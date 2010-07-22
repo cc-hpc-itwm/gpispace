@@ -1125,6 +1125,34 @@ namespace xml
 
       // ******************************************************************* //
 
+      class invalid_prefix : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const std::string & type
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << type << " " << name
+            << " with invalid prefix"
+            << " in " << path
+            ;
+       
+          return s.str();
+        }
+      public:
+        invalid_prefix ( const std::string & name
+                       , const std::string & type
+                       , const boost::filesystem::path & path
+                       )
+          : generic (nice (name, type, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class weparse : public generic
       {
       public:

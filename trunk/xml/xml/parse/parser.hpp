@@ -631,8 +631,11 @@ namespace xml
     static type::place_type
     place_type (const xml_node_type * node, state::type & state)
     {
+      const std::string name
+        (required ("place_type", node, "name", state.file_in_progress()));
+
       type::place_type p
-        ( required ("place_type", node, "name", state.file_in_progress())
+        ( validate_prefix (name, "place", state.file_in_progress())
         , required ("place_type", node, "type", state.file_in_progress())
         , fmap<std::string, petri_net::capacity_t>
           ( &::we::util::reader<petri_net::capacity_t>::read
@@ -1191,12 +1194,14 @@ namespace xml
     static type::transition_type
     transition_type (const xml_node_type * node, state::type & state)
     {
+      const std::string name
+        (required ("transition_type", node, "name", state.file_in_progress()));
+
       type::transition_type t;
 
       t.path = state.file_in_progress();
       t.level = state.level();
-      t.name =
-        required ("transition_type", node, "name", state.file_in_progress());
+      t.name = validate_prefix (name, "transition", state.file_in_progress());
       t.priority = fmap<std::string, petri_net::prio_t>
         ( boost::lexical_cast<petri_net::prio_t>
         , optional (node, "priority")

@@ -14,5 +14,6 @@
 #include <xml/parse/util/cdata.hpp>
 #include <xml/parse/util/read_bool.hpp>
 #include <xml/parse/util/property.hpp>
+#include <xml/parse/util/validprefix.hpp>
 
 #endif
