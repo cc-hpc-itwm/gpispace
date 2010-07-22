@@ -17,7 +17,7 @@ static unsigned long call_cnt = 0;
 #define MAGIC 4711
 
 static void alloc ( void *
-                  , const we::loader::input_t & input
+                  , const we::loader::input_t &
                   , we::loader::output_t & output
                   )
 {
