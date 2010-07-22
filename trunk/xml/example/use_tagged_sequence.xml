@@ -1,10 +1,11 @@
 <defun name="use_tagged_sequence">
-  <in name="N" type="long" place="N"/>
-  <in name="tag" type="string" place="tag"/>
   <struct name="p">
    <field name="i" type="long"/>
    <field name="t" type="string"/>
   </struct>
+
+  <in name="N" type="long" place="N"/>
+  <in name="tag" type="string" place="tag"/>
   <out name="p" type="p" place="p"/>
 
   <net>
