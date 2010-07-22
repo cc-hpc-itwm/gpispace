@@ -218,7 +218,7 @@ struct compare_workers
 	typedef WorkerManager::worker_map_t::value_type T;
 	bool operator()( T const& a, T const& b)
 	{
-		return a.second->pending().size() < a.second->pending().size();
+		return a.second->pending().size() < b.second->pending().size();
 	}
 };
 
