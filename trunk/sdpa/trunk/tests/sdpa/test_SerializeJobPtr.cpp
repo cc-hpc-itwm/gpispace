@@ -49,7 +49,7 @@ namespace sdpa {
 	class Job
 	{
 	public:
-		 Job(string arg) { std::cout<<"Called the constructor ..."<<std::endl;}
+          Job(string /* arg */) { std::cout<<"Called the constructor ..."<<std::endl;}
 		 Job(){std::cout<<"Called the constructor ..."<<std::endl;}
 		 virtual ~Job(){std::cout<<"Called the destructor ..."<<std::endl;}
 		 virtual string print_info() = 0;
@@ -58,16 +58,16 @@ namespace sdpa {
 		friend class boost::serialization::access;
 
 		template<class Archive>
-		void serialize(Archive& ar, const unsigned int /* file version */){}
+		void serialize(Archive& /*ar*/, const unsigned int /* file version */){}
 	};
 
 	class JobImpl : public Job
 	{
 	public:
 		  JobImpl(  const sdpa::job_id_t id = sdpa::JobId(""),
-					const sdpa::job_desc_t desc  = "",
-					const sdpa::daemon::IComm* pHandler = NULL,
-					const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id()) : Job(id.str())
+                         const sdpa::job_desc_t /* desc */ = "",
+                         const sdpa::daemon::IComm* /* pHandler */ = NULL,
+                         const sdpa::job_id_t &/*parent*/ = sdpa::job_id_t::invalid_job_id()) : Job(id.str())
 		{
 			  parent_ 	 = "aaaaaaaaaaaaa";
 			  worker_id_ = "bbbbbbbbbbbbb";

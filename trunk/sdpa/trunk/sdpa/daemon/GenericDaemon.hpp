@@ -167,7 +167,7 @@ namespace sdpa { namespace daemon {
 	  virtual bool requestsAllowed();
 
 	  template <class Archive>
-	  void serialize(Archive& ar, const unsigned int file_version )
+	  void serialize(Archive& ar, const unsigned int)
 	  {
 		  ar & ptr_job_man_;
 		  ar & ptr_scheduler_;

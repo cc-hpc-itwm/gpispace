@@ -50,22 +50,22 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 	}
 }
 
-void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
+void GenericDaemon::handleJobFinishedEvent(const JobFinishedEvent* /* pEvt */)
 {
 	SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
 }
 
-void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* pEvt )
+void GenericDaemon::handleJobFailedEvent(const JobFailedEvent* /* pEvt */ )
 {
 	SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
 }
 
-void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* pEvt )
+void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* /* pEvt */ )
 {
 	SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
 }
 
-void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
+void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* /* pEvt */)
 {
 	SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
 }

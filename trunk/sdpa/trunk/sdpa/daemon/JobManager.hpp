@@ -62,7 +62,7 @@ namespace sdpa { namespace daemon {
 	  size_t number_of_jobs() { return job_map_.size(); }
 
 	  template <class Archive>
-	  void serialize(Archive& ar, const unsigned int file_version )
+	  void serialize(Archive& ar, const unsigned int)
 	  {
 		  ar & job_map_;
 		  ar & job_map_marked_for_del_;

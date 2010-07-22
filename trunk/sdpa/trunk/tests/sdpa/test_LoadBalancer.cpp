@@ -76,7 +76,7 @@ void LoadBalancerTest::testLoadBalancer()
 		try {
 			const Worker::ptr_t& ptrCurrWorker = wm.getNextWorker();
 
-			for( int l=0; l<arrLoad[k]; l++)
+			for( size_t l=0; l<arrLoad[k]; l++)
 			{
 				sdpa::job_id_t jobId;
 				ptrCurrWorker->dispatch(jobId);

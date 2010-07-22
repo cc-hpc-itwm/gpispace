@@ -55,7 +55,7 @@ namespace sdpa { namespace fsm { namespace smc {
 			JobFSMContext& GetContext() { return m_fsmContext; }
 
 			template<class Archive>
-			void save(Archive & ar, const unsigned int version) const
+			void save(Archive & ar, const unsigned int) const
 			{
 				int stateId(m_fsmContext.getState().getId());
 
@@ -65,7 +65,7 @@ namespace sdpa { namespace fsm { namespace smc {
 			}
 
 			template<class Archive>
-			void load(Archive & ar, const unsigned int version)
+			void load(Archive & ar, const unsigned int)
 			{
 				int stateId;
 

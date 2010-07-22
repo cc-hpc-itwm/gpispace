@@ -73,7 +73,7 @@ namespace sdpa { namespace daemon {
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
 	  template <class Archive>
-	  void serialize(Archive& ar, const unsigned int file_version ) {
+	  void serialize(Archive& ar, const unsigned int) {
 		  ar & worker_map_;
 	  }
 

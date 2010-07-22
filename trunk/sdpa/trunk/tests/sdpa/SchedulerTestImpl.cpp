@@ -19,12 +19,12 @@ void SchedulerTestImpl::schedule(sdpa::job_id_t& jobId)
 	jobs_to_be_scheduled.push(jobId);
 }
 
-bool SchedulerTestImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref )
+bool SchedulerTestImpl::schedule_to(const sdpa::job_id_t& /*jobId*/, unsigned int /*rank*/, const we::preference_t& /*job_pref*/ )
 {
 	return false;
 }
 
-void SchedulerTestImpl::re_schedule(Worker::JobQueue* pQueue )
+void SchedulerTestImpl::re_schedule(Worker::JobQueue* /*pQueue*/ )
 {
 
 }
@@ -35,12 +35,12 @@ const Worker::ptr_t& SchedulerTestImpl::findWorker(const Worker::worker_id_t& wo
 	throw WorkerNotFoundException(worker_id);
 }
 
-const Worker::worker_id_t& SchedulerTestImpl::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& SchedulerTestImpl::findWorker(const sdpa::job_id_t& /*job_id*/) throw (NoWorkerFoundException)
 {
 	throw NoWorkerFoundException();
 }
 
-void SchedulerTestImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
+void SchedulerTestImpl::addWorker( const Worker::worker_id_t& /*workerId*/, unsigned int /*rank*/ ) throw (WorkerAlreadyExistException)
 {
 
 }
@@ -102,17 +102,17 @@ void SchedulerTestImpl::print()
 	ptr_worker_man_->print();
 }
 
-const sdpa::job_id_t SchedulerTestImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
+const sdpa::job_id_t SchedulerTestImpl::getNextJob(const Worker::worker_id_t& /*worker_id*/, const sdpa::job_id_t & /*last_job_id*/) throw (NoJobScheduledException)
 {
 	sdpa::job_id_t jobId;
 	return jobId;
 }
 
-void SchedulerTestImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
+void SchedulerTestImpl::acknowledgeJob(const Worker::worker_id_t& /*worker_id*/, const sdpa::job_id_t& /*job_id*/) throw(WorkerNotFoundException, JobNotFoundException)
 {
 }
 
-void SchedulerTestImpl::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
+void SchedulerTestImpl::deleteWorkerJob(const Worker::worker_id_t& /*worker_id*/, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
 {
 	throw JobNotDeletedException(job_id);
 }

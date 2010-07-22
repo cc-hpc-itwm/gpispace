@@ -190,7 +190,7 @@ namespace sdpa { namespace daemon {
     void delete_from_affinity_list(const sdpa::job_id_t& );
 
     template <class Archive>
-	void serialize(Archive& ar, const unsigned int file_version )
+	void serialize(Archive& ar, const unsigned int)
 	{
     	ar & name_;
     	ar & tstamp_;

@@ -213,7 +213,7 @@ namespace sdpa { namespace daemon {
     mutex_type &mutex() { return mtx_; }
 
     template <class Archive>
-  	void serialize(Archive& ar, const unsigned int file_version )
+  	void serialize(Archive& ar, const unsigned int)
   	{
       	ar & container_;
   	}

@@ -32,7 +32,7 @@ namespace daemon {
 
 		Orchestrator(  	const std::string &name = "",
 						const std::string& url = "",
-						const std::string &workflow_directory = "")
+                            const std::string &/*workflow_directory*/ = "")
 			: DaemonFSM( name, new T(this, boost::bind(&GenericDaemon::gen_id, this) ) ),
 			  SDPA_INIT_LOGGER(name),
 			  url_(url)
@@ -69,7 +69,7 @@ namespace daemon {
 		const std::string& url() const {return url_;}
 
 		template <class Archive>
-		void serialize(Archive& ar, const unsigned int file_version )
+		void serialize(Archive& ar, const unsigned int)
 		{
 			ar & boost::serialization::base_object<DaemonFSM>(*this);
 			ar & url_; //boost::serialization::make_nvp("url_", url_);

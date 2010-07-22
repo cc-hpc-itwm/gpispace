@@ -72,7 +72,7 @@ namespace sdpa {
 			const std::string& masterUrl() const { return masterUrl_; }
 
 			template <class Archive>
-			void serialize(Archive& ar, const unsigned int file_version )
+			void serialize(Archive& ar, const unsigned int)
 			{
 				ar & boost::serialization::base_object<DaemonFSM>(*this);
 				ar & url_; //boost::serialization::make_nvp("url_", url_);

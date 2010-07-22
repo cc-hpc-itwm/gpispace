@@ -85,7 +85,7 @@ namespace sdpa {
 	virtual void run();
 
 	template <class Archive>
-	void serialize(Archive& ar, const unsigned int file_version )
+	void serialize(Archive& ar, const unsigned int)
 	{
 		ar & boost::serialization::base_object<Scheduler>(*this);
 		ar & jobs_to_be_scheduled;

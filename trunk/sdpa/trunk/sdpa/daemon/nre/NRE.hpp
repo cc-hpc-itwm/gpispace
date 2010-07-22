@@ -146,7 +146,7 @@ namespace sdpa {
 		const std::string& masterUrl() const { return masterUrl_; }
 
 		template <class Archive>
-		void serialize(Archive& ar, const unsigned int file_version )
+		void serialize(Archive& ar, const unsigned int)
 		{
 			ar & boost::serialization::base_object<DaemonFSM>(*this);
 			ar & url_; //boost::serialization::make_nvp("url_", url_);
@@ -404,7 +404,7 @@ void NRE<T, U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
  * the SDPA.
  */
 template <typename T, typename U>
-bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& reason )
+bool  NRE<T, U>::cancel(const id_type& activityId, const reason_type& /* reason */)
 {
 	SDPA_LOG_DEBUG("GWES asked SDPA to cancel the activity "<<activityId<<" ...");
 	/*job_id_t job_id(activityId);

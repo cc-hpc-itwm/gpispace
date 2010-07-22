@@ -84,7 +84,7 @@ namespace sdpa { namespace daemon {
 			return os.str();
 		}
 
-		template <class Archive> void serialize(Archive& ar, const unsigned int file_version )
+		template <class Archive> void serialize(Archive& ar, const unsigned int)
 		{
 			ar & boost::serialization::base_object<Job>(*this);
 			ar & id_;

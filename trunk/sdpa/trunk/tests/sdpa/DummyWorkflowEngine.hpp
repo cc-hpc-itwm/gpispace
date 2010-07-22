@@ -94,7 +94,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-    bool failed(const id_type& activityId, const result_type & result)
+  bool failed(const id_type& activityId, const result_type & /* result */)
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
@@ -121,7 +121,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-    bool finished(const id_type& activityId, const result_type & result)
+  bool finished(const id_type& activityId, const result_type & /* result */)
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
 
@@ -231,7 +231,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
      * completion of the cancelling process by calling the
      * callback method Gwes2Sdpa::cancelled.
      */
-    bool cancel(const id_type& wfid, const reason_type& reason)
+  bool cancel(const id_type& wfid, const reason_type& /* reason */)
 	{
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
@@ -253,7 +253,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     }
 
     template <class Archive>
-	void serialize(Archive& ar, const unsigned int file_version )
+	void serialize(Archive& ar, const unsigned int)
 	{
     	ar & boost::serialization::base_object<IWorkflowEngine>(*this);
 		ar & map_Act2Wf_Ids_;
@@ -264,7 +264,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     		std::cout<<it->second<<" -> "<<it->first<<std::endl;
     }
 
-    void print_statistics (std::ostream & s) const
+    void print_statistics (std::ostream &) const
     {
     }
 
@@ -281,7 +281,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 namespace boost { namespace serialization {
 template<class Archive>
 inline void save_construct_data(
-    Archive & ar, const DummyWorkflowEngine* t, const unsigned int file_version
+    Archive & ar, const DummyWorkflowEngine* t, const unsigned int
 ){
     // save data required to construct instance
     ar << t->pIDaemon_;
@@ -289,7 +289,7 @@ inline void save_construct_data(
 
 template<class Archive>
 inline void load_construct_data(
-    Archive & ar, DummyWorkflowEngine* t, const unsigned int file_version
+    Archive & ar, DummyWorkflowEngine* t, const unsigned int
 ){
     // retrieve data from archive required to construct new instance
 	IDaemon *pIDaemon;

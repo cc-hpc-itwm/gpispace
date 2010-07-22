@@ -42,7 +42,7 @@ namespace sdpa {
 	 void check_post_request() { /*do nothing*/ }
 
 	 template <class Archive>
-	 void serialize(Archive& ar, const unsigned int file_version )
+	 void serialize(Archive& ar, const unsigned int)
 	 {
 		 ar & boost::serialization::base_object<SchedulerImpl>(*this);
 	 }

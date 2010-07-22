@@ -212,7 +212,7 @@ namespace sdpa {
 		}
 	 }
 
-	 void schedule_remote(const sdpa::job_id_t& jobId)
+	 void schedule_remote(const sdpa::job_id_t& /*jobId*/)
 	 {
            throw std::runtime_error ("Schedule remote not implemented for the NREs!");
 	 }
@@ -283,7 +283,7 @@ namespace sdpa {
 	 friend class sdpa::tests::WorkerSerializationTest;
 
 	 template <class Archive>
-	 void serialize(Archive& ar, const unsigned int file_version )
+	 void serialize(Archive& ar, const unsigned int)
 	 {
 		ar & boost::serialization::base_object<SchedulerImpl>(*this);
 		//ar & m_worker_;  //NreWorkerClient

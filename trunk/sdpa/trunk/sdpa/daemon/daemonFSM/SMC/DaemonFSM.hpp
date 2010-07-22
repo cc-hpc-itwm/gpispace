@@ -84,7 +84,7 @@ namespace sdpa {
 					DaemonFSMContext& GetContext() { return m_fsmContext; }
 
 					template<class Archive>
-					void save(Archive & ar, const unsigned int version) const
+					void save(Archive & ar, const unsigned int) const
 					{
 						int stateId(m_fsmContext.getState().getId());
 
@@ -94,7 +94,7 @@ namespace sdpa {
 					}
 
 					template<class Archive>
-					void load(Archive & ar, const unsigned int version)
+					void load(Archive & ar, const unsigned int)
 					{
 						int stateId;
 
@@ -106,7 +106,7 @@ namespace sdpa {
 					}
 
 					template<class Archive>
-					void serialize( Archive & ar, const unsigned int file_version )
+					void serialize( Archive & ar, const unsigned int file_version)
 					{
 						boost::serialization::split_member(ar, *this, file_version);
 					}
