@@ -23,13 +23,19 @@
     </specialize>
 
     <transition name="dup">
-       <use name="dup_long"/>
-       <connect-in port="in" place="N"/>
-       <connect-out port="one" place="Ngen"/>
-       <connect-out port="two" place="Ntag"/>
+      <properties name="synthesize">
+        <property key="unfold" value="true"/>
+      </properties>
+      <use name="dup_long"/>
+      <connect-in port="in" place="N"/>
+      <connect-out port="one" place="Ngen"/>
+      <connect-out port="two" place="Ntag"/>
     </transition>
 
     <transition name="sequence">
+      <properties name="synthesize">
+        <property key="unfold" value="true"/>
+      </properties>
       <include-function href="sequence.xml"/>
       <connect-in port="amount" place="Ngen"/>
       <connect-out port="out" place="id"/>

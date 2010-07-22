@@ -135,6 +135,16 @@ namespace xml
                             , typename Activity::transition_type::edge_type &
                             );
 
+      template <typename Activity, typename Net, typename Fun>
+      boost::unordered_map< std::string
+                          , typename Activity::transition_type::pid_t
+                          >
+      net_synthesize ( typename Activity::transition_type::net_type &
+                     , const Net &
+                     , const state::type &
+                     , typename Activity::transition_type::edge_type &
+                     );
+
       // ******************************************************************* //
 
       template<typename Map>
@@ -145,7 +155,7 @@ namespace xml
 
         if (pos == pid_of_place.end())
           {
-            THROW_STRANGE ("missing place" << name << " in pid_of_place");
+            THROW_STRANGE ("missing place " << name << " in pid_of_place");
           }
 
         return pos->second;
@@ -172,6 +182,8 @@ namespace xml
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
         
         typedef typename we_transition_type::pid_t pid_t;
+
+        typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
 
         void add_ports ( we_transition_type & trans
                        , const port_vec_type & ports
@@ -291,65 +303,13 @@ namespace xml
         we_transition_type operator () (const Net & net) const
         {
           we_net_type we_net;
+          
+          typename Activity::transition_type::edge_type e (0);
 
-          typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
-
-          pid_of_place_type pid_of_place;
-
-          for ( place_vec_type::const_iterator place (net.places().begin())
-              ; place != net.places().end()
-              ; ++place
-              )
-            {
-              const signature::type type (net.type_of_place (*place));
-              const pid_t pid
-                ( we_net.add_place ( we_place_type ( place->name
-                                                   , type
-                                                   , place->prop
-                                                   )
-                                   )
-                );
-
-              if (place->capacity.isJust())
-                {
-                  we_net.set_capacity (pid, *place->capacity);
-                }
-
-              pid_of_place[place->name] = pid;
-            }
-
-          we_edge_type e (0);
-
-          for ( typename Net::transition_vec_type::const_iterator transition
-                  (net.transitions().begin())
-              ; transition != net.transitions().end()
-              ; ++transition
-              )
-            {
-              transition_synthesize< Activity
-                                   , Net
-                                   , transition_type
-                                   , Fun
-                                   , pid_of_place_type
-                                   >
-                (*transition, state, net, we_net, pid_of_place, e); 
-            }
+          pid_of_place_type pid_of_place 
+            (net_synthesize<Activity, Net, Fun> (we_net, net, state, e));
 
           util::property::join (state, fun.prop, net.prop);
-
-          for ( place_vec_type::const_iterator place (net.places().begin())
-              ; place != net.places().end()
-              ; ++place
-              )
-            {
-              for ( value_vec_type::const_iterator val (place->values.begin())
-                  ; val != place->values.end()
-                  ; ++val
-                  )
-                {
-                  token::put (we_net, pid_of_place.at(place->name), *val);
-                }
-            }
 
           we_transition_type trans
             ( name()

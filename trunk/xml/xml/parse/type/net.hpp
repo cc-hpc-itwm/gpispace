@@ -35,6 +35,7 @@ namespace xml
         xml::util::unique<specialize_type> _specializes;
 
       public:
+        typedef std::vector<place_type> place_vec_type;
         typedef std::vector<function_type> function_vec_type;
         typedef std::vector<function_type> template_vec_type;
         typedef std::vector<transition_type> transition_vec_type;
@@ -146,6 +147,18 @@ namespace xml
                                                 , state.file_in_progress()
                                                 );
             }
+        }
+
+        // ***************************************************************** //
+        
+        void clear_places (void)
+        {
+          _places.clear();
+        }
+
+        void clear_transitions (void)
+        {
+          _transitions.clear();
         }
 
         // ***************************************************************** //
@@ -364,6 +377,161 @@ namespace xml
               fun->type_check (state);
             }
         }
+      };
+
+      // ******************************************************************* //
+
+      net_type set_prefix (const net_type & net_old, const std::string & prefix)
+      {
+        net_type net_new (net_old);
+
+        net_new.clear_places();
+        net_new.clear_transitions();
+
+        for ( net_type::place_vec_type::const_iterator
+                place_old (net_old.places().begin())
+            ; place_old != net_old.places().end()
+            ; ++place_old
+            )
+          {
+            place_type place_new (*place_old);
+
+            place_new.name = prefix + place_old->name;
+
+            net_new.push_place (place_new);
+          }
+
+        for ( net_type::transition_vec_type::const_iterator
+                transition_old (net_old.transitions().begin())
+            ; transition_old != net_old.transitions().end()
+            ; ++transition_old
+            )
+          {
+            transition_type transition_new (*transition_old);
+            transition_new.name = prefix + transition_old->name;
+
+            transition_new.clear_ports();
+
+            for (connect_vec_type::const_iterator
+                   connect_in_old (transition_old->in().begin())
+                ; connect_in_old != transition_old->in().end()
+                ; ++connect_in_old
+                )
+              {
+                connect_type connect_in_new (*connect_in_old);
+
+                connect_in_new.place = prefix + connect_in_old->place;
+
+                transition_new.push_in (connect_in_new);
+              }
+
+            for (connect_vec_type::const_iterator
+                   connect_read_old (transition_old->read().begin())
+                ; connect_read_old != transition_old->read().end()
+                ; ++connect_read_old
+                )
+              {
+                connect_type connect_read_new (*connect_read_old);
+
+                connect_read_new.place = prefix + connect_read_old->place;
+
+                transition_new.push_read (connect_read_new);
+              }
+
+            for (connect_vec_type::const_iterator
+                   connect_out_old (transition_old->out().begin())
+                ; connect_out_old != transition_old->out().end()
+                ; ++connect_out_old
+                )
+              {
+                connect_type connect_out_new (*connect_out_old);
+
+                connect_out_new.place = prefix + connect_out_old->place;
+
+                transition_new.push_out (connect_out_new);
+              }
+
+            net_new.push_transition (transition_new);
+          }
+
+        return net_new;
+      }
+
+      // ******************************************************************* //
+
+      template <typename Activity, typename Net, typename Fun>
+      boost::unordered_map< std::string
+                          , typename Activity::transition_type::pid_t
+                          >
+      net_synthesize ( typename Activity::transition_type::net_type & we_net
+                     , const Net & net
+                     , const state::type & state
+                     , typename Activity::transition_type::edge_type & e
+                     )
+      {
+        typedef typename Activity::transition_type we_transition_type;
+
+        typedef typename we_transition_type::place_type we_place_type;
+        typedef typename we_transition_type::edge_type we_edge_type;
+        
+        typedef typename we_transition_type::pid_t pid_t;
+
+        typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
+
+        pid_of_place_type pid_of_place;
+
+        for ( place_vec_type::const_iterator place (net.places().begin())
+            ; place != net.places().end()
+            ; ++place
+            )
+            {
+              const signature::type type (net.type_of_place (*place));
+              const pid_t pid
+                ( we_net.add_place ( we_place_type ( place->name
+                                                   , type
+                                                   , place->prop
+                                                   )
+                                   )
+                );
+
+              if (place->capacity.isJust())
+                {
+                  we_net.set_capacity (pid, *place->capacity);
+                }
+
+              pid_of_place[place->name] = pid;
+            }
+
+          for ( typename Net::transition_vec_type::const_iterator transition
+                  (net.transitions().begin())
+              ; transition != net.transitions().end()
+              ; ++transition
+              )
+            {
+              transition_synthesize< Activity
+                                   , Net
+                                   , transition_type
+                                   , Fun
+                                   , pid_of_place_type
+                                   >
+                (*transition, state, net, we_net, pid_of_place, e); 
+            }
+
+          for ( place_vec_type::const_iterator place (net.places().begin())
+              ; place != net.places().end()
+              ; ++place
+              )
+            {
+              for ( value_vec_type::const_iterator val (place->values.begin())
+                  ; val != place->values.end()
+                  ; ++val
+                  )
+                {
+                  token::put (we_net, pid_of_place.at(place->name), *val);
+                }
+            }
+
+          return pid_of_place;
       };
 
       // ******************************************************************* //

@@ -9,6 +9,7 @@
 #include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/property.hpp>
+#include <xml/parse/util/weparse.hpp>
 
 #include <vector>
 
@@ -198,6 +199,15 @@ namespace xml
 
         // ***************************************************************** //
 
+        void clear_ports ()
+        {
+          _in.clear();
+          _out.clear();
+          _read.clear();
+        }
+
+        // ***************************************************************** //
+
         void resolve ( const state::type & state
                      , const xml::parse::struct_t::forbidden_type & forbidden
                      )
@@ -339,6 +349,8 @@ namespace xml
       ) 
       {
         typedef typename Activity::transition_type we_transition_type;
+        typedef typename we_transition_type::expr_type we_expr_type;
+        typedef typename we_transition_type::preparsed_cond_type we_cond_type;
         typedef typename petri_net::tid_t tid_t;
 
         Fun fun
@@ -371,95 +383,335 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
-        we_transition_type we_trans 
-          ( boost::apply_visitor
-            ( function_synthesize<Activity, Net, Fun> (state, fun)
-            , fun.f
-            )
-          );
+        if (    boost::apply_visitor (function_is_net(), fun.f)
+           && ( "true" == trans.prop.get_with_default ( "synthesize.unfold"
+                                                      , "false"
+                                                      )
+              )
+           )
+          { // unfold
+            
+            // set a prefix
+            const std::string prefix ("_" + trans.name + "_");
+            const Net & net_old (boost::get<Net> (fun.f));
+            const Net & net_new (set_prefix (net_old, prefix));
 
-        for ( connect_vec_type::const_iterator connect (trans.in().begin())
-            ; connect != trans.in().end()
-            ; ++connect
-            )
-          {
-            we_trans.add_connections ()
-              (get_pid (pids, connect->place), connect->port, connect->prop)
-              ;
-          }
+            // synthesize into this level
+            const Map pid_of_place
+              (net_synthesize<Activity, Net, Fun> (we_net, net_new, state, e));
 
-        for ( connect_vec_type::const_iterator connect (trans.read().begin())
-            ; connect != trans.read().end()
-            ; ++connect
-            )
-          {
-            we_trans.add_connections ()
-              (get_pid (pids, connect->place), connect->port, connect->prop)
-              ;
-          }
+            // go in the subnet
+            const std::string cond_in (fun.condition());
+            
+            util::we_parser_t parsed_condition_in
+              ( util::we_parse ( cond_in
+                               , "condition"
+                               , "unfold"
+                               , trans.name
+                               , trans.path
+                               )
+              );
 
-        for ( connect_vec_type::const_iterator connect (trans.out().begin())
-            ; connect != trans.out().end()
-            ; ++connect
-            )
-          {
-            we_trans.add_connections ()
-              (connect->port, get_pid (pids, connect->place), connect->prop)
-              ;
-          }
+            we_transition_type trans_in
+              ( prefix + "in"
+              , we_expr_type ()
+              , we_cond_type (cond_in, parsed_condition_in)
+              , true
+              , fun.prop
+              );
 
-        const tid_t tid (we_net.add_transition (we_trans));
-
-        if (trans.priority.isJust())
-          {
-            we_net.set_transition_priority (tid, *trans.priority);
-          }
-
-        for ( connect_vec_type::const_iterator connect (trans.in().begin())
-            ; connect != trans.in().end()
-            ; ++connect
-            )
-          {
-            we_net.add_edge 
-              (e++, connection_t (PT, tid, get_pid (pids, connect->place)))
-              ;
-          }
-
-        for ( connect_vec_type::const_iterator connect (trans.read().begin())
-            ; connect != trans.read().end()
-            ; ++connect
-            )
-          {
-            we_net.add_edge
-              (e++, connection_t (PT_READ, tid, get_pid (pids, connect->place)))
-              ;
-          }
-
-        for ( connect_vec_type::const_iterator connect (trans.out().begin())
-            ; connect != trans.out().end()
-            ; ++connect
-            )
-          {
-            const pid_t pid (get_pid (pids, connect->place));
-
-            if (boost::apply_visitor (function_is_net(), fun.f))
+            for ( port_vec_type::const_iterator port (fun.in().begin())
+                ; port != fun.in().end()
+                ; ++port
+                )
               {
-                try
-                  {
-                    const petri_net::capacity_t
-                      capacity (we_net.get_capacity (pid));
+                const signature::type type
+                  (fun.type_of_port (we::type::PORT_IN, *port));
 
-                    throw error::capacity_on_net_output<Trans, Fun>
-                      (trans, fun, connect->place, capacity);
-                  }
-                catch (const petri_net::exception::capacity_unbounded &)
+                trans_in.add_ports () ( port->name
+                                      , type
+                                      , we::type::PORT_IN
+                                      , port->prop
+                                      );
+                trans_in.add_ports () ( port->name
+                                      , type
+                                      , we::type::PORT_OUT
+                                      , port->prop
+                                      );
+
+                if (port->place.isJust())
                   {
-                    /* do nothing, that is what we want */
+                    trans_in.add_connections ()
+                      ( port->name
+                      , get_pid (pid_of_place , prefix + *port->place)
+                      , port->prop
+                      )
+                      ;
                   }
               }
 
-            we_net.add_edge (e++, connection_t (TP, tid, pid));
-          }
+            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+                ; connect != trans.in().end()
+                ; ++connect
+                )
+              {
+                trans_in.add_connections ()
+                  (get_pid (pids, connect->place), connect->port, connect->prop)
+                  ;
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+                ; connect != trans.read().end()
+                ; ++connect
+                )
+              {
+                trans_in.add_connections ()
+                  (get_pid (pids, connect->place), connect->port, connect->prop)
+                  ;
+              }
+            
+            const tid_t tid_in (we_net.add_transition (trans_in));
+
+            for ( port_vec_type::const_iterator port (fun.in().begin())
+                ; port != fun.in().end()
+                ; ++port
+                )
+              {
+                if (port->place.isJust())
+                  {
+                    we_net.add_edge
+                      ( e++, connection_t ( TP
+                                          , tid_in
+                                          , get_pid ( pid_of_place
+                                                    , prefix + *port->place
+                                                    )
+                                          )
+                      )
+                      ;
+                  }
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+                ; connect != trans.in().end()
+                ; ++connect
+                )
+              {
+                we_net.add_edge
+                  ( e++
+                  , connection_t ( PT
+                                 , tid_in
+                                 , get_pid (pids, connect->place)
+                                 )
+                  )
+                  ;
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+                ; connect != trans.read().end()
+                ; ++connect
+                )
+              {
+                we_net.add_edge
+                  ( e++, connection_t ( PT
+                                      , tid_in
+                                      , get_pid (pids, connect->place)
+                                      )
+                  )
+                  ;
+              }
+
+            // going out of the subnet
+            const std::string cond_out ("true");
+            
+            util::we_parser_t parsed_condition_out
+              ( util::we_parse ( cond_out
+                               , "condition"
+                               , "unfold"
+                               , trans.name
+                               , trans.path
+                               )
+              );
+
+            we_transition_type trans_out
+              ( prefix + "out"
+              , we_expr_type ()
+              , we_cond_type (cond_out, parsed_condition_out)
+              , true
+              , fun.prop
+              );
+            
+            for ( port_vec_type::const_iterator port (fun.out().begin())
+                ; port != fun.out().end()
+                ; ++port
+                )
+              {
+                const signature::type type
+                  (fun.type_of_port (we::type::PORT_OUT, *port));
+
+                trans_out.add_ports () ( port->name
+                                       , type
+                                       , we::type::PORT_IN
+                                       , port->prop
+                                       );
+                trans_out.add_ports () ( port->name
+                                       , type
+                                       , we::type::PORT_OUT
+                                       , port->prop
+                                       );
+
+                if (port->place.isJust())
+                  {
+                    trans_out.add_connections ()
+                      ( get_pid (pid_of_place , prefix + *port->place)
+                      , port->name
+                      , port->prop
+                      )
+                      ;
+                  }
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+                ; connect != trans.out().end()
+                ; ++connect
+                )
+              {
+                trans_out.add_connections ()
+                  (connect->port, get_pid (pids, connect->place), connect->prop)
+                  ;
+              }
+
+            const tid_t tid_out (we_net.add_transition (trans_out));
+
+            for ( port_vec_type::const_iterator port (fun.out().begin())
+                ; port != fun.out().end()
+                ; ++port
+                )
+              {
+                if (port->place.isJust())
+                  {
+                    we_net.add_edge
+                      ( e++, connection_t ( PT
+                                          , tid_out
+                                          , get_pid ( pid_of_place
+                                                    , prefix + *port->place
+                                                    )
+                                          )
+                      )
+                      ;
+                    }
+                }
+            
+            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+                ; connect != trans.out().end()
+                ; ++connect
+                )
+              {
+                we_net.add_edge
+                  ( e++
+                  , connection_t ( TP
+                                 , tid_out
+                                 , get_pid (pids, connect->place)
+                                 )
+                  )
+                  ;
+              }
+          } // unfold
+
+        else
+
+          { // not unfold
+
+            we_transition_type we_trans 
+              ( boost::apply_visitor
+                ( function_synthesize<Activity, Net, Fun> (state, fun)
+                , fun.f
+                )
+              );
+
+            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+                ; connect != trans.in().end()
+                ; ++connect
+                )
+              {
+                we_trans.add_connections ()
+                  (get_pid (pids, connect->place), connect->port, connect->prop)
+                  ;
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+                ; connect != trans.read().end()
+                ; ++connect
+                )
+              {
+                we_trans.add_connections ()
+                  (get_pid (pids, connect->place), connect->port, connect->prop)
+                  ;
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+                ; connect != trans.out().end()
+                ; ++connect
+                )
+              {
+                we_trans.add_connections ()
+                  (connect->port, get_pid (pids, connect->place), connect->prop)
+                  ;
+              }
+
+            const tid_t tid (we_net.add_transition (we_trans));
+
+            if (trans.priority.isJust())
+              {
+                we_net.set_transition_priority (tid, *trans.priority);
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+                ; connect != trans.in().end()
+                ; ++connect
+                )
+              {
+                we_net.add_edge 
+                  (e++, connection_t (PT, tid, get_pid (pids, connect->place)))
+                  ;
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+                ; connect != trans.read().end()
+                ; ++connect
+                )
+              {
+                we_net.add_edge
+                  (e++, connection_t (PT_READ, tid, get_pid (pids, connect->place)))
+                  ;
+              }
+
+            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+                ; connect != trans.out().end()
+                ; ++connect
+                )
+              {
+                const pid_t pid (get_pid (pids, connect->place));
+
+                if (boost::apply_visitor (function_is_net(), fun.f))
+                  {
+                    try
+                      {
+                        const petri_net::capacity_t
+                          capacity (we_net.get_capacity (pid));
+
+                        throw error::capacity_on_net_output<Trans, Fun>
+                          (trans, fun, connect->place, capacity);
+                      }
+                    catch (const petri_net::exception::capacity_unbounded &)
+                      {
+                        /* do nothing, that is what we want */
+                      }
+                  }
+
+                we_net.add_edge (e++, connection_t (TP, tid, pid));
+              }
+
+          } // not unfold
 
         return;
       };

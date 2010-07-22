@@ -27,6 +27,9 @@
     </specialize>
 
     <transition name="use_tag">
+      <properties name="synthesize">
+        <property key="unfold" value="true"/>
+      </properties>
       <use name="f_use_tag"/>
       <connect-in port="tag" place="tag"/>
       <connect-in port="amount" place="N"/>
