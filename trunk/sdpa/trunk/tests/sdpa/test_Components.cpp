@@ -28,6 +28,7 @@
 #include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
 
+// FIXME: A real workflow wanted, should be a parameter to read
 #include <kdm/simple_generator.hpp>
 #include <kdm/kdm_simple.hpp>
 
@@ -148,42 +149,9 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 
 	bool bLaunchNrePcd = true;
 
-	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
-	// generate the test workflow simple-net.pnet
+        // FIXME: should be a parameter to where to read from
 
-	std::string cfg_file(TESTS_WORKFLOWS_PATH);
-	cfg_file += "/kdm.simple.conf";
-
-	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-
-	  act.add_input
-	    ( we::input_t::value_type
-	      ( we::token_t ( "config_file"
-	                    , literal::STRING
-	                    , cfg_file
-	                    )
-	      , simple_trans.input_port_by_name ("config_file")
-	      )
-	    );
-
-	//obsolete
-	/*
-	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-
-	act.input().push_back
-    ( we::input_t::value_type
-      ( we::token_t ( "config_file"
-                    , literal::STRING
-                    , std::string (TESTS_WORKFLOWS_PATH) + "/kdm.simple.conf"
-                    )
-      , simple_trans.input_port_by_name ("config_file")
-      )
-    );
-    */
-
-	m_strWorkflow = we::util::text_codec::encode (act);
+	m_strWorkflow = read_workflow("/dev/stdin");
 
 	//SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
