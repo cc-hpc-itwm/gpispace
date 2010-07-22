@@ -365,6 +365,16 @@ namespace xml
           return trans;
         }
       };
+ 
+      // ******************************************************************* //
+
+      class function_is_net : public boost::static_visitor<bool>
+      {
+      public:
+        bool operator () (const net_type &) const { return true; }
+        template<typename T>
+        bool operator () (const T &) const { return false; }
+      };
 
       // ******************************************************************* //
 

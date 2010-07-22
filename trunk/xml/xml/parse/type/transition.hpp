@@ -4,6 +4,7 @@
 #define _XML_PARSE_TYPE_TRANSITION_HPP
 
 #include <xml/parse/types.hpp>
+#include <xml/parse/error.hpp>
 
 #include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/unique.hpp>
@@ -96,7 +97,7 @@ namespace xml
           fun.specialize (map, get, known_structs, state);
         }
       };
-      
+
       // ******************************************************************* //
 
       template<typename Net, typename Trans>
@@ -439,9 +440,25 @@ namespace xml
             ; ++connect
             )
           {
-            we_net.add_edge
-              (e++, connection_t (TP, tid, get_pid (pids, connect->place)))
-              ;
+            const pid_t pid (get_pid (pids, connect->place));
+
+            if (boost::apply_visitor (function_is_net(), fun.f))
+              {
+                try
+                  {
+                    const petri_net::capacity_t
+                      capacity (we_net.get_capacity (pid));
+
+                    throw error::capacity_on_net_output<Trans, Fun>
+                      (trans, fun, connect->place, capacity);
+                  }
+                catch (const petri_net::exception::capacity_unbounded &)
+                  {
+                    /* do nothing, that is what we want */
+                  }
+              }
+
+            we_net.add_edge (e++, connection_t (TP, tid, pid));
           }
 
         return;
