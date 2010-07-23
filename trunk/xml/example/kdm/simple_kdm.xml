@@ -124,6 +124,7 @@
     <!--  check if this type is defined!!!! -->
     <place name="volume" type="VOLUME"/>
 
+<!--
     <transition name="debug_volume">
       <defun>
         <in name="volume" type="VOLUME"/>
@@ -135,6 +136,7 @@
     </transition>
 
     <place name="volume_debugged" type="VOLUME"/>
+-->
 
     <!-- wrap process volume so that it will be executed on the nre-pcd -->
     <transition name="process_volume">
@@ -155,7 +157,7 @@
           </transition>
         </net>
       </defun>
-      <connect-in place="volume_debugged" port="volume" />
+      <connect-in place="volume" port="volume" />
       <connect-read place="config" port="config" />
       <connect-out place="trigger_dec" port="done" />
     </transition>
