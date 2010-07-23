@@ -1233,7 +1233,7 @@ namespace we { namespace type {
           port_out = prop.get_with_default (prefix + ".port-out", "invhouse");
           expression = prop.get_with_default (prefix + ".expression", "none");
           modcall = prop.get_with_default (prefix + ".modcall", "box");
-          place = prop.get_with_default (prefix + ".place", "circle");
+          place = prop.get_with_default (prefix + ".place", "ellipse");
         }
       }
 
