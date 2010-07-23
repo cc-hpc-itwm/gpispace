@@ -385,7 +385,8 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
-        if (  trans.finline.get_with_default(false)
+        if (  !state.no_inline()
+           && trans.finline.get_with_default(false)
            && boost::apply_visitor (function_is_net(), fun.f))
           { // unfold
             
@@ -411,7 +412,7 @@ namespace xml
               );
 
             we_transition_type trans_in
-              ( prefix + "in"
+              ( prefix + "IN"
               , we_expr_type ()
               , we_cond_type (cond_in, parsed_condition_in)
               , true
@@ -531,7 +532,7 @@ namespace xml
               );
 
             we_transition_type trans_out
-              ( prefix + "out"
+              ( prefix + "OUT"
               , we_expr_type ()
               , we_cond_type (cond_out, parsed_condition_out)
               , true

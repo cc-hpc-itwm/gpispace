@@ -18,6 +18,7 @@
 
 #include <xml/parse/warning.hpp>
 #include <xml/parse/error.hpp>
+#include <xml/parse/util/read_bool.hpp>
 
 // ************************************************************************* //
 
@@ -29,6 +30,7 @@ namespace xml
     {
       namespace fs = boost::filesystem;
       namespace po = boost::program_options;
+      namespace property = we::type::property;
 
       typedef std::vector<fs::path> search_path_type;
       typedef std::vector<fs::path> in_progress_type;
@@ -41,7 +43,7 @@ namespace xml
         int _level;
         search_path_type _search_path;
         in_progress_type _in_progress;
-        we::type::property::path_type _prop_path;
+        property::path_type _prop_path;
         bool _ignore_properties;
         bool _Werror;
         bool _Wall;
@@ -56,6 +58,28 @@ namespace xml
         bool _Wproperty_overwritten;
         bool _Wtype_map_duplicate;
         bool _Wtype_get_duplicate;
+
+        bool _print_internal_structures;
+        bool _no_inline;
+
+        std::string _Osearch_path;
+        std::string _Oignore_properties;
+        std::string _OWerror;
+        std::string _OWall;
+        std::string _OWoverwrite_function_name_as;
+        std::string _OWoverwrite_template_name_as;
+        std::string _OWshadow;
+        std::string _OWdefault_construction;
+        std::string _OWunused_field;
+        std::string _OWport_not_connected;
+        std::string _OWunexpected_element;
+        std::string _OWoverwrite_function_name_trans;
+        std::string _OWproperty_overwritten;
+        std::string _OWtype_map_duplicate;
+        std::string _OWtype_get_duplicate;
+        
+        std::string _Oprint_internal_structures;
+        std::string _Ono_inline;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -122,6 +146,26 @@ namespace xml
           , _Wproperty_overwritten (true)
           , _Wtype_map_duplicate(true)
           , _Wtype_get_duplicate(true)
+          , _print_internal_structures(false)
+          , _no_inline(false)
+
+          , _Osearch_path ("search-path")
+          , _Oignore_properties ("ignore-properties")
+          , _OWerror ("Werror")
+          , _OWall ("all")
+          , _OWoverwrite_function_name_as ("Woverwrite-function-name-as")
+          , _OWoverwrite_template_name_as ("Woverwrite-template-name-as")
+          , _OWshadow ("shadow")
+          , _OWdefault_construction ("Wdefault-construction")
+          , _OWunused_field ("Wunused-field")
+          , _OWport_not_connected ("Wport-not-connected")
+          , _OWunexpected_element ("Wunexpected-element")
+          , _OWoverwrite_function_name_trans ("Woverwrite-function-name-trans")
+          , _OWproperty_overwritten ("Wproperty-overwritten")
+          , _OWtype_map_duplicate ("Wtype-map-duplicate")
+          , _OWtype_get_duplicate ("Wtype-get-duplicate")
+          , _Oprint_internal_structures ("print-internal-structures")
+          , _Ono_inline ("no-inline")
         {}
 
         int & level (void) { return _level; }
@@ -132,9 +176,53 @@ namespace xml
 
         // ***************************************************************** //
 
-        we::type::property::path_type & prop_path (void)
+        property::path_type & prop_path (void)
         {
           return _prop_path;
+        }
+
+        // ***************************************************************** //
+
+        bool property ( const property::path_type & path
+                      , const property::value_type & value
+                      )
+        {
+          if (path.size() != 2 || path[0] != "pnetc")
+            {
+              return false;
+            }
+
+#define GET_PROP(x)                       \
+          else if (path[1] == _O ## x)    \
+            {                             \
+              _ ## x = read_bool (value); \
+            }
+
+          if (path[1] == _Osearch_path)
+            {
+              _search_path.push_back (value);
+            }
+
+          GET_PROP (ignore_properties)
+          GET_PROP (Werror)
+          GET_PROP (Wall)
+          GET_PROP (Woverwrite_function_name_as)
+          GET_PROP (Woverwrite_template_name_as)
+          GET_PROP (Wshadow)
+          GET_PROP (Wdefault_construction)
+          GET_PROP (Wunused_field)
+          GET_PROP (Wport_not_connected)
+          GET_PROP (Wunexpected_element)
+          GET_PROP (Woverwrite_function_name_trans)
+          GET_PROP (Wproperty_overwritten)
+          GET_PROP (Wtype_map_duplicate)
+          GET_PROP (Wtype_get_duplicate)
+          GET_PROP (print_internal_structures)
+          GET_PROP (no_inline)
+
+#undef GET_PROP
+
+          return true;
         }
 
         // ***************************************************************** //
@@ -149,7 +237,9 @@ namespace xml
 
         // ***************************************************************** //
 
-#define ACCESS(x) const bool & x (void) const { return _ ## x; }
+#define ACCESS(x)                                       \
+        const bool & x (void) const { return _ ## x; }  \
+        bool & x (void){ return _ ## x; }
 
         ACCESS(ignore_properties)
 
@@ -166,6 +256,9 @@ namespace xml
         ACCESS(Wproperty_overwritten)
         ACCESS(Wtype_map_duplicate)
         ACCESS(Wtype_get_duplicate)
+        
+        ACCESS(print_internal_structures)
+        ACCESS(no_inline)
 
 #undef ACCESS
 
@@ -266,61 +359,73 @@ namespace xml
 #define VAL(x) po::value<bool>(&_ ## x)->default_value (_ ## x)
 
           desc.add_options ()
-            ( "search-path"
+            ( _Osearch_path.c_str()
             , po::value<search_path_type>(&_search_path)
             , "search path"
             )
-            ( "ignore-properties"
+            ( _Oignore_properties.c_str()
             , VAL(ignore_properties)
             , "when set to true, no properties are parsed"
             )
-            ( "Werror"
+            ( _OWerror.c_str()
             , VAL(Werror)
             , "cast warnings to errors"
             )
-            ( "Wall"
+            ( _OWall.c_str()
             , VAL(Wall)
             , "turn on all warnings"
             )
-            ( "Woverwrite-function-name-as"
+            ( _OWoverwrite_function_name_as.c_str()
             , VAL(Woverwrite_function_name_as)
             , "warn when overwriting a function name by 'as'"
             )
-            ( "Woverwrite-template-name-as"
+            ( _OWoverwrite_template_name_as.c_str()
             , VAL(Woverwrite_template_name_as)
             , "warn when overwriting a template name by 'as'"
             )
-            ( "Wshadow"
+            ( _OWshadow.c_str()
             , VAL(Wshadow)
             , "warn when shadowing a struct definition"
             )
-            ( "Wdefault-construction"
+            ( _OWdefault_construction.c_str()
             , VAL(Wdefault_construction)
             , "warn when default construct (part of) tokens"
             )
-            ( "Wunused-field"
+            ( _OWunused_field.c_str()
             , VAL(Wunused_field)
             , "warn when given fields in tokens are unused"
             )
-            ( "Wunexpected-element"
+            ( _OWport_not_connected.c_str()
+            , VAL(Wport_not_connected)
+            , "warn when port are not connected"
+            )
+            ( _OWunexpected_element.c_str()
             , VAL(Wunexpected_element)
             , "warn when unexpected elements occur"
             )
-            ( "Woverwrite-function-name-trans"
+            ( _OWoverwrite_function_name_trans.c_str()
             , VAL(Woverwrite_function_name_trans)
             , "warn when overwriting a function name with a transition name"
             )
-            ( "Wproperty-overwritten"
+            ( _OWproperty_overwritten.c_str()
             , VAL(Wproperty_overwritten)
             , "warn when overwriting a property"
             )
-            ( "Wtype-map-duplicate"
+            ( _OWtype_map_duplicate.c_str()
             , VAL(Wtype_map_duplicate)
             , "warn about duplicate type maps"
             )
-            ( "Wtype-get-duplicate"
+            ( _OWtype_get_duplicate.c_str()
             , VAL(Wtype_get_duplicate)
             , "warn about duplicate type gets"
+            )
+            ( _Oprint_internal_structures.c_str()
+            , VAL(print_internal_structures)
+            , "if set the parser dumps the internal structures right before synthesize"
+            )
+            ( _Ono_inline.c_str()
+            , VAL(no_inline)
+            , "if set, ignore the keyword inline"
             )
             ;
 #undef VAL

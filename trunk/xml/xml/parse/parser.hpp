@@ -799,11 +799,11 @@ namespace xml
                             );
                         }
 
-                      util::property::set ( state
-                                          , prop
-                                          , state.prop_path()
-                                          , cdata.front()
-                                          );
+                      util::property::set_state ( state
+                                                , prop
+                                                , state.prop_path()
+                                                , cdata.front()
+                                                );
                     }
                   else
                     {
@@ -816,11 +816,11 @@ namespace xml
                             );
                         }
 
-                      util::property::set ( state
-                                          , prop
-                                          , state.prop_path()
-                                          , *value
-                                          );
+                      util::property::set_state ( state
+                                                , prop
+                                                , state.prop_path()
+                                                , *value
+                                                );
                     }
 
                   state.prop_path().pop_back();
@@ -1315,15 +1315,12 @@ namespace xml
         ? parse_function (std::cin, state)
         : function_include (input, state)
         );
-      
+
       f.specialize (state);
       f.resolve (state, f.forbidden_below());
       f.type_check (state);
 
-      maybe<const we::type::property::value_type &>
-        dprint (f.prop.get_maybe_val ("parser.print-internal-structures"));
-
-      if (dprint.isJust() && *dprint == "on")
+      if (state.print_internal_structures())
          {
            std::cerr << f << std::endl;
          }

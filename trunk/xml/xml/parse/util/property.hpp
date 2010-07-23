@@ -41,6 +41,18 @@ namespace xml
             }
         }
 
+        inline void set_state ( state::type & state
+                              , property::type & prop
+                              , const property::path_type & path
+                              , const property::value_type & value
+                              )
+        {
+          if (!state.property (path, value))
+            {
+              ::xml::parse::util::property::set (state, prop, path, value);
+            }
+        }
+
         inline void join ( const state::type & state
                          , property::type & x
                          , const property::type & y
