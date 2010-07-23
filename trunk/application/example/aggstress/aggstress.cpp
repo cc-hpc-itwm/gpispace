@@ -16,11 +16,15 @@ static unsigned long call_cnt = 0;
 
 #define MAGIC 4711
 
-static void alloc ( void *
-                  , const we::loader::input_t &
-                  , we::loader::output_t & output
-                  )
+static void initialize ( void *
+                       , const we::loader::input_t & input
+                       , we::loader::output_t & output
+                       )
 {
+  const long & sleeptime (we::loader::get_input<long>(input, "sleeptime"));
+
+  MLOG (INFO, "initialize: sleeptime " << sleeptime);
+
   const fvmAllocHandle_t handle (fvmGlobalAlloc (sizeof(unsigned long)));
   const fvmAllocHandle_t scratch (fvmGlobalAlloc (sizeof(unsigned long)));
 
@@ -44,6 +48,7 @@ static void alloc ( void *
 
   config["handle"] = static_cast<long>(handle);
   config["scratch"] = static_cast<long>(scratch);
+  config["sleeptime"] = sleeptime;
 
   we::loader::put_output (output, "config", config);
 }
@@ -61,6 +66,8 @@ static void run ( void *
     (value::get_literal_value<long> (value::get_field ("handle", config)));
   const fvmAllocHandle_t scratch
     (value::get_literal_value<long> (value::get_field ("scratch", config)));
+  const long sleeptime
+    (value::get_literal_value<long> (value::get_field ("sleeptime", config)));
 
   unsigned long magic;
 
@@ -77,17 +84,17 @@ static void run ( void *
       throw std::runtime_error ("BUMMER: " + s.str());
     }
 
-  usleep ( 50 * 1000 );
+  usleep (sleeptime);
 
   we::loader::put_output (output, "done", control());
 }
 
-static void free ( void *
-                  , const we::loader::input_t & input
-                  , we::loader::output_t & output
-                  )
+static void finalize ( void *
+                     , const we::loader::input_t & input
+                     , we::loader::output_t & output
+                     )
 {
-  MLOG (INFO, "free: call_cnt = " << call_cnt);
+  MLOG (INFO, "finalize: call_cnt = " << call_cnt);
 
   const value::type & config (input.value ("config"));
 
@@ -114,9 +121,9 @@ static void free ( void *
 
 WE_MOD_INITIALIZE_START (aggstress);
 {
-  WE_REGISTER_FUN (alloc);
+  WE_REGISTER_FUN (initialize);
   WE_REGISTER_FUN (run);
-  WE_REGISTER_FUN (free);
+  WE_REGISTER_FUN (finalize);
 }
 WE_MOD_INITIALIZE_END (aggstress);
 
