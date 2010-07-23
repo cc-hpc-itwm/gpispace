@@ -1206,6 +1206,9 @@ namespace xml
         ( boost::lexical_cast<petri_net::prio_t>
         , optional (node, "priority")
         );
+      t.finline = fmap<std::string, bool>( read_bool
+                                         , optional (node, "inline")
+                                         );
 
       for ( xml_node_type * child (node->first_node())
           ; child

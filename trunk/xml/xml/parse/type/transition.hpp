@@ -165,6 +165,8 @@ namespace xml
 
         maybe<petri_net::prio_t> priority;
 
+        maybe<bool> finline;
+
         // ***************************************************************** //
 
         const connect_vec_type & in (void) const { return _in.elements(); }
@@ -383,12 +385,8 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
-        if (    boost::apply_visitor (function_is_net(), fun.f)
-           && ( "true" == trans.prop.get_with_default ( "synthesize.unfold"
-                                                      , "false"
-                                                      )
-              )
-           )
+        if (  trans.finline.get_with_default(false)
+           && boost::apply_visitor (function_is_net(), fun.f))
           { // unfold
             
             // set a prefix

@@ -9,6 +9,7 @@
       typed tokens
       user defined types
       hierarchical structure
+      hierarchical properties
     </xsd:documentation>
   </xsd:annotation>
 
@@ -17,27 +18,27 @@
   <xsd:element name="structs" type="struct_list_type"/>
   <xsd:element name="template" type="function_type"/>
 
-  <xsd:complexType name="transition_include_type">
-    <xsd:attribute name="href" type="xsd:string" use="required"/>
+ <xsd:complexType name="transition_include_type">
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="struct_include_type">
-    <xsd:attribute name="href" type="xsd:string" use="required"/>
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="function_include_type">
-    <xsd:attribute name="href" type="xsd:string" use="required"/>
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
     <xsd:attribute name="as" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="properties_include_type">
-    <xsd:attribute name="href" type="xsd:string" use="required"/>
+    <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="property_type">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
-        <xsd:attribute name="key" type="xsd:string" use="required"/>
+        <xsd:attribute name="key" type="xsd:ID" use="required"/>
         <xsd:attribute name="value" type="xsd:string" use="optional"/>
       </xsd:extension>
     </xsd:simpleContent>
@@ -49,7 +50,7 @@
       <xsd:element name="properties" type="property_map_type"/>
       <xsd:element name="include-properties" type="properties_include_type"/>
     </xsd:choice>
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="property_map_list_type">
@@ -67,7 +68,7 @@
   </xsd:complexType>
 
   <xsd:complexType name="struct_field_type">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
   </xsd:complexType>
   
@@ -84,7 +85,7 @@
       <xsd:element maxOccurs="1" name="value" type="xsd:string"/>
       <xsd:element maxOccurs="unbounded" name="field" type="token_field_type"/>
     </xsd:choice>
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="token_type">
@@ -95,17 +96,17 @@
   </xsd:complexType>
 
   <xsd:complexType name="mod_type">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="function" type="xsd:string" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="type_map_type">
-    <xsd:attribute name="replace" type="xsd:string" use="required"/>
+    <xsd:attribute name="replace" type="xsd:ID" use="required"/>
     <xsd:attribute name="with" type="xsd:string" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="type_get_type">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="template_use_type">
@@ -113,12 +114,12 @@
       <xsd:element name="type-map" type="type_map_type"/>
       <xsd:element name="type-get" type="type_get_type"/>
     </xsd:choice>
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="use" type="xsd:string" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="use_type">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="place_type">
@@ -127,7 +128,7 @@
       <xsd:element name="properties" type="property_map_type"/>
       <xsd:element name="include-properties" type="properties_include_type"/>
     </xsd:choice>
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="capacity" type="xsd:nonNegativeInteger" use="optional"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
   </xsd:complexType>
@@ -137,7 +138,7 @@
       <xsd:element name="properties" type="property_map_type"/>
       <xsd:element name="include-properties" type="properties_include_type"/>
     </xsd:choice>
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
     <xsd:attribute name="place" type="xsd:string" use="optional"/>
   </xsd:complexType>
@@ -148,7 +149,7 @@
       <xsd:element name="include-properties" type="properties_include_type"/>
     </xsd:choice>
     <xsd:attribute name="place" type="xsd:string" use="required"/>
-    <xsd:attribute name="port" type="xsd:string" use="required"/>
+    <xsd:attribute name="port" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="function_type">
@@ -187,7 +188,7 @@
         <xsd:element name="include-properties" type="properties_include_type"/>
       </xsd:choice>
     </xsd:sequence>
-    <xsd:attribute name="name" type="xsd:string" use="optional"/>
+    <xsd:attribute name="name" type="xsd:ID" use="optional"/>
     <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
@@ -219,8 +220,9 @@
         <xsd:element name="include-properties" type="properties_include_type"/>
       </xsd:choice>
     </xsd:sequence>
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="priority" type="xsd:nonNegativeInteger" use="optional"/>
+    <xsd:attribute name="inline" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="net_type">
