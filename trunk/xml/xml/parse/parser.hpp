@@ -16,10 +16,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
-
 #include <we/util/read.hpp>
-
-#include <we/we.hpp>
 
 #include <boost/lexical_cast.hpp>
 
@@ -1307,8 +1304,8 @@ namespace xml
 
     // ********************************************************************* //
 
-    static we::transition_t
-    parse (state::type & state, const std::string & input)
+    static type::function_type
+    frontend (state::type & state, const std::string & input)
     {
       type::function_type f
         ( (input == "-") 
@@ -1320,12 +1317,7 @@ namespace xml
       f.resolve (state, f.forbidden_below());
       f.type_check (state);
 
-      if (state.print_internal_structures())
-         {
-           std::cerr << f << std::endl;
-         }
-
-      return f.synthesize<we::activity_t> (state);
+      return f;
     }
   }
 }

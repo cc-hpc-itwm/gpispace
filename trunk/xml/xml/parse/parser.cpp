@@ -8,6 +8,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <we/we.hpp>
+
 // ************************************************************************* //
 
 namespace po = boost::program_options;
@@ -50,7 +52,19 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  const we::transition_t trans (xml::parse::parse (state, input));
+  xml::parse::type::function_type f (xml::parse::frontend (state, input));
+
+  if (state.print_internal_structures())
+    {
+      std::cerr << f << std::endl;
+    }
+
+  // optimize f
+
+  const we::transition_t trans (f.synthesize<we::activity_t> (state));
+
+  // optimize trans
+
   const we::activity_t act (trans);
 
   if (output == "-")
