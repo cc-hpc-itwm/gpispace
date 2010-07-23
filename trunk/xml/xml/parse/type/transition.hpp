@@ -352,6 +352,7 @@ namespace xml
       {
         typedef typename Activity::transition_type we_transition_type;
         typedef typename we_transition_type::expr_type we_expr_type;
+        typedef typename we_transition_type::place_type we_place_type;
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
         typedef typename petri_net::tid_t tid_t;
 
@@ -399,6 +400,14 @@ namespace xml
             const Map pid_of_place
               (net_synthesize<Activity, Net, Fun> (we_net, net_new, state, e));
 
+            // the guard
+            const pid_t pid_guard 
+              ( we_net.add_place ( we_place_type ( prefix + "GUARD"
+                                                 , literal::CONTROL
+                                                 )
+                                 )
+              );
+
             // go in the subnet
             const std::string cond_in (fun.condition());
             
@@ -418,6 +427,12 @@ namespace xml
               , true
               , fun.prop
               );
+
+            trans_in.add_ports () ( "guard"
+                                  , literal::CONTROL
+                                  , we::type::PORT_IN
+                                  );
+            trans_in.add_connections () (pid_guard, "guard");
 
             for ( port_vec_type::const_iterator port (fun.in().begin())
                 ; port != fun.in().end()
@@ -470,6 +485,8 @@ namespace xml
               }
             
             const tid_t tid_in (we_net.add_transition (trans_in));
+
+            we_net.add_edge (e++, connection_t (PT, tid_in, pid_guard));
 
             for ( port_vec_type::const_iterator port (fun.in().begin())
                 ; port != fun.in().end()
@@ -533,12 +550,18 @@ namespace xml
 
             we_transition_type trans_out
               ( prefix + "OUT"
-              , we_expr_type ()
+              , we_expr_type ("${guard} := []")
               , we_cond_type (cond_out, parsed_condition_out)
               , true
               , fun.prop
               );
             
+            trans_out.add_ports () ( "guard"
+                                   , literal::CONTROL
+                                   , we::type::PORT_OUT
+                                   );
+            trans_out.add_connections () ("guard", pid_guard);
+
             for ( port_vec_type::const_iterator port (fun.out().begin())
                 ; port != fun.out().end()
                 ; ++port
@@ -581,6 +604,8 @@ namespace xml
 
             const tid_t tid_out (we_net.add_transition (trans_out));
 
+            we_net.add_edge (e++, connection_t (TP, tid_out, pid_guard));
+
             for ( port_vec_type::const_iterator port (fun.out().begin())
                 ; port != fun.out().end()
                 ; ++port
@@ -614,6 +639,9 @@ namespace xml
                   )
                   ;
               }
+
+            token::put (we_net, pid_guard);
+
           } // unfold
 
         else
