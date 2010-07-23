@@ -26,7 +26,7 @@
       <type-get name="pair_string_long"/>
     </specialize>
 
-    <transition name="use_tag">
+    <transition name="use_tag" inline="true">
       <properties name="synthesize">
         <property key="unfold" value="true"/>
       </properties>
