@@ -16,12 +16,11 @@
   <out name="out" type="control" place="out"/>
 
   <net>
-    <place name="N" type="long"/>
+    <place name="N" type="long"><token><value>1600</value></token></place>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
-    <place name="state" type="long"/>
 
-    <place name="pending" type="long" capacity="1"/>
+    <place name="pending" type="long"/>
 
     <place name="done" type="control"/>
     <place name="out" type="control"/>
@@ -34,21 +33,17 @@
     <transition name="init">
       <defun>
         <in name="N" type="long"/>
-        <out name="Nstep" type="long"/>
+        <out name="N" type="long"/>
         <out name="wait" type="long"/>
-        <out name="state" type="long"/>
         <out name="trigger" type="control"/>
         <expression>
-          ${state} := 0;
-          ${Nstep} := ${N};
           ${wait} := ${N};
           ${trigger} := [];
         </expression>
       </defun>
       <connect-in port="N" place="N"/>
-      <connect-out port="Nstep" place="Nstep"/>
+      <connect-out port="N" place="Nstep"/>
       <connect-out port="wait" place="wait"/>
-      <connect-out port="state" place="state"/>
       <connect-out port="trigger" place="trigger_alloc"/>
     </transition>
 
@@ -79,35 +74,10 @@
       <connect-out port="trigger" place="out"/>
     </transition>
 
-    <transition name="step">
-      <defun>
-        <in name="max" type="long" />
-        <in name="i" type="long" />
-
-        <out name="i" type="long" />
-        <out name="out" type="long" />
-        <expression>
-          ${out} := ${i};
-          ${i} := ${i} + 1;
-        </expression>
-        <condition>${i} :lt: ${max}</condition>
-      </defun>
-      <connect-read place="Nstep" port="max" />
-      <connect-in place="state" port="i" />
-      <connect-out place="state" port="i" />
-      <connect-out place="pending" port="out" />
-    </transition>
-
-    <transition name="break">
-      <defun>
-        <in name="max" type="long" />
-        <in name="i" type="long" />
-        <expression>
-        </expression>
-        <condition>${i} :ge: ${max}</condition>
-      </defun>
-      <connect-in place="Nstep" port="max" />
-      <connect-in place="state" port="i" />
+    <transition name="generate" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in place="Nstep" port="amount"/>
+      <connect-out port="out" place="pending"/>
     </transition>
 
     <transition name="run">
