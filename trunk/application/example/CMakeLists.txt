@@ -1,1 +1,1 @@
-add_subdirectory(aggstress)
+add_subdirectory(stresstest)

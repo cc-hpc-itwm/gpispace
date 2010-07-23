@@ -119,15 +119,15 @@ static void finalize ( void *
   we::loader::put_output (output, "trigger", control());
 }
 
-WE_MOD_INITIALIZE_START (aggstress);
+WE_MOD_INITIALIZE_START (stresstest);
 {
   WE_REGISTER_FUN (initialize);
   WE_REGISTER_FUN (run);
   WE_REGISTER_FUN (finalize);
 }
-WE_MOD_INITIALIZE_END (aggstress);
+WE_MOD_INITIALIZE_END (stresstest);
 
-WE_MOD_FINALIZE_START (aggstress);
+WE_MOD_FINALIZE_START (stresstest);
 {
 }
-WE_MOD_FINALIZE_END (aggstress);
+WE_MOD_FINALIZE_END (stresstest);

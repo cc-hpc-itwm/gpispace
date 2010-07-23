@@ -24,8 +24,8 @@
 
     <place name="config" type="config"/>
 
-    <place name="trigger_alloc" type="control"/>
-    <place name="trigger_free" type="control"/>
+    <place name="trigger_initialize" type="control"/>
+    <place name="trigger_finalize" type="control"/>
 
     <transition name="init">
       <defun>
@@ -41,7 +41,7 @@
       <connect-in port="N" place="N"/>
       <connect-out port="N" place="Nstep"/>
       <connect-out port="wait" place="wait"/>
-      <connect-out port="trigger" place="trigger_alloc"/>
+      <connect-out port="trigger" place="trigger_initialize"/>
     </transition>
 
     <transition name="initialize">
@@ -49,9 +49,9 @@
         <in name="trigger" type="control"/>
         <in name="sleeptime" type="long"/>
         <out name="config" type="config"/>
-        <module name="aggstress" function="alloc"/>
+        <module name="stresstest" function="initialize"/>
       </defun>    
-      <connect-in port="trigger" place="trigger_alloc"/>
+      <connect-in port="trigger" place="trigger_initialize"/>
       <connect-in port="sleeptime" place="sleeptime"/>
       <connect-out port="config" place="config"/>
     </transition>
@@ -61,9 +61,9 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="aggstress" function="free"/>
+        <module name="aggstress" function="finalize"/>
       </defun>    
-      <connect-in port="trigger" place="trigger_free"/>
+      <connect-in port="trigger" place="trigger_finalize"/>
       <connect-in port="config" place="config"/>
       <connect-out port="trigger" place="out"/>
     </transition>
@@ -109,7 +109,7 @@
       </defun>
       <connect-in port="wait" place="wait"/>
       <connect-in port="M" place="M"/>
-      <connect-out port="done" place="trigger_free"/>
+      <connect-out port="done" place="trigger_finalize"/>
     </transition>
   </net>
 </defun>

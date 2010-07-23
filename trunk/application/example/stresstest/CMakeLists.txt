@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6.2)
 
-project(aggstress)
+project(stresstest)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
@@ -36,7 +36,7 @@ include_directories(${MAYBE_INCLUDE_DIR})
 find_package(FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-add_library(aggstress_mod SHARED aggstress.cpp)
-set_target_properties(aggstress_mod PROPERTIES OUTPUT_NAME aggstress)
+add_library(stresstest_mod SHARED stresstest.cpp)
+set_target_properties(stresstest_mod PROPERTIES OUTPUT_NAME stresstest)
 
-install(TARGETS aggstress_mod DESTINATION libexec)
+install(TARGETS stresstest_mod DESTINATION libexec)
