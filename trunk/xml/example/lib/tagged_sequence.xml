@@ -9,62 +9,60 @@
   <out name="pair" type="PAIR" place="pair"/>
 
   <net>
+    <struct name="state">
+      <field name="pair" type="PAIR"/>
+     <field name="max" type="long"/>
+    </struct>
+
     <place name="tag" type="T"/>
     <place name="N" type="long"/>
-    <place name="Ngen" type="long"/>
-    <place name="Ntag" type="long"/>
-    <place name="id" type="long"/>
     <place name="pair" type="PAIR"/>
+    <place name="state" type="state"/>
 
-    <include-template href="dup.xml"/>
-
-    <specialize name="dup_long" use="dup">
-      <type-map replace="T" with="long"/>
-    </specialize>
-
-    <transition name="dup" inline="true">
-      <use name="dup_long"/>
-      <connect-in port="in" place="N"/>
-      <connect-out port="one" place="Ngen"/>
-      <connect-out port="two" place="Ntag"/>
-    </transition>
-
-    <transition name="sequence" inline="true">
-      <include-function href="sequence.xml"/>
-      <connect-in port="amount" place="Ngen"/>
-      <connect-out port="out" place="id"/>
-    </transition>
-
-    <transition name="tag">
+    <transition name="init">
       <defun>
-        <in name="id" type="long"/>
         <in name="tag" type="T"/>
-        <in name="k" type="long"/>
-        <out name="k" type="long"/>
+        <in name="N" type="long"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.pair.tag} := ${tag};
+          ${state.pair.id} := 0L;
+          ${state.max} := ${N};
+        </expression>
+      </defun>
+      <connect-in port="tag" place="tag"/>
+      <connect-in port="N" place="N"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
         <out name="pair" type="PAIR"/>
         <expression>
-          ${pair.tag} := ${tag};
-          ${pair.id} := ${id};
-          ${k} := ${k} - 1
+          ${pair} := ${state.pair};
+          ${state.pair.id} := ${state.pair.id} + 1
         </expression>
-        <condition>${k} :gt: 0</condition>
+        <condition>
+          ${state.pair.id} :lt: ${state.max}
+        </condition>
       </defun>
-      <connect-in port="id" place="id"/>
-      <connect-read port="tag" place="tag"/>
-      <connect-in port="k" place="Ntag"/>
-      <connect-out port="k" place="Ntag"/>
+      <connect-in port="state" place="state"/>
+      <connect-out port="state" place="state"/>
       <connect-out port="pair" place="pair"/>
     </transition>
 
     <transition name="break">
       <defun>
-        <in name="k" type="long"/>
-        <in name="tag" type="T"/>
-        <expression></expression>
-        <condition>${k} :eq: 0</condition>
+        <in name="state" type="state"/>
+        <expression>
+        </expression>
+        <condition>
+          ${state.pair.id} :ge: ${state.max}
+        </condition>
       </defun>
-      <connect-in port="k" place="Ntag"/>
-      <connect-in port="tag" place="tag"/>
+      <connect-in port="state" place="state"/>
     </transition>
   </net>
 </template>
