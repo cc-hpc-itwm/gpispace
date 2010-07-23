@@ -1,0 +1,18 @@
+<defun name="use_sequence">
+  <in name="N" type="long" place="N"/>
+  <out name="out" type="long" place="i"/>
+  <net>
+    <place name="N" type="long"/>
+    <place name="i" type="long"/>
+
+    <transition name="generate" inline="true">
+      <properties name="synthesize">
+        <property key="unfold" value="true"/>
+      </properties>
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="N"/>
+      <connect-out port="out" place="i"/>
+      <condition>${N} > 2</condition>
+    </transition>
+  </net>
+</defun>
