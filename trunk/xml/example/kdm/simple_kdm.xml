@@ -4,8 +4,10 @@
        xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"  
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
-  <properties name="parser">
-    <property key="print-internal-structures" value="off"/>
+  <properties name="pnetc">
+    <property key="print-internal-structures" value="false"/>
+    <property key="no-inline" value="false"/>
+    <property key="Wall" value="true"/>
   </properties>
 
   <include-properties href="prop.pretty.dot.xml"/>
@@ -89,14 +91,14 @@
 
     <include-function href="lib/sequence.xml"/>
 
-    <transition name="generate_offset">
+    <transition name="generate_offset" inline="true">
       <use name="sequence"/>
       <connect-in place="number_of_offsets" port="amount"/>
       <connect-out place="offset" port="out"/>
     </transition>
     <place name="offset" type="long"/>
     
-    <transition name="generate_volume">
+    <transition name="generate_volume" inline="true">
       <include-function href="generate_volume.xml"/>
       <connect-in place="offset" port="offset" />
       <connect-in place="number_of_volumes" port="amount" />

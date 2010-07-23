@@ -17,7 +17,7 @@
       <type-get name="pair_long_VOLUME"/>
     </specialize>
 
-    <transition name="tag_seq">
+    <transition name="tag_seq" inline="true">
       <use name="f_tag_seq"/>
       <connect-in port="tag" place="volume"/>
       <connect-in port="amount" place="amount"/>
