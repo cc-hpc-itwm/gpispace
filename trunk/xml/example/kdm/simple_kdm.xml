@@ -96,7 +96,7 @@
       <connect-in place="number_of_offsets" port="amount"/>
       <connect-out place="offset" port="out"/>
     </transition>
-    <place name="offset" type="long"/>
+    <place name="offset" type="long" capacity="1"/>
     
     <transition name="generate_volume" inline="true">
       <include-function href="generate_volume.xml"/>
@@ -106,7 +106,7 @@
     </transition>
     
     <!--  check if this type is defined!!!! -->
-    <place name="volume" type="VOLUME" />    
+    <place name="volume" type="VOLUME" capacity="1"/>
 
     <!-- wrap process volume so that it will be executed on the nre-pcd -->
     <transition name="process_volume">
