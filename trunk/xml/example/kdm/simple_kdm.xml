@@ -73,28 +73,45 @@
       <connect-in   place="trigger_extract_offsets" port="trigger" />
       <connect-out  port="offsets" place="number_of_offsets" />      
     </transition>
-    <place name="number_of_offsets" type="long" />
+    <place name="number_of_offsets" type="long"/>
 
     <transition name="extract_number_of_volumes">
       <defun>
-        <in name="config" type="CONFIG" />
-        <out name="volumes" type="long" />
+        <in name="config" type="CONFIG"/>
+        <in name="trigger" type="control"/>
+        <out name="volumes" type="long"/>
         <expression>
           ${volumes} := ${config.SUBVOLUMES_PER_OFFSET};
         </expression>
       </defun>
-      <connect-read place="config" port="config" />
-      <connect-out port="volumes" place="number_of_volumes" />      
+      <connect-in place="trigger_extract_number_of_volumes" port="trigger"/>
+      <connect-read place="config" port="config"/>
+      <connect-out port="volumes" place="number_of_volumes"/>
     </transition>
     <place name="number_of_volumes" type="long" />
+    <place name="trigger_extract_number_of_volumes" type="control"/>
 
     <include-function href="lib/sequence.xml"/>
 
     <transition name="generate_offset" inline="true">
       <use name="sequence"/>
       <connect-in place="number_of_offsets" port="amount"/>
-      <connect-out place="offset" port="out"/>
+      <connect-out place="offset_generated" port="out"/>
     </transition>
+    <place name="offset_generated" type="long"/>
+
+    <include-template href="trigger_when.xml"/>
+    <specialize name="trigger_when_long" use="trigger_when">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="trigger_with_generated_offset">
+      <use name="trigger_when_long"/>
+      <connect-in port="object" place="offset_generated"/>
+      <connect-out port="object" place="offset"/>
+      <connect-out port="trigger" place="trigger_extract_number_of_volumes"/>
+    </transition>
+
     <place name="offset" type="long"/>
     
     <transition name="generate_volume" inline="true">
