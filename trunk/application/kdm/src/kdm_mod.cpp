@@ -593,6 +593,13 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   we::loader::put_output (output, "volume", volume);
 }
 
+static void debug_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  const value::type & volume (input.value("volume"));
+  LOG (INFO, "debug_volume: got volume " << volume);
+  we::loader::put_output (output, "volume", volume);
+}
+
 // ************************************************************************* //
 
 static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
@@ -625,6 +632,7 @@ WE_MOD_INITIALIZE_START (kdm);
   WE_REGISTER_FUN (init_volume);
   WE_REGISTER_FUN (finalize);
   WE_REGISTER_FUN (selftest);
+  WE_REGISTER_FUN (debug_volume);
 }
 WE_MOD_INITIALIZE_END (kdm);
 
