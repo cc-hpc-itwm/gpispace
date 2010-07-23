@@ -71,15 +71,10 @@ echo ""
 
 test -d "/scratch/$USER/sdpa" || mkdir -p "/scratch/$USER/sdpa"
 
-prefix="$SDPA_PREFIX"
-if [ -n "prefix" ]; then
-    prefix=/p/herc/itwm/hpc/soft/sdpa/sdpa
-fi
-
 nre-pcd --rank "$rank" \
-    --load $prefix/libexec/libfvm-pc.so \
-    --load $prefix/libexec/libsinc.so \
-    -p $prefix/libexec \
+    --load $SDPA_LIBEXEC/libfvm-pc.so \
+    --load $SDPA_LIBEXEC/libsinc.so \
+    -p $SDPA_LIBEXEC/libexec \
   >/scratch/$USER/sdpa/pc.`hostname`.log 2>&1 &
 sleep 1
 nre --url "0.0.0.0" --name "$name" --gui_url="$gui_url" --agg_name="$agg" --agg_url="$agg_url" >/scratch/$USER/sdpa/nre.`hostname`.log 2>&1 &
