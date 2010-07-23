@@ -61,7 +61,7 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="aggstress" function="finalize"/>
+        <module name="stresstest" function="finalize"/>
       </defun>    
       <connect-in port="trigger" place="trigger_finalize"/>
       <connect-in port="config" place="config"/>
