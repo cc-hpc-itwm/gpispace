@@ -107,13 +107,16 @@ namespace xml
       {
       private:
         const Net & net;
+        const state::type & state;
         const Trans & trans;
 
       public:
         transition_get_function ( const Net & _net
+                                , const state::type & _state
                                 , const Trans & _trans
                                 )
           : net (_net)
+          , state (_state)
           , trans (_trans)
         {}
 
@@ -130,6 +133,22 @@ namespace xml
             {
               throw error::unknown_function
                 (use.name, trans.name, trans.path);
+            }
+
+          if (use.as.isJust())
+            {
+              if (fun.name.isJust() && *fun.name != *use.as)
+                {
+                  state.warn
+                    ( warning::overwrite_function_name_as
+                      ( *fun.name
+                      , *use.as
+                      , state.file_in_progress()
+                      )
+                    );
+                }
+
+              fun.name = *use.as;
             }
 
           return fun;
@@ -252,7 +271,7 @@ namespace xml
         void type_check ( const std::string & direction
                         , const connect_type & connect
                         , const Net & net
-                        , const state::type &
+                        , const state::type & state
                         ) const
         {
           // existence of connect.place
@@ -266,7 +285,12 @@ namespace xml
 
           const function_type fun 
             ( boost::apply_visitor 
-              (transition_get_function<Net, transition_type> (net, *this), f)
+              (transition_get_function<Net, transition_type> ( net
+                                                             , state
+                                                             , *this
+                                                             )
+              , f
+              )
             );
 
           // existence of connect.port
@@ -358,7 +382,7 @@ namespace xml
 
         Fun fun
           ( boost::apply_visitor 
-            ( transition_get_function<Net, Trans> (net, trans)
+            ( transition_get_function<Net, Trans> (net, state, trans)
             , trans.f
             )
           );

@@ -1239,6 +1239,7 @@ namespace xml
                                                   , "name"
                                                   , state.file_in_progress()
                                                   )
+                                       , optional (child, "as")
                                        , state.level() + 2
                                        );
                 }
