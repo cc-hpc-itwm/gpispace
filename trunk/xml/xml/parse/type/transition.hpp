@@ -512,7 +512,7 @@ namespace xml
                 )
               {
                 we_net.add_edge
-                  ( e++, connection_t ( PT
+                  ( e++, connection_t ( PT_READ
                                       , tid_in
                                       , get_pid (pids, connect->place)
                                       )
