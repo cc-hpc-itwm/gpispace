@@ -108,7 +108,7 @@ namespace sdpa {
 	friend class sdpa::tests::WorkerSerializationTest;
 
 	 template <class Archive>
-	 void serialize(Archive& ar, const unsigned int file_version )
+	 void serialize(Archive& ar, const unsigned int /* file_version */)
 	 {
 		ar & boost::serialization::base_object<SchedulerImpl>(*this);
 	 }
