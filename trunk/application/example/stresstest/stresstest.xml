@@ -1,4 +1,11 @@
 <defun name="stresstest">
+  <properties name="pnetc">
+    <properties name="context">
+      <property key="milli">1000</property>
+      <property key="second">${milli} * 1000</property>
+    </properties>
+  </properties>
+
   <in name="agg" type="long" place="N"/>
   <in name="nre" type="long" place="M"/>
   <in name="sleeptime" type="long" place="sleeptime"/>
@@ -11,9 +18,9 @@
       <field name="sleeptime" type="long"/>
     </struct>
 
-    <place name="sleeptime" type="long"><token><value>50000</value></token></place>
-    <place name="N" type="long"><token><value>40</value></token></place>
-    <place name="M" type="long"><token><value>1600</value></token></place>
+    <place name="sleeptime" type="long"><token><value>50 * ${milli}</value></token></place>
+    <place name="N" type="long"><token><value>2^5</value></token></place>
+    <place name="M" type="long"><token><value>40 * 40</value></token></place>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
 

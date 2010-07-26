@@ -374,44 +374,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class parse_incomplete : public generic
-      {
-      private:
-        std::string nice ( const std::string & place
-                         , const std::string & field
-                         , const literal::type_name_t & sig
-                         , const literal::type_name_t & val
-                         , const std::string & rest
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-          
-          s << "when try to read value for place " << place
-            << " from " << path
-            << " when reading for field " << field
-            << " a value of type " << sig
-            << " from " << val
-            << " there is the rest " << rest
-            ;
-
-          return s.str();
-        }
-
-      public:
-        parse_incomplete ( const std::string & place
-                         , const std::string & field
-                         , const literal::type_name_t & sig
-                         , const literal::type_name_t & val
-                         , const std::string & rest
-                         , const boost::filesystem::path & path
-                         )
-          : generic (nice (place, field, sig, val, rest, path))
-        {}
-      };
-
-      // ******************************************************************* //
-
       class parse_type_mismatch : public generic
       {
       private:
@@ -507,6 +469,18 @@ namespace xml
                    , const std::string & msg
                    )
           : generic (nice (place, field, path, msg))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class eval_context_bind : public generic
+      {
+      public:
+        eval_context_bind ( const std::string & descr
+                          , const std::string & msg
+                          )
+          : generic (descr + ": " + msg)
         {}
       };
 

@@ -6,6 +6,8 @@
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 
+#include <we/expr/eval/context.hpp>
+
 #include <iostream>
 
 #include <list>
@@ -19,6 +21,7 @@
 #include <xml/parse/warning.hpp>
 #include <xml/parse/error.hpp>
 #include <xml/parse/util/read_bool.hpp>
+#include <xml/parse/util/weparse.hpp>
 
 // ************************************************************************* //
 
@@ -32,6 +35,8 @@ namespace xml
       namespace po = boost::program_options;
       namespace property = we::type::property;
 
+      using namespace warning;
+
       typedef std::vector<fs::path> search_path_type;
       typedef std::vector<fs::path> in_progress_type;
 
@@ -39,11 +44,15 @@ namespace xml
 
       struct type
       {
+      public:
+        typedef expr::eval::context<std::string> context_t;
+
       private:
         int _level;
         search_path_type _search_path;
         in_progress_type _in_progress;
         property::path_type _prop_path;
+        context_t _context;
         bool _ignore_properties;
         bool _Werror;
         bool _Wall;
@@ -58,6 +67,7 @@ namespace xml
         bool _Wproperty_overwritten;
         bool _Wtype_map_duplicate;
         bool _Wtype_get_duplicate;
+        bool _Woverwrite_context;
 
         bool _print_internal_structures;
         bool _no_inline;
@@ -77,6 +87,7 @@ namespace xml
         std::string _OWproperty_overwritten;
         std::string _OWtype_map_duplicate;
         std::string _OWtype_get_duplicate;
+        std::string _OWoverwrite_context;
         
         std::string _Oprint_internal_structures;
         std::string _Ono_inline;
@@ -144,10 +155,12 @@ namespace xml
           , _Wunexpected_element (true)
           , _Woverwrite_function_name_trans (false)
           , _Wproperty_overwritten (true)
-          , _Wtype_map_duplicate(true)
-          , _Wtype_get_duplicate(true)
-          , _print_internal_structures(false)
-          , _no_inline(false)
+          , _Wtype_map_duplicate (true)
+          , _Wtype_get_duplicate (true)
+          , _Woverwrite_context (true)
+
+          , _print_internal_structures (false)
+          , _no_inline (false)
 
           , _Osearch_path ("search-path")
           , _Oignore_properties ("ignore-properties")
@@ -164,6 +177,7 @@ namespace xml
           , _OWproperty_overwritten ("Wproperty-overwritten")
           , _OWtype_map_duplicate ("Wtype-map-duplicate")
           , _OWtype_get_duplicate ("Wtype-get-duplicate")
+          , _OWoverwrite_context ("Woverwrite-context")
           , _Oprint_internal_structures ("print-internal-structures")
           , _Ono_inline ("no-inline")
         {}
@@ -183,24 +197,76 @@ namespace xml
 
         // ***************************************************************** //
 
+        const context_t & context (void) const
+        {
+          return _context;
+        }
+
+        // ***************************************************************** //
+
         bool property ( const property::path_type & path
                       , const property::value_type & value
                       )
         {
-          if (path.size() != 2 || path[0] != "pnetc")
+          if (path.size() < 2 || path[0] != "pnetc")
             {
               return false;
             }
 
-#define GET_PROP(x)                       \
-          else if (path[1] == _O ## x)    \
-            {                             \
-              _ ## x = read_bool (value); \
+          if (path.size() == 3 && path[1] == "context")
+            {
+              std::ostringstream s;
+
+              s << "when try to bind context key "
+                << path[2] << " with " << value
+                << " in " << file_in_progress()
+                ;
+
+              try
+                {
+                  const value::type & old_val (_context.value (path[2]));
+
+                  warn ( overwrite_context ( path[2]
+                                           , value
+                                           , old_val
+                                           , file_in_progress()
+                                           )
+                       );
+                }
+              catch (const expr::exception::eval::missing_binding<std::string> &)
+                {
+                  /* do nothing, that's what we want */
+                }
+
+              const util::we_parser_t parser
+                ( util::generic_we_parse ( "${" + path[2] + "}:=" + value
+                                         , s.str()
+                                         )
+                );
+
+              try
+                {
+                  parser.eval_all (_context);
+                }
+              catch (const expr::exception::eval::divide_by_zero & e)
+                {
+                  throw error::eval_context_bind (s.str(), e.what());
+                }
+              catch (const expr::exception::eval::type_error & e)
+                {
+                  throw error::eval_context_bind (s.str(), e.what());
+                }
             }
 
           if (path[1] == _Osearch_path)
             {
               _search_path.push_back (value);
+            }
+
+#define GET_PROP(x)                                        \
+          else if (path.size() == 2 && path[1] == _O ## x) \
+            {                                              \
+              _ ## x = read_bool (value);                  \
             }
 
           GET_PROP (ignore_properties)
@@ -217,6 +283,8 @@ namespace xml
           GET_PROP (Wproperty_overwritten)
           GET_PROP (Wtype_map_duplicate)
           GET_PROP (Wtype_get_duplicate)
+          GET_PROP (Woverwrite_context)
+
           GET_PROP (print_internal_structures)
           GET_PROP (no_inline)
 
@@ -256,6 +324,7 @@ namespace xml
         ACCESS(Wproperty_overwritten)
         ACCESS(Wtype_map_duplicate)
         ACCESS(Wtype_get_duplicate)
+        ACCESS(Woverwrite_context)
         
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
@@ -265,60 +334,26 @@ namespace xml
         // ***************************************************************** //
 
         template<typename T>
-        void warn (const warning::struct_shadowed<T> & w) const
+        void warn (const struct_shadowed<T> & w) const
         {
           generic_warn (w, _Wshadow);
         }
 
-        void warn (const warning::overwrite_function_name_as & w) const
-        {
-          generic_warn (w, _Woverwrite_function_name_as);
-        }
+#define WARN(x) void warn (const x & w) const { generic_warn (w, _W ## x); }
 
-        void warn (const warning::overwrite_template_name_as & w) const
-        {
-          generic_warn (w, _Woverwrite_template_name_as);
-        }
+        WARN(overwrite_function_name_as)
+        WARN(overwrite_template_name_as)
+        WARN(default_construction)
+        WARN(unused_field)
+        WARN(port_not_connected)
+        WARN(unexpected_element)
+        WARN(overwrite_function_name_trans)
+        WARN(property_overwritten)
+        WARN(type_map_duplicate)
+        WARN(type_get_duplicate)
+        WARN(overwrite_context)
 
-        void warn (const warning::default_construction & w) const
-        {
-          generic_warn (w, _Wdefault_construction);
-        }
-
-        void warn (const warning::unused_field & w) const
-        {
-          generic_warn (w, _Wunused_field);
-        }
-
-        void warn (const warning::port_not_connected & w) const
-        {
-          generic_warn (w, _Wport_not_connected);
-        }
-
-        void warn (const warning::unexpected_element & w) const
-        {
-          generic_warn (w, _Wunexpected_element);
-        }
-
-        void warn (const warning::overwrite_function_name_trans & w) const
-        {
-          generic_warn (w, _Woverwrite_function_name_trans);
-        }
-
-        void warn (const warning::property_overwritten & w) const
-        {
-          generic_warn (w, _Wproperty_overwritten);
-        }
-
-        void warn (const warning::type_map_duplicate & w) const
-        {
-          generic_warn (w, _Wtype_map_duplicate);
-        }
-
-        void warn (const warning::type_get_duplicate & w) const
-        {
-          generic_warn (w, _Wtype_get_duplicate);
-        }
+#undef WARN
 
         // ***************************************************************** //
 
@@ -418,6 +453,10 @@ namespace xml
             ( _OWtype_get_duplicate.c_str()
             , VAL(Wtype_get_duplicate)
             , "warn about duplicate type gets"
+            )
+            ( _OWoverwrite_context.c_str()
+            , VAL(Woverwrite_context)
+            , "warn when overwriting values in global context"
             )
             ( _Oprint_internal_structures.c_str()
             , VAL(print_internal_structures)

@@ -93,37 +93,40 @@ namespace xml
                                 , const literal::type_name_t & value
                                 ) const
         {
-          literal::type val;
+          std::ostringstream s;
+          
+          s << "when parsing the value "
+            << " of field " << field_name
+            << " of place " << place_name
+            << " of type " << signature
+            << " in " << path
+            ;
 
-          unsigned int k (0);
-          std::string::const_iterator pos (value.begin());
-          const std::string::const_iterator end (value.end());
-          expr::parse::position parse_pos (k, pos, end);
+          const util::we_parser_t parser
+            (util::generic_we_parse (value, s.str()));
 
           try
             {
-              literal::read (val, parse_pos);
-            }
-          catch (const expr::exception::parse::exception & e)
-            {
-              const std::string nice (util::format_parse_error (value, e));
+              state::type::context_t context (state.context());
 
-              throw error::parse_lift (place_name, field_name, path, nice);
-            }
+              const value::type v (parser.eval_all (context));
+              const signature::type sig (signature);
 
-          if (!parse_pos.end())
-            {
-              throw error::parse_incomplete
-                ( place_name, field_name, signature
-                , value, parse_pos.rest(), path
+              return boost::apply_visitor 
+                ( value::visitor::require_type (field_name)
+                , sig.desc()
+                , v
                 );
             }
-
-          try
+          catch (const expr::exception::eval::divide_by_zero & e)
             {
-              return literal::require_type (field_name, signature, val);
+              throw error::parse_lift (place_name, field_name, path, e.what());
             }
-          catch (const ::type::error & e)
+          catch (const expr::exception::eval::type_error & e)
+            {
+              throw error::parse_lift (place_name, field_name, path, e.what());
+            }
+           catch (const ::type::error & e)
             {
               throw error::parse_lift (place_name, field_name, path, e.what());
             }
