@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
   SdpaWnd *wnd = new SdpaWnd();
   boost::asio::io_service io_service;
   fhg::log::Appender::ptr_t gui_appender(new GuiAppender(wnd));
-  fhg::log::remote::LogServer logserver(gui_appender, io_service, port);
+  fhg::log::shared_ptr<fhg::log::remote::LogServer> logserver (new fhg::log::remote::LogServer(gui_appender, io_service, port));
   pthread_create( &service_thread, NULL, service_thread_entry, &io_service );
   wnd->show();
   qa.connect(&qa,SIGNAL(lastWindowClosed()),&qa,SLOT(quit()));
