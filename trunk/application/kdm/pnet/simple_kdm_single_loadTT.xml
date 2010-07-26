@@ -48,6 +48,7 @@
     <transition name="patch">
       <defun>
         <in name="config" type="CONFIG"/>
+        <in name="just_eat" type="control"/>
         <out name="config" type="CONFIG"/>
         <out name="id" type="long"/>
         <expression>
@@ -56,6 +57,7 @@
         </expression>
       </defun>
       <connect-in port="config" place="config0"/>
+      <connect-in port="just_eat" place="trigger_loadTT"/>
       <connect-out port="config" place="config"/>
       <connect-out port="id" place="id"/>
     </transition>
