@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6.2)
 
 project(KDM_SDPA)
 
+add_subdirectory(obsolete)
+
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
 
@@ -9,7 +11,8 @@ include_directories(./src
 		    ./src/include
 		    ./src/structures
 		    ./src/filehandler
-		    ./src/utils)
+		    ./src/utils
+                    )
 
 set(SRC ./src/main.cpp
 	./src/MigVol.cpp
