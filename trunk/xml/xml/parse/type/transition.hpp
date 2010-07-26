@@ -10,6 +10,7 @@
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/weparse.hpp>
+#include <xml/parse/util/validprefix.hpp>
 
 #include <vector>
 
@@ -389,7 +390,7 @@ namespace xml
 
         if (fun.name.isJust())
           {
-            if (*fun.name != trans.name)
+            if (*fun.name != trans.name && has_valid_prefix (trans.name))
               {
                 state.warn ( warning::overwrite_function_name_trans 
                              ( *fun.name

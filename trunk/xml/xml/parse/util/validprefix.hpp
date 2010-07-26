@@ -29,6 +29,20 @@ namespace xml
 
       return name;
     }
+
+    inline bool has_valid_prefix (const std::string & name)
+    {
+      try
+        {
+          validate_prefix (name, std::string(), boost::filesystem::path());
+
+          return true;
+        }
+      catch (const error::invalid_prefix &)
+        {
+          return false;
+        }
+    }
   }
 }
 
