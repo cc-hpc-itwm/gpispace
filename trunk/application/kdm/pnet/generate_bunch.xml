@@ -11,14 +11,14 @@
 
     <include-template href="tagged_sequence.xml"/>
 
-    <specialize name="f_tag_seq" use="tagged_sequence">
+    <specialize name="tag_seq" use="tagged_sequence">
       <type-map replace="T" with="VOLUME"/>
       <type-map replace="PAIR" with="pair_long_VOLUME"/>
       <type-get name="pair_long_VOLUME"/>
     </specialize>
 
     <transition name="tag_seq" inline="true">
-      <use name="f_tag_seq"/>
+      <use name="tag_seq"/>
       <connect-in port="tag" place="volume"/>
       <connect-in port="amount" place="amount"/>
       <connect-out port="pair" place="pair"/>

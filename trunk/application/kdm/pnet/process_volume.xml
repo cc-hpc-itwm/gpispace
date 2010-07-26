@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<defun name="f_process_volume" internal="false">
+<defun internal="false">
   <in name="volume" type="VOLUME"  place="volume_in"/>
   <in name="config" type="CONFIG"  place="config_in"/>
   <out name="done"  type="control" place="done"/>
@@ -20,7 +19,7 @@
      </place>
 
     <transition name="init_wait" >
-      <defun name="f_init_wait">
+      <defun>
         <in name="config" type="CONFIG" />
         <out name="config" type="CONFIG" />
         <out name="num" type="long" />
@@ -32,7 +31,7 @@
     </transition>
 
     <transition name="init">
-      <defun name="f_init">
+      <defun>
         <in name="volume" type="VOLUME" />
         <in name="config" type="CONFIG" />
         <out name="volume" type="VOLUME" />
@@ -45,12 +44,12 @@
     
     <include-template href="dup.xml"/>
 
-    <specialize name="dup_VOLUME" use="dup">
+    <specialize name="dup_volume" use="dup">
       <type-map replace="T" with="VOLUME"/>
     </specialize>
 
     <transition name="dup_volume" inline="true">
-       <use name="dup_VOLUME"/>
+       <use name="dup_volume"/>
        <connect-in port="in" place="volume_initialized"/>
        <connect-out port="one" place="volume"/>
        <connect-out port="two" place="trigger_extract_bunches_per_offset"/>

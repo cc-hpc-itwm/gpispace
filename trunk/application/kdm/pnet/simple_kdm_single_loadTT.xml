@@ -35,7 +35,7 @@
       </defun>
 
       <connect-in place="config_file" port="config_file"/>
-      <connect-out port="config" place="config" />
+      <connect-out port="config" place="config0" />
       <connect-out port="trigger" place="trigger_loadTT" />
       <connect-out port="wait" place="wait" />
     </transition>
@@ -43,12 +43,34 @@
     <place name="config" type="CONFIG"/>
     <place name="wait" type="long"/>
     <place name="trigger_loadTT" type="control" />
+    <place name="config0" type="CONFIG"/>
+
+    <transition name="patch">
+      <defun>
+        <in name="config" type="CONFIG"/>
+        <out name="config" type="CONFIG"/>
+        <out name="id" type="long"/>
+        <expression>
+          ${config.PARALLEL_LOADTT} := 1;
+          ${id} := 0
+        </expression>
+      </defun>
+      <connect-in port="config" place="config0"/>
+      <connect-out port="config" place="config"/>
+      <connect-out port="id" place="id"/>
+    </transition>
+    <place name="id" type="long"/>
     
     <transition name="loadTT" inline="true">
-      <include-function href="loadTT.xml"/>
-      <connect-read place="config" port="config"/>
-      <connect-out port="trigger" place="trigger_extract_offsets"/>
-      <connect-in port="trigger" place="trigger_loadTT"/>
+      <defun>
+        <in name="config" type="CONFIG"/>
+        <in name="id" type="long"/>
+        <out name="done" type="control"/>
+        <module name="kdm" function="loadTT"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="id" place="id"/>
+      <connect-out port="done" place="trigger_extract_offsets"/>
     </transition>
     <place name="trigger_extract_offsets" type="control" />
 

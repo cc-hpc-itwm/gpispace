@@ -1,4 +1,4 @@
-<defun name="sequence">
+<defun>
   <in name="amount" type="long" place="N"/>
   <out name="out" type="long" place="id"/>
 

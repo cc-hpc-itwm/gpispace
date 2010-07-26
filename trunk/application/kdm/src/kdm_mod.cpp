@@ -40,7 +40,6 @@ static unsigned long sizeofJob (void)
 
 static value::type kdm_initialize (const std::string & filename, long & wait)
 {
-  // FIXME: doesn't work with > 1
   const int NThreads (4);
 
   MigrationJob Job;
@@ -168,8 +167,7 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
 
   const fvmAllocHandle_t scratch_Job (fvmGlobalAlloc (sizeofJob()));
   if (scratch_Job == 0)
-     throw std::runtime_error ("KDM::initialize scratch_Job == 0");
-
+    throw std::runtime_error ("KDM::initialize scratch_Job == 0");
   
   memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
 
@@ -192,6 +190,7 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
   config["OFFSETS"] = static_cast<long>(Job.n_offset);
   config["SUBVOLUMES_PER_OFFSET"] = static_cast<long>(Job.NSubVols);
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
+  config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
 
   wait = value::get_literal_value<long> (value::get_field ("OFFSETS", config))
        * value::get_literal_value<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
@@ -210,7 +209,7 @@ static void get_Job (const value::type & config, MigrationJob & Job)
   const fvmAllocHandle_t handle_Job
     (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
   const fvmAllocHandle_t scratch_Job
-     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+    (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -219,14 +218,22 @@ static void get_Job (const value::type & config, MigrationJob & Job)
                              , scratch_Job
                              )
            );
+
   memcpy (&Job, fvmGetShmemPtr(), sizeofJob());
 }
 
 // ************************************************************************* //
 
-static void kdm_loadTT (const value::type & config)
+static void kdm_loadTT (const value::type & config, const long & TT)
 {
   LOG (INFO, "loadTT: got config " << config);
+
+  const long & Parallel_loadTT
+    (value::get_literal_value<long> 
+     (value::get_field ("PARALLEL_LOADTT", config))
+    );
+
+  LOG (INFO, "loadTT: got TT " << TT << " out of " << Parallel_loadTT);
 
   MigrationJob Job;
 
@@ -270,10 +277,7 @@ static void kdm_loadTT (const value::type & config)
 
   TTVMMemHandler TTVMMem;
 
-  const long myPart (0);
-  const long numPart (1);
-
-  TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, myPart, numPart, handle_TT);
+  TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, TT, Parallel_loadTT, handle_TT);
 }
 
 // ************************************************************************* //
@@ -285,7 +289,7 @@ static void kdm_finalize (const value::type & config)
   const fvmAllocHandle_t handle_Job
     (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
   const fvmAllocHandle_t scratch_Job
-    (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
   const fvmAllocHandle_t handle_TT
     (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
 
@@ -545,9 +549,12 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & v (input.value("config"));
-  kdm_loadTT (v);
-  we::loader::put_output (output, "trigger", control());
+  const value::type & config (input.value("config"));
+  const long & TT (we::loader::get_input<long> (input, "id"));
+
+  kdm_loadTT (config, TT);
+
+  we::loader::put_output (output, "done", control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -593,35 +600,10 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   we::loader::put_output (output, "volume", volume);
 }
 
-static void debug_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
-{
-  const value::type & volume (input.value("volume"));
-  LOG (INFO, "debug_volume: got volume " << volume);
-  we::loader::put_output (output, "volume", volume);
-}
-
-// ************************************************************************* //
-
-static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
-{
-  std::cerr << "rank := " << fvmGetRank() << std::endl;
-  we::loader::put_output (output, "result", 0L);
-
-  long wait(0);
-
-  const value::type & config
-    (kdm_initialize ("/p/hpc/sdpa/ap/git/KDM_VM/Kirchhoff_Model.xml", wait));
-
-  kdm_loadTT (config);
-
-  kdm_finalize (config);
-}
-
 // ************************************************************************* //
 
 WE_MOD_INITIALIZE_START (kdm);
 {
-  //  fhg::log::Configurator::configure();
   LOG(INFO, "WE_MOD_INITIALIZE_START (kdm)");
 
   WE_REGISTER_FUN (initialize);
@@ -631,8 +613,6 @@ WE_MOD_INITIALIZE_START (kdm);
   WE_REGISTER_FUN (write);
   WE_REGISTER_FUN (init_volume);
   WE_REGISTER_FUN (finalize);
-  WE_REGISTER_FUN (selftest);
-  WE_REGISTER_FUN (debug_volume);
 }
 WE_MOD_INITIALIZE_END (kdm);
 

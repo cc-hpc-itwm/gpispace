@@ -121,12 +121,6 @@ set(KDM_MOD_SRCS src/kdm_mod.cpp
   ${KDM_MOD_PROCESS_SRCS}
 )
 
-set (KDM_PARALLEL_LOADTT_MOD_SRCS src/kdm_parallel_loadTT_mod.cpp
-  ${KDM_MOD_INITIALIZE_SRCS}
-  ${KDM_MOD_INITIALIZE_SUBVOL_SRCS}
-  ${KDM_MOD_PROCESS_SRCS}
-)
-
 set (KDM_COMPLEX_MOD_SRCS src/kdm_complex_mod.cpp
   ${KDM_MOD_INITIALIZE_SRCS}
   ${KDM_MOD_INITIALIZE_SUBVOL_SRCS}
@@ -163,14 +157,9 @@ set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
 #target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 target_link_libraries (kdm_complex_mod sinc_mod)
 
-add_library(kdm_parallel_loadTT_mod SHARED ${KDM_PARALLEL_LOADTT_MOD_SRCS})
-set_target_properties(kdm_parallel_loadTT_mod PROPERTIES OUTPUT_NAME kdm_parallel_loadTT)
-#target_link_libraries (kdm_parallel_loadTT_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
-target_link_libraries (kdm_parallel_loadTT_mod sinc_mod)
-
 add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
 set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
 #target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
 install(TARGETS sinc_mod DESTINATION libexec)
-install(TARGETS kdm_mod kdm_complex_mod kdm_parallel_loadTT_mod DESTINATION libexec)
+install(TARGETS kdm_mod kdm_complex_mod DESTINATION libexec)

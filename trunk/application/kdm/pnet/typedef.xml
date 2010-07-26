@@ -13,5 +13,6 @@
 			<field name="handle_TT" type="long" />
 			<field name="scratch_Job" type="long" />
 			<field name="NThreads" type="long" />
+                        <field name="PARALLEL_LOADTT" type="long"/>
 		</struct>
 </structs>
