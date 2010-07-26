@@ -22,6 +22,7 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/list.hpp>
@@ -33,14 +34,14 @@ namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_
 
 namespace sdpa { namespace daemon {
 
-  typedef std::map<sdpa::JobId, we::preference_t> preference_map_t;
+    typedef boost::unordered_map<sdpa::job_id_t, we::preference_t> preference_map_t;
 
   class JobManager  {
   public:
 	  typedef sdpa::shared_ptr<JobManager> ptr_t;
 	  typedef boost::recursive_mutex mutex_type;
 	  typedef boost::unique_lock<mutex_type> lock_type;
-	  typedef std::map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
+          typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
 	  typedef job_map_t::iterator iterator;
 
 	  iterator begin() { return job_map_.begin(); }
