@@ -43,21 +43,22 @@ else
 	echo "Running on slave $node_name..."
 fi
 
+TABLE="$HOME/.init-screen.tab"
 if [ $on_master -eq 1 ]; then
-	if [ -r ~/.init-screen.act ]; then
-	  if ! grep -q "$master" ~/.init-screen.act; then
+	if [ -r "$TABLE" ]; then
+	  if ! grep -q "$master" "$TABLE"; then
 		echo "It seems, that there is already another screen environment running."
 		echo
 		echo "hint:"
-		echo "   possibly running on: `cat ~/.init-screen.act | awk '{print $1}'`"
+		echo "   possibly running on: `cat ${TABLE} | awk '{print $1}'`"
 		echo
-		echo "Please remove ~/.init-screen.act if I am wrong and retry." 
+		echo "Please remove ${TABLE} if I am wrong and retry." 
 		exit 1
 	  fi
 	fi
 	tmp=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
 	tmp=`echo $master $tmp`
-	echo $tmp > ~/.init-screen.act
+	echo "${PBS_JOBCOOKIE} = $tmp" > "${TABLE}"
 	# distcc support
 	if [ -d $HOME/.distcc ]; then
 	  rm -f $HOME/.distcc/hosts
@@ -109,7 +110,7 @@ fi
 headnode="$PBS_O_HOST"
 
 if [ $start_fhglog -eq 1 ]; then
-	killall fhglog-server
+	killall fhglogd
 	echo "starting log-server on master node"
 	ssh -Y -t "$headnode" screen -D -RR -X "screen -t log ssh -Y -t $master" # fhglog-server"
 fi
