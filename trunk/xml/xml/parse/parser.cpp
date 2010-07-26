@@ -23,12 +23,12 @@ main (int argc, char ** argv)
   po::options_description desc("options");
 
   desc.add_options()
-    ("help", "this message")
-    ( "input"
+    ("help,h", "this message")
+    ( "input,i"
     , po::value<std::string>(&input)->default_value("-")
     , "input file name, - for stdin"
     )
-    ( "output"
+    ( "output,o"
     , po::value<std::string>(&output)->default_value("-")
     , "output file name, - for stdout"
     )
