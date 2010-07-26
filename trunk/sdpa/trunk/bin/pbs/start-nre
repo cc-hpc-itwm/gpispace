@@ -4,10 +4,6 @@ if [ -r ~/.init-screen.env ]; then
     source ~/.init-screen.env
 fi
 
-if [ -r /p/herc/itwm/hpc/soft/sdpa/etc/sdpa.env ]; then
-    source /p/herc/itwm/hpc/soft/sdpa/etc/sdpa.env
-fi
-
 name="nre.`hostname`"
 agg="aggregator"
 agg_host=
