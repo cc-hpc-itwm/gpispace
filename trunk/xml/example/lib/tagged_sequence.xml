@@ -11,7 +11,7 @@
   <net>
     <struct name="state">
       <field name="pair" type="PAIR"/>
-     <field name="max" type="long"/>
+      <field name="max" type="long"/>
     </struct>
 
     <place name="tag" type="T"/>
