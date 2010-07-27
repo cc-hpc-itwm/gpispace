@@ -255,7 +255,7 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 				}
 				catch(const JobNotDeletedException&)
 				{
-					SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+					SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
 				}
 
 				try {
@@ -302,7 +302,7 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		pJob->JobFailed(pEvt);
 	}
 	catch(JobNotFoundException const &){
-		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
+		SDPA_LOG_ERROR("Job "<<pEvt->job_id()<<" not found!");
 	}
 
 	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
@@ -363,7 +363,7 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				}
 				catch(const JobNotDeletedException&)
 				{
-					SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+					SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
 				}
 
 				try {
@@ -453,7 +453,7 @@ void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		}
     		catch(const JobNotDeletedException&)
 			{
-				SDPA_LOG_DEBUG("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+				SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
 			}
 
     		// tell WE that the activity was cancelled
