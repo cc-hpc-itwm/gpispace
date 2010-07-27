@@ -89,11 +89,6 @@ namespace sdpa {
     std::string id_;
   };
 
-  //  inline bool operator==(const JobId & a, const JobId & b)
-  //  {
-  //    return a.str() == b.str();
-  //  }
-
   inline std::size_t hash_value(const JobId & a)
   {
     boost::hash<std::string> hasher;
