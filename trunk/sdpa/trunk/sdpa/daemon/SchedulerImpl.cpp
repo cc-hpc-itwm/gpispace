@@ -21,6 +21,8 @@
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/id_generator.hpp>
 
+#include <cassert>
+
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
@@ -65,6 +67,8 @@ void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int
 
 void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 {
+  assert (pQueue);
+
 	while( !pQueue->empty() )
 	{
 		sdpa::job_id_t jobId = pQueue->pop_and_wait();
@@ -75,7 +79,9 @@ void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 
 void SchedulerImpl::declare_jobs_failed( Worker::JobQueue* pQueue )
 {
-	while( !pQueue->empty() )
+  assert (pQueue);
+
+        while( !pQueue->empty() )
 	{
 		sdpa::job_id_t jobId = pQueue->pop_and_wait();
 		SDPA_LOG_INFO("Declare the job "<<jobId.str()<<" failed!");
@@ -212,7 +218,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 	}
 	catch (std::exception const & ex)
 	{
-		SDPA_LOG_DEBUG("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
+		SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
 		//send a JobFailed event
 		sdpa::job_result_t result;
@@ -354,7 +360,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 		}
 
 		// if no preferences are explicitly set for this job
-        SDPA_LOG_DEBUG("Check if the job "<<jobId.str()<<" has preferences ... ");
+                DLOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
 
 		try
 		{
@@ -394,7 +400,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 				// fails and mandatory is set then -> declare the job failed
 				if( job_pref.is_mandatory() )
 				{
-                    LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_pref);
+                                  LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_pref);
 					ptr_comm_handler_->workerJobFailed( jobId, "Couldn't match the mandatory preferences with a registered worker!");
 					return false;
 				}
@@ -403,12 +409,19 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 					std::vector<unsigned int> registered_ranks;
 					ptr_worker_man_->getListOfRegisteredRanks(registered_ranks);
 
-					for( std::vector<unsigned int>::const_iterator iter = registered_ranks.begin(); iter != registered_ranks.end(); iter++ )
-						// return immediately if rank not excluded and scheduling to rank succeeded
-						if( uset_excluded.find(*iter) == uset_excluded.end() && schedule_to(jobId, *iter, job_pref) )
-								return true;
+					for( std::vector<unsigned int>::const_iterator iter (registered_ranks.begin())
+                                           ; iter != registered_ranks.end()
+                                           ; iter++
+                                           )
+                                        {
+                                          // return immediately if rank not excluded and scheduling to rank succeeded
+                                          if( uset_excluded.find(*iter) == uset_excluded.end() && schedule_to(jobId, *iter, job_pref) )
+                                            return true;
+                                        }
 				}
 
+                                // TODO: we had preferences but we could not fulfill them
+                                ptr_comm_handler_->workerJobFailed( jobId, "The job had preferences which could not be fulfilled!");
 				return false;
 			}
 		}
@@ -601,6 +614,7 @@ void SchedulerImpl::run()
 		catch(JobNotFoundException& ex)
 		{
 			SDPA_LOG_DEBUG("Job not found! Could not schedule the job "<<ex.job_id().str());
+                        throw;
 		}
 		catch( const boost::thread_interrupted & )
 		{
@@ -615,6 +629,7 @@ void SchedulerImpl::run()
 		catch ( const std::exception &ex )
 		{
 		  MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+                  throw;
 		}
 	}
 }
