@@ -50,9 +50,9 @@ if [ $on_master -eq 1 ]; then
 		echo "It seems, that there is already another screen environment running."
 		echo
 		echo "hint:"
-		echo "   possibly running on: `cat ${TABLE} | awk '{print $1}'`"
+		echo "   possibly running on: `cat ${TABLE} | awk '{print $3}'`"
 		echo
-		echo "Please remove ${TABLE} if I am wrong and retry." 
+		echo "Please remove ${TABLE} if I am wrong and retry."
 		exit 1
 	  fi
 	fi
