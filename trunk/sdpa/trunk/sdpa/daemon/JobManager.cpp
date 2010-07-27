@@ -112,10 +112,12 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
         {
           DLOG(TRACE, "Erased job "<<job_id.str()<<" from job map");
         }
+        free_slot_.notify_one();
 }
 
 std::vector<sdpa::job_id_t> JobManager::getJobIDList()
 {
+	lock_type lock(mtx_);
 	std::vector<sdpa::job_id_t> v;
 	for(job_map_t::iterator it = job_map_.begin(); it!= job_map_.end(); it++)
 		v.push_back(it->first);
@@ -123,33 +125,28 @@ std::vector<sdpa::job_id_t> JobManager::getJobIDList()
 	return v;
 }
 
-std::string JobManager::print()
+std::string JobManager::print() const
 {
 	//lock_type lock(mtx_);
 	std::ostringstream os;
 
 	os<<"Begin dump ..."<<std::endl;
 
-	if(begin() != end())
-	{
-		os<<"The list of jobs still owned by the JobManager:"<<std::endl;
-		iterator it;
-		for(it = begin(); it != end(); it++)
-		{
-			os<<"       -> job "<<(*it).second->id()<<std::endl;
-		}
-	}
-	else
-		os<<"No job left to the JobManager!"<<std::endl;
-
-	os<<"End dump ..."<<std::endl;
-	//retStr = cout.str();
+        os<<"The list of jobs still owned by the JobManager:"<<std::endl;
+        for ( job_map_t::const_iterator it (job_map_.begin())
+            ; it != job_map_.end()
+            ; ++it
+            )
+        {
+          os << "  ---> job "<< it->second->id() << std::endl;
+        }
 
 	return os.str();
 }
 
 const we::preference_t& JobManager::getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences)
 {
+	lock_type lock(mtx_);
 	if( job_preferences_.empty() )
 		throw NoJobPreferences(jobId);
 
@@ -166,9 +163,22 @@ const we::preference_t& JobManager::getJobPreferences(const sdpa::job_id_t& jobI
 
 void JobManager::addJobPreferences(const sdpa::job_id_t& job_id, const we::preference_t& pref) throw (JobNotFoundException)
 {
+	lock_type lock(mtx_);
 	if( job_map_.find( job_id ) == job_map_.end() )
 			throw JobNotFoundException( job_id );
 
 	// eventually, re-write the existing preferences
 	job_preferences_[job_id] = pref;
+}
+
+static const std::size_t MAX_PARALLEL_JOBS = 1024;
+bool JobManager::slotAvailable () const
+{
+  return number_of_jobs () < MAX_PARALLEL_JOBS;
+}
+
+void JobManager::waitForFreeSlot ()
+{
+  lock_type lock(mtx_);
+  free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }

@@ -59,9 +59,11 @@ namespace sdpa { namespace daemon {
 	  void addJobPreferences( const sdpa::job_id_t&, const we::preference_t& ) throw (JobNotFoundException);
 	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
 
-	  std::string print();
-	  size_t number_of_jobs() { return job_map_.size(); }
+	  std::string print() const;
+	  size_t number_of_jobs() const { return job_map_.size(); }
 
+          void waitForFreeSlot();
+          bool slotAvailable() const;
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)
 	  {
@@ -79,6 +81,7 @@ namespace sdpa { namespace daemon {
 	  job_map_t job_map_;
 	  job_map_t job_map_marked_for_del_;
 	  mutable mutex_type mtx_;
+          boost::condition_variable_any free_slot_;
 	  preference_map_t job_preferences_;
   };
 }}
