@@ -25,19 +25,19 @@ std::string StreamAppender::colorControlCode (LogEvent::severity_type severity) 
   switch (severity)
   {
   case LogEvent::severity_type::FATAL:
-    return "\033[;1;31m";
+    return "\033[;1;31m"; // red
   case LogEvent::severity_type::ERROR:
-    return "\033[;1;31m";
+    return "\033[;1;35m"; // magenta
   case LogEvent::severity_type::WARN:
-    return "\033[;1;34m";
+    return "\033[;1;33m"; // yellow
   case LogEvent::severity_type::INFO:
-    return "\033[;2;33m";
+    return "\033[;1;32m"; // green
   case LogEvent::severity_type::DEBUG:
-    return "\033[;2;32m";
+    return "\033[;0m"; // normal
   case LogEvent::severity_type::TRACE:
-    return "\033[;2;32m";
+    return "\033[;0m"; // normal
   default:
-    return "\033[;0m";
+    return "\033[;0m"; // normal
   }
 }
 
@@ -46,5 +46,9 @@ StreamAppender::append(const LogEvent &evt)
 {
   if (colored_)
     stream_ << colorControlCode (evt.severity());
+
   stream_ << getFormat()->format(evt);
+
+  if (colored_)
+    stream_ << "\033[0m";
 }		/* -----  end of method ConsoleAppender::append  ----- */
