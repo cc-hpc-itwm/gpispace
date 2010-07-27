@@ -46,7 +46,7 @@
       <connect-out port="done" place="done"/>
     </transition>
 
-    <transition name="dec">
+    <transition name="dec" priority="1">
       <defun>
         <in name="trigger" type="control"/>
         <in name="wait" type="long"/>
