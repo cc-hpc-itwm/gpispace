@@ -18,7 +18,7 @@
   <xsd:element name="structs" type="struct_list_type"/>
   <xsd:element name="template" type="function_type"/>
 
- <xsd:complexType name="transition_include_type">
+  <xsd:complexType name="transition_include_type">
     <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
   </xsd:complexType>
 
@@ -123,11 +123,13 @@
   </xsd:complexType>
 
   <xsd:complexType name="place_type">
-    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-      <xsd:element name="token" type="token_type"/>
-      <xsd:element name="properties" type="property_map_type"/>
-      <xsd:element name="include-properties" type="properties_include_type"/>
-    </xsd:choice>
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="properties" type="property_map_type"/>
+        <xsd:element name="include-properties" type="properties_include_type"/>
+      </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="token" type="token_type"/>
+    </xsd:sequence>
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="capacity" type="xsd:nonNegativeInteger" use="optional"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
@@ -155,7 +157,6 @@
   <xsd:complexType name="function_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="condition" type="xsd:string"/>
         <xsd:element name="properties" type="property_map_type"/>
         <xsd:element name="include-properties" type="properties_include_type"/>
       </xsd:choice>
@@ -164,29 +165,15 @@
         <xsd:element name="include-structs" type="struct_include_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="condition" type="xsd:string"/>
-        <xsd:element name="properties" type="property_map_type"/>
-        <xsd:element name="include-properties" type="properties_include_type"/>
-      </xsd:choice>
-      <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="in" type="port_type"/>
         <xsd:element name="out" type="port_type"/>
-      </xsd:choice>
-      <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="condition" type="xsd:string"/>
-        <xsd:element name="properties" type="property_map_type"/>
-        <xsd:element name="include-properties" type="properties_include_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="1" maxOccurs="1">
         <xsd:element name="expression" type="xsd:string"/>
         <xsd:element name="module" type="mod_type"/>
         <xsd:element name="net" type="net_type"/>
       </xsd:choice>
-      <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="condition" type="xsd:string"/>
-        <xsd:element name="properties" type="property_map_type"/>
-        <xsd:element name="include-properties" type="properties_include_type"/>
-      </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="condition" type="xsd:string"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:ID" use="optional"/>
     <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
@@ -195,7 +182,6 @@
   <xsd:complexType name="transition_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="condition" type="xsd:string"/>
         <xsd:element name="properties" type="property_map_type"/>
         <xsd:element name="include-properties" type="properties_include_type"/>
       </xsd:choice>
@@ -205,20 +191,11 @@
         <xsd:element name="use" type="use_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="condition" type="xsd:string"/>
-        <xsd:element name="properties" type="property_map_type"/>
-        <xsd:element name="include-properties" type="properties_include_type"/>
-      </xsd:choice>
-      <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
       </xsd:choice>
-      <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="condition" type="xsd:string"/>
-        <xsd:element name="properties" type="property_map_type"/>
-        <xsd:element name="include-properties" type="properties_include_type"/>
-      </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="condition" type="xsd:string"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="priority" type="xsd:nonNegativeInteger" use="optional"/>
