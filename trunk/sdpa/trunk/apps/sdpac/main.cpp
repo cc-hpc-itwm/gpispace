@@ -90,7 +90,8 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>()->default_value("sdpac.out"),
      "path to output file")
-    ("wait,w", su::po::value<int>()->implicit_value(1), "wait until job is finished (arg=poll interval)")
+    ("wait,w", "wait until job is finished")
+    ("poll-interval,t", su::po::value<int>()->default_value(1), "sets the poll interval")
     ("force,f", "force the operation")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
@@ -99,6 +100,7 @@ int main (int argc, char **argv) {
      "status: \tqueries the status of a job, arg must specify the job-id\n"
      "results: \tretrieve the results of a job, arg must specify the job-id\n"
      "delete: \tdelete a finished job, arg must specify the job-id\n"
+     "wait: \twait until the job reaches a final state\n"
      )
     ;
   cfg.tool_hidden_opts().add_options()
@@ -241,7 +243,7 @@ int main (int argc, char **argv) {
 
       if (cfg.is_set("wait"))
       {
-        const int poll_interval = cfg.get<int>("wait");
+        const int poll_interval = cfg.get<int>("poll-interval");
         int wait_code = command_wait(job_id, api, poll_interval);
 
         switch (wait_code)
@@ -262,6 +264,37 @@ int main (int argc, char **argv) {
         }
         return wait_code;
       }
+    }
+    else if (command == "wait")
+    {
+      if (args.empty())
+      {
+        std::cerr << "E: job-id required" << std::endl;
+        return 4;
+      }
+
+      const std::string job_id (args.front());
+      const int poll_interval = cfg.get<int>("poll-interval");
+      int wait_code = command_wait(job_id, api, poll_interval);
+
+      switch (wait_code)
+      {
+      case 0: // finished
+      case 1: // failed
+      case 2: // cancelled
+        {
+          std::cerr << "retrieve the results with:" << std::endl;
+          std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
+          std::cerr << "delete the job with:" << std::endl;
+          std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
+          break;
+        }
+      default:
+        std::cerr << "could not get status information!" << std::endl;
+        break;
+      }
+
+      return wait_code;
     }
     else if (command == "cancel")
     {
