@@ -18,7 +18,7 @@
     </specialize>
 
     <transition name="tag_seq" inline="true">
-      <use name="tag_seq" as="tag_seq"/>
+      <use name="tag_seq"/>
       <connect-in port="tag" place="offset"/>
       <connect-in port="amount" place="amount"/>
       <connect-out port="pair" place="pair"/>

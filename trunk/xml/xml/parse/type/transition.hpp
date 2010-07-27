@@ -136,22 +136,6 @@ namespace xml
                 (use.name, trans.name, trans.path);
             }
 
-          if (use.as.isJust())
-            {
-              if (fun.name.isJust() && *fun.name != *use.as)
-                {
-                  state.warn
-                    ( warning::overwrite_function_name_as
-                      ( *fun.name
-                      , *use.as
-                      , state.file_in_progress()
-                      )
-                    );
-                }
-
-              fun.name = *use.as;
-            }
-
           return fun;
         }
       };

@@ -30,7 +30,7 @@
     </transition>
 
     <transition name="generate" inline="true">
-      <include-function href="lib/sequence.xml" as="generate"/>
+      <include-function href="lib/sequence.xml"/>
       <connect-in port="amount" place="parallel"/>
       <connect-out port="out" place="id"/>
     </transition>
