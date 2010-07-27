@@ -690,7 +690,7 @@ namespace xml
 
         s << level(f.level+1) << "fun = " << std::endl;
 
-        boost::apply_visitor (visitor::show (s), f.f);
+        boost::apply_visitor (visitor::show (s, f.level+1), f.f);
 
         s << std::endl;
 
