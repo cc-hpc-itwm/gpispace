@@ -24,6 +24,7 @@ namespace fhg { namespace log {
         , fmt_string_("")
           // FIXME: broken if set to true
         , threaded_(false)
+        , colored_(false)
       {}
 
       void operator() () throw() {
@@ -103,21 +104,21 @@ namespace fhg { namespace log {
 
 	if (STDERR() == to_console_)
 	{
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr, colored_)))->setFormat(fmt);
 #ifndef NDEBUG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
 	else if (STDOUT() == to_console_)
 	{
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cout)))->setFormat(fmt);
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cout, colored_)))->setFormat(fmt);
 #ifndef NDEBUG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
 	else if (STDLOG() == to_console_)
 	{
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::clog)))->setFormat(fmt);
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::clog, colored_)))->setFormat(fmt);
 #ifndef NDEBUG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
@@ -125,7 +126,7 @@ namespace fhg { namespace log {
 	else if (to_console_.size() > 0)
 	{
 	  std::clog << "W: invalid value for configuration value to_console: " << to_console_ << " assuming stderr" << std::endl;
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr)))->setFormat(fmt);
+	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr, colored_)))->setFormat(fmt);
 	}
 
         if (to_file_.size())
@@ -204,10 +205,14 @@ namespace fhg { namespace log {
         {
           to_server_ = val;
         }
-		else if (key == "FHGLOG_threaded" && (val == "no" || val == "false" || val == "0"))
-		{
-		  threaded_ = false;
-		}
+        else if (key == "FHGLOG_threaded" && (val == "no" || val == "false" || val == "0"))
+        {
+          threaded_ = false;
+        }
+        else if (key == "FHGLOG_colored" && (val == "yes" || val == "true" || val == "1"))
+        {
+          colored_ = true;
+        }
         else if (key.substr(0, 6) == "FHGLOG")
         {
 #ifndef NDEBUG
@@ -228,6 +233,7 @@ namespace fhg { namespace log {
       std::string to_server_;
       std::string fmt_string_;
 	  bool threaded_;
+	  bool colored_;
   };
 
   class Configurator {

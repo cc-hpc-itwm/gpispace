@@ -62,31 +62,11 @@ namespace fhg { namespace log {
         return *this;
       }
 
-      bool operator==(const LogLevel &other) const {
-        return lvl_ == other.lvl_;
-      }
-      bool operator!=(const LogLevel &other) const {
-        return !(*this == other);
-      }
-
-      bool operator<(const LogLevel &other) const {
-        return lvl_ < other.lvl_;
-      }
-      bool operator<=(const LogLevel &other) const {
-        return lvl_ <= other.lvl_;
-      }
-
-      bool operator>(const LogLevel &other) const {
-        return lvl_ > other.lvl_;
-      }
-      bool operator>=(const LogLevel &other) const {
-        return lvl_ >= other.lvl_;
-      }
-
       const std::string &str() const;
 
       inline const Level &lvl() const { return lvl_; }
       inline Level &lvl() { return lvl_; }
+      operator Level () const { return lvl_; }
     private:
       Level lvl_;
   };

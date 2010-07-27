@@ -556,24 +556,28 @@ namespace we { namespace mgmt {
       inline
       void post_activity_notification (const internal_id_type & id)
       {
+        assert (is_valid (id));
         active_nets_[id % extractor_.size()].put(id);
       }
 
       inline
       void post_inject_activity_results (const internal_id_type & id)
       {
+        assert (is_valid (id));
         inj_q_[id % injector_.size()].put ( id );
       }
 
       inline
       void post_finished_notification (const internal_id_type & id)
       {
+        assert (is_valid (id));
         inj_q_[id % injector_.size()].put ( id );
       }
 
       inline
       void post_failed_notification (const internal_id_type & id)
       {
+        assert (is_valid (id));
         cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_failed, this, _1)));
       }
 
@@ -586,25 +590,29 @@ namespace we { namespace mgmt {
       inline
       void post_cancel_activity_notification (const internal_id_type & id)
       {
+        assert (is_valid (id));
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::cancel_activity, this, _1)));
       }
 
       inline
       void post_suspend_activity_notification (const internal_id_type & id)
       {
+        assert (is_valid (id));
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
       }
 
       inline
       void post_resume_activity_notification (const internal_id_type & id)
       {
+        assert (is_valid (id));
         cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_activity, this, _1)));
       }
 
       inline
       void post_execute_notification (const internal_id_type & id)
       {
-        active_nets_[id % extractor_.size()].put(id);
+        assert (is_valid (id));
+        post_activity_notification (id);
       }
 
       inline
@@ -631,6 +639,11 @@ namespace we { namespace mgmt {
         for (;;)
         {
           internal_id_type active_id = active_nets_[rank].get();
+          if (! is_valid (active_id))
+          {
+            LOG(WARN, "extracting from invalid id " << active_id);
+            continue;
+          }
 
           try
           {
@@ -661,6 +674,7 @@ namespace we { namespace mgmt {
             case policy::exec_policy::EXTRACT:
               {
                 DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc.name());
+
                 while (desc.enabled())
                 {
                   descriptor_type child (desc.extract (generate_internal_id()));
@@ -697,7 +711,7 @@ namespace we { namespace mgmt {
                 if (desc.is_done ())
                 {
                   DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc.name() << ")-" << active_id << " is done");
-                  //                  active_nets_[rank].erase (active_id);
+                  active_nets_[rank].erase (active_id);
                   post_finished_notification (active_id);
                 }
               }
@@ -840,11 +854,6 @@ namespace we { namespace mgmt {
         return internal_id_gen_();
       }
 
-      void activity_needs_attention(const cmd_t & cmd)
-      {
-        active_nets_.put(cmd.dat);
-      }
-
       void activity_failed(const cmd_t & cmd)
       {
         const internal_id_type internal_id (cmd.dat);
@@ -946,13 +955,6 @@ namespace we { namespace mgmt {
       {
         lookup(cmd.dat).suspend();
         sig_suspended (this, cmd.dat);
-      }
-
-      void resume_activity(const cmd_t & cmd)
-      {
-        lookup(cmd.dat).resume();
-        active_nets_.put (cmd.dat);
-        sig_resumed (this, cmd.dat);
       }
 
       inline void insert_activity(const descriptor_type & desc)

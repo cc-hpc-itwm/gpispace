@@ -28,19 +28,23 @@ namespace fhg { namespace log {
   {
     public:
       explicit
-      /* 
+      /*
       * Create a new StreamAppender with the given name.
       *
       * The appender does not take ownership of the stream, i.e. you have to
       * close the stream on your own.
       */
-      StreamAppender(const std::string &a_name = "console", std::ostream &stream = std::clog)
-        : Appender(a_name), stream_(stream) {}
+      StreamAppender(const std::string &a_name, std::ostream &stream, bool colored = false)
+        : Appender(a_name), stream_(stream), colored_(colored) {}
       ~StreamAppender() {}
 
       void append(const LogEvent &evt);
+
+    std::string colorControlCode (LogEvent::severity_type severity) const;
+
     private:
       std::ostream &stream_;
+      bool colored_;
   };
 }}
 #endif   /* ----- #ifndef STREAM_APPENDER_INC  ----- */
