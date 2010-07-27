@@ -254,7 +254,7 @@ namespace sdpa { namespace daemon {
 
 	  void setStage(seda::Stage* stage)
 	  {
-		  // assert stage->strategy() == this
+            assert (stage);
 		  daemon_stage_ = stage;
 	  }
 
