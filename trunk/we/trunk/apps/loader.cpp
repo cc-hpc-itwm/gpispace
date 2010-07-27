@@ -27,6 +27,9 @@ static void sig_handler(int sig)
 
 int main(int ac, char **av)
 {
+  // TODO: should go to the fhglog module
+  fhg::log::Configurator::configure();
+
   typedef std::vector<std::string> mod_list;
   namespace po = boost::program_options;
 
@@ -59,13 +62,10 @@ int main(int ac, char **av)
 
   if (vm.count("help"))
   {
-    std::cerr << "usage: nre-pcd [options] module...." << std::endl;
+    std::cerr << "usage: loader [options] module...." << std::endl;
     std::cerr << opts << std::endl;
     return 1;
   }
-
-  // TODO: should go to the fhglog module
-  fhg::log::Configurator::configure();
 
   signal(SIGSEGV, &sig_handler);
   signal(SIGABRT, &sig_handler);
@@ -130,7 +130,8 @@ int main(int ac, char **av)
 
   if (vm.count("selftest"))
   {
-    LOG(ERROR, "running selftests");
+    LOG(FATAL, "running selftests");
+    exit (1);
   }
 
   sigset_t waitset;
