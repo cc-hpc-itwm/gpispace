@@ -806,7 +806,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
 		//ptr_job_man_->addPreferences(job_id, pref);
 
                 // WORK HERE: limit number of maximum parallel jobs
-                // ptr_job_man_->waitForFreeSlot ();
+                ptr_job_man_->waitForFreeSlot ();
 
 		// don't forget to set here the job's preferences
 		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(sdpa::daemon::WE, name(), job_id, desc, parent_id));
