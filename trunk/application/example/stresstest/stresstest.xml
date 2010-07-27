@@ -2,6 +2,8 @@
   <properties name="pnetc">
     <properties name="context">
       <property key="milli">1000</property>
+      <property key="aggregator">100 * 1000</property>
+      <property key="nre">4</property>
       <property key="second">${milli} * 1000</property>
     </properties>
   </properties>
@@ -18,9 +20,9 @@
       <field name="sleeptime" type="long"/>
     </struct>
 
-    <place name="sleeptime" type="long"><token><value>50 * ${milli}</value></token></place>
-    <place name="N" type="long"><token><value>2^5</value></token></place>
-    <place name="M" type="long"><token><value>40 * 40</value></token></place>
+    <place name="sleeptime" type="long"><token><value>0 * ${milli}</value></token></place>
+    <place name="N" type="long"><token><value>${aggregator}</value></token></place>
+    <place name="M" type="long"><token><value>${nre}</value></token></place>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
 
@@ -89,7 +91,7 @@
       <connect-in port="trigger" place="pending"/>
     </transition>
 
-    <transition name="dec">
+    <transition name="dec" priority="1">
       <defun>
         <in name="trigger" type="control"/>
         <in name="wait" type="long"/>
