@@ -188,7 +188,7 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFinished(pEvt);
 	}
-	catch(JobNotFoundException){
+	catch(JobNotFoundException const &){
 		SDPA_LOG_ERROR("Job "<<pEvt->job_id()<<" not found!");
                 return;
 	}
@@ -201,7 +201,6 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 			// send the event to the master
 			sendEventToMaster(pEvtJobFinished, MSG_RETRY_CNT);
-			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
 		catch(QueueFull const &)
 		{
@@ -237,12 +236,19 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 				SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
 				result_type output = pEvt->result();
+
+                                // this  should only  be called  once, therefore
+                                // the state machine when we switch the job from
+                                // one state  to another, the  code belonging to
+                                // exactly    that    transition    should    be
+                                // executed. I.e. all this code should go to the
+                                // FSM callback routine.
 				ptr_workflow_engine_->finished(actId, output);
 
 				try {
 					ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
 				}
-				catch(WorkerNotFoundException)
+				catch(WorkerNotFoundException const &)
 				{
 					SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
 					throw;
@@ -256,7 +262,7 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 					//delete it also from job_map_
 					ptr_job_man_->deleteJob(pEvt->job_id());
 				}
-				catch(JobNotDeletedException&)
+				catch(JobNotDeletedException const &)
 				{
 					SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
                                         throw;
@@ -295,7 +301,7 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFailed(pEvt);
 	}
-	catch(JobNotFoundException){
+	catch(JobNotFoundException const &){
 		SDPA_LOG_DEBUG("Job "<<pEvt->job_id()<<" not found!");
 	}
 
