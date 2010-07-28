@@ -763,48 +763,17 @@ namespace we { namespace mgmt {
 
                 DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc.child_count() << ")");
 
+
                 if (desc.is_done ())
                 {
                   DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc.name() << ")-" << active_id << " is done");
                   active_nets_[rank].erase (active_id);
-                  post_finished_notification (active_id);
+                  do_inject (desc);
                 }
               }
               break;
             case policy::exec_policy::INJECT:
-              desc.finished();
-
-              DLOG( INFO
-                  , "extractor-" << rank << ": finished (" << desc.name() << ")-"
-                  << desc.id() << ": " << desc.show_output()
-                  );
-
-              if (desc.has_parent ())
-              {
-                lookup (desc.parent()).inject
-                  ( desc
-                  , boost::bind ( &this_type::post_activity_notification
-                                , this
-                                , _1
-                                )
-                  );
-
-                DLOG(INFO, "extractor-" << rank << ": injected (" << desc.name() << ")-" << desc.id()
-                    << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
-                    << ": " << desc.show_output());
-              }
-              else if (desc.came_from_external())
-              {
-                DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << " external-id := " << desc.from_external_id());
-                ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
-              }
-              else
-              {
-                throw std::runtime_error ("extractor does not know how to handle this: " + ::util::show (desc));
-              }
-
-              remove_activity (desc);
-
+              do_inject (desc);
               break;
             case policy::exec_policy::EXTERNAL:
               DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc.id());
@@ -845,37 +814,7 @@ namespace we { namespace mgmt {
 
           try
           {
-            descriptor_type & desc = lookup (act_id);
-            desc.finished();
-
-            DLOG(INFO, "injector[" << rank << "]: finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
-
-            if (desc.has_parent())
-            {
-              lookup (desc.parent()).inject
-                ( desc
-                , boost::bind ( &this_type::post_activity_notification
-                              , this
-                              , _1
-                              )
-                );
-              DLOG(INFO, "injected (" << desc.name() << ")-" << act_id
-                  << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
-                  << ": " << desc.show_output());
-            }
-            else if (desc.came_from_external())
-            {
-              DLOG(INFO, "finished (" << desc.name() << ")-" << act_id << " external-id := " << desc.from_external_id());
-              ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
-            }
-            else
-            {
-              throw std::runtime_error ("injector does not know how to handle this: " + ::util::show (desc));
-            }
-
-            sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
-            inj_q_[rank].erase (desc.id());
-            remove_activity (desc);
+            do_inject ( lookup(act_id) );
           }
           catch (std::exception const & ex)
           {
@@ -887,6 +826,42 @@ namespace we { namespace mgmt {
           }
         }
         DLOG(INFO, "injector-" << rank << " thread stopped...");
+      }
+
+      void do_inject ( descriptor_type & desc )
+      {
+        desc.finished();
+        DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
+
+        if (desc.has_parent())
+        {
+          DLOG(INFO, "injecting (" << desc.name() << ")-" << desc.id()
+              << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
+              << ": " << desc.show_output());
+          lookup (desc.parent()).inject
+            ( desc
+            , boost::bind ( &this_type::post_activity_notification
+                          , this
+                          , _1
+                          )
+            );
+        }
+        else if (desc.came_from_external())
+        {
+          DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << " external-id := " << desc.from_external_id());
+          ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
+        }
+        else
+        {
+          throw std::runtime_error ("STRANGE! cannot inject: " + ::util::show (desc));
+        }
+
+        if (sig_finished.connected())
+          sig_finished ( this
+                       , desc.id()
+                       , policy::codec::encode(desc.activity())
+                       );
+        remove_activity (desc);
       }
 
       /** Member variables **/
