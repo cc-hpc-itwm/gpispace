@@ -2,8 +2,8 @@
   <properties name="pnetc">
     <properties name="context">
       <property key="milli">1000</property>
-      <property key="aggregator">25 * 1000</property>
-      <property key="nre">4</property>
+      <property key="aggregator">1000</property>
+      <property key="nre">1000</property>
       <property key="second">${milli} * 1000</property>
     </properties>
   </properties>
