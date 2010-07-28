@@ -536,7 +536,7 @@ namespace we { namespace mgmt {
       void manager()
       {
         using namespace we::mgmt::detail::commands;
-        std::cerr << "D: manager thread started..." << std::endl;
+        DLOG(TRACE, "manager thread started...");
         for (;;)
         {
           cmd_t cmd = cmd_q_.get();
@@ -550,7 +550,7 @@ namespace we { namespace mgmt {
             throw;
           }
         }
-        DLOG(TRACE, "D: manager thread stopped...");
+        DLOG(TRACE, "manager thread stopped...");
       }
 
       inline
@@ -929,7 +929,7 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found<internal_id_type> &)
         {
-          std::cerr << "W: got finished notification for old activity: " << internal_id << std::endl;
+          LOG(ERROR, "got finished notification for old activity: " << internal_id);
         }
       }
 
