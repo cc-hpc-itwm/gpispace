@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     ("dumpversion", "dump version information")
     ("quiet,q", "be quiet")
     ("verbose,v", po::value<unsigned int>()->default_value(0), "verbosity level")
-    ("colored,c", "colored output")
+    ("color,c", po::value<std::string>()->default_value("auto"), "colored output")
     ( "format,f", po::value<std::string>()->default_value("short")
     , "possible values:\n"
     "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
@@ -100,6 +100,7 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
+  const std::string color (vm["color"].as<std::string>());
   const unsigned short port (vm["port"].as<unsigned short>());
   const std::string fmt_string (vm["format"].as<std::string>());
 
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
   fhg::log::getLogger().addAppender
     (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( "console"
                                                             , std::clog
-                                                            , vm.count("colored") > 0
+                                                            , color != "no"
                                                             )
                                )
     )->setFormat(fhg::log::Formatter::Default());
@@ -145,7 +146,7 @@ int main(int argc, char **argv)
   fhg::log::Appender::ptr_t appender
     (new fhg::log::StreamAppender( "console"
                                  , std::cout
-                                 , vm.count("colored") > 0
+                                 , color != "no"
                                  )
     );
 
