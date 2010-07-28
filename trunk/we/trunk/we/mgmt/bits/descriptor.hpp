@@ -196,6 +196,14 @@ namespace we
           activity_.inject_input ();
         }
 
+        template <typename F>
+        void inject (this_type const & child, F cb)
+        {
+          lock_t lock(mutex_);
+          this->inject (child);
+          cb ( id() );
+        }
+
         void inject (this_type const & child)
         {
           lock_t lock(mutex_);

@@ -556,63 +556,118 @@ namespace we { namespace mgmt {
       inline
       void post_activity_notification (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        active_nets_[id % extractor_.size()].put(id);
+        if (is_valid(id))
+        {
+          active_nets_[id % extractor_.size()].put(id);
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_inject_activity_results (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        inj_q_[id % injector_.size()].put ( id );
+        if (is_valid(id))
+        {
+          inj_q_[id % injector_.size()].put ( id );
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_finished_notification (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        inj_q_[id % injector_.size()].put ( id );
+        if (is_valid(id))
+        {
+          inj_q_[id % injector_.size()].put ( id );
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_failed_notification (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_failed, this, _1)));
+        if (is_valid(id))
+        {
+          cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_failed, this, _1)));
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_cancelled_notification (const internal_id_type & id)
       {
-        cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_cancelled, this, _1)));
+        if (is_valid(id))
+        {
+          cmd_q_.put(make_cmd(id, boost::bind(&this_type::activity_cancelled, this, _1)));
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_cancel_activity_notification (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        cmd_q_.put (make_cmd(id, boost::bind(&this_type::cancel_activity, this, _1)));
+        if (is_valid(id))
+        {
+          cmd_q_.put (make_cmd(id, boost::bind(&this_type::cancel_activity, this, _1)));
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_suspend_activity_notification (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
+        if (is_valid(id))
+        {
+          cmd_q_.put (make_cmd(id, boost::bind(&this_type::suspend_activity, this, _1)));
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_resume_activity_notification (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_activity, this, _1)));
+        if (is_valid(id))
+        {
+          cmd_q_.put (make_cmd(id, boost::bind(&this_type::resume_activity, this, _1)));
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
       void post_execute_notification (const internal_id_type & id)
       {
-        assert (is_valid (id));
-        post_activity_notification (id);
+        if (is_valid(id))
+        {
+          post_activity_notification (id);
+        }
+        else
+        {
+          LOG(ERROR, "id is not valid anymore: " << id);
+        }
       }
 
       inline
@@ -726,13 +781,17 @@ namespace we { namespace mgmt {
 
               if (desc.has_parent ())
               {
-                lookup (desc.parent()).inject (desc);
+                lookup (desc.parent()).inject
+                  ( desc
+                  , boost::bind ( &this_type::post_activity_notification
+                                , this
+                                , _1
+                                )
+                  );
 
                 DLOG(INFO, "extractor-" << rank << ": injected (" << desc.name() << ")-" << desc.id()
                     << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
                     << ": " << desc.show_output());
-
-                post_activity_notification (desc.parent());
               }
               else if (desc.came_from_external())
               {
@@ -793,11 +852,16 @@ namespace we { namespace mgmt {
 
             if (desc.has_parent())
             {
-              lookup (desc.parent()).inject (desc);
+              lookup (desc.parent()).inject
+                ( desc
+                , boost::bind ( &this_type::post_activity_notification
+                              , this
+                              , _1
+                              )
+                );
               DLOG(INFO, "injected (" << desc.name() << ")-" << act_id
                   << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
                   << ": " << desc.show_output());
-              post_activity_notification (desc.parent());
             }
             else if (desc.came_from_external())
             {
@@ -810,6 +874,7 @@ namespace we { namespace mgmt {
             }
 
             sig_finished (this, desc.id(), policy::codec::encode(desc.activity()));
+            inj_q_[rank].erase (desc.id());
             remove_activity (desc);
           }
           catch (std::exception const & ex)
