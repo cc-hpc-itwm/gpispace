@@ -39,7 +39,8 @@ namespace condition
     std::string expression_;
     typedef expr::parse::parser<signature::field_name_t> parser_t;
     parser_t parser;
-    mutable expr::eval::context<signature::field_name_t> context;
+    typedef expr::eval::context<signature::field_name_t> context_t;
+    mutable context_t context;
 
     typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
     translate_t translate;
@@ -112,6 +113,24 @@ namespace condition
     const std::string & expression() const
     {
       return expression_;
+    }
+    
+    bool is_const_true () const
+    {
+      try
+        {
+          context_t empty_context;
+
+          return parser.eval_all_bool (empty_context);
+        }
+      catch (const expr::exception::eval::type_error &)
+        {
+          return false;
+        }
+      catch (const expr::exception::eval::missing_binding<signature::field_name_t> &)
+        {
+          return false;
+        }
     }
   };
 
