@@ -2,10 +2,14 @@ cmake_minimum_required(VERSION 2.6.2)
 
 project(KDM_SDPA)
 
-add_subdirectory(obsolete)
-
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
+
+option(ENABLE_OBSOLETE_KDM "Build obsolete generator binaries" No)
+
+if (ENABLE_OBSOLETE_KDM)
+  add_subdirectory(obsolete)
+endif (ENABLE_OBSOLETE_KDM)
 
 include_directories(./src
 		    ./src/include
@@ -150,15 +154,15 @@ set_target_properties(sinc_mod PROPERTIES OUTPUT_NAME sinc)
 add_library(kdm_mod SHARED ${KDM_MOD_SRCS})
 set_target_properties(kdm_mod PROPERTIES OUTPUT_NAME kdm)
 #target_link_libraries (kdm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
-target_link_libraries (kdm_mod sinc_mod)
+#target_link_libraries (kdm_mod sinc_mod)
 
 add_library(kdm_complex_mod SHARED ${KDM_COMPLEX_MOD_SRCS})
 set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
 #target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
-target_link_libraries (kdm_complex_mod sinc_mod)
+#target_link_libraries (kdm_complex_mod sinc_mod)
 
-add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
-set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
+#add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
+#set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
 #target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
 install(TARGETS sinc_mod DESTINATION libexec)
