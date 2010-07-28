@@ -51,6 +51,11 @@ namespace we
           targets_.clear();
         }
 
+        bool connected () const
+        {
+          return ! targets_.empty();
+        }
+
         const std::string &name() const { return name_; }
 
 	void operator() ()
