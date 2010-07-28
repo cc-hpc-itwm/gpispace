@@ -32,6 +32,9 @@
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
 
+#include <we/type/bits/transition/toDot.hpp>
+#include <we/type/bits/transition/optimize.hpp>
+
 namespace we { namespace mgmt { namespace type {
   template <typename Transition>
   struct activity_traits

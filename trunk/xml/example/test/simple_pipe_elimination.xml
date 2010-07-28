@@ -1,0 +1,1097 @@
+<defun name="test_simple_pipe_elimination">
+  <net>
+    <!-- ***** -->
+    <transition name="border, L: pre_post, R: pre_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border, L: pre_post, R: pre">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border, L: pre_post, R: post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border, L: pre_post, R:">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+
+    <!-- **** -->
+    <transition name="L: pre_post, R: pre_post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: pre_post, R: pre">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: pre_post, R: post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: pre_post, R:">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- **** -->
+    <transition name="L: pre, R: pre_post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: pre, R: pre">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: pre, R: post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: pre, R:">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="preL_a">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <transition name="preL_b">
+            <use name="pre"/>
+            <connect-out port="out" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- **** -->
+    <transition name="L: post, R: pre_post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: post, R: pre">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: post, R: post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L: post, R:">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <transition name="postL_a">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <transition name="postL_b">
+            <use name="post"/>
+            <connect-in port="in" place="L"/>
+          </transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- **** -->
+    <transition name="L:, R: pre_post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L:, R: pre">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+
+          <transition name="preR_a">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="preR_b">
+            <use name="pre"/>
+            <connect-out port="out" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L:, R: post">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+
+          <transition name="postR_a">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="postR_b">
+            <use name="post"/>
+            <connect-in port="in" place="R"/>
+          </transition>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L:, R:">
+      <defun>
+        <net>
+          <defun name="simple">
+            <in name="L" type="control"/>
+            <out name="R" type="control"/>
+            <expression/>
+          </defun>
+
+          <defun name="pre">
+            <out name="out" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <defun name="post">
+            <in name="in" type="control"/>
+            <module name="dummy" function="dummy"/>
+          </defun>
+
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple">
+            <use name="simple"/>
+            <connect-in port="L" place="L"/>
+            <connect-out port="R" place="R"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+  </net>
+</defun>

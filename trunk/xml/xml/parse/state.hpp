@@ -8,10 +8,11 @@
 
 #include <we/expr/eval/context.hpp>
 
+#include <we/type/bits/transition/optimize.hpp>
+
 #include <iostream>
 
-#include <list>
-#include <deque>
+#include <vector>
 
 #include <stdexcept>
 
@@ -34,6 +35,7 @@ namespace xml
       namespace fs = boost::filesystem;
       namespace po = boost::program_options;
       namespace property = we::type::property;
+      namespace optimize = we::type::optimize;
 
       using namespace warning;
 
@@ -53,6 +55,7 @@ namespace xml
         in_progress_type _in_progress;
         property::path_type _prop_path;
         context_t _context;
+        optimize::options::type _options_optimize;
         bool _ignore_properties;
         bool _Werror;
         bool _Wall;
@@ -202,6 +205,11 @@ namespace xml
           return _context;
         }
 
+        const optimize::options::type & options_optimize (void) const
+        {
+          return _options_optimize;
+        }
+
         // ***************************************************************** //
 
         bool property ( const property::path_type & path
@@ -212,8 +220,7 @@ namespace xml
             {
               return false;
             }
-
-          if (path.size() == 3 && path[1] == "context")
+          else if (path.size() == 3 && path[1] == "context")
             {
               std::ostringstream s;
 
@@ -256,17 +263,18 @@ namespace xml
                 {
                   throw error::eval_context_bind (s.str(), e.what());
                 }
-            }
 
-          if (path[1] == _Osearch_path)
+              return true;
+            }
+          else if (path[1] == _Osearch_path)
             {
-              _search_path.push_back (value);
+              _search_path.push_back (value); return true;
             }
 
 #define GET_PROP(x)                                        \
           else if (path.size() == 2 && path[1] == _O ## x) \
             {                                              \
-              _ ## x = read_bool (value);                  \
+              _ ## x = read_bool (value); return true;     \
             }
 
           GET_PROP (ignore_properties)
@@ -289,8 +297,13 @@ namespace xml
           GET_PROP (no_inline)
 
 #undef GET_PROP
+          else
+            {
+              property::path_type deeper (path.begin() + 1, path.end());
 
-          return true;
+              return _options_optimize.property (deeper, value);
+            }
+
         }
 
         // ***************************************************************** //
@@ -468,6 +481,8 @@ namespace xml
             )
             ;
 #undef VAL
+
+          _options_optimize.add_options (desc);
         }
       };
     }

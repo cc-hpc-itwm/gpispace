@@ -183,6 +183,7 @@ namespace we
       PortDirection direction() const { return direction_; }
       const sig_type & signature() const { return signature_; }
       const pid_type & associated_place() const { return associated_place_; }
+      pid_type & associated_place() { return associated_place_; }
       const we::type::property::type & property() const { return prop_; }
 
       inline bool is_input (void) const { return direction_ == PORT_IN || direction_ == PORT_IN_OUT || direction_ == PORT_READ; }

@@ -34,14 +34,16 @@ main (int argc, char ** argv)
     )
     ;
 
-  xml::parse::state::type state;
-  state.add_options (desc);
+  xml::parse::state::type * state = new xml::parse::state::type;
+
+  state->add_options (desc);
 
   po::positional_options_description p;
   p.add("input", -1);
 
   po::variables_map vm;
-  po::store( po::command_line_parser(argc, argv).options(desc).positional(p).run()
+  po::store( po::command_line_parser(argc, argv)
+           . options(desc).positional(p).run()
            , vm
            );
   po::notify(vm);
@@ -52,18 +54,22 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  xml::parse::type::function_type f (xml::parse::frontend (state, input));
+  xml::parse::type::function_type f (xml::parse::frontend (*state, input));
 
-  if (state.print_internal_structures())
+  if (state->print_internal_structures())
     {
       std::cerr << f << std::endl;
     }
 
   // optimize f
 
-  const we::transition_t trans (f.synthesize<we::activity_t> (state));
+  we::transition_t trans (f.synthesize<we::activity_t> (*state));
 
   // optimize trans
+
+  we::type::optimize::optimize (trans, state->options_optimize());
+
+  delete state;
 
   const we::activity_t act (trans);
 
