@@ -39,6 +39,13 @@ if [ -r "$PBS_NODEFILE" ]; then
 	echo "Running on the initial master node..."
 	on_master=1
 	master="$node_name"
+	echo "Checking node availability..."
+	check-nodes
+	rc=$?
+	if [[ $rc -ne 0 ]]; then
+	  echo "$rc node(s) failed the availability test, giving up!"
+	  exit $rc
+	fi
 else
 	echo "Running on slave $node_name..."
 fi

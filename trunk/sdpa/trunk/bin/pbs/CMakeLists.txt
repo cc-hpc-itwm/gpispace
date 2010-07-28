@@ -3,7 +3,8 @@ install(PROGRAMS start-nre
                  start-orch
                  kill-nre
                  boot-nre
-		 status-nre
+				 check-nodes
+				 status-nre
                  fvm-cleanup
                  init-screen
         DESTINATION
