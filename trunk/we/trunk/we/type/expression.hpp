@@ -48,6 +48,7 @@ namespace we { namespace type {
 
     const std::string & expression () const { return expr_; }
     const ast_t & ast () const { return ast_; }
+    bool is_empty () const { return expr_ == ""; }
 
     void expression (const std::string & expr)
     {
