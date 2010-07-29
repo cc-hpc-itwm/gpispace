@@ -2,6 +2,7 @@
 #include    <stdexcept>
 #include    <iostream>
 #include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
 #include "error_handler.hpp"
 
 using namespace fhg::log;
@@ -17,7 +18,7 @@ const Logger::ptr_t &Logger::get()
 
 const Logger::ptr_t &Logger::get(const std::string &a_name, const std::string & base)
 {
-  typedef std::map<std::string, Logger::ptr_t> logger_map_t;
+  typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
   typedef boost::recursive_mutex mutex_type;
   typedef boost::lock_guard<mutex_type> lock_type;
 
