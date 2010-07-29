@@ -113,11 +113,19 @@ namespace xml
 
         fs::path expand (const std::string & file) const
         {
-          fs::path direct (file);
+          const fs::path absolute (file);
 
-          if (fs::exists (direct))
+          if (fs::exists (absolute))
             {
-              return direct;
+              return absolute;
+            }
+
+          const fs::path from_actual_file
+            (file_in_progress().branch_path() / file);
+
+          if (fs::exists (from_actual_file))
+            {
+              return from_actual_file;
             }
 
           for ( search_path_type::const_iterator dir (_search_path.begin())
@@ -130,7 +138,7 @@ namespace xml
                   continue;
                 }
 
-              fs::path path (*dir / file);
+              const fs::path path (*dir / file);
 
               if (fs::exists (path))
                 {
