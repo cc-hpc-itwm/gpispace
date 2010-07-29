@@ -23,6 +23,7 @@
 #include <sdpa/common.hpp>
 #include <boost/thread.hpp>
 
+#include <boost/unordered_map.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/access.hpp>
@@ -33,7 +34,7 @@
 namespace sdpa { namespace daemon {
     class JobImpl : public Job /*, public sdpa::fsm::JobFSMActions*/  {
     public:
-        typedef std::map<sdpa::job_id_t, Job::ptr_t> job_list_t;
+        typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
         typedef sdpa::shared_ptr<JobImpl> ptr_t;
 
         typedef boost::recursive_mutex mutex_type;
