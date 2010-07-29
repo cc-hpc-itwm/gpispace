@@ -1,0 +1,4 @@
+<defun>
+  <in name="in" type="control"/>
+  <module name="dummy" function="dummy"/>
+</defun>

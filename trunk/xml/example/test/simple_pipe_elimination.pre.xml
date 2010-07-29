@@ -1,0 +1,4 @@
+<defun>
+  <out name="out" type="control"/>
+  <module name="dummy" function="dummy"/>
+</defun>

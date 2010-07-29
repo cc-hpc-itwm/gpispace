@@ -1,0 +1,5 @@
+<defun name="simple">
+  <in name="L" type="control"/>
+  <out name="R" type="control"/>
+  <expression/>
+</defun>
