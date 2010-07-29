@@ -1,4 +1,5 @@
 add_executable(sdpac main.cpp)
+#set_target_properties(sdpac PROPERTIES LINK_FLAGS "-static")
 
 target_link_libraries(sdpac sdpa-client)
 target_link_libraries(sdpac sdpa-events)
