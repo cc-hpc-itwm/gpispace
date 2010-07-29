@@ -7,6 +7,7 @@
 #include <sstream>
 
 
+#include <boost/unordered_map.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -47,7 +48,7 @@ namespace sdpa { namespace util {
      */
     class Properties {
     public:
-        typedef std::map<std::string, std::string> map_t;
+        typedef boost::unordered_map<std::string, std::string> map_t;
         typedef map_t::const_iterator const_iterator;
         typedef map_t::iterator iterator;
 

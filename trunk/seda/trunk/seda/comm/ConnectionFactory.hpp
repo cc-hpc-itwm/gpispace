@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -41,10 +41,10 @@
 #ifndef SEDA_COMM_CONNECTION_FACTORY_HPP
 #define SEDA_COMM_CONNECTION_FACTORY_HPP 1
 
-#include <map>
 #include <string>
 #include <stdexcept>
 
+#include <boost/unordered_map.hpp>
 #include <seda/shared_ptr.hpp>
 #include <seda/comm/Connection.hpp>
 
@@ -65,6 +65,8 @@ namespace seda { namespace comm {
    */
   class ConnectionParameters {
   public:
+    typedef boost::unordered_map<std::string, std::string> prop_map_t;
+
 //    ConnectionParameters(const std::string &a_transport
 //                       , const std::string &host
 //                       , const std::string &a_logical_name
@@ -120,7 +122,7 @@ namespace seda { namespace comm {
     const std::string &get(const std::string &key) const throw (ParameterNotFound)
     {
       using namespace std;
-      const map<string, string>::const_iterator val(props_.find(key));
+      const prop_map_t::const_iterator val(props_.find(key));
       if (val == props_.end()) throw ParameterNotFound(key);
       return val->second;
     }
@@ -134,7 +136,7 @@ namespace seda { namespace comm {
     std::string host_;
     std::string logical_name_;
     unsigned short port_;
-    std::map<std::string, std::string> props_;
+    prop_map_t props_;
   };
 
   class ConnectionFactory {

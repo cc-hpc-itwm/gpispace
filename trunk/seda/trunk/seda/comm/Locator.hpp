@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -41,9 +41,9 @@
 #ifndef SEDA_COMM_LOCATOR_HPP
 #define SEDA_COMM_LOCATOR_HPP 1
 
+#include <boost/unordered_map.hpp>
 #include <boost/thread.hpp>
 #include <string>
-#include <map>
 #include <ostream>
 
 #include <fhglog/fhglog.hpp>
@@ -135,10 +135,10 @@ namespace seda { namespace comm {
   public:
     typedef shared_ptr<Locator> ptr_t;
     typedef Location location_t;
-    typedef std::map<std::string, location_t> location_map_t;
+    typedef boost::unordered_map<std::string, location_t> location_map_t;
     typedef location_map_t::iterator iterator;
     typedef location_map_t::const_iterator const_iterator;
-    
+
     const location_t &lookup(const std::string &name) const throw (std::exception)
     {
       boost::unique_lock<boost::recursive_mutex> mtx_lock(mtx_);
@@ -198,7 +198,7 @@ namespace seda { namespace comm {
     const_iterator begin() const { return locations_.begin(); }
     const_iterator end() const { return locations_.end(); }
   private:
-    location_map_t locations_;    
+    location_map_t locations_;
     mutable boost::recursive_mutex mtx_;
   };
 }}

@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -26,7 +26,7 @@
 #include <seda/Stage.hpp>
 #include <seda/StageNotFound.hpp>
 #include <seda/StageAlreadyRegistered.hpp>
-#include <map>
+#include <boost/unordered_map.hpp>
 
 namespace seda {
     /**
@@ -59,7 +59,7 @@ namespace seda {
          * Register a new stage and take over the ownership of it.
          */
         void insert(Stage* stage) throw(StageAlreadyRegistered);
-        
+
         /**
          * Lookup a stage by its name.
          */
@@ -90,12 +90,14 @@ namespace seda {
          */
         void clear();
     private:
+        typedef boost::unordered_map<std::string, Stage::Ptr> stage_map_t;
+
         StageRegistry();
         StageRegistry(const StageRegistry&);
         void operator=(const StageRegistry&);
 
         SEDA_DECLARE_LOGGER();
-        std::map<std::string, Stage::Ptr> _stages;
+        stage_map_t _stages;
     };
 }
 

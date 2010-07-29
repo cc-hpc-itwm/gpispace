@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -58,33 +58,33 @@ bool StageRegistry::remove(const Stage::Ptr &stage) {
 }
 
 bool StageRegistry::remove(const std::string &name) {
-    std::map<std::string, Stage::Ptr>::iterator it(_stages.find(name));
+    stage_map_t::iterator it(_stages.find(name));
     if (it == _stages.end()) {
         return false;
     } else {
         _stages.erase(it);
         return true;
-    }        
+    }
 }
 
 const Stage::Ptr StageRegistry::lookup(const std::string& name) const throw (StageNotFound) {
-    std::map<std::string, Stage::Ptr>::const_iterator it(_stages.find(name));
+    stage_map_t::const_iterator it(_stages.find(name));
     if (it == _stages.end()) {
         throw StageNotFound(name);
     } else {
         return it->second;
-    }        
+    }
 }
 
 void StageRegistry::startAll() {
-    std::map<std::string, Stage::Ptr>::iterator it(_stages.begin());
+    stage_map_t::iterator it(_stages.begin());
     while (it != _stages.end()) {
         it->second->start(); it++;
     }
 }
 
 void StageRegistry::stopAll() {
-    std::map<std::string, Stage::Ptr>::iterator it(_stages.begin());
+    stage_map_t::iterator it(_stages.begin());
     while (it != _stages.end()) {
         it->second->stop(); it++;
     }

@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <boost/unordered_map.hpp>
 #include <algorithm>
 
 using namespace std;
@@ -129,7 +130,7 @@ void WorkerManager::deleteNonResponsiveWorkers (sdpa::util::time_type const & ti
 void WorkerManager::balanceWorkers()
 {
 	lock_type lock(mtx_);
-	typedef std::map<Worker::worker_id_t, unsigned int> load_map_t;
+	typedef boost::unordered_map<Worker::worker_id_t, unsigned int> load_map_t;
 	typedef pair<Worker::worker_id_t, unsigned int> loadPair;
 	load_map_t loadVector;
 
