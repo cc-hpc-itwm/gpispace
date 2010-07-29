@@ -76,6 +76,7 @@ namespace xml
         bool _no_inline;
 
         std::string _Osearch_path;
+        std::string _Osearch_path_short;
         std::string _Oignore_properties;
         std::string _OWerror;
         std::string _OWall;
@@ -91,7 +92,7 @@ namespace xml
         std::string _OWtype_map_duplicate;
         std::string _OWtype_get_duplicate;
         std::string _OWoverwrite_context;
-        
+
         std::string _Oprint_internal_structures;
         std::string _Ono_inline;
 
@@ -173,7 +174,7 @@ namespace xml
           , _print_internal_structures (false)
           , _no_inline (false)
 
-          , _Osearch_path ("search-path")
+          , _Osearch_path ("search-path"), _Osearch_path_short("I")
           , _Oignore_properties ("ignore-properties")
           , _OWerror ("Werror")
           , _OWall ("Wall")
@@ -318,8 +319,8 @@ namespace xml
 
         fs::path file_in_progress (void) const
         {
-          return (_in_progress.empty()) 
-            ? fs::path("<stdin>") 
+          return (_in_progress.empty())
+            ? fs::path("<stdin>")
             : _in_progress.back()
             ;
         }
@@ -346,7 +347,7 @@ namespace xml
         ACCESS(Wtype_map_duplicate)
         ACCESS(Wtype_get_duplicate)
         ACCESS(Woverwrite_context)
-        
+
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
 
@@ -415,7 +416,7 @@ namespace xml
 #define VAL(x) po::value<bool>(&_ ## x)->default_value (_ ## x)
 
           desc.add_options ()
-            ( _Osearch_path.c_str()
+            ( (_Osearch_path + "," + _Osearch_path_short).c_str()
             , po::value<search_path_type>(&_search_path)
             , "search path"
             )
