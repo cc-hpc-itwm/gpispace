@@ -74,7 +74,7 @@ namespace expr
         nd_t c (nd_stack.back()); nd_stack.pop_back();
 
         if (c.flag == node::flag::value)
-          nd_stack.push_back 
+          nd_stack.push_back
             (nd_t (boost::apply_visitor ( value::function::unary (token)
                                         , c.value
                                         )
@@ -101,7 +101,7 @@ namespace expr
         nd_t l (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (l.flag == node::flag::value && r.flag == node::flag::value)
-          nd_stack.push_back 
+          nd_stack.push_back
             (nd_t (boost::apply_visitor ( value::function::binary (token)
                                         , l.value
                                         , r.value
@@ -226,12 +226,12 @@ namespace expr
                     nd_stack.push_back (refnode(token.get_ref()));
                     break;
                   case token::define:
-                    if (  nd_stack.empty() 
+                    if (  nd_stack.empty()
                        || (nd_stack.back().flag != node::flag::ref)
                        )
                       throw exception::parse::exception
-                        ( "left hand of " 
-                        + util::show(*token) 
+                        ( "left hand of "
+                        + util::show(*token)
                         + " must be reference name"
                         , k
                         );
@@ -277,7 +277,7 @@ namespace expr
 
       parser (const std::string & input)
       {
-        parse (input, boost::bind (eval::refnode_name<Key>, _1));
+        parse (input, eval::refnode_name<Key>);
       }
 
       // the parsed expressions in the correct order
@@ -302,7 +302,7 @@ namespace expr
         return node::get (front());
       }
 
-      bool get_front_bool () const 
+      bool get_front_bool () const
       {
         return value::function::is_true(get_front ());
       }
