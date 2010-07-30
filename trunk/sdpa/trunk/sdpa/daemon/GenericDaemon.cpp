@@ -302,7 +302,6 @@ void GenericDaemon::onStageStop(const std::string & /* stageName */)
 	// stop the scheduler thread
 	ptr_scheduler_->stop();
 
-	ptr_workflow_engine_ = NULL;
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
 
