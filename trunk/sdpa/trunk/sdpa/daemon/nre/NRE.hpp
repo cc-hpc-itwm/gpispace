@@ -109,7 +109,11 @@ namespace sdpa {
 						}
 				}
 			}
-
+                        if (ptr_workflow_engine_)
+                        {
+                          delete ptr_workflow_engine_;
+                          ptr_workflow_engine_ = NULL;
+                        }
 		}
 
 		static ptr_t create( const std::string& name, const std::string& url,
@@ -206,8 +210,11 @@ void NRE<T, U>::shutdown(NRE<T, U>::ptr_t ptrNRE)
 	ptrNRE->shutdown_network();
 	ptrNRE->stop();
 
-	delete ptrNRE->ptr_workflow_engine_;
-	ptrNRE->ptr_workflow_engine_ = NULL;
+        if (ptrNRE->ptr_workflow_engine_)
+        {
+          delete ptrNRE->ptr_workflow_engine_;
+          ptrNRE->ptr_workflow_engine_ = NULL;
+        }
 }
 
 template <typename T, typename U>
