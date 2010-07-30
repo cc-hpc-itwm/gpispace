@@ -3,7 +3,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wno-non-virtual-dtor -Wreturn-type -Wno-system-headers")
+  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -W -Wall -Wextra -Wno-non-virtual-dtor -Wreturn-type -Wno-system-headers")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-include-dirs -Wno-pragmas -Wredundant-decls")
   # produces a lot of warnings with (at least) boost 1.38:
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wfloat-equal")
@@ -25,7 +25,7 @@ endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
 # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-  set(CMAKE_CXX_FLAGS "-wd383 -wd981")
+  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -wd383 -wd981")
   message(STATUS "compiler: ${CMAKE_CXX_COMPILER_MAJOR}.${CMAKE_CXX_COMPILER_MINOR}")
   if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
     message(STATUS "Warning: adding __aligned__=ignored to the list of definitions")
