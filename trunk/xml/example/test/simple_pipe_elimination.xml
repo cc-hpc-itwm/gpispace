@@ -1,6 +1,6 @@
 <defun name="test_simple_pipe_elimination">
   <net>
-    <transition name="border_double_in, L: pre_post, R: post">
+    <transition name="border_double_in_L_pre_post_R_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <in name="R" type="control" place="R"/>
@@ -20,7 +20,7 @@
       </defun>
     </transition>
 
-    <transition name="border_double_out, L: pre_post, R: post">
+    <transition name="border_double_out_L_pre_post_R_post">
       <defun>
         <out name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -41,7 +41,7 @@
     </transition>
 
     <!-- ***** -->
-    <transition name="border, L: pre_post, R: pre_post">
+    <transition name="border_L_pre_post_R_pre_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -63,7 +63,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: pre_post, R: pre">
+    <transition name="border_L_pre_post_R_pre">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -83,7 +83,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: pre_post, R: post">
+    <transition name="border_L_pre_post_R_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -103,7 +103,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: pre_post, R:">
+    <transition name="border_L_pre_post_R">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -122,7 +122,7 @@
     </transition>
 
     <!-- ***** -->
-    <transition name="border, L: post, R: pre_post">
+    <transition name="border_L_post_R_pre_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -142,7 +142,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: post, R: pre">
+    <transition name="border_L_post_R_pre">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -160,7 +160,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: post, R: post">
+    <transition name="border_L_post_R_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -178,7 +178,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: post, R:">
+    <transition name="border_L_post_R">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -195,7 +195,7 @@
     </transition>
 
     <!-- ***** -->
-    <transition name="border, L: pre, R: pre_post">
+    <transition name="border_L_pre_R_pre_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -215,7 +215,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: pre, R: pre">
+    <transition name="border_L_pre_R_pre">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -233,7 +233,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: pre, R: post">
+    <transition name="border_L_pre_R_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -251,7 +251,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L: pre, R:">
+    <transition name="border_L_pre_R">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -268,7 +268,7 @@
     </transition>
 
     <!-- ***** -->
-    <transition name="border, L:, R: pre_post">
+    <transition name="border_L_R_pre_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -286,7 +286,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L:, R: pre">
+    <transition name="border_L_R_pre">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -302,7 +302,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L:, R: post">
+    <transition name="border_L_R_post">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -318,7 +318,7 @@
       </defun>
     </transition>
 
-    <transition name="border, L:, R:">
+    <transition name="border_L_R">
       <defun>
         <in name="L" type="control" place="L"/>
         <out name="R" type="control" place="R"/>
@@ -334,7 +334,7 @@
 
     <!-- **** -->
     <!-- **** -->
-    <transition name="L: pre_post, R: pre_post">
+    <transition name="L_pre_post_R_pre_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -354,7 +354,7 @@
       </defun>
     </transition>
 
-    <transition name="L: pre_post, R: pre">
+    <transition name="L_pre_post_R_pre">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -372,7 +372,7 @@
       </defun>
     </transition>
 
-    <transition name="L: pre_post, R: post">
+    <transition name="L_pre_post_R_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -390,7 +390,7 @@
       </defun>
     </transition>
 
-    <transition name="L: pre_post, R:">
+    <transition name="L_pre_post_R">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -407,7 +407,7 @@
     </transition>
 
     <!-- **** -->
-    <transition name="L: pre, R: pre_post">
+    <transition name="L_pre_R_pre_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -425,7 +425,7 @@
       </defun>
     </transition>
 
-    <transition name="L: pre, R: pre">
+    <transition name="L_pre_R_pre">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -441,7 +441,7 @@
       </defun>
     </transition>
 
-    <transition name="L: pre, R: post">
+    <transition name="L_pre_R_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -457,7 +457,7 @@
       </defun>
     </transition>
 
-    <transition name="L: pre, R:">
+    <transition name="L_pre_R">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -472,7 +472,7 @@
     </transition>
 
     <!-- **** -->
-    <transition name="L: post, R: pre_post">
+    <transition name="L_post_R_pre_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -490,7 +490,7 @@
       </defun>
     </transition>
 
-    <transition name="L: post, R: pre">
+    <transition name="L_post_R_pre">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -506,7 +506,7 @@
       </defun>
     </transition>
 
-    <transition name="L: post, R: post">
+    <transition name="L_post_R_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -522,7 +522,7 @@
       </defun>
     </transition>
 
-    <transition name="L: post, R:">
+    <transition name="L_post_R">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -537,7 +537,7 @@
     </transition>
 
     <!-- **** -->
-    <transition name="L:, R: pre_post">
+    <transition name="L_R_pre_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -553,7 +553,7 @@
       </defun>
     </transition>
 
-    <transition name="L:, R: pre">
+    <transition name="L_R_pre">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -567,7 +567,7 @@
       </defun>
     </transition>
 
-    <transition name="L:, R: post">
+    <transition name="L_R_post">
       <defun>
         <net>
           <place name="L" type="control"/>
@@ -581,7 +581,7 @@
       </defun>
     </transition>
 
-    <transition name="L:, R:">
+    <transition name="L_R">
       <defun>
         <net>
           <place name="L" type="control"/>
