@@ -22,6 +22,7 @@
 #include <sstream>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+#include <boost/unordered_map.hpp>
 #include <we/util/show.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/bits/queue.hpp>
@@ -136,7 +137,7 @@ namespace test {
     typedef Layer layer_type;
     typedef sdpa_daemon<Layer> this_type;
     typedef typename layer_type::id_type id_type;
-    typedef std::map<id_type, id_type> id_map_t;
+    typedef boost::unordered_map<id_type, id_type> id_map_t;
     typedef job_t<id_type> job_type;
     typedef we::mgmt::detail::queue<job_type, 8> job_q_t;
     typedef std::vector<boost::thread*> worker_list_t;
