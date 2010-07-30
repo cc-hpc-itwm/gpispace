@@ -24,14 +24,18 @@ namespace we { namespace type {
         struct type
         {
         private:
+          bool _not;
           bool _simple_pipe_elimination;
 
+          std::string _Onot;
           std::string _Osimple_pipe_elimination;
 
         public:
           type (void)
-            : _simple_pipe_elimination (true)
+            : _not (false)
+            , _simple_pipe_elimination (true)
 
+            , _Onot ("Onot")
             , _Osimple_pipe_elimination ("Osimple-pipe-elimination")
           {}
 
@@ -63,9 +67,9 @@ namespace we { namespace type {
 
           // *************************************************************** //
 
-#define ACCESS(x)                                       \
-        const bool & x (void) const { return _ ## x; }  \
-        bool & x (void){ return _ ## x; }
+#define ACCESS(x)                                         \
+        bool x (void) const { return (!_not) && _ ## x; } \
+        bool & x (void) { return _ ## x; }
 
         ACCESS(simple_pipe_elimination)
 #undef ACCESS
@@ -77,6 +81,10 @@ namespace we { namespace type {
 #define VAL(x) po::value<bool>(&_ ## x)->default_value (_ ## x)
 
             desc.add_options ()
+              ( _Onot.c_str()
+              , VAL(not)
+              , "disable all optimizations"
+              )
               ( _Osimple_pipe_elimination.c_str()
               , VAL(simple_pipe_elimination)
               , "eliminate simple pipeline transitions"
