@@ -65,7 +65,12 @@ int main ()
   compound->addAppender (Appender::ptr_t(new StopAppender (io_service)));
   compound->setFormat(Formatter::Custom("%m"));
 
-  fhg::log::remote::LogServer logd(compound, io_service, FHGLOG_DEFAULT_PORT);
+  fhg::log::shared_ptr<fhg::log::remote::LogServer> logd
+    (new fhg::log::remote::LogServer ( compound
+                                     , io_service
+                                     , FHGLOG_DEFAULT_PORT
+                                     )
+    );
 
   {
     std::clog << "** testing remote logging...";
