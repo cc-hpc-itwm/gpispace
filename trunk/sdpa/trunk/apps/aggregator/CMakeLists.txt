@@ -10,5 +10,4 @@ target_link_libraries(aggregator seda)
 target_link_libraries(aggregator seda-comm)
 target_link_libraries(aggregator ${Boost_LIBRARIES})
 
-
 install(TARGETS aggregator DESTINATION bin)
