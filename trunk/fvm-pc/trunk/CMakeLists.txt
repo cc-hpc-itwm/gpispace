@@ -107,6 +107,9 @@ include_directories(${WE_INCLUDE_DIR})
 find_package (FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})
 
+find_package(UTIL REQUIRED)
+include_directories(${UTIL_INCLUDE_DIR})
+
 if (WITH_FAKE_PC)
   find_package (MMGR REQUIRED)
   include_directories (${MMGR_INCLUDE_DIR})

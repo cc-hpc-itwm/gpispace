@@ -18,6 +18,8 @@
 
 #include <xml/parse/util/maybe.hpp>
 
+#include <fhg/util/split.hpp>
+
 namespace we
 {
   namespace type
@@ -45,29 +47,9 @@ namespace we
           for (unsigned int i (0); i < l; ++i) { s << "  "; }
         }
 
-        static path_type split (const std::string & s, const char & sep = '.')
+        static path_type split (const key_type & s, const char & sep = '.')
         {
-          path_type path;
-          key_type key;
-
-          for ( std::string::const_iterator pos (s.begin())
-              ; pos != s.end()
-              ; ++pos
-              )
-            {
-              if (*pos == sep)
-                {
-                  path.push_back (key);
-                  key.clear();
-                }
-              else
-                {
-                  key.push_back (*pos);
-                }
-            }
-          path.push_back (key);
-
-          return path;
+          return fhg::util::split<key_type, path_type> (s, sep);
         }
       }
 

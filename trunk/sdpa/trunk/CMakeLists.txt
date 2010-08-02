@@ -55,6 +55,13 @@ else(MAYBE_FOUND)
   message(FATAL_ERROR "MAYBE could not be found but is required")
 endif(MAYBE_FOUND)
 
+include(FindUTIL)
+if (UTIL_FOUND)
+  include_directories(${UTIL_INCLUDE_DIR})
+else(UTIL_FOUND)
+  message(FATAL_ERROR "UTIL could not be found but is required")
+endif(UTIL_FOUND)
+
 # threads
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)

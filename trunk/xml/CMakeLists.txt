@@ -31,6 +31,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
+include(FindUTIL REQUIRED)
+if (UTIL_FOUND)
+  include_directories(${UTIL_INCLUDE_DIR})
+endif(UTIL_FOUND)
+
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 include(CheckCompiler)

@@ -81,6 +81,8 @@ message(STATUS "========== Add project seda")
 add_subdirectory(seda)
 message(STATUS "========== Add project sdpa")
 add_subdirectory(sdpa)
+message(STATUS "========== Add project util")
+add_subdirectory(util)
 
 ## optional components
 if (ENABLE_MONITOR_GUI)

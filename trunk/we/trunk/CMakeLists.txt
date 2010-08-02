@@ -39,6 +39,11 @@ if (MAYBE_FOUND)
   include_directories(${MAYBE_INCLUDE_DIR})
 endif(MAYBE_FOUND)
 
+include(FindUTIL REQUIRED)
+if (UTIL_FOUND)
+  include_directories(${UTIL_INCLUDE_DIR})
+endif(UTIL_FOUND)
+
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 include(CheckCompiler)
