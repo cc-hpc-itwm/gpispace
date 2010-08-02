@@ -1,10 +1,10 @@
 # -*- mode: cmake; -*-
 
-file(GLOB tc_srcs "test_*.cpp")
+file(GLOB tc_srcs "test_*.c" "test_*.cpp")
 list(SORT tc_srcs)
 foreach (tc_src ${tc_srcs})
   # get the filename without extension
-  string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "\\2" tc_name ${tc_src})
+  string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
   message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
   add_executable(${tc_name} ${tc_src})
@@ -25,7 +25,6 @@ foreach (gen_src ${gen_srcs})
   add_executable(${gen_name} ${gen_src})
   target_link_libraries(${gen_name} ${FhgLog_LIBRARY})
   target_link_libraries(${gen_name} ${Boost_LIBRARIES})
-  target_link_libraries(${gen_name} dl)
   get_target_property(LOC ${gen_name} LOCATION_)
 endforeach(gen_src ${gen_srcs})
 
