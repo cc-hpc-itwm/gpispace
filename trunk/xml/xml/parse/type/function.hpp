@@ -15,7 +15,7 @@
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 
-#include <we/type/literal.hpp>
+#include <we/type/literal/valid_name.hpp>
 #include <we/type/property.hpp>
 
 #include <we/we.hpp>

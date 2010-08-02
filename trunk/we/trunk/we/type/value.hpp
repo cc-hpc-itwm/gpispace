@@ -7,6 +7,10 @@
 #include <we/type/signature.hpp>
 #include <we/type/error.hpp>
 
+#include <we/type/literal/show.hpp>
+#include <we/type/literal/require_type.hpp>
+#include <we/type/literal/hash.hpp>
+
 #include <we/util/show.hpp>
 
 #include <string>

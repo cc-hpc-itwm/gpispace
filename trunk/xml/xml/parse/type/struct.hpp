@@ -4,7 +4,7 @@
 #define _XML_PARSE_TYPE_STRUCT_HPP
 
 #include <we/type/signature.hpp>
-#include <we/type/literal.hpp>
+#include <we/type/literal/valid_name.hpp>
 
 #include <iostream>
 #include <vector>

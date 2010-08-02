@@ -11,6 +11,7 @@
 #include <we/expr/exception.hpp>
 
 #include <we/type/literal.hpp>
+#include <we/type/literal/read.hpp>
 
 #include <we/util/show.hpp>
 

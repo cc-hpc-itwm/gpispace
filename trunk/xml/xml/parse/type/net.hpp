@@ -12,7 +12,7 @@
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 
-#include <we/type/literal/name.hpp>
+#include <we/type/literal/valid_name.hpp>
 #include <we/type/property.hpp>
 
 #include <iostream>

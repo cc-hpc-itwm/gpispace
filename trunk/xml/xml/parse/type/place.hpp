@@ -18,6 +18,7 @@
 #include <we/type/id.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
+#include <we/type/literal/default.hpp>
 
 #include <we/type/literal.hpp>
 #include <we/type/value.hpp>
