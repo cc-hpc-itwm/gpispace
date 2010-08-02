@@ -25,19 +25,19 @@ target_link_libraries(msg_sender seda seda-comm)
 
 set(test_srcs test_udp.cpp)
 add_executable(test_udp ${test_srcs})
-add_test(test_udp ${CMAKE_CURRENT_BINARY_DIR}/test_udp)
+add_test(test_sedaComm_udp ${CMAKE_CURRENT_BINARY_DIR}/test_udp)
 target_link_libraries(test_udp seda seda-comm)
 
 add_executable(test_retrans test_retransmission.cpp)
-add_test(test_retrans ${CMAKE_CURRENT_BINARY_DIR}/test_retrans)
+add_test(test_sedaComm_retrans ${CMAKE_CURRENT_BINARY_DIR}/test_retrans)
 target_link_libraries(test_retrans seda seda-comm)
 
 set(test_srcs test_persister.cpp)
 add_executable(test_persister ${test_srcs})
-add_test(test_persister ${CMAKE_CURRENT_BINARY_DIR}/test_persister)
+add_test(test_sedaComm_persister ${CMAKE_CURRENT_BINARY_DIR}/test_persister)
 target_link_libraries(test_persister seda seda-comm)
 
 set(test_srcs test_message_size.cpp)
 add_executable(test_message_size ${test_srcs})
-add_test(test_message_size ${CMAKE_CURRENT_BINARY_DIR}/test_message_size)
+add_test(test_sedaComm_message_size ${CMAKE_CURRENT_BINARY_DIR}/test_message_size)
 target_link_libraries(test_message_size seda seda-comm)

@@ -1,4 +1,10 @@
 # -*- mode: cmake; -*-
+cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
+cmake_policy(VERSION 2.6)
+if(POLICY CMP0011)
+  cmake_policy(SET CMP0011 NEW)
+endif(POLICY CMP0011)
+
 project(libmmgr)
 
 # have the full monty in makefiles
@@ -16,36 +22,38 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
-cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
+option (ENABLE_TESTS "Build with tests" YES)
+
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
+message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
+
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include (CompilerFlags)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_C_FLAGS "-std=c99 -Wall -Werror")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g -ggdb")
 set(CMAKE_C_FLAGS_PROFILE "-O0 -g -pg")
 
-option (ENABLE_TESTS "Build with tests" YES)
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
-link_directories(${CMAKE_LIBRARY_PATH})
-link_directories(${${PROJECT_NAME}_BINARY_DIR})
-
-include(CTest)
+#link_directories(${CMAKE_LIBRARY_PATH})
+#link_directories(${${PROJECT_NAME}_BINARY_DIR})
 
 # Reflect the package structure
 add_subdirectory(mmgr)
 add_subdirectory(app)
-
 if (ENABLE_TESTS)
+  include(CTest)
   add_subdirectory(tests)
 endif (ENABLE_TESTS)
-
 
 # add some files to the installation target
 INSTALL(FILES README COPYING DESTINATION
