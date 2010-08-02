@@ -10,12 +10,12 @@ static const char *showArena[2] = { "ARENA_GLOBAL", "ARENA_LOCAL" };
 static const Arena_t Other[2] = { ARENA_LOCAL, ARENA_GLOBAL };
 
 static void
-do_alloc (PDTmmgr_t PDTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
+do_alloc (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return;
 
-  AllocReturn_t AllocReturn = dtmmgr_alloc (&PDTmmgr, Handle, Arena, Size);
+  AllocReturn_t AllocReturn = dtmmgr_alloc (&DTmmgr, Handle, Arena, Size);
 
   printf ("ALLOC: (Handle = " FMT_Handle_t ", Arena = %s, Size = " FMT_Size_t
           ") => ", Handle, showArena[Arena], Size);
@@ -27,7 +27,7 @@ do_alloc (PDTmmgr_t PDTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
       {
         Offset_t Offset = -1;
 
-        dtmmgr_offset_size (PDTmmgr, Handle, Arena, &Offset, NULL);
+        dtmmgr_offset_size (DTmmgr, Handle, Arena, &Offset, NULL);
 
         printf (", Offset = " FMT_Offset_t, Offset);
       }
@@ -54,15 +54,15 @@ do_alloc (PDTmmgr_t PDTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
 }
 
 static void
-do_free (PDTmmgr_t PDTmmgr, Handle_t Handle, Arena_t Arena)
+do_free (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return;
 
   printf ("FREE: (Handle = " FMT_Handle_t ", Arena = %s) => ", Handle,
           showArena[Arena]);
 
-  switch (dtmmgr_free (&PDTmmgr, Handle, Arena))
+  switch (dtmmgr_free (&DTmmgr, Handle, Arena))
     {
     case RET_SUCCESS:
       printf ("RET_SUCCESS");

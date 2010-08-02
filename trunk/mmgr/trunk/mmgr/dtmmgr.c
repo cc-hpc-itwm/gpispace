@@ -98,14 +98,14 @@ dtmmgr_free (PDTmmgr_t PDTmmgr, const Handle_t Handle, const Arena_t Arena)
 }
 
 HandleReturn_t
-dtmmgr_offset_size (const PDTmmgr_t PDTmmgr, const Handle_t Handle,
+dtmmgr_offset_size (const DTmmgr_t DTmmgr, const Handle_t Handle,
                     const Arena_t Arena, POffset_t POffset,
                     PMemSize_t PMemSize)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return RET_FAILURE;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   MemSize_t Size = 0;
 
@@ -130,23 +130,23 @@ dtmmgr_offset_size (const PDTmmgr_t PDTmmgr, const Handle_t Handle,
 }
 
 MemSize_t
-dtmmgr_memsize (const PDTmmgr_t PDTmmgr)
+dtmmgr_memsize (const DTmmgr_t DTmmgr)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   return pdtmmgr->mem_size;
 }
 
 MemSize_t
-dtmmgr_memfree (const PDTmmgr_t PDTmmgr)
+dtmmgr_memfree (const DTmmgr_t DTmmgr)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   MemSize_t FreeGlobal = tmmgr_memfree (pdtmmgr->arena[ARENA_GLOBAL]);
   MemSize_t FreeLocal = tmmgr_memfree (pdtmmgr->arena[ARENA_LOCAL]);
@@ -155,67 +155,67 @@ dtmmgr_memfree (const PDTmmgr_t PDTmmgr)
 }
 
 MemSize_t
-dtmmgr_memused (const PDTmmgr_t PDTmmgr)
+dtmmgr_memused (const DTmmgr_t DTmmgr)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
-  return pdtmmgr->mem_size - dtmmgr_memfree (PDTmmgr);
+  return pdtmmgr->mem_size - dtmmgr_memfree (DTmmgr);
 }
 
 Count_t
-dtmmgr_numhandle (const PDTmmgr_t PDTmmgr, const Arena_t Arena)
+dtmmgr_numhandle (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   return tmmgr_numhandle (pdtmmgr->arena[Arena]);
 }
 
 Count_t
-dtmmgr_numalloc (const PDTmmgr_t PDTmmgr, const Arena_t Arena)
+dtmmgr_numalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   return tmmgr_numalloc (pdtmmgr->arena[Arena]);
 }
 
 Count_t
-dtmmgr_numfree (const PDTmmgr_t PDTmmgr, const Arena_t Arena)
+dtmmgr_numfree (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   return tmmgr_numfree (pdtmmgr->arena[Arena]);
 }
 
 MemSize_t
-dtmmgr_sumalloc (const PDTmmgr_t PDTmmgr, const Arena_t Arena)
+dtmmgr_sumalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   return tmmgr_sumalloc (pdtmmgr->arena[Arena]);
 }
 
 MemSize_t
-dtmmgr_sumfree (const PDTmmgr_t PDTmmgr, const Arena_t Arena)
+dtmmgr_sumfree (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   return tmmgr_sumfree (pdtmmgr->arena[Arena]);
 }
@@ -266,16 +266,16 @@ dtmmgr_defrag (PDTmmgr_t PDTmmgr, const Arena_t Arena,
 }
 
 void
-dtmmgr_info (const PDTmmgr_t PDTmmgr)
+dtmmgr_info (const DTmmgr_t DTmmgr)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
-  MemSize_t memsize = dtmmgr_memsize (PDTmmgr);
-  MemSize_t memused = dtmmgr_memused (PDTmmgr);
-  MemSize_t memfree = dtmmgr_memfree (PDTmmgr);
+  MemSize_t memsize = dtmmgr_memsize (DTmmgr);
+  MemSize_t memused = dtmmgr_memused (DTmmgr);
+  MemSize_t memfree = dtmmgr_memfree (DTmmgr);
 
   printf ("*****BOTH: used = " FMT_MemSize_t " free = " FMT_MemSize_t
           " size = " FMT_MemSize_t "\n", memused, memfree, memsize);
@@ -284,12 +284,12 @@ dtmmgr_info (const PDTmmgr_t PDTmmgr)
 }
 
 void
-dtmmgr_status (const PDTmmgr_t PDTmmgr)
+dtmmgr_status (const DTmmgr_t DTmmgr)
 {
-  if (PDTmmgr == NULL)
+  if (DTmmgr == NULL)
     return;
 
-  pdtmmgr_t pdtmmgr = PDTmmgr;
+  pdtmmgr_t pdtmmgr = DTmmgr;
 
   FOR_ARENA (Arena) tmmgr_status (pdtmmgr->arena[Arena], showArena[Arena]);
 }

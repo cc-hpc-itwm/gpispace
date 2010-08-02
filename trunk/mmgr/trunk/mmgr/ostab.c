@@ -4,6 +4,8 @@
 #include <mmgr/ostab.h>
 #include <mmgr/unused.h>
 
+#include <assert.h>
+
 typedef struct
 {
   Offset_t offset;
@@ -14,7 +16,7 @@ Bool_t
 ostab_ins (POStab_t postab, const Key_t Key, const Offset_t Offset,
            const Size_t Size)
 {
-  Bool_t was_there;
+  Bool_t was_there = False;
   const PValue_t PVal = trie_ins (postab, Key, &was_there);
   const pdata_t data =
     (was_there == True) ? ((pdata_t) (*PVal)) : malloc (sizeof (data_t));
@@ -102,6 +104,8 @@ typedef struct
 static void
 fWork (const Key_t Key, const PValue_t PVal, void *Pwd)
 {
+  assert (PVal != NULL);
+
   const pdata_t pdata = (pdata_t) (*PVal);
   const pwork_dat_t pwd = Pwd;
 

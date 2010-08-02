@@ -2,8 +2,6 @@
 #ifndef BOOL_H
 #define BOOL_H
 
-#include <mmgr/null.h>
-
 #ifdef __cplusplus
 extern "C"
 {
