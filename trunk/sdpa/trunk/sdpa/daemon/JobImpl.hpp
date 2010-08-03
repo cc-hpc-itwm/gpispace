@@ -28,9 +28,6 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/access.hpp>
 
-#include <sstream>
-#include <map>
-
 namespace sdpa { namespace daemon {
     class JobImpl : public Job /*, public sdpa::fsm::JobFSMActions*/  {
     public:
