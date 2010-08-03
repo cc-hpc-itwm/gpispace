@@ -112,35 +112,6 @@ else(WE_FOUND)
   message(FATAL_ERROR "WE could not be found but is required")
 endif(WE_FOUND)
 
-# GWES/GWDL
-if( USE_GWES)
-include(FindGwes)
-# check for gwes/gwdl
-if (GWES_FOUND)
-  message(STATUS "Found Gwes: Inc:${GWES_INCLUDE_DIR} Lib:${GWES_LIBRARY}")
-  include_directories(${GWES_INCLUDE_DIR})
-else(GWES_FOUND)
-  message(FATAL_ERROR "Gwes could not be found!")
-endif (GWES_FOUND)
-
-if (GWDL_FOUND)
-  message(STATUS "Found Gwdl: Inc:${GWDL_INCLUDE_DIR} Lib:${GWDL_LIBRARY}")
-  include_directories(${GWDL_INCLUDE_DIR})
-else(GWDL_FOUND)
-  message(FATAL_ERROR "Gwdl could not be found!")
-endif (GWDL_FOUND)
-
-## find libxml2
-find_package(LibXml2 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
-message(STATUS "LibXml2: Inc:${LIBXML2_INCLUDE_DIR} Lib:${LIBXML2_LIBRARIES}")
-
-## find libxslt
-find_package(LibXslt REQUIRED)
-include_directories(${LIBXSLT_INCLUDE_DIR})
-message(STATUS "LibXslt: Inc:${LIBXSLT_INCLUDE_DIR} Lib:${LIBXSLT_LIBRARIES}")
-endif (USE_GWES)
-
 ## find zlib
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
