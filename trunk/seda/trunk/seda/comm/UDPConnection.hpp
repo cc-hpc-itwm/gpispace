@@ -90,7 +90,7 @@ namespace seda { namespace comm {
     boost::thread *service_thread_;
     boost::barrier barrier_;
 
-    enum { max_length = (2<<23) };
+    enum { max_length = (2<<16) };
     char data_[max_length];
 
     // asynchronous receive implementation
