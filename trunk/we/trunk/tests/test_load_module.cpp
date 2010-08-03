@@ -12,7 +12,7 @@ int main (int ac, char **av)
   if (ac < 2)
   {
     std::cerr << "usage: " << av[0] << " module..." << std::endl;
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
   }
 
   std::list<std::string> failed;
