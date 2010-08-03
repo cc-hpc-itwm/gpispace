@@ -23,12 +23,12 @@ static void run ( void *
   const double & a_start_x
     (value::get_literal_value<double> (value::get_field ("start.x", a)));
   const double & a_start_y
-    (value::get_literal_value<double> (value::get_field ("y", a_start)));
+    (value::get_literal_value<double> (value::get_field ("start.y", a)));
 
   const double & a_end_x
-    (value::get_literal_value<double> (value::get_field ("x", a_end)));
+    (value::get_literal_value<double> (value::get_field ("end.x", a)));
   const double & a_end_y
-    (value::get_literal_value<double> (value::get_field ("y", a_end)));
+    (value::get_literal_value<double> (value::get_field ("end.y", a)));
 
   LOG (INFO, "a_start_x " << a_start_x);
   LOG (INFO, "a_start_y " << a_start_y);

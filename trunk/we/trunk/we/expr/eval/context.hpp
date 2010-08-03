@@ -74,25 +74,6 @@ namespace expr
           }
       }
 
-      const value::type & find ( typename key_vec_t::const_iterator pos
-                               , const typename key_vec_t::const_iterator end
-                               , const value::type & store
-                               ) const
-      {
-        ++pos;
-
-        if (pos == end)
-          return store;
-        else
-          return find ( pos
-                      , end
-                      , boost::apply_visitor
-                        ( value::visitor::get_field (fhg::util::show (*pos))
-                        , store
-                        )
-                      );
-      }
-
     public:
       typedef typename container_t::const_iterator const_iterator;
       typedef typename container_t::iterator iterator;
@@ -136,12 +117,15 @@ namespace expr
               const const_iterator pos (container.find (key_vec[0]));
 
               if (pos == container.end())
-                throw exception::eval::missing_binding<Key> (key_vec[0]);
+                {
+                  throw exception::eval::missing_binding<Key> (key_vec[0]);
+                }
               else
-                return find ( key_vec.begin()
-                            , key_vec.end()
-                            , pos->second
-                            );
+                {
+                  value::visitor::get_field get (key_vec);
+
+                  return boost::apply_visitor (get, pos->second);
+                }
             }
           }
       }
