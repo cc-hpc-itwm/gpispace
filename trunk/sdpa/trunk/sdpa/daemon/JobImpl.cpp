@@ -41,7 +41,7 @@ namespace sdpa { namespace daemon {
                      const sdpa::job_desc_t desc,
                      const sdpa::daemon::IComm* pHandler,
                      const sdpa::job_id_t &parent)
-        : SDPA_INIT_LOGGER( string("Job ")+ id.str())
+        : SDPA_INIT_LOGGER("Job")
 		, id_(id)
 		, desc_(desc)
 		, parent_(parent)

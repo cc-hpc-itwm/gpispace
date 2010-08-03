@@ -34,7 +34,7 @@ namespace sdpa { namespace fsm { namespace smc {
 					const sdpa::job_desc_t desc = "",
 				    const sdpa::daemon::IComm* pHandler = NULL,
 				    const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
-			: JobImpl(id, desc, pHandler, parent), SDPA_INIT_LOGGER("sdpa.fsm.smc.JobFSM"), m_fsmContext(*this)
+			: JobImpl(id, desc, pHandler, parent), m_fsmContext(*this)
 			{
                           SDPA_LOG_DEBUG("Job state machine created: " << id);
 			}
@@ -86,7 +86,6 @@ namespace sdpa { namespace fsm { namespace smc {
 			//friend class sdpa::tests::WorkerSerializationTest;
 
 		private:
-			SDPA_DECLARE_LOGGER();
 			JobFSMContext m_fsmContext;
 			sdpa::status_t m_status_;
 	};
