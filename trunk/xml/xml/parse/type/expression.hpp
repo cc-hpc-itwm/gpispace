@@ -6,7 +6,7 @@
 #include <string>
 #include <iostream>
 
-#include <xml/parse/util/join.hpp>
+#include <fhg/util/join.hpp>
 
 namespace xml
 {
@@ -28,7 +28,7 @@ namespace xml
 
         std::string expression (void) const
         {
-          return util::join (expressions.begin(), expressions.end(), "; ");
+          return fhg::util::join (expressions.begin(), expressions.end(), "; ");
         }
       };
 

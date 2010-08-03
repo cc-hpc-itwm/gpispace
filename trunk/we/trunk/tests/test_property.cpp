@@ -2,7 +2,7 @@
 
 #include <we/type/property.hpp>
 
-#include <xml/parse/util/join.hpp>
+#include <fhg/util/join.hpp>
 #include <xml/parse/util/maybe.hpp>
 
 #include <iostream>
@@ -125,7 +125,7 @@ main ()
       const prop::path_type path (elem.first);
       const prop::value_type value (elem.second);
 
-      std::cout << xml::parse::util::join (path, ".") << " => " << value
+      std::cout << fhg::util::join (path, ".") << " => " << value
                 << std::endl
         ;
 

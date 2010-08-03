@@ -20,6 +20,8 @@
 
 #include <we/we.hpp>
 
+#include <fhg/util/join.hpp>
+
 #include <iostream>
 
 namespace xml
@@ -390,7 +392,7 @@ namespace xml
         {
           return cond.empty() 
             ? "true"
-            : util::join (cond.begin(), cond.end(), " & ", "(", ")")
+            : fhg::util::join (cond.begin(), cond.end(), " & ", "(", ")")
             ;
         }
 

@@ -11,7 +11,7 @@
 #include <we/type/property.hpp>
 #include <we/type/value.hpp>
 
-#include <xml/parse/util/join.hpp>
+#include <fhg/util/join.hpp>
 
 namespace xml
 {
@@ -274,7 +274,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "property " << util::join (key, ".")
+          s << "property " << fhg::util::join (key, ".")
             << " value " << old_val
             << " overwritten by value " << new_val
             << " in " << path

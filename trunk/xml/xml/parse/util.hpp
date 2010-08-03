@@ -5,7 +5,6 @@
 
 #include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/show_node_type.hpp>
-#include <xml/parse/util/join.hpp>
 #include <xml/parse/util/skip.hpp>
 #include <xml/parse/util/expect.hpp>
 #include <xml/parse/util/required.hpp>

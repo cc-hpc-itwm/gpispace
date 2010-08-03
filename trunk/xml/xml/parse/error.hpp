@@ -9,7 +9,7 @@
 
 #include <we/we.hpp>
 
-#include <xml/parse/util/join.hpp>
+#include <fhg/util/join.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -989,7 +989,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << msg << " for property " << util::join (key, ".")
+          s << msg << " for property " << fhg::util::join (key, ".")
             << " in " << path
             ;
        
