@@ -50,7 +50,7 @@ namespace fhg { namespace log {
 #define FHGLOG_SETUP(args...)                                           \
   do                                                                    \
   {                                                                     \
-     if (#args[0])                                                      \
+     if (! #args[0])                                                    \
      {                                                                  \
         fhg::log::configure();                                          \
      }                                                                  \
@@ -59,7 +59,7 @@ namespace fhg { namespace log {
         fhg::log::configure(args);                                      \
      }                                                                  \
   } while (0)
-    
+
 #define __LOG(logger, level, msg)                                       \
     do {                                                                \
       using namespace fhg::log;                                         \
