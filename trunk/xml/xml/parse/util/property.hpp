@@ -7,7 +7,7 @@
 #include <xml/parse/state.hpp>
 #include <xml/parse/warning.hpp>
 
-#include <xml/parse/util/maybe.hpp>
+#include <fhg/util/maybe.hpp>
 
 #include <we/type/property.hpp>
 
@@ -27,7 +27,8 @@ namespace xml
                         , const property::value_type & value
                         )
         {
-          const maybe<property::mapped_type> old (prop.set (path, value));
+          const fhg::util::maybe<property::mapped_type> old
+            (prop.set (path, value));
 
           if (old.isJust())
             {

@@ -5,12 +5,15 @@
 
 #include <xml/parse/types.hpp>
 #include <xml/parse/state.hpp>
+
 #include <xml/parse/util/unique.hpp>
 
 #include <vector>
 
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
+
+#include <fhg/util/maybe.hpp>
 
 #include <we/type/literal/valid_name.hpp>
 #include <we/type/property.hpp>
@@ -28,10 +31,12 @@ namespace xml
       struct net_type
       {
       private:
+        typedef fhg::util::maybe<std::string> maybe_string_type;
+
         xml::util::unique<place_type> _places;
         xml::util::unique<transition_type> _transitions;
-        xml::util::unique<function_type,maybe<std::string> > _functions;
-        xml::util::unique<function_type,maybe<std::string> > _templates;
+        xml::util::unique<function_type,maybe_string_type> _functions;
+        xml::util::unique<function_type,maybe_string_type> _templates;
         xml::util::unique<specialize_type> _specializes;
 
       public:
@@ -60,12 +65,12 @@ namespace xml
 
         bool get_function (const std::string & name, function_type & fun) const
         {
-          return _functions.by_key (maybe<std::string>(name), fun);
+          return _functions.by_key (maybe_string_type(name), fun);
         }
 
         bool get_template (const std::string & name, function_type & tmpl) const
         {
-          return _templates.by_key (maybe<std::string>(name), tmpl);
+          return _templates.by_key (maybe_string_type(name), tmpl);
         }
 
         // ***************************************************************** //

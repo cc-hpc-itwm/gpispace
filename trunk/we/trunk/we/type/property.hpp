@@ -16,8 +16,7 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 
-#include <xml/parse/util/maybe.hpp>
-
+#include <fhg/util/maybe.hpp>
 #include <fhg/util/split.hpp>
 
 namespace we
@@ -236,20 +235,21 @@ namespace we
         }
 
         template<typename IT>
-        const maybe<const value_type &>
+        const fhg::util::maybe<const value_type &>
         get_maybe_val (IT pos, IT end, IT zero) const
         {
           try
             {
-              return maybe<const value_type &> (get_val (pos, end, zero));
+              return
+                fhg::util::maybe<const value_type &> (get_val (pos, end, zero));
             }
           catch (const exception::missing_binding &)
             {
-              return maybe<const value_type &>();
+              return fhg::util::maybe<const value_type &>();
             }
           catch (const exception::not_a_val &)
             {
-              return maybe<const value_type &>();
+              return fhg::util::maybe<const value_type &>();
             }
         }
 
@@ -263,9 +263,12 @@ namespace we
         // ----------------------------------------------------------------- //
 
         template<typename IT>
-        maybe<mapped_type> set (IT pos, IT end, const value_type & val)
+        fhg::util::maybe<mapped_type> set ( IT pos
+                                          , IT end
+                                          , const value_type & val
+                                          )
         {
-          maybe<mapped_type> old_value;
+          fhg::util::maybe<mapped_type> old_value;
 
           if (pos == end)
             {
@@ -298,13 +301,13 @@ namespace we
           return old_value;
         }
 
-        maybe<mapped_type>
+        fhg::util::maybe<mapped_type>
         set (const path_type & path, const value_type & val)
         {
           return set (path.begin(), path.end(), val);
         }
 
-        maybe<mapped_type>
+        fhg::util::maybe<mapped_type>
         set (const std::string & path, const value_type & val)
         {
           return set (util::split (path), val);
@@ -349,19 +352,19 @@ namespace we
         // ----------------------------------------------------------------- //
 
         template<typename IT>
-        const maybe<const value_type &>
+        const fhg::util::maybe<const value_type &>
         get_maybe_val (IT pos, IT end) const
         {
           return get_maybe_val (pos, end, pos);
         }
 
-        const maybe<const value_type &>
+        const fhg::util::maybe<const value_type &>
         get_maybe_val (const path_type & path) const
         {
           return get_maybe_val (path.begin(), path.end());
         }
 
-        const maybe<const value_type &>
+        const fhg::util::maybe<const value_type &>
         get_maybe_val (const std::string & path) const
         {
           return get_maybe_val (util::split (path));

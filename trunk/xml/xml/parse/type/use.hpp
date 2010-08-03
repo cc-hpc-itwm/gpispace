@@ -4,7 +4,6 @@
 #define _XML_PARSE_TYPE_USE_HPP
 
 #include <xml/parse/types.hpp>
-#include <xml/parse/util/maybe.hpp>
 
 #include <iostream>
 

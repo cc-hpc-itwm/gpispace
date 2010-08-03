@@ -9,7 +9,7 @@
 
 #include <boost/program_options.hpp>
 
-#include <xml/parse/util/read_bool.hpp>
+#include <fhg/util/read_bool.hpp>
 
 namespace we { namespace type {
     namespace optimize
@@ -53,7 +53,7 @@ namespace we { namespace type {
 #define GET_PROP(x)                                                       \
             else if (path.size() == 1 && path[0] == _O ## x)              \
               {                                                           \
-                _ ## x = ::xml::parse::read_bool (value); return true;    \
+                _ ## x = fhg::util::read_bool (value); return true;       \
               }
 
             GET_PROP(simple_pipe_elimination)

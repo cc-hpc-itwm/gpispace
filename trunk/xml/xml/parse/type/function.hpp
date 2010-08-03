@@ -5,7 +5,6 @@
 
 #include <xml/parse/types.hpp>
 
-#include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/property.hpp>
@@ -21,6 +20,7 @@
 #include <we/we.hpp>
 
 #include <fhg/util/join.hpp>
+#include <fhg/util/maybe.hpp>
 
 #include <iostream>
 
@@ -354,8 +354,8 @@ namespace xml
 
         struct_vec_type structs;
 
-        maybe<std::string> name;
-        maybe<bool> internal;
+        fhg::util::maybe<std::string> name;
+        fhg::util::maybe<bool> internal;
 
         cond_vec_type cond;
 

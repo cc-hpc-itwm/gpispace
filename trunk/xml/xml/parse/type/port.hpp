@@ -6,7 +6,6 @@
 #include <string>
 #include <iostream>
 
-#include <xml/parse/util/maybe.hpp>
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
 
@@ -14,6 +13,8 @@
 #include <boost/variant.hpp>
 
 #include <we/type/property.hpp>
+
+#include <fhg/util/maybe.hpp>
 
 namespace xml
 {
@@ -26,7 +27,7 @@ namespace xml
       public:
         std::string name;
         std::string type;
-        maybe<std::string> place;
+        fhg::util::maybe<std::string> place;
         we::type::property::type prop;
         int level;
 
@@ -34,7 +35,7 @@ namespace xml
 
         port_type ( const std::string & _name
                   , const std::string & _type
-                  , const maybe<std::string> & _place
+                  , const fhg::util::maybe<std::string> & _place
                   , const int & _level
                   )
           : name (_name)

@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_MAYBE_HPP
-#define _XML_PARSE_MAYBE_HPP
+#ifndef _XML_FHG_UTIL_MAYBE_HPP
+#define _XML_FHG_UTIL_MAYBE_HPP
 
 #include <we/util/show.hpp>
 
@@ -14,151 +14,139 @@ namespace fhg
 {
   namespace util
   {
-    namespace maybe
+    namespace detail
     {
       struct Nothing {};
 
-      namespace visitor
+      class isJust : public boost::static_visitor<bool>
       {
-        class isJust : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator () (const Nothing &) const { return false; }
-
-          template<typename T>
-          bool operator () (const T &) const { return true; }
-        };
-
-        class isNothing : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator () (const Nothing &) const { return true; }
-          
-          template<typename T>
-          bool operator () (const T &) const { return false; }
-        };
+      public:
+        bool operator () (const Nothing &) const { return false; }
 
         template<typename T>
-        class get_with_default 
-          : public boost::static_visitor
-                   <typename boost::call_traits<T>::const_reference>
-        {
-        private:
-          typedef
-          typename boost::call_traits<T>::const_reference const_reference;
+        bool operator () (const T &) const { return true; }
+      };
 
-          const_reference dflt;
-
-        public:
-          get_with_default (const_reference _dflt) : dflt (_dflt) {}
-
-          const_reference operator () (const Nothing &) const { return dflt; }
-          const_reference operator () (const_reference x) const { return x; }
-        };
+      class isNothing : public boost::static_visitor<bool>
+      {
+      public:
+        bool operator () (const Nothing &) const { return true; }
 
         template<typename T>
-        class get
-          : public boost::static_visitor
-                   <typename boost::call_traits<T>::const_reference>
-        {
-        private:
-          typedef
-          typename boost::call_traits<T>::const_reference const_reference;
-
-          const_reference operator () (const Nothing &) const 
-          {
-            throw std::runtime_error ("maybe: Nothing");
-          }
-          const_reference operator () (const_reference x) const { return x; }
-        };
-      }
+        bool operator () (const T &) const { return false; }
+      };
 
       template<typename T>
-      struct type
+      class get_with_default : public boost::static_visitor<T>
       {
       private:
-        typedef typename boost::call_traits<T>::const_reference const_reference;
-
-        boost::variant<Nothing, T> m;
+        T dflt;
 
       public:
-        type () : m () {}
-        type (const_reference t) : m (t) {}
+        get_with_default (T _dflt) : dflt (_dflt) {}
 
-        bool isJust (void) const 
+        T operator () (const Nothing &) const { return dflt; }
+        T operator () (T x) const { return x; }
+      };
+
+      template<typename T>
+      class get : public boost::static_visitor<T>
+      {
+      public:
+        T operator () (const Nothing &) const
         {
-          return boost::apply_visitor (visitor::isJust(), m);
+          throw std::runtime_error ("maybe: Nothing");
         }
-
-        bool isNothing (void) const 
-        {
-          return boost::apply_visitor (visitor::isNothing(), m);
-        }
-
-        operator bool () const { return isJust(); }
-        
-        const_reference operator * (void) const
-        {
-          return boost::apply_visitor (maybe_detail::get<T>(), m);
-        }
-
-        const_reference get_with_default (const_reference dflt) const
-        {
-          return
-            boost::apply_visitor (maybe_detail::get_with_default<T> (dflt), m);
-        }
-
-        void operator = (const_reference x)
-        {
-          m = x;
-        }
-
-        template<typename U>
-        friend std::ostream & operator << (std::ostream &, const maybe<U> &);
+        T  operator () (T x) const { return x; }
       };
     }
+
+    template<typename T>
+    struct maybe
+    {
+    private:
+      typedef boost::variant <detail::Nothing, T> maybe_type;
+      typedef typename boost::call_traits<T>::const_reference const_reference;
+
+      maybe_type m;
+
+    public:
+      maybe () : m () {}
+      maybe (const_reference t) : m (t) {}
+
+      bool isJust (void) const
+      {
+        return boost::apply_visitor (detail::isJust(), m);
+      }
+
+      bool isNothing (void) const
+      {
+        return boost::apply_visitor (detail::isNothing(), m);
+      }
+
+      const_reference operator * (void) const
+      {
+        return boost::apply_visitor (detail::get<const_reference>(), m);
+      }
+
+      const_reference get_with_default (const_reference dflt) const
+      {
+        return boost::apply_visitor 
+          ( detail::get_with_default<const_reference> (dflt)
+          , m
+          );
+      }
+
+      void operator = (const_reference x)
+      {
+        m = x;
+      }
+
+      template<typename U>
+      friend std::ostream & operator << (std::ostream &, const maybe<U> &);
+    };
+
+    template<typename T>
+    inline std::size_t hash_value (const maybe<T> & x)
+    {
+      boost::hash<T> hasher;
+        
+      return x.isNothing() ? 0 : (1 + hasher (*x));
+    };
+
+    template<typename T>
+    inline bool operator == (const maybe<T> & x, const maybe<T> & y)
+    {
+      return x.isNothing()
+        ? (y.isNothing() ? true : false)
+        : (y.isNothing() ? false : (*x == *y))
+        ;
+    }
+
+    template<typename T>
+    std::ostream & operator << (std::ostream & s, const maybe<T> & m)
+    {
+      return s << (m.isNothing() ? "Nothing" : ("Just " + ::util::show(*m)));
+    };
+
+    template<typename T>
+    maybe<T> Nothing (void)
+    {
+      return maybe<T>();
+    }
+
+    template<typename T>
+    maybe<T> Just (const T & t)
+    {
+      return maybe<T>(t);
+    }
+
+    template<typename T, typename U>
+    maybe<U> fmap (U (*f)(const T &), const maybe<T> & m)
+    {
+      return m.isNothing() ? Nothing<U>() : Just<U>(f (*m));
+    }
   }
-}
-
-template<typename T>
-inline std::size_t hash_value (const maybe<T> & x)
-{
-  boost::hash<T> hasher;
-
-  return x.isNothing() ? 0 : (1 + hasher (*x));
-};
-
-template<typename T>
-inline bool operator == (const maybe<T> & x, const maybe<T> & y)
-{
-  return x.isNothing()
-    ? (y.isNothing() ? true : false)
-    : (y.isNothing() ? false : (*x == *y))
-    ;
-}
-
-template<typename T>
-std::ostream & operator << (std::ostream & s, const maybe<T> & m)
-{
-  return s << (m.isNothing() ? "Nothing" : ("Just " + ::util::show(*m)));
-};
-
-template<typename T>
-maybe<T> Nothing (void)
-{
-  return maybe<T>();
-}
-
-template<typename T>
-maybe<T> Just (const T & t)
-{
-  return maybe<T>(t);
-}
-
-template<typename T, typename U>
-maybe<U> fmap (U (*f)(const T &), const maybe<T> & m)
-{
-  return m.isNothing() ? Nothing<U>() : Just<U>(f (*m));
 }
 
 #endif

@@ -6,7 +6,6 @@
 #include <xml/parse/types.hpp>
 #include <xml/parse/error.hpp>
 
-#include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/weparse.hpp>
@@ -21,6 +20,8 @@
 
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
+
+#include <fhg/util/maybe.hpp>
 
 namespace xml
 {
@@ -167,9 +168,9 @@ namespace xml
 
         cond_vec_type cond;
 
-        maybe<petri_net::prio_t> priority;
+        fhg::util::maybe<petri_net::prio_t> priority;
 
-        maybe<bool> finline;
+        fhg::util::maybe<bool> finline;
 
         // ***************************************************************** //
 

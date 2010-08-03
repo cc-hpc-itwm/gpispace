@@ -21,8 +21,9 @@
 
 #include <xml/parse/warning.hpp>
 #include <xml/parse/error.hpp>
-#include <xml/parse/util/read_bool.hpp>
 #include <xml/parse/util/weparse.hpp>
+
+#include <fhg/util/read_bool.hpp>
 
 // ************************************************************************* //
 
@@ -280,10 +281,10 @@ namespace xml
               _search_path.push_back (value); return true;
             }
 
-#define GET_PROP(x)                                        \
-          else if (path.size() == 2 && path[1] == _O ## x) \
-            {                                              \
-              _ ## x = read_bool (value); return true;     \
+#define GET_PROP(x)                                               \
+          else if (path.size() == 2 && path[1] == _O ## x)        \
+            {                                                     \
+              _ ## x = fhg::util::read_bool (value); return true; \
             }
 
           GET_PROP (ignore_properties)

@@ -18,6 +18,9 @@
 #include <we/type/property.hpp>
 #include <we/util/read.hpp>
 
+#include <fhg/util/maybe.hpp>
+#include <fhg/util/read_bool.hpp>
+
 #include <boost/lexical_cast.hpp>
 
 // ************************************************************************* //
@@ -341,7 +344,8 @@ namespace xml
       f.path = state.file_in_progress();
       f.level = state.level();
       f.name = optional (node, "name");
-      f.internal = fmap<std::string, bool>( read_bool
+      f.internal =
+        fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                           , optional (node, "internal")
                                           );
       f.was_template = false;
@@ -524,7 +528,8 @@ namespace xml
                                                     , state.file_in_progress()
                                                     )
                                          );
-                  const maybe<std::string> as (optional (child, "as"));
+                  const fhg::util::maybe<std::string> as
+                    (optional (child, "as"));
 
                   type::function_type fun (function_include (file, state));
 
@@ -560,7 +565,8 @@ namespace xml
                                                     , state.file_in_progress()
                                                     )
                                          );
-                  const maybe<std::string> as (optional (child, "as"));
+                  const fhg::util::maybe<std::string> as
+                    (optional (child, "as"));
 
                   type::function_type tmpl (template_include (file, state));
 
@@ -634,7 +640,7 @@ namespace xml
       type::place_type p
         ( validate_prefix (name, "place", state.file_in_progress())
         , required ("place_type", node, "type", state.file_in_progress())
-        , fmap<std::string, petri_net::capacity_t>
+        , fhg::util::fmap<std::string, petri_net::capacity_t>
           ( &::we::util::reader<petri_net::capacity_t>::read
           , optional (node, "capacity")
           )
@@ -770,7 +776,8 @@ namespace xml
                                                    , state.file_in_progress()
                                                    )
                                         );
-                  const maybe<std::string> value (optional (child, "value"));
+                  const fhg::util::maybe<std::string>
+                    value (optional (child, "value"));
                   const std::vector<std::string> cdata
                     (parse_cdata (child, state.file_in_progress()));
 
@@ -1199,13 +1206,13 @@ namespace xml
       t.path = state.file_in_progress();
       t.level = state.level();
       t.name = validate_prefix (name, "transition", state.file_in_progress());
-      t.priority = fmap<std::string, petri_net::prio_t>
+      t.priority = fhg::util::fmap<std::string, petri_net::prio_t>
         ( boost::lexical_cast<petri_net::prio_t>
         , optional (node, "priority")
         );
-      t.finline = fmap<std::string, bool>( read_bool
-                                         , optional (node, "inline")
-                                         );
+      t.finline = fhg::util::fmap<std::string, bool>( fhg::util::read_bool
+                                                    , optional (node, "inline")
+                                                    );
 
       for ( xml_node_type * child (node->first_node())
           ; child

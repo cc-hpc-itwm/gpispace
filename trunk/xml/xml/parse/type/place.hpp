@@ -12,7 +12,6 @@
 #include <xml/parse/state.hpp>
 #include <xml/parse/error.hpp>
 
-#include <xml/parse/util/maybe.hpp>
 #include <xml/parse/util/weparse.hpp>
 
 #include <we/type/id.hpp>
@@ -29,6 +28,8 @@
 
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
+
+#include <fhg/util/maybe.hpp>
 
 namespace xml
 {
@@ -214,7 +215,7 @@ namespace xml
       public:
         std::string name;
         std::string type;
-        maybe<petri_net::capacity_t> capacity;
+        fhg::util::maybe<petri_net::capacity_t> capacity;
         std::vector<token_type> tokens;
         value_vec_type values;
         signature::type sig;
@@ -227,7 +228,7 @@ namespace xml
 
         place_type ( const std::string & _name
                    , const std::string & _type
-                   , const maybe<petri_net::capacity_t> _capacity
+                   , const fhg::util::maybe<petri_net::capacity_t> _capacity
                    )
           : name (_name)
           , type (_type)
