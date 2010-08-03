@@ -30,9 +30,6 @@ endforeach(tc_src ${tc_srcs})
 find_package(WE REQUIRED)
 include_directories(${WE_INCLUDE_DIR})
 
-find_package(MAYBE REQUIRED)
-include_directories(${MAYBE_INCLUDE_DIR})
-
 find_package(UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
 
