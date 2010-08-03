@@ -1,12 +1,7 @@
 #ifndef SDPA_TYPES_HPP
 #define SDPA_TYPES_HPP 1
 
-#include <iostream>
 #include <string>
-#include <list>
-#include <map>
-#include <set>
-
 #include <sdpa/JobId.hpp>
 
 namespace sdpa {
