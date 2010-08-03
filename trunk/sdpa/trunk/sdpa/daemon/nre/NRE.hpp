@@ -80,7 +80,7 @@ namespace sdpa {
 
 		virtual ~NRE()
 		{
-			SDPA_LOG_DEBUG("NRE destructor called ...");
+                  DLOG(TRACE, "NRE destructor called ...");
 
 			daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
