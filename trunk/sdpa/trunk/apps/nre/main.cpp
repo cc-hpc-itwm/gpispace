@@ -18,6 +18,8 @@ using namespace std;
 
 int main (int argc, char **argv)
 {
+  FHGLOG_SETUP();
+
 	string nreName;
 	string nreUrl;
 	string aggName;
@@ -52,7 +54,6 @@ int main (int argc, char **argv)
     <<" having the master "<<aggName<<"("<<aggUrl<<")"<<std::endl
     <<" with the nre-worker running at "<<workerUrl<<std::endl;
 
-  fhg::log::Configurator::configure();
 
   try {
     sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
