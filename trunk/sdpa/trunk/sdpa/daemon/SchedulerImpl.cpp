@@ -507,6 +507,11 @@ void SchedulerImpl::stop()
    m_thread.join();
 
    SDPA_LOG_DEBUG("Scheduler thread joined ...");
+
+   LOG_IF( WARN
+         , jobs_to_be_scheduled.size()
+         , "there are still jobs to be scheduled: " << jobs_to_be_scheduled.size()
+         );
 }
 
 bool SchedulerImpl::post_request(bool force)
