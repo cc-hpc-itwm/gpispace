@@ -108,7 +108,7 @@ static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "{" 
+      cout << "{"
            << *p << ": "
            << n.num_token (*p) << ": "
            << n.get_place (*p) << ":"
@@ -166,7 +166,7 @@ public:
         ; ++top
         )
       {
-        const token::type 
+        const token::type
           token (Function::Transition::get_token<token::type> (*top));
 
         const petri_net::pid_t
@@ -200,7 +200,7 @@ public:
       {
         const petri_net::pid_t pid (out->first);
 
-        typedef 
+        typedef
           Function::Transition::Traits<token::type>::token_on_place_t top_t;
 
         output.push_back (top_t (token::type ( translate (pid)
@@ -236,9 +236,9 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const context_t & context = context_t()
                                       )
 {
-  return net.add_transition 
+  return net.add_transition
     ( transition_t ( name
-                   , condition::type 
+                   , condition::type
                      ( strip (condition)
                      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
                      )
@@ -386,7 +386,7 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  cout 
+  cout
     << "BUNCHES_PER_PACKAGE    = " << BUNCHES_PER_PACKAGE << endl
     << "NUMBER_OF_NODES        = " << NUMBER_OF_NODES << endl
     << "OFFSETS                = " << OFFSETS << endl
@@ -415,7 +415,7 @@ main (int argc, char ** argv)
   pid_t pid_config (mk_place (net, "config", signature::config));
 
   pid_t pid_trigger_gen_store (mk_place (net, "trigger_gen_store"));
-  pid_t pid_gen_store_state 
+  pid_t pid_gen_store_state
     (mk_place (net, "gen_store_state", signature::state));
   pid_t pid_empty_store (mk_place (net, "empty_store", literal::LONG));
 
@@ -456,13 +456,13 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "gen_config"
-      , "${config.BUNCHES_PER_PACKAGE} := " + util::show(BUNCHES_PER_PACKAGE) + ";"
-      + "${config.NUMBER_OF_NODES} := " + util::show(NUMBER_OF_NODES) + ";"
-      + "${config.OFFSETS} := " + util::show (OFFSETS) + ";"
-      + "${config.PACKAGES_PER_OFFSET} := " + util::show(PACKAGES_PER_OFFSET) + ";"
-      + "${config.STORES} := " + util::show (STORES) + ";"
-      + "${config.SUBVOLUMES_PER_OFFSET} := " + util::show(SUBVOLUMES_PER_OFFSET) + ";"
-      + "${config.SUBVOLUME_MULTIPLICITY} := " + util::show(SUBVOLUME_MULTIPLICITY) +";"
+      , "${config.BUNCHES_PER_PACKAGE} := " + fhg::util::show(BUNCHES_PER_PACKAGE) + ";"
+      + "${config.NUMBER_OF_NODES} := " + fhg::util::show(NUMBER_OF_NODES) + ";"
+      + "${config.OFFSETS} := " + fhg::util::show (OFFSETS) + ";"
+      + "${config.PACKAGES_PER_OFFSET} := " + fhg::util::show(PACKAGES_PER_OFFSET) + ";"
+      + "${config.STORES} := " + fhg::util::show (STORES) + ";"
+      + "${config.SUBVOLUMES_PER_OFFSET} := " + fhg::util::show(SUBVOLUMES_PER_OFFSET) + ";"
+      + "${config.SUBVOLUME_MULTIPLICITY} := " + fhg::util::show(SUBVOLUME_MULTIPLICITY) +";"
       + "${trigger_gen_store} := []"
       )
     );
@@ -620,7 +620,7 @@ main (int argc, char ** argv)
       ( net
       , "trigger_gen_offset"
       , "${trigger_gen_offset} := []"
-      , "${gen_volume_wait} == 0L" 
+      , "${gen_volume_wait} == 0L"
       )
     );
 
@@ -670,7 +670,7 @@ main (int argc, char ** argv)
   mk_edge (net, connection_t (PT, tid_gen_offset_break, pid_gen_offset_state));
 
   // *********************************************************************** //
-  
+
   tid_t tid_gen_package
     ( mk_transition
       ( net
@@ -838,7 +838,7 @@ main (int argc, char ** argv)
   // token
 
   token::put (net, pid_config_file, std::string("/scratch/KDM.conf"));
-  
+
   // *********************************************************************** //
 
   marking (net);

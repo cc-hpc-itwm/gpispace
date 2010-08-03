@@ -50,7 +50,7 @@ namespace value
       type operator () (structured_t &) const
       {
         throw expr::exception::eval::type_error
-          (util::show (token) + " for a structured value");
+          (fhg::util::show (token) + " for a structured value");
       }
     };
 
@@ -74,7 +74,7 @@ namespace value
           case expr::token::eq: return value::visitor::eq()(x, y);
           default:
             throw expr::exception::eval::type_error
-              (util::show (token) + " for structured values");
+              (fhg::util::show (token) + " for structured values");
           }
       }
 
@@ -82,7 +82,7 @@ namespace value
       type operator () (A &, B &) const
       {
         throw expr::exception::eval::type_error
-          (util::show (token) + " for literal and structured value");
+          (fhg::util::show (token) + " for literal and structured value");
       }
     };
   }

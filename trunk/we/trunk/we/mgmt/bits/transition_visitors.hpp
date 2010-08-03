@@ -23,7 +23,9 @@
 #include <string>
 
 #include <boost/variant.hpp>
-#include <we/util/show.hpp>
+
+#include <fhg/util/show.hpp>
+
 #include <we/util/warnings.hpp>
 #include <we/type/transition.hpp>
 
@@ -250,8 +252,8 @@ namespace we { namespace mgmt { namespace visitor {
           else
           {
             throw std::runtime_error ( "output port ("
-                                       + ::util::show (port_it->first)
-                                       + ", " + ::util::show (port_it->second) + ") "
+                                       + fhg::util::show (port_it->first)
+                                       + ", " + fhg::util::show (port_it->second) + ") "
                                      + "is not associated with any place!"
                                      );
           }
@@ -304,7 +306,7 @@ namespace we { namespace mgmt { namespace visitor {
                                                               , top->second
                                                               )
                   << "(" << top->second << ")"
-                  << " token=" << ::util::show (top->first)
+                  << " token=" << fhg::util::show (top->first)
                   << std::endl;
       }
     }

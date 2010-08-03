@@ -12,8 +12,6 @@
 #include <we/type/condition.hpp>
 #include <we/type/literal/name.hpp>
 
-#include <we/util/show.hpp>
-
 #include "timer.hpp"
 
 #include <string>
@@ -202,7 +200,7 @@ public:
         ; ++top
         )
       {
-        const token::type 
+        const token::type
           token (Function::Transition::get_token<token::type> (*top));
 
         const petri_net::pid_t
@@ -250,7 +248,7 @@ public:
       {
         const petri_net::pid_t pid (out->first);
 
-        typedef 
+        typedef
           Function::Transition::Traits<token::type>::token_on_place_t top_t;
 
         output.push_back (top_t (token::type ( translate (pid)
@@ -272,12 +270,12 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition
                                       )
 {
-  return net.add_transition 
+  return net.add_transition
     ( mk_trans ( name
-               , condition::type 
+               , condition::type
                  ( condition
                  , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
-                 ) 
+                 )
                )
     , TransitionFunction
       ( name
@@ -368,7 +366,7 @@ main (int argc, char ** argv)
     (net.add_place (place::type("vid_buf_filled", sig_vid_buffer_filled)));
 
   petri_net::tid_t tid_load
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "load"
       , "${store.bid}    := ${bid_in} ;\
@@ -386,7 +384,7 @@ main (int argc, char ** argv)
   net.add_edge (mk_edge ("set store"), connection_t (TP, tid_load, pid_store));
 
   petri_net::tid_t tid_done_bid
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "done_bid"
       , "${bid_out} := ${store.bid} ;\
@@ -401,7 +399,7 @@ main (int argc, char ** argv)
   net.add_edge (mk_edge ("set bid_out"), connection_t (TP, tid_done_bid, pid_bid_out));
 
   petri_net::tid_t tid_tag
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "tag"
       , "${vid_buf_empty.vid}    := ${vid_in} ;\
@@ -416,7 +414,7 @@ main (int argc, char ** argv)
   net.add_edge (mk_edge ("set vid_buf_empty"), connection_t (TP, tid_tag, pid_vid_buf_empty));
 
   petri_net::tid_t tid_prefetch
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "prefetch"
       , "${store.seen}   := bitset_insert ( ${store.seen}          \
@@ -442,7 +440,7 @@ main (int argc, char ** argv)
 
   petri_net::pid_t pid_log (net.add_place (place::type("log", sig_log)));
 
-  std::string exp_process 
+  std::string exp_process
     ("${vid_buf_processed}        := ${vid_buf_filled.vb}            ;\
       ${vid_buf_processed.numbid} := ${vid_buf_filled.vb.numbid} + 1  "
     );
@@ -452,7 +450,7 @@ main (int argc, char ** argv)
                       ${log.vid} := ${vid_buf_filled.vb.vid}  ";
 
   petri_net::tid_t tid_process
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "process"
       , exp_process
@@ -467,7 +465,7 @@ main (int argc, char ** argv)
     net.add_edge (mk_edge ("set log"), connection_t (TP, tid_process, pid_log));
 
   petri_net::tid_t tid_done_vid
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "done_vid"
       , "${vid_out} := ${vid_buf_processed.vid}"
@@ -480,7 +478,7 @@ main (int argc, char ** argv)
   net.add_edge (mk_edge ("set vid_out"), connection_t (TP, tid_done_vid, pid_vid_out));
 
   petri_net::tid_t tid_next_vid
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "next_vid"
       , "${vid_buf_empty} := ${vid_buf_processed}"

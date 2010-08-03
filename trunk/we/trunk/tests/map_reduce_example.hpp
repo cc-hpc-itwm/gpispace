@@ -138,13 +138,13 @@ namespace we {
           for (std::size_t n(0); n < NUM_NODES; ++n)
           {
             const pid_t pid_wi =
-              map_reduce_subnet.add_place(place_t("wi_" + ::util::show(n)));
+              map_reduce_subnet.add_place(place_t("wi_" + fhg::util::show(n)));
             hull_in.push_back (pid_wi);
 
-            const pid_t pid_wo = map_reduce_subnet.add_place(place_t("wo_" + ::util::show(n)));
+            const pid_t pid_wo = map_reduce_subnet.add_place(place_t("wo_" + fhg::util::show(n)));
             hull_out.push_back (pid_wo);
 
-            transition_t wrk_trans ("work"+::util::show(n), typename transition_t::mod_type("map_reduce", "work"), "true");
+            transition_t wrk_trans ("work"+fhg::util::show(n), typename transition_t::mod_type("map_reduce", "work"), "true");
             wrk_trans.add_ports()
               ("i", "long", we::type::PORT_IN)
               ("o", "long", we::type::PORT_OUT)
@@ -157,10 +157,10 @@ namespace we {
             const tid_t tid_w = map_reduce_subnet.add_transition (wrk_trans);
 
             // connect work in
-            map_reduce_subnet.add_edge (edge_t("work_in_"+::util::show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
+            map_reduce_subnet.add_edge (edge_t("work_in_"+fhg::util::show(n)), petri_net::connection_t (petri_net::PT, tid_w, pid_wi));
 
             // connect work out
-            map_reduce_subnet.add_edge (edge_t("work_out_" + ::util::show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
+            map_reduce_subnet.add_edge (edge_t("work_out_" + fhg::util::show(n)), petri_net::connection_t (petri_net::TP, tid_w, pid_wo));
           }
 
           {
@@ -175,8 +175,8 @@ namespace we {
             size_t cnt(0);
             for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
             {
-              map_trans.add_ports() ("o"+::util::show (cnt), "long", we::type::PORT_OUT);
-              map_trans.add_connections() ("o"+::util::show (cnt), *i);
+              map_trans.add_ports() ("o"+fhg::util::show (cnt), "long", we::type::PORT_OUT);
+              map_trans.add_connections() ("o"+fhg::util::show (cnt), *i);
               cnt++;
             }
             tid_t tid_map = map_reduce_subnet.add_transition ( map_trans );
@@ -185,7 +185,7 @@ namespace we {
             cnt = 0;
             for (typename hull_t::const_iterator i = hull_in.begin(); i != hull_in.end(); ++i)
             {
-              map_reduce_subnet.add_edge (edge_t("map_" + ::util::show(cnt)), petri_net::connection_t (petri_net::TP, tid_map, *i));
+              map_reduce_subnet.add_edge (edge_t("map_" + fhg::util::show(cnt)), petri_net::connection_t (petri_net::TP, tid_map, *i));
               cnt++;
             }
           }
@@ -196,8 +196,8 @@ namespace we {
             size_t cnt(0);
             for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
             {
-              red_trans.add_ports() ("i" + ::util::show(cnt), "long", we::type::PORT_IN);
-              red_trans.add_connections() (*o, "i" + ::util::show(cnt));
+              red_trans.add_ports() ("i" + fhg::util::show(cnt), "long", we::type::PORT_IN);
+              red_trans.add_connections() (*o, "i" + fhg::util::show(cnt));
               cnt++;
             }
             red_trans.add_ports() ("o", "long", we::type::PORT_OUT);
@@ -209,7 +209,7 @@ namespace we {
             cnt = 0;
             for (typename hull_t::const_iterator o = hull_out.begin(); o != hull_out.end(); ++o)
             {
-              map_reduce_subnet.add_edge (edge_t("red_" + ::util::show(cnt)), petri_net::connection_t (petri_net::PT, tid_red, *o));
+              map_reduce_subnet.add_edge (edge_t("red_" + fhg::util::show(cnt)), petri_net::connection_t (petri_net::PT, tid_red, *o));
               cnt++;
             }
           }
@@ -253,7 +253,7 @@ namespace we {
           // put some tokens on the input
           for (std::size_t t (0); t < NUM_TOKEN; ++t)
           {
-            act.input().push_back (std::make_pair (token_t ("token-" + ::util::show(t)), map_reduce_trans.input_port_by_name ("i")));
+            act.input().push_back (std::make_pair (token_t ("token-" + fhg::util::show(t)), map_reduce_trans.input_port_by_name ("i")));
           }
 
           return act;

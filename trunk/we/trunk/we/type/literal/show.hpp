@@ -3,7 +3,7 @@
 #ifndef _WE_TYPE_LITERAL_SHOW_HPP
 #define _WE_TYPE_LITERAL_SHOW_HPP
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include <we/type/literal.hpp>
 
@@ -21,23 +21,23 @@ namespace literal
 
       std::string operator () (const long & x) const
       {
-        return util::show (x) + "L";
+        return fhg::util::show (x) + "L";
       }
 
       std::string operator () (const char & x) const
       {
-        return "'" + util::show (x) + "'";
+        return "'" + fhg::util::show (x) + "'";
       }
 
       std::string operator () (const std::string & x) const
       {
-        return "\"" + x + "\"";     
+        return "\"" + x + "\"";
       }
 
       template<typename T>
       std::string operator () (const T & x) const
       {
-        return util::show (x);
+        return fhg::util::show (x);
       }
     };
   }

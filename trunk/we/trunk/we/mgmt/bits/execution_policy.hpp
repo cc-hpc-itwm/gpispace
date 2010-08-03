@@ -1,7 +1,6 @@
 #ifndef WE_MGMT_BITS_EXECUTION_POLICY_HPP
 #define WE_MGMT_BITS_EXECUTION_POLICY_HPP 1
 
-#include <we/util/show.hpp>
 #include <we/mgmt/context.hpp>
 
 namespace we

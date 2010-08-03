@@ -34,7 +34,7 @@ int main()
     workers.push_back (rank);
   }
   std::cout << "available workers: "
-            << util::show (workers.begin (), workers.end())
+            << fhg::util::show (workers.begin (), workers.end())
             << std::endl;
 
   for ( std::vector<unsigned int>::const_iterator w (workers.begin())
@@ -59,10 +59,10 @@ int main()
           );
 
   std::cout << "possible workers: "
-            << util::show (workers.begin (), bound)
+            << fhg::util::show (workers.begin (), bound)
             << std::endl;
   std::cout << "impossible workers: "
-            << util::show (bound, workers.end())
+            << fhg::util::show (bound, workers.end())
             << std::endl;
 
   std::cout << std::endl;
@@ -76,10 +76,10 @@ int main()
           );
 
   std::cout << "possible workers: "
-            << util::show (workers.begin (), bound)
+            << fhg::util::show (workers.begin (), bound)
             << std::endl;
   std::cout << "impossible workers: "
-            << util::show (bound, workers.end())
+            << fhg::util::show (bound, workers.end())
             << std::endl;
 
   return EXIT_SUCCESS;

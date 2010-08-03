@@ -7,7 +7,7 @@
 
 #include <we/type/value.hpp>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -26,8 +26,8 @@ namespace expr
       {
       public:
         explicit missing_binding (const Key & key)
-          : std::runtime_error 
-            ("missing binding for: ${" + util::show(key) + "}") 
+          : std::runtime_error
+            ("missing binding for: ${" + fhg::util::show(key) + "}")
         {};
       };
     }
@@ -62,8 +62,8 @@ namespace expr
 
             modify ( pos
                    , end
-                   , boost::apply_visitor 
-                     ( value::visitor::field (::util::show (*pos))
+                   , boost::apply_visitor
+                     ( value::visitor::field (fhg::util::show (*pos))
                      , store
                      )
                    , value
@@ -83,8 +83,8 @@ namespace expr
         else
           return find ( pos
                       , end
-                      , boost::apply_visitor 
-                        ( value::visitor::get_field (::util::show (*pos))
+                      , boost::apply_visitor
+                        ( value::visitor::get_field (fhg::util::show (*pos))
                         , store
                         )
                       );
@@ -103,7 +103,7 @@ namespace expr
           case 1:
             container[key_vec[0]] = value;
           default:
-            container[key_vec[0]] = 
+            container[key_vec[0]] =
               boost::apply_visitor ( value::visitor::mk_structured()
                                    , container[key_vec[0]]
                                    );
@@ -189,7 +189,7 @@ namespace expr
     }
 
     template<typename Key>
-    parse::node::type<Key> refnode_name (const std::vector<Key> & key_vec) 
+    parse::node::type<Key> refnode_name (const std::vector<Key> & key_vec)
     {
       return parse::node::type<Key>(key_vec);
     }

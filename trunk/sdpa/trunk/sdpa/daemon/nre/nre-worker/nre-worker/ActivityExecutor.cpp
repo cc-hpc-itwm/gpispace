@@ -398,12 +398,12 @@ Reply* ActivityExecutor::reply(ExecuteRequest* pMsgExecReq)
 
   		we::activity_t act(we::util::text_codec::decode<we::activity_t>(pMsgExecReq->activity()));
 
-		LOG (INFO, "executing: " << act.transition().name() << "(" << ::util::show(act.input().begin(), act.input().end()) << ")" );
+		LOG (INFO, "executing: " << act.transition().name() << "(" << fhg::util::show(act.input().begin(), act.input().end()) << ")" );
 
   		struct exec_context ctxt( loader() );
   		act.execute(ctxt);
 
-                LOG (INFO, "finished: " << ::util::show (act.output().begin(), act.output().end()));
+                LOG (INFO, "finished: " << fhg::util::show (act.output().begin(), act.output().end()));
 
   		execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, we::util::text_codec::encode(act)));
 

@@ -19,7 +19,8 @@
 #include <we/expr/exception.hpp>
 
 #include <we/util/read.hpp>
-#include <we/util/show.hpp>
+
+#include <fhg/util/show.hpp>
 
 #include <stack>
 #include <deque>
@@ -231,7 +232,7 @@ namespace expr
                        )
                       throw exception::parse::exception
                         ( "left hand of "
-                        + util::show(*token)
+                        + fhg::util::show(*token)
                         + " must be reference name"
                         , k
                         );
@@ -255,7 +256,7 @@ namespace expr
                         case action::accept:
                           break;
                         default:
-                          throw exception::parse::exception (util::show(action), k);
+                          throw exception::parse::exception (fhg::util::show(action), k);
                         }
                       break;
                     }

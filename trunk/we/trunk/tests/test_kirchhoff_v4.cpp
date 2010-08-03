@@ -194,7 +194,7 @@ static void dot ( std::ostream & s
   s << "digraph " << name << " {" << endl;
 
   for (typename NET::transition_const_it t (n.transitions()); t.has_more(); ++t)
-    s << "t" << ::util::show (*t)
+    s << "t" << fhg::util::show (*t)
       << " ["
       << "label = \""
       << n.get_transition(*t).name
@@ -217,7 +217,7 @@ static void dot ( std::ostream & s
 
   for (typename NET::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      s << "p" << ::util::show (*p)
+      s << "p" << fhg::util::show (*p)
         << " ["
         << "label = \""
         << n.get_place(*p).get_name()
@@ -244,18 +244,18 @@ static void dot ( std::ostream & s
       switch (connection.type)
         {
         case petri_net::TP:
-          s << "t" << ::util::show (connection.tid)
+          s << "t" << fhg::util::show (connection.tid)
             << " -> "
-            << "p" << ::util::show (connection.pid)
+            << "p" << fhg::util::show (connection.pid)
             << " []"
             << ";"
             << endl
             ;
           break;
         case petri_net::PT:
-          s << "p" << ::util::show (connection.pid)
+          s << "p" << fhg::util::show (connection.pid)
             << " -> "
-            << "t" << ::util::show (connection.tid)
+            << "t" << fhg::util::show (connection.tid)
             << " []"
             << ";"
             << endl
@@ -263,22 +263,22 @@ static void dot ( std::ostream & s
           break;
         case petri_net::PT_READ:
           if (n.get_place (connection.pid).get_name() == "config")
-            s << "p" << ::util::show (connection.pid)
-              << "t" << ::util::show (connection.tid)
+            s << "p" << fhg::util::show (connection.pid)
+              << "t" << fhg::util::show (connection.tid)
               << " [label = \"config\", shape=\"none\"];"
               << endl
-              << "p" << ::util::show (connection.pid)
-              << "t" << ::util::show (connection.tid)
+              << "p" << fhg::util::show (connection.pid)
+              << "t" << fhg::util::show (connection.tid)
               << " -> "
-              << "t" << ::util::show (connection.tid)
+              << "t" << fhg::util::show (connection.tid)
               << " [style = \"dotted\"]"
               << ";"
               << endl
               ;
           else
-            s << "p" << ::util::show (connection.pid)
+            s << "p" << fhg::util::show (connection.pid)
               << " -> "
-              << "t" << ::util::show (connection.tid)
+              << "t" << fhg::util::show (connection.tid)
               << " [style = \"dotted\"]"
               << ";"
               << endl
@@ -807,10 +807,10 @@ main (int argc, char ** argv)
     ( mk_transition
       ( net
       , "gen_config"
-      , "${config.OFFSETS} := " + util::show (OFFSETS) + ";"
-      + "${config.BUNCHES_PER_OFFSET} := " + util::show(BUNCHES_PER_OFFSET) + ";"
-      + "${config.STORES} := " + util::show (STORES) + ";"
-      + "${config.SUBVOLUMES_PER_OFFSET} := " + util::show(SUBVOLUMES_PER_OFFSET) + ";"
+      , "${config.OFFSETS} := " + fhg::util::show (OFFSETS) + ";"
+      + "${config.BUNCHES_PER_OFFSET} := " + fhg::util::show(BUNCHES_PER_OFFSET) + ";"
+      + "${config.STORES} := " + fhg::util::show (STORES) + ";"
+      + "${config.SUBVOLUMES_PER_OFFSET} := " + fhg::util::show(SUBVOLUMES_PER_OFFSET) + ";"
       + "${trigger_loadTT} := [];"
       + "${wanted_offset} := bitset_insert ({}, 0L);"
       + "${volume_wait} := ${config.SUBVOLUMES_PER_OFFSET};"

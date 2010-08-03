@@ -7,7 +7,7 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 namespace expr
 {
@@ -35,12 +35,12 @@ namespace expr
         case token::divint:
         case token::modint:
         case token::mod: return left;
-        case token::_pow: 
-        case token::_powint: 
+        case token::_pow:
+        case token::_powint:
         case token::neg: return right;
         case token::define: return left;
         case token::_endif: return left;
-        default: throw exception::strange ("assoc " + util::show(token));
+        default: throw exception::strange ("assoc " + fhg::util::show(token));
         }
     }
   }

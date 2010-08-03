@@ -5,7 +5,7 @@
 #include <we/function/cond.hpp>
 
 #include <we/util/read.hpp>
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 #include <we/util/warnings.hpp>
 
 #include <we/type/condition.hpp>
@@ -71,7 +71,7 @@ static unsigned int capacity_value (3);
 typedef boost::unordered_map<petri_net::pid_t,token_t> map_t;
 typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
 
-static pnet_t::output_t trans_step 
+static pnet_t::output_t trans_step
 ( const petri_net::pid_t pid_max
 , const petri_net::pid_t pid_state
 , const petri_net::pid_t pid_value
@@ -151,18 +151,18 @@ main ()
   petri_net::pid_t pid_value (net.add_place ("value"));
   petri_net::pid_t pid_sum (net.add_place ("sum"));
 
-  petri_net::pid_t tid_step 
-    ( net.add_transition 
+  petri_net::pid_t tid_step
+    ( net.add_transition
       ( transition_t
         ( "step"
-        , "${" + util::show (pid_state) + "} < ${" + util::show (pid_max) + "}"
+        , "${" + fhg::util::show (pid_state) + "} < ${" + fhg::util::show (pid_max) + "}"
         )
       )
     );
 
-  petri_net::pid_t tid_sum 
-    ( net.add_transition 
-      ( transition_t 
+  petri_net::pid_t tid_sum
+    ( net.add_transition
+      ( transition_t
         ( "sum"
         , "true"
         )
@@ -181,7 +181,7 @@ main ()
   net.add_edge (edge_t (e++, "get sum"), connection_t (PT, tid_sum, pid_sum));
   net.add_edge (edge_t (e++, "set sum"), connection_t (TP, tid_sum, pid_sum));
 
-  net.set_transition_function 
+  net.set_transition_function
     ( tid_step
     , Function::Transition::Generic<token_t>
       ( boost::bind ( &trans_step
@@ -194,7 +194,7 @@ main ()
       )
     );
 
-  net.set_transition_function 
+  net.set_transition_function
     ( tid_sum
     , Function::Transition::Generic<token_t> (trans_sum)
     );

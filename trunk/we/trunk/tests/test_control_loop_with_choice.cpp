@@ -4,7 +4,7 @@
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 #include <we/util/warnings.hpp>
 
 #include "timer.hpp"
@@ -69,7 +69,7 @@ typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
 
 static unsigned long cnt_trans (0);
 
-static pnet_t::output_t trans_step 
+static pnet_t::output_t trans_step
 ( const petri_net::pid_t pid_max
 , const petri_net::pid_t pid_state
 , const petri_net::pid_t pid_increment
@@ -125,19 +125,19 @@ main ()
   petri_net::pid_t pid_max (net.add_place ("max"));
   petri_net::pid_t pid_increment (net.add_place ("increment"));
 
-  petri_net::pid_t tid_step 
-    ( net.add_transition 
-      ( transition_t 
+  petri_net::pid_t tid_step
+    ( net.add_transition
+      ( transition_t
         ( "step"
-        , "${" + util::show (pid_state) + "}" + " < ${" + util::show (pid_max) + "}"
+        , "${" + fhg::util::show (pid_state) + "}" + " < ${" + fhg::util::show (pid_max) + "}"
         )
       )
     );
-  petri_net::pid_t tid_break 
-    ( net.add_transition 
-      ( transition_t 
+  petri_net::pid_t tid_break
+    ( net.add_transition
+      ( transition_t
         ( "break"
-        , "${" + util::show (pid_state) + "}" + " >= ${" + util::show (pid_max) + "}"
+        , "${" + fhg::util::show (pid_state) + "}" + " >= ${" + fhg::util::show (pid_max) + "}"
         )
       )
     );
@@ -154,7 +154,7 @@ main ()
   net.add_edge (edge_t (e++, "get state"), connection_t (PT, tid_break, pid_state));
   net.add_edge (edge_t (e++, "get max"), connection_t (PT, tid_break, pid_max));
 
-  net.set_transition_function 
+  net.set_transition_function
     ( tid_step
     , Function::Transition::Generic<token_t>
       ( boost::bind ( &trans_step

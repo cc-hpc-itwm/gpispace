@@ -11,8 +11,6 @@
 #include <we/type/place.hpp>
 #include <we/type/condition.hpp>
 
-#include <we/util/show.hpp>
-
 #include "timer.hpp"
 
 #include <string>
@@ -150,7 +148,7 @@ public:
         ; ++top
         )
       {
-        const token::type 
+        const token::type
           token (Function::Transition::get_token<token::type> (*top));
 
         const petri_net::pid_t
@@ -170,7 +168,7 @@ public:
       {
         const petri_net::pid_t pid (out->first);
 
-        typedef 
+        typedef
           Function::Transition::Traits<token::type>::token_on_place_t top_t;
 
         output.push_back (top_t (token::type ( translate (pid)
@@ -192,12 +190,12 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition
                                       )
 {
-  return net.add_transition 
+  return net.add_transition
     ( mk_trans ( name
-               , condition::type 
+               , condition::type
                  ( condition
                  , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
-                 ) 
+                 )
                )
     , TransitionFunction
       ( name
@@ -257,7 +255,7 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_store (net.add_place (place::type("store", sig)));
 
   petri_net::tid_t tid
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "trans"
       , "${store.seen} := bitset_insert (${store.seen}, ${vid}); \

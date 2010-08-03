@@ -5,7 +5,7 @@
 #include <we/function/cond.hpp>
 #include <we/util/warnings.hpp>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include "timer.hpp"
 
@@ -119,19 +119,19 @@ main ()
   petri_net::pid_t pid_increment (net.add_place ("increment"));
   petri_net::pid_t pid_final (net.add_place ("final"));
 
-  petri_net::pid_t tid_step 
-    ( net.add_transition 
-      ( transition_t 
+  petri_net::pid_t tid_step
+    ( net.add_transition
+      ( transition_t
         ( "step"
-        , "${" + util::show (pid_value) + "}" + " < " + util::show (max)
+        , "${" + fhg::util::show (pid_value) + "}" + " < " + fhg::util::show (max)
         )
       )
     );
-  petri_net::pid_t tid_break 
-    ( net.add_transition 
-      ( transition_t 
+  petri_net::pid_t tid_break
+    ( net.add_transition
+      ( transition_t
         ( "break"
-        , "${" + util::show(pid_value) + "}" + " >= " + util::show (max)
+        , "${" + fhg::util::show(pid_value) + "}" + " >= " + fhg::util::show (max)
         )
       )
     );

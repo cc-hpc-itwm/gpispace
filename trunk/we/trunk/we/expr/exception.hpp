@@ -3,7 +3,7 @@
 #ifndef _EXPR_EXCEPTION_HPP
 #define _EXPR_EXCEPTION_HPP
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include <stdexcept>
 
@@ -26,7 +26,7 @@ namespace expr
       public:
         const unsigned int eaten;
         exception (const std::string & msg, const unsigned int k)
-          : std::runtime_error("parse error [" + util::show(k) + "]: " + msg) 
+          : std::runtime_error("parse error [" + fhg::util::show(k) + "]: " + msg)
           , eaten (k)
         {}
       };
@@ -54,7 +54,7 @@ namespace expr
                      , const unsigned int open
                      , const unsigned int k
                      )
-          : exception ( "unterminated " + what + ", opened at: " + util::show (open)
+          : exception ( "unterminated " + what + ", opened at: " + fhg::util::show (open)
                       , k
                       ) {}
       };
@@ -78,8 +78,8 @@ namespace expr
       class type_error : public std::runtime_error
       {
       public:
-        type_error (const std::string & msg) 
-          : std::runtime_error ("type error: " + msg) 
+        type_error (const std::string & msg)
+          : std::runtime_error ("type error: " + msg)
         {}
       };
 
@@ -92,7 +92,7 @@ namespace expr
       class not_integral : public std::runtime_error
       {
       public:
-        not_integral (const std::string & op) 
+        not_integral (const std::string & op)
           : std::runtime_error ("applied " + op + " to non-integral value(s)") {};
       };
     }

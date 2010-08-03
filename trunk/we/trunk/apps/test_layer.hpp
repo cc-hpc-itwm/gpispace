@@ -23,7 +23,7 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/unordered_map.hpp>
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/bits/queue.hpp>
 
@@ -53,7 +53,7 @@ namespace test {
       inline const std::string operator++()
       {
         unsigned long id = ++number;
-        return ::util::show ( id );
+        return fhg::util::show ( id );
       }
     private:
       id_generator<unsigned long> number;

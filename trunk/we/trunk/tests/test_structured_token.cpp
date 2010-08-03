@@ -11,8 +11,6 @@
 #include <we/type/place.hpp>
 #include <we/type/condition.hpp>
 
-#include <we/util/show.hpp>
-
 #include "timer.hpp"
 
 #include <string>
@@ -153,7 +151,7 @@ public:
         ; ++top
         )
       {
-        const token::type 
+        const token::type
           token (Function::Transition::get_token<token::type> (*top));
 
         const petri_net::pid_t
@@ -173,7 +171,7 @@ public:
       {
         const petri_net::pid_t pid (out->first);
 
-        typedef 
+        typedef
           Function::Transition::Traits<token::type>::token_on_place_t top_t;
 
         output.push_back (top_t (token::type ( translate (pid)
@@ -195,12 +193,12 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition
                                       )
 {
-  return net.add_transition 
+  return net.add_transition
     ( mk_trans ( name
-               , condition::type 
+               , condition::type
                  ( condition
                  , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
-                 ) 
+                 )
                )
     , TransitionFunction
       ( name
@@ -279,8 +277,8 @@ main (int argc, char ** argv)
   petri_net::pid_t pid_done (net.add_place (place::type("done")));
   petri_net::pid_t pid_in_progress (net.add_place (place::type("in_progress")));
 
-  petri_net::tid_t tid_init 
-    ( mk_transition 
+  petri_net::tid_t tid_init
+    ( mk_transition
       ( net
       , "init"
       , "${run} := ${start}"
@@ -289,7 +287,7 @@ main (int argc, char ** argv)
     );
 
   petri_net::tid_t tid_split
-    ( mk_transition 
+    ( mk_transition
       ( net
       , "split"
       , "${slice_in}    := ${splitted};     \
@@ -335,7 +333,7 @@ main (int argc, char ** argv)
       )
     );
 
-  petri_net::tid_t tid_finalize 
+  petri_net::tid_t tid_finalize
     ( mk_transition
       ( net
       , "finalize"
@@ -456,7 +454,7 @@ main (int argc, char ** argv)
 
 
   std::ostringstream oss;
-    
+
   {
     boost::archive::text_oarchive oa (oss, boost::archive::no_header);
     oa << BOOST_SERIALIZATION_NVP(net);

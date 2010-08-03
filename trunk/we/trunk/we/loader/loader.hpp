@@ -16,6 +16,8 @@
 #include <we/loader/Module.hpp>
 #include <we/loader/module_traits.hpp>
 
+#include <fhg/util/show.hpp>
+
 namespace we {
   namespace loader {
     using boost::shared_ptr;
@@ -77,7 +79,7 @@ namespace we {
 
       module_ptr_t load ( const boost::filesystem::path & path ) throw (ModuleLoadFailed)
       {
-        return load ( "mod-"+::util::show(module_counter_), path);
+        return load ( "mod-"+fhg::util::show(module_counter_), path);
       }
 
       module_ptr_t load( const std::string & module_name

@@ -20,7 +20,6 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/net.hpp>
-#include <we/util/show.hpp>
 #include <we/util/warnings.hpp>
 #include <we/type/port.hpp>
 #include <we/type/module_call.hpp>
@@ -29,6 +28,8 @@
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
+
+#include <fhg/util/show.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -160,13 +161,13 @@ namespace we { namespace type {
           : transition_(t)
         {}
 
-        connection_adder<Transition, from_type, to_type> & operator() 
+        connection_adder<Transition, from_type, to_type> & operator()
           ( const from_type outer
           , const std::string & name
           , const we::type::property::type & prop = we::type::property::type()
           )
         {
-          transition_.connect_outer_to_inner 
+          transition_.connect_outer_to_inner
             (outer, transition_.input_port_by_name (name), prop);
           return *this;
         }
@@ -177,7 +178,7 @@ namespace we { namespace type {
           , const we::type::property::type & prop = we::type::property::type()
           )
         {
-          transition_.connect_inner_to_outer 
+          transition_.connect_inner_to_outer
             (transition_.output_port_by_name (name), outer, prop);
           return *this;
         }
@@ -527,7 +528,7 @@ namespace we { namespace type {
         }
         else
         {
-          outer_to_inner_.insert 
+          outer_to_inner_.insert
             (outer_to_inner_t::value_type (outer, std::make_pair(inner, prop)));
         }
       }
@@ -544,7 +545,7 @@ namespace we { namespace type {
         }
         else
         {
-          inner_to_outer_.insert 
+          inner_to_outer_.insert
             (inner_to_outer_t::value_type (inner, std::make_pair(outer, prop)));
         }
       }
@@ -581,7 +582,7 @@ namespace we { namespace type {
           return outer_to_inner_.at(outer);
         } catch (const std::out_of_range &)
         {
-          throw exception::not_connected<Outer> ("trans: " + name() + ": not connected: " + ::util::show(outer), outer);
+          throw exception::not_connected<Outer> ("trans: " + name() + ": not connected: " + fhg::util::show(outer), outer);
         }
       }
 
@@ -606,7 +607,7 @@ namespace we { namespace type {
           return inner_to_outer_.at(inner);
         } catch (const std::out_of_range &)
         {
-          throw exception::not_connected<Inner> ("trans: " + name() + ": port not connected: " + ::util::show(inner), inner);
+          throw exception::not_connected<Inner> ("trans: " + name() + ": port not connected: " + fhg::util::show(inner), inner);
         }
       }
 
@@ -917,7 +918,7 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::port_undefined("trans: "+name()+": input port not connected by pid: "+ ::util::show (pid), ::util::show (pid));
+        throw exception::port_undefined("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), fhg::util::show (pid));
       }
 
       port_id_with_prop_t output_port_by_pid (const pid_t & pid) const
@@ -933,7 +934,7 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::port_undefined("trans: "+name()+": output port not connected by pid: "+ ::util::show (pid), ::util::show (pid));
+        throw exception::port_undefined("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), fhg::util::show (pid));
       }
 
       template <typename PortId>
@@ -945,7 +946,7 @@ namespace we { namespace type {
         }
         catch (const std::out_of_range &)
         {
-          const std::string port_name (::util::show (port_id) );
+          const std::string port_name (fhg::util::show (port_id) );
           throw exception::port_undefined("trans: "+name()+": port not defined:"+port_name, port_name);
         }
       }
@@ -962,7 +963,7 @@ namespace we { namespace type {
                 return port->second;
               }
           }
-        throw exception::port_undefined("trans: "+name()+": port not associated with:"+::util::show(pid), ::util::show(pid));
+        throw exception::port_undefined("trans: "+name()+": port not associated with:"+fhg::util::show(pid), fhg::util::show(pid));
       }
 
       // UNSAFE: does not check for multiple connections! Use with care!
@@ -982,7 +983,7 @@ namespace we { namespace type {
                 return;
               }
           }
-        throw exception::port_undefined("trans: "+name()+": during re_connect port not associated with:"+::util::show(pid_old), ::util::show(pid_old));
+        throw exception::port_undefined("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), fhg::util::show(pid_old));
       }
 
       // TODO implement port accessor iterator
@@ -1074,12 +1075,12 @@ namespace we { namespace type {
       public:
         std::string operator () (const expression_t & expr) const
         {
-          return "{expr, " + ::util::show (expr) + "}";
+          return "{expr, " + fhg::util::show (expr) + "}";
         }
 
         std::string operator () (const module_call_t & mod_call) const
         {
-          return "{mod, " + ::util::show (mod_call) + "}";
+          return "{mod, " + fhg::util::show (mod_call) + "}";
         }
 
         template <typename Place, typename Edge, typename Token>
@@ -1090,7 +1091,7 @@ namespace we { namespace type {
                                 > & net
                                 ) const
         {
-          return std::string("{net, ") + ::util::show(net) + "}";
+          return std::string("{net, ") + fhg::util::show(net) + "}";
         }
       };
     }

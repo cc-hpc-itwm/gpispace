@@ -39,7 +39,7 @@ static int doRequest(fvmRequest_t op_request)
 
   // man msgsnd:
   //    int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
-  
+
   //        The application shall ensure that the argument msgp points
   //        to a  user-defined buffer that  contains first a  field of
   //        type long specifying  the type of the message,  and then a
@@ -192,7 +192,7 @@ int fvmConnect(fvm_pc_config_t config)
 
 int fvmLeave()
 {
-  
+
   fvmRequest_t op_request; //just for the leave
 
   /* just detach from the shmem, the rest should be done by the
@@ -490,7 +490,7 @@ WE_MOD_INITIALIZE_START (fvm);
   int res(0);
   if ( (res = fvmConnect (cfg)) != 0)
   {
-    throw std::runtime_error("could not initialize fvm-connection: "+::util::show(res));
+    throw std::runtime_error("could not initialize fvm-connection: "+fhg::util::show(res));
   }
 
   WE_REGISTER_FUN (selftest);

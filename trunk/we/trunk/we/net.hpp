@@ -15,6 +15,8 @@
 #include <we/type/id.hpp>
 #include <we/util/cross.hpp>
 
+#include <fhg/util/show.hpp>
+
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -45,7 +47,7 @@ namespace petri_net
     class capacity_unbounded : public std::runtime_error
     {
     public:
-      explicit capacity_unbounded (const std::string & msg) 
+      explicit capacity_unbounded (const std::string & msg)
         : std::runtime_error ("capacity unbounded: " + msg)
       {}
     };
@@ -246,7 +248,7 @@ private:
                 if (get_transition (tid).condition (cs))
                   {
                     enabled.insert (tid);
-                    
+
                     cs.get_vec (enabled_choice[tid]);
                   }
                 else
@@ -589,7 +591,7 @@ public:
 
     if (pos == capacity_map.end())
       {
-        throw exception::capacity_unbounded ("place " + util::show (pid));
+        throw exception::capacity_unbounded ("place " + fhg::util::show (pid));
       }
 
     return pos->second;

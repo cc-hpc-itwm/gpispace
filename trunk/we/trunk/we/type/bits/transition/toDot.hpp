@@ -92,7 +92,7 @@ namespace we { namespace type {
           case '>': return "\\>";
           case '<': return "\\<";
           case '"': return "\\\"";
-          default: return ::util::show (c);
+          default: return fhg::util::show (c);
           }
       }
 
@@ -188,7 +188,7 @@ namespace we { namespace type {
         {
           const std::string prefix ("pretty.dot.style");
 
-          association = 
+          association =
             prop.get_with_default (prefix + ".association", "dotted");
           read_connection =
             prop.get_with_default (prefix + ".read-connection", "dashed");
@@ -210,8 +210,8 @@ namespace we { namespace type {
       {
         std::ostringstream s;
 
-        s << brackets ( keyval ("shape", shape) 
-                      + ", " 
+        s << brackets ( keyval ("shape", shape)
+                      + ", "
                       + keyval ("label", label)
                       + ", "
                       + keyval ("style", "filled")
@@ -237,7 +237,7 @@ namespace we { namespace type {
         if (opts.show_signature)
           {
             s << endl
-              << lines (',', opts.full ? ::util::show (sig.desc()) : sig.nice())
+              << lines (',', opts.full ? fhg::util::show (sig.desc()) : sig.nice())
               ;
           }
 
@@ -247,7 +247,7 @@ namespace we { namespace type {
       inline std::string association (void)
       {
         return brackets ( keyval ("style", style::association)
-                        + ", " 
+                        + ", "
                         + keyval ("dir", "none")
                         );
       }
@@ -269,7 +269,7 @@ namespace we { namespace type {
         template<typename F>
         generic (F _f) : f (_f) {}
 
-        bool operator () (const T & x) const 
+        bool operator () (const T & x) const
         {
           return f (x);
         }
@@ -289,7 +289,7 @@ namespace we { namespace type {
 
         options ()
           : full (false)
-          , predicate() 
+          , predicate()
           , show_token (true)
           , show_capacity (true)
           , show_signature (true)
@@ -336,7 +336,7 @@ namespace we { namespace type {
 
           level (s, l)
             << name (id, "expression")
-            << node (shape::expression, quote (::util::show (expr)))
+            << node (shape::expression, quote (fhg::util::show (expr)))
             ;
 
           return s.str();
@@ -350,7 +350,7 @@ namespace we { namespace type {
 
           level (s, l)
             << name (id, "modcall")
-            << node (shape::modcall, ::util::show (mod_call))
+            << node (shape::modcall, fhg::util::show (mod_call))
             ;
 
           return s.str();
@@ -396,7 +396,7 @@ namespace we { namespace type {
                       ++token_cnt[*tp];
                     }
 
-                  for ( typename token_cnt_t::const_iterator 
+                  for ( typename token_cnt_t::const_iterator
                           tok (token_cnt.begin())
                       ; tok != token_cnt.end()
                       ; ++tok
@@ -409,7 +409,7 @@ namespace we { namespace type {
                           token << tok->second << " x ";
                         }
 
-                      token << quote (::util::show (tok->first));
+                      token << quote (fhg::util::show (tok->first));
                     }
                 }
 
@@ -428,7 +428,7 @@ namespace we { namespace type {
                 }
 
               level (s, l + 1)
-                << name (id_net, "place_" + ::util::show (*p))
+                << name (id_net, "place_" + fhg::util::show (*p))
                 << node ( shape::place
                         , with_signature ( place.get_name()
                                          , place.get_signature()
@@ -456,11 +456,11 @@ namespace we { namespace type {
                 {
                   level (s, l + 1)
                     << name ( id_trans
-                            , "port_" + ::util::show (connection->first)
+                            , "port_" + fhg::util::show (connection->first)
                             )
                     << arrow
                     << name ( id_net
-                            , "place_" + ::util::show (connection->second.first)
+                            , "place_" + fhg::util::show (connection->second.first)
                             )
                     << std::endl
                     ;
@@ -498,11 +498,11 @@ namespace we { namespace type {
                   if (!found)
                     {
                       std::cerr << "***" << trans.name() << std::endl;
-                      std::cerr << connection->first 
-                                << " " 
-                                << ::util::show (connection->second)
+                      std::cerr << connection->first
+                                << " "
+                                << fhg::util::show (connection->second)
                                 << std::endl;
-                      std::cerr << ::util::show ( trans.outer_to_inner_begin()
+                      std::cerr << fhg::util::show ( trans.outer_to_inner_begin()
                                                 , trans.outer_to_inner_end()
                                                 ) << std::endl;
 
@@ -512,13 +512,13 @@ namespace we { namespace type {
 
                   level (s, l + 1)
                     << name ( id_net
-                            , "place_" + ::util::show (connection->first)
+                            , "place_" + fhg::util::show (connection->first)
                             )
                     << arrow
                     << name ( id_trans
-                            , "port_" + ::util::show (connection->second.first)
+                            , "port_" + fhg::util::show (connection->second.first)
                             )
-                    << ( is_read 
+                    << ( is_read
                        ? brackets (keyval ("style", style::read_connection))
                        : ""
                        )
@@ -540,7 +540,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template <typename P, typename E, typename T, typename Pred>
-      inline std::string dot 
+      inline std::string dot
       ( const transition_t<P,E,T> & t
       , id_type & id
       , const options<Pred> & opts
@@ -581,15 +581,15 @@ namespace we { namespace type {
 
         std::ostringstream cond;
 
-        if (::util::show (t.condition()) != "true")
+        if (fhg::util::show (t.condition()) != "true")
           {
-            cond << "|" << quote (::util::show (t.condition()));
+            cond << "|" << quote (fhg::util::show (t.condition()));
           }
 
         level (s, l + 1)
           << name (id_trans, "condition")
           << node ( shape::condition
-                  , t.name() 
+                  , t.name()
                   + cond.str()
                   + intext.str()
                   + priority.str()
@@ -602,7 +602,7 @@ namespace we { namespace type {
             )
           {
             level (s, l + 1)
-              << name (id_trans, "port_" + ::util::show(p->first))
+              << name (id_trans, "port_" + fhg::util::show(p->first))
               << node ( p->second.is_input() ? shape::port_in : shape::port_out
                       , with_signature ( p->second.name()
                                        , p->second.signature()
@@ -614,7 +614,7 @@ namespace we { namespace type {
 
         if (opts.predicate (t))
           {
-            s << boost::apply_visitor 
+            s << boost::apply_visitor
                  (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
             for ( typename trans_t::const_iterator p (t.ports_begin())
@@ -625,11 +625,11 @@ namespace we { namespace type {
                 if (p->second.has_associated_place())
                   {
                     level (s, l + 1)
-                      << name (id_trans, "port_" + ::util::show (p->first))
+                      << name (id_trans, "port_" + fhg::util::show (p->first))
                       << arrow
                       << name (id_trans
-                              , "place_" 
-                              + ::util::show (p->second.associated_place())
+                              , "place_"
+                              + fhg::util::show (p->second.associated_place())
                               )
                       << association()
                       << std::endl
@@ -647,7 +647,7 @@ namespace we { namespace type {
             level (s, l + 1) << bgcolor (color::expression);
             break;
           case content::subnet:
-            level (s, l + 1) << 
+            level (s, l + 1) <<
               bgcolor (t.is_internal() ? color::internal : color::external)
               ;
             break;

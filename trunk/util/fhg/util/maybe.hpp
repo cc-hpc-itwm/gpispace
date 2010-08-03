@@ -3,7 +3,7 @@
 #ifndef _XML_FHG_UTIL_MAYBE_HPP
 #define _XML_FHG_UTIL_MAYBE_HPP
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include <boost/functional/hash.hpp>
 
@@ -91,7 +91,7 @@ namespace fhg
 
       const_reference get_with_default (const_reference dflt) const
       {
-        return boost::apply_visitor 
+        return boost::apply_visitor
           ( detail::get_with_default<const_reference> (dflt)
           , m
           );
@@ -110,7 +110,7 @@ namespace fhg
     inline std::size_t hash_value (const maybe<T> & x)
     {
       boost::hash<T> hasher;
-        
+
       return x.isNothing() ? 0 : (1 + hasher (*x));
     };
 
@@ -126,7 +126,7 @@ namespace fhg
     template<typename T>
     std::ostream & operator << (std::ostream & s, const maybe<T> & m)
     {
-      return s << (m.isNothing() ? "Nothing" : ("Just " + ::util::show(*m)));
+      return s << (m.isNothing() ? "Nothing" : ("Just " + fhg::util::show(*m)));
     };
 
     template<typename T>

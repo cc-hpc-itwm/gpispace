@@ -45,7 +45,7 @@ namespace module
 
     T operator () (const value::structured_t & o) const
     {
-      throw std::runtime_error ("bad_get: expected literal, got: " + util::show (o));
+      throw std::runtime_error ("bad_get: expected literal, got: " + fhg::util::show (o));
     }
   };
 

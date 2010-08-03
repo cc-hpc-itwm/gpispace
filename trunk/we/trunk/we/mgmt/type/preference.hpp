@@ -4,7 +4,7 @@
 #include <vector>
 #include <ostream>
 #include <boost/unordered_set.hpp>
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 namespace we
 {
@@ -239,14 +239,14 @@ namespace we
         os << ", ";
 
         os << "{ranks, ";
-        os << ::util::show (p.ranks().begin(), p.ranks().end());
+        os << fhg::util::show (p.ranks().begin(), p.ranks().end());
         os << "}";
 
         if (! p.is_mandatory())
         {
           os << ", ";
           os << "{cant, ";
-          os << ::util::show (p.exclusion().begin(), p.exclusion().end());
+          os << fhg::util::show (p.exclusion().begin(), p.exclusion().end());
           os << "}";
         }
 

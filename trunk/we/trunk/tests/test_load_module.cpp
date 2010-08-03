@@ -2,7 +2,7 @@
 #include <list>
 #include <string>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 #include <we/loader/loader.hpp>
 
 int main (int ac, char **av)
@@ -18,7 +18,7 @@ int main (int ac, char **av)
   std::list<std::string> failed;
   for (int i = 1; i < ac; ++i)
   {
-    const std::string mod_name ("mod-" + ::util::show(i));
+    const std::string mod_name ("mod-" + fhg::util::show(i));
     try
     {
       loader.load (mod_name, av[i]);

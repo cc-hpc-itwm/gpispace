@@ -6,7 +6,7 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/exception.hpp>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 namespace expr
 {
@@ -42,7 +42,7 @@ namespace expr
         case token::_else:
         case token::_endif: return -99;
         case token::define: return -98;
-        default: throw exception::strange ("prec " + util::show(token));
+        default: throw exception::strange ("prec " + fhg::util::show(token));
         }
     }
   }

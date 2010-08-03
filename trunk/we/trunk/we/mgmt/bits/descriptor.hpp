@@ -4,7 +4,7 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/lexical_cast.hpp>
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 #include <algorithm>
 
 namespace we
@@ -346,7 +346,7 @@ namespace we
           if (has_parent())      p << parent();
           else                   p << "n/a";
           p << std::endl;
-          p << "     children := " << ::util::show (children_.begin(), children_.end()) << std::endl;
+          p << "     children := " << fhg::util::show (children_.begin(), children_.end()) << std::endl;
           p << "     internal := "
             << activity_.transition().is_internal()
             << std::endl;
@@ -374,13 +374,13 @@ namespace we
         std::string show_input() const
         {
           lock_t lock (mutex_);
-          return ::util::show (activity_.input().begin(), activity_.input().end());
+          return fhg::util::show (activity_.input().begin(), activity_.input().end());
         }
 
         std::string show_output() const
         {
           lock_t lock (mutex_);
-          return ::util::show (activity_.output().begin(), activity_.output().end());
+          return fhg::util::show (activity_.output().begin(), activity_.output().end());
         }
 
         template <typename Fun>

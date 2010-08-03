@@ -4,7 +4,7 @@
 #define _WE_TYPE_SIGNATURE_HPP
 
 #include <we/type/literal/name.hpp>
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
@@ -86,7 +86,7 @@ namespace signature
 
       std::ostream & operator () (const literal::type_name_t & t) const
       {
-        return s << util::show (t);
+        return s << fhg::util::show (t);
       }
 
       std::ostream & operator () (const structured_t & map) const
@@ -98,9 +98,9 @@ namespace signature
             ; ++field
             )
           s << ((field != map.begin()) ? ", " : "")
-            << util::show (field->first)
+            << fhg::util::show (field->first)
             << " :: "
-            << util::show (field->second)
+            << fhg::util::show (field->second)
             ;
 
         s << "]";
@@ -172,7 +172,7 @@ namespace signature
       {
         map[field] = type;
       }
-      
+
       void operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
@@ -189,7 +189,7 @@ namespace signature
     public:
       get_field ( const field_name_t & _field
                 , const std::string & _msg = "signature"
-                ) 
+                )
         : field (_field)
         , msg (_msg)
       {}
@@ -198,7 +198,7 @@ namespace signature
       {
         return map[field];
       }
-      
+
       desc_t & operator () (literal::type_name_t &) const
       {
         throw std::runtime_error
@@ -215,7 +215,7 @@ namespace signature
     public:
       create_structured_field ( const std::string & _field
                               , const std::string & _msg = "signature"
-                              ) 
+                              )
         : field (_field)
         , msg (_msg)
       {}
@@ -224,8 +224,8 @@ namespace signature
       {
         if (map.has_field (field))
           {
-            throw std::runtime_error (msg + ": try to create field " 
-                                     + field 
+            throw std::runtime_error (msg + ": try to create field "
+                                     + field
                                      + " which is already there"
                                      );
           }
@@ -240,7 +240,7 @@ namespace signature
       }
     };
 
-    class get_or_create_structured_field 
+    class get_or_create_structured_field
       : public boost::static_visitor<desc_t &>
     {
     private:
@@ -250,7 +250,7 @@ namespace signature
     public:
       get_or_create_structured_field ( const std::string & _field
                                      , const std::string & _msg = "signature"
-                                     ) 
+                                     )
         : field (_field)
         , msg (_msg)
       {}
@@ -284,8 +284,8 @@ namespace signature
       create_literal_field ( const std::string & _field
                            , const T & _val
                            , const std::string & _msg = "signature"
-                           ) 
-        : field (_field) 
+                           )
+        : field (_field)
         , val (_val)
         , msg (_msg)
       {}
@@ -294,8 +294,8 @@ namespace signature
       {
         if (map.has_field (field))
           {
-            throw std::runtime_error (msg + ": try to create field " 
-                                     + field 
+            throw std::runtime_error (msg + ": try to create field "
+                                     + field
                                      + " which is already there"
                                      );
           }

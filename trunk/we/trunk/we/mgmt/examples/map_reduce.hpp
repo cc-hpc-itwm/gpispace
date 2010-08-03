@@ -19,7 +19,7 @@
 #ifndef WE_MGMT_EXAMPLES_MAP_REDUCE_HPP
 #define WE_MGMT_EXAMPLES_MAP_REDUCE_HPP 1
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 #include <we/util/warnings.hpp>
 #include <we/mgmt/bits/types.hpp>
 #include <we/mgmt/bits/activity.hpp>

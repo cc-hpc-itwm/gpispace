@@ -13,9 +13,9 @@
 #include <we/type/literal.hpp>
 #include <we/type/literal/read.hpp>
 
-#include <we/util/show.hpp>
-
 #include <we/type/control.hpp>
+
+#include <fhg/util/show.hpp>
 
 #include <string>
 #include <iostream>
@@ -182,7 +182,7 @@ namespace expr
                   {
                   case 'o': ++pos; require("s"); unary (_cos, "cos"); break;
                   case 'e': ++pos; require("il"); unary (_ceil, "ceil"); break;
-                  default: throw exception::parse::expected 
+                  default: throw exception::parse::expected
                       ("'os' or 'eil'", pos());
                   }
               break;
@@ -454,7 +454,7 @@ namespace expr
       tokenizer ( unsigned int & _k
                 , std::string::const_iterator & _pos
                 , const std::string::const_iterator & _end
-                ) 
+                )
         : pos (_k, _pos,_end), token (eof) {}
       const literal::type & operator () (void) const { return tokval; }
       const token::type & operator * (void) const { return token; }
@@ -471,7 +471,7 @@ namespace expr
           ; pos != key_vec.end()
           ; ++pos
           )
-        s += ((pos != key_vec.begin()) ? "." : "") + ::util::show (*pos);
+        s += ((pos != key_vec.begin()) ? "." : "") + fhg::util::show (*pos);
 
       return s;
     }

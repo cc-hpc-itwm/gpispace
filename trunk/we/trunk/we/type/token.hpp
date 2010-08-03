@@ -10,8 +10,6 @@
 #include <we/type/signature.hpp>
 #include <we/type/value.hpp>
 
-#include <we/util/show.hpp>
-
 #include <string>
 #include <stdexcept>
 
@@ -49,7 +47,7 @@ namespace token
     }
 
   public:
-    type () 
+    type ()
       : value (control())
       , hash (boost::apply_visitor (value::visitor::hash(), value))
     {}
@@ -119,7 +117,7 @@ namespace token
       {
         throw std::runtime_error ("token::put: capacity exceeded");
       }
-    
+
     return net.put_token ( pid
                          , type ( place::name<NET> (net, pid)
                                 , place::signature<NET> (net, pid)

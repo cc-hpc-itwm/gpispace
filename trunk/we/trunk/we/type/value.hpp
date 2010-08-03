@@ -11,7 +11,7 @@
 #include <we/type/literal/require_type.hpp>
 #include <we/type/literal/hash.hpp>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include <string>
 #include <map>
@@ -98,7 +98,7 @@ namespace value
       type & operator () (literal::type & l) const
       {
         throw std::runtime_error
-          ("cannot get field " + name + " from the literal " + util::show(l));
+          ("cannot get field " + name + " from the literal " + fhg::util::show(l));
       }
     };
 
@@ -137,7 +137,7 @@ namespace value
       const type & operator () (const literal::type & l) const
       {
         throw std::runtime_error
-          ("cannot get field " + name + " from the literal " + util::show(l));
+          ("cannot get field " + name + " from the literal " + fhg::util::show(l));
       }
     };
 
@@ -276,7 +276,7 @@ namespace value
       template<typename T, typename U>
       type operator () (const T & t, const U & u) const
       {
-        throw ::type::error ("incompatible types: wanted type " + util::show (t) + " given value " + util::show (u));
+        throw ::type::error ("incompatible types: wanted type " + fhg::util::show (t) + " given value " + fhg::util::show (u));
       }
     };
 
@@ -378,7 +378,7 @@ namespace value
 
       result_type operator () (const value::structured_t & o) const
       {
-        throw std::runtime_error ("bad_get: expected literal, got: " + util::show (o));
+        throw std::runtime_error ("bad_get: expected literal, got: " + fhg::util::show (o));
       }
     };
   }

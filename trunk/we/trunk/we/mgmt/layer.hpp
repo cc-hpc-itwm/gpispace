@@ -23,6 +23,8 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <fhg/util/show.hpp>
+
 #include <we/net.hpp>
 #include <we/util/warnings.hpp>
 
@@ -281,7 +283,7 @@ namespace we { namespace mgmt {
 
       status_type status(const external_id_type & id) throw (std::exception)
       {
-        return ::util::show (lookup (map_to_internal(id)));
+        return fhg::util::show (lookup (map_to_internal(id)));
       }
 
       void print_statistics (std::ostream & s) const
@@ -290,7 +292,7 @@ namespace we { namespace mgmt {
 
         lock_t lock (mutex_);
         s << "   #activities := " << activities_.size() << std::endl;
-        s << "   ext -> int := " << ::util::show (ext_to_int_.begin(), ext_to_int_.end());
+        s << "   ext -> int := " << fhg::util::show (ext_to_int_.begin(), ext_to_int_.end());
         s << std::endl;
         s << std::endl;
 
@@ -348,9 +350,9 @@ namespace we { namespace mgmt {
         {
           throw exception::already_there<external_id_type>
             ( "already_there: ext_id := "
-            + ::util::show(external_id)
+            + fhg::util::show(external_id)
             + " -> int_id := "
-            + ::util::show(mapping->second)
+            + fhg::util::show(mapping->second)
             , external_id
             );
         }
@@ -375,9 +377,9 @@ namespace we { namespace mgmt {
         {
           throw exception::no_such_mapping<external_id_type>
             ( "no_such_mapping: ext := "
-            + ::util::show(external_id)
+            + fhg::util::show(external_id)
             + " -> int := "
-            + ::util::show(internal_id)
+            + fhg::util::show(internal_id)
             , external_id
             );
         }
@@ -398,7 +400,7 @@ namespace we { namespace mgmt {
         }
         else
         {
-          throw exception::no_such_mapping<external_id_type> ("no_such_mapping: ext_id := " + ::util::show (external_id), external_id);
+          throw exception::no_such_mapping<external_id_type> ("no_such_mapping: ext_id := " + fhg::util::show (external_id), external_id);
         }
       }
     public:
@@ -755,7 +757,7 @@ namespace we { namespace mgmt {
                     break;
                   default:
                     LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child.name() << ")-" << child.id());
-                    throw std::runtime_error ("invalid classification during execution of activity: " + ::util::show (child));
+                    throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
                   }
 
                   DLOG(TRACE, "extractor-" << rank << " done with child: " << child.id());
@@ -853,7 +855,7 @@ namespace we { namespace mgmt {
         }
         else
         {
-          throw std::runtime_error ("STRANGE! cannot inject: " + ::util::show (desc));
+          throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (desc));
         }
 
         if (sig_finished.connected())
@@ -922,7 +924,7 @@ namespace we { namespace mgmt {
           }
           else
           {
-            throw std::runtime_error ("activity failed, but I don't know what to do with it: " + ::util::show (desc));
+            throw std::runtime_error ("activity failed, but I don't know what to do with it: " + fhg::util::show (desc));
           }
 
           remove_activity (desc);
@@ -956,7 +958,7 @@ namespace we { namespace mgmt {
         }
         else
         {
-          throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + ::util::show (desc));
+          throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (desc));
         }
 
         sig_cancelled ( this
@@ -1015,7 +1017,7 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "removing activity " << desc.id());
 
         if (desc.has_children())
-          throw std::runtime_error("cannot remove non-leaf: " + ::util::show (desc));
+          throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
         if (desc.sent_to_external())
         {
           del_map_to_internal (desc.to_external_id(), desc.id());
@@ -1032,7 +1034,7 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::iterator a = activities_.find(id);
-        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
+        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
 
@@ -1040,7 +1042,7 @@ namespace we { namespace mgmt {
       {
         lock_t (mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
-        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+::util::show(id)+") failed!", id);
+        if (a == activities_.end()) throw exception::activity_not_found<internal_id_type>("lookup("+fhg::util::show(id)+") failed!", id);
         return a->second;
       }
 

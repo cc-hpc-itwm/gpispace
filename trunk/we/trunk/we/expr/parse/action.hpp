@@ -9,7 +9,7 @@
 #include <we/expr/token/type.hpp>
 #include <we/expr/exception.hpp>
 
-#include <we/util/show.hpp>
+#include <fhg/util/show.hpp>
 
 #include <iostream>
 
@@ -40,7 +40,7 @@ namespace expr
           case error2: return s << "error: missing operator";
           case error3: return s << "error: unbalanced parenthesis";
           case error4: return s << "error: invalid function argument";
-          default: throw exception::strange ("action " + util::show(action));
+          default: throw exception::strange ("action " + fhg::util::show(action));
           }
       }
 
@@ -58,7 +58,7 @@ namespace expr
           {
             if (inp == token::lpr)
               return error2;
-          
+
             if (inp == token::sep)
               return reduce;
 
@@ -72,7 +72,7 @@ namespace expr
           {
             if (inp == token::eof)
               return accept;
-            
+
             if (inp == token::rpr)
               return error3;
 
