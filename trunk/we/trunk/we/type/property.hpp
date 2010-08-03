@@ -310,7 +310,10 @@ namespace we
         fhg::util::maybe<mapped_type>
         set (const std::string & path, const value_type & val)
         {
-          return set (util::split (path), val);
+          const path_type path_splitted (util::split (path));
+          const fhg::util::maybe<mapped_type> ret (set (path_splitted, val));
+
+          return ret;
         }
 
         // ----------------------------------------------------------------- //
@@ -328,7 +331,10 @@ namespace we
 
         const mapped_type & get (const std::string & path) const
         {
-          return (get (util::split (path)));
+          const path_type path_splitted (util::split (path));
+          const mapped_type & ret (get (path_splitted));
+
+          return ret;
         }
 
         // ----------------------------------------------------------------- //
@@ -346,7 +352,10 @@ namespace we
 
         const value_type & get_val (const std::string & path) const
         {
-          return get_val (util::split (path));
+          const path_type path_splitted (util::split (path));
+          const value_type & ret (get_val (path_splitted));
+
+          return ret;
         }
 
         // ----------------------------------------------------------------- //
@@ -367,7 +376,11 @@ namespace we
         const fhg::util::maybe<const value_type &>
         get_maybe_val (const std::string & path) const
         {
-          return get_maybe_val (util::split (path));
+          const path_type path_splitted (util::split (path));
+          const fhg::util::maybe<const value_type &> ret
+            (get_maybe_val (path_splitted));
+
+          return ret;
         }
 
         // ----------------------------------------------------------------- //
@@ -390,7 +403,10 @@ namespace we
                          , const value_type & dflt
                          ) const
         {
-          return get_with_default (util::split (path), dflt);
+          const path_type path_splitted (util::split (path));
+          const value_type & ret (get_with_default (path_splitted, dflt));
+
+          return ret;
         }
 
         // ----------------------------------------------------------------- //
@@ -428,7 +444,9 @@ namespace we
 
         void del (const std::string & path)
         {
-          del (util::split (path));
+          const path_type path_splitted (util::split (path));
+
+          del (path_splitted);
         }
 
         // ----------------------------------------------------------------- //
