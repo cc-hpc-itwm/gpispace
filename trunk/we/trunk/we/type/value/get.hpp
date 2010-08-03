@@ -179,6 +179,17 @@ namespace value
 
     return boost::apply_visitor (get, v);
   }
+
+  template<typename T>
+  typename visitor::get_literal_value<T const &>::result_type
+  get (const signature::field_name_t & field, const type & v)
+  {
+    visitor::get_field get (field);
+
+    return boost::apply_visitor ( visitor::get_literal_value<T const &>()
+                                , boost::apply_visitor (get, v)
+                                );
+  }
 }
 
 #endif

@@ -14,21 +14,10 @@ static void run ( void *
 
   LOG (INFO, "a " << a);
 
-  const value::type & a_start (value::get_field ("start", a));
-  const value::type & a_end (value::get_field ("end", a));
-
-  LOG (INFO, "a_start " << a_start);
-  LOG (INFO, "a_end " << a_end);
-
-  const double & a_start_x
-    (value::get_literal_value<double> (value::get_field ("start.x", a)));
-  const double & a_start_y
-    (value::get_literal_value<double> (value::get_field ("start.y", a)));
-
-  const double & a_end_x
-    (value::get_literal_value<double> (value::get_field ("end.x", a)));
-  const double & a_end_y
-    (value::get_literal_value<double> (value::get_field ("end.y", a)));
+  const double & a_start_x (value::get<double> ("start.x", a));
+  const double & a_start_y (value::get<double> ("start.y", a));
+  const double & a_end_x (value::get<double> ("end.x", a));
+  const double & a_end_y (value::get<double> ("end.y", a));
 
   LOG (INFO, "a_start_x " << a_start_x);
   LOG (INFO, "a_start_y " << a_start_y);
