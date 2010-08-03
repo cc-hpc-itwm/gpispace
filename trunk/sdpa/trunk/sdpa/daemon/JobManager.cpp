@@ -34,6 +34,18 @@ JobManager::JobManager(): SDPA_INIT_LOGGER("sdpa::daemon::JobManager")  {
 }
 
 JobManager::~JobManager(){
+  LOG_IF( WARN
+        , job_map_.size()
+        , "there are still entries left in the job-map: " << job_map_.size()
+        );
+  LOG_IF( WARN
+        , job_map_marked_for_del_.size()
+        , "there are still entries left in the mark-for-deletion map: " << job_map_marked_for_del_.size()
+        );
+  LOG_IF( WARN
+        , job_preferences_.size()
+        , "there are still entries left in the preferences map: " << job_preferences_.size()
+        );
 
 }
 
