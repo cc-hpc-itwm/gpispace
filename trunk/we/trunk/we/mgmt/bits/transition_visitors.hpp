@@ -26,7 +26,6 @@
 
 #include <fhg/util/show.hpp>
 
-#include <we/util/warnings.hpp>
 #include <we/type/transition.hpp>
 
 namespace we { namespace mgmt { namespace visitor {

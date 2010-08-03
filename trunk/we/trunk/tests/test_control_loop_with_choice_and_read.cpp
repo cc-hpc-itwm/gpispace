@@ -5,7 +5,6 @@
 #include <we/function/cond.hpp>
 
 #include <fhg/util/show.hpp>
-#include <we/util/warnings.hpp>
 
 #include "timer.hpp"
 
@@ -72,10 +71,9 @@ static pnet_t::output_t trans_step
 ( const petri_net::pid_t pid_state
 , const petri_net::pid_t pid_increment
 , const pnet_t::input_t & input
-, const pnet_t::output_descr_t & output_descr
+, const pnet_t::output_descr_t &
 )
 {
-  we::util::remove_unused_variable_warning (output_descr);
   ++cnt_trans;
 
   pnet_t::output_t output;

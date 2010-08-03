@@ -16,8 +16,8 @@
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
-#include <we/util/read.hpp>
 
+#include <fhg/util/read.hpp>
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/read_bool.hpp>
 
@@ -203,7 +203,7 @@ namespace xml
                 }
               else if (child_name == "include-structs")
                 {
-                  const type::struct_vec_type structs 
+                  const type::struct_vec_type structs
                     ( structs_include ( required ( "structs_type"
                                                  , child
                                                  , "href"
@@ -253,7 +253,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "property_map_list_type"
                                                     , child
                                                     , "href"
@@ -290,7 +290,7 @@ namespace xml
         , required ("connect_type", node, "port", state.file_in_progress())
         , state.level() + 2
         );
-      
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -307,7 +307,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "connect_type"
                                                     , child
                                                     , "href"
@@ -321,7 +321,7 @@ namespace xml
                 }
               else
                 {
-                  state.warn 
+                  state.warn
                     ( warning::unexpected_element ( child_name
                                                   , "connect_type"
                                                   , state.file_in_progress()
@@ -374,7 +374,7 @@ namespace xml
                 }
               else if (child_name == "include-structs")
                 {
-                  const type::struct_vec_type structs 
+                  const type::struct_vec_type structs
                     ( structs_include ( required ( "function_type"
                                                  , child
                                                  , "href"
@@ -401,7 +401,7 @@ namespace xml
               else if (child_name == "net")
                 {
                   ++state.level();
-                  
+
                   f.f = net_type (child, state);
 
                   --state.level();
@@ -419,7 +419,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "function_type"
                                                     , child
                                                     , "href"
@@ -505,7 +505,7 @@ namespace xml
                 }
               else if (child_name == "include-structs")
                 {
-                  const type::struct_vec_type structs 
+                  const type::struct_vec_type structs
                     ( structs_include ( required ( "net_type"
                                                  , child
                                                  , "href"
@@ -537,7 +537,7 @@ namespace xml
                     {
                       if (fun.name.isJust() && *fun.name != *as)
                         {
-                          state.warn 
+                          state.warn
                             ( warning::overwrite_function_name_as
                               ( *fun.name
                               , *as
@@ -574,7 +574,7 @@ namespace xml
                     {
                       if (tmpl.name.isJust() && *tmpl.name != *as)
                         {
-                          state.warn 
+                          state.warn
                             ( warning::overwrite_template_name_as
                               ( *tmpl.name
                               , *as
@@ -600,7 +600,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "net_type"
                                                     , child
                                                     , "href"
@@ -641,7 +641,7 @@ namespace xml
         ( validate_prefix (name, "place", state.file_in_progress())
         , required ("place_type", node, "type", state.file_in_progress())
         , fhg::util::fmap<std::string, petri_net::capacity_t>
-          ( &::we::util::reader<petri_net::capacity_t>::read
+          ( &fhg::util::reader<petri_net::capacity_t>::read
           , optional (node, "capacity")
           )
         );
@@ -668,7 +668,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "place_type"
                                                     , child
                                                     , "href"
@@ -682,7 +682,7 @@ namespace xml
                 }
               else
                 {
-                  state.warn 
+                  state.warn
                     ( warning::unexpected_element ( child_name
                                                   , "place_type"
                                                   , state.file_in_progress()
@@ -723,7 +723,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "port_type"
                                                     , child
                                                     , "href"
@@ -737,7 +737,7 @@ namespace xml
                 }
               else
                 {
-                  state.warn 
+                  state.warn
                     ( warning::unexpected_element ( child_name
                                                   , "port_type"
                                                   , state.file_in_progress()
@@ -785,7 +785,7 @@ namespace xml
 
                   if (cdata.size() > 1)
                     {
-                      throw error::property_generic 
+                      throw error::property_generic
                         ( "more than one value given"
                         , state.prop_path()
                         , state.file_in_progress()
@@ -846,7 +846,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "property_dive"
                                                     , child
                                                     , "href"
@@ -860,7 +860,7 @@ namespace xml
                 }
               else
                 {
-                  state.warn 
+                  state.warn
                     ( warning::unexpected_element ( child_name
                                                   , "property_dive"
                                                   , state.file_in_progress()
@@ -887,7 +887,7 @@ namespace xml
                                  );
 
           state.prop_path().push_back (name);
-          
+
           property_dive (node, state, prop);
 
           state.prop_path().pop_back ();
@@ -948,7 +948,7 @@ namespace xml
                 }
               else
                 {
-                  state.warn 
+                  state.warn
                     ( warning::unexpected_element ( child_name
                                                   , "gen_struct_type"
                                                   , state.file_in_progress()
@@ -972,7 +972,7 @@ namespace xml
                            , sig
                            );
 
-      gen_struct_type 
+      gen_struct_type
         ( node
         , state
         , boost::apply_visitor (signature::visitor::get_field (name), sig)
@@ -1004,7 +1004,7 @@ namespace xml
     {
       const std::string name
         (required ("token_field_type", node, "name", state.file_in_progress()));
-      
+
       for ( xml_node_type * child (node->first_node())
           ; child
           ; child = child ? child->next_sibling() : child
@@ -1018,7 +1018,7 @@ namespace xml
               if (child_name == "value")
                 {
                   boost::apply_visitor
-                    ( signature::visitor::create_literal_field<std::string> 
+                    ( signature::visitor::create_literal_field<std::string>
                       ( name
                       , std::string (child->value())
                       , "token"
@@ -1028,10 +1028,10 @@ namespace xml
                 }
               else if (child_name == "field")
                 {
-                  token_field_type 
+                  token_field_type
                     ( child
                     , state
-                    , boost::apply_visitor 
+                    , boost::apply_visitor
                       ( signature::visitor::get_or_create_structured_field
                         (name, "token")
                       , tok
@@ -1099,7 +1099,7 @@ namespace xml
                  , type::type_map_type & map
                  )
     {
-      const std::string replace 
+      const std::string replace
         (required ("set_type_map", node, "replace", state.file_in_progress()));
       const std::string with
         (required ("set_type_map", node, "with", state.file_in_progress()));
@@ -1110,12 +1110,12 @@ namespace xml
         {
           if (old->second != with)
             {
-              throw error::type_map_mismatch 
+              throw error::type_map_mismatch
                 (replace, old->second, with, state.file_in_progress());
             }
           else
             {
-              state.warn ( warning::type_map_duplicate 
+              state.warn ( warning::type_map_duplicate
                            ( replace
                            , with
                            , state.file_in_progress()
@@ -1265,7 +1265,7 @@ namespace xml
                 {
                   t.push_out (connect_type(child, state));
                 }
-              else if (child_name == "connect-read")        
+              else if (child_name == "connect-read")
                 {
                   t.push_read (connect_type(child, state));
                 }
@@ -1282,7 +1282,7 @@ namespace xml
                 }
               else if (child_name == "include-properties")
                 {
-                  const we::type::property::type deeper 
+                  const we::type::property::type deeper
                     ( properties_include ( required ( "transition_type"
                                                     , child
                                                     , "href"
@@ -1315,7 +1315,7 @@ namespace xml
     frontend (state::type & state, const std::string & input)
     {
       type::function_type f
-        ( (input == "-") 
+        ( (input == "-")
         ? parse_function (std::cin, state)
         : function_include (input, state)
         );

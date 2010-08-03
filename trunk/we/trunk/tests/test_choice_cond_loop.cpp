@@ -4,9 +4,7 @@
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
 
-#include <we/util/read.hpp>
 #include <fhg/util/show.hpp>
-#include <we/util/warnings.hpp>
 
 #include <we/type/condition.hpp>
 #include <we/type/token.hpp>
@@ -76,11 +74,9 @@ static pnet_t::output_t trans_step
 , const petri_net::pid_t pid_state
 , const petri_net::pid_t pid_value
 , const pnet_t::input_t & input
-, const pnet_t::output_descr_t & output_descr
+, const pnet_t::output_descr_t &
 )
 {
-  we::util::remove_unused_variable_warning (output_descr);
-
   pnet_t::output_t output;
 
   map_t m;

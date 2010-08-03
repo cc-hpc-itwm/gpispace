@@ -2,8 +2,6 @@
 
 #include <we/expr/parse/parser.hpp>
 
-#include <we/util/read.hpp>
-
 #include "timer.hpp"
 
 #include <iostream>
@@ -42,14 +40,14 @@ int main (int ac, char **)
                 typedef expr::parse::parser<std::string> parser_t;
 
                 parser_t parser (input);
-              
+
                 while (!parser.empty())
                   {
                     cout << "expression: " << parser.front() << endl;
 
                     try
                       {
-                        cout << "evals to: " 
+                        cout << "evals to: "
                              << parser.eval_front (context)
                              << endl;
                       }
@@ -110,7 +108,7 @@ int main (int ac, char **)
         context_t context;
 
         context.bind("1",max);
-      
+
         parser_t parser (input);
 
         for (int r (0); r < round; ++r)

@@ -3,7 +3,6 @@
 #include <we/net.hpp>
 #include <we/function/trans.hpp>
 #include <we/function/cond.hpp>
-#include <we/util/warnings.hpp>
 
 #include <fhg/util/show.hpp>
 
@@ -69,10 +68,9 @@ typedef Function::Transition::Traits<token_t>::token_on_place_t top_t;
 static pnet_t::output_t trans ( const petri_net::pid_t & pid_value
                               , const petri_net::pid_t & pid_increment
                               , const pnet_t::input_t & input
-                              , const pnet_t::output_descr_t & output_descr
+                              , const pnet_t::output_descr_t &
                               )
 {
-  we::util::remove_unused_variable_warning (output_descr);
 //  ++cnt_trans;
 
   map_t m;

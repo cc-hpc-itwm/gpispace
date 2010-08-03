@@ -20,7 +20,6 @@
 
 #include <fhg/util/show.hpp>
 
-#include <we/util/warnings.hpp>
 #include <we/type/transition.hpp>
 #include <we/mgmt/bits/types.hpp>
 

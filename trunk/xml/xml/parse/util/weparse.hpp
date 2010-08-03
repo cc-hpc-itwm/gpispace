@@ -4,7 +4,6 @@
 #define _XML_PARSE_UTIL_WEPARSE_HPP
 
 #include <we/expr/parse/parser.hpp>
-#include <we/util/read.hpp>
 
 #include <xml/parse/error.hpp>
 
@@ -70,7 +69,7 @@ namespace xml
       {
         std::ostringstream s;
 
-        s << "when parsing " << descr 
+        s << "when parsing " << descr
           << " of " << type << " " << name
           << " in " << path
           ;

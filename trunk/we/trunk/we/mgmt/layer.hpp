@@ -24,9 +24,9 @@
 #include <fhglog/fhglog.hpp>
 
 #include <fhg/util/show.hpp>
+#include <fhg/util/warnings.hpp>
 
 #include <we/net.hpp>
-#include <we/util/warnings.hpp>
 
 #include <boost/random.hpp>
 #include <boost/function.hpp>
@@ -157,7 +157,7 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "cancel (" << id << ", " << reason << ")");
 
-        we::util::remove_unused_variable_warning(reason);
+        fhg::util::remove_unused_variable_warning(reason);
 
         post_cancel_activity_notification (map_to_internal(id));
         return true;
@@ -210,7 +210,7 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "failed (" << id << ", " << result << ")");
 
-        we::util::remove_unused_variable_warning(result);
+        fhg::util::remove_unused_variable_warning(result);
 
         post_failed_notification (map_to_internal(id));
         return true;

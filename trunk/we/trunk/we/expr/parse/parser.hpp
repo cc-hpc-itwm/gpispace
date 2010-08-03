@@ -18,8 +18,7 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we/util/read.hpp>
-
+#include <fhg/util/read.hpp>
 #include <fhg/util/show.hpp>
 
 #include <stack>
@@ -50,7 +49,7 @@ namespace expr
   namespace parse
   {
     template< typename Key
-            , typename READER = ::we::util::reader<Key>
+            , typename READER = fhg::util::reader<Key>
             >
     struct parser
     {

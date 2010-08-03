@@ -12,8 +12,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#include <we/util/warnings.hpp>
-
 #include <iostream>
 
 #include <stdint.h>
@@ -41,9 +39,8 @@ namespace bitsetofint
 
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void serialize(Archive & ar, const unsigned int)
     {
-      we::util::remove_unused_variable_warning(version);
       ar & BOOST_SERIALIZATION_NVP(container);
     }
 
@@ -74,7 +71,7 @@ namespace bitsetofint
     friend std::size_t hash_value (const type &);
     friend bool operator == (const type &, const type &);
   };
-  
+
   inline std::ostream & operator << (std::ostream & s, const type & t)
   {
     s << "{";

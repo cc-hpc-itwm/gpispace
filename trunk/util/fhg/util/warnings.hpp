@@ -16,10 +16,10 @@
  * =====================================================================================
  */
 
-#ifndef WE_UTIL_WARNINGS_HPP
-#define WE_UTIL_WARNINGS_HPP 1
+#ifndef _FHG_UTIL_WARNINGS_HPP
+#define _FHG_UTIL_WARNINGS_HPP 1
 
-namespace we { namespace util {
+namespace fhg { namespace util {
   template <typename T>
   inline void remove_unused_variable_warning(T) { }
 }}

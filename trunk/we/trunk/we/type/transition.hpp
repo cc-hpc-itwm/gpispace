@@ -20,7 +20,6 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/net.hpp>
-#include <we/util/warnings.hpp>
 #include <we/type/port.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
