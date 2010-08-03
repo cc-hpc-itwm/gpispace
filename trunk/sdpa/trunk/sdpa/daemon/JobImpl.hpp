@@ -93,8 +93,10 @@ namespace sdpa { namespace daemon {
 			ar & walltime_;
 		}
 
-    private:
+    protected:
         SDPA_DECLARE_LOGGER();
+
+    private:
         sdpa::job_id_t id_;
         sdpa::job_desc_t desc_;
         sdpa::job_id_t parent_;
