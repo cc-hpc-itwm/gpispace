@@ -79,21 +79,10 @@ if (ENABLE_LOGGING)
   message(STATUS "Project: '${PROJECT_NAME}'")
   set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
 
-  if (WITH_LOG4CPP)
-    set (WITH_FHGLOG NO)
-    message(STATUS "Building with log4cpp...")
-
-	find_package (Logging REQUIRED)
-    include_directories(${LOG4CPP_INCLUDE_DIRS})
-    set(${UPPER_PROJECT_NAME}_HAVE_LOG4CPP 1)
-  endif(WITH_LOG4CPP)
-
-  if (WITH_FHGLOG)
     message(STATUS "Building with fhglog...")
 	find_package (FhgLog REQUIRED)
     include_directories(${FhgLog_INCLUDE_DIR})
     set(${UPPER_PROJECT_NAME}_HAVE_FHGLOG 1)
-  endif(WITH_FHGLOG)
 endif (ENABLE_LOGGING)
 
 ## check for threads
