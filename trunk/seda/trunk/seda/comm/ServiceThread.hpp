@@ -28,7 +28,6 @@ namespace seda { namespace comm {
 	public:
 	  ServiceThread()
 		: thread_(NULL)
-		, barrier_(2)
 	  {}
 
 	  ~ServiceThread()
@@ -52,7 +51,6 @@ namespace seda { namespace comm {
 		if (thread_) { return; }
 
 		thread_ = new boost::thread(boost::bind(&ServiceThread::operator(), this));
-		barrier_.wait();
 	  }
 
 	  void stop()
@@ -60,13 +58,13 @@ namespace seda { namespace comm {
 		if (! thread_) { return; }
 
 		DLOG(TRACE, "interrupting service thread");
-		thread_->interrupt(); 
+		thread_->interrupt();
 		io_service_.stop();
 		DLOG(TRACE, "joining service thread");
 		thread_->join();
 		DLOG(TRACE, "service thread finished");
 		io_service_.reset();
-		
+
 		delete thread_; thread_ = NULL;
 	  }
 
@@ -74,7 +72,6 @@ namespace seda { namespace comm {
 	private:
 	  void operator()()
 	  {
-		barrier_.wait();
 		DLOG(TRACE, "service thread running");
 		try
 		{
@@ -89,7 +86,6 @@ namespace seda { namespace comm {
 
 	private:
 	  boost::thread *thread_;
-	  boost::barrier barrier_;
 	  boost::asio::io_service io_service_;
   };
 }}
