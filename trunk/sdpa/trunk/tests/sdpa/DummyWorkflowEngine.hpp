@@ -29,7 +29,6 @@
 #include <boost/config.hpp>
 #include <iostream>
 
-#include <boost/bimap.hpp>
 #include <map>
 #include <boost/thread.hpp>
 
