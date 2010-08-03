@@ -94,6 +94,8 @@ namespace sdpa { namespace nre { namespace worker {
     	getrusage(RUSAGE_SELF, &usage_);
     }
 
+    virtual ~PingReply() {}
+
     virtual void writeTo(std::ostream &os) const
     {
     	os << "PingReply: id=" << id() << " pid=" << pid() << " utime=" << usage().ru_utime.tv_sec;
@@ -116,6 +118,8 @@ namespace sdpa { namespace nre { namespace worker {
 	  typedef sdpa::shared_ptr<PingRequest> Ptr;
 	  PingRequest() : key_("") {}
 	  explicit PingRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
+
+          virtual ~PingRequest() {}
 
 	  virtual void writeTo(std::ostream &os) const
 	  {
@@ -151,6 +155,7 @@ namespace sdpa { namespace nre { namespace worker {
 	  typedef sdpa::shared_ptr<InfoReply> Ptr;
 	  InfoReply() { }
 	  InfoReply(const std::string &a_id, ExecutionContext *ctxt) : Reply(a_id), info_(ctxt->getRank()){ }
+          virtual ~InfoReply() {}
 
 	  virtual void writeTo(std::ostream &os) const
 	  {
@@ -169,6 +174,7 @@ namespace sdpa { namespace nre { namespace worker {
 	  typedef sdpa::shared_ptr<InfoRequest> Ptr;
 	  InfoRequest() : key_(""){}
 	  explicit InfoRequest(const std::string &a_msg_id) : Request(a_msg_id) {}
+          virtual ~InfoRequest() {}
 
 	  virtual void writeTo(std::ostream &os) const
 	  {
@@ -199,6 +205,7 @@ namespace sdpa { namespace nre { namespace worker {
 	  typedef sdpa::shared_ptr<ExecuteReply> Ptr;
 	  ExecuteReply() {}
 	  explicit ExecuteReply(const execution_result_t& exec_result) : exec_result_(exec_result) {}
+          virtual ~ExecuteReply() {}
 
 	  virtual void writeTo(std::ostream &os) const
 	  {
@@ -212,29 +219,13 @@ namespace sdpa { namespace nre { namespace worker {
 	  execution_result_t exec_result_; // defined in IWorkflowEngine
   };
 
-  /*namespace detail {
-	  // TODO implement for the real activity object type
-	  template <typename Activity>
-	  inline std::string get_module_name (const Activity & ) {
-		  // boost::get<transition_t::mod_call_t> (act.transition().data()).m();
-		  return "dummy";
-	  }
-
-	  template <typename Activity>
-	  inline std::string get_function_name (const Activity & ) {
-		  // boost::get<transition_t::mod_call_t> (act.transition().data()).f();
-		  return "dummy";
-	  }
-  }*/
-
-
-
   class ExecuteRequest : public Request
   {
   public:
 	  typedef sdpa::shared_ptr<ExecuteRequest> Ptr;
 	  ExecuteRequest() {}
 	  ExecuteRequest(const encoded_type &act) : activity_(act) {}
+          virtual ~ExecuteRequest() {}
 
 	  virtual bool would_block() const { return true; }
 
