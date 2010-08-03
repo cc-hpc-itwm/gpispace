@@ -62,7 +62,6 @@ namespace seda { namespace comm {
     , socket_(NULL)
     , recv_waiting_(0)
     , service_thread_(NULL)
-    , barrier_(2)
   {
     Locator::location_t my_loc(a_locator->lookup(name()));
     host_ = my_loc.host();
@@ -83,7 +82,6 @@ namespace seda { namespace comm {
     , socket_(NULL)
     , recv_waiting_(0)
     , service_thread_(NULL)
-    , barrier_(2)
   {}
 
   UDPConnection::~UDPConnection()
@@ -142,7 +140,6 @@ namespace seda { namespace comm {
 
     DLOG(TRACE, "starting service thread");
     service_thread_ = new boost::thread(boost::ref(*this));
-    barrier_.wait();
     LOG(INFO, "started UDPConnection(" << name() << ") on " << real_endpoint);
   }
 
@@ -352,7 +349,6 @@ namespace seda { namespace comm {
   void UDPConnection::operator()()
   {
     DLOG(TRACE, "thread started");
-    barrier_.wait();
     io_service_.run();
   }
 }}

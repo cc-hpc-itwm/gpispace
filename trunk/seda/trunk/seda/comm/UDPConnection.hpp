@@ -88,7 +88,6 @@ namespace seda { namespace comm {
     boost::asio::ip::udp::socket *socket_;
     std::size_t recv_waiting_;
     boost::thread *service_thread_;
-    boost::barrier barrier_;
 
     enum { max_length = (2<<16) };
     char data_[max_length];
