@@ -500,9 +500,8 @@ void SchedulerImpl::start()
 
 void SchedulerImpl::stop()
 {
-   m_thread.interrupt();
-
    bStopRequested = true;
+   m_thread.interrupt();
    SDPA_LOG_DEBUG("Scheduler thread before join ...");
    m_thread.join();
 
