@@ -35,6 +35,8 @@ namespace sdpa { namespace daemon {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
+        virtual ~Job() {}
+
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
         virtual const job_desc_t & description() const = 0;

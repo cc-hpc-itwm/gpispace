@@ -28,6 +28,7 @@ namespace sdpa {
 namespace daemon {
   class Scheduler {
   public:
+    virtual ~Scheduler() {}
 
 	 typedef sdpa::shared_ptr<Scheduler> ptr_t;
 

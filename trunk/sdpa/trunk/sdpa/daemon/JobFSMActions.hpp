@@ -35,6 +35,8 @@ namespace sdpa {
 	namespace fsm {
 		class JobFSMActions {
 			public:
+                  virtual ~JobFSMActions() {}
+
 				//actions
 				virtual void action_run_job()=0;
 				virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&)=0;
