@@ -11,6 +11,7 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
+#include <seda/StageRegistry.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -54,11 +55,23 @@ int main (int argc, char **argv)
     <<" having the master "<<aggName<<"("<<aggUrl<<")"<<std::endl
     <<" with the nre-worker running at "<<workerUrl<<std::endl;
 
+  sdpa::daemon::NRE< RealWorkflowEngine
+                   , sdpa::nre::worker::NreWorkerClient
+                   >::ptr_t ptrNRE
+    = sdpa::daemon::NRE< RealWorkflowEngine
+                       , sdpa::nre::worker::NreWorkerClient
+                       >::create( nreName
+                                , nreUrl
+                                , aggName
+                                , aggUrl
+                                , workerUrl
+                                , guiUrl
+                                );
 
   try {
-    sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create( nreName, nreUrl, aggName, aggUrl, workerUrl, guiUrl );
-    sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE);
+    sdpa::daemon::NRE< RealWorkflowEngine
+                     , sdpa::nre::worker::NreWorkerClient
+                     >::start(ptrNRE);
 
     LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
@@ -82,7 +95,7 @@ int main (int argc, char **argv)
             signal_ignored = false;
             break;
           default:
-            LOG(INFO, "ignoring signal: " << sig);
+            LOG(DEBUG, "ignoring signal: " << sig);
             break;
         }
       }
@@ -93,10 +106,16 @@ int main (int argc, char **argv)
     }
 
     LOG(INFO, "terminating...");
-
-    sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE);
-  } catch( std::exception& ) {
-    std::cout<<"Could not start the NRE!"<<std::endl;
+  } catch (std::exception const & ex) {
+    LOG(ERROR, "Could not start the NRE: " << ex.what() );
   }
+
+  sdpa::daemon::NRE< RealWorkflowEngine
+                   , sdpa::nre::worker::NreWorkerClient
+                   >::shutdown(ptrNRE);
+
+  seda::StageRegistry::instance().stopAll();
+  seda::StageRegistry::instance().clear();
+
   return 0;
 }
