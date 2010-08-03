@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -48,7 +48,7 @@ namespace seda {
           _timeout(SEDA_DEFAULT_TIMEOUT)
     {
     }
-  
+
     Stage::~Stage() {
         try {
             // stop the running threads and delete them
@@ -106,7 +106,7 @@ namespace seda {
             i->thread.join();
             delete i->worker;
             delete i;
-        }            
+        }
         _strategy->onStageStop(name());
     }
 
