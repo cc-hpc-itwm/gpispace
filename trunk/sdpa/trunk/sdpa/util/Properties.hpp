@@ -2,7 +2,6 @@
 #define SDPA_UTIL_PROPERTIES_HPP 1
 
 #include <string>
-#include <map>
 #include <sdpa/SDPAException.hpp>
 #include <sstream>
 
