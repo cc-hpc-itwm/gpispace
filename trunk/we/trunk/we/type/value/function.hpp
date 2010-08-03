@@ -4,6 +4,7 @@
 #define _TYPE_VALUE_FUNCTION_HPP
 
 #include <we/type/value.hpp>
+#include <we/type/value/eq.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/literal/function.hpp>
 

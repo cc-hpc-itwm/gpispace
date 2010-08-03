@@ -10,6 +10,11 @@
 #include <we/type/signature.hpp>
 #include <we/type/value.hpp>
 
+#include <we/type/value/eq.hpp>
+#include <we/type/value/hash.hpp>
+#include <we/type/value/require_type.hpp>
+#include <we/type/value/show.hpp>
+
 #include <string>
 #include <stdexcept>
 
@@ -92,7 +97,7 @@ namespace token
   inline bool operator == (const type & a, const type & b)
   {
     return
-      a.hash == b.hash
+      (a.hash == b.hash)
       &&
       boost::apply_visitor (value::visitor::eq(), a.value, b.value);
   }

@@ -168,7 +168,7 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
   const fvmAllocHandle_t scratch_Job (fvmGlobalAlloc (sizeofJob()));
   if (scratch_Job == 0)
     throw std::runtime_error ("KDM::initialize scratch_Job == 0");
-  
+
   memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
 
   for (int p (0); p < fvmGetNodeCount(); ++p)
@@ -229,7 +229,7 @@ static void kdm_loadTT (const value::type & config, const long & TT)
   LOG (INFO, "loadTT: got config " << config);
 
   const long & Parallel_loadTT
-    (value::get_literal_value<long> 
+    (value::get_literal_value<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     );
 
@@ -520,7 +520,7 @@ static void kdm_process ( const value::type & config
     (value::get_literal_value<long> (value::get_field ("NThreads", config)));
 
   char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
- 
+
   const fvmAllocHandle_t handle_TT
     (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
 

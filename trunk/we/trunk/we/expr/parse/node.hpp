@@ -9,6 +9,7 @@
 #include <we/expr/exception.hpp>
 
 #include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
 
 #include <stdexcept>
 #include <iostream>
@@ -117,7 +118,7 @@ namespace expr
       {
         switch (nd.flag)
           {
-          case flag::value: 
+          case flag::value:
             return boost::apply_visitor ( value::visitor::show (s)
                                         , nd.value
                                         );
@@ -125,11 +126,11 @@ namespace expr
           case flag::unary: return s << nd.token << "(" << *(nd.child0) << ")";
           case flag::binary:
             if (token::is_prefix (nd.token))
-              return 
-                s << nd.token 
+              return
+                s << nd.token
                   << "(" << *(nd.child0) << ", " <<  *(nd.child1) << ")";
             else
-              return 
+              return
                 s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
           case flag::ternary:
             if (nd.token != token::_ite)

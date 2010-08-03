@@ -21,6 +21,7 @@
 
 #include <we/type/literal.hpp>
 #include <we/type/value.hpp>
+#include <we/type/value/require_type.hpp>
 #include <we/type/token.hpp>
 #include <we/type/error.hpp>
 
@@ -78,7 +79,7 @@ namespace xml
         const boost::filesystem::path & path;
         const signature::field_name_t field_name;
         const state::type & state;
-        
+
       public:
         construct_value ( const std::string & _place_name
                         , const boost::filesystem::path & _path
@@ -90,13 +91,13 @@ namespace xml
           , field_name (_field_name)
           , state (_state)
         {}
-        
+
         value::type operator () ( const literal::type_name_t & signature
                                 , const literal::type_name_t & value
                                 ) const
         {
           std::ostringstream s;
-          
+
           s << "when parsing the value "
             << " of field " << field_name
             << " of place " << place_name
@@ -114,7 +115,7 @@ namespace xml
               const value::type v (parser.eval_all (context));
               const signature::type sig (signature);
 
-              return boost::apply_visitor 
+              return boost::apply_visitor
                 ( value::visitor::require_type (field_name)
                 , sig.desc()
                 , v
@@ -201,7 +202,7 @@ namespace xml
                                 , const VAL & value
                                 ) const
         {
-          throw error::parse_type_mismatch 
+          throw error::parse_type_mismatch
             (place_name, field_name, signature, value, path);
         }
       };
@@ -222,7 +223,7 @@ namespace xml
         int level;
         we::type::property::type prop;
 
-        place_type () 
+        place_type ()
           : name (), type (), capacity (), tokens (), values(), sig(), level ()
         {}
 
@@ -253,7 +254,7 @@ namespace xml
               ; ++tok
               )
             {
-              values.push_back 
+              values.push_back
                 (boost::apply_visitor ( construct_value (name, path, "", state)
                                       , sig.desc()
                                       , *tok

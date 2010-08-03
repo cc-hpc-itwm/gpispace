@@ -6,6 +6,9 @@
 #include <we/expr/parse/node.hpp>
 
 #include <we/type/value.hpp>
+#include <we/type/value/field.hpp>
+#include <we/type/value/mk_structured.hpp>
+#include <we/type/value/get.hpp>
 
 #include <fhg/util/show.hpp>
 
