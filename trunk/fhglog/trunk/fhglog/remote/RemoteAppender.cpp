@@ -66,11 +66,6 @@ void RemoteAppender::open()
   logserver_.port(port());
   socket_ = new udp::socket(io_service_, udp::v4());
 
-  boost::system::error_code ec;
-  const std::size_t max_length (2<<23);
-  socket_->set_option (boost::asio::socket_base::send_buffer_size (max_length), ec);
-  LOG_IF(WARN, ec, "could not set send-buffer-size to " << max_length << ": " << ec << ": " << ec.message());
-
   my_endpoint_string_ = boost::asio::ip::host_name();
 }
 
