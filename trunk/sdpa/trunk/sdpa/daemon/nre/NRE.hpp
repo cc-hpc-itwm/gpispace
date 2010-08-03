@@ -45,34 +45,33 @@ namespace sdpa {
 		typedef typename T::internal_id_type we_internal_id_t;
 		SDPA_DECLARE_LOGGER();
 
-		NRE( const std::string& name = "",
-			 const std::string& url = "",
-			 const std::string& masterName = "",
-			 const std::string& masterUrl = "",
-			 const std::string& workerUrl = "",
-			 const std::string& guiUrl = "",
-			 bool bLaunchNrePcd = false,
-			 const char* szNrePcdBinPath = "",
-			 const char* szKDMModulesPath = "",
-			 const char* szFvmPCModule = "")
-		: dsm::DaemonFSM( name,  create_workflow_engine<T>() ),
-				  SDPA_INIT_LOGGER(name),
-				  url_(url),
-				  masterName_(masterName),
-				  masterUrl_(masterUrl),
-				  //workerUrl_(workerUrl),
-				  m_guiServ("SDPA", guiUrl),
-				  bLaunchNrePcd_(bLaunchNrePcd)
+		NRE( const std::string& name = ""
+                   , const std::string& url = ""
+                   , const std::string& masterName = ""
+                   , const std::string& masterUrl = ""
+                   , const std::string& workerUrl = ""
+                   , const std::string& guiUrl = ""
+                   // TODO: fixme, this is ugly
+                   , bool bLaunchNrePcd = false
+                   , const std::string & fvmPCBinary = ""
+                   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                   )
+		: dsm::DaemonFSM( name
+                                , create_workflow_engine<T>()
+                                )
+                , SDPA_INIT_LOGGER(name)
+                , url_(url)
+                , masterName_(masterName)
+                , masterUrl_(masterUrl)
+                , workerUrl_(workerUrl)
+                , m_guiServ("SDPA", guiUrl)
+                , bLaunchNrePcd_(bLaunchNrePcd)
+                , nre_pcd_binary_(fvmPCBinary)
+                , nre_pcd_search_path_(fvmPCSearchPath)
+                , nre_pcd_pre_load_(fvmPCPreLoad)
 		{
 			SDPA_LOG_DEBUG("NRE constructor called ...");
-
-			ptr_scheduler_ = sdpa::daemon::Scheduler::ptr_t(new SchedulerNRE<U>( this,
-					                                                             workerUrl,
-					                                                             bLaunchNrePcd,
-					                                                             szNrePcdBinPath,
-					                                                             szKDMModulesPath,
-					                                                             szFvmPCModule ));
-
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
@@ -82,6 +81,7 @@ namespace sdpa {
 		virtual ~NRE()
 		{
 			SDPA_LOG_DEBUG("NRE destructor called ...");
+
 			daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
 
@@ -111,19 +111,37 @@ namespace sdpa {
 			}
                         if (ptr_workflow_engine_)
                         {
+                          DLOG(TRACE, "deleting workflow engine...");
                           delete ptr_workflow_engine_;
                           ptr_workflow_engine_ = NULL;
                         }
 		}
 
-		static ptr_t create( const std::string& name, const std::string& url,
-								  const std::string& masterName, const std::string& masterUrl,
-								  const std::string& workerUrl,  const std::string guiUrl="127.0.0.1:9000",
-								  bool bLaunchNrePcd = false,  const char* szNrePcdBinPath = "",
-								  const char* szKDMModulesPath = "", const char* szFvmPCModule = "")
+		static ptr_t create( const std::string& name
+                                   , const std::string& url
+                                   , const std::string& masterName
+                                   , const std::string& masterUrl
+                                   , const std::string& workerUrl
+                                   , const std::string guiUrl = "127.0.0.1:9000"
+                                   // TODO: fixme, this is ugly
+                                   , bool bLaunchNrePcd = false
+                                   , const std::string & fvmPCBinary = ""
+                                   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                                   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                                   )
 		{
-			 return ptr_t(new NRE<T, U>( name, url, masterName, masterUrl, workerUrl, guiUrl, bLaunchNrePcd,
-					                     szNrePcdBinPath, szKDMModulesPath, szFvmPCModule ));
+			 return ptr_t(new NRE<T, U>( name
+                                                   , url
+                                                   , masterName
+                                                   , masterUrl
+                                                   , workerUrl
+                                                   , guiUrl
+                                                   , bLaunchNrePcd
+                                                   , fvmPCBinary
+                                                   , fvmPCSearchPath
+                                                   , fvmPCPreLoad
+                                                   )
+                                     );
 		}
 
       	static void start( NRE<T, U>::ptr_t ptrNRE );
@@ -171,15 +189,25 @@ namespace sdpa {
 
 		Scheduler* create_scheduler()
 		{
-			return NULL; //new SchedulerNRE<U>(this);
+                  DLOG(TRACE, "creating nre scheduler...");
+                  return new SchedulerNRE<U>( this
+                                            , workerUrl_
+                                            , bLaunchNrePcd_
+                                            , nre_pcd_binary_
+                                            , nre_pcd_search_path_
+                                            , nre_pcd_pre_load_
+                                            );
 		}
 
 		std::string url_;
 		std::string masterName_;
 		std::string masterUrl_;
-		//std::string workerUrl_;
+                std::string workerUrl_;
 		gui_service m_guiServ;
 		bool bLaunchNrePcd_;
+            std::string nre_pcd_binary_;
+            std::vector<std::string> nre_pcd_search_path_;
+            std::vector<std::string> nre_pcd_pre_load_;
 	  };
 	}
 }
@@ -207,14 +235,16 @@ void NRE<T, U>:: start(NRE<T, U>::ptr_t ptrNRE)
 template <typename T, typename U>
 void NRE<T, U>::shutdown(NRE<T, U>::ptr_t ptrNRE)
 {
-	ptrNRE->shutdown_network();
-	ptrNRE->stop();
+  LOG(INFO, "shutting down...");
+  ptrNRE->shutdown_network();
+  ptrNRE->stop();
 
-        if (ptrNRE->ptr_workflow_engine_)
-        {
-          delete ptrNRE->ptr_workflow_engine_;
-          ptrNRE->ptr_workflow_engine_ = NULL;
-        }
+  if (ptrNRE->ptr_workflow_engine_)
+  {
+    DLOG(TRACE, "deleting workflow engine");
+    delete ptrNRE->ptr_workflow_engine_;
+    ptrNRE->ptr_workflow_engine_ = NULL;
+  }
 }
 
 template <typename T, typename U>
@@ -389,7 +419,7 @@ void NRE<T, U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
 
 			// send the event to the master
 			sendEventToMaster(pEvtCancelJobAck);
-			// delete it from the map when you receive a JobFaileddAckEvent!
+			// delete it from the map when you receive a JobCancelleddAckEvent!
 		}
 		catch(QueueFull)
 		{

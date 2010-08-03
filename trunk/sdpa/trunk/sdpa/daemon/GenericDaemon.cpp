@@ -50,7 +50,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
-	  ptr_scheduler_(create_scheduler()),
+	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
@@ -70,7 +70,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
-	  ptr_scheduler_(create_scheduler()),
+	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  daemon_stage_(NULL),
 	  master_(""),
@@ -102,7 +102,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
-	  ptr_scheduler_(create_scheduler()),
+	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  daemon_stage_(NULL),
 	  master_(""),
@@ -119,6 +119,7 @@ GenericDaemon::~GenericDaemon()
 
 	if(ptr_workflow_engine_)
 	{
+          DLOG(TRACE, "deleting workflow engine...");
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
@@ -286,26 +287,33 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
     //	MLOG(INFO, "registering myself (" << name() << ")...");
 
 	DMLOG(TRACE, "starting delivery service...");
+	delivery_service_.register_callback_handler(boost::bind(&GenericDaemon::messageDeliveryFailed, this, _1));
 	delivery_service_.start();
 	service_thread_.start();
 	DMLOG(TRACE, "starting my scheduler...");
-	ptr_scheduler_->start();
-
-	delivery_service_.register_callback_handler(boost::bind(&GenericDaemon::messageDeliveryFailed, this, _1));
+        try
+        {
+          ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
+          ptr_scheduler_->start();
+        } catch (...)
+        {
+          ptr_scheduler_->stop();
+          ptr_scheduler_.reset();
+          throw;
+        }
 }
 
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
 {
 	DMLOG(TRACE, "daemon stage is being stopped");
-	delivery_service_.stop();
-
 	// stop the scheduler thread
 	ptr_scheduler_->stop();
 
+	service_thread_.stop();
+	delivery_service_.stop();
+
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
-
-	service_thread_.stop();
 }
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)

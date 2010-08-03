@@ -27,40 +27,53 @@ using namespace sdpa::events;
 using namespace std;
 
 namespace sdpa {
-	namespace daemon {
-	template <typename U>
-  class SchedulerNRE : public SchedulerImpl {
+  namespace daemon {
+    template <typename U>
+    class SchedulerNRE : public SchedulerImpl {
+    public:
+      SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL, std::string workerUrl = ""
+                  // TODO: fixme, this is ugly
+                  , bool bLaunchNrePcd = false
+                  , const std::string & fvmPCBinary = ""
+                  , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                  , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                  )
+        : sdpa::daemon::SchedulerImpl(pHandler)
+        , SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
+        , m_worker_(workerUrl, bLaunchNrePcd, fvmPCBinary, fvmPCSearchPath, fvmPCPreLoad)
+      {
+        m_worker_.set_ping_interval(60);
+        m_worker_.set_ping_timeout(3);
+        m_worker_.set_ping_trials(3);
+      }
 
-  public:
-		SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL, std::string workerUrl = "",
-				const bool bLaunchNrePcd = false,
-				const char* szNrePcdBinPath = "",
-				const char* szKDMModulesPath = "",
-				const char* szFvmPCModule = "" ):
-				sdpa::daemon::SchedulerImpl(pHandler)
-				, SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
-				, m_worker_(workerUrl, bLaunchNrePcd, szNrePcdBinPath, szKDMModulesPath, szFvmPCModule )
-	{
-		m_worker_.set_ping_interval(60);
-		m_worker_.set_ping_timeout(3);
-		m_worker_.set_ping_trials(3);
-	}
+      virtual ~SchedulerNRE()
+      {
+        try
+        {
+          DLOG(TRACE, "destructing SchedulerNRE");
+          stop();
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not stop SchedulerNRE: " << ex.what());
+        }
+      };
 
-	virtual ~SchedulerNRE() {};
+      void start()
+      {
+        SDPA_LOG_DEBUG("Starting NreWorkerClient ...");
+        try
+        {
+          ptr_comm_handler_->rank() = m_worker_.start();
+        }
+        catch(const std::exception& val) {
+          SDPA_LOG_ERROR("Could not start the nre-worker-client: " << val.what());
+          throw;
+        }
 
-	void start() throw (std::exception)
-	{
-		SchedulerImpl::start();
-
-		SDPA_LOG_DEBUG("Starting NreWorkerClient ...");
-		try {
-			ptr_comm_handler_->rank() = m_worker_.start();
-		}
-		catch(const std::exception& val) {
-			SDPA_LOG_ERROR("Could not start the nre-worker-client: " << val.what());
-			throw;
-		}
-	}
+        SchedulerImpl::start();
+      }
 
 	void stop()
 	{
@@ -257,7 +270,7 @@ namespace sdpa {
 					}
 	 			}
 	 		}
-	 		catch(JobNotFoundException& ex)
+			catch(JobNotFoundException const & ex)
 	 		{
 	 			SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
 	 		}

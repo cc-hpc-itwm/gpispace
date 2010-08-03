@@ -24,6 +24,7 @@
 #endif
 
 #include <list>
+#include <vector>
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
@@ -72,14 +73,15 @@ namespace sdpa { namespace nre { namespace worker {
   {
   public:
     explicit
-    NreWorkerClient(const std::string &nre_worker_location,
-					const bool bLaunchNrePcd = false,
-					const char* szNrePcdBinPath = "",
-					const char* szKDMModulesPath = "",
-					const char* szFvmPCModule = "" )
+    NreWorkerClient( const std::string &nre_worker_location
+                   // TODO: fixme, this is ugly
+                   , bool bLaunchNrePcd = false
+                   , const std::string & fvmPCBinary = ""
+                   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                   )
       : nre_worker_location_(nre_worker_location)
       , my_reply_port_(0)
-      , barrier_(2)
       , service_thread_(NULL)
       , socket_(NULL)
       , timer_timeout_(5)
@@ -91,14 +93,15 @@ namespace sdpa { namespace nre { namespace worker {
       , ping_trials_(3)
       , num_waiting_receiver_(0)
       , started_(false)
-      , bLaunchNrePcd_(bLaunchNrePcd)
-	  , strNrePcdBinPath_(szNrePcdBinPath)
-      , strKDMModulesPath_(szKDMModulesPath)
-      , strFvmPCModule_(szFvmPCModule)
+      , nre_pcd_do_exec_(bLaunchNrePcd)
+      , nre_pcd_binary_(fvmPCBinary)
+      , nre_pcd_search_path_(fvmPCSearchPath)
+      , nre_pcd_pre_load_(fvmPCPreLoad)
     { }
 
-    ~NreWorkerClient() throw ()
+    ~NreWorkerClient()
     {
+      DLOG(TRACE, "destructing NreWorkerClient");
 		try {
 			stop();
 		}
@@ -133,14 +136,11 @@ namespace sdpa { namespace nre { namespace worker {
 
     unsigned int startNrePcd( ) throw (std::exception)
     {
-       	//int c;
-       	//int nStatus;
-       	string strID;
-       	int rank = 0;
+      unsigned int rc = 0;
 
        	// check here whether the nre-pcd is running or not
 
-       	if( bLaunchNrePcd_ )
+	if( nre_pcd_do_exec_ )
        	{
        		LOG(INFO, "Try to launch the nre-pcd ...");
        		pid_t pID = fork();
@@ -148,60 +148,71 @@ namespace sdpa { namespace nre { namespace worker {
 			if (pID == 0)  // child
 			{
 				// Code only executed by child process
-				strID = "nre-pcd: ";
-
-				std::string strNrePcdBin(strNrePcdBinPath_.c_str());
-				strNrePcdBin += "/nre-pcd";
-
 				try {
-				execl( strNrePcdBin.c_str(),
-						"nre-pcd",
-						"-l", worker_location().c_str(),
-						"-a", strKDMModulesPath_.c_str(),
-						"--load", strFvmPCModule_.c_str(),
-						NULL );
+                                  std::vector<std::string> cmdline;
+                                  cmdline.push_back ( nre_pcd_binary_ );
+
+                                  for ( std::vector<std::string>::const_iterator it (nre_pcd_search_path_.begin())
+                                      ; it != nre_pcd_search_path_.end()
+                                      ; ++it
+                                      )
+                                  {
+                                    cmdline.push_back("--append-search-path");
+                                    cmdline.push_back(*it);
+                                  }
+
+                                  for ( std::vector<std::string>::const_iterator it (nre_pcd_pre_load_.begin())
+                                      ; it != nre_pcd_pre_load_.end()
+                                      ; ++it
+                                      )
+                                  {
+                                    cmdline.push_back("--load");
+                                    cmdline.push_back(*it);
+                                  }
+
+                                  char ** av = new char*[cmdline.size()+1];
+                                  av[cmdline.size()] = (char*)(NULL);
+
+                                  std::size_t idx (0);
+                                  for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+                                      ; it != cmdline.end()
+                                      ; ++it, ++idx
+                                      )
+                                  {
+                                    av[idx] = new char[it->size()+1];
+                                    memcpy(av[idx], it->c_str(), it->size());
+                                    av[idx][it->size()] = (char)0;
+                                  }
+
+                                  if ( execvp( nre_pcd_binary_.c_str(), av) < 0 )
+                                  {
+                                    throw std::runtime_error ("could not exec(" + nre_pcd_binary_ +")");
+                                  }
+                                  // not reached
 				}
 				catch(const std::exception& ex)
 				{
 					LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
 					exit(1);
 				}
-
-				/*
-				// the variant with no spawned binary
-				DLOG(DEBUG, "starting process container on location: "<<worker_location()<< std::endl);
-				sdpa::nre::worker::ActivityExecutor executor(worker_location());
-				executor.loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
-
-				try {
-					LOG(INFO, "Load the fake-fvm module ("<<TESTS_FVM_PC_FAKE_MODULE<<") ...");
-					boost::filesystem::path pathFakeFvmModule(TESTS_FVM_PC_FAKE_MODULE);
-					executor.loader().load("fvm", pathFakeFvmModule);
-				}
-				catch(const we::loader::ModuleLoadFailed& ex)
-				{
-					 LOG(ERROR, "Could not load the module "<<TESTS_FVM_PC_FAKE_MODULE<<"!!!");
-					 throw ex;
-				}
-
-				executor.run();
-				*/
 			}
 			else if (pID < 0)            // failed to fork
 			{
 				LOG(ERROR, "Failed to fork!");
-				exit(1);
-				// Throw exception
+                                throw std::runtime_error ("fork failed: " + std::string(strerror(errno)));
 			}
 			else  // parent
 			{
 				// Code only executed by parent process
-				strID = "NREWorkerClient";
 				sleep(1);
 			}
        	}
+        else
+        {
+          throw std::runtime_error ("automatic start of process-container disabled");
+        }
 
-       	return rank;
+	return rc;
     }
 
 
@@ -258,7 +269,6 @@ namespace sdpa { namespace nre { namespace worker {
 		schedule_receive();
 
 		service_thread_ = new boost::thread(boost::bind(&NreWorkerClient::service_thread, this));
-		barrier_.wait();
 
 	    LOG(DEBUG, "Send a synchronous ping ... ");
 
@@ -273,11 +283,10 @@ namespace sdpa { namespace nre { namespace worker {
 	    		 LOG(DEBUG, "Try to start the NRE-PCD ...");
 	    		 startNrePcd();
 	    	 }
-	    	 catch(std::exception& excpt) {
+		 catch(std::exception const &) {
 	    		 LOG(ERROR, "Couldn't start the NRE-PCD process!");
-	    		 throw excpt;
+			 throw;
 	    	 }
-	    	 // one should start it here!
 	    }
 
 		//if not working re-start the nre-pcd here!!!!
@@ -293,14 +302,14 @@ namespace sdpa { namespace nre { namespace worker {
 		return (unsigned int)(pc_info.rank());
     }
 
-    void stop() throw (std::exception)
+    void stop()
     {
-		if (service_thread_ == NULL)
-		return;
+      if (service_thread_ == NULL)
+        return;
 
 		LOG(TRACE, "stopping nre-pcd connection");
-		service_thread_->interrupt();
 		io_service_.stop();
+		service_thread_->interrupt();
 		service_thread_->join();
 		DLOG(TRACE, "service thread finished");
 		delete service_thread_; service_thread_ = NULL;
@@ -575,7 +584,6 @@ namespace sdpa { namespace nre { namespace worker {
     void service_thread()
     {
     	LOG(DEBUG, "thread started");
-    	barrier_.wait();
 
     	try {
     		io_service_.run();
@@ -593,7 +601,6 @@ namespace sdpa { namespace nre { namespace worker {
 
     // boost
     boost::asio::io_service io_service_;
-    boost::barrier barrier_;
     boost::thread *service_thread_;
     udp::socket *socket_;
 
@@ -619,13 +626,13 @@ namespace sdpa { namespace nre { namespace worker {
     bool started_;
     bool timeout_timer_active_;
 
-    enum { max_length = (2<<23) };
+    enum { max_length = (2<<16) };
     char data_[max_length];
 
-    bool bLaunchNrePcd_;
-    std::string strNrePcdBinPath_;
-    std::string strKDMModulesPath_;
-    std::string strFvmPCModule_;
+    bool nre_pcd_do_exec_;
+    std::string nre_pcd_binary_;
+    std::vector<std::string> nre_pcd_search_path_;
+    std::vector<std::string> nre_pcd_pre_load_;
   };
 }}}
 
