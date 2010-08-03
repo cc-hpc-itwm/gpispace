@@ -25,10 +25,6 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include (CompilerFlags)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-
 option(ENABLE_TESTS "Build with test binaries" YES)
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
@@ -38,10 +34,14 @@ OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
 OPTION(USE_GWES "Use GWES" NO)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
-
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
+
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include (CompilerFlags)
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
