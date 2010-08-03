@@ -22,7 +22,6 @@
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/uuid.hpp>
 #include <sdpa/uuidgen.hpp>
-#include <map>
 
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -32,21 +31,17 @@ using namespace sdpa::events;
 
 void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 {
-	ostringstream os;
-	os<<"Call 'handleSubmitJobAckEvent'";
-	SDPA_LOG_DEBUG(os.str());
+  DLOG(TRACE, "handleSubmitJobAckEvent: " << pEvent->job_id() << " from " << pEvent->from());
 
-	acknowledge(pEvent->id());
+  acknowledge(pEvent->id());
 
 	Worker::worker_id_t worker_id = pEvent->from();
 	try {
 		ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
-
-	} catch(WorkerNotFoundException) {
-		SDPA_LOG_DEBUG("Worker "<<worker_id<<" not found!");
-		(os.str());
+	} catch(WorkerNotFoundException const &) {
+                SDPA_LOG_ERROR("job submission could not be acknowledged: worker " << worker_id << " not found!!");
 	} catch(...) {
-		SDPA_LOG_DEBUG("Unexpected exception occurred!");
+		SDPA_LOG_ERROR("Unexpected exception occurred during submitJobAck!");
 	}
 }
 
@@ -67,6 +62,7 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* /* pEvt */ )
 
 void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* /* pEvt */)
 {
+  // TODO: investigate if this function shouldn't be the same as the following two Ack callbacks
 	SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
 }
 
@@ -81,22 +77,16 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 		// delete it from the map when you receive a JobFinishedAckEvent!
 		ptr_job_man_->deleteJob(pEvt->job_id());
 	}
-	catch(JobNotFoundException)
+	catch(JobNotFoundException const &)
 	{
-		os.str("");
-		os<<"Job "<<pEvt->job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 	}
-	catch(JobNotDeletedException&)
+	catch(JobNotDeletedException const & ex)
 	{
-		os.str("");
-		os<<"The JobManager could not delete the job "<<pEvt->job_id();
-		SDPA_LOG_DEBUG(os.str());
+                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
 	}
 	catch(...) {
-		os.str("");
-		os<<"Unexpected exception occurred!";
-		SDPA_LOG_DEBUG(os.str());
+                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
 	}
 }
 
@@ -114,22 +104,16 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 		// delete it from the map when you receive a JobFinishedAckEvent!
 		ptr_job_man_->deleteJob(pEvt->job_id());
 	}
-	catch(JobNotFoundException)
+	catch(JobNotFoundException const &)
 	{
-		os.str("");
-		os<<"Job "<<pEvt->job_id()<<" not found!";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 	}
-	catch(JobNotDeletedException&)
+	catch(JobNotDeletedException const & ex)
 	{
-		os.str("");
-		os<<"The JobManager could not delete the job "<<pEvt->job_id();
-		SDPA_LOG_DEBUG(os.str());
+                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
 	}
 	catch(...) {
-		os.str("");
-		os<<"Unexpected exception occurred!";
-		SDPA_LOG_DEBUG(os.str());
+                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
 	}
 }
 
@@ -139,11 +123,10 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->QueryJobStatus(pEvt); // should send back a message with the status
 	}
-	catch(JobNotFoundException)
+	catch(JobNotFoundException const &)
 	{
-		ostringstream os;
-		os<<"The job "<<pEvt->job_id()<<" was not found by the JobManager";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_WARN("job " << pEvt->job_id() << " could not be found!");
+                // TODO: should reply with an ERROR here
 	}
 }
 
@@ -153,10 +136,9 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent*
 		Job::ptr_t pJob = ptr_job_man_->findJob(ptr->job_id());
 		pJob->RetrieveJobResults(ptr);
 	}
-	catch(JobNotFoundException)
+	catch(JobNotFoundException const &)
 	{
-		ostringstream os;
-		os<<"The job "<<ptr->job_id()<<" was not found by the JobManager";
-		SDPA_LOG_DEBUG(os.str());
+		SDPA_LOG_WARN("job " << ptr->job_id() << " could not be found!");
+                // TODO: should reply with an ERROR here
 	}
 }
