@@ -89,6 +89,7 @@ namespace sdpa {
 			private:
 			Scheduler* create_scheduler()
 			{
+                          DLOG(TRACE, "creating aggregator scheduler...");
 				return new SchedulerAgg(this);
 			}
 
