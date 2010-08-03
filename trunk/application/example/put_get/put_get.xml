@@ -15,12 +15,12 @@
     <place name="a" type="line">
       <token>
         <field name="start">
-          <field name="x"><value>2.0 / sqrt(3)</value></field>
-          <field name="y"><value>3.0 / sqrt(3)</value></field>
+          <field name="x"><value>1.0 / sqrt(3)</value></field>
+          <field name="y"><value>2.0 / sqrt(3)</value></field>
         </field>
         <field name="end">
-          <field name="x"><value>4.0 / sqrt(3)</value></field>
-          <field name="y"><value>5.0 / sqrt(3)</value></field>
+          <field name="x"><value>3.0 / sqrt(3)</value></field>
+          <field name="y"><value>4.0 / sqrt(3)</value></field>
         </field>
       </token>
     </place>
