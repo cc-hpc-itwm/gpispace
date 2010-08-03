@@ -85,6 +85,7 @@ namespace daemon {
 	  private:
 		Scheduler* create_scheduler()
 		{
+                        DLOG(TRACE, "creating orchestrator scheduler...");
 			return new SchedulerOrch(this);
 		}
 
