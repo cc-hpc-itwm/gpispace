@@ -39,13 +39,17 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler )
 
 SchedulerImpl::~SchedulerImpl()
 {
-	SDPA_LOG_DEBUG("Called the destructor of  SchedulerImpl ...");
+  DLOG(TRACE, "Called the destructor of  SchedulerImpl ...");
 	try  {
 		stop();
 	}
+	catch (std::exception const & ex)
+	{
+          LOG(ERROR, "exception during SchedulerImpl::stop(): " << ex.what());
+	}
 	catch (...)
 	{
-		SDPA_LOG_DEBUG("Scheduler NRE running ...");
+          LOG(ERROR, "unexpected exception during SchedulerImpl::stop()");
 	}
 }
 
@@ -502,10 +506,10 @@ void SchedulerImpl::stop()
 {
    bStopRequested = true;
    m_thread.interrupt();
-   SDPA_LOG_DEBUG("Scheduler thread before join ...");
+   DLOG(TRACE, "Scheduler thread before join ...");
    m_thread.join();
 
-   SDPA_LOG_DEBUG("Scheduler thread joined ...");
+   DLOG(TRACE, "Scheduler thread joined ...");
 
    LOG_IF( WARN
          , jobs_to_be_scheduled.size()
