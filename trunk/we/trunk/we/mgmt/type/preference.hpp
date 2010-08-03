@@ -100,6 +100,8 @@ namespace we
           : mandatory_(_mandatory)
         { }
 
+        virtual ~preference_t () {}
+
         yes_no_may can (const rank_type rank) const
         {
           if (is_mandatory())
