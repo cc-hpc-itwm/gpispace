@@ -40,7 +40,7 @@ static unsigned long sizeofJob (void)
 
 // ************************************************************************* //
 
-static value::type kdm_initialize (const std::string & filename, long & wait)
+static value::type kdm_initialize (const std::string & filename)
 {
   const int NThreads (4);
 
@@ -193,10 +193,6 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
   config["SUBVOLUMES_PER_OFFSET"] = static_cast<long>(Job.NSubVols);
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
   config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
-
-  wait = get<long> (config, "OFFSETS")
-       * get<long> (config, "SUBVOLUMES_PER_OFFSET")
-       ;
 
   LOG (DEBUG, "initialize: wait = " << wait);
   LOG (DEBUG, "initialize: config = " << config);
@@ -434,7 +430,6 @@ static void kdm_init_volume ( const value::type & config
 
 static void kdm_process ( const value::type & config
                         , const value::type & bunch
-                        , long & wait
                         )
 {
   //  LOG (INFO, "process: got bunch " << bunch);
@@ -484,8 +479,6 @@ static void kdm_process ( const value::type & config
 
   MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
 
-  --wait;
-
   //  LOG (INFO, "process: bunch done " << bunch);
 }
 
@@ -496,8 +489,12 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 {
   const std::string & filename (get<std::string> (input, "config_file"));
 
-  long wait (0);
-  const value::type & config (kdm_initialize (filename, wait));
+  const value::type & config (kdm_initialize (filename));
+
+  const long wait ( get<long> (config, "OFFSETS")
+                  * get<long> (config, "SUBVOLUMES_PER_OFFSET")
+                  )
+                  ;
 
   we::loader::put_output (output, "config", config);
   we::loader::put_output (output, "wait", literal::type(wait));
@@ -526,9 +523,9 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 {
   const value::type & config (get<value::type> (input, "config"));
   const value::type & bunch (get<value::type> (input, "bunch"));
-  long wait (get<long>(input, "wait"));
-  kdm_process (config, bunch, wait);
-  we::loader::put_output (output, "wait", wait);
+
+  kdm_process (config, bunch);
+
   we::loader::put_output (output, "trigger", control());
 }
 
@@ -536,7 +533,9 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 {
   const value::type & config (get<value::type> (input, "config"));
   const value::type & volume (get<value::type> (input, "volume"));
+
   kdm_write (config, volume);
+
   we::loader::put_output (output, "done", control());
 }
 

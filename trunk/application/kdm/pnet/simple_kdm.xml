@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <defun name="kdm_simple"
        internal="false"
-       xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"  
+       xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
   <properties name="pnetc">
@@ -16,6 +16,8 @@
   <out name="done" type="control" place="done"/>
 
   <net>
+
+<!--       <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"</value> -->
 
    <place name="config_file" type="string">
      <token>
@@ -39,11 +41,11 @@
       <connect-out port="trigger" place="trigger_loadTT" />
       <connect-out port="wait" place="wait" />
     </transition>
-    
+
     <place name="config" type="CONFIG"/>
     <place name="wait" type="long"/>
     <place name="trigger_loadTT" type="control" />
-    
+
     <transition name="loadTT" inline="true">
       <include-function href="loadTT.xml"/>
       <connect-read place="config" port="config"/>
@@ -63,26 +65,26 @@
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="trigger_extract_offsets" port="trigger" />
-      <connect-out  port="offsets" place="number_of_offsets" />      
+      <connect-out  port="offsets" place="number_of_offsets" />
     </transition>
     <place name="number_of_offsets" type="long"/>
 
     <transition name="extract_number_of_volumes">
       <defun>
         <in name="config" type="CONFIG"/>
-        <in name="trigger" type="control"/>
+        <in name="offset" type="long"/>
         <out name="volumes" type="long"/>
+        <out name="offset" type="long"/>
         <expression>
           ${volumes} := ${config.SUBVOLUMES_PER_OFFSET};
         </expression>
       </defun>
-      <connect-in place="trigger_extract_number_of_volumes" port="trigger"/>
+      <connect-in place="offset_generated" port="offset"/>
+      <connect-out place="offset" port="offset"/>
       <connect-read place="config" port="config"/>
       <connect-out port="volumes" place="number_of_volumes"/>
     </transition>
     <place name="number_of_volumes" type="long" />
-    <place name="trigger_extract_number_of_volumes" type="control"/>
-
 
     <transition name="generate_offset" inline="true">
       <include-function href="lib/sequence.xml"/>
@@ -91,27 +93,15 @@
     </transition>
     <place name="offset_generated" type="long"/>
 
-    <include-template href="trigger_when.xml"/>
-    <specialize name="trigger_with_generated_offset" use="trigger_when">
-      <type-map replace="T" with="long"/>
-    </specialize>
-
-    <transition name="trigger_with_generated_offset">
-      <use name="trigger_with_generated_offset"/>
-      <connect-in port="object" place="offset_generated"/>
-      <connect-out port="object" place="offset"/>
-      <connect-out port="trigger" place="trigger_extract_number_of_volumes"/>
-    </transition>
-
     <place name="offset" type="long"/>
-    
+
     <transition name="generate_volume" inline="true">
       <include-function href="generate_volume.xml"/>
       <connect-in place="offset" port="offset" />
       <connect-in place="number_of_volumes" port="amount" />
       <connect-out place="volume" port="out" />
     </transition>
-    
+
     <!--  check if this type is defined!!!! -->
     <place name="volume" type="VOLUME"/>
 
@@ -125,9 +115,9 @@
           <place name="volume" type="VOLUME" />
           <place name="config" type="CONFIG" />
           <place name="done" type="control" />
-          
+
           <transition name="wrap_process_volume">
-            <include-function href="process_volume.xml" /> 
+            <include-function href="process_volume.xml" />
             <connect-in   place="volume" port="volume" />
             <connect-read place="config" port="config" />
             <connect-out  place="done"   port="done" />
@@ -138,8 +128,8 @@
       <connect-read place="config" port="config" />
       <connect-out place="trigger_dec" port="done" />
     </transition>
-    <place name="trigger_dec" type="control" />    
-    
+    <place name="trigger_dec" type="control" />
+
     <transition name="dec">
       <defun>
         <in  name="trigger" type="control" />
@@ -153,7 +143,7 @@
       <connect-in place="wait" port="wait" />
       <connect-out place="wait" port="wait" />
     </transition>
-    
+
     <transition name="finalize">
       <defun internal="false">
         <in  name="wait" type="long" />

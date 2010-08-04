@@ -2,7 +2,7 @@
   <in name="volume" type="VOLUME"  place="volume_in"/>
   <in name="config" type="CONFIG"  place="config_in"/>
   <out name="done"  type="control" place="done"/>
-  
+
   <net>
     <place name="volume_in" type="VOLUME" />
     <place name="volume_initialized" type="VOLUME" />
@@ -12,7 +12,7 @@
     <place name="config" type="CONFIG" />
     <place name="wait" type="long" />
     <place name="done" type="control" />
-        
+
      <!--  check this!!! -->
      <place name="trigger_load" type="control" >
        <token><value>[]</value></token>
@@ -41,7 +41,7 @@
       <connect-read place="config" port="config" />
       <connect-out place="volume_initialized" port="volume" />
     </transition>
-    
+
     <include-template href="dup.xml"/>
 
     <specialize name="dup_volume" use="dup">
@@ -56,7 +56,7 @@
     </transition>
 
     <place name="trigger_extract_bunches_per_offset" type="VOLUME"/>
-    
+
     <transition name="extract_bunches_per_offset">
       <defun>
         <in name="trigger"  type="VOLUME" />
@@ -73,7 +73,7 @@
       <connect-out  place="volume_gen_bunch"                   port="trigger" />
     </transition>
     <place name="bunches_per_offset" type="long"/>
-    
+
     <transition name="generate_bunch" inline="true">
       <include-function href="generate_bunch.xml" />
         <connect-in place="volume_gen_bunch" port="volume" />
@@ -82,7 +82,7 @@
     </transition>
 
     <place name="bunch" type="BUNCH"/>
-    
+
     <transition name="load">
       <defun>
         <in name="bunch" type="BUNCH"/>
@@ -97,35 +97,65 @@
       <connect-out  port="bunch"   place="trigger_process" />
     </transition>
     <place name="trigger_process" type="BUNCH"/>
-    
+
     <transition name="process">
       <defun>
         <in  name="bunch"   type="BUNCH"/>
-        <in  name="wait"    type="long"/>
         <in  name="config"  type="CONFIG"/>
-        <out name="wait"    type="long" />
         <out name="trigger" type="control" />
         <module name="kdm" function="process"/>
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="trigger_process"  port="bunch" />
+      <connect-out  port="trigger" place="trigger_dec" />
+    </transition>
+
+    <place name="trigger_dec" type="control"/>
+
+    <transition name="dec">
+      <defun>
+       <in name="wait" type="long"/>
+       <in name="trigger" type="control"/>
+       <out name="trigger" type="control"/>
+       <out name="wait" type="long"/>
+       <expression>
+         ${wait} := ${wait} - 1
+       </expression>
+       <condition>${wait} :gt: 0</condition>
+      </defun>
       <connect-in   place="wait"  port="wait" />
       <connect-out  place="wait"  port="wait" />
-      <connect-out  port="trigger"   place="trigger_load" />
+      <connect-in port="trigger" place="trigger_dec"/>
+      <connect-out port="trigger" place="trigger_load"/>
     </transition>
-    
+
+    <transition name="break">
+      <defun>
+       <in name="wait" type="long"/>
+       <in name="trigger" type="control"/>
+       <out name="trigger" type="control"/>
+       <expression>
+         ${trigger} := []
+       </expression>
+       <condition>${wait} :eq: 0</condition>
+      </defun>
+      <connect-in place="wait"  port="wait" />
+      <connect-in port="trigger" place="trigger_load"/>
+      <connect-out port="trigger" place="trigger_write"/>
+    </transition>
+
+    <place name="trigger_write" type="control"/>
+
     <transition name="write">
       <defun>
         <in  name="config"  type="CONFIG"/>
-        <in  name="wait"    type="long"/>
+        <in name="trigger" type="control"/>
         <in  name="volume"  type="VOLUME"/>
         <out name="done"    type="control" />
         <module name="kdm" function="write"/>
-
-        <condition>${wait} == 0</condition>
       </defun>
       <connect-in  place="config" port="config" />
-      <connect-in  place="wait"   port="wait" />
+      <connect-in  place="trigger_write"   port="trigger" />
       <connect-in  place="volume" port="volume" />
       <connect-out port="done"    place="done" />
     </transition>
