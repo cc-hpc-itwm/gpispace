@@ -322,8 +322,7 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 		if(daemon_stage_)
 		{
 			daemon_stage_->send(pEvt);
-			//DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-			SDPA_LOG_INFO("Sent " <<pEvt->str()<<" to "<<pEvt->to());
+			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 		}
 		else
 		{
@@ -646,7 +645,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		ptr_job_man_->findJob(e.job_id());
 		return;
 	} catch(const JobNotFoundException&){
-          SDPA_LOG_INFO("Receive new job from "<<e.from() << " with job-id: " << e.job_id());
+          DLOG(TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
 	}
 
 	JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
@@ -664,7 +663,10 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		// check if the message comes from outside/slave or from WFE
 		// if it comes from outside set it as local
 		if(e.from() != sdpa::daemon::WE ) //e.to())
-			pJob->set_local(true);
+                {
+                  LOG(DEBUG, "got new job from " << e.from() << " = " << job_id);
+                  pJob->set_local(true);
+                }
 
 		ptr_scheduler_->schedule(job_id);
 
@@ -804,7 +806,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
 	// simple generate a SubmitJobEvent cu from = to = name()
 	// send an external job
 	try {
-		SDPA_LOG_DEBUG(" submitted the activity "<<activityId);
+          DLOG(TRACE, "workflow engine submitted "<<activityId);
 
 		job_id_t job_id(activityId);
 		job_id_t parent_id(""); // is this really needed?
