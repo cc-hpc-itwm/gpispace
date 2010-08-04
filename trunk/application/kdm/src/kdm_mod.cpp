@@ -528,7 +528,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
   kdm_write (config, volume);
 
-  we::loader::put_output (output, "done", control());
+  we::loader::put_output (output, "volume", volume);
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)

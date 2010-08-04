@@ -11,7 +11,6 @@
   <out name="done" type="control" place="done"/>
 
   <net>
-
 <!--       <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"</value> -->
 
    <place name="config_file" type="string">
@@ -19,19 +18,19 @@
        <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"</value>
      </token>
    </place>
-
    <place name="done" type="control"/>
 
-    <transition name="initialize">
-      <defun>
-        <in name="config_file" type="string"/>
-        <out name="config" type="CONFIG" />
-        <module name="kdm" function="initialize"/>
-      </defun>
+   <place name="wanted_offset" type="bitset"/>
 
-      <connect-in place="config_file" port="config_file"/>
-      <connect-out port="config" place="config_initialized" />
-    </transition>
+   <transition name="initialize">
+     <defun>
+       <in name="config_file" type="string"/>
+       <out name="config" type="CONFIG" />
+       <module name="kdm" function="initialize"/>
+     </defun>
+     <connect-in place="config_file" port="config_file"/>
+     <connect-out port="config" place="config_initialized" />
+   </transition>
 
     <include-template href="trigger_when.xml"/>
     <specialize name="trigger_when_initialized" use="trigger_when">
@@ -122,11 +121,67 @@
     </transition>
     <place name="number_of_volumes" type="long" />
 
+
+<!--
     <transition name="generate_offset" inline="true">
       <include-function href="lib/sequence.xml"/>
       <connect-in place="number_of_offsets" port="amount"/>
       <connect-out place="offset_generated" port="out"/>
     </transition>
+-->
+
+    <struct name="STATE">
+      <field name="id" type="long"/>
+      <field name="max" type="long"/>
+    </struct>
+
+    <transition name="generate_offset_init">
+      <defun>
+        <in name="amount" type="long"/>
+        <out name="wanted" type="bitset"/>
+        <out name="state" type="STATE"/>
+        <expression>
+          ${state.id} := 0;
+          ${state.max} := ${amount};
+          ${wanted} := bitset_insert ({}, ${state.id})
+        </expression>
+      </defun>
+      <connect-in port="amount" place="number_of_offsets"/>
+      <connect-out port="wanted" place="wanted_offset"/>
+      <connect-out port="state" place="generate_offset_state"/>
+    </transition>
+
+    <place name="generate_offset_state" type="STATE"/>
+
+    <transition name="generate_offset_step">
+      <defun>
+        <in name="state" type="STATE"/>
+        <in name="wanted" type="bitset"/>
+        <out name="state" type="STATE"/>
+        <out name="id" type="long"/>
+        <expression>
+          ${id} := ${state.id};
+          ${state.id} := ${state.id} + 1;
+        </expression>
+        <condition>${state.id} :lt: ${state.max}</condition>
+        <condition>bitset_is_element (${wanted}, ${state.id})</condition>
+      </defun>
+      <connect-in port="state" place="generate_offset_state"/>
+      <connect-out port="state" place="generate_offset_state"/>
+      <connect-read port="wanted" place="wanted_offset"/>
+      <connect-out port="id" place="offset_generated"/>
+    </transition>
+
+    <transition name="generate_offset_break">
+      <defun>
+        <in name="state" type="STATE"/>
+        <expression>
+        </expression>
+        <condition>${state.id} :ge: ${state.max}</condition>
+      </defun>
+      <connect-in port="state" place="generate_offset_state"/>
+    </transition>
+
     <place name="offset_generated" type="long"/>
 
     <place name="offset" type="long"/>
@@ -147,11 +202,11 @@
         <in name="volume" type="VOLUME"  place="volume"/>
         <in name="config" type="CONFIG"  place="config"/>
         <in name="trigger" type="control" place="trigger"/>
-        <out name="done"  type="control" place="done"/>
+        <out name="volume"  type="VOLUME" place="volume_out"/>
         <net>
           <place name="volume" type="VOLUME" />
           <place name="config" type="CONFIG" />
-          <place name="done" type="control" />
+          <place name="volume_out" type="VOLUME" />
           <place name="trigger" type="control"/>
 
           <transition name="wrap_process_volume">
@@ -159,20 +214,38 @@
             <connect-in place="volume" port="volume" />
             <connect-in place="trigger" port="trigger"/>
             <connect-in place="config" port="config" />
-            <connect-out place="done"   port="done" />
+            <connect-out place="volume_out"   port="volume" />
           </transition>
         </net>
       </defun>
       <connect-in place="volume" port="volume" />
       <connect-read port="trigger" place="loadTT_done"/>
       <connect-read place="config" port="config" />
-      <connect-out place="trigger_dec" port="done" />
+      <connect-out place="volume_done" port="volume" />
     </transition>
-    <place name="trigger_dec" type="control" />
+
+    <place name="volume_done" type="VOLUME" />
+    <place name="volume_trigger_dec" type="VOLUME" />
+
+    <transition name="update_wanted_offset">
+      <defun>
+        <in name="bs" type="bitset"/>
+        <out name="bs" type="bitset"/>
+        <in name="volume" type="VOLUME"/>
+        <out name="volume" type="VOLUME"/>
+        <expression>
+          ${bs} := bitset_insert (${bs}, ${volume.offset} + 1)
+        </expression>
+      </defun>
+      <connect-in port="bs" place="wanted_offset"/>
+      <connect-out port="bs" place="wanted_offset"/>
+      <connect-in port="volume" place="volume_done"/>
+      <connect-out port="volume" place="volume_trigger_dec"/>
+    </transition>
 
     <transition name="dec">
       <defun>
-        <in  name="trigger" type="control" />
+        <in  name="volume" type="VOLUME" />
         <in name="wait" type="long" />
         <out name="wait" type="long" />
         <expression>
@@ -180,7 +253,7 @@
         </expression>
         <condition>${wait} :gt: 0</condition>
       </defun>
-      <connect-in place="trigger_dec" port="trigger" />
+      <connect-in place="volume_trigger_dec" port="volume" />
       <connect-in place="wait" port="wait" />
       <connect-out place="wait" port="wait" />
     </transition>
@@ -219,12 +292,14 @@
         <in name="trigger" type="control"/>
         <in name="loadTT_done" type="control"/>
         <in name="config" type="CONFIG"/>
+        <in name="wanted_offset" type="bitset"/>
         <out name="clean" type="control"/>
         <expression>${clean} := []</expression>
       </defun>
       <connect-in port="loadTT_done" place="loadTT_done"/>
       <connect-in port="config" place="config"/>
       <connect-in port="trigger" place="finalize_done"/>
+      <connect-in port="wanted_offset" place="wanted_offset"/>
       <connect-out port="clean" place="done"/>
     </transition>
   </net>
