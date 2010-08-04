@@ -50,7 +50,7 @@ namespace we
       put_output(o, key, value::type (val));
     }
 
-    // getting something means to ge a literal value...
+    // getting something means to get a literal value...
     template <typename T>
     inline typename value::visitor::get_literal_value<T const &>::result_type
     get (const input_t & i, const std::string & key)
@@ -64,6 +64,46 @@ namespace we
     get<value::type> (const input_t & i, const std::string & key)
     {
       return i.value (key);
+    }
+
+    // get with an additional path into the value
+    template <typename T>
+    inline typename value::visitor::get_literal_value<T const &>::result_type
+    get ( const input_t & i
+        , const std::string & key
+        , const std::string & path_in_value
+        )
+    {
+      return value::get<T>(path_in_value, i.value (key));
+    }
+
+    template <typename T>
+    inline typename value::visitor::get_literal_value<T const &>::result_type
+    get ( const input_t & i
+        , const std::string & key
+        , const value::path_type & path_in_value
+        )
+    {
+      return value::get<T>(path_in_value, i.value (key));
+    }
+
+    // get from an earlier extracted value::type
+    template <typename T>
+    inline typename value::visitor::get_literal_value<T const &>::result_type
+    get ( const value::type & v
+        , const std::string & path_in_value
+        )
+    {
+      return value::get<T>(path_in_value, v);
+    }
+
+    template <typename T>
+    inline typename value::visitor::get_literal_value<T const &>::result_type
+    get ( const value::type & v
+        , const value::path_type & path_in_value
+        )
+    {
+      return value::get<T>(path_in_value, v);
     }
   }
 }
