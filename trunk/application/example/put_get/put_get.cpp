@@ -14,8 +14,12 @@ static void run ( void *
 
   LOG (INFO, "a " << a);
 
-  const double & a_start_x (value::get<double> ("start.x", a));
-  const double & a_start_y (value::get<double> ("start.y", a));
+  const value::type & a_start (value::get<value::type> ("start", a));
+
+  LOG (INFO, "a_start " << a_start);
+
+  const double & a_start_x (value::get<double> ("x", a_start));
+  const double & a_start_y (value::get<double> ("y", a_start));
   const double & a_end_x (value::get<double> ("end.x", a));
   const double & a_end_y (value::get<double> ("end.y", a));
 
