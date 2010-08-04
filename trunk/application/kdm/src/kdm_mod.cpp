@@ -491,7 +491,6 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   const value::type & config (kdm_initialize (filename));
 
   we::loader::put_output (output, "config", config);
-  we::loader::put_output (output, "trigger", control());
 }
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)

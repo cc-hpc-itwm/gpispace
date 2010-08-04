@@ -1,6 +1,7 @@
 <defun internal="false">
   <in name="volume" type="VOLUME"  place="volume_in"/>
-  <in name="config" type="CONFIG"  place="config_in"/>
+  <in name="config" type="CONFIG"  place="config"/>
+  <in name="trigger" type="control" place="trigger"/>
   <out name="done"  type="control" place="done"/>
 
   <net>
@@ -8,10 +9,11 @@
     <place name="volume_initialized" type="VOLUME" />
     <place name="volume_gen_bunch" type="VOLUME" />
     <place name="volume" type="VOLUME" />
-    <place name="config_in" type="CONFIG" />
     <place name="config" type="CONFIG" />
     <place name="wait" type="long" />
     <place name="done" type="control" />
+
+    <place name="trigger" type="control"/>
 
      <!--  check this!!! -->
      <place name="trigger_load" type="control" >
@@ -20,14 +22,14 @@
 
     <transition name="init_wait" >
       <defun>
-        <in name="config" type="CONFIG" />
-        <out name="config" type="CONFIG" />
-        <out name="num" type="long" />
-        <expression> ${num} := ${config.BUNCHES_PER_OFFSET} </expression>
+        <in name="trigger" type="control" />
+        <in name="config" type="CONFIG"/>
+        <out name="wait" type="long" />
+        <expression> ${wait} := ${config.BUNCHES_PER_OFFSET} </expression>
       </defun>
-      <connect-in place="config_in" port="config" />
-      <connect-out place="config" port="config" />
-      <connect-out place="wait" port="num" />
+      <connect-in place="trigger" port="trigger" />
+      <connect-read place="config" port="config" />
+      <connect-out place="wait" port="wait" />
     </transition>
 
     <transition name="init">
@@ -154,10 +156,24 @@
         <out name="done"    type="control" />
         <module name="kdm" function="write"/>
       </defun>
-      <connect-in  place="config" port="config" />
+      <connect-read  place="config" port="config" />
       <connect-in  place="trigger_write"   port="trigger" />
       <connect-in  place="volume" port="volume" />
-      <connect-out port="done"    place="done" />
+      <connect-out port="done"    place="write_done" />
+    </transition>
+
+    <place name="write_done" type="control"/>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="config" type="CONFIG"/>
+        <out name="clean" type="control"/>
+        <expression>${clean} := []</expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="trigger" place="write_done"/>
+      <connect-out port="clean" place="done"/>
     </transition>
   </net>
 </defun>
