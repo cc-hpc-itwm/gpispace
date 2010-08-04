@@ -462,7 +462,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
-  DLOG(TRACE, "action_lifesign");
+  DLOG(TRACE, "Received LS from the worker " << worker_id);
 
     /*
     o timestamp, load, other probably useful information
@@ -476,7 +476,6 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 	try {
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		ptrWorker->update();
-		SDPA_LOG_INFO("Received LS from the worker " << worker_id);
 	}
 	catch(WorkerNotFoundException const &)
 	{
