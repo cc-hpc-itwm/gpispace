@@ -59,7 +59,7 @@ static void initialize ( void *
                        )
 {
   const std::string & filename
-    (we::loader::get_input<std::string> (input, "config_file"));
+    (we::loader::get<std::string> (input, "config_file"));
 
   const int NThreads (4);
   const unsigned long STORES_PER_NODE (2);
@@ -182,7 +182,7 @@ static void initialize ( void *
   Job.shift_for_Vol = sizeofJob();
   Job.shift_for_TT = Job.shift_for_TT + SizeVolWithBuffer;
 
-  LOG (INFO, "ReqVMMemSize =  " << Job.ReqVMMemSize 
+  LOG (INFO, "ReqVMMemSize =  " << Job.ReqVMMemSize
       << " (" <<  (Job.ReqVMMemSize>>20) << " MiB)"
       );
 
@@ -211,12 +211,12 @@ static void initialize ( void *
   if (handle_TT == 0)
     throw std::runtime_error ("KDM::initialize handle_TT == 0");
 
-  const fvmAllocHandle_t handle_Store 
+  const fvmAllocHandle_t handle_Store
     (fvmGlobalAlloc (STORES_PER_NODE * sizeofBunchBuffer (Job)));
   if (handle_Store == 0)
     throw std::runtime_error ("KDM::initialize handle_Store == 0");
 
-  const fvmAllocHandle_t scratch_Store 
+  const fvmAllocHandle_t scratch_Store
     (fvmGlobalAlloc (sizeofBunchBuffer (Job)));
   if (handle_Store == 0)
     throw std::runtime_error ("KDM::initialize scratch_Store == 0");
@@ -246,8 +246,8 @@ static void initialize ( void *
   config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
   config["STORES"] = static_cast<long>(STORES_PER_NODE * fvmGetNodeCount());
 
-  const long wait 
-    (value::get_literal_value<long> 
+  const long wait
+    (value::get_literal_value<long>
      (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
     )
     ;
@@ -261,7 +261,7 @@ static void initialize ( void *
   we::loader::put_output (output, "wanted", bs);
 
   const long parallel_loadTT
-    (value::get_literal_value<long> 
+    (value::get_literal_value<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     )
     ;
@@ -277,12 +277,12 @@ static void loadTT ( void *
                    )
 {
   const value::type & config (input.value("config"));
-  const long & TT (we::loader::get_input<long> (input, "TT"));
+  const long & TT (we::loader::get<long> (input, "TT"));
 
   LOG (INFO, "loadTT: got config " << config);
 
   const long & Parallel_loadTT
-    (value::get_literal_value<long> 
+    (value::get_literal_value<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     );
 
@@ -344,7 +344,7 @@ static void load ( void *
 {
   const value::type & config (input.value("config"));
   const value::type & bunch (input.value("bunch"));
-  const long & empty_store (we::loader::get_input<long> (input, "empty_store"));
+  const long & empty_store (we::loader::get<long> (input, "empty_store"));
 
   MigrationJob Job;
 
@@ -382,7 +382,7 @@ static void load ( void *
   loaded_bunch["bunch"] = bunch;
   loaded_bunch["store"] = empty_store;
   loaded_bunch["seen"] = bitsetofint::type();
-  loaded_bunch["wait"] = value::get_literal_value<long> 
+  loaded_bunch["wait"] = value::get_literal_value<long>
     (value::get_field ("SUBVOLUMES_PER_OFFSET", config));
 
   LOG (INFO, "load: stored bunch " << loaded_bunch);
@@ -490,7 +490,7 @@ static void process ( void *
   const bool filled1
     (value::get_literal_value<bool>(value::get_field ("filled", buffer1)));
 
-  const int buf_to_prefetch 
+  const int buf_to_prefetch
     ((assigned0 && !filled0) ? 0 : ((assigned1 && !filled1) ? 1 : (-1)));
   const int buf_to_migrate (filled0 ? 0 : (filled1 ? 1 : (-1)));
 
@@ -505,8 +505,8 @@ static void process ( void *
         (value::get_literal_value<long> (value::get_field ("handle_Store", config)));
       const fvmAllocHandle_t scratch_Store
         (value::get_literal_value<long> (value::get_field ("scratch_Store", config)));
-      const long store 
-        ( value::get_literal_value<long> 
+      const long store
+        ( value::get_literal_value<long>
           (value::get_field ("store", value::get_field (buf, volume)))
         );
 
@@ -547,11 +547,11 @@ static void process ( void *
 
       // Reconstruct the tracebunch out of memory
       const long oid
-        (1 + value::get_literal_value<long> 
+        (1 + value::get_literal_value<long>
         (value::get_field ("offset", value::get_field ("volume", volume))));
 
       const long bid
-        (1 + value::get_literal_value<long> 
+        (1 + value::get_literal_value<long>
              ( value::get_field ( "id"
                                 , value::get_field ("bunch"
                                                    , value::get_field ( buf
@@ -562,7 +562,7 @@ static void process ( void *
              )
         );
 
-      char * migbuf ( ((char *)fvmGetShmemPtr()) 
+      char * migbuf ( ((char *)fvmGetShmemPtr())
                     + Job.shift_for_Vol
                     + Job.SubVolMemSize
                     + buf_to_migrate * sizeofBunchBuffer (Job)
@@ -575,7 +575,7 @@ static void process ( void *
         (value::get_literal_value<long> (value::get_field ("NThreads", config)));
 
       char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
- 
+
       const fvmAllocHandle_t handle_TT
         (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
 

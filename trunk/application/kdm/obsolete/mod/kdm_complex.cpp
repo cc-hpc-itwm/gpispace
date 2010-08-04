@@ -13,7 +13,7 @@ static void initialize ( void *
                        )
 {
   const std::string & filename
-    (we::loader::get_input<std::string> (input, "config_file"));
+    (we::loader::get<std::string> (input, "config_file"));
 
   value::structured_t config;
 
@@ -36,8 +36,8 @@ static void initialize ( void *
 
    std::cout << "initialize: got config " << config << std::endl;
 
-  const long wait 
-    (value::get_literal_value<long> 
+  const long wait
+    (value::get_literal_value<long>
      (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
     )
     ;
@@ -53,7 +53,7 @@ static void initialize ( void *
   we::loader::put_output (output, "wanted", bs);
 
   const long parallel_loadTT
-    (value::get_literal_value<long> 
+    (value::get_literal_value<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     )
     ;
@@ -69,7 +69,7 @@ static void loadTT ( void *
                    )
 {
   const value::type & config (input.value("config"));
-  const long & TT (we::loader::get_input<long> (input, "TT"));
+  const long & TT (we::loader::get<long> (input, "TT"));
 
   std::cout << "loadTT: got config " << config << std::endl;
   std::cout << "loadTT: got TT " << TT << std::endl;
@@ -86,7 +86,7 @@ static void load ( void *
 {
   const value::type & config (input.value("config"));
   const value::type & bunch (input.value("bunch"));
-  const long & empty_store (we::loader::get_input<long> (input, "empty_store"));
+  const long & empty_store (we::loader::get<long> (input, "empty_store"));
 
   std::cout << "load: got config " << config << std::endl;
   std::cout << "load: got bunch " << bunch << std::endl;
@@ -97,7 +97,7 @@ static void load ( void *
   loaded_bunch["bunch"] = bunch;
   loaded_bunch["store"] = empty_store;
   loaded_bunch["seen"] = bitsetofint::type();
-  loaded_bunch["wait"] = value::get_literal_value<long> 
+  loaded_bunch["wait"] = value::get_literal_value<long>
     (value::get_field ("SUBVOLUMES_PER_OFFSET", config));
 
   we::loader::put_output (output, "loaded_bunch", loaded_bunch);

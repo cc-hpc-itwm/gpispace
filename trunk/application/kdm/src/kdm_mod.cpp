@@ -537,7 +537,7 @@ static void kdm_process ( const value::type & config
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const std::string & filename
-    (we::loader::get_input<std::string> (input, "config_file"));
+    (we::loader::get<std::string> (input, "config_file"));
 
   long wait (0);
   const value::type & config (kdm_initialize (filename, wait));
@@ -550,7 +550,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const value::type & config (input.value("config"));
-  const long & TT (we::loader::get_input<long> (input, "id"));
+  const long & TT (we::loader::get<long> (input, "id"));
 
   kdm_loadTT (config, TT);
 
@@ -569,7 +569,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 {
   const value::type & config (input.value("config"));
   const value::type & bunch (input.value("bunch"));
-  long wait (we::loader::get_input<long>(input, "wait"));
+  long wait (we::loader::get<long>(input, "wait"));
   kdm_process (config, bunch, wait);
   we::loader::put_output (output, "wait", wait);
   we::loader::put_output (output, "trigger", control());

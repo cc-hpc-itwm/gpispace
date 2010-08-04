@@ -10,7 +10,7 @@ static void run ( void *
                 , we::loader::output_t & output
                 )
 {
-  const value::type & a (input.value ("a"));
+  const value::type & a (we::loader::get<value::type> (input, "a"));
 
   LOG (INFO, "a " << a);
 
@@ -28,7 +28,7 @@ static void run ( void *
   LOG (INFO, "a_end_x " << a_end_x);
   LOG (INFO, "a_end_y " << a_end_y);
 
-  const double & stretch (we::loader::get_input<double> (input, "stretch"));
+  const double & stretch (we::loader::get<double> (input, "stretch"));
 
   LOG (INFO, "stretch " << stretch);
 

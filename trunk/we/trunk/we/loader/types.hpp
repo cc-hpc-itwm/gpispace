@@ -50,11 +50,20 @@ namespace we
       put_output(o, key, value::type (val));
     }
 
+    // getting something means to ge a literal value...
     template <typename T>
-    inline
-    typename value::visitor::get_literal_value<T>::result_type const & get_input (const input_t & i, const std::string & key)
+    inline typename value::visitor::get_literal_value<T const &>::result_type
+    get (const input_t & i, const std::string & key)
     {
       return value::get_literal_value<T>(i.value(key));
+    }
+
+    // ...but not when stated explicitely be a value::type
+    template<>
+    inline const value::type &
+    get<value::type> (const input_t & i, const std::string & key)
+    {
+      return i.value (key);
     }
   }
 }

@@ -21,7 +21,7 @@ static void initialize ( void *
                        , we::loader::output_t & output
                        )
 {
-  const long & sleeptime (we::loader::get_input<long>(input, "sleeptime"));
+  const long & sleeptime (we::loader::get<long>(input, "sleeptime"));
 
   MLOG (INFO, "initialize: sleeptime " << sleeptime);
 
@@ -107,7 +107,7 @@ static void finalize ( void *
     {
       throw std::runtime_error ("STRANGE! BUMMER: free (handle) got 0");
     }
-  
+
   if (!scratch)
     {
       throw std::runtime_error ("STRANGE! BUMMER: free (scratch) got 0");

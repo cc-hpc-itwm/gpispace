@@ -188,7 +188,7 @@ namespace value
     return get_literal_value<T, type> (get_field (field, v));
   }
 
-  // ...but not when explicitely stated to be a value::type
+  // ...but not when stated explicitely to be a value::type
   template<>
   inline const type &
   get<type> (const signature::field_name_t & field, const type & v)
