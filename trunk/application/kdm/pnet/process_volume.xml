@@ -134,17 +134,18 @@
       <defun>
        <in name="wait" type="long"/>
        <in name="trigger" type="BUNCH"/>
-       <out name="trigger" type="control"/>
+       <out name="done" type="control"/>
        <out name="wait" type="long"/>
        <expression>
-         ${wait} := ${wait} - 1
+         ${wait} := ${wait} - 1;
+         ${done} := []
        </expression>
        <condition>${wait} :gt: 0</condition>
       </defun>
       <connect-in   place="wait"  port="wait" />
       <connect-out  place="wait"  port="wait" />
       <connect-in port="trigger" place="trigger_dec"/>
-      <connect-out port="trigger" place="trigger_load"/>
+      <connect-out port="done" place="trigger_load"/>
     </transition>
 
     <transition name="break">
