@@ -245,7 +245,7 @@ struct compare_workers
  */
 unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException)
 {
-	SDPA_LOG_DEBUG("Get the least loaded worker ...");
+        DLOG(TRACE, "Get the least loaded worker ...");
 
 	lock_type lock(mtx_);
 
@@ -372,7 +372,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
-	SDPA_LOG_DEBUG("Add the job " << jobId.str() );
+        DLOG(TRACE, "Add the job " << jobId.str() );
 	common_queue_.push(jobId);
 }
 
@@ -382,7 +382,7 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 		Worker::ptr_t ptrWorker = findWorker(worker_id);
 		// delete job from worker's queues
 
-		SDPA_LOG_DEBUG("Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
+		DLOG(TRACE, "Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
 		ptrWorker->delete_job(job_id);
 	}
 	catch(JobNotDeletedException const &) {

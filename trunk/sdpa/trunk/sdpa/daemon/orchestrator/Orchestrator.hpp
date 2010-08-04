@@ -175,7 +175,7 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
         DLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
 
-        // unconditionally send an acknowledge
+        if (pEvt->from() != sdpa::daemon::WE)
         {
           // send a JobFinishedAckEvent back to the worker/slave
           JobFinishedAckEvent::Ptr evt
@@ -265,7 +265,7 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
         DLOG(TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
 
-        // unconditionally send an acknowledge
+        if (pEvt->from() != sdpa::daemon::WE)
         {
           // send a JobFinishedAckEvent back to the worker/slave
           JobFailedAckEvent::Ptr evt

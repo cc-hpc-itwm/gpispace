@@ -187,7 +187,7 @@ void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & ti
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
-	SDPA_LOG_DEBUG("Called schedule_local ...");
+  DLOG(TRACE, "Called schedule_local ...");
 
 	id_type wf_id = jobId.str();
 
@@ -202,7 +202,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 		// Should set the workflow_id here, or send it together with the workflow description
-		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
+		DLOG(TRACE, "Submit the workflow attached to the job "<<wf_id<<" to WE");
 		pJob->Dispatch();
 		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 	}
@@ -337,7 +337,7 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
  */
 bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bDelNonRespWorkers )
 {
-	SDPA_LOG_DEBUG("Called schedule_with_contraints ...");
+  DLOG(TRACE, "Called schedule_with_contraints ...");
 
 	if(!ptr_comm_handler_)
 	{
@@ -655,7 +655,7 @@ const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker
 
 void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
 {
-  SDPA_LOG_DEBUG("Acknowledge the job "<<job_id.str());
+  DLOG(TRACE, "Acknowledge the job "<<job_id.str());
   Worker::ptr_t ptrWorker = findWorker(worker_id);
 
   //put the job into the Running state: do this in acknowledge!

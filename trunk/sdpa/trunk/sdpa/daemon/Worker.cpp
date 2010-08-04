@@ -51,7 +51,7 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   {
 	  submitted().erase(job_id);
 	  acknowledged().push(job_id);
-	  SDPA_LOG_DEBUG("acknowledged job(" << job_id.str() << ")");
+	  DLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
 	  return true;
   }
   catch (const sdpa::daemon::NotFoundItem& ex)
@@ -72,13 +72,13 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
 	{
 		try {
 			submitted().erase(job_id);
-			SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the submitted queue!");
+			DLOG(TRACE, "Deleted " << job_id.str() << " from the submitted queue of worker: " << name());
 		}
 		catch( const sdpa::daemon::NotFoundItem& ex )
 		{
 			try {
 				acknowledged().erase(job_id);
-				SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the acknowledged queue!");
+				DLOG(TRACE, "Deleted " << job_id.str() << " from the acknowledged queue of worker: " << name());
 			}
 			catch( const sdpa::daemon::NotFoundItem& ex )
 			{

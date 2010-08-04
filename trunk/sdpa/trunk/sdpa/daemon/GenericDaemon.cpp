@@ -871,7 +871,7 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
  */
 bool GenericDaemon::finished(const id_type& workflowId, const result_type& result)
 {
-  SDPA_LOG_INFO ("activity finished: " << workflowId);
+  DLOG(TRACE, "activity finished: " << workflowId);
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
 	// look for the job_id corresponding to the received workflowId into job_map_
