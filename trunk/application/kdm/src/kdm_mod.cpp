@@ -194,7 +194,6 @@ static value::type kdm_initialize (const std::string & filename)
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
   config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
 
-  LOG (DEBUG, "initialize: wait = " << wait);
   LOG (DEBUG, "initialize: config = " << config);
 
   return config;
@@ -552,7 +551,9 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 {
   const value::type & config (get<value::type> (input, "config"));
   const value::type & volume (get<value::type> (input, "volume"));
+
   kdm_init_volume (config, volume);
+
   we::loader::put_output (output, "volume", volume);
 }
 
