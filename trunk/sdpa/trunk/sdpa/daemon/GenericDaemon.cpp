@@ -462,7 +462,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
-  DLOG(TRACE, "Received LS from the worker " << worker_id);
+  DLOG(TRACE, "Received LS from the worker " << e.from());
 
     /*
     o timestamp, load, other probably useful information
@@ -472,14 +472,13 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
     o this datastructure is being updated everytime a message is received
 	o an aggregator is supposed to be unavailable when no messages have been received for a (configurable) period of time
      */
-	Worker::worker_id_t worker_id = e.from();
 	try {
-		Worker::ptr_t ptrWorker = findWorker(worker_id);
-		ptrWorker->update();
+          Worker::ptr_t ptrWorker = findWorker(e.from());
+          ptrWorker->update();
 	}
 	catch(WorkerNotFoundException const &)
 	{
-		SDPA_LOG_ERROR("got LS from unknown worker: " << worker_id);
+          SDPA_LOG_ERROR("got LS from unknown worker: " << e.from());
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
 		sendEventToSlave(pErrorEvt);
