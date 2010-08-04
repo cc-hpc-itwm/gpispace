@@ -463,7 +463,7 @@ void SchedulerImpl::start_job(const sdpa::job_id_t &jobId) {
 
 void SchedulerImpl::schedule(sdpa::job_id_t& jobId)
 {
-	SDPA_LOG_DEBUG("Handle job "<<jobId.str());
+  DLOG(TRACE, "Scheduler::schedule (" << jobId.str() << ")");
 	jobs_to_be_scheduled.push(jobId);
 }
 

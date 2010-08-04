@@ -63,7 +63,6 @@ Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFound
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
 	lock_type lock(mtx_);
-	ostringstream os;
 	job_map_t::iterator it;
 	bool bsucc = false;
 
@@ -72,13 +71,8 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) th
 
 	ret_pair =  job_map_.insert(job_pair);
 
-	if(ret_pair.second)
-	{
-		os<<"Inserted job "<<job_id<<" into the job map";
-		SDPA_LOG_DEBUG(os.str());
-	}
-	else
-		throw JobNotAddedException(job_id);
+	if(! ret_pair.second)
+          throw JobNotAddedException(job_id);
 }
 
 void JobManager::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)
@@ -93,13 +87,8 @@ void JobManager::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr
 
 	ret_pair =  job_map_marked_for_del_.insert(job_pair);
 
-	if(ret_pair.second)
-	{
-		os<<"Marked job "<<job_id<<" for deletion";
-		SDPA_LOG_DEBUG(os.str());
-	}
-	else
-		throw JobNotAddedException(job_id);
+	if(! ret_pair.second)
+          throw JobNotAddedException(job_id);
 }
 
 void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
