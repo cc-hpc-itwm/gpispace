@@ -190,7 +190,7 @@ namespace sdpa {
 		// check the result state and invoke the NRE's callbacks
 		if( result.first == sdpa::nre::worker::ACTIVITY_FINISHED )
 		{
-			SDPA_LOG_DEBUG("activity finished: " << act_id);
+                        DLOG(DEBUG, "activity finished: " << act_id);
 			// notify the gui
 			// and then, the workflow engine
 			ptr_comm_handler_->activityFinished(act_id, enc_act);
@@ -254,8 +254,7 @@ namespace sdpa {
 	 			else
 	 			{
 					try {
-
-						SDPA_LOG_DEBUG("Try to execute the job "<<jobId.str()<<" ...");
+                                                DLOG(TRACE, "Try to execute the job "<<jobId.str()<<" ...");
 						execute(jobId);
 					}
 					catch(JobNotFoundException& ex)
