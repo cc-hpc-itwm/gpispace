@@ -16,6 +16,7 @@
 #include <we/util/cross.hpp>
 
 #include <fhg/util/show.hpp>
+#include <fhg/util/maybe.hpp>
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
@@ -595,6 +596,15 @@ public:
       }
 
     return pos->second;
+  }
+
+  fhg::util::maybe<capacity_t> get_maybe_capacity (const pid_t & pid) const
+  {
+    capacity_map_t::const_iterator pos (capacity_map.find (pid));
+
+    return (pos == capacity_map.end())
+      ? fhg::util::Nothing<capacity_t>()
+      : fhg::util::Just<capacity_t>(pos->second);
   }
 
   void set_transition_function (const tid_t & tid, const trans_t & f)
