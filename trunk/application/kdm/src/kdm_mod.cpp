@@ -490,13 +490,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   const value::type & config (kdm_initialize (filename));
 
-  const long wait ( get<long> (config, "OFFSETS")
-                  * get<long> (config, "SUBVOLUMES_PER_OFFSET")
-                  )
-                  ;
-
   we::loader::put_output (output, "config", config);
-  we::loader::put_output (output, "wait", literal::type(wait));
   we::loader::put_output (output, "trigger", control());
 }
 

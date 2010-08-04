@@ -1,0 +1,31 @@
+<template name="triple">
+  <in name="in" type="T" place="x"/>
+  <out name="1" type="T" place="1"/>
+  <out name="2" type="T" place="2"/>
+  <out name="3" type="T" place="3"/>
+
+  <net>
+    <place name="x" type="T"/>
+    <place name="1" type="T"/>
+    <place name="2" type="T"/>
+    <place name="3" type="T"/>
+
+    <transition name="triple">
+      <defun>
+        <in name="x" type="T"/>
+        <out name="1" type="T"/>
+        <out name="2" type="T"/>
+        <out name="3" type="T"/>
+        <expression>
+          ${1} := ${x};
+          ${2} := ${x};
+          ${3} := ${x};
+        </expression>
+      </defun>
+      <connect-in port="x" place="x"/>
+      <connect-out port="1" place="1"/>
+      <connect-out port="2" place="2"/>
+      <connect-out port="3" place="3"/>
+    </transition>
+  </net>
+</template>
