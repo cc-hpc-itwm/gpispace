@@ -398,9 +398,13 @@ namespace we { namespace mgmt { namespace visitor {
       typedef typename Transition::pid_t     pid_t;
 
       const port_id_t port_id  = inp->second;
-      const pid_t     place_id = trans.get_port (port_id).associated_place();
 
-      token::put (net, place_id, inp->first);
+      if (trans.get_port (port_id).has_associated_place())
+        {
+          const pid_t place_id (trans.get_port (port_id).associated_place());
+
+          token::put (net, place_id, inp->first);
+        }
     }
   }
 
