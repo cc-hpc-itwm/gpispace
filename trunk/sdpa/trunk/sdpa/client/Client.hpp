@@ -42,7 +42,7 @@ namespace sdpa { namespace client {
     {
       using namespace sdpa::util;
       config_t cfg("client", "SDPAC_");
-	  std::string home(std::getenv("HOME"));
+      std::string home(std::getenv("HOME"));
       cfg.specific_opts().add_options()
         ("orchestrator", po::value<std::string>()->default_value("orchestrator"),
          "name of the orchestrator")
