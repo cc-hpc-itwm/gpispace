@@ -18,6 +18,17 @@ static void run ( void *
 
   LOG (INFO, "stretch " << stretch);
 
+  // also as value::type
+  {
+    const value::type & stretch_v (get<value::type> (input, "stretch"));
+
+    LOG (INFO, "stretch_v " << stretch_v);
+
+    const double & stretch_vd (value::get_literal_value<double> (stretch_v));
+
+    LOG (INFO, "stretch_vd " << stretch_vd);
+  }
+
   // *********************************************************************** //
   // get the complete token as value::type, structured
   const value::type & a (get<value::type> (input, "a"));
