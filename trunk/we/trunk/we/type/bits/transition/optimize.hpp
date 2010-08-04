@@ -4,12 +4,14 @@
 #define WE_TYPE_BITS_TRANSITION_OPTIMIZE_HPP 1
 
 #include <we/type/transition.hpp>
+#include <we/type/id.hpp>
 
 #include <stack>
 
 #include <boost/program_options.hpp>
 
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/maybe.hpp>
 
 namespace we { namespace type {
     namespace optimize
@@ -186,7 +188,7 @@ namespace we { namespace type {
 
             typename transition_t::port_id_with_prop_t port_id_with_prop
               (trans_in_B.output_port_by_pid (pid_B));
-            
+
             trans_in_B.re_connect_inner_to_outer
               ( port_id_with_prop.first
               , pid_A
@@ -196,6 +198,27 @@ namespace we { namespace type {
             net.modify_transition (tid_trans_in_B, trans_in_B);
 
             stack.pop();
+          }
+
+        // capacities
+        typedef petri_net::capacity_t capacity_t;
+
+        fhg::util::maybe<capacity_t> cap_A (net.get_maybe_capacity (pid_A));
+        fhg::util::maybe<capacity_t> cap_B (net.get_maybe_capacity (pid_B));
+
+        if (cap_A.isJust())
+          {
+            if (cap_B.isJust())
+              {
+                net.set_capacity (pid_A, std::min (*cap_A, *cap_B));
+              }
+          }
+        else
+          {
+            if (cap_B.isJust())
+              {
+                net.set_capacity (pid_A, *cap_B);
+              }
           }
 
         net.delete_place (pid_B);
@@ -261,7 +284,7 @@ namespace we { namespace type {
                   { // one port only
                     const pid_t pid_in (*net.in_to_transition(tid));
                     const pid_t pid_out (*net.out_of_transition(tid));
-                    
+
                     if (  net.in_to_place (pid_out).size() == 1
                        || net.out_of_place (pid_in).size() == 1
                        )
@@ -293,7 +316,7 @@ namespace we { namespace type {
                                                                       , pid_in
                                                                       );
                               }
-                        
+
                             modified = true;
                           }
                       }
@@ -328,7 +351,7 @@ namespace we { namespace type {
 
           bool operator () (expression_t &) const { return false; }
           bool operator () (module_call_t &) const { return false; }
-          
+
           template<typename P, typename E, typename T>
           bool operator ()
           (petri_net::net<P, transition_t<P,E,T>, E, T> & net) const
@@ -356,7 +379,7 @@ namespace we { namespace type {
             while (!stack.empty())
               {
                 const tid_t tid (stack.top()); stack.pop();
-   
+
                 transition_t trans (net.get_transition (tid));
 
                 const bool trans_modified
