@@ -38,6 +38,9 @@ namespace we
     typedef std::list<std::string> param_names_list_t;
     typedef std::pair<WrapperFunction, param_names_list_t> parameterized_function_t;
 
+    // ********************************************************************** //
+    // PUT
+
     inline void put_output (output_t & o, const std::string & key, const value::type & val)
     {
       o.push_back (output_t::value_type (val, key));
@@ -49,6 +52,9 @@ namespace we
     {
       put_output(o, key, value::type (val));
     }
+
+    // ********************************************************************** //
+    // GET
 
     // getting something means to get a literal value...
     template <typename T>
