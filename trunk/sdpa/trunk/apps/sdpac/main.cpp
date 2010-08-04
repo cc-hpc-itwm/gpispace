@@ -126,20 +126,22 @@ int main (int argc, char **argv) {
     return 0;
   }
 
-  try
+  if (cfg.is_set("logging.file"))
   {
-	fhg::log::getLogger().addAppender(
-	  fhg::log::Appender::ptr_t(
-		new fhg::log::FileAppender("logfile"
-								 , cfg.get<std::string>("logging.file")
-								 , std::ios_base::app
-								 | std::ios_base::binary
-								 | std::ios_base::out)))->setFormat(fhg::log::Formatter::Custom("%t %s: %l %p:%L - %m%n"));
-
-  }
-  catch (const std::exception &ex)
-  {
-	std::cerr << "W: could not open logfile: " << cfg.get<std::string>("logging.file") << std::endl;
+    try
+    {
+      fhg::log::getLogger().addAppender
+        (fhg::log::Appender::ptr_t
+        (new fhg::log::FileAppender( "logfile"
+                                   , cfg.get<std::string>("logging.file")
+                                   )
+        )
+        )->setFormat (fhg::log::Formatter::Custom("%t %s: %l %p:%L - %m%n"));
+    }
+    catch (const std::exception &ex)
+    {
+      std::cerr << "W: could not open logfile: " << cfg.get<std::string>("logging.file") << std::endl;
+    }
   }
 
   if (cfg.is_set("logging.tostderr"))
@@ -156,6 +158,7 @@ int main (int argc, char **argv) {
   {
     fhg::log::getLogger().setLevel(fhg::log::LogLevel::WARN);
   }
+
   if (cfg.is_set("verbose"))
   {
     int lvl(cfg.get<int>("verbose"));

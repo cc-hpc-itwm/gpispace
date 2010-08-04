@@ -44,10 +44,10 @@ NewConfig::NewConfig(const std::string &component_name, const std::string &env_p
     ("quiet,q", "be quiet")
     ;
   logging_opts_.add_options()
-    ("logging.file", po::value<std::string>()->default_value("sdpa-"+component_name_+".log"),
+    ("logging.file", po::value<std::string>(),
      "redirect log output to this file")
     ("logging.tostderr", "output to stderr")
-    ("logging.level", po::value<int>()->default_value(3),
+    ("logging.level", po::value<int>()->default_value(0),
      "standard logging level")
      ;
   network_opts_.add_options()
