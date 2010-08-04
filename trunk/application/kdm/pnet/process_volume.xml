@@ -9,6 +9,7 @@
     <place name="volume_initialized" type="VOLUME" />
     <place name="volume_gen_bunch" type="VOLUME" />
     <place name="volume" type="VOLUME" />
+    <place name="volume_to_write" type="VOLUME" />
     <place name="config" type="CONFIG" />
     <place name="wait" type="long" />
     <place name="volume_done" type="VOLUME" />
@@ -53,7 +54,7 @@
     <transition name="dup_volume" inline="true">
        <use name="dup_volume"/>
        <connect-in port="in" place="volume_initialized"/>
-       <connect-out port="one" place="volume"/>
+       <connect-out port="one" place="volume_to_write"/>
        <connect-out port="two" place="trigger_extract_bunches_per_offset"/>
     </transition>
 
@@ -80,21 +81,36 @@
       <include-function href="generate_bunch.xml" />
         <connect-in place="volume_gen_bunch" port="volume" />
       <connect-in place="bunches_per_offset" port="amount" />
-      <connect-out place="bunch" port="out" />
+      <connect-out place="bunch_generated" port="out" />
     </transition>
 
     <place name="bunch" type="BUNCH"/>
 
+    <place name="bunch_generated" type="BUNCH"/>
+
+    <include-template href="trigger_if.xml"/>
+    <specialize name="trigger_if_BUNCH" use="trigger_if">
+      <type-map replace="T" with="BUNCH"/>
+    </specialize>
+    <specialize name="trigger_if_VOLUME" use="trigger_if">
+      <type-map replace="T" with="VOLUME"/>
+    </specialize>
+
+    <transition name="trigger_load">
+      <use name="trigger_if_BUNCH"/>
+      <connect-in place="trigger_load"  port="trigger" />
+      <connect-in place="bunch_generated" port="object"/>
+      <connect-out place="bunch" port="object"/>
+    </transition>
+
     <transition name="load">
       <defun>
         <in name="bunch" type="BUNCH"/>
-        <in name="trigger" type="control" />
         <in name="config" type="CONFIG" />
         <out name="bunch" type="BUNCH" />
         <module name="kdm" function="load"/>
       </defun>
       <connect-read place="config" port="config" />
-      <connect-in   place="trigger_load"  port="trigger" />
       <connect-in   place="bunch"  port="bunch" />
       <connect-out  port="bunch"   place="trigger_process" />
     </transition>
@@ -104,20 +120,20 @@
       <defun>
         <in  name="bunch"   type="BUNCH"/>
         <in  name="config"  type="CONFIG"/>
-        <out name="trigger" type="control" />
+        <out name="bunch" type="BUNCH" />
         <module name="kdm" function="process"/>
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="trigger_process"  port="bunch" />
-      <connect-out  port="trigger" place="trigger_dec" />
+      <connect-out  port="bunch" place="trigger_dec" />
     </transition>
 
-    <place name="trigger_dec" type="control"/>
+    <place name="trigger_dec" type="BUNCH"/>
 
     <transition name="dec">
       <defun>
        <in name="wait" type="long"/>
-       <in name="trigger" type="control"/>
+       <in name="trigger" type="BUNCH"/>
        <out name="trigger" type="control"/>
        <out name="wait" type="long"/>
        <expression>
@@ -148,16 +164,21 @@
 
     <place name="trigger_write" type="control"/>
 
+    <transition name="trigger_write">
+      <use name="trigger_if_VOLUME"/>
+      <connect-in place="trigger_write"  port="trigger" />
+      <connect-in place="volume_to_write" port="object"/>
+      <connect-out place="volume" port="object"/>
+    </transition>
+
     <transition name="write">
       <defun>
         <in  name="config"  type="CONFIG"/>
-        <in name="trigger" type="control"/>
         <in  name="volume"  type="VOLUME"/>
         <out name="volume"    type="VOLUME" />
         <module name="kdm" function="write"/>
       </defun>
       <connect-read  place="config" port="config" />
-      <connect-in  place="trigger_write"   port="trigger" />
       <connect-in  place="volume" port="volume" />
       <connect-out port="volume" place="write_done" />
     </transition>

@@ -518,7 +518,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   kdm_process (config, bunch);
 
-  we::loader::put_output (output, "trigger", control());
+  we::loader::put_output (output, "bunch", bunch);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
