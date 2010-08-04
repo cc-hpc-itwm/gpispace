@@ -58,10 +58,10 @@ namespace we
 
     // getting something means to get a literal value...
     template <typename T>
-    inline typename value::visitor::get_literal_value<T const &>::result_type
+    inline typename value::visitor::get<T const &>::result_type
     get (const input_t & i, const std::string & key)
     {
-      return value::get_literal_value<T>(i.value(key));
+      return value::get<T>(i.value(key));
     }
 
     // ...but not when stated explicitely be a value::type
@@ -74,7 +74,7 @@ namespace we
 
     // get with an additional path into the value
     template <typename T>
-    inline typename value::visitor::get_literal_value<T const &>::result_type
+    inline typename value::visitor::get<T const &>::result_type
     get ( const input_t & i
         , const std::string & key
         , const std::string & path_in_value
@@ -84,7 +84,7 @@ namespace we
     }
 
     template <typename T>
-    inline typename value::visitor::get_literal_value<T const &>::result_type
+    inline typename value::visitor::get<T const &>::result_type
     get ( const input_t & i
         , const std::string & key
         , const value::path_type & path_in_value
@@ -95,7 +95,7 @@ namespace we
 
     // get from an earlier extracted value::type
     template <typename T>
-    inline typename value::visitor::get_literal_value<T const &>::result_type
+    inline typename value::visitor::get<T const &>::result_type
     get ( const value::type & v
         , const std::string & path_in_value
         )
@@ -104,12 +104,19 @@ namespace we
     }
 
     template <typename T>
-    inline typename value::visitor::get_literal_value<T const &>::result_type
+    inline typename value::visitor::get<T const &>::result_type
     get ( const value::type & v
         , const value::path_type & path_in_value
         )
     {
       return value::get<T>(path_in_value, v);
+    }
+
+    template <typename T>
+    inline typename value::visitor::get<T const &>::result_type
+    get (const value::type & v)
+    {
+      return value::get<T>(v);
     }
   }
 }

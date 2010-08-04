@@ -63,11 +63,11 @@ static void run ( void *
   const value::type & config (input.value ("config"));
 
   const fvmAllocHandle_t handle
-    (value::get_literal_value<long> (value::get_field ("handle", config)));
+    (value::get<long> (value::get_field ("handle", config)));
   const fvmAllocHandle_t scratch
-    (value::get_literal_value<long> (value::get_field ("scratch", config)));
+    (value::get<long> (value::get_field ("scratch", config)));
   const long sleeptime
-    (value::get_literal_value<long> (value::get_field ("sleeptime", config)));
+    (value::get<long> (value::get_field ("sleeptime", config)));
 
   unsigned long magic;
 
@@ -99,9 +99,9 @@ static void finalize ( void *
   const value::type & config (input.value ("config"));
 
   const fvmAllocHandle_t handle
-    (value::get_literal_value<long> (value::get_field ("handle", config)));
+    (value::get<long> (value::get_field ("handle", config)));
   const fvmAllocHandle_t scratch
-    (value::get_literal_value<long> (value::get_field ("scratch", config)));
+    (value::get<long> (value::get_field ("scratch", config)));
 
   if (!handle)
     {

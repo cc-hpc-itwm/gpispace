@@ -192,8 +192,8 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
   config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
 
-  wait = value::get_literal_value<long> (value::get_field ("OFFSETS", config))
-       * value::get_literal_value<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
+  wait = value::get<long> (value::get_field ("OFFSETS", config))
+       * value::get<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
        ;
 
   LOG (DEBUG, "initialize: wait = " << wait);
@@ -207,9 +207,9 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
 static void get_Job (const value::type & config, MigrationJob & Job)
 {
   const fvmAllocHandle_t handle_Job
-    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+    (value::get<long> (value::get_field ("handle_Job", config)));
   const fvmAllocHandle_t scratch_Job
-    (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+    (value::get<long> (value::get_field ("scratch_Job", config)));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -229,7 +229,7 @@ static void kdm_loadTT (const value::type & config, const long & TT)
   LOG (INFO, "loadTT: got config " << config);
 
   const long & Parallel_loadTT
-    (value::get_literal_value<long>
+    (value::get<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     );
 
@@ -271,9 +271,9 @@ static void kdm_loadTT (const value::type & config, const long & TT)
 
   // Load the entire travel time table data into memory
   const int NThreads
-    (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+    (value::get<long> (value::get_field ("NThreads", config)));
   const fvmAllocHandle_t handle_TT
-    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+    (value::get<long> (value::get_field ("handle_TT", config)));
 
   TTVMMemHandler TTVMMem;
 
@@ -287,11 +287,11 @@ static void kdm_finalize (const value::type & config)
   LOG (INFO, "finalize: got config " << config);
 
   const fvmAllocHandle_t handle_Job
-    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+    (value::get<long> (value::get_field ("handle_Job", config)));
   const fvmAllocHandle_t scratch_Job
-     (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+     (value::get<long> (value::get_field ("scratch_Job", config)));
   const fvmAllocHandle_t handle_TT
-    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+    (value::get<long> (value::get_field ("handle_TT", config)));
 
   fvmGlobalFree (handle_Job);
   fvmGlobalFree (scratch_Job);
@@ -309,7 +309,7 @@ static void kdm_load (const value::type & config, const value::type & bunch)
   get_Job (config, Job);
 
   const long oid
-    (1 + value::get_literal_value<long>
+    (1 + value::get<long>
          (value::get_field ("offset"
                            , value::get_field ("volume"
                                               , bunch
@@ -318,7 +318,7 @@ static void kdm_load (const value::type & config, const value::type & bunch)
          )
     );
   const long bid
-    (1 + value::get_literal_value<long> (value::get_field ("id", bunch)));
+    (1 + value::get<long> (value::get_field ("id", bunch)));
 
   char * pBunchData (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -358,9 +358,9 @@ static void kdm_write (const value::type & config, const value::type & volume)
 
   // create the subvolume
   const long vid
-    (1 + value::get_literal_value<long> (value::get_field ("id", volume)));
+    (1 + value::get<long> (value::get_field ("id", volume)));
   const long oid
-    (1 + value::get_literal_value<long> (value::get_field ("offset", volume)));
+    (1 + value::get<long> (value::get_field ("offset", volume)));
 
   MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
 
@@ -398,7 +398,7 @@ static void kdm_init_volume ( const value::type & config
     LOG(INFO, "Init SincInterpolator on node " << fvmGetRank());
 
     const long NThreads
-      (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+      (value::get<long> (value::get_field ("NThreads", config)));
 
     initSincIntArray(NThreads, Job.tracedt);
 
@@ -408,9 +408,9 @@ static void kdm_init_volume ( const value::type & config
 
     // rewrite Job
     const fvmAllocHandle_t handle_Job
-      (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+      (value::get<long> (value::get_field ("handle_Job", config)));
     const fvmAllocHandle_t scratch_Job
-      (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+      (value::get<long> (value::get_field ("scratch_Job", config)));
 
     waitComm (fvmPutGlobalData ( handle_Job
                                , fvmGetRank() * sizeofJob()
@@ -441,7 +441,7 @@ static void kdm_init_volume ( const value::type & config
 
   // create the subvolume
   const long vid
-    (1 + value::get_literal_value<long> (value::get_field ("id", volume)));
+    (1 + value::get<long> (value::get_field ("id", volume)));
 
   MigSubVol3D MigSubVol(MigVol, vid, Job.NSubVols);
 
@@ -482,7 +482,7 @@ static void kdm_process ( const value::type & config
 
   // create the subvolume
   const long vid
-    (1 + value::get_literal_value<long>
+    (1 + value::get<long>
          (value::get_field ("id"
                            , value::get_field ("volume"
                                               , bunch
@@ -500,7 +500,7 @@ static void kdm_process ( const value::type & config
 
   // Reconstruct the tracebunch out of memory
   const long oid
-    (1 + value::get_literal_value<long>
+    (1 + value::get<long>
          (value::get_field ("offset"
                            , value::get_field ("volume"
                                               , bunch
@@ -509,7 +509,7 @@ static void kdm_process ( const value::type & config
          )
     );
   const long bid
-    (1 + value::get_literal_value<long> (value::get_field ("id", bunch)));
+    (1 + value::get<long> (value::get_field ("id", bunch)));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -517,12 +517,12 @@ static void kdm_process ( const value::type & config
 
   // migrate the bunch to the subvolume
   const int NThreads
-    (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+    (value::get<long> (value::get_field ("NThreads", config)));
 
   char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
 
   const fvmAllocHandle_t handle_TT
-    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+    (value::get<long> (value::get_field ("handle_TT", config)));
 
   MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
 

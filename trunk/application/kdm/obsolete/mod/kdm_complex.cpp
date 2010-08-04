@@ -37,7 +37,7 @@ static void initialize ( void *
    std::cout << "initialize: got config " << config << std::endl;
 
   const long wait
-    (value::get_literal_value<long>
+    (value::get<long>
      (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
     )
     ;
@@ -53,7 +53,7 @@ static void initialize ( void *
   we::loader::put_output (output, "wanted", bs);
 
   const long parallel_loadTT
-    (value::get_literal_value<long>
+    (value::get<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     )
     ;
@@ -97,7 +97,7 @@ static void load ( void *
   loaded_bunch["bunch"] = bunch;
   loaded_bunch["store"] = empty_store;
   loaded_bunch["seen"] = bitsetofint::type();
-  loaded_bunch["wait"] = value::get_literal_value<long>
+  loaded_bunch["wait"] = value::get<long>
     (value::get_field ("SUBVOLUMES_PER_OFFSET", config));
 
   we::loader::put_output (output, "loaded_bunch", loaded_bunch);
@@ -122,22 +122,22 @@ static void process ( void *
 
   const value::type buffer0 (value::get_field ("buffer0", volume));
   const bool assigned0
-    (value::get_literal_value<bool>(value::get_field ("assigned", buffer0)));
+    (value::get<bool>(value::get_field ("assigned", buffer0)));
   const bool filled0
-    (value::get_literal_value<bool>(value::get_field ("filled", buffer0)));
+    (value::get<bool>(value::get_field ("filled", buffer0)));
 
   const value::type buffer1 (value::get_field ("buffer1", volume));
   const bool assigned1
-    (value::get_literal_value<bool>(value::get_field ("assigned", buffer1)));
+    (value::get<bool>(value::get_field ("assigned", buffer1)));
   const bool filled1
-    (value::get_literal_value<bool>(value::get_field ("filled", buffer1)));
+    (value::get<bool>(value::get_field ("filled", buffer1)));
 
   // die hier implementierte Logik ist noch nicht optimal: es wird
   // einfach nur jeder bufffer geladen, der assigned aber nicht
   // gefüllt ist und die buffer, die geladen sind, werden verarbeitet.
 
   const long wait
-    (value::get_literal_value<long>(value::get_field ("wait", volume)));
+    (value::get<long>(value::get_field ("wait", volume)));
 
   value::field("assigned", value::field("buffer0", volume_processed)) = assigned0 && !filled0;
   value::field("filled", value::field("buffer0", volume_processed)) = assigned0 && !filled0;

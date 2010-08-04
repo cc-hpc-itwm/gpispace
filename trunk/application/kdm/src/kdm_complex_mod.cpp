@@ -36,9 +36,9 @@ static unsigned long sizeofJob (void)
 static void get_Job (const value::type & config, MigrationJob & Job)
 {
   const fvmAllocHandle_t handle_Job
-    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+    (value::get<long> (value::get_field ("handle_Job", config)));
   const fvmAllocHandle_t scratch_Job
-    (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+    (value::get<long> (value::get_field ("scratch_Job", config)));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -247,7 +247,7 @@ static void initialize ( void *
   config["STORES"] = static_cast<long>(STORES_PER_NODE * fvmGetNodeCount());
 
   const long wait
-    (value::get_literal_value<long>
+    (value::get<long>
      (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
     )
     ;
@@ -261,7 +261,7 @@ static void initialize ( void *
   we::loader::put_output (output, "wanted", bs);
 
   const long parallel_loadTT
-    (value::get_literal_value<long>
+    (value::get<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     )
     ;
@@ -282,7 +282,7 @@ static void loadTT ( void *
   LOG (INFO, "loadTT: got config " << config);
 
   const long & Parallel_loadTT
-    (value::get_literal_value<long>
+    (value::get<long>
      (value::get_field ("PARALLEL_LOADTT", config))
     );
 
@@ -324,9 +324,9 @@ static void loadTT ( void *
 
   // Load the entire travel time table data into memory
   const int NThreads
-    (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+    (value::get<long> (value::get_field ("NThreads", config)));
   const fvmAllocHandle_t handle_TT
-    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+    (value::get<long> (value::get_field ("handle_TT", config)));
 
   TTVMMemHandler TTVMMem;
 
@@ -351,9 +351,9 @@ static void load ( void *
   get_Job (config, Job);
 
   const long oid
-    (1 + value::get_literal_value<long>(value::get_field ("offset", bunch)));
+    (1 + value::get<long>(value::get_field ("offset", bunch)));
   const long bid
-    (1 + value::get_literal_value<long> (value::get_field ("id", bunch)));
+    (1 + value::get<long> (value::get_field ("id", bunch)));
 
   char * pBunchData (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -364,9 +364,9 @@ static void load ( void *
   LOG (INFO, "load: loaded bunch " << bunch);
 
   const fvmAllocHandle_t handle_Store
-    (value::get_literal_value<long> (value::get_field ("handle_Store", config)));
+    (value::get<long> (value::get_field ("handle_Store", config)));
   const fvmAllocHandle_t scratch_Store
-     (value::get_literal_value<long> (value::get_field ("scratch_Store", config)));
+     (value::get<long> (value::get_field ("scratch_Store", config)));
 
   waitComm ( fvmPutGlobalData
              ( handle_Store
@@ -382,7 +382,7 @@ static void load ( void *
   loaded_bunch["bunch"] = bunch;
   loaded_bunch["store"] = empty_store;
   loaded_bunch["seen"] = bitsetofint::type();
-  loaded_bunch["wait"] = value::get_literal_value<long>
+  loaded_bunch["wait"] = value::get<long>
     (value::get_field ("SUBVOLUMES_PER_OFFSET", config));
 
   LOG (INFO, "load: stored bunch " << loaded_bunch);
@@ -412,7 +412,7 @@ static void process ( void *
     LOG(INFO, "Init SincInterpolator on node " << fvmGetRank());
 
     const long NThreads
-      (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+      (value::get<long> (value::get_field ("NThreads", config)));
 
     initSincIntArray(NThreads, Job.tracedt);
 
@@ -422,9 +422,9 @@ static void process ( void *
 
     // rewrite Job
     const fvmAllocHandle_t handle_Job
-      (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+      (value::get<long> (value::get_field ("handle_Job", config)));
     const fvmAllocHandle_t scratch_Job
-      (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+      (value::get<long> (value::get_field ("scratch_Job", config)));
 
     waitComm (fvmPutGlobalData ( handle_Job
                                , fvmGetRank() * sizeofJob()
@@ -450,14 +450,14 @@ static void process ( void *
 
   // create the subvolume
   const long vid
-    (1 + value::get_literal_value<long> (value::get_field ("id", value::get_field ("volume", volume))));
+    (1 + value::get<long> (value::get_field ("id", value::get_field ("volume", volume))));
 
   MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
 
   const fvmAllocHandle_t handle_Volume
-    (value::get_literal_value<long> (value::get_field ("handle_Volume", config)));
+    (value::get<long> (value::get_field ("handle_Volume", config)));
   const fvmAllocHandle_t scratch_Volume
-    (value::get_literal_value<long> (value::get_field ("scratch_Volume", config)));
+    (value::get<long> (value::get_field ("scratch_Volume", config)));
 
   const unsigned long SizeVolWithBuffer
     (Job.SubVolMemSize + 2 * sizeofBunchBuffer (Job));
@@ -480,15 +480,15 @@ static void process ( void *
 
   const value::type buffer0 (value::get_field ("buffer0", volume));
   const bool assigned0
-    (value::get_literal_value<bool>(value::get_field ("assigned", buffer0)));
+    (value::get<bool>(value::get_field ("assigned", buffer0)));
   const bool filled0
-    (value::get_literal_value<bool>(value::get_field ("filled", buffer0)));
+    (value::get<bool>(value::get_field ("filled", buffer0)));
 
   const value::type buffer1 (value::get_field ("buffer1", volume));
   const bool assigned1
-    (value::get_literal_value<bool>(value::get_field ("assigned", buffer1)));
+    (value::get<bool>(value::get_field ("assigned", buffer1)));
   const bool filled1
-    (value::get_literal_value<bool>(value::get_field ("filled", buffer1)));
+    (value::get<bool>(value::get_field ("filled", buffer1)));
 
   const int buf_to_prefetch
     ((assigned0 && !filled0) ? 0 : ((assigned1 && !filled1) ? 1 : (-1)));
@@ -502,11 +502,11 @@ static void process ( void *
       const std::string buf ((buf_to_prefetch == 0) ? "buffer0" : "buffer1");
 
       const fvmAllocHandle_t handle_Store
-        (value::get_literal_value<long> (value::get_field ("handle_Store", config)));
+        (value::get<long> (value::get_field ("handle_Store", config)));
       const fvmAllocHandle_t scratch_Store
-        (value::get_literal_value<long> (value::get_field ("scratch_Store", config)));
+        (value::get<long> (value::get_field ("scratch_Store", config)));
       const long store
-        ( value::get_literal_value<long>
+        ( value::get<long>
           (value::get_field ("store", value::get_field (buf, volume)))
         );
 
@@ -524,10 +524,10 @@ static void process ( void *
   if (buf_to_migrate >= 0)
     {
       const long wait
-        (value::get_literal_value<long>(value::get_field ("wait", volume)));
+        (value::get<long>(value::get_field ("wait", volume)));
 
       const long bunches
-        (value::get_literal_value<long>(value::get_field ("BUNCHES_PER_OFFSET", config)));
+        (value::get<long>(value::get_field ("BUNCHES_PER_OFFSET", config)));
 
       if (wait == bunches)
         {
@@ -547,11 +547,11 @@ static void process ( void *
 
       // Reconstruct the tracebunch out of memory
       const long oid
-        (1 + value::get_literal_value<long>
+        (1 + value::get<long>
         (value::get_field ("offset", value::get_field ("volume", volume))));
 
       const long bid
-        (1 + value::get_literal_value<long>
+        (1 + value::get<long>
              ( value::get_field ( "id"
                                 , value::get_field ("bunch"
                                                    , value::get_field ( buf
@@ -572,12 +572,12 @@ static void process ( void *
 
       // migrate the bunch to the subvolume
       const int NThreads
-        (value::get_literal_value<long> (value::get_field ("NThreads", config)));
+        (value::get<long> (value::get_field ("NThreads", config)));
 
       char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
 
       const fvmAllocHandle_t handle_TT
-        (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+        (value::get<long> (value::get_field ("handle_TT", config)));
 
       MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
 
@@ -649,16 +649,16 @@ static void write ( void *
 
   // create the subvolume
   const long vid
-    (1 + value::get_literal_value<long> (value::get_field ("id", volume)));
+    (1 + value::get<long> (value::get_field ("id", volume)));
   const long oid
-    (1 + value::get_literal_value<long> (value::get_field ("offset", volume)));
+    (1 + value::get<long> (value::get_field ("offset", volume)));
 
   MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
 
   const fvmAllocHandle_t handle_Volume
-    (value::get_literal_value<long> (value::get_field ("handle_Volume", config)));
+    (value::get<long> (value::get_field ("handle_Volume", config)));
   const fvmAllocHandle_t scratch_Volume
-    (value::get_literal_value<long> (value::get_field ("scratch_Volume", config)));
+    (value::get<long> (value::get_field ("scratch_Volume", config)));
 
   const unsigned long SizeVolWithBuffer
     (Job.SubVolMemSize + 2 * sizeofBunchBuffer (Job));
@@ -701,19 +701,19 @@ static void finalize ( void *
   LOG (INFO, "finalize: got config " << config);
 
   const fvmAllocHandle_t handle_TT
-    (value::get_literal_value<long> (value::get_field ("handle_TT", config)));
+    (value::get<long> (value::get_field ("handle_TT", config)));
   const fvmAllocHandle_t handle_Job
-    (value::get_literal_value<long> (value::get_field ("handle_Job", config)));
+    (value::get<long> (value::get_field ("handle_Job", config)));
   const fvmAllocHandle_t scratch_Job
-    (value::get_literal_value<long> (value::get_field ("scratch_Job", config)));
+    (value::get<long> (value::get_field ("scratch_Job", config)));
   const fvmAllocHandle_t handle_Store
-    (value::get_literal_value<long> (value::get_field ("handle_Store", config)));
+    (value::get<long> (value::get_field ("handle_Store", config)));
   const fvmAllocHandle_t scratch_Store
-    (value::get_literal_value<long> (value::get_field ("scratch_Store", config)));
+    (value::get<long> (value::get_field ("scratch_Store", config)));
   const fvmAllocHandle_t handle_Volume
-    (value::get_literal_value<long> (value::get_field ("handle_Volume", config)));
+    (value::get<long> (value::get_field ("handle_Volume", config)));
   const fvmAllocHandle_t scratch_Volume
-    (value::get_literal_value<long> (value::get_field ("scratch_Volume", config)));
+    (value::get<long> (value::get_field ("scratch_Volume", config)));
 
   fvmGlobalFree (handle_TT);
   fvmGlobalFree (handle_Job);

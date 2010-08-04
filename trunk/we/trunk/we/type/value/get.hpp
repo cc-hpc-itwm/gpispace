@@ -146,7 +146,7 @@ namespace value
     // ********************************************************************* //
 
     template <typename T>
-    class get_literal_value : public boost::static_visitor<T>
+    class get : public boost::static_visitor<T>
     {
     public:
       typedef T result_type;
@@ -166,10 +166,10 @@ namespace value
   }
 
   template <typename T, typename V>
-  typename visitor::get_literal_value<T const &>::result_type
-  get_literal_value (const V & v)
+  typename visitor::get<T const &>::result_type
+  get (const V & v)
   {
-    return boost::apply_visitor (visitor::get_literal_value<T const &>(), v);
+    return boost::apply_visitor (visitor::get<T const &>(), v);
   }
 
   inline const type &
@@ -190,17 +190,17 @@ namespace value
 
   // getting something means to get a literal value...
   template<typename T>
-  inline typename visitor::get_literal_value<T const &>::result_type
+  inline typename visitor::get<T const &>::result_type
   get (const signature::field_name_t & field, const type & v)
   {
-    return get_literal_value<T, type> (get_field (field, v));
+    return get<T, type> (get_field (field, v));
   }
 
   template<typename T>
-  inline typename visitor::get_literal_value<T const &>::result_type
+  inline typename visitor::get<T const &>::result_type
   get (const path_type & path, const type & v)
   {
-    return get_literal_value<T, type> (get_field (path, v));
+    return get<T, type> (get_field (path, v));
   }
 
   // ...but not when stated explicitely to be a value::type

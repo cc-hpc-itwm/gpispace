@@ -28,8 +28,8 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
 
   std::cout << "initialize: got config " << config << std::endl;
 
-  wait = value::get_literal_value<long> (value::get_field ("OFFSETS", config))
-    * value::get_literal_value<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
+  wait = value::get<long> (value::get_field ("OFFSETS", config))
+    * value::get<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
     ;
 
   std::cout << "initialize: wait = " << wait << std::endl;

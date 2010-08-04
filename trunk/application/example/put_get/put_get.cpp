@@ -24,7 +24,8 @@ static void run ( void *
 
     LOG (INFO, "stretch_v " << stretch_v);
 
-    const double & stretch_vd (value::get_literal_value<double> (stretch_v));
+    // extract the literal from the subtoken
+    const double & stretch_vd (get<double> (stretch_v));
 
     LOG (INFO, "stretch_vd " << stretch_vd);
   }
