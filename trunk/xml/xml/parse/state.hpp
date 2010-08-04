@@ -455,7 +455,7 @@ namespace xml
             )
             ( _OWport_not_connected.c_str()
             , VAL(Wport_not_connected)
-            , "warn when port are not connected"
+            , "warn when ports are not connected"
             )
             ( _OWunexpected_element.c_str()
             , VAL(Wunexpected_element)
