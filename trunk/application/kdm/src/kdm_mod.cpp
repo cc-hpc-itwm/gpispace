@@ -289,7 +289,7 @@ static void kdm_finalize (const value::type & config)
 
 static void kdm_load (const value::type & config, const value::type & bunch)
 {
-  //  LOG (INFO, "load: got bunch " << bunch);
+  LOG (INFO, "load: got bunch " << bunch);
 
   MigrationJob Job;
 
@@ -304,7 +304,7 @@ static void kdm_load (const value::type & config, const value::type & bunch)
 
   Bunch.LoadFromDisk_CO_MT(Job);
 
-  //  LOG (INFO, "load: bunch loaded");
+  LOG (INFO, "load: bunch loaded");
 }
 
 // ************************************************************************* //
@@ -431,7 +431,7 @@ static void kdm_process ( const value::type & config
                         , const value::type & bunch
                         )
 {
-  //  LOG (INFO, "process: got bunch " << bunch);
+  LOG (INFO, "process: got bunch " << bunch);
 
   MigrationJob Job;
 
@@ -478,7 +478,7 @@ static void kdm_process ( const value::type & config
 
   MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
 
-  //  LOG (INFO, "process: bunch done " << bunch);
+  LOG (INFO, "process: bunch done " << bunch);
 }
 
 // ************************************************************************* //
