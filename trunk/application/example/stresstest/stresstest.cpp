@@ -16,12 +16,14 @@ static unsigned long call_cnt = 0;
 
 #define MAGIC 4711
 
+using we::loader::get;
+
 static void initialize ( void *
                        , const we::loader::input_t & input
                        , we::loader::output_t & output
                        )
 {
-  const long & sleeptime (we::loader::get<long>(input, "sleeptime"));
+  const long & sleeptime (get<long>(input, "sleeptime"));
 
   MLOG (INFO, "initialize: sleeptime " << sleeptime);
 
@@ -60,14 +62,9 @@ static void run ( void *
 {
   ++call_cnt;
 
-  const value::type & config (input.value ("config"));
-
-  const fvmAllocHandle_t handle
-    (value::get<long> (value::get_field ("handle", config)));
-  const fvmAllocHandle_t scratch
-    (value::get<long> (value::get_field ("scratch", config)));
-  const long sleeptime
-    (value::get<long> (value::get_field ("sleeptime", config)));
+  const fvmAllocHandle_t & handle (get<long> (input, "config", "handle"));
+  const fvmAllocHandle_t & scratch  (get<long> (input, "config", "scratch"));
+  const long & sleeptime (get<long> (input, "config", "sleeptime"));
 
   unsigned long magic;
 
@@ -96,12 +93,8 @@ static void finalize ( void *
 {
   MLOG (INFO, "finalize: call_cnt = " << call_cnt);
 
-  const value::type & config (input.value ("config"));
-
-  const fvmAllocHandle_t handle
-    (value::get<long> (value::get_field ("handle", config)));
-  const fvmAllocHandle_t scratch
-    (value::get<long> (value::get_field ("scratch", config)));
+  const fvmAllocHandle_t & handle (get<long> (input, "config", "handle"));
+  const fvmAllocHandle_t & scratch  (get<long> (input, "config", "scratch"));
 
   if (!handle)
     {

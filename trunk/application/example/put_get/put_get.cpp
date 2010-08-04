@@ -98,6 +98,7 @@ static void run ( void *
   b_start["y"] = stretch * a_start_y;
   b_end["x"] = stretch * a_end_x;
   b_end["y"] = stretch * get<double> (input, "a", "end.y");
+
   b["start"] = b_start;
   b["end"] = b_end;
 

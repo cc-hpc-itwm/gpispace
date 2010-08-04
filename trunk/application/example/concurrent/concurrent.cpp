@@ -14,6 +14,8 @@
 
 #include <map>
 
+using we::loader::get;
+
 typedef std::map<unsigned int, unsigned long> call_cnt_map_t ;
 static call_cnt_map_t call_cnt_map;
 
@@ -22,8 +24,8 @@ static void fun ( void *
                 , we::loader::output_t & output
                 )
 {
-  const long & x (we::loader::get<long>(input, "x"));
-  const long & id (we::loader::get<long>(input, "id"));
+  const long & x (get<long>(input, "x"));
+  const long & id (get<long>(input, "id"));
 
   MLOG (DEBUG, fun << ": " << id);
 
@@ -38,7 +40,7 @@ static void A ( void *
               , we::loader::output_t & output
               )
 {
-  const long & id (we::loader::get<long>(input, "id"));
+  const long & id (get<long>(input, "id"));
 
   MLOG (DEBUG, "A : " << id);
 
@@ -53,7 +55,7 @@ static void B ( void *
               , we::loader::output_t & output
               )
 {
-  const long & id (we::loader::get<long>(input, "id"));
+  const long & id (get<long>(input, "id"));
 
   MLOG (DEBUG, "B : " << id);
 
@@ -68,7 +70,7 @@ static void C ( void *
               , we::loader::output_t & output
               )
 {
-  const long & id (we::loader::get<long>(input, "id"));
+  const long & id (get<long>(input, "id"));
 
   MLOG (DEBUG, "C : " << id);
 
@@ -83,7 +85,7 @@ static void D ( void *
               , we::loader::output_t & output
               )
 {
-  const long & id (we::loader::get<long>(input, "id"));
+  const long & id (get<long>(input, "id"));
 
   MLOG (DEBUG, "D : " << id);
 

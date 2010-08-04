@@ -5,6 +5,8 @@
 #include <fstream>
 #include <fvm-pc/pc.hpp>
 
+using we::loader::get;
+
 /* ************************************************************************* */
 
 static void initialize ( void *
@@ -12,8 +14,7 @@ static void initialize ( void *
                        , we::loader::output_t & output
                        )
 {
-  const std::string & filename
-    (we::loader::get<std::string> (input, "config_file"));
+  const std::string & filename (get<std::string> (input, "config_file"));
 
   value::structured_t config;
 
@@ -34,13 +35,9 @@ static void initialize ( void *
       config[s] = v;
   }
 
-   std::cout << "initialize: got config " << config << std::endl;
+  std::cout << "initialize: got config " << config << std::endl;
 
-  const long wait
-    (value::get<long>
-     (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
-    )
-    ;
+  const long & wait (get<long> (config, "SUBVOLUMES_PER_OFFSET"));
 
   std::cout << "initialize: wait = " << wait << std::endl;
 
@@ -52,11 +49,7 @@ static void initialize ( void *
 
   we::loader::put_output (output, "wanted", bs);
 
-  const long parallel_loadTT
-    (value::get<long>
-     (value::get_field ("PARALLEL_LOADTT", config))
-    )
-    ;
+  const long & parallel_loadTT (get<long> (config, "PARALLEL_LOADTT"));
 
   we::loader::put_output (output, "parallel_loadTT", literal::type(parallel_loadTT));
 }
@@ -64,12 +57,12 @@ static void initialize ( void *
 /* ************************************************************************* */
 
 static void loadTT ( void *
-                   , const we::loader::input_t &  input
+                   , const we::loader::input_t & input
                    , we::loader::output_t & output
                    )
 {
-  const value::type & config (input.value("config"));
-  const long & TT (we::loader::get<long> (input, "TT"));
+  const value::type & config (get<value::type> (input, "config"));
+  const long & TT (get<long> (input, "TT"));
 
   std::cout << "loadTT: got config " << config << std::endl;
   std::cout << "loadTT: got TT " << TT << std::endl;
@@ -84,9 +77,9 @@ static void load ( void *
                  , we::loader::output_t & output
                  )
 {
-  const value::type & config (input.value("config"));
-  const value::type & bunch (input.value("bunch"));
-  const long & empty_store (we::loader::get<long> (input, "empty_store"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & bunch (get<value::type> (input, "bunch"));
+  const long & empty_store (get<long> (input, "empty_store"));
 
   std::cout << "load: got config " << config << std::endl;
   std::cout << "load: got bunch " << bunch << std::endl;
@@ -97,8 +90,7 @@ static void load ( void *
   loaded_bunch["bunch"] = bunch;
   loaded_bunch["store"] = empty_store;
   loaded_bunch["seen"] = bitsetofint::type();
-  loaded_bunch["wait"] = value::get<long>
-    (value::get_field ("SUBVOLUMES_PER_OFFSET", config));
+  loaded_bunch["wait"] = get<long> (config, "SUBVOLUMES_PER_OFFSET");
 
   we::loader::put_output (output, "loaded_bunch", loaded_bunch);
 
@@ -112,32 +104,27 @@ static void process ( void *
                     , we::loader::output_t & output
                     )
 {
-  const value::type & config (input.value("config"));
-  const value::type & volume (input.value("volume"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & volume (get<value::type> (input, "volume"));
 
   std::cout << "process: got config " << config << std::endl;
   std::cout << "process: got volume " << volume << std::endl;
 
-  value::type volume_processed (volume);
+  const value::type & buffer0 (get<value::type> (volume, "buffer0"));
+  const bool & assigned0 (get<bool>(buffer0, "assigned"));
+  const bool & filled0 (get<bool>(buffer0, "filled"));
 
-  const value::type buffer0 (value::get_field ("buffer0", volume));
-  const bool assigned0
-    (value::get<bool>(value::get_field ("assigned", buffer0)));
-  const bool filled0
-    (value::get<bool>(value::get_field ("filled", buffer0)));
-
-  const value::type buffer1 (value::get_field ("buffer1", volume));
-  const bool assigned1
-    (value::get<bool>(value::get_field ("assigned", buffer1)));
-  const bool filled1
-    (value::get<bool>(value::get_field ("filled", buffer1)));
+  const value::type & buffer1 (get<value::type> (volume, "buffer1"));
+  const bool & assigned1 (get<bool>(buffer1, "assigned"));
+  const bool & filled1 (get<bool>(buffer1, "filled"));
 
   // die hier implementierte Logik ist noch nicht optimal: es wird
   // einfach nur jeder bufffer geladen, der assigned aber nicht
   // gefüllt ist und die buffer, die geladen sind, werden verarbeitet.
 
-  const long wait
-    (value::get<long>(value::get_field ("wait", volume)));
+  const long & wait (get<long>(volume, "wait"));
+
+  value::type volume_processed (volume);
 
   value::field("assigned", value::field("buffer0", volume_processed)) = assigned0 && !filled0;
   value::field("filled", value::field("buffer0", volume_processed)) = assigned0 && !filled0;
@@ -159,8 +146,8 @@ static void write ( void *
                   , we::loader::output_t & output
                   )
 {
-  const value::type & config (input.value("config"));
-  const value::type & volume (input.value("volume"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & volume (get<value::type> (input, "volume"));
 
   std::cout << "write: got config " << config << std::endl;
   std::cout << "write: got volume " << volume << std::endl;
@@ -175,7 +162,7 @@ static void finalize ( void *
                      , we::loader::output_t & output
                      )
 {
-  const value::type & config (input.value("config"));
+  const value::type & config (get<value::type> (input, "config"));
 
   std::cout << "finalize: got config " << config << std::endl;
 

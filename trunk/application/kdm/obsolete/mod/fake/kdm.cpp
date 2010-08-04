@@ -5,6 +5,8 @@
 #include <fstream>
 #include <fvm-pc/pc.hpp>
 
+using we::loader::get;
+
 static value::type kdm_initialize (const std::string & filename, long & wait)
 {
   value::structured_t config;
@@ -28,8 +30,8 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
 
   std::cout << "initialize: got config " << config << std::endl;
 
-  wait = value::get<long> (value::get_field ("OFFSETS", config))
-    * value::get<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
+  wait = get<long> (config, "OFFSETS")
+       * get<long> (config, "SUBVOLUMES_PER_OFFSET")
     ;
 
   std::cout << "initialize: wait = " << wait << std::endl;
@@ -82,8 +84,7 @@ static void kdm_init_volume ( const value::type & config
 
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const std::string & filename
-    (we::loader::get<std::string> (input, "config_file"));
+  const std::string & filename (get<std::string> (input, "config_file"));
 
   long wait (0);
   const value::type & config (kdm_initialize (filename, wait));
@@ -95,47 +96,47 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & v (input.value("config"));
+  const value::type & v (get<value::type> (input, "config"));
   kdm_loadTT (v);
   we::loader::put_output (output, "trigger", control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & bunch (input.value("bunch"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & bunch (get<value::type> (input, "bunch"));
   kdm_load (config, bunch);
   we::loader::put_output (output, "bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & bunch (input.value("bunch"));
-  long wait (we::loader::get<long>(input, "wait"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & bunch (get<value::type> (input, "bunch"));
+  long wait (get<long>(input, "wait"));
   kdm_process (config, bunch, wait);
   we::loader::put_output (output, "wait", wait);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & volume (input.value("volume"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & volume (get<value::type> (input, "volume"));
   kdm_write (config, volume);
   we::loader::put_output (output, "done", control());
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & v (input.value("config"));
+  const value::type & v (get<value::type> (input, "config"));
   kdm_finalize (v);
   we::loader::put_output (output, "trigger", control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & volume (input.value("volume"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & volume (get<value::type> (input, "volume"));
   kdm_init_volume (config, volume);
   we::loader::put_output (output, "volume", volume);
 }

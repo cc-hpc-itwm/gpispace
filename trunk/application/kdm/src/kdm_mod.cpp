@@ -19,6 +19,8 @@
 
 #include "sinc_mod.hpp"
 
+using we::loader::get;
+
 // ************************************************************************* //
 
 static unsigned long sizeofBunchBuffer (const MigrationJob & Job)
@@ -192,8 +194,8 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
   config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
 
-  wait = value::get<long> (value::get_field ("OFFSETS", config))
-       * value::get<long> (value::get_field ("SUBVOLUMES_PER_OFFSET", config))
+  wait = get<long> (config, "OFFSETS")
+       * get<long> (config, "SUBVOLUMES_PER_OFFSET")
        ;
 
   LOG (DEBUG, "initialize: wait = " << wait);
@@ -206,10 +208,8 @@ static value::type kdm_initialize (const std::string & filename, long & wait)
 
 static void get_Job (const value::type & config, MigrationJob & Job)
 {
-  const fvmAllocHandle_t handle_Job
-    (value::get<long> (value::get_field ("handle_Job", config)));
-  const fvmAllocHandle_t scratch_Job
-    (value::get<long> (value::get_field ("scratch_Job", config)));
+  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
+  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -228,10 +228,7 @@ static void kdm_loadTT (const value::type & config, const long & TT)
 {
   LOG (INFO, "loadTT: got config " << config);
 
-  const long & Parallel_loadTT
-    (value::get<long>
-     (value::get_field ("PARALLEL_LOADTT", config))
-    );
+  const long & Parallel_loadTT (get<long> (config, "PARALLEL_LOADTT"));
 
   LOG (INFO, "loadTT: got TT " << TT << " out of " << Parallel_loadTT);
 
@@ -270,10 +267,8 @@ static void kdm_loadTT (const value::type & config, const long & TT)
   GVol.Init(X0, point3D<int>(Nx,Ny,Nz), dx);
 
   // Load the entire travel time table data into memory
-  const int NThreads
-    (value::get<long> (value::get_field ("NThreads", config)));
-  const fvmAllocHandle_t handle_TT
-    (value::get<long> (value::get_field ("handle_TT", config)));
+  const int & NThreads (get<long> (config, "NThreads"));
+  const fvmAllocHandle_t & handle_TT (get<long> (config, "handle_TT"));
 
   TTVMMemHandler TTVMMem;
 
@@ -286,12 +281,9 @@ static void kdm_finalize (const value::type & config)
 {
   LOG (INFO, "finalize: got config " << config);
 
-  const fvmAllocHandle_t handle_Job
-    (value::get<long> (value::get_field ("handle_Job", config)));
-  const fvmAllocHandle_t scratch_Job
-     (value::get<long> (value::get_field ("scratch_Job", config)));
-  const fvmAllocHandle_t handle_TT
-    (value::get<long> (value::get_field ("handle_TT", config)));
+  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
+  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
+  const fvmAllocHandle_t & handle_TT  (get<long> (config, "handle_TT"));
 
   fvmGlobalFree (handle_Job);
   fvmGlobalFree (scratch_Job);
@@ -308,17 +300,8 @@ static void kdm_load (const value::type & config, const value::type & bunch)
 
   get_Job (config, Job);
 
-  const long oid
-    (1 + value::get<long>
-         (value::get_field ("offset"
-                           , value::get_field ("volume"
-                                              , bunch
-                                              )
-                           )
-         )
-    );
-  const long bid
-    (1 + value::get<long> (value::get_field ("id", bunch)));
+  const long oid (1 + get<long> (bunch, "volume.offset"));
+  const long bid (1 + get<long> (bunch, "id"));
 
   char * pBunchData (((char *)fvmGetShmemPtr()) + sizeofJob());
 
@@ -357,10 +340,8 @@ static void kdm_write (const value::type & config, const value::type & volume)
   grid3D G(X0,Nx,dx);
 
   // create the subvolume
-  const long vid
-    (1 + value::get<long> (value::get_field ("id", volume)));
-  const long oid
-    (1 + value::get<long> (value::get_field ("offset", volume)));
+  const long vid (1 + get<long> (volume, "id"));
+  const long oid (1 + get<long> (volume, "offset"));
 
   MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
 
@@ -397,8 +378,7 @@ static void kdm_init_volume ( const value::type & config
   {
     LOG(INFO, "Init SincInterpolator on node " << fvmGetRank());
 
-    const long NThreads
-      (value::get<long> (value::get_field ("NThreads", config)));
+    const long & NThreads (get<long> (config, "NThreads"));
 
     initSincIntArray(NThreads, Job.tracedt);
 
@@ -407,10 +387,8 @@ static void kdm_init_volume ( const value::type & config
     memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
 
     // rewrite Job
-    const fvmAllocHandle_t handle_Job
-      (value::get<long> (value::get_field ("handle_Job", config)));
-    const fvmAllocHandle_t scratch_Job
-      (value::get<long> (value::get_field ("scratch_Job", config)));
+    const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
+    const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
 
     waitComm (fvmPutGlobalData ( handle_Job
                                , fvmGetRank() * sizeofJob()
@@ -440,8 +418,7 @@ static void kdm_init_volume ( const value::type & config
   MigVol3D MigVol(X0,Nx,dx);
 
   // create the subvolume
-  const long vid
-    (1 + value::get<long> (value::get_field ("id", volume)));
+  const long vid (1 + get<long> (volume, "id"));
 
   MigSubVol3D MigSubVol(MigVol, vid, Job.NSubVols);
 
@@ -481,15 +458,7 @@ static void kdm_process ( const value::type & config
   MigVol3D MigVol(X0,Nx,dx);
 
   // create the subvolume
-  const long vid
-    (1 + value::get<long>
-         (value::get_field ("id"
-                           , value::get_field ("volume"
-                                              , bunch
-                                              )
-                           )
-         )
-    );
+  const long vid (1 + get<long> (bunch, "volume.id"));
 
   MigSubVol3D MigSubVol(MigVol,vid,Job.NSubVols);
 
@@ -499,30 +468,19 @@ static void kdm_process ( const value::type & config
   MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
 
   // Reconstruct the tracebunch out of memory
-  const long oid
-    (1 + value::get<long>
-         (value::get_field ("offset"
-                           , value::get_field ("volume"
-                                              , bunch
-                                              )
-                           )
-         )
-    );
-  const long bid
-    (1 + value::get<long> (value::get_field ("id", bunch)));
+  const long oid (1 + get<long> (bunch, "volume.offset"));
+  const long bid (1 + get<long> (bunch, "id"));
 
   char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob());
 
   TraceBunch Bunch(migbuf,oid,1,bid,Job);
 
   // migrate the bunch to the subvolume
-  const int NThreads
-    (value::get<long> (value::get_field ("NThreads", config)));
+  const long & NThreads (get<long> (config, "NThreads"));
 
   char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
 
-  const fvmAllocHandle_t handle_TT
-    (value::get<long> (value::get_field ("handle_TT", config)));
+  const fvmAllocHandle_t & handle_TT (get<long> (config, "handle_TT"));
 
   MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
 
@@ -536,8 +494,7 @@ static void kdm_process ( const value::type & config
 
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const std::string & filename
-    (we::loader::get<std::string> (input, "config_file"));
+  const std::string & filename (get<std::string> (input, "config_file"));
 
   long wait (0);
   const value::type & config (kdm_initialize (filename, wait));
@@ -549,8 +506,8 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const long & TT (we::loader::get<long> (input, "id"));
+  const value::type & config (get<value::type> (input, "config"));
+  const long & TT (get<long> (input, "id"));
 
   kdm_loadTT (config, TT);
 
@@ -559,17 +516,17 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & bunch (input.value("bunch"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & bunch (get<value::type> (input, "bunch"));
   kdm_load (config, bunch);
   we::loader::put_output (output, "bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & bunch (input.value("bunch"));
-  long wait (we::loader::get<long>(input, "wait"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & bunch (get<value::type> (input, "bunch"));
+  long wait (get<long>(input, "wait"));
   kdm_process (config, bunch, wait);
   we::loader::put_output (output, "wait", wait);
   we::loader::put_output (output, "trigger", control());
@@ -577,15 +534,15 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & volume (input.value("volume"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & volume (get<value::type> (input, "volume"));
   kdm_write (config, volume);
   we::loader::put_output (output, "done", control());
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
+  const value::type & config (get<value::type> (input, "config"));
 
   kdm_finalize (config);
 
@@ -594,8 +551,8 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (input.value("config"));
-  const value::type & volume (input.value("volume"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & volume (get<value::type> (input, "volume"));
   kdm_init_volume (config, volume);
   we::loader::put_output (output, "volume", volume);
 }
