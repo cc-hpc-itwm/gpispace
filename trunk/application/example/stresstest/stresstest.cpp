@@ -6,29 +6,81 @@
 #include <fvm-pc/util.hpp>
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <fstream>
 
 #include <stdexcept>
 #include <unistd.h>
 
+// ************************************************************************* //
+
+#include <boost/random.hpp>
+#include <limits>
+
+void generate (long * a, const unsigned long & N, const unsigned long & seed)
+{
+  MLOG (INFO, "generating " << N << " values with seed " << seed);
+
+  boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+                                , std::numeric_limits<long>::max()
+                                );
+
+  boost::mt19937 engine (seed);
+
+  for (unsigned long i (0); i < N; ++i, ++a)
+    {
+      *a = rand (engine);
+    }
+}
+
+void verify (long * a, const unsigned long & N, const unsigned long & seed)
+{
+  MLOG (INFO, "verifiying " << N << " values with seed " << seed);
+
+  boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+                                , std::numeric_limits<long>::max()
+                                );
+
+  boost::mt19937 engine (seed);
+
+  for (unsigned long i (0); i < N; ++i, ++a)
+    {
+      const long v (rand(engine));
+
+      if (*a != v)
+        {
+          std::ostringstream s;
+
+          s << "BUMMER! wrong value read"
+            << " expected in slot " << i << " the value " << v
+            << " but got the value " << *a
+            ;
+
+          throw std::runtime_error (s.str());
+        }
+    }
+}
+
+// ************************************************************************* //
+
 static unsigned long call_cnt = 0;
 
-#define MAGIC 4711
-
 using we::loader::get;
+
+// ************************************************************************* //
 
 static void initialize ( void *
                        , const we::loader::input_t & input
                        , we::loader::output_t & output
                        )
 {
-  const long & sleeptime (get<long>(input, "sleeptime"));
+  const long & num_long (get<long>(input, "num_long"));
 
-  MLOG (INFO, "initialize: sleeptime " << sleeptime);
+  const size_t size (num_long * sizeof (long));
 
-  const fvmAllocHandle_t handle (fvmGlobalAlloc (sizeof(unsigned long)));
-  const fvmAllocHandle_t scratch (fvmGlobalAlloc (sizeof(unsigned long)));
+  const fvmAllocHandle_t handle (fvmGlobalAlloc (size));
+  const fvmAllocHandle_t scratch (fvmGlobalAlloc (size));
 
   if (!handle)
     {
@@ -40,20 +92,27 @@ static void initialize ( void *
       throw std::runtime_error ("BUMMER: alloc (scratch) returned 0");
     }
 
-  unsigned long magic (MAGIC);
+  const long & seed (get<long>(input, "seed"));
 
-  memcpy (fvmGetShmemPtr(), &magic, sizeof(magic));
+  generate ((long *)fvmGetShmemPtr(), num_long, seed);
 
-  waitComm(fvmPutGlobalData (handle, 0, sizeof(unsigned long), 0, scratch));
+  waitComm (fvmPutGlobalData (handle, 0, size, 0, scratch));
 
   value::structured_t config;
 
   config["handle"] = static_cast<long>(handle);
   config["scratch"] = static_cast<long>(scratch);
-  config["sleeptime"] = sleeptime;
+  config["sleeptime"] = get<long>(input, "sleeptime");
+  config["num_long"] = num_long;
+  config["seed"] = seed;
+  config["verify_all_mem"] = get<bool>(input, "verify_all_mem");
+
+  MLOG (INFO, "initialize: config " << config);
 
   we::loader::put_output (output, "config", config);
 }
+
+// ************************************************************************* //
 
 static void run ( void *
                 , const we::loader::input_t & input
@@ -65,26 +124,60 @@ static void run ( void *
   const fvmAllocHandle_t & handle (get<long> (input, "config", "handle"));
   const fvmAllocHandle_t & scratch  (get<long> (input, "config", "scratch"));
   const long & sleeptime (get<long> (input, "config", "sleeptime"));
+  const long & seed (get<long>(input, "config", "seed"));
+  const long & num_long (get<long>(input, "config", "num_long"));
+  const bool & verify_all_mem (get<bool>(input, "config", "verify_all_mem"));
 
-  unsigned long magic;
+  const size_t size (num_long * sizeof (long));
 
-  waitComm(fvmGetGlobalData (handle, 0, sizeof(unsigned long), 0, scratch));
+  const int rank (fvmGetRank());
 
-  memcpy (&magic, fvmGetShmemPtr(), sizeof(unsigned long));
-
-  if (magic != MAGIC)
+  if (verify_all_mem)
     {
-      std::ostringstream s;
+      memset (fvmGetShmemPtr(), rank, fvmGetShmemSize());
+    }
+  else
+    {
+      memset (fvmGetShmemPtr(), rank, size);
+    }
 
-      s << "expected " << MAGIC << " got " << magic;
+  waitComm (fvmGetGlobalData (handle, 0, size, 0, scratch));
 
-      throw std::runtime_error ("BUMMER: " + s.str());
+  verify ((long *)fvmGetShmemPtr(), num_long, seed);
+
+  if (verify_all_mem && fvmGetShmemSize() > size)
+    {
+      MLOG ( INFO
+           , "verifiying mem behind data ("
+           << fvmGetShmemSize() - size
+           << " bytes)"
+           << " to contain the value " << rank
+           );
+
+      int * a ((int *)((char *)fvmGetShmemPtr() + size));
+
+      for (size_t i (size); i < fvmGetShmemSize(); i += sizeof(int), ++a)
+        {
+          if (*a != rank)
+            {
+              std::ostringstream s;
+
+              s << "BUMMER! memory behind data corrupted: "
+                << " expected in slot " << i << " the value " << rank
+                << " but got the value " << *a
+                ;
+
+              throw std::runtime_error (s.str());
+            }
+        }
     }
 
   usleep (sleeptime);
 
   we::loader::put_output (output, "done", control());
 }
+
+// ************************************************************************* //
 
 static void finalize ( void *
                      , const we::loader::input_t & input
@@ -111,6 +204,8 @@ static void finalize ( void *
 
   we::loader::put_output (output, "trigger", control());
 }
+
+// ************************************************************************* //
 
 WE_MOD_INITIALIZE_START (stresstest);
 {

@@ -1,16 +1,33 @@
 <defun name="stresstest">
   <properties name="pnetc">
     <properties name="context">
-      <property key="milli">1000</property>
-      <property key="aggregator">1000</property>
-      <property key="nre">1000</property>
-      <property key="second">${milli} * 1000</property>
+      <property key="MILLI">1000</property>
+      <property key="SECOND">${MILLI} * 1000</property>
+      <property key="KIBI">2^10</property>
+      <property key="MEBI">2^20</property>
+      <property key="GIBI">2^30</property>
+      <property key="SIZE_OF_LONG">8</property>
+
+      <property key="aggregator">2</property>
+      <property key="nre">5</property>
+      <property key="seed">long(1000.0 * pi)</property>
+      <property key="bytes_to_transfer">32 * ${MEBI}</property>
+
+      <!-- when true, the full shmem segment is verified, not only the data -->
+      <property key="verify_all_mem">true</property>
+
+      <property key="num_long_to_transfer">
+         ${bytes_to_transfer} div ${SIZE_OF_LONG}
+      </property>
     </properties>
   </properties>
 
   <in name="agg" type="long" place="N"/>
   <in name="nre" type="long" place="M"/>
   <in name="sleeptime" type="long" place="sleeptime"/>
+  <in name="num_long_to_transfer" type="long" place="num_long"/>
+  <in name="seed" type="long" place="seed"/>
+  <in name="verify_all_mem" type="bool" place="verify_all_mem"/>
   <out name="out" type="control" place="out"/>
 
   <net>
@@ -18,11 +35,17 @@
       <field name="handle" type="long"/>
       <field name="scratch" type="long"/>
       <field name="sleeptime" type="long"/>
+      <field name="num_long" type="long"/>
+      <field name="seed" type="long"/>
+      <field name="verify_all_mem" type="bool"/>
     </struct>
 
-    <place name="sleeptime" type="long"><token><value>0 * ${milli}</value></token></place>
+    <place name="sleeptime" type="long"><token><value>0 * ${MILLI}</value></token></place>
     <place name="N" type="long"><token><value>${aggregator}</value></token></place>
     <place name="M" type="long"><token><value>${nre}</value></token></place>
+    <place name="num_long" type="long"><token><value>${num_long_to_transfer}</value></token></place>
+    <place name="seed" type="long"><token><value>${seed}</value></token></place>
+    <place name="verify_all_mem" type="bool"><token><value>${verify_all_mem}</value></token></place>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
 
@@ -57,21 +80,27 @@
       <defun>
         <in name="trigger" type="control"/>
         <in name="sleeptime" type="long"/>
+        <in name="seed" type="long"/>
+        <in name="num_long" type="long"/>
+        <in name="verify_all_mem" type="bool"/>
         <out name="config" type="config"/>
         <module name="stresstest" function="initialize"/>
-      </defun>    
+      </defun>
       <connect-in port="trigger" place="trigger_initialize"/>
       <connect-in port="sleeptime" place="sleeptime"/>
+      <connect-in port="seed" place="seed"/>
+      <connect-in port="num_long" place="num_long"/>
+      <connect-in port="verify_all_mem" place="verify_all_mem"/>
       <connect-out port="config" place="config"/>
     </transition>
 
     <transition name="finalize">
-      <defun>    
+      <defun>
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
         <module name="stresstest" function="finalize"/>
-      </defun>    
+      </defun>
       <connect-in port="trigger" place="trigger_finalize"/>
       <connect-in port="config" place="config"/>
       <connect-out port="trigger" place="out"/>
@@ -105,7 +134,7 @@
       <connect-in port="wait" place="wait"/>
       <connect-out port="wait" place="wait"/>
     </transition>
-    
+
     <transition name="done">
       <defun>
         <in name="wait" type="long"/>
