@@ -22,6 +22,8 @@
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
 
 namespace we
 {
@@ -82,6 +84,7 @@ namespace we
     };
 
     typedef codec<boost::archive::text_oarchive, boost::archive::text_iarchive> text_codec;
+    typedef codec<boost::archive::xml_oarchive, boost::archive::xml_iarchive> xml_codec;
   }
 }
 
