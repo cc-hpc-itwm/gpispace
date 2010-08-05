@@ -552,6 +552,13 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   we::loader::put_output (output, "volume", volume);
 }
 
+static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)
+{
+  LOG (INFO, "DEBUG: volume " << get<value::type>(input, "volume"));
+
+  we::loader::put_output (output, "volume", get<value::type>(input, "volume"));
+}
+
 // ************************************************************************* //
 
 WE_MOD_INITIALIZE_START (kdm);
@@ -565,6 +572,7 @@ WE_MOD_INITIALIZE_START (kdm);
   WE_REGISTER_FUN (write);
   WE_REGISTER_FUN (init_volume);
   WE_REGISTER_FUN (finalize);
+  WE_REGISTER_FUN (debug);
 }
 WE_MOD_INITIALIZE_END (kdm);
 
