@@ -1314,11 +1314,7 @@ namespace xml
     static type::function_type
     frontend (state::type & state, const std::string & input)
     {
-      type::function_type f
-        ( (input == "-")
-        ? parse_function (std::cin, state)
-        : function_include (input, state)
-        );
+      type::function_type f (function_include (input, state));
 
       f.specialize (state);
       f.resolve (state, f.forbidden_below());

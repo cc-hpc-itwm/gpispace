@@ -17,20 +17,25 @@ namespace po = boost::program_options;
 int
 main (int argc, char ** argv)
 {
-  std::string input;
-  std::string output;
+  std::string input ("/dev/stdin");
+  std::string output ("/dev/stdout");
+  bool xml (false);
 
   po::options_description desc("options");
 
   desc.add_options()
     ("help,h", "this message")
     ( "input,i"
-    , po::value<std::string>(&input)->default_value("-")
+    , po::value<std::string>(&input)->default_value(input)
     , "input file name, - for stdin"
     )
     ( "output,o"
-    , po::value<std::string>(&output)->default_value("-")
+    , po::value<std::string>(&output)->default_value(output)
     , "output file name, - for stdout"
+    )
+    ( "xml,x"
+    , po::value<bool>(&xml)->default_value(xml)
+    , "write xml instead of text format"
     )
     ;
 
@@ -54,6 +59,16 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
+  if (input == "-")
+    {
+      input = "/dev/stdin";
+    }
+
+  if (output == "-")
+    {
+      output = "/dev/stdout";
+    }
+
   xml::parse::type::function_type f (xml::parse::frontend (*state, input));
 
   if (state->print_internal_structures())
@@ -73,16 +88,14 @@ main (int argc, char ** argv)
 
   const we::activity_t act (trans);
 
-  if (output == "-")
-    {
-      std::cout << we::util::text_codec::encode (act);
-    }
-  else
-    {
-      std::ofstream out (output.c_str());
-      
-      out << we::util::text_codec::encode (act);
-    }
-  
+
+  std::ofstream out (output.c_str());
+
+  out << ( xml
+         ? we::util::xml_codec::encode (act)
+         : we::util::text_codec::encode (act)
+         )
+    ;
+
   return EXIT_SUCCESS;
 }
