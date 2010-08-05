@@ -779,6 +779,7 @@ public:
     enabled.erase_priority (tid);
     in_map.erase (tid);
     out_map.erase (tid);
+    enabled_choice.erase (tid);
 
     return tid;
   }
