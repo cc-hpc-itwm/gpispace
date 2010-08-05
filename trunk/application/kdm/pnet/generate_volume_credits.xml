@@ -1,0 +1,51 @@
+<defun name="generate_volume_credits">
+  <in name="amount" type="long" place="amount_in"/>
+  <out name="out" type="control" place="out"/>
+
+  <net>
+    <place name="amount_in" type="long"/>
+    <place name="amount" type="long"/>
+    <place name="out" type="control"/>
+    <place name="pair" type="pair_control_long"/>
+    <place name="tag" type="control"/>
+
+    <include-template href="trigger_when.xml"/>
+    <specialize name="trigger_when_long" use="trigger_when">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="trigger_when_amount" inline="true">
+      <use name="trigger_when_long"/>
+      <connect-in port="object" place="amount_in"/>
+      <connect-out port="object" place="amount"/>
+      <connect-out port="trigger" place="tag"/>
+    </transition>
+
+    <include-template href="tagged_sequence.xml"/>
+
+    <specialize name="tag_seq" use="tagged_sequence">
+      <type-map replace="T" with="control"/>
+      <type-map replace="PAIR" with="pair_control_long"/>
+      <type-get name="pair_control_long"/>
+    </specialize>
+
+    <transition name="tag_seq" inline="true">
+      <use name="tag_seq"/>
+      <connect-in port="tag" place="tag"/>
+      <connect-in port="amount" place="amount"/>
+      <connect-out port="pair" place="pair"/>
+    </transition>
+
+    <transition name="translate">
+      <defun>
+        <in name="pair" type="pair_control_long"/>
+        <out name="control" type="control"/>
+        <expression>
+          ${control} := ${pair.tag}
+        </expression>
+      </defun>
+      <connect-in port="pair" place="pair"/>
+      <connect-out port="control" place="out"/>
+    </transition>
+</net>
+</defun>

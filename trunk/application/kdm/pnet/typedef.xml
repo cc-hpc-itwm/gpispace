@@ -14,5 +14,6 @@
 			<field name="scratch_Job" type="long" />
 			<field name="NThreads" type="long" />
                         <field name="PARALLEL_LOADTT" type="long"/>
+                        <field name="VOLUME_CREDITS" type="long"/>
 		</struct>
 </structs>

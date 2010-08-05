@@ -16,24 +16,23 @@
 
     <place name="trigger" type="control"/>
 
-     <!--  check this!!! -->
-     <place name="trigger_load" type="control" >
-       <token><value>[]</value></token>
-     </place>
+     <place name="trigger_load" type="control"/>
 
-    <transition name="init_wait" >
+    <transition name="init" >
       <defun>
         <in name="trigger" type="control" />
         <in name="config" type="CONFIG"/>
         <out name="wait" type="long" />
+        <out name="trigger" type="control"/>
         <expression> ${wait} := ${config.BUNCHES_PER_OFFSET} </expression>
       </defun>
       <connect-in place="trigger" port="trigger" />
       <connect-read place="config" port="config" />
       <connect-out place="wait" port="wait" />
+      <connect-out port="trigger" place="trigger_load"/>
     </transition>
 
-    <transition name="init">
+    <transition name="init_volume">
       <defun>
         <in name="volume" type="VOLUME" />
         <in name="config" type="CONFIG" />

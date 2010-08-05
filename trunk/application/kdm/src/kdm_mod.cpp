@@ -194,6 +194,8 @@ static value::type kdm_initialize (const std::string & filename)
   config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
   config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
 
+  config["VOLUME_CREDITS"] = 4 * static_cast<long>(fvmGetNodeCount());
+
   LOG (DEBUG, "initialize: config = " << config);
 
   return config;

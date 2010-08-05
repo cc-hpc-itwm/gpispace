@@ -64,20 +64,43 @@
       <connect-out port="wait" place="wait"/>
     </transition>
 
-    <include-template href="triple.xml"/>
-    <specialize name="triple_control" use="triple">
+    <include-template href="4.xml"/>
+    <specialize name="4_control" use="4">
       <type-map replace="T" with="control"/>
     </specialize>
 
-    <transition name="triple_init_done" inline="true">
-      <use name="triple_control"/>
+    <transition name="4_init_done" inline="true">
+      <use name="4_control"/>
       <connect-in port="in" place="initialized"/>
       <connect-out port="1" place="trigger_loadTT"/>
       <connect-out port="2" place="trigger_extract_offsets"/>
       <connect-out port="3" place="trigger_init_wait"/>
+      <connect-out port="4" place="trigger_generate_volume_credits"/>
     </transition>
 
     <place name="trigger_loadTT" type="control" />
+    <place name="trigger_generate_volume_credits" type="control" />
+
+    <transition name="extract_number_of_volume_credits">
+      <defun>
+        <in name="config" type="CONFIG" />
+        <in name="trigger" type="control" />
+        <out name="N" type="long" />
+        <expression>
+          ${N} := ${config.VOLUME_CREDITS}
+        </expression>
+      </defun>
+      <connect-read place="config" port="config" />
+      <connect-in   place="trigger_generate_volume_credits" port="trigger" />
+      <connect-out  port="N" place="number_of_volume_credits" />
+    </transition>
+    <place name="number_of_volume_credits" type="long"/>
+
+    <transition name="generate_volume_credits" inline="true">
+      <include-function href="generate_volume_credits.xml"/>
+      <connect-in port="amount" place="number_of_volume_credits"/>
+      <connect-out port="out" place="credit_volume"/>
+    </transition>
 
     <transition name="loadTT" inline="true">
       <include-function href="loadTT.xml"/>
@@ -225,6 +248,21 @@
     </transition>
 
     <place name="volume_done" type="VOLUME" />
+
+    <specialize name="trigger_when_volume" use="trigger_when">
+      <type-map replace="T" with="VOLUME"/>
+    </specialize>
+
+    <place name="credit_volume" type="control"/>
+    <place name="volume_done_credit_back" type="VOLUME"/>
+
+    <transition name="trigger_when_volume_done">
+      <use name="trigger_when_volume"/>
+      <connect-in port="object" place="volume_done"/>
+      <connect-out port="object" place="volume_done_credit_back"/>
+      <connect-out port="trigger" place="credit_volume"/>
+    </transition>
+
     <place name="volume_trigger_dec" type="VOLUME" />
 
     <transition name="update_wanted_offset">
@@ -239,7 +277,7 @@
       </defun>
       <connect-in port="bs" place="wanted_offset"/>
       <connect-out port="bs" place="wanted_offset"/>
-      <connect-in port="volume" place="volume_done"/>
+      <connect-in port="volume" place="volume_done_credit_back"/>
       <connect-out port="volume" place="volume_trigger_dec"/>
     </transition>
 
