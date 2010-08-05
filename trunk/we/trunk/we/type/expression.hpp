@@ -24,6 +24,7 @@
 
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/split_free.hpp>
+#include <boost/serialization/nvp.hpp>
 
 namespace we { namespace type {
   struct expression_t
@@ -64,14 +65,14 @@ namespace we { namespace type {
     template <typename Archive>
     void save (Archive & ar, const unsigned int) const
     {
-      ar << expr_;
+      ar << boost::serialization::make_nvp("expr", expr_);
     }
 
     template <typename Archive>
     void load (Archive & ar, const unsigned int)
     {
       std::string tmp;
-      ar >> tmp;
+      ar >> boost::serialization::make_nvp("expr", tmp);
       expression (tmp);
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
