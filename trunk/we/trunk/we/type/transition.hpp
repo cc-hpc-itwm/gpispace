@@ -1023,7 +1023,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
-        ar & BOOST_SERIALIZATION_NVP(condition_.expression());
+        ar & boost::serialization::make_nvp("condition", condition_.expression());
         ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
         ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
@@ -1038,7 +1038,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
         std::string cond_expr;
-        ar & BOOST_SERIALIZATION_NVP(cond_expr);
+        ar & boost::serialization::make_nvp("condition", cond_expr);
         condition_ = condition::type ( cond_expr
                                      , boost::bind
                                        ( &detail::translate_place_to_port_name<this_type, pid_t>
