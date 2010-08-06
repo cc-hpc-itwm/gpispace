@@ -79,7 +79,17 @@ static void initialize ( void *
 
   const size_t size (num_long * sizeof (long));
 
-  const fvmAllocHandle_t handle (fvmGlobalAlloc (size));
+  if (size % fvmGetNodeCount() != 0)
+    {
+      throw std::runtime_error ("BUMMER: size % fvmGetNodeCount() != 0");
+    }
+
+  if (size > fvmGetShmemSize())
+    {
+      throw std::runtime_error ("BUMMER: size > fvmGetShmemSize()");
+    }
+
+  const fvmAllocHandle_t handle (fvmGlobalAlloc (size / fvmGetNodeCount()));
   const fvmAllocHandle_t scratch (fvmGlobalAlloc (size));
 
   if (!handle)
@@ -93,10 +103,14 @@ static void initialize ( void *
     }
 
   const long & seed (get<long>(input, "seed"));
+  const bool & _verify (get<bool>(input, "verify"));
 
-  generate ((long *)fvmGetShmemPtr(), num_long, seed);
+  if (_verify)
+    {
+      generate ((long *)fvmGetShmemPtr(), num_long, seed);
 
-  waitComm (fvmPutGlobalData (handle, 0, size, 0, scratch));
+      waitComm (fvmPutGlobalData (handle, 0, size, 0, scratch));
+    }
 
   value::structured_t config;
 
@@ -106,6 +120,7 @@ static void initialize ( void *
   config["num_long"] = num_long;
   config["seed"] = seed;
   config["verify_all_mem"] = get<bool>(input, "verify_all_mem");
+  config["verify"] = _verify;
 
   MLOG (INFO, "initialize: config " << config);
 
@@ -127,6 +142,7 @@ static void run ( void *
   const long & seed (get<long>(input, "config", "seed"));
   const long & num_long (get<long>(input, "config", "num_long"));
   const bool & verify_all_mem (get<bool>(input, "config", "verify_all_mem"));
+  const bool & _verify (get<bool>(input, "config", "verify"));
 
   const size_t size (num_long * sizeof (long));
 
@@ -136,14 +152,17 @@ static void run ( void *
     {
       memset (fvmGetShmemPtr(), rank, fvmGetShmemSize());
     }
-  else
+  else if (_verify)
     {
       memset (fvmGetShmemPtr(), rank, size);
     }
 
   waitComm (fvmGetGlobalData (handle, 0, size, 0, scratch));
 
-  verify ((long *)fvmGetShmemPtr(), num_long, seed);
+  if (_verify)
+    {
+      verify ((long *)fvmGetShmemPtr(), num_long, seed);
+    }
 
   if (verify_all_mem && fvmGetShmemSize() > size)
     {
@@ -154,9 +173,9 @@ static void run ( void *
            << " to contain the value " << rank
            );
 
-      int * a ((int *)((char *)fvmGetShmemPtr() + size));
+      char * a ((char *)fvmGetShmemPtr() + size);
 
-      for (size_t i (size); i < fvmGetShmemSize(); i += sizeof(int), ++a)
+      for (size_t i (size); i < fvmGetShmemSize(); ++i, ++a)
         {
           if (*a != rank)
             {
