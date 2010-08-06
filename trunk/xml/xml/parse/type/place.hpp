@@ -223,9 +223,7 @@ namespace xml
         int level;
         we::type::property::type prop;
 
-        place_type ()
-          : name (), type (), capacity (), tokens (), values(), sig(), level ()
-        {}
+        place_type () {}
 
         place_type ( const std::string & _name
                    , const std::string & _type
@@ -234,10 +232,6 @@ namespace xml
           : name (_name)
           , type (_type)
           , capacity (_capacity)
-          , tokens ()
-          , values ()
-          , sig ()
-          , level ()
         {}
 
         void push_token (const token_type & t)
