@@ -1,36 +1,36 @@
-<template name="4">
+<template name="quad">
   <in name="in" type="T" place="x"/>
-  <out name="1" type="T" place="1"/>
-  <out name="2" type="T" place="2"/>
-  <out name="3" type="T" place="3"/>
-  <out name="4" type="T" place="4"/>
+  <out name="one" type="T" place="one"/>
+  <out name="two" type="T" place="two"/>
+  <out name="three" type="T" place="three"/>
+  <out name="four" type="T" place="four"/>
 
   <net>
     <place name="x" type="T"/>
-    <place name="1" type="T"/>
-    <place name="2" type="T"/>
-    <place name="3" type="T"/>
-    <place name="4" type="T"/>
+    <place name="one" type="T"/>
+    <place name="two" type="T"/>
+    <place name="three" type="T"/>
+    <place name="four" type="T"/>
 
     <transition name="triple">
       <defun>
         <in name="x" type="T"/>
-        <out name="1" type="T"/>
-        <out name="2" type="T"/>
-        <out name="3" type="T"/>
-        <out name="4" type="T"/>
+        <out name="one" type="T"/>
+        <out name="two" type="T"/>
+        <out name="three" type="T"/>
+        <out name="four" type="T"/>
         <expression>
-          ${1} := ${x};
-          ${2} := ${x};
-          ${3} := ${x};
-          ${4} := ${x};
+          ${one} := ${x};
+          ${two} := ${x};
+          ${three} := ${x};
+          ${four} := ${x};
         </expression>
       </defun>
       <connect-in port="x" place="x"/>
-      <connect-out port="1" place="1"/>
-      <connect-out port="2" place="2"/>
-      <connect-out port="3" place="3"/>
-      <connect-out port="4" place="4"/>
+      <connect-out port="one" place="one"/>
+      <connect-out port="two" place="two"/>
+      <connect-out port="three" place="three"/>
+      <connect-out port="four" place="four"/>
     </transition>
   </net>
 </template>

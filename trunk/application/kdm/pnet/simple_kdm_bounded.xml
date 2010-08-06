@@ -63,17 +63,17 @@
     </transition>
 
     <include-template href="4.xml"/>
-    <specialize name="4_control" use="4">
+    <specialize name="four_control" use="quad">
       <type-map replace="T" with="control"/>
     </specialize>
 
-    <transition name="4_init_done" inline="true">
-      <use name="4_control"/>
+    <transition name="four_init_done" inline="true">
+      <use name="four_control"/>
       <connect-in port="in" place="initialized"/>
-      <connect-out port="1" place="trigger_loadTT"/>
-      <connect-out port="2" place="trigger_extract_offsets"/>
-      <connect-out port="3" place="trigger_init_wait"/>
-      <connect-out port="4" place="trigger_generate_volume_credits"/>
+      <connect-out port="one" place="trigger_loadTT"/>
+      <connect-out port="two" place="trigger_extract_offsets"/>
+      <connect-out port="three" place="trigger_init_wait"/>
+      <connect-out port="four" place="trigger_generate_volume_credits"/>
     </transition>
 
     <place name="trigger_loadTT" type="control" />

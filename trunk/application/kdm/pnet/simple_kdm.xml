@@ -70,9 +70,9 @@
     <transition name="triple_init_done" inline="true">
       <use name="triple_control"/>
       <connect-in port="in" place="initialized"/>
-      <connect-out port="1" place="trigger_loadTT"/>
-      <connect-out port="2" place="trigger_extract_offsets"/>
-      <connect-out port="3" place="trigger_init_wait"/>
+      <connect-out port="one" place="trigger_loadTT"/>
+      <connect-out port="two" place="trigger_extract_offsets"/>
+      <connect-out port="three" place="trigger_init_wait"/>
     </transition>
 
     <place name="trigger_loadTT" type="control" />

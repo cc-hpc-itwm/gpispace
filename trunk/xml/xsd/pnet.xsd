@@ -43,7 +43,7 @@
       </xsd:extension>
     </xsd:simpleContent>
   </xsd:complexType>
-  
+
   <xsd:complexType name="property_map_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:element name="property" type="property_type"/>
@@ -71,7 +71,7 @@
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
   </xsd:complexType>
-  
+
   <xsd:complexType name="struct_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:element name="field" type="struct_field_type"/>
@@ -143,6 +143,15 @@
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
     <xsd:attribute name="place" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="virtual_place_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
+    <xsd:attribute name="type" type="xsd:string" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="connect_type">
