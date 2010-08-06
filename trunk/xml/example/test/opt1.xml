@@ -1,0 +1,20 @@
+<defun name="opt">
+  <in name="N" type="long" place="in"/>
+  <out name="N" type="long" place="out"/>
+  <net>
+    <place name="in" type="long"/>
+    <place name="out" type="long"/>
+    <place name="l" type="control"/>
+    <transition name="run">
+      <defun>
+        <in name="x" type="long"/>
+        <out name="x" type="long"/>
+        <out name="trigger" type="control"/>
+        <expression>${trigger} := []</expression>
+      </defun>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="out"/>
+      <connect-out port="trigger" place="l"/>
+    </transition>
+  </net>
+</defun>
