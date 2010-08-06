@@ -92,12 +92,12 @@ static void initialize ( void *
   const fvmAllocHandle_t handle (fvmGlobalAlloc (size / fvmGetNodeCount()));
   const fvmAllocHandle_t scratch (fvmGlobalAlloc (size));
 
-  if (!handle)
+  if (size > 0 && !handle)
     {
       throw std::runtime_error ("BUMMER: alloc (handle) returned 0");
     }
 
-  if (!scratch)
+  if (size > 0 && !scratch)
     {
       throw std::runtime_error ("BUMMER: alloc (scratch) returned 0");
     }
@@ -208,18 +208,15 @@ static void finalize ( void *
   const fvmAllocHandle_t & handle (get<long> (input, "config", "handle"));
   const fvmAllocHandle_t & scratch  (get<long> (input, "config", "scratch"));
 
-  if (!handle)
+  if (handle)
     {
-      throw std::runtime_error ("STRANGE! BUMMER: free (handle) got 0");
+      fvmGlobalFree (handle);
     }
 
-  if (!scratch)
+  if (scratch)
     {
-      throw std::runtime_error ("STRANGE! BUMMER: free (scratch) got 0");
+      fvmGlobalFree (scratch);
     }
-
-  fvmGlobalFree (handle);
-  fvmGlobalFree (scratch);
 
   we::loader::put_output (output, "trigger", control());
 }
