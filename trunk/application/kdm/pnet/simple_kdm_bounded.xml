@@ -230,7 +230,7 @@
           <place name="trigger" type="control"/>
 
           <transition name="wrap_process_volume">
-            <include-function href="process_volume.xml" />
+            <include-function href="process_volume_bounded.xml" />
             <connect-in place="volume" port="volume" />
             <connect-in place="trigger" port="trigger"/>
             <connect-in place="config" port="config" />
