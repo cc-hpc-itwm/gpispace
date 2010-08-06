@@ -45,7 +45,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "expected node of type " 
+          s << "expected node of type "
             << util::quote (util::show_node_type (want))
             << ": got node of type "
             << util::quote(util::show_node_type (got))
@@ -63,7 +63,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "expected node of type " 
+          s << "expected node of type "
             << util::quote (util::show_node_type (want1))
             << " or "
             << util::quote (util::show_node_type (want2))
@@ -103,7 +103,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "expected node of type " 
+          s << "expected node of type "
             << util::quote (util::show_node_type (want))
             << " in " << path
             ;
@@ -118,7 +118,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "expected node of type " 
+          s << "expected node of type "
             << util::quote (util::show_node_type (want1))
             << " or "
             << util::quote (util::show_node_type (want2))
@@ -188,7 +188,7 @@ namespace xml
 
           return s.str();
         }
-        
+
       public:
         no_elements_given ( const std::string & pre
                           , const boost::filesystem::path & path
@@ -212,7 +212,7 @@ namespace xml
 
           return s.str();
         }
-        
+
       public:
         more_than_one_definition ( const std::string & pre
                                  , const boost::filesystem::path & path
@@ -229,7 +229,7 @@ namespace xml
         top_level_anonymous_function ( const std::string & file
                                      , const std::string & pre
                                      )
-          : generic ( "try to include top level anonymous function from " 
+          : generic ( "try to include top level anonymous function from "
                     + file
                     , pre
                     )
@@ -244,7 +244,7 @@ namespace xml
         top_level_anonymous_template ( const std::string & file
                                      , const std::string & pre
                                      )
-          : generic ( "try to include top level anonymous template from " 
+          : generic ( "try to include top level anonymous template from "
                     + file
                     , pre
                     )
@@ -284,7 +284,7 @@ namespace xml
 
           return ss.str();
         }
-        
+
       public:
         include_loop ( const std::string & pre
                      , IT pos, const IT & end
@@ -310,7 +310,7 @@ namespace xml
 
           return s.str();
         }
-        
+
       public:
         cannot_resolve ( const std::string & field
                        , const std::string & type
@@ -582,7 +582,7 @@ namespace xml
           std::ostringstream s;
 
           s << "duplicate " << "connect-" << type << " " << name
-            << " for transition " << trans 
+            << " for transition " << trans
             << " in " << path;
 
           return s.str();
@@ -702,11 +702,11 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << direction << " " << port 
+          s << direction << " " << port
             << " with unknown type " << type
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -732,11 +732,11 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << direction << "-port " << port 
+          s << direction << "-port " << port
             << " connected to non-existing place " << place
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -761,11 +761,11 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << direction << "-port " << port 
+          s << direction << "-port " << port
             << " not connected"
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -824,7 +824,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "in transition " << trans << "in " << path << ": "
+          s << "in transition " << trans << " in " << path << ": "
             << "connect-" << direction << " to nonexistent place " << place
             ;
 
@@ -853,7 +853,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "in transition " << trans << " in " << path << ": " 
+          s << "in transition " << trans << " in " << path << ": "
             << "connect-" << direction << " to nonexistent port " << port
             ;
 
@@ -881,7 +881,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "in transition " << trans << " in " << path << ": " 
+          s << "in transition " << trans << " in " << path << ": "
             << "unknown function " << fun
             ;
 
@@ -937,7 +937,7 @@ namespace xml
           std::ostringstream s;
 
           s << "in transition " << trans << " in " << path << ": "
-            << "type error: connect-" << direction 
+            << "type error: connect-" << direction
             << " place " << place.name
             << " of type " << place.type
             << " with port " << port.name
@@ -992,7 +992,7 @@ namespace xml
           s << msg << " for property " << fhg::util::join (key, ".")
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -1022,7 +1022,7 @@ namespace xml
             << " and earlier to type " << to_old
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -1051,7 +1051,7 @@ namespace xml
             << " in specialization " << spec
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -1084,7 +1084,7 @@ namespace xml
             << " with out-connection to place " << place
             << " which has a capacity of " << capacity
             ;
-       
+
           return s.str();
         }
       public:
@@ -1113,7 +1113,7 @@ namespace xml
             << " with invalid prefix"
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -1140,7 +1140,7 @@ namespace xml
       class strange : public generic
       {
       public:
-        strange (const std::string & msg) 
+        strange (const std::string & msg)
           : generic ("this is STRANGE and should not happen", msg)
         {}
       };
