@@ -222,16 +222,19 @@ namespace xml
         signature::type sig;
         int level;
         we::type::property::type prop;
+        fhg::util::maybe<bool> is_virtual;
 
         place_type () {}
 
         place_type ( const std::string & _name
                    , const std::string & _type
                    , const fhg::util::maybe<petri_net::capacity_t> _capacity
+                   , const fhg::util::maybe<bool> _is_virtual
                    )
           : name (_name)
           , type (_type)
           , capacity (_capacity)
+          , is_virtual (_is_virtual)
         {}
 
         void push_token (const token_type & t)
@@ -282,6 +285,7 @@ namespace xml
         s << level(p.level+1) << "type = " << p.type << std::endl;
         s << level(p.level+1) << "sig = " << p.sig << std::endl;
         s << level(p.level+1) << "capacity = " << p.capacity << std::endl;
+        s << level(p.level+1) << "virtual = " << p.is_virtual << std::endl;
 
         for ( std::vector<token_type>::const_iterator tok (p.tokens.begin())
             ; tok != p.tokens.end()

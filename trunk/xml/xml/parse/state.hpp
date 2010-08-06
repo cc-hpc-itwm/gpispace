@@ -75,6 +75,7 @@ namespace xml
 
         bool _print_internal_structures;
         bool _no_inline;
+        bool _synthesize_virtual_places;
 
         std::string _Osearch_path;
         std::string _Osearch_path_short;
@@ -96,6 +97,7 @@ namespace xml
 
         std::string _Oprint_internal_structures;
         std::string _Ono_inline;
+        std::string _Osynthesize_virtual_places;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -174,6 +176,7 @@ namespace xml
 
           , _print_internal_structures (false)
           , _no_inline (false)
+          , _synthesize_virtual_places (false)
 
           , _Osearch_path ("search-path"), _Osearch_path_short("I")
           , _Oignore_properties ("ignore-properties")
@@ -193,6 +196,7 @@ namespace xml
           , _OWoverwrite_context ("Woverwrite-context")
           , _Oprint_internal_structures ("print-internal-structures")
           , _Ono_inline ("no-inline")
+          , _Osynthesize_virtual_places ("synthesize virtual places")
         {}
 
         int & level (void) { return _level; }
@@ -305,6 +309,7 @@ namespace xml
 
           GET_PROP (print_internal_structures)
           GET_PROP (no_inline)
+          GET_PROP (synthesize_virtual_places)
 
 #undef GET_PROP
           else
@@ -351,6 +356,7 @@ namespace xml
 
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
+        ACCESS(synthesize_virtual_places)
 
 #undef ACCESS
 
@@ -487,6 +493,10 @@ namespace xml
             )
             ( _Ono_inline.c_str()
             , VAL(no_inline)
+            , "if set, ignore the keyword inline"
+            )
+            ( _Osynthesize_virtual_places.c_str()
+            , VAL(synthesize_virtual_places)
             , "if set, ignore the keyword inline"
             )
             ;

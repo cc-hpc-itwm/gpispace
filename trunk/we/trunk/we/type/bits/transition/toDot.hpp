@@ -429,14 +429,31 @@ namespace we { namespace type {
 
               level (s, l + 1)
                 << name (id_net, "place_" + fhg::util::show (*p))
-                << node ( shape::place
-                        , with_signature ( place.get_name()
-                                         , place.get_signature()
-                                         , opts
-                                         )
-                        + token.str()
-                        + capacity.str()
-                        )
+                << node
+                   ( shape::place
+                   , with_signature ( place.get_name()
+                                    , place.get_signature()
+                                    , opts
+                                    )
+                   + token.str()
+                   + capacity.str()
+                   + ((  "true"
+                      == place.get_property().get_with_default( "virtual"
+                                                              , "false"
+                                                              )
+                      )
+                     ? (endl + "::virtual::")
+                     : ""
+                     )
+                   + ( place.get_property().get_maybe_val("real").isJust()
+                     ? ( endl
+                       + "::real "
+                       + *place.get_property().get_maybe_val("real")
+                       + "::"
+                       )
+                     : ""
+                     )
+                   )
                 ;
             }
 
@@ -497,15 +514,6 @@ namespace we { namespace type {
 
                   if (!found)
                     {
-                      std::cerr << "***" << trans.name() << std::endl;
-                      std::cerr << connection->first
-                                << " "
-                                << fhg::util::show (connection->second)
-                                << std::endl;
-                      std::cerr << fhg::util::show ( trans.outer_to_inner_begin()
-                                                , trans.outer_to_inner_end()
-                                                ) << std::endl;
-
                       throw std::runtime_error
                          ("STRANGE! Connected in port but not in net!");
                     }

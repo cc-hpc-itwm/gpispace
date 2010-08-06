@@ -598,6 +598,34 @@ namespace xml
         {}
       };
 
+      // ******************************************************************* //
+
+      class duplicate_place_map : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const std::string & trans
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "duplicate place-map " << name
+            << " for transition " << trans
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        duplicate_place_map ( const std::string & name
+                            , const std::string & trans
+                            , const boost::filesystem::path & path
+                            )
+          : generic (nice (name, trans, path))
+        {}
+      };
 
       // ******************************************************************* //
 
@@ -1122,6 +1150,59 @@ namespace xml
                        , const boost::filesystem::path & path
                        )
           : generic (nice (name, type, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class no_map_for_virtual_place : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << " missing map for virtual place " << name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        no_map_for_virtual_place ( const std::string & name
+                                 , const boost::filesystem::path & path
+                                 )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class real_place_missing : public generic
+      {
+      private:
+        std::string nice ( const std::string & place_virtual
+                         , const std::string & place_real
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << " missing real place " << place_real
+            << " to replace virtual place " << place_virtual
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        real_place_missing ( const std::string & place_virtual
+                           , const std::string & place_real
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (place_virtual, place_real, path))
         {}
       };
 

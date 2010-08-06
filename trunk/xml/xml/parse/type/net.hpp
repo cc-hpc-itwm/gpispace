@@ -89,7 +89,7 @@ namespace xml
         {
           return _functions.elements();
         }
-        
+
         const specialize_vec_type & specializes (void) const
         {
           return _specializes.elements();
@@ -155,7 +155,7 @@ namespace xml
         }
 
         // ***************************************************************** //
-        
+
         void clear_places (void)
         {
           _places.clear();
@@ -222,7 +222,7 @@ namespace xml
               )
             {
               function_type tmpl;
-              
+
               if (!get_template (specialize->use, tmpl))
                 {
                   throw error::unknown_template (specialize->use, path);
@@ -232,7 +232,7 @@ namespace xml
 
               type_map_apply (map, specialize->type_map);
 
-              tmpl.specialize 
+              tmpl.specialize
                 ( specialize->type_map
                 , specialize->type_get
                 , st::join (known_structs, st::make (structs), state)
@@ -258,7 +258,7 @@ namespace xml
               ; ++fun
               )
             {
-              fun->specialize 
+              fun->specialize
                 ( map
                 , get
                 , st::join (known_structs, st::make (structs), state)
@@ -279,7 +279,7 @@ namespace xml
               ; ++trans
               )
             {
-              trans->specialize 
+              trans->specialize
                 ( map
                 , get
                 , st::join (known_structs, st::make (structs), state)
@@ -329,7 +329,7 @@ namespace xml
               ; ++pos
               )
             {
-              boost::apply_visitor 
+              boost::apply_visitor
                 ( st::resolve (structs_resolved, pos->second.path)
                 , pos->second.sig
                 );
@@ -469,6 +469,7 @@ namespace xml
                           , typename Activity::transition_type::pid_t
                           >
       net_synthesize ( typename Activity::transition_type::net_type & we_net
+                     , const place_map_map_type & place_map_map
                      , const Net & net
                      , const state::type & state
                      , typename Activity::transition_type::edge_type & e
@@ -478,7 +479,7 @@ namespace xml
 
         typedef typename we_transition_type::place_type we_place_type;
         typedef typename we_transition_type::edge_type we_edge_type;
-        
+
         typedef typename we_transition_type::pid_t pid_t;
 
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
@@ -491,20 +492,47 @@ namespace xml
             )
             {
               const signature::type type (net.type_of_place (*place));
-              const pid_t pid
-                ( we_net.add_place ( we_place_type ( place->name
-                                                   , type
-                                                   , place->prop
-                                                   )
-                                   )
-                );
 
-              if (place->capacity.isJust())
+              if (  !state.synthesize_virtual_places()
+                 && place->is_virtual.get_with_default (false)
+                 )
                 {
-                  we_net.set_capacity (pid, *place->capacity);
-                }
+                  // try to find a mapping
+                  const place_map_map_type::const_iterator pid
+                    (place_map_map.find (place->name));
 
-              pid_of_place[place->name] = pid;
+                  if (pid == place_map_map.end())
+                    {
+                      throw error::no_map_for_virtual_place
+                        (place->name, state.file_in_progress());
+                    }
+
+                  pid_of_place[place->name] = pid->second;
+                }
+              else
+                {
+                  we::type::property::type prop (place->prop);
+
+                  if (place->is_virtual.get_with_default (false))
+                    {
+                      prop.set ("virtual", "true");
+                    }
+
+                  const pid_t pid
+                    ( we_net.add_place ( we_place_type ( place->name
+                                                       , type
+                                                       , prop
+                                                       )
+                                       )
+                    );
+
+                  if (place->capacity.isJust())
+                    {
+                      we_net.set_capacity (pid, *place->capacity);
+                    }
+
+                  pid_of_place[place->name] = pid;
+                }
             }
 
           for ( typename Net::transition_vec_type::const_iterator transition
@@ -519,7 +547,7 @@ namespace xml
                                    , Fun
                                    , pid_of_place_type
                                    >
-                (*transition, state, net, we_net, pid_of_place, e); 
+                (*transition, state, net, we_net, pid_of_place, e);
             }
 
           for ( place_vec_type::const_iterator place (net.places().begin())

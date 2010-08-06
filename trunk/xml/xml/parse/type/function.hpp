@@ -75,7 +75,7 @@ namespace xml
         Fun & fun;
 
       public:
-        function_specialize 
+        function_specialize
         ( const type::type_map_type & _map
         , const type::type_get_type & _get
         , const xml::parse::struct_t::set_type & _known_structs
@@ -125,7 +125,7 @@ namespace xml
       template< typename Activity
               , typename Net
               , typename Trans
-              , typename Fun     
+              , typename Fun
               , typename Map
               >
       void
@@ -142,6 +142,7 @@ namespace xml
                           , typename Activity::transition_type::pid_t
                           >
       net_synthesize ( typename Activity::transition_type::net_type &
+                     , const place_map_map_type &
                      , const Net &
                      , const state::type &
                      , typename Activity::transition_type::edge_type &
@@ -166,7 +167,7 @@ namespace xml
       // ******************************************************************* //
 
       template<typename Activity, typename Net, typename Fun>
-      class function_synthesize 
+      class function_synthesize
         : public boost::static_visitor<typename Activity::transition_type>
       {
       private:
@@ -182,7 +183,7 @@ namespace xml
         typedef typename we_transition_type::net_type we_net_type;
         typedef typename we_transition_type::mod_type we_mod_type;
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
-        
+
         typedef typename we_transition_type::pid_t pid_t;
 
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
@@ -199,7 +200,7 @@ namespace xml
             {
               const signature::type type
                 (fun.type_of_port (direction, *port));
-              
+
               trans.add_ports () (port->name, type, direction, port->prop);
             }
         }
@@ -262,14 +263,14 @@ namespace xml
 
       public:
         function_synthesize (const state::type & _state, Fun & _fun)
-          : state (_state) 
+          : state (_state)
           , fun (_fun)
         {}
 
         we_transition_type operator () (const expression_type & e) const
         {
           const std::string expr (e.expression());
-          const util::we_parser_t parsed_expression 
+          const util::we_parser_t parsed_expression
             (util::we_parse (expr, "expression", "function", name(), fun.path));
 
           we_transition_type trans
@@ -305,11 +306,18 @@ namespace xml
         we_transition_type operator () (const Net & net) const
         {
           we_net_type we_net;
-          
+
           typename Activity::transition_type::edge_type e (0);
 
-          pid_of_place_type pid_of_place 
-            (net_synthesize<Activity, Net, Fun> (we_net, net, state, e));
+          pid_of_place_type pid_of_place
+            ( net_synthesize<Activity, Net, Fun>
+              ( we_net
+              , place_map_map_type()
+              , net
+              , state
+              , e
+              )
+            );
 
           util::property::join (state, fun.prop, net.prop);
 
@@ -327,7 +335,7 @@ namespace xml
           return trans;
         }
       };
- 
+
       // ******************************************************************* //
 
       class function_is_net : public boost::static_visitor<bool>
@@ -350,7 +358,7 @@ namespace xml
         typedef boost::variant < expression_type
                                , mod_type
                                , boost::recursive_wrapper<net_type>
-                               > type; 
+                               > type;
 
         struct_vec_type structs;
 
@@ -390,7 +398,7 @@ namespace xml
 
         std::string condition (void) const
         {
-          return cond.empty() 
+          return cond.empty()
             ? "true"
             : fhg::util::join (cond.begin(), cond.end(), " & ", "(", ")")
             ;
@@ -455,7 +463,7 @@ namespace xml
           resolve (empty, state, forbidden);
         }
 
-        void resolve 
+        void resolve
         ( const xml::parse::struct_t::set_type & global
         , const state::type & state
         , const xml::parse::struct_t::forbidden_type & forbidden
@@ -471,13 +479,13 @@ namespace xml
               ; ++pos
               )
             {
-              boost::apply_visitor 
+              boost::apply_visitor
                 ( st::resolve (structs_resolved, pos->second.path)
                 , pos->second.sig
                 );
             }
 
-          boost::apply_visitor 
+          boost::apply_visitor
             (function_resolve<net_type> ( structs_resolved
                                         , state
                                         , forbidden_below()
@@ -518,7 +526,7 @@ namespace xml
               ; ++port
               )
             {
-              boost::apply_visitor 
+              boost::apply_visitor
                 (port_type_check<net_type> ("in", *port, path, state), f);
             }
 
@@ -527,7 +535,7 @@ namespace xml
               ; ++port
               )
             {
-              boost::apply_visitor 
+              boost::apply_visitor
                 (port_type_check<net_type> ("out", *port, path, state), f);
             }
 
@@ -561,7 +569,7 @@ namespace xml
           const type_map_type type_map_empty;
           const type_get_type type_get_empty;
           const xml::parse::struct_t::set_type known_empty;
-              
+
           specialize ( type_map_empty
                      , type_get_empty
                      , known_empty
@@ -600,8 +608,8 @@ namespace xml
 
           namespace st = xml::parse::struct_t;
 
-          boost::apply_visitor 
-            ( function_specialize<net_type, function_type> 
+          boost::apply_visitor
+            ( function_specialize<net_type, function_type>
               ( map
               , get
               , st::join (known_structs, st::make (structs), state)

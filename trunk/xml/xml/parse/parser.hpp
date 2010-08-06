@@ -336,6 +336,60 @@ namespace xml
 
     // ********************************************************************* //
 
+    static type::place_map_type
+    place_map_type (const xml_node_type * node, state::type & state)
+    {
+      type::place_map_type place_map
+        ( required ("place_map_type", node, "virtual", state.file_in_progress())
+        , required ("place_map_type", node, "real", state.file_in_progress())
+        , state.level() + 2
+        );
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "properties")
+                {
+                  property_map_type (place_map.prop, child, state);
+                }
+              else if (child_name == "include-properties")
+                {
+                  const we::type::property::type deeper
+                    ( properties_include ( required ( "connect_type"
+                                                    , child
+                                                    , "href"
+                                                    , state.file_in_progress()
+                                                    )
+                                         , state
+                                         )
+                    );
+
+                  util::property::join (state, place_map.prop, deeper);
+                }
+              else
+                {
+                  state.warn
+                    ( warning::unexpected_element ( child_name
+                                                  , "place_map_type"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+      return place_map;
+    }
+
+    // ********************************************************************* //
+
     static type::function_type
     function_type (const xml_node_type * node, state::type & state)
     {
@@ -644,6 +698,9 @@ namespace xml
           ( &fhg::util::reader<petri_net::capacity_t>::read
           , optional (node, "capacity")
           )
+        , fhg::util::fmap<std::string, bool> ( fhg::util::read_bool
+                                             , optional (node, "virtual")
+                                             )
         );
 
       p.level = state.level();
@@ -1256,6 +1313,10 @@ namespace xml
                   t.f = function_type (child, state);
 
                   state.level() -= 2;
+                }
+              else if (child_name == "place-map")
+                {
+                  t.push_place_map (place_map_type (child, state));
                 }
               else if (child_name == "connect-in")
                 {

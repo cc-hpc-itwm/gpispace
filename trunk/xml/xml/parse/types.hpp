@@ -67,6 +67,7 @@ namespace xml
 }
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/place.hpp>

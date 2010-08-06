@@ -38,7 +38,7 @@ namespace xml
         const xml::parse::struct_t::forbidden_type & forbidden;
 
       public:
-        transition_resolve 
+        transition_resolve
         ( const xml::parse::struct_t::set_type & _global
         , const state::type & _state
         , const xml::parse::struct_t::forbidden_type & _forbidden
@@ -69,7 +69,7 @@ namespace xml
         void operator () (const use_type &) const { return; }
         void operator () (const Fun & fun) const { fun.type_check (state); }
       };
-      
+
       // ******************************************************************* //
 
       template<typename Fun>
@@ -82,7 +82,7 @@ namespace xml
         const state::type & state;
 
       public:
-        transition_specialize 
+        transition_specialize
         ( const type::type_map_type & _map
         , const type::type_get_type & _get
         , const xml::parse::struct_t::set_type & _known_structs
@@ -95,7 +95,7 @@ namespace xml
         {}
 
         void operator () (use_type &) const { return; }
-        void operator () (Fun & fun) const 
+        void operator () (Fun & fun) const
         {
           fun.specialize (map, get, known_structs, state);
         }
@@ -151,10 +151,11 @@ namespace xml
         xml::util::unique<connect_type> _in;
         xml::util::unique<connect_type> _out;
         xml::util::unique<connect_type> _read;
+        xml::util::unique<place_map_type> _place_map;
 
       public:
         typedef boost::variant <function_type, use_type> f_type;
-        
+
         f_type f;
 
         std::string name;
@@ -177,6 +178,10 @@ namespace xml
         const connect_vec_type & in (void) const { return _in.elements(); }
         const connect_vec_type & out (void) const { return _out.elements(); }
         const connect_vec_type & read (void) const { return _read.elements(); }
+        const place_map_vec_type & place_map (void) const
+        {
+          return _place_map.elements();
+        }
 
         // ***************************************************************** //
 
@@ -201,6 +206,14 @@ namespace xml
           if (!_read.push (connect))
             {
               throw error::duplicate_connect ("read", connect.name, name, path);
+            }
+        }
+
+        void push_place_map (const place_map_type & place_map)
+        {
+          if (!_place_map.push (place_map))
+            {
+              throw error::duplicate_place_map (place_map.name, name, path);
             }
         }
 
@@ -269,8 +282,8 @@ namespace xml
                 (direction, name, connect.place, path);
             }
 
-          const function_type fun 
-            ( boost::apply_visitor 
+          const function_type fun
+            ( boost::apply_visitor
               (transition_get_function<Net, transition_type> ( net
                                                              , state
                                                              , *this
@@ -282,9 +295,9 @@ namespace xml
           // existence of connect.port
           port_type port;
 
-          const bool port_exists 
-            ( (direction == "out") 
-            ? fun.get_port_out (connect.port, port) 
+          const bool port_exists
+            ( (direction == "out")
+            ? fun.get_port_out (connect.port, port)
             : fun.get_port_in (connect.port, port)
             );
 
@@ -358,16 +371,17 @@ namespace xml
       , typename Activity::transition_type::net_type & we_net
       , const Map & pids
       , typename Activity::transition_type::edge_type & e
-      ) 
+      )
       {
         typedef typename Activity::transition_type we_transition_type;
         typedef typename we_transition_type::expr_type we_expr_type;
+        typedef typename we_transition_type::place_type we_place_type;
         typedef typename we_transition_type::place_type we_place_type;
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
         typedef typename petri_net::tid_t tid_t;
 
         Fun fun
-          ( boost::apply_visitor 
+          ( boost::apply_visitor
             ( transition_get_function<Net, Trans> (net, state, trans)
             , trans.f
             )
@@ -377,7 +391,7 @@ namespace xml
           {
             if (*fun.name != trans.name && has_valid_prefix (trans.name))
               {
-                state.warn ( warning::overwrite_function_name_trans 
+                state.warn ( warning::overwrite_function_name_trans
                              ( *fun.name
                              , fun.path
                              , trans.name
@@ -396,23 +410,58 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
-        if (  !state.no_inline()
-           && trans.finline.get_with_default(false)
-           && boost::apply_visitor (function_is_net(), fun.f))
+        if (  (  !state.synthesize_virtual_places()
+              && !trans.place_map().empty()
+              )
+           || (  !state.no_inline()
+              && trans.finline.get_with_default(false)
+              && boost::apply_visitor (function_is_net(), fun.f)
+              )
+           )
           { // unfold
-            
+
             // set a prefix
             const std::string prefix ("_" + trans.name + "_");
             const Net & net_old (boost::get<Net> (fun.f));
             const Net & net_new (set_prefix (net_old, prefix));
 
+            place_map_map_type place_map_map;
+
+            for ( place_map_vec_type::const_iterator
+                    pm (trans.place_map().begin())
+                ; pm != trans.place_map().end()
+                ; ++pm
+                )
+              {
+                const typename Map::const_iterator pid
+                  (pids.find (pm->place_real));
+
+                if (pid == pids.end())
+                  {
+                    throw
+                      error::real_place_missing ( pm->place_virtual
+                                                , pm->place_real
+                                                , state.file_in_progress()
+                                                );
+                  }
+
+                place_map_map[prefix + pm->place_virtual] = pid->second;
+              }
+
             // synthesize into this level
             const Map pid_of_place
-              (net_synthesize<Activity, Net, Fun> (we_net, net_new, state, e));
+              ( net_synthesize<Activity, Net, Fun>
+                ( we_net
+                , place_map_map
+                , net_new
+                , state
+                , e
+                )
+              );
 
             // go in the subnet
             const std::string cond_in (fun.condition());
-            
+
             util::we_parser_t parsed_condition_in
               ( util::we_parse ( cond_in
                                , "condition"
@@ -479,7 +528,7 @@ namespace xml
                   (get_pid (pids, connect->place), connect->port, connect->prop)
                   ;
               }
-            
+
             const tid_t tid_in (we_net.add_transition (trans_in));
 
             for ( port_vec_type::const_iterator port (fun.in().begin())
@@ -532,7 +581,7 @@ namespace xml
 
             // going out of the subnet
             const std::string cond_out ("true");
-            
+
             util::we_parser_t parsed_condition_out
               ( util::we_parse ( cond_out
                                , "condition"
@@ -549,7 +598,7 @@ namespace xml
               , true
               , fun.prop
               );
-            
+
             for ( port_vec_type::const_iterator port (fun.out().begin())
                 ; port != fun.out().end()
                 ; ++port
@@ -610,7 +659,7 @@ namespace xml
                       ;
                     }
                 }
-            
+
             for ( connect_vec_type::const_iterator connect (trans.out().begin())
                 ; connect != trans.out().end()
                 ; ++connect
@@ -631,7 +680,38 @@ namespace xml
 
           { // not unfold
 
-            we_transition_type we_trans 
+            // set the real-property
+            for ( place_map_vec_type::const_iterator
+                    pm (trans.place_map().begin())
+                ; pm != trans.place_map().end()
+                ; ++pm
+                )
+              {
+                const typename Map::const_iterator pid
+                  (pids.find (pm->place_real));
+
+                if (pid == pids.end())
+                  {
+                    throw
+                      error::real_place_missing ( pm->place_virtual
+                                                , pm->place_real
+                                                , state.file_in_progress()
+                                                );
+                  }
+
+                we_place_type we_place (we_net.get_place (pid->second));
+
+                we_place.property().set ( "real"
+                                        , "for "
+                                        + trans.name
+                                        + "."
+                                        + pm->place_virtual
+                                        );
+
+                we_net.modify_place (pid->second, we_place);
+              }
+
+            we_transition_type we_trans
               ( boost::apply_visitor
                 ( function_synthesize<Activity, Net, Fun> (state, fun)
                 , fun.f
@@ -680,7 +760,7 @@ namespace xml
                 ; ++connect
                 )
               {
-                we_net.add_edge 
+                we_net.add_edge
                   (e++, connection_t (PT, tid, get_pid (pids, connect->place)))
                   ;
               }
@@ -737,6 +817,16 @@ namespace xml
         s << level(t.level+1) << "properties = " << std::endl;
 
         t.prop.writeTo (s, t.level+2);
+
+        s << level (t.level + 1) << "place-map = " << std::endl;
+
+        for ( place_map_vec_type::const_iterator pos (t.place_map().begin())
+            ; pos != t.place_map().end()
+            ; ++pos
+            )
+          {
+            s << *pos << std::endl;
+          }
 
         s << level (t.level + 1) << "connect-in = " << std::endl;
 

@@ -38,12 +38,13 @@ namespace place
   public:
     const name_t & get_name (void) const { return name; }
     const signature::type & get_signature (void) const { return signature; }
-    const we::type::property::type & get_property (void) { return prop; }
+    const we::type::property::type & get_property (void) const { return prop; }
+    we::type::property::type & property (void) { return prop; }
 
     type ()
     {}
 
-    explicit 
+    explicit
     type ( const name_t & _name
          , const literal::type_name_t & _type_name = literal::CONTROL
          )
@@ -73,7 +74,7 @@ namespace place
   inline std::size_t hash_value (const type & p)
   {
     boost::hash<type::name_t> h;
-    
+
     return h(p.get_name());
   }
 

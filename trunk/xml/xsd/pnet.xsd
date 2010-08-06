@@ -133,6 +133,7 @@
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="capacity" type="xsd:nonNegativeInteger" use="optional"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
+    <xsd:attribute name="virtual" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="port_type">
@@ -145,15 +146,6 @@
     <xsd:attribute name="place" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
-  <xsd:complexType name="virtual_place_type">
-    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-      <xsd:element name="properties" type="property_map_type"/>
-      <xsd:element name="include-properties" type="properties_include_type"/>
-    </xsd:choice>
-    <xsd:attribute name="name" type="xsd:ID" use="required"/>
-    <xsd:attribute name="type" type="xsd:string" use="required"/>
-  </xsd:complexType>
-
   <xsd:complexType name="connect_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:element name="properties" type="property_map_type"/>
@@ -161,6 +153,15 @@
     </xsd:choice>
     <xsd:attribute name="place" type="xsd:string" use="required"/>
     <xsd:attribute name="port" type="xsd:ID" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="place_map_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+    <xsd:attribute name="virtual" type="xsd:string" use="required"/>
+    <xsd:attribute name="real" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="function_type">
@@ -199,6 +200,7 @@
         <xsd:element name="include-function" type="transition_include_type"/>
         <xsd:element name="use" type="use_type"/>
       </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="place-map" type="place_map_type"/>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
