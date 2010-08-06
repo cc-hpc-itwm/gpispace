@@ -716,13 +716,31 @@ public:
     if (is_PT (connection.type))
       {
         adj_pt.clear_adjacent (connection.pid, connection.tid);
+
+        in_map[connection.tid].erase (connection.pid);
+
+        update_set_of_tid
+          ( connection.tid
+          ,  in_map[connection.tid].size()
+          == in_to_transition(connection.tid).size()
+          , in_enabled
+          , out_enabled
+          );
       }
     else
       {
         adj_tp.clear_adjacent (connection.tid, connection.pid);
-      }
 
-    recalculate_enabled_by_edge (eid, connection);
+        out_map[connection.tid].erase (connection.pid);
+
+        update_set_of_tid
+          ( connection.tid
+          ,  out_map[connection.tid].size()
+          == out_of_transition(connection.tid).size()
+          , out_enabled
+          , in_enabled
+          );
+      }
 
     connection_map.erase (it);
 
