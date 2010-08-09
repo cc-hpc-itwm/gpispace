@@ -69,6 +69,8 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
+  state->set_input (input);
+
   xml::parse::type::function_type f (xml::parse::frontend (*state, input));
 
   if (state->print_internal_structures())

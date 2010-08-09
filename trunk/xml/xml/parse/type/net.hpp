@@ -570,12 +570,26 @@ namespace xml
               ; ++place
               )
             {
+              const pid_t pid (pid_of_place.at (place->name));
+
               for ( value_vec_type::const_iterator val (place->values.begin())
                   ; val != place->values.end()
                   ; ++val
                   )
                 {
-                  token::put (we_net, pid_of_place.at(place->name), *val);
+                  token::put (we_net, pid, *val);
+                }
+
+              if (  (we_net.in_to_place (pid).size() == 0)
+                 && (we_net.out_of_place (pid).size() == 0)
+                 )
+                {
+                  state.warn
+                    ( warning::independent_place ( place->name
+                                                 , state.file_in_progress()
+                                                 )
+                    )
+                    ;
                 }
             }
 

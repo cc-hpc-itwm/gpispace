@@ -72,6 +72,8 @@ namespace xml
         bool _Wtype_map_duplicate;
         bool _Wtype_get_duplicate;
         bool _Woverwrite_context;
+        bool _Windependent_place;
+        bool _Windependent_transition;
 
         bool _print_internal_structures;
         bool _no_inline;
@@ -94,6 +96,8 @@ namespace xml
         std::string _OWtype_map_duplicate;
         std::string _OWtype_get_duplicate;
         std::string _OWoverwrite_context;
+        std::string _OWindependent_place;
+        std::string _OWindependent_transition;
 
         std::string _Oprint_internal_structures;
         std::string _Ono_inline;
@@ -173,6 +177,8 @@ namespace xml
           , _Wtype_map_duplicate (true)
           , _Wtype_get_duplicate (true)
           , _Woverwrite_context (true)
+          , _Windependent_place (true)
+          , _Windependent_transition (true)
 
           , _print_internal_structures (false)
           , _no_inline (false)
@@ -194,6 +200,9 @@ namespace xml
           , _OWtype_map_duplicate ("Wtype-map-duplicate")
           , _OWtype_get_duplicate ("Wtype-get-duplicate")
           , _OWoverwrite_context ("Woverwrite-context")
+          , _OWindependent_place ("Windependent-place")
+          , _OWindependent_transition ("Windependent-transition")
+
           , _Oprint_internal_structures ("print-internal-structures")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
@@ -306,6 +315,8 @@ namespace xml
           GET_PROP (Wtype_map_duplicate)
           GET_PROP (Wtype_get_duplicate)
           GET_PROP (Woverwrite_context)
+          GET_PROP (Windependent_place)
+          GET_PROP (Windependent_transition)
 
           GET_PROP (print_internal_structures)
           GET_PROP (no_inline)
@@ -322,6 +333,16 @@ namespace xml
         }
 
         // ***************************************************************** //
+
+        void set_input (const fs::path & path)
+        {
+          _in_progress.push_back (path);
+        }
+
+        void set_input (const std::string & file)
+        {
+          set_input (fs::path (file));
+        }
 
         fs::path file_in_progress (void) const
         {
@@ -353,6 +374,8 @@ namespace xml
         ACCESS(Wtype_map_duplicate)
         ACCESS(Wtype_get_duplicate)
         ACCESS(Woverwrite_context)
+        ACCESS(Windependent_place)
+        ACCESS(Windependent_transition)
 
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
@@ -381,6 +404,8 @@ namespace xml
         WARN(type_map_duplicate)
         WARN(type_get_duplicate)
         WARN(overwrite_context)
+        WARN(independent_place)
+        WARN(independent_transition)
 
 #undef WARN
 
@@ -502,6 +527,14 @@ namespace xml
             ( _OWoverwrite_context.c_str()
             , VAL(Woverwrite_context)
             , "warn when overwriting values in global context"
+            )
+            ( _OWindependent_place.c_str()
+            , VAL(Windependent_place)
+            , "warn when a place has no connection at all"
+            )
+            ( _OWindependent_transition.c_str()
+            , VAL(Windependent_transition)
+            , "warn when a transition has no connection at all"
             )
             ( _Oprint_internal_structures.c_str()
             , VAL(print_internal_structures)

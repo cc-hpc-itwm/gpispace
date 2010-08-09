@@ -387,6 +387,15 @@ namespace xml
         typedef typename we_transition_type::preparsed_cond_type we_cond_type;
         typedef typename petri_net::tid_t tid_t;
 
+        if ((trans.in().size() == 0) && (trans.out().size() == 0))
+          {
+            state.warn
+              ( warning::independent_transition ( trans.name
+                                                , state.file_in_progress()
+                                                )
+              );
+          }
+
         Fun fun
           ( boost::apply_visitor
             ( transition_get_function<Net, Trans> (net, state, trans)

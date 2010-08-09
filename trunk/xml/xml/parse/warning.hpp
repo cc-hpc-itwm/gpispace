@@ -75,7 +75,7 @@ namespace xml
 
           return s.str();
         }
-        
+
       public:
         overwrite_function_name_as ( const std::string & old_name
                                    , const std::string & new_name
@@ -104,7 +104,7 @@ namespace xml
 
           return s.str();
         }
-        
+
       public:
         overwrite_template_name_as ( const std::string & old_name
                                    , const std::string & new_name
@@ -149,7 +149,7 @@ namespace xml
                          )
         {
           std::ostringstream s;
-          
+
           s << "default construction takes place for place " << place
             << " from " << path
             ;
@@ -182,7 +182,7 @@ namespace xml
                          )
         {
           std::ostringstream s;
-          
+
           s << "for place " << place
             << " from " << path
             << " there is a field given with name " << field
@@ -213,11 +213,11 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << direction << "-port " << port 
+          s << direction << "-port " << port
             << " not connected"
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -247,11 +247,11 @@ namespace xml
             << " overwritten with transition name " << trans
             << " in " << transpath
             ;
-       
+
           return s.str();
         }
       public:
-        overwrite_function_name_trans 
+        overwrite_function_name_trans
         ( const std::string & fun
         , const boost::filesystem::path & funpath
         , const std::string & trans
@@ -279,7 +279,7 @@ namespace xml
             << " overwritten by value " << new_val
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -309,7 +309,7 @@ namespace xml
             << " twice"
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -335,7 +335,7 @@ namespace xml
           s << "type get duplicate, type " << name
             << " in " << path
             ;
-       
+
           return s.str();
         }
       public:
@@ -375,6 +375,57 @@ namespace xml
                           , const boost::filesystem::path & path
                           )
           : generic (nice (key, val, old_val, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class independent_place : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "the place " << name << " has no connection at all"
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        independent_place ( const std::string & name
+                          , const boost::filesystem::path & path
+                          )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class independent_transition : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "the transition " << name << " has no connection at all"
+            << " (or read connections only)"
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        independent_transition ( const std::string & name
+                               , const boost::filesystem::path & path
+                               )
+          : generic (nice (name, path))
         {}
       };
     }
