@@ -153,65 +153,12 @@
 
     <place name="offset" type="long"/>
 
-<!--
     <transition name="generate_volume" inline="true">
       <include-function href="generate_volume.xml"/>
+      <place-map virtual="credit_generate_volume" real="credit_volume"/>
       <connect-in place="offset" port="offset" />
       <connect-in place="number_of_volumes" port="amount" />
       <connect-out place="volume" port="out" />
-    </transition>
--->
-
-    <struct name="STATE">
-      <field name="offset" type="long"/>
-      <field name="id" type="long"/>
-      <field name="max" type="long"/>
-    </struct>
-
-    <transition name="generate_volume_init">
-      <defun>
-        <in name="N" type="long"/>
-        <in name="offset" type="long"/>
-        <out name="state" type="STATE"/>
-        <expression>
-          ${state.id} := 0;
-          ${state.offset} := ${offset};
-          ${state.max} := ${N}
-        </expression>
-      </defun>
-      <connect-in port="N" place="number_of_volumes"/>
-      <connect-in port="offset" place="offset"/>
-      <connect-out port="state" place="generate_volume_state"/>
-    </transition>
-    <place name="generate_volume_state" type="STATE"/>
-
-    <transition name="generate_volume_step">
-      <defun>
-        <in name="state" type="STATE"/>
-        <in name="credit" type="control"/>
-        <out name="state" type="STATE"/>
-        <out name="volume" type="VOLUME"/>
-        <expression>
-          ${volume.id} := ${state.id};
-          ${volume.offset} := ${state.offset};
-          ${state.id} := ${state.id} + 1
-        </expression>
-        <condition>${state.id} :lt: ${state.max}</condition>
-      </defun>
-      <connect-in port="state" place="generate_volume_state"/>
-      <connect-in port="credit" place="credit_volume"/>
-      <connect-out port="state" place="generate_volume_state"/>
-      <connect-out port="volume" place="volume"/>
-    </transition>
-
-    <transition name="generate_volume_break">
-      <defun>
-        <in name="state" type="STATE"/>
-        <expression>
-        </expression>
-        <condition>${state.id} :ge: ${state.max}</condition>
-      </defun>
-      <connect-in port="state" place="generate_volume_state"/>
     </transition>
 
     <place name="volume" type="VOLUME"/>
