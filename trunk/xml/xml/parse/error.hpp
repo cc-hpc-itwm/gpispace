@@ -1185,6 +1185,7 @@ namespace xml
       private:
         std::string nice ( const std::string & place_virtual
                          , const std::string & place_real
+                         , const std::string & trans
                          , const boost::filesystem::path & path
                          ) const
         {
@@ -1192,6 +1193,7 @@ namespace xml
 
           s << " missing real place " << place_real
             << " to replace virtual place " << place_virtual
+            << " in transition " << trans
             << " in " << path
             ;
 
@@ -1200,9 +1202,10 @@ namespace xml
       public:
         real_place_missing ( const std::string & place_virtual
                            , const std::string & place_real
+                           , const std::string & trans
                            , const boost::filesystem::path & path
                            )
-          : generic (nice (place_virtual, place_real, path))
+          : generic (nice (place_virtual, place_real, trans, path))
         {}
       };
 
