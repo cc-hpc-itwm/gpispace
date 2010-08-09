@@ -9,7 +9,7 @@
     <place name="out" type="VOLUME"/>
     <place name="pair" type="pair_long_long"/>
 
-    <place name="credit_generate_volume" type="control" virtual="true"/>
+    <place name="credit" type="control" virtual="true"/>
 
     <include-template href="tagged_sequence_bounded.xml"/>
 
@@ -21,7 +21,7 @@
 
     <transition name="tag_seq" inline="true">
       <use name="tag_seq"/>
-      <place-map virtual="credit" real="credit_generate_volume"/>
+      <place-map virtual="credit" real="credit"/>
       <connect-in port="tag" place="offset"/>
       <connect-in port="amount" place="amount"/>
       <connect-out port="pair" place="pair"/>

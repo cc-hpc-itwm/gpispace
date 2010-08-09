@@ -9,16 +9,19 @@
     <place name="out" type="BUNCH"/>
     <place name="pair" type="pair_long_VOLUME"/>
 
-    <include-template href="tagged_sequence.xml"/>
+    <include-template href="tagged_sequence_bounded.xml"/>
 
-    <specialize name="tag_seq" use="tagged_sequence">
+    <specialize name="tag_seq" use="tagged_sequence_bounded">
       <type-map replace="T" with="VOLUME"/>
       <type-map replace="PAIR" with="pair_long_VOLUME"/>
       <type-get name="pair_long_VOLUME"/>
     </specialize>
 
+    <place name="credit" type="control" virtual="true"/>
+
     <transition name="tag_seq" inline="true">
       <use name="tag_seq"/>
+      <place-map virtual="credit" real="credit"/>
       <connect-in port="tag" place="volume"/>
       <connect-in port="amount" place="amount"/>
       <connect-out port="pair" place="pair"/>
@@ -34,7 +37,7 @@
         </expression>
       </defun>
       <connect-in port="pair" place="pair"/>
-      <connect-out port="bunch" place="out"/>      
+      <connect-out port="bunch" place="out"/>
     </transition>
 </net>
 </defun>

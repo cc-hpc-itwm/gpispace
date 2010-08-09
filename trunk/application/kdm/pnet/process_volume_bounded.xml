@@ -24,7 +24,7 @@
       <type-map replace="T" with="control"/>
     </specialize>
 
-    <transition name="when_triggered">
+    <transition name="when_triggered" inline="true">
       <use name="dup_control"/>
       <connect-in port="in" place="trigger"/>
       <connect-out port="one" place="trigger_generate_bunch"/>
@@ -85,65 +85,12 @@
     </transition>
     <place name="bunches_per_offset" type="long"/>
 
-<!--
     <transition name="generate_bunch" inline="true">
       <include-function href="generate_bunch.xml" />
-        <connect-in place="volume_gen_bunch" port="volume" />
+      <place-map virtual="credit" real="trigger_generate_bunch"/>
+      <connect-in place="volume_gen_bunch" port="volume" />
       <connect-in place="bunches_per_offset" port="amount" />
-      <connect-out place="bunch_generated" port="out" />
-    </transition>
--->
-
-    <struct name="generate_bunch_STATE">
-      <field name="id" type="long"/>
-      <field name="max" type="long"/>
-      <field name="volume" type="VOLUME"/>
-    </struct>
-    <place name="generate_bunch_state" type="generate_bunch_STATE"/>
-
-    <transition name="generate_bunch_init">
-      <defun>
-        <in name="amount" type="long"/>
-        <in name="volume" type="VOLUME"/>
-        <out name="state" type="generate_bunch_STATE"/>
-        <expression>
-          ${state.id} := 0;
-          ${state.max} := ${amount};
-          ${state.volume} := ${volume};
-        </expression>
-      </defun>
-      <connect-in port="amount" place="bunches_per_offset"/>
-      <connect-in port="volume" place="volume_gen_bunch"/>
-      <connect-out port="state" place="generate_bunch_state"/>
-    </transition>
-
-    <transition name="generate_bunch_step">
-      <defun>
-        <in name="state" type="generate_bunch_STATE"/>
-        <in name="trigger" type="control"/>
-        <out name="state" type="generate_bunch_STATE"/>
-        <out name="bunch" type="BUNCH"/>
-        <expression>
-          ${bunch.id} := ${state.id};
-          ${bunch.volume} := ${state.volume};
-          ${state.id} := ${state.id} + 1;
-        </expression>
-        <condition>${state.id} :lt: ${state.max}</condition>
-      </defun>
-      <connect-in port="state" place="generate_bunch_state"/>
-      <connect-in port="trigger" place="trigger_generate_bunch"/>
-      <connect-out port="state" place="generate_bunch_state"/>
-      <connect-out port="bunch" place="bunch"/>
-    </transition>
-
-    <transition name="generate_bunch_break">
-      <defun>
-        <in name="state" type="generate_bunch_STATE"/>
-        <expression>
-        </expression>
-        <condition>${state.id} :ge: ${state.max}</condition>
-      </defun>
-      <connect-in port="state" place="generate_bunch_state"/>
+      <connect-out place="bunch" port="out" />
     </transition>
 
     <place name="bunch" type="BUNCH"/>
@@ -182,8 +129,6 @@
     </transition>
 
     <place name="bunch_done" type="BUNCH"/>
-
-    <place name="trigger_dec" type="BUNCH"/>
 
     <transition name="dec">
       <defun>

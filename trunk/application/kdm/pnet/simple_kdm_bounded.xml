@@ -20,6 +20,17 @@
    </place>
    <place name="done" type="control"/>
 
+   <include-template href="dup.xml"/>
+   <specialize name="dup_VOLUME" use="dup">
+     <type-map replace="T" with="VOLUME"/>
+   </specialize>
+   <specialize name="dup_long" use="dup">
+     <type-map replace="T" with="long"/>
+   </specialize>
+   <specialize name="dup_control" use="dup">
+     <type-map replace="T" with="control"/>
+   </specialize>
+
    <transition name="initialize">
      <defun>
        <in name="config_file" type="string"/>
@@ -62,22 +73,24 @@
       <connect-out port="wait" place="wait"/>
     </transition>
 
-    <include-template href="4.xml"/>
-    <specialize name="four_control" use="quad">
+    <include-template href="5.xml"/>
+    <specialize name="five_control" use="five">
       <type-map replace="T" with="control"/>
     </specialize>
 
-    <transition name="four_init_done" inline="true">
-      <use name="four_control"/>
+    <transition name="five_init_done" inline="true">
+      <use name="five_control"/>
       <connect-in port="in" place="initialized"/>
       <connect-out port="one" place="trigger_loadTT"/>
       <connect-out port="two" place="trigger_extract_offsets"/>
       <connect-out port="three" place="trigger_init_wait"/>
       <connect-out port="four" place="trigger_generate_volume_credits"/>
+      <connect-out port="five" place="trigger_generate_offset_credits"/>
     </transition>
 
     <place name="trigger_loadTT" type="control" />
     <place name="trigger_generate_volume_credits" type="control" />
+    <place name="trigger_generate_offset_credits" type="control" />
 
     <transition name="extract_number_of_volume_credits">
       <defun>
@@ -90,15 +103,58 @@
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="trigger_generate_volume_credits" port="trigger" />
-      <connect-out  port="N" place="number_of_volume_credits" />
+      <connect-out  port="N" place="number_of_volume_credits_extracted" />
     </transition>
+    <place name="number_of_volume_credits_extracted" type="long"/>
+
+    <transition name="dup_volume_credits" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="number_of_volume_credits_extracted"/>
+      <connect-out port="one" place="number_of_volume_credits"/>
+      <connect-out port="two" place="volume_credit_wait"/>
+    </transition>
+
+    <place name="volume_credit_wait" type="long"/>
+
     <place name="number_of_volume_credits" type="long"/>
 
     <transition name="generate_volume_credits" inline="true">
-      <include-function href="generate_volume_credits.xml"/>
+      <include-function href="generate_credits.xml"/>
       <connect-in port="amount" place="number_of_volume_credits"/>
       <connect-out port="out" place="credit_volume"/>
     </transition>
+
+    <transition name="extract_number_of_offset_credits">
+      <defun>
+        <in name="config" type="CONFIG" />
+        <in name="trigger" type="control" />
+        <out name="N" type="long" />
+        <expression>
+          ${N} := 2 + (${config.VOLUME_CREDITS} div ${config.SUBVOLUMES_PER_OFFSET})
+        </expression>
+      </defun>
+      <connect-read place="config" port="config" />
+      <connect-in   place="trigger_generate_offset_credits" port="trigger" />
+      <connect-out  port="N" place="number_of_offset_credits_extracted" />
+    </transition>
+    <place name="number_of_offset_credits_extracted" type="long"/>
+
+    <transition name="dup_offset_credits" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="number_of_offset_credits_extracted"/>
+      <connect-out port="one" place="number_of_offset_credits"/>
+      <connect-out port="two" place="offset_credit_wait"/>
+    </transition>
+
+    <place name="number_of_offset_credits" type="long"/>
+    <place name="offset_credit_wait" type="long"/>
+
+    <transition name="generate_offset_credits" inline="true">
+      <include-function href="generate_credits.xml"/>
+      <connect-in port="amount" place="number_of_offset_credits"/>
+      <connect-out port="out" place="credit_offset"/>
+    </transition>
+    <place name="credit_offset" type="control"/>
 
     <transition name="loadTT" inline="true">
       <include-function href="loadTT.xml"/>
@@ -135,7 +191,7 @@
           ${volumes} := ${config.SUBVOLUMES_PER_OFFSET};
         </expression>
       </defun>
-      <connect-in place="offset_generated" port="offset"/>
+      <connect-in place="offset_generated_volume_wait_set" port="offset"/>
       <connect-out place="offset" port="offset"/>
       <connect-read place="config" port="config"/>
       <connect-out port="volumes" place="number_of_volumes"/>
@@ -144,18 +200,44 @@
 
 
     <transition name="generate_offset" inline="true">
-      <include-function href="sequence.xml"/>
+      <include-function href="sequence_bounded.xml"/>
+      <place-map virtual="credit" real="credit_offset"/>
       <connect-in place="number_of_offsets" port="amount"/>
       <connect-out place="offset_generated" port="out"/>
     </transition>
 
     <place name="offset_generated" type="long"/>
 
+    <struct name="volume_wait">
+      <field name="offset" type="long"/>
+      <field name="wait" type="long"/>
+    </struct>
+
+    <transition name="set_volume_wait">
+      <defun>
+        <in name="offset" type="long"/>
+        <in name="config" type="CONFIG"/>
+        <out name="offset" type="long"/>
+        <out name="wait" type="volume_wait"/>
+        <expression>
+          ${wait.offset} := ${offset};
+          ${wait.wait} := ${config.SUBVOLUMES_PER_OFFSET}
+        </expression>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="offset" place="offset_generated"/>
+      <connect-out port="offset" place="offset_generated_volume_wait_set"/>
+      <connect-out port="wait" place="volume_wait"/>
+    </transition>
+
+    <place name="offset_generated_volume_wait_set" type="long"/>
+    <place name="volume_wait" type="volume_wait"/>
+
     <place name="offset" type="long"/>
 
     <transition name="generate_volume" inline="true">
       <include-function href="generate_volume.xml"/>
-      <place-map virtual="credit_generate_volume" real="credit_volume"/>
+      <place-map virtual="credit" real="credit_volume"/>
       <connect-in place="offset" port="offset" />
       <connect-in place="number_of_volumes" port="amount" />
       <connect-out place="volume" port="out" />
@@ -202,11 +284,45 @@
     <transition name="trigger_when_volume_done">
       <use name="trigger_when_volume"/>
       <connect-in port="object" place="volume_done"/>
-      <connect-out port="object" place="volume_trigger_dec"/>
+      <connect-out port="object" place="volume_credit_back"/>
       <connect-out port="trigger" place="credit_volume"/>
     </transition>
 
+    <place name="volume_credit_back" type="VOLUME" />
+
+    <transition name="dup_volume_credit_back" inline="true">
+      <use name="dup_VOLUME"/>
+      <connect-in port="in" place="volume_credit_back"/>
+      <connect-out port="one" place="volume_trigger_offset_back"/>
+      <connect-out port="two" place="volume_trigger_dec"/>
+    </transition>
+
+    <place name="volume_trigger_offset_back" type="VOLUME" />
     <place name="volume_trigger_dec" type="VOLUME" />
+
+    <transition name="update_offset_wait">
+      <defun>
+        <in name="wait" type="volume_wait"/>
+        <in name="volume" type="VOLUME"/>
+        <out name="wait" type="volume_wait"/>
+        <expression>${wait.wait} := ${wait.wait} - 1</expression>
+        <condition>${wait.offset} == ${volume.offset}</condition>
+      </defun>
+      <connect-in port="wait" place="volume_wait"/>
+      <connect-in port="volume" place="volume_trigger_offset_back"/>
+      <connect-out port="wait" place="volume_wait"/>
+    </transition>
+
+    <transition name="offset_back">
+      <defun>
+        <in name="wait" type="volume_wait"/>
+        <out name="credit" type="control"/>
+        <expression>${credit} := []</expression>
+        <condition>${wait.wait} == 0</condition>
+      </defun>
+      <connect-in port="wait" place="volume_wait"/>
+      <connect-out port="credit" place="credit_offset"/>
+    </transition>
 
     <transition name="dec">
       <defun>
@@ -252,6 +368,54 @@
 
     <place name="finalize_done" type="control"/>
 
+    <transition name="dup_finalize_done" inline="true">
+      <use name="dup_control"/>
+      <connect-in port="in" place="finalize_done"/>
+      <connect-out port="one" place="trigger_delete_credit_volume"/>
+      <connect-out port="two" place="trigger_delete_credit_offset"/>
+    </transition>
+
+    <place name="trigger_delete_credit_volume" type="control"/>
+    <place name="trigger_delete_credit_offset" type="control"/>
+
+    <include-template href="eatN.xml"/>
+    <specialize name="eatN_control" use="eatN">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="delete_credit_volume" inline="true">
+      <use name="eatN_control"/>
+      <place-map virtual="what" real="credit_volume"/>
+      <connect-in port="trigger" place="trigger_delete_credit_volume"/>
+      <connect-in port="N" place="volume_credit_wait"/>
+      <connect-out port="done" place="delete_credit_volume_done"/>
+    </transition>
+
+    <transition name="delete_credit_offset" inline="true">
+      <use name="eatN_control"/>
+      <place-map virtual="what" real="credit_offset"/>
+      <connect-in port="trigger" place="trigger_delete_credit_offset"/>
+      <connect-in port="N" place="offset_credit_wait"/>
+      <connect-out port="done" place="delete_credit_offset_done"/>
+    </transition>
+
+    <place name="delete_credit_offset_done" type="control"/>
+    <place name="delete_credit_volume_done" type="control"/>
+
+    <transition name="join_delete_credit">
+      <defun>
+        <in name="a" type="control"/>
+        <in name="b" type="control"/>
+        <out name="joined" type="control"/>
+        <expression>${joined} := []</expression>
+      </defun>
+      <connect-in port="a" place="delete_credit_volume_done"/>
+      <connect-in port="b" place="delete_credit_offset_done"/>
+      <connect-out port="joined" place="delete_credit_done"/>
+    </transition>
+
+    <place name="delete_credit_done" type="control"/>
+
     <transition name="cleanup">
       <defun>
         <in name="trigger" type="control"/>
@@ -262,7 +426,7 @@
       </defun>
       <connect-in port="loadTT_done" place="loadTT_done"/>
       <connect-in port="config" place="config"/>
-      <connect-in port="trigger" place="finalize_done"/>
+      <connect-in port="trigger" place="delete_credit_done"/>
       <connect-out port="clean" place="done"/>
     </transition>
   </net>
