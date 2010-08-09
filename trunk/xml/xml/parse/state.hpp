@@ -387,6 +387,30 @@ namespace xml
         // ***************************************************************** //
 
         template<typename T>
+        T generic_parse ( T (*parse)(std::istream &, type &)
+                        , const boost::filesystem::path & path
+                        )
+        {
+          _in_progress.push_back (path);
+
+          std::ifstream stream (path.string().c_str());
+
+          const T x (parse (stream, *this));
+
+          _in_progress.pop_back ();
+
+          return x;
+        }
+
+        template<typename T>
+        T generic_parse ( T (*parse)(std::istream &, type &)
+                        , const std::string & file
+                        )
+        {
+          return generic_parse<T> (parse, boost::filesystem::path (file));
+        }
+
+        template<typename T>
         T generic_include ( T (*parse)(std::istream &, type &)
                           , const std::string & file
                           )
@@ -405,15 +429,7 @@ namespace xml
                 }
             }
 
-          _in_progress.push_back (path);
-
-          std::ifstream stream (path.string().c_str());
-
-          const T x (parse (stream, *this));
-
-          _in_progress.pop_back ();
-
-          return x;
+          return generic_parse<T> (parse, path);
         };
 
         // ***************************************************************** //
