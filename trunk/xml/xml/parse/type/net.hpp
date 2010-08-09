@@ -456,6 +456,21 @@ namespace xml
                 transition_new.push_out (connect_out_new);
               }
 
+            transition_new.clear_place_map();
+
+            for (place_map_vec_type::const_iterator
+                   place_map_old (transition_old->place_map().begin())
+                ; place_map_old != transition_old->place_map().end()
+                ; ++place_map_old
+                )
+              {
+                place_map_type place_map_new (*place_map_old);
+
+                place_map_new.place_real = prefix + place_map_old->place_real;
+
+                transition_new.push_place_map (place_map_new);
+              }
+
             net_new.push_transition (transition_new);
           }
 

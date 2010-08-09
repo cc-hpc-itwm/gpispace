@@ -226,6 +226,11 @@ namespace xml
           _read.clear();
         }
 
+        void clear_place_map ()
+        {
+          _place_map.clear();
+        }
+
         // ***************************************************************** //
 
         void resolve ( const state::type & state
@@ -441,6 +446,7 @@ namespace xml
                     throw
                       error::real_place_missing ( pm->place_virtual
                                                 , pm->place_real
+                                                , trans.name
                                                 , state.file_in_progress()
                                                 );
                   }
@@ -695,6 +701,7 @@ namespace xml
                     throw
                       error::real_place_missing ( pm->place_virtual
                                                 , pm->place_real
+                                                , trans.name
                                                 , state.file_in_progress()
                                                 );
                   }
