@@ -120,7 +120,7 @@
     <place name="number_of_volumes" type="long" />
 
     <transition name="generate_offset" inline="true">
-      <include-function href="lib/sequence.xml"/>
+      <include-function href="sequence.xml"/>
       <connect-in place="number_of_offsets" port="amount"/>
       <connect-out place="offset_generated" port="out"/>
     </transition>
