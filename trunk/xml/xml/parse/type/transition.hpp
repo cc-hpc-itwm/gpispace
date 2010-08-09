@@ -137,6 +137,8 @@ namespace xml
                 (use.name, trans.name, trans.path);
             }
 
+          fun.name = trans.name;
+
           return fun;
         }
       };
