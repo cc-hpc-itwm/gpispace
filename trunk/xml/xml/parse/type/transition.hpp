@@ -403,6 +403,28 @@ namespace xml
             )
           );
 
+        for ( port_vec_type::const_iterator port_in (fun.in().begin())
+            ; port_in != fun.in().end()
+            ; ++port_in
+            )
+          {
+            port_type port_out;
+
+            if (  fun.get_port_out (port_in->name, port_out)
+               && (port_out.type != port_in->type)
+               )
+              {
+                state.warn
+                  ( warning::conflicting_port_types ( trans.name
+                                                    , port_in->name
+                                                    , port_in->type
+                                                    , port_out.type
+                                                    , state.file_in_progress()
+                                                    )
+                  );
+              }
+          }
+
         if (fun.name.isJust())
           {
             if (*fun.name != trans.name && has_valid_prefix (trans.name))

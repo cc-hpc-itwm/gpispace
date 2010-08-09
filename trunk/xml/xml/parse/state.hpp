@@ -74,6 +74,7 @@ namespace xml
         bool _Woverwrite_context;
         bool _Windependent_place;
         bool _Windependent_transition;
+        bool _Wconflicting_port_types;
 
         bool _print_internal_structures;
         bool _no_inline;
@@ -98,6 +99,7 @@ namespace xml
         std::string _OWoverwrite_context;
         std::string _OWindependent_place;
         std::string _OWindependent_transition;
+        std::string _OWconflicting_port_types;
 
         std::string _Oprint_internal_structures;
         std::string _Ono_inline;
@@ -179,6 +181,7 @@ namespace xml
           , _Woverwrite_context (true)
           , _Windependent_place (true)
           , _Windependent_transition (true)
+          , _Wconflicting_port_types (true)
 
           , _print_internal_structures (false)
           , _no_inline (false)
@@ -202,6 +205,7 @@ namespace xml
           , _OWoverwrite_context ("Woverwrite-context")
           , _OWindependent_place ("Windependent-place")
           , _OWindependent_transition ("Windependent-transition")
+          , _OWconflicting_port_types ("Wconflicting-port-types")
 
           , _Oprint_internal_structures ("print-internal-structures")
           , _Ono_inline ("no-inline")
@@ -317,6 +321,7 @@ namespace xml
           GET_PROP (Woverwrite_context)
           GET_PROP (Windependent_place)
           GET_PROP (Windependent_transition)
+          GET_PROP (Wconflicting_port_types)
 
           GET_PROP (print_internal_structures)
           GET_PROP (no_inline)
@@ -376,6 +381,7 @@ namespace xml
         ACCESS(Woverwrite_context)
         ACCESS(Windependent_place)
         ACCESS(Windependent_transition)
+        ACCESS(Wconflicting_port_types)
 
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
@@ -406,6 +412,7 @@ namespace xml
         WARN(overwrite_context)
         WARN(independent_place)
         WARN(independent_transition)
+        WARN(conflicting_port_types)
 
 #undef WARN
 
@@ -535,6 +542,10 @@ namespace xml
             ( _OWindependent_transition.c_str()
             , VAL(Windependent_transition)
             , "warn when a transition has no connection at all"
+            )
+            ( _OWconflicting_port_types.c_str()
+            , VAL(Wconflicting_port_types)
+            , "warn when in/out port has conflicting types"
             )
             ( _Oprint_internal_structures.c_str()
             , VAL(print_internal_structures)
