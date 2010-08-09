@@ -196,7 +196,7 @@ namespace xml
           , _OWoverwrite_context ("Woverwrite-context")
           , _Oprint_internal_structures ("print-internal-structures")
           , _Ono_inline ("no-inline")
-          , _Osynthesize_virtual_places ("synthesize virtual places")
+          , _Osynthesize_virtual_places ("synthesize-virtual-places")
         {}
 
         int & level (void) { return _level; }
