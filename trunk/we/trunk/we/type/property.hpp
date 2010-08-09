@@ -152,6 +152,14 @@ namespace we
           }
         };
 
+        class is_value : public boost::static_visitor<bool>
+        {
+        public:
+          bool operator () (const value_type &) const { return true; }
+          template<typename T>
+          bool operator () (const T &) const { return false; }
+        };
+
         template<typename T>
         class show : public boost::static_visitor<>
         {
@@ -533,6 +541,62 @@ namespace we
             }
 
           return stack;
+        }
+
+        inline stack_type dfs ( const type & t
+                              , const path_type::const_iterator pre_pos
+                              , const path_type::const_iterator pre_end
+                              )
+        {
+          if (pre_pos == pre_end)
+            {
+              return dfs (t);
+            }
+          else
+            {
+              for ( map_type::const_iterator pos (t.get_map().begin())
+                  ; pos != t.get_map().end()
+                  ; ++pos
+                  )
+                {
+                  if (pos->first == *pre_pos)
+                    {
+                      if ( boost::apply_visitor
+                           ( we::type::property::visitor::is_value()
+                           , pos->second
+                           )
+                         )
+                        {
+                          return stack_type();
+                        }
+
+                      return
+                        dfs
+                        ( boost::apply_visitor
+                          ( we::type::property::visitor::get_map<const type &>()
+                          , pos->second
+                          )
+                        , pre_pos + 1
+                        , pre_end
+                        )
+                        ;
+                    }
+                }
+            }
+
+          return stack_type();
+        }
+
+        inline stack_type dfs (const type & t, const path_type & path)
+        {
+          return dfs (t, path.begin(), path.end());
+        }
+
+        inline stack_type dfs (const type & t, const std::string & path)
+        {
+          const path_type path_splitted (util::split (path));
+
+          return dfs (t, path_splitted);
         }
       }
     }

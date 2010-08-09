@@ -146,6 +146,14 @@ main (int argc, char ** argv)
     , po::value<bool>(&options.show_intext)->default_value(options.show_intext)
     , "whether or not show the transition internal/external falg"
     )
+    ( "show-virtual"
+    , po::value<bool>(&options.show_virtual)->default_value(options.show_virtual)
+    , "whether or not show the virtual flag"
+    )
+    ( "show-real"
+    , po::value<bool>(&options.show_real)->default_value(options.show_real)
+    , "whether or not show the real places, associated with a place"
+    )
     ( "not-starts-with"
     , po::value<vec_type>(&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
@@ -203,6 +211,6 @@ main (int argc, char ** argv)
     }
 
   act.dot (std::cout, options);
-  
+
   return EXIT_SUCCESS;
 }

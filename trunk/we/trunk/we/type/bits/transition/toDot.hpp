@@ -45,6 +45,11 @@ namespace we { namespace type {
         return " " + parens (s, "[", "]");
       }
 
+      inline std::string props (const std::string & s)
+      {
+        return parens (s, ":: ", " ::");
+      }
+
       inline std::string dquote (const std::string & s)
       {
         return parens (s, "\"", "\"");
@@ -252,6 +257,18 @@ namespace we { namespace type {
                         );
       }
 
+      inline std::string property ( const std::string & prop
+                                  , const std::string & val
+                                  )
+      {
+        return props (quote (prop) + ": " + quote (val));
+      }
+
+      inline std::string property (const std::string & prop)
+      {
+        return props (quote (prop));
+      }
+
       // ******************************************************************* //
       // predicates about when to expand a transition
 
@@ -286,6 +303,8 @@ namespace we { namespace type {
         bool show_signature;
         bool show_priority;
         bool show_intext;
+        bool show_virtual;
+        bool show_real;
 
         options ()
           : full (false)
@@ -295,6 +314,8 @@ namespace we { namespace type {
           , show_signature (true)
           , show_priority (true)
           , show_intext (false)
+          , show_virtual (true)
+          , show_real (true)
         {}
       };
 
@@ -427,6 +448,43 @@ namespace we { namespace type {
                     }
                 }
 
+              std::ostringstream virt;
+
+              if (opts.show_virtual)
+                {
+                  if (  "true"
+                     == place.get_property().get_with_default ( "virtual"
+                                                              , "false"
+                                                              )
+                     )
+                    {
+                      virt << endl << property ("virtual");
+                    }
+                }
+
+              std::ostringstream real;
+
+              if (opts.show_real)
+                {
+                  namespace prop = we::type::property::traverse;
+
+                  prop::stack_type stack
+                    (prop::dfs (place.get_property(), "real"));
+
+                  while (!stack.empty())
+                    {
+                      real << endl
+                           << property ("real"
+                                       , stack.top().first[0]
+                                       + "."
+                                       + stack.top().second
+                                       )
+                        ;
+
+                      stack.pop();
+                    }
+                }
+
               level (s, l + 1)
                 << name (id_net, "place_" + fhg::util::show (*p))
                 << node
@@ -437,22 +495,8 @@ namespace we { namespace type {
                                     )
                    + token.str()
                    + capacity.str()
-                   + ((  "true"
-                      == place.get_property().get_with_default( "virtual"
-                                                              , "false"
-                                                              )
-                      )
-                     ? (endl + "::virtual::")
-                     : ""
-                     )
-                   + ( place.get_property().get_maybe_val("real").isJust()
-                     ? ( endl
-                       + "::real "
-                       + *place.get_property().get_maybe_val("real")
-                       + "::"
-                       )
-                     : ""
-                     )
+                   + virt.str()
+                   + real.str()
                    )
                 ;
             }

@@ -708,12 +708,11 @@ namespace xml
 
                 we_place_type we_place (we_net.get_place (pid->second));
 
-                we_place.property().set ( "real"
-                                        , "for "
-                                        + trans.name
-                                        + "."
-                                        + pm->place_virtual
-                                        );
+                std::ostringstream path;
+
+                path << "real" << "." << trans.name;
+
+                we_place.property().set (path.str(), pm->place_virtual);
 
                 we_net.modify_place (pid->second, we_place);
               }
