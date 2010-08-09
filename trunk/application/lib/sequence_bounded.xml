@@ -1,4 +1,4 @@
-<defun name="sequence_bounded">
+<defun>
   <in name="amount" type="long" place="N"/>
   <out name="out" type="long" place="id"/>
 

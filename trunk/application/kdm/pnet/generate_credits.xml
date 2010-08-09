@@ -1,4 +1,4 @@
-<defun name="generate_volume_credits">
+<defun>
   <in name="amount" type="long" place="amount_in"/>
   <out name="out" type="control" place="out"/>
 

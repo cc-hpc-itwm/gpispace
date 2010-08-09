@@ -1,4 +1,4 @@
-<defun name="process_volume_bounded" internal="false">
+<defun internal="false">
   <in name="volume" type="VOLUME"  place="volume_in"/>
   <in name="config" type="CONFIG"  place="config"/>
   <in name="trigger" type="control" place="trigger"/>
