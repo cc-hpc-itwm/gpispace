@@ -1,16 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<defun name="kdm_simple"
-       internal="false"
-       xsi:noNamespaceSchemaLocation="../../xsd/pnet.xsd"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
->
-  <include-properties href="prop.pretty.dot.xml"/>
-  <include-structs href="typedef.xml"/>
+<defun name="kdm_simple" internal="false">
+
+  <include-properties href="prop/pretty.dot.xml"/>
+  <include-structs href="types.xml"/>
 
   <in name="config_file" type="string" place="config_file"/>
   <out name="done" type="control" place="done"/>
 
   <net>
+
 <!--       <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"</value> -->
 
    <place name="config_file" type="string">
@@ -153,7 +150,7 @@
           <place name="trigger" type="control"/>
 
           <transition name="wrap_process_volume">
-            <include-function href="process_volume.xml" />
+            <include-function href="process.xml" />
             <connect-in place="volume" port="volume" />
             <connect-in place="trigger" port="trigger"/>
             <connect-in place="config" port="config" />

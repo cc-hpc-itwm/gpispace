@@ -1,8 +1,8 @@
 <props>
   <properties name="pretty">
     <properties name="dot">
-      <include-properties href="prop.pretty.dot.color.xml"/>
-      <include-properties href="prop.pretty.dot.shape.xml"/>
+      <include-properties href="pretty.dot.color.xml"/>
+      <include-properties href="pretty.dot.shape.xml"/>
       <properties name="style">
         <property key="association" value="dotted"/>
         <property key="read-connection" value="dashed"/>

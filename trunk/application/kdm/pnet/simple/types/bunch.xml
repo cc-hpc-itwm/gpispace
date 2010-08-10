@@ -1,0 +1,6 @@
+<structs>
+  <struct name="BUNCH">
+    <field name="id" type="long"/>
+    <field name="volume" type="VOLUME"/>
+  </struct>
+</structs>
