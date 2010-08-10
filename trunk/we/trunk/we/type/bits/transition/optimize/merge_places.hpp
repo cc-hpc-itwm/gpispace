@@ -20,6 +20,7 @@ namespace we { namespace type {
       inline void merge_places
       ( petri_net::net<P, transition_t<P,E,T>, E, T> & net
       , const petri_net::pid_t & pid_A
+      , const bool & is_read
       , const petri_net::pid_t & pid_B
       )
       {
@@ -57,6 +58,11 @@ namespace we { namespace type {
             net.delete_edge (eid_out_B);
 
             connection.pid = pid_A;
+
+            if (is_read)
+              {
+                connection.type = petri_net::pt_read();
+              }
 
             net.add_edge (edge, connection);
 

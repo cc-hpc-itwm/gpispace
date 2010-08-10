@@ -8,11 +8,16 @@
 
 #include <we/type/bits/transition/optimize/merge_places.hpp>
 
+#include <fhg/util/maybe.hpp>
+
 #include <stack>
+#include <vector>
 
 namespace we { namespace type {
     namespace optimize
     {
+      // ******************************************************************* //
+
       template<typename P, typename E, typename T>
       inline bool is_associated ( const transition_t<P, E, T> & trans
                                 , const petri_net::pid_t & pid
@@ -30,6 +35,146 @@ namespace we { namespace type {
             return false;
           }
       }
+
+      // ******************************************************************* //
+
+      struct pid_in_type
+      {
+        petri_net::pid_t pid;
+        bool is_read;
+
+        pid_in_type (const petri_net::pid_t & _pid, const bool & _is_read)
+          : pid (_pid), is_read (_is_read)
+        {}
+      };
+
+      struct pid_out_type
+      {
+        petri_net::pid_t pid;
+        bool is_associated;
+
+        pid_out_type (const petri_net::pid_t & _pid, const bool & _is_assoc)
+          : pid (_pid), is_associated (_is_assoc)
+        {}
+      };
+
+      struct pid_pair_type
+      {
+        pid_in_type in;
+        pid_out_type out;
+
+        pid_pair_type (const pid_in_type & _in, const pid_out_type & _out)
+          : in (_in), out (_out)
+        {}
+      };
+
+      typedef std::vector<pid_pair_type> pid_pair_vec_type;
+
+      template<typename P, typename E, typename T>
+      inline fhg::util::maybe<pid_pair_vec_type>
+      pid_pairs ( const transition_t<P, E, T> & trans
+                , const petri_net::tid_t & tid
+                , const petri_net::net<P, transition_t<P, E, T>, E, T> & net
+                , const transition_t<P, E, T> & trans_parent
+                )
+      {
+        typedef transition_t<P, E, T> transition_t;
+        typedef typename transition_t::port_t port_t;
+        typedef typename port_t::name_type name_type;
+        typedef petri_net::pid_t pid_t;
+        typedef boost::unordered_map<name_type, pid_t> map_type;
+        typedef typename transition_t::outer_to_inner_t outer_to_inner;
+        typedef typename transition_t::inner_to_outer_t inner_to_outer;
+        typedef boost::unordered_map<name_type, pid_t> map_type;
+
+        map_type map_in;
+        map_type map_out;
+
+        for ( typename outer_to_inner::const_iterator
+                oi (trans.outer_to_inner_begin())
+            ; oi != trans.outer_to_inner_end()
+            ; ++oi
+            )
+          {
+            const port_t port (trans.get_port (oi->second.first));
+            const pid_t pid (oi->first);
+
+            map_in[port.name()] = pid;
+          }
+
+        for ( typename inner_to_outer::const_iterator
+                io (trans.inner_to_outer_begin())
+            ; io != trans.inner_to_outer_end()
+            ; ++io
+            )
+          {
+            const port_t port (trans.get_port (io->first));
+            const pid_t pid (io->second.first);
+
+            map_out[port.name()] = pid;
+          }
+
+        if (map_in.size() != map_out.size())
+          {
+            return fhg::util::Nothing<pid_pair_vec_type>();
+          }
+
+        pid_pair_vec_type pid_pair_vec;
+
+        bool all_in_equals_one (true);
+        bool all_out_equals_one (true);
+
+        for ( typename map_type::const_iterator in (map_in.begin())
+            ; in != map_in.end()
+            ; ++in
+            )
+          {
+            const typename map_type::const_iterator out
+              (map_out.find (in->first));
+
+            if (out == map_out.end())
+              {
+                return fhg::util::Nothing<pid_pair_vec_type>();
+              }
+
+            const petri_net::pid_t pid_A (in->second);
+            const petri_net::pid_t pid_B (out->second);
+
+            all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
+            all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
+
+            port_t port_A;
+            port_t port_B;
+
+            const bool ass_A (is_associated (trans_parent, pid_A, port_A));
+            const bool ass_B (is_associated (trans_parent, pid_B, port_B));
+
+            if (  (ass_A && port_A.is_input()  && ass_B && port_B.is_input() )
+               || (ass_A && port_A.is_output() && ass_B && port_B.is_output())
+               )
+              {
+                return fhg::util::Nothing<pid_pair_vec_type>();
+              }
+
+              pid_pair_vec.push_back
+                ( pid_pair_type
+                  ( pid_in_type ( pid_A
+                                , net.is_read_connection (tid, pid_A)
+                                )
+                  , pid_out_type (pid_B, ass_B)
+                  )
+                );
+          }
+
+        if (!all_in_equals_one && !all_out_equals_one)
+          {
+            return fhg::util::Nothing<pid_pair_vec_type>();
+          }
+
+        return fhg::util::Just<pid_pair_vec_type> (pid_pair_vec);
+      }
+
+      // ******************************************************************* //
 
       template<typename P, typename E, typename T>
       inline bool simple_pipe_elimination
@@ -67,50 +212,34 @@ namespace we { namespace type {
                && trans.condition().is_const_true()
                )
               {
-                if (  net.in_to_transition(tid).size() == 1
-                   && net.out_of_transition(tid).size() == 1
-                   )
-                  { // one port only
-                    const pid_t pid_in (*net.in_to_transition(tid));
-                    const pid_t pid_out (*net.out_of_transition(tid));
+                const fhg::util::maybe<pid_pair_vec_type>
+                  pid_pair_vec (pid_pairs (trans, tid, net, trans_parent));
 
-                    if (  net.in_to_place (pid_out).size() == 1
-                       || net.out_of_place (pid_in).size() == 1
-                       )
+                if (pid_pair_vec.isJust())
+                  {
+                    net.delete_transition (tid);
+
+                    for ( pid_pair_vec_type::const_iterator
+                            pp ((*pid_pair_vec).begin())
+                        ; pp != (*pid_pair_vec).end()
+                        ; ++pp
+                        )
                       {
-                        port_t port_pid_in;
-                        port_t port_pid_out;
+                        const pid_pair_type & pid_pair (*pp);
+                        const pid_in_type & in (pid_pair.in);
+                        const pid_out_type & out (pid_pair.out);
 
-                        const bool is_assoc_pid_in
-                          (is_associated (trans_parent, pid_in, port_pid_in));
-                        const bool is_assoc_pid_out
-                          (is_associated (trans_parent, pid_out, port_pid_out));
+                        merge_places (net, in.pid, in.is_read, out.pid);
 
-                        if (  ! (  is_assoc_pid_in  && port_pid_in.is_input()
-                                && is_assoc_pid_out && port_pid_out.is_input()
-                                )
-                           && ! (  is_assoc_pid_in  && port_pid_in.is_output()
-                                && is_assoc_pid_out && port_pid_out.is_output()
-                                )
-                           )
+                        if (out.is_associated)
                           {
-                            net.delete_transition (tid);
-
-                            merge_places (net, pid_in, pid_out);
-
-                            if (is_assoc_pid_out)
-                              {
-                                trans_parent.UNSAFE_re_associate_port ( pid_out
-                                                                      , pid_in
-                                                                      );
-                              }
-
-                            modified = true;
+                            trans_parent.UNSAFE_re_associate_port ( out.pid
+                                                                  , in.pid
+                                                                  );
                           }
                       }
-                  }
-                else
-                  { // WORK HERE: more than one port
+
+                    modified = true;
                   }
               }
 

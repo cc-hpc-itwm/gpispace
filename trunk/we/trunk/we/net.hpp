@@ -68,6 +68,11 @@ namespace petri_net
     return (et == PT || et == PT_READ);
   }
 
+  static edge_type pt_read (void)
+  {
+    return PT_READ;
+  }
+
   typedef adjacency::const_it<pid_t,eid_t> adj_place_const_it;
   typedef adjacency::const_it<tid_t,eid_t> adj_transition_const_it;
 
@@ -705,6 +710,22 @@ public:
     return it->second;
   }
 
+  bool is_read_connection (const tid_t & tid, const pid_t & pid) const
+  {
+    for ( adj_place_const_it pit (in_to_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        if (*pit == pid)
+          {
+            return is_pt_read (get_edge_info (pit()).type);
+          }
+      }
+
+    return false;
+  }
+
   // delete elements
   const eid_t & delete_edge (const eid_t & eid)
   {
@@ -1096,7 +1117,7 @@ public:
         const token_type & token (token_via_edge.first);
         const eid_t & eid (token_via_edge.second);
 
-        if (get_edge_info (eid).type == PT_READ)
+        if (is_pt_read (get_edge_info (eid).type))
           put_token (pid, token);
       }
 
