@@ -147,15 +147,7 @@ set(SDPA_HAVE_FHGLOG 1)
 find_package(MMGR REQUIRED)
 include_directories(${MMGR_INCLUDE_DIR})
 
-message(STATUS "*** Fixme: FVM includes...")
-# TODO add a STATIC parameter to FindFVM
-# to locate the static version in preference to the dynamic
-include (FindFVM)
-if (FVM_FOUND)
-  include_directories(${FVM_INCLUDE_DIR})
-else (FVM_FOUND)
-  message (FATAL_ERROR "Sorry, FVM process container library required!")
-endif (FVM_FOUND)
+find_package(FVM REQUIRED)
 message(STATUS "Found FVM: Inc:${FVM_INCLUDE_DIR} Lib:${FVM_LIBRARY}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
