@@ -1,7 +1,6 @@
 #ifndef FHG_LOG_LOGGER_HPP
 #define FHG_LOG_LOGGER_HPP 1
 
-#include <map>
 #include <list>
 #include <string>
 
