@@ -582,6 +582,7 @@ namespace xml
 
               if (  (we_net.in_to_place (pid).size() == 0)
                  && (we_net.out_of_place (pid).size() == 0)
+                 && (!place->is_virtual.get_with_default (false))
                  )
                 {
                   state.warn
