@@ -155,7 +155,8 @@ namespace sdpa {
 
 		void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
 		void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
-		void handleCancelJobAckEvent(const CancelJobAckEvent* pEvt );
+		void handleCancelJobEvent(const CancelJobEvent* );
+		void handleCancelJobAckEvent(const CancelJobAckEvent* );
 
 		void activityCreated( const id_type& id, const std::string& data );
 		void activityStarted( const id_type& id, const std::string& data );
@@ -396,6 +397,25 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 }
 
 template <typename T, typename U>
+void NRE<T, U>::handleCancelJobEvent(const CancelJobEvent* pEvt )
+{
+  assert (pEvt);
+
+  LOG(INFO, "cancelling job: " << pEvt->job_id());
+
+	// put the job into the state Cancelling
+	try {
+          Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+          pJob->CancelJob(pEvt);
+          DLOG(TRACE, "The job state is: "<<pJob->getStatus());
+	}
+	catch(JobNotFoundException const &){
+          SDPA_LOG_ERROR ("job " << pEvt->job_id() << " could not be found!");
+          throw;
+	}
+}
+
+template <typename T, typename U>
 void NRE<T, U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
 {
   assert(pEvt);
@@ -441,7 +461,6 @@ void NRE<T, U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
 		}
 	}
 }
-
 
 /**
  * Cancel an atomic activity that has previously been submitted to

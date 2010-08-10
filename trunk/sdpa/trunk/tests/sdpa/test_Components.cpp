@@ -152,44 +152,8 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 
 	bool bLaunchNrePcd = true;
 
-	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
-	// generate the test workflow simple-net.pnet
-
-	std::string cfg_file(TESTS_WORKFLOWS_PATH);
-	cfg_file += "/kdm.simple.conf";
-
-	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-
-	  act.add_input
-	    ( we::input_t::value_type
-	      ( we::token_t ( "config_file"
-	                    , literal::STRING
-	                    , cfg_file
-	                    )
-	      , simple_trans.input_port_by_name ("config_file")
-	      )
-	    );
-
-	//obsolete
-	/*
-	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-
-	act.input().push_back
-    ( we::input_t::value_type
-      ( we::token_t ( "config_file"
-                    , literal::STRING
-                    , std::string (TESTS_WORKFLOWS_PATH) + "/kdm.simple.conf"
-                    )
-      , simple_trans.input_port_by_name ("config_file")
-      )
-    );
-    */
-
-	m_strWorkflow = we::util::text_codec::encode (act);
-
-	//SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	SDPA_LOG_DEBUG("Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", orchestratorPort, "workflows");
@@ -331,37 +295,7 @@ void TestComponents::startDaemons(const std::string& workerUrl)
 {
 	string strGuiUrl = "";
 
-	std::string cfg_file(TESTS_WORKFLOWS_PATH);
-	cfg_file += "/kdm.simple.conf";
-
-	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-
-	act.add_input
-		( we::input_t::value_type
-		  ( we::token_t ( "config_file"
-						, literal::STRING
-						, cfg_file
-						)
-		  , simple_trans.input_port_by_name ("config_file")
-		  )
-		);
-
-	//obsolete
-	/*we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-	act.input().push_back
-    ( we::input_t::value_type
-      ( we::token_t ( "config_file"
-                    , literal::STRING
-                    , std::string (TESTS_WORKFLOWS_PATH) + "/kdm.simple.conf"
-                    )
-      , simple_trans.input_port_by_name ("config_file")
-      )
-    );*/
-
-	m_strWorkflow = we::util::text_codec::encode (act);
-
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
@@ -428,41 +362,8 @@ void TestComponents::testActivityRealWeAllCompAndActExec()
 	string workerUrl = "127.0.0.1:8000";
 	string strGuiUrl   = "";
 
-	// m_strWorkflow = read_workflow("workflows/simple-net.pnet");
-	// generate the test workflow simple-net.pnet
-
-	std::string cfg_file(TESTS_WORKFLOWS_PATH);
-	cfg_file += "/kdm.simple.conf";
-
-	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-
-	act.add_input
-		( we::input_t::value_type
-		  ( we::token_t ( "config_file"
-						, literal::STRING
-						, cfg_file
-						)
-		  , simple_trans.input_port_by_name ("config_file")
-		  )
-		);
-
-    // obsolete
-	/*we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-	act.input().push_back
-    ( we::input_t::value_type
-      ( we::token_t ( "config_file"
-                    , literal::STRING
-                    , std::string (TESTS_WORKFLOWS_PATH) + "/kdm.simple.conf"
-                    )
-      , simple_trans.input_port_by_name ("config_file")
-      )
-    );*/
-
-	m_strWorkflow = we::util::text_codec::encode (act);
-
-	//SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	SDPA_LOG_DEBUG("starting the Orchestrator ...");
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
@@ -559,12 +460,7 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 	SDPA_LOG_DEBUG("***** testActivityDummyWeAllCompAndNreWorker *****"<<std::endl);
 	string strGuiUrl   = "";
 
-	//m_strWorkflow = read_workflow("workflows/simple-net.pnet");
-
-	we::transition_t simple_trans (kdm::kdm<we::activity_t>::generate());
-	we::activity_t act ( simple_trans );
-	m_strWorkflow = we::util::text_codec::encode (act);
-
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
@@ -646,9 +542,7 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 	SDPA_LOG_DEBUG("*****testCompDummyGwesAndFakeFvmPC*****"<<std::endl);
 	string strGuiUrl   = "";
 
-	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
-					    //read_workflow("workflows/remig.master.gwdl");
-
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
@@ -731,9 +625,7 @@ void TestComponents::testComponentsDummyGwesNoFvmPC()
 	SDPA_LOG_DEBUG("*****testComponentsDummyGwesNoFvmPC*****"<<std::endl);
 	string strGuiUrl   = "";
 
-	m_strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
-					    //read_workflow("workflows/remig.master.gwdl");
-
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");

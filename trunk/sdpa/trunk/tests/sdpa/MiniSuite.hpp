@@ -1,5 +1,5 @@
-#ifndef TESTS_SDPA_SUITE_HPP
-#define TESTS_SDPA_SUITE_HPP 1
+#ifndef TESTS_MINI_SUITE_HPP
+#define TESTS_MINI_SUITE_HPP 1
 
 #include <cppunit/TestFixture.h>
 
@@ -12,8 +12,7 @@
 
 //#include <tests/sdpa/test_D2D2DDummyWfEng.hpp>
 //#include <tests/sdpa/test_D2D2DRealWfEng.hpp>
-
-//#include <tests/sdpa/test_Components.hpp>
+#include <tests/sdpa/test_Components.hpp>
 
 #include <tests/sdpa/test_LoadBalancer.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
@@ -25,9 +24,11 @@ namespace sdpa { namespace tests {
     static CPPUNIT_NS::Test *suite() {
       CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite( "MiniTestSuite" );
 
-      suiteOfTests->addTest( SchedulerTest::suite() );
-      suiteOfTests->addTest( LoadBalancerTest::suite() );
-      //      suiteOfTests->addTest( TestComponents::suite() );
+      /*suiteOfTests->addTest( SchedulerTest::suite() );
+      suiteOfTests->addTest( LoadBalancerTest::suite() );*/
+
+      suiteOfTests->addTest( TestComponents::suite() );
+
 
       return suiteOfTests;
     }
