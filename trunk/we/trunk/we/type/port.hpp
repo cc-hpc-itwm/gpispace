@@ -116,6 +116,8 @@ namespace we
       typedef detail::direction::i_port I_PORT;
       typedef detail::direction::o_port O_PORT;
 
+      typedef std::string name_type;
+
       port ()
         : name_("default")
         , direction_(I_PORT::value)
@@ -123,7 +125,7 @@ namespace we
       {}
 
       template <typename Signature>
-      port (const std::string & name, PortDirection direction, const Signature & signature)
+      port (const name_type & name, PortDirection direction, const Signature & signature)
         : name_(name)
         , direction_(direction)
         , signature_(signature)
@@ -131,7 +133,7 @@ namespace we
       {}
 
       template <typename Signature>
-      port ( const std::string & name
+      port ( const name_type & name
            , PortDirection direction
            , const Signature & signature
            , const we::type::property::type & prop
@@ -144,7 +146,7 @@ namespace we
       {}
 
       template <typename Signature, typename PlaceId>
-      port (const std::string & name, PortDirection direction, const Signature & signature, const PlaceId place_id)
+      port (const name_type & name, PortDirection direction, const Signature & signature, const PlaceId place_id)
         : name_(name)
         , direction_(direction)
         , signature_(signature)
@@ -152,7 +154,7 @@ namespace we
       {}
 
       template <typename Signature, typename PlaceId>
-      port ( const std::string & name
+      port ( const name_type & name
            , PortDirection direction
            , const Signature & signature
            , const PlaceId place_id
@@ -167,19 +169,19 @@ namespace we
 
       template <typename Signature, typename Dir>
       static
-      port create ( const std::string & name, const Signature & signature )
+      port create ( const name_type & name, const Signature & signature )
       {
         return port<Signature, IdType, Traits> ( name, Dir::value, signature );
       }
 
       template <typename Signature, typename PlaceId, typename Dir>
       static
-      port create ( const std::string & name, const Signature & signature, const PlaceId place_id )
+      port create ( const name_type & name, const Signature & signature, const PlaceId place_id )
       {
         return port<Signature, IdType, Traits> ( name, Dir::value, signature, place_id );
       }
 
-      const std::string & name() const { return name_; }
+      const name_type & name() const { return name_; }
       PortDirection direction() const { return direction_; }
       const sig_type & signature() const { return signature_; }
       const pid_type & associated_place() const { return associated_place_; }
@@ -190,7 +192,7 @@ namespace we
       inline bool is_output (void) const { return direction_ == PORT_OUT || direction_ == PORT_IN_OUT; }
       inline bool has_associated_place (void) const { return associated_place_ != pid_traits::invalid(); }
     private:
-      std::string name_;
+      name_type name_;
       PortDirection direction_;
       sig_type signature_;
       //! associated to a place within a network, only reasonable for transitions with a subnet
