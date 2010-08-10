@@ -9,7 +9,7 @@ logger_path::logger_path ()
 
 logger_path::logger_path (const std::string & a_path)
 {
-  split(a_path, ".", std::back_inserter(path_));
+  split(a_path, SEPERATOR(), std::back_inserter(path_));
 }
 
 logger_path::logger_path (const logger_path & a_path)
@@ -33,7 +33,7 @@ std::string logger_path::str(void) const
 
   while (it != path_.end())
   {
-    sstr << "." << *it;
+    sstr << SEPERATOR() << *it;
     ++it;
   }
 
@@ -43,6 +43,6 @@ std::string logger_path::str(void) const
 void logger_path::str(const std::string & s)
 {
   path_type p;
-  split (s, ".", std::back_inserter(p));
+  split (s, SEPERATOR(), std::back_inserter(p));
   path_ = p;
 }

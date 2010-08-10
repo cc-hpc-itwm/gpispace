@@ -28,5 +28,18 @@ int main()
     }
   }
 
+  {
+    std::stringstream sstr;
+    sstr << p;
+    logger_path p_in;
+    sstr >> p_in;
+
+    if (p_in != p)
+    {
+      std::cerr << "*** failed: expected: " << p << " got: " << p_in << std::endl;
+      errcount += 1;
+    }
+  }
+
   return errcount;
 }

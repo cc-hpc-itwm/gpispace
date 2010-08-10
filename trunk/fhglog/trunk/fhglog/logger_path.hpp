@@ -14,6 +14,12 @@ namespace fhg
     public:
       typedef std::vector<std::string> path_type;
 
+      static const std::string & SEPERATOR()
+      {
+        static std::string s (".");
+        return s;
+      }
+
       logger_path ();
       // non-explicit
       logger_path (const std::string & a_path);
@@ -24,7 +30,7 @@ namespace fhg
       logger_path & operator/(T const & t)
       {
         fhg::log::split( boost::lexical_cast<std::string>(t)
-                       , "."
+                       , SEPERATOR()
                        , std::back_inserter (path_)
                        );
         return *this;
@@ -73,6 +79,21 @@ namespace fhg
       s >> str;
       p.str(str);
       return s;
+    }
+
+    inline bool operator==(const logger_path & a, const logger_path & b)
+    {
+      return a.str() == b.str();
+    }
+
+    inline bool operator!=(const logger_path & a, const logger_path & b)
+    {
+      return ! (a == b);
+    }
+
+    inline bool operator<(const logger_path & a, const logger_path & b)
+    {
+      return (a.str() < b.str());
     }
   }
 }
