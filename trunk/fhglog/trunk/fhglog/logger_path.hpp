@@ -1,0 +1,80 @@
+#ifndef FHG_LOG_LOGGER_PATH_HPP
+#define FHG_LOG_LOGGER_PATH_HPP 1
+
+#include <fhglog/util.hpp>
+#include <vector>
+#include <boost/lexical_cast.hpp>
+
+namespace fhg
+{
+  namespace log
+  {
+    class logger_path
+    {
+    public:
+      typedef std::vector<std::string> path_type;
+
+      logger_path ();
+      // non-explicit
+      logger_path (const std::string & a_path);
+      logger_path (const logger_path & a_path);
+      logger_path (const path_type & a_path);
+
+      template <typename T>
+      logger_path & operator/(T const & t)
+      {
+        fhg::log::split( boost::lexical_cast<std::string>(t)
+                       , "."
+                       , std::back_inserter (path_)
+                       );
+        return *this;
+      }
+
+      logger_path & operator/(logger_path const & p)
+      {
+        std::copy ( p.path_.begin()
+                  , p.path_.end()
+                  , std::back_inserter(path_)
+                  );
+        return *this;
+      }
+
+      std::string str(void) const;
+      void str(const std::string &);
+
+      operator std::string () { return str(); }
+
+      const std::string & operator[] (const std::size_t idx) const
+      {
+        return path_[idx];
+      }
+
+      std::string & operator[] (const std::size_t idx)
+      {
+        return path_[idx];
+      }
+    private:
+      path_type path_;
+    };
+
+    inline std::ostream & operator << ( std::ostream & s
+                                      , const logger_path & p
+                                      )
+    {
+      s << p.str();
+      return s;
+    }
+
+    inline std::istream & operator >> ( std::istream & s
+                                      , logger_path & p
+                                      )
+    {
+      std::string str;
+      s >> str;
+      p.str(str);
+      return s;
+    }
+  }
+}
+
+#endif
