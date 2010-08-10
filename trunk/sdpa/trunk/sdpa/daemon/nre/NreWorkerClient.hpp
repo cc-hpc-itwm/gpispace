@@ -392,11 +392,30 @@ namespace sdpa { namespace nre { namespace worker {
       boost::unique_lock<boost::recursive_mutex> lock(msg_mtx_);
       std::string encoded_message(codec_.encode(m));
       DLOG(TRACE, "sending " << encoded_message.size() << " bytes of data to " << nre_worker_endpoint_ << ": " << encoded_message);
-      socket_->async_send_to(boost::asio::buffer(encoded_message)
-                           , nre_worker_endpoint_
-                           , boost::bind(&NreWorkerClient::handle_send_to, this
-                           , boost::asio::placeholders::error
-                           , boost::asio::placeholders::bytes_transferred));
+
+      boost::system::error_code ec;
+      std::size_t bytes_sent
+        (socket_->send_to( boost::asio::buffer( encoded_message
+                                              , encoded_message.size()
+                                              )
+                         , nre_worker_endpoint_
+                         , 0
+                         , ec
+                         )
+        );
+
+      LOG_IF( ERROR
+            , bytes_sent != encoded_message.size()
+            , "not all data could be sent: " << bytes_sent << "/" << encoded_message.size()
+            );
+
+      if (ec.value() != boost::system::errc::success)
+      {
+        LOG( ERROR
+           , "could not deliver message: " << ec << ": " << ec.message()
+           );
+        throw boost::system::system_error (ec);
+      }
     }
 
     template <class T> struct counter_mgr
