@@ -23,6 +23,8 @@
 
 #include <fhg/util/maybe.hpp>
 
+#include <rewrite/validprefix.hpp>
+
 namespace xml
 {
   namespace parse
@@ -427,7 +429,9 @@ namespace xml
 
         if (fun.name.isJust())
           {
-            if (*fun.name != trans.name && has_valid_prefix (trans.name))
+            if (  (*fun.name != trans.name)
+               && (!rewrite::has_magic_prefix (trans.name))
+               )
               {
                 state.warn ( warning::overwrite_function_name_trans
                              ( *fun.name
@@ -459,7 +463,7 @@ namespace xml
           { // unfold
 
             // set a prefix
-            const std::string prefix ("_" + trans.name + "_");
+            const std::string prefix (rewrite::mk_prefix (trans.name));
             const Net & net_old (boost::get<Net> (fun.f));
             const Net & net_new (set_prefix (net_old, prefix));
 

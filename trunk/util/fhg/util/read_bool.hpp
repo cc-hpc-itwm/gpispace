@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_FHG_UTIL_READ_BOOL_HPP
-#define _XML_FHG_UTIL_READ_BOOL_HPP
+#ifndef _FHG_UTIL_READ_BOOL_HPP
+#define _FHG_UTIL_READ_BOOL_HPP 1
 
 #include <boost/unordered_set.hpp>
 

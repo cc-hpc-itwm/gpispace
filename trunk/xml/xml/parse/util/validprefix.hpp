@@ -7,6 +7,8 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <rewrite/validprefix.hpp>
+
 namespace xml
 {
   namespace parse
@@ -16,32 +18,12 @@ namespace xml
                                        , const boost::filesystem::path & path
                                        )
     {
-      const std::string::const_iterator end (name.end());
-      const std::string::const_iterator pos (name.begin());
-
-      if (pos != end)
+      if (rewrite::has_magic_prefix (name))
         {
-          if (*pos == '_')
-            {
-              throw error::invalid_prefix (name, type, path);
-            }
+          throw error::invalid_prefix (name, type, path);
         }
 
       return name;
-    }
-
-    inline bool has_valid_prefix (const std::string & name)
-    {
-      try
-        {
-          validate_prefix (name, std::string(), boost::filesystem::path());
-
-          return true;
-        }
-      catch (const error::invalid_prefix &)
-        {
-          return false;
-        }
     }
   }
 }

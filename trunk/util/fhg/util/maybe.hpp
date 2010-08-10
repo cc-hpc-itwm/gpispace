@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_FHG_UTIL_MAYBE_HPP
-#define _XML_FHG_UTIL_MAYBE_HPP
+#ifndef _FHG_UTIL_MAYBE_HPP
+#define _FHG_UTIL_MAYBE_HPP 1
 
 #include <fhg/util/show.hpp>
 

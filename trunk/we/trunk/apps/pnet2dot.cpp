@@ -8,57 +8,20 @@
 #include <boost/program_options.hpp>
 #include <boost/function.hpp>
 
-// ************************************************************************* //
-
-template<typename IT>
-static bool
-generic_starts_with ( IT pos_p, const IT end_p
-                    , IT pos_x, const IT end_x
-                    )
-{
-  while (pos_p != end_p && pos_x != end_x)
-    {
-      if (*pos_p != *pos_x)
-        {
-          return false;
-        }
-
-      ++pos_p;
-      ++pos_x;
-    }
-
-  if (pos_p == end_p)
-    {
-      return true;
-    }
-
-  return false;
-}
-
-static bool
-starts_with (const std::string & p, const std::string & x)
-{
-  return generic_starts_with (p.begin(), p.end(), x.begin(), x.end());
-}
-
-static bool
-ends_with (const std::string & s, const std::string & x)
-{
-  return generic_starts_with (s.rbegin(), s.rend(), x.rbegin(), x.rend());
-}
+#include <fhg/util/starts_with.hpp>
 
 // ************************************************************************* //
 
 template<typename T>
 bool name_not_starts_with (const std::string & p, const T & x)
 {
-  return !starts_with (p, x.name());
+  return !fhg::util::starts_with (p, x.name());
 }
 
 template<typename T>
 bool name_not_ends_with (const std::string & s, const T & x)
 {
-  return !ends_with (s, x.name());
+  return !fhg::util::ends_with (s, x.name());
 }
 
 // ************************************************************************* //
