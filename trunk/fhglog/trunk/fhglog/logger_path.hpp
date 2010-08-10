@@ -59,6 +59,16 @@ namespace fhg
       {
         return path_[idx];
       }
+
+      std::size_t size() const
+      {
+        return path_.size();
+      }
+
+      bool empty() const
+      {
+        return path_.empty();
+      }
     private:
       path_type path_;
     };
