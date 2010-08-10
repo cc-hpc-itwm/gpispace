@@ -25,11 +25,13 @@ using namespace fhg::log;
 
 FileAppender::FileAppender(const std::string &a_name
                          , const std::string &a_path
+                          , const std::string &fmt
                          , int flush_interval
                          , const std::ios_base::openmode &a_mode) throw (std::exception)
   : Appender(a_name)
   , path_(a_path)
   , stream_()
+  , fmt_(fmt)
   , mode_(a_mode)
   , flush_interval_(flush_interval)
   , event_count_(0)
@@ -68,7 +70,7 @@ void FileAppender::flush() throw ()
 
 void FileAppender::close() throw (std::exception)
 {
-  stream_.close();  
+  stream_.close();
 }
 
 void FileAppender::open() throw (std::exception)
@@ -89,7 +91,7 @@ void FileAppender::reopen() throw (std::exception)
 
 void FileAppender::append(const LogEvent &evt)
 {
-  stream_ << getFormat()->format(evt);
+  stream_ << format(fmt_, evt);
   if (++event_count_ >= flush_interval_)
     flush();
 }

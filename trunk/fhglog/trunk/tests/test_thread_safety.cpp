@@ -56,7 +56,7 @@ int main (int , char **)
   logger_t root(getLogger());
 
   std::ostringstream logstream;
-  root.addAppender(Appender::ptr_t(new SynchronizedAppender(new StreamAppender("stringstream", logstream))));
+  root.addAppender(Appender::ptr_t(new SynchronizedAppender(new StreamAppender("stringstream", logstream, "%m"))));
 
   {
     std::clog << "** testing multiple threads...";

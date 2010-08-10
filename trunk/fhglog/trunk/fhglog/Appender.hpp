@@ -13,23 +13,14 @@ namespace fhg { namespace log {
 
       virtual void append(const LogEvent &evt) = 0;
 
-      virtual inline void setFormat(const Formatter::ptr_t &fmt) { fmt_ = fmt; }
-      // takes ownership!
-      virtual inline void setFormat(Formatter *fmt) { fmt_ = Formatter::ptr_t(fmt); }
-      virtual inline const Formatter::ptr_t &getFormat() const { return fmt_; }
-
       const std::string &name() const { return name_; }
-
-      Appender &operator<<(const LogEvent &evt) { this->append(evt); return *this; }
     protected:
       explicit
       Appender(const std::string &a_name)
-        : name_(a_name), fmt_(Formatter::Default())
-      {
-      }
+        : name_(a_name)
+      { }
     private:
       std::string name_;
-      Formatter::ptr_t fmt_;
   };
 }}
 

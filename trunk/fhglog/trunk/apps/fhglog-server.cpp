@@ -24,6 +24,7 @@
 #include <fhglog/util.hpp>
 #include <fhglog/remote/LogServer.hpp>
 #include <fhglog/FilteringAppender.hpp>
+#include <fhglog/format.hpp>
 #include <boost/program_options.hpp>
 
 boost::asio::io_service io_service;
@@ -111,10 +112,11 @@ int main(int argc, char **argv)
   fhg::log::getLogger().addAppender
     (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( "console"
                                                             , std::clog
+                                                            , fhg::log::default_format::SHORT()
                                                             , color != "no"
                                                             )
                                )
-    )->setFormat(fhg::log::Formatter::Default());
+    );
 
   fhg::log::LogLevel level (fhg::log::LogLevel::INFO);
   if (vm.count("quiet"))
@@ -142,17 +144,21 @@ int main(int argc, char **argv)
 
   fhg::log::getLogger().setLevel (level);
 
+  std::string fmt (fhg::log::default_format::SHORT());
+
+  if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
+  else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
+  else                            fmt = fhg::log::default_format::SHORT();
+  fhg::log::check_format (fmt);
+
   // remote messages go to stdout
   fhg::log::Appender::ptr_t appender
     (new fhg::log::StreamAppender( "console"
                                  , std::cout
+                                 , fmt
                                  , color != "no"
                                  )
     );
-
-  if      (fmt_string == "full")  appender->setFormat(fhg::log::Formatter::Full());
-  else if (fmt_string == "short") appender->setFormat(fhg::log::Formatter::Short());
-  else                            appender->setFormat(fhg::log::Formatter::Custom(fmt_string));
 
   appender = fhg::log::Appender::ptr_t
     ( new fhg::log::FilteringAppender ( appender

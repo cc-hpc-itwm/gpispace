@@ -31,8 +31,8 @@ int main (int , char **)
   log.setLevel(LogLevel::MIN_LEVEL);
 
   FileAppender::ptr_t file_app(new FileAppender("logfile"
-                                              , "test_file_appender.cpp.log"));
-  file_app->setFormat(Formatter::Custom("%m"));
+                                              , "test_file_appender.cpp.log"
+                                               , "%m"));
   log.addAppender(file_app);
 
   {
@@ -109,8 +109,7 @@ int main (int , char **)
     std::clog << "** testing reopening file appender with different path...";
     try
     {
-      FileAppender::ptr_t foo(new FileAppender("appender-to-foo", "foo.log"));
-      foo->setFormat(Formatter::Custom("%m"));
+      FileAppender::ptr_t foo(new FileAppender("appender-to-foo", "foo.log", "%m"));
 
       {
         std::ifstream ifs("foo.log");

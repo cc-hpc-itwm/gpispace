@@ -38,7 +38,7 @@ int main (int, char **)
   logger_t log(getLogger());
 
   std::ostringstream logstream;
-  log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream)))->setFormat(Formatter::Custom("%m"));
+  log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream, "%m")));
 
   {
     std::clog << "** testing manual event appending...";

@@ -18,21 +18,22 @@
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
+#include <fhglog/format.hpp>
 
 class VectorAppender : public fhg::log::Appender
 {
 public:
   typedef std::vector<std::string> container_type;
 
-  VectorAppender(const std::string &a_name, container_type & vec)
+  VectorAppender(const std::string &a_name, container_type & vec, const std::string & fmt)
     : fhg::log::Appender(a_name)
     , vec_ (vec)
+    , fmt_(fmt)
   {}
 
   void append(const fhg::log::LogEvent &evt)
   {
-    const std::string s (fhg::log::Appender::getFormat()->format(evt));
-    vec_.push_back (s);
+    vec_.push_back (fhg::log::format(fmt_, evt));
   }
 
   const container_type & list () const
@@ -42,6 +43,7 @@ public:
 
 private:
   container_type & vec_;
+  std::string fmt_;
 };
 
 template <typename T>
@@ -61,7 +63,7 @@ static int test_every_n (const size_t N, const size_t Num = 100)
   log.setLevel (LogLevel::MIN_LEVEL);
 
   VectorAppender::container_type vec;
-  log.addAppender(Appender::ptr_t(new VectorAppender("vectorappender", vec)))->setFormat(Formatter::Custom("%m"));
+  log.addAppender(Appender::ptr_t(new VectorAppender("vectorappender", vec, "%m")));
 
   {
     std::clog << "** testing appending only every " << N << " events...";
@@ -97,7 +99,7 @@ int main (int , char **)
   log.setLevel (LogLevel::MIN_LEVEL);
 
   VectorAppender::container_type vec;
-  log.addAppender(Appender::ptr_t(new VectorAppender("vectorappender", vec)))->setFormat(Formatter::Custom("%m"));
+  log.addAppender(Appender::ptr_t(new VectorAppender("vectorappender", vec, "%m")));
 
 //   {
 //     const size_t N (1);

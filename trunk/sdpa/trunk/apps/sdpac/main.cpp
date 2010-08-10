@@ -134,9 +134,10 @@ int main (int argc, char **argv) {
         (fhg::log::Appender::ptr_t
         (new fhg::log::FileAppender( "logfile"
                                    , cfg.get<std::string>("logging.file")
+                                   , "%t %s: %l %p:%L - %m%n"
                                    )
         )
-        )->setFormat (fhg::log::Formatter::Custom("%t %s: %l %p:%L - %m%n"));
+        );
     }
     catch (const std::exception &ex)
     {
@@ -146,9 +147,13 @@ int main (int argc, char **argv) {
 
   if (cfg.is_set("logging.tostderr"))
   {
-    fhg::log::getLogger().addAppender(
-      fhg::log::Appender::ptr_t(
-        new fhg::log::StreamAppender("console", std::cerr)))->setFormat(fhg::log::Formatter::Custom("%s: %p:%L - %m%n"));
+    fhg::log::getLogger().addAppender
+      (fhg::log::Appender::ptr_t(new fhg::log::StreamAppender( "console"
+                                                             , std::cerr
+                                                             , "%s: %p:%L - %m%n"
+                                                             )
+                                )
+      );
   }
   if (cfg.is_set("quiet"))
   {

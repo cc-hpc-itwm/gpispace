@@ -41,19 +41,6 @@ namespace fhg { namespace log {
 
       virtual ~DecoratingAppender() {}
 
-      virtual inline void setFormat(Formatter *fmt)
-      {
-        real_appender_->setFormat(fmt);
-      }
-      virtual inline void setFormat(const Formatter::ptr_t &fmt)
-      {
-        real_appender_->setFormat(fmt);
-      }
-      virtual inline const Formatter::ptr_t &getFormat() const
-      {
-        return real_appender_->getFormat();
-      }
-
       virtual void append(const LogEvent &evt)
       {
         real_appender_->append(evt);

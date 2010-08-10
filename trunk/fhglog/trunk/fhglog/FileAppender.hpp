@@ -23,8 +23,8 @@
 #include <fstream>
 #include <stdexcept>
 
+#include <fhglog/format.hpp>
 #include <fhglog/Appender.hpp>
-
 
 namespace fhg { namespace log {
   class FileAppender : public Appender
@@ -32,10 +32,15 @@ namespace fhg { namespace log {
   public:
     typedef shared_ptr<FileAppender> ptr_t;
 
-    FileAppender(const std::string &a_name
-               , const std::string &a_path
-               , int flush_interval = 5
-               , const std::ios_base::openmode &a_mode = std::ios_base::out | std::ios_base::app | std::ios_base::binary) throw (std::exception);
+    FileAppender( const std::string &a_name
+                , const std::string &a_path
+                , const std::string &fmt = default_format::LONG()
+                , int flush_interval = 5
+                , const std::ios_base::openmode &a_mode
+                    = std::ios_base::out
+                    | std::ios_base::app
+                    | std::ios_base::binary
+                ) throw (std::exception);
     virtual ~FileAppender() throw();
 
     const std::string &path() const
@@ -67,6 +72,7 @@ namespace fhg { namespace log {
   private:
     std::string path_;
     std::ofstream stream_;
+    std::string fmt_;
     std::ios_base::openmode mode_;
     int flush_interval_;
     mutable int event_count_;

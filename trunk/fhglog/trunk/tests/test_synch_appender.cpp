@@ -30,7 +30,7 @@ int main (int , char **)
   log.setLevel(LogLevel::MIN_LEVEL);
 
   std::ostringstream logstream;
-  log.addAppender(Appender::ptr_t(new SynchronizedAppender(new StreamAppender("stringstream", logstream))))->setFormat(Formatter::Custom("%m"));
+  log.addAppender(Appender::ptr_t(new SynchronizedAppender(new StreamAppender("stringstream", logstream, "%m"))));
 
   {
     std::clog << "** testing event appending (one appender)...";

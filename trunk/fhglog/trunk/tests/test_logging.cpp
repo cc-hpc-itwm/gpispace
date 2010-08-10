@@ -64,8 +64,8 @@ int main(int argc, char **argv)
   }
   std::cerr << "the log-level has been set to: " << logger.getLevel().str() << "(" << logger.getLevel().lvl() << ")" << std::endl;
 
-  root.addAppender(Appender::ptr_t(new StreamAppender("console-long", std::cerr)))->setFormat(Formatter::Default());
-  logger.addAppender(Appender::ptr_t(new StreamAppender("console-short", std::cerr)))->setFormat(Formatter::Full());
+  root.addAppender(Appender::ptr_t(new StreamAppender("console-long", std::cerr, default_format::LONG())));
+  logger.addAppender(Appender::ptr_t(new StreamAppender("console-short", std::cerr, default_format::SHORT())));
 
   LOG(INFO, "this is a very small info message");
 

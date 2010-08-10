@@ -28,13 +28,12 @@ int main (int , char **)
   int errcount(0);
 
   std::ostringstream logstream;
-  Appender::ptr_t streamAppender(new StreamAppender("stream", logstream));
+  Appender::ptr_t streamAppender(new StreamAppender("stream", logstream, "%m"));
 
   {
     std::clog << "** testing level filter with filtering appender...";
     Filter::ptr_t filter(new LevelFilter(LogLevel::ERROR));
     Appender::ptr_t appender(new FilteringAppender(streamAppender, filter));
-    appender->setFormat(Formatter::Custom("%m"));
 
     appender->append(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
     if (! logstream.str().empty())

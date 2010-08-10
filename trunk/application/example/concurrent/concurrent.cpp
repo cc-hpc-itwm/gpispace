@@ -27,7 +27,7 @@ static void fun ( void *
   const long & x (get<long>(input, "x"));
   const long & id (get<long>(input, "id"));
 
-  MLOG (DEBUG, fun << ": " << id);
+  MLOG (DEBUG, "fun : " << id);
 
   ++call_cnt_map[x];
 
@@ -95,7 +95,7 @@ static void D ( void *
 }
 
 static void finalize ( void *
-                     , const we::loader::input_t & input
+                     , const we::loader::input_t &
                      , we::loader::output_t & output
                      )
 {

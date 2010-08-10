@@ -34,8 +34,8 @@ int main (int , char **)
   {
 	CompoundAppender::ptr_t compound(new CompoundAppender("compound-appender"));
 
-	compound->addAppender(Appender::ptr_t(new StreamAppender("s1", logstream)))->setFormat(Formatter::Custom("%m"));
-	compound->addAppender(Appender::ptr_t(new StreamAppender("s2", logstream)))->setFormat(Formatter::Custom("%m"));
+	compound->addAppender(Appender::ptr_t(new StreamAppender("s1", logstream, "%m")));
+	compound->addAppender(Appender::ptr_t(new StreamAppender("s2", logstream, "%m")));
 
 	log.addAppender(compound);
 

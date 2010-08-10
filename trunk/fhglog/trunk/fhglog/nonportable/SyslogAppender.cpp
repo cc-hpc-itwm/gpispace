@@ -17,10 +17,10 @@
  */
 
 #include "SyslogAppender.hpp"
-
+#include <fhglog/format.hpp>
 using namespace fhg::log;
 
 void SyslogAppender::append(const fhg::log::LogEvent &evt)
 {
-  syslog(evt.severity().lvl(), "%s", getFormat()->format(evt).c_str());
+  syslog(evt.severity().lvl(), "%s", format(fmt_, evt).c_str());
 }

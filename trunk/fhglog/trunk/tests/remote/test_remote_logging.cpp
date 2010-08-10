@@ -50,7 +50,7 @@ int main ()
   logger_t log(getLogger());
   logger_t rem(getLogger("remote"));
 
-  log.addAppender(Appender::ptr_t(new StreamAppender("console", std::clog)));
+  log.addAppender(Appender::ptr_t(new StreamAppender("console", std::clog, "%m")));
   rem.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)));
 
   CompoundAppender::ptr_t compound(new CompoundAppender("compound"));
@@ -59,11 +59,11 @@ int main ()
   Appender::ptr_t appender
     (new StreamAppender( "stringstream"
                        , logstream
+                       , "%m"
                        )
     );
   compound->addAppender (appender);
   compound->addAppender (Appender::ptr_t(new StopAppender (io_service)));
-  compound->setFormat(Formatter::Custom("%m"));
 
   fhg::log::shared_ptr<fhg::log::remote::LogServer> logd
     (new fhg::log::remote::LogServer ( compound

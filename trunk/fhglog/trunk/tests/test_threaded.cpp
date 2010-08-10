@@ -35,10 +35,9 @@ int main (int , char **)
   {
     std::clog << "** testing event appending (one appender, threaded)...";
 
-	Appender::ptr_t s1(new StreamAppender("s1", logstream));
+        Appender::ptr_t s1(new StreamAppender("s1", logstream, "%m"));
 
 	ThreadedAppender::ptr_t threaded_appender(new ThreadedAppender(s1));
-	threaded_appender->setFormat(Formatter::Custom("%m"));
 
 	log.addAppender(threaded_appender);
 

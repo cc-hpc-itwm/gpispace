@@ -32,21 +32,23 @@ namespace fhg { namespace log {
   class SyslogAppender : public Appender
   {
   public:
-    SyslogAppender(const std::string &ident, int options, int facility)
+    SyslogAppender(const std::string &ident, std::string const & fmt, int options, int facility)
       : Appender(ident)
+      , fmt_(fmt)
       , options_(options)
       , facility_(facility)
     {
-      openlog(name().c_str(), options, facility); 
+      openlog(name().c_str(), options, facility);
     }
 
     virtual ~SyslogAppender()
     {
       closelog();
     }
-    
+
     void append(const fhg::log::LogEvent &);
   private:
+    std::string fmt_;
     int options_;
     int facility_;
   };

@@ -35,8 +35,7 @@ int main (int , char **)
   {
     std::clog << "** testing serialized event appending performance...";
 
-	Appender::ptr_t null(new NullAppender("null"));
-	null->setFormat(Formatter::Custom("%m"));
+    Appender::ptr_t null(new NullAppender("null"));
 
 	log.addAppender(null);
 
@@ -61,7 +60,6 @@ int main (int , char **)
 	Appender::ptr_t null(new NullAppender("null"));
 
 	ThreadedAppender::ptr_t threaded_appender(new ThreadedAppender(null));
-	threaded_appender->setFormat(Formatter::Custom("%m"));
 
 	log.addAppender(threaded_appender);
 

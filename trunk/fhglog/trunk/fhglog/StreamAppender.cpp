@@ -17,12 +17,13 @@
  */
 
 #include    "StreamAppender.hpp"
+#include "format.hpp"
 #include "fileno.hpp" // fileno for streams
 #include "unistd.h"   // isatty
 
 using namespace fhg::log;
 
-std::string StreamAppender::colorControlCode (LogEvent::severity_type severity) const
+static std::string colorControlCode (LogEvent::severity_type severity)
 {
   switch (severity)
   {
@@ -43,8 +44,12 @@ std::string StreamAppender::colorControlCode (LogEvent::severity_type severity) 
   }
 }
 
-StreamAppender::StreamAppender(const std::string &a_name, std::ostream &stream, bool colored)
-  : Appender(a_name), stream_(stream), colored_(colored)
+StreamAppender::StreamAppender( const std::string &a_name
+                              , std::ostream &stream
+                              , std::string const &fmt
+                              , bool colored
+                              )
+  : Appender(a_name), stream_(stream), fmt_(fmt), colored_(colored)
 {
   int fd (fileno (stream));
   if (fd < 0) colored_ = false;
@@ -57,7 +62,7 @@ StreamAppender::append(const LogEvent &evt)
   if (colored_)
     stream_ << colorControlCode (evt.severity());
 
-  stream_ << getFormat()->format(evt);
+  stream_ << format(fmt_, evt);
 
   if (colored_)
     stream_ << "\033[0m";

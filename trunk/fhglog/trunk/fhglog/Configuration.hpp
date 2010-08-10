@@ -87,38 +87,61 @@ namespace fhg { namespace log {
 
       void configure()
       {
-        Formatter::ptr_t fmt(Formatter::Default());
+        std::string fmt (default_format::SHORT());
 
         if (fmt_string_.size())
         {
 #ifndef NDEBUG
           std::clog << "D: setting format to \"" << fmt_string_ << "\"" << std::endl;
 #endif
-          if      (fmt_string_ == "full")    fmt = Formatter::Full();
-          else if (fmt_string_ == "short")   fmt = Formatter::Short();
-          else if (fmt_string_ == "default") fmt = Formatter::Default();
-          else                               fmt = Formatter::Custom(fmt_string_);
+          if      (fmt_string_ == "full")    fmt = default_format::LONG();
+          else if (fmt_string_ == "short")   fmt = default_format::SHORT();
+          else if (fmt_string_ == "default") fmt = default_format::SHORT();
+          else                               fmt = fmt_string_;
+
+          check_format (fmt);
         }
 
 	CompoundAppender::ptr_t compound_appender(new CompoundAppender("auto-config-appender"));
 
 	if (STDERR() == to_console_)
 	{
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr, color_ != "no")))->setFormat(fmt);
+	  compound_appender->addAppender
+            (Appender::ptr_t(new StreamAppender( "console"
+                                               , std::cerr
+                                               , fmt
+                                               , color_ != "no"
+                                               )
+                            )
+            );
 #ifndef NDEBUG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
 	else if (STDOUT() == to_console_)
 	{
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cout, color_ != "no")))->setFormat(fmt);
+	  compound_appender->addAppender
+            (Appender::ptr_t(new StreamAppender( "console"
+                                               , std::cout
+                                               , fmt
+                                               , color_ != "no"
+                                               )
+                            )
+            );
 #ifndef NDEBUG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
 	else if (STDLOG() == to_console_)
 	{
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::clog, color_ != "no")))->setFormat(fmt);
+	  compound_appender->addAppender
+            (Appender::ptr_t(new StreamAppender( "console"
+                                               , std::clog
+                                               , fmt
+                                               , color_ != "no"
+                                               )
+                            )
+            );
 #ifndef NDEBUG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
@@ -126,14 +149,27 @@ namespace fhg { namespace log {
 	else if (to_console_.size() > 0)
 	{
 	  std::clog << "W: invalid value for configuration value to_console: " << to_console_ << " assuming stderr" << std::endl;
-	  compound_appender->addAppender(Appender::ptr_t(new StreamAppender("console", std::cerr, color_ != "no")))->setFormat(fmt);
+	  compound_appender->addAppender
+            (Appender::ptr_t(new StreamAppender( "console"
+                                               , std::cerr
+                                               , fmt
+                                               , color_ != "no"
+                                               )
+                            )
+            );
 	}
 
         if (to_file_.size())
         {
           try
           {
-            compound_appender->addAppender(Appender::ptr_t(new FileAppender("log-file", to_file_)))->setFormat(fmt);
+            compound_appender->addAppender
+              (Appender::ptr_t(new FileAppender( "log-file"
+                                               , to_file_
+                                               , default_format::LONG()
+                                               )
+                              )
+              );
 #ifndef NDEBUG
             std::clog << "D: logging to file: " << to_file_ << std::endl;
 #endif

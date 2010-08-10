@@ -23,12 +23,14 @@
 class FormattingNullAppender : public fhg::log::Appender
 {
   public:
-    FormattingNullAppender(const std::string &a_name) : fhg::log::Appender(a_name) {}
+  FormattingNullAppender(const std::string &a_name, const std::string & fmt) : fhg::log::Appender(a_name), fmt_(fmt) {}
 
     void append(const fhg::log::LogEvent &evt)
     {
-      fhg::log::Appender::getFormat()->format(evt);
+      format (fmt_, evt);
     }
+private:
+  std::string fmt_;
 };
 
 int main (int , char **)
@@ -92,7 +94,7 @@ int main (int , char **)
 
   {
     std::clog << "** testing formatting performance...";
-    log.addAppender(Appender::ptr_t(new FormattingNullAppender("null")))->setFormat(Formatter::Full());
+    log.addAppender(Appender::ptr_t(new FormattingNullAppender("null", default_format::LONG())));
     for (std::size_t count(0); count < 100000; ++count)
     {
       log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
@@ -103,7 +105,7 @@ int main (int , char **)
 
 
   std::ostringstream logstream;
-  log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream)))->setFormat(Formatter::Custom("%m"));
+  log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream, "%m")));
 
   {
     std::clog << "** testing event appending (one appender)...";
@@ -125,7 +127,7 @@ int main (int , char **)
   {
     std::clog << "** testing event appending (two appender)...";
     std::ostringstream logstream2;
-    log.addAppender(Appender::ptr_t(new StreamAppender("stringstream-2", logstream2)))->setFormat(Formatter::Custom("%m"));
+    log.addAppender(Appender::ptr_t(new StreamAppender("stringstream-2", logstream2, "%m")));
     FHGLOG_MKEVENT(evt, DEBUG, "hello world!");
     log.log(evt);
     if (logstream.str() != "hello world!" || logstream2.str() != "hello world!")

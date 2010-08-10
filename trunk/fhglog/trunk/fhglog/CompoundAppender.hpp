@@ -37,21 +37,6 @@ namespace fhg { namespace log {
 
       virtual ~CompoundAppender() {}
 
-      virtual inline void setFormat(Formatter *fmt)
-      {
-		Appender::setFormat(fmt);
-		setFormat(getFormat());
-      }
-
-      virtual inline void setFormat(const Formatter::ptr_t &fmt)
-      {
-		Appender::setFormat(fmt);
-		for (appender_list::iterator a(appenders_.begin()); a != appenders_.end(); ++a)
-		{
-		  (*a)->setFormat(fmt);
-		}
-      }
-
       virtual void append(const LogEvent &evt)
       {
 		for (appender_list::iterator a(appenders_.begin()); a != appenders_.end(); ++a)
