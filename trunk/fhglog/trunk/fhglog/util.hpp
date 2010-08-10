@@ -85,6 +85,19 @@ namespace fhg { namespace log {
     }
   }
 
+  template <typename OutputIterator>
+  inline void split ( const std::string & s
+                    , std::string const & sep
+                    , OutputIterator out
+                    )
+  {
+    if (s.empty())
+      return;
+    std::pair<std::string, std::string> h_t (split_string(s, sep));
+    *out++ = h_t.first;
+    split (h_t.second, sep, out);
+  }
+
   inline environment_t get_environment_variables()
   {
       environment_t env;
