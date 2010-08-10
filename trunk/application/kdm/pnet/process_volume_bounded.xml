@@ -86,7 +86,7 @@
     <place name="bunches_per_offset" type="long"/>
 
     <transition name="generate_bunch" inline="true">
-      <include-function href="generate_bunch.xml" />
+      <include-function href="generate_bunch_bounded.xml" />
       <place-map virtual="credit" real="trigger_generate_bunch"/>
       <connect-in place="volume_gen_bunch" port="volume" />
       <connect-in place="bunches_per_offset" port="amount" />

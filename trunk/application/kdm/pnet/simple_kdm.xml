@@ -79,7 +79,7 @@
 
     <transition name="loadTT" inline="true">
       <include-function href="loadTT.xml"/>
-      <connect-read place="config" port="config"/>
+      <place-map virtual="config" real="config"/>
       <connect-out port="trigger" place="loadTT_done"/>
       <connect-in port="trigger" place="trigger_loadTT"/>
     </transition>

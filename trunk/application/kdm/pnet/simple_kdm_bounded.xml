@@ -158,7 +158,7 @@
 
     <transition name="loadTT" inline="true">
       <include-function href="loadTT.xml"/>
-      <connect-read place="config" port="config"/>
+      <place-map virtual="config" real="config"/>
       <connect-out port="trigger" place="loadTT_done"/>
       <connect-in port="trigger" place="trigger_loadTT"/>
     </transition>
@@ -236,7 +236,7 @@
     <place name="offset" type="long"/>
 
     <transition name="generate_volume" inline="true">
-      <include-function href="generate_volume.xml"/>
+      <include-function href="generate_volume_bounded.xml"/>
       <place-map virtual="credit" real="credit_volume"/>
       <connect-in place="offset" port="offset" />
       <connect-in place="number_of_volumes" port="amount" />
