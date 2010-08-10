@@ -58,36 +58,46 @@ int main()
   int errcount(0);
 
   { // empty string -> empty path
+    std::cout << "*** Testing split(\"\")" << std::endl;
     std::string path_string;
     std::vector<std::string> path;
     fhg::log::split (path_string, ".", std::back_inserter(path));
     std::vector<std::string> expected;
-    check_sequence (path.begin(), path.end(), expected.begin(), expected.end(), default_handler<std::string>());
-    std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(std::cout, "."));
+    errcount += check_sequence ( path.begin(), path.end()
+                               , expected.begin(), expected.end()
+                               , default_handler<std::string>()
+                               );
   }
 
   // TODO: is this what we want?
   { // single . -> path[0] = ""
+    std::cout << "*** Testing split(\".\")" << std::endl;
     std::string path_string(".");
     std::vector<std::string> path;
     fhg::log::split (path_string, ".", std::back_inserter(path));
     std::vector<std::string> expected;
     expected.push_back("");
-    check_sequence (path.begin(), path.end(), expected.begin(), expected.end(), default_handler<std::string>());
-    std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(std::cout, "."));
+    errcount += check_sequence ( path.begin(), path.end()
+                               , expected.begin(), expected.end()
+                               , default_handler<std::string>()
+                               );
   }
 
   { // trailing .
+    std::cout << "*** Testing split(\"foo.\")" << std::endl;
     std::string path_string("foo.");
     std::vector<std::string> path;
     fhg::log::split (path_string, ".", std::back_inserter(path));
     std::vector<std::string> expected;
     expected.push_back("foo");
-    check_sequence (path.begin(), path.end(), expected.begin(), expected.end(), default_handler<std::string>());
-    std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(std::cout, "."));
+    errcount += check_sequence ( path.begin(), path.end()
+                               , expected.begin(), expected.end()
+                               , default_handler<std::string>()
+                               );
   }
 
   { // components
+    std::cout << "*** Testing split(\"fhg.log.logger.1\")" << std::endl;
     std::string path_string ("fhg.log.logger.1");
     std::vector<std::string> path;
     fhg::log::split (path_string, ".", std::back_inserter(path));
@@ -96,8 +106,10 @@ int main()
     expected.push_back("log");
     expected.push_back("logger");
     expected.push_back("1");
-    check_sequence (path.begin(), path.end(), expected.begin(), expected.end(), default_handler<std::string>());
-    std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(std::cout, "."));
+    errcount += check_sequence ( path.begin(), path.end()
+                               , expected.begin(), expected.end()
+                               , default_handler<std::string>()
+                               );
   }
 
   return errcount;
