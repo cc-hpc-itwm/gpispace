@@ -25,6 +25,8 @@
 
 #include <boost/serialization/nvp.hpp>
 
+#include <stack>
+
 namespace petri_net
 {
   namespace exception
@@ -755,17 +757,28 @@ public:
     // make the token deletion visible to delete_edge
     token_place_rel.delete_right (pid);
 
+    std::stack<eid_t> stack;
+
     for ( adj_transition_const_it tit (out_of_place (pid))
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge (tit());
+      {
+        stack.push (tit());
+      }
 
     for ( adj_transition_const_it tit (in_to_place (pid))
         ; tit.has_more()
         ; ++tit
         )
-      delete_edge (tit());
+      {
+        stack.push (tit());
+      }
+
+    while (!stack.empty())
+      {
+        delete_edge (stack.top()); stack.pop();
+      }
 
     pmap.erase (pid);
 
@@ -775,17 +788,28 @@ public:
   const tid_t & delete_transition (const tid_t & tid)
     throw (bijection::exception::no_such)
   {
+    std::stack<eid_t> stack;
+
     for ( adj_place_const_it pit (out_of_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge (pit());
+      {
+        stack.push (pit());
+      }
 
     for ( adj_place_const_it pit (in_to_transition (tid))
         ; pit.has_more()
         ; ++pit
         )
-      delete_edge (pit());
+      {
+        stack.push (pit());
+      }
+
+    while (!stack.empty())
+      {
+        delete_edge (stack.top()); stack.pop();
+      }
 
     tmap.erase (tid);
 
