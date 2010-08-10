@@ -94,7 +94,6 @@ namespace we { namespace type {
                                 )
                            )
                           {
-                            net.delete_edge (net.in_to_transition(tid)());
                             net.delete_transition (tid);
 
                             merge_places (net, pid_in, pid_out);
