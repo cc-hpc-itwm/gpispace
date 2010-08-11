@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
+#include <boost/program_options.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -55,6 +56,10 @@ public:
   tcp::socket & socket ()
   {
     return socket_;
+  }
+
+  ~session_t ()
+  {
   }
 
   boost::asio::ip::tcp::endpoint remote_endpoint () const
@@ -175,7 +180,7 @@ public:
 
     boost::system::error_code ec;
 
-    do
+    while (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
     {
       boost::asio::ip::tcp::endpoint endpoint (*endpoint_iterator);
       DLOG(TRACE, "trying to bind to " << endpoint);
@@ -200,15 +205,14 @@ public:
         }
       }
 
-      acceptor_.close();
       LOG(WARN, "could not bind to " << endpoint << " = " << ec.message() << ": " << ec);
-      ++endpoint_iterator;
-    } while (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator());
 
-    if (ec)
-    {
-      boost::asio::detail::throw_error (ec);
+      acceptor_.close();
+      ++endpoint_iterator;
     }
+
+    // throw remaining error if any
+    boost::asio::detail::throw_error (ec);
   }
 
 private:
@@ -243,22 +247,45 @@ private:
 
 int main(int ac, char *av[])
 {
+  namespace po = boost::program_options;
+
   FHGLOG_SETUP(ac,av);
 
-  std::string server_address ("localhost");
+  std::string server_address ("");
   std::string server_port ("1234");
+  bool reuse_address (true);
 
-  if (ac > 1)
+  po::options_description desc ("options");
+  desc.add_options()
+    ("help,h", "print this help")
+    ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
+    ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
+    ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
+    ;
+
+  po::variables_map vm;
+  try
   {
-    server_address = av[1];
+    po::store (po::parse_command_line (ac, av, desc), vm);
+    po::notify (vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    std::cerr << "try " << av[0] << " -h to get some help" << std::endl;
+    return EXIT_FAILURE;
   }
 
-  if (ac > 2)
+  if (vm.count ("help"))
   {
-    server_port = av[2];
+    std::cerr << "usage: " << av[0] << std::endl;
+    std::cerr << std::endl;
+    std::cerr << desc << std::endl;
+    return EXIT_SUCCESS;
   }
+
   boost::asio::io_service io_service;
-  tcp_server server (io_service, server_address, server_port);
+  tcp_server server (io_service, server_address, server_port, reuse_address);
   io_service.run();
   return 0;
 }
