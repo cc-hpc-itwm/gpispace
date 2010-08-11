@@ -16,6 +16,38 @@
 
 using boost::asio::ip::tcp;
 
+struct to_hex
+{
+  to_hex (std::string const & s)
+    : s_(s)
+  {}
+
+  std::ostream & operator << (std::ostream & os) const
+  {
+    std::string::const_iterator c (s_.begin());
+    std::ostringstream sstr;
+    sstr << std::hex;
+    while (c != s_.end())
+    {
+      sstr << "\\x"
+           << std::setfill ('0')
+           << std::setw (2)
+           << (int)(*c & 0xff)
+        ;
+      //      int i (*c & 0xff);
+      //      sstr << i;
+      ++c;
+    }
+    return os << sstr.str();
+  }
+  std::string const & s_;
+};
+
+inline std::ostream & operator << (std::ostream & os, const to_hex & h)
+{
+  return h.operator<<(os);
+}
+
 class basic_session
 {
 public:
@@ -123,7 +155,7 @@ private:
     }
     else
     {
-      LOG(WARN, "session closed: error := " << error);
+      LOG(WARN, "session closed: " << error.message() << ": " << error);
       manager_.del (shared_from_this());
     }
   }
@@ -134,15 +166,14 @@ private:
   {
     if (!error)
     {
-      DLOG(TRACE, "received " << bytes_recv << " bytes");
       std::string data(&inbound_data_[0], inbound_data_.size());
-      DLOG(INFO, "  data := " << data);
+      DLOG(TRACE, "received " << bytes_recv << " bytes: " << to_hex (data));
 
       read_header ();
     }
     else
     {
-      LOG(ERROR, "session got error during chunk receive := " << error);
+      LOG(ERROR, "session got error during read: " << error.message() << ": " << error);
       manager_.del (shared_from_this());
     }
   }
