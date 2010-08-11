@@ -15,188 +15,13 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 
+#include <fhgcom/session_manager.hpp>
+#include <fhgcom/session.hpp>
+
 using boost::asio::ip::tcp;
 
-struct to_hex
-{
-  to_hex (std::string const & s, const std::size_t max_dump = 128)
-    : s_(s)
-    , max_(max_dump)
-  {}
-
-  std::ostream & operator << (std::ostream & os) const
-  {
-    std::string::const_iterator c (s_.begin());
-    std::ios_base::fmtflags flags(os.flags());
-    os << std::hex;
-    std::size_t cnt (0);
-    while (c != s_.end() && ++cnt <= max_)
-    {
-      os << "\\x"
-         << std::setfill ('0')
-         << std::setw (2)
-         << (int)(*c++ & 0xff)
-        ;
-    }
-    if (c != s_.end())
-    {
-      os << " ...";
-    }
-    os.flags (flags);
-    return os;
-  }
-  std::string const & s_;
-  const std::size_t max_;
-};
-
-inline std::ostream & operator << (std::ostream & os, const to_hex & h)
-{
-  return h.operator<<(os);
-}
-
-class basic_session
-{
-public:
-  virtual ~basic_session () {}
-  virtual boost::asio::ip::tcp::endpoint remote_endpoint () const = 0;
-  virtual boost::asio::ip::tcp::endpoint local_endpoint () const = 0;
-};
-
-typedef boost::shared_ptr<basic_session> basic_session_ptr;
-
-class session_manager
-{
-public:
-  void add (basic_session_ptr session)
-  {
-    LOG(INFO, "adding session between " << session->local_endpoint() << " and " << session->remote_endpoint());
-    sessions_.insert(session);
-  }
-
-  void del (basic_session_ptr session)
-  {
-    LOG(INFO, "removing session between " << session->local_endpoint() << " and " << session->remote_endpoint());
-    sessions_.erase(session);
-  }
-private:
-  std::set<basic_session_ptr> sessions_;
-};
-
-class session_t : public basic_session
-                , public boost::enable_shared_from_this<session_t>
-{
-public:
-  session_t (boost::asio::io_service & io_service, session_manager & manager)
-    : socket_(io_service)
-    , manager_(manager)
-  {}
-
-  tcp::socket & socket ()
-  {
-    return socket_;
-  }
-
-  ~session_t ()
-  {
-  }
-
-  boost::asio::ip::tcp::endpoint remote_endpoint () const
-  {
-    return socket_.remote_endpoint();
-  }
-  boost::asio::ip::tcp::endpoint local_endpoint () const
-  {
-    return socket_.local_endpoint();
-  }
-
-  void start ()
-  {
-    manager_.add (shared_from_this());
-    read_header ();
-  }
-
-private:
-  void read_header ()
-  {
-    DLOG(DEBUG, "trying to receive header of length " << header_length);
-    boost::asio::async_read ( socket_
-                            , boost::asio::buffer (inbound_header_)
-                            , boost::bind ( &session_t::handle_read_header
-                                          , shared_from_this()
-                                          , boost::asio::placeholders::error
-                                          , boost::asio::placeholders::bytes_transferred
-                                          )
-                            );
-  }
-
-  void handle_read_header ( const boost::system::error_code & error
-                          , size_t bytes_recv
-                          )
-  {
-    if (!error)
-    {
-      DLOG(DEBUG, "received " << bytes_recv << " bytes of header");
-      std::istringstream is (std::string (inbound_header_, header_length));
-      std::size_t inbound_data_size = 0;
-      if (! (is >> std::hex >> inbound_data_size))
-      {
-        LOG(ERROR, "could not parse header: " << std::string(inbound_header_, header_length));
-        manager_.del (shared_from_this());
-        // TODO: call handler
-        return;
-      }
-
-      DLOG(DEBUG, "going to receive " << inbound_data_size << " bytes");
-
-      inbound_data_.resize (inbound_data_size);
-
-      boost::asio::async_read ( socket_
-                              , boost::asio::buffer (inbound_data_)
-                              , boost::bind ( &session_t::handle_read_data
-                                            , shared_from_this()
-                                            , boost::asio::placeholders::error
-                                            , boost::asio::placeholders::bytes_transferred
-                                            )
-                              );
-    }
-    else
-    {
-      LOG(WARN, "session closed: " << error.message() << ": " << error);
-      manager_.del (shared_from_this());
-    }
-  }
-
-  void handle_read_data ( const boost::system::error_code & error
-                        , size_t bytes_recv
-                        )
-  {
-    if (!error)
-    {
-      std::string data(&inbound_data_[0], inbound_data_.size());
-      DLOG(TRACE, "received " << bytes_recv << " bytes: " << to_hex (data));
-
-      read_header ();
-    }
-    else
-    {
-      LOG(ERROR, "session got error during read: " << error.message() << ": " << error);
-      manager_.del (shared_from_this());
-    }
-  }
-
-  tcp::socket socket_;
-
-  enum { header_length = 8 }; // 8 hex chars -> 4 bytes
-
-  std::string outbound_header_;
-  std::string outbound_data_;
-
-  char inbound_header_[header_length];
-  std::vector<char> inbound_data_;
-
-  session_manager & manager_;
-};
-
+typedef boost::shared_ptr<fhg::com::basic_session> basic_session_ptr;
+typedef fhg::com::session session_t;
 typedef boost::shared_ptr<session_t> session_ptr;
 
 class tcp_server
@@ -279,7 +104,7 @@ private:
 
   boost::asio::io_service & io_service_;
   tcp::acceptor acceptor_;
-  session_manager manager_;
+  fhg::com::session_manager manager_;
 };
 
 int main(int ac, char *av[])
