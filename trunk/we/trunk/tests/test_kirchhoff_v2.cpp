@@ -114,7 +114,7 @@ static void marking (const pnet_t & n)
 {
   for (pnet_t::place_const_it p (n.places()); p.has_more(); ++p)
     {
-      cout << "{" 
+      cout << "{"
            << *p << ": "
            << n.num_token (*p) << ": "
            << n.get_place (*p) << ":"
@@ -135,8 +135,8 @@ class TransitionFunction
 private:
   const std::string name;
   const std::string expression;
-  const expr::parse::parser<signature::field_name_t> parser;
-  expr::eval::context<signature::field_name_t> context;
+  const expr::parse::parser parser;
+  expr::eval::context context;
 
   typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
   typedef boost::function<signature::type (const petri_net::pid_t &)> sig_t;
@@ -168,7 +168,7 @@ public:
         ; ++top
         )
       {
-        const token::type 
+        const token::type
           token (Function::Transition::get_token<token::type> (*top));
 
         const petri_net::pid_t
@@ -206,7 +206,7 @@ public:
       {
         const petri_net::pid_t pid (out->first);
 
-        typedef 
+        typedef
           Function::Transition::Traits<token::type>::token_on_place_t top_t;
 
         output.push_back (top_t (token::type ( translate (pid)
@@ -230,9 +230,9 @@ static petri_net::tid_t mk_transition ( pnet_t & net
                                       , const std::string & condition = "true"
                                       )
 {
-  return net.add_transition 
+  return net.add_transition
     ( transition_t ( name
-                   , condition::type 
+                   , condition::type
                      ( condition
                      , boost::bind(&place::name<pnet_t>, boost::ref(net), _1)
                      )
@@ -283,7 +283,7 @@ main (int argc, char ** argv)
       return EXIT_SUCCESS;
     }
 
-  cout 
+  cout
     << "OFFSETS               = " << OFFSETS << endl
     << "SUBVOLUMES_PER_OFFSET = " << SUBVOLUMES_PER_OFFSET << endl
     << "PACKAGES_PER_OFFSET   = " << PACKAGES_PER_OFFSET << endl
@@ -376,7 +376,7 @@ main (int argc, char ** argv)
       , "${off_try.state} >= ${off_try.num}"
       )
     );
-  
+
   net.add_edge (mk_edge(), connection_t (PT, tid_off_break, pid_off_try));
 
   petri_net::tid_t tid_off_step
@@ -389,7 +389,7 @@ main (int argc, char ** argv)
       , "${off_try.state} < ${off_try.num}"
       )
     );
-  
+
   net.add_edge (mk_edge(), connection_t (PT, tid_off_step, pid_off_try));
   net.add_edge (mk_edge(), connection_t (TP, tid_off_step, pid_off_to_work));
   net.add_edge (mk_edge(), connection_t (TP, tid_off_step, pid_off_state));
@@ -451,7 +451,7 @@ main (int argc, char ** argv)
       , "${pack_try.state.state} >= ${pack_try.state.num}"
       )
     );
-  
+
   net.add_edge (mk_edge(), connection_t (PT, tid_pack_break, pid_pack_try));
 
   petri_net::tid_t tid_pack_step
@@ -465,7 +465,7 @@ main (int argc, char ** argv)
       , "${pack_try.state.state} < ${pack_try.state.num}"
       )
     );
-  
+
   net.add_edge (mk_edge(), connection_t (PT, tid_pack_step, pid_pack_try));
   net.add_edge (mk_edge(), connection_t (TP, tid_pack_step, pid_pack_to_work));
   net.add_edge (mk_edge(), connection_t (TP, tid_pack_step, pid_pack_state));
@@ -527,7 +527,7 @@ main (int argc, char ** argv)
       , "${bunch_try.state.state} >= ${bunch_try.state.num}"
       )
     );
-  
+
   net.add_edge (mk_edge(), connection_t (PT, tid_bunch_break, pid_bunch_try));
 
   petri_net::tid_t tid_bunch_step
@@ -541,7 +541,7 @@ main (int argc, char ** argv)
       , "${bunch_try.state.state} < ${bunch_try.state.num}"
       )
     );
-  
+
   net.add_edge (mk_edge(), connection_t (PT, tid_bunch_step, pid_bunch_try));
   net.add_edge (mk_edge(), connection_t (TP, tid_bunch_step, pid_bunch_to_work));
   net.add_edge (mk_edge(), connection_t (TP, tid_bunch_step, pid_bunch_state));

@@ -27,11 +27,10 @@ namespace expr
 {
   namespace token
   {
-    template<typename Key, typename READER>
     struct tokenizer
     {
     public:
-      typedef std::vector<Key> key_vec_t;
+      typedef std::vector<std::string> key_vec_t;
     private:
       parse::position pos;
 
@@ -425,7 +424,7 @@ namespace expr
                           switch (*pos)
                             {
                             case '.':
-                              _ref.push_back (READER::read (_aref));
+                              _ref.push_back (_aref);
                               _aref.clear();
                               break;
                             default:
@@ -435,7 +434,7 @@ namespace expr
                           ++pos;
                         }
                       require ("}");
-                      _ref.push_back (READER::read (_aref));
+                      _ref.push_back (_aref);
                     }
                     break;
                   default: throw exception::parse::expected ("'{'", pos());
@@ -445,10 +444,7 @@ namespace expr
             }
       }
 
-      template<typename K, typename R>
-      friend std::ostream & operator << ( std::ostream &
-                                        , const tokenizer<K, R> &
-                                        );
+      friend std::ostream & operator << (std::ostream &, const tokenizer &);
 
     public:
       tokenizer ( unsigned int & _k
@@ -462,31 +458,17 @@ namespace expr
       const key_vec_t & get_ref (void) const { return _ref; }
     };
 
-    template<typename Key>
-    static std::string show_key_vec (const typename std::vector<Key> & key_vec)
+    static std::string show_key_vec (const std::vector<std::string> & key_vec)
     {
       std::string s;
 
-      for ( typename std::vector<Key>::const_iterator pos (key_vec.begin())
+      for ( std::vector<std::string>::const_iterator pos (key_vec.begin())
           ; pos != key_vec.end()
           ; ++pos
           )
         s += ((pos != key_vec.begin()) ? "." : "") + fhg::util::show (*pos);
 
       return s;
-    }
-
-    template<typename Key, typename R>
-    static std::ostream & operator << ( std::ostream & s
-                                      , const tokenizer<Key, R> & t
-                                      )
-    {
-      switch (*t)
-        {
-        case val: return s << t();
-        case ref: return s << "${" << show_key_vec (t.ref()) << "}";
-        default: return s << *t;
-        }
     }
   }
 }

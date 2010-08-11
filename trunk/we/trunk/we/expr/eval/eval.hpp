@@ -13,53 +13,75 @@ namespace expr
 {
   namespace eval
   {
-    template<typename Key>
-    value::type eval ( const parse::node::type<Key> & node
-                     , context<Key> & context
-                     )
+    namespace visitor
     {
-      switch (node.flag)
+      namespace node = expr::parse::node;
+
+      class eval : public boost::static_visitor<value::type>
+      {
+      private:
+        context & c;
+
+      public:
+        eval (context & _c) : c (_c) {}
+
+        value::type operator () (const value::type & v) const
         {
-        case expr::parse::node::flag::value: return node.value;
-        case expr::parse::node::flag::ref: return context.value (node.ref);
-        case expr::parse::node::flag::unary:
-          {
-            value::type c0 (eval (*node.child0, context));
+          return v;
+        }
 
-            return boost::apply_visitor ( value::function::unary (node.token)
-                                        , c0
-                                        );
-          }
-        case expr::parse::node::flag::binary:
-          if (is_define (node.token))
+        value::type operator () (const node::key_vec_t & key) const
+        {
+          return c.value (key);
+        }
+
+        value::type operator () (const node::unary_t & u) const
+        {
+          value::type c0 (boost::apply_visitor (*this, u.child));
+
+          return boost::apply_visitor ( value::function::unary (u.token)
+                                      , c0
+                                      );
+        }
+
+        value::type operator () (const node::binary_t & b) const
+        {
+          if (is_define (b.token))
             {
-              value::type c1 (eval (*node.child1, context));
+              value::type c1 (boost::apply_visitor (*this, b.r));
 
-              return context.bind ((*node.child0).ref, c1);
+              return c.bind (boost::get<node::key_vec_t>(b.l), c1);
             }
           else
             {
-              value::type c0 (eval (*node.child0, context));
-              value::type c1 (eval (*node.child1, context));
+              value::type c0 (boost::apply_visitor (*this, b.l));
+              value::type c1 (boost::apply_visitor (*this, b.r));
 
-              return boost::apply_visitor ( value::function::binary (node.token)
+              return boost::apply_visitor ( value::function::binary (b.token)
                                           , c0
                                           , c1
                                           );
             }
-        case expr::parse::node::flag::ternary:
-          if (node.token == expr::token::_ite)
+
+        }
+
+        value::type operator () (const node::ternary_t & t) const
+        {
+          if (t.token == expr::token::_ite)
             {
-              if (value::function::is_true (eval (*node.child0, context)))
-                return eval (*node.child1, context);
+              if ( value::function::is_true ( boost::apply_visitor ( *this
+                                                                   , t.child0
+                                                                   )
+                                            )
+                 )
+                return boost::apply_visitor (*this, t.child1);
               else
-                return eval (*node.child2, context);
+                return boost::apply_visitor (*this, t.child2);
             }
           else
             throw expr::exception::strange ("ternary but not ite");
-
-        default: throw parse::node::unknown();
         }
+      };
     }
   }
 }

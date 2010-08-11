@@ -68,7 +68,7 @@ namespace petri_net
     return (et == PT || et == PT_READ);
   }
 
-  static edge_type pt_read (void)
+  static inline edge_type pt_read (void)
   {
     return PT_READ;
   }

@@ -71,7 +71,7 @@ namespace module
     we::mgmt::type::detail::printer<activity_t, std::ostream> printer (act, std::cout);
 
     // construct context
-    typedef expr::eval::context <signature::field_name_t> context_t;
+    typedef expr::eval::context context_t;
     typedef activity_t::input_t input_t;
     typedef activity_t::output_t output_t;
     typedef activity_t::token_type token_type;

@@ -28,7 +28,7 @@ namespace we
   {
     class IModule;
 
-    typedef expr::eval::context <signature::field_name_t> input_t;
+    typedef expr::eval::context input_t;
     typedef std::vector <std::pair<value::type, std::string> > output_t;
 
     typedef void (*InitializeFunction)(IModule*, unsigned int);

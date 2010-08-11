@@ -20,6 +20,8 @@
 #include <deque>
 #include <boost/serialization/deque.hpp>
 
+#include <fhg/util/show.hpp>
+
 namespace Function { namespace Condition
 {
   typedef petri_net::pid_t pid_t;
@@ -78,8 +80,8 @@ namespace Function { namespace Condition
   private:
     typedef literal::type val_t;
     std::string expression;
-    expr::parse::parser<petri_net::pid_t> parser;
-    mutable expr::eval::context<petri_net::pid_t> context;
+    expr::parse::parser parser;
+    mutable expr::eval::context context;
   public:
     explicit Expression (const std::string & _expression)
       : expression (_expression)
@@ -98,7 +100,9 @@ namespace Function { namespace Condition
               ; choice.has_more()
               ; ++choice
               )
-            context.bind ((*choice).first, val_t ((*choice).second.first));
+            context.bind ( fhg::util::show ((*choice).first)
+                         , val_t ((*choice).second.first)
+                         );
 
           if (parser.eval_all_bool (context))
             return true;

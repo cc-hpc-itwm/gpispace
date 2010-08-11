@@ -488,7 +488,7 @@ namespace we { namespace mgmt { namespace visitor {
     result_type operator () (const we::type::expression_t & expr)
     {
       // construct context
-      typedef expr::eval::context <signature::field_name_t> context_t;
+      typedef expr::eval::context context_t;
       context_t context;
 
       typedef typename Activity::input_t input_t;

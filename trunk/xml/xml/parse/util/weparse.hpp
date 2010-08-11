@@ -17,7 +17,7 @@ namespace xml
   {
     namespace util
     {
-      typedef expr::parse::parser<std::string> we_parser_t;
+      typedef expr::parse::parser we_parser_t;
 
       inline std::string
       format_parse_error ( const std::string & input

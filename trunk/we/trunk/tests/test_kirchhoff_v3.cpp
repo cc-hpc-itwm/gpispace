@@ -125,14 +125,14 @@ static void marking (const pnet_t & n)
 
 // ************************************************************************* //
 
-typedef expr::eval::context<signature::field_name_t> context_t;
+typedef expr::eval::context context_t;
 
 class TransitionFunction
 {
 private:
   const std::string name;
   const std::string expression;
-  const expr::parse::parser<signature::field_name_t> parser;
+  const expr::parse::parser parser;
   context_t context;
 
   typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;

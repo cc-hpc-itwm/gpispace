@@ -29,7 +29,7 @@
 namespace we { namespace type {
   struct expression_t
   {
-    typedef expr::parse::parser<std::string> ast_t;
+    typedef expr::parse::parser ast_t;
 
     expression_t ()
       : expr_("")

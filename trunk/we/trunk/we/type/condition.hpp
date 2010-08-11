@@ -37,9 +37,9 @@ namespace condition
   {
   private:
     std::string expression_;
-    typedef expr::parse::parser<signature::field_name_t> parser_t;
+    typedef expr::parse::parser parser_t;
     parser_t parser;
-    typedef expr::eval::context<signature::field_name_t> context_t;
+    typedef expr::eval::context context_t;
     mutable context_t context;
 
     typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
@@ -59,7 +59,7 @@ namespace condition
     void load(Archive & ar, const unsigned int) const
     {
       ar & BOOST_SERIALIZATION_NVP(expression_);
-      parser = expr::parse::parser<signature::field_name_t>(expression_);
+      parser = expr::parse::parser(expression_);
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -114,7 +114,7 @@ namespace condition
     {
       return expression_;
     }
-    
+
     bool is_const_true () const
     {
       try
@@ -127,7 +127,7 @@ namespace condition
         {
           return false;
         }
-      catch (const expr::exception::eval::missing_binding<signature::field_name_t> &)
+      catch (const expr::exception::eval::missing_binding &)
         {
           return false;
         }

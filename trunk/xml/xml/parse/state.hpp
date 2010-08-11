@@ -48,7 +48,7 @@ namespace xml
       struct type
       {
       public:
-        typedef expr::eval::context<std::string> context_t;
+        typedef expr::eval::context context_t;
 
       private:
         int _level;
@@ -267,7 +267,7 @@ namespace xml
                                            )
                        );
                 }
-              catch (const expr::exception::eval::missing_binding<std::string> &)
+              catch (const expr::exception::eval::missing_binding &)
                 {
                   /* do nothing, that's what we want */
                 }

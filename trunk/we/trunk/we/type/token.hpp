@@ -35,7 +35,7 @@ namespace token
     };
   }
 
-  typedef expr::eval::context<signature::field_name_t> context_t;
+  typedef expr::eval::context context_t;
 
   class type
   {

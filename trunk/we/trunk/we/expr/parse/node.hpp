@@ -17,141 +17,171 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <boost/variant.hpp>
+
 namespace expr
 {
   namespace parse
   {
     namespace node
     {
-      class unknown : public std::runtime_error
-      {
-      public:
-        unknown () : std::runtime_error ("STRANGE! unknown node type") {};
-      };
+      struct unary_t;
+      struct binary_t;
+      struct ternary_t;
 
-      namespace flag
-      {
-        enum flag
-        { value
-        , ref
-        , unary
-        , binary
-        , ternary
-        };
-      };
+      typedef std::vector<std::string> key_vec_t;
 
-      // WORK HERE: better type with union!?
-      template<typename Key>
-      struct type
-      {
-        typedef boost::shared_ptr<type> ptr_t;
-        typedef std::vector<Key> key_vec_t;
+      typedef boost::variant < value::type
+                             , key_vec_t
+                             , boost::recursive_wrapper<unary_t>
+                             , boost::recursive_wrapper<binary_t>
+                             , boost::recursive_wrapper<ternary_t>
+                             > type;
 
-        flag::flag flag;
-        value::type value;
-        key_vec_t ref;
+      std::ostream & operator << (std::ostream &, const type &);
+
+      struct unary_t
+      {
         token::type token;
-        ptr_t child0;
-        ptr_t child1;
-        ptr_t child2;
+        type child;
 
-        type (const value::type & _value)
-          : flag (flag::value)
-          , value (_value)
-          , ref ()
-          , token ()
-          , child0 ()
-          , child1 ()
-          , child2 ()
-        {}
-
-        type (const key_vec_t & _ref)
-          : flag (flag::ref)
-          , value ()
-          , ref (_ref)
-          , token ()
-          , child0 ()
-          , child1 ()
-          , child2 ()
-        {}
-
-        type (const token::type & _token, const ptr_t _child0)
-          : flag (flag::unary)
-          , value ()
-          , ref ()
-          , token (_token)
-          , child0 (_child0)
-          , child1 ()
-          , child2 ()
-        {}
-
-        type ( const token::type & _token
-             , const ptr_t _child0
-             , const ptr_t _child1
-             )
-          : flag (flag::binary)
-          , value ()
-          , ref ()
-          , token (_token)
-          , child0 (_child0)
-          , child1 (_child1)
-          , child2 ()
-        {}
-
-        type ( const token::type & _token
-             , const ptr_t _child0
-             , const ptr_t _child1
-             , const ptr_t _child2
-             )
-          : flag (flag::ternary)
-          , value ()
-          , ref ()
-          , token (_token)
-          , child0 (_child0)
-          , child1 (_child1)
-          , child2 (_child2)
+        unary_t (const token::type & _token, const type & _child)
+          : token (_token), child (_child)
         {}
       };
 
-      template<typename Key>
-      std::ostream & operator << (std::ostream & s, const type<Key> & nd)
+      struct binary_t
       {
-        switch (nd.flag)
-          {
-          case flag::value:
-            return boost::apply_visitor ( value::visitor::show (s)
-                                        , nd.value
-                                        );
-          case flag::ref: return s << "${" << token::show_key_vec (nd.ref) << "}";
-          case flag::unary: return s << nd.token << "(" << *(nd.child0) << ")";
-          case flag::binary:
-            if (token::is_prefix (nd.token))
-              return
-                s << nd.token
-                  << "(" << *(nd.child0) << ", " <<  *(nd.child1) << ")";
-            else
-              return
-                s << "(" << *(nd.child0) << nd.token << *(nd.child1) << ")";
-          case flag::ternary:
-            if (nd.token != token::_ite)
-              throw exception::strange ("ternary but not _ite!?");
+        token::type token;
+        type l;
+        type r;
 
-            return s << "(" << token::_if << *(nd.child0)
-                            << token::_then << *(nd.child1)
-                            << token::_else << *(nd.child2)
-                            << token::_endif
-                     << ")";
-          default: throw unknown();
+        binary_t (const token::type & _token, const type & _l, const type & _r)
+          : token (_token), l (_l), r (_r)
+        {}
+      };
+
+      struct ternary_t
+      {
+        token::type token;
+        type child0;
+        type child1;
+        type child2;
+
+        ternary_t ( const token::type & _token
+                  , const type & _child0
+                  , const type & _child1
+                  , const type & _child2
+                  )
+          : token (_token), child0 (_child0), child1 (_child1), child2 (_child2)
+        {}
+      };
+
+      // ******************************************************************* //
+
+      namespace visitor
+      {
+        class is_value : public boost::static_visitor<bool>
+        {
+        public:
+          bool operator () (const value::type &) const { return true; }
+
+          template<typename T>
+          bool operator () (const T &) const { return false; }
+        };
+
+        // ***************************************************************** //
+
+        class get_value : public boost::static_visitor<const value::type &>
+        {
+        public:
+          const value::type & operator () (const value::type & v) const
+          {
+            return v;
           }
+
+          template<typename T>
+          const value::type & operator () (const T &) const
+          {
+            throw exception::eval::type_error ("get: node is not an value");
+          }
+        };
+
+        // ***************************************************************** //
+
+        class is_ref : public boost::static_visitor<bool>
+        {
+        public:
+          bool operator () (const key_vec_t &) const { return true; }
+
+          template<typename T>
+          bool operator () (const T &) const { return false; }
+        };
+
+        // ***************************************************************** //
+
+        class show : public boost::static_visitor<void>
+        {
+        private:
+          std::ostream & s;
+
+        public:
+          show (std::ostream & _s) : s (_s) {}
+
+          void operator () (const value::type & v) const
+          {
+            boost::apply_visitor (value::visitor::show (s), v);
+          }
+
+          void operator () (const key_vec_t & key) const
+          {
+            s << "${" << token::show_key_vec (key) << "}";
+          }
+
+          void operator () (const unary_t & u) const
+          {
+            s << u.token << "(" << u.child << ")";
+          }
+
+          void operator () (const binary_t & b) const
+          {
+            if (token::is_prefix (b.token))
+              {
+                s << b.token << "(" << b.l << ", " <<  b.r << ")";
+              }
+            else
+              {
+                s << "(" << b.l << b.token << b.r << ")";
+              }
+          }
+
+          void operator () (const ternary_t & t) const
+          {
+            if (t.token != token::_ite)
+              {
+                throw exception::strange ("ternary but not _ite!?");
+              }
+
+            s << "(" << token::_if << t.child0
+                     << token::_then << t.child1
+                     << token::_else << t.child2
+                     << token::_endif
+                     << ")"
+              ;
+          }
+        };
       }
 
-      template<typename Key>
-      const value::type & get (const type<Key> & node)
+      inline std::ostream & operator << (std::ostream & s, const type & node)
       {
-        if (node.flag != flag::value)
-          throw exception::eval::type_error ("get: node is not an value");
+        boost::apply_visitor (visitor::show (s), node);
 
-        return node.value;
+        return s;
+      }
+
+      inline const value::type & get (const type & node)
+      {
+        return boost::apply_visitor (visitor::get_value(), node);
       }
     }
   }

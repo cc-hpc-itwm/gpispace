@@ -48,20 +48,17 @@ namespace expr
 
   namespace parse
   {
-    template< typename Key
-            , typename READER = fhg::util::reader<Key>
-            >
     struct parser
     {
     private:
-      typedef node::type<Key> nd_t;
+      typedef node::type nd_t;
       typedef std::deque<nd_t> nd_stack_t;
       typedef std::stack<token::type> op_stack_t;
       nd_stack_t nd_stack;
       op_stack_t op_stack;
 
       // iterate through the entries
-      typedef typename nd_stack_t::const_iterator nd_it_t;
+      typedef nd_stack_t::const_iterator nd_it_t;
 
       nd_it_t begin () const { return nd_stack.begin(); }
       nd_it_t end () const { return nd_stack.end(); }
@@ -73,18 +70,16 @@ namespace expr
 
         nd_t c (nd_stack.back()); nd_stack.pop_back();
 
-        if (c.flag == node::flag::value)
+        if (boost::apply_visitor (node::visitor::is_value(), c))
           nd_stack.push_back
             (nd_t (boost::apply_visitor ( value::function::unary (token)
-                                        , c.value
+                                        , boost::get<value::type> (c)
                                         )
                   )
             );
         else
           {
-            typename nd_t::ptr_t ptr_c (new nd_t(c));
-
-            nd_stack.push_back (nd_t (token, ptr_c));
+            nd_stack.push_back (node::unary_t (token, c));
           }
       }
 
@@ -100,20 +95,19 @@ namespace expr
 
         nd_t l (nd_t(nd_stack.back())); nd_stack.pop_back();
 
-        if (l.flag == node::flag::value && r.flag == node::flag::value)
+        if (  boost::apply_visitor (node::visitor::is_value(), l)
+           && boost::apply_visitor (node::visitor::is_value(), r)
+           )
           nd_stack.push_back
             (nd_t (boost::apply_visitor ( value::function::binary (token)
-                                        , l.value
-                                        , r.value
+                                        , boost::get<value::type> (l)
+                                        , boost::get<value::type> (r)
                                         )
                   )
             );
         else
           {
-            typename nd_t::ptr_t ptr_l (new nd_t (l));
-            typename nd_t::ptr_t ptr_r (new nd_t (r));
-
-            nd_stack.push_back (nd_t (token, ptr_l, ptr_r));
+            nd_stack.push_back (node::binary_t (token, l, r));
           }
       }
 
@@ -122,32 +116,28 @@ namespace expr
         if (nd_stack.empty())
           throw exception::parse::missing_operand (k, "else expression");
 
-        nd_t case_false (nd_t(nd_stack.back())); nd_stack.pop_back();
+        nd_t f (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (nd_stack.empty())
           throw exception::parse::missing_operand (k, "then expression");
 
-        nd_t case_true (nd_t(nd_stack.back())); nd_stack.pop_back();
+        nd_t t (nd_t(nd_stack.back())); nd_stack.pop_back();
 
         if (nd_stack.empty())
           throw exception::parse::missing_operand (k, "condition");
 
-        nd_t condition (nd_t(nd_stack.back())); nd_stack.pop_back();
+        nd_t c (nd_t(nd_stack.back())); nd_stack.pop_back();
 
-        if (condition.flag == node::flag::value)
+        if (boost::apply_visitor (node::visitor::is_value(), c))
           {
-            if (value::function::is_true(condition.value))
-              nd_stack.push_back (case_true);
+            if (value::function::is_true(boost::get<value::type> (c)))
+              nd_stack.push_back (t);
             else
-              nd_stack.push_back (case_false);
+              nd_stack.push_back (f);
           }
         else
           {
-            typename nd_t::ptr_t ptr_c (new nd_t (condition));
-            typename nd_t::ptr_t ptr_t (new nd_t (case_true));
-            typename nd_t::ptr_t ptr_f (new nd_t (case_false));
-
-            nd_stack.push_back (nd_t (token::_ite,  ptr_c, ptr_t, ptr_f));
+            nd_stack.push_back (node::ternary_t (token::_ite,  c, t, f));
           }
       }
 
@@ -199,9 +189,10 @@ namespace expr
         op_stack.pop();
       }
 
-      void parse ( const std::string input
-                 , const boost::function<nd_t (const std::vector<Key> &)> & refnode
-                 )
+      void
+      parse ( const std::string input
+            , const boost::function<nd_t (const node::key_vec_t &)> & refnode
+            )
       {
         std::string::const_iterator pos (input.begin());
         const std::string::const_iterator end (input.end());
@@ -211,7 +202,7 @@ namespace expr
           {
             op_stack.push (token::eof);
 
-            token::tokenizer<Key,READER> token (k, pos, end);
+            token::tokenizer token (k, pos, end);
 
             do
               {
@@ -220,14 +211,16 @@ namespace expr
                 switch (*token)
                   {
                   case token::val:
-                    nd_stack.push_back (nd_t(token()));
+                    nd_stack.push_back (token());
                     break;
                   case token::ref:
                     nd_stack.push_back (refnode(token.get_ref()));
                     break;
                   case token::define:
                     if (  nd_stack.empty()
-                       || (nd_stack.back().flag != node::flag::ref)
+                       || (! boost::apply_visitor
+                             (node::visitor::is_ref (), nd_stack.back())
+                          )
                        )
                       throw exception::parse::exception
                         ( "left hand of "
@@ -266,9 +259,9 @@ namespace expr
       }
 
     public:
-      parser (const std::string & input, eval::context<Key> & context)
+      parser (const std::string & input, eval::context & context)
       {
-        parse (input, boost::bind ( eval::refnode_value<Key>
+        parse (input, boost::bind ( eval::refnode_value
                                   , boost::ref(context)
                                   , _1
                                   )
@@ -277,7 +270,7 @@ namespace expr
 
       parser (const std::string & input)
       {
-        parse (input, eval::refnode_name<Key>);
+        parse (input, eval::refnode_name);
       }
 
       // the parsed expressions in the correct order
@@ -286,12 +279,12 @@ namespace expr
       const nd_t & front (void) const { return nd_stack.front(); }
 
       // eval the first entry in the stack
-      value::type eval_front (eval::context<Key> & context) const
+      value::type eval_front (eval::context & context) const
       {
-        return eval::eval (front(), context);
+        return boost::apply_visitor (eval::visitor::eval (context), front());
       }
 
-      bool eval_front_bool (eval::context<Key> & context) const
+      bool eval_front_bool (eval::context & context) const
       {
         return value::function::is_true(eval_front (context));
       }
@@ -308,32 +301,29 @@ namespace expr
       }
 
       // evaluate the hole stack in order, return the last value
-      value::type eval_all (eval::context<Key> & context) const
+      value::type eval_all (eval::context & context) const
       {
         value::type v;
 
         for (nd_it_t it (begin()); it != end(); ++it)
-          v = eval::eval (*it, context);
+          v = boost::apply_visitor (eval::visitor::eval (context), *it);
 
         return v;
       }
 
-      bool eval_all_bool (eval::context<Key> & context) const
+      bool eval_all_bool (eval::context & context) const
       {
         const value::type v (eval_all (context));
 
         return value::function::is_true(v);
       }
 
-      template<typename K, typename R>
-      friend std::ostream &
-      operator << (std::ostream &, const parser<K,R> &);
+      friend std::ostream & operator << (std::ostream &, const parser &);
     };
 
-    template<typename K, typename R>
-    std::ostream & operator << (std::ostream & s, const parser<K,R> & p)
+    inline std::ostream & operator << (std::ostream & s, const parser & p)
     {
-      for (typename parser<K,R>::nd_it_t it (p.begin()); it != p.end(); ++it)
+      for (parser::nd_it_t it (p.begin()); it != p.end(); ++it)
         s << *it << std::endl;
       return s << std::endl;
     }

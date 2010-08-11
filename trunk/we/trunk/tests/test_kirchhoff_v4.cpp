@@ -342,7 +342,7 @@ static count_t count;
 
 // ************************************************************************* //
 
-typedef expr::eval::context<signature::field_name_t> context_t;
+typedef expr::eval::context context_t;
 
 static boost::mutex mutex_print_fire;
 
@@ -351,7 +351,7 @@ class TransitionFunction
 private:
   const std::string name;
   const std::string expression;
-  const expr::parse::parser<signature::field_name_t> parser;
+  const expr::parse::parser parser;
 
   typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
   typedef boost::function<signature::type (const petri_net::pid_t &)> sig_t;

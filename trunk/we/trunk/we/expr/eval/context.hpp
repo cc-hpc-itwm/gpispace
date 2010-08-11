@@ -25,13 +25,12 @@ namespace expr
   {
     namespace eval
     {
-      template<typename Key>
       class missing_binding : public std::runtime_error
       {
       public:
-        explicit missing_binding (const Key & key)
+        explicit missing_binding (const std::string & key)
           : std::runtime_error
-            ("missing binding for: ${" + fhg::util::show(key) + "}")
+            ("missing binding for: ${" + key + "}")
         {};
       };
     }
@@ -39,17 +38,16 @@ namespace expr
 
   namespace eval
   {
-    template<typename Key>
     struct context
     {
     public:
-      typedef std::vector<Key> key_vec_t;
+      typedef std::vector<std::string> key_vec_t;
     private:
-      typedef boost::unordered_map<Key,value::type> container_t;
+      typedef boost::unordered_map<std::string,value::type> container_t;
       container_t container;
 
-      void modify ( typename key_vec_t::const_iterator pos
-                  , const typename key_vec_t::const_iterator end
+      void modify ( key_vec_t::const_iterator pos
+                  , const key_vec_t::const_iterator end
                   , value::type & store
                   , const value::type & value
                   )
@@ -75,8 +73,8 @@ namespace expr
           }
       }
 
-      const value::type & find ( typename key_vec_t::const_iterator pos
-                               , const typename key_vec_t::const_iterator end
+      const value::type & find ( key_vec_t::const_iterator pos
+                               , const key_vec_t::const_iterator end
                                , const value::type & store
                                ) const
       {
@@ -96,8 +94,8 @@ namespace expr
       }
 
     public:
-      typedef typename container_t::const_iterator const_iterator;
-      typedef typename container_t::iterator iterator;
+      typedef container_t::const_iterator const_iterator;
+      typedef container_t::iterator iterator;
 
       value::type bind (const key_vec_t & key_vec, const value::type & value)
       {
@@ -122,7 +120,7 @@ namespace expr
         return value;
       }
 
-      value::type bind (const Key & key, const value::type & value)
+      value::type bind (const std::string & key, const value::type & value)
       {
         container[key] = value; return value;
       }
@@ -138,7 +136,7 @@ namespace expr
               const const_iterator pos (container.find (key_vec[0]));
 
               if (pos == container.end())
-                throw exception::eval::missing_binding<Key> (key_vec[0]);
+                throw exception::eval::missing_binding (key_vec[0]);
               else
                 return find ( key_vec.begin()
                             , key_vec.end()
@@ -148,12 +146,12 @@ namespace expr
           }
       }
 
-      const value::type & value (const Key & key) const
+      const value::type & value (const std::string & key) const
       {
         const const_iterator pos (container.find (key));
 
         if (pos == container.end())
-          throw exception::eval::missing_binding<Key> (key);
+          throw exception::eval::missing_binding (key);
         else
           return pos->second;
       }
@@ -168,14 +166,12 @@ namespace expr
       const_iterator end (void) const { return container.end(); }
       std::size_t size (void) const { return container.size(); }
 
-      template<typename K>
-      friend std::ostream & operator << (std::ostream &, const context<K> &);
+      friend std::ostream & operator << (std::ostream &, const context &);
     };
 
-    template<typename K>
-    std::ostream & operator << (std::ostream & s, const context<K> & cntx)
+    inline std::ostream & operator << (std::ostream & s, const context & cntx)
     {
-      for ( typename context<K>::const_iterator it (cntx.begin())
+      for ( context::const_iterator it (cntx.begin())
           ; it != cntx.end()
           ; ++it
           )
@@ -184,19 +180,18 @@ namespace expr
       return s;
     }
 
-    template<typename Key>
-    parse::node::type<Key>
-    refnode_value ( const context<Key> & context
-                  , const std::vector<Key> & key_vec
+    inline parse::node::type
+    refnode_value ( const context & context
+                  , const std::vector<std::string> & key_vec
                   )
     {
-      return parse::node::type<Key>(context.value(key_vec));
+      return parse::node::type (context.value(key_vec));
     }
 
-    template<typename Key>
-    parse::node::type<Key> refnode_name (const std::vector<Key> & key_vec)
+    inline parse::node::type
+    refnode_name (const std::vector<std::string> & key_vec)
     {
-      return parse::node::type<Key>(key_vec);
+      return parse::node::type (key_vec);
     }
   }
 }

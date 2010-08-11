@@ -120,8 +120,8 @@ class TransitionFunction
 private:
   const std::string name;
   const std::string expression;
-  const expr::parse::parser<signature::field_name_t> parser;
-  expr::eval::context<signature::field_name_t> context;
+  const expr::parse::parser parser;
+  expr::eval::context context;
 
   typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
   typedef boost::function<signature::type (const petri_net::pid_t &)> sig_t;

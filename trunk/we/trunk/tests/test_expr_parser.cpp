@@ -20,7 +20,7 @@ int main (int ac, char **)
     cout << "enter expression, ^D to start measurement" << endl;
     cout << "clear context: #" << endl;
     cout << "list context: ?" << endl;
-    typedef expr::eval::context<std::string> context_t;
+    typedef expr::eval::context context_t;
     context_t context;
     std::string input;
 
@@ -37,7 +37,7 @@ int main (int ac, char **)
           default:
             try
               {
-                typedef expr::parse::parser<std::string> parser_t;
+                typedef expr::parse::parser parser_t;
 
                 parser_t parser (input);
 
@@ -51,7 +51,7 @@ int main (int ac, char **)
                              << parser.eval_front (context)
                              << endl;
                       }
-                    catch (expr::exception::eval::missing_binding<std::string> e)
+                    catch (const expr::exception::eval::missing_binding & e)
                       {
                         cout << e.what() << endl;
                       }
@@ -93,9 +93,8 @@ int main (int ac, char **)
   cout << "measure..." << endl;
 
   {
-    typedef std::string ref_t;
-    typedef expr::parse::parser<ref_t> parser_t;
-    typedef expr::eval::context<ref_t> context_t;
+    typedef expr::parse::parser parser_t;
+    typedef expr::eval::context context_t;
 
     {
       const long round (1000);
@@ -141,9 +140,8 @@ int main (int ac, char **)
   }
 
   {
-    typedef std::string ref_t;
-    typedef expr::parse::parser<ref_t> parser_t;
-    typedef expr::eval::context<ref_t> context_t;
+    typedef expr::parse::parser parser_t;
+    typedef expr::eval::context context_t;
 
     std::ostringstream ss;
 
