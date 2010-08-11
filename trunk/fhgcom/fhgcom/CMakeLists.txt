@@ -1,6 +1,11 @@
 # -*- mode: cmake; -*-
-file(GLOB hdrs "*.hpp")
-file(GLOB srcs "*.cpp")
+set (hdrs
+  message.hpp
+)
+
+set (srcs
+  message.cpp
+)
 
 ADD_LIBRARY(fhgcom ${hdrs} ${srcs})
 ADD_LIBRARY(fhgcom-shared SHARED ${hdrs} ${srcs})
