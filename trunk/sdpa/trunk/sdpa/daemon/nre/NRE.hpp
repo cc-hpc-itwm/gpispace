@@ -203,12 +203,12 @@ namespace sdpa {
 		std::string url_;
 		std::string masterName_;
 		std::string masterUrl_;
-                std::string workerUrl_;
+		std::string workerUrl_;
 		gui_service m_guiServ;
 		bool bLaunchNrePcd_;
-            std::string nre_pcd_binary_;
-            std::vector<std::string> nre_pcd_search_path_;
-            std::vector<std::string> nre_pcd_pre_load_;
+        std::string nre_pcd_binary_;
+        std::vector<std::string> nre_pcd_search_path_;
+        std::vector<std::string> nre_pcd_pre_load_;
 	  };
 	}
 }

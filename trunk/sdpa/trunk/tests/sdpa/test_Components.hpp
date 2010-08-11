@@ -35,9 +35,10 @@ namespace sdpa {
 			  //CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
 			  //CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
 
-			  CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
+			  /*CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndActExec );
-			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );*/
+
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE );
 
 			  CPPUNIT_TEST_SUITE_END();

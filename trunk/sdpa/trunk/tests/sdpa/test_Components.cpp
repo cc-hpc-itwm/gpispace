@@ -28,9 +28,6 @@
 #include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
 
-#include <kdm/simple_generator.hpp>
-#include <kdm/kdm_simple.hpp>
-
 #include <boost/filesystem/path.hpp>
 
 #include <sys/wait.h>
@@ -127,7 +124,6 @@ void TestComponents::setUp()
 	m_ptrCli->configure_network( config );
 
 	seda::Stage::Ptr user_stage = seda::StageRegistry::instance().lookup(m_ptrCli->input_stage());
-
 }
 
 void TestComponents::tearDown()
@@ -163,11 +159,21 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", aggregatorPort,"orchestrator_0", orchestratorPort);
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
 
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
 	// use external scheduler and real GWES
 	SDPA_LOG_DEBUG("Create the NRE ...");
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl,
-				                             bLaunchNrePcd, TESTS_NRE_PCD_BIN_PATH, TESTS_KDM_FAKE_MODULES_PATH, TESTS_FVM_PC_FAKE_MODULE );
+		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+				                             nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl,
+				                             bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
 
 	try {
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
@@ -252,7 +258,7 @@ void TestComponents::startPcdAndDaemons(const std::string& workerUrl) throw (std
 	    execl( strNrePcdBin.c_str(),
 	            "nre-pcd",
 				"-l", workerUrl.c_str(),
-				"-a", TESTS_KDM_FAKE_MODULES_PATH,
+				"-a", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH,
 				"--load", TESTS_FVM_PC_FAKE_MODULE,
 				NULL );
 				//,envp );
@@ -378,7 +384,7 @@ void TestComponents::testActivityRealWeAllCompAndActExec()
 
 	SDPA_LOG_DEBUG("starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
-	executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
+	executor->loader().append_search_path (TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
 
 	try {
 		SDPA_LOG_INFO("Load the fake-fvm module ("<<TESTS_FVM_PC_FAKE_MODULE<<") ...");
@@ -475,7 +481,7 @@ void TestComponents::testActivityDummyWeAllCompAndNreWorker()
 
 	SDPA_LOG_DEBUG("starting process container on location: 127.0.0.1:8000"<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor("127.0.0.1:8000"));
-    executor->loader().append_search_path (TESTS_KDM_FAKE_MODULES_PATH);
+    executor->loader().append_search_path (TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
 
 	try {
 		executor->start();
@@ -622,6 +628,7 @@ void TestComponents::testCompDummyGwesAndFakeFvmPC()
 
 void TestComponents::testComponentsDummyGwesNoFvmPC()
 {
+	/*
 	SDPA_LOG_DEBUG("*****testComponentsDummyGwesNoFvmPC*****"<<std::endl);
 	string strGuiUrl   = "";
 
@@ -637,9 +644,7 @@ void TestComponents::testComponentsDummyGwesNoFvmPC()
 	// use external scheduler and dummy GWES
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::create("NRE_0",  "127.0.0.1:7002","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8000", strGuiUrl );
-	/*sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_1 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create( "NRE_1",  "127.0.0.1:7003","aggregator_0", "127.0.0.1:7001", "127.0.0.1:8001", strGuiUrl );
-	*/
+
 
     try
     {
@@ -691,5 +696,5 @@ void TestComponents::testComponentsDummyGwesNoFvmPC()
 	//sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::tests::worker::NreWorkerClient>::shutdown(ptrNRE_1);
 
     sleep(1);
-	SDPA_LOG_DEBUG("testComponentsDummyGwesNoFvmPC finished!");
+	SDPA_LOG_DEBUG("testComponentsDummyGwesNoFvmPC finished!");*/
 }

@@ -36,6 +36,7 @@
 #include <sdpa/daemon/nre/Codec.hpp>
 #include <sdpa/daemon/IWorkflowEngine.hpp>
 
+#include <sstream>
 #include <iostream>
 #include <string>
 
@@ -136,59 +137,73 @@ namespace sdpa { namespace nre { namespace worker {
 
     unsigned int startNrePcd( ) throw (std::exception)
     {
-      unsigned int rc = 0;
+    	unsigned int rc = 0;
 
        	// check here whether the nre-pcd is running or not
 
-	if( nre_pcd_do_exec_ )
+		if( nre_pcd_do_exec_ )
        	{
-       		LOG(INFO, "Try to launch the nre-pcd ...");
+       		LOG(INFO, "Try to spawn nre-pcd with fork!");
        		pid_t pID = fork();
 
 			if (pID == 0)  // child
 			{
 				// Code only executed by child process
+				LOG(INFO, "After fork, I'm the child process ...");
 				try {
-                                  std::vector<std::string> cmdline;
-                                  cmdline.push_back ( nre_pcd_binary_ );
+					std::vector<std::string> cmdline;
+					cmdline.push_back ( nre_pcd_binary_ );
 
-                                  for ( std::vector<std::string>::const_iterator it (nre_pcd_search_path_.begin())
-                                      ; it != nre_pcd_search_path_.end()
-                                      ; ++it
-                                      )
-                                  {
-                                    cmdline.push_back("--append-search-path");
-                                    cmdline.push_back(*it);
-                                  }
+					LOG(INFO, std::string("nre_pcd_binary_ = ") + cmdline[0] );
 
-                                  for ( std::vector<std::string>::const_iterator it (nre_pcd_pre_load_.begin())
-                                      ; it != nre_pcd_pre_load_.end()
-                                      ; ++it
-                                      )
-                                  {
-                                    cmdline.push_back("--load");
-                                    cmdline.push_back(*it);
-                                  }
+					cmdline.push_back("-l");
+					cmdline.push_back(worker_location().c_str());
 
-                                  char ** av = new char*[cmdline.size()+1];
-                                  av[cmdline.size()] = (char*)(NULL);
+					for ( std::vector<std::string>::const_iterator it (nre_pcd_search_path_.begin())
+					  ; it != nre_pcd_search_path_.end()
+					  ; ++it
+					  )
+					{
+						cmdline.push_back("--append-search-path");
+						cmdline.push_back(*it);
+					}
 
-                                  std::size_t idx (0);
-                                  for ( std::vector<std::string>::const_iterator it (cmdline.begin())
-                                      ; it != cmdline.end()
-                                      ; ++it, ++idx
-                                      )
-                                  {
-                                    av[idx] = new char[it->size()+1];
-                                    memcpy(av[idx], it->c_str(), it->size());
-                                    av[idx][it->size()] = (char)0;
-                                  }
+					for ( std::vector<std::string>::const_iterator it (nre_pcd_pre_load_.begin())
+					  ; it != nre_pcd_pre_load_.end()
+					  ; ++it
+					  )
+					{
+						cmdline.push_back("--load");
+						cmdline.push_back(*it);
+					}
 
-                                  if ( execvp( nre_pcd_binary_.c_str(), av) < 0 )
-                                  {
-                                    throw std::runtime_error ("could not exec(" + nre_pcd_binary_ +")");
-                                  }
-                                  // not reached
+					char ** av = new char*[cmdline.size()+1];
+					av[cmdline.size()] = (char*)(NULL);
+
+					std::size_t idx (0);
+					for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+					  ; it != cmdline.end()
+					  ; ++it, ++idx
+					  )
+					{
+						LOG(INFO, std::string("cmdline[")<<idx<<"]=" << cmdline[idx] );
+
+						av[idx] = new char[it->size()+1];
+						memcpy(av[idx], it->c_str(), it->size());
+						av[idx][it->size()] = (char)0;
+					}
+
+					std::stringstream sstr_cmd;
+					for(size_t k=0; k<idx; k++)
+						sstr_cmd << av[idx];
+
+					LOG(INFO, std::string("Try to launch the nre-pcd using the following the command line:\n") + sstr_cmd.str() );
+
+					if ( execv( nre_pcd_binary_.c_str(), av) < 0 )
+					{
+						throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() );
+					}
+					// not reached
 				}
 				catch(const std::exception& ex)
 				{
@@ -199,12 +214,12 @@ namespace sdpa { namespace nre { namespace worker {
 			else if (pID < 0)            // failed to fork
 			{
 				LOG(ERROR, "Failed to fork!");
-                                throw std::runtime_error ("fork failed: " + std::string(strerror(errno)));
+                throw std::runtime_error ("fork failed: " + std::string(strerror(errno)));
 			}
 			else  // parent
 			{
 				// Code only executed by parent process
-				sleep(1);
+				sleep(2);
 			}
        	}
         else
@@ -274,13 +289,13 @@ namespace sdpa { namespace nre { namespace worker {
 
 	    try {
 	    	ping (); // send a synchronous ping
-	    	LOG(WARN, "An instance of the NRE-PCD daemon is already running!");
+	    	LOG(DEBUG, "An instance of the NRE-PCD daemon is already running!");
 	    }
 	    catch (const NrePcdIsDead& ex)
 	    {
-	    	 LOG(WARN, "The NRE-PCD process didn't reply to ping requests. It is probably dead or not yet started!");
+	    	 LOG(DEBUG, "The NRE-PCD process didn't reply to ping requests. It is probably dead or not yet started!");
 	    	 try {
-	    		 LOG(DEBUG, "Try to start the NRE-PCD ...");
+	    		 LOG(DEBUG, "Try to start automatically the NRE-PCD ...");
 	    		 startNrePcd();
 	    	 }
 		 catch(std::exception const &) {
