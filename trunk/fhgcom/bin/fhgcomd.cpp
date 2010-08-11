@@ -3,6 +3,7 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <ios>
 #include <deque>
 #include <iostream>
 #include <list>
@@ -18,29 +19,34 @@ using boost::asio::ip::tcp;
 
 struct to_hex
 {
-  to_hex (std::string const & s)
+  to_hex (std::string const & s, const std::size_t max_dump = 128)
     : s_(s)
+    , max_(max_dump)
   {}
 
   std::ostream & operator << (std::ostream & os) const
   {
     std::string::const_iterator c (s_.begin());
-    std::ostringstream sstr;
-    sstr << std::hex;
-    while (c != s_.end())
+    std::ios_base::fmtflags flags(os.flags());
+    os << std::hex;
+    std::size_t cnt (0);
+    while (c != s_.end() && ++cnt <= max_)
     {
-      sstr << "\\x"
-           << std::setfill ('0')
-           << std::setw (2)
-           << (int)(*c & 0xff)
+      os << "\\x"
+         << std::setfill ('0')
+         << std::setw (2)
+         << (int)(*c++ & 0xff)
         ;
-      //      int i (*c & 0xff);
-      //      sstr << i;
-      ++c;
     }
-    return os << sstr.str();
+    if (c != s_.end())
+    {
+      os << " ...";
+    }
+    os.flags (flags);
+    return os;
   }
   std::string const & s_;
+  const std::size_t max_;
 };
 
 inline std::ostream & operator << (std::ostream & os, const to_hex & h)
