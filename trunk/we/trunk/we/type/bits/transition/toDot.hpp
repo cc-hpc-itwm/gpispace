@@ -74,7 +74,12 @@ namespace we { namespace type {
               {
                 if (was_b)
                   {
-                    was_b = (*pos != ' ');
+                    if (!isspace (*pos))
+                      {
+                        was_b = false;
+
+                        l += *pos;
+                      }
                   }
                 else
                   {
