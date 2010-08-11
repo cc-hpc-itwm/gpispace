@@ -277,7 +277,7 @@ namespace fhg { namespace log {
       static void configure() {
         configure(DefaultConfiguration());
       }
-      static void configure(int , char **) {
+      static void configure(int , char *[]) {
         // parameters currently ignored
         configure();
       }
@@ -297,6 +297,12 @@ namespace fhg { namespace log {
   void configure ()
   {
     Configurator::configure();
+  }
+
+  inline
+  void configure (int ac, char *av[])
+  {
+    Configurator::configure(ac, av);
   }
 }}
 
