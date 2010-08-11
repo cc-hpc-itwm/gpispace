@@ -293,14 +293,14 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 // ************************************************************************* //
 // div log stuff
 
-typedef std::pair<const pnet_t,const pnet_t::token_input_t> show_token_input_t;
+typedef std::pair<const pnet_t &,const pnet_t::token_input_t &> show_token_input_t;
 
 inline std::ostream & operator << ( std::ostream & s
                                   , const show_token_input_t & show_token_input
                                   )
 {
   const pnet_t & net (show_token_input.first);
-  const pnet_t::token_input_t token_input (show_token_input.second);
+  const pnet_t::token_input_t & token_input (show_token_input.second);
 
   return s << "{"
            << Function::Transition::get_token<token_t>(token_input)
@@ -309,14 +309,14 @@ inline std::ostream & operator << ( std::ostream & s
            << "}";
 }
 
-typedef std::pair<const pnet_t,const pnet_t::activity_t> show_activity_t;
+typedef std::pair<const pnet_t &,const pnet_t::activity_t &> show_activity_t;
 
 inline std::ostream & operator << ( std::ostream & s
                                   , const show_activity_t & show_activity
                                   )
 {
   const pnet_t & net (show_activity.first);
-  const pnet_t::activity_t activity (show_activity.second);
+  const pnet_t::activity_t & activity (show_activity.second);
 
   s << "activity" << ": " << net.get_transition (activity.tid).t << ":";
 
@@ -331,14 +331,14 @@ inline std::ostream & operator << ( std::ostream & s
   return s;
 }
 
-typedef std::pair<const pnet_t,const pnet_t::output_t> show_output_t;
+typedef std::pair<const pnet_t &,const pnet_t::output_t &> show_output_t;
 
 inline std::ostream & operator << ( std::ostream & s
                                   , const show_output_t & show_output
                                   )
 {
   const pnet_t & net (show_output.first);
-  const pnet_t::output_t output (show_output.second);
+  const pnet_t::output_t & output (show_output.second);
 
   s << " output: ";
 
