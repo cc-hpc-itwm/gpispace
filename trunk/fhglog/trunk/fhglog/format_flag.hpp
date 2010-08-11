@@ -2,6 +2,8 @@
 #define FHG_LOG_FORMAT_FLAG_HPP 1
 
 #include <fhglog/LogEvent.hpp>
+#include <ios>
+
 namespace fhg
 {
   namespace log
@@ -154,7 +156,10 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << e.tid();
+            std::ios_base::fmtflags flags(os.flags());
+            os << std::hex << e.tid();
+            os.flags(flags);
+            return os;
           }
         };
         struct PID
