@@ -58,10 +58,13 @@ namespace expr
       op_stack_t op_stack;
 
       // iterate through the entries
-      typedef nd_stack_t::const_iterator nd_it_t;
+      typedef nd_stack_t::const_iterator nd_const_it_t;
+      typedef nd_stack_t::iterator nd_it_t;
 
-      nd_it_t begin () const { return nd_stack.begin(); }
-      nd_it_t end () const { return nd_stack.end(); }
+      nd_const_it_t begin () const { return nd_stack.begin(); }
+      nd_const_it_t end () const { return nd_stack.end(); }
+      nd_it_t begin () { return nd_stack.begin(); }
+      nd_it_t end () { return nd_stack.end(); }
 
       void unary (const token::type & token, const unsigned int k)
       {
@@ -305,7 +308,7 @@ namespace expr
       {
         value::type v;
 
-        for (nd_it_t it (begin()); it != end(); ++it)
+        for (nd_const_it_t it (begin()); it != end(); ++it)
           v = boost::apply_visitor (eval::visitor::eval (context), *it);
 
         return v;
@@ -318,12 +321,22 @@ namespace expr
         return value::function::is_true(v);
       }
 
+      void rename ( const node::key_vec_t::value_type & from
+                  , const node::key_vec_t::value_type & to
+                  )
+      {
+        for (nd_it_t it (begin()); it != end(); ++it)
+          {
+            node::rename (*it, from ,to);
+          }
+      }
+
       friend std::ostream & operator << (std::ostream &, const parser &);
     };
 
     inline std::ostream & operator << (std::ostream & s, const parser & p)
     {
-      for (parser::nd_it_t it (p.begin()); it != p.end(); ++it)
+      for (parser::nd_const_it_t it (p.begin()); it != p.end(); ++it)
         s << *it << std::endl;
       return s << std::endl;
     }

@@ -29,7 +29,7 @@ namespace expr
       struct binary_t;
       struct ternary_t;
 
-      typedef std::vector<std::string> key_vec_t;
+      typedef expr::token::key_vec_t key_vec_t;
 
       typedef boost::variant < value::type
                              , key_vec_t
@@ -182,6 +182,64 @@ namespace expr
       inline const value::type & get (const type & node)
       {
         return boost::apply_visitor (visitor::get_value(), node);
+      }
+
+      // ******************************************************************* //
+
+      namespace visitor
+      {
+        class rename : public boost::static_visitor<void>
+        {
+        private:
+          const key_vec_t::value_type from;
+          const key_vec_t::value_type to;
+
+        public:
+          rename ( const key_vec_t::value_type & _from
+                 , const key_vec_t::value_type & _to
+                 )
+            : from (_from), to (_to)
+          {}
+
+          void operator () (value::type &) const
+          {
+            return;
+          }
+
+          void operator () (key_vec_t & v) const
+          {
+            if (v.size() > 0 && v[0] == from)
+              {
+                v[0] = to;
+              }
+          }
+
+          void operator () (unary_t & u) const
+          {
+            boost::apply_visitor (*this, u.child);
+          }
+
+          void operator () (binary_t & b) const
+          {
+            boost::apply_visitor (*this, b.l);
+            boost::apply_visitor (*this, b.r);
+          }
+
+          void operator () (ternary_t & t) const
+          {
+            boost::apply_visitor (*this, t.child0);
+            boost::apply_visitor (*this, t.child1);
+            boost::apply_visitor (*this, t.child2);
+          }
+        };
+      }
+
+      inline void rename ( type & t
+                         , const key_vec_t::value_type & from
+                         , const key_vec_t::value_type & to
+                         )
+      {
+        boost::apply_visitor (visitor::rename (from, to), t);
       }
     }
   }

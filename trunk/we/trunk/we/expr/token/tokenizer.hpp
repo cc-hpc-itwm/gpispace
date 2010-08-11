@@ -27,10 +27,10 @@ namespace expr
 {
   namespace token
   {
+    typedef std::vector<std::string> key_vec_t;
+
     struct tokenizer
     {
-    public:
-      typedef std::vector<std::string> key_vec_t;
     private:
       parse::position pos;
 
@@ -458,11 +458,11 @@ namespace expr
       const key_vec_t & get_ref (void) const { return _ref; }
     };
 
-    static std::string show_key_vec (const std::vector<std::string> & key_vec)
+    static std::string show_key_vec (const key_vec_t & key_vec)
     {
       std::string s;
 
-      for ( std::vector<std::string>::const_iterator pos (key_vec.begin())
+      for ( key_vec_t::const_iterator pos (key_vec.begin())
           ; pos != key_vec.end()
           ; ++pos
           )

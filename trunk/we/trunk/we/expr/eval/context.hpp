@@ -41,7 +41,8 @@ namespace expr
     struct context
     {
     public:
-      typedef std::vector<std::string> key_vec_t;
+      typedef expr::token::key_vec_t key_vec_t;
+
     private:
       typedef boost::unordered_map<std::string,value::type> container_t;
       container_t container;
@@ -182,14 +183,14 @@ namespace expr
 
     inline parse::node::type
     refnode_value ( const context & context
-                  , const std::vector<std::string> & key_vec
+                  , const context::key_vec_t & key_vec
                   )
     {
       return parse::node::type (context.value(key_vec));
     }
 
     inline parse::node::type
-    refnode_name (const std::vector<std::string> & key_vec)
+    refnode_name (const context::key_vec_t & key_vec)
     {
       return parse::node::type (key_vec);
     }
