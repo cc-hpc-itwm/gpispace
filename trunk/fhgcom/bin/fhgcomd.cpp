@@ -186,7 +186,7 @@ private:
 
   tcp::socket socket_;
 
-  enum { header_length = 8 };
+  enum { header_length = 8 }; // 8 hex chars -> 4 bytes
 
   std::string outbound_header_;
   std::string outbound_data_;
