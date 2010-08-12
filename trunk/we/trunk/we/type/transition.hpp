@@ -303,7 +303,7 @@ namespace we { namespace type {
 
       typedef signature::type signature_type;
       typedef port<signature_type> port_t;
-      typedef boost::unordered_map<pid_t, port_t> port_map_t;
+      typedef boost::unordered_map<port_id_t, port_t> port_map_t;
       typedef typename port_map_t::const_iterator const_iterator;
       typedef typename port_map_t::iterator port_iterator;
 
@@ -470,6 +470,11 @@ namespace we { namespace type {
         return name_;
       }
 
+      std::string & name (void)
+      {
+        return name_;
+      }
+
       bool is_internal (void) const
       {
         return internal_;
@@ -490,7 +495,7 @@ namespace we { namespace type {
         return data_;
       }
 
-      transition_t & operator=(const transition_t & other)
+      this_type & operator=(const this_type & other)
       {
         if (this != &other)
         {
@@ -500,6 +505,7 @@ namespace we { namespace type {
           inner_to_outer_ = other.inner_to_outer_;
           ports_ = other.ports_;
           data_ = other.data_;
+          port_id_counter_ = other.port_id_counter_;
           condition_ = condition::type
             ( other.condition_.expression()
             , boost::bind
@@ -656,6 +662,22 @@ namespace we { namespace type {
         return detail::port_adder<this_type>(*this);
       }
 
+      // UNSAFE: does not check for already existing port, use with care
+      port_id_t UNSAFE_add_port (const port_t & port)
+      {
+        port_id_t port_id = port_id_counter_++;
+
+        ports_.insert (std::make_pair (port_id, port));
+
+        return port_id;
+      }
+
+      void erase_port (const port_id_t & port_id)
+      {
+        ports_.erase (port_id);
+        inner_to_outer_.erase (port_id);
+      }
+
       template <typename SignatureType, typename Direction>
       void add_port ( const std::string & port_name
                     , SignatureType const & signature
@@ -721,7 +743,7 @@ namespace we { namespace type {
           }
         }
         port_t port (port_name, PORT_IN, signature, prop);
-        pid_t port_id = port_id_counter_++;
+        port_id_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -743,7 +765,7 @@ namespace we { namespace type {
           }
         }
         port_t port (port_name, PORT_IN, signature, associated_place, prop);
-        pid_t port_id = port_id_counter_++;
+        port_id_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -763,7 +785,7 @@ namespace we { namespace type {
           }
         }
         port_t port (port_name, PORT_READ, signature, prop);
-        pid_t port_id = port_id_counter_++;
+        port_id_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -784,7 +806,7 @@ namespace we { namespace type {
           }
         }
         port_t port (port_name, PORT_READ, signature, associated_place, prop);
-        pid_t port_id = port_id_counter_++;
+        port_id_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -804,7 +826,7 @@ namespace we { namespace type {
           }
         }
         port_t port (port_name, PORT_OUT, signature, prop);
-        pid_t port_id = port_id_counter_++;
+        port_id_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -825,7 +847,7 @@ namespace we { namespace type {
           }
         }
         port_t port (port_name, PORT_OUT, signature, associated_place, prop);
-        pid_t port_id = port_id_counter_++;
+        port_id_t port_id = port_id_counter_++;
 
         ports_.insert (std::make_pair (port_id, port));
         return port_id;
@@ -950,6 +972,20 @@ namespace we { namespace type {
         }
       }
 
+      template <typename PortId>
+      port_t & get_port (const PortId port_id)
+      {
+        try
+        {
+          return ports_[port_id];
+        }
+        catch (const std::out_of_range &)
+        {
+          const std::string port_name (fhg::util::show (port_id) );
+          throw exception::port_undefined("trans: "+name()+": port not defined:"+port_name, port_name);
+        }
+      }
+
       const port_t & get_port_by_associated_pid (const pid_t & pid) const
       {
         for ( const_iterator port (ports_.begin())
@@ -986,14 +1022,11 @@ namespace we { namespace type {
       }
 
       // TODO implement port accessor iterator
-      const_iterator ports_begin() const
-      {
-        return ports_.begin();
-      }
-      const_iterator ports_end() const
-      {
-        return ports_.end();
-      }
+      const_iterator ports_begin() const { return ports_.begin(); }
+      const_iterator ports_end() const { return ports_.end(); }
+
+      port_iterator ports_begin() { return ports_.begin(); }
+      port_iterator ports_end() { return ports_.end(); }
 
       const we::type::property::type & prop (void) const { return prop_; }
 
@@ -1006,7 +1039,7 @@ namespace we { namespace type {
       outer_to_inner_t outer_to_inner_;
       inner_to_outer_t inner_to_outer_;
       port_map_t ports_;
-      pid_t port_id_counter_;
+      port_id_t port_id_counter_;
 
       we::type::property::type prop_;
 
