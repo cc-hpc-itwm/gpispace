@@ -54,14 +54,10 @@ namespace we { namespace type {
                         && simple_pipe_elimination::run (trans_parent, net)
                         )
               ;
-
-            if (options.merge_expressions())
-              {
-                while (merge_expressions::run (trans_parent, net))
-                  {
-                    modified = true;
-                  }
-              }
+            modified |= (   options.merge_expressions()
+                        && merge_expressions::run (trans_parent, net)
+                        )
+              ;
 
             typedef std::stack<tid_t> stack_t;
             stack_t stack;

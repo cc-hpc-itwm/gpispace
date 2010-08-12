@@ -409,7 +409,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template<typename P, typename E, typename T>
-      inline bool run
+      inline bool run_once
       ( transition_t<P, E, T> & trans_parent
       , petri_net::net<P, transition_t<P,E,T>, E, T> & net
       )
@@ -477,6 +477,22 @@ namespace we { namespace type {
               }
 
             stack.pop();
+          }
+
+        return modified;
+      }
+
+      template<typename P, typename E, typename T>
+      inline bool run
+      ( transition_t<P, E, T> & trans_parent
+      , petri_net::net<P, transition_t<P,E,T>, E, T> & net
+      )
+      {
+        bool modified (false);
+
+        while (run_once (trans_parent, net))
+          {
+            modified = true;
           }
 
         return modified;
