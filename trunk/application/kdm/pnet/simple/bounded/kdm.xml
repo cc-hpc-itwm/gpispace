@@ -320,32 +320,16 @@
       <connect-out port="credit" place="credit_offset"/>
     </transition>
 
-    <transition name="dec">
-      <defun>
-        <in  name="volume" type="VOLUME" />
-        <in name="wait" type="long" />
-        <out name="wait" type="long" />
-        <expression>
-          ${wait} := ${wait} - 1;
-        </expression>
-        <condition>${wait} :gt: 0</condition>
-      </defun>
-      <connect-in place="volume_trigger_dec" port="volume" />
-      <connect-in place="wait" port="wait" />
-      <connect-out place="wait" port="wait" />
-    </transition>
+    <include-template href="wait.xml"/>
+    <specialize name="wait_VOLUME" use="wait">
+      <type-map replace="T" with="VOLUME"/>
+    </specialize>
 
-    <transition name="break">
-      <defun>
-        <out name="trigger" type="control" />
-        <in name="wait" type="long" />
-        <expression>
-          ${trigger} := []
-        </expression>
-        <condition>${wait} :eq: 0</condition>
-      </defun>
-      <connect-in place="wait" port="wait" />
-      <connect-out place="trigger_finalize" port="trigger" />
+    <transition name="wait_volume">
+      <use name="wait_VOLUME"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="trigger" place="volume_trigger_dec"/>
+      <connect-out port="done" place="trigger_finalize"/>
     </transition>
 
     <place name="trigger_finalize" type="control"/>
@@ -398,23 +382,10 @@
     <place name="delete_credit_offset_done" type="control"/>
     <place name="delete_credit_volume_done" type="control"/>
 
-    <transition name="join_delete_credit">
-      <defun>
-        <in name="a" type="control"/>
-        <in name="b" type="control"/>
-        <out name="joined" type="control"/>
-        <expression>${joined} := []</expression>
-      </defun>
-      <connect-in port="a" place="delete_credit_volume_done"/>
-      <connect-in port="b" place="delete_credit_offset_done"/>
-      <connect-out port="joined" place="delete_credit_done"/>
-    </transition>
-
-    <place name="delete_credit_done" type="control"/>
-
     <transition name="cleanup">
       <defun>
-        <in name="trigger" type="control"/>
+        <in name="delete_credit_offset_done" type="control"/>
+        <in name="delete_credit_volume_done" type="control"/>
         <in name="loadTT_done" type="control"/>
         <in name="config" type="CONFIG"/>
         <out name="clean" type="control"/>
@@ -422,7 +393,8 @@
       </defun>
       <connect-in port="loadTT_done" place="loadTT_done"/>
       <connect-in port="config" place="config"/>
-      <connect-in port="trigger" place="delete_credit_done"/>
+      <connect-in port="delete_credit_offset_done" place="delete_credit_offset_done"/>
+      <connect-in port="delete_credit_volume_done" place="delete_credit_volume_done"/>
       <connect-out port="clean" place="done"/>
     </transition>
   </net>

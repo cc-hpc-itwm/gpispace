@@ -1,0 +1,37 @@
+<template name="wait">
+  <in name="trigger" type="T" place="trigger"/>
+  <out name="done" type="control" place="done"/>
+  <net>
+    <place name="trigger" type="T"/>
+    <place name="done" type="control"/>
+    <place name="wait" type="long" virtual="true"/>
+
+    <transition name="dec">
+      <defun>
+        <in name="object" type="T"/>
+        <in name="wait" type="long"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${wait} := ${wait} - 1;
+        </expression>
+        <condition>${wait} :gt: 0</condition>
+      </defun>
+      <connect-in place="trigger" port="object"/>
+      <connect-in place="wait" port="wait"/>
+      <connect-out place="wait" port="wait"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <out name="trigger" type="control"/>
+        <in name="wait" type="long"/>
+        <expression>
+          ${trigger} := []
+        </expression>
+        <condition>${wait} :eq: 0</condition>
+      </defun>
+      <connect-in place="wait" port="wait"/>
+      <connect-out place="done" port="trigger"/>
+    </transition>
+  </net>
+</template>
