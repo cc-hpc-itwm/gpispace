@@ -177,14 +177,14 @@ namespace sdpa { namespace daemon {
 	  friend class boost::serialization::access;
 	  friend class sdpa::tests::WorkerSerializationTest;
 
-	  virtual void print() {
-	  		  ptr_job_man_->print();
-	  		  ptr_scheduler_->print();
+	  virtual void print()
+	  {
+		  ptr_job_man_->print();
+		  ptr_scheduler_->print();
 	  }
 
-
 	  // should be overriden by the end components
-	  //virtual void print_statistics (std::ostream & s) const {}
+	  // virtual void print_statistics (std::ostream & s) const {}
 
 	  template <typename T>
 	  T* create_workflow_engine()
@@ -243,10 +243,10 @@ namespace sdpa { namespace daemon {
 	  GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
 	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
 
-          virtual Scheduler* create_scheduler()
-          {
-            return NULL;
-          }
+	  virtual Scheduler* create_scheduler()
+	  {
+		  return NULL;
+	  }
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
@@ -254,8 +254,11 @@ namespace sdpa { namespace daemon {
 
 	  void setStage(seda::Stage* stage)
 	  {
-            assert (stage);
-		  daemon_stage_ = stage;
+          assert (stage);
+          if(stage)
+        	  daemon_stage_ = stage;
+          else
+        	  daemon_stage_ = NULL;
 	  }
 
 	  seda::Stage* ptr_to_master_stage_;

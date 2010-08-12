@@ -154,7 +154,7 @@ namespace sdpa { namespace nre { namespace worker {
 					std::vector<std::string> cmdline;
 					cmdline.push_back ( nre_pcd_binary_ );
 
-					LOG(INFO, std::string("nre_pcd_binary_ = ") + cmdline[0] );
+					//LOG(INFO, std::string("nre_pcd_binary_ = ") + cmdline[0] );
 
 					cmdline.push_back("-l");
 					cmdline.push_back(worker_location().c_str());
@@ -186,7 +186,7 @@ namespace sdpa { namespace nre { namespace worker {
 					  ; ++it, ++idx
 					  )
 					{
-						LOG(INFO, std::string("cmdline[")<<idx<<"]=" << cmdline[idx] );
+						//LOG(INFO, std::string("cmdline[")<<idx<<"]=" << cmdline[idx] );
 
 						av[idx] = new char[it->size()+1];
 						memcpy(av[idx], it->c_str(), it->size());
@@ -197,7 +197,7 @@ namespace sdpa { namespace nre { namespace worker {
 					for(size_t k=0; k<idx; k++)
 						sstr_cmd << av[idx];
 
-					LOG(INFO, std::string("Try to launch the nre-pcd using the following the command line:\n") + sstr_cmd.str() );
+					LOG(DEBUG, std::string("Try to launch the nre-pcd with the following the command line:\n") + sstr_cmd.str() );
 
 					if ( execv( nre_pcd_binary_.c_str(), av) < 0 )
 					{

@@ -119,7 +119,7 @@ GenericDaemon::~GenericDaemon()
 
 	if(ptr_workflow_engine_)
 	{
-          DLOG(TRACE, "deleting workflow engine...");
+		DLOG(TRACE, "deleting workflow engine...");
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
@@ -150,8 +150,8 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 	}
 	catch(std::exception const& ex)
 	{
-		SDPA_LOG_ERROR("Exception occurred when thying to start the decoding stage: "<<ex.what());
-                throw;
+		SDPA_LOG_ERROR("Exception occurred when trying to start the decoding stage: "<<ex.what());
+		throw;
 	}
 
 	try {
@@ -183,16 +183,15 @@ void GenericDaemon::configure_network( std::string daemonUrl, std::string master
 	catch(std::exception const & ex)
 	{
 		SDPA_LOG_ERROR("Exception occurred when trying to start the network stage: "<<ex.what());
-                throw;
+		throw;
 	}
 }
 
 void GenericDaemon::shutdown_network()
 {
-  {
-    if (master() != "" && is_registered())
-      sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
-  }
+
+    if( !master().empty() && is_registered())
+    	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
 
 	SDPA_LOG_DEBUG("shutting-down the network components of the daemon "<<daemon_stage_->name());
 	const std::string prefix(daemon_stage_->name()+".net");
@@ -291,16 +290,17 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 	delivery_service_.start();
 	service_thread_.start();
 	DMLOG(TRACE, "starting my scheduler...");
-        try
-        {
-          ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
-          ptr_scheduler_->start();
-        } catch (...)
-        {
-          ptr_scheduler_->stop();
-          ptr_scheduler_.reset();
-          throw;
-        }
+
+	try
+	{
+		ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
+		ptr_scheduler_->start();
+	} catch (...)
+	{
+		ptr_scheduler_->stop();
+		ptr_scheduler_.reset();
+		throw;
+	}
 }
 
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
