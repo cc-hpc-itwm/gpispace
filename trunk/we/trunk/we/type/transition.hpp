@@ -942,6 +942,22 @@ namespace we { namespace type {
         throw exception::port_undefined("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), fhg::util::show (pid));
       }
 
+      pid_t input_pid_by_port_id (const port_id_t & port_id) const
+      {
+        for ( outer_to_inner_t::const_iterator p (outer_to_inner_.begin())
+            ; p != outer_to_inner_.end()
+            ; ++p
+            )
+        {
+          if (p->second.first == port_id)
+          {
+            return p->first;
+          }
+        }
+
+        throw exception::port_undefined("trans: "+name()+": pid not connected by port_id: "+ fhg::util::show (port_id), fhg::util::show (port_id));
+      }
+
       port_id_with_prop_t output_port_by_pid (const pid_t & pid) const
       {
         for ( inner_to_outer_t::const_iterator p (inner_to_outer_.begin())
