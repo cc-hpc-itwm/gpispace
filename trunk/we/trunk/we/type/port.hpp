@@ -181,7 +181,9 @@ namespace we
         return port<Signature, IdType, Traits> ( name, Dir::value, signature, place_id );
       }
 
+      name_type & name() { return name_; }
       const name_type & name() const { return name_; }
+
       PortDirection direction() const { return direction_; }
       const sig_type & signature() const { return signature_; }
       const pid_type & associated_place() const { return associated_place_; }
