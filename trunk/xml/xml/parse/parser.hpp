@@ -757,8 +757,11 @@ namespace xml
     static type::port_type
     port_type (const xml_node_type * node, state::type & state)
     {
+      const std::string name
+        (required ("port_type", node, "name", state.file_in_progress()));
+
       type::port_type port
-        ( required ("port_type", node, "name", state.file_in_progress())
+        ( validate_prefix (name, "port", state.file_in_progress())
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
         , state.level() + 2
