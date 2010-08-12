@@ -15,7 +15,7 @@
     <type-get name="pair_pair"/>
   </specialize>
 
-  <transition name="make_pair_pair2">
+  <transition name="make_pair_pair2" inline="true">
     <use name="make_pair_pair"/>
     <connect-in port="tag" place="x"/>
     <connect-in port="first" place="y"/>
@@ -32,7 +32,7 @@
   <place name="x1" type="long"/>
   <place name="x2" type="long"/>
 
-  <transition name="dup_x">
+  <transition name="dup_x" inline="true">
     <use name="dup_long"/>
     <connect-in port="in" place="x"/>
     <connect-out port="one" place="x1"/>
@@ -46,7 +46,7 @@
   <place name="z1" type="string"/>
   <place name="z2" type="string"/>
 
-  <transition name="dup_z">
+  <transition name="dup_z" inline="true">
     <use name="dup_string"/>
     <connect-in port="in" place="z"/>
     <connect-out port="one" place="z1"/>
@@ -60,7 +60,7 @@
   <place name="pair1" type="pair_pair"/>
   <place name="pair2" type="pair_pair"/>
 
-  <transition name="dup_pair">
+  <transition name="dup_pair" inline="true">
     <use name="dup_pairpair"/>
     <connect-in port="in" place="pair"/>
     <connect-out port="one" place="pair1"/>
