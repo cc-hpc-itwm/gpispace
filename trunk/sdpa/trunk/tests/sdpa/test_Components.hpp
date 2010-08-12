@@ -31,14 +31,9 @@ namespace sdpa {
 			class TestComponents: public CPPUNIT_NS::TestFixture {
 			  CPPUNIT_TEST_SUITE( sdpa::tests::TestComponents );
 
-			  //obsolete
-			  //CPPUNIT_TEST( testCompDummyGwesAndFakeFvmPC );
-			  //CPPUNIT_TEST( testComponentsDummyGwesNoFvmPC );
-
-			  /*CPPUNIT_TEST( testActivityDummyWeAllCompAndNreWorker );
-			  CPPUNIT_TEST( testActivityRealWeAllCompAndActExec );
-			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );*/
-
+			  CPPUNIT_TEST( testActivityRealWeAllCompActExec );
+			  CPPUNIT_TEST( testActivityDummyWeAllCompActExec );
+			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByTest );
 			  CPPUNIT_TEST( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE );
 
 			  CPPUNIT_TEST_SUITE_END();
@@ -48,17 +43,11 @@ namespace sdpa {
 			  ~TestComponents();
 			  void setUp();
 			  void tearDown();
-
 			  std::string read_workflow(std::string strFileName);
 
 			protected:
-			  void testAny();
-			  void testCompDummyGwesAndFakeFvmPC();
-			  void testComponentsDummyGwesNoFvmPC();
-			  void testActivityDummyWeAllCompAndNreWorker();
-
-			  void testActivityRealWeAllCompAndActExec();
-
+			  void testActivityDummyWeAllCompActExec();
+			  void testActivityRealWeAllCompActExec();
 			  void testActivityRealWeAllCompAndNreWorkerSpawnedByTest();
 			  void testActivityRealWeAllCompAndNreWorkerSpawnedByNRE();
 
