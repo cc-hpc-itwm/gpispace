@@ -24,17 +24,21 @@ namespace we { namespace type {
         private:
           bool _not;
           bool _simple_pipe_elimination;
+          bool _merge_expressions;
 
           std::string _Onot;
           std::string _Osimple_pipe_elimination;
+          std::string _Omerge_expressions;
 
         public:
           type (void)
             : _not (false)
             , _simple_pipe_elimination (true)
+            , _merge_expressions (true)
 
             , _Onot ("Onot")
             , _Osimple_pipe_elimination ("Osimple-pipe-elimination")
+            , _Omerge_expressions ("Omerge-expressions")
           {}
 
           // *************************************************************** //
@@ -55,6 +59,7 @@ namespace we { namespace type {
               }
 
             GET_PROP(simple_pipe_elimination)
+            GET_PROP(merge_expressions)
 
 #undef GET_PROP
             else
@@ -70,6 +75,7 @@ namespace we { namespace type {
         bool & x (void) { return _ ## x; }
 
         ACCESS(simple_pipe_elimination)
+        ACCESS(merge_expressions)
 #undef ACCESS
 
           // *************************************************************** //
@@ -86,6 +92,10 @@ namespace we { namespace type {
               ( _Osimple_pipe_elimination.c_str()
               , VAL(simple_pipe_elimination)
               , "eliminate simple pipeline transitions"
+              )
+              ( _Omerge_expressions.c_str()
+              , VAL(merge_expressions)
+              , "merge consecutive expression transitions"
               )
               ;
 #undef VAL

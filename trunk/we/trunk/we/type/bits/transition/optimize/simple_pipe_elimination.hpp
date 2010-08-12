@@ -7,6 +7,7 @@
 #include <we/type/id.hpp>
 
 #include <we/type/bits/transition/optimize/merge_places.hpp>
+#include <we/type/bits/transition/optimize/is_associated.hpp>
 
 #include <fhg/util/maybe.hpp>
 
@@ -16,26 +17,6 @@
 namespace we { namespace type {
     namespace optimize
     {
-      // ******************************************************************* //
-
-      template<typename P, typename E, typename T>
-      inline bool is_associated ( const transition_t<P, E, T> & trans
-                                , const petri_net::pid_t & pid
-                                , typename transition_t<P, E, T>::port_t & port
-                                )
-      {
-        try
-          {
-            port = trans.get_port_by_associated_pid (pid);
-
-            return true;
-          }
-        catch (const exception::port_undefined &)
-          {
-            return false;
-          }
-      }
-
       // ******************************************************************* //
 
       struct pid_in_type
@@ -202,8 +183,7 @@ namespace we { namespace type {
         while (!stack.empty())
           {
             const tid_t & tid (stack.top());
-
-            transition_t trans (net.get_transition (tid));
+            const transition_t trans (net.get_transition (tid));
 
             if ( (  boost::apply_visitor (content::visitor (), trans.data())
                   == content::expression

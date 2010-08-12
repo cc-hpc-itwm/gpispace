@@ -8,6 +8,7 @@
 
 #include <we/type/bits/transition/optimize/option.hpp>
 #include <we/type/bits/transition/optimize/simple_pipe_elimination.hpp>
+#include <we/type/bits/transition/optimize/merge_expressions.hpp>
 
 #include <stack>
 
@@ -53,6 +54,14 @@ namespace we { namespace type {
                         &&         simple_pipe_elimination (trans_parent, net)
                         )
               ;
+
+            if (options.merge_expressions())
+              {
+                while (merge_expressions (trans_parent, net))
+                  {
+                    modified = true;
+                  }
+              }
 
             typedef std::stack<tid_t> stack_t;
             stack_t stack;

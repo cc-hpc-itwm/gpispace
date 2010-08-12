@@ -50,6 +50,9 @@ namespace expr
   {
     struct parser
     {
+    public:
+      typedef node::key_vec_t key_vec_t;
+
     private:
       typedef node::type nd_t;
       typedef std::deque<nd_t> nd_stack_t;
@@ -194,7 +197,7 @@ namespace expr
 
       void
       parse ( const std::string input
-            , const boost::function<nd_t (const node::key_vec_t &)> & refnode
+            , const boost::function<nd_t (const key_vec_t &)> & refnode
             )
       {
         std::string::const_iterator pos (input.begin());
@@ -281,6 +284,14 @@ namespace expr
       void pop_front (void) { nd_stack.pop_front(); }
       const nd_t & front (void) const { return nd_stack.front(); }
 
+      void add (parser & other)
+      {
+        while (!other.empty())
+          {
+            nd_stack.push_back (other.front()); other.pop_front();
+          }
+      }
+
       // eval the first entry in the stack
       value::type eval_front (eval::context & context) const
       {
@@ -321,14 +332,26 @@ namespace expr
         return value::function::is_true(v);
       }
 
-      void rename ( const node::key_vec_t::value_type & from
-                  , const node::key_vec_t::value_type & to
+      void rename ( const key_vec_t::value_type & from
+                  , const key_vec_t::value_type & to
                   )
       {
         for (nd_it_t it (begin()); it != end(); ++it)
           {
             node::rename (*it, from ,to);
           }
+      }
+
+      std::string string (void) const
+      {
+        std::ostringstream s;
+
+        for (nd_const_it_t it (begin()); it != end(); ++it)
+          {
+            s << *it << ";";
+          }
+
+        return s.str();
       }
 
       friend std::ostream & operator << (std::ostream &, const parser &);

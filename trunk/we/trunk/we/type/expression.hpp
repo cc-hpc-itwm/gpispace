@@ -49,12 +49,27 @@ namespace we { namespace type {
 
     const std::string & expression () const { return expr_; }
     const ast_t & ast () const { return ast_; }
+    ast_t & ast () { return ast_; }
     bool is_empty () const { return expr_ == ""; }
 
     void expression (const std::string & expr)
     {
       ast_ = ast_t (expr);
       expr_ = expr;
+    }
+
+    void rename ( const ast_t::key_vec_t::value_type & from
+                , const ast_t::key_vec_t::value_type & to
+                )
+    {
+      ast_.rename (from, to);
+      expr_ = ast_.string();
+    }
+
+    void add (expression_t & other)
+    {
+      ast_.add (other.ast());
+      expr_ = ast_.string();
     }
 
   private:
