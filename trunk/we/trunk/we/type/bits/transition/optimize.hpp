@@ -51,13 +51,13 @@ namespace we { namespace type {
             bool modified (false);
 
             modified |= (  options.simple_pipe_elimination ()
-                        &&         simple_pipe_elimination (trans_parent, net)
+                        && simple_pipe_elimination::run (trans_parent, net)
                         )
               ;
 
             if (options.merge_expressions())
               {
-                while (merge_expressions (trans_parent, net))
+                while (merge_expressions::run (trans_parent, net))
                   {
                     modified = true;
                   }

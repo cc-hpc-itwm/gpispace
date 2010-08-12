@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace we { namespace type {
-    namespace optimize
+    namespace optimize { namespace simple_pipe_elimination
     {
       // ******************************************************************* //
 
@@ -158,7 +158,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template<typename P, typename E, typename T>
-      inline bool simple_pipe_elimination
+      inline bool run
       ( transition_t<P, E, T> & trans_parent
       , petri_net::net<P, transition_t<P,E,T>, E, T> & net
       )
@@ -228,7 +228,7 @@ namespace we { namespace type {
 
         return modified;
       }
-    }
+    }}
   }
 }
 
