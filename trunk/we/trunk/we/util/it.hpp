@@ -32,6 +32,7 @@ namespace it
     void operator ++ (void) { ++pos; }
 
     size_type size (void) const { return the_size; }
+    bool empty (void) const { return the_size == 0; }
   };
 }
 
