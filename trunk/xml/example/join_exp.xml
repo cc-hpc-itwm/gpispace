@@ -94,5 +94,69 @@
   </transition>
 
   <place name="d" type="long"/>
+
+  <place name="cin" type="long"/>
+  <place name="cread" type="long"/>
+  <place name="triggA" type="control"/>
+  <place name="triggB" type="control"/>
+  <place name="triggT" type="control"/>
+  <place name="resA" type="long"/>
+  <place name="resB" type="long"/>
+  <place name="t" type="long"/>
+  <transition name="init">
+    <defun>
+      <in name="c" type="long"/>
+      <out name="c" type="long"/>
+      <out name="t" type="control"/>
+      <expression>${t}:=[]</expression>
+    </defun>
+    <connect-in port="c" place="cin"/>
+    <connect-out port="c" place="cread"/>
+    <connect-out port="t" place="triggT"/>
+  </transition>
+  <transition name="dup">
+    <defun>
+      <in name="x" type="control"/>
+      <out name="a" type="control"/>
+      <out name="b" type="control"/>
+      <expression>${a}:=${x}; ${b}:=${x}</expression>
+    </defun>
+    <connect-in port="x" place="triggT"/>
+    <connect-out port="a" place="triggA"/>
+    <connect-out port="b" place="triggB"/>
+  </transition>
+  <transition name="A">
+    <defun>
+      <in name="trigger" type="control"/>
+      <in name="x" type="long"/>
+      <out name="N" type="long"/>
+      <expression>${N}:=2*${x}</expression>
+    </defun>
+    <connect-in port="trigger" place="triggA"/>
+    <connect-read port="x" place="cread"/>
+    <connect-out port="N" place="resA"/>
+  </transition>
+  <transition name="B">
+    <defun>
+      <in name="trigger" type="control"/>
+      <in name="t" type="long"/>
+      <in name="x" type="long"/>
+      <out name="N" type="long"/>
+      <expression>${N}:=${t}*${x}</expression>
+    </defun>
+    <connect-in port="trigger" place="triggB"/>
+    <connect-read port="x" place="cread"/>
+    <connect-read port="t" place="t"/>
+    <connect-out port="N" place="resB"/>
+  </transition>
+  <transition name="consume">
+    <defun>
+      <in name="a" type="long"/>
+      <in name="b" type="long"/>
+      <module name="mod" function="fun"/>
+    </defun>
+    <connect-in port="a" place="resA"/>
+    <connect-in port="b" place="resB"/>
+  </transition>
   </net>
 </defun>
