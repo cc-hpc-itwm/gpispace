@@ -46,29 +46,16 @@
       <connect-out port="done" place="doneTT"/>
     </transition>
 
-    <transition name="dec">
-      <defun>
-        <in name="trigger" type="control"/>
-        <in name="wait" type="long"/>
-        <out name="wait" type="long"/>
-        <expression>${wait} := ${wait} - 1</expression>
-        <condition>${wait} :gt: 0</condition>
-      </defun>
+    <include-template href="wait.xml"/>
+    <specialize name="wait_control" use="wait">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_control"/>
+      <place-map virtual="wait" real="wait"/>
       <connect-in port="trigger" place="doneTT"/>
-      <connect-in port="wait" place="wait"/>
-      <connect-out port="wait" place="wait"/>
+      <connect-out port="done" place="done"/>
     </transition>
-
-    <transition name="finalize">
-      <defun>
-        <in name="wait" type="long"/>
-        <out name="trigger" type="control"/>
-        <expression>${trigger} := []</expression>
-        <condition>${wait} :eq: 0</condition>
-      </defun>
-      <connect-in port="wait" place="wait"/>
-      <connect-out port="trigger" place="done"/>
-    </transition>
-
   </net>
 </defun>
