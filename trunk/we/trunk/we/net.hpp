@@ -710,6 +710,38 @@ public:
     return it->second;
   }
 
+  eid_t get_eid_out (const tid_t & tid, const pid_t & pid) const
+  {
+    for ( adj_place_const_it pit (out_of_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        if (*pit == pid)
+          {
+            return pit();
+          }
+      }
+
+    throw exception::no_such ("specific out connection");
+  }
+
+  eid_t get_eid_in (const tid_t & tid, const pid_t & pid) const
+  {
+    for ( adj_place_const_it pit (in_to_transition (tid))
+        ; pit.has_more()
+        ; ++pit
+        )
+      {
+        if (*pit == pid)
+          {
+            return pit();
+          }
+      }
+
+    throw exception::no_such ("specific in connection");
+  }
+
   bool is_read_connection (const tid_t & tid, const pid_t & pid) const
   {
     for ( adj_place_const_it pit (in_to_transition (tid))
