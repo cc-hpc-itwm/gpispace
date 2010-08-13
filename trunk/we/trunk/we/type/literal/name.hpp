@@ -3,6 +3,8 @@
 #ifndef _WE_TYPE_LITERAL_NAME_HPP
 #define _WE_TYPE_LITERAL_NAME_HPP
 
+#include <string>
+
 namespace literal
 {
   typedef std::string type_name_t;

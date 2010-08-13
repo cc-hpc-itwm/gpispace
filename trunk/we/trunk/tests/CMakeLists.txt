@@ -1,5 +1,7 @@
 # -*- mode: cmake; -*-
 
+include_directories(.)
+
 set(tc_srcs
     test_activity.cpp
     test_adjacency.cpp
@@ -45,6 +47,8 @@ set(tc_srcs
     test_trans.cpp
     test_unordered_map.cpp
     test_user_defined_transition_function.cpp
+    test_sig_cpp.cpp
+    test_sig_cpp_result.cpp
    )
 list(SORT tc_srcs)
 foreach (tc_src ${tc_srcs})

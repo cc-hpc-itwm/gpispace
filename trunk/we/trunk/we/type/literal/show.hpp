@@ -7,6 +7,11 @@
 
 #include <we/type/literal.hpp>
 
+#include <iostream>
+#include <sstream>
+
+#include <iomanip>
+
 namespace literal
 {
   namespace visitor
@@ -34,6 +39,11 @@ namespace literal
         return "\"" + x + "\"";
       }
 
+      std::string operator () (const double & d) const
+      {
+        std::ostringstream s; s << std::showpoint << d; return s.str();
+      }
+
       template<typename T>
       std::string operator () (const T & x) const
       {
@@ -42,7 +52,7 @@ namespace literal
     };
   }
 
-  static std::string show (const type v)
+  inline std::string show (const type & v)
   {
     return boost::apply_visitor (visitor::show(), v);
   }
