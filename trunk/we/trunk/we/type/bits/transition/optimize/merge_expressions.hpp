@@ -19,7 +19,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template<typename P, typename E, typename T>
-      inline fhg::util::maybe<const typename transition_t<P, E, T>::port_t &>
+      inline fhg::util::maybe<const typename transition_t<P, E, T>::port_t>
       input_port_by_pid ( const transition_t<P, E, T> & trans
                         , const petri_net::pid_t & pid
                         )
@@ -29,12 +29,12 @@ namespace we { namespace type {
 
         try
           {
-            return fhg::util::Just<const port_t &>
+            return fhg::util::Just<const port_t>
               (trans.get_port (trans.input_port_by_pid (pid).first));
           }
         catch (const we::type::exception::port_undefined &)
           {
-            return fhg::util::Nothing<const port_t &>();
+            return fhg::util::Nothing<const port_t>();
           }
       }
 
@@ -45,8 +45,8 @@ namespace we { namespace type {
       {
         typedef boost::unordered_set<petri_net::pid_t> pid_set_type;
 
-        const transition_t<P, E, T> & pred;
-        const petri_net::tid_t & tid_pred;
+        const transition_t<P, E, T> pred;
+        const petri_net::tid_t tid_pred;
         const pid_set_type pid_read;
 
         trans_info ( const transition_t<P, E, T> & _pred
@@ -75,10 +75,10 @@ namespace we { namespace type {
         typedef trans_info<P, E, T> trans_info;
         typedef typename trans_info::pid_set_type pid_set_type;
 
-        typedef std::pair<const transition_t &, const tid_t &> pair_type;
+        typedef std::pair<const transition_t, const tid_t> pair_type;
         typedef boost::unordered_set<pair_type> set_of_pair_type;
 
-        typedef std::pair<const tid_t &, const pid_t &> tid_pid_type;
+        typedef std::pair<const tid_t, const pid_t> tid_pid_type;
         typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
 
         typedef boost::unordered_set<std::string> name_set_type;
@@ -169,7 +169,7 @@ namespace we { namespace type {
             return fhg::util::Nothing<trans_info>();
           }
 
-        const pair_type & p (*preds.begin());
+        const pair_type p (*preds.begin());
 
         for ( typename set_of_tid_pid_type::const_iterator tr (preds_read.begin())
             ; tr != preds_read.end()
@@ -223,7 +223,7 @@ namespace we { namespace type {
               }
             else
               {
-                const fhg::util::maybe<const port_t &>
+                const fhg::util::maybe<const port_t>
                   maybe_pred_in (input_port_by_pid (pred, *p));
 
                 if (maybe_pred_in.isJust())
@@ -450,6 +450,7 @@ namespace we { namespace type {
                   {
                     transition_t pred ((*maybe_pred).pred);
                     tid_t tid_pred ((*maybe_pred).tid_pred);
+
                     pid_set_type pid_read ((*maybe_pred).pid_read);
 
                     rename_ports<P, E, T> (trans, pred);
