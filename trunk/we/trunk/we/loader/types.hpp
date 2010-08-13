@@ -29,7 +29,7 @@ namespace we
     class IModule;
 
     typedef expr::eval::context input_t;
-    typedef std::vector <std::pair<value::type, std::string> > output_t;
+    typedef expr::eval::context output_t;
 
     typedef void (*InitializeFunction)(IModule*, unsigned int);
     typedef void (*FinalizeFunction)(IModule*);
@@ -43,7 +43,7 @@ namespace we
 
     inline void put_output (output_t & o, const std::string & key, const value::type & val)
     {
-      o.push_back (output_t::value_type (val, key));
+      o.bind (key, val);
     }
 
     template <typename T>

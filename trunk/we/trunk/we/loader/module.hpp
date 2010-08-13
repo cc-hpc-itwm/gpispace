@@ -2,6 +2,7 @@
 #define SDPA_DAEMON_NRE_MODULE_CALL_HPP 1
 
 #include <we/loader/loader.hpp>
+#include <we/loader/types.hpp>
 
 namespace module
 {
@@ -35,7 +36,7 @@ namespace module
         );
     }
 
-    typedef std::vector <std::pair<value::type, std::string> > mod_output_t;
+    typedef we::loader::output_t mod_output_t;
 
     mod_output_t mod_output;
 
@@ -49,7 +50,9 @@ namespace module
       try
       {
         const port_id_t port_id =
-          we::type::detail::translate_name_to_output_port (act.transition(), ton->second);
+          we::type::detail::translate_name_to_output_port ( act.transition()
+                                                          , ton->first
+                                                          );
 
         const port_t & port =
           act.transition().get_port (port_id);
@@ -58,7 +61,7 @@ namespace module
           ( output_t::value_type
             ( token_type ( port.name()
                          , port.signature()
-                         , ton->first
+                         , ton->second
                          )
             , port_id
             )
