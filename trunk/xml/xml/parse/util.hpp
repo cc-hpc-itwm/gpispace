@@ -12,5 +12,6 @@
 #include <xml/parse/util/cdata.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/validprefix.hpp>
+#include <xml/parse/util/validstructfield.hpp>
 
 #endif

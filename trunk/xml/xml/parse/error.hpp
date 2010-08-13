@@ -1153,6 +1153,32 @@ namespace xml
         {}
       };
 
+
+      // ******************************************************************* //
+
+      class invalid_field_name : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << " invalid field name " << name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        invalid_field_name ( const std::string & name
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (name, path))
+        {}
+      };
+
       // ******************************************************************* //
 
       class no_map_for_virtual_place : public generic

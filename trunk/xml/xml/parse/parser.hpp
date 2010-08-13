@@ -964,12 +964,16 @@ namespace xml
                       , signature::desc_t & sig
                       )
     {
-      const std::string name ( required ( "struct_field_type"
-                                        , node
-                                        , "name"
-                                        , state.file_in_progress()
-                                        )
-                             );
+      const std::string name
+        ( validate_field_name ( required ( "struct_field_type"
+                                         , node
+                                         , "name"
+                                         , state.file_in_progress()
+                                         )
+                              , state.file_in_progress()
+                              )
+        );
+
       const std::string type ( required ( "struct_field_type"
                                         , node
                                         , "type"
@@ -1026,7 +1030,14 @@ namespace xml
                    )
     {
       const std::string name
-        (required ("substruct_type", node, "name", state.file_in_progress()));
+        ( validate_field_name ( required ( "substruct_type"
+                                         , node
+                                         , "name"
+                                         , state.file_in_progress()
+                                         )
+                              , state.file_in_progress()
+                              )
+        );
 
       boost::apply_visitor ( signature::visitor::create_structured_field (name)
                            , sig
@@ -1045,7 +1056,13 @@ namespace xml
       type::struct_t s;
 
       s.path = state.file_in_progress();
-      s.name = required ("struct_type", node, "name", state.file_in_progress());
+      s.name = validate_field_name ( required ( "struct_type"
+                                              , node
+                                              , "name"
+                                              , state.file_in_progress()
+                                              )
+                                   , state.file_in_progress()
+                                   );
       s.sig = signature::structured_t();
       s.level = state.level();
 

@@ -6,6 +6,7 @@
 #include <we/type/literal/name.hpp>
 
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace literal
 {
@@ -42,6 +43,36 @@ namespace literal
       static name n;
 
       return n.translate (t);
+    }
+
+    struct names_reserved
+    {
+    private:
+      typedef boost::unordered_set<std::string> set_type;
+
+      set_type s;
+
+    public:
+      names_reserved (void) : s ()
+      {
+        s.insert ("control");
+        s.insert ("bool");
+        s.insert ("long");
+        s.insert ("double");
+        s.insert ("char");
+      }
+
+      bool reserved (const set_type::value_type & x) const
+      {
+        return (s.find (x) != s.end());
+      }
+    };
+
+    inline bool reserved (const std::string & x)
+    {
+      static names_reserved n;
+
+      return n.reserved (x);
     }
   }
 }

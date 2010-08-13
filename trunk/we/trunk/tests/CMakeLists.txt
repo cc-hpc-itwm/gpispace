@@ -1,6 +1,6 @@
 # -*- mode: cmake; -*-
 
-include_directories(.)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(tc_srcs
     test_activity.cpp
@@ -48,36 +48,53 @@ set(tc_srcs
     test_unordered_map.cpp
     test_user_defined_transition_function.cpp
     test_sig_cpp.cpp
+
+   )
+
+
+function(construct_tests )
+  foreach (tc_src ${ARGN})
+    # get the filename without extension
+    string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
+    message(STATUS "adding test case ${tc_name} (using ${tc_src})")
+
+    add_executable(${tc_name} ${tc_src})
+    target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
+    target_link_libraries(${tc_name} ${Boost_LIBRARIES})
+    target_link_libraries(${tc_name} dl)
+    get_target_property(LOC ${tc_name} LOCATION_)
+    add_test(${tc_name} ${LOC})
+  endforeach(tc_src ${tc_srcs})
+endfunction(construct_tests)
+
+list(SORT tc_srcs)
+construct_tests(${tc_srcs})
+
+set(cross_hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/cross.hpp
+   )
+set(cross_gen
+    test_${PROJECT_NAME}_sig_cpp
+   )
+add_custom_command(OUTPUT ${cross_hpp}
+                   COMMAND ${cross_gen} > ${cross_hpp}
+                   DEPENDS ${cross_gen}
+                  )
+
+set(tc_src
     test_sig_cpp_result.cpp
    )
-list(SORT tc_srcs)
-foreach (tc_src ${tc_srcs})
-  # get the filename without extension
-  string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
-  message(STATUS "adding test case ${tc_name} (using ${tc_src})")
-
-  add_executable(${tc_name} ${tc_src})
-  target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
-  target_link_libraries(${tc_name} ${Boost_LIBRARIES})
-  target_link_libraries(${tc_name} dl)
-  get_target_property(LOC ${tc_name} LOCATION_)
-  add_test(${tc_name} ${LOC})
-endforeach(tc_src ${tc_srcs})
+string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
+add_executable(${tc_name} ${tc_src} ${cross_hpp})
+target_link_libraries(${tc_name} ${Boost_LIBRARIES})
+get_target_property(LOC ${tc_name} LOCATION_)
+add_test(${tc_name} ${LOC})
 
 set (gen_srcs
      generate_map_reduce.cpp
     )
 list(SORT gen_srcs)
-foreach (gen_src ${gen_srcs})
-  # get the filename without extension
-  string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "\\2" gen_name ${gen_src})
-  message(STATUS "adding generator ${gen_name} (using ${gen_src})")
-
-  add_executable(${gen_name} ${gen_src})
-  target_link_libraries(${gen_name} ${FhgLog_LIBRARY})
-  target_link_libraries(${gen_name} ${Boost_LIBRARIES})
-  get_target_property(LOC ${gen_name} LOCATION_)
-endforeach(gen_src ${gen_srcs})
+construct_tests(${gen_srcs})
 
 # answer module
 add_library(answer SHARED answer.cpp)
