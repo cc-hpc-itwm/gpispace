@@ -1,7 +1,29 @@
 # -*- mode: cmake; -*-
 
-file(GLOB tc_srcs "test_*.c" "test_*.cpp")
+file(GLOB tc_srcs
+   test_append.cpp
+   test_compound.cpp
+   test_default_config.cpp
+   test_disabled_logging.cpp
+   test_error_handler.cpp
+   test_event.cpp
+   test_every_n.cpp
+   test_file_appender.cpp
+   test_filtering_appender.cpp
+   test_format.cpp
+   test_formatter.cpp
+   test_logger_config.cpp
+   test_logging.cpp
+   test_path.cpp
+   test_perf.cpp
+   test_split.cpp
+   test_synch_appender.cpp
+   test_threaded.cpp
+   test_thread_safety.cpp
+)
+
 list(SORT tc_srcs)
+
 foreach (tc_src ${tc_srcs})
   # get the filename without extension
   string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
