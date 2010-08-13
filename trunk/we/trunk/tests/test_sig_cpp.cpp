@@ -21,6 +21,7 @@ main ()
   cross["_bool"] = literal::BOOL;
   cross["_long"] = literal::LONG;
   cross["_char"] = literal::CHAR;
+  cross["_double"] = literal::DOUBLE;
   cross["bitset"] = literal::BITSET;
 
   signature::type sig (cross, "cross");
