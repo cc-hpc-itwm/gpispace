@@ -6,6 +6,7 @@
 #include <fvm-pc/pc.hpp>
 
 using we::loader::get;
+using we::loader::put;
 
 static value::type kdm_initialize (const std::string & filename, long & wait)
 {
@@ -89,16 +90,16 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   long wait (0);
   const value::type & config (kdm_initialize (filename, wait));
 
-  we::loader::put_output (output, "config", config);
-  we::loader::put_output (output, "wait", literal::type(wait));
-  we::loader::put_output (output, "trigger", control());
+  put (output, "config", config);
+  put (output, "wait", literal::type(wait));
+  put (output, "trigger", control());
 }
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const value::type & v (get<value::type> (input, "config"));
   kdm_loadTT (v);
-  we::loader::put_output (output, "trigger", control());
+  put (output, "trigger", control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -106,7 +107,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   const value::type & config (get<value::type> (input, "config"));
   const value::type & bunch (get<value::type> (input, "bunch"));
   kdm_load (config, bunch);
-  we::loader::put_output (output, "bunch", bunch);
+  put (output, "bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -115,8 +116,8 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   const value::type & bunch (get<value::type> (input, "bunch"));
   long wait (get<long>(input, "wait"));
   kdm_process (config, bunch, wait);
-  we::loader::put_output (output, "wait", wait);
-  we::loader::put_output (output, "trigger", control());
+  put (output, "wait", wait);
+  put (output, "trigger", control());
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -124,14 +125,14 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
   const value::type & config (get<value::type> (input, "config"));
   const value::type & volume (get<value::type> (input, "volume"));
   kdm_write (config, volume);
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const value::type & v (get<value::type> (input, "config"));
   kdm_finalize (v);
-  we::loader::put_output (output, "trigger", control());
+  put (output, "trigger", control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -139,13 +140,13 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   const value::type & config (get<value::type> (input, "config"));
   const value::type & volume (get<value::type> (input, "volume"));
   kdm_init_volume (config, volume);
-  we::loader::put_output (output, "volume", volume);
+  put (output, "volume", volume);
 }
 
 static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
 {
   //  std::cerr << "rank := " << fvmGetRank() << std::endl;
-  we::loader::put_output (output, "result", 0L);
+  put (output, "result", 0L);
 }
 
 WE_MOD_INITIALIZE_START (kdm);

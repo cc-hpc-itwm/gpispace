@@ -41,16 +41,63 @@ namespace we
     // ********************************************************************** //
     // PUT
 
-    inline void put_output (output_t & o, const std::string & key, const value::type & val)
+    // on port, complete token
+    inline void put ( output_t & o
+                    , const std::string & key
+                    , const value::type & val
+                    )
     {
       o.bind (key, val);
     }
 
-    template <typename T>
-    inline
-    void put_output (output_t & o, const std::string & key, const T & val)
+    // on port, subtoken by path
+    inline void put ( output_t & o
+                    , const std::string & key
+                    , const value::path_type & path
+                    , const value::type & val
+                    )
     {
-      put_output(o, key, value::type (val));
+      o.bind<value::path_type> (key, path, val);
+    }
+
+    inline void put ( output_t & o
+                    , const std::string & key
+                    , const std::string & path
+                    , const value::type & val
+                    )
+    {
+      o.bind<std::string> (key, path, val);
+    }
+
+    // on port, complete literal
+    template <typename T>
+    inline void put ( output_t & o
+                    , const std::string & key
+                    , const T & val
+                    )
+    {
+      put (o, key, value::type (val));
+    }
+
+    // on port, subliteral by string-path
+    template<typename T>
+    inline void put ( output_t & o
+                    , const std::string & key
+                    , const value::path_type & path
+                    , const T & val
+                    )
+    {
+      put (o, key, path, value::type (val));
+    }
+
+    template <typename T>
+    inline void put ( output_t & o
+                    , const std::string & key
+                    , const std::string & path
+                    , const T & val
+                    )
+    {
+      put (o, key, path, value::type (val));
     }
 
     // ********************************************************************** //
@@ -77,7 +124,7 @@ namespace we
     inline typename value::visitor::get<T const &>::result_type
     get ( const input_t & i
         , const std::string & key
-        , const std::string & path_in_value
+        , const value::path_type & path_in_value
         )
     {
       return value::get<T>(path_in_value, i.value (key));
@@ -87,7 +134,7 @@ namespace we
     inline typename value::visitor::get<T const &>::result_type
     get ( const input_t & i
         , const std::string & key
-        , const value::path_type & path_in_value
+        , const std::string & path_in_value
         )
     {
       return value::get<T>(path_in_value, i.value (key));
@@ -96,11 +143,9 @@ namespace we
     // get from an earlier extracted value::type
     template <typename T>
     inline typename value::visitor::get<T const &>::result_type
-    get ( const value::type & v
-        , const std::string & path_in_value
-        )
+    get (const value::type & v)
     {
-      return value::get<T>(path_in_value, v);
+      return value::get<T>(v);
     }
 
     template <typename T>
@@ -114,9 +159,11 @@ namespace we
 
     template <typename T>
     inline typename value::visitor::get<T const &>::result_type
-    get (const value::type & v)
+    get ( const value::type & v
+        , const std::string & path_in_value
+        )
     {
-      return value::get<T>(v);
+      return value::get<T>(path_in_value, v);
     }
   }
 }

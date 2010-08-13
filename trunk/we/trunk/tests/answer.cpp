@@ -14,7 +14,7 @@ static void answer (void * state, const we::loader::input_t & input, we::loader:
 {
   std::cerr << "state := " << state << std::endl;
   std::cerr << "input := " << input << std::endl;
-  we::loader::put_output (output, "out", 42L);
+  we::loader::put (output, "out", 42L);
 }
 
 WE_MOD_INITIALIZE_START (answer);

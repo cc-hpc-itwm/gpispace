@@ -6,6 +6,7 @@
 #include <fvm-pc/pc.hpp>
 
 using we::loader::get;
+using we::loader::put;
 
 /* ************************************************************************* */
 
@@ -41,17 +42,17 @@ static void initialize ( void *
 
   std::cout << "initialize: wait = " << wait << std::endl;
 
-  we::loader::put_output (output, "config", config);
-  we::loader::put_output (output, "wait", literal::type(wait));
-  we::loader::put_output (output, "trigger", control());
+  put (output, "config", config);
+  put (output, "wait", literal::type(wait));
+  put (output, "trigger", control());
 
   bitsetofint::type bs; bs.ins (0);
 
-  we::loader::put_output (output, "wanted", bs);
+  put (output, "wanted", bs);
 
   const long & parallel_loadTT (get<long> (config, "PARALLEL_LOADTT"));
 
-  we::loader::put_output (output, "parallel_loadTT", literal::type(parallel_loadTT));
+  put (output, "parallel_loadTT", literal::type(parallel_loadTT));
 }
 
 /* ************************************************************************* */
@@ -67,7 +68,7 @@ static void loadTT ( void *
   std::cout << "loadTT: got config " << config << std::endl;
   std::cout << "loadTT: got TT " << TT << std::endl;
 
-  we::loader::put_output (output, "TT", TT);
+  put (output, "TT", TT);
 }
 
 /* ************************************************************************* */
@@ -92,7 +93,7 @@ static void load ( void *
   loaded_bunch["seen"] = bitsetofint::type();
   loaded_bunch["wait"] = get<long> (config, "SUBVOLUMES_PER_OFFSET");
 
-  we::loader::put_output (output, "loaded_bunch", loaded_bunch);
+  put (output, "loaded_bunch", loaded_bunch);
 
   std::cout << "load: loaded_bunch " << loaded_bunch << std::endl;
 }
@@ -134,7 +135,7 @@ static void process ( void *
   value::field("free", value::field("buffer1", volume_processed)) = assigned1 && !filled1;
   value::field("wait", volume_processed) = wait - ((filled0) ? 1 : 0) - ((filled1) ? 1 : 0);
 
-  we::loader::put_output (output, "volume_processed", volume_processed);
+  put (output, "volume_processed", volume_processed);
 
   std::cout << "process: volume_processed " << volume_processed << std::endl;
 }
@@ -152,7 +153,7 @@ static void write ( void *
   std::cout << "write: got config " << config << std::endl;
   std::cout << "write: got volume " << volume << std::endl;
 
-  we::loader::put_output (output, "volume", volume);
+  put (output, "volume", volume);
 }
 
 /* ************************************************************************* */
@@ -166,14 +167,14 @@ static void finalize ( void *
 
   std::cout << "finalize: got config " << config << std::endl;
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 /* ************************************************************************* */
 
 static void selftest (void *, const we::loader::input_t & , we::loader::output_t & output)
 {
-  we::loader::put_output (output, "result", 0L);
+  put (output, "result", 0L);
 }
 
 /* ************************************************************************* */

@@ -10,6 +10,7 @@
 
   <in name="a" type="line" place="a"/>
   <out name="b" type="line" place="b"/>
+  <out name="c" type="line" place="c"/>
 
   <net>
     <place name="a" type="line">
@@ -30,12 +31,14 @@
     </place>
 
     <place name="b" type="line"/>
+    <place name="c" type="line"/>
 
     <transition name="run">
       <defun>
         <in name="a" type="line"/>
         <in name="stretch" type="double"/>
         <out name="b" type="line"/>
+        <out name="c" type="line"/>
 
         <module name="put_get" function="run"/>
       </defun>
@@ -43,6 +46,7 @@
       <connect-in port="a" place="a"/>
       <connect-in port="stretch" place="stretch"/>
       <connect-out port="b" place="b"/>
+      <connect-out port="c" place="c"/>
     </transition>
   </net>
 </defun>

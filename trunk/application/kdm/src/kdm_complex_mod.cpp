@@ -20,6 +20,7 @@
 #include "sinc_mod.hpp"
 
 using we::loader::get;
+using we::loader::put;
 
 // ************************************************************************* //
 
@@ -247,17 +248,17 @@ static void initialize ( void *
 
   const long & wait (get<long> (config, "SUBVOLUMES_PER_OFFSET"));
 
-  we::loader::put_output (output, "config", config);
-  we::loader::put_output (output, "wait", literal::type(wait));
-  we::loader::put_output (output, "trigger", control());
+  put (output, "config", config);
+  put (output, "wait", literal::type(wait));
+  put (output, "trigger", control());
 
   bitsetofint::type bs; bs.ins (0);
 
-  we::loader::put_output (output, "wanted", bs);
+  put (output, "wanted", bs);
 
   const long & parallel_loadTT (get<long> (config, "PARALLEL_LOADTT"));
 
-  we::loader::put_output (output, "parallel_loadTT", parallel_loadTT);
+  put (output, "parallel_loadTT", parallel_loadTT);
 }
 
 /* ************************************************************************* */
@@ -318,7 +319,7 @@ static void loadTT ( void *
 
   TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, TT, Parallel_loadTT, handle_TT);
 
-  we::loader::put_output (output, "TT", TT);
+  put (output, "TT", TT);
 }
 
 /* ************************************************************************* */
@@ -368,7 +369,7 @@ static void load ( void *
 
   LOG (INFO, "load: stored bunch " << loaded_bunch);
 
-  we::loader::put_output (output, "loaded_bunch", loaded_bunch);
+  put (output, "loaded_bunch", loaded_bunch);
 }
 
 /* ************************************************************************* */
@@ -553,7 +554,7 @@ static void process ( void *
              )
            );
 
-  we::loader::put_output (output, "volume_processed", volume_processed);
+  put (output, "volume_processed", volume_processed);
 
   LOG (INFO, "process: volume_processed " << volume_processed);
 }
@@ -627,7 +628,7 @@ static void write ( void *
     , Job.MigFileMode
     );
 
-  we::loader::put_output (output, "volume", volume);
+  put (output, "volume", volume);
 }
 
 /* ************************************************************************* */
@@ -657,7 +658,7 @@ static void finalize ( void *
   fvmGlobalFree (handle_Volume);
   fvmGlobalFree (scratch_Volume);
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 /* ************************************************************************* */

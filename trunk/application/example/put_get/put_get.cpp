@@ -6,6 +6,7 @@
 #include <fvm-pc/util.hpp>
 
 using we::loader::get;
+using we::loader::put;
 
 static void run ( void *
                 , const we::loader::input_t & input
@@ -90,19 +91,38 @@ static void run ( void *
 
   // *********************************************************************** //
 
+  // not recommended
   value::structured_t b_start;
-  value::structured_t b_end;
-  value::structured_t b;
 
   b_start["x"] = stretch * a_start_x;
   b_start["y"] = stretch * a_start_y;
-  b_end["x"] = stretch * a_end_x;
-  b_end["y"] = stretch * get<double> (input, "a", "end.y");
 
-  b["start"] = b_start;
-  b["end"] = b_end;
+  // *********************************************************************** //
+  // put a literal via a path on a port
 
-  we::loader::put_output (output, "b", b);
+  put (output, "b", "end.x", stretch * a_end_x);
+
+  // also by a value::path
+  {
+    value::path_type path; path.push_back ("end"); path.push_back ("y");
+
+    put (output, "b", path, stretch * get<double> (input, "a", "end.y"));
+  }
+
+  // *********************************************************************** //
+  // put a complete subtoken via a path on a port
+
+  put (output, "b", "start", b_start);
+
+  // *********************************************************************** //
+  // put a complete value on a port (here grab it from the already
+  // constructed output)
+
+  value::type b (get<value::type> (output, "b"));
+
+  put (output, "c", "start", get<value::type> (b, "end"));
+  put (output, "c", "end", get<value::type> (b, "start"));
+
 }
 
 WE_MOD_INITIALIZE_START (put_get);

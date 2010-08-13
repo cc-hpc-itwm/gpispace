@@ -20,6 +20,7 @@
 #include "sinc_mod.hpp"
 
 using we::loader::get;
+using we::loader::put;
 
 // ************************************************************************* //
 
@@ -40,8 +41,9 @@ static unsigned long sizeofJob (void)
 
 // ************************************************************************* //
 
-static value::type kdm_initialize (const std::string & filename)
+static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
+  const std::string & filename (get<std::string> (input, "config_file"));
   const int NThreads (4);
 
   MigrationJob Job;
@@ -182,23 +184,19 @@ static value::type kdm_initialize (const std::string & filename)
 
   LOG (DEBUG, "handle_TT " << Job.globTTbufsizelocal);
 
-  value::structured_t config;
+  put (output, "config", "handle_Job", static_cast<long>(handle_Job));
+  put (output, "config", "scratch_Job", static_cast<long>(scratch_Job));
+  put (output, "config", "handle_TT", static_cast<long>(handle_TT));
+  put (output, "config", "NThreads", static_cast<long>(NThreads));
 
-  config["handle_Job"] = static_cast<long>(handle_Job);
-  config["scratch_Job"] = static_cast<long>(scratch_Job);
-  config["handle_TT"] = static_cast<long>(handle_TT);
-  config["NThreads"] = static_cast<long>(NThreads);
+  put (output, "config", "OFFSETS", static_cast<long>(Job.n_offset));
+  put (output, "config", "SUBVOLUMES_PER_OFFSET", static_cast<long>(Job.NSubVols));
+  put (output, "config", "BUNCHES_PER_OFFSET", static_cast<long>(Nbid_in_pid (1, 1, Job)));
+  put (output, "config", "PARALLEL_LOADTT", static_cast<long>(fvmGetNodeCount()));
 
-  config["OFFSETS"] = static_cast<long>(Job.n_offset);
-  config["SUBVOLUMES_PER_OFFSET"] = static_cast<long>(Job.NSubVols);
-  config["BUNCHES_PER_OFFSET"] = static_cast<long>(Nbid_in_pid (1, 1, Job));
-  config["PARALLEL_LOADTT"] = static_cast<long>(fvmGetNodeCount());
+  put (output, "config", "VOLUME_CREDITS", 4 * static_cast<long>(fvmGetNodeCount()));
 
-  config["VOLUME_CREDITS"] = 4 * static_cast<long>(fvmGetNodeCount());
-
-  LOG (DEBUG, "initialize: config = " << config);
-
-  return config;
+  LOG (DEBUG, "initialize: config = " << get<value::type>(output, "config"));
 }
 
 // ************************************************************************* //
@@ -486,15 +484,6 @@ static void kdm_process ( const value::type & config
 // ************************************************************************* //
 // wrapper functions
 
-static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
-{
-  const std::string & filename (get<std::string> (input, "config_file"));
-
-  const value::type & config (kdm_initialize (filename));
-
-  we::loader::put_output (output, "config", config);
-}
-
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const value::type & config (get<value::type> (input, "config"));
@@ -502,7 +491,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   kdm_loadTT (config, TT);
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -510,7 +499,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   const value::type & config (get<value::type> (input, "config"));
   const value::type & bunch (get<value::type> (input, "bunch"));
   kdm_load (config, bunch);
-  we::loader::put_output (output, "bunch", bunch);
+  put (output, "bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -520,7 +509,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   kdm_process (config, bunch);
 
-  we::loader::put_output (output, "bunch", bunch);
+  put (output, "bunch", bunch);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -530,7 +519,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
   kdm_write (config, volume);
 
-  we::loader::put_output (output, "volume", volume);
+  put (output, "volume", volume);
 }
 
 static void finalize (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -539,7 +528,7 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
   kdm_finalize (config);
 
-  we::loader::put_output (output, "trigger", control());
+  put (output, "trigger", control());
 }
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
@@ -549,14 +538,14 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
   kdm_init_volume (config, volume);
 
-  we::loader::put_output (output, "volume", volume);
+  put (output, "volume", volume);
 }
 
 static void debug (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   LOG (INFO, "DEBUG: volume " << get<value::type>(input, "volume"));
 
-  we::loader::put_output (output, "volume", get<value::type>(input, "volume"));
+  put (output, "volume", get<value::type>(input, "volume"));
 }
 
 // ************************************************************************* //

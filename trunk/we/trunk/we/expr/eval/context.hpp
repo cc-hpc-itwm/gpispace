@@ -6,6 +6,7 @@
 #include <we/expr/parse/node.hpp>
 
 #include <we/type/value.hpp>
+#include <we/type/value/put.hpp>
 
 #include <we/type/value/field.hpp>
 #include <we/type/value/mk_structured.hpp>
@@ -47,47 +48,20 @@ namespace expr
       typedef boost::unordered_map<std::string,value::type> container_t;
       container_t container;
 
-      void modify ( key_vec_t::const_iterator pos
-                  , const key_vec_t::const_iterator end
-                  , value::type & store
-                  , const value::type & value
-                  )
-      {
-        ++pos;
-
-        if (pos == end)
-          store = value;
-        else
-          {
-            store = boost::apply_visitor ( value::visitor::mk_structured()
-                                         , store
-                                         );
-
-            modify ( pos
-                   , end
-                   , boost::apply_visitor
-                     ( value::visitor::field (fhg::util::show (*pos))
-                     , store
-                     )
-                   , value
-                   );
-          }
-      }
-
       const value::type & find ( key_vec_t::const_iterator pos
                                , const key_vec_t::const_iterator end
                                , const value::type & store
                                ) const
       {
-        ++pos;
-
         if (pos == end)
-          return store;
+          {
+            return store;
+          }
         else
           {
             value::visitor::get_field get (fhg::util::show (*pos));
 
-            return find ( pos
+            return find ( pos + 1
                         , end
                         , boost::apply_visitor (get, store)
                         );
@@ -98,27 +72,37 @@ namespace expr
       typedef container_t::const_iterator const_iterator;
       typedef container_t::iterator iterator;
 
+      template<typename Path>
+      value::type bind ( const std::string & key
+                       , const Path & path
+                       , const value::type & value
+                       )
+      {
+        container[key]
+          =  boost::apply_visitor ( value::visitor::mk_structured()
+                                  , container[key]
+                                  );
+
+        return value::put (path, container[key], value);
+      }
+
       value::type bind (const key_vec_t & key_vec, const value::type & value)
       {
-        switch (key_vec.size())
+        if (key_vec.size() == 0)
           {
-          case 0:
             throw std::runtime_error ("context.bind []");
-          case 1:
-            container[key_vec[0]] = value;
-          default:
-            container[key_vec[0]] =
-              boost::apply_visitor ( value::visitor::mk_structured()
-                                   , container[key_vec[0]]
-                                   );
-
-            modify ( key_vec.begin()
-                   , key_vec.end()
-                   , container[key_vec[0]]
-                   , value
-                   );
           }
-        return value;
+
+        container[key_vec[0]] =
+          boost::apply_visitor ( value::visitor::mk_structured()
+                               , container[key_vec[0]]
+                               );
+
+        return value::put ( key_vec.begin() + 1
+                          , key_vec.end()
+                          , container[key_vec[0]]
+                          , value
+                          );
       }
 
       value::type bind (const std::string & key, const value::type & value)
@@ -139,7 +123,7 @@ namespace expr
               if (pos == container.end())
                 throw exception::eval::missing_binding (key_vec[0]);
               else
-                return find ( key_vec.begin()
+                return find ( key_vec.begin() + 1
                             , key_vec.end()
                             , pos->second
                             );

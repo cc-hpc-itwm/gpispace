@@ -15,6 +15,7 @@
 #include <map>
 
 using we::loader::get;
+using we::loader::put;
 
 typedef std::map<unsigned int, unsigned long> call_cnt_map_t ;
 static call_cnt_map_t call_cnt_map;
@@ -31,7 +32,7 @@ static void fun ( void *
 
   ++call_cnt_map[x];
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 static unsigned long call_cnt_A = 0;
@@ -46,7 +47,7 @@ static void A ( void *
 
   ++call_cnt_A;
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 static unsigned long call_cnt_B = 0;
@@ -61,7 +62,7 @@ static void B ( void *
 
   ++call_cnt_B;
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 static unsigned long call_cnt_C = 0;
@@ -76,7 +77,7 @@ static void C ( void *
 
   ++call_cnt_C;
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 static unsigned long call_cnt_D = 0;
@@ -91,7 +92,7 @@ static void D ( void *
 
   ++call_cnt_D;
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 static void finalize ( void *
@@ -112,7 +113,7 @@ static void finalize ( void *
   MLOG (INFO, "call_cnt_C = " << call_cnt_C);
   MLOG (INFO, "call_cnt_D = " << call_cnt_D);
 
-  we::loader::put_output (output, "done", control());
+  put (output, "done", control());
 }
 
 WE_MOD_INITIALIZE_START (concurrent);

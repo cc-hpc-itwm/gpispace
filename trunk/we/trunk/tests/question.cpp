@@ -6,7 +6,7 @@
 static void question (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   std::cerr << "input := " << input << std::endl;
-  we::loader::put_output (output, "out", (long)get_answer());
+  we::loader::put (output, "out", (long)get_answer());
   std::cerr << "answer := " << get_answer() << std::endl;
 }
 
