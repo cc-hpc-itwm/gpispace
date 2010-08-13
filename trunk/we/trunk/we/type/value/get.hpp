@@ -20,7 +20,7 @@ namespace value
   {
     namespace exception
     {
-      class missing_field : public generic
+      class missing_field : public std::runtime_error
       {
       public:
         missing_field (const signature::field_name_t & name)
