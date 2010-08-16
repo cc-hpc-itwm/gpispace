@@ -164,7 +164,7 @@ namespace sdpa { namespace daemon {
 	  void jobFailed(const job_id_t&, const std::string& reason);
 	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
 
-	  virtual bool requestsAllowed();
+	  virtual bool requestsAllowed(const sdpa::util::time_type&);
 
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)
@@ -190,14 +190,18 @@ namespace sdpa { namespace daemon {
 	  T* create_workflow_engine()
 	  {
 		  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-//		  pWfE->sig_submitted.connect( &GenericDaemon::observe_submitted<T> );
-//		  pWfE->sig_finished.connect(  &GenericDaemon::observe_finished<T> );
-//		  pWfE->sig_failed.connect(    &GenericDaemon::observe_failed<T> );
-//		  pWfE->sig_cancelled.connect( &GenericDaemon::observe_cancelled<T> );
-//		  pWfE->sig_executing.connect( &GenericDaemon::observe_executing<T> );
+		  // pWfE->sig_submitted.connect( &GenericDaemon::observe_submitted<T> );
+		  // pWfE->sig_finished.connect(  &GenericDaemon::observe_finished<T> );
+		  // pWfE->sig_failed.connect(    &GenericDaemon::observe_failed<T> );
+		  // pWfE->sig_cancelled.connect( &GenericDaemon::observe_cancelled<T> );
+		  // pWfE->sig_executing.connect( &GenericDaemon::observe_executing<T> );
 
 		  return pWfE;
 	  }
+
+	  void incExtJobsCnt();
+	  void decExtJobsCnt();
+	  unsigned int extJobsCnt();
 
   protected:
 
@@ -270,7 +274,8 @@ namespace sdpa { namespace daemon {
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
 	  unsigned int m_nRank;
-	  unsigned int m_nExternalJobs;
+
+	  sdpa::util::time_type m_ullPollingInterval;
 
 	private:
 	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
@@ -279,7 +284,8 @@ namespace sdpa { namespace daemon {
 
 	  void messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr);
 
-	  mutable mutex_type mtx_;
+	  unsigned int m_nExternalJobs;
+	  mutable mutex_type ext_job_cnt_mtx_;
   };
 }}
 

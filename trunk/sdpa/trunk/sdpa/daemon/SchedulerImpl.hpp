@@ -77,6 +77,8 @@ namespace sdpa {
 	virtual void check_post_request();
 	virtual bool post_request(bool force = false);
 	virtual void send_life_sign();
+	virtual void update_request_time(const sdpa::util::time_type& new_time ) { m_last_request_time = new_time; }
+
 	void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
 	// thread related functions

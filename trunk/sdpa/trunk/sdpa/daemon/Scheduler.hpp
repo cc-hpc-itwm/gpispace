@@ -52,6 +52,8 @@ namespace daemon {
 	 virtual void schedule_remote(const sdpa::job_id_t &job) = 0;
 	 virtual void re_schedule(Worker::JobQueue* pQueue ) = 0;
 
+	 //virtual void update_request_time(const sdpa::util::time_type& new_time ) = 0;
+
 	 virtual void start()=0;
 	 virtual void stop()=0;
 	 virtual void run()=0;

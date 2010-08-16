@@ -254,8 +254,12 @@ void NRE<T, U>::action_configure(const StartUpEvent &se)
 	GenericDaemon::action_configure (se);
 
 	SDPA_LOG_INFO("Configuring myeself (nre)...");
-	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put("polling interval",          50 * 1000); //0.1s
+
+	// should set/update this dynamically, as a function of number of workers and their
+	// processing capacities
+
+	ptr_daemon_cfg_->put("nmax_ext_job_req", 10U);
+	ptr_daemon_cfg_->put("polling interval", 50 * 1000); //0.1s
 }
 
 template <typename T, typename U>
@@ -263,15 +267,14 @@ void NRE<T, U>::action_config_ok(const ConfigOkEvent&)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuration (nre) was ok");
-	{
-	  std::ostringstream sstr;
-	  ptr_daemon_cfg_->writeTo (sstr);
-	  SDPA_LOG_INFO("config: " << sstr.str());
-	}
+
+	std::ostringstream sstr;
+	ptr_daemon_cfg_->writeTo (sstr);
+	SDPA_LOG_INFO("config: " << sstr.str());
 
 	SDPA_LOG_INFO("NRE (" << name() << ") sending registration event to master (" << master() << ") my rank=" << rank());
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank() ));
-        sendEventToMaster (pEvtWorkerReg, MSG_RETRY_CNT);
+	sendEventToMaster (pEvtWorkerReg, MSG_RETRY_CNT);
 }
 
 template <typename T, typename U>
@@ -316,21 +319,22 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		}
 		catch(QueueFull const &)
 		{
-                  SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+			SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
 		}
 		catch(seda::StageNotFound const &)
 		{
-                  SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
-                  throw;
+            SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+            throw;
 		}
 		catch(std::exception const & ex)
 		{
-                  SDPA_LOG_ERROR("Exception during stage->send: " << ex.what());
-                  throw;
+			SDPA_LOG_ERROR("Exception during stage->send: " << ex.what());
+            throw;
 		}
-		catch(...) {
-                  SDPA_LOG_ERROR("Unknown exception during stage->send!");
-                  throw;
+		catch(...)
+		{
+            SDPA_LOG_ERROR("Unknown exception during stage->send!");
+            throw;
 		}
 	}
         else
@@ -356,9 +360,10 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFailed(pEvt);
 	}
-	catch(JobNotFoundException const &){
+	catch(JobNotFoundException const &)
+	{
 		SDPA_LOG_ERROR("Job "<<pEvt->job_id()<<" not found!");
-                return;
+        return;
 	}
 
 	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
@@ -382,16 +387,16 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		catch(seda::StageNotFound const &)
 		{
 			SDPA_LOG_FATAL("Stage not found when trying to send JobFailedEvent");
-                        throw;
+			throw;
 		}
 		catch(std::exception const & ex)
 		{
-                  SDPA_LOG_FATAL("Exception during stage->send: " << ex.what());
-                  throw;
+			SDPA_LOG_FATAL("Exception during stage->send: " << ex.what());
+            throw;
 		}
 		catch(...) {
-                  SDPA_LOG_FATAL("Unknown exception during stage->send!");
-                  throw;
+            SDPA_LOG_FATAL("Unknown exception during stage->send!");
+            throw;
 		}
 	}
 }
@@ -399,19 +404,19 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 template <typename T, typename U>
 void NRE<T, U>::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
-  assert (pEvt);
-
-  LOG(INFO, "cancelling job: " << pEvt->job_id());
+	assert (pEvt);
+	LOG(INFO, "cancelling job: " << pEvt->job_id());
 
 	// put the job into the state Cancelling
 	try {
-          Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
-          pJob->CancelJob(pEvt);
-          DLOG(TRACE, "The job state is: "<<pJob->getStatus());
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+        pJob->CancelJob(pEvt);
+        DLOG(TRACE, "The job state is: "<<pJob->getStatus());
 	}
-	catch(JobNotFoundException const &){
-          SDPA_LOG_ERROR ("job " << pEvt->job_id() << " could not be found!");
-          throw;
+	catch(JobNotFoundException const &)
+	{
+		SDPA_LOG_ERROR ("job " << pEvt->job_id() << " could not be found!");
+        throw;
 	}
 }
 

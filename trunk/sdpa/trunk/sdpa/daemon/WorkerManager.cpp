@@ -372,7 +372,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
-        DLOG(TRACE, "Add the job " << jobId.str() );
+	DLOG(TRACE, "Add the job " << jobId.str() );
 	common_queue_.push(jobId);
 }
 

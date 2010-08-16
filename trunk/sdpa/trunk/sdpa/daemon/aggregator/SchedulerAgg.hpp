@@ -44,17 +44,17 @@ namespace sdpa {
 		DMLOG(TRACE, "post request: force=" << force);
 	 	bool bReqPosted = false;
 	 	sdpa::util::time_type current_time = sdpa::util::now();
-	 	sdpa::util::time_type difftime = current_time - m_last_request_time;
+	 	sdpa::util::time_type diff_time = current_time - m_last_request_time;
 
-	 	if( force || ( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") &&
-					   ptr_comm_handler_->requestsAllowed()) )
+	 	if( force || ptr_comm_handler_->requestsAllowed(diff_time) )
 	 	{
 	 		// post a new request to the master
 	 		// the slave posts a job request
-                  DMLOG(TRACE, "Post a new request to "<<ptr_comm_handler_->master());
+            DMLOG(TRACE, "Post a new request to "<<ptr_comm_handler_->master());
 	 		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
 	 		ptr_comm_handler_->sendEventToMaster(pEvtReq);
-	 		m_last_request_time = current_time;
+
+	 		update_request_time(current_time);
 	 		bReqPosted = true;
 	 	}
 		else
@@ -82,7 +82,7 @@ namespace sdpa {
 	 	 }
 		 else
 		 {
-		  DMLOG(DEBUG, "not sending life-sign, i am not registered yet");
+			 DMLOG(DEBUG, "not sending life-sign, i am not registered yet");
 		 }
 	 }
 

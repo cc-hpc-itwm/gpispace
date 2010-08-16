@@ -257,7 +257,7 @@ void GenericDaemon::stop()
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-  DLOG(TRACE, "perform (" << typeid(*pEvent.get()).name() << ")");
+	DLOG(TRACE, "perform (" << typeid(*pEvent.get()).name() << ")");
 	if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
 	{
 		pSdpaEvt->handleBy(this);
@@ -423,9 +423,17 @@ void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int
 	}
 }
 
-bool GenericDaemon::requestsAllowed()
+bool GenericDaemon::requestsAllowed( const sdpa::util::time_type& difftime )
 {
-  return (m_nExternalJobs < cfg()->get<unsigned int>("nmax_ext_job_req", 10));
+	// if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
+	// reset it to the value specified by config first time when m_nExternalJobs becomes positive
+	// don't forget to decrement m_nExternalJobs when the job is finished !
+
+	if( extJobsCnt() == 0 && m_ullPollingInterval < ptr_daemon_cfg_->get<unsigned int>("upper bound polling interval") )
+		m_ullPollingInterval  = m_ullPollingInterval + 10000;
+
+	return (difftime>m_ullPollingInterval) &&
+		   (m_nExternalJobs<cfg()->get<unsigned int>("nmax_ext_job_req"));
 }
 
 //actions
@@ -435,16 +443,17 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	SDPA_LOG_INFO("Configuring myself (generic)...");
 
 	// use for now as below, later read from config file
-	ptr_daemon_cfg_->put("nmax_ext_job_req", 10U);
 	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
+	ptr_daemon_cfg_->put("upper bound polling interval", 5 * 1000*1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  2 * 1000 * 1000);
 	ptr_daemon_cfg_->put("node_timeout",        6 * 1000 * 1000);
+
+	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
 }
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
 	// check if the system should be recovered
-
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("configuration was ok");
 }
@@ -478,7 +487,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 	}
 	catch(WorkerNotFoundException const &)
 	{
-          SDPA_LOG_ERROR("got LS from unknown worker: " << e.from());
+		SDPA_LOG_ERROR("got LS from unknown worker: " << e.from());
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
 		sendEventToSlave(pErrorEvt);
@@ -548,7 +557,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 void GenericDaemon::action_request_job(const RequestJobEvent& e)
 {
-  DLOG(DEBUG, "got job request from: " << e.from());
+	DLOG(DEBUG, "got job request from: " << e.from());
 
 	/*
 	the slave(aggregator) requests new executable jobs
@@ -575,7 +584,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 		if( ptrJob.get() )
 		{
-			// put the job into the Runnig state here
+			// put the job into the Running state here
 			ptrJob->Dispatch(); // no event need to be sent
 
 			// create a SubmitJobEvent for the job job_id serialize and attach description
@@ -624,8 +633,8 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
-  DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
-  /*
+	DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+	/*
 	* job-id (ignored by the orchestrator, see below)
     * contains workflow description and initial tokens
     * contains a flag for simulation
@@ -636,7 +645,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
     * put the job into the job-map
     * send a submitJobAck back
     */
-  static const JobId job_id_empty ("");
+	static const JobId job_id_empty ("");
 
 	// First, check if the job 'job_id' wasn't already submitted!
 	try {
@@ -661,10 +670,10 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		// check if the message comes from outside/slave or from WFE
 		// if it comes from outside set it as local
 		if(e.from() != sdpa::daemon::WE ) //e.to())
-                {
-                  LOG(DEBUG, "got new job from " << e.from() << " = " << job_id);
-                  pJob->set_local(true);
-                }
+		{
+			LOG(DEBUG, "got new job from " << e.from() << " = " << job_id);
+			pJob->set_local(true);
+		}
 
 		ptr_scheduler_->schedule(job_id);
 
@@ -676,8 +685,9 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			// There is a problem with this if uncommented
 			sendEventToMaster(pSubmitJobAckEvt, 0);
 
-			lock_type lock(mtx_);
-			m_nExternalJobs++;
+			if( !master_.empty() )
+				incExtJobsCnt();
+
 		}
 		//catch also workflow exceptions
 	}catch(JobNotAddedException const &ex) {
@@ -725,10 +735,10 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 	// check if the worker evtRegWorker.from() has already registered!
 	try {
-                const unsigned long long node_timeout (cfg()->get<unsigned long long>("node_timeout", 30 * 1000 * 1000));
-                ptr_scheduler_->deleteNonResponsiveWorkers (node_timeout);
+		const unsigned long long node_timeout (cfg()->get<unsigned long long>("node_timeout", 30 * 1000 * 1000));
+        ptr_scheduler_->deleteNonResponsiveWorkers (node_timeout);
 
-                LOG(TRACE, "Trying to registering new worker: " << worker_id << " with rank " << rank);
+        LOG(TRACE, "Trying to registering new worker: " << worker_id << " with rank " << rank);
 
 		addWorker( worker_id, rank );
 
@@ -736,7 +746,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-                pWorkerRegAckEvt->id() = evtRegWorker.id();
+		pWorkerRegAckEvt->id() = evtRegWorker.id();
 		sendEventToSlave(pWorkerRegAckEvt, 0);
 	}
 	catch(WorkerAlreadyExistException const & ex) {
@@ -812,8 +822,8 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
 		// TO DO: modify the prototype of the submit function
 		//ptr_job_man_->addPreferences(job_id, pref);
 
-                // WORK HERE: limit number of maximum parallel jobs
-                ptr_job_man_->waitForFreeSlot ();
+        // WORK HERE: limit number of maximum parallel jobs
+		ptr_job_man_->waitForFreeSlot ();
 
 		// don't forget to set here the job's preferences
 		SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent(sdpa::daemon::WE, name(), job_id, desc, parent_id));
@@ -883,9 +893,7 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
 	job_id_t job_id(workflowId);
 	JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(sdpa::daemon::WE, name(), job_id, result));
 	sendEventToSelf(pEvtJobFinished);
-
-	lock_type lock(mtx_);
-	m_nExternalJobs--;
+	decExtJobsCnt();
 
 	return true;
 }
@@ -912,9 +920,7 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
 
 	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(sdpa::daemon::WE, name(), job_id, result ));
 	sendEventToSelf(pEvtJobFailed);
-
-	lock_type lock(mtx_);
-	m_nExternalJobs--;
+	decExtJobsCnt();
 
 	return true;
 }
@@ -934,9 +940,7 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 	CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
 	sendEventToSelf(pEvtCancelJobAck);
-
-	lock_type lock(mtx_);
-	m_nExternalJobs--;
+	decExtJobsCnt();
 
 	return true;
 }
@@ -1008,4 +1012,25 @@ void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string&
 void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
 {
 	ptr_workflow_engine_->cancelled( actId );
+}
+
+void GenericDaemon::incExtJobsCnt()
+{
+	lock_type lock(ext_job_cnt_mtx_);
+	m_nExternalJobs++;
+
+	// reset the polling interval
+	if( m_nExternalJobs == 1 )
+		m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
+}
+
+void GenericDaemon::decExtJobsCnt()
+{
+	lock_type lock(ext_job_cnt_mtx_);
+	m_nExternalJobs--;
+}
+
+unsigned int GenericDaemon::extJobsCnt()
+{
+	return m_nExternalJobs;
 }
