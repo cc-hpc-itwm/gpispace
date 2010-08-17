@@ -509,6 +509,88 @@ Randtransitionen\grqq\ entfernen, im Beispiel ensteht dann das Netz:
 \includegraphics[width=\textwidth]{loadTT_flat_O.pdf}
 \end{center}
 
+\subsection{Virtuelle Plätze}
+
+Nicht alle konzeptionellen Probleme lassen sich mit hierarchischen
+Netzen l"osen. Betrachten wir die Transition
+
+\begin{center}
+\includegraphics[width=\textwidth]{seq_normal.pdf}
+\end{center}
+
+und deren Verwendung in der Transition \transition{map}:
+
+\begin{center}
+\includegraphics[width=\textwidth]{map_normal.pdf}
+\end{center}
+
+Die Transition \transition{map} ruft die Function \function{calc.calc}
+mit den Parametern $0,\ldots,N-1$ auf, also insgesamt $N$ mal.
+
+Zunächst st"ort hier, dass die Transitionen \transition{dec} und
+\transition{break} offensichtlich ein wiederkehrendes Muster
+implementieren, aber nicht in eine Subtransition ausgelagert werden
+können.
+
+Schwerwiegender ist das Problem, dass die Transition
+\transition{generate} zun"achst alle $N$ Token erzeugt. Wenn $N$ sehr
+gro\3 ist durchaus problematisch. Auch Flachkopfen hilft nicht
+wirklich weiter: Das Netz hat dann die Gestalt:
+
+\begin{center}
+\includegraphics[width=\textwidth]{map_normal_flat.pdf}
+\end{center}
+
+Wir führen alle Netze nebenl"aufig aus. Wenn nun die Transition
+\transition{calc} einige Zeit in Anspruch nimmt, dann kann inzwischen
+die Transition \transition{\_generate\_step} solange schalten, bis
+alle $N$ Token erzeugt wurden. Also kann es immer noch zu unerwarteten
+"Uberl"aufen kommen. Ein Netz, das dieses Problem behebt hat die
+Gestalt:
+
+\begin{center}
+\includegraphics[width=\textwidth]{map_credit_by_hand.pdf}
+\end{center}
+
+Hier verbraucht die Transition \transition{gen\_step} einen Credit, der
+nach Ende der Transition \transition{calc} wieder zur Verf"ugung
+gestellt wird. Zwar l"auft hier nichts mehr "uber, aber das ist
+einfach zu un"ubersichtlich f"ur eine so einfache Aufgabe.
+
+Mit virtuellen Pl"atzen k\"onnen wir nun zun"achst die Transition
+\transition{sequence\_bounded} und das Template \transition{wait} wie
+folgt definieren:
+
+\begin{center}
+\includegraphics[width=\textwidth]{seq_bounded.pdf}
+\end{center}
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{wait.pdf}
+\end{center}
+
+Es handelt sich um normale Subnetze, die aber virtuelle Pl"atze
+enthalten. Wir k"onnen nun konzeptionell das folgende Netz notieren:
+
+\begin{center}
+\includegraphics[width=\textwidth]{map_credit_concept.pdf}
+\end{center}
+
+Hier sehen wir wieder, was das Netz prinzipiell tut. Die Pl"atze
+\place{wait} und \place{credit} sind die realen Gegenpart zu den
+virtuellen Pl"atzen in den Transitionen \transition{generate} und
+\transition{wait}.
+
+Ein Editor w"urde das besser darstellen als der automatische Layouter.
+
+Dieses Netz ist in dieser Form nicht ausf"uhrbar! Die Verwendung
+virtueller Pl"atze erzwingt Flachklopfen. Das Netz sieht so aus wie
+das h"andisch erzeugte:
+
+\begin{center}
+\includegraphics[width=\textwidth]{map_credit_inlined.pdf}
+\end{center}
+
 \section{Das Austauschformat}
 
 Wir haben ein internes (bin"ares) Format und einen Compiler, der XML
