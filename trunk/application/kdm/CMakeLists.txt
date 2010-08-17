@@ -11,6 +11,8 @@ if (ENABLE_OBSOLETE_KDM)
   add_subdirectory(obsolete)
 endif (ENABLE_OBSOLETE_KDM)
 
+add_subdirectory(src/fake)
+
 include_directories(./src
 		    ./src/include
 		    ./src/structures
