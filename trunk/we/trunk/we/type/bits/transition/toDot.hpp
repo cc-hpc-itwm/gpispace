@@ -640,7 +640,7 @@ namespace we { namespace type {
 
         if (fhg::util::show (t.condition()) != "true")
           {
-            cond << "|" << quote (fhg::util::show (t.condition()));
+            cond << "|" << lines ('&', quote (fhg::util::show (t.condition())));
           }
 
         level (s, l + 1)
