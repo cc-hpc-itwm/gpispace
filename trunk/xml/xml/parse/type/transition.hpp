@@ -452,6 +452,7 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
+        if (trans.priority.isNothing())
         if (  (  !state.synthesize_virtual_places()
               && !trans.place_map().empty()
               )
