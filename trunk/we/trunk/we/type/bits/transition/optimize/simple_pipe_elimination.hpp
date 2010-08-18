@@ -63,6 +63,8 @@ namespace we { namespace type {
         typedef typename transition_t::port_t port_t;
         typedef typename port_t::name_type name_type;
         typedef petri_net::pid_t pid_t;
+        typedef petri_net::pid_t eid_t;
+        typedef petri_net::connection_t connection_t;
         typedef boost::unordered_map<name_type, pid_t> map_type;
         typedef typename transition_t::outer_to_inner_t outer_to_inner;
         typedef typename transition_t::inner_to_outer_t inner_to_outer;
@@ -120,6 +122,13 @@ namespace we { namespace type {
 
             const petri_net::pid_t pid_A (in->second);
             const petri_net::pid_t pid_B (out->second);
+
+            const eid_t eid (net.get_eid_in (tid, pid_A));
+
+            if (petri_net::is_pt_read (net.get_edge_info (eid).type))
+              {
+                return fhg::util::Nothing<pid_pair_vec_type>();
+              }
 
             all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
             all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
