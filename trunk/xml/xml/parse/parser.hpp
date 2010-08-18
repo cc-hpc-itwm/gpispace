@@ -692,7 +692,13 @@ namespace xml
         (required ("place_type", node, "name", state.file_in_progress()));
 
       type::place_type p
-        ( validate_prefix (name, "place", state.file_in_progress())
+        ( validate_name ( validate_prefix ( name
+                                          , "place"
+                                          , state.file_in_progress()
+                                          )
+                        , "place"
+                        , state.file_in_progress()
+                        )
         , required ("place_type", node, "type", state.file_in_progress())
         , fhg::util::fmap<std::string, petri_net::capacity_t>
           ( &fhg::util::reader<petri_net::capacity_t>::read
@@ -761,7 +767,13 @@ namespace xml
         (required ("port_type", node, "name", state.file_in_progress()));
 
       type::port_type port
-        ( validate_prefix (name, "port", state.file_in_progress())
+        ( validate_name ( validate_prefix ( name
+                                          , "port"
+                                          , state.file_in_progress()
+                                          )
+                        , "port"
+                        , state.file_in_progress()
+                        )
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
         , state.level() + 2
@@ -1282,7 +1294,13 @@ namespace xml
 
       t.path = state.file_in_progress();
       t.level = state.level();
-      t.name = validate_prefix (name, "transition", state.file_in_progress());
+      t.name = validate_name ( validate_prefix ( name
+                                               , "transition"
+                                               , state.file_in_progress()
+                                               )
+                             , "transition"
+                             , state.file_in_progress()
+                             );
       t.priority = fhg::util::fmap<std::string, petri_net::prio_t>
         ( boost::lexical_cast<petri_net::prio_t>
         , optional (node, "priority")
