@@ -30,6 +30,7 @@ namespace literal
         m[literal::CHAR]    = "char";
         m[literal::STRING]  = "std::string";
         m[literal::BITSET]  = "bitsetofint::type";
+        m[literal::STACK]   = "std::vector<long>";
       }
 
       const map_type::mapped_type & translate (const type_name_t & t) const

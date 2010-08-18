@@ -7,6 +7,7 @@
 
 #include <we/type/signature.hpp>
 #include <we/type/literal.hpp>
+#include <we/type/literal/show.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/split.hpp>
@@ -37,7 +38,9 @@ namespace value
         {
           std::ostringstream s;
 
-          s << "cannot get field " << name << " from the literal " << l;
+          s << "cannot get field " << name
+            << " from the literal " << literal::show (l)
+            ;
 
           return s.str();
         }

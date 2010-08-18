@@ -17,7 +17,7 @@ namespace literal
 
     if (*pos == '\\')
       ++pos;
-      
+
     if (pos.end())
       throw expr::exception::parse::unterminated ("\\", open, pos());
 
@@ -82,7 +82,7 @@ namespace literal
         l += base::val (*pos);
         ++pos;
       }
-    
+
     return l;
   }
 
@@ -205,6 +205,7 @@ namespace literal
       case 't': ++pos; require ("rue", pos); v = true; break;
       case 'f': ++pos; require ("alse", pos); v = false; break;
       case '[': ++pos; require ("]", pos); v = control(); break;
+      case '@': ++pos; require ("@", pos); v = literal::stack_type(); break;
       case '\'':
         {
           const unsigned int open (pos());
@@ -263,7 +264,7 @@ namespace literal
                   default:
                     container.push_back (read_ulong (pos));
                     if (pos.end())
-                      throw expr::exception::parse::unterminated 
+                      throw expr::exception::parse::unterminated
                         ("{", open, pos());
                     else
                       switch (*pos)
@@ -271,7 +272,7 @@ namespace literal
                         case '}': break;
                         case ',': ++pos; break;
                         default:
-                          throw expr::exception::parse::expected 
+                          throw expr::exception::parse::expected
                             ("'}' or ','", pos());
                         }
                     break;

@@ -7,6 +7,7 @@
 
 #include <we/type/signature.hpp>
 #include <we/type/literal.hpp>
+#include <we/type/literal/show.hpp>
 
 #include <stdexcept>
 #include <sstream>
@@ -33,7 +34,7 @@ namespace value
         std::ostringstream s;
 
         s << "cannot get field " << name
-          << " from the literal " << l
+          << " from the literal " << literal::show (l)
           ;
 
         throw std::runtime_error (s.str());

@@ -64,6 +64,17 @@ namespace literal
           (fhg::util::show (token) + " (bitset)");
       }
 
+      literal::type operator () (literal::stack_type & s) const
+      {
+        switch (token)
+          {
+          case expr::token::_stack_empty: return s.empty();
+          case expr::token::_stack_top: return s.back();
+          case expr::token::_stack_pop: s.pop_back(); return s;
+          default: throw expr::exception::strange ("unary " + fhg::util::show(token));
+          }
+      }
+
       literal::type operator () (bool & x) const
       {
         switch (token)
@@ -365,6 +376,17 @@ namespace literal
           }
       }
 
+      literal::type operator () (literal::stack_type & s, long & l) const
+      {
+        switch (token)
+          {
+          case expr::token::_stack_push: s.push_back (l); return s;
+          default:
+            throw expr::exception::eval::type_error
+              (fhg::util::show (token) + " for values of type stack and long");
+          }
+      }
+
       literal::type operator () (bitsetofint::type & set, long & l) const
       {
         switch (token)
@@ -396,7 +418,7 @@ namespace literal
             throw expr::exception::eval::type_error
               (fhg::util::show (token) + " for values of type bitset and long");
           default: throw expr::exception::strange ("binary " + fhg::util::show(token));
-          }
+         }
       }
 
       literal::type operator () (char & l, char & r) const

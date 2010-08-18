@@ -44,6 +44,24 @@ namespace literal
         std::ostringstream s; s << std::showpoint << d; return s.str();
       }
 
+      std::string operator () (const literal::stack_type & stack) const
+      {
+        std::ostringstream s;
+
+        s << "@";
+
+        literal::stack_type c (stack);
+
+        while (!c.empty())
+          {
+            s << " " << c.back(); c.pop_back();
+          }
+
+        s << "@";
+
+        return s.str();
+      }
+
       template<typename T>
       std::string operator () (const T & x) const
       {

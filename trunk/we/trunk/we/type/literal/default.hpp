@@ -26,6 +26,7 @@ namespace literal
     dflt[CHAR] = char();
     dflt[STRING] = std::string();
     dflt[BITSET] = bitsetofint::type();
+    dflt[STACK] = literal::stack_type();
 
     return dflt;
   }
@@ -39,7 +40,7 @@ namespace literal
     if (pos == dflt.end())
       {
         throw std::runtime_error
-          ("literal::of_type: requested default value for unknown type " 
+          ("literal::of_type: requested default value for unknown type "
           + type_name
           );
       }

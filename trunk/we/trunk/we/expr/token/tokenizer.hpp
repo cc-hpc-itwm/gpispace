@@ -273,15 +273,56 @@ namespace expr
             case 's':
               ++pos;
               if (is_eof())
-                throw exception::parse::expected ("'in', 'ubstr' or 'qrt'", pos());
+                throw exception::parse::expected
+                  ("'in', 'ubstr', 'qrt', 'stack_...'", pos());
               else
                 switch (*pos)
                   {
                   case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
                   case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
                   case 'u': ++pos; require ("bstr"); token = _substr; break;
+                  case 't':
+                    ++pos;
+                    require ("ack_");
+                    if (is_eof())
+                      throw exception::parse::expected
+                        ("'empty', 'top', 'push' or 'pop'", pos());
+                    else
+                      switch (*pos)
+                        {
+                        case 'e': ++pos; require ("mpty");
+                          unary (_stack_empty, "stack_empty");
+                          break;
+                        case 't': ++pos; require ("op");
+                          unary (_stack_top, "stack_top");
+                          break;
+                        case 'p':
+                          ++pos;
+                          if (is_eof())
+                            throw exception::parse::expected
+                              ("'ush' or 'op'", pos());
+                          else
+                            switch (*pos)
+                              {
+                              case 'u': ++pos; require ("sh");
+                                token = _stack_push;
+                                break;
+                              case 'o': ++pos; require ("p");
+                                unary (_stack_pop, "stack_pop");
+                                break;
+                              default:
+                                throw exception::parse::expected
+                                  ("'ush' or 'op'", pos());
+                              }
+                          break;
+                        default:
+                          throw exception::parse::expected
+                            ("'empty', 'top', 'push' or 'pop'", pos());
+                        }
+
+                    break;
                   default: throw exception::parse::expected
-                      ("'in', 'ubstr' or 'qrt'", pos());
+                      ("'in', 'ubstr', 'qrt', 'stack_...'", pos());
                   }
               break;
             case 't':

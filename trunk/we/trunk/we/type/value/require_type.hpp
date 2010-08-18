@@ -8,6 +8,7 @@
 #include <we/type/signature.hpp>
 
 #include <we/type/literal.hpp>
+#include <we/type/literal/show.hpp>
 #include <we/type/literal/name.hpp>
 #include <we/type/literal/require_type.hpp>
 
@@ -66,6 +67,32 @@ namespace value
             throw ::type::error ("unknown field " + field->first);
 
         return v;
+      }
+
+      template<typename T>
+      type operator () (const T & t, const literal::type & u) const
+      {
+        std::ostringstream s;
+
+        s << "incompatible types:"
+          << " wanted type " << fhg::util::show (t)
+          << " given value " << literal::show (u)
+          ;
+
+        throw ::type::error (s.str());
+      }
+
+      template<typename U>
+      type operator () (const literal::type & t, const U & u) const
+      {
+        std::ostringstream s;
+
+        s << "incompatible types:"
+          << " wanted type " << literal::show (t)
+          << " given value " << fhg::util::show (u)
+          ;
+
+        throw ::type::error (s.str());
       }
 
       template<typename T, typename U>

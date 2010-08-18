@@ -8,6 +8,7 @@
 
 #include <we/type/control.hpp>
 #include <we/type/bitsetofint.hpp>
+#include <we/type/literal.hpp>
 #include <we/type/literal/name.hpp>
 
 namespace literal
@@ -24,6 +25,7 @@ namespace literal
       type_name_t operator () (const char &) const { return CHAR; }
       type_name_t operator () (const std::string &) const { return STRING; }
       type_name_t operator () (const bitsetofint::type &) const { return BITSET; }
+      type_name_t operator () (const literal::stack_type &) const { return STACK; }
     };
   }
 

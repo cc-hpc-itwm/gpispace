@@ -8,10 +8,15 @@
 
 #include <boost/variant.hpp>
 
+#include <boost/serialization/vector.hpp>
+
 #include <string>
+#include <vector>
 
 namespace literal
 {
+  typedef std::vector<long> stack_type;
+
   typedef boost::variant< control
                         , bool
                         , long
@@ -19,6 +24,7 @@ namespace literal
                         , char
                         , std::string
                         , bitsetofint::type
+                        , stack_type
                         > type;
 }
 
