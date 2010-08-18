@@ -21,7 +21,7 @@ namespace we { namespace type {
 
             return true;
           }
-        catch (const exception::port_undefined &)
+        catch (const exception::not_connected<petri_net::pid_t> &)
           {
             return false;
           }

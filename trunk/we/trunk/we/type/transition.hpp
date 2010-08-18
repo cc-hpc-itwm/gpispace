@@ -939,7 +939,7 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::port_undefined("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), fhg::util::show (pid));
+        throw exception::not_connected<pid_t>("trans: "+name()+": input port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
       pid_t input_pid_by_port_id (const port_id_t & port_id) const
@@ -955,7 +955,7 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::port_undefined("trans: "+name()+": pid not connected by port_id: "+ fhg::util::show (port_id), fhg::util::show (port_id));
+        throw exception::not_connected<port_id_t>("trans: "+name()+": pid not connected by port_id: "+ fhg::util::show (port_id), port_id);
       }
 
       port_id_with_prop_t output_port_by_pid (const pid_t & pid) const
@@ -971,7 +971,7 @@ namespace we { namespace type {
           }
         }
 
-        throw exception::port_undefined("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), fhg::util::show (pid));
+        throw exception::not_connected<pid_t>("trans: "+name()+": output port not connected by pid: "+ fhg::util::show (pid), pid);
       }
 
       template <typename PortId>
@@ -1014,7 +1014,7 @@ namespace we { namespace type {
                 return port->second;
               }
           }
-        throw exception::port_undefined("trans: "+name()+": port not associated with:"+fhg::util::show(pid), fhg::util::show(pid));
+        throw exception::not_connected<pid_t>("trans: "+name()+": port not associated with:"+fhg::util::show(pid), pid);
       }
 
       // UNSAFE: does not check for multiple connections! Use with care!
@@ -1034,7 +1034,7 @@ namespace we { namespace type {
                 return;
               }
           }
-        throw exception::port_undefined("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), fhg::util::show(pid_old));
+        throw exception::not_connected<pid_t>("trans: "+name()+": during re_connect port not associated with:"+fhg::util::show(pid_old), pid_old);
       }
 
       // TODO implement port accessor iterator

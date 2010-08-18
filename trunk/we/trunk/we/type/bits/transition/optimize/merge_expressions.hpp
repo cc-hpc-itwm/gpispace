@@ -32,7 +32,7 @@ namespace we { namespace type {
             return fhg::util::Just<const port_t>
               (trans.get_port (trans.input_port_by_pid (pid).first));
           }
-        catch (const we::type::exception::port_undefined &)
+        catch (const we::type::exception::not_connected<petri_net::pid_t> &)
           {
             return fhg::util::Nothing<const port_t>();
           }
@@ -328,28 +328,35 @@ namespace we { namespace type {
               }
             else
               {
-                const pid_t pid (trans.input_pid_by_port_id (p->first));
-
-                if (pid_read.find (pid) != pid_read.end())
+                try
                   {
-                    if (input_port_by_pid (pred, pid).isNothing())
+                    const pid_t pid (trans.input_pid_by_port_id (p->first));
+
+                    if (pid_read.find (pid) != pid_read.end())
                       {
-                        pred.UNSAFE_add_port (p->second);
+                        if (input_port_by_pid (pred, pid).isNothing())
+                          {
+                            pred.UNSAFE_add_port (p->second);
 
-                        const eid_t eid (net.get_eid_in (tid_trans, pid));
-                        const E edge (net.get_edge (eid));
-                        connection_t connection (net.get_edge_info (eid));
+                            const eid_t eid (net.get_eid_in (tid_trans, pid));
+                            const E edge (net.get_edge (eid));
+                            connection_t connection (net.get_edge_info (eid));
 
-                        net.delete_edge (eid);
+                            net.delete_edge (eid);
 
-                        connection.tid = tid_pred;
+                            connection.tid = tid_pred;
 
-                        net.add_edge (edge, connection);
+                            net.add_edge (edge, connection);
 
-                        pred.add_connections ()
-                          (pid, p->second.name(), p->second.property())
-                          ;
+                            pred.add_connections ()
+                              (pid, p->second.name(), p->second.property())
+                              ;
+                          }
                       }
+                  }
+                catch (const we::type::exception::not_connected<pid_t> &)
+                  {
+                    // do nothing, the port was not connected
                   }
               }
           }
