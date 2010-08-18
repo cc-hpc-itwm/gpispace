@@ -452,13 +452,15 @@ namespace xml
 
         util::property::join (state, fun.prop, trans.prop);
 
-        if (trans.priority.isNothing())
-        if (  (  !state.synthesize_virtual_places()
-              && !trans.place_map().empty()
-              )
-           || (  !state.no_inline()
-              && trans.finline.get_with_default(false)
-              && boost::apply_visitor (function_is_net(), fun.f)
+        if (  trans.priority.isNothing() // WORK HERE: make it work with prio
+           && (
+               (  !state.synthesize_virtual_places()
+               && !trans.place_map().empty()
+               )
+               || (  !state.no_inline()
+                  && trans.finline.get_with_default(false)
+                  && boost::apply_visitor (function_is_net(), fun.f)
+                  )
               )
            )
           { // unfold
