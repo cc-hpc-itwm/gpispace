@@ -690,8 +690,9 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 		}
 		//catch also workflow exceptions
-	}catch(JobNotAddedException const &ex) {
-          SDPA_LOG_ERROR("job " << job_id << " could not be added: " << ex.what());
+	}catch(JobNotAddedException const &ex)
+	{
+		SDPA_LOG_ERROR("job " << job_id << " could not be added: " << ex.what());
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
 		sendEventToMaster(pErrorEvt);
@@ -703,21 +704,21 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	catch(seda::StageNotFound const &)
 	{
 		SDPA_LOG_FATAL("Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id);
-                throw;
+		throw;
 	}
 	catch(std::exception const & ex) {
-          SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
-          throw;
+		SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
+        throw;
 	}
 	catch(...) {
-          SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
-          throw;
+        SDPA_LOG_ERROR("Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
+        throw;
 	}
 }
 
 void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 {
-  DLOG(TRACE, "got config request from " << e.from());
+	DLOG(TRACE, "got config request from " << e.from());
 	/*
 	 * on startup the aggregator tries to retrieve a configuration from its orchestrator
 	 * post ConfigReplyEvent/message that contains the configuration data for the requesting aggregator
@@ -730,8 +731,8 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
-  worker_id_t worker_id (evtRegWorker.from());
-  unsigned int rank (evtRegWorker.rank());
+	worker_id_t worker_id (evtRegWorker.from());
+	unsigned int rank (evtRegWorker.rank());
 
 	// check if the worker evtRegWorker.from() has already registered!
 	try {
@@ -749,9 +750,10 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		pWorkerRegAckEvt->id() = evtRegWorker.id();
 		sendEventToSlave(pWorkerRegAckEvt, 0);
 	}
-	catch(WorkerAlreadyExistException const & ex) {
-          SDPA_LOG_ERROR( "An worker with either the same id or the same rank already exist into the worker map! "
-                        "id="<<ex.worker_id()<<", rank="<<ex.rank());
+	catch(WorkerAlreadyExistException const & ex)
+	{
+		SDPA_LOG_ERROR( "An worker with either the same id or the same rank already exist into the worker map! "
+        "id="<<ex.worker_id()<<", rank="<<ex.rank());
 	}
 	catch(const QueueFull& ex)
 	{
@@ -767,32 +769,32 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 {
-  LOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
-  switch (error.error_code())
-  {
-	case ErrorEvent::SDPA_ENOERROR:
+	LOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
+	switch (error.error_code())
 	{
-	  // everything is fine, nothing to do
-	  break;
+		case ErrorEvent::SDPA_ENOERROR:
+		{
+			// everything is fine, nothing to do
+			break;
+		}
+		case ErrorEvent::SDPA_EWORKERNOTREG:
+		{
+			MLOG(WARN, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
+			WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from(), rank() ));
+			sendEventToMaster(pWorkerRegEvt);
+			break;
+		}
+		case ErrorEvent::SDPA_ENODE_SHUTDOWN:
+		{
+			MLOG(INFO, "worker " << error.from() << " went down (clean)");
+			ptr_scheduler_->delWorker(error.from());
+			break;
+		}
+		default:
+		{
+			MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+		}
 	}
-	case ErrorEvent::SDPA_EWORKERNOTREG:
-	{
-		MLOG(WARN, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
-		WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from(), rank() ));
-		sendEventToMaster(pWorkerRegEvt);
-		break;
-	}
-	case ErrorEvent::SDPA_ENODE_SHUTDOWN:
-	{
-          MLOG(INFO, "worker " << error.from() << " went down (clean)");
-          ptr_scheduler_->delWorker(error.from());
-          break;
-	}
-	default:
-          {
-		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
-          }
-  }
 }
 
 /* Implements Gwes2Sdpa */
@@ -809,10 +811,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
 	// set the parent_id to ?
 	// add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
 	// schedule the new job to some worker
-	// ATTENTION! Important assumption: the workflow_id should be set identical to the job_id!
 
-	// simple generate a SubmitJobEvent cu from = to = name()
-	// send an external job
 	try {
           DLOG(TRACE, "workflow engine submitted "<<activityId);
 
@@ -860,7 +859,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
  */
 bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason)
 {
-  SDPA_LOG_INFO ("cancelling activity " << activityId << " reason: " << reason);
+	SDPA_LOG_INFO ("cancelling activity " << activityId << " reason: " << reason);
 
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
 	// look for the job_id corresponding to the received workflowId into job_map_
@@ -881,7 +880,7 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
  */
 bool GenericDaemon::finished(const id_type& workflowId, const result_type& result)
 {
-  DLOG(TRACE, "activity finished: " << workflowId);
+	DLOG(TRACE, "activity finished: " << workflowId);
 	// generate a JobFinishedEvent for self!
 	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
 	// look for the job_id corresponding to the received workflowId into job_map_
@@ -904,17 +903,8 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
  */
 bool GenericDaemon::failed(const id_type& workflowId, const result_type & result)
 {
-  SDPA_LOG_WARN ("activity failed: " << workflowId);
+	SDPA_LOG_WARN ("activity failed: " << workflowId);
 	// generate a JobFinishedEvent for self!
-	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
-	// look for the job_id corresponding to the received workflowId into job_map_
-	// in fact they should be the same!
-	// generate const JobFailedEvent& event
-	// Job& job = job_map_[job_id];
-	// call job.JobFailed(event);
-	// if( has siblings)
-	// kill the siblings and the master job, else kill the master job
-	// The master process (User, Orch, Agg) should be informed that the job failed or  was canceled
 
 	job_id_t job_id(workflowId);
 
@@ -931,10 +921,8 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
  */
 bool GenericDaemon::cancelled(const id_type& workflowId)
 {
-  SDPA_LOG_INFO ("activity cancelled: " << workflowId);
+	SDPA_LOG_INFO ("activity cancelled: " << workflowId);
 	// generate a JobCancelledEvent for self!
-	// identify the job with the job_id == workflow_id_t
-	// trigger a CancelJobAck for that job
 
 	job_id_t job_id(workflowId);
 

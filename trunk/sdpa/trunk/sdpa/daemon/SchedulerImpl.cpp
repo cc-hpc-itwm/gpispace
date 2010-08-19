@@ -364,7 +364,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 		}
 
 		// if no preferences are explicitly set for this job
-                DLOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
+		DLOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
 
 		try
 		{
@@ -414,14 +414,10 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 					ptr_worker_man_->getListOfRegisteredRanks(registered_ranks);
 
 					for( std::vector<unsigned int>::const_iterator iter (registered_ranks.begin())
-                                           ; iter != registered_ranks.end()
-                                           ; iter++
-                                           )
-					{
-					  // return immediately if rank not excluded and scheduling to rank succeeded
-					  if( uset_excluded.find(*iter) == uset_excluded.end() && schedule_to(jobId, *iter, job_pref) )
-						return true;
-					}
+                                           ; iter != registered_ranks.end(); iter++ )
+						// return immediately if rank not excluded and scheduling to rank succeeded
+						if( uset_excluded.find(*iter) == uset_excluded.end() && schedule_to(jobId, *iter, job_pref) )
+							return true;
 				}
 
                 // TODO: we had preferences but we could not fulfill them
@@ -650,21 +646,61 @@ void SchedulerImpl::print()
 
 const sdpa::job_id_t SchedulerImpl::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
-  return ptr_worker_man_->getNextJob(worker_id, last_job_id);
+	sdpa::job_id_t job_id = sdpa::job_id_t::invalid_job_id();
+
+	try {
+		job_id = ptr_worker_man_->getNextJob(worker_id, last_job_id);
+	}
+	catch(const NoJobScheduledException& ex1)
+	{
+		//SDPA_LOG_ERROR("Exception: no jobs scheduled!");
+		throw ex1;
+	}
+	catch(WorkerNotFoundException& ex2)
+	{
+		//SDPA_LOG_ERROR("Exception occurred: worker not found!");
+		throw ex2;
+	}
+
+	return job_id;
 }
 
 void SchedulerImpl::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException)
 {
-  DLOG(TRACE, "Acknowledge the job "<<job_id.str());
-  Worker::ptr_t ptrWorker = findWorker(worker_id);
+	DLOG(TRACE, "Acknowledge the job "<<job_id.str());
+	try {
+		Worker::ptr_t ptrWorker = findWorker(worker_id);
 
-  //put the job into the Running state: do this in acknowledge!
-  if( !ptrWorker->acknowledge(job_id) )
-    throw JobNotFoundException(job_id);
+		//put the job into the Running state: do this in acknowledge!
+		if( !ptrWorker->acknowledge(job_id) )
+			throw JobNotFoundException(job_id);
+	}
+	catch(JobNotFoundException const& ex1)
+	{
+		SDPA_LOG_ERROR("Could not find the job "<<job_id.str()<<"!");
+		throw ex1;
+	}
+	catch(WorkerNotFoundException const &ex2 )
+	{
+		SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
+		throw ex2;
+	}
 }
 
-void SchedulerImpl::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
+void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
 {
-  ptr_worker_man_->deleteWorkerJob(worker_id, job_id);
+	try {
+		ptr_worker_man_->deleteWorkerJob(worker_id, job_id);
+	}
+	catch(JobNotDeletedException const& ex1)
+	{
+		SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<"!");
+		throw ex1;
+	}
+	catch(WorkerNotFoundException const &ex2 )
+	{
+		SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
+		throw ex2;
+	}
 }
 

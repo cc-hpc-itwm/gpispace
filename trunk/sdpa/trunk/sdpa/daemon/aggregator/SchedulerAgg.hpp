@@ -59,7 +59,7 @@ namespace sdpa {
 	 	}
 		else
 		{
-		  DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
+			DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
 		}
 
 	 	return bReqPosted;
@@ -86,7 +86,6 @@ namespace sdpa {
 		 }
 	 }
 
-
 	 void check_post_request()
 	 {
 	 	 if( ptr_comm_handler_->is_registered() )
@@ -99,7 +98,7 @@ namespace sdpa {
 	 	 }
 		 else
 		 {
-		  DMLOG(DEBUG, "not requesting job, i am not registered yet");
+			 DMLOG(DEBUG, "not requesting job, i am not registered yet");
 		 }
 	 }
 

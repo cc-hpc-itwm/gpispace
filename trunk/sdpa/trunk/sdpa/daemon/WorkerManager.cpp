@@ -329,44 +329,52 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
   DLOG(TRACE, "Get the next job ...");
 
 	sdpa::job_id_t jobId;
-	const Worker::ptr_t& ptrWorker = findWorker(worker_id);
-	ptrWorker->update();
 
-	// look first into the worker's queue
 	try {
-		jobId = ptrWorker->get_next_job(last_job_id);
+		const Worker::ptr_t& ptrWorker = findWorker(worker_id);
+		ptrWorker->update();
 
-		// delete the job from the affinity list of the other workers
-		deleteJobFromAllAffinityLists(jobId);
-
-		return jobId;
-	}
-	catch(const NoJobScheduledException& ex)
-	{
-		// if there is a job into the common queue serve it
+		// look first into the worker's queue
 		try {
-			jobId = common_queue_.pop();
-			ptrWorker->submitted().push(jobId);
+			jobId = ptrWorker->get_next_job(last_job_id);
+
+			// delete the job from the affinity list of the other workers
+			deleteJobFromAllAffinityLists(jobId);
+
 			return jobId;
 		}
-		catch(const QueueEmpty& ex)
+		catch(const NoJobScheduledException& ex)
 		{
-			// try to steal some work from other workers
-			// if not possible, throw an exception
+			// if there is a job into the common queue serve it
 			try {
-				jobId = stealWork(worker_id);
+				jobId = common_queue_.pop();
 				ptrWorker->submitted().push(jobId);
-
-				// delete the job from the affinity list of the other workers
-				deleteJobFromAllAffinityLists(jobId);
-
 				return jobId;
 			}
-			catch( const NoJobScheduledException& ex )
+			catch(const QueueEmpty& ex)
 			{
-				throw ex;
+				// try to steal some work from other workers
+				// if not possible, throw an exception
+				try {
+					jobId = stealWork(worker_id);
+					ptrWorker->submitted().push(jobId);
+
+					// delete the job from the affinity list of the other workers
+					deleteJobFromAllAffinityLists(jobId);
+
+					return jobId;
+				}
+				catch( const NoJobScheduledException& ex )
+				{
+					throw ex;
+				}
 			}
 		}
+	}
+	catch(const WorkerNotFoundException& ex2 )
+	{
+		SDPA_LOG_ERROR("Worker not found!");
+		throw ex2;
 	}
 }
 
@@ -386,7 +394,7 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 		ptrWorker->delete_job(job_id);
 	}
 	catch(JobNotDeletedException const &) {
-		SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<" not found!");
+		SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<"!");
 	}
 	catch(WorkerNotFoundException const &) {
 		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
