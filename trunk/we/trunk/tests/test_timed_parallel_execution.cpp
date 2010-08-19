@@ -250,7 +250,7 @@ private:
   std::deque<T> q;
   boost::condition_variable cond_put;
   boost::condition_variable cond_get;
-  boost::mutex mutex;
+  mutable boost::mutex mutex;
 public:
   void put (const T & x)
   {
@@ -289,8 +289,19 @@ public:
     return x;
   }
 
-  bool empty (void) const { return q.empty(); }
-  typename std::deque<T>::size_type size (void) const { return q.size(); }
+  bool empty (void) const
+  {
+    boost::lock_guard<boost::mutex> lock (mutex);
+
+    return q.empty();
+  }
+
+  typename std::deque<T>::size_type size (void) const
+  {
+    boost::lock_guard<boost::mutex> lock (mutex);
+
+    return q.size();
+  }
 };
 
 typedef deque<pnet_t::activity_t> deque_activity_t;
@@ -299,14 +310,14 @@ typedef deque<pnet_t::output_t> deque_output_t;
 // ************************************************************************* //
 // div log stuff
 
-typedef std::pair<const pnet_t,const pnet_t::token_input_t> show_token_input_t;
+typedef std::pair<const pnet_t &,const pnet_t::token_input_t &> show_token_input_t;
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_token_input_t & show_token_input
                                   )
 {
   const pnet_t & net (show_token_input.first);
-  const pnet_t::token_input_t token_input (show_token_input.second);
+  const pnet_t::token_input_t & token_input (show_token_input.second);
 
   return s << "{"
            << Function::Transition::get_token<token_t>(token_input)
@@ -315,14 +326,14 @@ static std::ostream & operator << ( std::ostream & s
            << "}";
 }
 
-typedef std::pair<const pnet_t,const pnet_t::activity_t> show_activity_t;
+typedef std::pair<const pnet_t &,const pnet_t::activity_t &> show_activity_t;
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_activity_t & show_activity
                                   )
 {
   const pnet_t & net (show_activity.first);
-  const pnet_t::activity_t activity (show_activity.second);
+  const pnet_t::activity_t & activity (show_activity.second);
 
   s << "activity" << ": " << net.get_transition (activity.tid).t << ":";
 
@@ -337,14 +348,14 @@ static std::ostream & operator << ( std::ostream & s
   return s;
 }
 
-typedef std::pair<const pnet_t,const pnet_t::output_t> show_output_t;
+typedef std::pair<const pnet_t &,const pnet_t::output_t &> show_output_t;
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_output_t & show_output
                                   )
 {
   const pnet_t & net (show_output.first);
-  const pnet_t::output_t output (show_output.second);
+  const pnet_t::output_t & output (show_output.second);
 
   s << " output: ";
 
@@ -560,9 +571,6 @@ main ()
   net.add_edge (e.make("g"), connection_t (PT, tid_finalize, pid.done_gen));
   net.add_edge (e.make("f"), connection_t (TP, tid_finalize, pid.all_done));
 
-  net.put_token (pid.max, 100);
-  net.put_token (pid.i, 0);
-
   set_trans (net, tid_gen, pid, trans_gen);
   set_trans (net, tid_finish, pid, trans_finish);
   set_trans (net, tid_finalize, pid, trans_finalize);
@@ -580,6 +588,9 @@ main ()
                           , _3
                           )
             );
+
+  net.put_token (pid.max, 100);
+  net.put_token (pid.i, 0);
 
   for (unsigned int i(0); i < QUEUE_DEPTH_IN_NET; ++i)
     net.put_token (pid.queue);
@@ -619,6 +630,8 @@ main ()
 
   for (unsigned int w(0); w < NUM_WORKER; ++w)
     pthread_join (t_worker[w], NULL);
+
+  pthread_attr_destroy(&attr);
 
   cout << net << endl;
 
