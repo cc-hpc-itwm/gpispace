@@ -337,8 +337,8 @@ namespace expr
                   default: throw exception::parse::expected ("'hen' or 'rue'", pos());
                   }
               break;
-            case '|': ++pos; token = _or; break;
-            case '&': ++pos; token = _and; break;
+            case '|': ++pos; require ("|"); token = _or; break;
+            case '&': ++pos; require ("&"); token = _and; break;
             case '<': ++pos; cmp (lt, le); break;
             case '>': ++pos; cmp (gt, ge); break;
             case '!':

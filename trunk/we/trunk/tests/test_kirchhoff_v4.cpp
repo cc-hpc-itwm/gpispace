@@ -900,7 +900,7 @@ main (int argc, char ** argv)
       , "${offset_bunch} := ${gen_offset_state.state};\
          ${offset_volume} := ${gen_offset_state.state};\
          ${gen_offset_state.state} := ${gen_offset_state.state} + 1"
-      , "${gen_offset_state.state} < ${gen_offset_state.num} &\
+      , "${gen_offset_state.state} < ${gen_offset_state.num} &&\
          bitset_is_element (${wanted_offset}, ${gen_offset_state.state})"
       )
     );
@@ -1052,8 +1052,8 @@ main (int argc, char ** argv)
          ${volume.buffer0.bunch} := ${loaded_bunch.bunch};\
          ${volume.buffer0.store} := ${loaded_bunch.store};\
          ${assign_xor_reuse_store} := []"
-      , "(!${volume.buffer0.assigned}) &\
-         (${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &\
+      , "(!${volume.buffer0.assigned}) &&\
+         (${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &&\
          (!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
       )
     );
@@ -1074,8 +1074,8 @@ main (int argc, char ** argv)
          ${volume.buffer1.bunch} := ${loaded_bunch.bunch};\
          ${volume.buffer1.store} := ${loaded_bunch.store};\
          ${assign_xor_reuse_store} := []"
-      , "(!${volume.buffer1.assigned}) &\
-         (${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &\
+      , "(!${volume.buffer1.assigned}) &&\
+         (${volume.volume.offset} == ${loaded_bunch.bunch.offset}) &&\
          (!bitset_is_element (${loaded_bunch.seen}, ${volume.volume.id}))"
       )
     );
@@ -1097,16 +1097,16 @@ main (int argc, char ** argv)
       ( net
       , "process"
       , "${volume_processed} := ${volume};\
-         ${volume_processed.buffer0.assigned} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
-         ${volume_processed.buffer0.filled} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
-         ${volume_processed.buffer0.free} := (${volume.buffer0.assigned} & !${volume.buffer0.filled});\
-         ${volume_processed.buffer1.assigned} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
-         ${volume_processed.buffer1.filled} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
-         ${volume_processed.buffer1.free} := (${volume.buffer1.assigned} & !${volume.buffer1.filled});\
+         ${volume_processed.buffer0.assigned} := (${volume.buffer0.assigned} && !${volume.buffer0.filled});\
+         ${volume_processed.buffer0.filled} := (${volume.buffer0.assigned} && !${volume.buffer0.filled});\
+         ${volume_processed.buffer0.free} := (${volume.buffer0.assigned} && !${volume.buffer0.filled});\
+         ${volume_processed.buffer1.assigned} := (${volume.buffer1.assigned} && !${volume.buffer1.filled});\
+         ${volume_processed.buffer1.filled} := (${volume.buffer1.assigned} && !${volume.buffer1.filled});\
+         ${volume_processed.buffer1.free} := (${volume.buffer1.assigned} && !${volume.buffer1.filled});\
          ${volume_processed.wait} := ${volume.wait}\
                                   - (if ${volume.buffer0.filled} then 1L else 0L endif)\
                                   - (if ${volume.buffer1.filled} then 1L else 0L endif)"
-      , "${volume.buffer0.assigned} | ${volume.buffer1.assigned}"
+      , "${volume.buffer0.assigned} || ${volume.buffer1.assigned}"
       )
     );
 
@@ -1123,7 +1123,7 @@ main (int argc, char ** argv)
       , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
          ${volume_processed.buffer0.free} := false;\
          ${assign_xor_reuse_store} := []"
-      , "(${volume_processed.buffer0.bunch} == ${loaded_bunch.bunch}) &\
+      , "(${volume_processed.buffer0.bunch} == ${loaded_bunch.bunch}) &&\
          (${volume_processed.buffer0.free})"
       )
     );
@@ -1142,7 +1142,7 @@ main (int argc, char ** argv)
       , "${loaded_bunch.wait} := ${loaded_bunch.wait} - 1;\
          ${volume_processed.buffer1.free} := false;\
          ${assign_xor_reuse_store} := []"
-      , "(${volume_processed.buffer1.bunch} == ${loaded_bunch.bunch}) &\
+      , "(${volume_processed.buffer1.bunch} == ${loaded_bunch.bunch}) &&\
          (${volume_processed.buffer1.free})"
       )
     );

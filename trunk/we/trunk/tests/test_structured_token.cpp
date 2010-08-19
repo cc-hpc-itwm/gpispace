@@ -338,7 +338,7 @@ main (int argc, char ** argv)
       ( net
       , "finalize"
       , "${done} := ${run}"
-      , "${joined} == ${NUM_SLICES} & ${splitted} == ${NUM_SLICES}"
+      , "${joined} == ${NUM_SLICES} && ${splitted} == ${NUM_SLICES}"
       )
     );
 

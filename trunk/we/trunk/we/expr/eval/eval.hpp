@@ -52,6 +52,42 @@ namespace expr
 
               return c.bind (boost::get<node::key_vec_t>(b.l), c1);
             }
+          else if (is_or (b.token))
+            {
+              value::type c0 (boost::apply_visitor (*this, b.l));
+
+              if (!value::function::is_true (c0))
+                {
+                  value::type c1 (boost::apply_visitor (*this, b.r));
+
+                  return boost::apply_visitor ( value::function::binary (b.token)
+                                              , c0
+                                              , c1
+                                              );
+                }
+              else
+                {
+                  return c0;
+                }
+            }
+          else if (is_and (b.token))
+            {
+              value::type c0 (boost::apply_visitor (*this, b.l));
+
+              if (value::function::is_true (c0))
+                {
+                  value::type c1 (boost::apply_visitor (*this, b.r));
+
+                  return boost::apply_visitor ( value::function::binary (b.token)
+                                              , c0
+                                              , c1
+                                              );
+                }
+              else
+                {
+                  return c0;
+                }
+            }
           else
             {
               value::type c0 (boost::apply_visitor (*this, b.l));

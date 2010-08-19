@@ -64,7 +64,7 @@ namespace we { namespace type {
 
         for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
           {
-            if (*pos == b)
+            if (*pos == b && !was_b)
               {
                 l += endl;
 

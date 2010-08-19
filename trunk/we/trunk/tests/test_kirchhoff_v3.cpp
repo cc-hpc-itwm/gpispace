@@ -648,7 +648,7 @@ main (int argc, char ** argv)
       , "gen_offset_step"
       , "${offset} := ${gen_offset_state.state};\
          ${gen_offset_state.state} := ${gen_offset_state.state} + 1;"
-      , "${gen_offset_state.state} < ${gen_offset_state.num} &\
+      , "${gen_offset_state.state} < ${gen_offset_state.num} &&\
          bitset_is_element (${wanted_offset},${gen_offset_state.state})"
       )
     );
@@ -796,8 +796,8 @@ main (int argc, char ** argv)
                                                );\
          ${volume.buffer_0.store} := ${loaded_bunch.store}\
         "
-      , "(!${volume.buffer_0.assigned}) &\
-         (${loaded_bunch.bunch.package.offset} == ${volume.offset}) &\
+      , "(!${volume.buffer_0.assigned}) &&\
+         (${loaded_bunch.bunch.package.offset} == ${volume.offset}) &&\
          (!bitset_is_element (${loaded_bunch.seen}, ${volume.id})) \
         "
       )
@@ -819,8 +819,8 @@ main (int argc, char ** argv)
                                                );\
          ${volume.buffer_1.store} := ${loaded_bunch.store}\
         "
-      , "(!${volume.buffer_1.assigned}) &\
-         (${loaded_bunch.bunch.package.offset} == ${volume.offset}) &\
+      , "(!${volume.buffer_1.assigned}) &&\
+         (${loaded_bunch.bunch.package.offset} == ${volume.offset}) &&\
          (!bitset_is_element (${loaded_bunch.seen}, ${volume.id})) \
         "
       )

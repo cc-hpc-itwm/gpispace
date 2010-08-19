@@ -53,6 +53,16 @@ namespace expr
     {
       return (token == define);
     }
+
+    inline bool is_or (const type & token)
+    {
+      return (token == _or);
+    }
+
+    inline bool is_and (const type & token)
+    {
+      return (token == _and);
+    }
   }
 }
 

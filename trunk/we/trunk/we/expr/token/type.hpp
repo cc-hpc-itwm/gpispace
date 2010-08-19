@@ -52,8 +52,8 @@ namespace expr
     {
       switch (token)
         {
-        case _or: return s << " | ";
-        case _and: return s << " & ";
+        case _or: return s << " || ";
+        case _and: return s << " && ";
         case _not: return s << "!";
         case lt: return s << " < ";
         case le: return s << " <= ";

@@ -400,7 +400,7 @@ namespace xml
         {
           return cond.empty()
             ? "true"
-            : fhg::util::join (cond.begin(), cond.end(), " & ", "(", ")")
+            : fhg::util::join (cond.begin(), cond.end(), " && ", "(", ")")
             ;
         }
 
