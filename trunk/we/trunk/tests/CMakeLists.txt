@@ -48,9 +48,11 @@ set(tc_srcs
     test_unordered_map.cpp
     test_user_defined_transition_function.cpp
     test_sig_cpp.cpp
-
    )
 
+# answer module
+add_library(answer SHARED answer.cpp)
+add_library(question SHARED question.cpp)
 
 function(construct_tests )
   foreach (tc_src ${ARGN})
@@ -64,6 +66,7 @@ function(construct_tests )
     target_link_libraries(${tc_name} dl)
     get_target_property(LOC ${tc_name} LOCATION_)
     add_test(${tc_name} ${LOC})
+    add_dependencies(${tc_name} question answer)
   endforeach(tc_src ${tc_srcs})
 endfunction(construct_tests)
 
@@ -95,7 +98,3 @@ set (gen_srcs
     )
 list(SORT gen_srcs)
 construct_tests(${gen_srcs})
-
-# answer module
-add_library(answer SHARED answer.cpp)
-add_library(question SHARED question.cpp)

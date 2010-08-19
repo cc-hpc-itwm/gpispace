@@ -8,13 +8,12 @@ int main (int ac, char **argv)
 {
   we::loader::loader loader;
 
+  loader.append_search_path (".");
+
   for (int i = 1; i < ac; ++i)
   {
     loader.append_search_path (argv[i]);
   }
-
-  loader.load ( "answer" );
-  loader.load ( "question" );
 
   std::cerr << loader << std::endl;
 
@@ -23,7 +22,6 @@ int main (int ac, char **argv)
 
   loader["answer"] ("answer", inp, out);
 
-  loader.unload ("answer");
   std::cerr << loader << std::endl;
 
   loader["question"] ("question", inp, out);
