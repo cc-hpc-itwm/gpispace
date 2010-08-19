@@ -1,0 +1,39 @@
+<defun>
+  <in name="config" type="config" place="config"/>
+  <in name="trigger" type="control" place="trigger"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <place name="config" type="config"/>
+    <place name="done" type="control"/>
+    <place name="store" type="long" virtual="true"/>
+    <place name="trigger" type="control"/>
+    <place name="N" type="long"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="N" type="long"/>
+        <expression>
+          ${N} := ${config.size.store.volume}
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="N" place="N"/>
+    </transition>
+
+    <include-template href="eatN.xml"/>
+    <specialize name="eatN_long" use="eatN">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="eat" inline="true">
+      <use name="eatN_long"/>
+      <place-map virtual="what" real="store"/>
+      <connect-in port="trigger" place="trigger"/>
+      <connect-in port="N" place="N"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

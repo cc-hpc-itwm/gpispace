@@ -1,0 +1,21 @@
+<structs>
+  <struct name="bunch">
+    <field name="bunchtag" type="long"/>
+    <field name="id" type="long"/>
+
+    <struct name="offset">
+      <field name="id" type="long"/>
+    </struct>
+
+    <struct name="store">
+      <field name="id" type="long"/>
+    </struct>
+
+    <struct name="volumes">
+      <field name="left" type="long"/>
+      <struct name="seen">
+        <field name="id" type="bitset"/>
+      </struct>
+    </struct>
+  </struct>
+</structs>

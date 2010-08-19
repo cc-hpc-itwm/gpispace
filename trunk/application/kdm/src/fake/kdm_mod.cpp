@@ -14,61 +14,99 @@ using we::loader::put;
 
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const std::string & filename (get<std::string> (input, "config_file"));
+  const std::string & filename (get<std::string> (input, "file_config"));
 
   MLOG (INFO, "initialize: filename " << filename);
 
-  put (output, "config", "handle_Job", 0L);
-  put (output, "config", "scratch_Job", 0L);
-  put (output, "config", "handle_TT", 0L);
-  put (output, "config", "NThreads", 4L);
+  std::ifstream file (filename.c_str());
 
-  put (output, "config", "OFFSETS", 2L);
-  put (output, "config", "SUBVOLUMES_PER_OFFSET", 3L);
-  put (output, "config", "BUNCHES_PER_OFFSET", 5L);
-  put (output, "config", "PARALLEL_LOADTT", 8L);
+  if (!file)
+    {
+      throw std::runtime_error ("BUMMER: file not good");
+    }
 
-  put (output, "config", "VOLUME_CREDITS", 16L);
+  while (!file.eof())
+    {
+      std::string s;
+      file >> s;
+      long v;
+      file >> v;
+      if (s.size())
+        {
+          put (output, "config", s, v);
+        }
+    }
+
+  if ( get<long> (output, "config", "size.store.volume")
+     < get<long> (output, "config", "per_offset.volumes")
+     )
+    {
+      throw std::runtime_error
+        ("need at least as many volume stores as volumes per offset");
+    }
 
   MLOG (INFO, "initialize: config " << get<value::type>(output, "config"));
 }
 
 static void loadTT (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
   const long & id (get<long> (input, "id"));
 
-  MLOG (INFO, "loadTT: id " << id << ", config " << config);
+  MLOG (INFO, "loadTT: id " << id);
 
   put (output, "done", control());
 }
 
 static void load (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
   const value::type & bunch (get<value::type> (input, "bunch"));
 
-  MLOG (INFO, "load: bunch " << bunch << ", config " << config);
+  MLOG (INFO, "load: bunch " << bunch);
 
   put (output, "bunch", bunch);
 }
 
 static void process (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
-  const value::type & bunch (get<value::type> (input, "bunch"));
+  const value::type & volume (get<value::type> (input, "volume"));
+  literal::stack_type stack_bunch_id
+    (get<literal::stack_type> (volume, "assigned.bunch.id"));
+  literal::stack_type stack_store_id
+    (get<literal::stack_type> (volume, "assigned.bunch.store.id"));
 
-  MLOG (INFO, "process: bunch " << bunch << ", config " << config);
+  MLOG (INFO, "process: size " << stack_bunch_id.size());
 
-  put (output, "bunch", bunch);
+  while (!stack_bunch_id.empty())
+    {
+      if (stack_store_id.empty())
+        {
+          throw std::runtime_error ("BUMMER!");
+        }
+
+      const long & bid (stack_bunch_id.back());
+      const long & store (stack_store_id.back());
+      const long & vid (get<long> (volume, "id"));
+      const long & oid (get<long> (volume, "offset.id"));
+
+      MLOG ( INFO
+           , "process: match volume " << oid << "." << vid
+           << " with bunch " << bid << " from store " << store
+           );
+
+      stack_bunch_id.pop_back();
+      stack_store_id.pop_back();
+    }
+
+  MLOG (INFO, "process: volume " << volume);
+
+  put (output, "volume", volume);
 }
 
 static void write (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
   const value::type & volume (get<value::type> (input, "volume"));
 
-  MLOG (INFO, "write: volume " << volume << ", config " << config);
+  MLOG (INFO, "write: volume " << volume);
 
   put (output, "volume", volume);
 }
@@ -84,10 +122,9 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
 static void init_volume (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & config (get<value::type> (input, "config"));
   const value::type & volume (get<value::type> (input, "volume"));
 
-  MLOG (INFO, "init_volume: volume " << volume << ", config " << config);
+  MLOG (INFO, "init_volume: volume " << volume);
 
   put (output, "volume", volume);
 }

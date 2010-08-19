@@ -1,0 +1,32 @@
+<defun>
+  <in name="config" type="config" place="config"/>
+  <out name="offset" type="long" place="offset"/>
+
+  <net>
+
+    <place name="config" type="config"/>
+    <place name="offset" type="long"/>
+
+    <transition name="extract">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="N" type="long"/>
+        <expression>${N} := ${config.offsets}</expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="N" place="N"/>
+    </transition>
+
+    <place name="N" type="long"/>
+
+    <place name="wanted" type="bitset" virtual="true"/>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence_wanted.xml"/>
+      <place-map virtual="wanted" real="wanted"/>
+      <connect-in port="amount" place="N"/>
+      <connect-out port="out" place="offset"/>
+    </transition>
+
+  </net>
+</defun>

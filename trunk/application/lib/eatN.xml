@@ -12,12 +12,12 @@
       <defun>
         <in name="trigger" type="control"/>
         <in name="N" type="long"/>
-        <out name="N" type="long"/>
-        <expression></expression>
+        <out name="Nout" type="long"/>
+        <expression>${Nout} := ${N}</expression>
       </defun>
       <connect-in port="trigger" place="run"/>
       <connect-in port="N" place="N_in"/>
-      <connect-out port="N" place="N"/>
+      <connect-out port="Nout" place="N"/>
     </transition>
     <transition name="step">
       <defun>

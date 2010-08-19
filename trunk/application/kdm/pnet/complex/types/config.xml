@@ -1,0 +1,25 @@
+<structs>
+  <struct name="config">
+    <field name="offsets" type="long"/>
+
+    <struct name="per_offset">
+      <field name="volumes" type="long"/>
+      <field name="bunches" type="long"/>
+    </struct>
+
+    <struct name="size">
+      <struct name="store">
+        <field name="bunch" type="long"/>
+        <field name="volume" type="long"/>
+      </struct>
+    </struct>
+
+    <struct name="assign">
+      <field name="most" type="long"/>
+    </struct>
+
+    <struct name="loadTT">
+      <field name="parallel" type="long"/>
+    </struct>
+  </struct>
+</structs>

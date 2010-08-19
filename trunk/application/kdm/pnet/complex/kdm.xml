@@ -1,0 +1,452 @@
+<defun name="kdm_complex" internal="false">
+
+  <include-structs href="types/config.xml"/>
+  <include-structs href="types/volume.xml"/>
+  <include-structs href="types/bunch.xml"/>
+
+  <in name="file_config" type="string" place="file_config"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <place name="file_config" type="string"/>
+    <place name="done" type="control"/>
+
+    <transition name="initialize">
+      <defun>
+        <in name="file_config" type="string"/>
+        <out name="config" type="config" />
+        <module name="kdm" function="initialize"/>
+      </defun>
+      <connect-in place="file_config" port="file_config"/>
+      <connect-out port="config" place="config_initialized" />
+    </transition>
+
+    <place name="config_initialized" type="config"/>
+
+    <include-template href="5.xml"/>
+    <specialize name="five.config" use="five">
+      <type-map replace="T" with="config"/>
+    </specialize>
+
+    <transition name="five_config" inline="true">
+      <use name="five.config"/>
+      <connect-in port="in" place="config_initialized"/>
+      <connect-out port="one" place="config_generate_store"/>
+      <connect-out port="two" place="config_init_wanted_offsets"/>
+      <connect-out port="three" place="config_loadTT"/>
+      <connect-out port="four" place="config"/>
+      <connect-out port="five" place="config_init_wait"/>
+    </transition>
+
+    <place name="config_generate_store" type="config"/>
+    <place name="config_init_wait" type="config"/>
+    <place name="config_init_wanted_offsets" type="config"/>
+    <place name="config_generate_offset" type="config"/>
+    <place name="config_loadTT" type="config"/>
+    <place name="config" type="config"/>
+
+    <transition name="init_wait">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${wait} := ${config.offsets} * ${config.per_offset.volumes}
+        </expression>
+      </defun>
+      <connect-in port="config" place="config_init_wait"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <place name="wait" type="long"/>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_volume" use="wait">
+      <type-map replace="T" with="volume"/>
+    </specialize>
+
+    <transition name="wait" inline="true">
+      <use name="wait_volume"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="trigger" place="volume_done"/>
+      <connect-out port="done" place="done_work"/>
+    </transition>
+
+    <place name="done_work" type="control"/>
+
+    <transition name="loadTT" inline="true">
+      <include-function href="loadTT.xml"/>
+      <connect-in port="config" place="config_loadTT"/>
+      <connect-out port="config" place="config_process"/>
+    </transition>
+
+    <place name="config_process" type="config"/>
+
+    <transition name="generate_store" inline="true">
+      <include-function href="generate/store.xml"/>
+      <connect-in port="config" place="config_generate_store"/>
+      <connect-out port="bunch" place="store_bunch"/>
+      <connect-out port="volume" place="store_volume"/>
+    </transition>
+
+    <place name="store_volume" type="long"/>
+    <place name="store_bunch" type="long"/>
+
+    <transition name="init_wanted_offsets">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <out name="wanted" type="bitset"/>
+        <expression>${wanted} := bitset_insert ({}, 0L)</expression>
+      </defun>
+      <connect-in port="config" place="config_init_wanted_offsets"/>
+      <connect-out port="config" place="config_generate_offset"/>
+      <connect-out port="wanted" place="wanted_offset"/>
+    </transition>
+
+    <place name="wanted_offset" type="bitset"/>
+
+    <transition name="generate_offset" inline="true">
+      <include-function href="generate/offset.xml"/>
+      <place-map virtual="wanted" real="wanted_offset"/>
+      <connect-in port="config" place="config_generate_offset"/>
+      <connect-out port="offset" place="offset"/>
+    </transition>
+
+    <place name="offset" type="long"/>
+
+    <include-template href="dup.xml"/>
+    <specialize name="dup.long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <specialize name="dup.volume" use="dup">
+      <type-map replace="T" with="volume"/>
+    </specialize>
+    <specialize name="dup.control" use="dup">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="dup_offset" inline="true">
+      <use name="dup.long"/>
+      <connect-in port="in" place="offset"/>
+      <connect-out port="one" place="offset_volume"/>
+      <connect-out port="two" place="offset_bunch"/>
+    </transition>
+
+    <place name="offset_volume" type="long"/>
+    <place name="offset_bunch" type="long"/>
+
+    <transition name="generate_volume">
+      <include-function href="generate/volume.xml"/>
+      <place-map virtual="store" real="store_volume"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="offset" place="offset_volume"/>
+      <connect-out port="volume" place="volume_generated"/>
+    </transition>
+
+    <transition name="generate_bunch">
+      <include-function href="generate/bunch.xml"/>
+      <place-map virtual="store" real="store_bunch"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="offset" place="offset_bunch"/>
+      <connect-out port="bunch" place="bunch_generated"/>
+    </transition>
+
+    <place name="volume_generated" type="volume"/>
+    <place name="bunch_generated" type="bunch"/>
+
+    <transition name="load_bunch">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="bunch" type="bunch"/>
+        <out name="bunch" type="bunch"/>
+        <module name="kdm" function="load"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="bunch" place="bunch_generated"/>
+      <connect-out port="bunch" place="bunch"/>
+    </transition>
+
+    <place name="bunch" type="bunch"/>
+
+    <transition name="initialize_volume">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <module name="kdm" function="init_volume"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="volume" place="volume_generated"/>
+      <connect-out port="volume" place="volume"/>
+    </transition>
+
+    <place name="volume" type="volume"/>
+    <place name="volume_process" type="volume"/>
+
+    <transition name="process">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <module name="kdm" function="process"/>
+      </defun>
+      <connect-read port="config" place="config_process"/>
+      <connect-in port="volume" place="volume_process"/>
+      <connect-out port="volume" place="volume_processed"/>
+    </transition>
+
+    <place name="volume_processed" type="volume"/>
+
+    <transition name="assign" priority="1">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="volume" type="volume"/>
+        <in name="bunch" type="bunch"/>
+        <out name="volume" type="volume"/>
+        <out name="bunch" type="bunch"/>
+        <expression>
+          ${bunch.volumes.seen.id}
+           := bitset_insert (${bunch.volumes.seen.id}, ${volume.id});
+
+          ${volume.assigned.count} := ${volume.assigned.count} + 1;
+          ${volume.assigned.bunch.id}
+           := stack_push (${volume.assigned.bunch.id}, ${bunch.id});
+          ${volume.assigned.bunch.store.id}
+           := stack_push (${volume.assigned.bunch.store.id}, ${bunch.store.id});
+        </expression>
+        <condition>
+          ${volume.offset.id} :eq: ${bunch.offset.id}
+        </condition>
+        <condition>
+          !bitset_is_element (${bunch.volumes.seen.id}, ${volume.id})
+        </condition>
+        <condition>
+          ${volume.assigned.count} :lt: ${config.assign.most}
+        </condition>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="volume" place="volume"/>
+      <connect-in port="bunch" place="bunch"/>
+      <connect-out port="volume" place="volume"/>
+      <connect-out port="bunch" place="bunch"/>
+    </transition>
+
+    <transition name="fully_assigned">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <expression></expression>
+        <condition>
+          ${volume.assigned.count} :ge: ${config.assign.most}
+        </condition>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="volume" place="volume"/>
+      <connect-out port="volume" place="volume_process"/>
+    </transition>
+
+    <transition name="take_anyway">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <expression></expression>
+        <condition>
+          ${volume.assigned.count} :gt: 0
+        </condition>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="volume" place="volume"/>
+      <connect-out port="volume" place="volume_process"/>
+    </transition>
+
+    <transition name="unassign">
+      <defun>
+        <in name="volume" type="volume"/>
+        <in name="bunch" type="bunch"/>
+        <out name="volume" type="volume"/>
+        <out name="bunch" type="bunch"/>
+        <expression>
+          ${bunch.volumes.left} := ${bunch.volumes.left} - 1;
+
+          ${volume.bunches.left} := ${volume.bunches.left} - 1;
+          ${volume.assigned.count} := ${volume.assigned.count} - 1;
+          ${volume.assigned.bunch.id}
+           := stack_pop (${volume.assigned.bunch.id});
+          ${volume.assigned.bunch.store.id}
+           := stack_pop (${volume.assigned.bunch.store.id});
+        </expression>
+        <condition>
+          !stack_empty (${volume.assigned.bunch.id})
+        </condition>
+        <condition>
+          stack_top (${volume.assigned.bunch.id}) :eq: ${bunch.id}
+        </condition>
+        <condition>
+          ${volume.offset.id} :eq: ${bunch.offset.id}
+        </condition>
+      </defun>
+      <connect-in port="volume" place="volume_processed"/>
+      <connect-in port="bunch" place="bunch"/>
+      <connect-out port="volume" place="volume_processed"/>
+      <connect-out port="bunch" place="bunch"/>
+    </transition>
+
+    <transition name="unassigned">
+      <defun>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <expression>
+        </expression>
+        <condition>
+          stack_empty (${volume.assigned.bunch.id})
+        </condition>
+      </defun>
+      <connect-in port="volume" place="volume_processed"/>
+      <connect-out port="volume" place="volume"/>
+    </transition>
+
+    <transition name="break_bunch">
+      <defun>
+        <in name="bunch" type="bunch"/>
+        <out name="store" type="long"/>
+        <expression>${store} := ${bunch.store.id}</expression>
+        <condition>${bunch.volumes.left} :eq: 0</condition>
+      </defun>
+      <connect-in port="bunch" place="bunch"/>
+      <connect-out port="store" place="store_bunch"/>
+    </transition>
+
+    <transition name="break_volume">
+      <defun>
+        <in name="volume" type="volume"/>
+        <in name="wanted" type="bitset"/>
+        <out name="wanted" type="bitset"/>
+        <out name="volume" type="volume"/>
+        <expression>
+          ${wanted} := bitset_insert (${wanted}, ${volume.offset.id} + 1)
+        </expression>
+        <condition>
+          ${volume.bunches.left} :eq: 0
+        </condition>
+      </defun>
+      <connect-in port="volume" place="volume"/>
+      <connect-out port="volume" place="volume_write"/>
+      <connect-in port="wanted" place="wanted_offset"/>
+      <connect-out port="wanted" place="wanted_offset"/>
+    </transition>
+
+    <place name="volume_write" type="volume"/>
+
+    <transition name="write">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <module name="kdm" function="write"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="volume" place="volume_write"/>
+      <connect-out port="volume" place="volume_written"/>
+    </transition>
+
+    <place name="volume_written" type="volume"/>
+
+    <transition name="dup_volume_written" inline="true">
+      <use name="dup.volume"/>
+      <connect-in port="in" place="volume_written"/>
+      <connect-out port="one" place="volume_done"/>
+      <connect-out port="two" place="volume_release"/>
+    </transition>
+
+    <place name="volume_done" type="volume"/>
+    <place name="volume_release" type="volume"/>
+
+    <transition name="release_store_volume">
+      <defun>
+        <in name="volume" type="volume"/>
+        <out name="store" type="long"/>
+        <expression>
+          ${store} := ${volume.store.id};
+        </expression>
+      </defun>
+      <connect-in port="volume" place="volume_release"/>
+      <connect-out port="store" place="store_volume"/>
+    </transition>
+
+    <transition name="finalize">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="trigger" type="control"/>
+        <out name="trigger" type="control"/>
+        <module name="kdm" function="finalize"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="trigger" place="done_work"/>
+      <connect-out port="trigger" place="done_finalize"/>
+    </transition>
+
+    <place name="done_finalize" type="control"/>
+
+    <transition name="dup_done_finalize" inline="true">
+      <use name="dup.control"/>
+      <connect-in port="in" place="done_finalize"/>
+      <connect-out port="one" place="trigger_eat_store_bunch"/>
+      <connect-out port="two" place="trigger_eat_store_volume"/>
+    </transition>
+
+    <place name="trigger_eat_store_bunch" type="control"/>
+    <place name="trigger_eat_store_volume" type="control"/>
+
+    <transition name="eat_store_bunch">
+      <include-function href="eat/store/bunch.xml"/>
+      <place-map virtual="store" real="store_bunch"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="trigger" place="trigger_eat_store_bunch"/>
+      <connect-out port="done" place="done_eat_store_bunch"/>
+    </transition>
+
+    <transition name="eat_store_volume">
+      <include-function href="eat/store/volume.xml"/>
+      <place-map virtual="store" real="store_volume"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="trigger" place="trigger_eat_store_bunch"/>
+      <connect-out port="done" place="done_eat_store_volume"/>
+    </transition>
+
+    <place name="done_eat_store_bunch" type="control"/>
+    <place name="done_eat_store_volume" type="control"/>
+
+    <transition name="join_eat_store">
+      <defun>
+        <in name="a" type="control"/>
+        <in name="b" type="control"/>
+        <out name="joined" type="control"/>
+        <expression>${joined} := []</expression>
+      </defun>
+      <connect-in port="a" place="done_eat_store_bunch"/>
+      <connect-in port="b" place="done_eat_store_volume"/>
+      <connect-out port="joined" place="done_eat_store"/>
+    </transition>
+
+    <place name="done_eat_store" type="control"/>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="config_process" type="config"/>
+        <in name="wanted_offset" type="bitset"/>
+        <in name="trigger" type="control"/>
+        <out name="done" type="control"/>
+        <expression>${done} := []</expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="config_process" place="config_process"/>
+      <connect-in port="wanted_offset" place="wanted_offset"/>
+      <connect-in port="trigger" place="done_eat_store"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

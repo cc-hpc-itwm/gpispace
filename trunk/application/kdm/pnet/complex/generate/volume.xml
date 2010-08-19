@@ -1,0 +1,73 @@
+<defun>
+  <in name="config" type="config" place="config"/>
+  <in name="offset" type="long" place="offset"/>
+  <out name="volume" type="volume" place="volume"/>
+
+  <net>
+
+    <place name="config" type="config"/>
+    <place name="offset" type="long"/>
+    <place name="volume" type="volume"/>
+    <place name="store" type="long" virtual="true"/>
+
+    <struct name="state">
+      <field name="id" type="long"/>
+      <field name="max" type="long"/>
+      <field name="offset" type="long"/>
+      <field name="bunches" type="long"/>
+    </struct>
+
+    <place name="state" type="state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="offset" type="long"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.id} := 0;
+          ${state.max} := ${config.per_offset.volumes};
+          ${state.offset} := ${offset};
+          ${state.bunches} := ${config.per_offset.bunches};
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="offset" place="offset"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <in name="store" type="long"/>
+        <out name="state" type="state"/>
+        <out name="volume" type="volume"/>
+        <expression>
+          ${volume.id} := ${state.id};
+          ${volume.offset.id} := ${state.offset};
+          ${volume.store.id} := ${store};
+          ${volume.bunches.left} := ${state.bunches};
+          ${volume.assigned.count} := 0;
+          ${volume.assigned.bunch.id} := @@;
+          ${volume.assigned.bunch.store.id} := @@;
+          ${state.id} := ${state.id} + 1;
+        </expression>
+        <condition>${state.id} :lt: ${state.max}</condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-in port="store" place="store"/>
+      <connect-out port="state" place="state"/>
+      <connect-out port="volume" place="volume"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <expression></expression>
+        <condition>${state.id} :ge: ${state.max}</condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+    </transition>
+
+  </net>
+</defun>
