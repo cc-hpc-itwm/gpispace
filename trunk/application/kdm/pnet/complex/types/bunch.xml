@@ -1,6 +1,5 @@
 <structs>
   <struct name="bunch">
-    <field name="bunchtag" type="long"/>
     <field name="id" type="long"/>
 
     <struct name="offset">

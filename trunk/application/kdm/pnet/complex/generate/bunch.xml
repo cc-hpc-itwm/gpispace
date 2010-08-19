@@ -48,7 +48,6 @@
           ${bunch.store.id} := ${store};
           ${bunch.volumes.left} := ${state.volumes};
           ${bunch.volumes.seen.id} := {};
-          ${bunch.bunchtag} := ${bunch.id};
           ${state.id} := ${state.id} + 1;
         </expression>
         <condition>${state.id} :lt: ${state.max}</condition>

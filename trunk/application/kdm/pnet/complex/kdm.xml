@@ -255,7 +255,6 @@
 
     <transition name="take_anyway">
       <defun>
-        <in name="config" type="config"/>
         <in name="volume" type="volume"/>
         <out name="volume" type="volume"/>
         <expression></expression>
@@ -263,7 +262,6 @@
           ${volume.assigned.count} :gt: 0
         </condition>
       </defun>
-      <connect-read port="config" place="config"/>
       <connect-in port="volume" place="volume"/>
       <connect-out port="volume" place="volume_process"/>
     </transition>
@@ -418,7 +416,7 @@
       <include-function href="eat/store/volume.xml"/>
       <place-map virtual="store" real="store_volume"/>
       <connect-read port="config" place="config"/>
-      <connect-in port="trigger" place="trigger_eat_store_bunch"/>
+      <connect-in port="trigger" place="trigger_eat_store_volume"/>
       <connect-out port="done" place="done_eat_store_volume"/>
     </transition>
 
