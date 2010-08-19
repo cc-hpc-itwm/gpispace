@@ -131,9 +131,9 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
 // ************************************************************************* //
 
-WE_MOD_INITIALIZE_START (kdm);
+WE_MOD_INITIALIZE_START (kdm_complex);
 {
-  LOG(INFO, "WE_MOD_INITIALIZE_START (kdm_fake)");
+  LOG(INFO, "WE_MOD_INITIALIZE_START (kdm_complex)");
 
   WE_REGISTER_FUN (initialize);
   WE_REGISTER_FUN (loadTT);
@@ -143,10 +143,10 @@ WE_MOD_INITIALIZE_START (kdm);
   WE_REGISTER_FUN (init_volume);
   WE_REGISTER_FUN (finalize);
 }
-WE_MOD_INITIALIZE_END (kdm);
+WE_MOD_INITIALIZE_END (kdm_complex);
 
-WE_MOD_FINALIZE_START (kdm);
+WE_MOD_FINALIZE_START (kdm_complex);
 {
-  LOG(INFO, "WE_MOD_FINALIZE_START (kdm)");
+  LOG(INFO, "WE_MOD_FINALIZE_START (kdm_complex)");
 }
-WE_MOD_FINALIZE_END (kdm);
+WE_MOD_FINALIZE_END (kdm_complex);

@@ -1,7 +1,7 @@
-offsets               5
-per_offset.volumes    10
-per_offset.bunches    20
+offsets               15
+per_offset.volumes    12
+per_offset.bunches    2
 loadTT.parallel       8
-size.store.bunch      10
-size.store.volume     10
+size.store.bunch      8
+size.store.volume     12
 assign.most           5

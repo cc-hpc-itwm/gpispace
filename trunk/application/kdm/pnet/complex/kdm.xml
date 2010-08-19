@@ -9,14 +9,20 @@
 
   <net>
 
-    <place name="file_config" type="string"/>
+    <place name="file_config" type="string">
+      <token>
+        <value>
+          "/u/herc/rahn/kdm.complex.conf"
+        </value>
+      </token>
+    </place>
     <place name="done" type="control"/>
 
     <transition name="initialize">
       <defun>
         <in name="file_config" type="string"/>
         <out name="config" type="config" />
-        <module name="kdm" function="initialize"/>
+        <module name="kdm_complex" function="initialize"/>
       </defun>
       <connect-in place="file_config" port="file_config"/>
       <connect-out port="config" place="config_initialized" />
@@ -160,7 +166,7 @@
         <in name="config" type="config"/>
         <in name="bunch" type="bunch"/>
         <out name="bunch" type="bunch"/>
-        <module name="kdm" function="load"/>
+        <module name="kdm_complex" function="load"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="bunch" place="bunch_generated"/>
@@ -174,7 +180,7 @@
         <in name="config" type="config"/>
         <in name="volume" type="volume"/>
         <out name="volume" type="volume"/>
-        <module name="kdm" function="init_volume"/>
+        <module name="kdm_complex" function="init_volume"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="volume" place="volume_generated"/>
@@ -189,7 +195,7 @@
         <in name="config" type="config"/>
         <in name="volume" type="volume"/>
         <out name="volume" type="volume"/>
-        <module name="kdm" function="process"/>
+        <module name="kdm_complex" function="process"/>
       </defun>
       <connect-read port="config" place="config_process"/>
       <connect-in port="volume" place="volume_process"/>
@@ -345,7 +351,7 @@
         <in name="config" type="config"/>
         <in name="volume" type="volume"/>
         <out name="volume" type="volume"/>
-        <module name="kdm" function="write"/>
+        <module name="kdm_complex" function="write"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="volume" place="volume_write"/>
@@ -381,7 +387,7 @@
         <in name="config" type="config"/>
         <in name="trigger" type="control"/>
         <out name="trigger" type="control"/>
-        <module name="kdm" function="finalize"/>
+        <module name="kdm_complex" function="finalize"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="trigger" place="done_work"/>
