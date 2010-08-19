@@ -175,13 +175,13 @@ main ()
     }
   }
 
-  cout << "*** filled up to " << std::numeric_limits<unsigned int>::max() << endl;
+  cout << "*** filled up to " << std::numeric_limits<unsigned short>::max() << endl;
 
-  set.resize (std::numeric_limits<unsigned int>::max());
+  set.resize (std::numeric_limits<unsigned short>::max());
 
-  set[std::numeric_limits<unsigned int>::max()-1] = true;
+  set[std::numeric_limits<unsigned short>::max()-1] = true;
 
-  cout << set;
+  //  cout << set;
 
   {
     std::ostringstream oss;
