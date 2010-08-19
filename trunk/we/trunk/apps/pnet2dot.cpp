@@ -2,6 +2,8 @@
 
 #include <we/we.hpp>
 
+#include <we/type/bits/transition/toDot.hpp>
+
 #include <iostream>
 #include <fstream>
 
@@ -9,6 +11,23 @@
 #include <boost/function.hpp>
 
 #include <fhg/util/starts_with.hpp>
+
+// ************************************************************************* //
+
+namespace detail {
+  template<typename Activity, typename Pred>
+  void dot (std::ostream & os, const Activity & a, const Pred & pred)
+  {
+    we::type::dot::id_type id (0);
+
+    we::type::dot::init (a.transition().prop());
+
+    os << "digraph " << a.transition().name() << " {" << std::endl;
+    os << "compound=true" << std::endl;
+    os << we::type::dot::dot (a.transition(), id, pred);
+    os << "} /* " << a.transition().name() << " */" << std::endl;
+  }
+}
 
 // ************************************************************************* //
 
@@ -173,7 +192,7 @@ main (int argc, char ** argv)
       we::util::text_codec::decode (stream, act);
     }
 
-  act.dot (std::cout, options);
+  detail::dot (std::cout, act, options);
 
   return EXIT_SUCCESS;
 }

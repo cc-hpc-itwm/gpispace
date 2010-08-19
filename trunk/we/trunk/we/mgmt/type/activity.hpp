@@ -32,7 +32,6 @@
 #include <we/mgmt/bits/traits.hpp>
 #include <we/mgmt/bits/transition_visitors.hpp>
 
-#include <we/type/bits/transition/toDot.hpp>
 #include <we/type/bits/transition/optimize.hpp>
 
 namespace we { namespace mgmt { namespace type {
@@ -415,21 +414,6 @@ namespace we { namespace mgmt { namespace type {
       os << "}";
 
       os << "}";
-    }
-
-    template<typename Pred>
-    void dot (std::ostream & os, const Pred & pred) const
-    {
-      unique_lock_t lock (mutex_);
-
-      we::type::dot::id_type id (0);
-
-      we::type::dot::init (transition().prop());
-
-      os << "digraph " << transition().name() << " {" << std::endl;
-      os << "compound=true" << std::endl;
-      os << we::type::dot::dot (transition(), id, pred);
-      os << "} /* " << transition().name() << " */" << std::endl;
     }
 
     // **********************************
