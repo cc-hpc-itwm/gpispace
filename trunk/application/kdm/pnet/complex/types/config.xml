@@ -34,5 +34,9 @@
       <field name="bunch" type="long"/>
       <field name="volume" type="long"/>
     </struct>
+
+    <struct name="threads">
+      <field name="N" type="long"/>
+    </struct>
   </struct>
 </structs>
