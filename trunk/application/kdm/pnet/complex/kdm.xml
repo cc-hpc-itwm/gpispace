@@ -19,7 +19,7 @@
     <place name="done" type="control"/>
 
     <place name="memsizeGPI" type="long">
-      <token><value>2^30</value></long>
+      <token><value>2^30</value></token>
     </place>
 
     <transition name="initialize">
@@ -29,7 +29,7 @@
         <out name="config" type="config" />
         <module name="kdm_complex" function="initialize"/>
       </defun>
-      <connect-in place="memsizeGPI" type="long"/>
+      <connect-in port="memsizeGPI" place="memsizeGPI"/>
       <connect-in place="file_config" port="file_config"/>
       <connect-out port="config" place="config_initialized" />
     </transition>
