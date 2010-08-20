@@ -21,5 +21,18 @@
     <struct name="loadTT">
       <field name="parallel" type="long"/>
     </struct>
+
+    <struct name="handle">
+      <field name="job" type="long"/>
+      <field name="TT" type="long"/>
+      <field name="bunch" type="long"/>
+      <field name="volume" type="volume"/>
+    </struct>
+
+    <struct name="scratch">
+      <field name="job" type="long"/>
+      <field name="bunch" type="long"/>
+      <field name="volume" type="volume"/>
+    </struct>
   </struct>
 </structs>
