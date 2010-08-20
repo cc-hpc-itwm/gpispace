@@ -31,8 +31,8 @@ static unsigned long sizeofJob (void)
 
 static void get_Job (const value::type & config, MigrationJob & Job)
 {
-  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
-  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
+  const fvmAllocHandle_t & handle_Job (get<long> (config, "handle.job"));
+  const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch.job"));
 
   waitComm (fvmGetGlobalData ( handle_Job
                              , fvmGetRank() * sizeofJob()
@@ -170,6 +170,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   //  Job.ReqVMMemSize = Job.globTTbufsizelocal + 2 * sizeofJob();
 
   Job.BunchMemSize = getSizeofTD(Job);
+  Job.shift_for_TT = Job.SubVolMemSize + Job.BunchMemSize;
 
   // Check whether the travel time table covers the entire output volume
 
@@ -308,7 +309,7 @@ static void loadTT (void *, const we::loader::input_t & input, we::loader::outpu
 
   // Load the entire travel time table data into memory
   const int & NThreads (get<long> (config, "threads.N"));
-  const fvmAllocHandle_t & handle_TT (get<long> (config, "handle_TT"));
+  const fvmAllocHandle_t & handle_TT (get<long> (config, "handle.TT"));
 
   TTVMMemHandler TTVMMem;
 
@@ -333,9 +334,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   const long & oid (get<long> (bunch, "offset.id"));
   const long & bid (get<long> (bunch, "id"));
 
-  char * pBunchData (((char *)fvmGetShmemPtr()) + sizeofJob());
-
-  TraceBunch Bunch(pBunchData,oid+1,1,bid+1,Job);
+  TraceBunch Bunch((char *)fvmGetShmemPtr(),oid+1,1,bid+1,Job);
 
   Bunch.LoadFromDisk_CO_MT(Job);
 
@@ -347,7 +346,7 @@ static void load (void *, const we::loader::input_t & input, we::loader::output_
   waitComm ( fvmPutGlobalData ( handle_bunch
                               , sid * Job.BunchMemSize
                               , Job.BunchMemSize
-                              , sizeofJob()
+                              , 0
                               , scratch_bunch
                               )
            );
@@ -362,6 +361,8 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   const value::type & config (get<value::type> (input, "config"));
   const value::type & volume (get<value::type> (input, "volume"));
 
+  MLOG (INFO, "process: volume " << volume);
+
   MigrationJob Job;
 
   get_Job (config, Job);
@@ -371,15 +372,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
   const long & vid (get<long>(volume, "id"));
 
-  waitComm (fvmGetGlobalData ( handle_volume
-                             , vid * Job.SubVolMemSize
-                             , Job.SubVolMemSize
-                             , sizeofJob()
-                             , scratch_volume
-                             )
-           );
-
-  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + sizeofJob());
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()));
 
   point3D<float> X0(Job.MigVol.first_x_coord.v,
                    Job.MigVol.first_y_coord.v,
@@ -397,12 +390,23 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
   MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
 
+  waitComm (fvmGetGlobalData ( handle_volume
+                             , vid * Job.SubVolMemSize
+                             , Job.SubVolMemSize
+                             , 0
+                             , scratch_volume
+                             )
+           );
+
   literal::stack_type stack_bunch_id
     (get<literal::stack_type> (volume, "assigned.bunch.id"));
   literal::stack_type stack_store_id
     (get<literal::stack_type> (volume, "assigned.bunch.store.id"));
 
   MLOG (INFO, "process: size " << stack_bunch_id.size());
+
+  const fvmAllocHandle_t & handle_bunch (get<long> (config, "handle.bunch"));
+  const fvmAllocHandle_t & scratch_bunch (get<long> (config, "scratch.bunch"));
 
   while (!stack_bunch_id.empty())
     {
@@ -420,19 +424,16 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
            << " with bunch " << bid << " from store " << sid
            );
 
-      const fvmAllocHandle_t handle_bunch (get<long> (config, "handle.bunch"));
-      const fvmAllocHandle_t scratch_bunch (get<long> (config, "scratch.bunch"));
-
       waitComm ( fvmGetGlobalData ( handle_bunch
                                   , sid * Job.BunchMemSize
                                   , Job.BunchMemSize
-                                  , sizeofJob() + Job.SubVolMemSize
+                                  , Job.SubVolMemSize
                                   , scratch_bunch
                                   )
                );
 
       // Reconstruct the tracebunch out of memory
-      char * migbuf (((char *)fvmGetShmemPtr()) + sizeofJob() + Job.SubVolMemSize);
+      char * migbuf (((char *)fvmGetShmemPtr()) + Job.SubVolMemSize);
 
       TraceBunch Bunch(migbuf,oid+1,1,bid+1,Job);
 
@@ -440,7 +441,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
       const long & NThreads (get<long> (config, "threads.N"));
 
       char * _VMem  (((char *)fvmGetShmemPtr())
-                    + sizeofJob() + Job.SubVolMemSize + Job.BunchMemSize
+                    + Job.SubVolMemSize + Job.BunchMemSize
                     );
 
       const fvmAllocHandle_t & handle_TT (get<long> (config, "handle.TT"));
@@ -451,7 +452,13 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
       stack_store_id.pop_back();
     }
 
-  MLOG (INFO, "process: volume " << volume);
+  waitComm (fvmPutGlobalData ( handle_volume
+                             , vid * Job.SubVolMemSize
+                             , Job.SubVolMemSize
+                             , 0
+                             , scratch_volume
+                             )
+           );
 
   put (output, "volume", volume);
 }
@@ -473,16 +480,16 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
   const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
   const long & vid (get<long>(volume, "id"));
 
-  waitComm (fvmGetGlobalData ( handle_volume
-                             , vid * Job.SubVolMemSize
-                             , Job.SubVolMemSize
-                             , sizeofJob()
-                             , scratch_volume
-                             )
+  waitComm ( fvmGetGlobalData ( handle_volume
+			      , vid * Job.SubVolMemSize
+			      , Job.SubVolMemSize
+			      , 0
+			      , scratch_volume
+			      )
            );
 
   // write offset class for a  given subvolume to disk
-  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + sizeofJob());
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()));
 
   // Reconstruct the subvolume out of memory
   point3D<float> X0(Job.MigVol.first_x_coord.v,
@@ -556,7 +563,7 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   {
     MLOG (INFO, "Init SincInterpolator on node " << fvmGetRank());
 
-    const long & NThreads (get<long> (config, "threads,N"));
+    const long & NThreads (get<long> (config, "threads.N"));
 
     initSincIntArray(NThreads, Job.tracedt);
 
@@ -600,7 +607,7 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
   MigSubVol3D MigSubVol(MigVol, vid+1, Job.NSubVols);
 
-  char * pVMMemSubVol (((char *)fvmGetShmemPtr()) + sizeofJob());
+  char * pVMMemSubVol (((char *)fvmGetShmemPtr()));
 
   MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
 
@@ -613,7 +620,7 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   waitComm (fvmPutGlobalData ( handle_volume
                              , vid * Job.SubVolMemSize
                              , Job.SubVolMemSize
-                             , sizeofJob()
+                             , 0
                              , scratch_volume
                              )
            );
@@ -623,9 +630,9 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
 // ************************************************************************* //
 
-WE_MOD_INITIALIZE_START (kdm);
+WE_MOD_INITIALIZE_START (kdm_complex);
 {
-  LOG(INFO, "WE_MOD_INITIALIZE_START (kdm_fake)");
+  LOG(INFO, "WE_MOD_INITIALIZE_START (kdm_complex)");
 
   WE_REGISTER_FUN (initialize);
   WE_REGISTER_FUN (loadTT);
@@ -635,10 +642,10 @@ WE_MOD_INITIALIZE_START (kdm);
   WE_REGISTER_FUN (init_volume);
   WE_REGISTER_FUN (finalize);
 }
-WE_MOD_INITIALIZE_END (kdm);
+WE_MOD_INITIALIZE_END (kdm_complex);
 
-WE_MOD_FINALIZE_START (kdm);
+WE_MOD_FINALIZE_START (kdm_complex);
 {
-  LOG(INFO, "WE_MOD_FINALIZE_START (kdm)");
+  LOG(INFO, "WE_MOD_FINALIZE_START (kdm_complex)");
 }
-WE_MOD_FINALIZE_END (kdm);
+WE_MOD_FINALIZE_END (kdm_complex);
