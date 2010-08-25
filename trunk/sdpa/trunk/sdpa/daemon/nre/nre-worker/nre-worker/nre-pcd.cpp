@@ -139,16 +139,15 @@ int main(int ac, char **av)
     }
     catch (const ModuleLoadFailed &mlf)
     {
-      std::cerr << "could not load module: " << mlf.what() << std::endl;
+      LOG(ERROR, "could not load module: " << mlf.what());
       return 3;
     }
     catch (const std::exception &ex)
     {
-      std::cerr << "could not load module: " << ex.what() << std::endl;
+      LOG(ERROR, "could not load module: " << ex.what());
       return 3;
     }
   }
 
   return executor->run();
-
 }
