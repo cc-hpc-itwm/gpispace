@@ -70,7 +70,7 @@ test -d "/scratch/$USER/sdpa" || mkdir -p "/scratch/$USER/sdpa"
 nre-pcd --rank "$rank" \
     --load "$SDPA_LIBEXEC/libfvm-pc.so" \
     --load "$SDPA_LIBEXEC/libsinc.so" \
-    -p "$SDPA_LIBEXEC" \
+    -a "$SDPA_LIBEXEC" \
   >/scratch/$USER/sdpa/pc.`hostname`.log 2>&1 &
 sleep 1
 nre --url "0.0.0.0" --name "$name" --gui_url="$gui_url" --agg_name="$agg" --agg_url="$agg_url" >/scratch/$USER/sdpa/nre.`hostname`.log 2>&1 &
