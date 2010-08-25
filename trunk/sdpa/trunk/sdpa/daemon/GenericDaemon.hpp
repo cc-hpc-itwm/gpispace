@@ -276,6 +276,7 @@ namespace sdpa { namespace daemon {
 	  unsigned int m_nRank;
 
 	  sdpa::util::time_type m_ullPollingInterval;
+	  unsigned int m_nExternalJobs;
 
 	private:
 	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
@@ -284,7 +285,6 @@ namespace sdpa { namespace daemon {
 
 	  void messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr);
 
-	  unsigned int m_nExternalJobs;
 	  mutable mutex_type ext_job_cnt_mtx_;
   };
 }}
