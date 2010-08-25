@@ -56,7 +56,7 @@ int main(int ac, char **av)
     return 1;
   }
 
-  fhg::log::Configurator::configure();
+  FHGLOG_SETUP( ac, av );
 
   using namespace we::loader;
 
@@ -66,6 +66,7 @@ int main(int ac, char **av)
                                             , vm["rank"].as<int>()
                                             )
     );
+
   if (vm.count("prepend-search-path"))
   {
     const std::vector<std::string>& search_path= vm["prepend-search-path"].as<std::vector<std::string> >();
