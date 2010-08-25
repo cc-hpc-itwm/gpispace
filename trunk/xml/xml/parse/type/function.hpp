@@ -623,6 +623,7 @@ namespace xml
 
       // ******************************************************************* //
 
+      inline
       std::ostream & operator << (std::ostream & s, const function_type & f)
       {
         s << level(f.level) << "function (" << std::endl;
