@@ -104,7 +104,7 @@ namespace sdpa {
 	 	}
 		else
 		{
-			DMLOG(TRACE, "not polling, difftime=" << difftime << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
+			DMLOG(TRACE, "not polling, difftime=" << diff_time << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
 		}
 
 	 	return bReqPosted;
