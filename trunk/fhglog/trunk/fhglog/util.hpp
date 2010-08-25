@@ -25,6 +25,7 @@
 
 #include <list>
 #include <string>
+#include <sstream> // stringstream
 #include <utility> // std::pair
 #include <unistd.h> // char **environ
 
@@ -96,6 +97,34 @@ namespace fhg { namespace log {
     std::pair<std::string, std::string> h_t (split_string(s, sep));
     *out++ = h_t.first;
     split (h_t.second, sep, out);
+  }
+
+  template <typename Iterator>
+  inline std::string join ( Iterator begin
+                          , Iterator end
+                          , const std::string & separator
+                          , const std::string & lead_in = ""
+                          , const std::string & lead_out = ""
+                          )
+  {
+    std::ostringstream os;
+
+    os << lead_in;
+
+    Iterator it = begin;
+    while (it != end)
+    {
+      if (it != begin)
+      {
+        os << separator;
+      }
+      os << *it;
+      ++it;
+    }
+
+    os << lead_out;
+
+    return os.str();
   }
 
   inline environment_t get_environment_variables()
