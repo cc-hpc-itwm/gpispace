@@ -3,10 +3,20 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -W -Wall -Wextra -Wno-ignored-qualifiers -Wnon-virtual-dtor -Wno-system-headers")
+  include (CheckCXXSourceCompiles)
+
+  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -W -Wall -Wextra -Wnon-virtual-dtor -Wno-system-headers")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-include-dirs -Wno-pragmas -Wredundant-decls")
   # produces a lot of warnings with (at least) boost 1.38:
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wfloat-equal")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wfloat-equal")
+
+  set (CMAKE_REQUIRED_FLAGS "-Wno-ignored-qualifiers")
+  set (__CXX_FLAG_CHECK_SOURCE "int main () { return 0; }")
+  message(STATUS "checking if ${CMAKE_REQUIRED_FLAGS} works")
+  CHECK_CXX_SOURCE_COMPILES ("${__CXX_FLAG_CHECK_SOURCE}" W_NO_IGNORED_QUALIFIERS)
+  if (W_NO_IGNORED_QUALIFIERS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-ignored-qualifiers")
+  endif (W_NO_IGNORED_QUALIFIERS)
 
   # release flags
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-unused-parameter")
