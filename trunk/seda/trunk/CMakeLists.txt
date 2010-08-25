@@ -40,11 +40,6 @@ OPTION(USE_STL_TR1
  "Use tr1 from stl"
  0)
 
-OPTION(ENABLE_TESTS
-  "Build and perform unit tests"
-  YES)
-
-
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
@@ -65,10 +60,10 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 ## PkgConfig is helpful
 include(FindPkgConfig)
 if ( PKG_CONFIG_FOUND )
-  if (ENABLE_TESTS)
+  if (BUILD_TESTING)
     pkg_check_modules (CPPUNIT cppunit>=1.12)
     message(STATUS "CPPUnit: ${CPPUNIT_CFLAGS} ${CPPUNIT_LDFLAGS} STATIC=${CPPUNIT_STATIC_LDFLAGS}")
-  endif (ENABLE_TESTS)
+  endif (BUILD_TESTING)
 
 else  ( PKG_CONFIG_FOUND )
   message("No PKGCONFIG found - hoping for the best.")
@@ -131,10 +126,9 @@ if (WITH_COMM)
   add_subdirectory(seda/comm)
 endif (WITH_COMM)
 
-if (ENABLE_TESTS)
-  enable_testing()
+if (BUILD_TESTING)
   add_subdirectory(tests)
-endif (ENABLE_TESTS)
+endif (BUILD_TESTING)
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION

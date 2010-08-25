@@ -22,8 +22,6 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
-option (ENABLE_TESTS "Build with tests" YES)
-
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -50,10 +48,10 @@ include_directories(${CMAKE_INCLUDE_PATH})
 # Reflect the package structure
 add_subdirectory(mmgr)
 add_subdirectory(app)
-if (ENABLE_TESTS)
-  include(CTest)
+include(CTest)
+if (BUILD_TESTING)
   add_subdirectory(tests)
-endif (ENABLE_TESTS)
+endif (BUILD_TESTING)
 
 # add some files to the installation target
 INSTALL(FILES README COPYING DESTINATION

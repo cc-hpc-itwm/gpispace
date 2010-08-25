@@ -13,8 +13,6 @@ include (./version.cmake)
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
 
-option(ENABLE_TESTS "Build with test binaries" YES)
-
 set(PROJECT_DESCRIPTION "SDPA Monitor GUI")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
@@ -84,11 +82,11 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # Reflect the package structure
 add_subdirectory(gui)
-#if (ENABLE_TESTS)
-#  # CTest
+# CTest
 #  include(CTest)
+#if (BUILD_TESTING)
 #  add_subdirectory(tests)
-#endif (ENABLE_TESTS)
+#endif (BUILD_TESTING)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)

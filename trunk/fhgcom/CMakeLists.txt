@@ -13,7 +13,6 @@ include (./version.cmake)
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
 
-option(ENABLE_TESTS "Build with test binaries" YES)
 option(USE_STL_TR1
  "Use tr1 from stl"
  0)
@@ -97,11 +96,10 @@ INSTALL(FILES README COPYING DESTINATION
 # Reflect the package structure
 add_subdirectory(fhgcom)
 add_subdirectory(bin)
-if (ENABLE_TESTS)
-  # CTest
-  include(CTest)
+include(CTest)
+if (BUILD_TESTING)
   add_subdirectory(tests)
-endif (ENABLE_TESTS)
+endif (BUILD_TESTING)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)

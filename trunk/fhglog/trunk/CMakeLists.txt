@@ -13,7 +13,6 @@ include (./version.cmake)
 # have the full monty in makefiles
 set(CMAKE_VERBOSE_MAKEFILE true)
 
-option(ENABLE_TESTS "Build with test binaries" YES)
 option(WITH_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
 option(USE_STL_TR1
  "Use tr1 from stl"
@@ -117,11 +116,11 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake DESTINATION
 # Reflect the package structure
 add_subdirectory(fhglog)
 add_subdirectory(apps)
-if (ENABLE_TESTS)
-  # CTest
-  include(CTest)
+# CTest
+include(CTest)
+if (BUILD_TESTING)
   add_subdirectory(tests)
-endif (ENABLE_TESTS)
+endif (BUILD_TESTING)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)

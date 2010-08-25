@@ -23,7 +23,6 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
-option (ENABLE_TESTS "Build with test binaries" YES)
 set (WE_NUM_EXTRACTORS "1" CACHE STRING "number of extractors")
 set (WE_NUM_INJECTORS  "1" CACHE STRING "number of injectors")
 
@@ -93,9 +92,9 @@ include(CTest)
 # Reflect the package structure
 add_subdirectory(we)
 add_subdirectory(apps)
-if (ENABLE_TESTS)
+if (BUILD_TESTING)
   add_subdirectory(tests)
-endif (ENABLE_TESTS)
+endif (BUILD_TESTING)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)

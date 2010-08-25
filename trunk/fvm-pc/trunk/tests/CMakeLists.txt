@@ -1,10 +1,10 @@
 # -*- mode: cmake; -*-
 
-file(GLOB tc_srcs "test_*.cpp")
+set (tc_srcs "")
 list(SORT tc_srcs)
 foreach (tc_src ${tc_srcs})
   # get the filename without extension
-  string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "\\2" tc_name ${tc_src})
+  string(REGEX REPLACE "(.*/)?(.*)\\.cpp.*" "pc-\\2" tc_name ${tc_src})
   message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
   add_executable(${tc_name} ${tc_src})

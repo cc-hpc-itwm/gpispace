@@ -25,7 +25,6 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
-option(ENABLE_TESTS "Build with test binaries" YES)
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
@@ -166,10 +165,10 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(sdpa)
 add_subdirectory(apps)
 add_subdirectory(bin)
-if (ENABLE_TESTS)
-  include(CTest)
+include(CTest)
+if (BUILD_TESTING)
   add_subdirectory(tests)
-endif (ENABLE_TESTS)
+endif (BUILD_TESTING)
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION

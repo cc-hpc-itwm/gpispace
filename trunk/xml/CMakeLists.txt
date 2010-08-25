@@ -22,8 +22,6 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
 set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
-option (ENABLE_TESTS "Build with test binaries" YES)
-
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
 # Make sure all subdirectories include correctly
