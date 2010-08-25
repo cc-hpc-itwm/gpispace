@@ -10,7 +10,7 @@
 
 #include <malloc.h>
 
-int main (int ac, char **)
+int main (int, char **)
 {
   typedef expr::eval::context context_t;
   typedef expr::parse::parser parser_t;
