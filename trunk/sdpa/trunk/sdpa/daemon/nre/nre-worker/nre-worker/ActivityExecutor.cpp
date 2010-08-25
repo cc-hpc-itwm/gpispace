@@ -18,6 +18,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <csignal>
 
 #include <boost/asio.hpp>
 
