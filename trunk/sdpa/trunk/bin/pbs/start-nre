@@ -34,24 +34,24 @@ if [ -n "$SDPA_FVM_PC_CFG" ]; then
 fi
 
 while read k v; do
-  case "$k" in
+    case "$k" in
 	SHMSZ)
-	  echo "using shmsz $v"
-	  export FVM_PC_SHMSZ="$v"
-	  ;;
+	    echo "using shmsz $v"
+	    export FVM_PC_SHMSZ="$v"
+	    ;;
 	FVMSZ)
-	  echo "using fvmsz $v"
-	  export FVM_PC_FVMSZ="$v"
-	  ;;
-    MSQFILE)
-	  echo "using msq $v"
-	  export FVM_PC_MSQ="$v"
-	  ;;
+	    echo "using fvmsz $v"
+	    export FVM_PC_FVMSZ="$v"
+	    ;;
+	MSQFILE)
+	    echo "using msq $v"
+	    export FVM_PC_MSQ="$v"
+	    ;;
 	SHMFILE)
-	  echo "using shm $v"
-	  export FVM_PC_SHM="$v"
-	  ;;
-  esac
+	    echo "using shm $v"
+	    export FVM_PC_SHM="$v"
+	    ;;
+    esac
 done < "$fvm_pc_cfg"
 
 echo "using aggregator at: $agg_url"
