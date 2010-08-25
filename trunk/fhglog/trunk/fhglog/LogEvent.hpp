@@ -7,6 +7,10 @@
 #include <pthread.h>
 #include <fhglog/LogLevel.hpp>
 
+// serialization
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/nvp.hpp>
+
 namespace fhg { namespace log {
   class LogEvent {
     public:
@@ -81,6 +85,25 @@ namespace fhg { namespace log {
         }
       }
       inline std::ostream &stream() { return message_buffer_; }
+
+    friend class boost::serialization::access;
+    template<typename Archive>
+    void serialize (Archive & ar, const unsigned int /* version */ )
+    {
+      ar & BOOST_SERIALIZATION_NVP( severity_ );
+      ar & BOOST_SERIALIZATION_NVP( path_ );
+      ar & BOOST_SERIALIZATION_NVP( file_ );
+      ar & BOOST_SERIALIZATION_NVP( function_ );
+      ar & BOOST_SERIALIZATION_NVP( line_ );
+      ar & BOOST_SERIALIZATION_NVP( message_ );
+      ar & BOOST_SERIALIZATION_NVP( tstamp_ );
+      ar & BOOST_SERIALIZATION_NVP( pid_ );
+      ar & BOOST_SERIALIZATION_NVP( tid_ );
+      ar & BOOST_SERIALIZATION_NVP( logged_via_ );
+      ar & BOOST_SERIALIZATION_NVP( logged_on_ );
+      ar & BOOST_SERIALIZATION_NVP( module_ );
+    }
+
     private:
       severity_type severity_;
       file_type path_;

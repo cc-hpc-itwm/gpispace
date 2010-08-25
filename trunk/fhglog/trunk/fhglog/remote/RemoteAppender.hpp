@@ -22,6 +22,7 @@
 #include <boost/asio.hpp>
 
 #include <fhglog/Appender.hpp>
+#include <boost/thread.hpp>
 
 #if ! defined(FHGLOG_DEFAULT_PORT)
 // ascii codes of fhgl: 102 104 103 108

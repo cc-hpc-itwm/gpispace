@@ -22,7 +22,6 @@
 
 #include "LogServer.hpp"
 #include <boost/archive/text_iarchive.hpp>
-#include "Serialization.hpp"
 
 using namespace fhg::log::remote;
 using boost::asio::ip::udp;
@@ -68,7 +67,7 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
       std::stringstream sstr(msg);
       boost::archive::text_iarchive ia(sstr);
 
-      ia >> evt;
+      ia & evt;
     }
     catch (const std::exception &ex)
     {

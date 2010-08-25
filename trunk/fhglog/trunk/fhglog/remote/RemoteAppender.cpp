@@ -24,7 +24,6 @@
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/lexical_cast.hpp>
-#include <fhglog/remote/Serialization.hpp>
 
 using namespace fhg::log::remote;
 
@@ -85,7 +84,6 @@ void RemoteAppender::append(const LogEvent &evt)
   const_cast<LogEvent&>(evt).logged_on() = my_endpoint_string_;
   std::stringstream sstr;
   boost::archive::text_oarchive oa(sstr);
-  oa << evt;
+  oa & evt;
   socket_->send_to(boost::asio::buffer(sstr.str()), logserver_, 0, ignored_error);
 }
-
