@@ -6,6 +6,8 @@
 #include <sstream>
 #include <cstring>
 #include <csignal>
+#include <stdlib.h>
+#include <iterator>
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -67,6 +69,23 @@ int main(int ac, char **av)
                                             )
     );
 
+  {
+    typedef std::vector<std::string> path_t;
+    path_t library_path;
+    const char * env_entry (getenv ("PC_LIBRARY_PATH"));
+    if (env_entry)
+    {
+      fhg::log::split (env_entry, ":", std::back_inserter (library_path));
+      for ( path_t::const_iterator p(library_path.begin())
+          ; p != library_path.end()
+          ; ++p
+        )
+      {
+        executor->loader().append_search_path( *p );
+      }
+    }
+  }
+
   if (vm.count("prepend-search-path"))
   {
     const std::vector<std::string>& search_path= vm["prepend-search-path"].as<std::vector<std::string> >();
@@ -91,6 +110,18 @@ int main(int ac, char **av)
     {
       executor->loader().append_search_path( *p );
     }
+  }
+
+  if (verbose)
+  {
+    LOG( DEBUG
+       , "constructed PC_LIBRARY_PATH=\""
+       << fhg::log::join( executor->loader().search_path().begin()
+                        , executor->loader().search_path().end()
+                        , ":"
+                        )
+       << "\""
+       );
   }
 
   if (vm.count("load"))
