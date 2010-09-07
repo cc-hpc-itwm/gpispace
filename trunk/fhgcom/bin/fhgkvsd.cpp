@@ -1,35 +1,30 @@
-// chat server example from boost.org
-//    http://www.boost.org/doc/libs/1_43_0/doc/html/boost_asio/example/chat/chat_server.cpp
-
 #include <fhglog/fhglog.hpp>
 
-#include <deque>
 #include <iostream>
-#include <list>
-#include <set>
-#include <sstream>
-
 #include <boost/program_options.hpp>
-#include <boost/bind.hpp>
 
+#include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/io_service_pool.hpp>
-#include <fhgcom/tcp_client.hpp>
-
-using boost::asio::ip::tcp;
+#include <fhgcom/tcp_server.hpp>
 
 int main(int ac, char *av[])
 {
   FHGLOG_SETUP(ac,av);
+
   namespace po = boost::program_options;
 
-  std::string server_address ("localhost");
+  std::string server_address ("");
   std::string server_port ("2439");
+  bool reuse_address (true);
+  std::string store_path ("/tmp/fhgkvsd.store");
 
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
-    ("server,s", po::value<std::string>(&server_address)->default_value(server_address), "use this server")
+    ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
     ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
+    ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
+    ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store")
     ;
 
   po::variables_map vm;
@@ -53,33 +48,16 @@ int main(int ac, char *av[])
     return EXIT_SUCCESS;
   }
 
-  // fork service thread
-  fhg::com::io_service_pool pool (1);
-  boost::thread thrd (boost::bind ( &fhg::com::io_service_pool::run
-                                  , &pool
-                                  )
-                     );
-
-  fhg::com::tcp_client client ( pool.get_io_service()
+  fhg::com::io_service_pool pool (4);
+  fhg::com::kvs::server::kvsd kvsd (store_path);
+  fhg::com::tcp_server server ( pool
+                              , kvsd
                               , server_address
                               , server_port
+                              , reuse_address
                               );
 
-  while ( std::cin )
-  {
-    std::cerr << "reading message..." << std::endl;
-    std::string input;
-    std::getline (std::cin, input);
-    if (input.empty())
-      continue;
-    else if (input == "quit")
-      break;
-    std::cerr << "sending " << input << std::endl;
-    client.send (input);
-  }
-
-  client.close ();
-  pool.stop();
-
+  server.start ();
+  pool.run();
   return 0;
 }

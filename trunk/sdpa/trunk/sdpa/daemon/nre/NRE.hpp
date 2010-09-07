@@ -91,7 +91,8 @@ namespace sdpa {
 				int nStatus;
 
 				//kill pcd here
-				kill(0,SIGTERM);
+				//kill(0,SIGTERM);
+                                kill(0, 0);
 
 				c = wait(&nStatus);
 				if( WIFEXITED(nStatus) )

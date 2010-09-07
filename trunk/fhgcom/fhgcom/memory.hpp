@@ -2,6 +2,7 @@
 #define FHG_COM_MEMORY_HPP 1
 
 #include <fhglog/fhglog-config.hpp>
+#include <fhglog/memory.hpp>
 
 namespace fhg
 {

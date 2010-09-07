@@ -39,13 +39,6 @@ if [ -r "$PBS_NODEFILE" ]; then
 	echo "Running on the initial master node..."
 	on_master=1
 	master="$node_name"
-	echo "Checking node availability..."
-	check-nodes
-	rc=$?
-	if [[ $rc -ne 0 ]]; then
-	  echo "$rc node(s) failed the availability test, giving up!"
-	  exit $rc
-	fi
 else
 	echo "Running on slave $node_name..."
 fi
@@ -53,7 +46,7 @@ fi
 TABLE="$HOME/.init-screen.tab"
 if [ $on_master -eq 1 ]; then
 	if [ -r "$TABLE" ]; then
-	  if ! grep -q "$master" "$TABLE"; then
+	  if grep -q "$master" "$TABLE"; then
 		echo "It seems, that there is already another screen environment running."
 		echo
 		echo "hint:"
@@ -63,6 +56,15 @@ if [ $on_master -eq 1 ]; then
 		exit 1
 	  fi
 	fi
+
+	echo "Checking node availability..."
+	check-nodes
+	rc=$?
+	if [[ $rc -ne 0 ]]; then
+	  echo "$rc node(s) failed the availability test, giving up!"
+	  exit $rc
+	fi
+
 	tmp=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
 	tmp=`echo $master $tmp`
 	echo "${PBS_JOBCOOKIE} = $tmp" > "${TABLE}"

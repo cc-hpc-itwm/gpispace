@@ -14,6 +14,7 @@ namespace fhg
 
       virtual std::string local_endpoint_str () const = 0;
       virtual std::string remote_endpoint_str () const = 0;
+      virtual void async_send (const std::string &) = 0;
     };
   }
 }

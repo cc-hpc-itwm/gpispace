@@ -1,7 +1,10 @@
 # -*- mode: cmake; -*-
 
-file(GLOB tc_srcs "test_*.c" "test_*.cpp")
-list(SORT tc_srcs)
+set(tc_srcs
+  "test_store.cpp"
+  "test_kvs_message.cpp"
+)
+
 foreach (tc_src ${tc_srcs})
   # get the filename without extension
   string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})

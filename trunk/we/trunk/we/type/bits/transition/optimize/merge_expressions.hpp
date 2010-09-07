@@ -367,7 +367,7 @@ namespace we { namespace type {
       template<typename P, typename E, typename T>
       inline void clear_ports
       ( transition_t<P, E, T> & trans
-      , const petri_net::tid_t tid_trans
+      , const petri_net::tid_t /* tid_trans */
       , const transition_t<P, E, T> & trans_parent
       , petri_net::net<P, transition_t<P, E, T>, E, T> & net
       )

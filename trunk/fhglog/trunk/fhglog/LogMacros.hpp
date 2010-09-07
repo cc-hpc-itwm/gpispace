@@ -1,7 +1,7 @@
 #ifndef  FHG_LOG_LOGMACROS_INC
 #define  FHG_LOG_LOGMACROS_INC
 
-#include <fhglog/Logger.hpp>
+#include <fhglog/LoggerApi.hpp>
 #include <fhglog/util.hpp>
 #include <sstream>
 
@@ -134,5 +134,5 @@ namespace fhg { namespace log {
 #define LOG_ERROR(logger, msg) LLOG(ERROR, logger, msg)
 #define LOG_FATAL(logger, msg) LLOG(FATAL, logger, msg)
 
-#endif   /* ----- #ifndef FHG_LOG_LOGMACROS_INC  ----- */
 }}
+#endif   /* ----- #ifndef FHG_LOG_LOGMACROS_INC  ----- */

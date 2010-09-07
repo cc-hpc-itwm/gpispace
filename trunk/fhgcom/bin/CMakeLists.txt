@@ -6,5 +6,12 @@ target_link_libraries(fhgcomd fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 add_executable(fhgcomc fhgcomc.cpp)
 target_link_libraries(fhgcomc fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 
+add_executable(fhgkvsd fhgkvsd.cpp)
+target_link_libraries(fhgkvsd fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
+
+add_executable(fhgkvsc fhgkvsc.cpp)
+target_link_libraries(fhgkvsc fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
+
 install(TARGETS fhgcomd DESTINATION bin)
+install(TARGETS fhgkvsd DESTINATION bin)
 install(TARGETS fhgcomc DESTINATION bin)
