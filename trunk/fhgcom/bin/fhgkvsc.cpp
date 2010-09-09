@@ -60,6 +60,8 @@ int main(int ac, char *av[])
                                      , server_port
                                      );
 
+  client.start();
+
   if (mode == "get")
   {
     if (key.empty())
@@ -105,6 +107,7 @@ int main(int ac, char *av[])
     throw std::runtime_error ("invalid mode value: " + mode);
   }
 
+  client.stop();
   pool.stop();
   return 0;
 }

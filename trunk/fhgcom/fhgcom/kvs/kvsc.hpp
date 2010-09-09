@@ -39,6 +39,16 @@ namespace fhg
           virtual ~kvsc()
           {}
 
+          void start ()
+          {
+            kvs_.start();
+          }
+
+          void stop ()
+          {
+            kvs_.stop();
+          }
+
           template <typename Val>
           void put (key_type const & k, Val v)
           {

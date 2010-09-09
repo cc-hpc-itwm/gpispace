@@ -3,38 +3,32 @@
 
 #include "tcp_client.hpp"
 
+using boost::asio::ip::tcp;
+
 namespace fhg
 {
   namespace com
   {
     tcp_client::tcp_client ( boost::asio::io_service & io_service
                            , const std::string & host
-                           , const std::string & service
+                           , const std::string & port
                            )
-      : socket_(io_service)
+      : io_service_(io_service)
+      , socket_(io_service)
+      , host_(host)
+      , port_(port)
+      , send_in_progress_(false)
       , stopped_(false)
+      , connected_(false)
+      , deadline_(io_service)
     {
-      boost::asio::ip::tcp::resolver resolver (io_service);
-      boost::asio::ip::tcp::resolver::query query(host, service);
-      boost::asio::ip::tcp::resolver::iterator endpoint_iterator
-        (resolver.resolve (query));
-      boost::asio::ip::tcp::endpoint endpoint (*endpoint_iterator);
-
-      DLOG (TRACE, "trying to connect to " << endpoint);
-      socket_.async_connect( endpoint
-                           , boost::bind( &tcp_client::handle_connect
-                                        , this
-                                        , boost::asio::placeholders::error
-                                        , ++endpoint_iterator
-                                        )
-                           );
     }
 
     tcp_client::~tcp_client ()
     {
       try
       {
-        close ();
+        stop ();
       }
       catch (...)
       {
@@ -42,14 +36,41 @@ namespace fhg
       }
     }
 
-    void tcp_client::close ()
+    void tcp_client::start ()
+    {
+      start (host_, port_);
+    }
+
+    void tcp_client::start ( const std::string & host
+                           , const std::string & port
+                           )
+    {
+      host_ = host;
+      port_ = port;
+
+      tcp::resolver resolver (io_service_);
+      tcp::resolver::query query(host, port);
+
+      start (resolver.resolve (query));
+    }
+
+    void tcp_client::stop ()
     {
       lock_t lock (mutex_);
 
-      stopped_ = true;
+      if (stopped_) return;
 
-      while (to_send_.size())
-        data_sent_.wait(lock);
+      stopped_ = true;
+      connected_ = false;
+      send_in_progress_ = false;
+
+      socket_.close();
+
+      if (to_send_.size())
+      {
+        LOG(WARN, "there was still data to send!");
+        to_send_.clear();
+      }
 
       if (to_recv_.size())
       {
@@ -57,7 +78,9 @@ namespace fhg
         to_recv_.clear();
       }
 
-      socket_.close();
+      // wake up receivers
+      data_rcvd_.notify_all ();
+
       DLOG(TRACE, "session closed");
     }
 
@@ -74,27 +97,12 @@ namespace fhg
            << data
         ;
 
-      bool send_in_progress (false);
       {
         lock_t lock (mutex_);
-        send_in_progress = !to_send_.empty();
         to_send_.push_back (sstr.str());
       }
 
-      if (!send_in_progress)
-      {
-        DLOG(TRACE, "initiating write of " << to_send_.front());
-
-        boost::asio::async_write( socket_
-                                , boost::asio::buffer( to_send_.front().data()
-                                                     , to_send_.front().length()
-                                                     )
-                                , boost::bind( &tcp_client::handle_write
-                                             , this
-                                             , boost::asio::placeholders::error
-                                             )
-                                );
-      }
+      start_writer();
     }
 
     std::string tcp_client::recv ()
@@ -121,36 +129,109 @@ namespace fhg
       return data;
     }
 
-    void tcp_client::handle_connect ( const boost::system::error_code & e
-                                    , boost::asio::ip::tcp::resolver::iterator endpoint_iterator
-                                    )
+
+    void tcp_client::start(tcp::resolver::iterator endpoint_iter)
     {
-      if (stopped_)
-        return;
+      start_connect (endpoint_iter);
 
-      if (! e)
-      {
-        DLOG (TRACE, "connected");
-        read_header();
-      }
-      else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
-      {
-        socket_.close();
-        boost::asio::ip::tcp::endpoint endpoint (*endpoint_iterator);
+      deadline_.async_wait (boost::bind(&tcp_client::check_deadline, this));
+    }
 
-        DLOG (TRACE, "trying to connect to " << endpoint);
-        socket_.async_connect( endpoint
+
+    void tcp_client::start_connect (tcp::resolver::iterator endpoint_iter)
+    {
+      if (endpoint_iter != tcp::resolver::iterator())
+      {
+        DLOG (TRACE, "trying to connect to " << endpoint_iter->endpoint());
+        deadline_.expires_from_now(boost::posix_time::seconds(30));
+
+        socket_.async_connect( endpoint_iter->endpoint()
                              , boost::bind( &tcp_client::handle_connect
                                           , this
-                                          , boost::asio::placeholders::error
-                                          , ++endpoint_iterator
+                                          , _1
+                                          , endpoint_iter
                                           )
                              );
       }
       else
       {
-        LOG(ERROR, "could not connect: " << e.message() << ": " << e);
-        close ();
+        stop();
+      }
+    }
+
+    void tcp_client::start_reader ()
+    {
+      read_header ();
+    }
+
+    void tcp_client::start_writer ()
+    {
+      if (stopped_)
+        return;
+
+      lock_t lock (mutex_);
+      if (!send_in_progress_ && !to_send_.empty() && connected_)
+      {
+        DLOG( TRACE
+            , "initiating write of "
+            << util::basic_hex_converter<64>::convert( to_send_.front().begin()
+                                                     , to_send_.front().end()
+                                                     )
+            );
+        send_in_progress_ = true;
+        boost::asio::async_write( socket_
+                                , boost::asio::buffer( to_send_.front().data()
+                                                     , to_send_.front().length()
+                                                     )
+                                , boost::bind( &tcp_client::handle_write
+                                             , this
+                                             , boost::asio::placeholders::error
+                                             )
+                                );
+      }
+    }
+
+    void tcp_client::check_deadline ()
+    {
+      if (stopped_)
+        return;
+
+      if (deadline_.expires_at() <= boost::asio::deadline_timer::traits_type::now())
+      {
+        socket_.close();
+        deadline_.expires_at(boost::posix_time::pos_infin);
+      }
+
+      deadline_.async_wait(boost::bind(&tcp_client::check_deadline, this));
+    }
+
+    void tcp_client::handle_connect ( const boost::system::error_code & e
+                                    , boost::asio::ip::tcp::resolver::iterator endpoint_iter
+                                    )
+    {
+      if (stopped_)
+        return;
+
+      if (!socket_.is_open())
+      {
+        LOG(WARN, "connection attempt timed out!");
+        start_connect (++endpoint_iter);
+      }
+      else if (e)
+      {
+        LOG(WARN, "connection attempt failed: " << e.message());
+
+        socket_.close();
+        start_connect (++endpoint_iter);
+      }
+      else
+      {
+        DLOG (TRACE, "successfully connected to: " << endpoint_iter->endpoint());
+
+        connected_ = true;
+
+        start_reader ();
+        start_writer ();
       }
     }
 
@@ -185,11 +266,15 @@ namespace fhg
                                                )
                                   );
         }
+        else
+        {
+          send_in_progress_ = false;
+        }
       }
       else
       {
         LOG(ERROR, "could not send data: " << e << ": " << e.message());
-        close ();
+        stop ();
       }
     }
 
@@ -241,6 +326,7 @@ namespace fhg
       else
       {
         LOG(WARN, "session closed: " << error.message() << " := " << error);
+        stop ();
       }
     }
 
@@ -270,6 +356,7 @@ namespace fhg
       else
       {
         LOG(ERROR, "session got error during chunk receive := " << error);
+        stop ();
       }
     }
   }

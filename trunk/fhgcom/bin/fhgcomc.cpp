@@ -64,6 +64,7 @@ int main(int ac, char *av[])
                               , server_address
                               , server_port
                               );
+  client.start ();
 
   while ( std::cin )
   {
@@ -78,7 +79,7 @@ int main(int ac, char *av[])
     client.send (input);
   }
 
-  client.close ();
+  client.stop();
   pool.stop();
 
   return 0;
