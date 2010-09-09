@@ -17,6 +17,7 @@ set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_APPLICATION "Build with application" YES)
 OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
+OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -27,6 +28,12 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 include(CheckCompiler)
 info_compiler()
 include (CompilerFlags)
+
+if (DEBUG_FHGLOG)
+  message (STATUS "additional messages from fhglog have been enabled")
+else (DEBUG_FHGLOG)
+  add_definitions("-DNDEBUG_FHGLOG")
+endif (DEBUG_FHGLOG)
 
 # cpack configuration
 #include(InstallRequiredSystemLibraries)

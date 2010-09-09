@@ -1,6 +1,49 @@
 # -*- mode: cmake; -*-
-file(GLOB hdrs "*.hpp")
-file(GLOB srcs "*.cpp")
+
+set (hdrs
+  Appender.hpp
+  CompoundAppender.hpp
+  Configuration.hpp
+  DecoratingAppender.hpp
+  DefaultConfiguration.hpp
+  error_handler.hpp
+  fhglog.hpp
+  FileAppender.hpp
+  fileno.hpp
+  Filter.hpp
+  FilteringAppender.hpp
+  format_flag.hpp
+  format.hpp
+  Formatter.hpp
+  LogEvent.hpp
+  LoggerApi.hpp
+  logger_config.hpp
+  Logger.hpp
+  logger_path.hpp
+  LogLevel.hpp
+  LogMacros.hpp
+  macros.hpp
+  memory.hpp
+  NullAppender.hpp
+  StreamAppender.hpp
+  SynchronizedAppender.hpp
+  ThreadedAppender.hpp
+  types.hpp
+  util.hpp
+  )
+
+set (srcs
+  DefaultConfiguration.cpp
+  error_handler.cpp
+  FileAppender.cpp
+  fileno.cpp
+  Formatter.cpp
+  LogEvent.cpp
+  Logger.cpp
+  logger_path.cpp
+  LogLevel.cpp
+  StreamAppender.cpp
+  )
 
 if (HAVE_SYSLOG_H)
   set(hdrs ${hdrs} "nonportable/SyslogAppender.hpp")
@@ -9,8 +52,14 @@ endif (HAVE_SYSLOG_H)
 
 if (WITH_REMOTE_LOGGING)
   add_subdirectory(remote)
-  file(GLOB remote_srcs "remote/*.cpp")
-  file(GLOB remote_hdrs "remote/*.hpp")
+  set (remote_hdrs
+    remote/LogServer.hpp
+    remote/RemoteAppender.hpp
+    )
+  set (remote_srcs
+    remote/LogServer.cpp
+    remote/RemoteAppender.cpp
+    )
   install(FILES ${remote_hdrs} DESTINATION include/fhglog/remote)
 endif (WITH_REMOTE_LOGGING)
 

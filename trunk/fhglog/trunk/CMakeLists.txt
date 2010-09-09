@@ -20,6 +20,8 @@ option(USE_STL_TR1
 set(FHGLOG_EXIT_ON_ERROR Yes CACHE BOOL "Exit on error or not")
 set(FHGLOG_EXIT_ON_ERROR_CODE "42" CACHE STRING "The exit code with which fhglog will exit on FATAL messages")
 
+option(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
+
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 set(PROJECT_DESCRIPTION "FHG Logging Framework")
@@ -100,6 +102,12 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
   string(TOUPPER ${CMAKE_BUILD_TYPE} tmp)
   message(STATUS "additional CXXFLAGS: ${CMAKE_CXX_FLAGS_${tmp}}")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+
+if (DEBUG_FHGLOG)
+  # nothing
+else (DEBUG_FHGLOG)
+  add_definitions("-DNDEBUG_FHGLOG")
+endif (DEBUG_FHGLOG)
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
