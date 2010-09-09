@@ -29,7 +29,7 @@ namespace fhg { namespace log {
 
       void operator() () throw() {
 #if FHGLOG_DISABLE_LOGGING != 1
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
         std::clog << "I: performing default logging configuration" << std::endl;
 #endif
         try {
@@ -114,7 +114,7 @@ namespace fhg { namespace log {
                                                )
                             )
             );
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
@@ -128,7 +128,7 @@ namespace fhg { namespace log {
                                                )
                             )
             );
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
@@ -142,7 +142,7 @@ namespace fhg { namespace log {
                                                )
                             )
             );
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
 	  std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
 	}
@@ -170,7 +170,7 @@ namespace fhg { namespace log {
                                                )
                               )
               );
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
             std::clog << "D: logging to file: " << to_file_ << std::endl;
 #endif
           }
@@ -187,7 +187,7 @@ namespace fhg { namespace log {
           {
             // TODO: split to_remote_ into host and port
             compound_appender->addAppender(Appender::ptr_t(new remote::RemoteAppender("log-server", to_server_)));
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
             std::clog << "D: logging to server: " << to_server_ << std::endl;
 #endif
           }
@@ -198,7 +198,7 @@ namespace fhg { namespace log {
         }
 #endif
 
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
         std::clog << "D: loglevel set to " << level_ << std::endl;
 #endif
         getLogger().setLevel(level_);
@@ -251,7 +251,7 @@ namespace fhg { namespace log {
         }
         else if (key.substr(0, 6) == "FHGLOG")
         {
-#ifndef NDEBUG
+#ifndef NDEBUG_FHGLOG
         std::clog << "D: ignoring key: " << key << std::endl;
 #endif
         }
