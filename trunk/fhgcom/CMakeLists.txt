@@ -17,6 +17,11 @@ option(USE_STL_TR1
  "Use tr1 from stl"
  0)
 
+option(NO_IMPLICIT_TEMPLATES
+  "Do not let the compiler implicitely instantiate templates"
+  OFF
+  )
+
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 set(PROJECT_DESCRIPTION "FHG Communication Framework")
@@ -40,6 +45,12 @@ include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+
+if (NO_IMPLICIT_TEMPLATES)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-implicit-templates")
+  # TODO:  check each  library  etc. and  add a  special  .cpp file  to it  that
+  # instantiates all templates...
+endif (NO_IMPLICIT_TEMPLATES)
 
 # threads
 include(FindThreads)
