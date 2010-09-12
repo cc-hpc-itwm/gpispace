@@ -76,7 +76,7 @@ namespace sdpa { namespace daemon {
     SynchronizedQueue() : stopped_(false) {}
     ~SynchronizedQueue() { }
 
-    inline value_type pop() throw (QueueEmpty)
+    inline value_type pop()
     {
       lock_type lock(mtx_);
       if (container_.empty()) throw QueueEmpty();
@@ -92,7 +92,7 @@ namespace sdpa { namespace daemon {
     	stopped_ = true;
     	not_empty_.notify_all();
     }
-    inline value_type pop_and_wait() throw (boost::thread_interrupted, QueueEmpty)
+    inline value_type pop_and_wait()
     {
       lock_type lock(mtx_);
       while (container_.empty() && !stopped_)
@@ -106,7 +106,7 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
-    inline value_type pop_and_wait(const boost::posix_time::time_duration &timeout) throw (boost::thread_interrupted, QueueEmpty)
+    inline value_type pop_and_wait(const boost::posix_time::time_duration &timeout)
     {
       lock_type lock(mtx_);
       while (container_.empty() && !stopped_)
@@ -167,7 +167,7 @@ namespace sdpa { namespace daemon {
       return container_.erase(pos);
     }
 
-    inline void erase(const value_type& item) throw (NotFoundItem)
+    inline void erase(const value_type& item)
     {
     	lock_type lock(mtx_);
     	for (iterator iter = begin(); iter != end(); iter++)
