@@ -25,6 +25,10 @@ set (srcs
   io_service_pool.cpp
 )
 
+if (NO_IMPLICIT_TEMPLATES)
+  set (srcs ${srcs} template.cpp)
+endif (NO_IMPLICIT_TEMPLATES)
+
 ADD_LIBRARY(fhgcom ${hdrs} ${srcs})
 ADD_LIBRARY(fhgcom-shared SHARED ${hdrs} ${srcs})
 set_target_properties(fhgcom-shared PROPERTIES OUTPUT_NAME fhgcom)
