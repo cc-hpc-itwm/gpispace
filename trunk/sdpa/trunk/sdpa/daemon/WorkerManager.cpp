@@ -102,8 +102,8 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 
 	Worker::ptr_t pWorker( new Worker( workerId, rank ));
 
-	worker_map_.insert(pair<Worker::worker_id_t, Worker::ptr_t>(pWorker->name(), pWorker));
-	rank_map_.insert( pair<unsigned int, Worker::worker_id_t>(rank, pWorker->name()) );
+	worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
+	rank_map_.insert(rank_map_t::value_type(rank, pWorker->name()));
 
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
@@ -429,8 +429,16 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
 
 	if (w == worker_map_.end())
 		throw WorkerNotFoundException(workerId);
-
 	worker_map_.erase (w);
+
+        for (rank_map_t::iterator it (rank_map_.begin()); it != rank_map_.end(); ++it)
+        {
+          if (it->second == workerId)
+          {
+            rank_map_.erase (it);
+            break;
+          }
+        }
 }
 
 
