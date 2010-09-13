@@ -5,13 +5,22 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if (USE_SMC_SC)
 	add_state_machine(CLIENT_FSM_CPP CLIENT_FSM_H ClientFsm)
-endif (USE_SMC_SC)	
+endif (USE_SMC_SC)
 
-file(GLOB hdrs *.hpp)
-file(GLOB srcs *.cpp)
+set (srcs
+  Client.cpp
+  )
 
-set(hdrs ${CLIENT_FSM_H} ${hdrs})
-set(srcs ${CLIENT_FSM_CPP} ${srcs})
+set (hdrs
+  Client.hpp
+  ClientActions.hpp
+  ClientEvents.hpp
+  exceptions.hpp
+  types.hpp
+  )
+
+set(hdrs ${hdrs} ${CLIENT_FSM_H})
+set(srcs ${srcs} ${CLIENT_FSM_CPP})
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
 

@@ -5,12 +5,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_state_machine(JOBFSM_CPP JOBFSM_H JobFSM)
 
-file(GLOB srcs *.cpp)
-file(GLOB hdrs *.hpp)
+set (srcs
+  JobFSM.cpp
+  )
 
-# Make sure the state machine gets incorporated.
-set(hdrs ${JOBFSM_H}   ${hdrs})
-set(srcs ${JOBFSM_CPP}    ${srcs})
+set (hdrs
+  JobFSM.hpp
+  )
+
+# Make sure that the state machine gets incorporated.
+set(hdrs ${hdrs} ${JOBFSM_H})
+set(srcs ${srcs} ${JOBFSM_CPP})
 
 ADD_LIBRARY(sdpa-jobFSM_SMC ${srcs})
 

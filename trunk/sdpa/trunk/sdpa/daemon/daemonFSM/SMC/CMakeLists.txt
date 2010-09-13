@@ -5,12 +5,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_state_machine(DAEMON_FSM_CPP DAEMON_FSM_H DaemonFSM)
 
-file(GLOB srcs *.cpp)
-file(GLOB hdrs *.hpp)
+set (srcs
+  DaemonFSM.cpp
+  )
+
+set (hdrs
+  DaemonFSM.hpp
+  )
 
 # Make sure the state machine gets incorporated.
-set(hdrs ${DAEMON_FSM_H}   ${hdrs})
-set(srcs ${DAEMON_FSM_CPP} ${srcs})
+set(hdrs ${hdrs} ${DAEMON_FSM_H})
+set(srcs ${srcs} ${DAEMON_FSM_CPP})
 
 ADD_LIBRARY(sdpa-daemonFSM_SMC ${srcs})
 target_link_libraries(sdpa-daemonFSM_SMC sdpa-events)
