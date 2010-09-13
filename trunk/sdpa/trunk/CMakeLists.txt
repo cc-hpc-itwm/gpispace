@@ -177,6 +177,7 @@ INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
   )
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp  DESTINATION include/sdpa)
 INSTALL(FILES etc/sdpac.rc.example DESTINATION etc/sdpa)
+INSTALL(FILES etc/sdpac.env DESTINATION etc/sdpa)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)
