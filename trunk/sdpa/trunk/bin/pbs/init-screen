@@ -52,7 +52,7 @@ if [ $on_master -eq 1 ]; then
 		echo "hint:"
 		echo "   possibly running on: `cat ${TABLE} | awk '{print $3}'`"
 		echo
-		echo "Please remove ${TABLE} if I am wrong and retry."
+		echo "Please remove the entry from ${TABLE} and retry."
 		exit 1
 	  fi
 	fi
@@ -95,6 +95,14 @@ export FHGLOG_level="WARN"
 # user config follows (may override above values, please be careful)
 test -r "$HOME/.init-screen.rc" && source "$HOME/.init-screen.rc"
 EOF
+
+	if [ ! -r "$HOME/.init-screen.rc" ]; then
+	    echo "creating default .init-screen.rc file..."
+	    cat > "$HOME/.init-screen.rc" <<EOF
+export PC_LIBRARY_PATH="\$HOME/.sdpa/modules"
+export PC_MODULE_DATA="\$HOME/.sdpa/moddata"
+EOF
+	fi
 fi
 
 if [ $# -gt 0 ]; then
