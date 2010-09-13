@@ -1,5 +1,7 @@
 #include <fhglog/fhglog.hpp>
 
+#include <stdlib.h>
+
 #include <iostream>
 #include <boost/program_options.hpp>
 
@@ -16,7 +18,7 @@ int main(int ac, char *av[])
   std::string server_address ("");
   std::string server_port ("2439");
   bool reuse_address (true);
-  std::string store_path ("/tmp/fhgkvsd.store");
+  std::string store_path (std::string(getenv("HOME")) + "/.fhgkvsd.dat");
 
   po::options_description desc ("options");
   desc.add_options()
