@@ -370,7 +370,6 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   // load and reconstruct the volume
   const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
   const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
-  const long & vid (get<long>(volume, "id"));
 
   char * pVMMemSubVol (((char *)fvmGetShmemPtr()));
 
@@ -386,12 +385,16 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   MigVol3D MigVol(X0,Nx,dx);
 
   // create the subvolume
+  const long & vid (get<long>(volume, "id"));
+
   MigSubVol3D MigSubVol(MigVol,vid+1,Job.NSubVols);
 
   MigSubVol.setMemPtr((float *)pVMMemSubVol,Job.SubVolMemSize);
 
+  const long & volume_sid (get<long>(volume, "store.id"));
+
   waitComm (fvmGetGlobalData ( handle_volume
-                             , vid * Job.SubVolMemSize
+                             , volume_sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , 0
                              , scratch_volume
@@ -440,9 +443,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
       // migrate the bunch to the subvolume
       const long & NThreads (get<long> (config, "threads.N"));
 
-      char * _VMem  (((char *)fvmGetShmemPtr())
-                    + Job.SubVolMemSize + Job.BunchMemSize
-                    );
+      char * _VMem  (((char *)fvmGetShmemPtr()) + Job.shift_for_TT);
 
       const fvmAllocHandle_t & handle_TT (get<long> (config, "handle.TT"));
 
@@ -453,7 +454,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
     }
 
   waitComm (fvmPutGlobalData ( handle_volume
-                             , vid * Job.SubVolMemSize
+                             , volume_sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , 0
                              , scratch_volume
@@ -478,10 +479,10 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
 
   const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
   const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
-  const long & vid (get<long>(volume, "id"));
+  const long & sid (get<long>(volume, "store.id"));
 
   waitComm ( fvmGetGlobalData ( handle_volume
-			      , vid * Job.SubVolMemSize
+			      , sid * Job.SubVolMemSize
 			      , Job.SubVolMemSize
 			      , 0
 			      , scratch_volume
@@ -506,6 +507,7 @@ static void write (void *, const we::loader::input_t & input, we::loader::output
   grid3D G(X0,Nx,dx);
 
   // create the subvolume
+  const long & vid (get<long>(volume, "id"));
   const long & oid (get<long> (volume, "offset.id"));
 
   MigSubVol3D MigSubVol(MigVol,vid+1,Job.NSubVols);
@@ -617,8 +619,10 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
   const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
   const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
 
+  const long & sid (get<long> (volume, "store.id"));
+
   waitComm (fvmPutGlobalData ( handle_volume
-                             , vid * Job.SubVolMemSize
+                             , sid * Job.SubVolMemSize
                              , Job.SubVolMemSize
                              , 0
                              , scratch_volume
