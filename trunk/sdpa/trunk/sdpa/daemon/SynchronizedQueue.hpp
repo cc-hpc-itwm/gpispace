@@ -109,16 +109,16 @@ namespace sdpa { namespace daemon {
     inline value_type pop_and_wait(const boost::posix_time::time_duration &timeout)
     {
       lock_type lock(mtx_);
+
+      const boost::system_time to = boost::get_system_time() + timeout;
+
       while (container_.empty() && !stopped_)
       {
-        const boost::system_time to = boost::get_system_time() + timeout;
-
-        if (!not_empty_.timed_wait(lock, to))
-        {
-          if (container_.empty()) throw QueueEmpty();
-          else break;
-        }
+        not_empty_.timed_wait (lock, to);
+        if (container_.empty())
+          throw QueueEmpty(); // timedout
       }
+
       if (stopped_) throw QueueEmpty();
 
       value_type item = container_.front();
