@@ -26,7 +26,7 @@ for node_num in $nodes; do
     continue
   fi
 
-  node_name=$( uniq $PBS_NODEFILE | sort -n | tail -n +$node_num | head -n 1 )
+  node_name=$( uniq $PBS_NODEFILE | tail -n +$node_num | head -n 1 )
   rm -f /scratch/$USER/sdpa/nre.$node_name.log
   rm -f /scratch/$USER/sdpa/pc.$node_name.log
 
