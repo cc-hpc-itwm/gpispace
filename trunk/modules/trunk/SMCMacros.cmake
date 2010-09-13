@@ -40,10 +40,13 @@ function(add_state_machine GEN_FSM_C_FILE GEN_FSM_H_FILE FSM_NAME)
     #add_custom_target(generate_${FSM_NAME} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.cpp ${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.h)
 
   else(SMC_FOUND)
-    if ("${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}.sm" IS_NEWER_THAN "${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.cpp")
-#      message(FATAL_ERROR "The '${FSM_NAME}' StateMachine needs to be updated but the StateMachineCompiler (SMC) could not be found!")
-      message(STATUS "WARNING: The '${FSM_NAME}' StateMachine needs to be updated but the StateMachineCompiler (SMC) could not be found!")
-    endif ("${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}.sm" IS_NEWER_THAN "${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}_sm.cpp")
+    add_custom_command(
+      OUTPUT ${_GEN_FSM_H_FILE} ${_GEN_FSM_C_FILE}
+      COMMAND echo "WARNING: state-machine ${FSM_NAME} must be updated but SMC was not found!"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${FSM_NAME}.sm
+      COMMENT "Compiling '${FSM_NAME}' state machine..."
+      )
   endif(SMC_FOUND)
 
   message (STATUS "generated files: ${_GEN_FSM_H_FILE} ${_GEN_FSM_C_FILE}")
