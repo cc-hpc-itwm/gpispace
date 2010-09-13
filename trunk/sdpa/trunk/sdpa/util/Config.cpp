@@ -111,8 +111,7 @@ void NewConfig::parse_config_file(std::istream &stream, const std::string &cfg_f
 {
   if (! stream)
   {
-	if (is_set("verbose"))
-	  std::cerr << "W: could not open " << cfg_file << " for reading!" << std::endl;
+    throw std::runtime_error ("could not read config file: " + cfg_file);
   }
   else
   {
