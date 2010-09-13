@@ -17,6 +17,20 @@
 #include <sdpa/util/Config.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+namespace fs = boost::filesystem;
+
+void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
+{
+  std::cout << prompt;
+  std::string tmp;
+  std::getline (in, tmp);
+  if (tmp.size())
+    result = tmp;
+}
 
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
@@ -93,6 +107,7 @@ int main (int argc, char **argv) {
     ("wait,w", "wait until job is finished")
     ("poll-interval,t", su::po::value<int>()->default_value(1), "sets the poll interval")
     ("force,f", "force the operation")
+    ("make-config", "create a basic config file")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -111,7 +126,81 @@ int main (int argc, char **argv) {
 
   cfg.parse_command_line(argc, argv);
   cfg.parse_environment();
-  cfg.parse_config_file();
+
+  cfg.notify();
+
+  if (cfg.is_set("make-config"))
+  {
+    fs::path cfg_file (cfg.get("config"));
+    if (fs::exists (cfg_file))
+    {
+      std::cerr << "E: config file '" << cfg_file << "' does already exist, please remove it first!" << std::endl;
+      return 1;
+    }
+
+    std::cout << "In order to create a configuration, I have to ask you some questions." << std::endl;
+    std::cout << std::endl;
+
+    std::string orchestrator_name(cfg.get<std::string>("orchestrator"));
+    get_user_input("Name of the orchestrator ["+orchestrator_name+"]: ", orchestrator_name);
+
+    std::string orchestrator_location("localhost:5000");
+    get_user_input("Location of the orchestrator ["+orchestrator_location+"]: ", orchestrator_location);
+
+    std::cout << std::endl;
+    std::cout << "The information I gathered is:" << std::endl;
+
+    std::stringstream sstr;
+
+    sstr << "#" << std::endl;
+    sstr << "# automatically generated sdpac config on " << boost::posix_time::second_clock::local_time() << std::endl;
+    sstr << "#" << std::endl;
+    sstr << "orchestrator = " << orchestrator_name << std::endl;
+    sstr << std::endl;
+
+    sstr << "[network]" << std::endl;
+    sstr << "location = " << orchestrator_name << ":" << orchestrator_location << std::endl;
+    sstr << std::endl;
+
+    std::cout << sstr.str();
+
+    std::cout << "Is that ok [y/N]? ";
+    {
+      std::string tmp;
+      std::getline (std::cin, tmp);
+      if (tmp != "y" && tmp != "Y")
+        return 1;
+    }
+
+    // try to open config file
+    fs::ofstream cfg_ofs(cfg_file);
+    if ( ! cfg_ofs.is_open() )
+    {
+      fs::create_directories (cfg_file.parent_path());
+      cfg_ofs.open (cfg_file);
+      if ( ! cfg_ofs.is_open())
+      {
+        std::cerr << "E: could not open " << cfg_file << " for writing!" << std::endl;
+        return 1;
+      }
+    }
+
+    cfg_ofs << sstr.str();
+
+    std::cout << "Thank you, your config file has been written to " << cfg.get("config") << std::endl;
+    return 0;
+  }
+
+  try
+  {
+    cfg.parse_config_file();
+  }
+  catch (std::exception const &)
+  {
+    std::cerr << "could not parse config file: " << cfg.get("config") << std::endl;
+    std::cerr << "try generating one with '" << argv[0] << " --make-config'"  << std::endl;
+    return 1;
+  }
   cfg.notify();
 
   if (cfg.is_set("help"))
