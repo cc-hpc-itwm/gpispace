@@ -50,7 +50,7 @@ namespace sdpa { namespace client {
          "location of the client")
         ("name", po::value<std::string>()->default_value("sdpa.app.client"),
          "name of the client")
-        ("config,C", po::value<std::string>()->default_value(home + "/.config/sdpa/sdpac.rc"),
+        ("config,C", po::value<std::string>()->default_value(home + "/.sdpa/configs/sdpac.rc"),
          "path to the configuration file")
         ;
       return cfg;
