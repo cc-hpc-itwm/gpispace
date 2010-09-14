@@ -1,6 +1,8 @@
 set (hdrs
   manager.hpp
+  manager.tcc
   )
+
 set (srcs
   manager.cpp
   )
