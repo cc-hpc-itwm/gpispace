@@ -45,6 +45,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+
 #include "Serialization.hpp"
 
 using boost::asio::ip::udp;
@@ -181,8 +185,22 @@ namespace seda { namespace comm {
 
       try
       {
-        std::stringstream sstr(tmp);
-        boost::archive::text_iarchive ia(sstr);
+        // handle compression
+
+        std::stringstream compressed_sstr(tmp);
+        std::stringstream decompressed_sstr;
+
+        namespace io = boost::iostreams;
+
+        io::filtering_streambuf<io::input>
+          in;
+        in.push (io::zlib_decompressor());
+        in.push (compressed_sstr);
+        io::copy (in, decompressed_sstr);
+
+        boost::archive::text_iarchive ia(decompressed_sstr);
+
+
 
         seda::comm::SedaMessage msg;
         ia >> msg;
@@ -258,11 +276,21 @@ namespace seda { namespace comm {
     dst.port(loc.port());
     DLOG(TRACE, "sending " << m.str() << " to " << dst);
 
-    std::stringstream sstr;
-    boost::archive::text_oarchive oa(sstr);
+    std::stringstream decompressed_sstr;
+    boost::archive::text_oarchive oa(decompressed_sstr);
     oa << m;
 
-    const std::string msg_to_send (sstr.str());
+    // handle compression
+    std::stringstream compressed_sstr;
+
+    namespace io = boost::iostreams;
+    io::filtering_streambuf<io::input>
+      in;
+    in.push (io::zlib_compressor());
+    in.push (decompressed_sstr);
+    io::copy (in, compressed_sstr);
+
+    const std::string msg_to_send (compressed_sstr.str());
 
     DLOG(TRACE, "going to send " << msg_to_send.size() << " bytes of data: " << msg_to_send);
 //    socket_->async_send_to( boost::asio::buffer(msg_to_send, msg_to_send.size())
@@ -283,7 +311,7 @@ namespace seda { namespace comm {
 		       )
        );
 
-     LOG_IF(ERROR, bytes_sent != msg_to_send.size(), "not all data could be sent: " << bytes_sent << "/" << sstr.str().size() << " max: " << max_length);
+     LOG_IF(ERROR, bytes_sent != msg_to_send.size(), "not all data could be sent: " << bytes_sent << "/" << msg_to_send.size() << " max: " << max_length);
      if (ec.value() != boost::system::errc::success)
      {
        LOG(ERROR, "could not deliver message: " << ec << ": " << ec.message());
