@@ -144,6 +144,9 @@ find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 set(SDPA_HAVE_FHGLOG 1)
 
+find_package(FhgCom REQUIRED)
+include_directories(${FhgCom_INCLUDE_DIR})
+
 find_package(MMGR REQUIRED)
 include_directories(${MMGR_INCLUDE_DIR})
 
