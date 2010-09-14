@@ -8,8 +8,22 @@ add_subdirectory(events)
 add_subdirectory(daemon)
 add_subdirectory(client)
 
-file(GLOB hdrs "*.hpp")
-file(GLOB srcs "*.cpp")
+set (hdrs
+  common.hpp
+  JobId.hpp
+  logging.hpp
+  memory.hpp
+  SDPAException.hpp
+  types.hpp
+  uuidgen.hpp
+  uuid.hpp
+)
+
+set (srcs
+  JobId.cpp
+  uuid.cpp
+  uuidgen.cpp
+)
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})
 target_link_libraries(sdpa seda)      # ${SEDA_LIBRARY}
@@ -18,3 +32,5 @@ target_link_libraries(sdpa ${FhgLog_LIBRARY})
 
 install(FILES ${hdrs} DESTINATION include/sdpa)
 install(TARGETS sdpa ARCHIVE DESTINATION lib)
+
+add_subdirectory (com)

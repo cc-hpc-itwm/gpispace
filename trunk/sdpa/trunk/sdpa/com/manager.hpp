@@ -1,0 +1,4 @@
+#ifndef SDPA_COM_MANAGER_HPP
+#define SDPA_COM_MANAGER_HPP 1
+
+#endif
