@@ -284,8 +284,7 @@ namespace seda { namespace comm {
     std::stringstream compressed_sstr;
 
     namespace io = boost::iostreams;
-    io::filtering_streambuf<io::input>
-      in;
+    io::filtering_streambuf<io::input> in;
     in.push (io::zlib_compressor());
     in.push (decompressed_sstr);
     io::copy (in, compressed_sstr);
