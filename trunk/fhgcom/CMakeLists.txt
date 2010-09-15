@@ -63,7 +63,7 @@ endif(CMAKE_USE_PTHREADS_INIT)
 set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
 set(Boost_FIND_QUIETLY false)
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization program_options test_exec_monitor)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization program_options test_exec_monitor iostreams)
 # we need at least 1.36 so check for it
 if (Boost_MAJOR_VERSION LESS 1)
     message(FATAL_ERROR "At least Boost 1.36 is required")
@@ -73,6 +73,11 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
+
+## find zlib
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIRS})
+message(STATUS "ZLib: Inc:${ZLIB_INCLUDE_DIR} Lib:${ZLIB_LIBRARIES}")
 
 # logging
 find_package(FhgLog REQUIRED)

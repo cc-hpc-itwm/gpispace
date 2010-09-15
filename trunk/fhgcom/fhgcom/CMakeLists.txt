@@ -31,6 +31,8 @@ endif (NO_IMPLICIT_TEMPLATES)
 
 ADD_LIBRARY(fhgcom ${hdrs} ${srcs})
 ADD_LIBRARY(fhgcom-shared SHARED ${hdrs} ${srcs})
+target_link_libraries (fhgcom ${ZLIB_LIBRARIES})
+target_link_libraries (fhgcom-shared ${ZLIB_LIBRARIES})
 set_target_properties(fhgcom-shared PROPERTIES OUTPUT_NAME fhgcom)
 
 install(FILES ${hdrs} DESTINATION include/fhgcom)
