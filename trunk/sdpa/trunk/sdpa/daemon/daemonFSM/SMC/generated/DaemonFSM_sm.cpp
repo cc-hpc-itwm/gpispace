@@ -6,7 +6,7 @@
 #  pragma GCC diagnostic ignored "-Wunused"
 #  pragma GCC diagnostic ignored "-Weffc++"
 #  pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif 
+#endif
 
 
 #include <string.h>
@@ -28,7 +28,7 @@ namespace sdpa
 
             const int DaemonFSMContext::MIN_INDEX = 0;
             const int DaemonFSMContext::MAX_INDEX = 2;
-            DaemonFSMState* DaemonFSMContext::_States[] = 
+            DaemonFSMState* DaemonFSMContext::_States[] =
 {
                 &SMC_DaemonFSM::Down,
                 &SMC_DaemonFSM::Configuring,

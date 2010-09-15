@@ -31,7 +31,7 @@ namespace sdpa
 
         const int ClientContext::MIN_INDEX = 0;
         const int ClientContext::MAX_INDEX = 2;
-        ClientState* ClientContext::_States[] = 
+        ClientState* ClientContext::_States[] =
 {
             &ClientFsm::Unconfigured,
             &ClientFsm::Configuring,
