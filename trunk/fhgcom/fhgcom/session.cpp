@@ -112,8 +112,18 @@ void session::handle_read_data ( const boost::system::error_code & error
 
   if (!error)
   {
-    std::string data(&inbound_data_[0], inbound_data_.size());
-    manager_.handle_data (shared_from_this(), data);
+    try
+    {
+      const std::string data(&inbound_data_[0], inbound_data_.size());
+
+      DLOG(TRACE, "received " << data.size() << " bytes " << util::log_raw (data));
+
+      manager_.handle_data (shared_from_this(), data);
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "Could not handle data: " << ex.what());
+    }
 
     read_header ();
   }
