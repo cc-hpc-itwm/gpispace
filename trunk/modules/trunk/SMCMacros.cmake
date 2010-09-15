@@ -17,11 +17,12 @@ function(add_state_machine GEN_FSM_C_FILE GEN_FSM_H_FILE FSM_NAME)
   if(SMC_FOUND)
     add_custom_command(
       OUTPUT ${_GEN_FSM_H_FILE} ${_GEN_FSM_C_FILE}
-      COMMAND ${JAVA_RUNTIME} -jar ${SMC_JAR} -serial -c++ ${_FSM_FILE}
+      COMMAND ${CMAKE_COMMAND} -E copy ${_FSM_FILE} ${CMAKE_CURRENT_BINARY_DIR}
+      COMMAND ${JAVA_RUNTIME} -jar ${SMC_JAR} -serial -c++ ${FSM_NAME}.sm
       # save the newly generated header and cpp files
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/generated
-      COMMAND ${CMAKE_COMMAND} -E copy ${_GEN_FSM_H_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/generated
-      COMMAND ${CMAKE_COMMAND} -E copy ${_GEN_FSM_C_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/generated
+      COMMAND ${CMAKE_COMMAND} -E copy ${_GEN_FSM_H_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/generated/
+      COMMAND ${CMAKE_COMMAND} -E copy ${_GEN_FSM_C_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/generated/
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       DEPENDS ${_FSM_FILE}
       COMMENT "Compiling '${FSM_NAME}' state machine..."
