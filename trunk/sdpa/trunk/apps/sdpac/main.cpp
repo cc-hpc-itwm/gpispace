@@ -276,10 +276,12 @@ int main (int argc, char **argv) {
                 << "                 "
                 << " " << api->copyright()
                 << std::endl
-                << "  build #" << api->build()
-                << "  rev #" << api->revision()
+                << "                      "
+                << "build #" << api->build()
+                << " "
+                << "rev #" << api->revision()
                 << std::endl
-                << "                       "
+                << "                     "
                 << api->build_timestamp()
                 << std::endl;
       std::cout << "       "
