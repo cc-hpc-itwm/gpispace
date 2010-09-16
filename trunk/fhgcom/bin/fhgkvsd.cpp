@@ -27,6 +27,7 @@ int main(int ac, char *av[])
     ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
     ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store")
+    ("clear,C", "start with an empty store")
     ;
 
   po::variables_map vm;
@@ -52,6 +53,9 @@ int main(int ac, char *av[])
 
   fhg::com::io_service_pool pool (4);
   fhg::com::kvs::server::kvsd kvsd (store_path);
+
+  if (vm.count ("clear")) kvsd.clear ("");
+
   fhg::com::tcp_server server ( pool
                               , kvsd
                               , server_address

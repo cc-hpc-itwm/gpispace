@@ -93,6 +93,22 @@ namespace fhg
           }
 
           fhg::com::kvs::message::type
+          operator () (fhg::com::kvs::message::clear const & m)
+          {
+            DLOG(TRACE, "clear (" << m.regexp() << ")");
+            try
+            {
+              store_.clear (m.regexp());
+              return fhg::com::kvs::message::error ();
+            }
+            catch (std::exception const & ex)
+            {
+              return fhg::com::kvs::message::error
+                (fhg::com::kvs::message::error::KVS_EUNKNOWN, ex.what());
+            }
+          }
+
+          fhg::com::kvs::message::type
           operator () (fhg::com::kvs::message::msg_load const & m)
           {
             DLOG(TRACE, "load (" << m.file() << ")");
@@ -109,6 +125,15 @@ namespace fhg
               return fhg::com::kvs::message::error
                 (fhg::com::kvs::message::error::KVS_EUNKNOWN, ex.what());
             }
+          }
+
+          fhg::com::kvs::message::type
+          operator () (fhg::com::kvs::message::req_list const & m)
+          {
+            DLOG(TRACE, "list (" << m.regexp() << ")");
+            fhg::com::kvs::message::list list;
+            store_.keys (list.keys());
+            return list;
           }
 
           template <typename T>
@@ -168,6 +193,8 @@ namespace fhg
           {
             lock_t lock(mutex_);
             store_[ k ] = boost::lexical_cast<value_type>(v);
+
+            write_through ();
           }
 
           template <typename T>
@@ -192,10 +219,20 @@ namespace fhg
             }
           }
 
+          void clear (std::string const & /*regexp*/)
+          {
+            lock_t lock(mutex_);
+            store_.clear ();
+
+            write_through ();
+          }
+
           void del (key_type const & k)
           {
             lock_t lock(mutex_);
             store_.erase (k);
+
+            write_through ();
           }
 
           void save () const
@@ -243,6 +280,18 @@ namespace fhg
               throw std::runtime_error ("could not load from file: " + file);
             }
           }
+
+          void keys (std::set<std::string> & s)
+          {
+            lock_t lock(mutex_);
+            for ( store_type::const_iterator e (store_.begin())
+                ; e != store_.end()
+                ; ++e
+                )
+            {
+              s.insert ( e->first );
+            }
+          }
         protected:
           void on_add_hook (session_ptr) {}
           void on_del_hook (session_ptr) {}
@@ -274,6 +323,18 @@ namespace fhg
             }
           }
         private:
+          void write_through ()
+          {
+            try
+            {
+              save ();
+            }
+            catch (std::exception const & ex)
+            {
+              LOG(WARN, "write-through failed: " << ex.what());
+            }
+          }
+
           mutable boost::recursive_mutex mutex_;
           std::string file_;
           store_type store_;

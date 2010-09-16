@@ -99,6 +99,27 @@ namespace fhg
                     );
             DLOG(TRACE, "load() := " << m);
           }
+
+          std::set<std::string> list (std::string const & regexp = "")
+          {
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::req_list(regexp)
+                    , m
+                    );
+            DLOG(TRACE, "list(" << regexp << ") := " << m);
+            return boost::get<fhg::com::kvs::message::list>(m).keys();
+          }
+
+          void clear (std::string const & regexp = "")
+          {
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::clear()
+                    , m
+                    );
+            DLOG(TRACE, "clear( "<< regexp << ") := " << m);
+          }
         private:
           mutable tcp_client kvs_;
 
