@@ -15,6 +15,7 @@ set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_M
 set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
+OPTION(DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION(ENABLE_APPLICATION "Build with application" YES)
 OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
 OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
@@ -34,6 +35,11 @@ if (DEBUG_FHGLOG)
 else (DEBUG_FHGLOG)
   add_definitions("-DNDEBUG_FHGLOG")
 endif (DEBUG_FHGLOG)
+
+if (DISABLE_FHGLOG)
+  add_definitions("-DFHGLOG_DISABLE_LOGGING=1")
+endif (DISABLE_FHGLOG)
+
 
 # cpack configuration
 #include(InstallRequiredSystemLibraries)
