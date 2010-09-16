@@ -22,7 +22,7 @@ cmake "${source_path}" \
   -DENABLE_MONITOR_GUI=No \
   -DBOOST_ROOT=/opt/boost \
   -DPROJECT_REVISION="${revision}" \
-  -DPROJECT_BUILD="${build}"
+  -DPROJECT_BUILD="${build}" \
   || exit 1
 make -s all || exit 1
 ctest
