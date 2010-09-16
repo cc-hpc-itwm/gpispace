@@ -208,7 +208,12 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   const long per_offset_bunches (static_cast<long>(Nbid_in_pid (1, 1, Job)));
 
-  long size_store_bunch (per_offset_bunches);
+  long size_store_bunch (2 * per_offset_bunches);
+
+  if (fvmGetNodeCount() > size_store_bunch)
+    {
+      size_store_bunch = 2 * fvmGetNodeCount();
+    }
 
   while (size_store_bunch * Job.BunchMemSize > memsizeGPI / 2)
     {
@@ -250,7 +255,9 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   put (output, "config", "size.store.volume", size_store_volume);
 
-  put (output, "config", "assign.most", size_store_bunch / 2);
+  put ( output, "config", "assign.most"
+      , std::min (size_store_bunch, per_offset_bunches) / 2
+      );
 
   if ( get<long> (output, "config", "size.store.volume")
      < get<long> (output, "config", "per_offset.volumes")
@@ -411,11 +418,12 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
   const fvmAllocHandle_t & handle_bunch (get<long> (config, "handle.bunch"));
   const fvmAllocHandle_t & scratch_bunch (get<long> (config, "scratch.bunch"));
 
+  // WORK HERE: Prefetching!
   while (!stack_bunch_id.empty())
     {
       if (stack_store_id.empty())
         {
-          throw std::runtime_error ("BUMMER!");
+          throw std::runtime_error ("BUMMER! bunch-id without store-id!?");
         }
 
       const long & bid (stack_bunch_id.back());
