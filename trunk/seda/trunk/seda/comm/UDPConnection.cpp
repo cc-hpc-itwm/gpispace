@@ -272,7 +272,12 @@ namespace seda { namespace comm {
 
     udp::resolver resolver(io_service_);
     udp::resolver::query query(udp::v4(), loc.host(), "0");
-    udp::endpoint dst = *resolver.resolve(query);
+
+    udp::resolver::iterator endpoint_iter = resolver.resolve(query);
+    if (endpoint_iter == udp::resolver::iterator())
+      throw std::runtime_error ("could not resolve host name: " + loc.host());
+
+    udp::endpoint dst = *endpoint_iter;
     dst.port(loc.port());
     DLOG(TRACE, "sending " << m.str() << " to " << dst);
 
@@ -292,23 +297,14 @@ namespace seda { namespace comm {
     const std::string msg_to_send (compressed_sstr.str());
 
     DLOG(TRACE, "going to send " << msg_to_send.size() << " bytes of data: " << msg_to_send);
-//    socket_->async_send_to( boost::asio::buffer(msg_to_send, msg_to_send.size())
-//			  , dst
-//			  , boost::bind( &UDPConnection::handle_send_to
-//				       , this
-//				       , boost::asio::placeholders::error
-//				       , boost::asio::placeholders::bytes_transferred
-//				       )
-//			  );
-
-     boost::system::error_code ec;
-     std::size_t bytes_sent
-       (socket_->send_to( boost::asio::buffer(msg_to_send, msg_to_send.size())
+    boost::system::error_code ec;
+    std::size_t bytes_sent
+      (socket_->send_to( boost::asio::buffer(msg_to_send, msg_to_send.size())
 		       , dst
 		       , 0
 		       , ec
 		       )
-       );
+      );
 
      LOG_IF(ERROR, bytes_sent != msg_to_send.size(), "not all data could be sent: " << bytes_sent << "/" << msg_to_send.size() << " max: " << max_length);
      if (ec.value() != boost::system::errc::success)
