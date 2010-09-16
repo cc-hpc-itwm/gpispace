@@ -48,6 +48,8 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , copyright_(SDPA_COPYRIGHT)
   , contact_(SDPA_CONTACT)
   , timestamp_(SDPA_TIMESTAMP)
+  , revision_(SDPA_REVISION)
+  , build_(SDPA_BUILD)
   , name_(a_name)
   , output_stage_(output_stage)
   , fsm_(*this)
@@ -406,7 +408,7 @@ void Client::action_configure(const config_t &cfg)
 void Client::action_configure_network(const config_t &cfg)
 {
   LOG(DEBUG, "configuring network components...");
-  
+
   const std::string net_stage_name(client_stage_->name()+".from-net");
   {
     LOG(TRACE, "setting up decoding...");

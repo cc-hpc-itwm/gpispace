@@ -17,6 +17,9 @@ else (V_MAJOR)
   set(V_PATCH 0)
 endif (V_MAJOR)
 
+set(PROJECT_REVISION "unknown" CACHE STRING "Source code revision")
+set(PROJECT_BUILD    "unknown" CACHE STRING "Build number")
+
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
