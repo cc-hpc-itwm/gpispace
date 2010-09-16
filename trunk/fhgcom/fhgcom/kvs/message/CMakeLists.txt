@@ -8,6 +8,9 @@ set (hdrs
   error.hpp
   load.hpp
   save.hpp
+  list.hpp
+  req_list.hpp
+  clear.hpp
 
   type.hpp
   show.hpp

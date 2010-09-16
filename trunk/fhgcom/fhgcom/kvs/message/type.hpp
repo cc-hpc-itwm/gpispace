@@ -16,6 +16,8 @@
 #include <fhgcom/kvs/message/error.hpp>
 #include <fhgcom/kvs/message/save.hpp>
 #include <fhgcom/kvs/message/load.hpp>
+#include <fhgcom/kvs/message/list.hpp>
+#include <fhgcom/kvs/message/clear.hpp>
 
 namespace fhg
 {
@@ -33,6 +35,9 @@ namespace fhg
                               , error
                               , msg_save
                               , msg_load
+                              , req_list
+                              , list
+                              , clear
                               > type;
       }
     }
