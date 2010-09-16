@@ -14,8 +14,11 @@ int main(int ac, char *av[])
 
   std::string server_address ("");
   std::string server_port ("2439");
+
   std::string key;
   std::string value;
+
+  std::vector<std::string> key_list;
 
   po::options_description desc ("options");
   desc.add_options()
@@ -24,14 +27,16 @@ int main(int ac, char *av[])
     ("port,P", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
     ("key,k", po::value<std::string>(&key), "key to put or get")
     ("value,v", po::value<std::string>(&value), "value to store")
+    ("full,f", "key must match completely")
 
     ("save,s", "save the database on the server")
     ("load,l", "reload the database on the server")
     ("list,L", "list entries in the server")
     ("clear,C", "clear entries on the server")
+
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
-    ("get,g", po::value<std::string>(&key), "get a value from the key-value store")
-    ("del,d", po::value<std::string>(&key), "delete an entry from the key-value store")
+    ("get,g", po::value<std::vector<std::string> >(&key_list), "get values from the key-value store")
+    ("del,d", po::value<std::vector<std::string> >(&key_list), "delete entries from the key-value store")
     ;
 
   po::variables_map vm;
@@ -71,13 +76,13 @@ int main(int ac, char *av[])
   {
     try
     {
-      std::set<std::string> keys (client.list());
-      for ( std::set<std::string>::const_iterator k (keys.begin())
-          ; k != keys.end()
-          ; ++k
+      std::map<std::string, std::string> entries (client.list());
+      for ( std::map<std::string, std::string>::const_iterator e (entries.begin())
+          ; e != entries.end()
+          ; ++e
         )
       {
-        std::cout << *k << std::endl;
+        std::cout << e->first << " = " << e->second << std::endl;
       }
     }
     catch (std::exception const & ex)
@@ -100,21 +105,48 @@ int main(int ac, char *av[])
   }
   else if (vm.count ("get"))
   {
-    try
+    std::size_t count (0);
+    for ( std::vector<std::string>::const_iterator k (key_list.begin())
+        ; k != key_list.end()
+        ; ++k
+        )
     {
-      std::cout << client.get (key) << std::endl;
-    }
-    catch (std::exception const & ex)
-    {
-      if (value.empty())
+      try
+      {
+        std::map<std::string, std::string> entries (client.get(*k));
+        if (vm.count("full"))
+        {
+          if (entries.find(*k) != entries.end())
+          {
+            std::cout << entries.at(*k) << std::endl;
+            count = 1;
+          }
+          else if (! value.empty())
+          {
+            std::cout << value << std::endl;
+          }
+          else
+          {
+            throw std::runtime_error ("no such entry: " + *k);
+          }
+        }
+        else
+        {
+          for ( std::map<std::string, std::string>::const_iterator e (entries.begin())
+              ; e != entries.end()
+              ; ++e
+              )
+          {
+            std::cout << e->first << " = " << e->second << std::endl;
+            ++count;
+          }
+        }
+      }
+      catch (std::exception const & ex)
       {
         std::cerr << "E: " << ex.what() << std::endl;
-        return 1;
       }
-      else
-      {
-        std::cout << value << std::endl;
-      }
+      return count > 0 ? EXIT_SUCCESS : EXIT_FAILURE;
     }
   }
   else if (vm.count("put"))
@@ -136,15 +168,23 @@ int main(int ac, char *av[])
   }
   else if (vm.count ("del"))
   {
-    try
+    std::size_t count (0);
+    for ( std::vector<std::string>::const_iterator k (key_list.begin())
+        ; k != key_list.end()
+        ; ++k
+        )
     {
-      client.del (key);
+      try
+      {
+        client.del (*k);
+        ++count;
+      }
+      catch (std::exception const & ex)
+      {
+        std::cerr << "E: " << ex.what() << std::endl;
+      }
     }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return 1;
-    }
+    return count > 0 ? EXIT_SUCCESS : EXIT_FAILURE;
   }
 
   client.stop();

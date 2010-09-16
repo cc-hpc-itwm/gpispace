@@ -49,11 +49,6 @@ namespace fhg
               }
             }
 
-            void operator() (value const & m)
-            {
-              stream_ << "VALUE " << m.val();
-            }
-
             void operator() (msg_save const & m)
             {
               stream_ << "SAVE " << m.file();
@@ -62,6 +57,11 @@ namespace fhg
             void operator() (msg_load const & m)
             {
               stream_ << "LOAD " << m.file();
+            }
+
+            void operator() (list const & m)
+            {
+              stream_ << "LIST";
             }
 
             template <typename T>

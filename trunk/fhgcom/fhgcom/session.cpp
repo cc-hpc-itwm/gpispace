@@ -98,7 +98,7 @@ void session::handle_read_header ( const boost::system::error_code & error
   }
   else
   {
-    LOG(WARN, "session closed: " << error.message() << ": " << error);
+    LOG(INFO, "session closed: " << error.message() << ": " << error);
     close ();
   }
 }

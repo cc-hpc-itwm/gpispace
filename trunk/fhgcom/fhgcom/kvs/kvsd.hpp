@@ -51,12 +51,9 @@ namespace fhg
             DLOG(TRACE, "get (" << m.key() << ")");
             try
             {
-              return fhg::com::kvs::message::value (store_.get(m.key()));
-            }
-            catch (exception::no_such const & ex)
-            {
-              return fhg::com::kvs::message::error
-                (fhg::com::kvs::message::error::KVS_ENOSUCH, m.key());
+              fhg::com::kvs::message::list list;
+              store_.get(m.key(), list.entries());
+              return list;
             }
             catch (std::exception const & ex)
             {
@@ -132,7 +129,7 @@ namespace fhg
           {
             DLOG(TRACE, "list (" << m.regexp() << ")");
             fhg::com::kvs::message::list list;
-            store_.keys (list.keys());
+            store_.entries (list.entries());
             return list;
           }
 
@@ -197,25 +194,15 @@ namespace fhg
             write_through ();
           }
 
-          template <typename T>
-          T get (key_type const & k) const
-          {
-            return boost::lexical_cast<T> (get(k));
-          }
-
-          std::string const & get(key_type const & k) const
+          void get( key_type const & k
+                  , fhg::com::kvs::message::list::map_type & m
+                  ) const
           {
             lock_t lock(mutex_);
-            typedef store_type::const_iterator item_it;
-            item_it item (store_.find(k));
-            if (item != store_.end())
+            for (store_type::const_iterator e (store_.begin()); e != store_.end(); ++e)
             {
-              return item->second;
-            }
-            else
-            {
-              // TODO: better exception
-              throw exception::no_such (k);
+              if (e->first.substr(0, k.size()) == k)
+                m[e->first] = e->second;
             }
           }
 
@@ -281,7 +268,7 @@ namespace fhg
             }
           }
 
-          void keys (std::set<std::string> & s)
+          void entries (std::map<std::string, std::string> & m)
           {
             lock_t lock(mutex_);
             for ( store_type::const_iterator e (store_.begin())
@@ -289,7 +276,7 @@ namespace fhg
                 ; ++e
                 )
             {
-              s.insert ( e->first );
+              m[e->first] = e->second;
             }
           }
         protected:

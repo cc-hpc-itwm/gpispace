@@ -46,23 +46,3 @@ BOOST_AUTO_TEST_CASE( get_test )
 
   BOOST_REQUIRE( m1 == m2 );
 }
-
-BOOST_AUTO_TEST_CASE( value_test )
-{
-  fhg::com::kvs::message::type m1
-    (fhg::com::kvs::message::value("bar"));
-
-  std::stringstream sstr;
-  {
-    boost::archive::text_oarchive ar(sstr);
-    ar & m1;
-  }
-
-  fhg::com::kvs::message::type m2;
-  {
-    boost::archive::text_iarchive ar(sstr);
-    ar & m2;
-  }
-
-  BOOST_REQUIRE( m1 == m2 );
-}

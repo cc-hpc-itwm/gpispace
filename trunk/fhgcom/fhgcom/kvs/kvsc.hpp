@@ -53,21 +53,16 @@ namespace fhg
             DLOG(TRACE, "put(" << k << ", " << v << ") := " << m);
           }
 
-          template <typename T>
-          T get (key_type const & k) const
-          {
-            return boost::lexical_cast<T> (get(k));
-          }
-
-          std::string get(key_type const & k) const
+          fhg::com::kvs::message::list::map_type
+          get(key_type const & k) const
           {
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::get( k )
+                    , fhg::com::kvs::message::get(k)
                     , m
                     );
             DLOG(TRACE, "get(" << k << ") := " << m);
-            return boost::get<fhg::com::kvs::message::value>(m).val();
+            return boost::get<fhg::com::kvs::message::list>(m).entries();
           }
 
           void del (key_type const & k)
@@ -100,7 +95,8 @@ namespace fhg
             DLOG(TRACE, "load() := " << m);
           }
 
-          std::set<std::string> list (std::string const & regexp = "")
+          fhg::com::kvs::message::list::map_type
+          list (std::string const & regexp = "")
           {
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -108,7 +104,7 @@ namespace fhg
                     , m
                     );
             DLOG(TRACE, "list(" << regexp << ") := " << m);
-            return boost::get<fhg::com::kvs::message::list>(m).keys();
+            return boost::get<fhg::com::kvs::message::list>(m).entries();
           }
 
           void clear (std::string const & regexp = "")

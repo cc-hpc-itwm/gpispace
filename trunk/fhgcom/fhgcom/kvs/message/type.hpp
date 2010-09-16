@@ -12,11 +12,11 @@
 #include <fhgcom/kvs/message/put.hpp>
 #include <fhgcom/kvs/message/get.hpp>
 #include <fhgcom/kvs/message/del.hpp>
-#include <fhgcom/kvs/message/value.hpp>
 #include <fhgcom/kvs/message/error.hpp>
 #include <fhgcom/kvs/message/save.hpp>
 #include <fhgcom/kvs/message/load.hpp>
 #include <fhgcom/kvs/message/list.hpp>
+#include <fhgcom/kvs/message/req_list.hpp>
 #include <fhgcom/kvs/message/clear.hpp>
 
 namespace fhg
@@ -27,11 +27,9 @@ namespace fhg
     {
       namespace message
       {
-
         typedef boost::variant< put
                               , get
                               , del
-                              , value
                               , error
                               , msg_save
                               , msg_load

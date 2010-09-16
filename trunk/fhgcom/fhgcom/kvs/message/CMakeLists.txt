@@ -4,7 +4,6 @@ set (hdrs
   put.hpp
   get.hpp
   del.hpp
-  value.hpp
   error.hpp
   load.hpp
   save.hpp
