@@ -3,6 +3,8 @@
 #ifndef _NET_HPP
 #define _NET_HPP
 
+#include <cassert>
+
 #include <we/container/adjacency.hpp>
 #include <we/container/bijection.hpp>
 #include <we/container/multirel.hpp>
@@ -160,7 +162,8 @@ private:
   token_place_rel_t token_place_rel;
 
   enabled_t enabled;
-  enabled_choice_t enabled_choice;
+  enabled_choice_t enabled_choice_consume;
+  enabled_choice_t enabled_choice_read;
 
   trans_map_t trans;
 
@@ -186,7 +189,8 @@ private:
     ar & BOOST_SERIALIZATION_NVP(adj_tp);
     ar & BOOST_SERIALIZATION_NVP(token_place_rel);
     ar & BOOST_SERIALIZATION_NVP(enabled);
-    ar & BOOST_SERIALIZATION_NVP(enabled_choice);
+    ar & BOOST_SERIALIZATION_NVP(enabled_choice_consume);
+    ar & BOOST_SERIALIZATION_NVP(enabled_choice_read);
     // WORK HERE: serialize the functions
     // AP: we do not need this with the new transitions
     //     because the function is already encapsulated
@@ -237,7 +241,6 @@ private:
                          , const bool can_fire
                          , set_of_tid_t & a
                          , set_of_tid_t & b
-                         , const bool recalc_choices = true
                          )
   {
     if (can_fire)
@@ -246,37 +249,39 @@ private:
 
         if (b.find (tid) != b.end())
           {
-            if (recalc_choices)
+            choices_t cs (choices(tid));
+
+            // call the global condition function here, that sets the
+            // cross product either to the end or to some valid choice
+
+            if (get_transition (tid).condition (cs))
               {
-                choices_t cs (choices(tid));
+                enabled.insert (tid);
 
-                // call the global condition function here, that sets the
-                // cross product either to the end or to some valid choice
+                enabled_choice_consume[tid].clear();
+                enabled_choice_read[tid].clear();
 
-                if (get_transition (tid).condition (cs))
+                for ( typename cross::iterator<pid_in_map_t> choice (*cs)
+                    ; choice.has_more()
+                    ; ++choice
+                    )
                   {
-                    enabled.insert (tid);
+                    const token_via_edge_t & token_via_edge ((*choice).second);
+                    const eid_t & eid (token_via_edge.second);
 
-                    cs.get_vec (enabled_choice[tid]);
-                  }
-                else
-                  {
-                    enabled.erase (tid);
+                    if (is_pt_read (get_edge_info (eid).type))
+                      {
+                        enabled_choice_read[tid].push_back (*choice);
+                      }
+                    else
+                      {
+                        enabled_choice_consume[tid].push_back (*choice);
+                      }
                   }
               }
             else
               {
-                typename enabled_choice_t::iterator it
-                  (enabled_choice.find(tid));
-
-                if (it != enabled_choice.end())
-                  {
-                    enabled.insert (tid);
-                  }
-                else
-                  {
-                    enabled.erase (tid);
-                  }
+                enabled.erase (tid);
               }
           }
       }
@@ -501,7 +506,8 @@ public:
     , adj_tp (eid_invalid, _transitions, _places)
     , token_place_rel ()
     , enabled ()
-    , enabled_choice ()
+    , enabled_choice_consume ()
+    , enabled_choice_read ()
     , trans ()
     , capacity_map ()
     , in_map ()
@@ -874,7 +880,8 @@ public:
     enabled.erase_priority (tid);
     in_map.erase (tid);
     out_map.erase (tid);
-    enabled_choice.erase (tid);
+    enabled_choice_consume.erase (tid);
+    enabled_choice_read.erase (tid);
 
     return tid;
   }
@@ -1114,16 +1121,21 @@ public:
     output_descr_t output_descr (get_output_descr(tid));
 
     input_t input;
-    typename enabled_choice_t::iterator it (enabled_choice.find(tid));
+    typename enabled_choice_t::iterator choice_consume
+      (enabled_choice_consume.find(tid));
+    typename enabled_choice_t::iterator choice_read
+      (enabled_choice_read.find(tid));
 
-    if (it == enabled_choice.end())
-      throw std::runtime_error ("STRANGE: enabled but there is no choice");
+    assert (  (choice_consume != enabled_choice_consume.end())
+           || (choice_read != enabled_choice_read.end())
+           );
 
-    choice_vec_t choice_vec (it->second);
-    enabled_choice.erase (it);
+    choice_vec_t choice_vec_consume (choice_consume->second);
+    enabled_choice_consume.erase (choice_consume);
 
-    for ( typename choice_vec_t::const_iterator choice (choice_vec.begin())
-        ; choice != choice_vec.end()
+    for ( typename choice_vec_t::const_iterator choice
+            (choice_vec_consume.begin())
+        ; choice != choice_vec_consume.end()
         ; ++choice
         )
       {
@@ -1134,13 +1146,16 @@ public:
 
         input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
 
+        assert (!is_pt_read (get_edge_info (eid).type));
+
         delete_one_token (pid, token);
       }
 
-    // WORK HERE: This is not the most efficient way, but
-    // delete_one_token has side effects....
-    for ( typename choice_vec_t::const_iterator choice (choice_vec.begin())
-        ; choice != choice_vec.end()
+    choice_vec_t choice_vec_read (choice_read->second);
+
+    for ( typename choice_vec_t::const_iterator choice
+            (choice_vec_read.begin())
+        ; choice != choice_vec_read.end()
         ; ++choice
         )
       {
@@ -1149,8 +1164,7 @@ public:
         const token_type & token (token_via_edge.first);
         const eid_t & eid (token_via_edge.second);
 
-        if (is_pt_read (get_edge_info (eid).type))
-          put_token (pid, token);
+        input.push_back (token_input_t (token, place_via_edge_t(pid, eid)));
       }
 
     return activity_t (tid, input, output_descr);
