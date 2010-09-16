@@ -7,8 +7,8 @@ if [ $# -ne 3 ]; then
 fi
 
 build_type="$1"
-source_path="$2"
-build_path="$3"
+source_path="$(pwd)/$2"
+build_path="$(pwd)/$3"
 echo "bitten build.sh type=${build_type} src=${source_path} bld=${build_path}"
 
 echo "creating build directory..."
@@ -18,7 +18,7 @@ pushd "${build_path}"
 cmake "${source_path}" \
   -DCMAKE_BUILD_TYPE=${build_type} \
   -DENABLE_MONITOR_GUI=No \
-  -DBOOST_ROOT=/opt/boost
+  -DBOOST_ROOT=/opt/boost \
   || exit 1
 make -s all || exit 1
 ctest
