@@ -15,7 +15,11 @@ echo "creating build directory..."
 
 mkdir -p "${build_path}" || exit 1
 pushd "${build_path}"
-cmake "${source_path}" -DCMAKE_BUILD_TYPE=${build_type} -DENABLE_MONITOR_GUI=No || exit 1
+cmake "${source_path}" \
+  -DCMAKE_BUILD_TYPE=${build_type} \
+  -DENABLE_MONITOR_GUI=No \
+  -DBOOST_ROOT=/opt/boost
+  || exit 1
 make -s all || exit 1
 ctest
 popd
