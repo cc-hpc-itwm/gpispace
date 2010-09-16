@@ -49,18 +49,9 @@ int main(int ac, char *av[])
     return EXIT_SUCCESS;
   }
 
-  fhg::com::io_service_pool pool (1);
-  boost::thread thrd (boost::bind ( &fhg::com::io_service_pool::run
-                                  , &pool
-                                  )
-                     );
+  fhg::com::kvs::client::kvsc client;
 
-  fhg::com::kvs::client::kvsc client ( pool.get_io_service()
-                                     , server_address
-                                     , server_port
-                                     );
-
-  client.start();
+  client.start (server_address, server_port);
 
   if (mode == "get")
   {
@@ -108,6 +99,5 @@ int main(int ac, char *av[])
   }
 
   client.stop();
-  pool.stop();
   return 0;
 }

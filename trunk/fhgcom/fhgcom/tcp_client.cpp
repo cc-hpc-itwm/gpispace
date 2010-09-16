@@ -1,27 +1,28 @@
 #include <fhglog/macros.hpp>
 #include <fhgcom/util/to_hex.hpp>
 
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/lambda.hpp>
+
 #include "tcp_client.hpp"
 
+using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
+using boost::lambda::bind;
+using boost::lambda::var;
+//using boost::lambda::_1;
 
 namespace fhg
 {
   namespace com
   {
-    tcp_client::tcp_client ( boost::asio::io_service & io_service
-                           , const std::string & host
-                           , const std::string & port
-                           )
-      : io_service_(io_service)
-      , socket_(io_service)
-      , host_(host)
-      , port_(port)
-      , send_in_progress_(false)
-      , stopped_(false)
-      , connected_(false)
-      , deadline_(io_service)
+    tcp_client::tcp_client ()
+      : socket_(io_service_)
+      , deadline_(io_service_)
     {
+      deadline_.expires_at (boost::posix_time::pos_infin);
+
+      check_deadline ();
     }
 
     tcp_client::~tcp_client ()
@@ -36,58 +37,80 @@ namespace fhg
       }
     }
 
-    void tcp_client::start ()
-    {
-      start (host_, port_);
-    }
-
     void tcp_client::start ( const std::string & host
                            , const std::string & port
+                           , boost::posix_time::time_duration timeout
                            )
     {
-      host_ = host;
-      port_ = port;
-
-      tcp::resolver resolver (io_service_);
+      // Resolve the host name and service to a list of endpoints.
       tcp::resolver::query query(host, port);
+      tcp::resolver::iterator iter = tcp::resolver(io_service_).resolve(query);
 
-      start (resolver.resolve (query));
+      // Set a deadline for the asynchronous operation. The host name may resolve
+      // to multiple endpoints, and this function tries to connect to each one in
+      // turn. Setting the deadline here means it applies to the entire sequence.
+      deadline_.expires_from_now(timeout);
+
+      boost::system::error_code ec;
+
+      for (; iter != tcp::resolver::iterator(); ++iter)
+      {
+        // We may have an open socket from a previous connection attempt. This
+        // socket cannot be reused, so we must close it before trying to connect
+        // again.
+        socket_.close();
+
+        // Set up the variable that receives the result of the asynchronous
+        // operation. The error code is set to would_block to signal that the
+        // operation is incomplete. Asio guarantees that its asynchronous
+        // operations will never fail with would_block, so any other value in
+        // ec indicates completion.
+        ec = boost::asio::error::would_block;
+
+        DLOG(TRACE, "trying to connect to " << iter->endpoint());
+
+        // Start the asynchronous operation itself. The boost::lambda function
+        // object is used as a callback and will update the ec variable when the
+        // operation completes. The blocking_udp_client.cpp example shows how you
+        // can use boost::bind rather than boost::lambda.
+        socket_.async_connect(iter->endpoint(), var(ec) = boost::lambda::_1);
+
+        // Block until the asynchronous operation has completed.
+        do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+
+        // Determine whether a connection was successfully established. The
+        // deadline actor may have had a chance to run and close our socket, even
+        // though the connect operation notionally succeeded. Therefore we must
+        // check whether the socket is still open before deciding that the we
+        // were successful.
+        if (!ec && socket_.is_open())
+        {
+          LOG(INFO, "connected to " << socket_.remote_endpoint());
+          return;
+        }
+      }
+
+      throw boost::system::system_error
+        (ec ? ec : boost::asio::error::host_not_found);
     }
 
     void tcp_client::stop ()
     {
-      lock_t lock (mutex_);
-
-      if (stopped_) return;
-
-      stopped_ = true;
-      connected_ = false;
-      send_in_progress_ = false;
-
       socket_.close();
-
-      if (to_send_.size())
-      {
-        LOG(WARN, "there was still data to send!");
-        to_send_.clear();
-      }
-
-      if (to_recv_.size())
-      {
-        LOG(WARN, "there was still data to be received!");
-        to_recv_.clear();
-      }
-
-      // wake up receivers
-      data_rcvd_.notify_all ();
-
-      DLOG(TRACE, "session closed");
     }
 
-    void tcp_client::send ( const std::string & data )
+    void tcp_client::send ( const std::string & data
+                          , boost::posix_time::time_duration timeout
+                          )
     {
-      if (stopped_)
-        throw std::runtime_error ("not connected");
+      deadline_.expires_from_now(timeout);
+
+      // Set up the variable that receives the result of the asynchronous
+      // operation. The error code is set to would_block to signal that the
+      // operation is incomplete. Asio guarantees that its asynchronous
+      // operations will never fail with would_block, so any other value in
+      // ec indicates completion.
+      boost::system::error_code ec = boost::asio::error::would_block;
 
       std::ostringstream sstr;
       sstr << std::setw(header_length)
@@ -97,267 +120,97 @@ namespace fhg
            << data
         ;
 
-      {
-        lock_t lock (mutex_);
-        to_send_.push_back (sstr.str());
-      }
+      DLOG( TRACE
+          , "initiating write of "
+          << util::basic_hex_converter<64>::convert( sstr.str().begin()
+                                                   , sstr.str().end()
+                                                   )
+          );
 
-      start_writer();
+      // Start the asynchronous operation itself. The boost::lambda function
+      // object is used as a callback and will update the ec variable when the
+      // operation completes. The blocking_udp_client.cpp example shows how you
+      // can use boost::bind rather than boost::lambda.
+      boost::asio::async_write(socket_, boost::asio::buffer(sstr.str()), var(ec) = boost::lambda::_1);
+
+      // Block until the asynchronous operation has completed.
+      do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+
+      if (ec)
+        throw boost::system::system_error(ec);
     }
 
-    std::string tcp_client::recv ()
+    std::string tcp_client::recv (boost::posix_time::time_duration timeout)
     {
-      if (stopped_)
-        throw std::runtime_error ("stopped");
+      deadline_.expires_from_now (timeout);
 
-      lock_t lock (mutex_);
-      while (to_recv_.empty())
+      // Set up the variable that receives the result of the asynchronous
+      // operation. The error code is set to would_block to signal that the
+      // operation is incomplete. Asio guarantees that its asynchronous
+      // operations will never fail with would_block, so any other value in
+      // ec indicates completion.
+      boost::system::error_code ec = boost::asio::error::would_block;
+
+      char header[header_length];
+      boost::asio::async_read ( socket_
+                              , boost::asio::buffer (header, header_length)
+                              , var(ec) = boost::lambda::_1
+                              );
+
+      // Block until the asynchronous operation has completed.
+      do io_service_.run_one(); while (ec == boost::asio::error::would_block);
+
+      if (ec)
+        throw boost::system::system_error(ec);
+
+      std::size_t data_size = 0;
       {
-        data_rcvd_.wait (lock);
-
-        if (stopped_)
-          throw std::runtime_error ("stopped");
+        std::istringstream is (std::string (header, header_length));
+        if (! (is >> std::hex >> data_size))
+        {
+          LOG(ERROR, "could not parse header: " << std::string(header, header_length));
+          throw std::runtime_error ("could not parse header!");
+        }
       }
 
-      std::string data (to_recv_.front()); to_recv_.pop_front();
+      DLOG(DEBUG, "going to receive " << data_size << " bytes");
+      std::vector<char> data;
+      data.resize(data_size);
 
-      if (! to_recv_.empty())
-      {
-        data_rcvd_.notify_one();
-      }
+      ec = boost::asio::error::would_block;
+      boost::asio::async_read ( socket_
+                              , boost::asio::buffer (data)
+                              , var(ec) = boost::lambda::_1
+                              );
 
-      return data;
-    }
+      // Block until the asynchronous operation has completed.
+      do io_service_.run_one(); while (ec == boost::asio::error::would_block);
 
+      if (ec)
+        throw boost::system::system_error(ec);
 
-    void tcp_client::start(tcp::resolver::iterator endpoint_iter)
-    {
-      start_connect (endpoint_iter);
-
-      deadline_.async_wait (boost::bind(&tcp_client::check_deadline, this));
-    }
-
-
-    void tcp_client::start_connect (tcp::resolver::iterator endpoint_iter)
-    {
-      if (endpoint_iter != tcp::resolver::iterator())
-      {
-        DLOG (TRACE, "trying to connect to " << endpoint_iter->endpoint());
-        deadline_.expires_from_now(boost::posix_time::seconds(30));
-
-        socket_.async_connect( endpoint_iter->endpoint()
-                             , boost::bind( &tcp_client::handle_connect
-                                          , this
-                                          , _1
-                                          , endpoint_iter
-                                          )
-                             );
-      }
-      else
-      {
-        stop();
-      }
-    }
-
-    void tcp_client::start_reader ()
-    {
-      read_header ();
-    }
-
-    void tcp_client::start_writer ()
-    {
-      if (stopped_)
-        return;
-
-      lock_t lock (mutex_);
-      if (!send_in_progress_ && !to_send_.empty() && connected_)
-      {
-        DLOG( TRACE
-            , "initiating write of "
-            << util::basic_hex_converter<64>::convert( to_send_.front().begin()
-                                                     , to_send_.front().end()
-                                                     )
-            );
-        send_in_progress_ = true;
-        boost::asio::async_write( socket_
-                                , boost::asio::buffer( to_send_.front().data()
-                                                     , to_send_.front().length()
-                                                     )
-                                , boost::bind( &tcp_client::handle_write
-                                             , this
-                                             , boost::asio::placeholders::error
-                                             )
-                                );
-      }
+      return std::string (&data[0], data.size());
     }
 
     void tcp_client::check_deadline ()
     {
-      if (stopped_)
-        return;
-
-      if (deadline_.expires_at() <= boost::asio::deadline_timer::traits_type::now())
+      // Check whether the deadline has passed. We compare the deadline against
+      // the current time since a new asynchronous operation may have moved the
+      // deadline before this actor had a chance to run.
+      if (deadline_.expires_at() <= deadline_timer::traits_type::now())
       {
+        // The deadline has passed. The socket is closed so that any outstanding
+        // asynchronous operations are cancelled. This allows the blocked
+        // connect(), read_line() or write_line() functions to return.
         socket_.close();
+
+        // There is no longer an active deadline. The expiry is set to positive
+        // infinity so that the actor takes no action until a new deadline is set.
         deadline_.expires_at(boost::posix_time::pos_infin);
       }
 
-      deadline_.async_wait(boost::bind(&tcp_client::check_deadline, this));
-    }
-
-    void tcp_client::handle_connect ( const boost::system::error_code & e
-                                    , boost::asio::ip::tcp::resolver::iterator endpoint_iter
-                                    )
-    {
-      if (stopped_)
-        return;
-
-      if (!socket_.is_open())
-      {
-        LOG(WARN, "connection attempt timed out!");
-        start_connect (++endpoint_iter);
-      }
-      else if (e)
-      {
-        LOG(WARN, "connection attempt failed: " << e.message());
-
-        socket_.close();
-        start_connect (++endpoint_iter);
-      }
-      else
-      {
-        DLOG (TRACE, "successfully connected to: " << endpoint_iter->endpoint());
-
-        connected_ = true;
-
-        start_reader ();
-        start_writer ();
-      }
-    }
-
-    void tcp_client::handle_write (const boost::system::error_code & e)
-    {
-      if (stopped_)
-        return;
-
-      if (! e)
-      {
-        DLOG(TRACE, "write completed");
-
-        bool more_to_send (false);
-        {
-          lock_t lock (mutex_);
-          to_send_.pop_front();
-
-          data_sent_.notify_one();
-
-          more_to_send = ! to_send_.empty();
-        }
-
-        if (more_to_send)
-        {
-          boost::asio::async_write( socket_
-                                  , boost::asio::buffer( to_send_.front().data()
-                                                       , to_send_.front().length()
-                                                       )
-                                  , boost::bind( &tcp_client::handle_write
-                                               , this
-                                               , boost::asio::placeholders::error
-                                               )
-                                  );
-        }
-        else
-        {
-          send_in_progress_ = false;
-        }
-      }
-      else
-      {
-        LOG(ERROR, "could not send data: " << e << ": " << e.message());
-        stop ();
-      }
-    }
-
-    void tcp_client::read_header ()
-    {
-      DLOG(DEBUG, "trying to receive header of length " << header_length);
-      boost::asio::async_read ( socket_
-                              , boost::asio::buffer (inbound_header_)
-                              , boost::bind ( &tcp_client::handle_read_header
-                                            , this
-                                            , boost::asio::placeholders::error
-                                            , boost::asio::placeholders::bytes_transferred
-                                            )
-                              );
-    }
-
-    void tcp_client::handle_read_header ( const boost::system::error_code & error
-                                        , size_t bytes_recv
-                                        )
-    {
-      if (stopped_)
-        return;
-
-      if (!error)
-      {
-        DLOG(DEBUG, "received " << bytes_recv << " bytes of header");
-        std::istringstream is (std::string (inbound_header_, header_length));
-        std::size_t inbound_data_size = 0;
-        if (! (is >> std::hex >> inbound_data_size))
-        {
-          LOG(ERROR, "could not parse header: " << std::string(inbound_header_, header_length));
-          // TODO: call handler
-          return;
-        }
-
-        DLOG(DEBUG, "going to receive " << inbound_data_size << " bytes");
-
-        inbound_data_.resize (inbound_data_size);
-
-        boost::asio::async_read ( socket_
-                                , boost::asio::buffer (inbound_data_)
-                                , boost::bind ( &tcp_client::handle_read_data
-                                              , this
-                                              , boost::asio::placeholders::error
-                                              , boost::asio::placeholders::bytes_transferred
-                                              )
-                                );
-      }
-      else
-      {
-        LOG(WARN, "session closed: " << error.message() << " := " << error);
-        stop ();
-      }
-    }
-
-    void tcp_client::handle_read_data ( const boost::system::error_code & error
-                                      , size_t bytes_recv
-                                      )
-    {
-      if (stopped_)
-        return;
-
-      if (!error)
-      {
-        DLOG(TRACE, "received " << bytes_recv << " bytes: "
-            << util::basic_hex_converter<64>::convert( inbound_data_.begin()
-                                                     , inbound_data_.end()
-                                                     )
-            );
-
-        {
-          lock_t lock (mutex_);
-          to_recv_.push_back(std::string(&inbound_data_[0], inbound_data_.size()));
-          data_rcvd_.notify_one();
-        }
-
-        read_header ();
-      }
-      else
-      {
-        LOG(ERROR, "session got error during chunk receive := " << error);
-        stop ();
-      }
+      // Put the actor back to sleep.
+      deadline_.async_wait(bind(&tcp_client::check_deadline, this));
     }
   }
 }

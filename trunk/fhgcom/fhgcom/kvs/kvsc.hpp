@@ -28,22 +28,15 @@ namespace fhg
         public:
           typedef std::string key_type;
 
-          explicit
-          kvsc ( boost::asio::io_service & io_service
-               , std::string const & server_address
-               , std::string const & server_port
-               )
-            : kvs_(io_service, server_address, server_port)
-          {}
-
           virtual ~kvsc()
           {}
 
-          void start ()
+          void start ( std::string const & server_address
+                     , std::string const & server_port
+                     )
           {
-            kvs_.start();
+            kvs_.start (server_address, server_port);
           }
-
           void stop ()
           {
             kvs_.stop();
@@ -122,11 +115,11 @@ namespace fhg
                 boost::archive::text_oarchive ar(sstr);
                 ar & msg;
               }
-              client.send (sstr.str());
+              client.send (sstr.str(), boost::posix_time::seconds(10));
             }
 
             {
-              std::stringstream sstr (client.recv());
+              std::stringstream sstr (client.recv(boost::posix_time::seconds(10)));
               {
                 boost::archive::text_iarchive ar(sstr);
                 ar & rpl;

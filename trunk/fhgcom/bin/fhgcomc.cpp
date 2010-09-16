@@ -10,12 +10,7 @@
 #include <sstream>
 
 #include <boost/program_options.hpp>
-#include <boost/bind.hpp>
-
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_client.hpp>
-
-using boost::asio::ip::tcp;
 
 int main(int ac, char *av[])
 {
@@ -53,18 +48,8 @@ int main(int ac, char *av[])
     return EXIT_SUCCESS;
   }
 
-  // fork service thread
-  fhg::com::io_service_pool pool (1);
-  boost::thread thrd (boost::bind ( &fhg::com::io_service_pool::run
-                                  , &pool
-                                  )
-                     );
-
-  fhg::com::tcp_client client ( pool.get_io_service()
-                              , server_address
-                              , server_port
-                              );
-  client.start ();
+  fhg::com::tcp_client client;
+  client.start (server_address, server_port);
 
   while ( std::cin )
   {
@@ -80,7 +65,6 @@ int main(int ac, char *av[])
   }
 
   client.stop();
-  pool.stop();
 
   return 0;
 }
