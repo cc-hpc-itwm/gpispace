@@ -10,13 +10,17 @@
   <net>
 
     <place name="file_config" type="string">
+   </place>
+   <!--
       <token>
         <value>
           "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
         </value>
       </token>
-    </place>
-    <place name="done" type="control"/>
+       "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
+       "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
+    -->
+   <place name="done" type="control"/>
 
     <place name="memsizeGPI" type="long">
       <token><value>2^30</value></token>
@@ -36,19 +40,20 @@
 
     <place name="config_initialized" type="config"/>
 
-    <include-template href="5.xml"/>
-    <specialize name="five.config" use="five">
+    <include-template href="6.xml"/>
+    <specialize name="six.config" use="six">
       <type-map replace="T" with="config"/>
     </specialize>
 
-    <transition name="five_config" inline="true">
-      <use name="five.config"/>
+    <transition name="six_config" inline="true">
+      <use name="six.config"/>
       <connect-in port="in" place="config_initialized"/>
       <connect-out port="one" place="config_generate_store"/>
       <connect-out port="two" place="config_init_wanted_offsets"/>
       <connect-out port="three" place="config_loadTT"/>
       <connect-out port="four" place="config"/>
       <connect-out port="five" place="config_init_wait"/>
+      <connect-out port="six" place="config_generate_offset"/>
     </transition>
 
     <place name="config_generate_store" type="config"/>
@@ -104,15 +109,9 @@
     <place name="store_volume" type="long"/>
     <place name="store_bunch" type="long"/>
 
-    <transition name="init_wanted_offsets">
-      <defun>
-        <in name="config" type="config"/>
-        <out name="config" type="config"/>
-        <out name="wanted" type="bitset"/>
-        <expression>${wanted} := bitset_insert ({}, 0L)</expression>
-      </defun>
+    <transition name="init_wanted_offsets" inline="true">
+      <include-function href="init/wanted_offsets.xml"/>
       <connect-in port="config" place="config_init_wanted_offsets"/>
-      <connect-out port="config" place="config_generate_offset"/>
       <connect-out port="wanted" place="wanted_offset"/>
     </transition>
 
@@ -194,6 +193,25 @@
     </transition>
 
     <place name="volume" type="volume"/>
+
+    <place name="trigger_select_volume" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <place name="volume_selected" type="volume"/>
+
+    <transition name="select_volume" priority="2">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <expression></expression>
+      </defun>
+      <connect-in port="trigger" place="trigger_select_volume"/>
+      <connect-in port="volume" place="volume"/>
+      <connect-out port="volume" place="volume_selected"/>
+    </transition>
+
     <place name="volume_process" type="volume"/>
 
     <transition name="process">
@@ -210,7 +228,24 @@
 
     <place name="volume_processed" type="volume"/>
 
-    <transition name="assign" priority="1">
+    <place name="trigger_select_volume_processed" type="control">
+      <token><value>[]</value></token>
+    </place>
+    <place name="volume_processed_selected" type="volume"/>
+
+    <transition name="select_volume_processed" priority="2">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <expression></expression>
+      </defun>
+      <connect-in port="trigger" place="trigger_select_volume_processed"/>
+      <connect-in port="volume" place="volume_processed"/>
+      <connect-out port="volume" place="volume_processed_selected"/>
+    </transition>
+
+    <transition name="assign" priority="2">
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume"/>
@@ -238,41 +273,57 @@
         </condition>
       </defun>
       <connect-read port="config" place="config"/>
-      <connect-in port="volume" place="volume"/>
+      <connect-in port="volume" place="volume_selected"/>
       <connect-in port="bunch" place="bunch"/>
-      <connect-out port="volume" place="volume"/>
+      <connect-out port="volume" place="volume_selected"/>
       <connect-out port="bunch" place="bunch"/>
     </transition>
 
-    <transition name="fully_assigned">
+    <transition name="fully_assigned" priority="1">
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume"/>
         <out name="volume" type="volume"/>
-        <expression></expression>
+        <out name="trigger" type="control"/>
+        <expression>${trigger} := []</expression>
         <condition>
           ${volume.assigned.count} :ge: ${config.assign.most}
         </condition>
       </defun>
       <connect-read port="config" place="config"/>
-      <connect-in port="volume" place="volume"/>
+      <connect-in port="volume" place="volume_selected"/>
       <connect-out port="volume" place="volume_process"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
     </transition>
 
-    <transition name="take_anyway">
+    <transition name="take_anyway" priority="1">
       <defun>
         <in name="volume" type="volume"/>
         <out name="volume" type="volume"/>
-        <expression></expression>
+        <out name="trigger" type="control"/>
+        <expression>${trigger} := []</expression>
         <condition>
           ${volume.assigned.count} :gt: 0
         </condition>
       </defun>
-      <connect-in port="volume" place="volume"/>
+      <connect-in port="volume" place="volume_selected"/>
       <connect-out port="volume" place="volume_process"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
     </transition>
 
-    <transition name="unassign">
+    <transition name="give_back">
+      <defun>
+        <in name="volume" type="volume"/>
+        <out name="volume" type="volume"/>
+        <out name="trigger" type="control"/>
+        <expression>${trigger} := []</expression>
+      </defun>
+      <connect-in port="volume" place="volume_selected"/>
+      <connect-out port="volume" place="volume"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
+    </transition>
+
+    <transition name="unassign" priority="2">
       <defun>
         <in name="volume" type="volume"/>
         <in name="bunch" type="bunch"/>
@@ -298,24 +349,27 @@
           ${volume.offset.id} :eq: ${bunch.offset.id}
         </condition>
       </defun>
-      <connect-in port="volume" place="volume_processed"/>
+      <connect-in port="volume" place="volume_processed_selected"/>
       <connect-in port="bunch" place="bunch"/>
-      <connect-out port="volume" place="volume_processed"/>
+      <connect-out port="volume" place="volume_processed_selected"/>
       <connect-out port="bunch" place="bunch"/>
     </transition>
 
     <transition name="unassigned">
       <defun>
+        <out name="trigger" type="control"/>
         <in name="volume" type="volume"/>
         <out name="volume" type="volume"/>
         <expression>
+          ${trigger} := []
         </expression>
         <condition>
           stack_empty (${volume.assigned.bunch.id})
         </condition>
       </defun>
-      <connect-in port="volume" place="volume_processed"/>
+      <connect-in port="volume" place="volume_processed_selected"/>
       <connect-out port="volume" place="volume"/>
+      <connect-out port="trigger" place="trigger_select_volume_processed"/>
     </transition>
 
     <transition name="break_bunch">
@@ -329,23 +383,26 @@
       <connect-out port="store" place="store_bunch"/>
     </transition>
 
-    <transition name="break_volume">
+    <transition name="break_volume" priority="1">
       <defun>
         <in name="volume" type="volume"/>
         <in name="wanted" type="bitset"/>
         <out name="wanted" type="bitset"/>
         <out name="volume" type="volume"/>
+        <out name="trigger" type="control"/>
         <expression>
-          ${wanted} := bitset_insert (${wanted}, ${volume.offset.id} + 1)
+          ${wanted} := bitset_insert (${wanted}, ${volume.offset.id} + 1);
+          ${trigger} := []
         </expression>
         <condition>
           ${volume.bunches.left} :eq: 0
         </condition>
       </defun>
-      <connect-in port="volume" place="volume"/>
+      <connect-in port="volume" place="volume_selected"/>
       <connect-out port="volume" place="volume_write"/>
       <connect-in port="wanted" place="wanted_offset"/>
       <connect-out port="wanted" place="wanted_offset"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
     </transition>
 
     <place name="volume_write" type="volume"/>

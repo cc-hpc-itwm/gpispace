@@ -1,0 +1,70 @@
+<defun>
+  <in name="config" type="config" place="config"/>
+  <out name="wanted" type="bitset" place="wanted"/>
+  <net>
+    <place name="config" type="config"/>
+    <place name="wanted" type="bitset"/>
+
+    <struct name="state">
+      <field name="wanted" type="bitset"/>
+      <field name="offset" type="long"/>
+      <struct name="state">
+        <field name="state" type="long"/>
+        <field name="inc" type="long"/>
+        <field name="max" type="long"/>
+      </struct>
+    </struct>
+
+    <place name="state" type="state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.wanted} := {};
+          ${state.offset} := 0L;
+          ${state.state.state} := 0L;
+          ${state.state.inc} := ${config.per_offset.volumes};
+          ${state.state.max} := ${config.size.store.volume};
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.wanted} := bitset_insert (${state.wanted}, ${state.offset});
+          ${state.offset} := ${state.offset} + 1;
+
+          ${state.state.state} := ${state.state.state} + ${state.state.inc}
+        </expression>
+        <condition>
+          ${state.state.state} :lt: ${state.state.max}
+        </condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="wanted" type="bitset"/>
+        <expression>
+          ${wanted} := ${state.wanted}
+        </expression>
+        <condition>
+          ${state.state.state} :ge: ${state.state.max}
+        </condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="wanted" place="wanted"/>
+    </transition>
+
+  </net>
+</defun>
