@@ -9,4 +9,4 @@ target_link_libraries(orchestrator seda)
 target_link_libraries(orchestrator seda-comm)
 target_link_libraries(orchestrator ${Boost_LIBRARIES})
 
-install(TARGETS orchestrator DESTINATION bin)
+install(TARGETS orchestrator RUNTIME DESTINATION bin)

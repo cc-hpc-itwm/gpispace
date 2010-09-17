@@ -9,4 +9,6 @@ target_link_libraries(sdpac seda)
 target_link_libraries(sdpac seda-comm)
 target_link_libraries(sdpac ${Boost_LIBRARIES})
 
-install(TARGETS sdpac DESTINATION bin)
+install(TARGETS sdpac
+  RUNTIME
+  DESTINATION bin)
