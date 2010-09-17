@@ -24,15 +24,17 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-unused-parameter")
 
   # debug flags
-  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS_DEBUG
+      "-O0 -g -ggdb -fno-omit-frame-pointer -Woverloaded-virtual -Wno-system-headers"
+     )
 #    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
 #    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
 
   # gprof and gcov support
-  set(CMAKE_CXX_FLAGS_PROFILE "-O0 -g -ggdb -Wreturn-type -Woverloaded-virtual")
-  set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -Wno-system-headers -pg")
-  set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_PROFILE} -fprofile-arcs -ftest-coverage")
+  set(CMAKE_CXX_FLAGS_PROFILE
+      "-O0 -fprofile-arcs -ftest-coverage -pg -g -ggdb -Wreturn-type -Woverloaded-virtual -Wno-system-headers"
+      CACHE STRING "Flags for Profile build"
+     )
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 
 # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
