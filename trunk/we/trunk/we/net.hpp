@@ -266,7 +266,7 @@ private:
                     ; ++choice
                     )
                   {
-                    const token_via_edge_t & token_via_edge ((*choice).second);
+                    const token_via_edge_t & token_via_edge (choice.val());
                     const eid_t & eid (token_via_edge.second);
 
                     if (is_pt_read (get_edge_info (eid).type))
@@ -1151,7 +1151,7 @@ public:
         delete_one_token (pid, token);
       }
 
-    choice_vec_t choice_vec_read (choice_read->second);
+    choice_vec_t & choice_vec_read (choice_read->second);
 
     for ( typename choice_vec_t::const_iterator choice
             (choice_vec_read.begin())
