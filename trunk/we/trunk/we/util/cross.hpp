@@ -105,13 +105,13 @@ namespace cross
 
     iterator<MAP> operator * (void) const { return iterator<MAP>(map,pos); }
 
-//     void get_vec (typename Traits<MAP>::vec_t & v) const
-//     {
-//       v.clear();
+    void get_vec (typename Traits<MAP>::vec_t & v) const
+    {
+      v.clear();
 
-//       for (iterator<MAP> it (map, pos); it.has_more(); ++it)
-//         v.push_back (*it);
-//     }
+      for (iterator<MAP> it (map, pos); it.has_more(); ++it)
+        v.push_back (*it);
+    }
   };
 }
 
