@@ -31,7 +31,7 @@ int main(int ac, char *av[])
 
     ("save,s", "save the database on the server")
     ("load,l", "reload the database on the server")
-    ("list,L", "list entries in the server")
+    ("list-all,a", "list all entries in the server")
     ("clear,C", "clear entries on the server")
 
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
@@ -72,7 +72,7 @@ int main(int ac, char *av[])
   {
     client.save();
   }
-  else if (vm.count ("list"))
+  else if (vm.count ("list-all"))
   {
     try
     {
