@@ -1,10 +1,10 @@
-offsets               20
-per_offset.volumes    16
-per_offset.bunches    31
-loadTT.parallel       8
-size.store.bunch      20
-size.store.volume     16
-assign.most           10
+offsets               15
+per_offset.volumes    12
+per_offset.bunches    2
+loadTT.parallel       12
+size.store.bunch      12
+size.store.volume     12
+assign.most           6
 handle.job 0
 handle.TT 0
 handle.bunch 0
@@ -12,3 +12,4 @@ handle.volume 0
 scratch.job 0
 scratch.bunch 0
 scratch.volume 0
+threads.N 4
