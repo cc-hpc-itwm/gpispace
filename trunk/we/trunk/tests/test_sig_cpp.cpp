@@ -10,10 +10,12 @@ main ()
   signature::structured_t point;
   point["x"] = literal::DOUBLE;
   point["y"] = literal::DOUBLE;
+
   signature::structured_t line;
   line["start"] = point;
   line["end"] = point;
   line["descr"] = literal::STRING;
+
   signature::structured_t cross;
   cross["h"] = line;
   cross["v"] = line;
