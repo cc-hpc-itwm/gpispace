@@ -48,6 +48,7 @@ set(tc_srcs
     test_unordered_map.cpp
     test_user_defined_transition_function.cpp
     test_sig_cpp.cpp
+    test_try_gen.cpp
    )
 
 # answer module
