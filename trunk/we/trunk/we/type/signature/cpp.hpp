@@ -8,6 +8,7 @@
 #include <we/type/literal/cpp.hpp>
 
 #include <fhg/util/show.hpp>
+#include <fhg/util/maybe.hpp>
 
 #include <iostream>
 #include <string>
@@ -18,9 +19,11 @@ namespace signature
   {
     namespace visitor
     {
-      class cpp_typedef : public boost::static_visitor<std::ostream &>
+      // ****************************************************************** //
+
+      class cpp_generic : public boost::static_visitor<std::ostream &>
       {
-      private:
+      protected:
         std::ostream & s;
         unsigned int l;
 
@@ -33,8 +36,169 @@ namespace signature
         }
 
       public:
-        cpp_typedef (std::ostream & _s, const unsigned int _l = 0)
+        cpp_generic (std::ostream & _s, const unsigned int _l = 0)
           : s(_s), l (_l)
+        {}
+      };
+
+      // ****************************************************************** //
+
+      class cpp_construct_from_value : public cpp_generic
+      {
+      private:
+        signature::field_name_t fieldname;
+
+        signature::field_name_t
+        longer (const signature::field_name_t & sub) const
+        {
+          return fieldname.empty() ? sub : (fieldname + "." + sub);
+        }
+
+      public:
+        cpp_construct_from_value (std::ostream & _s, const unsigned int _l = 0)
+          : cpp_generic (_s, _l), fieldname ()
+        {}
+
+        cpp_construct_from_value ( const signature::field_name_t & _fieldname
+                                 , std::ostream & _s
+                                 , const unsigned int _l = 0
+                                 )
+          : cpp_generic (_s, _l), fieldname (_fieldname)
+        {}
+
+        std::ostream & operator () (const literal::type_name_t & t) const
+        {
+          level (l+1); s << "this->" << fieldname << " = value::get<"
+                         << literal::cpp::translate (t)
+                         << "> (v_" << (l-1)
+                         << ");"
+                         << std::endl
+                         ;
+
+          return s;
+        }
+
+        std::ostream & operator () (const structured_t & map) const
+        {
+          for ( structured_t::const_iterator field (map.begin())
+              ; field != map.end()
+              ; ++field
+              )
+            {
+              level (l+1); s << "{" << std::endl;
+
+              level (l+2); s << "const value::type & v_" << l << " "
+                             << "(value::get_level (\"" << field->first << "\""
+                             << ", v_" << (l-1) << "));"
+                             << std::endl;
+
+              boost::apply_visitor
+                ( cpp_construct_from_value (longer (field->first), s, l+1)
+                , field->second
+                );
+
+              level (l+1); s << "}" << std::endl;
+            }
+
+          return s;
+        }
+      };
+    }
+
+    // ********************************************************************** //
+
+    namespace visitor
+    {
+      class cpp_method_value : public cpp_generic
+      {
+      private:
+        signature::field_name_t fieldname;
+        signature::field_name_t levelname;
+
+        signature::field_name_t
+        longer (const signature::field_name_t & sub) const
+        {
+          return fieldname.empty() ? sub : (fieldname + "." + sub);
+        }
+
+      public:
+        cpp_method_value (std::ostream & _s, const unsigned int _l = 0)
+          : cpp_generic (_s, _l), fieldname ()
+        {}
+
+        cpp_method_value ( const signature::field_name_t & _fieldname
+                         , const signature::field_name_t & _levelname
+                         , std::ostream & _s
+                         , const unsigned int _l = 0
+                         )
+          : cpp_generic (_s, _l), fieldname (_fieldname), levelname (_levelname)
+        {}
+
+        std::ostream & operator () (const literal::type_name_t & t) const
+        {
+          level (l); s << "v_" << (l-1) << "[\"" << levelname << "\"]"
+                       << " = " << "this->" << fieldname << ";"
+                       << std::endl;
+
+          return s;
+        }
+
+        std::ostream & operator () (const structured_t & map) const
+        {
+          level (l); s << "{" << std::endl;
+
+          level (l+1); s << "value::structured_t v_" << l << ";"
+                         << std::endl
+                         ;
+
+          for ( structured_t::const_iterator field (map.begin())
+              ; field != map.end()
+              ; ++field
+              )
+            {
+              boost::apply_visitor
+                ( cpp_method_value (longer (field->first), field->first, s, l+1)
+                , field->second
+                );
+            }
+
+          if (fieldname.empty())
+            {
+              level (l+1); s << "return v_" << l << ";" << std::endl;
+            }
+          else
+            {
+              level (l+1); s << "v_" << (l-1) << "[\"" << levelname << "\"]"
+                             << " = " << "v_" << l << ";"
+                             << std::endl;
+            }
+
+          level (l); s << "}" << std::endl;
+
+          return s;
+        }
+      };
+    }
+
+    // ********************************************************************** //
+
+    namespace visitor
+    {
+      class cpp_struct : public cpp_generic
+      {
+      private:
+        fhg::util::maybe<std::string> name;
+
+      public:
+        cpp_struct ( const std::string & _name
+                   , std::ostream & _s
+                   , const unsigned int _l = 0
+                   )
+          : cpp_generic (_s, _l), name (_name)
+        {}
+
+        cpp_struct (std::ostream & _s, const unsigned int _l = 0)
+          : cpp_generic (_s, _l), name ()
         {}
 
         std::ostream & operator () (const literal::type_name_t & t) const
@@ -44,7 +208,14 @@ namespace signature
 
         std::ostream & operator () (const structured_t & map) const
         {
-          s << "struct {" << std::endl;
+          s << "struct ";
+
+          if (name.isJust())
+            {
+              s << *name << " ";
+            }
+
+          s << "{" << std::endl;
 
           for ( structured_t::const_iterator field (map.begin())
               ; field != map.end()
@@ -53,9 +224,30 @@ namespace signature
             {
               level(l+1);
 
-              boost::apply_visitor (cpp_typedef (s, l+1), field->second);
+              boost::apply_visitor (cpp_struct (s, l+1), field->second);
 
               s << " " << fhg::util::show (field->first) << ";" << std::endl;
+            }
+
+          if (name.isJust())
+            {
+              // default constructor
+              level (l+1); s << *name << " () {}" << std::endl;
+
+              // constructor from value::type
+              level (l+1); s << *name
+                             << " (const value::type & v_" << l << ")"
+                             << std::endl;
+
+              level (l+1); s << "{" << std::endl;
+
+              cpp_construct_from_value (s, l+1) (map);
+
+              level (l+1); s << "}" << std::endl;
+
+              // method value
+              level (l+1); s << "value::type value (void) const" << std::endl;
+              cpp_method_value (s, l+1) (map);
             }
 
           level(l); s << "}";
@@ -65,42 +257,30 @@ namespace signature
       };
     }
 
-    inline void cpp_typedef ( std::ostream & os
-                            , const type & s
-                            , const std::string & n
-                            )
+    inline void cpp_struct ( std::ostream & os
+                           , const type & s
+                           , const std::string & n
+                           )
     {
-      os << "typedef ";
+      boost::apply_visitor (visitor::cpp_struct (n, os), s.desc());
 
-      boost::apply_visitor (visitor::cpp_typedef (os), s.desc());
-
-      os << " " << n << ";" << std::endl;
+      os << ";" << std::endl;
     }
 
-    inline void cpp_typedef (std::ostream & os, const type & s)
+    inline void cpp_struct (std::ostream & os, const type & s)
     {
-      cpp_typedef (os, s, s.nice());
+      cpp_struct (os, s, s.nice());
     }
 
     // ********************************************************************** //
 
     namespace visitor
     {
-      class cpp_show : public boost::static_visitor<std::ostream &>
+      class cpp_show : public cpp_generic
       {
       private:
-        std::ostream & s;
         const std::string & field_local;
         const std::string & field_global;
-        const unsigned int l;
-
-        void level (const unsigned int & j) const
-        {
-          for (unsigned int i (0); i < j; ++i)
-            {
-              s << "  ";
-            }
-        }
 
       public:
         cpp_show ( std::ostream & _s
@@ -108,10 +288,9 @@ namespace signature
                  , const std::string & _field_global
                  , const unsigned int _l = 0
                  )
-          : s(_s)
+          : cpp_generic (_s, _l)
           , field_local (_field_local)
           , field_global (_field_global)
-          , l (_l)
         {}
 
         std::ostream & operator () (const literal::type_name_t &) const
@@ -208,8 +387,13 @@ namespace signature
       os << "#include <we/type/literal.hpp>" << std::endl;
       os << "#include <iostream>" << std::endl;
       os << std::endl;
+      os << "// for the constructor from value::type" << std::endl;
+      os << "#include <we/type/value.hpp>" << std::endl;
+      os << "#include <we/type/value/show.hpp>" << std::endl;
+      os << "#include <we/type/value/get.hpp>" << std::endl;
+      os << std::endl;
 
-      cpp_typedef (os, s, n);
+      cpp_struct (os, s, n);
 
       os << std::endl;
 

@@ -12,6 +12,7 @@ main ()
   c._char = 'a';
   c._control = control();
   c._long = 23;
+  c._double = -42.3141;
   c.bitset.ins (23);
   c.h.descr = "h";
   c.h.end.x = 1.0;
@@ -25,6 +26,12 @@ main ()
   c.v.start.y = -1.0;
 
   std::cout << c << std::endl;
+
+  std::cout << c.value() << std::endl;
+
+  cross c2 (c.value());
+
+  std::cout << c2.value() << std::endl;
 
   return EXIT_SUCCESS;
 }

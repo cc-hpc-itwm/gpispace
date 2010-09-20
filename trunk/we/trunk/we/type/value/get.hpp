@@ -80,6 +80,34 @@ namespace value
 
     // ********************************************************************* //
 
+    class get_level : public boost::static_visitor<const type &>
+    {
+    private:
+      const signature::field_name_t & name;
+
+    public:
+      get_level (const signature::field_name_t & _name) : name (_name) {}
+
+      const type & operator () (const structured_t & s) const
+      {
+        structured_t::const_iterator field (s.find (name));
+
+        if (field == s.end())
+          {
+            throw exception::missing_field (name);
+          }
+
+        return field->second;
+      }
+
+      const type & operator () (const literal::type & l) const
+      {
+        throw exception::cannot_get_field_from_literal (name, l);
+      }
+    };
+
+    // ********************************************************************* //
+
     class get_field : public boost::static_visitor<const type &>
     {
     private:
@@ -166,6 +194,13 @@ namespace value
     return boost::apply_visitor (visitor::get<T const &>(), v);
   }
 
+  template <typename T>
+  typename visitor::get<T const &>::result_type
+  get (const type & v)
+  {
+    return boost::apply_visitor (visitor::get<T const &>(), v);
+  }
+
   inline const type &
   get_field (const signature::field_name_t & field, const type & v)
   {
@@ -210,6 +245,12 @@ namespace value
   get<type> (const path_type & path, const type & v)
   {
     return get_field (path, v);
+  }
+
+  inline const type &
+  get_level (const signature::field_name_t & field, const type & v)
+  {
+    return boost::apply_visitor (visitor::get_level (field), v);
   }
 }
 

@@ -26,76 +26,90 @@ struct triangle {
 
   triangle () {}
 
-  triangle (const value::type & v)
+  triangle (const value::type & v_0)
   {
     {
-      value::type point (value::get_field ("point", v));
-
+      const value::type & v_1 (value::get_level ("point", v_0));
       {
-        value::type a (value::get_field ("a", point));
-
-        this->point.a.x = value::get<double> ("x", a);
-        this->point.a.y = value::get<double> ("y", a);
+        const value::type & v_2 (value::get_level ("a", v_1));
+        {
+          const value::type & v_3 (value::get_level ("x", v_2));
+          this->point.a.x = value::get<double> (v_3);
+        }
+        {
+          const value::type & v_3 (value::get_level ("y", v_2));
+          this->point.a.y = value::get<double> (v_3);
+        }
       }
-
       {
-        value::type b (value::get_field ("b", point));
-
-        this->point.b.x = value::get<double> ("x", b);
-        this->point.b.y = value::get<double> ("y", b);
+        const value::type & v_2 (value::get_level ("b", v_1));
+        {
+          const value::type & v_3 (value::get_level ("x", v_2));
+          this->point.b.x = value::get<double> (v_3);
+        }
+        {
+          const value::type & v_3 (value::get_level ("y", v_2));
+          this->point.b.y = value::get<double> (v_3);
+        }
       }
-
       {
-        value::type c (value::get_field ("c", point));
-
-        this->point.c.x = value::get<double> ("x", c);
-        this->point.c.y = value::get<double> ("y", c);
+        const value::type & v_2 (value::get_level ("c", v_1));
+        {
+          const value::type & v_3 (value::get_level ("x", v_2));
+          this->point.c.x = value::get<double> (v_3);
+        }
+        {
+          const value::type & v_3 (value::get_level ("y", v_2));
+          this->point.c.y = value::get<double> (v_3);
+        }
       }
     }
-
-    this->name = value::get<std::string> ("name", v);
+    {
+      const value::type & v_1 (value::get_level ("name", v_0));
+      this->name = value::get<std::string> (v_1);
+    }
   }
 
   value::type value (void) const
   {
-    value::structured_t triangle;
+    value::structured_t v_0;
 
     {
-      value::structured_t point;
+      value::structured_t v_1;
 
       {
-        value::structured_t a;
+        value::structured_t v_2;
 
-        a["x"] = this->point.a.x;
-        a["y"] = this->point.a.y;
+        v_2["x"] = this->point.a.x;
+        v_2["y"] = this->point.a.y;
 
-        point["a"] = a;
+        v_1["a"] = v_2;
       }
 
       {
-        value::structured_t b;
+        value::structured_t v_2;
 
-        b["x"] = this->point.b.x;
-        b["y"] = this->point.b.y;
+        v_2["x"] = this->point.b.x;
+        v_2["y"] = this->point.b.y;
 
-        point["b"] = b;
+        v_1["b"] = v_2;
       }
 
       {
-        value::structured_t c;
+        value::structured_t v_2;
 
-        c["x"] = this->point.c.x;
-        c["y"] = this->point.c.y;
+        v_2["x"] = this->point.c.x;
+        v_2["y"] = this->point.c.y;
 
-        point["c"] = c;
+        v_1["c"] = v_2;
       }
 
-      triangle["point"] = point;
+      v_0["point"] = v_1;
     }
 
-    triangle["name"] = this->name;
+    v_0["name"] = this->name;
 
-    return triangle;
+    return v_0;
   }
 };
 
