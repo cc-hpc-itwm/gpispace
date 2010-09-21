@@ -18,6 +18,7 @@
 #include <Pv4dVM4.h>
 
 #include <fvmAllocator.h>
+#include <fvmAllocatorTypes.h>
 #include <fvmSync.h>
 #include <fvmLogger.h>
 
@@ -31,7 +32,7 @@ static unsigned long fvmMemUsed;
 static unsigned long fvmMemFree;
 static unsigned long numAllocations=0;
 /* sockets to other allocator threads */
-static int sockfd[MAXNODES]; 
+static int sockfd[MAXNODES];
 
 pthread_t allocator_thread;
 
@@ -58,7 +59,7 @@ static int localsockpair[2];
 
 const char *type2str(fvmAllocType_t type)
 {
-      
+
   static const char * const fvm_type_str[] = {
 
     [QUERYGLOBALLOC] = "Query global allocation",
@@ -75,7 +76,7 @@ const char *type2str(fvmAllocType_t type)
     [GLOBALFREE] = "Global deallocation",
     [GLOBALFREEACK] = "global deallocation ack"
   };
-	
+
   if(type < QUERYGLOBALLOC || type > GLOBALFREEACK)
     return "unknown";
 
@@ -102,7 +103,7 @@ static void printAllocRequest(fvmAllocRequest_t request)
 
 static fvmAllocHandle_t buildHandle()
 {
-  static unsigned long myrankUL = myrank;
+  unsigned long myrankUL = myrank;
 
   numAllocations++;
   return (fvmAllocHandle_t) ((myrankUL << 44) | (numAllocations & 0xFFFFFFFFFFFUL));
@@ -155,7 +156,7 @@ static int broadcast(fvmAllocRequest_t *request)
 	fvm_printf("Thread allocator: couldnt send broadcast _complete_ request to allocator %d\n",dst);
     }
     mask >>=1;
-     
+
   }
 
 #ifndef NDEBUGALLOCCOMM
@@ -206,7 +207,7 @@ static int reduce(fvmAllocRequest_t *request)
             request->handle = 0;
   	}
       mask >>=1;
-	
+
     }
 
 
@@ -251,7 +252,7 @@ static HandleReturn_t fvmMMFreeInternal(fvmAllocHandle_t handle, Arena_t arena)
       }
   }
 #ifndef NDEBUGALLOC
-  else 
+  else
     {
       fvm_printf("FVM ALLOCATOR: free failed for handle %lu on arena %d \n", handle, arena);
     }
@@ -303,12 +304,12 @@ static AllocReturn_t fvmMMAllocInternal(size_t size, fvmAllocHandle_t handle, Ar
       dtmmgr_defrag (&dtmmgr, arena ,&fMemmove, NULL, NULL);
       allocReturn = dtmmgr_alloc(&dtmmgr, (Handle_t)handle, arena, size);
     }
-    
+
   if(allocReturn == ALLOC_SUCCESS)
     {
       fvmMemUsed += size;
       fvmMemFree -= size;
-    } 
+    }
 
 #ifndef NDEBUGALLOC
   dtmmgr_status (dtmmgr);
@@ -333,8 +334,8 @@ int fvmGlobalMMFree(fvmAllocHandle_t handle)
   unsigned long currentAllocator ;
   currentAllocator  = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
   fvm_printf("FVM ALLOCATOR: current allocator at start is %lu\n", currentAllocator);
-  
-  //  do {} while (atomicCmpSwapCntVM(0, myrank+1, VMCounter7) != myrank+1);  
+
+  //  do {} while (atomicCmpSwapCntVM(0, myrank+1, VMCounter7) != myrank+1);
   if(currentAllocator  != 0)
     {
       do
@@ -348,7 +349,7 @@ int fvmGlobalMMFree(fvmAllocHandle_t handle)
 	  /* try to update current allocator to be me */
 	  currentAllocator = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
 	  fvm_printf("FVM ALLOCATOR: current allocator after signal %lu\n", currentAllocator);
-	  
+
 	} while(currentAllocator != 0);
     }
 
@@ -428,8 +429,8 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
   unsigned long currentAllocator ;
   currentAllocator  = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
   fvm_printf("FVM ALLOCATOR: current allocator at start is %lu\n", currentAllocator);
-  
-  //  do {} while (atomicCmpSwapCntVM(0, myrank+1, VMCounter7) != myrank+1);  
+
+  //  do {} while (atomicCmpSwapCntVM(0, myrank+1, VMCounter7) != myrank+1);
   if(currentAllocator  != 0)
     {
       do
@@ -443,7 +444,7 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 	  /* try to update current allocator to be me */
 	  currentAllocator = atomicCmpSwapCntVM(0, myrank+1, VMCounter7);
 	  fvm_printf("FVM ALLOCATOR: current allocator after signal %lu\n", currentAllocator);
-	  
+
 	} while(currentAllocator != 0);
     }
  fvm_printf("FVM ALLOCATOR: Proceding with allocation rank: %d \n", myrank);
@@ -484,7 +485,7 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
       /* else proceed with allocation */
 
       else if(request.handle > 0 && request.type == QUERYGLOBALLOCACK){
-	
+
 	/* initiate commit */
 	if((sendMsg2GlobalAllocator(&request, COMMITGLOBALLOC)) == -1)
 	  {
@@ -499,7 +500,7 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 		goto out;
 	      }
 	  }
-	
+
 	if((sendMsg2GlobalAllocator(&request, COMMSTOPGLOBAL)) == -1)
 	  {
 	    request.handle = 0;
@@ -507,14 +508,14 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 	  }
 	else
 	  {
-	    
+
 	    if((recvMsg2GlobalAllocator(&request)) == -1)
 	      {
 		request.handle = 0;
 		goto out;
 	      }
 	  }
-	
+
 	/* tell everyone all is fine */
 	if((sendMsg2GlobalAllocator(&request, COMMITGLOBALLOCACKGLOBALLY)) == -1)
 	  {
@@ -534,8 +535,8 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 #ifndef NDEBUGALLOC
       fvm_printf("Allocation: received handle  %ld\n",request.handle);
 #endif
-      
-      
+
+
       /*release global allocation */
       currentAllocator = atomicCmpSwapCntVM(myrank + 1, 0, VMCounter7);
 /*       fvm_printf("FVM ALLOCATOR: current allocator is %lu\n", currentAllocator); */
@@ -544,7 +545,7 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
 /*       fvm_printf("FVM ALLOCATOR: current allocator after is %lu\n", c); */
 
       fvmCondSignal(&fvmcond_global_alloc);
-      
+
     out:
 
       return request.handle;
@@ -584,7 +585,7 @@ fvmAllocHandle_t fvmLocalMMAlloc(size_t size)
 
   }
 #ifndef NDEBUGALLOC
-  else 
+  else
     {
       fvm_printf("FVM ALLOCATOR: no free mem (%lu) or size (%lu) invalid \n", fvmMemFree, size);
     }
@@ -614,23 +615,23 @@ int fvmLocalMMFree(fvmAllocHandle_t handle)
   /* make sure there's no alloc/free before the free */
   pthread_mutex_lock(&mutex_localAlloc);
   pthread_mutex_lock(&mutex_alloc_in_progress);
-  
+
   /* wait for any on going global allocations */
   while(global_alloc_in_progress > 0)
     pthread_cond_wait(&cond_alloc_in_progress,&mutex_alloc_in_progress);
-  
+
   ++local_alloc_in_progress;
   pthread_mutex_unlock(&mutex_alloc_in_progress);
-  
-  if(fvmMMFreeInternal(handle, ARENA_LOCAL) != RET_SUCCESS) { 
+
+  if(fvmMMFreeInternal(handle, ARENA_LOCAL) != RET_SUCCESS) {
     ret = 1;
   }
-  
+
   pthread_mutex_lock(&mutex_alloc_in_progress);
   --local_alloc_in_progress;
   pthread_cond_signal(&cond_alloc_in_progress);
   pthread_mutex_unlock(&mutex_alloc_in_progress);
-  
+
   pthread_mutex_unlock(&mutex_localAlloc);
 
   allowCommunication();
@@ -645,14 +646,14 @@ static void allocator_thread_exit(void *arg)
 {
   /* clean all resources */
   Size_t bytes = dtmmgr_finalize (&dtmmgr);
-  
+
   pthread_mutex_destroy(&mutex_alloc_in_progress);
   pthread_mutex_destroy(& mutex_localAlloc);
   pthread_cond_destroy(&cond_alloc_in_progress);
-  
+
   fvmCondDestroy(&fvmcond_global_alloc);
   fvmMutexDestroy(&fvmmutex_global_alloc);
-  
+
 }
 
 /* Allocator thread for global allocations */
@@ -670,7 +671,7 @@ void *allocator_thread_f(void * args)
   int listensock;
 
   struct addrinfo hints;
-  struct addrinfo *servinfo, *p;  
+  struct addrinfo *servinfo, *p;
 
   int nbytes;
 
@@ -683,52 +684,52 @@ void *allocator_thread_f(void * args)
   pthread_mutex_init(&mutex_alloc_in_progress,NULL);
   pthread_mutex_init(&mutex_localAlloc,NULL);
   pthread_cond_init(&cond_alloc_in_progress,NULL);
-  
+
   pthread_mutex_init(&mutex_communication,NULL);
   pthread_cond_init(&cond_communication,NULL);
-  
+
  /*  pthread_cleanup_push(allocator_thread_exit, NULL); */
 
-  
-  memset(&hints, 0, sizeof(hints)); 
-  hints.ai_family = AF_INET;     
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = AI_PASSIVE;    
-  
-  FD_ZERO(&master);    
+  hints.ai_flags = AI_PASSIVE;
+
+  FD_ZERO(&master);
   FD_ZERO(&read_fds);
-  
-  
-  for(i=0;i<MAXNODES;i++) 
+
+
+  for(i=0;i<MAXNODES;i++)
     sockfd[i]=-1;
-  
-  
+
+
   fdmax = localsockpair[1];
-  
+
   FD_SET(localsockpair[1],&master); /* add socketpair to own node */
-  
-  
+
+
   /*************************  start listening *********************************************/
-  
-  if ((getaddrinfo(NULL, ALLOCATOR_PORT_REMOTE, &hints, &servinfo)) != 0) 
+
+  if ((getaddrinfo(NULL, ALLOCATOR_PORT_REMOTE, &hints, &servinfo)) != 0)
     {
       pthread_exit(NULL);
     }
-  
-  
+
+
   /* loop through all the results and bind to the first we can */
-  for(p = servinfo; p != NULL; p = p->ai_next) 
+  for(p = servinfo; p != NULL; p = p->ai_next)
     {
       if ((listensock = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
 	{
 	  continue;
 	}
-      
-      if (setsockopt(listensock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) 
+
+      if (setsockopt(listensock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
 	  pthread_exit(NULL);
 	}
-      
+
       if (bind(listensock, p->ai_addr, p->ai_addrlen) == -1)
 	{
 	  close(listensock);
@@ -736,25 +737,25 @@ void *allocator_thread_f(void * args)
 	}
       break;
     }
-  
-  if (p == NULL) 
+
+  if (p == NULL)
     {
       pthread_exit(NULL);
     }
-  
-  freeaddrinfo(servinfo); 
-  
+
+  freeaddrinfo(servinfo);
+
   if (listen(listensock, BACKLOG) == -1)
     {
       pthread_exit(NULL);
     }
-  
+
   /************************************ now build topology ************************************/
-  
+
 #ifndef NDEBUG
   fvm_printf("************ Allocator thread: building topology *************\n");
 #endif
-  
+
 
   /* TODO: why not 2 loops to connect nodes
      for (other = myrank + 1; other < numnode; ++other)
@@ -765,84 +766,84 @@ void *allocator_thread_f(void * args)
 
      instead of the nested loop with the if
   */
-  
+
   for(i=0; i<numnodes; i++)
     {
       /* if it's me, then connect to all nodes after me */
       if(myrank == i)
 	{
-	  
+
 	  for(j=i+1;j<numnodes;j++)
 	    {
-	      
-	      if ((getaddrinfo(hostnames[j], ALLOCATOR_PORT_REMOTE, &hints, &servinfo)) != 0) 
+
+	      if ((getaddrinfo(hostnames[j], ALLOCATOR_PORT_REMOTE, &hints, &servinfo)) != 0)
 		{
 		  pthread_exit(NULL);
 		}
 	      /* loop through all the results and connect to the first we can */
-	      for(p = servinfo; p != NULL; p = p->ai_next) 
+	      for(p = servinfo; p != NULL; p = p->ai_next)
 		{
-		  if ((sockfd[j] = socket(p->ai_family, p->ai_socktype,p->ai_protocol)) == -1) 
+		  if ((sockfd[j] = socket(p->ai_family, p->ai_socktype,p->ai_protocol)) == -1)
 		    {
 		      perror("client: socket");
 		      continue;
 		    }
-		  
-		  if (connect(sockfd[j], p->ai_addr, p->ai_addrlen) == -1) 
+
+		  if (connect(sockfd[j], p->ai_addr, p->ai_addrlen) == -1)
 		    {
-		      close(sockfd[j]); 
+		      close(sockfd[j]);
 		      perror("thread allocator: connect");
 		      continue;
 		    }
 #ifndef NDEBUG
-		  fvm_printf("Thread allocator: connected to node %d\n",j);						
+		  fvm_printf("Thread allocator: connected to node %d\n",j);
 #endif
 		  break;
 		}
-	      
+
 	      if (p == NULL)
 		{
 		  fvm_printf("Thread allocator: error, no usable sockets");
 		  pthread_exit(NULL);
-		  
-		}			
+
+		}
 	      FD_SET(sockfd[j],&master);
 	      if (sockfd[j] > fdmax)
-		{    
+		{
 		  fdmax = sockfd[j];
 		}
 	    }
-	}					
-      
+	}
+
       /* accept connection from nodes before me */
-      if(myrank > i) 
+      if(myrank > i)
 	{
-	  
+
 	  int lfd = -1;
-	  
+
 	  struct sockaddr_in Sender;
 	  socklen_t SenderSize = sizeof(Sender);
-	  
+
 	  if(listensock==-1){
 	    pthread_exit(NULL);
 	  }
-	  
+
 	  lfd = accept(listensock,(struct sockaddr*)&Sender,&SenderSize);
 	  if(lfd == -1)
 	    pthread_exit(NULL);
-	  
+
 	  const char *clientIP = inet_ntoa(Sender.sin_addr);
-	  
+
 	  struct in_addr addr;
 	  addr.s_addr = inet_addr(clientIP);
 	  struct hostent *host;
 	  host = gethostbyaddr((char*)&addr,sizeof(addr),AF_INET);
-	  
+
 	  if(!host)
 	    {
 	      pthread_exit(NULL);
 	    }
-	  
+
 	  const char *hnName = host->h_name;
 
 	  int pos=-1;
@@ -854,17 +855,17 @@ void *allocator_thread_f(void * args)
 		  pos=k;
 		}
 	    }
-	  
+
 	  /* TODO: O(n^2), how safe is strstr? */
-	  
+
 	  if(pos==-1)
 	    {
 	      pthread_exit(NULL);
 	    }
-	  
+
 	  sockfd[pos] = lfd;
 	  FD_SET(sockfd[pos],&master);
-	  if (sockfd[pos] > fdmax) 
+	  if (sockfd[pos] > fdmax)
 	    {
 	      fdmax = sockfd[pos];
 	    }
@@ -877,29 +878,29 @@ void *allocator_thread_f(void * args)
 #ifndef NDEBUG
   fvm_printf("************ Allocator thread: building topology *************\n");
 #endif
-  
+
   /* now just wait for requests */
   for(;;)
     {
       read_fds= master;
-      
+
 #ifndef NDEBUGALLOC
       fvm_printf("Alloc thread: waiting in select\n");
 #endif
-      
+
       if(select(fdmax+1, &read_fds,NULL,NULL,NULL) == -1)
 	{
 	  pthread_exit(NULL);
 	}
-      
+
       for(i=0;i<=fdmax;i++)
 	{
 	  if(FD_ISSET(i,&read_fds)){
-	    
+
 	    fvmAllocRequest_t request;
 	    int ack = 0;
 	    int local = 0;
-	    
+
 	    if(i == localsockpair[1]) /* local request */
 	      local = 1;
 
@@ -912,58 +913,58 @@ void *allocator_thread_f(void * args)
 		  perror("recv");
 		close(i);
 		FD_CLR(i,&master);
-		
+
 	      }
 	    else
-	      { 
-		
+	      {
+
 #ifndef NDEBUGALLOC
 		fvm_printf("------- New request %s\n",(char *) type2str(request.type));
 #endif
-		
+
 		switch(request.type) {
 		case QUERYGLOBALLOC:
-		  
+
 		  if(local)
 		    {
 		      /* I'm initiator of allocation so build handle */
 		      request.handle = buildHandle();
 		      request.root = myrank;
 		    }
-		  
+
 #ifndef NDEBUGALLOC
 		  printAllocRequest(request);
 #endif
 
 		  /* make sure there is no running allocation */
 		  pthread_mutex_lock(&mutex_alloc_in_progress);
-	  
+
 		  while(local_alloc_in_progress > 0)
 		    pthread_cond_wait(&cond_alloc_in_progress,&mutex_alloc_in_progress);
-		  
+
 		  ++global_alloc_in_progress;
 		  pthread_mutex_unlock(&mutex_alloc_in_progress);
 
 		  /* tell other allocators to alloc with the handle */
 		  if(broadcast(&request))
 		    fvm_printf("broadcast failed for request type %s\n",(char *) type2str(request.type));
-		  
-		  
+
+
 		  if(fvmMemFree < request.size || request.size == 0)
 		    {
 		      fvm_printf("NOT enough memory or request of size zero\n");
 		      request.handle = 0;
 		    }
-		  
+
 		  /* reduce to find out whether we can commit or abort */
 		  request.type = QUERYGLOBALLOCACK;
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %s\n",(char *) type2str(request.type));
-		  
+
 #ifndef NDEBUGALLOC
 		  printAllocRequest(request);
 #endif
-		  
+
 		  if(local)
 		    {
 		      /* Im initiator */
@@ -972,22 +973,22 @@ void *allocator_thread_f(void * args)
 			fvm_printf("Thread allocator: couldnt handle to local\n");
 		    }
 		  break;
-		  
-		case ABORTGLOBALLOC:	      
+
+		case ABORTGLOBALLOC:
 		  /* tell other allocators to abort */
 		  if(broadcast(&request))
 		    fvm_printf("broadcast failed for request type %d\n",(int)request.type);
-		  
-		  /* actually abort */		
+
+		  /* actually abort */
 		  pthread_mutex_lock(&mutex_alloc_in_progress);
 		  --global_alloc_in_progress;
 		  pthread_cond_signal(&cond_alloc_in_progress);
 		  pthread_mutex_unlock(&mutex_alloc_in_progress);
-		  
+
 		  request.type = ABORTGLOBALLOCACK;
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %d\n",(int)request.type);
-		  
+
 		  if(local)
 		    {
 		      /* Im initiator */
@@ -996,75 +997,75 @@ void *allocator_thread_f(void * args)
 			fvm_printf("Thread allocator: couldnt handle to local\n");
 		    }
 		  break;
-		  
+
 		case COMMITGLOBALLOC:
 		  /* tell others to commit allocation */
 		  if(broadcast(&request))
 		    fvm_printf("broadcast failed for %d\n",(int)request.type);
-		  
-		  
+
+
 		  deferCommunication();
 		  waitAllCommunication();
-		  
+
 		  request.type = COMMITGLOBALLOCACK;
 		  if(reduce (&request))
 		    fvm_printf("reduce failed for %d\n",(int) request.type);
-		  
+
 		  if(local)
 		    {
 		      if((send(localsockpair[1],&request,sizeof(fvmAllocRequest_t),0)) == -1)
 			fvm_printf("Thread allocator: couldnt handle to local\n");
 		    }
-		  
+
 		  break;
-		  
+
 		case COMMSTOPGLOBAL:
-		  
+
 		  /* tell others that communication is stopped */
 		  if(broadcast(&request))
 		    fvm_printf("broadcast failed for %d\n",(int)request.type);
-		  
-		  
+
+
 		  /* finally can do the allocation */
 		  if(fvmMMAllocInternal(request.size,request.handle,ARENA_GLOBAL) != ALLOC_SUCCESS)
 		    {
 		      fvm_printf("Allocator thread: failed to do allocation\n");
 		      request.handle = 0;
 		    }
-		  
+
 		  request.type = COMMSTOPGLOBALACK;
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %d\n",(int)request.type);
-		  
+
 		  if(local){
 		    /* return handle to fvm process */
 		    if((send(localsockpair[1],&request,sizeof(fvmAllocRequest_t),0)) == -1)
 		      fvm_printf("Thread allocator: couldnt handle to local\n");
 		  }
 		  break;
-		  
+
 		case COMMITGLOBALLOCACKGLOBALLY:
-		  
+
 		  if(broadcast(&request))
 		    fvm_printf("broadcast failed for %d\n",(int)request.type);
-		  
+
 		  allowCommunication();
-		  
+
 		  if(reduce(&request))
 		    fvm_printf("reduce failed for %d\n",(int)request.type);
-		  
+
 		  pthread_mutex_lock(&mutex_alloc_in_progress);
 		  --global_alloc_in_progress;
 		  pthread_cond_signal(&cond_alloc_in_progress);
 		  pthread_mutex_unlock(&mutex_alloc_in_progress);
-		  
+
 		  if(local)
 		    {
 		      if((send(localsockpair[1],&request,sizeof(fvmAllocRequest_t),0)) == -1)
 			fvm_printf("Thread allocator: couldnt handle to local\n");
 		    }
 		  break;
-		  
+
 		  /* TODO: still assuming free is rather problem-less */
 		  /* if one node fails, others do their de-allocation without this knowledge */
 		case GLOBALFREE:
@@ -1075,28 +1076,28 @@ void *allocator_thread_f(void * args)
 
 		  /* tell other allocators to free handle */
 		  if(broadcast(&request))
-		    fvm_printf("broadcast failed for %d\n",(int)request.type);	      
+		    fvm_printf("broadcast failed for %d\n",(int)request.type);
 
-		  
+
 		  deferCommunication();
 		  waitAllCommunication();
-		  
-		  if(fvmMMFreeInternal(request.handle, ARENA_GLOBAL) != RET_SUCCESS) 
-		    { 
+
+		  if(fvmMMFreeInternal(request.handle, ARENA_GLOBAL) != RET_SUCCESS)
+		    {
 		      ack = 1;
 		    }
 		  request.type = GLOBALFREEACK;
 		  if(reduce(&request))
-		    fvm_printf("reduce failed for %d\n",(int)request.type);	      
+		    fvm_printf("reduce failed for %d\n",(int)request.type);
 
 
 		  allowCommunication();
-		  
+
 		  if(local)
 		    /* ack fvm process */
 		    if((send(localsockpair[1],&ack,sizeof(ack),0)) == -1)
 		      fvm_printf("Thread allocator: couldnt ackto local\n");
-		  
+
 		  break;
 		default:
 		  break;
@@ -1110,9 +1111,9 @@ void *allocator_thread_f(void * args)
 
 int fvmMMInit(void * ptr, const size_t length, const int rank, const int nnodes, const char **hosts)
 {
-  
+
   int thread_ret;
-  
+
   myrank = rank;
   numnodes = nnodes;
   hostnames = hosts;
