@@ -5,6 +5,8 @@
 
 mydir=$( cd $( dirname $( which $0 ) ) && pwd  )
 
+PATH="${mydir}:$PATH"
+
 # please set these variables to "meaningful" values on your system
 sdpa_gpi="@GPI_BINARY_DIR@/sdpa-gpi"
 pcd_cfg="${mydir}/../etc/gpi/sdpa-gpi.cfg"
