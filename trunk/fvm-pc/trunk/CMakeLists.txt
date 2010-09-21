@@ -17,8 +17,8 @@ set (FVM_FVM_SIZE "3221225472" CACHE STRING "Default virtual machine size")
 set (FVM_SHM_SIZE "3221225472" CACHE STRING "Default shared memory segment size")
 set (FVM_FAKE_FVM_SIZE "52428800" CACHE STRING "Default fake virtual machine size")
 set (FVM_FAKE_SHM_SIZE "52428800" CACHE STRING "Default fake shared memory segment size")
-set (FVM_MSQ_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/keyfile"  CACHE STRING "Default MSQ file")
-set (FVM_SHM_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/shmemkey" CACHE STRING "Default SHM file")
+set (FVM_MSQ_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/keyfile"  CACHE STRING "Default MSQ file")
+set (FVM_SHM_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/shmemkey" CACHE STRING "Default SHM file")
 
 message(STATUS "FVM config: shmsize=${FVM_SHM_SIZE} fvmsize=${FVM_FVM_SIZE}")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
@@ -105,5 +105,5 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
   ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg
 
-  DESTINATION etc
+  DESTINATION etc/gpi
   COMPONENT configurations)
