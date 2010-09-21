@@ -101,11 +101,11 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile
-  DESTINATION ${FVM_MSQ_FILE}
+  DESTINATION etc/gpi
   COMPONENT configurations
   )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey
-  DESTINATION ${FVM_SHM_FILE}
+  DESTINATION etc/gpi
   COMPONENT configurations
   )
 
