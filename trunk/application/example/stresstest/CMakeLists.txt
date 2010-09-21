@@ -39,7 +39,16 @@ include_directories (${FhgLog_INCLUDE_DIR})
 add_library(stresstest_mod SHARED stresstest.cpp)
 set_target_properties(stresstest_mod PROPERTIES OUTPUT_NAME stresstest)
 
+set (xmls
+  stress.xml
+  stresstest.xml
+  )
+
 install(TARGETS stresstest_mod
   LIBRARY
   DESTINATION libexec
   COMPONENT modules)
+
+install(FILES ${xmls}
+  DESTINATION share/sdpa/xml/stresstest
+  COMPONENT examples)
