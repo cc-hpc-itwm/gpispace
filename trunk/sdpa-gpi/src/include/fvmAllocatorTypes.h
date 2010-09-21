@@ -25,8 +25,10 @@ typedef enum {
   GLOBALFREEACK
 } fvmAllocType_t;
 
+#include <stdint.h>
+
 typedef unsigned long fvmAllocHandle_t;
-typedef unsigned long fvmSize_t;
+typedef uint64_t fvmSize_t;
 
 typedef struct {
   fvmAllocType_t type;
