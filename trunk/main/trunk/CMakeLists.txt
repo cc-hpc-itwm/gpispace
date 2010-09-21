@@ -68,17 +68,17 @@ add_subdirectory(selftest)
 
 ## optional components
 if (ENABLE_MONITOR_GUI)
-  message(STATUS "========== Add project monitor")
+  message(STATUS "=== [ monitor ] ===")
   add_subdirectory(monitor)
 endif (ENABLE_MONITOR_GUI)
 
 if (ENABLE_SDPA_GPI)
-  message(STATUS "========== Add project sdpa-gpi")
+  message(STATUS "=== [ sdpa-gpi ] ===")
   add_subdirectory(sdpa-gpi)
 endif (ENABLE_SDPA_GPI)
 
 if (ENABLE_APPLICATION)
-  message(STATUS "========== Add application")
+  message(STATUS "=== [ applications ] ===")
   add_subdirectory(application)
 endif (ENABLE_APPLICATION)
 
