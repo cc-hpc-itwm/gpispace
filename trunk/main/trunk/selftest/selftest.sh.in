@@ -3,12 +3,13 @@
 # a small tool to test the whole SDPA installation for functionality
 #
 
+mydir=$( cd $( dirname $( which $0 ) ) && pwd  )
+
 # please set these variables to "meaningful" values on your system
 sdpa_gpi="@GPI_BINARY_DIR@/sdpa-gpi"
-libexec="@CMAKE_INSTALL_PREFIX@/libexec"
-pcd_cfg="@GPI_CONFIG_PATH@/fvm.cfg"
+pcd_cfg="${mydir}/../etc/fvm.cfg"
+libexec="${mydir}/../libexec"
 logfile=sdpa-selftest.log
-mydir=$( cd $( dirname $( which $0 ) ) && pwd  )
 
 # these values should already be ok (just make sure PATH is correctly set)
 orch="orchestrator"
