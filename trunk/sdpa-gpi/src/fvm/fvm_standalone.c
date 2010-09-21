@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
   const char *hosts[1024];
 
 #ifdef FVM_CONFIG_PATH
-	char * configpath = FVM_CONFIG_PATH; //hardcoded default
+	const char * configpath = FVM_CONFIG_PATH; //hardcoded default
 #else
-	char * configpath = "/u/herc/machado/bin/fvmconfig"; //hardcoded default
+	const char * configpath = "/u/herc/machado/bin/fvmconfig"; //hardcoded default
 #endif
 
   int optionsParse = 4;
