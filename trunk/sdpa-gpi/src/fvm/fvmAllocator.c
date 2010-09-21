@@ -61,7 +61,7 @@ const char *type2str(fvmAllocType_t type)
 {
 
   static const char * const fvm_type_str[] = {
-
+    /*
     [QUERYGLOBALLOC] = "Query global allocation",
     [QUERYGLOBALLOCACK] = "Query global allocation ack",
     [ABORTGLOBALLOC] = "Abort global allocation",
@@ -75,6 +75,20 @@ const char *type2str(fvmAllocType_t type)
     [LOCALFREE] = " Local deallocation",
     [GLOBALFREE] = "Global deallocation",
     [GLOBALFREEACK] = "global deallocation ack"
+    */
+    "Query global allocation",
+    "Query global allocation ack",
+    "Abort global allocation",
+    "Abort global allocation ack",
+    "Commit global allocation",
+    "Commit global allocation ack",
+    "Communication stop global",
+    "Communication stop global ack",
+    "Commit global allocation globally",
+    "Local allocation",
+    " Local deallocation",
+    "Global deallocation",
+    "global deallocation ack"
   };
 
   if(type < QUERYGLOBALLOC || type > GLOBALFREEACK)
