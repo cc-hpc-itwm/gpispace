@@ -16,8 +16,10 @@ set(V_MINOR 1)
 set(V_PATCH 0)
 
 option (WITH_FAKE_PC "Build with fake virtual machine interface library" ON)
-set (FVM_FVM_SIZE 52428800 CACHE STRING "Default FVM size")
-set (FVM_SHM_SIZE 52428800 CACHE STRING "Default SHM size")
+set (FVM_FVM_SIZE 3221225472 CACHE STRING "Default FVM size" CACHE STRING "Default virtual machine size")
+set (FVM_SHM_SIZE 3221225472 CACHE STRING "Default SHM size" CACHE STRING "Default shared memory segment size")
+set (FVM_FAKE_FVM_SIZE 52428800 CACHE STRING "Default FVM size" CACHE STRING "Default fake virtual machine size")
+set (FVM_FAKE_SHM_SIZE 52428800 CACHE STRING "Default SHM size" CACHE STRING "Default fake shared memory segment size")
 set (FVM_MSQ_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/keyfile"  CACHE STRING "Default MSQ file")
 set (FVM_SHM_FILE "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/shmemkey" CACHE STRING "Default SHM file")
 
@@ -25,30 +27,9 @@ message(STATUS "FVM config: shmsize=${FVM_SHM_SIZE} fvmsize=${FVM_FVM_SIZE}")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
-#include(CheckCompiler)
+include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-      add_definitions("-DNDEBUG")
-    endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
-
-    set(FHG_PROFILE_FLAGS "-pg -fprofile-arcs -ftest-coverage")
-
-    set(CMAKE_CXX_FLAGS "-W -Wall -Wextra -Werror")
-
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-unused")
-
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -fno-omit-frame-pointer")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wreturn-type -Wshadow")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-variable -Wunused-parameter")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wunused-function -Wunused")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Woverloaded-virtual -Wno-system-headers")
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-
-  # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
-  if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-    set(CMAKE_CXX_FLAGS "-wd383 -wd981")
-  endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
+  include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
@@ -68,16 +49,18 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 add_definitions(-DSHMEM -DNDEBUGALLOC -DNDEBUG -DNDEBUGCOMM -DNDEBUGMSG)
 
-if (MAX_SHMEM_SIZE)
-else (MAX_SHMEM_SIZE)
-  set (MAX_SHMEM_SIZE 536870912) # 512 MB
-endif (MAX_SHMEM_SIZE)
-if (MAX_FVM_SIZE)
-else (MAX_FVM_SIZE)
-  set (MAX_FVM_SIZE 536870912) # 512 MB
-endif (MAX_FVM_SIZE)
-add_definitions(-DMAX_SHMEM_SIZE=${MAX_SHMEM_SIZE})
-add_definitions(-DMAX_FVM_SIZE=${MAX_FVM_SIZE})
+if (WITH_FAKE_PC)
+  if (MAX_SHMEM_SIZE)
+  else (MAX_SHMEM_SIZE)
+    set (MAX_SHMEM_SIZE 536870912) # 512 MB
+  endif (MAX_SHMEM_SIZE)
+  if (MAX_FVM_SIZE)
+  else (MAX_FVM_SIZE)
+    set (MAX_FVM_SIZE 536870912) # 512 MB
+  endif (MAX_FVM_SIZE)
+  add_definitions(-DMAX_SHMEM_SIZE=${MAX_SHMEM_SIZE})
+  add_definitions(-DMAX_FVM_SIZE=${MAX_FVM_SIZE})
+endif (WITH_FAKE_PC)
 
 ## check for boost
 set(Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.37" "1.37.0" "1.40" "1.40.0")
@@ -118,9 +101,13 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey.tpl
-              ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile.tpl
-              ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
-        DESTINATION etc
-	COMPONENT configurations
-       )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg)
+install(FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey.tpl
+  ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile.tpl
+  ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
+  ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg
+
+  DESTINATION etc
+  COMPONENT configurations
+  )
