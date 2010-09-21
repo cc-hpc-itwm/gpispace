@@ -45,17 +45,19 @@ const char *op2str(fvmOperation_t op)
 {
 
   static const char * const fvm_op_str[] = {
-
-    [FGLOBALLOC] = "Global allocation",
-    [FGLOBALFREE] = "Global deallocation",
-    [FLOCALLOC] = "Local allocation",
-    [FLOCALFREE] = "Local deallocation",
-    [PUTGLOBAL] = "Put global data",
-    [GETGLOBAL] = "Get global data",
-    [PUTLOCAL] = "Put local data",
-    [GETLOCAL] = "Get local data",
-    [WAITCOMM] = "Wait communication",
-    [LEAVE] = "Leave"
+    "Start operation"
+    , "Global allocation"
+    , "Local allocation"
+    , "Global deallocation"
+    , "Local deallocation"
+    , "Put global data"
+    , "Get global data"
+    , "Put local data"
+    , "Get local data"
+    , "Read DMA"
+    , "Write DMA"
+    , "Wait communication"
+    , "Leave"
   };
 
   if(op < FGLOBALLOC || op > LEAVE)
