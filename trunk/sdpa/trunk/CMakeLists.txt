@@ -186,7 +186,7 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp
   COMPONENT headers)
 INSTALL(FILES etc/sdpac.rc.example
   DESTINATION etc/sdpa
-  COMPONENT configuration)
+  COMPONENT configurations)
 INSTALL(FILES etc/sdpa.env
   DESTINATION etc/sdpa
-  COMPONENT configuration)
+  COMPONENT configurations)
