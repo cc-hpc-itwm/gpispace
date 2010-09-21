@@ -1,9 +1,6 @@
 # -*- mode: cmake; -*-
 project(sdpa_main)
 
-# have the full monty in makefiles
-set(CMAKE_VERBOSE_MAKEFILE false)
-
 include (./version.cmake)
 
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture")

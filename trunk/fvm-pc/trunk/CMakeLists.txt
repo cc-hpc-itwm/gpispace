@@ -8,9 +8,6 @@ endif(POLICY CMP0011)
 project(libfvm-pc)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
-# have the full monty in makefiles
-set(CMAKE_VERBOSE_MAKEFILE true)
-
 set(V_MAJOR 0)
 set(V_MINOR 1)
 set(V_PATCH 0)

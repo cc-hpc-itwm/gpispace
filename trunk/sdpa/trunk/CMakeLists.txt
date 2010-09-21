@@ -7,9 +7,6 @@ endif(POLICY CMP0011)
 
 project(sdpa)
 
-# have the full monty in makefiles
-set(CMAKE_VERBOSE_MAKEFILE true)
-
 if (V_MAJOR)
 else (V_MAJOR)
   set(V_MAJOR 0)

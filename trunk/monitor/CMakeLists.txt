@@ -10,9 +10,6 @@ string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 include (./version.cmake)
 
-# have the full monty in makefiles
-set(CMAKE_VERBOSE_MAKEFILE true)
-
 set(PROJECT_DESCRIPTION "SDPA Monitor GUI")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")

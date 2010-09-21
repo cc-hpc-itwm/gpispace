@@ -10,9 +10,6 @@ string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 include (./version.cmake)
 
-# have the full monty in makefiles
-set(CMAKE_VERBOSE_MAKEFILE true)
-
 option(USE_STL_TR1
  "Use tr1 from stl"
  0)
