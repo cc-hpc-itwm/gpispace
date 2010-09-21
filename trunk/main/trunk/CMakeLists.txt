@@ -20,6 +20,9 @@ OPTION(ENABLE_APPLICATION "Build with application" YES)
 OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
 OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
+
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
