@@ -235,7 +235,8 @@ namespace signature
               level (l+1); s << *name << " () {}" << std::endl;
 
               // constructor from value::type
-              level (l+1); s << *name
+              level (l+1); s << "explicit "
+                             << *name
                              << " (const value::type & v_" << l << ")"
                              << std::endl;
 
@@ -348,7 +349,7 @@ namespace signature
                          , const std::string & n
                          )
     {
-      os << "std::ostream & operator << (std::ostream & s, const "
+      os << "inline std::ostream & operator << (std::ostream & s, const "
          << n << " & x)" << std::endl;
       os << "{" << std::endl;
 
@@ -383,11 +384,11 @@ namespace signature
       os << "#include <string>" << std::endl;
       os << std::endl;
       os << "// for the operator <<" << std::endl;
-      os << "#include <we/type/literal/show.hpp>" << std::endl;
       os << "#include <we/type/literal.hpp>" << std::endl;
+      os << "#include <we/type/literal/show.hpp>" << std::endl;
       os << "#include <iostream>" << std::endl;
       os << std::endl;
-      os << "// for the constructor from value::type" << std::endl;
+      os << "// for the connection to value::type" << std::endl;
       os << "#include <we/type/value.hpp>" << std::endl;
       os << "#include <we/type/value/show.hpp>" << std::endl;
       os << "#include <we/type/value/get.hpp>" << std::endl;
