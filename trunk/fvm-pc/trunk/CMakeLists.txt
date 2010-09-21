@@ -121,5 +121,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey.tpl
               ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile.tpl
               ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
-        DESTINATION etc/
+        DESTINATION etc
+	COMPONENT configurations
        )

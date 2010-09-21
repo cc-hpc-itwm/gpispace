@@ -35,7 +35,16 @@ target_link_libraries (fhgcom ${ZLIB_LIBRARIES})
 target_link_libraries (fhgcom-shared ${ZLIB_LIBRARIES})
 set_target_properties(fhgcom-shared PROPERTIES OUTPUT_NAME fhgcom)
 
-install(FILES ${hdrs} DESTINATION include/fhgcom)
-install(TARGETS fhgcom DESTINATION lib EXPORT ${PROJECT_NAME}Exports)
-install(TARGETS fhgcom-shared DESTINATION lib EXPORT ${PROJECT_NAME}Exports)
+install(FILES ${hdrs}
+  DESTINATION include/fhgcom
+  COMPONENT headers)
+
+install(TARGETS fhgcom
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)
+
+install(TARGETS fhgcom-shared
+  LIBRARY DESTINATION lib
+  COMPONENT libraries)
 

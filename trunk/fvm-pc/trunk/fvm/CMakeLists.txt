@@ -1,4 +1,9 @@
 # -*- mode: cmake; -*-
-file(GLOB hdrs "*.hpp" "*.h")
+set (hdrs
+  fvmAllocatorTypes.h
+  fvm_common.h
+  )
 
-install(FILES ${hdrs} DESTINATION include/fvm)
+install(FILES ${hdrs}
+  DESTINATION include/fvm
+  COMPONENT headers)

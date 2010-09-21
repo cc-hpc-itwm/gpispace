@@ -177,12 +177,19 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
-  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
+  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+  COMPONENT documentation
   )
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp  DESTINATION include/sdpa)
-INSTALL(FILES etc/sdpac.rc.example DESTINATION etc/sdpa)
-INSTALL(FILES etc/sdpa.env DESTINATION etc/sdpa)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp
+  DESTINATION include/sdpa
+  COMPONENT headers)
+INSTALL(FILES etc/sdpac.rc.example
+  DESTINATION etc/sdpa
+  COMPONENT configuration)
+INSTALL(FILES etc/sdpa.env
+  DESTINATION etc/sdpa
+  COMPONENT configuration)
 
 # cpack configuration
 include(InstallRequiredSystemLibraries)

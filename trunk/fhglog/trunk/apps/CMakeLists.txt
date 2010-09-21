@@ -7,6 +7,8 @@ if (WITH_REMOTE_LOGGING)
   target_link_libraries(fhglogd fhglog ${Boost_LIBRARIES})
   target_link_libraries(fhglog-client fhglog ${Boost_LIBRARIES})
 
-  install(TARGETS fhglogd DESTINATION bin)
-#  install(TARGETS fhglog-client DESTINATION bin)
+  install(TARGETS fhglogd
+    RUNTIME
+    DESTINATION bin
+    COMPONENT applications)
 endif (WITH_REMOTE_LOGGING)

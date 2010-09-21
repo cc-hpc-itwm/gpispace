@@ -15,7 +15,12 @@ endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-file(GLOB tc_srcs "*.cpp")
+set (tc_srcs
+  complex_generator.cpp
+  simple_generator.cpp
+  simple_generator_parallel_loadTT.cpp
+  )
+
 list(SORT tc_srcs)
 foreach (tc_src ${tc_srcs})
   # get the filename without extension

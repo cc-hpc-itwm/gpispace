@@ -12,4 +12,5 @@ target_link_libraries(aggregator ${Boost_LIBRARIES})
 
 install(TARGETS aggregator
   RUNTIME
-  DESTINATION bin)
+  DESTINATION bin
+  COMPONENT applications)

@@ -1,6 +1,17 @@
-file(GLOB jobFSM-src *.cpp *.hpp )
+set (hdrs
+  JobFSM.hpp
+  )
 
-ADD_LIBRARY(sdpa-jobFSM_BSC ${jobFSM-src})
+set (srcs
+  Reactions.cpp
+  )
 
-install(FILES ${hdrs} DESTINATION include/sdpa/jobFSM/BSC)
-install(TARGETS sdpa-jobFSM_BSC ARCHIVE DESTINATION lib)
+ADD_LIBRARY(sdpa-jobFSM_BSC ${srcs})
+
+install(FILES ${hdrs}
+  DESTINATION include/sdpa/jobFSM/BSC
+  COMPONENT headers)
+install(TARGETS sdpa-jobFSM_BSC
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)

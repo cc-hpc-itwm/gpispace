@@ -39,4 +39,7 @@ include_directories (${FhgLog_INCLUDE_DIR})
 add_library(put_get_mod SHARED put_get.cpp)
 set_target_properties(put_get_mod PROPERTIES OUTPUT_NAME put_get)
 
-install(TARGETS put_get_mod DESTINATION libexec)
+install(TARGETS put_get_mod
+  LIBRARY
+  DESTINATION libexec
+  COMPONENT modules)

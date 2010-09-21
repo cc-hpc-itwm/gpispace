@@ -119,8 +119,9 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
-  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
+  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+  COMPONENT documentation
 )
 install(EXPORT ${PROJECT_NAME}Exports DESTINATION lib/shared
   FILE ${PROJECT_NAME}Targets.cmake)

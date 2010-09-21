@@ -136,24 +136,30 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
-  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
+  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+  COMPONENT documentation
   )
 
 # install the config
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp
   DESTINATION include/seda
+  COMPONENT headers
 )
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  install(EXPORT ${PROJECT_NAME}Exports DESTINATION lib/shared
-    FILE ${PROJECT_NAME}Targets.cmake)
+  install(EXPORT ${PROJECT_NAME}Exports
+    DESTINATION lib/shared
+    FILE ${PROJECT_NAME}Targets.cmake
+    COMPONENT libraries)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-  DESTINATION lib/shared )
+  DESTINATION lib/shared
+  COMPONENT libraries)
 
 # install pkgconfig file
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc
   DESTINATION lib/pkgconfig
+  COMPONENT libraries
 )
 
 # CPACK packaging

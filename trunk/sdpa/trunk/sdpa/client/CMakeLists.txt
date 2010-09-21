@@ -23,5 +23,10 @@ endif (USE_SMC_SC)
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
 
-install(FILES ${hdrs} DESTINATION include/sdpa/client)
-install(TARGETS sdpa-client ARCHIVE DESTINATION lib)
+install(FILES ${hdrs}
+  DESTINATION include/sdpa/client
+  COMPONENT headers)
+install(TARGETS sdpa-client
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)

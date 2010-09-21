@@ -1,10 +1,54 @@
 # -*- mode: cmake; -*-
 
-file(GLOB hdrs "*.hpp")
-file(GLOB srcs "*.cpp")
+set (hdrs
+  CancelJobAckEvent.hpp
+  CancelJobEvent.hpp
+  Codec.hpp
+  CodecStrategy.hpp
+  ConfigNokEvent.hpp
+  ConfigOkEvent.hpp
+  ConfigReplyEvent.hpp
+  ConfigRequestEvent.hpp
+  DeleteJobAckEvent.hpp
+  DeleteJobEvent.hpp
+  ErrorEvent.hpp
+  EventHandler.hpp
+  id_generator.hpp
+  InterruptEvent.hpp
+  JobEvent.hpp
+  JobFailedAckEvent.hpp
+  JobFailedEvent.hpp
+  JobFinishedAckEvent.hpp
+  JobFinishedEvent.hpp
+  JobResultsReplyEvent.hpp
+  JobStatusReplyEvent.hpp
+  LifeSignEvent.hpp
+  MgmtEvent.hpp
+  QueryJobStatusEvent.hpp
+  RequestJobEvent.hpp
+  RetrieveJobResultsEvent.hpp
+  RunJobEvent.hpp
+  SDPAEvent.hpp
+  sdpa-msg.proto
+  Serialization.hpp
+  StartUpEvent.hpp
+  SubmitJobAckEvent.hpp
+  SubmitJobEvent.hpp
+  WorkerRegistrationAckEvent.hpp
+  WorkerRegistrationEvent.hpp
+  )
 
-include_directories(${PB_INCLUDE_DIR})
-ADD_LIBRARY(sdpa-events ${hdrs} ${srcs})
+set (srcs
+  ErrorEvent.cpp
+  SDPAEvent.cpp
+  )
 
-install(FILES ${hdrs} DESTINATION include/sdpa/events)
-install(TARGETS sdpa-events ARCHIVE DESTINATION lib)
+ADD_LIBRARY(sdpa-events ${srcs})
+
+install(FILES ${hdrs}
+  DESTINATION include/sdpa/events
+  COMPONENT headers)
+install(TARGETS sdpa-events
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)

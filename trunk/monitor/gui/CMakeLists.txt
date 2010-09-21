@@ -21,4 +21,7 @@ target_link_libraries (sdpa-mon
 	${QT_LIBRARIES}
 )
 
-install(TARGETS sdpa-mon DESTINATION bin)
+install(TARGETS sdpa-mon
+  RUNTIME
+  DESTINATION bin
+  COMPONENT applications)

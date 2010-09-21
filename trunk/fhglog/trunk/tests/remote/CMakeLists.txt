@@ -1,5 +1,8 @@
 # -*- mode: cmake; -*-
-file(GLOB tc_srcs "test_*.c" "test_*.cpp")
+set (tc_srcs
+  test_remote_logging.cpp
+  )
+
 list(SORT tc_srcs)
 foreach (tc_src ${tc_srcs})
   # get the filename without extension

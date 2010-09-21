@@ -167,5 +167,12 @@ set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
 #set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
 #target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
-install(TARGETS sinc_mod DESTINATION libexec)
-install(TARGETS kdm_mod kdm_complex_mod DESTINATION libexec)
+install(TARGETS sinc_mod
+  LIBRARY
+  DESTINATION libexec
+  COMPONENT modules)
+
+install(TARGETS kdm_mod kdm_complex_mod
+  LIBRARY
+  DESTINATION libexec
+  COMPONENT modules)

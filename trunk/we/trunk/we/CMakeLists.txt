@@ -1,6 +1,12 @@
 # -*- mode: cmake; -*-
-file(GLOB hdrs "*.hpp")
-install(FILES ${hdrs} DESTINATION include/we)
+set (hdrs
+  net.hpp
+  we.hpp
+  )
+
+install(FILES ${hdrs}
+  DESTINATION include/we
+  COMPONENT headers)
 
 add_subdirectory (concurrent)
 add_subdirectory (container)

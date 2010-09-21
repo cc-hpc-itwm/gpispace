@@ -27,4 +27,8 @@ include_directories (${FhgLog_INCLUDE_DIR})
 add_library(kdm_mod_fake SHARED kdm_complex_mod.cpp)
 set_target_properties(kdm_mod_fake PROPERTIES OUTPUT_NAME kdm_complex)
 
-install(TARGETS kdm_mod_fake DESTINATION libexec/fake)
+install(TARGETS kdm_mod_fake
+  LIBRARY
+  DESTINATION libexec/fake
+  COMPONENT modules
+  )

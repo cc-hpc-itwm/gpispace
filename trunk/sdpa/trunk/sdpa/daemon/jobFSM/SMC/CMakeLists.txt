@@ -19,5 +19,10 @@ set(srcs ${srcs} ${JOBFSM_CPP})
 
 ADD_LIBRARY(sdpa-jobFSM_SMC ${srcs})
 
-install(FILES ${hdrs} DESTINATION include/sdpa/jobFSM/SMC)
-install(TARGETS sdpa-jobFSM_SMC ARCHIVE DESTINATION lib)
+install(FILES ${hdrs}
+  DESTINATION include/sdpa/jobFSM/SMC
+  COMPONENT headers)
+install(TARGETS sdpa-jobFSM_SMC
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)

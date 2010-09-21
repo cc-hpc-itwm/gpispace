@@ -1,8 +1,18 @@
+set (hdrs
+  DaemonFSM.hpp
+  )
 
-file(GLOB daemonFSM-src *.cpp *.hpp)
+set (srcs
+  Reactions.cpp
+  )
 
-ADD_LIBRARY(sdpa-daemonFSM_BSC ${daemonFSM-src})
+ADD_LIBRARY(sdpa-daemonFSM_BSC ${srcs})
 target_link_libraries(sdpa-daemonFSM_BSC sdpa-events sdpa_daemon)
 
-install(FILES ${hdrs} DESTINATION include/sdpa/daemonFSM/BSC)
-install(TARGETS sdpa-daemonFSM_BSC ARCHIVE DESTINATION lib)
+install(FILES ${hdrs}
+  DESTINATION include/sdpa/daemonFSM/BSC
+  COMPONENT headers)
+install(TARGETS sdpa-daemonFSM_BSC
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)

@@ -78,7 +78,9 @@ message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost
 include_directories(${Boost_INCLUDE_DIRS})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp DESTINATION include/fhglog)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
+  DESTINATION include/fhglog
+  COMPONENT headers)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake)
 add_definitions(-DHAVE_CONFIG_H)
@@ -110,17 +112,19 @@ else (DEBUG_FHGLOG)
 endif (DEBUG_FHGLOG)
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS DESTINATION
-  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
+  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+  COMPONENT documentation
 )
-install(EXPORT ${PROJECT_NAME}Exports DESTINATION lib/shared
-  FILE ${PROJECT_NAME}Targets.cmake)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-  DESTINATION lib/shared )
 
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake DESTINATION
-  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
-)
+#install(EXPORT ${PROJECT_NAME}Exports
+#  DESTINATION lib/shared
+#  FILE ${PROJECT_NAME}Targets.cmake
+#  COMPONENT libraries)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+  DESTINATION lib/shared
+  COMPONENT libraries)
 
 # Reflect the package structure
 add_subdirectory(fhglog)

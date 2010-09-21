@@ -15,4 +15,6 @@ set (hdrs
   show.hpp
 )
 
-install(FILES ${hdrs} DESTINATION include/fhgcom/kvs/message)
+install(FILES ${hdrs}
+  DESTINATION include/fhgcom/kvs/message
+  COMPONENT headers)

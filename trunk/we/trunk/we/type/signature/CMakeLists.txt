@@ -2,4 +2,6 @@
 set (hdrs
   cpp.hpp
 )
-install(FILES ${hdrs} DESTINATION include/we/type/signature)
+install(FILES ${hdrs}
+  DESTINATION include/we/type/signature
+  COMPONENT headers)

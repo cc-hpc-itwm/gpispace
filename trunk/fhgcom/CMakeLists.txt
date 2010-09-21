@@ -84,7 +84,9 @@ find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhgcom/fhgcom-config.hpp)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhgcom/fhgcom-config.hpp DESTINATION include/fhgcom)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhgcom/fhgcom-config.hpp
+  DESTINATION include/fhgcom
+  COMPONENT headers)
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -105,8 +107,9 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # add some files to the installation target
-INSTALL(FILES README COPYING DESTINATION
-  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+INSTALL(FILES README COPYING
+  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+  COMPONENT documentation
 )
 
 # Reflect the package structure

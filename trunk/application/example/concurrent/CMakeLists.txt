@@ -39,4 +39,7 @@ include_directories (${FhgLog_INCLUDE_DIR})
 add_library(concurrent_mod SHARED concurrent.cpp)
 set_target_properties(concurrent_mod PROPERTIES OUTPUT_NAME concurrent)
 
-install(TARGETS concurrent_mod DESTINATION libexec)
+install(TARGETS concurrent_mod
+  LIBRARY
+  DESTINATION libexec
+  COMPONENT modules)

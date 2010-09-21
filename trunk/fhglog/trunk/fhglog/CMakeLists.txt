@@ -60,13 +60,23 @@ if (WITH_REMOTE_LOGGING)
     remote/LogServer.cpp
     remote/RemoteAppender.cpp
     )
-  install(FILES ${remote_hdrs} DESTINATION include/fhglog/remote)
+  install(FILES ${remote_hdrs}
+    DESTINATION include/fhglog/remote
+    COMPONENT headers)
 endif (WITH_REMOTE_LOGGING)
 
 ADD_LIBRARY(fhglog ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
 ADD_LIBRARY(fhglog-shared SHARED ${hdrs} ${srcs} ${remote_srcs} ${remote_hdrs})
 set_target_properties(fhglog-shared PROPERTIES OUTPUT_NAME fhglog)
 
-install(FILES ${hdrs} DESTINATION include/fhglog)
-install(TARGETS fhglog DESTINATION lib EXPORT ${PROJECT_NAME}Exports)
-install(TARGETS fhglog-shared DESTINATION lib EXPORT ${PROJECT_NAME}Exports)
+install(FILES ${hdrs}
+  DESTINATION include/fhglog
+  COMPONENT headers)
+install(TARGETS fhglog
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)
+install(TARGETS fhglog-shared
+  LIBRARY
+  DESTINATION lib
+  COMPONENT libraries)

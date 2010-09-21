@@ -1,6 +1,6 @@
 # -*- mode: cmake; -*-
 
-file(GLOB tc_srcs
+set (tc_srcs
    test_append.cpp
    test_compound.cpp
    test_default_config.cpp

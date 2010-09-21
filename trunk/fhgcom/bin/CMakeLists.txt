@@ -15,9 +15,9 @@ target_link_libraries(fhgkvsc fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 install(TARGETS fhgkvsd
   RUNTIME
   DESTINATION bin
-  COMPONENT application)
+  COMPONENT applications)
 
 install(TARGETS fhgkvsc
   RUNTIME
   DESTINATION bin
-  COMPONENT application)
+  COMPONENT applications)

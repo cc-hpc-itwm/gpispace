@@ -8,4 +8,6 @@ set (hdrs
   simple_pipe_elimination.hpp
 )
 
-install(FILES ${hdrs} DESTINATION include/we/type/bits/transition/optimize)
+install(FILES ${hdrs}
+  DESTINATION include/we/type/bits/transition/optimize
+  COMPONENT headers)

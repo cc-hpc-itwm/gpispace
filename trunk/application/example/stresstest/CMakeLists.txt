@@ -39,4 +39,7 @@ include_directories (${FhgLog_INCLUDE_DIR})
 add_library(stresstest_mod SHARED stresstest.cpp)
 set_target_properties(stresstest_mod PROPERTIES OUTPUT_NAME stresstest)
 
-install(TARGETS stresstest_mod DESTINATION libexec)
+install(TARGETS stresstest_mod
+  LIBRARY
+  DESTINATION libexec
+  COMPONENT modules)

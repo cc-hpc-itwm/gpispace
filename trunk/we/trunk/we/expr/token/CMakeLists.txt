@@ -1,3 +1,12 @@
 # -*- mode: cmake; -*-
-file(GLOB hdrs "*.hpp")
-install(FILES ${hdrs} DESTINATION include/we/expr/token)
+set (hdrs
+  assoc.hpp
+  prec.hpp
+  prop.hpp
+  tokenizer.hpp
+  type.hpp
+  )
+
+install(FILES ${hdrs}
+  DESTINATION include/we/expr/token
+  COMPONENT headers)

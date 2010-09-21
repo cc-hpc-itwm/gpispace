@@ -1,3 +1,10 @@
 # -*- mode: cmake; -*-
-file(GLOB hdrs "*.hpp")
-install(FILES ${hdrs} DESTINATION include/we/mgmt/type)
+set (hdrs
+  activity.hpp
+  flags.hpp
+  preference.hpp
+  )
+
+install(FILES ${hdrs}
+  DESTINATION include/we/mgmt/type
+  COMPONENT headers)

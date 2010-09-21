@@ -54,8 +54,9 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 # add some files to the installation target
-INSTALL(FILES README COPYING DESTINATION
-  share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+INSTALL(FILES README COPYING
+  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+  COMPONENT documentation
   )
 
 # cpack configuration
