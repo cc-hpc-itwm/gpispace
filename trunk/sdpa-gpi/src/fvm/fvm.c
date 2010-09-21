@@ -45,16 +45,17 @@ const char *op2str(fvmOperation_t op)
 {
 
   static const char * const fvm_op_str[] = {
-	[FGLOBALLOC] = "Global allocation",
-	[FGLOBALFREE] = "Global deallocation",
-	[FLOCALLOC] = "Local allocation",
-	[FLOCALFREE] = "Local deallocation",
-	[PUTGLOBAL] = "Put global data",
-	[GETGLOBAL] = "Get global data",
-	[PUTLOCAL] = "Put local data",
-	[GETLOCAL] = "Get local data",
-	[WAITCOMM] = "Wait communication",
-	[LEAVE] = "Leave"
+
+    [FGLOBALLOC] = "Global allocation",
+    [FGLOBALFREE] = "Global deallocation",
+    [FLOCALLOC] = "Local allocation",
+    [FLOCALFREE] = "Local deallocation",
+    [PUTGLOBAL] = "Put global data",
+    [GETGLOBAL] = "Get global data",
+    [PUTLOCAL] = "Put local data",
+    [GETLOCAL] = "Get local data",
+    [WAITCOMM] = "Wait communication",
+    [LEAVE] = "Leave"
   };
 
   if(op < FGLOBALLOC || op > LEAVE)
@@ -275,7 +276,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
   fvmOffset_t fvmInitialOffset_Locally;
   void * fvmAddress;
 
-  size_t globalSize;	    
+  size_t globalSize;
   size_t rest = 0;
   size_t currentTransferSize = 0;
   size_t availableSpace;
@@ -296,14 +297,14 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	if(num_handles == MAXHANDLES)
 	{
 	  freeHandle = num_handles;
-	  handles[freeHandle] = COMM_HANDLE_ERROR_TOO_MANY;  
+	  handles[freeHandle] = COMM_HANDLE_ERROR_TOO_MANY;
 	  num_handles = MAXHANDLES;
 	  sendAck(freeHandle);
 	  goto out;
-	}      
+	}
 	else
 	  freeHandle = num_handles;
-  }    
+  }
 
 #ifndef NDEBUGCOMM
   pv4d_printf("FVM: Global Comm %s: new handle for operation is %d\n",op2str(op), freeHandle);
@@ -320,13 +321,13 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
   }
 
 
-#ifndef NBOUNDCHECK 
+#ifndef NBOUNDCHECK
   if (transferSize + shmemOffset > configuration.shmemsize)
   {
 	handles[freeHandle] = COMM_HANDLE_ERROR_SHMEM_BOUNDARY;
 	goto out;
   }
-#endif 
+#endif
 
 
 #ifndef NDEBUGALLOC
@@ -372,7 +373,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 		goto out;
 	}
   }
-  else if (op == PUTLOCAL || op == GETLOCAL) 
+  else if (op == PUTLOCAL || op == GETLOCAL)
   {
 	arena = ARENA_LOCAL;
 	HandleReturn_t dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_LOCAL, &handleOffset, &handleSize);
@@ -444,7 +445,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	}
   }
 
-#ifndef NDEBUGCOMM 
+#ifndef NDEBUGCOMM
   if(arena != ARENA_LOCAL && arena != ARENA_GLOBAL)
   {
 	handles[freeHandle] = COMM_HANDLE_ERROR_ARENA_UNKNOWN;
@@ -463,12 +464,12 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	globalSize = handleSize;
 
 #ifndef NDEBUGCOMM
-  pv4d_printf("GLOBAL comm: transferSize %lu  - globalsize %lu\n", 
+  pv4d_printf("GLOBAL comm: transferSize %lu  - globalsize %lu\n",
 	  transferSize,
 	  globalSize);
 #endif
 
-  if(fvmOffset + transferSize <= globalSize) 
+  if(fvmOffset + transferSize <= globalSize)
   {
 
 	shmemInitialOffset = shmemOffset;
@@ -502,7 +503,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	}
 
 	else if( op == PUTLOCAL)
-	{ 
+	{
 	  pv4d_printf("PUTLOCAL\n");
 
 	  memcpy(((char *)fvmAddress) + fvmInitialOffset, ((char *)shm) + shmemInitialOffset, transferSize);
@@ -513,7 +514,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	{
 	  while (rest > 0)
 	  {
-		offsetRank = fvmInitialOffset / handleSize; 
+		offsetRank = fvmInitialOffset / handleSize;
 
 		fvmInitialOffset_Locally = handleOffset + (fvmInitialOffset % handleSize);
 
@@ -552,13 +553,13 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 		else /* is remote, use scratch space to do a dma and then memcpy it */
 		{
 
-		  if( op == GETGLOBAL) 
+		  if( op == GETGLOBAL)
 		  {
 			/* make sure the scratch handle has enough space */
 			if(currentTransferSize > scratchSize)
 			{
 #ifndef NDEBUGCOMM
-			  pv4d_printf("GETTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
+			  pv4d_printf("GETTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n",
 				  scratchSize,
 				  freeHandle,
 				  currentTransferSize);
@@ -568,9 +569,9 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 			  goto out;
 			}
 
-			readDmaVM(scratchOffset, 
-				handleOffset + (fvmInitialOffset % handleSize), 
-				currentTransferSize, 
+			readDmaVM(scratchOffset,
+				handleOffset + (fvmInitialOffset % handleSize),
+				currentTransferSize,
 				(fvmInitialOffset / handleSize),
 				VMQueue0);
 
@@ -593,22 +594,22 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 			if(currentTransferSize > scratchSize)
 			{
 #ifndef NDEBUGCOMM
-			  pv4d_printf("PUTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n", 
+			  pv4d_printf("PUTGLOBAL Error: scratch space (%lu)  too small for handle %d (%lu) \n",
 				  scratchSize,
 				  freeHandle,
 				  currentTransferSize);
 #endif
 
-			  handles[freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;	  
+			  handles[freeHandle]= COMM_HANDLE_ERROR_SCRATCH_SIZE_TOO_SMALL;
 			  goto out;
 			}
 
 
 			memcpy( ((char *)fvmAddress) + scratchOffset,  ((char *)shm) + shmemInitialOffset, currentTransferSize);
 
-			writeDmaVM(scratchOffset, 
-				handleOffset + (fvmInitialOffset % handleSize), 
-				currentTransferSize, 
+			writeDmaVM(scratchOffset,
+				handleOffset + (fvmInitialOffset % handleSize),
+				currentTransferSize,
 				(fvmInitialOffset / handleSize),
 				VMQueue0);
 
@@ -627,14 +628,14 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	  handles[freeHandle] = COMM_HANDLE_OK;
 	}
   }
-  else 
+  else
   {
 
 	/* put handle in error state */
 	handles[freeHandle] = COMM_HANDLE_ERROR_SIZE_NOT_MATCH;
 	goto out;
   }
-out:	
+out:
   return (handles[freeHandle]);
 
 }
@@ -697,7 +698,7 @@ static void waitCommInternal(fvmCommHandle_t handlecheck)
 
 
 check_switch:
-  switch(handles[handlecheck]) 
+  switch(handles[handlecheck])
   {
 #ifndef NBOUNDCHECK
 	case COMM_HANDLE_ERROR_SHMEM_BOUNDARY:
@@ -764,14 +765,14 @@ int fvmListenRequests()
 	  return (-1);
 	}
 
-#ifndef NDEBUGMSG		
+#ifndef NDEBUGMSG
 	pv4d_printf("PARENT: Request was %s\n",op2str(msg.request.op));
 #endif
 
 	op_request = msg.request;
 
 	switch(op_request.op){
-	  case FGLOBALLOC: 
+	  case FGLOBALLOC:
 
 		{
 		  msgQueueAllocMsg_t allocmsg;
@@ -791,7 +792,7 @@ int fvmListenRequests()
 		  break;
 		}
 
-	  case FGLOBALFREE: 
+	  case FGLOBALFREE:
 		sendAck(fvmFreeInternal(op_request.args.arg_allochandle));
 		break;
 
