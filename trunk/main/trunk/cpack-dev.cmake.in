@@ -2,9 +2,9 @@ set(CPACK_CMAKE_GENERATOR "Unix Makefiles")
 set(CPACK_GENERATOR "TBZ2")
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-     set(CPACK_PACKAGE_NAME "sdpa-dbg")
+     set(CPACK_PACKAGE_NAME "sdpa-dev-dbg")
 else (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-     set(CPACK_PACKAGE_NAME "sdpa")
+     set(CPACK_PACKAGE_NAME "sdpa-dev")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Debug")
 
 set(CPACK_PACKAGE_VENDOR "@PROJECT_VENDOR@")
