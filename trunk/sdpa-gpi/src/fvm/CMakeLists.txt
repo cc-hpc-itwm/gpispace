@@ -3,7 +3,7 @@ set (hdrs
 
 set (srcs
   fvmAllocator.c
-  fvmConfig.
+  fvmConfig.c
   fvmLogger.c
   fvm.c
   fvmSync.c
