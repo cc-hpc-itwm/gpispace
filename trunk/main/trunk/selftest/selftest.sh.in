@@ -7,7 +7,7 @@ mydir=$( cd $( dirname $( which $0 ) ) && pwd  )
 
 # please set these variables to "meaningful" values on your system
 sdpa_gpi="@GPI_BINARY_DIR@/sdpa-gpi"
-pcd_cfg="${mydir}/../etc/fvm.cfg"
+pcd_cfg="${mydir}/../etc/gpi/sdpa-gpi.cfg"
 libexec="${mydir}/../libexec"
 logfile=sdpa-selftest.log
 
