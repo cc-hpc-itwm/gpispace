@@ -99,11 +99,22 @@ endif (BUILD_TESTING)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg)
-install(FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey
-  ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile
-  ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
-  ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg
 
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile
+  DESTINATION ${FVM_MSQ_FILE}
+  COMPONENT configurations
+  )
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey
+  DESTINATION ${FVM_SHM_FILE}
+  COMPONENT configurations
+  )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
   DESTINATION etc/gpi
-  COMPONENT configurations)
+  COMPONENT configurations
+  RENAME sdpa-gpi.cfg)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg
+  DESTINATION etc/gpi
+  COMPONENT configurations
+  RENAME sdpa-gpi.fake.cfg)
