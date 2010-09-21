@@ -7,3 +7,4 @@ clean:
 	$(MAKE) -C datastructures clean
 	$(MAKE) -C fvm clean
 
+.PHONY: all clean
