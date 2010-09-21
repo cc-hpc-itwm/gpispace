@@ -100,11 +100,10 @@ endif (BUILD_TESTING)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/etc/fvm.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg)
 install(FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey.tpl
-  ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile.tpl
+  ${CMAKE_CURRENT_SOURCE_DIR}/etc/shmemkey
+  ${CMAKE_CURRENT_SOURCE_DIR}/etc/keyfile
   ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.cfg
   ${CMAKE_CURRENT_BINARY_DIR}/etc/fvm.fake.cfg
 
   DESTINATION etc
-  COMPONENT configurations
-  )
+  COMPONENT configurations)
