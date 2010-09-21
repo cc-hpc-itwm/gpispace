@@ -36,6 +36,3 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 # Reflect the package structure
 add_subdirectory(fhg)
 add_subdirectory(rewrite)
-
-# cpack configuration
-include(CPack)

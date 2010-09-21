@@ -190,29 +190,3 @@ INSTALL(FILES etc/sdpac.rc.example
 INSTALL(FILES etc/sdpa.env
   DESTINATION etc/sdpa
   COMPONENT configuration)
-
-# cpack configuration
-include(InstallRequiredSystemLibraries)
-set(CPACK_RPM_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
-set(CPACK_RPM_PACKAGE_VENDOR ${PROJECT_VENDOR})
-set(CPACK_RPM_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-set(CPACK_RPM_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_RPM_PACKAGE_VERSION_MAJOR "${V_MAJOR}")
-set(CPACK_RPM_PACKAGE_VERSION_MINOR "${V_MINOR}")
-set(CPACK_RPM_PACKAGE_VERSION_PATCH "${V_PATCH}")
-set(CPACK_RPM_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
-if(WIN32 AND NOT UNIX)
-  # There is a bug in NSI that does not handle full unix paths properly. Make
-  # sure there is at least one set of four (4) backlasshes.
-  #  set(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
-  #  set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\MyExecutable.exe")
-  #  set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} My Famous Project")
-  #  set(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.my-project-home-page.org")
-  #  set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.my-personal-home-page.com")
-  #  set(CPACK_NSIS_CONTACT "me@my-personal-home-page.com")
-  #  set(CPACK_NSIS_MODIFY_PATH ON)
-else(WIN32 AND NOT UNIX)
-  set(CPACK_RPM_SOURCE_STRIP_FILES "")
-endif(WIN32 AND NOT UNIX)
-set(CPACK_BINARY_RPM ON)
-include(CPack)
