@@ -121,6 +121,7 @@ static fvmAllocHandle_t buildHandle()
 
   numAllocations++;
   return (fvmAllocHandle_t) ((myrankUL << 44) | (numAllocations & 0xFFFFFFFFFFFUL));
+  // return (fvmAllocHandle_t) ((myrankUL << 24) | (numAllocations & 0xFFFFFFUL));
 }
 
 
@@ -436,7 +437,7 @@ static int recvMsg2GlobalAllocator(fvmAllocRequest_t *request)
 }
 
 
-fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
+fvmAllocHandle_t fvmGlobalMMAlloc(fvmSize_t size)
 {
 
   fvmAllocRequest_t request;
@@ -566,7 +567,7 @@ fvmAllocHandle_t fvmGlobalMMAlloc(size_t size)
     }
 }
 
-fvmAllocHandle_t fvmLocalMMAlloc(size_t size)
+fvmAllocHandle_t fvmLocalMMAlloc(fvmSize_t size)
 {
 
   fvmAllocHandle_t handle = 0;
