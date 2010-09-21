@@ -77,7 +77,7 @@ if [ x"$sdpa_gpi" != x"$sdpa_gpi_tmp" ] ; then
   exit ${EERR}
 fi
 
-log "initializing selftest..."
+log "initializing selftest (running in ${mydir})..."
 log "starting sdpa-gpi..."
 ${sdpa_gpi} >> ${logfile} 2>&1 &
 sdpa_gpi_pid=$!
