@@ -16,3 +16,11 @@ target_link_libraries (sdpa-gpi
   sdpa-gpi-datastructures
   ${EXT_LIBRARIES})
 
+set_target_properties(sdpa-gpi
+  PROPERTIES
+  INSTALL_RPATH ""
+  )
+install (TARGETS sdpa-gpi
+  RUNTIME
+  DESTINATION bin
+  COMPONENT applications)
