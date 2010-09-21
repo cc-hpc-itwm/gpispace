@@ -8,18 +8,18 @@
 
 
 //all includes
-#include <emmintrin.h>
+//#include <emmintrin.h>
 #include <fcntl.h>
 #include <iostream>
 #include <math.h>
 #include <memory.h>
-#include <mmintrin.h>
+//#include <mmintrin.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <xmmintrin.h>
+//#include <xmmintrin.h>
 #include <float.h>
 
 #include <vector>
