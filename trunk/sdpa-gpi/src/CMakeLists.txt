@@ -8,7 +8,7 @@ add_definitions ("-DNDEBUGCMSG")
 add_definitions ("-DNDEBUGCOMM")
 add_definitions ("-DSHMEM")
 add_definitions ("-DUSE_STL_TR1")
-add_definitions ("-DFVM_CONFIG_PATH=\"${FVM_CONFIG_PATH}\"")
+add_definitions ("-DFVM_CONFIG_PATH=\"${GPI_CONFIG_PATH}\"")
 
 add_subdirectory(datastructures)
 add_subdirectory(fvm)
