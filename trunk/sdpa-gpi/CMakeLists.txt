@@ -26,6 +26,7 @@ message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules"
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext/include)
 include_directories(${CMAKE_INCLUDE_PATH})
 
+set (FVM_CONFIG_PATH "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg" CACHE STRING "path to the sdpa-gpi config file")
 set (EXT_LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/lib64)
 set (EXT_LIBRARIES ${EXT_LIBRARIES} ${EXT_LIBRARY_DIR}/libibverbs12.so)
 set (EXT_LIBRARIES ${EXT_LIBRARIES} ${EXT_LIBRARY_DIR}/libPv4dVM4.a)
