@@ -1,11 +1,17 @@
 set (hdrs
-  error.hpp
-  parser.cpp
-  parser.hpp
-  state.hpp
-  types.hpp
-  util.hpp
-  warning.hpp
+  cdata.hpp
+  expect.hpp
+  name_element.hpp
+  optional.hpp
+  property.hpp
+  required.hpp
+  show_node_type.hpp
+  skip.hpp
+  unique.hpp
+  valid_name.hpp
+  validprefix.hpp
+  validstructfield.hpp
+  weparse.hpp
   )
 
 install (FILES ${hdrs}
