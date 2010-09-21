@@ -4,10 +4,11 @@
 #
 
 # please set these variables to "meaningful" values on your system
-sdpa_gpi="/opt/cluster/GPI/bin/petry/sdpa-gpi"
-libexec="/p/herc/itwm/hpc/soft/sdpa/ap/gcc/libexec"
-pcd_cfg="/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg"
+sdpa_gpi="@GPI_BINARY_DIR@/sdpa-gpi"
+libexec="@CMAKE_INSTALL_PREFIX@/libexec"
+pcd_cfg="@GPI_CONFIG_PATH@/fvm.cfg"
 logfile=sdpa-selftest.log
+mydir=$( cd $( dirname $( which $0 ) ) && pwd  )
 
 # these values should already be ok (just make sure PATH is correctly set)
 orch="orchestrator"
