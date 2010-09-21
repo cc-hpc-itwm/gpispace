@@ -2,16 +2,21 @@
 #
 # a small tool to test the whole SDPA installation for functionality
 #
+
+# please set these variables to "meaningful" values on your system
 sdpa_gpi="/opt/cluster/GPI/bin/petry/sdpa-gpi"
+libexec="/p/herc/itwm/hpc/soft/sdpa/ap/gcc/libexec"
+pcd_cfg="/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg"
+logfile=sdpa-selftest.log
+
+# these values should already be ok (just make sure PATH is correctly set)
 orch="orchestrator"
 agg="aggregator"
 nre="nre"
 pcd="nre-pcd"
 pnetc="pnetc"
 sdpac="sdpac"
-job="stresstest.xml"
-
-logfile=/tmp/sdpa-selftest.log
+jobdesc="selftest.pnet"
 
 # error codes:
 ESUC=0
@@ -61,6 +66,15 @@ function shutdown()
 trap shutdown EXIT
 
 :> ${logfile}
+
+sdpa_gpi_tmp=$( which ${sdpa_gpi} )
+if [ x"$sdpa_gpi" != x"$sdpa_gpi_tmp" ] ; then
+  log "Please make sure, that you specify the full path to the sdpa-gpi binary!"
+  log "Currently set to: ${sdpa_gpi}"
+  log "output of 'which $sdpa_gpi': $sdpa_gpi_tmp"
+  exit ${EERR}
+fi
+
 log "initializing selftest..."
 log "starting sdpa-gpi..."
 ${sdpa_gpi} >> ${logfile} 2>&1 &
@@ -95,12 +109,7 @@ else
 	log "OK"
 fi
 
-fvm_pc_cfg="/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg"
-if [ -n "$SDPA_FVM_PC_CFG" ]; then
-  fvm_pc_cfg="$SDPA_FVM_PC_CFG"
-fi
-
-log "reading PCD config from $fvm_pc_cfg..."
+log "reading PCD config from $pcd_cfg..."
 while read k v; do
     case "$k" in
         SHMSZ)
@@ -120,10 +129,10 @@ while read k v; do
             export FVM_PC_SHM="$v"
             ;;
     esac
-done < "$fvm_pc_cfg"
+done < "$pcd_cfg"
 
 log "starting process-container..."
-${pcd} --rank "0" --load "/p/herc/itwm/hpc/soft/sdpa/ap/gcc/libexec/libfvm-pc.so" -a /p/herc/itwm/hpc/soft/sdpa/ap/gcc/libexec >> ${logfile} 2>&1 &
+${pcd} --rank "0" --load "${libexec}/libfvm-pc.so" -a "${libexec}" >> ${logfile} 2>&1 &
 pcd_pid=$!
 sleep 1
 if ! is_alive "pcd" $pcd_pid ; then
@@ -143,8 +152,28 @@ if ! is_alive "nre" $nre_pid ; then
 else
 	log "OK"
 fi
-log "submitting job..."
-jobid=$( ${sdpac} submit selftest.pnet )
+log "submitting job ${jobdesc}..."
+jobid=$( ${sdpac} submit ${jobdesc} 2>&1 )
+if [ $? -ne 0 ] ; then
+  log "Could not submit job: $jobid"
+  exit ${ESUB}
+fi
 log "JOB-ID := $jobid"
-log "waiting for job to return..."
-${sdpac} wait $jobid
+
+MAX=15
+S=
+for (( i=0; i < $MAX; i++ )) ; do
+  S=$( ${sdpac} status ${jobid} )
+  log "status: $S"
+  if echo $S | grep -q -i 'finish' ; then
+	break
+  fi
+  sleep 1
+done
+if echo $S | grep -q -i 'finish' ; then
+  log "Congratulations, everything seems to work!"
+  exit ${ESUC}
+else
+  log "Submitted job did not return within $MAX seconds!"
+  exit ${ESUB}
+fi
