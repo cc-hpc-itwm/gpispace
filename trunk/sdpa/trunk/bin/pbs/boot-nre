@@ -4,10 +4,14 @@ if [ ! -r "$PBS_NODEFILE" ]; then
   exit 2
 fi
 
-ps aux | grep -q "[f]vm_sdpa_standalone"
+ps aux | grep -q "[s]dpa-gpi"
 if [ $? -ne 0 ]; then
-  echo "E: FVM is not running, please start it first!"
-  exit 2
+  echo "W: GPI is not running, checking for fvm!"
+  ps aux | grep -q "[f]vm_sdpa_standalone"
+  if [ $? -ne 0 ] ; then
+	echo "F: FVM is not running, please start either sdpa-gpi or fvm_sdpa_standalone!"
+	exit 2
+  fi
 fi
 
 trap 'wait; exit 0' INT
