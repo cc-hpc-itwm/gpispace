@@ -337,6 +337,11 @@ int CheckReadMigrationJob::ReadConfigFileXML(char* ConfigFileName, MigrationJob&
   char* FrequencyString = new char[10000];
   FrequencyString[0] = 0;
 
+  if (!ReadXML(Reader, "Migration/SeismicData/clip", Job.clip, false))
+    Job.clip = -1.f;
+  if (!ReadXML(Reader, "Migration/SeismicData/trap", Job.trap, false))
+    Job.trap = -1.f;
+
   if (ReadXML(Reader, "Migration/SeismicData/BandPass", FrequencyString, false))
   {
     printf("frequency string: <%s>\n", FrequencyString);
@@ -529,7 +534,9 @@ int CheckReadMigrationJob::WriteConfigFileXML(char* ConfigFileName, MigrationJob
   ConfigFile << "      <N0CDPy>" << Job.N0CDPy << "</N0CDPy>" << std::endl;
   ConfigFile << "      <NCDPy>" << Job.NCDPy << "</NCDPy>" << std::endl;
   ConfigFile << "      <CDPdy>" << Job.CDPdy << "</CDPdy>" << std::endl;
-  ConfigFile << "       <BandPass>" << Job.frequ1 << "," << Job.frequ2 << "," << Job.frequ3 << "," << Job.frequ4 << "</BandPass>\n";
+  ConfigFile << "      <clip>" << Job.clip << "</clip>\n";
+  ConfigFile << "      <trap>" << Job.trap << "</trap>\n";
+  ConfigFile << "      <BandPass>" << Job.frequ1 << "," << Job.frequ2 << "," << Job.frequ3 << "," << Job.frequ4 << "</BandPass>\n";
   ConfigFile << "    </SeismicData>\n";
 
   ConfigFile << std::endl;

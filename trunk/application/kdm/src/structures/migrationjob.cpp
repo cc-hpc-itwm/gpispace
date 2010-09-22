@@ -62,6 +62,11 @@ MigrationJob::MigrationJob()
 
   use_sstacks = false;
 
+  frequ1 = frequ2 = frequ3 = frequ4 = -1.f;
+
+  clip = -1.f;
+  trap = -1.f;
+
   /// Modifications by Daniel Grünewald
 
   /// SDPA control parameters
@@ -238,6 +243,9 @@ MigrationJob::MigrationJob(const MigrationJob& Job)
   frequ3 = Job.frequ3;
   frequ4 = Job.frequ4;
 
+  clip = Job.clip;
+  trap = Job.trap;
+
   use_sstacks = Job.use_sstacks;
   n_azimuths = Job.n_azimuths;
   n_inclinations = Job.n_inclinations;
@@ -391,6 +399,9 @@ MigrationJob& MigrationJob::operator=(const MigrationJob& Job)
   frequ2 = Job.frequ2;
   frequ3 = Job.frequ3;
   frequ4 = Job.frequ4;
+
+  clip = Job.clip;
+  trap = Job.trap;
 
   use_sstacks = Job.use_sstacks;
   n_azimuths = Job.n_azimuths;

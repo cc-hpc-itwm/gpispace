@@ -183,6 +183,9 @@ public:
   /** Band pass Frequencies */
   float frequ1, frequ2, frequ3, frequ4;
 
+  float clip;
+  float trap;
+
   /// Slant stack information
   bool use_sstacks;
   char SlantStackFileName[1000];

@@ -144,6 +144,10 @@ set (STANDALONE_SRCS src/standalone.cpp
 	./src/utils/sincinterpolator.cpp
  )
 
+set (FILTER_MOD_SRCS src/filter_mod.cpp
+     ${STANDALONE_SRCS}
+    )
+
 set(SINC_INT_MOD_SRCS
 	./src/sinc_mod.cpp
 	./src/utils/sincinterpolator.cpp
@@ -174,6 +178,9 @@ set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
 #target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 #target_link_libraries (kdm_complex_mod sinc_mod)
 
+add_library(filter_mod SHARED ${FILTER_MOD_SRCS})
+set_target_properties(filter_mod PROPERTIES OUTPUT_NAME filter)
+
 add_executable(standalone_test ${STANDALONE_SRCS})
 target_link_libraries(standalone_test pthread)
 
@@ -181,7 +188,7 @@ target_link_libraries(standalone_test pthread)
 #set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
 #target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
-install(TARGETS sinc_mod
+install(TARGETS sinc_mod filter_mod
   LIBRARY
   DESTINATION libexec
   COMPONENT modules)
