@@ -1,5 +1,35 @@
-file(GLOB hdrs "*.hpp")
-file(GLOB srcs "*.cpp")
+set (hdrs
+  exceptions.hpp
+  GenericDaemonActions.hpp
+  GenericDaemon.hpp
+  IComm.hpp
+  IWorkflowEngine.hpp
+  JobFSMActions.hpp
+  Job.hpp
+  JobImpl.hpp
+  JobManager.hpp
+  NotificationEvent.hpp
+  NotificationService.hpp
+  Observable.hpp
+  Observer.hpp
+  Scheduler.hpp
+  SchedulerImpl.hpp
+  SynchronizedQueue.hpp
+  Worker.hpp
+  WorkerManager.hpp
+  )
+
+set (srcs
+  GenericDaemon.cpp
+  Job.cpp
+  JobEventHandlers.cpp
+  JobImpl.cpp
+  JobManager.cpp
+  SchedulerImpl.cpp
+  SynchronizedQueue.cpp
+  Worker.cpp
+  WorkerManager.cpp
+  )
 
 add_subdirectory(orchestrator)
 add_subdirectory(aggregator)
