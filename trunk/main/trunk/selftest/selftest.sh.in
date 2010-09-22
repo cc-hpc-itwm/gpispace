@@ -75,8 +75,26 @@ sdpa_gpi_tmp=$( which ${sdpa_gpi} )
 if [ x"$sdpa_gpi" != x"$sdpa_gpi_tmp" ] ; then
   log "Please make sure, that you specify the full path to the sdpa-gpi binary!"
   log "Currently set to: ${sdpa_gpi}"
-  log "output of 'which $sdpa_gpi': $sdpa_gpi_tmp"
-  exit ${EERR}
+  read -t 10 -n 1 -p "Do you want me to copy ${mydir}/sdpa-gpi to ${sdpa_gpi}? [y/N] "
+  case "$REPLY" in
+    y|Y)
+      echo
+      log "/bin/cp \"${mydir}/sdpa-gpi\" \"${sdpa_gpi}\""
+      /bin/cp "${mydir}/sdpa-gpi" "${sdpa_gpi}"
+      if [ $? != 0 ]; then
+        log "copy operation failed with code: $?"
+        exit ${ERRR}
+      fi
+      ;;
+    ?*)
+      echo
+      exit ${EERR}
+      ;;
+    *)
+      log "timeout"
+      exit ${EERR}
+      ;;
+  esac
 fi
 
 log "initializing selftest (running in ${mydir})..."
