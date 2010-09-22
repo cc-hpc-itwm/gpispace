@@ -111,8 +111,22 @@
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="bunch"  port="bunch" />
+      <connect-out  port="bunch"   place="trigger_clip" />
+    </transition>
+    <place name="trigger_clip" type="BUNCH"/>
+
+    <transition name="clip">
+      <defun>
+        <in name="bunch" type="BUNCH"/>
+        <in name="config" type="CONFIG" />
+        <out name="bunch" type="BUNCH" />
+        <module name="clip" function="clip"/>
+      </defun>
+      <connect-read place="config" port="config" />
+      <connect-in   place="trigger_clip"  port="bunch" />
       <connect-out  port="bunch"   place="trigger_process" />
     </transition>
+
     <place name="trigger_process" type="BUNCH"/>
 
     <transition name="process">

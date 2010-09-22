@@ -9,5 +9,10 @@
     <field name="NThreads" type="long" />
     <field name="PARALLEL_LOADTT" type="long"/>
     <field name="VOLUME_CREDITS" type="long"/>
+
+    <struct name="filter">
+      <field name="clip" type="double"/>
+      <field name="trap" type="double"/>
+    </struct>
   </struct>
 </structs>
