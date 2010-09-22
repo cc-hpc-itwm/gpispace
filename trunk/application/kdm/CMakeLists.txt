@@ -133,6 +133,8 @@ set (KDM_COMPLEX_MOD_SRCS src/kdm_complex_mod.cpp
   ${KDM_MOD_PROCESS_SRCS}
 )
 
+set (STANDALONE_SRCS src/standalone.cpp)
+
 set(SINC_INT_MOD_SRCS
 	./src/sinc_mod.cpp
 	./src/utils/sincinterpolator.cpp
@@ -162,6 +164,8 @@ add_library(kdm_complex_mod SHARED ${KDM_COMPLEX_MOD_SRCS})
 set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
 #target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 #target_link_libraries (kdm_complex_mod sinc_mod)
+
+add_executable(standalone_test ${STANDALONE_SRCS})
 
 #add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
 #set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
