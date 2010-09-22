@@ -120,7 +120,7 @@
         <in name="bunch" type="BUNCH"/>
         <in name="config" type="CONFIG" />
         <out name="bunch" type="BUNCH" />
-        <module name="clip" function="clip"/>
+        <module name="filter" function="clip"/>
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="trigger_clip"  port="bunch" />
