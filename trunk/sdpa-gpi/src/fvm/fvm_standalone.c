@@ -41,10 +41,10 @@ int main(int argc, char *argv[])
 
   const char *hosts[1024];
 
-#ifdef FVM_CONFIG_PATH
-	const char * configpath = FVM_CONFIG_PATH; //hardcoded default
+#ifdef GPI_CONFIG_PATH
+	const char * configpath = GPI_CONFIG_PATH; //hardcoded default
 #else
-	const char * configpath = "/u/herc/machado/bin/fvmconfig"; //hardcoded default
+#   error "GPI_CONFIG_PATH must be defined in order to compile this file!"
 #endif
 
   int optionsParse = 4;
