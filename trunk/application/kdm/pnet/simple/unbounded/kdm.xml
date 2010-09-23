@@ -150,7 +150,7 @@
           <place name="config" type="CONFIG" />
           <place name="volume_out" type="VOLUME" />
 
-          <transition name="wrap_process_volume">
+          <transition name="process_volume">
             <include-function href="process.xml" />
             <connect-in place="volume" port="volume" />
             <connect-in place="config" port="config" />
