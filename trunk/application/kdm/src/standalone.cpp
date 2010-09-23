@@ -25,6 +25,81 @@
 #include <stdlib.h>
 
 
+static void bandpass_impl (TraceBunch & Bunch, 
+			   const float & frequ1, const float & frequ2, const float & frequ3, const float & frequ4)
+{
+//     if ( (frequ1 < 0.f) || (frequ2 < 0.f) || (frequ3 < 0.f) && (frequ4 < 0.f))
+// 	throw std::runtime_error ("bandpass called but not configured");
+
+    const int NTraces( Bunch.getNTB() );
+    if (NTraces <= 0)
+	return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+    const int NSample = Bunch.getTrace(0)->getNt();
+    const float dt = Bunch.getTrace(0)->getdtbin();
+
+    const int Nfft = getptz(NSample);
+
+    // initialize the band pass filter for each sample
+    float * filterarray = new float[Nfft];
+    for (int iarray = 0; iarray < Nfft; iarray++)
+    { 
+	const float frequ( iarray/(dt*Nfft) );
+
+	filterarray [iarray] = 1.0f;
+	if ( (frequ < frequ1) || (frequ >= frequ4))
+	    filterarray[iarray] = 0;
+	else
+	    if ( (frequ >= frequ1) && (frequ < frequ2))
+	    {
+		const float val = (frequ - frequ1)/(frequ2-frequ1);
+		const float s_val = sinf((2*val-1)*M_PI/2);
+		filterarray [iarray] =  0.25f*(s_val + 1.f)*(s_val + 1.f);
+	    }
+	    else
+		if ( (frequ >= frequ3) && (frequ < frequ4))
+		{
+		    const float val = (frequ4 - frequ)/(frequ4-frequ3);
+		    const float s_val = sinf((2*val-1)*M_PI/2);
+		    filterarray [iarray] =  0.25f*(s_val + 1.f)*(s_val+ 1.f);
+		}
+    }
+
+    float * fftarray = new float[2*Nfft];
+
+    for(int i=0; i< NTraces; i++)
+    {
+	volatile char * pTraceData = Bunch.getTrace(i)->getDataPtr();
+	TraceData Trace(pTraceData,NSample);
+	
+	float* Data_ptr = (float*) Trace.getTPtr();
+
+	memset(fftarray, 0, 2*Nfft*sizeof(float));
+	for (int it = 0; it < NSample; it++)
+	{
+	    fftarray[2*it] = Data_ptr[it];
+	}
+	
+	fft(-1, Nfft, fftarray);
+	for (int iarray = 0; iarray < Nfft; iarray++)
+	{
+	    const float newim = fftarray[2*iarray]  * filterarray[iarray];
+	    const float newre = -fftarray[2*iarray+1] * filterarray[iarray];
+	    fftarray[2*iarray] = newre;
+	    fftarray[2*iarray+1] = newim;
+	}
+	fft(1, Nfft, fftarray);
+	
+	for (int it = 0; it < NSample; it++)
+	    Data_ptr[it] = fftarray[2*it]/Nfft;
+    }
+
+    delete[] fftarray;
+    delete[] filterarray;
+}
+
 // ---------------------------------------------
 // dummy in-place Bunch-in -- Bunch-out function
 void Manipulate( TraceBunch& Bunch )
@@ -57,14 +132,14 @@ int main(int argc, char *argv[])
 
     // initialize a bunch of traces
     const int Ntrace = 10;
-    const int Nt = 15;
+    const int Nt = 1500;
     char * pTraceData = new char[Ntrace * ( sizeof(int)+7*sizeof(float) + 5*Nt*sizeof(float))];
     for (int itrace = 0; itrace < Ntrace; itrace++)
     {
 	{ // set the header values
 	    char* Header_ptr = &pTraceData[itrace  * ( sizeof(int)+7*sizeof(float) + 5*Nt*sizeof(float))];
-	    *((int*)(Header_ptr)) = 4000;
-	    *((float*)(Header_ptr + sizeof(int))) = 0.f;
+	    *((int*)(Header_ptr)) = Nt;
+	    *((float*)(Header_ptr + sizeof(int))) = 0.004f;
 	    *((float*)(Header_ptr + sizeof(int) + 1*sizeof(float))) = Nt * 0.004f;
 	    *((float*)(Header_ptr + sizeof(int) + 2*sizeof(float))) = 0.f;
 	    *((float*)(Header_ptr + sizeof(int) + 3*sizeof(float))) = 0.f;
@@ -77,7 +152,7 @@ int main(int argc, char *argv[])
 	    float* Data = (float*) (&pTraceData[itrace  * ( sizeof(int)+7*sizeof(float) + 5*Nt*sizeof(float)) + sizeof(int)+7*sizeof(float)]);
 	    for (int isample = 0; isample < Nt; isample++)
 	    {
-		Data[isample] = itrace + isample;
+		Data[isample] = ((itrace + isample) == Nt/2)?1.f:0.f;
 	    }
 	}
     }
@@ -102,10 +177,16 @@ int main(int argc, char *argv[])
     // generate my dummy Bunch
     TraceBunch MyBunch(pTraceData, oid, pid, bid, Job);
 
+//     // ------------------
+//     // call to the in-place Bunch-in -- Bunch-out function
+//     std::cout << "\nCall the in-place Bunch-in -- Bunch-out function.\n\n";
+//     Manipulate(MyBunch);
+//     // ------------------
+
     // ------------------
     // call to the in-place Bunch-in -- Bunch-out function
     std::cout << "\nCall the in-place Bunch-in -- Bunch-out function.\n\n";
-    Manipulate(MyBunch);
+    bandpass_impl(MyBunch, 0.f, 20.f, 30.f, 40.f);
     // ------------------
 
 
