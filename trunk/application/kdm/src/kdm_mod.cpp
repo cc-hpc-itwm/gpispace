@@ -198,6 +198,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   put (output, "config", "filter.clip", static_cast<double>(Job.clip));
   put (output, "config", "filter.trap", static_cast<double>(Job.trap));
+  put (output, "config", "filter.tpow", static_cast<double>(Job.tpow));
 
   LOG (DEBUG, "initialize: config = " << get<value::type>(output, "config"));
 }

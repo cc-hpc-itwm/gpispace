@@ -13,6 +13,7 @@
     <struct name="filter">
       <field name="clip" type="double"/>
       <field name="trap" type="double"/>
+      <field name="tpow" type="double"/>
     </struct>
   </struct>
 </structs>
