@@ -1,0 +1,73 @@
+<defun name="loadTTHUHU">
+  <in name="config" type="CONFIG" place="config"/>
+  <out name="config" type="CONFIG" place="config_out"/>
+  <net>
+    <place name="config" type="CONFIG"/>
+    <place name="config_loadTT" type="CONFIG"/>
+    <place name="config_out" type="CONFIG"/>
+    <place name="done" type="control"/>
+    <place name="doneTT" type="control"/>
+    <place name="parallel" type="long"/>
+    <place name="id" type="long"/>
+    <place name="wait" type="long"/>
+
+    <transition name="initialize">
+      <defun>
+        <in name="config" type="CONFIG"/>
+        <out name="config_out" type="CONFIG"/>
+        <out name="parallel" type="long"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${parallel} := ${config.PARALLEL_LOADTT};
+          ${wait} := ${parallel};
+          ${config_out} := ${config}
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="config_out" place="config_loadTT"/>
+      <connect-out port="parallel" place="parallel"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="parallel"/>
+      <connect-out port="out" place="id"/>
+    </transition>
+
+    <transition name="loadTT">
+      <defun>
+        <in name="config" type="CONFIG"/>
+        <in name="id" type="long"/>
+        <out name="done" type="control"/>
+        <module name="kdm" function="loadTT"/>
+      </defun>
+      <connect-read port="config" place="config_loadTT"/>
+      <connect-in port="id" place="id"/>
+      <connect-out port="done" place="doneTT"/>
+    </transition>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_control" use="wait">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_control"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="trigger" place="doneTT"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <transition name="out">
+      <defun>
+        <in name="config" type="CONFIG"/>
+        <out name="config" type="CONFIG"/>
+        <in name="trigger" type="control"/>
+      </defun>
+      <connect-in port="config" place="config_loadTT"/>
+      <connect-in port="trigger" place="done"/>
+      <connect-out port="config" place="config_out"/>
+    </transition>
+  </net>
+</defun>

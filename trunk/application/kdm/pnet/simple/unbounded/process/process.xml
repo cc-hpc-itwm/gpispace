@@ -1,0 +1,55 @@
+<defun name="process_bunch">
+  <include-structs href="types.xml"/>
+
+  <in name="bunch" type="BUNCH"  place="bunch"/>
+  <in name="config" type="CONFIG"  place="config"/>
+  <out name="bunch"  type="BUNCH" place="bunch_done"/>
+
+  <net>
+    <place name="config" type="CONFIG" />
+
+    <place name="bunch" type="BUNCH"/>
+
+    <transition name="load">
+      <defun>
+        <in name="bunch" type="BUNCH"/>
+        <in name="config" type="CONFIG" />
+        <out name="bunch" type="BUNCH" />
+        <module name="kdm" function="load"/>
+      </defun>
+      <connect-read place="config" port="config" />
+      <connect-in   place="bunch"  port="bunch" />
+      <connect-out  port="bunch"   place="bunch_loaded" />
+    </transition>
+
+    <place name="bunch_loaded" type="BUNCH"/>
+
+    <transition name="filter">
+      <defun>
+        <in name="bunch" type="BUNCH"/>
+        <in name="config" type="CONFIG" />
+        <out name="bunch" type="BUNCH" />
+        <module name="filter" function="shrink"/>
+      </defun>
+      <connect-read place="config" port="config" />
+      <connect-in   place="bunch_loaded"  port="bunch" />
+      <connect-out  port="bunch"   place="bunch_to_process" />
+    </transition>
+
+    <place name="bunch_to_process" type="BUNCH"/>
+
+    <transition name="process">
+      <defun>
+        <in  name="bunch"   type="BUNCH"/>
+        <in  name="config"  type="CONFIG"/>
+        <out name="bunch" type="BUNCH" />
+        <module name="kdm" function="process"/>
+      </defun>
+      <connect-in place="config" port="config" />
+      <connect-in place="bunch_to_process"  port="bunch" />
+      <connect-out port="bunch" place="bunch_done" />
+    </transition>
+
+    <place name="bunch_done" type="BUNCH"/>
+  </net>
+</defun>

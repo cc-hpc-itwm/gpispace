@@ -1,47 +1,47 @@
-<defun internal="false">
+<defun internal="false" name="process">
   <in name="volume" type="VOLUME"  place="volume_in"/>
-  <in name="config" type="CONFIG"  place="config"/>
-  <in name="trigger" type="control" place="trigger"/>
+  <in name="config" type="CONFIG"  place="config_in"/>
   <out name="volume"  type="VOLUME" place="volume_done"/>
 
   <net>
     <place name="volume_in" type="VOLUME" />
-    <place name="volume_initialized" type="VOLUME" />
-    <place name="volume_gen_bunch" type="VOLUME" />
     <place name="volume" type="VOLUME" />
     <place name="volume_to_write" type="VOLUME" />
+    <place name="config_in" type="CONFIG" />
     <place name="config" type="CONFIG" />
+    <place name="config_init" type="CONFIG" />
+    <place name="config_generate" type="CONFIG" />
     <place name="wait" type="long" />
     <place name="volume_done" type="VOLUME" />
 
-    <place name="trigger" type="control"/>
+    <place name="credit_load" type="control"/>
 
-     <place name="trigger_load" type="control"/>
+    <include-template href="triple.xml"/>
+    <specialize name="triple_config" use="triple">
+      <type-map replace="T" with="CONFIG"/>
+    </specialize>
+
+    <transition name="triple_config" inline="true">
+      <use name="triple_config"/>
+      <connect-in port="in" place="config_in"/>
+      <connect-out port="one" place="config_generate"/>
+      <connect-out port="two" place="config_init"/>
+      <connect-out port="three" place="config"/>
+    </transition>
 
     <transition name="init" >
       <defun>
-        <in name="trigger" type="control" />
         <in name="config" type="CONFIG"/>
         <out name="wait" type="long" />
         <out name="trigger" type="control"/>
-        <expression> ${wait} := ${config.BUNCHES_PER_OFFSET} </expression>
+        <expression>
+          ${wait} := ${config.BUNCHES_PER_OFFSET};
+          ${trigger} := []
+        </expression>
       </defun>
-      <connect-in place="trigger" port="trigger" />
-      <connect-read place="config" port="config" />
+      <connect-in place="config_init" port="config" />
       <connect-out place="wait" port="wait" />
-      <connect-out port="trigger" place="trigger_load"/>
-    </transition>
-
-    <transition name="init_volume">
-      <defun>
-        <in name="volume" type="VOLUME" />
-        <in name="config" type="CONFIG" />
-        <out name="volume" type="VOLUME" />
-        <module name="kdm" function="init_volume" />
-      </defun>
-      <connect-in place="volume_in" port="volume" />
-      <connect-read place="config" port="config" />
-      <connect-out place="volume_initialized" port="volume" />
+      <connect-out port="trigger" place="credit_load"/>
     </transition>
 
     <include-template href="dup.xml"/>
@@ -52,131 +52,45 @@
 
     <transition name="dup_volume" inline="true">
        <use name="dup_volume"/>
-       <connect-in port="in" place="volume_initialized"/>
-       <connect-out port="one" place="volume_to_write"/>
-       <connect-out port="two" place="trigger_extract_bunches_per_offset"/>
+       <connect-in port="in" place="volume_in"/>
+       <connect-out port="one" place="volume_generate_bunch"/>
+       <connect-out port="two" place="volume_to_write"/>
     </transition>
 
-    <place name="trigger_extract_bunches_per_offset" type="VOLUME"/>
-
-    <transition name="extract_bunches_per_offset">
-      <defun>
-        <in name="trigger"  type="VOLUME" />
-        <in name="config"   type="CONFIG" />
-        <out name="trigger" type="VOLUME" />
-        <out name="value"   type="long"  />
-        <expression>
-          ${value} := ${config.BUNCHES_PER_OFFSET};
-        </expression>
-      </defun>
-      <connect-in   place="trigger_extract_bunches_per_offset" port="trigger" />
-      <connect-read place="config"                             port="config" />
-      <connect-out  place="bunches_per_offset"                 port="value" />
-      <connect-out  place="volume_gen_bunch"                   port="trigger" />
-    </transition>
-    <place name="bunches_per_offset" type="long"/>
-
-    <transition name="generate_bunch" inline="true">
-      <include-function href="generate_bunch.xml" />
-        <connect-in place="volume_gen_bunch" port="volume" />
-      <connect-in place="bunches_per_offset" port="amount" />
-      <connect-out place="bunch_generated" port="out" />
+    <transition name="generate_bunches" inline="true">
+      <include-function href="process/init.xml"/>
+      <place-map real="credit_load" virtual="credit_load"/>
+      <connect-in port="volume" place="volume_generate_bunch"/>
+      <connect-in port="config" place="config_generate"/>
+      <connect-out port="bunch" place="bunch"/>
     </transition>
 
+    <place name="volume_generate_bunch" type="VOLUME"/>
     <place name="bunch" type="BUNCH"/>
 
-    <place name="bunch_generated" type="BUNCH"/>
-
-    <include-template href="trigger_if.xml"/>
-    <specialize name="trigger_if_BUNCH" use="trigger_if">
-      <type-map replace="T" with="BUNCH"/>
-    </specialize>
-    <specialize name="trigger_if_VOLUME" use="trigger_if">
-      <type-map replace="T" with="VOLUME"/>
-    </specialize>
-
-    <transition name="trigger_load">
-      <use name="trigger_if_BUNCH"/>
-      <connect-in place="trigger_load"  port="trigger" />
-      <connect-in place="bunch_generated" port="object"/>
-      <connect-out place="bunch" port="object"/>
-    </transition>
-
-    <transition name="load">
-      <defun>
-        <in name="bunch" type="BUNCH"/>
-        <in name="config" type="CONFIG" />
-        <out name="bunch" type="BUNCH" />
-        <module name="kdm" function="load"/>
-      </defun>
+    <transition name="process_bunch" inline="true">
+      <include-function href="process/process.xml"/>
       <connect-read place="config" port="config" />
       <connect-in   place="bunch"  port="bunch" />
-      <connect-out  port="bunch"   place="trigger_clip" />
-    </transition>
-    <place name="trigger_clip" type="BUNCH"/>
-
-    <transition name="clip">
-      <defun>
-        <in name="bunch" type="BUNCH"/>
-        <in name="config" type="CONFIG" />
-        <out name="bunch" type="BUNCH" />
-        <module name="filter" function="clip"/>
-      </defun>
-      <connect-read place="config" port="config" />
-      <connect-in   place="trigger_clip"  port="bunch" />
-      <connect-out  port="bunch"   place="trigger_process" />
+      <connect-out  port="bunch"   place="bunch_done" />
     </transition>
 
-    <place name="trigger_process" type="BUNCH"/>
+    <place name="bunch_done" type="BUNCH"/>
 
-    <transition name="process">
-      <defun>
-        <in  name="bunch"   type="BUNCH"/>
-        <in  name="config"  type="CONFIG"/>
-        <out name="bunch" type="BUNCH" />
-        <module name="kdm" function="process"/>
-      </defun>
-      <connect-read place="config" port="config" />
-      <connect-in   place="trigger_process"  port="bunch" />
-      <connect-out  port="bunch" place="trigger_dec" />
-    </transition>
-
-    <place name="trigger_dec" type="BUNCH"/>
-
-    <transition name="dec">
-      <defun>
-       <in name="wait" type="long"/>
-       <in name="trigger" type="BUNCH"/>
-       <out name="done" type="control"/>
-       <out name="wait" type="long"/>
-       <expression>
-         ${wait} := ${wait} - 1;
-         ${done} := []
-       </expression>
-       <condition>${wait} :gt: 0</condition>
-      </defun>
-      <connect-in   place="wait"  port="wait" />
-      <connect-out  place="wait"  port="wait" />
-      <connect-in port="trigger" place="trigger_dec"/>
-      <connect-out port="done" place="trigger_load"/>
-    </transition>
-
-    <transition name="break">
-      <defun>
-       <in name="wait" type="long"/>
-       <in name="trigger" type="control"/>
-       <out name="trigger" type="control"/>
-       <expression>
-         ${trigger} := []
-       </expression>
-       <condition>${wait} :eq: 0</condition>
-      </defun>
-      <connect-in place="wait"  port="wait" />
-      <connect-in port="trigger" place="trigger_load"/>
-      <connect-out port="trigger" place="trigger_write"/>
+    <transition name="wait" inline="true">
+      <include-function href="process/wait.xml"/>
+      <place-map virtual="credit" real="credit_load"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="bunch" place="bunch_done"/>
+      <connect-out port="done" place="trigger_write"/>
     </transition>
 
     <place name="trigger_write" type="control"/>
+
+    <include-template href="trigger_if.xml"/>
+    <specialize name="trigger_if_VOLUME" use="trigger_if">
+      <type-map replace="T" with="VOLUME"/>
+    </specialize>
 
     <transition name="trigger_write">
       <use name="trigger_if_VOLUME"/>
@@ -192,23 +106,9 @@
         <out name="volume"    type="VOLUME" />
         <module name="kdm" function="write"/>
       </defun>
-      <connect-read  place="config" port="config" />
+      <connect-in  place="config" port="config" />
       <connect-in  place="volume" port="volume" />
-      <connect-out port="volume" place="write_done" />
-    </transition>
-
-    <place name="write_done" type="VOLUME"/>
-
-    <transition name="cleanup">
-      <defun>
-        <in name="volume" type="VOLUME"/>
-        <in name="config" type="CONFIG"/>
-        <out name="volume" type="VOLUME"/>
-        <expression></expression>
-      </defun>
-      <connect-in port="config" place="config"/>
-      <connect-in port="volume" place="write_done"/>
-      <connect-out port="volume" place="volume_done"/>
+      <connect-out port="volume" place="volume_done" />
     </transition>
   </net>
 </defun>

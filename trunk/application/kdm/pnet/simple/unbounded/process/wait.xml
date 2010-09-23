@@ -1,0 +1,46 @@
+<defun internal="false" name="process">
+  <include-structs href="types.xml"/>
+
+  <in name="bunch" type="BUNCH"  place="bunch"/>
+  <out name="done"  type="control" place="done"/>
+
+  <net>
+    <place name="bunch" type="BUNCH"/>
+    <place name="wait" type="long" virtual="true"/>
+    <place name="done" type="control"/>
+    <place name="credit" type="control" virtual="true"/>
+
+    <transition name="dec">
+      <defun>
+       <in name="wait" type="long"/>
+       <in name="trigger" type="BUNCH"/>
+       <out name="done" type="control"/>
+       <out name="wait" type="long"/>
+       <expression>
+         ${wait} := ${wait} - 1;
+         ${done} := []
+       </expression>
+       <condition>${wait} :gt: 0</condition>
+      </defun>
+      <connect-in   place="wait"  port="wait" />
+      <connect-out  place="wait"  port="wait" />
+      <connect-in port="trigger" place="bunch"/>
+      <connect-out port="done" place="credit"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+       <in name="wait" type="long"/>
+       <in name="trigger" type="control"/>
+       <out name="trigger" type="control"/>
+       <expression>
+         ${trigger} := []
+       </expression>
+       <condition>${wait} :eq: 0</condition>
+      </defun>
+      <connect-in place="wait"  port="wait" />
+      <connect-in port="trigger" place="credit"/>
+      <connect-out port="trigger" place="done"/>
+    </transition>
+  </net>
+</defun>
