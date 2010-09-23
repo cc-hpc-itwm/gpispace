@@ -150,10 +150,10 @@ find_package(FVM REQUIRED)
 message(STATUS "Found FVM: Inc:${FVM_INCLUDE_DIR} Lib:${FVM_LIBRARY}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.hpp.in   ${CMAKE_CURRENT_BINARY_DIR}/sdpa/version.hpp)
 if (PROJECT_REVISION)
-   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/version.hpp)
 else (PROJECT_REVISION)
-   message (FATAL_ERROR "PROJECT_REVISION is not set!")
+   message (WARNING "PROJECT_REVISION is not set!")
 endif (PROJECT_REVISION)
 add_definitions(-DHAVE_CONFIG_H)
 
