@@ -33,9 +33,10 @@ for node_num in $nodes; do
   node_name=$( uniq $PBS_NODEFILE | tail -n +$node_num | head -n 1 )
   rm -f /scratch/$USER/sdpa/nre.$node_name.log
   rm -f /scratch/$USER/sdpa/pc.$node_name.log
+  rank=$(( $node_num - 1 ))
 
-  echo "starting nre on $node_name..."
-  ssh $node_name start-nre $node_num >/dev/null 2>&1 &
+  echo "starting nre on $node_name (rank: $rank)..."
+  ssh $node_name start-nre $rank >/dev/null 2>&1 &
 done
 wait
 status-nre $nodes
