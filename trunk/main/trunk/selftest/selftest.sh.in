@@ -9,8 +9,8 @@ PATH="${mydir}:$PATH"
 
 # please set these variables to "meaningful" values on your system
 sdpa_gpi="@GPI_BINARY_DIR@/sdpa-gpi"
-pcd_cfg="@GPI_CONFIG_PATH@"
-libexec="@CMAKE_INSTALL_PREFIX@/libexec"
+pcd_cfg="${mydir}/../etc/gpi/sdpa-gpi.cfg"
+libexec="${mydir}/../libexec"
 logfile=sdpa-selftest.log
 
 # these values should already be ok (just make sure PATH is correctly set)
@@ -20,7 +20,7 @@ nre="nre"
 pcd="nre-pcd"
 pnetc="pnetc"
 sdpac="sdpac"
-jobdesc="@CMAKE_INSTALL_PREFIX@/share/sdpa/examples/selftest/selftest.pnet"
+jobdesc="selftest.pnet"
 
 # error codes:
 ESUC=0
@@ -98,7 +98,6 @@ if [ x"$sdpa_gpi" != x"$sdpa_gpi_tmp" ] ; then
 fi
 
 log "initializing selftest (running in ${mydir})..."
-log "$(sdpac --version)"
 log "starting sdpa-gpi..."
 ${sdpa_gpi} >> ${logfile} 2>&1 &
 sdpa_gpi_pid=$!

@@ -57,7 +57,7 @@ configFile_t readConfigFile(const char *filename, const int numOptions)
   ifp = fopen(filename, "r");
 
   if (ifp == NULL) {
-    fprintf(stderr, "Can't open FVM configuration file: %s!\n", filename);
+    fprintf(stderr, "Can't open FVM configuration file!\n");
     exit(1);
   }
 

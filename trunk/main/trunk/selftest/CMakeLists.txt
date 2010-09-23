@@ -4,8 +4,3 @@ install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/selftest.sh
   DESTINATION bin
   COMPONENT applications
   RENAME sdpa-selftest)
-
-install(FILES selftest.pnet
-  DESTINATION share/sdpa/examples/selftest/
-  COMPONENT examples
-  )
