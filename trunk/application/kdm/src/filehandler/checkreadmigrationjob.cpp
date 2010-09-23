@@ -342,7 +342,7 @@ int CheckReadMigrationJob::ReadConfigFileXML(char* ConfigFileName, MigrationJob&
   if (!ReadXML(Reader, "Migration/SeismicData/trap", Job.trap, false))
     Job.trap = -1.f;
   if (!ReadXML(Reader, "Migration/SeismicData/tpow", Job.tpow, false))
-    Job.clip = 0.f;
+    Job.tpow = 0.f;
 
   if (ReadXML(Reader, "Migration/SeismicData/BandPass", FrequencyString, false))
   {
