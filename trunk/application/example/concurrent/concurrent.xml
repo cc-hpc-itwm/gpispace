@@ -59,6 +59,7 @@
       <connect-out port="done" place="done_call"/>
     </transition>
 
+<!--
     <transition name="D">
       <defun>
         <in name="id" type="long"/>
@@ -68,7 +69,9 @@
       <connect-in port="id" place="id"/>
       <connect-out port="done" place="done_call"/>
     </transition>
+-->
 
+<!--
     <transition name="dec">
       <defun>
         <in name="w" type="long"/>
@@ -90,6 +93,19 @@
         <condition>${w} :eq: 0</condition>
       </defun>
       <connect-in port="w" place="consume"/>
+      <connect-out port="done" place="done_all"/>
+    </transition>
+-->
+
+    <include-template href="lib/wait.xml"/>
+    <specialize name="wait" use="wait">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait"/>
+      <place-map virtual="wait" real="consume"/>
+      <connect-in port="trigger" place="done_call"/>
       <connect-out port="done" place="done_all"/>
     </transition>
 
