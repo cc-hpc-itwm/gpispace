@@ -100,6 +100,105 @@ static void bandpass_impl (TraceBunch & Bunch,
     delete[] filterarray;
 }
 
+static void frac_impl (TraceBunch & Bunch)
+{
+    const int NTraces( Bunch.getNTB() );
+    if (NTraces <= 0)
+	return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+    const int NSample = Bunch.getTrace(0)->getNt();
+    const float dt = Bunch.getTrace(0)->getdtbin();
+
+    const int Nfft = getptz(NSample);
+
+    // initialize the frac array to omega for each sample
+    float * filterarray = new float[Nfft];
+    for (int iarray = 0; iarray < Nfft/2; iarray++)
+    { 
+	float omega = 2.f*2.f*M_PI*iarray/(dt*Nfft);
+	filterarray[iarray] = omega;
+    }
+    for (int iarray = Nfft/2; iarray < Nfft; iarray++)
+    { 
+	filterarray[iarray] = 0.f;
+    }
+
+    float * fftarray = new float[2*Nfft];
+
+    for(int i=0; i< NTraces; i++)
+    {
+	volatile char * pTraceData = Bunch.getTrace(i)->getDataPtr();
+	TraceData Trace(pTraceData,NSample);
+	
+	float* Data_ptr = (float*) Trace.getTPtr();
+
+	memset(fftarray, 0, 2*Nfft*sizeof(float));
+	for (int it = 0; it < NSample; it++)
+	{
+	    fftarray[2*it] = Data_ptr[it];
+	}
+	
+	fft(-1, Nfft, fftarray);
+	for (int iarray = 0; iarray < Nfft; iarray++)
+	{
+	    const float newim = fftarray[2*iarray]  * filterarray[iarray];
+	    const float newre = -fftarray[2*iarray+1] * filterarray[iarray];
+	    fftarray[2*iarray] = newre;
+	    fftarray[2*iarray+1] = newim;
+	}
+	fft(1, Nfft, fftarray);
+	
+	for (int it = 0; it < NSample; it++)
+	    Data_ptr[it] = fftarray[2*it]/Nfft;
+    }
+
+    delete[] fftarray;
+    delete[] filterarray;
+}
+
+static void tpow_impl (TraceBunch & Bunch, 
+		       const float & tpow)
+{
+//     if (tpow == 0.f)
+// 	throw std::runtime_error ("tpow called but not configured");
+
+    const int NTraces( Bunch.getNTB() );
+    if (NTraces <= 0)
+	return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+    const int NSample = Bunch.getTrace(0)->getNt();
+    const float dt = Bunch.getTrace(0)->getdtbin();
+    const float t0 = Bunch.getTrace(0)->getT0();
+
+    // initialize the tpow filter for each sample
+    float * filterarray = new float[NSample];
+    for (int iarray = 0; iarray < NSample; iarray++)
+    { 
+	const float TT = std::max(dt, t0 + iarray * dt);
+	filterarray[iarray] = pow(TT, tpow);
+    }
+
+    for(int i=0; i< NTraces; i++)
+    {
+	volatile char * pTraceData = Bunch.getTrace(i)->getDataPtr();
+	TraceData Trace(pTraceData,NSample);
+	
+	float* Data_ptr = (float*) Trace.getTPtr();
+
+	for (int iarray = 0; iarray < NSample; iarray++)
+	{
+	    Data_ptr[iarray] *= filterarray[iarray];
+	}
+	
+    }
+
+    delete[] filterarray;
+}
+
 // ---------------------------------------------
 // dummy in-place Bunch-in -- Bunch-out function
 void Manipulate( TraceBunch& Bunch )
@@ -187,6 +286,18 @@ int main(int argc, char *argv[])
     // call to the in-place Bunch-in -- Bunch-out function
     std::cout << "\nCall the in-place Bunch-in -- Bunch-out function.\n\n";
     bandpass_impl(MyBunch, 0.f, 20.f, 30.f, 40.f);
+    // ------------------
+
+    // ------------------
+    // call to the in-place Bunch-in -- Bunch-out function
+    std::cout << "\nCall the in-place Bunch-in -- Bunch-out function.\n\n";
+    tpow_impl(MyBunch, 5.f);
+    // ------------------
+
+    // ------------------
+    // call to the in-place Bunch-in -- Bunch-out function
+    std::cout << "\nCall the in-place Bunch-in -- Bunch-out function.\n\n";
+    frac_impl(MyBunch);
     // ------------------
 
 

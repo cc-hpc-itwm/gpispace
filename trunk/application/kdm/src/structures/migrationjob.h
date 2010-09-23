@@ -186,6 +186,9 @@ public:
   float clip;
   float trap;
 
+  /** power for tpow preprocessing */
+  float tpow;
+
   /// Slant stack information
   bool use_sstacks;
   char SlantStackFileName[1000];

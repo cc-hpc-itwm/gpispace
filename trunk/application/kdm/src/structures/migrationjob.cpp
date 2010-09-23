@@ -67,6 +67,8 @@ MigrationJob::MigrationJob()
   clip = -1.f;
   trap = -1.f;
 
+  tpow= 0.f;
+
   /// Modifications by Daniel Grünewald
 
   /// SDPA control parameters
@@ -246,6 +248,8 @@ MigrationJob::MigrationJob(const MigrationJob& Job)
   clip = Job.clip;
   trap = Job.trap;
 
+  tpow = Job.tpow;
+
   use_sstacks = Job.use_sstacks;
   n_azimuths = Job.n_azimuths;
   n_inclinations = Job.n_inclinations;
@@ -402,6 +406,8 @@ MigrationJob& MigrationJob::operator=(const MigrationJob& Job)
 
   clip = Job.clip;
   trap = Job.trap;
+
+  tpow = Job.tpow;
 
   use_sstacks = Job.use_sstacks;
   n_azimuths = Job.n_azimuths;
