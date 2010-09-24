@@ -32,6 +32,20 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
     result = tmp;
 }
 
+static std::string center (std::string const & text, const std::size_t len)
+{
+  if (len >= text.size())
+  {
+    std::size_t diff (len - text.size());
+    std::string indent; indent.resize( diff / 2, ' ');
+    return indent + text;
+  }
+  else
+  {
+    return text;
+  }
+}
+
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
 {
@@ -266,32 +280,35 @@ int main (int argc, char **argv) {
     sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create(cfg));
     if (cfg.is_set("version"))
     {
-      std::cout << "           "
-                << "SDPA - Seismic Data Processing Architecture" << std::endl;
-      std::cout << "           "
-                << "===========================================" << std::endl;
-      std::cout << "                            "
-                << "v" << api->version()
-                << std::endl
-                << "                 "
-                << " " << api->copyright()
-                << std::endl
-                << "                      "
-                << "build #" << api->build()
-                << " "
-                << "rev #" << api->revision()
-                << std::endl
-                << "                     "
-                << api->build_timestamp()
-                << std::endl;
-      std::cout << "       "
-                << api->contact()
-                << std::endl;
+      const std::size_t maxlen (72);
+      const std::string header ("SDPA - Seismic Data Processing Architecture");
+      std::string seperator; seperator.resize (header.size(), '=');
+
+      std::vector <std::string> lines;
+      lines.push_back (header);
+      lines.push_back (seperator);
+      lines.push_back ("");
+      lines.push_back (api->revision());
+      lines.push_back (api->copyright());
+      lines.push_back (api->build_timestamp());
+      lines.push_back (api->contact());
+
+      for ( std::vector<std::string>::iterator line (lines.begin())
+	  ; line != lines.end()
+	  ; ++line
+	  )
+      {
+	if (! line->empty())
+	{
+	  std::cout << center (*line, maxlen);
+	}
+	std::cout << std::endl;
+      }
       return 0;
     }
     if (cfg.is_set("dumpversion"))
     {
-      std::cout << api->version() << std::endl;
+      std::cout << api->revision() << std::endl;
       return 0;
     }
 
