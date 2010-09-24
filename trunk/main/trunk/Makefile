@@ -1,3 +1,6 @@
+#
+# obsolete Makefile, please try to use cmake directly
+#
 CMAKE=cmake
 CMAKE_CONFIG=
 CTEST_CONFIG=
