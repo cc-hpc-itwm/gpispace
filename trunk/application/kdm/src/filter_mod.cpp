@@ -415,7 +415,7 @@ static void tpow ( void * state
 		 , we::loader::output_t & output
 		 )
 {
-  generic_filter_with_float (state, input, output, clip_impl, "filter.tpow");
+  generic_filter_with_float (state, input, output, tpow_impl, "filter.tpow");
 }
 
 // ************************************************************************* //

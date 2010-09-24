@@ -123,6 +123,7 @@ static void initialize ( void *
   config["seed"] = seed;
   config["verify_all_mem"] = get<bool>(input, "verify_all_mem");
   config["verify"] = _verify;
+  config["communicate"] = get<bool>(input, "communicate");
 
   MLOG (INFO, "initialize: config " << config);
 
@@ -145,6 +146,7 @@ static void run ( void *
   const long & num_long (get<long>(input, "config", "num_long"));
   const bool & verify_all_mem (get<bool>(input, "config", "verify_all_mem"));
   const bool & _verify (get<bool>(input, "config", "verify"));
+  const bool & _communicate (get<bool>(input, "config", "communicate"));
 
   const size_t size (num_long * sizeof (long));
 
@@ -159,7 +161,10 @@ static void run ( void *
       memset (fvmGetShmemPtr(), rank, size);
     }
 
-  waitComm (fvmGetGlobalData (handle, 0, size, 0, scratch));
+  if (_communicate)
+    {
+      waitComm (fvmGetGlobalData (handle, 0, size, 0, scratch));
+    }
 
   if (_verify)
     {
