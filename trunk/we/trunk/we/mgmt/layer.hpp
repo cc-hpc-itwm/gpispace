@@ -721,6 +721,7 @@ namespace we { namespace mgmt {
         ext_submit ( ext_id, policy::codec::encode (ext_act));
       }
 
+      // WORK HERE: rewrite!
       void extractor(const std::size_t rank)
       {
         DLOG(INFO, "extractor[" << rank << "] thread started...");
@@ -745,76 +746,29 @@ namespace we { namespace mgmt {
               continue;
             }
 
-            // classify/execute
-            //    EXTRACT: while loop
-            //       classify/execute
-            //          EXTRACT: remember id
-            //       INJECT: inject
-            //       EXTERN: extern
-            //    INJECT:  inject to parent / notify client
-            //    EXTERN:  send to extern
-            typename policy::exec_policy exec_policy;
-
             sig_executing (this, desc.id());
 
-            switch (desc.execute (exec_policy))
+            try
             {
-            case policy::exec_policy::EXTRACT:
-              {
-                DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc.name());
-
-                while (desc.enabled())
-                {
-                  descriptor_type child (desc.extract (generate_internal_id()));
-                  child.inject_input ();
-
-                  DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc.name() << ")-" << desc.id()
-                      << ": (" << child.name() << ")-" << child.id() << " with input " << child.show_input());
-
-                  switch (child.execute (exec_policy))
-                  {
-                  case policy::exec_policy::EXTRACT:
-                    insert_activity(child);
-                    post_execute_notification (child.id());
-                    break;
-                  case policy::exec_policy::INJECT:
-                    child.finished();
-                    DLOG(INFO, "extractor-" << rank << ": finished (" << child.name() << ")-" << child.id() << ": " << child.show_output());
-                    desc.inject (child);
-                    break;
-                  case policy::exec_policy::EXTERNAL:
-                    insert_activity (child);
-                    execute_externally (child.id());
-                    break;
-                  default:
-                    LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child.name() << ")-" << child.id());
-                    throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
-                  }
-
-                  DLOG(TRACE, "extractor-" << rank << " done with child: " << child.id());
-                }
-
-                DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc.child_count() << ")");
-
-
-                if (desc.is_done ())
-                {
-                  DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc.name() << ")-" << active_id << " is done");
-                  active_nets_[rank].erase (active_id);
-                  do_inject (desc);
-                }
-              }
-              break;
-            case policy::exec_policy::INJECT:
-              do_inject (desc);
-              break;
-            case policy::exec_policy::EXTERNAL:
-              DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc.id());
-              execute_externally (desc.id());
-              break;
-            default:
-              LOG(FATAL, "extractor-" << rank << ": got strange classification for activity (" << desc.name() << ")-" << desc.id());
-              throw std::runtime_error ("extractor got strange classification for activity");
+              // classify/execute
+              //    EXTRACT: while loop
+              //       classify/execute
+              //          EXTRACT: remember id
+              //       INJECT: inject
+              //       EXTERN: extern
+              //    INJECT:  inject to parent / notify client
+              //    EXTERN:  send to extern
+              typename policy::exec_policy exec_policy;
+              do_execute (desc, exec_policy, rank);
+            }
+            catch (const std::exception & ex)
+            {
+              LOG( ERROR
+                 , "extractor-" << rank
+                 << ": something went wrong during execution of: "
+                 << desc.name() << ": " << ex.what()
+                 );
+              post_failed_notification (desc.id());
             }
           }
           catch (const exception::activity_not_found<internal_id_type> & ex)
@@ -823,6 +777,71 @@ namespace we { namespace mgmt {
           }
         }
         DLOG(INFO, "extractor-" << rank << " thread stopped...");
+      }
+
+      template <typename ExecPolicy>
+      inline
+      void do_execute (descriptor_type & desc, ExecPolicy exec_policy, size_t rank)
+      {
+        switch (desc.execute (exec_policy))
+        {
+        case policy::exec_policy::EXTRACT:
+          {
+            DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc.name());
+
+            while (desc.enabled())
+            {
+              descriptor_type child (desc.extract (generate_internal_id()));
+              child.inject_input ();
+
+              DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc.name() << ")-" << desc.id()
+                  << ": (" << child.name() << ")-" << child.id() << " with input " << child.show_input());
+
+              switch (child.execute (exec_policy))
+              {
+              case policy::exec_policy::EXTRACT:
+                insert_activity(child);
+                post_execute_notification (child.id());
+                break;
+              case policy::exec_policy::INJECT:
+                child.finished();
+                DLOG(INFO, "extractor-" << rank << ": finished (" << child.name() << ")-" << child.id() << ": " << child.show_output());
+                desc.inject (child);
+                break;
+              case policy::exec_policy::EXTERNAL:
+                insert_activity (child);
+                execute_externally (child.id());
+                break;
+              default:
+                LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child.name() << ")-" << child.id());
+                throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
+              }
+
+              DLOG(TRACE, "extractor-" << rank << " done with child: " << child.id());
+            }
+
+            DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc.child_count() << ")");
+
+
+            if (desc.is_done ())
+            {
+              DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc.name() << ")-" << desc.id() << " is done");
+              active_nets_[rank].erase (desc.id());
+              do_inject (desc);
+            }
+          }
+          break;
+        case policy::exec_policy::INJECT:
+          do_inject (desc);
+          break;
+        case policy::exec_policy::EXTERNAL:
+          DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc.id());
+          execute_externally (desc.id());
+          break;
+        default:
+          LOG(FATAL, "extractor-" << rank << ": got strange classification for activity (" << desc.name() << ")-" << desc.id());
+          throw std::runtime_error ("extractor got strange classification for activity");
+        }
       }
 
       inline
