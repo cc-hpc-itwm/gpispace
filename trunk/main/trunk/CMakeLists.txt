@@ -22,7 +22,8 @@ OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 
 function(get_foo_revision_info REV_INFO)
   execute_process(
-	COMMAND svn info ${CMAKE_CURRENT_SOURCE_DIR}
+	COMMAND svn info
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	OUTPUT_VARIABLE _out
 	RESULT_VARIABLE _res
   )
@@ -32,7 +33,8 @@ function(get_foo_revision_info REV_INFO)
     set (${REV_INFO} ${_rev} PARENT_SCOPE)
   else(_res)
 	execute_process(
-	  COMMAND git describe ${CMAKE_CURRENT_SOURCE_DIR}
+	  COMMAND git describe
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	  OUTPUT_VARIABLE _out_git
 	  RESULT_VARIABLE _res_git
 	)
