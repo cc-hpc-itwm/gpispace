@@ -261,6 +261,12 @@ namespace sdpa { namespace nre { namespace worker {
 
 		udp::resolver resolver(io_service_);
 		udp::resolver::query query(udp::v4(), worker_host.c_str(), "0");
+                // FIXME: this is a possible segfault!
+                udp::resolver::iterator endpoint_iter = resolver.resolve(query);
+                if (endpoint_iter == udp::resolver::iterator())
+                {
+                  throw std::runtime_error ("could not resolve: " + worker_host);
+                }
 		nre_worker_endpoint_ = *resolver.resolve(query);
 		nre_worker_endpoint_.port(worker_port);
 
