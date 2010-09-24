@@ -12,14 +12,22 @@ else
   nodes=$@
 fi
 
+bunch_size=16
+count=0
 for node_num in $nodes; do
   if [ $node_num -lt 1 -o $node_num -gt "$node_max" ]; then
 	echo "W: ignoring node number $node_num: out of range: must be within [1,$node_max]"
   fi
 
-  node_name=$( uniq $PBS_NODEFILE | sort -n | tail -n +$node_num | head -n 1 )
+  count=$(( count + 1 ))
+
+  node_name=$( uniq $PBS_NODEFILE | tail -n +$node_num | head -n 1 )
   echo "killing nre on $node_name..."
-  ssh $node_name killall nre-pcd >/dev/null 2>&1 &
-  ssh $node_name killall nre >/dev/null 2>&1 &
+  ssh -x $node_name killall nre-pcd >/dev/null 2>&1 &
+  ssh -x $node_name killall nre >/dev/null 2>&1 &
+  if [ $count -gt $bunch_size ] ; then
+      wait
+      count=0
+  fi
 done
 wait

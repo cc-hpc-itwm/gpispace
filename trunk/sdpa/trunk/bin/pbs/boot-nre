@@ -14,8 +14,6 @@ if [ $? -ne 0 ]; then
   fi
 fi
 
-trap 'wait; exit 0' INT
-
 node_max=$( uniq $PBS_NODEFILE | wc -l )
 nodes=$( echo $( seq 1 $node_max ) )
 if [ $# -lt 1 ]; then
@@ -24,11 +22,15 @@ else
   nodes=$@
 fi
 
+bunch_size=16
+count=0
 for node_num in $nodes; do
   if [ $node_num -lt 1 -o $node_num -gt "$node_max" ]; then
 	echo "W: ignoring node number $node_num: out of range: must be within [1,$node_max]"
     continue
   fi
+
+  count=$(( count + 1 ))
 
   node_name=$( uniq $PBS_NODEFILE | tail -n +$node_num | head -n 1 )
   rm -f /scratch/$USER/sdpa/nre.$node_name.log
@@ -36,7 +38,10 @@ for node_num in $nodes; do
   rank=$(( $node_num - 1 ))
 
   echo "starting nre on $node_name (rank: $rank)..."
-  ssh $node_name start-nre $rank >/dev/null 2>&1 &
+  ssh -x $node_name start-nre $rank >/dev/null 2>&1 &
+  if [ $count -gt $bunch_size ] ; then
+      wait
+      count=0
+  fi
 done
 wait
-status-nre $nodes
