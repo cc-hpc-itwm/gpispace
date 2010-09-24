@@ -159,7 +159,15 @@ namespace we { namespace mgmt {
 
         fhg::util::remove_unused_variable_warning(reason);
 
-        post_cancel_activity_notification (map_to_internal(id));
+        try
+        {
+          post_cancel_activity_notification (map_to_internal(id));
+        }
+        catch (std::exception const &)
+        {
+          LOG(ERROR, "trying to cancel unknown activity " << id);
+          return false;
+        }
         return true;
       }
 
@@ -177,19 +185,26 @@ namespace we { namespace mgmt {
        **/
       bool finished(const external_id_type & id, const result_type & result)
       {
-        internal_id_type int_id (map_to_internal (id));
+        try
         {
-          lock_t lock(mutex_);
-          descriptor_type & desc (lookup (int_id));
+          internal_id_type int_id (map_to_internal (id));
           {
-            activity_type act (policy::codec::decode (result));
-            desc.output (act.output());
-            DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << desc.show_output());
+            lock_t lock(mutex_);
+            descriptor_type & desc (lookup (int_id));
+            {
+              activity_type act (policy::codec::decode (result));
+              desc.output (act.output());
+              DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << desc.show_output());
+            }
           }
-        }
 
-        post_finished_notification (int_id);
-        return true;
+          post_finished_notification (int_id);
+        }
+        catch (const std::exception &)
+        {
+          LOG(ERROR, "trying to notify finished for unknown activity " << id);
+        }
+          return true;
       }
 
       /**
@@ -212,8 +227,16 @@ namespace we { namespace mgmt {
 
         fhg::util::remove_unused_variable_warning(result);
 
-        post_failed_notification (map_to_internal(id));
-        return true;
+        try
+        {
+          post_failed_notification (map_to_internal(id));
+          return true;
+        }
+        catch (const std::exception &)
+        {
+          LOG(ERROR, "tried to notify failed for unknown activity " << id);
+          return false;
+        }
       }
 
       /**
@@ -233,8 +256,16 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "cancelled (" << id << ")");
 
-        post_cancelled_notification (map_to_internal(id));
-        return true;
+        try
+        {
+          post_cancelled_notification (map_to_internal(id));
+          return true;
+        }
+        catch (const std::exception &)
+        {
+          LOG(ERROR, "tried to notify cancelled for unknown activity " << id);
+          return false;
+        }
       }
 
       /**
