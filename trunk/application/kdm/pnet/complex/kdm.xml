@@ -10,13 +10,13 @@
   <net>
 
     <place name="file_config" type="string">
-   </place>
-   <!--
       <token>
         <value>
-          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
+       "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
         </value>
       </token>
+   </place>
+   <!--
        "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
        "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
     -->

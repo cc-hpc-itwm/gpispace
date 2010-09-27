@@ -1,4 +1,5 @@
-<defun name="loadTTHUHU">
+<defun name="loadTT">
+  <include-structs href="types.xml"/>
   <in name="config" type="CONFIG" place="config"/>
   <out name="config" type="CONFIG" place="config_out"/>
   <net>
@@ -52,7 +53,7 @@
       <type-map replace="T" with="control"/>
     </specialize>
 
-    <transition name="wait">
+    <transition name="wait" inline="true">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait"/>
       <connect-in port="trigger" place="doneTT"/>

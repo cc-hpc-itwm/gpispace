@@ -1,4 +1,5 @@
 <defun internal="false" name="process">
+  <include-structs href="types.xml"/>
   <in name="volume" type="VOLUME"  place="volume_in"/>
   <in name="config" type="CONFIG"  place="config_in"/>
   <out name="volume"  type="VOLUME" place="volume_done"/>
