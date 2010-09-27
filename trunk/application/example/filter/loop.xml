@@ -1,0 +1,93 @@
+<defun name="loop">
+  <include-structs href="types.xml"/>
+
+  <in name="description" type="string" place="desc"/>
+  <out name="done" type="control" place="all_done"/>
+
+  <net>
+    <place name="desc" type="string"/>
+    <place name="done" type="control"/>
+    <place name="all_done" type="control"/>
+    <place name="config" type="config"/>
+    <place name="store" type="long"/>
+    <place name="part" type="long"/>
+    <place name="wait" type="long"/>
+    <place name="write_credit" type="control"/>
+    <place name="part_loaded" type="part_in_store"/>
+    <place name="part_filtered" type="part_in_store"/>
+    <place name="part_written" type="long"/>
+
+    <transition name="init" inline="true">
+      <include-function href="init.xml"/>
+      <connect-in port="desc" place="desc"/>
+      <connect-out port="write_credit" place="write_credit"/>
+      <connect-out port="config" place="config"/>
+      <connect-out port="store" place="store"/>
+      <connect-out port="part" place="part"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <transition name="work" inline="true">
+      <include-function href="work.xml"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="part" place="part_loaded"/>
+      <connect-out port="part" place="part_filtered"/>
+    </transition>
+
+    <transition name="load">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="store" type="long"/>
+        <in name="part" type="long"/>
+        <out name="part_loaded" type="part_in_store"/>
+        <module name="simple_process" function="load"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="store" place="store"/>
+      <connect-in port="part" place="part"/>
+      <connect-out port="part_loaded" place="part_loaded"/>
+    </transition>
+
+    <transition name="write">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="credit" type="control"/>
+        <in name="part_in_store" type="part_in_store"/>
+        <out name="credit" type="control"/>
+        <out name="store" type="long"/>
+        <out name="part" type="long"/>
+        <module name="simple_process" function="write"/>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="credit" place="write_credit"/>
+      <connect-in port="part_in_store" place="part_filtered"/>
+      <connect-out port="store" place="store"/>
+      <connect-out port="part" place="part_written"/>
+      <connect-out port="credit" place="write_credit"/>
+    </transition>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_part" use="wait">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_part"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="trigger" place="part_written"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <transition name="finalize">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="config" type="config"/>
+        <out name="done" type="control"/>
+        <module name="simple_process" function="finalize"/>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="trigger" place="done"/>
+      <connect-out port="done" place="all_done"/>
+    </transition>
+  </net>
+</defun>

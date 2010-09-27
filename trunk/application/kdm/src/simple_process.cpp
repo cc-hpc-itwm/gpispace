@@ -37,28 +37,61 @@ static void init ( void * state
     {
       std::string s;
       file >> s;
-      long v;
-      file >> v;
-
-      MLOG (INFO, "init: read " << s << " " << v);
 
       if (s.size())
         {
-          put (output, "config", s, v);
+          if (  s == "output.file" || s == "output.typ"
+             || s == "input.file"  || s == "input.typ"
+             )
+            {
+              std::string v;
+              file >> v;
+
+              MLOG (INFO, "init: read " << s << " " << v);
+
+              put (output, "config", s, v);
+            }
+          else
+            {
+              long v;
+              file >> v;
+
+              MLOG (INFO, "init: read " << s << " " << v);
+
+              put (output, "config", s, v);
+            }
         }
     }
 
-  const long & trace_per_bunch (get<long> (output, "config", "trace.per_bunch"));
-  const long & trace_nt (get<long> (output, "config", "trace.Nt"));
-  const long & trace_num (get<long> (output, "config", "trace.number"));
-  const long & memsize (get<long> (output, "config", "memsize"));
+  const long & trace_per_bunch (get<long> (output, "config", "tune.trace_per_bunch"));
+  const long & trace_num (get<long> (output, "config", "trace_detect.number"));
+  const long & trace_size_in_bytes (get<long> (output, "config", "trace_detect.size_in_bytes"));
+  const long & memsize (get<long> (output, "config", "tune.memsize"));
 
-  const long sizeofTraceBuffer (5 * trace_nt * sizeof(float)
-                               + sizeof (int) + 7 * sizeof (float)
-                               );
-  const long sizeofBunchBuffer (trace_per_bunch * sizeofTraceBuffer);
+  const long sizeofBunchBuffer (trace_per_bunch * trace_size_in_bytes);
 
-  const long num_store (memsize / sizeofBunchBuffer);
+  const long node_count (fvmGetNodeCount());
+
+  long num_store_per_node (0);
+
+  while ((1 + num_store_per_node) * node_count * sizeofBunchBuffer < memsize)
+    {
+      num_store_per_node += 1;
+    }
+
+  const fvmAllocHandle_t handle_data
+    (fvmGlobalAlloc (num_store_per_node * sizeofBunchBuffer));
+  if (handle_data == 0)
+    {
+      throw std::runtime_error ("BUMMER! handle_data == 0");
+    }
+  const fvmAllocHandle_t handle_scratch
+    (fvmGlobalAlloc (1 * sizeofBunchBuffer));
+  if (handle_scratch == 0)
+    {
+      throw std::runtime_error ("BUMMER! handle_scratch == 0");
+    }
+
   long num_part (trace_num / trace_per_bunch);
 
   if (trace_num % trace_per_bunch != 0)
@@ -69,17 +102,34 @@ static void init ( void * state
   // allocate memory in GPI space
   // allocate scratch handle
 
-  put (output, "config", "handle.data", 42L);
-  put (output, "config", "handle.scratch", 23L);
-
-  put (output, "config", "num.store", 42L);
-  put (output, "config", "num.part", 23L);
-
+  put (output, "config", "num.store", num_store_per_node * node_count);
+  put (output, "config", "num.part", num_part);
   put (output, "config", "num.write_credit", 2L);
 
-  put (output, "config", "file.output", std::string("outputfilename"));
+  put (output, "config", "handle.data", static_cast<long>(handle_data));
+  put (output, "config", "handle.scratch", static_cast<long>(handle_scratch));
 
-  MLOG (INFO, "got: give config " << get<value::type>(output, "config"));
+  MLOG (INFO, "init: got config " << get<value::type>(output, "config"));
+}
+
+// ************************************************************************* //
+
+static void finalize ( void * state
+                     , const we::loader::input_t & input
+                     , we::loader::output_t & output
+                     )
+{
+  const value::type & config (get<value::type> (input, "config"));
+
+  MLOG (INFO, "finalize: config " << config);
+
+  const fvmAllocHandle_t handle_data (get<long> (config, "handle.data"));
+  const fvmAllocHandle_t handle_scratch (get<long> (config, "handle.scratch"));
+
+  fvmGlobalFree (handle_data);
+  fvmGlobalFree (handle_scratch);
+
+  put (output, "done", control());
 }
 
 // ************************************************************************* //
@@ -133,6 +183,7 @@ WE_MOD_INITIALIZE_START (simple_process);
   WE_REGISTER_FUN (init);
   WE_REGISTER_FUN (load);
   WE_REGISTER_FUN (write);
+  WE_REGISTER_FUN (finalize);
 }
 WE_MOD_INITIALIZE_END (simple_process);
 

@@ -5,19 +5,31 @@
       <field name="part" type="long"/>
       <field name="write_credit" type="long"/>
     </struct>
-    <struct name="file">
-      <field name="output" type="string"/>
+
+    <struct name="input">
+      <field name="file" type="string"/>
+      <field name="typ" type="string"/>
     </struct>
+
+    <struct name="output">
+      <field name="file" type="string"/>
+      <field name="typ" type="string"/>
+    </struct>
+
     <struct name="handle">
       <field name="data" type="long"/>
       <field name="scratch" type="long"/>
     </struct>
-    <struct name="trace">
-      <field name="Nt" type="long"/>
-      <field name="per_bunch" type="long"/>
+
+    <struct name="trace_detect">
+      <field name="size_in_bytes" type="long"/>
       <field name="number" type="long"/>
     </struct>
-    <field name="memsize" type="long"/>
+
+    <struct name="tune">
+      <field name="memsize" type="long"/>
+      <field name="trace_per_bunch" type="long"/>
+    </struct>
   </struct>
 
   <struct name="part_in_store">
