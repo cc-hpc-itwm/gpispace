@@ -73,6 +73,14 @@ namespace fhg
     {
       std::string fmt (default_format::SHORT());
 
+      StreamAppender::ColorMode color_mode (StreamAppender::COLOR_OFF);
+      if (color_ == "auto")
+        color_mode = StreamAppender::COLOR_AUTO;
+      if (color_ == "off")
+        color_mode = StreamAppender::COLOR_OFF;
+      if (color_ == "on")
+        color_mode = StreamAppender::COLOR_ON;
+
       if (fmt_string_.size())
       {
 #ifndef NDEBUG
@@ -94,7 +102,7 @@ namespace fhg
           (Appender::ptr_t(new StreamAppender( "console"
                                              , std::cerr
                                              , fmt
-                                             , color_ != "no"
+                                             , color_mode
                                              )
                           )
           );
@@ -108,7 +116,7 @@ namespace fhg
           (Appender::ptr_t(new StreamAppender( "console"
                                              , std::cout
                                              , fmt
-                                             , color_ != "no"
+                                             , color_mode
                                              )
                           )
           );
@@ -122,7 +130,7 @@ namespace fhg
           (Appender::ptr_t(new StreamAppender( "console"
                                              , std::clog
                                              , fmt
-                                             , color_ != "no"
+                                             , color_mode
                                              )
                           )
           );
@@ -137,7 +145,7 @@ namespace fhg
           (Appender::ptr_t(new StreamAppender( "console"
                                              , std::cerr
                                              , fmt
-                                             , color_ != "no"
+                                             , color_mode
                                              )
                           )
           );
@@ -229,7 +237,7 @@ namespace fhg
       {
         threaded_ = false;
       }
-      else if (key == "FHGLOG_color" && (val == "auto" || val == "no" || val == "yes"))
+      else if (key == "FHGLOG_color")
       {
         color_ = val;
       }

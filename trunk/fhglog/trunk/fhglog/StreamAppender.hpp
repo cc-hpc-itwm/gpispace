@@ -27,7 +27,13 @@ namespace fhg { namespace log {
   class StreamAppender : public Appender
   {
     public:
-      explicit
+      enum ColorMode
+        {
+            COLOR_OFF
+          , COLOR_ON
+          , COLOR_AUTO
+        };
+
       /*
       * Create a new StreamAppender with the given name.
       *
@@ -37,7 +43,7 @@ namespace fhg { namespace log {
       StreamAppender( const std::string &a_name
                     , std::ostream &stream
                     , std::string const & fmt
-                    , bool colored = false
+                    , ColorMode color_mode = COLOR_AUTO
                     );
       ~StreamAppender() {}
 
@@ -45,7 +51,7 @@ namespace fhg { namespace log {
     private:
       std::ostream &stream_;
       std::string fmt_;
-      bool colored_;
+      ColorMode color_mode_;
   };
 }}
 #endif   /* ----- #ifndef STREAM_APPENDER_INC  ----- */

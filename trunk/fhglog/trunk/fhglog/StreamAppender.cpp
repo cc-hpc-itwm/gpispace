@@ -47,23 +47,35 @@ static std::string colorControlCode (LogEvent::severity_type severity)
 StreamAppender::StreamAppender( const std::string &a_name
                               , std::ostream &stream
                               , std::string const &fmt
-                              , bool colored
+                              , StreamAppender::ColorMode color_mode
                               )
-  : Appender(a_name), stream_(stream), fmt_(fmt), colored_(colored)
+  : Appender(a_name), stream_(stream), fmt_(fmt), color_mode_(color_mode)
 {
-  int fd (fileno (stream));
-  if (fd < 0) colored_ = false;
-  if (isatty(fd) != 1) colored_ = false;
+  if (color_mode_ == COLOR_AUTO)
+  {
+    int fd (fileno (stream));
+    if (fd < 0)
+    {
+      color_mode_ = COLOR_OFF;
+    } else if (isatty(fd))
+    {
+      color_mode_ = COLOR_ON;
+    }
+    else
+    {
+      color_mode_ = COLOR_OFF;
+    }
+  }
 }
 
 void
 StreamAppender::append(const LogEvent &evt)
 {
-  if (colored_)
+  if (color_mode_ == COLOR_ON)
     stream_ << colorControlCode (evt.severity());
 
   stream_ << format(fmt_, evt);
 
-  if (colored_)
-    stream_ << "\033[0m";
-}		/* -----  end of method ConsoleAppender::append  ----- */
+  if (color_mode_ == COLOR_ON)
+    stream_ << colorControlCode (evt.severity());
+}

@@ -108,12 +108,21 @@ int main(int argc, char **argv)
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);
 
+  fhg::log::StreamAppender::ColorMode color_mode
+    (fhg::log::StreamAppender::COLOR_OFF);
+  if (color == "auto")
+    color_mode = fhg::log::StreamAppender::COLOR_AUTO;
+  if (color == "off")
+    color_mode = fhg::log::StreamAppender::COLOR_OFF;
+  if (color == "on")
+    color_mode = fhg::log::StreamAppender::COLOR_ON;
+
   // my own output goes to stderr
   fhg::log::getLogger().addAppender
     (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( "console"
                                                             , std::clog
                                                             , fhg::log::default_format::SHORT()
-                                                            , color != "no"
+                                                            , color_mode
                                                             )
                                )
     );
@@ -156,7 +165,7 @@ int main(int argc, char **argv)
     (new fhg::log::StreamAppender( "console"
                                  , std::cout
                                  , fmt
-                                 , color != "no"
+                                 , color_mode
                                  )
     );
 
