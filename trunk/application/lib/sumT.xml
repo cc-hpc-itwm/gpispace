@@ -1,0 +1,8 @@
+<template name="sum">
+  <in name="a" type="T"/>
+  <in name="b" type="T"/>
+  <out name="s" type="T"/>
+  <expression>
+    ${s} := ${a} + ${b}
+  </expression>
+</template>
