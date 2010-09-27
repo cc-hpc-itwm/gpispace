@@ -1,0 +1,29 @@
+<structs>
+  <struct name="config">
+    <struct name="num">
+      <field name="store" type="long"/>
+      <field name="part" type="long"/>
+      <field name="write_credit" type="long"/>
+    </struct>
+    <struct name="file">
+      <field name="output" type="string"/>
+    </struct>
+    <struct name="handle">
+      <field name="data" type="long"/>
+      <field name="scratch" type="long"/>
+    </struct>
+    <struct name="trace">
+      <field name="Nt" type="long"/>
+      <field name="per_bunch" type="long"/>
+      <field name="number" type="long"/>
+    </struct>
+    <field name="memsize" type="long"/>
+  </struct>
+
+  <struct name="part_in_store">
+    <struct name="id">
+      <field name="part" type="long"/>
+      <field name="store" type="long"/>
+    </struct>
+  </struct>
+</structs>

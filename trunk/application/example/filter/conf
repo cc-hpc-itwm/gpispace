@@ -1,0 +1,7 @@
+trace.per_bunch  20
+memsize          1073741824
+
+file.output      "outputfilename"
+
+trace_detect.size_in_bytes 324
+trace_detect.number        441

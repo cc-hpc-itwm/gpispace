@@ -136,7 +136,7 @@ set (KDM_COMPLEX_MOD_SRCS src/kdm_complex_mod.cpp
 set (STANDALONE_SRCS src/standalone.cpp
     	./src/structures/migrationjob.cpp
 	./src/TraceBunch.cpp
-        ./src/TraceData.cpp	
+        ./src/TraceData.cpp
 	./src/filehandler/tracefilehandler.cpp
 	./src/structures/mod.cpp
 	./src/utils/swap_bytes.cpp
@@ -145,6 +145,14 @@ set (STANDALONE_SRCS src/standalone.cpp
  )
 
 set (FILTER_MOD_SRCS src/filter_mod.cpp
+     ${STANDALONE_SRCS}
+    )
+
+set (SIMPLE_PROCESS_MOD_SRCS src/simple_process.cpp
+     ${STANDALONE_SRCS}
+    )
+
+set (FILTER_TRACE_MOD_SRCS src/filter_trace_mod.cpp
      ${STANDALONE_SRCS}
     )
 
@@ -181,6 +189,12 @@ set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
 add_library(filter_mod SHARED ${FILTER_MOD_SRCS})
 set_target_properties(filter_mod PROPERTIES OUTPUT_NAME filter)
 
+add_library (simple_process_mod SHARED ${SIMPLE_PROCESS_MOD_SRCS})
+set_target_properties(simple_process_mod PROPERTIES OUTPUT_NAME simple_process)
+
+add_library (filter_trace_mod SHARED ${FILTER_TRACE_MOD_SRCS})
+set_target_properties(filter_trace_mod PROPERTIES OUTPUT_NAME filter_trace)
+
 add_executable(standalone_test ${STANDALONE_SRCS})
 target_link_libraries(standalone_test pthread)
 
@@ -188,7 +202,7 @@ target_link_libraries(standalone_test pthread)
 #set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
 #target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
 
-install(TARGETS sinc_mod filter_mod
+install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
   LIBRARY
   DESTINATION libexec
   COMPONENT modules)
