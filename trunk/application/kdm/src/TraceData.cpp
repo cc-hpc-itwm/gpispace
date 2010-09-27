@@ -371,32 +371,32 @@ void TraceData::PrepareData(const MigrationJob& Job)
     if (bandpass_filter == NULL)
     {
 	bandpass_filter = new float[Nfft];
-	if ( (Job.frequ1 > 0)
-	     && (Job.frequ2 > 0)
-	     && (Job.frequ3 > 0)
-	     && (Job.frequ4 > 0))
-	{
-	    for (int iarray = 0; iarray < Nfft; iarray++)
-	    {
-		float frequ = ((float)iarray)/(dtbin*((float)Nfft));
-		bandpass_filter [iarray] = 1.0f;
-		if ( (frequ < Job.frequ1) || (frequ >= Job.frequ4))
-		    bandpass_filter[iarray] = 0.;
-		else
-		    if ( (frequ >= Job.frequ1) && (frequ < Job.frequ2))
-		    {
-			const float val = (frequ - Job.frequ1)/(Job.frequ2-Job.frequ1);
-			bandpass_filter [iarray] =  (sin((2*val-1)*_PI/2) + 1)*(sin((2*val-1)*_PI/2) + 1)/4;
-		    }
-		    else
-			if ( (frequ >= Job.frequ3) && (frequ < Job.frequ4))
-			{
-			    const float val = (Job.frequ4 - frequ)/(Job.frequ4-Job.frequ3);
-			    bandpass_filter [iarray] =  (sin((2.*val-1.)*_PI/2.) + 1.)*(sin((2.*val-1.)*_PI/2.) + 1.)/4.;
-			}
-	    }
-	}
-	else
+// 	if ( (Job.frequ1 > 0)
+// 	     && (Job.frequ2 > 0)
+// 	     && (Job.frequ3 > 0)
+// 	     && (Job.frequ4 > 0))
+// 	{
+// 	    for (int iarray = 0; iarray < Nfft; iarray++)
+// 	    {
+// 		float frequ = ((float)iarray)/(dtbin*((float)Nfft));
+// 		bandpass_filter [iarray] = 1.0f;
+// 		if ( (frequ < Job.frequ1) || (frequ >= Job.frequ4))
+// 		    bandpass_filter[iarray] = 0.;
+// 		else
+// 		    if ( (frequ >= Job.frequ1) && (frequ < Job.frequ2))
+// 		    {
+// 			const float val = (frequ - Job.frequ1)/(Job.frequ2-Job.frequ1);
+// 			bandpass_filter [iarray] =  (sin((2*val-1)*_PI/2) + 1)*(sin((2*val-1)*_PI/2) + 1)/4;
+// 		    }
+// 		    else
+// 			if ( (frequ >= Job.frequ3) && (frequ < Job.frequ4))
+// 			{
+// 			    const float val = (Job.frequ4 - frequ)/(Job.frequ4-Job.frequ3);
+// 			    bandpass_filter [iarray] =  (sin((2.*val-1.)*_PI/2.) + 1.)*(sin((2.*val-1.)*_PI/2.) + 1.)/4.;
+// 			}
+// 	    }
+// 	}
+// 	else
 	{
 	    for (int iarray = 0; iarray < Nfft; iarray++)
 	    {
