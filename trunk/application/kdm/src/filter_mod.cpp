@@ -202,7 +202,7 @@ static void bandpass_impl ( TraceBunch & Bunch
 			  , const float & frequ4
 			  )
 {
-  if ( (frequ1 < 0.f) || (frequ2 < 0.f) || (frequ3 < 0.f) && (frequ4 < 0.f))
+  if ( (frequ1 < 0.f) || (frequ2 < 0.f) || (frequ3 < 0.f) || (frequ4 < 0.f))
     throw std::runtime_error ("bandpass called but not configured");
 
     const int NTraces( Bunch.getNTB() );
@@ -259,8 +259,8 @@ static void bandpass_impl ( TraceBunch & Bunch
 	fft(-1, Nfft, fftarray);
 	for (int iarray = 0; iarray < Nfft; iarray++)
 	{
-	    const float newim = fftarray[2*iarray]  * filterarray[iarray];
-	    const float newre = -fftarray[2*iarray+1] * filterarray[iarray];
+	    const float newre = fftarray[2*iarray]  * filterarray[iarray];
+	    const float newim = fftarray[2*iarray+1] * filterarray[iarray];
 	    fftarray[2*iarray] = newre;
 	    fftarray[2*iarray+1] = newim;
 	}
