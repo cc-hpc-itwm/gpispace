@@ -77,5 +77,5 @@ StreamAppender::append(const LogEvent &evt)
   stream_ << format(fmt_, evt);
 
   if (color_mode_ == COLOR_ON)
-    stream_ << colorControlCode (evt.severity());
+    stream_ << "\033[;0m"; // back to normal after output
 }
