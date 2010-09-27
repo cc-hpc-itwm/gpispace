@@ -1,0 +1,51 @@
+<defun>
+  <in name="amount" type="long" place="N"/>
+  <out name="out" type="control" place="id"/>
+
+  <net>
+    <struct name="state">
+      <field name="id" type="long"/>
+      <field name="max" type="long"/>
+    </struct>
+
+    <place name="N" type="long"/>
+    <place name="state" type="state"/>
+    <place name="id" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <in name="N" type="long"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.id} := 0L; ${state.max} := ${N}
+        </expression>
+      </defun>
+      <connect-in place="N" port="N"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <expression></expression>
+        <condition>${state.id} :ge: ${state.max}</condition>
+      </defun>
+      <connect-in place="state" port="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="id" type="control"/>
+        <expression>
+          ${id} := []; ${state.id} := ${state.id} + 1
+        </expression>
+        <condition>${state.id} :lt: ${state.max}</condition>
+      </defun>
+      <connect-in place="state" port="state"/>
+      <connect-out place="state" port="state"/>
+      <connect-out place="id" port="id"/>
+    </transition>
+  </net>
+</defun>
