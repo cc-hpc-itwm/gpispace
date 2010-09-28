@@ -8,12 +8,20 @@
 
     <struct name="input">
       <field name="file" type="string"/>
-      <field name="typ" type="string"/>
+      <field name="type" type="string"/>
     </struct>
 
     <struct name="output">
       <field name="file" type="string"/>
-      <field name="typ" type="string"/>
+      <field name="type" type="string"/>
+    </struct>
+
+    <struct name="data">
+      <field name="size" type="long"/>
+    </struct>
+
+    <struct name="bunchbuffer">
+      <field name="size" type="long"/>
     </struct>
 
     <struct name="handle">
