@@ -68,7 +68,7 @@ typedef struct {
 //                        MigrationJob &_Job, SincInterpolator ** _SincIntA,int NThreads = 1);
 
 bool MigBunch2SubVol(const MigrationJob &Job, TraceBunch &Bunch,
-                    MigSubVol3D &SubVol,SincInterpolator **SincIntA,int NThreads, char *, const fvmAllocHandle_t);
+                    MigSubVol3D &SubVol,int NThreads, char *, const fvmAllocHandle_t);
 // bool MigBunch2SubVol2(const MigrationJob &Job, TraceBunch &Bunch,
 // 		      MigSubVol3D &SubVol,SincInterpolator &SincInt);
 

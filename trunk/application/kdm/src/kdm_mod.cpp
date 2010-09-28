@@ -373,30 +373,30 @@ static void kdm_init_volume ( const value::type & config
 
   get_Job (config, Job);
 
-  if (!Job.sinc_initialized)
-  {
-    LOG(INFO, "Init SincInterpolator on node " << fvmGetRank());
+//   if (!Job.sinc_initialized)
+//   {
+//     LOG(INFO, "Init SincInterpolator on node " << fvmGetRank());
 
-    const long & NThreads (get<long> (config, "NThreads"));
+//     const long & NThreads (get<long> (config, "NThreads"));
 
-    initSincIntArray(NThreads, Job.tracedt);
+//     initSincIntArray(NThreads, Job.tracedt);
 
-    Job.sinc_initialized = true;
+//     Job.sinc_initialized = true;
 
-    memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
+//     memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
 
-    // rewrite Job
-    const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
-    const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
+//     // rewrite Job
+//     const fvmAllocHandle_t & handle_Job (get<long> (config, "handle_Job"));
+//     const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch_Job"));
 
-    waitComm (fvmPutGlobalData ( handle_Job
-                               , fvmGetRank() * sizeofJob()
-                               , sizeofJob()
-                               , 0
-                               , scratch_Job
-                               )
-             );
-  }
+//     waitComm (fvmPutGlobalData ( handle_Job
+//                                , fvmGetRank() * sizeofJob()
+//                                , sizeofJob()
+//                                , 0
+//                                , scratch_Job
+//                                )
+//              );
+//   }
 
   // init subvolume
 
@@ -480,7 +480,7 @@ static void kdm_process ( const value::type & config
 
   const fvmAllocHandle_t & handle_TT (get<long> (config, "handle_TT"));
 
-  MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
+  MigBunch2SubVol(Job,Bunch,MigSubVol,NThreads, _VMem, handle_TT);
 
   LOG (INFO, "process: bunch done " << bunch);
 }

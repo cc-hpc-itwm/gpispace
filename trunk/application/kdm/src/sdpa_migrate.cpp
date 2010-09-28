@@ -1,4 +1,5 @@
 #include <sdpa_migrate.hpp>
+#include "sinc_mod.hpp"
 
 // bool SDPA_mig_and_pref( int _oid
 //                       , int _pid2mig
@@ -80,7 +81,7 @@
 // }
 
 bool MigBunch2SubVol(const MigrationJob &Job, TraceBunch &Bunch,
- 		     MigSubVol3D &SubVol,SincInterpolator **SincIntA,int NThreads
+		     MigSubVol3D &SubVol,int NThreads
                     , char * _VMem
                     , const fvmAllocHandle_t handle_TT
                     )
@@ -99,7 +100,7 @@ bool MigBunch2SubVol(const MigrationJob &Job, TraceBunch &Bunch,
     thread_params[mtid].Job      = &Job;
     thread_params[mtid].Bunch    = &Bunch;
     thread_params[mtid].SubVol   = &SubVol;
-    thread_params[mtid].SincInt  = SincIntA[mtid];
+    thread_params[mtid].SincInt  = getSincInterpolator (mtid, Job.tracedt);
     thread_params[mtid].Ntid     = Ntid;
     thread_params[mtid].mtid     = mtid;
     thread_params[mtid].NThreads = NThreads;

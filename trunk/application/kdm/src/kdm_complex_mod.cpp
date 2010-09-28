@@ -455,7 +455,7 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
       const fvmAllocHandle_t & handle_TT (get<long> (config, "handle.TT"));
 
-      MigBunch2SubVol(Job,Bunch,MigSubVol,SincIntArray(),NThreads, _VMem, handle_TT);
+      MigBunch2SubVol(Job,Bunch,MigSubVol,NThreads, _VMem, handle_TT);
 
       stack_bunch_id.pop_back();
       stack_store_id.pop_back();
@@ -569,30 +569,30 @@ static void init_volume (void *, const we::loader::input_t & input, we::loader::
 
   get_Job (config, Job);
 
-  if (!Job.sinc_initialized)
-  {
-    MLOG (INFO, "Init SincInterpolator on node " << fvmGetRank());
+//   if (!Job.sinc_initialized)
+//   {
+//     MLOG (INFO, "Init SincInterpolator on node " << fvmGetRank());
 
-    const long & NThreads (get<long> (config, "threads.N"));
+//     const long & NThreads (get<long> (config, "threads.N"));
 
-    initSincIntArray(NThreads, Job.tracedt);
+//     initSincIntArray(NThreads, Job.tracedt);
 
-    Job.sinc_initialized = true;
+//     Job.sinc_initialized = true;
 
-    memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
+//     memcpy (fvmGetShmemPtr(), &Job, sizeofJob());
 
-    // rewrite Job
-    const fvmAllocHandle_t & handle_Job (get<long> (config, "handle.job"));
-    const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch.job"));
+//     // rewrite Job
+//     const fvmAllocHandle_t & handle_Job (get<long> (config, "handle.job"));
+//     const fvmAllocHandle_t & scratch_Job (get<long> (config, "scratch.job"));
 
-    waitComm (fvmPutGlobalData ( handle_Job
-                               , fvmGetRank() * sizeofJob()
-                               , sizeofJob()
-                               , 0
-                               , scratch_Job
-                               )
-             );
-  }
+//     waitComm (fvmPutGlobalData ( handle_Job
+//                                , fvmGetRank() * sizeofJob()
+//                                , sizeofJob()
+//                                , 0
+//                                , scratch_Job
+//                                )
+//              );
+//   }
 
   // init subvolume
 

@@ -26,15 +26,15 @@ namespace sinc
   {
     sinc_data_t * get(unsigned int tid, float dt)
     {
-      sinc_data_t * sd = interpolators[tid];
-      if (sd == NULL)
+      if (interpolators.find(tid) == interpolators.end())
       {
-        sd = new sinc_data_t(dt);
-        interpolators[tid] = sd;
-
+        sinc_data_t * sd (new sinc_data_t(dt));
         sd->init();
+        interpolators[tid] = sd;
       }
-      else if ((dt - sd->dt) > std::numeric_limits<float>::epsilon())
+
+      sinc_data_t * sd = interpolators.at(tid);
+      if ((dt - sd->dt) > std::numeric_limits<float>::epsilon())
       {
         sd->dt = dt;
         sd->init();
