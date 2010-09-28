@@ -7,6 +7,9 @@
 #include <string>
 #include <fstream>
 
+#include "SegYBHeader.h"
+#include "SegYEBCHeader.h"
+#include "SegYHeader.h"
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
@@ -37,7 +40,57 @@ static void do_load ( const std::string & filename
       fclose (inp);
     }
   else if (type == "segy")
-    {}
+    {
+       const int endianess( LITENDIAN );
+       FILE * inp (fopen (filename.c_str(), "rb"));
+	
+       if (inp == NULL)
+         {
+           throw std::runtime_error ("do_load: could not open " + filename);
+         }
+
+      const size_t size_of_SegYBHeader( 400 );
+      const size_t size_of_SegEBCHeader( 3200 );
+      fseek (inp, size_of_SegYBHeader + size_of_SegEBCHeader + part * part_size, SEEK_SET);
+
+      fread (pos, size, 1, inp);
+      const size_t trace_size( size/num );
+      const int Nsample = (trace_size - sizeof(SegYHeader)) / sizeof(float);
+      
+      std::cout << num << std::endl;
+      for (int inum = 0; inum < num; ++inum)
+      {
+	  SegYHeader * Header = (SegYHeader*) ( (char*)pos + inum * trace_size);
+	  float * Data = (float*) ( (char*)pos + inum * trace_size + sizeof(SegYHeader));
+
+	  if (endianess != BIGENDIAN)
+	  {
+	      swap_bytes((void*)&Header->tracl, 1, sizeof(int));
+	      swap_bytes((void*)&Header->tracr, 1, sizeof(int));
+	      swap_bytes((void*)&Header->tracf, 1, sizeof(int));
+	      swap_bytes((void*)&Header->cdp, 1, sizeof(int));
+	      swap_bytes((void*)&Header->cdpt, 1, sizeof(int));
+	      swap_bytes((void*)&Header->ep, 1, sizeof(int));
+	      swap_bytes((void*)&Header->scalco, 1, sizeof(short));
+	      swap_bytes((void*)&Header->sx, 1, sizeof(int));
+	      swap_bytes((void*)&Header->sy, 1, sizeof(int));
+	      swap_bytes((void*)&Header->gx, 1, sizeof(int));
+	      swap_bytes((void*)&Header->gy, 1, sizeof(int));
+	      swap_bytes((void*)&Header->offset, 1, sizeof(int));
+	      swap_bytes((void*)&Header->selev, 1, sizeof(int));
+	      swap_bytes((void*)&Header->gelev, 1, sizeof(int));
+	      swap_bytes((void*)&Header->scalel, 1, sizeof(short));
+	      swap_bytes((void*)&Header->ns, 1, sizeof(unsigned short));
+	      swap_bytes((void*)&Header->dt, 1, sizeof(unsigned short));
+	      swap_bytes((void*)&Header->trid, 1, sizeof(short));
+	      swap_bytes((void*)&Header->delrt, 1, sizeof(short));
+	      swap_bytes((void*)&Header->gdel, 1, sizeof(int));
+	      swap_bytes((void*)&Header->sdel, 1, sizeof(int));
+	  }
+	  ibm2float(Data, Nsample, endianess);
+      }
+      fclose (inp);
+    }
   else
     {
       throw std::runtime_error ("do_load: unknown type " + type);
@@ -61,7 +114,7 @@ static void do_write ( const std::string & filename
 
       if (outp == NULL)
         {
-          throw std::runtime_error ("do_load: could not open " + filename);
+          throw std::runtime_error ("do_write: could not open " + filename);
         }
 
       fseek (outp, part * part_size, SEEK_SET);
@@ -71,7 +124,73 @@ static void do_write ( const std::string & filename
       fclose (outp);
     }
   else if (type == "segy")
-    {}
+    {
+      const int endianess( LITENDIAN );
+      FILE * outp (fopen (filename.c_str(), "rb+"));
+	
+      if (outp == NULL)
+        {
+          throw std::runtime_error ("do_write: could not open " + filename);
+        }
+
+      const size_t trace_size( size/num );
+      const int Nsample = (trace_size - sizeof(SegYHeader)) / sizeof(float);
+      
+      if (  part == 0 )
+      {
+	  SegYEBCHeader EBCHeader = {};
+	  SegYBHeader BHeader;	
+
+	  BHeader.hns = Nsample;
+	  BHeader.hdt = ((SegYHeader*)pos)->dt;
+	  if (endianess != BIGENDIAN)
+	    {
+		swap_bytes((void*)&BHeader.hns, 1, sizeof(short));
+		swap_bytes((void*)&BHeader.hdt, 1, sizeof(short));
+		swap_bytes((void*)&BHeader.format, 1, sizeof(short));	  
+	    }
+	  fwrite((char*) &EBCHeader, sizeof(SegYEBCHeader), 1, outp);
+	  fwrite((char*) &BHeader, sizeof(SegYBHeader), 1, outp); 
+      }
+      for (int inum = 0; inum < num; ++inum)
+      {
+	  SegYHeader * Header = (SegYHeader*) ( (char*)pos + inum * trace_size);
+	  float * Data = (float*) ( (char*)pos + inum * trace_size + sizeof(SegYHeader));
+
+	  if (endianess != BIGENDIAN)
+	  {
+	      swap_bytes((void*)&Header->tracl, 1, sizeof(int));
+	      swap_bytes((void*)&Header->tracr, 1, sizeof(int));
+	      swap_bytes((void*)&Header->tracf, 1, sizeof(int));
+	      swap_bytes((void*)&Header->cdp, 1, sizeof(int));
+	      swap_bytes((void*)&Header->cdpt, 1, sizeof(int));
+	      swap_bytes((void*)&Header->ep, 1, sizeof(int));
+	      swap_bytes((void*)&Header->scalco, 1, sizeof(short));
+	      swap_bytes((void*)&Header->sx, 1, sizeof(int));
+	      swap_bytes((void*)&Header->sy, 1, sizeof(int));
+	      swap_bytes((void*)&Header->gx, 1, sizeof(int));
+	      swap_bytes((void*)&Header->gy, 1, sizeof(int));
+	      swap_bytes((void*)&Header->offset, 1, sizeof(int));
+	      swap_bytes((void*)&Header->selev, 1, sizeof(int));
+	      swap_bytes((void*)&Header->gelev, 1, sizeof(int));
+	      swap_bytes((void*)&Header->scalel, 1, sizeof(short));
+	      swap_bytes((void*)&Header->ns, 1, sizeof(unsigned short));
+	      swap_bytes((void*)&Header->dt, 1, sizeof(unsigned short));
+	      swap_bytes((void*)&Header->trid, 1, sizeof(short));
+	      swap_bytes((void*)&Header->delrt, 1, sizeof(short));
+	      swap_bytes((void*)&Header->gdel, 1, sizeof(int));
+	      swap_bytes((void*)&Header->sdel, 1, sizeof(int));
+	  }
+	  float2ibm(Data, Nsample, endianess);
+      }
+
+      const size_t size_of_SegYBHeader( 400 );
+      const size_t size_of_SegEBCHeader( 3200 );
+      fseek (outp, size_of_SegYBHeader + size_of_SegEBCHeader + part * part_size, SEEK_SET);
+
+      fwrite (pos, size, 1, outp);
+      fclose (outp);
+    }
   else
     {
       throw std::runtime_error ("do_write: unknown type " + type);

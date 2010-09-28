@@ -96,6 +96,72 @@ static void unblank ( void * state
 
 // ************************************************************************* //
 
+
+static void frac_impl (void * ptr, const long & num)
+{
+    const long NTraces( num );
+    if (NTraces <= 0)
+	return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+    const int NSample = ((SegYHeader* )ptr)->ns;
+    const float dt = ((SegYHeader* )ptr)->dt * 1.e-6;
+    const size_t trace_size( sizeof(SegYHeader) + NSample * sizeof(float) );
+
+    const int Nfft = getptz(NSample);
+
+    // initialize the frac array to omega for each sample
+    float * filterarray = new float[Nfft];
+    for (int iarray = 0; iarray < Nfft/2; iarray++)
+    { 
+	float omega = 2.f*2.f*M_PI*iarray/(dt*Nfft);
+	filterarray[iarray] = omega;
+    }
+    for (int iarray = Nfft/2; iarray < Nfft; iarray++)
+    { 
+	filterarray[iarray] = 0.f;
+    }
+
+    float * fftarray = new float[2*Nfft];
+
+    for(int i=0; i< NTraces; i++)
+    {
+	float* Data_ptr = (float*) ( (char*)ptr + i * trace_size + sizeof(SegYHeader) );
+
+	memset(fftarray, 0, 2*Nfft*sizeof(float));
+	for (int it = 0; it < NSample; it++)
+	{
+	    fftarray[2*it] = Data_ptr[it];
+	}
+	
+	fft(-1, Nfft, fftarray);
+	for (int iarray = 0; iarray < Nfft; iarray++)
+	{
+	    const float newim = fftarray[2*iarray]  * filterarray[iarray];
+	    const float newre = -fftarray[2*iarray+1] * filterarray[iarray];
+	    fftarray[2*iarray] = newre;
+	    fftarray[2*iarray+1] = newim;
+	}
+	fft(1, Nfft, fftarray);
+	
+	for (int it = 0; it < NSample; it++)
+	    Data_ptr[it] = fftarray[2*it]/Nfft;
+    }
+
+    delete[] fftarray;
+    delete[] filterarray;
+}
+
+static void frac ( void * state
+		 , const we::loader::input_t & input
+		 , we::loader::output_t & output
+		 )
+{
+  generic_filter (state, input, output, frac_impl);
+}
+
+// ************************************************************************* //
 WE_MOD_INITIALIZE_START (filter_trace);
 {
   LOG(INFO, "WE_MOD_INITIALIZE_START (filter_trace)");
