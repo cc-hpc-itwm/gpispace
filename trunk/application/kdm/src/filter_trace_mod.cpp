@@ -96,6 +96,147 @@ static void unblank ( void * state
 
 // ************************************************************************* //
 
+static void clip_impl (void * ptr, const long & num
+		       , const float & c)
+{
+  if (c == -1.f)
+    throw std::runtime_error ("clip called but not configured");
+
+  const long NTraces( num );
+  if (NTraces <= 0)
+      return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+  const int NSample = ((SegYHeader* )ptr)->ns;
+  const size_t trace_size( sizeof(SegYHeader) + NSample * sizeof(float) );
+
+    for(int i=0; i< NTraces; i++)
+    {
+	float* Data_ptr = (float*) ( (char*)ptr + i * trace_size + sizeof(SegYHeader) );
+
+	for (int it = 0; it < NSample; it++)
+	{
+	  if (Data_ptr[it] > c)
+	    Data_ptr[it] = c;
+	}
+   }
+}
+
+
+// ************************************************************************* //
+
+static void trap_impl (void * ptr, const long & num
+		       , const float & t)
+{
+  if (t == -1.f)
+    throw std::runtime_error ("trap called but not configured");
+		
+
+    const long NTraces( num );
+    if (NTraces <= 0)
+	return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+    const int NSample = ((SegYHeader* )ptr)->ns;
+    const size_t trace_size( sizeof(SegYHeader) + NSample * sizeof(float) );
+
+    for(int i=0; i< NTraces; i++)
+    {
+	float* Data_ptr = (float*) ( (char*)ptr + i * trace_size + sizeof(SegYHeader) );
+
+	for (int it = 0; it < NSample; it++)
+	{
+	  if (Data_ptr[it] > t)
+	    Data_ptr[it] = 0.f;
+	}
+   }
+}
+
+
+// ************************************************************************* //
+
+static void bandpass_impl ( void * ptr, const long & num
+			  , const float & frequ1
+			  , const float & frequ2
+			  , const float & frequ3
+			  , const float & frequ4
+			  )
+{
+  if ( (frequ1 < 0.f) || (frequ2 < 0.f) || (frequ3 < 0.f) || (frequ4 < 0.f))
+    throw std::runtime_error ("bandpass called but not configured");
+
+    const long NTraces( num );
+    if (NTraces <= 0)
+	return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+    const int NSample = ((SegYHeader* )ptr)->ns;
+    const float dt = ((SegYHeader* )ptr)->dt * 1.e-6;
+    const size_t trace_size( sizeof(SegYHeader) + NSample * sizeof(float) );
+
+    const int Nfft = getptz(NSample);
+
+    // initialize the band pass filter for each sample
+    float * filterarray = new float[Nfft];
+    for (int iarray = 0; iarray < Nfft; iarray++)
+    { 
+	const float frequ( iarray/(dt*Nfft) );
+
+	filterarray [iarray] = 1.0f;
+	if ( (frequ < frequ1) || (frequ >= frequ4))
+	    filterarray[iarray] = 0;
+	else
+	    if ( (frequ >= frequ1) && (frequ < frequ2))
+	    {
+		const float val = (frequ - frequ1)/(frequ2-frequ1);
+		const float s_val = sinf((2*val-1)*M_PI/2);
+		filterarray [iarray] =  0.25f*(s_val + 1.f)*(s_val + 1.f);
+	    }
+	    else
+		if ( (frequ >= frequ3) && (frequ < frequ4))
+		{
+		    const float val = (frequ4 - frequ)/(frequ4-frequ3);
+		    const float s_val = sinf((2*val-1)*M_PI/2);
+		    filterarray [iarray] =  0.25f*(s_val + 1.f)*(s_val+ 1.f);
+		}
+    }
+
+    float * fftarray = new float[2*Nfft];
+
+    for(int i=0; i< NTraces; i++)
+    {
+	float* Data_ptr = (float*) ( (char*)ptr + i * trace_size + sizeof(SegYHeader) );
+
+	memset(fftarray, 0, 2*Nfft*sizeof(float));
+	for (int it = 0; it < NSample; it++)
+	{
+	    fftarray[2*it] = Data_ptr[it];
+	}
+	
+	fft(-1, Nfft, fftarray);
+	for (int iarray = 0; iarray < Nfft; iarray++)
+	{
+	    const float newre = fftarray[2*iarray]  * filterarray[iarray];
+	    const float newim = fftarray[2*iarray+1] * filterarray[iarray];
+	    fftarray[2*iarray] = newre;
+	    fftarray[2*iarray+1] = newim;
+	}
+	fft(1, Nfft, fftarray);
+	
+	for (int it = 0; it < NSample; it++)
+	    Data_ptr[it] = fftarray[2*it]/Nfft;
+    }
+
+    delete[] fftarray;
+    delete[] filterarray;
+}
+
+
+// ************************************************************************* //
+
 
 static void frac_impl (void * ptr, const long & num)
 {
@@ -162,11 +303,53 @@ static void frac ( void * state
 }
 
 // ************************************************************************* //
+
+static void tpow_impl (void * ptr, const long & num,
+		       const float & tpow)
+{
+//     if (tpow == 0.f)
+// 	throw std::runtime_error ("tpow called but not configured");
+
+    const long NTraces( num );
+    if (NTraces <= 0)
+	return;
+
+    // get the time sampling from the first trace
+    // assuming that all traces have the same sampling
+    const int NSample = ((SegYHeader* )ptr)->ns;
+    const float dt = ((SegYHeader* )ptr)->dt * 1.e-6;
+    const float t0 = ((SegYHeader* )ptr)->delrt;
+    const size_t trace_size( sizeof(SegYHeader) + NSample * sizeof(float) );
+
+    // initialize the tpow filter for each sample
+    float * filterarray = new float[NSample];
+    for (int iarray = 0; iarray < NSample; iarray++)
+    { 
+	const float TT = std::max(dt, t0 + iarray * dt);
+	filterarray[iarray] = pow(TT, tpow);
+    }
+
+    for(int i=0; i< NTraces; i++)
+    {
+	float* Data_ptr = (float*) ( (char*)ptr + i * trace_size + sizeof(SegYHeader) );
+
+	for (int iarray = 0; iarray < NSample; iarray++)
+	{
+	    Data_ptr[iarray] *= filterarray[iarray];
+	}
+	
+    }
+
+    delete[] filterarray;
+}
+
+// ************************************************************************* //
 WE_MOD_INITIALIZE_START (filter_trace);
 {
   LOG(INFO, "WE_MOD_INITIALIZE_START (filter_trace)");
 
   WE_REGISTER_FUN (unblank);
+  WE_REGISTER_FUN (frac);
 }
 WE_MOD_INITIALIZE_END (filter_trace);
 
