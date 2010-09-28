@@ -144,7 +144,7 @@ static void init ( void * state
   MLOG (INFO, "init: sizeofBunchBuffer " << sizeofBunchBuffer);
 
   const long node_count (fvmGetNodeCount());
-  const long num_slot_per_node (memsize / (node_count * sizeofBunchBuffer));
+  const long num_slot_per_node (memsize / sizeofBunchBuffer);
 
   MLOG (INFO, "init: num_slot_per_node " << num_slot_per_node);
 
@@ -187,7 +187,7 @@ static void init ( void * state
   put (output, "config", "bunchbuffer.size", sizeofBunchBuffer);
   put (output, "config", "num.store", (num_slot_per_node - 1) * node_count);
   put (output, "config", "num.part", num_part);
-  put (output, "config", "num.write_credit", 2L);
+  put (output, "config", "num.write_credit", node_count);
 
   put (output, "config", "handle.data", static_cast<long>(handle_data));
   put (output, "config", "handle.scratch", static_cast<long>(handle_scratch));
