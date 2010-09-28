@@ -1,4 +1,5 @@
 #include <we/loader/macros.hpp>
+#include <fhglog/fhglog.hpp>
 #include <limits>
 #include "sinc_mod.hpp"
 
@@ -6,7 +7,7 @@ namespace sinc
 {
   struct sinc_data_t
   {
-    sinc_data_t (float _dt = std::numeric_limits<float>::quiet_NaN())
+    sinc_data_t (float _dt = -1.f)
       : dt(_dt)
     { }
 
@@ -24,17 +25,22 @@ namespace sinc
 
   struct sinc_data_mgr
   {
+    void resize (unsigned int ntid)
+    {
+      for (unsigned int tid (interpolators.size()); tid < ntid; ++tid)
+	{
+	  interpolators.push_back (new sinc_data_t);
+	}
+    }
+
     sinc_data_t * get(unsigned int tid, float dt)
     {
-      if (interpolators.find(tid) == interpolators.end())
-      {
-        sinc_data_t * sd (new sinc_data_t(dt));
-        sd->init();
-        interpolators[tid] = sd;
-      }
+      assert (interpolators.size() > tid);
 
-      sinc_data_t * sd = interpolators.at(tid);
-      if ((dt - sd->dt) > std::numeric_limits<float>::epsilon())
+      sinc_data_t * sd (interpolators[tid]);
+      if (  (sd->dt < 0)
+	 || (fabs(dt - sd->dt) > std::numeric_limits<float>::epsilon())
+	 )
       {
         sd->dt = dt;
         sd->init();
@@ -43,91 +49,53 @@ namespace sinc
       return sd;
     }
 
+    typedef std::vector<sinc::sinc_data_t*> interpolators_t;
+
     ~sinc_data_mgr() throw()
     {
-      while (! interpolators.empty())
-      {
-        sinc_data_t * sd = interpolators.begin()->second;
-        interpolators.erase (interpolators.begin());
-
-        if (sd) delete sd;
-      }
+      for ( interpolators_t::const_iterator pos (interpolators.begin())
+	  ; pos != interpolators.end()
+	  ; ++pos
+	  )
+	{
+	  if (*pos)
+	    {
+	      delete (*pos);
+	    }
+	  else
+	    {
+	      assert (false /* BUMMER */);
+	    }
+	}
     }
-    std::map<unsigned int, sinc::sinc_data_t*> interpolators;
+
+    interpolators_t interpolators;
   };
 }
 
+static sinc::sinc_data_mgr sd_mgr;
+
 SincInterpolator * getSincInterpolator (unsigned int thread_id, float dt)
 {
-  static sinc::sinc_data_mgr sd_mgr;
   return &(sd_mgr.get(thread_id, dt)->s);
 }
 
-static SincInterpolator ** sinc_int_array (0);
-static unsigned int NThread (0);
-
-SincInterpolator ** SincIntArray ()
+void resizeSincInterpolatorArray (unsigned int ntid)
 {
-  return sinc_int_array;
+  sd_mgr.resize (ntid);
 }
 
-void initSincIntArray (const unsigned int num_threads, float dt)
-{
-  if (sinc_int_array)
-  {
-    for (unsigned int i (0); i < NThread; ++i)
-    {
-      delete sinc_int_array[i];
-    }
-
-    delete [] sinc_int_array;
-    sinc_int_array = 0;
-  }
-
-  sinc_int_array = new SincInterpolator*[num_threads];
-
-  if (0 == sinc_int_array)
-  {
-    throw std::runtime_error ("sinc: could not allocate memory for SincInterpolator");
-  }
-
-  for (unsigned int i (0); i < num_threads; ++i)
-  {
-    sinc_int_array[i] = new SincInterpolator;
-
-    if (0 == sinc_int_array[i])
-    {
-      throw std::runtime_error ("sinc: could not allocate memory for SincInterpolator");
-    }
-
-    sinc_int_array[i]->init (dt);
-  }
-
-  NThread = num_threads;
-}
-
+/* ************************************************************************* */
 
 WE_MOD_INITIALIZE_START (sinc);
 {
-  //  LOG(INFO, "WE_MOD_INITIALIZE_START (sinc)");
-  std::cout << "WE_MOD_INITIALIZE_START (sinc)" << std::endl;
+  LOG(INFO, "WE_MOD_INITIALIZE_START (sinc)");
 }
 WE_MOD_INITIALIZE_END (sinc);
 
 WE_MOD_FINALIZE_START (sinc);
 {
-  //  LOG(INFO, "WE_MOD_FINALIZE_START (sinc)");
-  std::cout << "WE_MOD_FINALIZE_START (sinc)" << std::endl;
-  if (sinc_int_array)
-  {
-    for (unsigned int i (0); i < NThread; ++i)
-    {
-      delete sinc_int_array[i];
-    }
-
-    delete [] sinc_int_array;
-    sinc_int_array = 0;
-  }
+  LOG(INFO, "WE_MOD_FINALIZE_START (sinc)");
 }
 WE_MOD_FINALIZE_END (sinc);
 

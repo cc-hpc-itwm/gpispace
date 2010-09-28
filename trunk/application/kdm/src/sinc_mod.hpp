@@ -8,9 +8,8 @@
 #ifdef __cplusplus
 extern "C"
 {
-  extern SincInterpolator ** SincIntArray();
-  extern void initSincIntArray (const unsigned int num_threads, float);
   extern SincInterpolator * getSincInterpolator (unsigned int thread_id, float dt);
+  extern void resizeSincInterpolatorArray (unsigned int ntid);
 }
 #endif
 

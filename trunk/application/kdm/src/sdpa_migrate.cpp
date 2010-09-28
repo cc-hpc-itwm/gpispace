@@ -95,12 +95,14 @@ bool MigBunch2SubVol(const MigrationJob &Job, TraceBunch &Bunch,
   pthread_t threads[Ntid];
   thread_param_t thread_params[Ntid];
 
+  resizeSincInterpolatorArray (Ntid);
+
   for(int mtid=0;mtid<Ntid;mtid++)
   {
     thread_params[mtid].Job      = &Job;
     thread_params[mtid].Bunch    = &Bunch;
     thread_params[mtid].SubVol   = &SubVol;
-    thread_params[mtid].SincInt  = getSincInterpolator (mtid, Job.tracedt);
+    thread_params[mtid].SincInt  = NULL; // getSincInterpolator (mtid, Job.tracedt);
     thread_params[mtid].Ntid     = Ntid;
     thread_params[mtid].mtid     = mtid;
     thread_params[mtid].NThreads = NThreads;
@@ -221,6 +223,10 @@ void *MigBunch2SubVol_ST(void *_param)
 //    SincInt.init(thread_param->Bunch->getTrace(0)->getdtbin());
 
    //thread_param->Bunch->getTrace(0)->Dump();
+
+   thread_param->SincInt = getSincInterpolator ( mtid
+					       , thread_param->Job->tracedt
+					       );
 
    for(int i=0;i<NTB;i++)
    {
