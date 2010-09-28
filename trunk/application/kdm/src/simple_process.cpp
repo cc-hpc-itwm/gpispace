@@ -14,9 +14,10 @@
 
 static void do_load ( const std::string & filename
                     , const std::string & type
-                    , const long & part
-                    , const long & part_size
-                    , const long & size
+                    , const long & part      // ordinal number of this part
+                    , const long & part_size // size of a full part, bytes
+                    , const long & size      // size of this part, bytes
+		    , const long & num       // number of traces in this part
                     , void * pos
                     )
 {
@@ -47,9 +48,10 @@ static void do_load ( const std::string & filename
 
 static void do_write ( const std::string & filename
                      , const std::string & type
-                     , const long & part
-                     , const long & part_size
-                     , const long & size
+		     , const long & part      // ordinal number of this part
+		     , const long & part_size // size of a full part, bytes
+		     , const long & size      // size of this part, bytes
+		     , const long & num       // number of traces in this part
                      , void * pos
                      )
 {
@@ -182,7 +184,7 @@ static void init ( void * state
 
   close (outp_des);
 
-  put (output, "config", "data.size", static_cast<long>(buffer.st_size));
+  put (output, "config", "data.size", trace_size_in_bytes * trace_num);
 
   put (output, "config", "bunchbuffer.size", sizeofBunchBuffer);
   put (output, "config", "num.store", (num_slot_per_node - 1) * node_count);
@@ -240,7 +242,10 @@ static void load ( void * state
                             )
                   );
 
-  do_load (filename, type, part, sizeofBunchBuffer, size, fvmGetShmemPtr());
+  const long & trace_size_in_bytes (get<long> (config, "trace_detect.size_in_bytes"));
+  const long num (size / trace_size_in_bytes);
+
+  do_load (filename, type, part, sizeofBunchBuffer, size, num, fvmGetShmemPtr());
 
   // communicate data to GPI space into handle.data using handle.scratch
 
@@ -285,6 +290,9 @@ static void write ( void * state
                             )
                   );
 
+  const long & trace_size_in_bytes (get<long> (config, "trace_detect.size_in_bytes"));
+  const long num (size / trace_size_in_bytes);
+
   waitComm (fvmGetGlobalData ( handle_data
                              , store * sizeofBunchBuffer
                              , sizeofBunchBuffer
@@ -298,7 +306,7 @@ static void write ( void * state
   const std::string & filename (get<std::string> (config, "output.file"));
   const std::string & type (get<std::string> (config, "output.type"));
 
-  do_write (filename, type, part, sizeofBunchBuffer, size, fvmGetShmemPtr());
+  do_write (filename, type, part, sizeofBunchBuffer, size, num, fvmGetShmemPtr());
 
   put (output, "part", part);
   put (output, "store", store);

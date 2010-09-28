@@ -23,15 +23,21 @@ static void generic_filter ( void * state
 {
   const value::type & config (get<value::type> (input, "config"));
   const value::type & part_in_store (get<value::type> (input, "in"));
+  const long & part (get<long> (part_in_store, "id.part"));
   const long & store (get<long> (part_in_store, "id.store"));
 
-  MLOG (INFO, "generic_filter: store " << store << ", config " << config);
+  MLOG (INFO, "generic_filter: part " << part << ", store " << store << ", config " << config);
 
   // communicate from GPI space to fvmGetShmemPtr()
 
   const fvmAllocHandle_t & handle_data (get<long> (config, "handle.data"));
   const fvmAllocHandle_t & handle_scratch (get<long> (config, "handle.scratch"));
   const long & sizeofBunchBuffer (get<long> (config, "bunchbuffer.size"));
+  const long & data_size (get<long> (config, "data.size"));
+  const long size (std::min ( sizeofBunchBuffer
+                            , data_size - part * sizeofBunchBuffer
+                            )
+                  );
 
   waitComm (fvmGetGlobalData ( handle_data
                              , store * sizeofBunchBuffer
@@ -43,7 +49,10 @@ static void generic_filter ( void * state
 
   // call filter_impl
 
-  filter_impl (fvmGetShmemPtr(), get<long> (config, "tune.trace_per_bunch"));
+  const long & trace_size_in_bytes (get<long> (config, "trace_detect.size_in_bytes"));
+  const long num (size / trace_size_in_bytes);
+
+  filter_impl (fvmGetShmemPtr(), num);
 
   // communicate back
 
@@ -61,6 +70,7 @@ static void generic_filter ( void * state
 // ************************************************************************* //
 
 // ptr points to num many basis-items (e.g. traces)
+// num is valid also in the case of a smaller part
 static void unblank_impl (void * ptr, const long & num)
 {
   char * buf ((char *) ptr);
