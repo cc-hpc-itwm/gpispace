@@ -146,7 +146,13 @@ static void clip_impl (TraceBunch & Bunch, const float & c)
 	for (int it = 0; it < NSample; it++)
 	{
 	  if (Data_ptr[it] > c)
-	    Data_ptr[it] = c;
+	    {
+	      Data_ptr[it] = c;
+	    }
+	  else if (Data_ptr[it] < -c)
+	    {
+	      Data_ptr[it] = -c;
+	    }
 	}
    }
 }
@@ -179,7 +185,7 @@ static void trap_impl (TraceBunch & Bunch, const float & t)
 
 	for (int it = 0; it < NSample; it++)
 	{
-	  if (Data_ptr[it] > t)
+	  if (Data_ptr[it] > t || Data_ptr[it] < -t)
 	    Data_ptr[it] = 0.f;
 	}
    }

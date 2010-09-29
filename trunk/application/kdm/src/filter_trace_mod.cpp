@@ -121,7 +121,13 @@ static void clip_impl (void * ptr, const long & num
 	for (int it = 0; it < NSample; it++)
 	{
 	  if (Data_ptr[it] > c)
-	    Data_ptr[it] = c;
+	    {
+	      Data_ptr[it] = c;
+	    }
+	  else if (Data_ptr[it] < -c)
+	    {
+	      Data_ptr[it] = -c;
+	    }
 	}
    }
 }
@@ -160,7 +166,7 @@ static void trap_impl (void * ptr, const long & num
 
 	for (int it = 0; it < NSample; it++)
 	{
-	  if (Data_ptr[it] > t)
+	  if (Data_ptr[it] > t || Data_ptr[it] < -t)
 	    Data_ptr[it] = 0.f;
 	}
    }
