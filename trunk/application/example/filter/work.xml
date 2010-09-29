@@ -1,4 +1,5 @@
 <defun name="work">
+  <include-structs href="types.xml"/>
   <in name="config" type="config" place="config"/>
   <in name="part" type="part_in_store" place="in"/>
   <out name="part" type="part_in_store" place="out"/>
@@ -12,7 +13,7 @@
         <in name="config" type="config"/>
         <in name="in" type="part_in_store"/>
         <out name="out" type="part_in_store"/>
-        <module name="filter_trace" function="unblank"/>
+        <module name="filter_trace" function="clip"/>
       </defun>
       <connect-in port="config" place="config"/>
       <connect-in port="in" place="in"/>

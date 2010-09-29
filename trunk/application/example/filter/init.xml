@@ -7,6 +7,8 @@
   <out name="config" type="config" place="config"/>
   <out name="wait" type="long" place="wait"/>
   <out name="write_credit" type="control" place="write_credit"/>
+  <out name="num_store" type="long" place="num_store_out"/>
+  <out name="num_credit" type="long" place="num_credit_out"/>
 
   <net>
     <place name="desc" type="string"/>
@@ -19,6 +21,8 @@
     <place name="num_store" type="long"/>
     <place name="num_part" type="long"/>
     <place name="num_credit" type="long"/>
+    <place name="num_store_out" type="long"/>
+    <place name="num_credit_out" type="long"/>
 
     <transition name="init">
       <defun>
@@ -36,21 +40,27 @@
         <in name="config" type="config"/>
         <out name="config" type="config"/>
         <out name="num_store" type="long"/>
+        <out name="num_store_out" type="long"/>
         <out name="num_part" type="long"/>
         <out name="num_credit" type="long"/>
+        <out name="num_credit_out" type="long"/>
         <out name="wait" type="long"/>
         <expression>
           ${num_store} := ${config.num.store};
+          ${num_store_out} := ${num_store};
           ${num_part} := ${config.num.part};
           ${num_credit} := ${config.num.write_credit};
+          ${num_credit_out} := ${num_credit};
           ${wait} := ${config.num.part};
         </expression>
       </defun>
       <connect-in port="config" place="config_initialized"/>
       <connect-out port="config" place="config"/>
       <connect-out port="num_store" place="num_store"/>
+      <connect-out port="num_store_out" place="num_store_out"/>
       <connect-out port="num_part" place="num_part"/>
       <connect-out port="num_credit" place="num_credit"/>
+      <connect-out port="num_credit_out" place="num_credit_out"/>
       <connect-out port="wait" place="wait"/>
     </transition>
 
