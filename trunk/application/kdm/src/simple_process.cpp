@@ -13,6 +13,8 @@
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
+#include <fhg/util/starts_with.hpp>
+
 // ************************************************************************* //
 
 static void do_load ( const std::string & filename
@@ -240,11 +242,20 @@ static void init ( void * state
 
       if (s.size())
         {
-          if (  s == "output.file" || s == "output.type"
-             || s == "input.file"  || s == "input.type"
-             )
+          if (  fhg::util::starts_with ("output", s) 
+	     || fhg::util::starts_with ("input", s)
+	     )
             {
               std::string v;
+              file >> v;
+
+              MLOG (INFO, "init: read " << s << " " << v);
+
+              put (output, "config", s, v);
+            }
+          else if (fhg::util::starts_with ("param", s))
+            {
+              double v;
               file >> v;
 
               MLOG (INFO, "init: read " << s << " " << v);
