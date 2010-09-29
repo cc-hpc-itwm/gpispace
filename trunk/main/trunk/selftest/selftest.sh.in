@@ -113,7 +113,7 @@ fi
 log "starting orchestrator..."
 ${orch} >> ${logfile} 2>&1 &
 orch_pid=$!
-sleep 1
+sleep 2
 if ! is_alive "orchestrator" $orch_pid ; then
 	log "E: Orchestrator could not be started!"
 	exit ${EORCH}
@@ -124,7 +124,7 @@ fi
 log "starting aggregator..."
 ${agg} >> ${logfile} 2>&1 &
 agg_pid=$!
-sleep 1
+sleep 2
 if ! is_alive "aggregator" $agg_pid ; then
 	log "E: Aggregator could not be started!"
 	exit ${EAGG}
@@ -157,7 +157,7 @@ done < "$pcd_cfg"
 log "starting process-container..."
 ${pcd} --rank "0" --load "${libexec}/libfvm-pc.so" -a "${libexec}" >> ${logfile} 2>&1 &
 pcd_pid=$!
-sleep 1
+sleep 2
 if ! is_alive "pcd" $pcd_pid ; then
 	log "E: PCD could not be started!"
 	exit ${EPCD}
@@ -168,7 +168,7 @@ fi
 log "starting nre..."
 ${nre} >> ${logfile} 2>&1 &
 nre_pid=$!
-sleep 1
+sleep 2
 if ! is_alive "nre" $nre_pid ; then
 	log "E: NRE could not be started!"
 	exit ${ENRE}
