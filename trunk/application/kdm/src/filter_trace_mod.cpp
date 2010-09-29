@@ -10,16 +10,19 @@
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
+#include <boost/function.hpp>
+
 using we::loader::get;
 using we::loader::put;
 
 // ************************************************************************* //
 
-static void generic_filter ( void * state
-                           , const we::loader::input_t & input
-                           , we::loader::output_t & output
-                           , void (*filter_impl) (void *, const long &)
-                           )
+static void
+generic_filter ( void * state
+	       , const we::loader::input_t & input
+	       , we::loader::output_t & output
+	       , boost::function <void (void *, const long &)> filter_impl
+	       )
 {
   const value::type & config (get<value::type> (input, "config"));
   const value::type & part_in_store (get<value::type> (input, "in"));
@@ -123,6 +126,15 @@ static void clip_impl (void * ptr, const long & num
    }
 }
 
+static void clip ( void * state
+		 , const we::loader::input_t & input
+		 , we::loader::output_t & output
+		 )
+{
+  const float & c (get<double> (input, "config", "param.clip.c"));
+
+  generic_filter (state, input, output, boost::bind (clip_impl, _1, _2, c));
+}
 
 // ************************************************************************* //
 
@@ -154,6 +166,15 @@ static void trap_impl (void * ptr, const long & num
    }
 }
 
+static void trap ( void * state
+		 , const we::loader::input_t & input
+		 , we::loader::output_t & output
+		 )
+{
+  const float & t (get<long> (input, "config", "param.trap.t"));
+
+  generic_filter (state, input, output, boost::bind (trap_impl, _1, _2, t));
+}
 
 // ************************************************************************* //
 
@@ -234,12 +255,35 @@ static void bandpass_impl ( void * ptr, const long & num
     delete[] filterarray;
 }
 
+static void bandpass ( void * state
+		     , const we::loader::input_t & input
+		     , we::loader::output_t & output
+		     )
+{
+  const float & frequ1 (get<long> (input, "config", "param.bandpass.frequ1"));
+  const float & frequ2 (get<long> (input, "config", "param.bandpass.frequ2"));
+  const float & frequ3 (get<long> (input, "config", "param.bandpass.frequ3"));
+  const float & frequ4 (get<long> (input, "config", "param.bandpass.frequ4"));
+
+  generic_filter (state, input, output
+		 , boost::bind ( bandpass_impl
+			       , _1
+			       , _2
+			       , frequ1
+			       , frequ2
+			       , frequ3
+			       , frequ4
+			       )
+		 );
+}
 
 // ************************************************************************* //
 
 
 static void frac_impl (void * ptr, const long & num)
 {
+  MLOG(INFO, "frac called");
+
     const long NTraces( num );
     if (NTraces <= 0)
 	return;
@@ -343,13 +387,28 @@ static void tpow_impl (void * ptr, const long & num,
     delete[] filterarray;
 }
 
+static void tpow ( void * state
+		 , const we::loader::input_t & input
+		 , we::loader::output_t & output
+		 )
+{
+  const float & t (get<double> (input, "config", "param.tpow.tpow"));
+
+  generic_filter (state, input, output, boost::bind (tpow_impl, _1, _2, t));
+}
+
 // ************************************************************************* //
+
 WE_MOD_INITIALIZE_START (filter_trace);
 {
   LOG(INFO, "WE_MOD_INITIALIZE_START (filter_trace)");
 
   WE_REGISTER_FUN (unblank);
   WE_REGISTER_FUN (frac);
+  WE_REGISTER_FUN (clip);
+  WE_REGISTER_FUN (trap);
+  WE_REGISTER_FUN (tpow);
+  WE_REGISTER_FUN (bandpass);
 }
 WE_MOD_INITIALIZE_END (filter_trace);
 

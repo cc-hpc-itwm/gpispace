@@ -38,6 +38,24 @@
       <field name="memsize" type="long"/>
       <field name="trace_per_bunch" type="long"/>
     </struct>
+
+    <struct name="param">
+      <struct name="tpow">
+        <field name="tpow" type="double"/>
+      </struct>
+      <struct name="clip">
+        <field name="c" type="double"/>
+      </struct>
+      <struct name="trap">
+        <field name="t" type="double"/>
+      </struct>
+      <struct name="bandpass">
+        <field name="frequ1" type="double"/>
+        <field name="frequ2" type="double"/>
+        <field name="frequ3" type="double"/>
+        <field name="frequ4" type="double"/>
+      </struct>
+    </struct>
   </struct>
 
   <struct name="part_in_store">

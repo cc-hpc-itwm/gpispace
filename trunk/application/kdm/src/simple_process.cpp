@@ -222,6 +222,17 @@ static void init ( void * state
 
   MLOG (INFO, "init: read from " << filename);
 
+  // set default params
+  value::type param;
+
+  put (output, "config", "param.tpow.tpow", -1.0);
+  put (output, "config", "param.clip.c", -1.0);
+  put (output, "config", "param.trap.t", -1.0);
+  put (output, "config", "param.bandpass.frequ1", -1.0);
+  put (output, "config", "param.bandpass.frequ2", -1.0);
+  put (output, "config", "param.bandpass.frequ3", -1.0);
+  put (output, "config", "param.bandpass.frequ4", -1.0);
+
   while (!file.eof())
     {
       std::string s;
