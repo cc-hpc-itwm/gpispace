@@ -231,7 +231,7 @@ static long exec_impl ( std::string const & command
 	{
 	  LOG(TRACE, "input possible");
 
-	  r = write (in_to_child, src, size_in - bytes_wr);
+	  r = write (in_to_child, src, 1); //size_in - bytes_wr);
 
 	  if (r < 1)
 	  {
@@ -342,7 +342,7 @@ WE_MOD_INITIALIZE_START (exec);
   
   long ec (exec_impl ( "cat"
 		     , buf, inp.size()
-		     , buf, sizeof(out_buf)
+		     , buf, sizeof(buf)
 		     )
 	  );
   MLOG(INFO, "output = " << buf << " ec = " << ec);
