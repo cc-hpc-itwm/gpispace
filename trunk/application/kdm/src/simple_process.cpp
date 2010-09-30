@@ -17,6 +17,49 @@
 
 // ************************************************************************* //
 
+static void determine_size ( const std::string & filename
+			     , const std::string & type
+			     , long & num       // number of traces in this file
+			     , long & size      // size of one trace + header in bytes
+    )
+{
+  if (type == "text")
+    {
+	throw std::runtime_error ("determine_size: note implemented for file type 'text' ");
+    }
+  else if (type == "segy")
+    {
+       const int endianess( LITENDIAN );
+       FILE * inp (fopen (filename.c_str(), "rb"));
+	
+       if (inp == NULL)
+         {
+           throw std::runtime_error ("do_load: could not open " + filename);
+         }
+
+      fseek (inp, sizeof(SegYBHeader) + sizeof(SegYEBCHeader), SEEK_SET);
+
+      SegYHeader Header;
+      fread ((char*)&Header, sizeof(SegYHeader), 1, inp);
+      if (endianess != BIGENDIAN)
+      {
+	  swap_bytes((void*)&(Header.ns), 1, sizeof(unsigned short));
+      }
+      size = sizeof(SegYHeader) + Header.ns*sizeof(float);
+
+      fseek (inp, 0, SEEK_END);
+      const long endpos = ftell (inp);
+      num = (endpos - sizeof(SegYBHeader) - sizeof(SegYEBCHeader)) / size;
+      fclose (inp);
+    }
+  else
+    {
+      throw std::runtime_error ("determine_size: unknown type " + type);
+    }
+}
+
+// ************************************************************************* //
+
 static void do_load ( const std::string & filename
                     , const std::string & type
                     , const long & part      // ordinal number of this part
@@ -52,8 +95,8 @@ static void do_load ( const std::string & filename
          }
 
       const size_t size_of_SegYBHeader( 400 );
-      const size_t size_of_SegEBCHeader( 3200 );
-      fseek (inp, size_of_SegYBHeader + size_of_SegEBCHeader + part * part_size, SEEK_SET);
+      const size_t size_of_SegYEBCHeader( 3200 );
+      fseek (inp, size_of_SegYBHeader + size_of_SegYEBCHeader + part * part_size, SEEK_SET);
 
       fread (pos, size, 1, inp);
       const size_t trace_size( size/num );
@@ -187,8 +230,8 @@ static void do_write ( const std::string & filename
       }
 
       const size_t size_of_SegYBHeader( 400 );
-      const size_t size_of_SegEBCHeader( 3200 );
-      fseek (outp, size_of_SegYBHeader + size_of_SegEBCHeader + part * part_size, SEEK_SET);
+      const size_t size_of_SegYEBCHeader( 3200 );
+      fseek (outp, size_of_SegYBHeader + size_of_SegYEBCHeader + part * part_size, SEEK_SET);
 
       fwrite (pos, size, 1, outp);
       fclose (outp);
