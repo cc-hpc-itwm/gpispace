@@ -1,0 +1,22 @@
+#/bin/bash
+
+cd /u/herc/rahn/SDPA/trunk/application/example/filter/
+
+inf=${1:?}
+int=${2:?}
+outf=${3:?}
+outt=${4:?}
+shift 4
+
+cat tune.conf > filt.conf
+
+cat >> filt.conf <<EOF
+input.file ${inf}
+input.type ${int}
+output.file ${outf}
+output.type ${outt}
+exec.su "$@"
+EOF
+
+pnetc loop.xml -I ../../lib > su4.pnet
+sdpac -w submit su4.pnet
