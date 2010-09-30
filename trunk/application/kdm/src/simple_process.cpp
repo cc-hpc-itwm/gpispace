@@ -27,7 +27,7 @@ static void determine_size ( const std::string & filename
     {
 	throw std::runtime_error ("determine_size: note implemented for file type 'text' ");
     }
-  else if (type == "segy")
+  else if ( (type == "segy") || (type == "su") )
     {
        const int endianess( LITENDIAN );
        FILE * inp (fopen (filename.c_str(), "rb"));
@@ -37,11 +37,12 @@ static void determine_size ( const std::string & filename
            throw std::runtime_error ("do_load: could not open " + filename);
          }
 
-      fseek (inp, sizeof(SegYBHeader) + sizeof(SegYEBCHeader), SEEK_SET);
+       if (type == "segy")
+	   fseek (inp, sizeof(SegYBHeader) + sizeof(SegYEBCHeader), SEEK_SET);
 
       SegYHeader Header;
       fread ((char*)&Header, sizeof(SegYHeader), 1, inp);
-      if (endianess != BIGENDIAN)
+      if ( (type == "segy") && (endianess != BIGENDIAN) )
       {
 	  swap_bytes((void*)&(Header.ns), 1, sizeof(unsigned short));
       }
@@ -49,7 +50,10 @@ static void determine_size ( const std::string & filename
 
       fseek (inp, 0, SEEK_END);
       const long endpos = ftell (inp);
-      num = (endpos - sizeof(SegYBHeader) - sizeof(SegYEBCHeader)) / size;
+      if (type == "segy")
+	  num = (endpos - sizeof(SegYBHeader) - sizeof(SegYEBCHeader)) / size;
+      else
+	  num = (endpos ) / size;
       fclose (inp);
     }
   else
@@ -84,7 +88,7 @@ static void do_load ( const std::string & filename
 
       fclose (inp);
     }
-  else if (type == "segy")
+  else if ((type == "segy") || (type == "su") )
     {
        const int endianess( LITENDIAN );
        FILE * inp (fopen (filename.c_str(), "rb"));
@@ -94,9 +98,8 @@ static void do_load ( const std::string & filename
            throw std::runtime_error ("do_load: could not open " + filename);
          }
 
-      const size_t size_of_SegYBHeader( 400 );
-      const size_t size_of_SegYEBCHeader( 3200 );
-      fseek (inp, size_of_SegYBHeader + size_of_SegYEBCHeader + part * part_size, SEEK_SET);
+       const size_t size_of_fileheader = (type == "segy")?sizeof(SegYBHeader) + sizeof(SegYEBCHeader):0;
+      fseek (inp, size_of_fileheader + part * part_size, SEEK_SET);
 
       fread (pos, size, 1, inp);
       const size_t trace_size( size/num );
@@ -108,7 +111,7 @@ static void do_load ( const std::string & filename
 	  SegYHeader * Header = (SegYHeader*) ( (char*)pos + inum * trace_size);
 	  float * Data = (float*) ( (char*)pos + inum * trace_size + sizeof(SegYHeader));
 
-	  if (endianess != BIGENDIAN)
+	  if ((type == "segy") && (endianess != BIGENDIAN))
 	  {
 	      swap_bytes((void*)&Header->tracl, 1, sizeof(int));
 	      swap_bytes((void*)&Header->tracr, 1, sizeof(int));
@@ -132,7 +135,8 @@ static void do_load ( const std::string & filename
 	      swap_bytes((void*)&Header->gdel, 1, sizeof(int));
 	      swap_bytes((void*)&Header->sdel, 1, sizeof(int));
 	  }
-	  ibm2float(Data, Nsample, endianess);
+	  if (type == "segy")
+	      ibm2float(Data, Nsample, endianess);
       }
       fclose (inp);
     }
@@ -168,7 +172,7 @@ static void do_write ( const std::string & filename
 
       fclose (outp);
     }
-  else if (type == "segy")
+  else if ( (type == "segy") || (type == "su"))
     {
       const int endianess( LITENDIAN );
       FILE * outp (fopen (filename.c_str(), "rb+"));
@@ -181,7 +185,7 @@ static void do_write ( const std::string & filename
       const size_t trace_size( size/num );
       const int Nsample = (trace_size - sizeof(SegYHeader)) / sizeof(float);
       
-      if (  part == 0 )
+      if ( ( part == 0 ) && (type == "segy"))
       {
 	  SegYEBCHeader EBCHeader = {};
 	  SegYBHeader BHeader;	
@@ -202,7 +206,7 @@ static void do_write ( const std::string & filename
 	  SegYHeader * Header = (SegYHeader*) ( (char*)pos + inum * trace_size);
 	  float * Data = (float*) ( (char*)pos + inum * trace_size + sizeof(SegYHeader));
 
-	  if (endianess != BIGENDIAN)
+	  if ((type == "segy") && (endianess != BIGENDIAN))
 	  {
 	      swap_bytes((void*)&Header->tracl, 1, sizeof(int));
 	      swap_bytes((void*)&Header->tracr, 1, sizeof(int));
@@ -226,12 +230,12 @@ static void do_write ( const std::string & filename
 	      swap_bytes((void*)&Header->gdel, 1, sizeof(int));
 	      swap_bytes((void*)&Header->sdel, 1, sizeof(int));
 	  }
-	  float2ibm(Data, Nsample, endianess);
+	  if (type == "segy")
+	      float2ibm(Data, Nsample, endianess);
       }
 
-      const size_t size_of_SegYBHeader( 400 );
-      const size_t size_of_SegYEBCHeader( 3200 );
-      fseek (outp, size_of_SegYBHeader + size_of_SegYEBCHeader + part * part_size, SEEK_SET);
+       const size_t size_of_fileheader = (type == "segy")?sizeof(SegYBHeader) + sizeof(SegYEBCHeader):0;
+      fseek (outp, size_of_fileheader + part * part_size, SEEK_SET);
 
       fwrite (pos, size, 1, outp);
       fclose (outp);
