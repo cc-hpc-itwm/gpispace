@@ -169,7 +169,7 @@ static long exec_impl ( std::string const & command
 
       if (nfds == 0) break;
       
-      int ready = pselect (nfds + 1, &rd, &wr, NULL, NULL, NULL);
+      int ready = pselect (nfds + 1, &rd, &wr, NULL, &timeout, NULL);
       if (ready < 0 && errno == EINTR)
       {
 	DLOG(TRACE, "interrupted");
@@ -192,18 +192,18 @@ static long exec_impl ( std::string const & command
       {
 	if (out_from_child >= 0 && FD_ISSET(out_from_child, &rd))
 	{
-	  DLOG(TRACE, "output available");
+	  LOG(TRACE, "output available");
 
 	  r = read (out_from_child, dst, size_out - bytes_rd);
 	  if (r < 1)
 	  {
-	    DLOG(TRACE, "closing output stream from child");
+	    LOG(TRACE, "closing output stream from child");
 	    close (out_from_child);
 	    out_from_child = -1;
 	  }
 	  else
 	  {
-	    DLOG(TRACE, "read " << r << " bytes");
+	    LOG(TRACE, "read " << r << " bytes");
 	    bytes_rd += r;
 	    dst += r;
 	  }
@@ -211,13 +211,13 @@ static long exec_impl ( std::string const & command
 
 	if (err_from_child >= 0 && FD_ISSET(err_from_child, &rd))
 	{
-	  DLOG(TRACE, "error available");
+	  LOG(TRACE, "error available");
 	  
 	  char c;
 	  r = read (err_from_child, &c, 1);
 	  if (r < 1)
 	  {
-	    DLOG(TRACE, "closing error stream from child");
+	    LOG(TRACE, "closing error stream from child");
 	    close (err_from_child);
 	    err_from_child = -1;
 	  }
@@ -229,29 +229,29 @@ static long exec_impl ( std::string const & command
 
 	if (in_to_child >= 0 && FD_ISSET(in_to_child, &wr))
 	{
-	  DLOG(TRACE, "input possible");
+	  LOG(TRACE, "input possible");
 
 	  r = write (in_to_child, src, size_in - bytes_wr);
 
 	  if (r < 1)
 	  {
-	    DLOG(TRACE, "closing output to child");
+	    LOG(TRACE, "closing output to child");
 	    close (in_to_child);
 	    in_to_child = -1;
 	  }
 	  else
 	  {
-	    DLOG(TRACE, "wrote " << r << " bytes to child");
+	    LOG(TRACE, "wrote " << r << " bytes to child");
 	    bytes_wr += r;
 	    src += r;
 	  }
 	}
 	
-	DLOG(TRACE, "wr = " << bytes_wr << " rd = " << bytes_rd);
+	LOG(TRACE, "wr = " << bytes_wr << " rd = " << bytes_rd);
 
 	if (bytes_rd == size_out && bytes_wr == size_in)
 	{
-	  DLOG(INFO, "read/write completed");
+	  LOG(INFO, "read/write completed");
 	  break;
 	}
       }
@@ -313,18 +313,18 @@ static void selftest ( void *
 		     , we::loader::output_t &
 		     )
 {
-  char out_buf[1024];
-  memset (out_buf, 0, sizeof(out_buf));
+  char buf[1024];
+  memset (buf, 0, sizeof(buf));
 
   const std::string inp ("Hallo Welt!");
   
-  long ec (exec_impl ( "/bin/cat"
+  long ec (exec_impl ( "cat"
 		     , inp.c_str(), inp.size()
-		     , out_buf, sizeof(out_buf)
+		     , buf, sizeof(buf)
 		     )
 	  );
 
-  MLOG(INFO, "selftest: ec=" << ec << " o=" << out_buf);
+  MLOG(INFO, "selftest: ec=" << ec << " o=" << buf);
 }
 
 // ************************************************************************* //
@@ -334,17 +334,18 @@ WE_MOD_INITIALIZE_START (exec);
   WE_REGISTER_FUN_AS (exec_wrapper, "exec");
   WE_REGISTER_FUN (selftest);
   
-  char out_buf[10240];
-  memset (out_buf, 0, sizeof(out_buf));
+  char buf[1024];
+  memset (buf, 0, sizeof(buf));
 
   const std::string inp ("Hallo Welt!");
+  memcpy(buf, inp.c_str(), inp.size());
   
-  long ec (exec_impl ( "cat /etc/passwd"
-		     , inp.c_str(), inp.size()
-		     , out_buf, sizeof(out_buf)
+  long ec (exec_impl ( "cat"
+		     , buf, inp.size()
+		     , buf, sizeof(out_buf)
 		     )
 	  );
-  MLOG(INFO, "output = " << out_buf);
+  MLOG(INFO, "output = " << buf << " ec = " << ec);
 }
 WE_MOD_INITIALIZE_END (exec);
 
