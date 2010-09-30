@@ -329,9 +329,9 @@ static void init ( void * state
 		  coll += v;
 		}
 
-              MLOG (INFO, "init: read " << s << " " << coll.substr(0,coll.size()-2));
+              MLOG (INFO, "init: read " << s << " " << coll.substr(0,coll.size()-1));
 
-              put (output, "config", s, coll.substr(0,coll.size()-2));
+              put (output, "config", s, coll.substr(0,coll.size()-1));
             }
           else
             {
