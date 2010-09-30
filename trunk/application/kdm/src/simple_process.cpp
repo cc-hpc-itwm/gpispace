@@ -281,6 +281,7 @@ static void init ( void * state
   put (output, "config", "param.bandpass.frequ2", -1.0);
   put (output, "config", "param.bandpass.frequ3", -1.0);
   put (output, "config", "param.bandpass.frequ4", -1.0);
+  put (output, "config", "exec.su", std::string(""));
 
   while (!file.eof())
     {
@@ -300,14 +301,37 @@ static void init ( void * state
 
               put (output, "config", s, v);
             }
-          else if (fhg::util::starts_with ("param", s))
-            {
+	  else if (fhg::util::starts_with ("param", s))
+	    {
               double v;
               file >> v;
 
               MLOG (INFO, "init: read " << s << " " << v);
 
               put (output, "config", s, v);
+	    }
+          else if (fhg::util::starts_with ("exec", s))
+            {
+	      std::string coll;
+	      std::string v;
+
+	      file >> v;
+
+	      assert (v[0] == '"');
+
+	      coll = v.substr(1,v.size()-1);
+
+	      while (v[v.size()-1] != '"')
+		{
+		  file >> v;
+
+		  coll += ' ';
+		  coll += v;
+		}
+
+              MLOG (INFO, "init: read " << s << " " << coll.substr(0,coll.size()-2));
+
+              put (output, "config", s, coll.substr(0,coll.size()-2));
             }
           else
             {
@@ -321,7 +345,41 @@ static void init ( void * state
         }
     }
 
+  // determine size, overwrite values given in config file
+  {
+    long num (0);
+    long size (0);
+
+    const std::string & inp (get<std::string> (output, "config", "input.file"));
+    const std::string & t (get<std::string> (output, "config", "input.type"));
+
+    determine_size (inp, t, num, size);
+
+    put (output, "config", "trace_detect.number", num);
+    put (output, "config", "trace_detect.size_in_bytes", size);
+
+    try
+      {
+	const long & slots_per_node (get<long> (output, "config", "tune.slots_per_node"));
+	const long & memsize (get<long> (output, "config", "tune.memsize"));
+	const long trace_per_bunch ((memsize/slots_per_node) / size);
+
+	put (output, "config", "tune.trace_per_bunch", trace_per_bunch);
+      }
+    catch (...)
+      {
+	// do nothing, slots_per_node is not set
+	put (output, "config", "tune.slots_per_node", 1L);
+      }
+  }
+
   const long & trace_per_bunch (get<long> (output, "config", "tune.trace_per_bunch"));
+
+  if (trace_per_bunch <= 0)
+    {
+      throw std::runtime_error ("BUMMER! trace_per_bunch <= 0");
+    }
+
   const long & trace_num (get<long> (output, "config", "trace_detect.number"));
   const long & trace_size_in_bytes (get<long> (output, "config", "trace_detect.size_in_bytes"));
   const long & memsize (get<long> (output, "config", "tune.memsize"));

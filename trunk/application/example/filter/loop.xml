@@ -8,7 +8,7 @@
     <place name="desc" type="string">
       <token>
         <value>
-          "/u/herc/rahn/filt.conf"
+          "/u/herc/rahn/SDPA/trunk/application/example/filter/filt.conf"
         </value>
       </token>
     </place>
