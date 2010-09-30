@@ -282,28 +282,6 @@ static long exec_impl ( std::string const & command
 
 // ************************************************************************* //
 
-// ************************************************************************* //
-
-static void exec_wrapper ( void *
-			 , const we::loader::input_t & input
-			 , we::loader::output_t & output
-			 )
-{
-  const std::string & command (get<std::string> (input, "command"));
-
-  MLOG (INFO, "exec:  = \"" << command << "\"");
-
-  void * input_traces (0);
-  void * output_traces (0);
-  
-  long ec (exec_impl (command, input_traces, 0, output_traces, 0));
-
-  MLOG (INFO, "exec: returned with: " << ec);
-  put (output, "ec", ec);
-}
-
-// ************************************************************************* //
-
 static void
 generic_filter ( void * state
 	       , const we::loader::input_t & input
