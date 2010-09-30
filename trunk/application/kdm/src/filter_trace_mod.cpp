@@ -83,7 +83,6 @@ static long exec_impl ( std::string const & command
 	; ++it, ++idx
 	)
     {
-      LOG(DEBUG, "av[" << idx << "]: " << *it);
       av[idx] = new char[it->size()+1];
       memcpy(av[idx], it->c_str(), it->size());
       av[idx][it->size()] = (char)0;
@@ -92,10 +91,11 @@ static long exec_impl ( std::string const & command
     std::stringstream sstr_cmd;
     for(size_t k=0; k<idx; k++)
       sstr_cmd << av[idx];
-  
-    close (0);
-    close (1);
-    close (2);
+
+    for (int i = 0; i < 1024; ++i)
+    {
+      close (i);
+    }
     
     close (in_pipe[1]);
     close (out_pipe[0]);
@@ -108,7 +108,6 @@ static long exec_impl ( std::string const & command
     //    if ( execve( av[0], av, environ) < 0 )
     if ( execvp( av[0], av ) < 0 )
     {
-      LOG(ERROR, "could not execv(" << command << "): " << strerror(errno));
       throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() + std::string(strerror(errno)));
     }
   }
@@ -278,6 +277,28 @@ static long exec_impl ( std::string const & command
   }
   
   return ec;
+}
+
+// ************************************************************************* //
+
+// ************************************************************************* //
+
+static void exec_wrapper ( void *
+			 , const we::loader::input_t & input
+			 , we::loader::output_t & output
+			 )
+{
+  const std::string & command (get<std::string> (input, "command"));
+
+  MLOG (INFO, "exec:  = \"" << command << "\"");
+
+  void * input_traces (0);
+  void * output_traces (0);
+  
+  long ec (exec_impl (command, input_traces, 0, output_traces, 0));
+
+  MLOG (INFO, "exec: returned with: " << ec);
+  put (output, "ec", ec);
 }
 
 // ************************************************************************* //

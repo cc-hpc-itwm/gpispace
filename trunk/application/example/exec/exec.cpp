@@ -87,7 +87,6 @@ static long exec_impl ( std::string const & command
 	; ++it, ++idx
 	)
     {
-      LOG(DEBUG, "av[" << idx << "]: " << *it);
       av[idx] = new char[it->size()+1];
       memcpy(av[idx], it->c_str(), it->size());
       av[idx][it->size()] = (char)0;
@@ -96,10 +95,11 @@ static long exec_impl ( std::string const & command
     std::stringstream sstr_cmd;
     for(size_t k=0; k<idx; k++)
       sstr_cmd << av[idx];
-  
-    close (0);
-    close (1);
-    close (2);
+
+    for (int i = 0; i < 1024; ++i)
+    {
+      close (i);
+    }
     
     close (in_pipe[1]);
     close (out_pipe[0]);
@@ -112,7 +112,6 @@ static long exec_impl ( std::string const & command
     //    if ( execve( av[0], av, environ) < 0 )
     if ( execvp( av[0], av ) < 0 )
     {
-      LOG(ERROR, "could not execv(" << command << "): " << strerror(errno));
       throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() + std::string(strerror(errno)));
     }
   }
@@ -231,7 +230,7 @@ static long exec_impl ( std::string const & command
 	{
 	  LOG(TRACE, "input possible");
 
-	  r = write (in_to_child, src, 1); //size_in - bytes_wr);
+	  r = write (in_to_child, src, size_in - bytes_wr);
 
 	  if (r < 1)
 	  {
@@ -333,19 +332,20 @@ WE_MOD_INITIALIZE_START (exec);
 {
   WE_REGISTER_FUN_AS (exec_wrapper, "exec");
   WE_REGISTER_FUN (selftest);
-  
-  char buf[1024];
-  memset (buf, 0, sizeof(buf));
 
-  const std::string inp ("Hallo Welt!");
-  memcpy(buf, inp.c_str(), inp.size());
+  std::ifstream ifs ("/tmp/suplane.test");
+  char buf[15872];
+  ifs.read (buf, sizeof(buf));
   
-  long ec (exec_impl ( "cat"
-		     , buf, inp.size()
+  long ec (exec_impl ( "sufrac"
+		     , buf, sizeof(buf)
 		     , buf, sizeof(buf)
 		     )
 	  );
-  MLOG(INFO, "output = " << buf << " ec = " << ec);
+  std::ofstream ofs ("/tmp/suplane.test.out");
+  ofs.write (buf, sizeof(buf));
+  
+  MLOG(INFO, "ec = " << ec);
 }
 WE_MOD_INITIALIZE_END (exec);
 
