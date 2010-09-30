@@ -34,9 +34,9 @@ static int terminate (pid_t pid)
 
 static long exec_impl ( std::string const & command
 		      , const void *input
-                      , std::size_t size_in
+                      , unsigned int size_in
 		      , void *output
-                      , std::size_t size_out
+                      , unsigned int size_out
 		      )
 {
   int in_pipe[2];
@@ -68,31 +68,31 @@ static long exec_impl ( std::string const & command
   fcntl (err_pipe[0], F_SETFD, O_NONBLOCK);
   fcntl (err_pipe[1], F_SETFD, O_NONBLOCK);
 
-  std::vector<std::string> cmdline;
-  fhg::log::split (command, " ", std::back_inserter (cmdline));
-
-  char ** av = new char*[cmdline.size()+1];
-  av[cmdline.size()] = (char*)(NULL);
-  
-  std::size_t idx (0);
-  for ( std::vector<std::string>::const_iterator it (cmdline.begin())
-      ; it != cmdline.end()
-      ; ++it, ++idx
-      )
-  {
-    LOG(DEBUG, "av[" << idx << "]: " << *it);
-    av[idx] = new char[it->size()+1];
-    memcpy(av[idx], it->c_str(), it->size());
-    av[idx][it->size()] = (char)0;
-  }
-  
-  std::stringstream sstr_cmd;
-  for(size_t k=0; k<idx; k++)
-    sstr_cmd << av[idx];
-  
   pid_t pid_child = fork();
   if (pid_child == 0)
   {
+    std::vector<std::string> cmdline;
+    fhg::log::split (command, " ", std::back_inserter (cmdline));
+    
+    char ** av = new char*[cmdline.size()+1];
+    av[cmdline.size()] = (char*)(NULL);
+    
+    std::size_t idx (0);
+    for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+	; it != cmdline.end()
+	; ++it, ++idx
+	)
+    {
+      LOG(DEBUG, "av[" << idx << "]: " << *it);
+      av[idx] = new char[it->size()+1];
+      memcpy(av[idx], it->c_str(), it->size());
+      av[idx][it->size()] = (char)0;
+    }
+    
+    std::stringstream sstr_cmd;
+    for(size_t k=0; k<idx; k++)
+      sstr_cmd << av[idx];
+  
     close (0);
     close (1);
     close (2);
@@ -105,10 +105,11 @@ static long exec_impl ( std::string const & command
     dup2(out_pipe[1], 1);
     dup2(out_pipe[1], 2);
     
-    if ( execve( av[0], av, environ) < 0 )
+    //    if ( execve( av[0], av, environ) < 0 )
+    if ( execvp( av[0], av ) < 0 )
     {
-      LOG(ERROR, "could not execv(" << command << ")");
-      throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() );
+      LOG(ERROR, "could not execv(" << command << "): " << strerror(errno));
+      throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() + std::string(strerror(errno)));
     }
   }
   else if (pid_child > 0)
@@ -167,6 +168,7 @@ static long exec_impl ( std::string const & command
       int ready = pselect (nfds + 1, &rd, &wr, NULL, NULL, NULL);
       if (ready < 0 && errno == EINTR)
       {
+	DLOG(TRACE, "interrupted");
 	continue;
       }
       else if (ready < 0)
@@ -202,6 +204,7 @@ static long exec_impl ( std::string const & command
 	    dst += r;
 	  }
 	}
+
 	if (err_from_child >= 0 && FD_ISSET(err_from_child, &rd))
 	{
 	  DLOG(TRACE, "error available");
@@ -219,6 +222,7 @@ static long exec_impl ( std::string const & command
 	    err_str << c;
 	  }
 	}
+
 	if (in_to_child >= 0 && FD_ISSET(in_to_child, &wr))
 	{
 	  DLOG(TRACE, "input possible");
@@ -266,8 +270,6 @@ static long exec_impl ( std::string const & command
       MLOG(WARN, "strange child status: " << status);
       throw std::runtime_error("STRANGE child status!");
     }
-
-    MLOG(INFO, "got output of size: " << 0);
   }
   else
   {
