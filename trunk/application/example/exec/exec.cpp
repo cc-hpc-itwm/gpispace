@@ -98,7 +98,8 @@ static long exec_impl ( std::string const & command
 
     for (int i = 0; i < 1024; ++i)
     {
-      close (i);
+      if (i != in_pipe[0] && i != out_pipe[1] && i != err_pipe[1])
+	close (i);
     }
     
     close (in_pipe[1]);
