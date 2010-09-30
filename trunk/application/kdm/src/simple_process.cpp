@@ -421,6 +421,14 @@ static void init ( void * state
       num_part += 1;
     }
 
+  if ( get<std::string> (output, "config", "output.type")
+       !=
+       get<std::string> (output, "config", "input.type")
+     )
+  {
+    throw std::runtime_error ("Sorry, input type != output type not implemented yet!");
+  }
+
   struct stat buffer;
   stat (inputfile.c_str(), &buffer);
 
