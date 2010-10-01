@@ -1,5 +1,18 @@
 #/bin/bash
 
+data_dir=${DATA_DIR:?}
+
+filter_dir="$data_dir/filter"
+filter_cfg="$filter_dir/filt.conf"
+tune_cfg="$filter_dir/tune.conf"
+pnet_lib="$data_dir/../pnet/lib"
+pnet_lib="/p/herc/itwm/hpc/ap/SDPA/application/lib"
+
+if [ $# -ne 5 ]; then
+  echo "usage: $0 input-file input-type output-file output-type su-program"
+  exit 1
+fi
+
 inf=${1:?}
 int=${2:?}
 outf=${3:?}
@@ -7,16 +20,51 @@ outt=${4:?}
 prog=${5:?}
 shift 5
 
-cat tune.conf > filt.conf
+if [ -r "$tune_cfg" ] ; then
+  cat "$tune_cfg" > "$filter_cfg"
+else
+  echo "W: could not read $tune_cfg"
+fi
 
-module load soft/su
-cat >> filt.conf <<EOF
-input.file `pwd`/${inf}
+abspath ()
+{
+  p="$1"
+  case "$p" in
+	/*)
+	  REPLY="$p"
+	  ;;
+	*)
+	  REPLY="`pwd`/$p"
+	  ;;
+  esac
+  return 0
+}
+
+abspath ${inf}
+abs_inf="$REPLY"
+
+abspath ${outf}
+abs_outf="$REPLY"
+
+cat >> "$filter_cfg" <<EOF
+input.file ${abs_inf}
 input.type ${int}
-output.file `pwd`/${outf}
+output.file ${abs_outf}
 output.type ${outt}
 exec.su "${prog} $@"
 EOF
 
-pnetc loop.xml -I ../../lib > su4.pnet
-sdpac -w submit su4.pnet
+echo "generating job description..."
+sed -e "s,@CONFIG_FILE@,$filter_cfg," "$filter_dir/loop.xml.in" > "$filter_dir/loop.xml"
+if [ $? -ne 0 ] ; then
+  echo "generating failed!"
+  exit 2
+fi
+
+pnetc "$filter_dir/loop.xml" -I "$pnet_lib" > $filter_dir/su4.pnet
+if [ $? -ne 0 ] ; then
+  echo "generating failed!"
+  exit 2
+fi
+
+sdpac -w submit $filter_dir/su4.pnet
