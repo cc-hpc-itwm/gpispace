@@ -1,7 +1,5 @@
 #/bin/bash
 
-cd /u/herc/rahn/SDPA/trunk/application/example/filter/
-
 inf=${1:?}
 int=${2:?}
 outf=${3:?}
@@ -11,13 +9,14 @@ shift 5
 
 cat tune.conf > filt.conf
 
+module load soft/su
 cat >> filt.conf <<EOF
 input.file `pwd`/${inf}
 input.type ${int}
 output.file `pwd`/${outf}
 output.type ${outt}
-exec.su "`which ${prog}` $@"
+exec.su "${prog} $@"
 EOF
 
-#pnetc loop.xml -I ../../lib > su4.pnet
+pnetc loop.xml -I ../../lib > su4.pnet
 sdpac -w submit su4.pnet

@@ -337,8 +337,7 @@ WE_MOD_INITIALIZE_START (exec);
   std::ifstream ifs ("/tmp/suplane.test");
   char buf[15872];
   ifs.read (buf, sizeof(buf));
-  
-  long ec (exec_impl ( "sufrac"
+    long ec (exec_impl ( "sufrac"
 		     , buf, sizeof(buf)
 		     , buf, sizeof(buf)
 		     )
