@@ -740,7 +740,6 @@ WE_MOD_INITIALIZE_START (filter_trace);
   WE_REGISTER_FUN (tpow);
   WE_REGISTER_FUN (bandpass);
   WE_REGISTER_FUN (exec);
-
 }
 WE_MOD_INITIALIZE_END (filter_trace);
 
