@@ -444,6 +444,7 @@ static void init ( void * state
   put (output, "config", "num.store", (num_slot_per_node - 1) * node_count);
   put (output, "config", "num.part", num_part);
   put (output, "config", "num.write_credit", node_count);
+  put (output, "config", "num.read_credit", node_count);
 
   put (output, "config", "handle.data", static_cast<long>(handle_data));
   put (output, "config", "handle.scratch", static_cast<long>(handle_scratch));
