@@ -12,25 +12,30 @@
     <place name="config" type="config"/>
     <place name="store" type="long" virtual="true"/>
     <place name="write_credit" type="control" virtual="true"/>
+    <place name="load_credit" type="control" virtual="true"/>
     <place name="num_store" type="long" virtual="true"/>
-    <place name="num_credit" type="long" virtual="true"/>
+    <place name="num_write_credit" type="long" virtual="true"/>
+    <place name="num_load_credit" type="long" virtual="true"/>
 
-    <include-template href="dup.xml"/>
-    <specialize name="dup_control" use="dup">
+    <include-template href="triple.xml"/>
+    <specialize name="triple_control" use="triple">
       <type-map replace="T" with="control"/>
     </specialize>
 
-    <transition name="dup" inline="true">
-      <use name="dup_control"/>
+    <transition name="triple" inline="true">
+      <use name="triple_control"/>
       <connect-in port="in" place="trigger"/>
       <connect-out port="one" place="trigger_eat_store"/>
       <connect-out port="two" place="trigger_eat_write_credit"/>
+      <connect-out port="three" place="trigger_eat_load_credit"/>
     </transition>
 
     <place name="trigger_eat_store" type="control"/>
     <place name="trigger_eat_write_credit" type="control"/>
+    <place name="trigger_eat_load_credit" type="control"/>
     <place name="done_eat_store" type="control"/>
     <place name="done_eat_write_credit" type="control"/>
+    <place name="done_eat_load_credit" type="control"/>
 
     <include-template href="eatN.xml"/>
     <specialize name="eatN_long" use="eatN">
@@ -47,12 +52,19 @@
       <connect-in port="N" place="num_store"/>
       <connect-out port="done" place="done_eat_store"/>
     </transition>
-    <transition name="eat_credit" inline="true">
+    <transition name="eat_write_credit" inline="true">
       <use name="eatN_control"/>
       <place-map virtual="what" real="write_credit"/>
       <connect-in port="trigger" place="trigger_eat_write_credit"/>
-      <connect-in port="N" place="num_credit"/>
+      <connect-in port="N" place="num_write_credit"/>
       <connect-out port="done" place="done_eat_write_credit"/>
+    </transition>
+    <transition name="eat_load_credit" inline="true">
+      <use name="eatN_control"/>
+      <place-map virtual="what" real="load_credit"/>
+      <connect-in port="trigger" place="trigger_eat_load_credit"/>
+      <connect-in port="N" place="num_load_credit"/>
+      <connect-out port="done" place="done_eat_load_credit"/>
     </transition>
 
     <transition name="finalize">
@@ -71,11 +83,13 @@
       <defun>
         <in name="one" type="control"/>
         <in name="two" type="control"/>
+        <in name="three" type="control"/>
         <out name="clean" type="control"/>
         <expression>${clean} := []</expression>
       </defun>
       <connect-in port="one" place="done_eat_store"/>
       <connect-in port="two" place="done_eat_write_credit"/>
+      <connect-in port="three" place="done_eat_load_credit"/>
       <connect-out port="clean" place="clean"/>
     </transition>
   </net>

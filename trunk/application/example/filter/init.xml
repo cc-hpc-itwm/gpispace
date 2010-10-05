@@ -7,8 +7,10 @@
   <out name="config" type="config" place="config"/>
   <out name="wait" type="long" place="wait"/>
   <out name="write_credit" type="control" place="write_credit"/>
+  <out name="load_credit" type="control" place="load_credit"/>
   <out name="num_store" type="long" place="num_store_out"/>
-  <out name="num_credit" type="long" place="num_credit_out"/>
+  <out name="num_write_credit" type="long" place="num_write_credit_out"/>
+  <out name="num_load_credit" type="long" place="num_load_credit_out"/>
 
   <net>
     <place name="desc" type="string"/>
@@ -17,12 +19,15 @@
     <place name="config" type="config"/>
     <place name="wait" type="long"/>
     <place name="write_credit" type="control"/>
+    <place name="load_credit" type="control"/>
 
     <place name="num_store" type="long"/>
     <place name="num_part" type="long"/>
-    <place name="num_credit" type="long"/>
+    <place name="num_write_credit" type="long"/>
+    <place name="num_load_credit" type="long"/>
     <place name="num_store_out" type="long"/>
-    <place name="num_credit_out" type="long"/>
+    <place name="num_write_credit_out" type="long"/>
+    <place name="num_load_credit_out" type="long"/>
 
     <transition name="init">
       <defun>
@@ -42,15 +47,19 @@
         <out name="num_store" type="long"/>
         <out name="num_store_out" type="long"/>
         <out name="num_part" type="long"/>
-        <out name="num_credit" type="long"/>
-        <out name="num_credit_out" type="long"/>
+        <out name="num_write_credit" type="long"/>
+        <out name="num_write_credit_out" type="long"/>
+        <out name="num_load_credit" type="long"/>
+        <out name="num_load_credit_out" type="long"/>
         <out name="wait" type="long"/>
         <expression>
           ${num_store} := ${config.num.store};
           ${num_store_out} := ${num_store};
           ${num_part} := ${config.num.part};
-          ${num_credit} := ${config.num.write_credit};
-          ${num_credit_out} := ${num_credit};
+          ${num_write_credit} := ${config.num.write_credit};
+          ${num_write_credit_out} := ${num_write_credit};
+          ${num_load_credit} := ${config.num.load_credit};
+          ${num_load_credit_out} := ${num_load_credit};
           ${wait} := ${config.num.part};
         </expression>
       </defun>
@@ -59,8 +68,10 @@
       <connect-out port="num_store" place="num_store"/>
       <connect-out port="num_store_out" place="num_store_out"/>
       <connect-out port="num_part" place="num_part"/>
-      <connect-out port="num_credit" place="num_credit"/>
-      <connect-out port="num_credit_out" place="num_credit_out"/>
+      <connect-out port="num_write_credit" place="num_write_credit"/>
+      <connect-out port="num_write_credit_out" place="num_write_credit_out"/>
+      <connect-out port="num_load_credit" place="num_load_credit"/>
+      <connect-out port="num_load_credit_out" place="num_load_credit_out"/>
       <connect-out port="wait" place="wait"/>
     </transition>
 
@@ -76,10 +87,16 @@
       <connect-out port="out" place="part"/>
     </transition>
 
-    <transition name="generate_credit" inline="true">
+    <transition name="generate_write_credit" inline="true">
       <include-function href="sequence_control.xml"/>
-      <connect-in port="amount" place="num_credit"/>
+      <connect-in port="amount" place="num_write_credit"/>
       <connect-out port="out" place="write_credit"/>
+    </transition>
+
+    <transition name="generate_load_credit" inline="true">
+      <include-function href="sequence_control.xml"/>
+      <connect-in port="amount" place="num_load_credit"/>
+      <connect-out port="out" place="load_credit"/>
     </transition>
   </net>
 </defun>

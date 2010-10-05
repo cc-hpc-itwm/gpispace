@@ -4,6 +4,7 @@
       <field name="store" type="long"/>
       <field name="part" type="long"/>
       <field name="write_credit" type="long"/>
+      <field name="load_credit" type="long"/>
     </struct>
 
     <struct name="input">
