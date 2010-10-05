@@ -13,6 +13,7 @@
       </token>
     </place>
 
+
     <place name="done" type="control"/>
     <place name="clean" type="control"/>
     <place name="config" type="config"/>
@@ -20,22 +21,26 @@
     <place name="part" type="long"/>
     <place name="wait" type="long"/>
     <place name="write_credit" type="control"/>
+    <place name="load_credit" type="control"/>
     <place name="part_loaded" type="part_in_store"/>
     <place name="part_filtered" type="part_in_store"/>
     <place name="part_written" type="long"/>
     <place name="num_store" type="long"/>
-    <place name="num_credit" type="long"/>
+    <place name="num_write_credit" type="long"/>
+    <place name="num_load_credit" type="long"/>
 
     <transition name="init" inline="true">
       <include-function href="init.xml"/>
       <connect-in port="desc" place="desc"/>
       <connect-out port="write_credit" place="write_credit"/>
+      <connect-out port="load_credit" place="load_credit"/>
       <connect-out port="config" place="config"/>
       <connect-out port="store" place="store"/>
       <connect-out port="part" place="part"/>
       <connect-out port="wait" place="wait"/>
       <connect-out port="num_store" place="num_store"/>
-      <connect-out port="num_credit" place="num_credit"/>
+      <connect-out port="num_write_credit" place="num_write_credit"/>
+      <connect-out port="num_load_credit" place="num_load_credit"/>
     </transition>
 
     <transition name="work" inline="true">
@@ -43,6 +48,7 @@
       <connect-read port="config" place="config"/>
       <connect-in port="part" place="part_loaded"/>
       <connect-out port="part" place="part_filtered"/>
+      <connect-out port="credit" place="load_credit"/>
     </transition>
 
     <transition name="load">
@@ -50,12 +56,14 @@
         <in name="config" type="config"/>
         <in name="store" type="long"/>
         <in name="part" type="long"/>
+        <in name="credit" type="control"/>
         <out name="part_loaded" type="part_in_store"/>
         <module name="simple_process" function="load"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="store" place="store"/>
       <connect-in port="part" place="part"/>
+      <connect-in port="credit" place="load_credit"/>
       <connect-out port="part_loaded" place="part_loaded"/>
     </transition>
 
@@ -93,8 +101,10 @@
       <include-function href="finalize.xml"/>
       <place-map virtual="store" real="store"/>
       <place-map virtual="write_credit" real="write_credit"/>
+      <place-map virtual="load_credit" real="load_credit"/>
       <place-map virtual="num_store" real="num_store"/>
-      <place-map virtual="num_credit" real="num_credit"/>
+      <place-map virtual="num_write_credit" real="num_write_credit"/>
+      <place-map virtual="num_load_credit" real="num_load_credit"/>
       <connect-in port="config" place="config"/>
       <connect-in port="trigger" place="done"/>
       <connect-out port="clean" place="clean"/>
@@ -149,7 +159,7 @@
       <use name="eatN_control"/>
       <place-map virtual="what" real="write_credit"/>
       <connect-in port="trigger" place="trigger_eat_write_credit"/>
-      <connect-in port="N" place="num_credit"/>
+      <connect-in port="N" place="num_write_credit"/>
       <connect-out port="done" place="done_eat_write_credit"/>
     </transition>
     <transition name="clean">
