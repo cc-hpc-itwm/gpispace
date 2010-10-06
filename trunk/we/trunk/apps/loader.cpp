@@ -130,8 +130,7 @@ int main(int ac, char **av)
 
   if (vm.count("selftest"))
   {
-    LOG(FATAL, "running selftests");
-    exit (1);
+    return loader.selftest();
   }
 
   sigset_t waitset;

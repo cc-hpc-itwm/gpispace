@@ -166,6 +166,35 @@ namespace we {
         os << "}";
         os << "}";
       }
+
+      int selftest ()
+      {
+        int ec (0);
+        
+        // running selftests
+        for ( module_table_t::const_iterator m(module_table_.begin())
+            ; m != module_table_.end()
+            ; ++m
+            )
+        {
+          try
+          {
+            we::loader::input_t inp;
+            we::loader::output_t out;
+            (*(m->second))("selftest", inp, out);
+          }
+          catch (FunctionNotFound const &)
+          {
+            // ignore
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "selftest failed for module: " << m->first << ": " << ex.what());
+            ++ec;
+          }
+        }
+        return ec;
+      }
     private:
       loader(const loader&);
       loader & operator = (const loader &);
