@@ -36,7 +36,7 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-add_library(exec_mod SHARED exec.cpp)
+add_library(exec_mod SHARED process.cpp exec_mod.cpp)
 set_target_properties(exec_mod PROPERTIES OUTPUT_NAME exec)
 
 set (mods
