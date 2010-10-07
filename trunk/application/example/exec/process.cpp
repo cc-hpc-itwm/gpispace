@@ -191,13 +191,13 @@ namespace process
       throw std::runtime_error ("could not fork child: " + std::string (strerror(errno)));
     }
   }
-  
+
   void process_t::child (const pid_t parent_pid)
   {
     dup2(pipe_[0][1], 0);
     dup2(pipe_[1][1], 1);
     dup2(pipe_[2][1], 2);
-    
+
     {
       int fd (1024);
       while ( fd --> 3 )
@@ -205,16 +205,16 @@ namespace process
         close (fd);
       }
     }
-    
+
     std::vector<std::string> cmdline;
     fhg::log::split ( command_line_
                     , " "
                     , std::back_inserter (cmdline)
                     );
-    
+
     char ** av = new char*[cmdline.size()+1];
     av[cmdline.size()] = (char*)(NULL);
-    
+
     std::size_t idx (0);
     for ( std::vector<std::string>::const_iterator it (cmdline.begin())
 	; it != cmdline.end()
@@ -225,7 +225,7 @@ namespace process
       memcpy(av[idx], it->c_str(), it->size());
       av[idx][it->size()] = (char)0;
     }
-    
+
     if ( execvp( av[0], av ) < 0 )
     {
       std::cerr << "could not execute command line: " << command_line_ << std::endl;
@@ -239,7 +239,7 @@ namespace process
                             )
   {
     const int timeout = -1;
-    
+
     const std::size_t error_size (4096);
     char error_buffer[error_size + 1];
     error_buffer[error_size] = 0;
@@ -253,7 +253,7 @@ namespace process
     std::size_t bytes_er (0);
 
     signal (SIGPIPE, SIG_IGN);
-      
+
     struct pollfd poll_fd[3];
 
     // stderr
@@ -410,6 +410,7 @@ namespace process
         }
         return -1;
       }
+
       fcntl (pipe_[stream][0], F_SETFD, O_NONBLOCK);
       fcntl (pipe_[stream][1], F_SETFD, O_NONBLOCK);
     }
@@ -417,7 +418,7 @@ namespace process
     int tmp = pipe_[0][0];
     pipe_[0][0] = pipe_[0][1];
     pipe_[0][1] = tmp;
-    
+
     return 0;
   }
 
