@@ -16,6 +16,8 @@
 #include <we/loader/Module.hpp>
 #include <we/loader/module_traits.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 #include <fhg/util/show.hpp>
 
 namespace we {
@@ -170,7 +172,7 @@ namespace we {
       int selftest ()
       {
         int ec (0);
-        
+
         // running selftests
         for ( module_table_t::const_iterator m(module_table_.begin())
             ; m != module_table_.end()
