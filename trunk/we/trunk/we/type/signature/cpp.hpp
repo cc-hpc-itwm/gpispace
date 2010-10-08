@@ -43,7 +43,7 @@ namespace signature
 
       // ****************************************************************** //
 
-      class cpp_construct_from_value : public cpp_generic
+      class cpp_from_value : public cpp_generic
       {
       private:
         signature::field_name_t fieldname;
@@ -55,20 +55,20 @@ namespace signature
         }
 
       public:
-        cpp_construct_from_value (std::ostream & _s, const unsigned int _l = 0)
+        cpp_from_value (std::ostream & _s, const unsigned int _l = 1)
           : cpp_generic (_s, _l), fieldname ()
         {}
 
-        cpp_construct_from_value ( const signature::field_name_t & _fieldname
-                                 , std::ostream & _s
-                                 , const unsigned int _l = 0
-                                 )
+        cpp_from_value ( const signature::field_name_t & _fieldname
+                       , std::ostream & _s
+                       , const unsigned int _l = 0
+                       )
           : cpp_generic (_s, _l), fieldname (_fieldname)
         {}
 
         std::ostream & operator () (const literal::type_name_t & t) const
         {
-          level (l+1); s << "this->" << fieldname << " = value::get<"
+          level (l+1); s << "x." << fieldname << " = value::get<"
                          << literal::cpp::translate (t)
                          << "> (v_" << (l-1)
                          << ");"
@@ -93,7 +93,7 @@ namespace signature
                              << std::endl;
 
               boost::apply_visitor
-                ( cpp_construct_from_value (longer (field->first), s, l+1)
+                ( cpp_from_value (longer (field->first), s, l+1)
                 , field->second
                 );
 
@@ -109,7 +109,7 @@ namespace signature
 
     namespace visitor
     {
-      class cpp_method_value : public cpp_generic
+      class cpp_to_value : public cpp_generic
       {
       private:
         signature::field_name_t fieldname;
@@ -122,22 +122,22 @@ namespace signature
         }
 
       public:
-        cpp_method_value (std::ostream & _s, const unsigned int _l = 0)
+        cpp_to_value (std::ostream & _s, const unsigned int _l = 0)
           : cpp_generic (_s, _l), fieldname ()
         {}
 
-        cpp_method_value ( const signature::field_name_t & _fieldname
-                         , const signature::field_name_t & _levelname
-                         , std::ostream & _s
-                         , const unsigned int _l = 0
-                         )
+        cpp_to_value ( const signature::field_name_t & _fieldname
+                     , const signature::field_name_t & _levelname
+                     , std::ostream & _s
+                     , const unsigned int _l = 0
+                     )
           : cpp_generic (_s, _l), fieldname (_fieldname), levelname (_levelname)
         {}
 
         std::ostream & operator () (const literal::type_name_t & t) const
         {
           level (l); s << "v_" << (l-1) << "[\"" << levelname << "\"]"
-                       << " = " << "this->" << fieldname << ";"
+                       << " = " << "x." << fieldname << ";"
                        << std::endl;
 
           return s;
@@ -157,7 +157,7 @@ namespace signature
               )
             {
               boost::apply_visitor
-                ( cpp_method_value (longer (field->first), field->first, s, l+1)
+                ( cpp_to_value (longer (field->first), field->first, s, l+1)
                 , field->second
                 );
             }
@@ -229,28 +229,6 @@ namespace signature
               s << " " << fhg::util::show (field->first) << ";" << std::endl;
             }
 
-          if (name.isJust())
-            {
-              // default constructor
-              level (l+1); s << *name << " () {}" << std::endl;
-
-              // constructor from value::type
-              level (l+1); s << "explicit "
-                             << *name
-                             << " (const value::type & v_" << l << ")"
-                             << std::endl;
-
-              level (l+1); s << "{" << std::endl;
-
-              cpp_construct_from_value (s, l+1) (map);
-
-              level (l+1); s << "}" << std::endl;
-
-              // method value
-              level (l+1); s << "value::type value (void) const" << std::endl;
-              cpp_method_value (s, l+1) (map);
-            }
-
           level(l); s << "}";
 
           return s;
@@ -266,6 +244,20 @@ namespace signature
       boost::apply_visitor (visitor::cpp_struct (n, os), s.desc());
 
       os << ";" << std::endl;
+
+      os << n << " from_value (const value::type & v_0)" << std::endl;
+
+      os << "{" << std::endl;
+      os << "  " << n << " x;" << std::endl;
+
+      boost::apply_visitor (visitor::cpp_from_value (os), s.desc());
+
+      os << "  return x;" << std::endl;
+      os << "}" << std::endl;
+
+      os << "value::type to_value (const " << n << " & x)" << std::endl;
+
+      boost::apply_visitor (visitor::cpp_to_value (os), s.desc());
     }
 
     inline void cpp_struct (std::ostream & os, const type & s)

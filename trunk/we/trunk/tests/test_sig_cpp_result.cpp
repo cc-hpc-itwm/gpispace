@@ -27,13 +27,11 @@ main ()
   c.v.start.x = 0.0;
   c.v.start.y = -1.0;
 
-  //  std::cout << c << std::endl;
+  std::cout << to_value (c) << std::endl;
 
-  std::cout << c.value() << std::endl;
+  cross c2 (from_value (to_value (c)));
 
-  cross c2 (c.value());
-
-  std::cout << c2.value() << std::endl;
+  std::cout << to_value(c2) << std::endl;
 
   return EXIT_SUCCESS;
 }
