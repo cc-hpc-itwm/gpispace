@@ -31,7 +31,7 @@ static void determine_size ( const std::string & filename
     {
        const int endianess( LITENDIAN );
        FILE * inp (fopen (filename.c_str(), "rb"));
-	
+
        if (inp == NULL)
          {
            throw std::runtime_error ("do_load: could not open " + filename);
@@ -92,7 +92,7 @@ static void do_load ( const std::string & filename
     {
        const int endianess( LITENDIAN );
        FILE * inp (fopen (filename.c_str(), "rb"));
-	
+
        if (inp == NULL)
          {
            throw std::runtime_error ("do_load: could not open " + filename);
@@ -104,7 +104,7 @@ static void do_load ( const std::string & filename
       fread (pos, size, 1, inp);
       const size_t trace_size( size/num );
       const int Nsample = (trace_size - sizeof(SegYHeader)) / sizeof(float);
-      
+
       std::cout << num << std::endl;
       for (int inum = 0; inum < num; ++inum)
       {
@@ -176,7 +176,7 @@ static void do_write ( const std::string & filename
     {
       const int endianess( LITENDIAN );
       FILE * outp (fopen (filename.c_str(), "rb+"));
-	
+
       if (outp == NULL)
         {
           throw std::runtime_error ("do_write: could not open " + filename);
@@ -184,11 +184,11 @@ static void do_write ( const std::string & filename
 
       const size_t trace_size( size/num );
       const int Nsample = (trace_size - sizeof(SegYHeader)) / sizeof(float);
-      
+
       if ( ( part == 0 ) && (type == "segy"))
       {
 	  SegYEBCHeader EBCHeader = {};
-	  SegYBHeader BHeader;	
+	  SegYBHeader BHeader;
 
 	  BHeader.hns = Nsample;
 	  BHeader.hdt = ((SegYHeader*)pos)->dt;
@@ -196,10 +196,10 @@ static void do_write ( const std::string & filename
 	    {
 		swap_bytes((void*)&BHeader.hns, 1, sizeof(short));
 		swap_bytes((void*)&BHeader.hdt, 1, sizeof(short));
-		swap_bytes((void*)&BHeader.format, 1, sizeof(short));	  
+		swap_bytes((void*)&BHeader.format, 1, sizeof(short));
 	    }
 	  fwrite((char*) &EBCHeader, sizeof(SegYEBCHeader), 1, outp);
-	  fwrite((char*) &BHeader, sizeof(SegYBHeader), 1, outp); 
+	  fwrite((char*) &BHeader, sizeof(SegYBHeader), 1, outp);
       }
       for (int inum = 0; inum < num; ++inum)
       {
@@ -290,7 +290,7 @@ static void init ( void * state
 
       if (s.size())
         {
-          if (  fhg::util::starts_with ("output", s) 
+          if (  fhg::util::starts_with ("output", s)
 	     || fhg::util::starts_with ("input", s)
 	     )
             {
@@ -350,13 +350,35 @@ static void init ( void * state
     long num (0);
     long size (0);
 
-    const std::string & inp (get<std::string> (output, "config", "input.file"));
+    try
+      {
+        num = get<long> (output, "config", "trace_detect.number");
+      }
+    catch (...)
+      {
+        // do nothing, the value is not given
+      }
+
+    try
+      {
+        size = get<long> (output, "config", "trace_detect.size_in_bytes");
+      }
+    catch (...)
+      {
+        // do nothing, the value is not given
+      }
+
     const std::string & t (get<std::string> (output, "config", "input.type"));
 
-    determine_size (inp, t, num, size);
+    if (t != "text")
+      {
+        const std::string & inp (get<std::string> (output, "config", "input.file"));
 
-    put (output, "config", "trace_detect.number", num);
-    put (output, "config", "trace_detect.size_in_bytes", size);
+        determine_size (inp, t, num, size);
+
+        put (output, "config", "trace_detect.number", num);
+        put (output, "config", "trace_detect.size_in_bytes", size);
+      }
 
     try
       {
