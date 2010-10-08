@@ -3,6 +3,8 @@
 #ifndef _WE_TYPE_SIGNATURE_HPP
 #define _WE_TYPE_SIGNATURE_HPP
 
+#include <we/type/signature/types.hpp>
+
 #include <we/type/literal/name.hpp>
 #include <fhg/util/show.hpp>
 
@@ -20,8 +22,6 @@
 
 namespace signature
 {
-  typedef std::string field_name_t;
-
   struct structured_t;
 
   typedef boost::variant< literal::type_name_t

@@ -4,6 +4,7 @@
 #define _WE_TYPE_VALUE_GET_HPP
 
 #include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
 
 #include <we/type/signature.hpp>
 #include <we/type/literal.hpp>

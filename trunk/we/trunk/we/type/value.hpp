@@ -4,7 +4,7 @@
 #define _WE_TYPE_VALUE_HPP
 
 #include <we/type/literal.hpp>
-#include <we/type/signature.hpp>
+#include <we/type/signature/types.hpp>
 
 #include <string>
 #include <map>
