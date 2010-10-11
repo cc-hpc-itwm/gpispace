@@ -1,7 +1,7 @@
 #include "sdpaWnd.h"
 #include "CostumerEvent.h"
 
-#include <math>
+#include <cmath>
 
 #include <QScrollBar>
 
