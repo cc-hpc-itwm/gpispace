@@ -8,8 +8,6 @@ set(sdpa-mon_SRCS
 set(sdpa-mon_MOC_HDRS
   CostumerEvent.h
   sdpaWnd.h
-  Universal.h
-  UniversalQt.h
 )
 QT4_WRAP_CPP(sdpa-mon_MOC_SRCS ${sdpa-mon_MOC_HDRS})
 
@@ -19,6 +17,9 @@ target_link_libraries (sdpa-mon
 	${FhgLog_LIBRARY}
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
+	${TIFF_LIBRARIES}
+	${JPEG_LIBRARIES}
+	${MNG_LIBRARIES}
 )
 
 install(TARGETS sdpa-mon

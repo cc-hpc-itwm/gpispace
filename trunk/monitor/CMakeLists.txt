@@ -60,6 +60,10 @@ include_directories(${SDPA_INCLUDE_DIR})
 
 ## check for qt
 find_package(Qt4 REQUIRED)
+find_package(TIFF REQUIRED)
+find_package(JPEG REQUIRED)
+#find_package(PNG REQUIRED)
+find_package(MNG REQUIRED)
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})

@@ -1,6 +1,10 @@
 #include "sdpaWnd.h"
 #include "CostumerEvent.h"
 
+#include <math>
+
+#include <QScrollBar>
+
 SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
 {
   m_nMinHeight = 20;
@@ -208,7 +212,7 @@ bool SdpaWnd::event( QEvent * e )
 //        }
 //      }
 
-      m_nCounter = MAX( m_nCounter, param.id-m_nFirstID+1);
+      m_nCounter = std::max( m_nCounter, param.id-m_nFirstID+1);
       m_pWidget->setFixedSize( m_nNbColumn*m_nMinWidth, m_nCounter*m_nMinHeight );
 
       if (m_cbAutoFollow->isChecked())

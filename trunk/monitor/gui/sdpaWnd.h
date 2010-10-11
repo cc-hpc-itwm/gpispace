@@ -1,8 +1,16 @@
 #ifndef SDPA_WND_H
 #define SDPA_WND_H
 
-#include "UniversalQt.h"
 #include <QCustomEvent>
+#include <QPushButton>
+#include <QGridLayout>
+#include <QScrollArea>
+#include <QCheckBox>
+#include <QWidget>
+#include <QLabel>
+#include <QColor>
+
+//#include "UniversalQt.h"
 //#include "Universal.h"
 //#include "Datastructs.h"
 enum STATE_WND

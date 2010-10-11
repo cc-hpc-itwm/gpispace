@@ -15,6 +15,8 @@
 
 #include "sdpaWnd.h"
 #include "CostumerEvent.h"
+#include <QApplication>
+
 using namespace std;
 
 void* service_thread_entry(void *arg)

@@ -1,10 +1,7 @@
 #ifndef COSTUMEREVENT_H
 #define COSTUMEREVENT_H
 
-#include "UniversalQt.h"
-#include "Universal.h"
-
-
+#include <QEvent>
 
 template <typename Typ>
 class DataCostumerEvent : public QEvent
