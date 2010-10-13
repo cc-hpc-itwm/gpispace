@@ -1,4 +1,5 @@
 <defun name="port_type">
   <in name="x" type="double"/>
   <out name="x" type="long"/>
+  <expression></expression>
 </defun>
