@@ -46,7 +46,7 @@ namespace sdpa
 
             const int JobFSMContext::MIN_INDEX = 0;
             const int JobFSMContext::MAX_INDEX = 5;
-            JobFSMState* JobFSMContext::_States[] =
+            JobFSMState* JobFSMContext::_States[] = 
 {
                 &SDPA::Pending,
                 &SDPA::Running,
