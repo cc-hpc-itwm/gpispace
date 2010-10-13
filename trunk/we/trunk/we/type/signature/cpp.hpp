@@ -377,8 +377,7 @@ namespace signature
       os << std::endl;
       os << "// for the connection to value::type" << std::endl;
       os << "#include <we/type/value.hpp>" << std::endl;
-      //      os << "#include <we/type/value/show.hpp>" << std::endl;
-      os << "#include <we/type/value/get.hpp>" << std::endl;
+      os << "#include <we/type/value/cpp/get.hpp>" << std::endl;
       os << std::endl;
 
       cpp_struct (os, s, n);
