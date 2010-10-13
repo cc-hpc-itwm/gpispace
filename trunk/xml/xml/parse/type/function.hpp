@@ -351,8 +351,39 @@ namespace xml
       struct function_type
       {
       private:
-        xml::util::unique<port_type> _in;
-        xml::util::unique<port_type> _out;
+        typedef xml::util::unique<port_type> unique_port_type;
+
+        unique_port_type _in;
+        unique_port_type _out;
+
+        // ***************************************************************** //
+
+        void push ( const port_type & p
+                  , unique_port_type & ports
+                  , const unique_port_type & others
+                  , const std::string descr
+                  )
+        {
+          port_type old;
+
+          if (!ports.push (p, old))
+            {
+              throw error::duplicate_port (descr, p.name, path);
+            }
+
+          port_type other;
+
+          if (others.by_key (p.name, other) && p.type != other.type)
+            {
+              throw error::port_type_mismatch ( p.name
+                                              , p.type
+                                              , other.type
+                                              , path
+                                              );
+            }
+        }
+
+        // ***************************************************************** //
 
       public:
         typedef boost::variant < expression_type
@@ -406,25 +437,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        void push_in (const port_type & p)
-        {
-          port_type old;
-
-          if (!_in.push (p, old))
-            {
-              throw error::duplicate_port ("in", p.name, path);
-            }
-        }
-
-        void push_out (const port_type & p)
-        {
-          port_type old;
-
-          if (!_out.push (p, old))
-            {
-              throw error::duplicate_port ("out", p.name, path);
-            }
-        }
+        void push_in (const port_type & p) { push (p, _in, _out, "in"); }
+        void push_out (const port_type & p) { push (p, _out, _in, "out"); }
 
         // ***************************************************************** //
 

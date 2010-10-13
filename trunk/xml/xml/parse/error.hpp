@@ -1233,6 +1233,37 @@ namespace xml
 
       // ******************************************************************* //
 
+      class port_type_mismatch : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const std::string & type1
+                         , const std::string & type2
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "in/out-port " << name
+            << " has different types " << type1 << " and " << type2
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        port_type_mismatch ( const std::string & name
+                           , const std::string & type1
+                           , const std::string & type2
+                           , const boost::filesystem::path & path
+                           )
+          : generic (nice (name, type1, type2, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class real_place_missing : public generic
       {
       private:
