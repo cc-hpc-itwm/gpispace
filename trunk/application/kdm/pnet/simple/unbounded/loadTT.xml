@@ -65,6 +65,7 @@
         <in name="config" type="CONFIG"/>
         <out name="config" type="CONFIG"/>
         <in name="trigger" type="control"/>
+        <expression></expression>
       </defun>
       <connect-in port="config" place="config_loadTT"/>
       <connect-in port="trigger" place="done"/>

@@ -201,6 +201,7 @@
               <in name="config_A" type="CONFIG"/>
               <in name="config_B" type="CONFIG"/>
               <out name="config_A" type="CONFIG"/>
+              <expression></expression>
             </defun>
             <connect-in port="config_A" place="config_A"/>
             <connect-in port="config_B" place="config_B"/>
