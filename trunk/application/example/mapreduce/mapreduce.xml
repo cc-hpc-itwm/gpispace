@@ -26,6 +26,7 @@
       <defun>
         <in name="i" type="i_t"/>
         <out name="o" type="o_t"/>
+        <expression></expression>
       </defun>
       <connect-in port="i" place="i"/>
       <connect-out port="o" place="o"/>

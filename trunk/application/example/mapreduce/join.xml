@@ -19,6 +19,7 @@
       <defun>
         <in name="N" type="N_t"/>
         <out name="state" type="state_t"/>
+        <expression></expression>
       </defun>
       <connect-in port="N" place="N"/>
       <connect-out port="state" place="state"/>
@@ -29,6 +30,7 @@
         <in name="state" type="state_t"/>
         <out name="state" type="state_t"/>
         <in name="o" type="o_t"/>
+        <expression></expression>
         <condition>${state}</condition>
       </defun>
       <connect-in port="state" place="state"/>
@@ -40,6 +42,7 @@
       <defun>
         <in name="state" type="state_t"/>
         <out name="O" type="O_t"/>
+        <expression></expression>
         <condition>!${state}</condition>
       </defun>
       <connect-in port="state" place="state"/>
