@@ -16,9 +16,9 @@ namespace xml
                                      , const boost::filesystem::path & path
                                      )
     {
-      if (name.find ('.') != std::string::npos)
+      if (name.find_first_of (".,()") != std::string::npos)
         {
-          throw error::invalid_name_dot (name, type, path);
+          throw error::invalid_character (name, type, path);
         }
 
       return name;

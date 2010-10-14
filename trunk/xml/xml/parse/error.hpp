@@ -1155,7 +1155,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      class invalid_name_dot : public generic
+      class invalid_character : public generic
       {
       private:
         std::string nice ( const std::string & name
@@ -1166,17 +1166,17 @@ namespace xml
           std::ostringstream s;
 
           s << type << " " << name
-            << " is invalid since it contains a dot (.)"
+            << " is invalid: forbidden characters are .,()"
             << " in " << path
             ;
 
           return s.str();
         }
       public:
-        invalid_name_dot ( const std::string & name
-                         , const std::string & type
-                         , const boost::filesystem::path & path
-                         )
+        invalid_character ( const std::string & name
+                          , const std::string & type
+                          , const boost::filesystem::path & path
+                          )
           : generic (nice (name, type, path))
         {}
       };
