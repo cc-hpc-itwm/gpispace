@@ -24,8 +24,8 @@ namespace expr
       class exception : public std::runtime_error
       {
       public:
-        const unsigned int eaten;
-        exception (const std::string & msg, const unsigned int k)
+        const std::size_t eaten;
+        exception (const std::string & msg, const std::size_t k)
           : std::runtime_error("parse error [" + fhg::util::show(k) + "]: " + msg)
           , eaten (k)
         {}
@@ -34,14 +34,14 @@ namespace expr
       class expected : public exception
       {
       public:
-        expected (const std::string & what, const unsigned int k)
+        expected (const std::string & what, const std::size_t k)
           : exception ("expected " + what, k) {}
       };
 
       class misplaced : public exception
       {
       public:
-        misplaced (const std::string & what, const unsigned int k)
+        misplaced (const std::string & what, const std::size_t k)
           : exception ( "misplaced " + what + ", operator expected"
                       , k - what.length()
                       ) {}
@@ -51,8 +51,8 @@ namespace expr
       {
       public:
         unterminated ( const std::string & what
-                     , const unsigned int open
-                     , const unsigned int k
+                     , const std::size_t open
+                     , const std::size_t k
                      )
           : exception ( "unterminated " + what + ", opened at: " + fhg::util::show (open)
                       , k
@@ -62,7 +62,7 @@ namespace expr
       class missing : public exception
       {
       public:
-        missing (const std::string & what, const unsigned int k)
+        missing (const std::string & what, const std::size_t k)
           : exception ("missing " + what, k) {}
       };
     }

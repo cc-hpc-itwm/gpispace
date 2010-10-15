@@ -6,8 +6,6 @@
 #include <we/expr/token/prop.hpp>
 #include <we/expr/token/type.hpp>
 
-#include <we/expr/parse/position.hpp>
-
 #include <we/expr/exception.hpp>
 
 #include <we/type/literal.hpp>
@@ -32,7 +30,7 @@ namespace expr
     struct tokenizer
     {
     private:
-      parse::position pos;
+      fhg::util::parse::position pos;
 
       token::type token;
       literal::type tokval;
@@ -488,7 +486,7 @@ namespace expr
       friend std::ostream & operator << (std::ostream &, const tokenizer &);
 
     public:
-      tokenizer ( unsigned int & _k
+      tokenizer ( std::size_t & _k
                 , std::string::const_iterator & _pos
                 , const std::string::const_iterator & _end
                 )

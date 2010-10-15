@@ -38,9 +38,9 @@ namespace expr
       class missing_operand : public exception
       {
       public:
-        missing_operand (const unsigned int k, const std::string & what)
+        missing_operand (const std::size_t k, const std::string & what)
           : exception ("missing " + what + " operand", k-1) {}
-        missing_operand (const unsigned int k)
+        missing_operand (const std::size_t k)
           : exception ("missing operand", k-1) {}
       };
     }
@@ -69,7 +69,7 @@ namespace expr
       nd_it_t begin () { return nd_stack.begin(); }
       nd_it_t end () { return nd_stack.end(); }
 
-      void unary (const token::type & token, const unsigned int k)
+      void unary (const token::type & token, const std::size_t k)
       {
         if (nd_stack.empty())
           throw exception::parse::missing_operand (k);
@@ -89,7 +89,7 @@ namespace expr
           }
       }
 
-      void binary (const token::type & token, const unsigned int k)
+      void binary (const token::type & token, const std::size_t k)
       {
         if (nd_stack.empty())
           throw exception::parse::missing_operand (k, "left");
@@ -117,7 +117,7 @@ namespace expr
           }
       }
 
-      void ite (const unsigned int k)
+      void ite (const std::size_t k)
       {
         if (nd_stack.empty())
           throw exception::parse::missing_operand (k, "else expression");
@@ -147,7 +147,7 @@ namespace expr
           }
       }
 
-      void reduce (const unsigned int k)
+      void reduce (const std::size_t k)
       {
         switch (op_stack.top())
           {
@@ -206,7 +206,7 @@ namespace expr
       {
         std::string::const_iterator pos (input.begin());
         const std::string::const_iterator end (input.end());
-        unsigned int k (0);
+        std::size_t k (0);
 
         while (pos != end)
           {

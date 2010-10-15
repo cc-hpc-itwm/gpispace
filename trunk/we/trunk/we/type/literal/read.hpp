@@ -3,17 +3,18 @@
 #ifndef _WE_TYPE_LITERAL_READ_HPP
 #define _WE_TYPE_LITERAL_READ_HPP
 
-#include <we/expr/parse/position.hpp>
+#include <fhg/util/parse/position.hpp>
 
 #include <we/expr/exception.hpp>
 
 #include <we/type/literal.hpp>
 
+
 namespace literal
 {
-  static char read_quoted_char (expr::parse::position & pos)
+  static char read_quoted_char (fhg::util::parse::position & pos)
   {
-    const unsigned int open (pos());
+    const std::size_t open (pos());
 
     if (*pos == '\\')
       ++pos;
@@ -72,7 +73,7 @@ namespace literal
   };
 
   template<typename base>
-  static inline long generic_read_ulong (expr::parse::position & pos)
+  static inline long generic_read_ulong (fhg::util::parse::position & pos)
   {
     long l (0);
 
@@ -86,7 +87,7 @@ namespace literal
     return l;
   }
 
-  static long read_ulong (expr::parse::position & pos)
+  static long read_ulong (fhg::util::parse::position & pos)
   {
     if (pos.end() || !isdigit(*pos))
       {
@@ -117,7 +118,7 @@ namespace literal
     return l;
   }
 
-  static bool read_sign (expr::parse::position & pos)
+  static bool read_sign (fhg::util::parse::position & pos)
   {
     if (!pos.end() && *pos == '-')
       {
@@ -128,14 +129,16 @@ namespace literal
     return false;
   }
 
-  static long read_long (expr::parse::position & pos)
+  static long read_long (fhg::util::parse::position & pos)
   {
     const bool negative (read_sign(pos));
 
     return negative ? -read_ulong (pos) : read_ulong (pos);
   }
 
-  static double read_fraction (const long ipart, expr::parse::position & pos)
+  static double read_fraction ( const long ipart
+                              , fhg::util::parse::position & pos
+                              )
   {
     double d (ipart);
     double frac (read_ulong (pos));
@@ -160,7 +163,7 @@ namespace literal
     return d;
   }
 
-  static void read_num (type & v, expr::parse::position & pos)
+  static void read_num (type & v, fhg::util::parse::position & pos)
   {
     long i (read_long (pos));
 
@@ -179,7 +182,9 @@ namespace literal
       }
   }
 
-  inline void require (const std::string & what, expr::parse::position & pos)
+  inline void require ( const std::string & what
+                      , fhg::util::parse::position & pos
+                      )
   {
     std::string::const_iterator what_pos (what.begin());
     const std::string::const_iterator what_end (what.end());
@@ -194,7 +199,7 @@ namespace literal
         }
   }
 
-  static void read (type & v, expr::parse::position & pos)
+  static void read (type & v, fhg::util::parse::position & pos)
   {
     if (pos.end())
       throw expr::exception::parse::expected
@@ -208,7 +213,7 @@ namespace literal
       case '@': ++pos; require ("@", pos); v = literal::stack_type(); break;
       case '\'':
         {
-          const unsigned int open (pos());
+          const std::size_t open (pos());
 
           ++pos;
 
@@ -228,7 +233,7 @@ namespace literal
         break;
       case '"':
         {
-          const unsigned int open (pos());
+          const std::size_t open (pos());
 
           ++pos;
 
@@ -247,7 +252,7 @@ namespace literal
         break;
       case '{':
         {
-          const unsigned int open (pos());
+          const std::size_t open (pos());
 
           ++pos;
 

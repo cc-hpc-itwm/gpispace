@@ -25,8 +25,6 @@
 #include <we/type/token.hpp>
 #include <we/type/error.hpp>
 
-#include <we/expr/parse/position.hpp>
-
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 

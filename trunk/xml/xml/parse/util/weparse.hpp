@@ -27,7 +27,7 @@ namespace xml
         std::ostringstream s;
 
         s << std::endl << input << std::endl;
-        for (unsigned int k (0); k < e.eaten; ++k)
+        for (std::size_t k (0); k < e.eaten; ++k)
           {
             s << " ";
           }

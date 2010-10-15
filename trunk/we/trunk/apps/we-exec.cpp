@@ -7,7 +7,8 @@
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/literal.hpp>
-#include <we/expr/parse/position.hpp>
+
+#include <fhg/util/parse/position.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
@@ -156,10 +157,10 @@ int main (int argc, char **argv)
       ( inp->substr (inp->find('=')+1) );
 
     literal::type tokval;
-    unsigned int k (0);
+    std::size_t k (0);
     std::string::const_iterator begin (value.begin());
 
-    expr::parse::position pos (k, begin, value.end());
+    fhg::util::parse::position pos (k, begin, value.end());
     literal::read (tokval, pos);
 
     act.add_input (

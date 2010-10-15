@@ -508,6 +508,7 @@ namespace xml
       return type::mod_type
         ( required ("mod_type", node, "name", state.file_in_progress())
         , required ("mod_type", node, "function", state.file_in_progress())
+        , state.file_in_progress()
         );
     }
 

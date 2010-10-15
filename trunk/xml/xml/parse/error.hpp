@@ -1155,6 +1155,8 @@ namespace xml
 
       // ******************************************************************* //
 
+      static const std::string invalid_characters = ".,()";
+
       class invalid_character : public generic
       {
       private:
@@ -1166,7 +1168,7 @@ namespace xml
           std::ostringstream s;
 
           s << type << " " << name
-            << " is invalid: forbidden characters are .,()"
+            << " is invalid: forbidden characters are " << invalid_characters
             << " in " << path
             ;
 
@@ -1292,6 +1294,63 @@ namespace xml
           : generic (nice (place_virtual, place_real, trans, path))
         {}
       };
+
+      // ******************************************************************* //
+
+      namespace parse_function
+      {
+        class formatted : public generic
+        {
+        private:
+          std::string nice ( const std::string & name
+                           , const std::string & function
+                           , const std::string & what
+                           , const std::size_t & k
+                           , const boost::filesystem::path & path
+                           ) const
+          {
+            std::ostringstream s;
+
+            s << "error while parsing a function description for module"
+              << " name " << name << " in " << path << ":"
+              << std::endl << function
+              << std::endl
+              ;
+            for (std::size_t i (0); i < k; ++i) { s << " "; }
+            s << "^" << std::endl;
+            s << what << std::endl;
+
+            return s.str();
+          }
+        public:
+          formatted ( const std::string & name
+                    , const std::string & function
+                    , const std::string & what
+                    , const std::size_t & k
+                    , const boost::filesystem::path & path
+                    )
+            : generic (nice (name, function, what, k, path))
+          {}
+        };
+
+        class expected : public formatted
+        {
+        public:
+          expected ( const std::string & name
+                   , const std::string & function
+                   , const std::string & what
+                   , const std::size_t & k
+                   , const boost::filesystem::path & path
+                   )
+            : formatted ( name
+                        , function
+                        , "expected " + fhg::util::show (what)
+                        , k
+                        , path
+                        )
+          {}
+        };
+      }
 
       // ******************************************************************* //
 
