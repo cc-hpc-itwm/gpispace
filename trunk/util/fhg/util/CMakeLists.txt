@@ -14,3 +14,5 @@ set (hdrs
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
   COMPONENT headers)
+
+add_subdirectory(parse)

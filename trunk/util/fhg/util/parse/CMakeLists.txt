@@ -1,10 +1,8 @@
 # -*- mode: cmake; -*-
 set (hdrs
-  action.hpp
-  node.hpp
-  parser.hpp
-  )
+  position.hpp
+)
 
 install(FILES ${hdrs}
-  DESTINATION include/we/expr/parse
+  DESTINATION include/fhg/util/parse
   COMPONENT headers)
