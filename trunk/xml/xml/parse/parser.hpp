@@ -1420,6 +1420,7 @@ namespace xml
       f.specialize (state);
       f.resolve (state, f.forbidden_below());
       f.type_check (state);
+      f.sanity_check (state);
 
       return f;
     }

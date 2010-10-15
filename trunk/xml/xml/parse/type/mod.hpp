@@ -24,11 +24,53 @@ namespace xml
     {
       struct mod_type
       {
+      private:
+        typedef std::vector<std::string> port_arg_vec_type;
+
       public:
         std::string name;
         std::string function;
         fhg::util::maybe<std::string> port_return;
-        std::vector<std::string> port_arg;
+        port_arg_vec_type port_arg;
+
+        // ***************************************************************** //
+
+        template<typename Fun>
+        void sanity_check (const Fun & fun) const
+        {
+          if (port_return.isJust())
+            {
+              if (!fun.is_known_port (*port_return))
+                {
+                  throw error::function_description_with_unknown_port
+                    ( "return"
+                    , *port_return
+                    , name
+                    , function
+                    , fun.path
+                    );
+                }
+            }
+
+          for ( port_arg_vec_type::const_iterator port (port_arg.begin())
+              ; port != port_arg.end()
+              ; ++port
+              )
+            {
+              if (!fun.is_known_port (*port))
+                {
+                  throw error::function_description_with_unknown_port
+                    ( "argument"
+                    , *port
+                    , name
+                    , function
+                    , fun.path
+                    );
+                }
+            }
+        }
+
+        // ***************************************************************** //
 
         mod_type ( const std::string & _name
                  , const std::string & _function

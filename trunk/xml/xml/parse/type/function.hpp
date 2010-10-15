@@ -106,6 +106,28 @@ namespace xml
 
       // ******************************************************************* //
 
+      template<typename Net, typename Fun>
+      class function_sanity_check : public boost::static_visitor<void>
+      {
+      private:
+        const state::type & state;
+        const Fun & fun;
+
+      public:
+        function_sanity_check ( const state::type & _state
+                              , const Fun & _fun
+                              )
+          : state (_state)
+          , fun (_fun)
+        {}
+
+        void operator () (const expression_type &) const { return; }
+        void operator () (const mod_type & m) const { m.sanity_check (fun); }
+        void operator () (const Net & net) const { net.sanity_check (state); }
+      };
+
+      // ******************************************************************* //
+
       template<typename Net>
       class function_type_check : public boost::static_visitor<void>
       {
@@ -425,6 +447,21 @@ namespace xml
           return _out.by_key (name, port);
         }
 
+        bool is_known_port_in (const std::string & name) const
+        {
+          return _in.is_element (name);
+        }
+
+        bool is_known_port_out (const std::string & name) const
+        {
+          return _out.is_element (name);
+        }
+
+        bool is_known_port (const std::string & name) const
+        {
+          return is_known_port_in (name) || is_known_port_out (name);
+        }
+
         // ***************************************************************** //
 
         std::string condition (void) const
@@ -530,6 +567,16 @@ namespace xml
 
           return signature::type (sig->second.sig, sig->second.name);
         };
+
+        // ***************************************************************** //
+
+        void sanity_check (const state::type & state) const
+        {
+          boost::apply_visitor
+            ( function_sanity_check<net_type, function_type> (state, *this)
+            , f
+            );
+        }
 
         // ***************************************************************** //
 

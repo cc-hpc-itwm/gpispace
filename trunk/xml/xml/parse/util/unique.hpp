@@ -71,6 +71,13 @@ namespace xml
         return true;
       }
 
+      bool is_element (const Key & key) const
+      {
+        T x;
+
+        return by_key (key, x);
+      }
+
       void clear (void) { vec.clear(); names.clear(); pos = 0; }
 
       vec_type & elements (void) { return vec; }

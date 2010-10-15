@@ -749,6 +749,39 @@ namespace xml
 
       // ******************************************************************* //
 
+      class function_description_with_unknown_port : public generic
+      {
+      private:
+        std::string nice ( const std::string & port_type
+                         , const std::string & port_name
+                         , const std::string & mod_name
+                         , const std::string & mod_function
+                         , const boost::filesystem::path & path
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "unknown " << port_type << " port " << port_name
+            << " in description of function " << mod_name << "." << mod_function
+            << " in " << path
+            << std::endl;
+
+          return s.str();
+        }
+      public:
+        function_description_with_unknown_port
+        ( const std::string & port_type
+        , const std::string & port_name
+        , const std::string & mod_name
+        , const std::string & mod_function
+        , const boost::filesystem::path & path
+        )
+          : generic (nice (port_type, port_name, mod_name, mod_function, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class port_connected_place_nonexistent : public generic
       {
       private:

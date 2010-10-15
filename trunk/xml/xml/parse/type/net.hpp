@@ -364,6 +364,27 @@ namespace xml
 
         // ***************************************************************** //
 
+        void sanity_check (const state::type & state) const
+        {
+          for ( transition_vec_type::const_iterator trans (transitions().begin())
+              ; trans != transitions().end()
+              ; ++trans
+              )
+            {
+              trans->sanity_check (state);
+            }
+
+          for ( function_vec_type::const_iterator fun (functions().begin())
+              ; fun != functions().end()
+              ; ++fun
+              )
+            {
+              fun->sanity_check (state);
+            }
+        }
+
+        // ***************************************************************** //
+
         void type_check (const state::type & state) const
         {
           for ( transition_vec_type::const_iterator trans (transitions().begin())
