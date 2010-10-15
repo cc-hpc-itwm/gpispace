@@ -346,6 +346,7 @@ static void init ( void * state
     }
 
   // determine size, overwrite values given in config file
+  if (get<std::string> (output, "config", "input.type") != "text")
   {
     long num (0);
     long size (0);
