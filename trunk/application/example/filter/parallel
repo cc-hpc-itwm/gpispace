@@ -5,8 +5,8 @@ data_dir=${DATA_DIR:?}
 filter_dir="$data_dir/filter"
 filter_cfg="$filter_dir/filt.conf"
 tune_cfg="$filter_dir/tune.conf"
-pnet_lib="$data_dir/../pnet/lib"
-pnet_lib="/p/herc/itwm/hpc/ap/SDPA/application/lib"
+pnet_lib="$data_dir/../lib"
+#pnet_lib="/p/herc/itwm/hpc/ap/SDPA/application/lib"
 
 if [ $# -lt 5 ]; then
   echo "usage: $0 input-file input-type output-file output-type su-pipeline"
