@@ -8,6 +8,7 @@
 #include <we/expr/exception.hpp>
 
 #include <we/type/literal.hpp>
+#include <we/type/literal/show.hpp>
 #include <we/type/bitsetofint.hpp>
 
 #include <math.h>
@@ -16,10 +17,14 @@ namespace literal
 {
   namespace function
   {
+    // ********************************************************************* //
+
     static inline bool is_zero (const double & x)
     {
       return (fabs (x) < 1e-6);
     }
+
+    // ********************************************************************* //
 
     namespace visitor
     {
@@ -45,24 +50,14 @@ namespace literal
       return boost::apply_visitor (visitor::is_true(), v);
     }
 
+    // ********************************************************************* //
+
     class unary : public boost::static_visitor<literal::type>
     {
     private:
       const expr::token::type & token;
     public:
       unary (const expr::token::type & _token) : token (_token) {}
-
-      literal::type operator () (control &) const
-      {
-        throw expr::exception::eval::type_error
-          (fhg::util::show (token) + " (control token)");
-      }
-
-      literal::type operator () (bitsetofint::type &) const
-      {
-        throw expr::exception::eval::type_error
-          (fhg::util::show (token) + " (bitset)");
-      }
 
       literal::type operator () (literal::stack_type & s) const
       {
@@ -71,7 +66,10 @@ namespace literal
           case expr::token::_stack_empty: return s.empty();
           case expr::token::_stack_top: return s.back();
           case expr::token::_stack_pop: s.pop_back(); return s;
-          default: throw expr::exception::strange ("unary " + fhg::util::show(token));
+          case expr::token::_stack_size: return long (s.size());
+          default:
+            throw expr::exception::eval::type_error
+              (fhg::util::show (token) + " (" + literal::show (s) + ")");
           }
       }
 
@@ -80,20 +78,11 @@ namespace literal
         switch (token)
           {
           case expr::token::_not: return x ? false : true;
-          case expr::token::neg:
-          case expr::token::abs:
-          case expr::token::_sin:
-          case expr::token::_cos:
-          case expr::token::_sqrt:
-          case expr::token::_log:
-          case expr::token::_floor:
-          case expr::token::_ceil:
-          case expr::token::_round:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " (" + fhg::util::show(x) + ")");
           case expr::token::_tolong: return x ? 1L : 0L;
           case expr::token::_todouble: return x ? 1.0 : 0.0;
-          default: throw expr::exception::strange ("unary " + fhg::util::show(token));
+          default:
+            throw expr::exception::eval::type_error
+              (fhg::util::show (token) + " (" + fhg::util::show(x) + ")");
           }
       }
 
@@ -113,7 +102,9 @@ namespace literal
           case expr::token::_round:
           case expr::token::_tolong: return x;
           case expr::token::_todouble: return double(x);
-          default: throw expr::exception::strange ("unary " + fhg::util::show(token));
+          default:
+            throw expr::exception::eval::type_error
+              (fhg::util::show (token) + " (" + fhg::util::show(x) + ")");
           }
       }
 
@@ -137,7 +128,9 @@ namespace literal
             return round_half_up ? floor (x + 0.5) : ceil (x - 0.5);
           case expr::token::_tolong: return long(x);
           case expr::token::_todouble: return x;
-          default: throw expr::exception::strange ("unary " + fhg::util::show(token));
+          default:
+            throw expr::exception::eval::type_error
+              (fhg::util::show (token) + " (" + fhg::util::show(x) + ")");
           }
       }
 
@@ -148,7 +141,7 @@ namespace literal
           case expr::token::_len: return (long)(1);
           default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " ('" + fhg::util::show(x) + "')");
+              (fhg::util::show (token) + " (" + fhg::util::show(x) + ")");
           }
       }
 
@@ -159,10 +152,19 @@ namespace literal
           case expr::token::_len: return (long)(x.size());
           default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " ('" + fhg::util::show(x) + "')");
+              (fhg::util::show (token) + " (" + fhg::util::show(x) + ")");
           }
       }
+
+      template<typename T>
+      literal::type operator () (T x) const
+      {
+        throw expr::exception::eval::type_error
+          (fhg::util::show (token) + " (" + literal::show (x) + ")");
+      }
     };
+
+    // ********************************************************************* //
 
     class binary : public boost::static_visitor<literal::type>
     {
@@ -170,12 +172,6 @@ namespace literal
       const expr::token::type & token;
     public:
       binary (const expr::token::type & _token) : token (_token) {}
-
-      literal::type operator () (control &, control &) const
-      {
-        throw expr::exception::eval::type_error
-          (fhg::util::show (token) + " for control token");
-      }
 
       literal::type operator () (bool & l, bool & r) const
       {
@@ -189,25 +185,13 @@ namespace literal
           case expr::token::ge: return l >= r ? true : false;
           case expr::token::ne: return l != r ? true : false;
           case expr::token::eq: return l == r ? true : false;
-          case expr::token::add:
-          case expr::token::sub:
-          case expr::token::mul:
-          case expr::token::div:
-          case expr::token::divint:
-          case expr::token::modint:
-          case expr::token::mod:
-          case expr::token::_pow:
-          case expr::token::_powint:
-          case expr::token::_bitset_insert:
-          case expr::token::_bitset_delete:
-          case expr::token::_bitset_is_element:
-          case expr::token::_len:
-          case expr::token::_substr:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type bool");
           case expr::token::min: return std::min (l,r);
           case expr::token::max: return std::max (l,r);
-          default: throw expr::exception::strange ("binary " + fhg::util::show(token));
+          default:
+            throw expr::exception::eval::type_error
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
       }
 
@@ -248,14 +232,11 @@ namespace literal
             }
           case expr::token::min: return std::min (l,r);
           case expr::token::max: return std::max (l,r);
-          case expr::token::_bitset_insert:
-          case expr::token::_bitset_delete:
-          case expr::token::_bitset_is_element:
-          case expr::token::_len:
-          case expr::token::_substr:
+          default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type long");
-          default: throw expr::exception::strange ("binary " + fhg::util::show(token));
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
       }
 
@@ -263,10 +244,6 @@ namespace literal
       {
         switch (token)
           {
-          case expr::token::_or:
-          case expr::token::_and:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type double");
           case expr::token::lt: return is_zero (l-r) ? false : (l < r ? true : false);
           case expr::token::le: return is_zero (l-r) ? true : (l < r ? true : false);
           case expr::token::gt: return is_zero (l-r) ? false : (l > r ? true : false);
@@ -282,24 +259,14 @@ namespace literal
           case expr::token::divint:
             if (is_zero (r)) throw expr::exception::eval::divide_by_zero();
             return l / r;
-          case expr::token::modint:
-          case expr::token::mod:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type double");
           case expr::token::_pow: return pow (l, r);
-          case expr::token::_powint:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type double");
           case expr::token::min: return std::min (l,r);
           case expr::token::max: return std::max (l,r);
-          case expr::token::_bitset_insert:
-          case expr::token::_bitset_delete:
-          case expr::token::_bitset_is_element:
-          case expr::token::_len:
-          case expr::token::_substr:
+          default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type double");
-          default: throw expr::exception::strange ("binary " + fhg::util::show(token));
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
       }
 
@@ -307,10 +274,6 @@ namespace literal
       {
         switch (token)
           {
-          case expr::token::_or:
-          case expr::token::_and:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type string");
           case expr::token::lt: return l < r ? true : false;
           case expr::token::le: return l <= r ? true : false;
           case expr::token::gt: return l > r ? true : false;
@@ -318,26 +281,13 @@ namespace literal
           case expr::token::ne: return l != r ? true : false;
           case expr::token::eq: return l == r ? true : false;
           case expr::token::add: { std::string s; s+= l; s += r; return s; }
-          case expr::token::sub:
-          case expr::token::mul:
-          case expr::token::div:
-          case expr::token::divint:
-          case expr::token::modint:
-          case expr::token::mod:
-          case expr::token::_pow:
-          case expr::token::_powint:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type string");
           case expr::token::min: return std::min (l,r);
           case expr::token::max: return std::max (l,r);
-          case expr::token::_bitset_insert:
-          case expr::token::_bitset_delete:
-          case expr::token::_bitset_is_element:
-          case expr::token::_len:
-          case expr::token::_substr:
+          default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type string");
-          default: throw expr::exception::strange ("binary " + fhg::util::show(token));
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
       }
 
@@ -345,34 +295,12 @@ namespace literal
       {
         switch (token)
           {
-          case expr::token::_substr:
-            return l.substr(0, r);
-          case expr::token::_or:
-          case expr::token::_and:
-          case expr::token::lt:
-          case expr::token::le:
-          case expr::token::gt:
-          case expr::token::ge:
-          case expr::token::ne:
-          case expr::token::eq:
-          case expr::token::add:
-          case expr::token::sub:
-          case expr::token::mul:
-          case expr::token::div:
-          case expr::token::divint:
-          case expr::token::modint:
-          case expr::token::mod:
-          case expr::token::_pow:
-          case expr::token::min:
-          case expr::token::max:
-          case expr::token::_powint:
-          case expr::token::_bitset_insert:
-          case expr::token::_bitset_delete:
-          case expr::token::_bitset_is_element:
-          case expr::token::_len:
+          case expr::token::_substr: return l.substr(0, r);
+          default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type string and long");
-          default: throw expr::exception::strange ("binary " + fhg::util::show(token));
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
       }
 
@@ -383,7 +311,9 @@ namespace literal
           case expr::token::_stack_push: s.push_back (l); return s;
           default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type stack and long");
+              ( fhg::util::show (token) +
+              "(" + literal::show (s) + "," + fhg::util::show (l) + ")"
+              );
           }
       }
 
@@ -394,30 +324,11 @@ namespace literal
           case expr::token::_bitset_insert: set.ins (l); return set;
           case expr::token::_bitset_delete: set.del (l); return set;
           case expr::token::_bitset_is_element: return set.is_element (l);
-          case expr::token::_substr:
-          case expr::token::_or:
-          case expr::token::_and:
-          case expr::token::lt:
-          case expr::token::le:
-          case expr::token::gt:
-          case expr::token::ge:
-          case expr::token::ne:
-          case expr::token::eq:
-          case expr::token::add:
-          case expr::token::sub:
-          case expr::token::mul:
-          case expr::token::div:
-          case expr::token::divint:
-          case expr::token::modint:
-          case expr::token::mod:
-          case expr::token::_pow:
-          case expr::token::min:
-          case expr::token::max:
-          case expr::token::_powint:
-          case expr::token::_len:
+          default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type bitset and long");
-          default: throw expr::exception::strange ("binary " + fhg::util::show(token));
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (set) + "," + fhg::util::show (l) + ")"
+              );
          }
       }
 
@@ -425,10 +336,6 @@ namespace literal
       {
         switch (token)
           {
-          case expr::token::_or:
-          case expr::token::_and:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type char");
           case expr::token::lt: return l < r ? true : false;
           case expr::token::le: return l <= r ? true : false;
           case expr::token::gt: return l > r ? true : false;
@@ -436,26 +343,13 @@ namespace literal
           case expr::token::ne: return l != r ? true : false;
           case expr::token::eq: return l == r ? true : false;
           case expr::token::add: { std::string s; s+= l; s += r; return s; }
-          case expr::token::sub:
-          case expr::token::mul:
-          case expr::token::div:
-          case expr::token::divint:
-          case expr::token::modint:
-          case expr::token::mod:
-          case expr::token::_pow:
-          case expr::token::_powint:
-            throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type char");
           case expr::token::min: return std::min (l,r);
           case expr::token::max: return std::max (l,r);
-          case expr::token::_bitset_insert:
-          case expr::token::_bitset_delete:
-          case expr::token::_bitset_is_element:
-          case expr::token::_len:
-          case expr::token::_substr:
+          default:
             throw expr::exception::eval::type_error
-              (fhg::util::show (token) + " for values of type char");
-          default: throw expr::exception::strange ("binary " + fhg::util::show(token));
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
           }
       }
 
@@ -463,8 +357,8 @@ namespace literal
       literal::type operator () (T & t, U & u) const
       {
         throw expr::exception::eval::type_error
-          ( fhg::util::show (token)
-          + " for values of wrong types: (" + show(t) + ", "  + show(u) + ")"
+          ( fhg::util::show (token) +
+          "(" + literal::show (t) + "," + literal::show (u) + ")"
           );
       }
     };

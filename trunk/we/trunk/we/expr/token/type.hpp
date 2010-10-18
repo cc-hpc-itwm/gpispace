@@ -31,7 +31,7 @@ namespace expr
     , _sqrt, _log
     , _tolong, _todouble
     , _bitset_insert, _bitset_delete, _bitset_is_element
-    , _stack_empty, _stack_top, _stack_push, _stack_pop
+    , _stack_empty, _stack_top, _stack_push, _stack_pop, _stack_size
     , _len
     , _substr
 
@@ -89,6 +89,7 @@ namespace expr
         case _stack_top: return s << "stack_top";
         case _stack_push: return s << "stack_push";
         case _stack_pop: return s << "stack_pop";
+        case _stack_size: return s << "stack_size";
         case _len: return s << "len";
         case _substr: return s << "substr";
         case abs: return s << "abs";

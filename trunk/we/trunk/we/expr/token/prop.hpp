@@ -32,6 +32,7 @@ namespace expr
         case _stack_top:
         case _stack_push:
         case _stack_pop:
+        case _stack_size:
         case _substr:
         case abs: return true;
         default: return false;

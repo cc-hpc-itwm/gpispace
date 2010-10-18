@@ -168,7 +168,8 @@ namespace expr
           case token::_stack_empty:
           case token::_stack_top: unary (op_stack.top(), k); break;
           case token::_stack_push: binary (op_stack.top(), k); break;
-          case token::_stack_pop: unary (op_stack.top(), k); break;
+          case token::_stack_pop:
+          case token::_stack_size: unary (op_stack.top(), k); break;
           case token::_substr:
           case token::mul:
           case token::div:

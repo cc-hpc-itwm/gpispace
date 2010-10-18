@@ -284,12 +284,15 @@ namespace expr
                     require ("ack_");
                     if (is_eof())
                       throw exception::parse::expected
-                        ("'empty', 'top', 'push' or 'pop'", pos());
+                        ("'empty', 'top', 'push', 'pop' or 'size'", pos());
                     else
                       switch (*pos)
                         {
                         case 'e': ++pos; require ("mpty");
                           unary (_stack_empty, "stack_empty");
+                          break;
+                        case 's': ++pos; require ("ize");
+                          unary (_stack_size, "stack_size");
                           break;
                         case 't': ++pos; require ("op");
                           unary (_stack_top, "stack_top");
@@ -315,7 +318,7 @@ namespace expr
                           break;
                         default:
                           throw exception::parse::expected
-                            ("'empty', 'top', 'push' or 'pop'", pos());
+                            ("'empty', 'top', 'push', 'pop' or 'size'", pos());
                         }
 
                     break;
