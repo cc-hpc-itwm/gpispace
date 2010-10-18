@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 data_dir=${DATA_DIR:?}
 
@@ -8,8 +8,8 @@ tune_cfg="$filter_dir/tune.conf"
 pnet_lib="$data_dir/../pnet/lib"
 pnet_lib="/p/herc/itwm/hpc/ap/SDPA/application/lib"
 
-if [ $# -ne 5 ]; then
-  echo "usage: $0 input-file input-type output-file output-type su-program"
+if [ $# -lt 5 ]; then
+  echo "usage: $0 input-file input-type output-file output-type su-pipeline"
   exit 1
 fi
 
@@ -21,14 +21,14 @@ prog=${5:?}
 shift 5
 
 if [ ! -r "$inf" ] ; then
-  echo "E: cannot access $inf for reading, aborting"
+  echo "E: cannot access $inf for reading, aborting" >/dev/stderr
   exit 1
 fi
 
 if [ -r "$tune_cfg" ] ; then
   cat "$tune_cfg" > "$filter_cfg"
 else
-  echo "W: could not read $tune_cfg"
+  echo "W: could not read $tune_cfg" >/dev/stderr
 fi
 
 abspath ()
@@ -52,9 +52,9 @@ abspath ${outf}
 abs_outf="$REPLY"
 
 # create the shell script to execute the filter
-script=$( mktemp -p "$filter_dir" filter.sh.XXXXXX )
+script=$( mktemp "$filter_dir/filter.sh.XXXXXX" )
 if [ $? -ne 0 ] ; then
-  echo "could not create temporary file in $filter_dir"
+  echo "could not create temporary file in $filter_dir" >/dev/stderr
   exit 2
 fi
 
@@ -75,24 +75,33 @@ EOF
 cleanup ()
 {
   rm -f "${script}"
+  rm -f "${filter_cfg}"
 }
 trap cleanup EXIT
 
-echo "generated script file:"
-cat "${script}"
+echo "-: generated script file:" >/dev/stderr
+cat "${script}" >/dev/stderr
 
-echo "generating job description..."
+echo "-: generated config:" >/dev/stderr
+cat "${filter_cfg}" >/dev/stderr
+
+echo -n "-: generating job description..." >/dev/stderr
 sed -e "s,@CONFIG_FILE@,$filter_cfg," "$filter_dir/loop.xml.in" > "$filter_dir/loop.xml"
 if [ $? -ne 0 ] ; then
-  echo "generating failed!"
+  echo "E: generating failed!" >/dev/stderr
   exit 2
 fi
+echo "ok" >/dev/stderr
 
-pnetc "$filter_dir/loop.xml" -I "$pnet_lib" > $filter_dir/su4.pnet
+echo -n "-: compiling job description..." >/dev/stderr
+pnetc "$filter_dir/loop.xml" -I "$pnet_lib" > "$filter_dir/su4.pnet"
 if [ $? -ne 0 ] ; then
-  echo "generating failed!"
+  echo "E: generating failed!"
   exit 2
 fi
+echo "ok" >/dev/stderr
+
+exit 0
 
 sdpac -w submit $filter_dir/su4.pnet
 test -e "${script}" && rm -f "${script}"
