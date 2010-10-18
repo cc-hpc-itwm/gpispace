@@ -109,7 +109,8 @@ static long exec_impl ( std::string const & command
     //    if ( execve( av[0], av, environ) < 0 )
     if ( execvp( av[0], av ) < 0 )
     {
-      throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() + std::string(strerror(errno)));
+      //      throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() + std::string(strerror(errno)));
+      _exit (-errno);
     }
   }
   else if (pid_child > 0)
@@ -118,6 +119,8 @@ static long exec_impl ( std::string const & command
     close (in_pipe[0]);
     close (out_pipe[1]);
     close (err_pipe[1]);
+
+    usleep (5000);
 
     int in_to_child = in_pipe[1];
     int out_from_child = out_pipe[0];
@@ -175,7 +178,7 @@ static long exec_impl ( std::string const & command
       {
 	if (errno != 0)
 	{
-	  LOG(ERROR, "select() failed: " << strerror(errno));
+	  DLOG(ERROR, "select() failed: " << strerror(errno));
 	  terminate (pid_child);
 	  throw std::runtime_error ("select() failed: " + std::string(strerror(errno)));
 	}
@@ -188,7 +191,7 @@ static long exec_impl ( std::string const & command
       {
 	if (out_from_child >= 0 && FD_ISSET(out_from_child, &rd))
 	{
-	  LOG(TRACE, "output available");
+	  DLOG(TRACE, "output available");
 
 	  r = read (out_from_child, dst, size_out - bytes_rd);
 	  if (r < 1)
@@ -199,7 +202,7 @@ static long exec_impl ( std::string const & command
 	  }
 	  else
 	  {
-	    LOG(TRACE, "read " << r << " bytes");
+	    DLOG(TRACE, "read " << r );
 	    bytes_rd += r;
 	    dst += r;
 	  }
@@ -207,47 +210,50 @@ static long exec_impl ( std::string const & command
 
 	if (err_from_child >= 0 && FD_ISSET(err_from_child, &rd))
 	{
-	  LOG(TRACE, "error available");
+	  DLOG(TRACE, "error available");
 	  
 	  char c;
 	  r = read (err_from_child, &c, 1);
 	  if (r < 1)
 	  {
-	    LOG(TRACE, "closing error stream from child");
+	    DLOG(TRACE, "closing error stream from child: " << err_str.str());
 	    close (err_from_child);
 	    err_from_child = -1;
 	  }
 	  else
 	  {
 	    err_str << c;
+    
 	  }
 	}
 
 	if (in_to_child >= 0 && FD_ISSET(in_to_child, &wr))
 	{
-	  LOG(TRACE, "input possible");
+	  DLOG(TRACE, "input possible");
 
-	  r = write (in_to_child, src, size_in - bytes_wr);
+	  size_t avail (size_in - bytes_wr);
+
+	  r = write (in_to_child, src, std::min (size_t(4<<10), avail));
 
 	  if (r < 1)
 	  {
-	    LOG(TRACE, "closing output to child");
+	    DLOG(TRACE, "closing output to child");
 	    close (in_to_child);
 	    in_to_child = -1;
 	  }
 	  else
 	  {
-	    LOG(TRACE, "wrote " << r << " bytes to child");
+	    DLOG(TRACE, "wrote " << r << " bytes to child");
 	    bytes_wr += r;
 	    src += r;
 	  }
 	}
 	
-	LOG(TRACE, "wr = " << bytes_wr << " rd = " << bytes_rd);
+	DLOG(TRACE, "wr = " << bytes_wr << " rd = " << bytes_rd);
 
 	if (bytes_rd == size_out && bytes_wr == size_in)
 	{
-	  LOG(INFO, "read/write completed");
+	  DLOG(INFO, "read/write completed");
 	  break;
 	}
       }
@@ -670,7 +676,7 @@ static void tpow ( void * state
 
 // ************************************************************************* //
 
-static void exec ( void * state
+static void execW ( void * state
 		 , const we::loader::input_t & input
 		 , we::loader::output_t & output
 		 )
@@ -712,7 +718,9 @@ static void exec ( void * state
 
   MLOG (INFO, "call exec for '" << cmd << "' with size " << size);
 
-  exec_impl (cmd, fvmGetShmemPtr(), (std::size_t)size, fvmGetShmemPtr(), (std::size_t)size);
+  void * buf (fvmGetShmemPtr());
+
+  exec_impl (cmd, buf, (std::size_t)size, buf, (std::size_t)size);
 
   // communicate back
 
@@ -739,7 +747,7 @@ WE_MOD_INITIALIZE_START (filter_trace);
   WE_REGISTER_FUN (trap);
   WE_REGISTER_FUN (tpow);
   WE_REGISTER_FUN (bandpass);
-  WE_REGISTER_FUN (exec);
+  WE_REGISTER_FUN (execW);
 }
 WE_MOD_INITIALIZE_END (filter_trace);
 

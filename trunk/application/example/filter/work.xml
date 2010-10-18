@@ -16,7 +16,7 @@
         <in name="config" type="config"/>
         <in name="in" type="part_in_store"/>
         <out name="out" type="part_in_store"/>
-        <module name="filter_trace" function="exec"/>
+        <module name="filter_trace" function="execW"/>
       </defun>
       <connect-in port="config" place="config"/>
       <connect-in port="in" place="in"/>
