@@ -23,7 +23,7 @@
    <place name="done" type="control"/>
 
     <place name="memsizeGPI" type="long">
-      <token><value>2^30</value></token>
+      <token><value>3*2^30</value></token>
     </place>
 
     <transition name="initialize">
