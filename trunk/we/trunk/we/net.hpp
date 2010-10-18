@@ -1132,6 +1132,7 @@ public:
 
     choice_vec_t choice_vec_consume (choice_consume->second);
     enabled_choice_consume.erase (choice_consume);
+    choice_vec_t choice_vec_read (choice_read->second);
 
     for ( typename choice_vec_t::const_iterator choice
             (choice_vec_consume.begin())
@@ -1150,8 +1151,6 @@ public:
 
         delete_one_token (pid, token);
       }
-
-    choice_vec_t & choice_vec_read (choice_read->second);
 
     for ( typename choice_vec_t::const_iterator choice
             (choice_vec_read.begin())
