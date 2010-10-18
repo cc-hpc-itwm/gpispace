@@ -101,7 +101,5 @@ if [ $? -ne 0 ] ; then
 fi
 echo "ok" >/dev/stderr
 
-exit 0
-
 sdpac -w submit $filter_dir/su4.pnet
 test -e "${script}" && rm -f "${script}"
