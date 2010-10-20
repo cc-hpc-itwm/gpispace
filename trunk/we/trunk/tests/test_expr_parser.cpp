@@ -10,6 +10,31 @@
 
 #include <malloc.h>
 
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+bool read_line (std::string & s)
+{
+  char * line (readline("> "));
+
+  if (!line)
+    {
+      return false;
+    }
+
+  s = std::string (line);
+
+  if (*line)
+    {
+      add_history (line);
+    }
+
+  free (line);
+
+  return true;
+}
+
 using std::cin;
 using std::cout;
 using std::endl;
@@ -24,11 +49,7 @@ int main (int ac, char **)
     context_t context;
     std::string input;
 
-    const std::string prompt ("> ");
-
-    cout << prompt;
-
-    while (getline(cin, input).good())
+    while (read_line(input))
       {
         switch (input[0])
           {
@@ -84,7 +105,6 @@ int main (int ac, char **)
                 cout << "EXCEPTION: " << e.what() << endl;
               }
           }
-        cout << prompt;
       }
 
     return EXIT_SUCCESS;
