@@ -190,6 +190,17 @@ namespace literal
       }
   }
 
+  static void skip_sep (const char & sep, fhg::util::parse::position & pos)
+  {
+    if (!pos.end())
+      {
+        if (*pos == sep)
+          {
+            ++pos; skip_spaces (pos);
+          }
+      }
+  }
+
   static bool read_stack_item (long & l, fhg::util::parse::position & pos)
   {
     if (pos.end() || !isspace (*pos))
@@ -239,13 +250,7 @@ namespace literal
 
     val = read_long (pos); skip_spaces (pos);
 
-    if (!pos.end())
-      {
-        if (*pos == ',')
-          {
-            ++pos; skip_spaces (pos);
-          }
-      }
+    skip_sep (',', pos);
 
     return true;
   }
@@ -339,45 +344,29 @@ namespace literal
           v = s;
         }
         break;
-      case '{':
+      case '{': ++pos;
         {
-          const std::size_t open (pos());
-
-          ++pos;
-
           bitsetofint::type::container_type container;
+          bool read_item;
 
           do
             {
-              if (pos.end())
-                throw expr::exception::parse::unterminated ("{", open, pos());
-              else
-                switch (*pos)
-                  {
-                  case '}': break;
-                  default:
-                    container.push_back (read_ulong (pos));
-                    if (pos.end())
-                      throw expr::exception::parse::unterminated
-                        ("{", open, pos());
-                    else
-                      switch (*pos)
-                        {
-                        case '}': break;
-                        case ',': ++pos; break;
-                        default:
-                          throw expr::exception::parse::expected
-                            ("'}' or ','", pos());
-                        }
-                    break;
-                  }
+              read_item = false;
+
+              skip_spaces (pos);
+
+              if (!pos.end() && isdigit (*pos))
+                {
+                  container.push_back (read_long (pos));
+
+                  skip_spaces (pos); skip_sep (',', pos);
+
+                  read_item = true;
+                }
             }
-          while (!(pos.end() || *pos == '}'));
+          while (read_item);
 
-          if (pos.end())
-            throw expr::exception::parse::unterminated ("{", open, pos());
-
-          ++pos;
+          require ("}", pos);
 
           v = bitsetofint::type (container);
         }
