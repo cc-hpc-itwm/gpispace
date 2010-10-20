@@ -157,17 +157,26 @@ namespace expr
 
           void operator () (const ternary_t & t) const
           {
-            if (t.token != token::_ite)
+            switch (t.token)
               {
-                throw exception::strange ("ternary but not _ite!?");
+              case token::_ite:
+                s << "(" << token::_if << t.child0
+                         << token::_then << t.child1
+                         << token::_else << t.child2
+                         << token::_endif
+                  << ")"
+                  ;
+              case token::_map_assign:
+                s << token::_map_assign
+                  << "(" << t.child0
+                  << "," << t.child1
+                  << "," << t.child2
+                  << ")"
+                  ;
+                break;
+              default:
+                throw exception::strange ("unknown ternary token");
               }
-
-            s << "(" << token::_if << t.child0
-                     << token::_then << t.child1
-                     << token::_else << t.child2
-                     << token::_endif
-                     << ")"
-              ;
           }
         };
       }

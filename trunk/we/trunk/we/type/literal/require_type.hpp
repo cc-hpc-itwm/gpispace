@@ -26,6 +26,7 @@ namespace literal
       type_name_t operator () (const std::string &) const { return STRING; }
       type_name_t operator () (const bitsetofint::type &) const { return BITSET; }
       type_name_t operator () (const literal::stack_type &) const { return STACK; }
+      type_name_t operator () (const literal::map_type &) const { return MAP; }
     };
   }
 

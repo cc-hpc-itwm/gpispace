@@ -111,9 +111,6 @@ namespace expr
 
         if (top == token::sep)
           {
-            if (inp == token::sep)
-              return error4;
-
             if (inp == token::eof)
               return error4;
 

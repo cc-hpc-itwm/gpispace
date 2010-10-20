@@ -62,6 +62,27 @@ namespace literal
         return s.str();
       }
 
+      std::string operator () (const literal::map_type & map) const
+      {
+        std::ostringstream s;
+
+        s << "[|";
+
+        for ( literal::map_type::const_iterator pos (map.begin())
+            ; pos != map.end()
+            ; ++pos
+            )
+          {
+            s << (pos != map.begin() ? ", " : "")
+              << pos->first << " -> " << pos->second
+              ;
+          }
+
+        s << "|]";
+
+        return s.str();
+      }
+
       template<typename T>
       std::string operator () (const T & x) const
       {

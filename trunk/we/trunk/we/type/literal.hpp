@@ -10,12 +10,15 @@
 
 #include <boost/serialization/vector.hpp>
 
+#include <boost/unordered_map.hpp>
+
 #include <string>
 #include <vector>
 
 namespace literal
 {
   typedef std::vector<long> stack_type;
+  typedef boost::unordered_map<long, long> map_type;
 
   typedef boost::variant< control
                         , bool
@@ -25,6 +28,7 @@ namespace literal
                         , std::string
                         , bitsetofint::type
                         , stack_type
+                        , map_type
                         > type;
 }
 

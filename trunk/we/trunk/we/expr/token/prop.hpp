@@ -33,6 +33,10 @@ namespace expr
         case _stack_push:
         case _stack_pop:
         case _stack_size:
+        case _map_assign:
+        case _map_unassign:
+        case _map_is_assigned:
+        case _map_get_assignment:
         case _substr:
         case abs: return true;
         default: return false;

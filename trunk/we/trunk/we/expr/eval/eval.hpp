@@ -17,6 +17,8 @@ namespace expr
     {
       namespace node = expr::parse::node;
 
+      // ******************************************************************* //
+
       class eval : public boost::static_visitor<value::type>
       {
       private:
@@ -103,19 +105,49 @@ namespace expr
 
         value::type operator () (const node::ternary_t & t) const
         {
-          if (t.token == expr::token::_ite)
+          switch (t.token)
             {
+            case expr::token::_ite:
               if ( value::function::is_true ( boost::apply_visitor ( *this
                                                                    , t.child0
                                                                    )
                                             )
                  )
-                return boost::apply_visitor (*this, t.child1);
+                {
+                  return boost::apply_visitor (*this, t.child1);
+                }
               else
-                return boost::apply_visitor (*this, t.child2);
+                {
+                  return boost::apply_visitor (*this, t.child2);
+                }
+              break;
+            case expr::token::_map_assign:
+              {
+                value::type c0 (boost::apply_visitor (*this, t.child0));
+                value::type c1 (boost::apply_visitor (*this, t.child1));
+                value::type c2 (boost::apply_visitor (*this, t.child2));
+
+                try
+                  {
+                    literal::map_type & m
+                      (value::get_ref<literal::map_type> (c0));
+                    long & k (value::get_ref<long> (c1));
+                    long & v (value::get_ref<long> (c2));
+
+                    m[k] = v;
+
+                    return m;
+                  }
+                catch (...)
+                  {
+                    throw expr::exception::eval::type_error
+                      ("map_assign (" + fhg::util::show (c0));
+                  }
+              }
+              break;
+            default:
+              throw expr::exception::strange ("unknown ternary token");
             }
-          else
-            throw expr::exception::strange ("ternary but not ite");
         }
       };
     }

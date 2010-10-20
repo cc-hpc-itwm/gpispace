@@ -27,6 +27,7 @@ namespace literal
     dflt[STRING] = std::string();
     dflt[BITSET] = bitsetofint::type();
     dflt[STACK] = literal::stack_type();
+    dflt[MAP] = literal::map_type();
 
     return dflt;
   }

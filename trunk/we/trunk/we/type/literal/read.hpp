@@ -209,7 +209,21 @@ namespace literal
       {
       case 't': ++pos; require ("rue", pos); v = true; break;
       case 'f': ++pos; require ("alse", pos); v = false; break;
-      case '[': ++pos; require ("]", pos); v = control(); break;
+      case '[':
+        ++pos;
+        if (pos.end())
+          {
+            throw expr::exception::parse::expected ("']' or '|'", pos());
+          }
+        else
+          switch (*pos)
+            {
+            case ']': ++pos; v = control(); break;
+            case '|': ++pos; require ("|]", pos); v = literal::map_type(); break;
+            default:
+              throw expr::exception::parse::expected ("']' or '|'", pos());
+            }
+        break;
       case '@': ++pos; require ("@", pos); v = literal::stack_type(); break;
       case '\'':
         {

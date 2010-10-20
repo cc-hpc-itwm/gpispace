@@ -157,6 +157,23 @@ namespace value
       }
     };
 
+    template <typename T>
+    class get_ref : public boost::static_visitor<T>
+    {
+    public:
+      typedef T result_type;
+
+      result_type operator () (literal::type & literal) const
+      {
+        return boost::get<T> (literal);
+      }
+
+      result_type operator () (value::structured_t & o) const
+      {
+        throw exception::bad_get (o);
+      }
+    };
+
     // ********************************************************************* //
   }
 
@@ -165,6 +182,13 @@ namespace value
   get (const V & v)
   {
     return boost::apply_visitor (visitor::get<T const &>(), v);
+  }
+
+  template <typename T, typename V>
+  typename visitor::get<T &>::result_type
+  get_ref (V & v)
+  {
+    return boost::apply_visitor (visitor::get_ref<T &>(), v);
   }
 
   inline const type &

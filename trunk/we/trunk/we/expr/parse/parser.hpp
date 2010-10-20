@@ -117,6 +117,26 @@ namespace expr
           }
       }
 
+      void ternary (const token::type & token, const std::size_t k)
+      {
+        if (nd_stack.empty())
+          throw exception::parse::missing_operand (k, "first");
+
+        nd_t t (nd_t(nd_stack.back())); nd_stack.pop_back();
+
+        if (nd_stack.empty())
+          throw exception::parse::missing_operand (k, "second");
+
+        nd_t s (nd_t(nd_stack.back())); nd_stack.pop_back();
+
+        if (nd_stack.empty())
+          throw exception::parse::missing_operand (k, "third");
+
+        nd_t f (nd_t(nd_stack.back())); nd_stack.pop_back();
+
+        nd_stack.push_back (node::ternary_t (token, f, s, t));
+      }
+
       void ite (const std::size_t k)
       {
         if (nd_stack.empty())
@@ -170,6 +190,10 @@ namespace expr
           case token::_stack_push: binary (op_stack.top(), k); break;
           case token::_stack_pop:
           case token::_stack_size: unary (op_stack.top(), k); break;
+          case token::_map_assign: ternary (op_stack.top(), k); break;
+          case token::_map_unassign:
+          case token::_map_is_assigned:
+          case token::_map_get_assignment: binary (op_stack.top(), k); break;
           case token::_substr:
           case token::mul:
           case token::div:

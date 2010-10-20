@@ -332,6 +332,21 @@ namespace literal
          }
       }
 
+      literal::type operator () (literal::map_type & m, long & k) const
+      {
+        switch (token)
+          {
+          case expr::token::_map_unassign: m.erase (k); return m;
+          case expr::token::_map_is_assigned: return m.find (k) != m.end();
+          case expr::token::_map_get_assignment: return m.at (k);
+          default:
+            throw expr::exception::eval::type_error
+              ( fhg::util::show (token) +
+              "(" + literal::show (m) + "," + fhg::util::show (k) + ")"
+              );
+          }
+      }
+
       literal::type operator () (char & l, char & r) const
       {
         switch (token)

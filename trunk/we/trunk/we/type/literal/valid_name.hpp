@@ -25,6 +25,7 @@ namespace literal
       set.insert (STRING);
       set.insert (BITSET);
       set.insert (STACK);
+      set.insert (MAP);
     }
 
     bool valid (const type_name_t & x) const

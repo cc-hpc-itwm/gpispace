@@ -255,15 +255,43 @@ namespace expr
               ++pos;
               if (is_eof())
                 throw exception::parse::expected
-                  ("'in' or 'ax' or 'od'", pos());
+                  ("'in' or 'ax', 'od' or 'map_...'", pos());
               else
                 switch (*pos)
                   {
                   case 'i': ++pos; require ("n"); token = min; break;
-                  case 'a': ++pos; require ("x"); token = max; break;
                   case 'o': ++pos; require ("d"); token = modint; break;
+                  case 'a': ++pos;
+                    if (is_eof())
+                      throw exception::parse::expected
+                        ("'x' or 'p_...'", pos());
+                    else
+                      switch (*pos)
+                        {
+                        case 'x': ++pos; token = max; break;
+                        case 'p': ++pos; require ("_");
+                          if (is_eof())
+                            throw exception::parse::expected
+                              ("'assign', 'unassign', 'is_assigned' or 'get_assignment'", pos());
+                          else
+                            switch (*pos)
+                              {
+                              case 'a': ++pos; require ("ssign"); token = _map_assign; break;
+                              case 'u': ++pos; require ("nassign"); token = _map_unassign; break;
+                              case 'i': ++pos; require ("s_assigned"); token = _map_is_assigned; break;
+                              case 'g': ++pos; require ("et_assignment"); token = _map_get_assignment; break;
+                              default:
+                                throw exception::parse::expected
+                                  ("'assign', 'unassign', 'is_assigned' or 'get_assignment'", pos());
+                              }
+                          break;
+                        default:
+                          throw exception::parse::expected
+                            ("'x' or 'p_...'", pos());
+                        }
+                    break;
                   default: throw exception::parse::expected
-                      ("'in' or 'ax' od 'od'", pos());
+                      ("'in' or 'ax', 'od' or 'map_...'", pos());
                   }
               break;
             case 'p': ++pos; require("i"); set_PI(); break;
@@ -442,12 +470,6 @@ namespace expr
             case ',': ++pos; token = sep; break;
             case '(': ++pos; token = lpr; break;
             case ')': ++pos; token = rpr; break;
-            case '[':
-              ++pos;
-              require("]");
-              token = val;
-              tokval = control();
-              break;
             case '$':
               ++pos;
               token = ref;
