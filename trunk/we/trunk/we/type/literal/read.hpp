@@ -182,6 +182,14 @@ namespace literal
       }
   }
 
+  static void skip_spaces (fhg::util::parse::position & pos)
+  {
+    while (!pos.end() && isspace (*pos))
+      {
+        ++pos;
+      }
+  }
+
   static bool read_stack_item (long & l, fhg::util::parse::position & pos)
   {
     if (pos.end() || !isspace (*pos))
@@ -190,6 +198,8 @@ namespace literal
       }
 
     ++pos;
+
+    skip_spaces (pos);
 
     l = read_long (pos);
 
@@ -213,6 +223,33 @@ namespace literal
         }
   }
 
+  static bool read_map_item ( long & key
+                            , long & val
+                            , fhg::util::parse::position & pos
+                            )
+  {
+    if (pos.end() || !isdigit (*pos))
+      {
+        return false;
+      }
+
+    key = read_long (pos); skip_spaces (pos);
+
+    require ("->", pos); skip_spaces (pos);
+
+    val = read_long (pos); skip_spaces (pos);
+
+    if (!pos.end())
+      {
+        if (*pos == ',')
+          {
+            ++pos; skip_spaces (pos);
+          }
+      }
+
+    return true;
+  }
+
   static void read (type & v, fhg::util::parse::position & pos)
   {
     if (pos.end())
@@ -232,7 +269,20 @@ namespace literal
           switch (*pos)
             {
             case ']': ++pos; v = control(); break;
-            case '|': ++pos; require ("|]", pos); v = literal::map_type(); break;
+            case '|': ++pos;
+              {
+                literal::map_type m;
+                long key;
+                long val;
+
+                while (read_map_item (key, val, pos))
+                  {
+                    m[key] = val;
+                  }
+
+                require ("|]", pos); v = m;
+              }
+              break;
             default:
               throw expr::exception::parse::expected ("']' or '|'", pos());
             }
