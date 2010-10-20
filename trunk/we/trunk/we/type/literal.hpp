@@ -8,7 +8,7 @@
 
 #include <boost/variant.hpp>
 
-#include <boost/serialization/vector.hpp>
+#include <boost/serialization/deque.hpp>
 
 #include <boost/unordered_map.hpp>
 
@@ -17,7 +17,7 @@
 
 namespace literal
 {
-  typedef std::vector<long> stack_type;
+  typedef std::deque<long> stack_type;
   typedef boost::unordered_map<long, long> map_type;
 
   typedef boost::variant< control

@@ -182,6 +182,20 @@ namespace literal
       }
   }
 
+  static bool read_stack_item (long & l, fhg::util::parse::position & pos)
+  {
+    if (pos.end() || !isspace (*pos))
+      {
+        return false;
+      }
+
+    ++pos;
+
+    l = read_long (pos);
+
+    return true;
+  }
+
   inline void require ( const std::string & what
                       , fhg::util::parse::position & pos
                       )
@@ -209,8 +223,7 @@ namespace literal
       {
       case 't': ++pos; require ("rue", pos); v = true; break;
       case 'f': ++pos; require ("alse", pos); v = false; break;
-      case '[':
-        ++pos;
+      case '[': ++pos;
         if (pos.end())
           {
             throw expr::exception::parse::expected ("']' or '|'", pos());
@@ -224,7 +237,19 @@ namespace literal
               throw expr::exception::parse::expected ("']' or '|'", pos());
             }
         break;
-      case '@': ++pos; require ("@", pos); v = literal::stack_type(); break;
+      case '@': ++pos;
+        {
+          literal::stack_type s;
+          long l;
+
+          while (read_stack_item (l, pos))
+            {
+              s.push_front (l);
+            }
+
+          require ("@", pos); v = s;
+        }
+        break;
       case '\'':
         {
           const std::size_t open (pos());
