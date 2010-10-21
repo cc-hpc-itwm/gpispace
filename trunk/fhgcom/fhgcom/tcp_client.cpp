@@ -174,6 +174,10 @@ namespace fhg
           {
             reconnect ();
           }
+          else
+          {
+            throw;
+          }
         }
       }
     }
