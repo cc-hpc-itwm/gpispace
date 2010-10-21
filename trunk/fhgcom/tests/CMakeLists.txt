@@ -3,6 +3,7 @@
 set(tc_srcs
   "test_store.cpp"
   "test_kvs_message.cpp"
+  "test_peer.cpp"
 )
 
 foreach (tc_src ${tc_srcs})
