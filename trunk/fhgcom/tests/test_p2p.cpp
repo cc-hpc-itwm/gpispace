@@ -17,23 +17,17 @@ BOOST_AUTO_TEST_CASE ( test_address )
 BOOST_AUTO_TEST_CASE ( test_address_translation_equal )
 {
   using namespace fhg::com::p2p;
-  address_t a1;
-  translate_name ("name-1", a1);
+  address_t a1 ("name-1");
+  address_t a2 ("name-1");
 
-  address_t a2;
-  translate_name ("name-1", a2);
-
-  BOOST_CHECK_EQUAL ( 0, memcmp (&a1, &a2, sizeof (address_t)) );
+  BOOST_CHECK_EQUAL ( a1, a2 );
 }
 
 BOOST_AUTO_TEST_CASE ( test_address_translation_unique )
 {
   using namespace fhg::com::p2p;
-  address_t a1;
-  translate_name ("name-1", a1);
+  address_t a1 ("name-1");
+  address_t a2 ("name-2");
 
-  address_t a2;
-  translate_name ("name-2", a2);
-
-  BOOST_CHECK ( memcmp (&a1, &a2, sizeof (address_t)) != 0 );
+  BOOST_CHECK ( a1 != a2 );
 }

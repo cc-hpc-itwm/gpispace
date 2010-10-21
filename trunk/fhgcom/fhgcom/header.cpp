@@ -5,6 +5,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace fhg
 {
@@ -29,6 +30,69 @@ namespace fhg
       {
         boost::uuids::uuid u = fhg_com_gen_uuid(name);
         memcpy (&addr, &u, sizeof(u));
+      }
+
+      address_t::address_t ()
+      {
+        memset (data, 0, sizeof (data));
+      }
+
+      address_t::address_t (std::string const &nm)
+      {
+        translate_name (nm, *this);
+      }
+
+      // standard operators
+      bool operator==(address_t const& lhs, address_t const& rhs)
+      {
+        return memcmp (&lhs, &rhs, sizeof(address_t)) == 0;
+      }
+      bool operator!=(address_t const& lhs, address_t const& rhs)
+      {
+        return ! (lhs == rhs);
+      }
+      bool operator<(address_t const& lhs, address_t const& rhs)
+      {
+        return memcmp (&lhs, &rhs, sizeof(address_t)) < 0;
+      }
+      bool operator>(address_t const& lhs, address_t const& rhs)
+      {
+        return memcmp (&lhs, &rhs, sizeof(address_t)) > 0;
+      }
+      bool operator<=(address_t const& lhs, address_t const& rhs)
+      {
+        return ! (lhs > rhs);
+      }
+      bool operator>=(address_t const& lhs, address_t const& rhs)
+      {
+        return ! (lhs < rhs);
+      }
+
+      void swap(address_t& lhs, address_t& rhs)
+      {
+        uint8_t tmp[sizeof(address_t)];
+        memcpy (tmp, &lhs, sizeof(address_t));
+        memcpy (&lhs, &rhs, sizeof(address_t));
+        memcpy (&rhs, tmp, sizeof(address_t));
+      }
+
+      std::size_t hash_value(address_t const& a)
+      {
+        boost::uuids::uuid u;
+        memcpy (&u, &a, sizeof(boost::uuids::uuid));
+        return hash_value (u);
+      }
+
+      std::string to_string (address_t const & a)
+      {
+        boost::uuids::uuid u;
+        memcpy (&u, &a, sizeof(boost::uuids::uuid));
+        return to_string (u);
+      }
+
+      std::ostream & operator<<(std::ostream & os, address_t const &a)
+      {
+        return os << to_string (a);
       }
     }
   }
