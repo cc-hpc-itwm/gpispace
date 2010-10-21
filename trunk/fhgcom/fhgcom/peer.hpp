@@ -65,7 +65,10 @@ namespace fhg
       void start () {}
       void stop () {}
 
-      void send (const char * data, const std::size_t n, int timeout);
+      void send ( const std::string & to
+                , const std::string & data
+                );
+
     private:
       std::string name_;
       std::string host_;
