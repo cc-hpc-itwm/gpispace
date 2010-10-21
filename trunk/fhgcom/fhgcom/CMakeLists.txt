@@ -10,6 +10,7 @@ set (hdrs
   session.hpp
   basic_session_manager.hpp
   session_manager.hpp
+  connection.hpp
 
   tcp_server.hpp
   tcp_client.hpp
@@ -18,6 +19,7 @@ set (hdrs
 
 set (srcs
   session.cpp
+  connection.cpp
 
   tcp_server.cpp
   tcp_client.cpp
