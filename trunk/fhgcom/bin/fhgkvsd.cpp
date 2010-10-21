@@ -6,6 +6,7 @@
 #include <boost/program_options.hpp>
 
 #include <fhgcom/kvs/kvsd.hpp>
+#include <fhgcom/peer_info.hpp>
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
@@ -15,8 +16,24 @@ int main(int ac, char *av[])
 
   namespace po = boost::program_options;
 
-  std::string server_address ("");
+  std::string server_address ("*");
   std::string server_port ("2439");
+
+  if (getenv("KVS_URL") != NULL)
+  {
+    try
+    {
+      using namespace fhg::com;
+      peer_info_t pi (peer_info_t::from_string (getenv("KVS_URL")));
+      server_address = pi.host(server_address);
+      server_port = pi.port(server_port);
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "W: malformed environment variable KVS_URL: " << ex.what() << std::endl;
+    }
+  }
+
   bool reuse_address (true);
   std::string store_path (std::string(getenv("HOME")) + "/.fhgkvsd.dat");
 
@@ -55,6 +72,11 @@ int main(int ac, char *av[])
   fhg::com::kvs::server::kvsd kvsd (store_path);
 
   if (vm.count ("clear")) kvsd.clear ("");
+
+  if (server_address == "*")
+  {
+    server_address = "0";
+  }
 
   fhg::com::tcp_server server ( pool
                               , kvsd
