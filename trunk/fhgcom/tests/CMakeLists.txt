@@ -1,9 +1,10 @@
 # -*- mode: cmake; -*-
 
 set(tc_srcs
-  "test_store.cpp"
-  "test_kvs_message.cpp"
-  "test_peer.cpp"
+  test_store.cpp
+  test_kvs_message.cpp
+  test_peer.cpp
+  test_message.cpp
 )
 
 foreach (tc_src ${tc_srcs})
