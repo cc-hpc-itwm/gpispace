@@ -3,6 +3,7 @@
   <include-structs href="types/config.xml"/>
   <include-structs href="types/volume.xml"/>
   <include-structs href="types/bunch.xml"/>
+  <include-structs href="types/offset_seen.xml"/>
 
   <in name="file_config" type="string" place="file_config"/>
   <out name="done" type="control" place="done"/>
@@ -12,7 +13,7 @@
     <place name="file_config" type="string">
       <token>
         <value>
-       "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_C3NA.rahn.xml"
         </value>
       </token>
    </place>
@@ -23,7 +24,7 @@
    <place name="done" type="control"/>
 
     <place name="memsizeGPI" type="long">
-      <token><value>3*2^30</value></token>
+      <token><value>5*2^30</value></token>
     </place>
 
     <transition name="initialize">
@@ -113,7 +114,12 @@
       <include-function href="init/wanted_offsets.xml"/>
       <connect-in port="config" place="config_init_wanted_offsets"/>
       <connect-out port="wanted" place="wanted_offset"/>
+      <connect-out port="offset_next" place="offset_next"/>
+      <connect-out port="offset_seen" place="offset_seen"/>
     </transition>
+
+    <place name="offset_next" type="long"/>
+    <place name="offset_seen" type="offset_seen"/>
 
     <place name="wanted_offset" type="bitset"/>
 
@@ -386,26 +392,53 @@
     <transition name="break_volume" priority="1">
       <defun>
         <in name="volume" type="volume"/>
-        <in name="wanted" type="bitset"/>
-        <out name="wanted" type="bitset"/>
+        <in name="offset_seen" type="offset_seen"/>
+        <out name="offset_seen" type="offset_seen"/>
         <out name="volume" type="volume"/>
         <out name="trigger" type="control"/>
         <expression>
-          ${wanted} := bitset_insert (${wanted}, ${volume.offset.id} + 1);
-          ${trigger} := []
+          ${trigger} := [];
+          ${offset_seen.seen.volume} := ${offset_seen.seen.volume} + 1
         </expression>
         <condition>
           ${volume.bunches.left} :eq: 0
         </condition>
+        <condition>
+          ${volume.offset.id} :eq: ${offset_seen.offset.id}
+        </condition>
       </defun>
       <connect-in port="volume" place="volume_selected"/>
       <connect-out port="volume" place="volume_write"/>
-      <connect-in port="wanted" place="wanted_offset"/>
-      <connect-out port="wanted" place="wanted_offset"/>
       <connect-out port="trigger" place="trigger_select_volume"/>
+      <connect-in port="offset_seen" place="offset_seen"/>
+      <connect-out port="offset_seen" place="offset_seen"/>
     </transition>
 
     <place name="volume_write" type="volume"/>
+
+    <transition name="update_offset_next">
+      <defun>
+        <in name="offset_seen" type="offset_seen"/>
+        <in name="config" type="config"/>
+        <in name="wanted" type="bitset"/>
+        <out name="wanted" type="bitset"/>
+        <in name="next" type="long"/>
+        <out name="next" type="long"/>
+        <expression>
+          ${wanted} := bitset_insert (${wanted}, ${next});
+          ${next} := ${next} + 1
+        </expression>
+        <condition>
+          ${offset_seen.seen.volume} :ge: ${config.per_offset.volumes}
+        </condition>
+      </defun>
+      <connect-in port="offset_seen" place="offset_seen"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="wanted" place="wanted_offset"/>
+      <connect-out port="wanted" place="wanted_offset"/>
+      <connect-in port="next" place="offset_next"/>
+      <connect-out port="next" place="offset_next"/>
+    </transition>
 
     <transition name="write">
       <defun>

@@ -1,9 +1,13 @@
 <defun>
   <in name="config" type="config" place="config"/>
   <out name="wanted" type="bitset" place="wanted"/>
+  <out name="offset_next" type="long" place="next"/>
+  <out name="offset_seen" type="offset_seen" place="offset_seen"/>
   <net>
     <place name="config" type="config"/>
     <place name="wanted" type="bitset"/>
+    <place name="next" type="long"/>
+    <place name="offset_seen" type="offset_seen"/>
 
     <struct name="state">
       <field name="wanted" type="bitset"/>
@@ -36,11 +40,15 @@
     <transition name="step">
       <defun>
         <in name="state" type="state"/>
+        <out name="offset_seen" type="offset_seen"/>
         <out name="state" type="state"/>
         <expression>
           ${state.wanted} := bitset_insert (${state.wanted}, ${state.offset});
-          ${state.offset} := ${state.offset} + 1;
 
+          ${offset_seen.offset.id} := ${state.offset};
+          ${offset_seen.seen.volume} := 0L;
+
+          ${state.offset} := ${state.offset} + 1;
           ${state.state.state} := ${state.state.state} + ${state.state.inc}
         </expression>
         <condition>
@@ -49,14 +57,17 @@
       </defun>
       <connect-in port="state" place="state"/>
       <connect-out port="state" place="state"/>
+      <connect-out port="offset_seen" place="offset_seen"/>
     </transition>
 
     <transition name="break">
       <defun>
         <in name="state" type="state"/>
         <out name="wanted" type="bitset"/>
+        <out name="next" type="long"/>
         <expression>
-          ${wanted} := ${state.wanted}
+          ${wanted} := ${state.wanted};
+          ${next} := ${state.offset}
         </expression>
         <condition>
           ${state.state.state} :ge: ${state.state.max}
@@ -64,6 +75,7 @@
       </defun>
       <connect-in port="state" place="state"/>
       <connect-out port="wanted" place="wanted"/>
+      <connect-out port="next" place="next"/>
     </transition>
 
   </net>

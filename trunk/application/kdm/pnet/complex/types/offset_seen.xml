@@ -1,0 +1,10 @@
+<structs>
+  <struct name="offset_seen">
+    <struct name="offset">
+      <field name="id" type="long"/>
+    </struct>
+    <struct name="seen">
+      <field name="volume" type="long"/>
+    </struct>
+  </struct>
+</structs>
