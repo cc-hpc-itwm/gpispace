@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE ( put_get_test )
 
   kvs::get_or_create_global_kvs (host, port, true, boost::posix_time::seconds(10), 3);
   kvs::put ("test_global_kvs", 42);
-  std::string val (kvs::get ("test_global_kvs").begin()->second);
+  std::string val (kvs::get<std::string> ("test_global_kvs"));
 
   BOOST_CHECK_EQUAL (val, "42");
 

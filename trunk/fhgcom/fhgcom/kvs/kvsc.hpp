@@ -42,12 +42,13 @@ namespace fhg
           {
             boost::lock_guard<boost::mutex> lock (mtx_);
 
-            kvs_.start (server_address, server_port
+            kvs_.start ( server_address, server_port
                        , auto_reconnect
                        , timeout
                        , max_connection_attempts
                        );
           }
+
           void stop ()
           {
             boost::lock_guard<boost::mutex> lock (mtx_);
@@ -224,18 +225,18 @@ namespace fhg
         client::kvsc * kvsc_;
       };
 
-      client::kvsc & get_or_create_global_kvs ( std::string const & host = ""
-                                              , std::string const & port = ""
-                                              , const bool auto_reconnect = true
-                                              , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
-                                              , const std::size_t max_connection_attempts = 11
-                                              )
+      inline client::kvsc & get_or_create_global_kvs ( std::string const & host = ""
+                                                     , std::string const & port = ""
+                                                     , const bool auto_reconnect = true
+                                                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
+                                                     , const std::size_t max_connection_attempts = 11
+                                                     )
       {
         static kvs_mgr m (host, port, auto_reconnect, timeout, max_connection_attempts);
         return m.kvs();
       }
 
-      client::kvsc & global_kvs ()
+      inline client::kvsc & global_kvs ()
       {
         return get_or_create_global_kvs ();
       }
@@ -249,7 +250,16 @@ namespace fhg
 
       template <typename Key>
       inline
-      fhg::com::kvs::message::list::map_type get (Key k)
+      void del (Key k)
+      {
+        return global_kvs().del (k);
+      }
+
+      typedef fhg::com::kvs::message::list::map_type values_type;
+
+      template <typename Key>
+      inline
+      values_type get_tree (Key k)
       {
         return global_kvs().get(k);
       }
@@ -258,7 +268,7 @@ namespace fhg
       inline
       Val get (Key k)
       {
-        fhg::com::kvs::message::list::map_type v (get(k));
+        values_type v (get_tree(k));
         if (v.size() == 1)
         {
           return boost::lexical_cast<Val>(v.begin()->second);

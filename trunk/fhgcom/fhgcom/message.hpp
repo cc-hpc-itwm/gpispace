@@ -3,27 +3,31 @@
 
 #include <vector>
 
+#include <fhgcom/header.hpp>
+
 namespace fhg
 {
   namespace com
   {
     struct message_t
     {
+      typedef p2p::header_t header_t;
+
       message_t ()
-        : data_()
+        : data()
       {}
 
       explicit
       message_t (std::size_t len)
-        : data_(len)
+        : data(len)
       {}
 
       message_t (const char * d, std::size_t len)
-        : data_(d, d+len)
+        : data(d, d+len)
       {}
 
       message_t (const message_t & other)
-        : data_(other.data_)
+        : data(other.data)
       {}
 
       ~message_t ()
@@ -33,24 +37,29 @@ namespace fhg
       {
         if (this != &rhs)
         {
-          data_ = rhs.data_;
+          header = rhs.header;
+          data = rhs.data;
         }
         return *this;
       }
 
-      void resize (std::size_t n)
+      void resize (const std::size_t n)
       {
-        data_.resize (n);
+        data.resize (n);
       }
 
-      std::vector<char> & data () { return data_; }
-      const std::vector<char> & data () const { return data_; }
+      void resize ()
+      {
+        data.resize (header.length);
+      }
 
-      const char * buf () const { return &data_[0]; }
-      std::size_t size () const { return data_.size(); }
-    private:
-      std::vector<char> data_;
+      const char * buf () const { return &data[0]; }
+      std::size_t size () const { return data.size(); }
+
+      header_t header;
+      std::vector<char> data;
     };
   }
 }
+
 #endif
