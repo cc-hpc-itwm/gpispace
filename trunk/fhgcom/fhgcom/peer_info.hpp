@@ -61,15 +61,30 @@ namespace fhg
       {
         return name_;
       }
+      std::string const & name (const std::string & def) const
+      {
+        if (name_.empty()) return def;
+        else return name();
+      }
 
       std::string const & host () const
       {
         return host_;
       }
+      std::string const & host (const std::string & def) const
+      {
+        if (host_.empty()) return def;
+        else return host();
+      }
 
       std::string const & port () const
       {
         return port_;
+      }
+      std::string const & port (const std::string & def) const
+      {
+        if (port_.empty()) return def;
+        else return port();
       }
 
       std::string const & to_string () const
