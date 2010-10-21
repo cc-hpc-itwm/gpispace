@@ -5,6 +5,7 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <fhgcom/peer_info.hpp>
 #include <fhgcom/tcp_client.hpp>
 
 #include <fhgcom/kvs/store.hpp>
@@ -146,62 +147,80 @@ namespace fhg
                        , fhg::com::kvs::message::type & rpl
                        )
           {
+            std::stringstream o_sstr;
             {
-              std::stringstream sstr;
-              {
-                boost::archive::text_oarchive ar(sstr);
-                ar & msg;
-              }
-              client.send (sstr.str(), boost::posix_time::seconds(10));
+              boost::archive::text_oarchive ar(o_sstr);
+              ar & msg;
             }
-
+            std::stringstream i_sstr( client.request ( o_sstr.str()
+                                                     , boost::posix_time::seconds(10)
+                                                     )
+                                    );
             {
-              std::stringstream sstr (client.recv(boost::posix_time::seconds(10)));
-              {
-                boost::archive::text_iarchive ar(sstr);
-                ar & rpl;
-              }
+              boost::archive::text_iarchive ar(i_sstr);
+              ar & rpl;
             }
           }
         };
       }
 
-      client::kvsc * get_or_create_global_kvs (std::string const & host = "", std::string const & port = "")
+      // helper struct to initialize the global kvs in a thread safe way
+      struct kvs_mgr
       {
-        static client::kvsc * global_kvsc_ (0);
-        if (global_kvsc_ == NULL)
+        explicit
+        kvs_mgr (std::string const & host, std::string const & port)
+          : kvsc_(new client::kvsc)
         {
-          global_kvsc_ = new client::kvsc;
+          std::string h (host);
+          std::string p (port);
 
-          std::string h ("localhost");
-          if (host != "")
+          if (h.empty() && p.empty())
           {
-            h = host;
-          }
-          else if (getenv("KVS_HOST") != NULL)
-          {
-            h = getenv("KVS_HOST");
-          }
-
-          std::string p ("2349");
-          if (port != "")
-          {
-            p = port;
-          }
-          else if (getenv ("KVS_HOST") != NULL)
-          {
-            p = getenv("KVS_PORT");
+            if (getenv("KVS_URL"))
+            {
+              peer_info_t pi = peer_info_t::from_string (getenv("KVS_URL"));
+              h = pi.host();
+              p = pi.port();
+            }
           }
 
-          global_kvsc_->start (host, port);
+          if (h.empty())
+          {
+            h = "localhost";
+          }
+
+          if (p.empty())
+          {
+            // TODO configuration variables!
+            p = "2439";
+          }
+
+          LOG(TRACE, "global kvs auto-configured to be at: [" << h << "]:" << p);
+          kvsc_->start (h,p);
         }
 
-        return global_kvsc_;
+        ~kvs_mgr ()
+        {
+          delete kvsc_; kvsc_ = 0;
+        }
+
+        client::kvsc & kvs()
+        {
+          return *kvsc_;
+        }
+      private:
+        client::kvsc * kvsc_;
+      };
+
+      client::kvsc & get_or_create_global_kvs (std::string const & host = "", std::string const & port = "")
+      {
+        static kvs_mgr m (host, port);
+        return m.kvs();
       }
 
       client::kvsc & global_kvs ()
       {
-        return *get_or_create_global_kvs ();
+        return get_or_create_global_kvs ();
       }
 
       template <typename Key, typename Val>
@@ -216,6 +235,21 @@ namespace fhg
       fhg::com::kvs::message::list::map_type get (Key k)
       {
         return global_kvs().get(k);
+      }
+
+      template <typename Val, typename Key>
+      inline
+      Val get (Key k)
+      {
+        fhg::com::kvs::message::list::map_type v (get(k));
+        if (v.size() == 1)
+        {
+          return boost::lexical_cast<Val>(v.begin()->second);
+        }
+        else
+        {
+          throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
+        }
       }
     }
   }

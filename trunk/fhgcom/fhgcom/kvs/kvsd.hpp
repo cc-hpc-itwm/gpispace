@@ -160,29 +160,24 @@ namespace fhg
           explicit
           kvsd (const std::string & file)
             : file_(file)
+            , write_through_enabled_(false)
           {
             try
             {
               LOG(INFO, "loading contents from file storage: " << file);
               load ();
+              write_through_enabled_ = true;
             }
             catch (std::exception const & ex)
             {
               LOG(WARN, "could not load file storage: " << ex.what());
+              write_through_enabled_ = false;
             }
           }
 
           virtual ~kvsd()
           {
-            try
-            {
-              LOG(INFO, "storing contents to file storage: " << file_);
-              save ();
-            }
-            catch (std::exception const & ex)
-            {
-              LOG(WARN, "could not save file storage: " << ex.what());
-            }
+            write_through();
           }
 
           template <typename Val>
@@ -312,19 +307,24 @@ namespace fhg
         private:
           void write_through ()
           {
-            try
+            if (write_through_enabled_)
             {
-              save ();
-            }
-            catch (std::exception const & ex)
-            {
-              LOG(WARN, "write-through failed: " << ex.what());
+              try
+              {
+                save ();
+              }
+              catch (std::exception const & ex)
+              {
+                LOG(WARN, "write-through failed: " << ex.what());
+                write_through_enabled_ = false;
+              }
             }
           }
 
           mutable boost::recursive_mutex mutex_;
           std::string file_;
           store_type store_;
+          bool write_through_enabled_;
         };
       }
     }

@@ -19,6 +19,9 @@ namespace fhg
     tcp_client::tcp_client ()
       : socket_(io_service_)
       , deadline_(io_service_)
+      , auto_reconnect_ (false)
+      , connection_attempts_(0)
+      , max_connection_attempts_(0)
     {
       deadline_.expires_at (boost::posix_time::pos_infin);
 
@@ -39,17 +42,56 @@ namespace fhg
 
     void tcp_client::start ( const std::string & host
                            , const std::string & port
+                           , bool auto_reconnect
                            , boost::posix_time::time_duration timeout
+                           , const std::size_t max_connection_attempts
                            )
     {
+      host_ = host;
+      port_ = port;
+      auto_reconnect_ = auto_reconnect;
+      connection_attempts_ = 0;
+      max_connection_attempts_ = max_connection_attempts_;
+      timeout_ = timeout;
+
+      reconnect();
+    }
+
+    void tcp_client::reconnect ()
+    {
+      connection_attempts_ = 0;
+
+      for (;;)
+      {
+        ++connection_attempts_;
+
+        try
+        {
+          DLOG(INFO, "trying to connect " << connection_attempts_ << "/" << max_connection_attempts_);
+          connect ();
+          break;
+        }
+        catch (...)
+        {
+          if (max_connection_attempts_)
+          {
+            if (connection_attempts_ > max_connection_attempts_)
+              throw;
+          }
+        }
+      }
+    }
+
+    void tcp_client::connect ()
+    {
       // Resolve the host name and service to a list of endpoints.
-      tcp::resolver::query query(host, port);
+      tcp::resolver::query query(host_, port_);
       tcp::resolver::iterator iter = tcp::resolver(io_service_).resolve(query);
 
       // Set a deadline for the asynchronous operation. The host name may resolve
       // to multiple endpoints, and this function tries to connect to each one in
       // turn. Setting the deadline here means it applies to the entire sequence.
-      deadline_.expires_from_now(timeout);
+      deadline_.expires_from_now(timeout_);
 
       boost::system::error_code ec;
 
@@ -99,9 +141,50 @@ namespace fhg
       socket_.close();
     }
 
+    std::string tcp_client::request ( const std::string & reqst
+                                    , boost::posix_time::time_duration timeout
+                                    )
+    {
+      for (;;)
+      {
+        try
+        {
+          try_send (reqst, timeout);
+          return try_recv (timeout);
+        }
+        catch (...)
+        {
+          if (auto_reconnect_)
+          {
+            reconnect ();
+          }
+        }
+      }
+    }
+
     void tcp_client::send ( const std::string & data
                           , boost::posix_time::time_duration timeout
                           )
+    {
+      for (;;)
+      {
+        try
+        {
+          return try_send ( data, timeout );
+        }
+        catch (...)
+        {
+          if (auto_reconnect_)
+          {
+            reconnect ();
+          }
+        }
+      }
+    }
+
+    void tcp_client::try_send ( const std::string & data
+                              , boost::posix_time::time_duration timeout
+                              )
     {
       deadline_.expires_from_now(timeout);
 
@@ -137,10 +220,31 @@ namespace fhg
       do io_service_.run_one(); while (ec == boost::asio::error::would_block);
 
       if (ec)
+      {
+        LOG(WARN, "send failed: " << ec);
         throw boost::system::system_error(ec);
+      }
     }
 
     std::string tcp_client::recv (boost::posix_time::time_duration timeout)
+    {
+      for (;;)
+      {
+        try
+        {
+          return try_recv (timeout);
+        }
+        catch (...)
+        {
+          if (auto_reconnect_)
+          {
+            reconnect ();
+          }
+        }
+      }
+    }
+
+    std::string tcp_client::try_recv (boost::posix_time::time_duration timeout)
     {
       deadline_.expires_from_now (timeout);
 
@@ -161,7 +265,10 @@ namespace fhg
       do io_service_.run_one(); while (ec == boost::asio::error::would_block);
 
       if (ec)
+      {
+        LOG(WARN, "recv failed: " << ec);
         throw boost::system::system_error(ec);
+      }
 
       std::size_t data_size = 0;
       {
@@ -187,7 +294,10 @@ namespace fhg
       do io_service_.run_one(); while (ec == boost::asio::error::would_block);
 
       if (ec)
+      {
+        LOG(WARN, "recv failed: " << ec);
         throw boost::system::system_error(ec);
+      }
 
       return std::string (&data[0], data.size());
     }
