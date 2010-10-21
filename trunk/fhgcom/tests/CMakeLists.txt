@@ -7,6 +7,8 @@ set(tc_srcs
   test_peer.cpp
   test_message.cpp
   test_connection.cpp
+
+  test_p2p.cpp
 )
 
 foreach (tc_src ${tc_srcs})
