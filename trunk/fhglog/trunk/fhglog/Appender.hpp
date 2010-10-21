@@ -1,8 +1,10 @@
 #ifndef FHG_LOG_APPENDER_HPP
 #define FHG_LOG_APPENDER_HPP 1
 
+#include    <string>
+
 #include    <fhglog/memory.hpp>
-#include    <fhglog/Formatter.hpp>
+#include    <fhglog/LogEvent.hpp>
 
 namespace fhg { namespace log {
   class Appender {

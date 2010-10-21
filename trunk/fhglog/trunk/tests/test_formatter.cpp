@@ -18,6 +18,7 @@
 
 #include <sstream> // std::ostringstream
 #include <fhglog/fhglog.hpp>
+#include <fhglog/format.hpp>
 
 static int test_format(const fhg::log::LogEvent &evt
               , const std::string &fmt
@@ -31,9 +32,7 @@ static int test_format(const fhg::log::LogEvent &evt
   {
     try
     {
-      Formatter::ptr_t formatter(Formatter::Custom(fmt));
-
-      const std::string actual(formatter->format(evt));
+      const std::string actual(format(fmt, evt));
       if (expected != actual)
       {
         std::clog << "FAILED!" << std::endl;
@@ -62,8 +61,7 @@ static int test_format(const fhg::log::LogEvent &evt
   else
   {
     try {
-      Formatter::ptr_t formatter(Formatter::Custom(fmt));
-      const std::string actual(formatter->format(evt));
+      const std::string actual(format(fmt, evt));
       std::clog << "FAILED!" << std::endl;
       std::clog << "\texception expected!" << std::endl;
       std::clog << "\tactual: " << actual << std::endl;

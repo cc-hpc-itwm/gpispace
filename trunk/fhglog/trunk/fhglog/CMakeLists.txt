@@ -14,7 +14,6 @@ set (hdrs
   FilteringAppender.hpp
   format_flag.hpp
   format.hpp
-  Formatter.hpp
   LogEvent.hpp
   LoggerApi.hpp
   logger_config.hpp
@@ -37,7 +36,6 @@ set (srcs
   error_handler.cpp
   FileAppender.cpp
   fileno.cpp
-  Formatter.cpp
   LogEvent.cpp
   Logger.cpp
   logger_path.cpp
