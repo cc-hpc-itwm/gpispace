@@ -197,8 +197,8 @@ int main(int ac, char *av[])
       {
         std::cerr << "E: " << ex.what() << std::endl;
       }
-      return count > 0 ? EX_OK : EX_ERR;
     }
+    return count > 0 ? EX_OK : EX_ERR;
   }
   else if (vm.count("put"))
   {
