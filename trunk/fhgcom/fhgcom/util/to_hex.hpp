@@ -74,6 +74,14 @@ namespace fhg
           convert (s, start, end);
           return s.str();
         }
+
+        template <typename Container>
+        static std::string convert (Container c)
+        {
+          std::stringstream s;
+          convert (s, c.begin(), c.end());
+          return s.str();
+        }
       };
 
       template <std::size_t MAX=0>
