@@ -68,3 +68,22 @@ BOOST_AUTO_TEST_CASE ( put_get_int_test )
   pool.stop();
   thrd.join();
 }
+
+BOOST_AUTO_TEST_CASE ( no_server_test )
+{
+  using namespace fhg::com;
+
+  const std::string host ("localhost");
+  const std::string port ("1234");
+
+  kvs::get_or_create_global_kvs (host, port);
+  try
+  {
+    kvs::put ("test_global_int_kvs", 42);
+    BOOST_CHECK(false);
+  }
+  catch (...)
+  {
+    // ok
+  }
+}
