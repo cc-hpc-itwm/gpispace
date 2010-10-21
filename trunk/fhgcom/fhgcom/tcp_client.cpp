@@ -3,6 +3,7 @@
 
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "tcp_client.hpp"
 
@@ -65,23 +66,34 @@ namespace fhg
       {
         try
         {
-          LOG_IF( WARN
-                , connection_attempts_ > 0
-                , "trying to connect to [" << host_ << "]:" << port_ << " attempt: " << connection_attempts_ << "/" << max_connection_attempts_
-                );
           connect ();
           break;
         }
-        catch (...)
+        catch (std::exception const & ex)
         {
           ++connection_attempts_;
 
-          if (max_connection_attempts_)
+          LOG( WARN
+             , "connecting to [" << host_ << "]:" << port_
+             << " failed: " << ex.what()
+             << " attempt: " << (connection_attempts_) << "/" << max_connection_attempts_
+             );
+
+          if (max_connection_attempts_ && connection_attempts_ >= max_connection_attempts_)
           {
-            if (connection_attempts_ > max_connection_attempts_)
-              throw;
+            throw;
           }
-          sleep (10);
+          else
+          {
+            // TODO: this is probably bad, but we have to wait until we reconnect
+            boost::posix_time::time_duration reconnect_in
+              (boost::posix_time::microseconds
+              ((float)timeout_.total_microseconds() / (float)(std::max(max_connection_attempts_, std::size_t(2)) - 1))
+              );
+            LOG(TRACE, "reconnecting in " << reconnect_in);
+            usleep (reconnect_in.total_microseconds());
+
+          }
         }
       }
     }

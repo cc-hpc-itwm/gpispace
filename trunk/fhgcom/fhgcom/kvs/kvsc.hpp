@@ -41,8 +41,8 @@ namespace fhg
 
             kvs_.start (server_address, server_port
                        , true
-                       , boost::posix_time::seconds (60)
-                       , 6
+                       , boost::posix_time::seconds (10)
+                       , 10
                        );
           }
           void stop ()
