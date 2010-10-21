@@ -7,6 +7,10 @@
 
 #include <vector>
 
+#include <cassert>
+
+#include <boost/random.hpp>
+
 namespace cross
 {
   typedef std::vector<std::size_t> pos_t;
@@ -46,10 +50,13 @@ namespace cross
 
     void operator ++ (void) { if (has_more()) { ++pos; ++state; } }
     const key_t & key (void) const { return pos->first; }
-    const val_t & val (void) const { return pos->second[*state]; }
+    const val_t & val (void) const
+    {
+      return pos->second[*state % pos->second.size()];
+    }
     ret_t operator * (void) const
     {
-      return ret_t (pos->first, pos->second[*state]);
+      return ret_t (pos->first, pos->second[*state % pos->second.size()]);
     }
   };
 
@@ -59,20 +66,22 @@ namespace cross
   private:
     const MAP & map;
     pos_t pos;
+    pos_t shift;
     bool _has_more;
 
     typedef typename Traits<MAP>::map_it_t it_t;
 
-    void step (std::size_t slot, it_t it)
+    void step (std::size_t slot, it_t it, pos_t::const_iterator s)
     {
       ++pos[slot];
 
-      if (pos[slot] == it->second.size())
+      if (pos[slot] == it->second.size() + *s)
         {
-          pos[slot] = 0;
+          pos[slot] = *s;
 
           ++slot;
           ++it;
+          ++s;
 
           if (it == map.end())
             {
@@ -80,38 +89,76 @@ namespace cross
             }
           else
             {
-              step (slot, it);
+              step (slot, it, s);
             }
         }
     }
 
-  public:
     void rewind (void)
     {
+      pos.clear();
+
       _has_more = (map.begin() != map.end());
 
-      for (it_t m (map.begin()); m != map.end(); ++m)
+      pos_t::const_iterator s (shift.begin());
+
+      for (it_t m (map.begin()); m != map.end(); ++m, ++s)
         {
-          pos.push_back (0);
+          assert (s != shift.end());
+
+          pos.push_back (*s);
 
           _has_more &= (!m->second.empty());
         }
     }
 
-    explicit cross (const MAP & _map) : map (_map), pos () { rewind(); }
+  public:
+    explicit cross (const MAP & _map)
+      : map (_map)
+      , shift (map.size())
+    {
+      std::fill (shift.begin(), shift.end(), 0);
+
+      rewind();
+    }
+
+    // const and non-const version since the compiler chooses the
+    // non-template function first
+    cross (const MAP & _map, const pos_t & _shift)
+      : map (_map)
+      , shift (_shift)
+    {
+      assert (shift.size() == map.size());
+
+      rewind();
+    }
+
+    cross (const MAP & _map, pos_t & _shift)
+      : map (_map)
+      , shift (_shift)
+    {
+      assert (shift.size() == map.size());
+
+      rewind();
+    }
+
+    template<typename Engine>
+    cross (const MAP & _map, Engine & engine)
+      : map (_map)
+    {
+      for (it_t m (map.begin()); m != map.end(); ++m)
+        {
+          boost::uniform_int<> dist (0, m->second.size() - 1);
+          shift.push_back (dist (engine));
+        }
+
+      rewind();
+    }
 
     bool has_more (void) const { return _has_more; }
-    void operator ++ () { step(0, map.begin()); }
+    void operator ++ () { step (0, map.begin(), shift.begin()); }
 
-    iterator<MAP> operator * (void) const { return iterator<MAP>(map,pos); }
-
-    void get_vec (typename Traits<MAP>::vec_t & v) const
-    {
-      v.clear();
-
-      for (iterator<MAP> it (map, pos); it.has_more(); ++it)
-        v.push_back (*it);
-    }
+    iterator<MAP> operator * (void) const { return iterator<MAP> (map, pos); }
   };
 }
 

@@ -11,6 +11,7 @@
 #include <string>
 
 #include <boost/unordered_map.hpp>
+#include <boost/random.hpp>
 
 using std::cout;
 using std::endl;
@@ -22,13 +23,29 @@ namespace
   typedef int val_t;
   typedef std::vector<val_t> vec_val_t;
   typedef std::pair<key_t,val_t> ret_t;
-  typedef std::vector<ret_t> cross_t;
 
   typedef boost::unordered_map<key_t,vec_val_t> map_t;
+  typedef cross::cross<map_t> cross_t;
 
   static std::ostream & operator << (std::ostream & s, const ret_t & kv)
   {
-    return s << setw(4) << kv.first << ":" << kv.second;
+    return s << setw(5) << kv.first << ":" << kv.second;
+  }
+
+  static void traverse (cross_t c)
+  {
+    cout << "traverse:" << endl;
+
+    std::size_t k (0);
+
+    for ( ; c.has_more(); ++c)
+      {
+        cout << setw(2) << k++ << "| ";
+
+        for (cross::iterator<map_t> i (*c); i.has_more(); ++i)
+          cout << *i;
+        cout << endl;
+      }
   }
 }
 
@@ -49,41 +66,19 @@ main ()
   map["789"].push_back (8);
   map["789"].push_back (9);
 
-  cross::cross<map_t> cross (map);
+  traverse (cross_t (map));
 
-  {
-    // traversing as vectors, incremental
+  cross::pos_t shift;
 
-    std::size_t k (0);
+  shift.push_back (2);
+  shift.push_back (1);
+  shift.push_back (3);
 
-    for ( ; cross.has_more(); ++cross)
-      {
-        cout << setw(2) << k++ << "| ";
+  traverse (cross_t (map, shift));
 
-        cross_t c; cross.get_vec(c);
+  boost::mt19937 engine (42U);
 
-        for (cross_t::const_iterator i (c.begin()); i != c.end(); ++i)
-          cout << *i;
-        cout << endl;
-      }
-  }
-
-  cross.rewind();
-
-  {
-    // traversing as vectors, get iterators for the entry too
-
-    std::size_t k (0);
-
-    for ( ; cross.has_more(); ++cross)
-      {
-        cout << setw(2) << k++ << "| ";
-
-        for (cross::iterator<map_t> i (*cross); i.has_more(); ++i)
-          cout << *i;
-        cout << endl;
-      }
-  }
+  traverse (cross_t (map, engine));
 
   return EXIT_SUCCESS;
 }
