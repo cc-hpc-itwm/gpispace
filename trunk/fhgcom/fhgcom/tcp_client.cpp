@@ -88,11 +88,10 @@ namespace fhg
             // TODO: this is probably bad, but we have to wait until we reconnect
             boost::posix_time::time_duration reconnect_in
               (boost::posix_time::microseconds
-              ((float)timeout_.total_microseconds() / (float)(std::max(max_connection_attempts_, std::size_t(2)) - 1))
+              ((int)std::ceil ((float)timeout_.total_microseconds() / (float)(std::max(max_connection_attempts_, std::size_t(2)) - 1)))
               );
             LOG(TRACE, "reconnecting in " << reconnect_in);
             usleep (reconnect_in.total_microseconds());
-
           }
         }
       }
