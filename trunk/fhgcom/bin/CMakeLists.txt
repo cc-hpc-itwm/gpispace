@@ -12,12 +12,20 @@ target_link_libraries(fhgkvsd fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 add_executable(fhgkvsc fhgkvsc.cpp)
 target_link_libraries(fhgkvsc fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 
+add_executable(fhgaddr fhgaddr.cpp)
+target_link_libraries(fhgaddr fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
+
 install(TARGETS fhgkvsd
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
 
 install(TARGETS fhgkvsc
+  RUNTIME
+  DESTINATION bin
+  COMPONENT applications)
+
+install(TARGETS fhgaddr
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
