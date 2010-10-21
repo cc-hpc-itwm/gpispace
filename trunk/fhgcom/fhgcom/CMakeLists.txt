@@ -17,7 +17,6 @@ set (hdrs
 )
 
 set (srcs
-  message.cpp
   session.cpp
 
   tcp_server.cpp

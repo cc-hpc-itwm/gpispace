@@ -1,35 +1,72 @@
 #ifndef FHG_COM_MESSAGE_HPP
 #define FHG_COM_MESSAGE_HPP 1
 
-#include <vector>
-#include <string>
-
 namespace fhg
 {
   namespace com
   {
-    class message
+    struct message_t
     {
-    public:
-#define FHG_COM_MESSAGE_LENGTH_TYPE std::size_t
+      message_t ()
+        : data_(0)
+        , length_(0)
+      {}
 
-      // header length is encoded as hex chars (2 chars per byte)
-      enum { header_length = sizeof(FHG_COM_MESSAGE_LENGTH_TYPE) * 2 };
+      explicit
+      message_t (std::size_t len)
+        : data_(0)
+        , length_(len)
+      {
+        assert (len > 0);
+        data_ = new char [len];
+      }
 
-      message ();
-      message (std::string const & _data);
+      message_t (char ** data, std::size_t len)
+        : data_(*data)
+        , length_(len)
+      {
+        *data = 0;
+      }
 
-      const std::vector<char> & data () const;
-      const std::string & header () const;
+      message_t (const message_t & other)
+        : data_ (0)
+        , length_(0)
+      {
+        *this = other;
+      }
 
-      std::string encode_header (void) const;
-      void resize (const std::size_t);
+      ~message_t ()
+      {
+        if (data_)
+        {
+          delete [] data_; data_ = 0;
+        }
+        length_ = 0;
+      }
 
+      message_t & operator= (const message_t & rhs)
+      {
+        if (this != &rhs)
+        {
+          this->~message_t ();
+          if (rhs.data_)
+          {
+            length_ = rhs.length_;
+            data_ = new char [length_];
+            memcpy (data_, rhs.data_, length_);
+          }
+        }
+        return *this;
+      }
+
+      std::size_t length () const { return length_; }
+      const char * data () const { return data_; }
+      char * data () { return data_; }
+      void clear () { this->~message_t(); }
     private:
-      std::vector<char> data_;
-      std::string header_;
+      char * data_;
+      std::size_t length_;
     };
   }
 }
-
 #endif
