@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fhgcom/peer.hpp>
+#include <fhgcom/peer_info.hpp>
 
 BOOST_AUTO_TEST_CASE ( start_stop_test )
 {
@@ -26,4 +27,16 @@ BOOST_AUTO_TEST_CASE ( output_test )
   std::stringstream sstr;
   sstr << peer_o;
   BOOST_CHECK_EQUAL (sstr.str(), "peer@[localhost]:1234");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_full_peer_info )
+{
+  using namespace fhg::com;
+
+  const std::string url ("peer@[::1]:1234");
+  peer_info_t pi = peer_info_t::from_string (url);
+
+  BOOST_CHECK_EQUAL (pi.name(), "peer");
+  BOOST_CHECK_EQUAL (pi.host(), "::1");
+  BOOST_CHECK_EQUAL (pi.port(), "1234");
 }

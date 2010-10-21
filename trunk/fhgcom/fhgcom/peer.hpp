@@ -6,41 +6,12 @@
 #include <boost/unordered_map.hpp>
 
 #include <fhgcom/connection.hpp>
+#include <fhgcom/peer_info.hpp>
 
 namespace fhg
 {
   namespace com
   {
-    struct host_t
-    {
-      explicit
-      host_t (std::string const & h)
-        : value (h)
-      {}
-
-      operator std::string () const
-      {
-        return value;
-      }
-    private:
-      std::string value;
-    };
-
-    struct port_t
-    {
-      explicit
-      port_t (std::string const & p)
-        : value (p)
-      {}
-
-      operator std::string () const
-      {
-        return value;
-      }
-    private:
-      std::string value;
-    };
-
     class peer_t;
     struct peer_message_handler_t : public message_handler_t
     {
@@ -99,8 +70,7 @@ namespace fhg
     std::ostream & operator << (std::ostream & os, peer_t const & p)
     {
       return os << p.name() << "@"
-                << "[" << p.host() << "]:" << p.port()
-                << std::endl;
+                << "[" << p.host() << "]:" << p.port();
     }
   }
 }
