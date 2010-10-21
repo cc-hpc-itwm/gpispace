@@ -38,10 +38,10 @@ namespace fhg
           {}
 
           fhg::com::kvs::message::type
-          operator () ( fhg::com::kvs::message::put const & m )
+          operator () (fhg::com::kvs::message::put const & m)
           {
-            DLOG(TRACE, "put (" << m.key() << ") := " << m.val());
-            store_.put (m.key(), m.val());
+            DLOG(TRACE, "put (" << m.entries().begin()->first << ") := " << m.entries().begin()->second);
+            store_.put (m.entries());
             return fhg::com::kvs::message::error (); // no_error
           }
 
@@ -178,6 +178,20 @@ namespace fhg
           virtual ~kvsd()
           {
             write_through();
+          }
+
+          void put (fhg::com::kvs::message::put::map_type const & m)
+          {
+            lock_t lock(mutex_);
+            for ( fhg::com::kvs::message::put::map_type::const_iterator e (m.begin())
+                ; e != m.end()
+                ; ++e
+                )
+            {
+              store_[ e->first ] = e->second;
+            }
+
+            write_through ();
           }
 
           template <typename Val>

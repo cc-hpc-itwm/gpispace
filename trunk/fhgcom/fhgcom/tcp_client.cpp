@@ -318,6 +318,10 @@ namespace fhg
         throw boost::system::system_error(ec);
       }
 
+      DLOG( TRACE
+          , "received "
+          << util::basic_hex_converter<64>::convert( data )
+          );
       return std::string (&data[0], data.size());
     }
 

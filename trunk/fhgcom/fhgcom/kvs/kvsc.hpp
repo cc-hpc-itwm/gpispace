@@ -56,6 +56,17 @@ namespace fhg
             kvs_.stop();
           }
 
+          void put (fhg::com::kvs::message::put::map_type const & e)
+          {
+            boost::lock_guard<boost::mutex> lock (mtx_);
+
+            fhg::com::kvs::message::type m;
+            request ( kvs_
+                    , fhg::com::kvs::message::put( e )
+                    , m
+                    );
+            DLOG(TRACE, "put(...) := " << m);
+          }
           template <typename Val>
           void put (key_type const & k, Val v)
           {
@@ -241,6 +252,14 @@ namespace fhg
         return get_or_create_global_kvs ();
       }
 
+      typedef fhg::com::kvs::message::list::map_type values_type;
+
+      inline
+      void put (values_type const & e)
+      {
+        return global_kvs().put(e);
+      }
+
       template <typename Key, typename Val>
       inline
       void put (Key k, Val v)
@@ -254,8 +273,6 @@ namespace fhg
       {
         return global_kvs().del (k);
       }
-
-      typedef fhg::com::kvs::message::list::map_type values_type;
 
       template <typename Key>
       inline

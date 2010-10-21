@@ -143,15 +143,14 @@ namespace fhg
       std::string prefix ("p2p.peer");
       prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
 
-      kvs::put ( prefix + "." + "location" + "." + "host"
-               , boost::lexical_cast<std::string>(endpoint.address())
-               );
-      kvs::put ( prefix + "." + "location" + "." + "port"
-               , boost::lexical_cast<std::string>(endpoint.port())
-               );
-      kvs::put ( prefix + "." + "name"
-               , name_
-               );
+      kvs::values_type values;
+      values[prefix + "." + "location" + "." + "host"] =
+        boost::lexical_cast<std::string>(endpoint.address());
+      values[prefix + "." + "location" + "." + "port"] =
+        boost::lexical_cast<std::string>(endpoint.port());
+      values[prefix + "." + "name"] = name_;
+
+      kvs::put (values);
     }
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
