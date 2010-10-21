@@ -212,7 +212,21 @@ namespace fhg
           void del (key_type const & k)
           {
             lock_t lock(mutex_);
-            store_.erase (k);
+
+            // TODO: work here
+            bool changed (false);
+            do
+            {
+              changed = false;
+              for (store_type::iterator it (store_.begin()); it != store_.end() && !changed; ++it)
+              {
+                if (it->first.substr(0, k.size()) == k)
+                {
+                  store_.quick_erase (it);
+                  changed = true;
+                }
+              }
+            } while (changed);
 
             write_through ();
           }
