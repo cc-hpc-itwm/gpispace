@@ -4,6 +4,7 @@
 #include <string>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 #include <boost/asio.hpp>
 
 namespace sdpa

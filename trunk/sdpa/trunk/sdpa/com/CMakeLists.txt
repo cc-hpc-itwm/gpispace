@@ -9,7 +9,7 @@ set (hdrs
 
 set (srcs
   manager.cpp
-  connection.cpp
+#  connection.cpp
   )
 
 ADD_LIBRARY(sdpa-com ${srcs} ${hdrs})
