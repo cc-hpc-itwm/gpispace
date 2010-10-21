@@ -19,6 +19,7 @@ set (hdrs
 
 set (srcs
   session.cpp
+  peer.cpp
   connection.cpp
 
   tcp_server.cpp
@@ -48,4 +49,3 @@ install(TARGETS fhgcom
 install(TARGETS fhgcom-shared
   LIBRARY DESTINATION lib
   COMPONENT libraries)
-

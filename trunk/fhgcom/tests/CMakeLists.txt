@@ -6,6 +6,7 @@ set(tc_srcs
   test_global_kvs.cpp
   test_peer.cpp
   test_message.cpp
+  test_connection.cpp
 )
 
 foreach (tc_src ${tc_srcs})

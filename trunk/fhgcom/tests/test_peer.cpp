@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE ( start_stop_test )
   peer.stop();
 }
 
-BOOST_AUTO_TEST_CASE ( input_output_test )
+BOOST_AUTO_TEST_CASE ( output_test )
 {
   using namespace fhg::com;
 
@@ -25,11 +25,5 @@ BOOST_AUTO_TEST_CASE ( input_output_test )
 
   std::stringstream sstr;
   sstr << peer_o;
-
-  peer_t peer_i;
-  sstr >> peer_i;
-
-  BOOST_CHECK_EQUAL (peer_i.name(), "peer");
-  BOOST_CHECK_EQUAL (peer_i.host(), "localhost");
-  BOOST_CHECK_EQUAL (peer_i.port(), "1234");
+  BOOST_CHECK_EQUAL (sstr.str(), "peer@[localhost]:1234");
 }
