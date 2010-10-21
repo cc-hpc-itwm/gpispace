@@ -1,0 +1,38 @@
+P2P Communication:
+==================
+
+   * message format
+      - header
+
+     0   4          16   20          32
+     +---+-----------+---+------------+
+     |ver|   flags   |ToM| reserved   |
+     +---+-----------+----------------+
+     |         payload length         |
+     +--------------------------------+
+     |     128 bit source address     |
+     +--------------------------------+
+     |   128 bit destination address  |
+     +--------------------------------+
+
+       - fields:
+           ver: 4 bit version information
+	        current version: 0x1
+	   flags: 12 bit not yet specified
+	   ToM: type of message
+	             - 0xxx user data
+		     - 1xxx system message
+		     - 1000 hello packet
+           reserved: 12 bit not yet specified
+	   payload length: 32bit describing the length of payload in bytes
+	   source: 128bit source descriptor
+	   destination: 128bit destination descriptor
+
+peer_t ("name-of-peer", listen-url, cookie);
+
+   * connection initiation  process:
+
+       - on connect the client side sends a HELO packet (ToM: 0x8) to the server
+         to indicate who is connecting
+
+   * the peer can communicate with all other peers sharing the same cookie
