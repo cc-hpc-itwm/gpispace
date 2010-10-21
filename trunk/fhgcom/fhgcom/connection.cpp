@@ -75,12 +75,11 @@ namespace fhg
             // TODO: call handler
             if (message_handler_)
             {
-              message_handler_->handle_error
-                (boost::system::error_code
-                ( boost::system::errc::invalid_argument
-                , boost::system::generic_category()
-                )
-                );
+              boost::system::error_code ec;
+              ec.assign ( boost::system::errc::invalid_argument
+                        , boost::system::get_generic_category()
+                        );
+              message_handler_->handle_error (ec);
             }
           }
           return;
