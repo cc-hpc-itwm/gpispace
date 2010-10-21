@@ -51,7 +51,7 @@ namespace fhg
       port_ = port;
       auto_reconnect_ = auto_reconnect;
       connection_attempts_ = 0;
-      max_connection_attempts_ = max_connection_attempts_;
+      max_connection_attempts_ = max_connection_attempts;
       timeout_ = timeout;
 
       reconnect();
@@ -63,21 +63,25 @@ namespace fhg
 
       for (;;)
       {
-        ++connection_attempts_;
-
         try
         {
-          DLOG(INFO, "trying to connect " << connection_attempts_ << "/" << max_connection_attempts_);
+          LOG_IF( WARN
+                , connection_attempts_ > 0
+                , "trying to connect to [" << host_ << "]:" << port_ << " attempt: " << connection_attempts_ << "/" << max_connection_attempts_
+                );
           connect ();
           break;
         }
         catch (...)
         {
+          ++connection_attempts_;
+
           if (max_connection_attempts_)
           {
             if (connection_attempts_ > max_connection_attempts_)
               throw;
           }
+          sleep (10);
         }
       }
     }
