@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE ( output_test )
   BOOST_CHECK_EQUAL (sstr.str(), "peer@[localhost]:1234");
 }
 
-BOOST_AUTO_TEST_CASE ( parse_full_peer_info )
+BOOST_AUTO_TEST_CASE ( parse_peer_info_full )
 {
   using namespace fhg::com;
 
@@ -38,5 +38,29 @@ BOOST_AUTO_TEST_CASE ( parse_full_peer_info )
 
   BOOST_CHECK_EQUAL (pi.name(), "peer");
   BOOST_CHECK_EQUAL (pi.host(), "::1");
+  BOOST_CHECK_EQUAL (pi.port(), "1234");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_name )
+{
+  using namespace fhg::com;
+
+  const std::string url ("[::1]:1234");
+  peer_info_t pi = peer_info_t::from_string (url);
+
+  BOOST_CHECK_EQUAL (pi.name(), "");
+  BOOST_CHECK_EQUAL (pi.host(), "::1");
+  BOOST_CHECK_EQUAL (pi.port(), "1234");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_port )
+{
+  using namespace fhg::com;
+
+  const std::string url ("localhost:1234");
+  peer_info_t pi = peer_info_t::from_string (url);
+
+  BOOST_CHECK_EQUAL (pi.name(), "");
+  BOOST_CHECK_EQUAL (pi.host(), "localhost");
   BOOST_CHECK_EQUAL (pi.port(), "1234");
 }
