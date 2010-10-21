@@ -39,7 +39,11 @@ namespace fhg
           {
             boost::lock_guard<boost::mutex> lock (mtx_);
 
-            kvs_.start (server_address, server_port);
+            kvs_.start (server_address, server_port
+                       , true
+                       , boost::posix_time::seconds (60)
+                       , 6
+                       );
           }
           void stop ()
           {
