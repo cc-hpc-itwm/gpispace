@@ -25,6 +25,7 @@ environment variables:
 	export FHGLOG_to_console="$FHGLOG_to_console"
 	export FHGLOG_to_server="$FHGLOG_to_server"
 	export FHGLOG_threaded="$FHGLOG_threaded"
+        export KVS_URL="kvs@[node242]:2349"
 EOF
     exit 1
 	;;
