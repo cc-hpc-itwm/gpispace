@@ -132,7 +132,10 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << e.tstamp();
+            char buf[128];
+            time_t tm = e.tstamp();
+            ctime_r (&tm, buf);
+            return os << buf;
           }
         };
         struct TSTAMP
