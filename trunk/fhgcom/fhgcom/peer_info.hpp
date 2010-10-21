@@ -112,7 +112,7 @@ namespace fhg
           if (e_pos == std::string::npos)
             throw std::runtime_error ("peer_info: could not parse: " + s);
           host_ = s.substr (b_pos, e_pos - b_pos);
-          b_pos = e_pos + 1;
+          b_pos = e_pos;
         }
         else
         {
@@ -120,7 +120,7 @@ namespace fhg
           if (e_pos != std::string::npos)
           {
             host_ = s.substr (b_pos, e_pos - b_pos);
-            b_pos = e_pos + 1;
+            b_pos = e_pos;
           }
           else
           {
@@ -140,13 +140,13 @@ namespace fhg
         }
         update_to_string_cache();
       }
-    private:
+
       static const std::string & default_port ()
       {
         static std::string def_port("2349");
         return def_port;
       }
-
+    private:
       void update_to_string_cache() const
       {
         if (! name_.empty())

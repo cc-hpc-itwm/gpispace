@@ -57,10 +57,22 @@ BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_port )
 {
   using namespace fhg::com;
 
-  const std::string url ("localhost:1234");
+  const std::string url ("localhost");
   peer_info_t pi = peer_info_t::from_string (url);
 
   BOOST_CHECK_EQUAL (pi.name(), "");
   BOOST_CHECK_EQUAL (pi.host(), "localhost");
-  BOOST_CHECK_EQUAL (pi.port(), "1234");
+  BOOST_CHECK_EQUAL (pi.port(), peer_info_t::default_port());
+}
+
+BOOST_AUTO_TEST_CASE ( parse_peer_info_wi_name )
+{
+  using namespace fhg::com;
+
+  const std::string url ("peer@localhost");
+  peer_info_t pi = peer_info_t::from_string (url);
+
+  BOOST_CHECK_EQUAL (pi.name(), "peer");
+  BOOST_CHECK_EQUAL (pi.host(), "localhost");
+  BOOST_CHECK_EQUAL (pi.port(), peer_info_t::default_port());
 }
