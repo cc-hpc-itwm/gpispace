@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE ( put_get_test )
   server.start ();
   boost::thread thrd (boost::bind ( &fhg::com::io_service_pool::run, &pool ));
 
-  kvs::get_or_create_global_kvs (host, port);
+  kvs::get_or_create_global_kvs (host, port, true, boost::posix_time::seconds(10), 3);
   kvs::put ("test_global_kvs", 42);
   std::string val (kvs::get ("test_global_kvs").begin()->second);
 
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE ( put_get_int_test )
   server.start ();
   boost::thread thrd (boost::bind ( &fhg::com::io_service_pool::run, &pool ));
 
-  kvs::get_or_create_global_kvs (host, port);
+  kvs::get_or_create_global_kvs (host, port, true, boost::posix_time::seconds(10), 3);
   kvs::put ("test_global_int_kvs", 42);
   int val (kvs::get<int> ("test_global_int_kvs"));
   BOOST_CHECK_EQUAL (val, 42);
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE ( no_server_test )
   const std::string host ("localhost");
   const std::string port ("1234");
 
-  kvs::get_or_create_global_kvs (host, port);
+  kvs::get_or_create_global_kvs (host, port, true, boost::posix_time::seconds(10), 3);
   try
   {
     kvs::put ("test_global_int_kvs", 42);

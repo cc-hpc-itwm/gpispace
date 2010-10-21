@@ -35,14 +35,17 @@ namespace fhg
 
           void start ( std::string const & server_address
                      , std::string const & server_port
+                     , const bool auto_reconnect = true
+                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
+                     , const std::size_t max_connection_attempts = 11
                      )
           {
             boost::lock_guard<boost::mutex> lock (mtx_);
 
             kvs_.start (server_address, server_port
-                       , true
-                       , boost::posix_time::seconds (10)
-                       , 10
+                       , auto_reconnect
+                       , timeout
+                       , max_connection_attempts
                        );
           }
           void stop ()
@@ -172,7 +175,12 @@ namespace fhg
       struct kvs_mgr
       {
         explicit
-        kvs_mgr (std::string const & host, std::string const & port)
+        kvs_mgr ( std::string const & host
+                , std::string const & port
+                , const bool auto_reconnect
+                , const boost::posix_time::time_duration timeout
+                , const std::size_t max_connection_attempts
+                )
           : kvsc_(new client::kvsc)
         {
           std::string h (host);
@@ -200,7 +208,7 @@ namespace fhg
           }
 
           LOG(TRACE, "global kvs auto-configured to be at: [" << h << "]:" << p);
-          kvsc_->start (h,p);
+          kvsc_->start (h,p,auto_reconnect,timeout,max_connection_attempts);
         }
 
         ~kvs_mgr ()
@@ -216,9 +224,14 @@ namespace fhg
         client::kvsc * kvsc_;
       };
 
-      client::kvsc & get_or_create_global_kvs (std::string const & host = "", std::string const & port = "")
+      client::kvsc & get_or_create_global_kvs ( std::string const & host = ""
+                                              , std::string const & port = ""
+                                              , const bool auto_reconnect = true
+                                              , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
+                                              , const std::size_t max_connection_attempts = 11
+                                              )
       {
-        static kvs_mgr m (host, port);
+        static kvs_mgr m (host, port, auto_reconnect, timeout, max_connection_attempts);
         return m.kvs();
       }
 
