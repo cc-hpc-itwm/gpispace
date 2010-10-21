@@ -136,15 +136,9 @@ namespace fhg
         }
         else
         {
-          port_ = default_port ();
+          throw std::runtime_error ("peer_info: parse error: port is missing!");
         }
         update_to_string_cache();
-      }
-
-      static const std::string & default_port ()
-      {
-        static std::string def_port("2349");
-        return def_port;
       }
     private:
       void update_to_string_cache() const
