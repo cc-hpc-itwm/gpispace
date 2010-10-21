@@ -68,7 +68,6 @@ function(construct_tests )
     target_link_libraries(${tc_name} readline)
     get_target_property(LOC ${tc_name} LOCATION_)
     add_test(${tc_name} ${LOC})
-    add_dependencies(${tc_name} question answer)
   endforeach(tc_src ${tc_srcs})
 endfunction(construct_tests)
 
@@ -100,3 +99,6 @@ set (gen_srcs
     )
 list(SORT gen_srcs)
 construct_tests(${gen_srcs})
+
+string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name test_loader.cpp)
+add_dependencies(${tc_name} question answer)
