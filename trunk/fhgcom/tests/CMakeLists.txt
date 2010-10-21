@@ -3,6 +3,7 @@
 set(tc_srcs
   test_store.cpp
   test_kvs_message.cpp
+  test_global_kvs.cpp
   test_peer.cpp
   test_message.cpp
 )
