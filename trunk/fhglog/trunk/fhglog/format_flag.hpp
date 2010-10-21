@@ -2,6 +2,8 @@
 #define FHG_LOG_FORMAT_FLAG_HPP 1
 
 #include <fhglog/LogEvent.hpp>
+#include <algorithm>
+#include <cstring>
 #include <ios>
 
 namespace fhg
@@ -123,6 +125,13 @@ namespace fhg
             return os << e.message();
           }
         };
+
+        inline
+        bool isnewline (const char c)
+        {
+          return c == '\n' || c == '\r';
+        }
+
         struct DATE
         {
           static const char value            = 'd';
@@ -132,10 +141,18 @@ namespace fhg
                                       , const char
                                       )
           {
-            char buf[128];
-            time_t tm = e.tstamp();
+            char buf[128]; memset (buf, 0, sizeof(buf));
+            time_t tm = (e.tstamp() / 1000 / 1000);
             ctime_r (&tm, buf);
-            return os << buf;
+            // WORK HERE: remove trailing newline stuff
+            std::string tmp (buf);
+            tmp.erase(std::remove_if( tmp.begin()
+                                    , tmp.end()
+                                    , isnewline
+                                    )
+                     , tmp.end()
+                     );
+            return os << tmp;
           }
         };
         struct TSTAMP
