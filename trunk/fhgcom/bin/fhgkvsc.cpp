@@ -6,6 +6,16 @@
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+enum my_exit_codes
+  {
+     EX_OK = EXIT_SUCCESS
+   , EX_ERR = EXIT_FAILURE
+     , EX_INVAL // invalid argument
+     , EX_SEARCH // key not found
+     , EX_CONN // connection failed
+  };
+
+
 int main(int ac, char *av[])
 {
   FHGLOG_SETUP(ac,av);
@@ -29,9 +39,9 @@ int main(int ac, char *av[])
     ("value,v", po::value<std::string>(&value), "value to store")
     ("full,f", "key must match completely")
 
-    ("save,s", "save the database on the server")
-    ("load,l", "reload the database on the server")
-    ("list-all,a", "list all entries in the server")
+    ("save,S", "save the database on the server")
+    ("load,L", "reload the database on the server")
+    ("list-all,l", "list all entries in the server")
     ("clear,C", "clear entries on the server")
 
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
@@ -49,7 +59,7 @@ int main(int ac, char *av[])
   {
     std::cerr << "invalid argument: " << ex.what() << std::endl;
     std::cerr << "try " << av[0] << " -h to get some help" << std::endl;
-    return EXIT_FAILURE;
+    return EX_INVAL;
   }
 
   if (vm.count ("help"))
@@ -57,20 +67,44 @@ int main(int ac, char *av[])
     std::cerr << "usage: " << av[0] << std::endl;
     std::cerr << std::endl;
     std::cerr << desc << std::endl;
-    return EXIT_SUCCESS;
+    return EX_OK;
   }
 
   fhg::com::kvs::client::kvsc client;
 
-  client.start (server_address, server_port);
+  try
+  {
+    client.start (server_address, server_port, false, boost::posix_time::seconds(10), 1);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "E: " << ex.what() << std::endl;
+    return EX_CONN;
+  }
 
   if (vm.count ("load"))
   {
-    client.load();
+    try
+    {
+      client.load();
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "E: " << ex.what() << std::endl;
+      return EX_CONN;
+    }
   }
   else if (vm.count ("save"))
   {
-    client.save();
+    try
+    {
+      client.save();
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "E: " << ex.what() << std::endl;
+      return EX_CONN;
+    }
   }
   else if (vm.count ("list-all"))
   {
@@ -88,7 +122,7 @@ int main(int ac, char *av[])
     catch (std::exception const & ex)
     {
       std::cerr << "E: " << ex.what() << std::endl;
-      return 1;
+      return EX_CONN;
     }
   }
   else if (vm.count ("clear"))
@@ -100,12 +134,13 @@ int main(int ac, char *av[])
     catch (std::exception const & ex)
     {
       std::cerr << "E: " << ex.what() << std::endl;
-      return 1;
+      return EX_CONN;
     }
   }
   else if (vm.count ("get"))
   {
     std::size_t count (0);
+
     for ( std::vector<std::string>::const_iterator k (key_list.begin())
         ; k != key_list.end()
         ; ++k
@@ -146,14 +181,15 @@ int main(int ac, char *av[])
       {
         std::cerr << "E: " << ex.what() << std::endl;
       }
-      return count > 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+      return count > 0 ? EX_OK : EX_ERR;
     }
   }
   else if (vm.count("put"))
   {
     if (value.empty())
     {
-      throw std::runtime_error ("put: value must not be empty");
+      std::cerr << "E: put: value must not be empty" << std::endl;
+      return EX_INVAL;
     }
 
     try
@@ -163,7 +199,7 @@ int main(int ac, char *av[])
     catch (std::exception const & ex)
     {
       std::cerr << "E: " << ex.what() << std::endl;
-      return 1;
+      return EX_CONN;
     }
   }
   else if (vm.count ("del"))
@@ -184,9 +220,9 @@ int main(int ac, char *av[])
         std::cerr << "E: " << ex.what() << std::endl;
       }
     }
-    return count > 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+    return count > 0 ? EX_OK : EX_ERR;
   }
 
   client.stop();
-  return 0;
+  return EX_OK;
 }
