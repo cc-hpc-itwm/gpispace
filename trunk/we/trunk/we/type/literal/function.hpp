@@ -59,6 +59,20 @@ namespace literal
     public:
       unary (const expr::token::type & _token) : token (_token) {}
 
+      literal::type operator () (literal::set_type & s) const
+      {
+        switch (token)
+          {
+          case expr::token::_set_pop: s.erase (s.begin()); return s;
+          case expr::token::_set_top: return *(s.begin());
+          case expr::token::_set_empty: return s.empty();
+          case expr::token::_set_size: return long(s.size());
+          default:
+            throw expr::exception::eval::type_error
+              (fhg::util::show (token) + " (" + literal::show (s) + ")");
+          }
+      }
+
       literal::type operator () (literal::stack_type & s) const
       {
         switch (token)
@@ -172,6 +186,21 @@ namespace literal
       const expr::token::type & token;
     public:
       binary (const expr::token::type & _token) : token (_token) {}
+
+      literal::type operator () (literal::set_type & s, long & k) const
+      {
+        switch (token)
+          {
+          case expr::token::_set_insert: s.insert (k); return s;
+          case expr::token::_set_erase: s.erase (k); return s;
+          case expr::token::_set_is_element: return s.find (k) != s.end();
+          default:
+            throw expr::exception::eval::type_error
+              ( fhg::util::show (token) +
+              "(" + literal::show (s) + "," + fhg::util::show (k) + ")"
+              );
+          }
+      }
 
       literal::type operator () (bool & l, bool & r) const
       {

@@ -11,6 +11,7 @@
 #include <boost/serialization/deque.hpp>
 
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 #include <string>
 #include <vector>
@@ -19,6 +20,7 @@ namespace literal
 {
   typedef std::deque<long> stack_type;
   typedef boost::unordered_map<long, long> map_type;
+  typedef boost::unordered_set<long> set_type;
 
   typedef boost::variant< control
                         , bool
@@ -29,6 +31,7 @@ namespace literal
                         , bitsetofint::type
                         , stack_type
                         , map_type
+                        , set_type
                         > type;
 }
 

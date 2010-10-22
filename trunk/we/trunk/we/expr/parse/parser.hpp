@@ -193,7 +193,14 @@ namespace expr
           case token::_map_assign: ternary (op_stack.top(), k); break;
           case token::_map_unassign:
           case token::_map_is_assigned:
-          case token::_map_get_assignment: binary (op_stack.top(), k); break;
+          case token::_map_get_assignment:
+          case token::_set_insert:
+          case token::_set_erase:
+          case token::_set_is_element: binary (op_stack.top(), k); break;
+          case token::_set_pop:
+          case token::_set_top:
+          case token::_set_empty:
+          case token::_set_size: unary (op_stack.top(), k); break;
           case token::_substr:
           case token::mul:
           case token::div:

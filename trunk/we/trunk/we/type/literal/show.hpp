@@ -83,6 +83,25 @@ namespace literal
         return s.str();
       }
 
+      std::string operator () (const literal::set_type & set) const
+      {
+        std::ostringstream s;
+
+        s << "{:";
+
+        for ( literal::set_type::const_iterator pos (set.begin())
+            ; pos != set.end()
+            ; ++pos
+            )
+          {
+            s << " " << *pos;
+          }
+
+        s << ":}";
+
+        return s.str();
+      }
+
       template<typename T>
       std::string operator () (const T & x) const
       {

@@ -345,31 +345,51 @@ namespace literal
         }
         break;
       case '{': ++pos;
-        {
-          bitsetofint::type::container_type container;
-          bool read_item;
-
-          do
+        if (pos.end())
+          throw expr::exception::parse::expected ("'}' or ':'", pos());
+        else
+          switch (*pos)
             {
-              read_item = false;
+            case ':': ++pos;
+              {
+                literal::set_type s;
+                long l;
 
-              skip_spaces (pos);
+                while (read_stack_item (l, pos))
+                  {
+                    s.insert (l);
+                  }
 
-              if (!pos.end() && isdigit (*pos))
-                {
-                  container.push_back (read_long (pos));
+                require (":}", pos); v = s;
+              }
+              break;
+            default:
+              {
+                bitsetofint::type::container_type container;
+                bool read_item;
 
-                  skip_spaces (pos); skip_sep (',', pos);
+                do
+                  {
+                    read_item = false;
 
-                  read_item = true;
-                }
+                    skip_spaces (pos);
+
+                    if (!pos.end() && isdigit (*pos))
+                      {
+                        container.push_back (read_long (pos));
+
+                        skip_spaces (pos); skip_sep (',', pos);
+
+                        read_item = true;
+                      }
+                  }
+                while (read_item);
+
+                require ("}", pos);
+
+                v = bitsetofint::type (container);
+              }
             }
-          while (read_item);
-
-          require ("}", pos);
-
-          v = bitsetofint::type (container);
-        }
         break;
       default:
         read_num (v, pos);

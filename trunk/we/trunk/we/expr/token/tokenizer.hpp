@@ -300,13 +300,57 @@ namespace expr
               ++pos;
               if (is_eof())
                 throw exception::parse::expected
-                  ("'in', 'ubstr', 'qrt', 'stack_...'", pos());
+                  ("'in', 'ubstr', 'qrt', 'tack_...' or 'et_...'", pos());
               else
                 switch (*pos)
                   {
                   case 'i': ++pos; require ("n"); unary (_sin, "sin"); break;
                   case 'q': ++pos; require ("rt"); unary (_sqrt, "sqrt"); break;
                   case 'u': ++pos; require ("bstr"); token = _substr; break;
+                  case 'e': ++pos;
+                    require ("t_");
+                    if (is_eof())
+                      throw exception::parse::expected
+                        ("'insert', 'erase', 'is_element', 'pop', 'top', 'empty' or 'size'", pos());
+                    else
+                      switch (*pos)
+                        {
+                        case 'e': ++pos;
+                          if (is_eof())
+                            throw exception::parse::expected
+                              ("'mpty' or 'rase'", pos());
+                          else
+                            switch (*pos)
+                              {
+                              case 'r': ++pos; require ("ase"); token = _set_erase; break;
+                              case 'm': ++pos; require ("pty"); unary (_set_empty, "set_empty"); break;
+                              default:
+                                throw exception::parse::expected
+                                  ("'mpty' or 'rase'", pos());
+                              }
+                          break;
+                        case 'i': ++pos;
+                          if (is_eof())
+                            throw exception::parse::expected
+                              ("'nsert' or 's_element'", pos());
+                          else
+                            switch (*pos)
+                              {
+                              case 'n': ++pos; require ("sert"); token = _set_insert; break;
+                              case 's': ++pos; require ("_element"); token = _set_is_element; break;
+                              default:
+                                throw exception::parse::expected
+                                  ("'nsert' or 's_element'", pos());
+                              }
+                          break;
+                        case 'p': ++pos; require ("op");  unary (_set_pop, "set_pop"); break;
+                        case 's': ++pos; require ("ize"); unary (_set_size, "set_size"); break;
+                        case 't': ++pos; require ("op");  unary (_set_top, "set_top"); break;
+                        default:
+                          throw exception::parse::expected
+                            ("'insert', 'erase', 'is_element', 'pop_front', 'pop_back', 'top_front' or 'top_back'", pos());
+                        }
+                    break;
                   case 't':
                     ++pos;
                     require ("ack_");
@@ -350,8 +394,9 @@ namespace expr
                         }
 
                     break;
-                  default: throw exception::parse::expected
-                      ("'in', 'ubstr', 'qrt', 'stack_...'", pos());
+                  default:
+                    throw exception::parse::expected
+                      ("'in', 'ubstr', 'qrt', 'tack_...' or 'et_...'", pos());
                   }
               break;
             case 't':

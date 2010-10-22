@@ -18,6 +18,7 @@ namespace literal
   static const type_name_t BITSET  ("bitset");
   static const type_name_t STACK   ("stack");
   static const type_name_t MAP     ("map");
+  static const type_name_t SET     ("set");
 }
 
 #endif

@@ -37,6 +37,9 @@ namespace expr
         case _map_unassign:
         case _map_is_assigned:
         case _map_get_assignment:
+        case _set_insert:
+        case _set_erase:
+        case _set_is_element:
         case _substr:
         case abs: return true;
         default: return false;

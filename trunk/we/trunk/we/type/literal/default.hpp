@@ -28,6 +28,7 @@ namespace literal
     dflt[BITSET] = bitsetofint::type();
     dflt[STACK] = literal::stack_type();
     dflt[MAP] = literal::map_type();
+    dflt[SET] = literal::set_type();
 
     return dflt;
   }
