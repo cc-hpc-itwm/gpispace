@@ -2,6 +2,7 @@
 #define FHG_COM_PEER_HPP 1
 
 #include <string>
+#include <list>
 #include <deque>
 
 #include <boost/thread.hpp>
@@ -50,21 +51,22 @@ namespace fhg
       void stop ();
       void run ();
 
-      void async_send ( const std::string & to
-                      , const std::string & data
+
+      void async_send ( const message_t * m
                       , handler_t h
                       );
-      void send ( const std::string & to
-                , const std::string & data
+      void send (const message_t *);
+
+      void async_send ( std::string const & to
+                      , std::string const & data
+                      , handler_t h
+                      );
+      void send ( std::string const & to
+                , std::string const & data
                 );
 
-      void async_recv ( std::string & from
-                      , std::string & data
-                      , handler_t h
-                      );
-      void recv ( std::string & from
-                , std::string & data
-                );
+      void async_recv (message_t *m, handler_t h);
+      void recv (message_t *m);
 
       void resolve_name (std::string const & name, p2p::address_t & addr);
       void resolve_addr (p2p::address_t const & addr, std::string & name);
@@ -81,21 +83,6 @@ namespace fhg
           , handler (0)
         {}
 
-        to_send_t (to_send_t const & other)
-          : message (other.message)
-          , handler (other.handler)
-        {}
-
-        to_send_t & operator=(const to_send_t & other)
-        {
-          if (this != &other)
-          {
-            message = other.message;
-            handler = other.handler;
-          }
-          return *this;
-        }
-
         message_t  message;
         handler_t  handler;
       };
@@ -103,10 +90,11 @@ namespace fhg
       struct to_recv_t
       {
         to_recv_t ()
-          : handler (0)
+          : message (0)
+          , handler (0)
         {}
 
-        message_t  message;
+        message_t  *message;
         handler_t  handler;
       };
 
@@ -123,7 +111,6 @@ namespace fhg
         connection_t *connection;
         connection_t *loopback;
         std::string name;
-        std::deque<to_recv_t> i_queue;
         std::deque<to_send_t> o_queue;
       };
 
@@ -157,6 +144,8 @@ namespace fhg
 
       connection_t * listen_;
 
+      std::list<to_recv_t> m_to_recv;
+      std::list<const message_t *> m_pending;
     };
   }
 }

@@ -124,11 +124,14 @@ BOOST_AUTO_TEST_CASE ( peer_run_two )
 
   try
   {
-    std::string from; std::string data;
     peer_1.send ("peer-2", "hello world!");
-    peer_2.recv (from, data);
+    message_t m;
+    peer_2.recv (&m);
 
-    BOOST_CHECK_EQUAL (from, "peer-1");
+    std::string src;
+    peer_2.resolve_addr(m.header.src, src);
+    std::string data (m.data.begin(), m.data.end());
+    BOOST_CHECK_EQUAL (src, "peer-1");
     BOOST_CHECK_EQUAL (data, "hello world!");
   }
   catch (std::exception const & ex)
@@ -232,7 +235,7 @@ BOOST_AUTO_TEST_CASE ( peer_loopback )
 
   try
   {
-    for (std::size_t i (0); i < 100; ++i)
+    for (std::size_t i (0); i < 10000; ++i)
     {
       peer_1.send(peer_1.name (), "hello world!");
     }
@@ -258,6 +261,36 @@ BOOST_AUTO_TEST_CASE ( send_to_nonexisting_peer )
   try
   {
     peer_1.send("peer-2", "hello world!");
+  }
+  catch (std::exception const & ex)
+  {
+    BOOST_ERROR ( ex.what() );
+  }
+
+  peer_1.stop();
+  thrd_1.join ();
+}
+
+BOOST_AUTO_TEST_CASE ( send_large_data )
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"));
+  boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
+
+  peer_1.start();
+
+  try
+  {
+    message_t m;
+    peer_1.resolve_name("peer-1", m.header.dst);
+    m.data.resize( (2<<25) );
+    m.header.length = m.data.size();
+    peer_1.send(&m);
+    message_t r;
+    peer_1.recv(&r);
+
+    BOOST_CHECK_EQUAL(m.data.size(), r.data.size());
   }
   catch (std::exception const & ex)
   {
