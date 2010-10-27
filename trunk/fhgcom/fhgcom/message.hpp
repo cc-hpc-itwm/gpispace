@@ -26,6 +26,11 @@ namespace fhg
         : data(d, d+len)
       {}
 
+      template <typename Iterator>
+      message_t (Iterator begin, Iterator end)
+        : data(begin, end)
+      {}
+
       message_t (const message_t & other)
         : data(other.data)
       {}
@@ -51,6 +56,12 @@ namespace fhg
       void resize ()
       {
         data.resize (header.length);
+      }
+
+      template <typename Iterator>
+      void assign (Iterator begin, Iterator end)
+      {
+        data.assign(begin, end);
       }
 
       const char * buf () const { return &data[0]; }
