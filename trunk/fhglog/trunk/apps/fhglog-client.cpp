@@ -32,7 +32,7 @@ int main (int argc, char **argv)
   std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : FHGLOG_DEFAULT_LOCATION);
   std::string file ("fhglog-client.cpp");
   int line (0);
-  std::string message("--- MARK ---");
+  std::string message("-");
   std::string tag("default");
   int level (LogLevel::DEF_LEVEL);
 
