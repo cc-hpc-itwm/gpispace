@@ -16,32 +16,18 @@
  * =====================================================================================
  */
 
-#include    "StreamAppender.hpp"
+#include "StreamAppender.hpp"
 #include "format.hpp"
 #include "fileno.hpp" // fileno for streams
+#include "color_map.hpp"
 #include "unistd.h"   // isatty
 
 using namespace fhg::log;
 
-static std::string colorControlCode (LogEvent::severity_type severity)
+static color_map_t & get_color_map()
 {
-  switch (severity)
-  {
-  case LogEvent::severity_type::FATAL:
-    return "\033[;1;31m"; // red
-  case LogEvent::severity_type::ERROR:
-    return "\033[;1;35m"; // magenta
-  case LogEvent::severity_type::WARN:
-    return "\033[;1;33m"; // yellow
-  case LogEvent::severity_type::INFO:
-    return "\033[;1;32m"; // green
-  case LogEvent::severity_type::DEBUG:
-    return "\033[;0m"; // normal
-  case LogEvent::severity_type::TRACE:
-    return "\033[;0m"; // normal
-  default:
-    return "\033[;0m"; // normal
-  }
+  static color_map_t color_map;
+  return color_map;
 }
 
 StreamAppender::StreamAppender( const std::string &a_name
@@ -72,10 +58,11 @@ void
 StreamAppender::append(const LogEvent &evt)
 {
   if (color_mode_ == COLOR_ON)
-    stream_ << colorControlCode (evt.severity());
+    stream_ << get_color_map()[(evt.severity())];
 
+  // TODO: pass color mapper into the formatter
   stream_ << format(fmt_, evt);
 
   if (color_mode_ == COLOR_ON)
-    stream_ << "\033[;0m"; // back to normal after output
+    stream_ << get_color_map().reset_escape_code();
 }
