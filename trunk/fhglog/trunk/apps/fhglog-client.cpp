@@ -30,10 +30,11 @@ int main (int argc, char **argv)
   po::options_description desc("options");
 
   unsigned short port (FHGLOG_DEFAULT_PORT);
+  std::string url;
   std::string host ("localhost");
   std::string file ("fhglog-client.cpp");
   int line (0);
-  std::string message;
+  std::string message("--- MARK ---");
   std::string tag("default");
   int level (LogLevel::DEF_LEVEL);
 
@@ -41,6 +42,7 @@ int main (int argc, char **argv)
     ("help,h", "this message")
     ("port,P", po::value<unsigned short>(&port)->default_value(port), "port to connect to")
     ("host,H", po::value<std::string>(&host)->default_value(host), "host to send to")
+    ("url,U", po::value<std::string>(&url), "url (host:port) to use, takes precedence")
     ("message,m", po::value<std::string>(&message), "message to send")
     ("priority,p", po::value<int>(&level)->default_value(level), "log level to use (0-5)")
     ("tag,t", po::value<std::string>(&tag)->default_value(tag), "category tag of the message")
@@ -82,9 +84,14 @@ int main (int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  std::ostringstream sstr;
-  sstr << host << ":" << port;
-  std::string location (sstr.str());
+  std::string location (url);
+
+  if (location.empty())
+  {
+    std::ostringstream sstr;
+    sstr << host << ":" << port;
+    location = sstr.str();
+  }
 
   remote::RemoteAppender r ("remote", location);
 
