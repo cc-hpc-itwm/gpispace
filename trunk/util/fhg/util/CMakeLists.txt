@@ -9,6 +9,8 @@ set (hdrs
   starts_with.hpp
   util.hpp
   warnings.hpp
+
+  semaphore.hpp
 )
 
 install(FILES ${hdrs}
