@@ -3,6 +3,7 @@
 #include "connection.hpp"
 
 #include <fhgcom/util/to_hex.hpp>
+#include <fhgcom/message_io.hpp>
 
 using namespace boost::asio::ip;
 
@@ -11,11 +12,13 @@ namespace fhg
   namespace com
   {
     connection_t::connection_t( boost::asio::io_service & io_service
+                              , std::string const & cookie
                               , connection_t::handler_t * h
                               )
       : strand_(io_service)
       , socket_(io_service)
       , deadline_(io_service)
+      , cookie_(cookie)
       , callback_handler_(h)
       , in_message_(new message_t)
     {}
@@ -61,6 +64,8 @@ namespace fhg
     {
       assert (in_message_ != 0);
 
+      DLOG(TRACE, "waiting for header");
+
       boost::asio::async_read( socket_
                              , boost::asio::buffer (&in_message_->header, sizeof(message_t::header_t))
                              , strand_.wrap
@@ -81,13 +86,13 @@ namespace fhg
         assert (bytes_transferred == sizeof(message_t::header_t));
 
         // WORK HERE: convert for local endianess!
-
-        DLOG(DEBUG, "going to receive " << in_message_->header.length << " bytes");
+        DLOG(TRACE, "received header: " << in_message_->header);
         LOG_IF( WARN
               , in_message_->header.length > (1<<22)
               , "incoming message is quite large (>4MB)!"
               );
         in_message_->resize ();
+
         boost::asio::async_read ( socket_
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
@@ -112,6 +117,8 @@ namespace fhg
       {
         message_t * m = in_message_;
         in_message_ = 0;
+
+        DLOG(TRACE, "received message " << *m);
 
         if (callback_handler_)
         {
@@ -161,17 +168,6 @@ namespace fhg
       }
     }
 
-    void connection_t::async_send ( const message_t * msg
-                                  , completion_handler_t hdl
-                                  , boost::posix_time::time_duration timeout
-                                  )
-    {
-      strand_.post (boost::bind( &self::start_send
-                               , this
-                               , to_send_t (msg, hdl, timeout)
-                               ));
-    }
-
     void connection_t::start_send (connection_t::to_send_t s)
     {
       bool send_in_progress = !to_send_.empty();
@@ -186,10 +182,7 @@ namespace fhg
 
       const to_send_t & d (to_send_.front());
 
-      DLOG( TRACE
-          , "initiating write of " << d.message->header.length << " bytes of payload data: "
-          << util::basic_hex_converter<128>::convert(d.message->data)
-          );
+      DLOG( TRACE, "initiating write of " << *d.message);
 
       boost::asio::async_write( socket_
                               , d.to_buffers()
@@ -217,11 +210,6 @@ namespace fhg
         catch (std::exception const & ex)
         {
           LOG(ERROR, "completion handler failed: " << ex.what());
-        }
-
-        if (d.message)
-        {
-          delete d.message; d.message = 0;
         }
 
         if (! to_send_.empty())

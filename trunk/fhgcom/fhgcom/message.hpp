@@ -32,7 +32,8 @@ namespace fhg
       {}
 
       message_t (const message_t & other)
-        : data(other.data)
+        : header(other.header)
+        , data(other.data)
       {}
 
       ~message_t ()

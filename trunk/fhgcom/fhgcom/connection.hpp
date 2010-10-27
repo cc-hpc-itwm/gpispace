@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <ios>
 
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
@@ -36,10 +38,14 @@ namespace fhg
         virtual void handle_error       (connection_t *, const boost::system::error_code & error ) = 0;
       };
 
-      typedef void (*completion_handler_t)(const boost::system::error_code & error);
+      typedef boost::function <void (boost::system::error_code const &)> completion_handler_t;
+      //      typedef void (*completion_handler_t)(const boost::system::error_code & error);
 
       explicit
-      connection_t (boost::asio::io_service & io_service, handler_t * h);
+      connection_t ( boost::asio::io_service & io_service
+                   , std::string const & cookie
+                   , handler_t * h
+                   );
 
       ~connection_t ();
 
@@ -47,8 +53,9 @@ namespace fhg
 
       boost::asio::ip::tcp::socket & socket ();
 
+      template <typename Handler>
       void async_send ( const message_t * msg
-                      , completion_handler_t hdl
+                      , Handler hdl
                       , boost::posix_time::time_duration timeout = boost::posix_time::pos_infin
                       );
 
@@ -94,11 +101,25 @@ namespace fhg
       boost::asio::io_service::strand strand_;
       boost::asio::ip::tcp::socket socket_;
       boost::asio::deadline_timer deadline_;
-      handler_t * callback_handler_;
+
+      std::string cookie_;
+      handler_t *callback_handler_;
       message_t *in_message_;
 
       std::list <to_send_t> to_send_;
     };
+
+    template <typename Handler>
+    void connection_t::async_send ( const message_t * msg
+                                  , Handler hdl
+                                  , boost::posix_time::time_duration timeout
+                                  )
+    {
+      strand_.post (boost::bind( &self::start_send
+                               , this
+                               , to_send_t (msg, hdl, timeout)
+                               ));
+    }
   }
 }
 

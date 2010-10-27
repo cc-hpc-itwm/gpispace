@@ -14,6 +14,7 @@ set (hdrs
   session_manager.hpp
   connection.hpp
   peer.hpp
+  peer_io.hpp
   peer_info.hpp
 
   tcp_server.hpp
