@@ -1,0 +1,53 @@
+#include "color_map.hpp"
+
+#include <sstream>
+
+namespace fhg
+{
+  namespace log
+  {
+    color_map_t::color_map_t ()
+    {
+      m_color_table[LogLevel::TRACE] = reset_escape_code();
+      m_color_table[LogLevel::DEBUG] = reset_escape_code();
+      m_color_table[LogLevel::INFO]  = color_escape_code(FG_CYAN);
+      m_color_table[LogLevel::WARN]  = color_escape_code(FG_YELLOW);
+      m_color_table[LogLevel::ERROR] = color_escape_code(FG_RED);
+      m_color_table[LogLevel::FATAL] = color_escape_code(FG_MAGENTA, BG_DEFAULT, 5); // blink
+    }
+
+    std::string const & color_map_t::reset_escape_code ()
+    {
+      static std::string s ("\033[0m");
+      return s;
+    }
+
+    std::string color_map_t::color_escape_code ( color_map_t::ColorEnum fg
+                                               , color_map_t::ColorEnum bg
+                                               , int flags
+                                               )
+    {
+      std::ostringstream os;
+      os << "[" << flags << ";" << fg << ";" << bg << "m";
+      return "\033" + os.str();
+    }
+
+    std::string const & color_map_t::colorize (const LogLevel &lvl) const
+    {
+      return m_color_table.at (lvl);
+    }
+
+    std::string const & color_map_t::operator[](const LogLevel &level) const
+    {
+      return const_cast<color_map_t&>(*this).operator[](level);
+    }
+    std::string & color_map_t::operator[](const LogLevel &level)
+    {
+      if (m_color_table.find(level) == m_color_table.end())
+      {
+        m_color_table[level] = reset_escape_code();
+      }
+      return m_color_table[level];
+    }
+  }
+}

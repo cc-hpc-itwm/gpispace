@@ -2,6 +2,7 @@
 
 set (hdrs
   Appender.hpp
+  color_map.hpp
   CompoundAppender.hpp
   Configuration.hpp
   DecoratingAppender.hpp
@@ -33,6 +34,7 @@ set (hdrs
 
 set (srcs
   DefaultConfiguration.cpp
+  color_map.cpp
   error_handler.cpp
   FileAppender.cpp
   fileno.cpp
