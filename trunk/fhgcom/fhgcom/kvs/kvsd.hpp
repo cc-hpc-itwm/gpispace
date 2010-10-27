@@ -291,6 +291,7 @@ namespace fhg
             }
             else
             {
+              write_through_enabled_ = false;
               throw std::runtime_error ("could not load from file: " + file);
             }
           }
