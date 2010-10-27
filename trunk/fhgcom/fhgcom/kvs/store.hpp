@@ -10,24 +10,27 @@ namespace fhg
   {
     namespace kvs
     {
-      template <typename Cache>
+      template <typename Backend, typename Cache>
       class basic_store
       {
       public:
+        typedef Backend backend_type;
         typedef Cache cache_type;
         typedef typename cache_type::size_type cache_size_type;
 
         explicit
-        basic_store (const cache_size_type max_size)
-          : cache_ (max_size)
+        basic_store ( backend_type & backend
+                    , const cache_size_type max_size
+                    )
+          : backend_(backend)
+          , cache_ (max_size)
         {}
 
         template <typename Val>
         void put (typename cache_type::key_type const & k, Val v)
         {
           cache_.put (k, v);
-
-          // TODO: make network communication
+          backend_.put (k, v);
         }
 
         template <typename T>
@@ -35,17 +38,18 @@ namespace fhg
         {
           try
           {
+            // TODO: check timestamp?
             return cache_.get<T>(k);
           }
           catch (std::exception const &)
           {
-            // TODO: make network communication
-            // cache_.put (k, v);
-            throw;
+            T v = backend_.get<T>(k);
+            cache_.put (k,v);
+            return v;
           }
         }
 
-        typename cache_type::value_type const &
+        typename cache_type::value_type
         get (typename cache_type::key_type const & k) const
         {
           try
@@ -54,9 +58,9 @@ namespace fhg
           }
           catch (std::exception const &)
           {
-            // TODO: make network communication
-            // cache_.put (k, v);
-            throw;
+            typename cache_type::value_type v (backend_.get(k));
+            cache_.put (k,v);
+            return v;
           }
         }
 
@@ -74,25 +78,25 @@ namespace fhg
           return cache_.size();
         }
       private:
+        backend_type & backend_;
         mutable cache_type cache_;
       };
 
-      typedef basic_store<detail::cache> store;
-
-      template <typename Val>
-      inline void put (store & s, std::string const & k, Val v)
+      template <typename Val, typename B, typename C>
+      inline void put (basic_store<B,C> & s, std::string const & k, Val v)
       {
         s.put (k, v);
       }
 
-      template <typename Val>
-      inline Val get (store const & s, std::string const & k)
+      template <typename Val, typename B, typename C>
+      inline Val get (basic_store<B,C> const & s, std::string const & k)
       {
         return s.get<Val>(k);
       }
 
-      inline store::cache_type::value_type const &
-      get (store const & s, std::string const & k)
+      template <typename B, typename C>
+      inline typename basic_store<B,C>::cache_type::value_type const &
+      get (basic_store<B,C> const & s, std::string const & k)
       {
         return s.get(k);
       }

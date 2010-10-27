@@ -30,11 +30,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
-include(FindUTIL REQUIRED)
-if (UTIL_FOUND)
-  include_directories(${UTIL_INCLUDE_DIR})
-endif(UTIL_FOUND)
-
 message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules")
 
 include(CheckCompiler)
@@ -60,6 +55,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 ## fhglog
 find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
+
+include(FindUTIL REQUIRED)
+include_directories(${UTIL_INCLUDE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/we/we-config.hpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/we/we-config.hpp
