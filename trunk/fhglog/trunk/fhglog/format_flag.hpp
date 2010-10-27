@@ -2,6 +2,7 @@
 #define FHG_LOG_FORMAT_FLAG_HPP 1
 
 #include <fhglog/LogEvent.hpp>
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <cstring>
 #include <ios>
@@ -135,7 +136,7 @@ namespace fhg
         struct DATE
         {
           static const char value            = 'd';
-          //        static const char *description = "when was the event created (date string)";
+          //static const char *description = "when was the event created (date string)";
           static std::ostream & format( const LogEvent &e
                                       , std::ostream &os
                                       , const char
@@ -144,14 +145,8 @@ namespace fhg
             char buf[128]; memset (buf, 0, sizeof(buf));
             time_t tm = (e.tstamp() / 1000 / 1000);
             ctime_r (&tm, buf);
-            // WORK HERE: remove trailing newline stuff
             std::string tmp (buf);
-            tmp.erase(std::remove_if( tmp.begin()
-                                    , tmp.end()
-                                    , isnewline
-                                    )
-                     , tmp.end()
-                     );
+            boost::trim (tmp);
             return os << tmp;
           }
         };
