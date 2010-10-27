@@ -19,8 +19,11 @@
 #include <fstream>
 
 #include <boost/serialization/map.hpp>
+
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
 
 namespace fhg
 {
@@ -255,11 +258,12 @@ namespace fhg
             std::ofstream ofs (file.c_str());
             if (ofs)
             {
-              boost::archive::text_oarchive ar(ofs);
+              boost::archive::xml_oarchive ar(ofs);
 
               lock_t lock(mutex_);
               std::map<std::string, std::string> tmp_map_ (store_.begin(), store_.end());
-              ar & tmp_map_;
+              ar << boost::serialization::make_nvp("kvsd", tmp_map_);
+              write_through_enabled_ = true;
             }
             else
             {
@@ -277,13 +281,13 @@ namespace fhg
             std::ifstream ifs (file.c_str());
             if (ifs)
             {
-              std::map<std::string, std::string> tmp_store_;
-              boost::archive::text_iarchive ar(ifs);
-              ar & tmp_store_;
+              boost::archive::xml_iarchive ar(ifs);
+              std::map<std::string, std::string> tmp_map_;
+              ar >> boost::serialization::make_nvp("kvsd", tmp_map_);
 
               lock_t lock(mutex_);
-              store_type tmp_ (tmp_store_.begin(), tmp_store_.end());
-              store_ = tmp_;
+              store_.clear ();
+              store_.insert (tmp_map_.begin(), tmp_map_.end());
             }
             else
             {
