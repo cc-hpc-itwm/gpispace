@@ -9,18 +9,20 @@
 #include <boost/variant.hpp>
 
 #include <boost/serialization/deque.hpp>
-
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/set.hpp>
 
 #include <string>
 #include <vector>
 
+#include <map>
+#include <set>
+
 namespace literal
 {
   typedef std::deque<long> stack_type;
-  typedef boost::unordered_map<long, long> map_type;
-  typedef boost::unordered_set<long> set_type;
+  typedef std::map<long, long> map_type;
+  typedef std::set<long> set_type;
 
   typedef boost::variant< control
                         , bool
