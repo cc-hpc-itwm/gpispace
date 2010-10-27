@@ -2,6 +2,7 @@
 
 set(tc_srcs
   test_semaphore.cpp
+  test_event.cpp
 )
 
 foreach (tc_src ${tc_srcs})
