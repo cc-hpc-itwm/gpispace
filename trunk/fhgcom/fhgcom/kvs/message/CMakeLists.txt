@@ -1,18 +1,18 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
-  put.hpp
-  get.hpp
+  clear.hpp
   del.hpp
   error.hpp
-  load.hpp
-  save.hpp
+  get.hpp
   list.hpp
+  load.hpp
+  put.hpp
   req_list.hpp
-  clear.hpp
-
-  type.hpp
+  save.hpp
   show.hpp
+  type.hpp
+  value.hpp
 )
 
 install(FILES ${hdrs}
