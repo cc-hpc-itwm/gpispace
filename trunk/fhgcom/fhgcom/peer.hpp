@@ -76,22 +76,53 @@ namespace fhg
     private:
       struct to_send_t
       {
+        to_send_t ()
+          : message ()
+          , handler (0)
+        {}
+
+        to_send_t (to_send_t const & other)
+          : message (other.message)
+          , handler (other.handler)
+        {}
+
+        to_send_t & operator=(const to_send_t & other)
+        {
+          if (this != &other)
+          {
+            message = other.message;
+            handler = other.handler;
+          }
+          return *this;
+        }
+
         message_t  message;
         handler_t  handler;
       };
 
       struct to_recv_t
       {
+        to_recv_t ()
+          : handler (0)
+        {}
+
         message_t  message;
         handler_t  handler;
-        // semaphore...
-        // timeout
       };
 
       struct connection_data_t
       {
+        connection_data_t ()
+          : send_in_progress (false)
+          , connection (0)
+          , loopback (0)
+          , name ("")
+        {}
+
         bool send_in_progress;
         connection_t *connection;
+        connection_t *loopback;
+        std::string name;
         std::deque<to_recv_t> i_queue;
         std::deque<to_send_t> o_queue;
       };

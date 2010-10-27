@@ -2,9 +2,11 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
+#include <boost/system/error_code.hpp>
 
 #include "peer.hpp"
 #include "kvs/kvsc.hpp"
+#include <fhg/util/thread/event.hpp>
 
 namespace fhg
 {
@@ -48,7 +50,7 @@ namespace fhg
     {
       // stop and delete entries from backlog
       {
-        boost::unique_lock<boost::recursive_mutex> lock;
+        boost::unique_lock<boost::recursive_mutex> lock(mutex_);
 
         try
         {
@@ -98,13 +100,33 @@ namespace fhg
       io_service_.stop();
     }
 
+    void peer_t::send ( const std::string & to
+                      , const std::string & data
+                      )
+    {
+      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
+      async_op_t send_finished;
+      async_send (to, data, boost::bind (&async_op_t::notify, &send_finished));
+
+      boost::system::error_code ec;
+      send_finished.wait (ec);
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
+      }
+    }
+
     void peer_t::async_send ( const std::string & to
                             , const std::string & data
                             , peer_t::handler_t completion_handler
                             )
     {
+      boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+
       // TODO: io_service_.post (...);
       p2p::address_t addr (to);
+
+      // TODO: short circuit loopback sends
 
       if (connections_.find(addr) == connections_.end())
       {
@@ -113,7 +135,24 @@ namespace fhg
         prefix += "." + boost::lexical_cast<std::string>(addr);
         kvs::values_type location (kvs::get_tree (prefix + "." + "location"));
 
-        assert (! location.empty());
+        if (location.empty())
+        {
+          LOG(WARN, "could not lookup location information for " << to << " (" << addr << ")");
+          if (completion_handler)
+          {
+            try
+            {
+              using namespace boost::system;
+              completion_handler
+                (errc::make_error_code (errc::no_such_process));
+            }
+            catch (std::exception const & ex)
+            {
+              LOG(ERROR, "completion handler failed (ignored): " << ex.what());
+            }
+          }
+          return;
+        }
 
         host_t h (location.at(prefix + ".location.host"));
         port_t p (location.at(prefix + ".location.port"));
@@ -125,12 +164,14 @@ namespace fhg
         connection_data_t & cd = connections_[addr];
         cd.send_in_progress = false;
         cd.connection = new connection_t(io_service_, cookie_, this);
+        cd.name = to;
 
         to_send_t to_send;
         to_send.message.assign (data.begin(), data.end());
         to_send.message.header.src = my_addr_;
         to_send.message.header.dst = addr;
         to_send.message.header.length = data.size();
+        to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
         boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -154,6 +195,7 @@ namespace fhg
         to_send.message.header.src = my_addr_;
         to_send.message.header.dst = addr;
         to_send.message.header.length = data.size();
+        to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
         io_service_.post (boost::bind (&self::start_sender, this, addr));
@@ -162,12 +204,38 @@ namespace fhg
       //      throw std::runtime_error ("not implemented");
     }
 
+    void peer_t::recv ( std::string & from
+                      , std::string & data
+                      )
+    {
+      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
+      async_op_t recv_finished;
+      async_recv (from, data, boost::bind (&async_op_t::notify, &recv_finished));
+
+      boost::system::error_code ec;
+      recv_finished.wait (ec);
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
+      }
+    }
+
     void peer_t::async_recv ( std::string & from
                             , std::string & data
                             , peer_t::handler_t completion_handler
                             )
     {
-      //      throw std::runtime_error ("not implemented");
+      boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+
+      if (completion_handler)
+      {
+        using namespace boost::system;
+        completion_handler
+          (errc::make_error_code (errc::function_not_supported));
+      }
+      else
+      {
+      }
     }
 
     void peer_t::resolve_name ( std::string const & name
@@ -181,7 +249,8 @@ namespace fhg
                               , std::string & name
                               )
     {
-      boost::unique_lock<boost::recursive_mutex> lock;
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+
       reverse_lookup_cache_t::const_iterator it (reverse_lookup_cache_.find (addr));
       if (it == reverse_lookup_cache_.end())
       {
@@ -214,7 +283,6 @@ namespace fhg
         connection_data_t & cd = connections_.at (a);
         // send hello message
         to_send_t to_send;
-        to_send.handler = 0;
         to_send.message.header.src = my_addr_;
         to_send.message.header.dst = a;
         to_send.message.header.type_of_msg = p2p::type_of_message_traits::HELLO_PACKET;
@@ -226,46 +294,59 @@ namespace fhg
       {
         LOG(WARN, "connection to " << a << " could not be established: " << ec);
         // TODO: remove connection data
+        //     call handler for all o_queue elements
+        //     call handler for all i_queue elements
       }
     }
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
     {
+      assert (connections_.find (a) != connections_.end());
       connection_data_t & cd = connections_.at (a);
-      to_send_t to_send = cd.o_queue.front ();
-      cd.o_queue.pop_front();
+      assert (! cd.o_queue.empty());
 
+      if (cd.o_queue.front().handler)
+      {
+        DLOG(TRACE, "message calling callback handler");
+        cd.o_queue.front().handler (ec);
+      }
+
+      LOG_IF(WARN, ec, "message delivery to " << a << " failed: " << ec);
+
+      cd.o_queue.pop_front();
       if (! ec)
       {
-        DLOG(TRACE, "message successfully sent to " << a);
-
         if (! cd.o_queue.empty())
         {
+          // TODO: wrap in strand...
           cd.connection->async_send ( &cd.o_queue.front().message
                                     , boost::bind (&self::handle_send, this, a, _1)
                                     );
         }
+        else
+        {
+          cd.send_in_progress = false;
+        }
       }
       else
       {
-        LOG(WARN, "could not send message to " << a << ": " << ec);
-      }
-
-      if (to_send.handler)
-      {
-        to_send.handler(ec);
+        cd.send_in_progress = false;
+        // TODO: close connection
       }
     }
 
     void peer_t::start_sender (const p2p::address_t a)
     {
       connection_data_t & cd = connections_.at(a);
-      if (cd.send_in_progress)
+      if (cd.send_in_progress || cd.o_queue.empty())
         return;
+
+      assert (! cd.o_queue.empty());
+
+      cd.send_in_progress = true;
       cd.connection->async_send ( &cd.o_queue.front().message
                                 , boost::bind (&self::handle_send, this, a, _1)
                                 );
-      cd.send_in_progress = true;
     }
 
     void peer_t::update_my_location ()
@@ -336,12 +417,21 @@ namespace fhg
         }
         else
         {
-          DLOG(INFO, "connection successfully established with " << m->header.src);
-          connection_data_t cd;
-          cd.send_in_progress = false;
-          cd.connection = c;
-          connections_[m->header.src] = cd;
           backlog_.erase (c);
+
+          DLOG(INFO, "connection successfully established with " << m->header.src);
+
+          connection_data_t & cd = connections_[m->header.src];
+          if (cd.connection != 0)
+          {
+            // handle loopback connections correctly
+            DLOG(TRACE, "connection already exists, it seems that i have initiated it");
+            cd.loopback = c;
+          }
+          else
+          {
+            cd.connection = c;
+          }
         }
         break;
       default:
@@ -351,11 +441,13 @@ namespace fhg
 
       delete m;
     }
+
     void peer_t::handle_user_data   (connection_t *, const message_t *m)
     {
       DLOG(TRACE, "got user message");
-
+      delete m;
     }
+
     void peer_t::handle_error       (connection_t *, const boost::system::error_code & ec)
     {
       // TODO: WORK HERE
