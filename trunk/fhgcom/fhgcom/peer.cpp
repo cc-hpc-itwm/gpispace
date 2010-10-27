@@ -20,6 +20,7 @@ namespace fhg
       , port_(port)
       , cookie_(cookie)
       , my_addr_(p2p::address_t(name))
+      , started_()
       , io_service_()
       , acceptor_(io_service_)
       , connections_()
@@ -47,6 +48,8 @@ namespace fhg
     {
       // stop and delete entries from backlog
       {
+        boost::unique_lock<boost::recursive_mutex> lock;
+
         try
         {
           std::string prefix ("p2p.peer");
@@ -69,6 +72,9 @@ namespace fhg
 
     void peer_t::start()
     {
+      // todo introduce timeout to event::wait()
+      fhg::util::thread::event<int>::value_type ec;
+      started_.wait (ec);
     }
 
     void peer_t::stop()
@@ -99,8 +105,6 @@ namespace fhg
     {
       // TODO: io_service_.post (...);
       p2p::address_t addr (to);
-
-      // create message
 
       if (connections_.find(addr) == connections_.end())
       {
@@ -156,6 +160,49 @@ namespace fhg
       }
 
       //      throw std::runtime_error ("not implemented");
+    }
+
+    void peer_t::async_recv ( std::string & from
+                            , std::string & data
+                            , peer_t::handler_t completion_handler
+                            )
+    {
+      //      throw std::runtime_error ("not implemented");
+    }
+
+    void peer_t::resolve_name ( std::string const & name
+                              , p2p::address_t & addr
+                              )
+    {
+      addr = p2p::address_t (name);
+    }
+
+    void peer_t::resolve_addr ( p2p::address_t const & addr
+                              , std::string & name
+                              )
+    {
+      boost::unique_lock<boost::recursive_mutex> lock;
+      reverse_lookup_cache_t::const_iterator it (reverse_lookup_cache_.find (addr));
+      if (it == reverse_lookup_cache_.end())
+      {
+        // lookup location information
+        try
+        {
+          const std::string key
+            ("p2p.peer." + boost::lexical_cast<std::string>(addr)+".name");
+          name = kvs::get<std::string>(key);
+          reverse_lookup_cache_[addr] = name;
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(WARN, "could not resolve address (" << addr << ") to name: " << ex.what());
+          throw std::runtime_error (std::string("could not resolve address: ") + ex.what());
+        }
+      }
+      else
+      {
+        name = it->second;
+      }
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
@@ -221,29 +268,31 @@ namespace fhg
       cd.send_in_progress = true;
     }
 
-    void peer_t::async_recv ( std::string & from
-                            , std::string & data
-                            , peer_t::handler_t completion_handler
-                            )
-    {
-      //      throw std::runtime_error ("not implemented");
-    }
-
     void peer_t::update_my_location ()
     {
-      boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
+      try
+      {
+        boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
 
-      std::string prefix ("p2p.peer");
-      prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
+        std::string prefix ("p2p.peer");
+        prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
 
-      kvs::values_type values;
-      values[prefix + "." + "location" + "." + "host"] =
-        boost::lexical_cast<std::string>(endpoint.address());
-      values[prefix + "." + "location" + "." + "port"] =
-        boost::lexical_cast<std::string>(endpoint.port());
-      values[prefix + "." + "name"] = name_;
+        kvs::values_type values;
+        values[prefix + "." + "location" + "." + "host"] =
+          boost::lexical_cast<std::string>(endpoint.address());
+        values[prefix + "." + "location" + "." + "port"] =
+          boost::lexical_cast<std::string>(endpoint.port());
+        values[prefix + "." + "name"] = name_;
 
-      kvs::put (values);
+        kvs::put (values);
+
+        started_.notify (0);
+      }
+      catch (...)
+      {
+        started_.notify (1);
+        throw;
+      }
     }
 
     void peer_t::handle_accept (const boost::system::error_code & ec)

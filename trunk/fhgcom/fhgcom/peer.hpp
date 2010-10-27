@@ -4,6 +4,7 @@
 #include <string>
 #include <deque>
 
+#include <boost/thread.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <boost/unordered_set.hpp>
@@ -12,6 +13,8 @@
 #include <fhgcom/header.hpp>
 #include <fhgcom/connection.hpp>
 #include <fhgcom/peer_info.hpp>
+
+#include <fhg/util/thread/event.hpp>
 
 namespace fhg
 {
@@ -41,6 +44,7 @@ namespace fhg
       std::string const & name () const { return name_; }
       std::string const & host () const { return host_; }
       std::string const & port () const { return port_; }
+      p2p::address_t const & address () const { return my_addr_; }
 
       void start ();
       void stop ();
@@ -61,6 +65,9 @@ namespace fhg
       void recv ( std::string & from
                 , std::string & data
                 );
+
+      void resolve_name (std::string const & name, p2p::address_t & addr);
+      void resolve_addr (p2p::address_t const & addr, std::string & name);
     protected:
       void handle_system_data (connection_t *, const message_t *m);
       void handle_user_data   (connection_t *, const message_t *m);
@@ -96,20 +103,29 @@ namespace fhg
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
 
+      mutable boost::recursive_mutex mutex_;
+
       std::string name_;
       std::string host_;
       std::string port_;
       std::string cookie_;
       p2p::address_t my_addr_;
+      fhg::util::thread::event<int> started_;
 
       boost::asio::io_service io_service_;
       boost::asio::ip::tcp::acceptor acceptor_;
 
+      typedef boost::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
+      reverse_lookup_cache_t reverse_lookup_cache_;
+
       typedef boost::unordered_map<p2p::address_t, connection_data_t> connections_t;
       connections_t connections_;
+
       typedef boost::unordered_set<connection_t *> backlog_t;
       backlog_t backlog_;
+
       connection_t * listen_;
+
     };
   }
 }

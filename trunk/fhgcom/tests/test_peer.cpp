@@ -15,18 +15,19 @@
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
+// TODO: move to fixture
 BOOST_AUTO_TEST_CASE ( setup_dummy )
 {
   FHGLOG_SETUP();
-}
 
-BOOST_AUTO_TEST_CASE ( start_stop_test )
-{
+  // make sure that the kvs is reachable...
   using namespace fhg::com;
 
-  peer_t peer ("peer", host_t("localhost"), port_t("1234"));
-  peer.start();
-  peer.stop();
+  kvs::put ("fhg.com.test.PeerTest", 42);
+  int i = kvs::get<int>("fhg.com.test.PeerTest");
+  kvs::del ("fhg.com.test.PeerTest");
+
+  BOOST_CHECK_EQUAL (42, i);
 }
 
 BOOST_AUTO_TEST_CASE ( output_test )
@@ -121,8 +122,6 @@ BOOST_AUTO_TEST_CASE ( peer_run_two )
   peer_1.start();
   peer_2.start();
 
-  sleep (5);
-
   try
   {
     std::string from; std::string data;
@@ -139,6 +138,83 @@ BOOST_AUTO_TEST_CASE ( peer_run_two )
     BOOST_ERROR ( ex.what() );
   }
 
+  peer_1.stop();
+  peer_2.stop();
+
+  thrd_1.join ();
+  thrd_2.join ();
+}
+
+BOOST_AUTO_TEST_CASE ( resolve_peer_names )
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"));
+  boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
+
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"));
+  boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
+
+  peer_1.start();
+  peer_2.start();
+
+  {
+    p2p::address_t a1;
+    peer_1.resolve_name ("peer-1", a1);
+    p2p::address_t a2;
+    peer_2.resolve_name ("peer-1", a2);
+    BOOST_CHECK_EQUAL (a1, a2);
+  }
+
+  {
+    p2p::address_t a1;
+    peer_1.resolve_name ("peer-2", a1);
+    p2p::address_t a2;
+    peer_2.resolve_name ("peer-2", a2);
+    BOOST_CHECK_EQUAL (a1, a2);
+  }
+
+  peer_1.stop();
+  peer_2.stop();
+
+  thrd_1.join ();
+  thrd_2.join ();
+}
+
+BOOST_AUTO_TEST_CASE ( resolve_peer_addresses )
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"));
+  boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
+
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"));
+  boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
+
+  peer_1.start();
+  peer_2.start();
+
+  const p2p::address_t peer_1_addr (peer_1.address());
+  const p2p::address_t peer_2_addr (peer_2.address());
+
+  {
+    std::string n_1;
+    peer_1.resolve_addr (peer_1_addr, n_1);
+
+    std::string n_2;
+    peer_2.resolve_addr (peer_1_addr, n_2);
+
+    BOOST_CHECK_EQUAL (n_1, n_2);
+  }
+  {
+    std::string n_1;
+    peer_1.resolve_addr (peer_2_addr, n_1);
+
+    std::string n_2;
+    peer_2.resolve_addr (peer_2_addr, n_2);
+
+    BOOST_CHECK_EQUAL (n_1, n_2);
+  }
 
   peer_1.stop();
   peer_2.stop();
