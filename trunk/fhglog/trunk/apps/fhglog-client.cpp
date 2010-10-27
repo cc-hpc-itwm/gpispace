@@ -29,9 +29,7 @@ int main (int argc, char **argv)
 
   po::options_description desc("options");
 
-  unsigned short port (FHGLOG_DEFAULT_PORT);
-  std::string url;
-  std::string host ("localhost");
+  std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : FHGLOG_DEFAULT_LOCATION);
   std::string file ("fhglog-client.cpp");
   int line (0);
   std::string message("--- MARK ---");
@@ -40,10 +38,8 @@ int main (int argc, char **argv)
 
   desc.add_options()
     ("help,h", "this message")
-    ("port,P", po::value<unsigned short>(&port)->default_value(port), "port to connect to")
-    ("host,H", po::value<std::string>(&host)->default_value(host), "host to send to")
-    ("url,U", po::value<std::string>(&url), "url (host:port) to use, takes precedence")
-    ("message,m", po::value<std::string>(&message), "message to send")
+    ("url,U", po::value<std::string>(&url)->default_value(url), "url (host[:port]) to use")
+    ("message,m", po::value<std::string>(&message), "message to send, if message is - stdin is used")
     ("priority,p", po::value<int>(&level)->default_value(level), "log level to use (0-5)")
     ("tag,t", po::value<std::string>(&tag)->default_value(tag), "category tag of the message")
     ("file,F", po::value<std::string>(&file)->default_value(file), "filename of the event")
@@ -84,19 +80,23 @@ int main (int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  std::string location (url);
-
-  if (location.empty())
-  {
-    std::ostringstream sstr;
-    sstr << host << ":" << port;
-    location = sstr.str();
-  }
-
-  remote::RemoteAppender r ("remote", location);
-
   if (level < LogLevel::MIN_LEVEL || level > LogLevel::MAX_LEVEL)
     level = LogLevel::DEF_LEVEL;
+
+  if (message == "-")
+  {
+    message = "";
+
+    do
+    {
+      char c;
+      if (std::cin.read (&c, 1))
+        message += c;
+      else
+        break;
+    } while (true);
+  }
+
   LogEvent e( (LogLevel::Level)level
             , file
             , ""
@@ -104,6 +104,17 @@ int main (int argc, char **argv)
             , message
             );
   e.logged_via() = tag;
-  r.append (e);
+
+  try
+  {
+    remote::RemoteAppender r ("remote", url);
+    r.append (e);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "could not log message: " << ex.what() << std::endl;
+    return 1;
+  }
+
   return 0;
 }
