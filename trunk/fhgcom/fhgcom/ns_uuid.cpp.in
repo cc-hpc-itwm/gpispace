@@ -1,0 +1,3 @@
+#include "ns_uuid.hpp"
+
+const char * fhg::com::p2p::FHG_COM_NS_UUID = "@FHG_COM_NS_UUID@";

@@ -18,6 +18,7 @@ option(NO_IMPLICIT_TEMPLATES
   "Do not let the compiler implicitely instantiate templates"
   OFF
   )
+set(FHG_COM_NS_UUID "c9fe00cb-d9f7-432e-9235-66b7929b6e2a" CACHE STRING "The unique namespace uuid for this installation")
 
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
@@ -81,6 +82,7 @@ find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhgcom/fhgcom-config.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhgcom/fhgcom-config.hpp
   DESTINATION include/fhgcom
   COMPONENT headers)
