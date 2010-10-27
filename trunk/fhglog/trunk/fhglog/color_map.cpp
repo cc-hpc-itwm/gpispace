@@ -8,8 +8,8 @@ namespace fhg
   {
     color_map_t::color_map_t ()
     {
-      m_color_table[LogLevel::TRACE] = reset_escape_code();
-      m_color_table[LogLevel::DEBUG] = reset_escape_code();
+      m_color_table[LogLevel::TRACE] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
+      m_color_table[LogLevel::DEBUG] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
       m_color_table[LogLevel::INFO]  = color_escape_code(FG_CYAN);
       m_color_table[LogLevel::WARN]  = color_escape_code(FG_YELLOW);
       m_color_table[LogLevel::ERROR] = color_escape_code(FG_RED);
@@ -28,8 +28,8 @@ namespace fhg
                                                )
     {
       std::ostringstream os;
-      os << "[" << flags << ";" << fg << ";" << bg << "m";
-      return "\033" + os.str();
+      os << "\033[" << flags << ";" << fg << ";" << bg << "m";
+      return os.str();
     }
 
     std::string const & color_map_t::colorize (const LogLevel &lvl) const
