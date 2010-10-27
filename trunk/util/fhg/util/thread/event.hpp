@@ -43,8 +43,7 @@ namespace fhg
           m_semaphore.V();
         }
 
-        template <typename U>
-        void notify(U const & u)
+        void notify(value_type const & u)
         {
           m_semaphore.P();
           m_event = u;
@@ -55,7 +54,7 @@ namespace fhg
 
         void notify()
         {
-          notify<T> (T());
+          notify (T());
         }
 
         std::size_t count () const
