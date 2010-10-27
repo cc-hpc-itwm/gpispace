@@ -9,8 +9,6 @@ set (hdrs
   starts_with.hpp
   util.hpp
   warnings.hpp
-
-  semaphore.hpp
 )
 
 install(FILES ${hdrs}
@@ -18,3 +16,4 @@ install(FILES ${hdrs}
   COMPONENT headers)
 
 add_subdirectory(parse)
+add_subdirectory(thread)
