@@ -153,12 +153,10 @@ int main(int argc, char **argv)
 
   fhg::log::getLogger().setLevel (level);
 
-  std::string fmt (fhg::log::default_format::SHORT());
-
+  std::string fmt (fmt_string);
   if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
   else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
-  else                            fmt = fhg::log::default_format::SHORT();
-  fhg::log::check_format (fmt);
+  else fhg::log::check_format (fmt);
 
   // remote messages go to stdout
   fhg::log::Appender::ptr_t appender
