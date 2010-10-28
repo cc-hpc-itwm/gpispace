@@ -12,6 +12,9 @@ namespace fhg
 {
   namespace com
   {
+    static void dummy_handler (p2p::address_t, boost::system::error_code const &)
+    {}
+
     peer_t::peer_t ( std::string const & name
                    , host_t const & host
                    , port_t const & port
@@ -106,11 +109,8 @@ namespace fhg
         while (! cd.o_queue.empty())
         {
           to_send_t & to_send = cd.o_queue.front();
-          if (to_send.handler)
-          {
-            using namespace boost::system;
-            to_send.handler (errc::make_error_code(errc::operation_canceled));
-          }
+          using namespace boost::system;
+          to_send.handler (my_addr_, errc::make_error_code(errc::operation_canceled));
           cd.o_queue.pop_front();
         }
 
@@ -148,11 +148,8 @@ namespace fhg
       {
         to_recv_t to_recv = m_to_recv.front();
         m_to_recv.pop_front();
-        if (to_recv.handler)
-        {
-          using namespace boost::system;
-          to_recv.handler (errc::make_error_code(errc::operation_canceled));
-        }
+        using namespace boost::system;
+        to_recv.handler (my_addr_, errc::make_error_code(errc::operation_canceled));
       }
     }
 
@@ -177,6 +174,7 @@ namespace fhg
                             )
     {
       assert (m);
+      assert (completion_handler);
 
       boost::unique_lock<boost::recursive_mutex> lock(mutex_);
 
@@ -195,18 +193,14 @@ namespace fhg
         if (location.empty())
         {
           LOG(WARN, "could not lookup location information for " << addr);
-          if (completion_handler)
+          try
           {
-            try
-            {
-              using namespace boost::system;
-              completion_handler
-                (errc::make_error_code (errc::no_such_process));
-            }
-            catch (std::exception const & ex)
-            {
-              LOG(ERROR, "completion handler failed (ignored): " << ex.what());
-            }
+            using namespace boost::system;
+            completion_handler(addr, errc::make_error_code (errc::no_such_process));
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "completion handler failed (ignored): " << ex.what());
           }
           return;
         }
@@ -303,6 +297,7 @@ namespace fhg
     void peer_t::async_recv (message_t *m, peer_t::handler_t completion_handler)
     {
       assert (m);
+      assert (completion_handler);
 
       {
         boost::unique_lock<boost::recursive_mutex> lock(mutex_);
@@ -325,8 +320,7 @@ namespace fhg
       }
 
       using namespace boost::system;
-      if (completion_handler)
-        completion_handler(errc::make_error_code (errc::success));
+      completion_handler(m->header.src, errc::make_error_code (errc::success));
     }
 
     void peer_t::resolve_name ( std::string const & name
@@ -374,6 +368,7 @@ namespace fhg
         connection_data_t & cd = connections_.at (a);
         // send hello message
         to_send_t to_send;
+        to_send.handler = dummy_handler;
         to_send.message.header.src = my_addr_;
         to_send.message.header.dst = a;
         to_send.message.header.type_of_msg = p2p::type_of_message_traits::HELLO_PACKET;
@@ -396,11 +391,7 @@ namespace fhg
       connection_data_t & cd = connections_.at (a);
       assert (! cd.o_queue.empty());
 
-      if (cd.o_queue.front().handler)
-      {
-        DLOG(TRACE, "message calling callback handler");
-        cd.o_queue.front().handler (ec);
-      }
+      cd.o_queue.front().handler (a, ec);
 
       LOG_IF(WARN, ec, "message delivery to " << a << " failed: " << ec);
 
@@ -559,8 +550,7 @@ namespace fhg
         delete m;
 
         using namespace boost::system;
-        to_recv.handler
-          (errc::make_error_code (errc::success));
+        to_recv.handler(to_recv.message->header.src, errc::make_error_code (errc::success));
       }
     }
 
@@ -578,15 +568,10 @@ namespace fhg
         while (! cd.o_queue.empty())
         {
           to_send_t & to_send = cd.o_queue.front();
-          if (to_send.handler)
-          {
-            using namespace boost::system;
-            to_send.handler (errc::make_error_code(errc::operation_canceled));
-          }
+          using namespace boost::system;
+          to_send.handler (to_send.message.header.dst, errc::make_error_code(errc::operation_canceled));
           cd.o_queue.pop_front();
         }
-
-        //        delete c;
 
         connections_.erase(c->remote_address());
       }
