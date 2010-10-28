@@ -14,17 +14,47 @@
 static fhg::com::io_service_pool pool (4);
 static fhg::com::kvs::server::kvsd *g_kvsd (0);
 
-void signal_handler (int)
+void save_state (int s)
 {
-  pool.stop();
   try
   {
+    LOG(DEBUG, "saving state due to signal: " << s);
     g_kvsd->save();
   }
   catch (std::exception const & ex)
   {
     LOG(WARN, "could not persist state: " << ex.what());
   }
+}
+void load_state (int s)
+{
+  try
+  {
+    LOG(DEBUG, "loading state due to signal: " << s);
+    g_kvsd->load();
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(WARN, "could not load state: " << ex.what());
+  }
+}
+void clear_state (int s)
+{
+  try
+  {
+    LOG(DEBUG, "clearing state due to signal: " << s);
+    g_kvsd->clear("");
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(WARN, "could not clear state: " << ex.what());
+  }
+}
+
+void signal_handler (int s)
+{
+  pool.stop();
+  save_state (s);
 }
 
 int main(int ac, char *av[])
@@ -52,7 +82,9 @@ int main(int ac, char *av[])
   }
 
   bool reuse_address (true);
-  std::string store_path (std::string(getenv("HOME")) + "/.fhgkvsd.dat");
+  std::string home (getenv("HOME") ? getenv("HOME") : ".");
+  std::string default_store_path(home + "/.fhgkvsd.dat");
+  std::string store_path (getenv("KVS_STORE") ? getenv("KVS_STORE") : default_store_path);
 
   po::options_description desc ("options");
   desc.add_options()
@@ -60,7 +92,7 @@ int main(int ac, char *av[])
     ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
     ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
-    ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store")
+    ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store, set KVS_STORE to override default")
     ("clear,C", "start with an empty store")
     ;
 
@@ -97,6 +129,10 @@ int main(int ac, char *av[])
 
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);
+  signal(SIGUSR1, save_state);
+  signal(SIGUSR2, clear_state);
+  signal(SIGHUP, load_state);
+
 
   fhg::com::tcp_server server ( pool
                               , kvsd
