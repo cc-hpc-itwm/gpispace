@@ -3,6 +3,8 @@
 
 #include <cstring>
 
+#include <boost/lexical_cast.hpp>
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -87,7 +89,7 @@ namespace fhg
       {
         boost::uuids::uuid u;
         memcpy (&u, &a, sizeof(boost::uuids::uuid));
-        return to_string (u);
+        return boost::lexical_cast<std::string>(u);
       }
 
       std::ostream & operator<<(std::ostream & os, address_t const &a)
