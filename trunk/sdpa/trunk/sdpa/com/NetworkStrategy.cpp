@@ -1,5 +1,10 @@
 #include "NetworkStrategy.hpp"
 
+#include <sdpa/events/Codec.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
+
+#include <boost/lexical_cast.hpp>
+
 namespace sdpa
 {
   namespace com
@@ -18,8 +23,27 @@ namespace sdpa
 
     void NetworkStrategy::perform (seda::IEvent::Ptr const & e)
     {
+      static sdpa::events::Codec codec;
+
+      assert (e);
+
       // convert event to fhg::com::message_t
-      // synchronous send
+      if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
+      {
+        fhg::com::message_t msg;
+        msg.header.dst = m_peer.resolve_name (sdpa_event->to());
+        msg.header.src = m_peer.address();
+
+        const std::string encoded_evt (codec.encode(sdpa_event));
+        msg.data.assign (encoded_evt.begin(), encoded_evt.end());
+        msg.header.length = msg.data.size();
+
+        m_peer.send (&msg);
+      }
+      else
+      {
+        LOG(ERROR, "cannot handle non-SDPAEvent events: " << e->str());
+      }
     }
 
     void NetworkStrategy::onStageStart (std::string const &)
@@ -37,19 +61,48 @@ namespace sdpa
 
     void NetworkStrategy::handle_recv (fhg::com::p2p::address_t addr, boost::system::error_code const & ec)
     {
+      static sdpa::events::Codec codec;
+
       if (! ec)
       {
         // convert m_message to event
-        // ForwardStrategy::perform (event)
+        assert (addr == m_message.header.src);
+
+        try
+        {
+          sdpa::events::SDPAEvent::Ptr evt
+            (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+          evt->from () = m_peer.resolve_addr (addr);
+          evt->to () = m_peer.name();
+          ForwardStrategy::perform (evt);
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(WARN, "could not handle incoming message: " << ex.what());
+        }
 
         m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1, _2));
       }
       else // if (ec != eof)
       {
-        // TODO: add handlers to peer to figure out which connection had problems
-        // ForwardStrategy::perform (error)
+        if (addr != m_peer.address())
+        {
+          LOG(WARN, "connection to " << m_peer.resolve_addr(addr) << " lost: " << ec);
+          sdpa::events::ErrorEvent::Ptr
+            error(new sdpa::events::ErrorEvent ( m_peer.resolve_addr(addr)
+                                               , m_peer.name()
+                                               , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                               , boost::lexical_cast<std::string>(ec)
+                                               )
+                 );
+          ForwardStrategy::perform (error);
+          m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1, _2));
+        }
+        else
+        {
+          LOG(TRACE, m_peer.name() << " is shutting down");
+        }
       }
     }
   }
 }
-
