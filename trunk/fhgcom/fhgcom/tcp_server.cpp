@@ -56,7 +56,7 @@ void tcp_server::start ( const std::string & host
       acceptor_.listen (tcp::acceptor::max_connections, ec);
       if (! ec)
       {
-        LOG(INFO, "successfully bound to: " << acceptor_.local_endpoint());
+        LOG(DEBUG, "successfully bound to: " << acceptor_.local_endpoint());
         accept ();
         break;
       }

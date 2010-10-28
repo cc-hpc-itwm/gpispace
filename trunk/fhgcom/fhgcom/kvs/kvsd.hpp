@@ -167,7 +167,7 @@ namespace fhg
           {
             try
             {
-              LOG(INFO, "loading contents from file storage: " << file);
+              LOG(DEBUG, "loading contents from file storage: " << file);
               load ();
               write_through_enabled_ = true;
             }

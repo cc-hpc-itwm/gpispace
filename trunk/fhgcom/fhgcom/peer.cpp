@@ -374,7 +374,7 @@ namespace fhg
     {
       if (! ec)
       {
-        LOG(INFO, "connection to " << a << " established: " << ec);
+        DLOG(TRACE, "connection to " << a << " established: " << ec);
 
         connection_data_t & cd = connections_.at (a);
         // send hello message
@@ -515,7 +515,7 @@ namespace fhg
         {
           backlog_.erase (c);
 
-          DLOG(INFO, "connection successfully established with " << m->header.src);
+          LOG(DEBUG, "connection between " << my_addr_ << " and " << m->header.src << " successfully established");
 
           c->remote_address (m->header.src);
           connection_data_t & cd = connections_[m->header.src];
