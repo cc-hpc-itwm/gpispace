@@ -208,7 +208,7 @@ public:
   /// SDPA VM parameters
   int ReqVMMemSize;
 
-  int globTTbufsizelocal;
+  long globTTbufsizelocal;
 
   int locbufsize;	  // Size of the local buffers;
 
