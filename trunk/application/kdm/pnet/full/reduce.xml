@@ -2,8 +2,9 @@
 
   <in name="config" type="config" place="config"/>
   <in name="volume" type="volume_in_progress" place="volume"/>
-  <out name="volume_done" type="volume_with_store" place="volume_done"/>
   <in name="sum" type="volume_in_reduction" place="sum_in"/>
+
+  <out name="volume_done" type="volume_with_store" place="volume_done"/>
   <out name="sum" type="volume_in_reduction" place="sum_out"/>
 
   <net>

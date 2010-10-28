@@ -1,4 +1,5 @@
 <defun>
+
   <in name="config" type="config" place="config"/>
   <out name="volume_state" type="volume_state" place="volume_state"/>
   <out name="volume_with_store" type="volume_with_store" place="volume_with_store"/>
@@ -36,7 +37,8 @@
           ${state.bunch.id} := 0L;
           ${state.bunch.max} := ${config.per.offset.bunches};
 
-          ${state.bunch_store_per_volume_store} := ${config.per.volume_store.bunch_stores}
+          ${state.bunch_store_per_volume_store}
+            := ${config.per.volume_store.bunch_stores}
         </expression>
       </defun>
       <connect-in port="config" place="config"/>
@@ -101,9 +103,15 @@
 
           ${state.bunch.id} := ${state.bunch.id} + 1
         </expression>
-        <condition>${state.bunch.id} :lt: ${state.bunch.max}</condition>
-        <condition>map_is_assigned (${assoc}, ${store.id})</condition>
-        <condition>${state.offset.id} :eq: map_get_assignment (${assoc}, ${store.id})</condition>
+        <condition>
+          ${state.bunch.id} :lt: ${state.bunch.max}
+        </condition>
+        <condition>
+          map_is_assigned (${assoc}, ${store.id})
+        </condition>
+        <condition>
+          ${state.offset.id} :eq: map_get_assignment (${assoc}, ${store.id})
+        </condition>
       </defun>
       <connect-in port="state" place="state_bunch"/>
       <connect-read port="assoc" place="assoc"/>
@@ -180,12 +188,17 @@
         <out name="state" type="state"/>
         <out name="state_assign" type="state_assign"/>
         <expression>
-          ${state_assign.volume_with_store.volume.id} := ${state.volume.id};
-          ${state_assign.volume_with_store.volume.offset.id} := ${state.offset.id};
-          ${state_assign.volume_with_store.store} := ${store};
+          ${state_assign.volume_with_store.volume.id}
+            := ${state.volume.id};
+          ${state_assign.volume_with_store.volume.offset.id}
+            := ${state.offset.id};
+          ${state_assign.volume_with_store.store}
+            := ${store};
 
-          ${state_assign.bunch_store_to_assign.id} := ${state.bunch_store_per_volume_store} * ${store.id};
-          ${state_assign.bunch_store_to_assign.max} := ${state.bunch_store_per_volume_store} * (${store.id} + 1);
+          ${state_assign.bunch_store_to_assign.id}
+            := ${state.bunch_store_per_volume_store} * ${store.id};
+          ${state_assign.bunch_store_to_assign.max}
+            := ${state.bunch_store_per_volume_store} * (${store.id} + 1);
 
           ${state.copy.id} := ${state.copy.id} + 1
         </expression>
@@ -204,7 +217,11 @@
         <expression>
           ${volume} := ${state.volume_with_store}
         </expression>
-        <condition>${state.bunch_store_to_assign.id} :ge: ${state.bunch_store_to_assign.max}</condition>
+        <condition>
+          ${state.bunch_store_to_assign.id}
+          :ge:
+          ${state.bunch_store_to_assign.max}
+        </condition>
       </defun>
       <connect-in port="state" place="state_assign"/>
       <connect-out port="volume" place="volume_with_store"/>
@@ -217,11 +234,19 @@
         <in name="assoc" type="map"/>
         <out name="assoc" type="map"/>
         <expression>
-          ${assoc} := map_assign (${assoc}, ${state.bunch_store_to_assign.id}, ${state.volume_with_store.volume.offset.id});
+          ${assoc} := map_assign ( ${assoc}
+                                 , ${state.bunch_store_to_assign.id}
+                                 , ${state.volume_with_store.volume.offset.id}
+                                 );
 
-          ${state.bunch_store_to_assign.id} := ${state.bunch_store_to_assign.id} + 1;
+          ${state.bunch_store_to_assign.id}
+            := ${state.bunch_store_to_assign.id} + 1;
         </expression>
-        <condition>${state.bunch_store_to_assign.id} :lt: ${state.bunch_store_to_assign.max}</condition>
+        <condition>
+          ${state.bunch_store_to_assign.id}
+          :lt:
+          ${state.bunch_store_to_assign.max}
+        </condition>
       </defun>
       <connect-in port="state" place="state_assign"/>
       <connect-out port="state" place="state_assign"/>

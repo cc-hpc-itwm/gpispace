@@ -8,6 +8,7 @@
   <out name="done" type="control" place="done"/>
 
   <net>
+
     <place name="file_config" type="string"/>
     <place name="memsizeGPI" type="long"/>
 

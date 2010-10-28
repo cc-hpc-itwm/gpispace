@@ -1,7 +1,10 @@
 <defun name="loadTT">
+
   <in name="config" type="config" place="config_in"/>
   <out name="config" type="config" place="config_out"/>
+
   <net>
+
     <place name="config_in" type="config"/>
     <place name="config_out" type="config"/>
     <place name="config_initialize" type="config"/>
