@@ -1,0 +1,9 @@
+<structs>
+
+  <include-structs href="type/config.xml"/>
+  <include-structs href="type/store.xml"/>
+  <include-structs href="type/n_of_m.xml"/>
+  <include-structs href="type/bunch.xml"/>
+  <include-structs href="type/volume.xml"/>
+
+</structs>
