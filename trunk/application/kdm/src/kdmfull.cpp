@@ -36,9 +36,8 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   put (output, "config", "per.offset.volumes", 5L);
   put (output, "config", "per.offset.bunches", 12L);
   put (output, "config", "per.volume.copies", 2L);
-  put (output, "config", "per.volume_store.bunch_stores", 2L);
 
-  put (output, "config", "size.store.bunch", 8L);
+  put (output, "config", "size.store.bunch", 10L);
   put (output, "config", "size.store.volume", 10L);
 
   put (output, "config", "assign.most", 4L);
