@@ -1,6 +1,7 @@
 #include <fhglog/fhglog.hpp>
 
 #include <stdlib.h>
+#include <csignal>
 
 #include <iostream>
 #include <boost/program_options.hpp>
@@ -9,6 +10,22 @@
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
+
+static fhg::com::io_service_pool pool (4);
+static fhg::com::kvs::server::kvsd *g_kvsd (0);
+
+void signal_handler (int)
+{
+  pool.stop();
+  try
+  {
+    g_kvsd->save();
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(WARN, "could not persist state: " << ex.what());
+  }
+}
 
 int main(int ac, char *av[])
 {
@@ -68,8 +85,8 @@ int main(int ac, char *av[])
     return EXIT_SUCCESS;
   }
 
-  fhg::com::io_service_pool pool (4);
   fhg::com::kvs::server::kvsd kvsd (store_path);
+  g_kvsd = &kvsd;
 
   if (vm.count ("clear")) kvsd.clear ("");
 
@@ -77,6 +94,9 @@ int main(int ac, char *av[])
   {
     server_address = "0";
   }
+
+  signal(SIGINT, signal_handler);
+  signal(SIGTERM, signal_handler);
 
   fhg::com::tcp_server server ( pool
                               , kvsd
