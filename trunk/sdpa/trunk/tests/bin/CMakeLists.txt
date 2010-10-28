@@ -4,6 +4,8 @@ set (tc_srcs
   test_comm.cpp
   test_notification.cpp
   test_retransmit.cpp
+
+  test_network_strategy.cpp
   )
 list(SORT tc_srcs)
 
@@ -13,6 +15,7 @@ foreach (tc_src ${tc_srcs})
   message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
   add_executable(${tc_name} ${tc_src})
+  target_link_libraries(${tc_name} sdpa-com)
   target_link_libraries(${tc_name} sdpa-daemon)
   target_link_libraries(${tc_name} sdpa-jobFSM_SMC)
   target_link_libraries(${tc_name} sdpa-events)
@@ -20,6 +23,7 @@ foreach (tc_src ${tc_srcs})
   target_link_libraries(${tc_name} sdpa)
   target_link_libraries(${tc_name} seda)
   target_link_libraries(${tc_name} seda-comm)
+  target_link_libraries(${tc_name} ${FhgCom_LIBRARY})
   target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
   target_link_libraries(${tc_name} ${Boost_LIBRARIES})
   get_target_property(LOC ${tc_name} LOCATION_)
