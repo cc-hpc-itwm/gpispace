@@ -43,4 +43,8 @@ else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgcom ${CMAKE_BINARY_DIR}/fhgcom)
   set(FhgCom_LIBRARY_DIR "")
   set(FhgCom_LIBRARY fhgcom)
+
+  if (NOT FhgCom_FIND_QUIETLY)
+    message (STATUS "Found FhgCom headers in ${FhgCom_INCLUDE_DIR} and libraries ${FhgCom_LIBRARY} ${FhgCom_LIBRARY_SHARED}")
+  endif (NOT FhgCom_FIND_QUIETLY)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
