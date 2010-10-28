@@ -11,9 +11,6 @@
       <struct name="volume">
         <field name="copies" type="long"/>
       </struct>
-      <struct name="volume_store">
-        <field name="bunch_stores" type="long"/>
-      </struct>
     </struct>
 
     <struct name="size">

@@ -17,7 +17,8 @@
       <field name="volume" type="n_of_m"/>
       <field name="copy" type="n_of_m"/>
       <field name="bunch" type="n_of_m"/>
-      <field name="bunch_store_per_volume_store" type="long"/>
+      <field name="bunch_stores" type="long"/>
+      <field name="volume_stores" type="long"/>
     </struct>
 
     <transition name="init">
@@ -37,8 +38,8 @@
           ${state.bunch.id} := 0L;
           ${state.bunch.max} := ${config.per.offset.bunches};
 
-          ${state.bunch_store_per_volume_store}
-            := ${config.per.volume_store.bunch_stores}
+          ${state.bunch_stores} := ${config.size.store.bunch};
+          ${state.volume_stores} := ${config.size.store.volume};
         </expression>
       </defun>
       <connect-in port="config" place="config"/>
@@ -195,10 +196,13 @@
           ${state_assign.volume_with_store.store}
             := ${store};
 
+          ${b} := ${state.bunch_stores};
+          ${v} := ${state.volume_stores};
+
           ${state_assign.bunch_store_to_assign.id}
-            := ${state.bunch_store_per_volume_store} * ${store.id};
+            := long (ceil ((${store.id} + 0L) * ${b} / ${v}));
           ${state_assign.bunch_store_to_assign.max}
-            := ${state.bunch_store_per_volume_store} * (${store.id} + 1);
+            := long (ceil ((${store.id} + 1L) * ${b} / ${v}));
 
           ${state.copy.id} := ${state.copy.id} + 1
         </expression>
