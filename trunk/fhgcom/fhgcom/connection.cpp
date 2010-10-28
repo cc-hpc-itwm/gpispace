@@ -25,14 +25,20 @@ namespace fhg
 
     connection_t::~connection_t ()
     {
-      set_callback_handler(0);
-
-      DLOG(TRACE, "connection destroyed");
-
-      if (in_message_)
+      try
       {
-        delete in_message_;
-        in_message_ = 0;
+        set_callback_handler(0);
+        stop();
+        DLOG(TRACE, "connection destroyed");
+        if (in_message_)
+        {
+          delete in_message_;
+          in_message_ = 0;
+        }
+      }
+      catch (std::exception const & ex)
+      {
+        LOG(ERROR, "exception during connection destructor: " << ex.what());
       }
     }
 

@@ -5,6 +5,7 @@
 #include <list>
 #include <deque>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -76,6 +77,8 @@ namespace fhg
       void handle_error       (connection_t *, const boost::system::error_code & error);
 
     private:
+      typedef boost::shared_ptr<connection_t> connection_ptr_t;
+
       struct to_send_t
       {
         to_send_t ()

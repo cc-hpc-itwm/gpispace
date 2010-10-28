@@ -61,6 +61,12 @@ namespace fhg
 
       void start ();
       void stop ();
+
+      const p2p::address_t & local_address () const { return m_local_addr; }
+      const p2p::address_t & remote_address () const { return m_remote_addr; }
+
+      void local_address  (const p2p::address_t & a) { m_local_addr = a; }
+      void remote_address (const p2p::address_t & a) { m_remote_addr = a; }
     private:
       struct to_send_t
       {
@@ -107,6 +113,9 @@ namespace fhg
       message_t *in_message_;
 
       std::list <to_send_t> to_send_;
+
+      p2p::address_t m_local_addr;
+      p2p::address_t m_remote_addr;
     };
 
     template <typename Handler>

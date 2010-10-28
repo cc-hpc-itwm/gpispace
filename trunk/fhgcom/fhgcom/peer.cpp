@@ -48,22 +48,13 @@ namespace fhg
 
     peer_t::~peer_t()
     {
-      // stop and delete entries from backlog
+      try
       {
-        boost::unique_lock<boost::recursive_mutex> lock(mutex_);
-
-        try
-        {
-          std::string prefix ("p2p.peer");
-          prefix += "." + boost::lexical_cast<std::string>(my_addr_);
-          kvs::del (prefix);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not delete my information from the kvs: " << ex.what());
-        }
-
-        stop ();
+        stop();
+      }
+      catch (std::exception const & ex)
+      {
+        LOG(ERROR, "exception during destructor of peer " << name() << ": " << ex.what());
       }
     }
 
@@ -81,23 +72,88 @@ namespace fhg
 
     void peer_t::stop()
     {
-      // lock(mutex)
-      BOOST_FOREACH(connection_t * c, backlog_)
+      boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+
+      DLOG(TRACE, "stopping peer " << name());
+
       {
-        c->stop();
-        delete c;
+        io_service_.stop();
+
+        try
+        {
+          std::string prefix ("p2p.peer");
+          prefix += "." + boost::lexical_cast<std::string>(my_addr_);
+          kvs::del (prefix);
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not delete my information from the kvs: " << ex.what());
+        }
       }
-      backlog_.clear();
+
+      while (! backlog_.empty())
+      {
+        (*backlog_.begin())->stop();
+        delete (*backlog_.begin());
+        backlog_.erase(backlog_.begin());
+      }
 
       // TODO: call pending handlers and delete pending messages
-      BOOST_FOREACH(connections_t::value_type cd, connections_)
+      while (! connections_.empty ())
       {
-        cd.second.connection->stop();
-        delete cd.second.connection;
-      }
-      connections_.clear();
+        connection_data_t & cd = connections_.begin()->second;
+        cd.connection->stop();
+        while (! cd.o_queue.empty())
+        {
+          to_send_t & to_send = cd.o_queue.front();
+          if (to_send.handler)
+          {
+            using namespace boost::system;
+            to_send.handler (errc::make_error_code(errc::operation_canceled));
+          }
+          cd.o_queue.pop_front();
+        }
 
-      io_service_.stop();
+        connection_t * conn = cd.connection;
+        connection_t * loop = cd.loopback;
+        connections_.erase (connections_.begin());
+
+        if (loop)
+        {
+          loop->stop();
+          delete loop;
+        }
+        if (conn)
+        {
+          conn->stop();
+          delete conn;
+        }
+      }
+
+      if (listen_)
+      {
+        listen_->stop();
+        delete listen_;
+        listen_ = 0;
+      }
+
+      // remove pending
+      while (! m_pending.empty())
+      {
+        delete m_pending.front();
+        m_pending.pop_front();
+      }
+
+      while (! m_to_recv.empty())
+      {
+        to_recv_t to_recv = m_to_recv.front();
+        m_to_recv.pop_front();
+        if (to_recv.handler)
+        {
+          using namespace boost::system;
+          to_recv.handler (errc::make_error_code(errc::operation_canceled));
+        }
+      }
     }
 
     void peer_t::send ( const std::string & to
@@ -164,7 +220,9 @@ namespace fhg
         // async_connect (...);
         connection_data_t & cd = connections_[addr];
         cd.send_in_progress = false;
-        cd.connection = new connection_t(io_service_, cookie_, this);
+        cd.connection = (new connection_t(io_service_, cookie_, this));
+        cd.connection->local_address (my_addr_);
+        cd.connection->remote_address (addr);
 
         to_send_t to_send;
         to_send.message = *m;
@@ -429,6 +487,7 @@ namespace fhg
       assert (0 == listen_);
 
       listen_ = new connection_t (io_service_, cookie_, this);
+      listen_->local_address(my_addr_);
       acceptor_.async_accept( listen_->socket()
                             , boost::bind( &self::handle_accept
                                          , this
@@ -447,6 +506,8 @@ namespace fhg
         {
           LOG(ERROR, "protocol error between " << my_addr_ << " and " << m->header.src << " closing connection");
           // TODO remove from other maps
+          c->stop();
+          delete c;
         }
         else
         {
@@ -454,6 +515,7 @@ namespace fhg
 
           DLOG(INFO, "connection successfully established with " << m->header.src);
 
+          c->remote_address (m->header.src);
           connection_data_t & cd = connections_[m->header.src];
           if (cd.connection != 0)
           {
@@ -502,10 +564,32 @@ namespace fhg
       }
     }
 
-    void peer_t::handle_error       (connection_t *, const boost::system::error_code & ec)
+    void peer_t::handle_error       (connection_t *c, const boost::system::error_code & ec)
     {
       // TODO: WORK HERE
       LOG_IF(WARN, ec, "error on one of my connections, closing it...");
+
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+
+      if (connections_.find (c->remote_address()) != connections_.end())
+      {
+        connection_data_t & cd = connections_[c->remote_address()];
+
+        while (! cd.o_queue.empty())
+        {
+          to_send_t & to_send = cd.o_queue.front();
+          if (to_send.handler)
+          {
+            using namespace boost::system;
+            to_send.handler (errc::make_error_code(errc::operation_canceled));
+          }
+          cd.o_queue.pop_front();
+        }
+
+        //        delete c;
+
+        connections_.erase(c->remote_address());
+      }
     }
   }
 }
