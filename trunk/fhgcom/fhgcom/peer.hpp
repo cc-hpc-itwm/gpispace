@@ -69,6 +69,8 @@ namespace fhg
       void async_recv (message_t *m, handler_t h);
       void recv (message_t *m);
 
+      std::string resolve_addr (p2p::address_t const &);
+      p2p::address_t resolve_name (std::string const &);
       void resolve_name (std::string const & name, p2p::address_t & addr);
       void resolve_addr (p2p::address_t const & addr, std::string & name);
     protected:

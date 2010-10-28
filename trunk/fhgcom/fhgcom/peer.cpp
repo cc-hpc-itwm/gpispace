@@ -323,16 +323,7 @@ namespace fhg
       completion_handler(m->header.src, errc::make_error_code (errc::success));
     }
 
-    void peer_t::resolve_name ( std::string const & name
-                              , p2p::address_t & addr
-                              )
-    {
-      addr = p2p::address_t (name);
-    }
-
-    void peer_t::resolve_addr ( p2p::address_t const & addr
-                              , std::string & name
-                              )
+    std::string peer_t::resolve_addr (p2p::address_t const &addr)
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
 
@@ -344,8 +335,9 @@ namespace fhg
         {
           const std::string key
             ("p2p.peer." + boost::lexical_cast<std::string>(addr)+".name");
-          name = kvs::get<std::string>(key);
+          std::string name = kvs::get<std::string>(key);
           reverse_lookup_cache_[addr] = name;
+          return name;
         }
         catch (std::exception const & ex)
         {
@@ -355,8 +347,27 @@ namespace fhg
       }
       else
       {
-        name = it->second;
+        return it->second;
       }
+    }
+
+    p2p::address_t peer_t::resolve_name (std::string const &name)
+    {
+      return p2p::address_t (name);
+    }
+
+    void peer_t::resolve_name ( std::string const & name
+                              , p2p::address_t & addr
+                              )
+    {
+      addr = resolve_name (name);
+    }
+
+    void peer_t::resolve_addr ( p2p::address_t const & addr
+                              , std::string & name
+                              )
+    {
+      name = resolve_addr (addr);
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
