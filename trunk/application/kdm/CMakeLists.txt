@@ -133,6 +133,12 @@ set (KDM_COMPLEX_MOD_SRCS src/kdm_complex_mod.cpp
   ${KDM_MOD_PROCESS_SRCS}
 )
 
+set (KDM_FULL_MOD_SRCS src/kdmfull.cpp
+  ${KDM_MOD_INITIALIZE_SRCS}
+  ${KDM_MOD_INITIALIZE_SUBVOL_SRCS}
+  ${KDM_MOD_PROCESS_SRCS}
+)
+
 set (STANDALONE_SRCS src/standalone.cpp
     	./src/structures/migrationjob.cpp
 	./src/TraceBunch.cpp
@@ -178,13 +184,12 @@ set_target_properties(sinc_mod PROPERTIES OUTPUT_NAME sinc)
 
 add_library(kdm_mod SHARED ${KDM_MOD_SRCS})
 set_target_properties(kdm_mod PROPERTIES OUTPUT_NAME kdm)
-#target_link_libraries (kdm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
-#target_link_libraries (kdm_mod sinc_mod)
 
 add_library(kdm_complex_mod SHARED ${KDM_COMPLEX_MOD_SRCS})
 set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
-#target_link_libraries (kdm_complex_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
-#target_link_libraries (kdm_complex_mod sinc_mod)
+
+add_library(kdmfull_mod SHARED ${KDM_FULL_MOD_SRCS})
+set_target_properties(kdmfull_mod PROPERTIES OUTPUT_NAME kdmfull)
 
 add_library(filter_mod SHARED ${FILTER_MOD_SRCS})
 set_target_properties(filter_mod PROPERTIES OUTPUT_NAME filter)
@@ -198,16 +203,12 @@ set_target_properties(filter_trace_mod PROPERTIES OUTPUT_NAME filter_trace)
 add_executable(standalone_test ${STANDALONE_SRCS})
 target_link_libraries(standalone_test pthread)
 
-#add_library(fvm_mod SHARED ./src/fvm_mod.cpp)
-#set_target_properties(fvm_mod PROPERTIES OUTPUT_NAME fvm-test)
-#target_link_libraries (fvm_mod ${FhgLog_LIBRARY_SHARED} ${Boost_LIBRARIES})
-
 install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
   LIBRARY
   DESTINATION libexec
   COMPONENT modules)
 
-install(TARGETS kdm_mod kdm_complex_mod
+install(TARGETS kdm_mod kdm_complex_mod kdmfull_mod
   LIBRARY
   DESTINATION libexec
   COMPONENT modules)
