@@ -9,8 +9,21 @@
 
   <net>
 
-    <place name="file_config" type="string"/>
-    <place name="memsizeGPI" type="long"/>
+    <place name="file_config" type="string">
+      <token>
+        <value>
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
+        </value>
+      </token>
+    </place>
+
+    <place name="memsizeGPI" type="long">
+      <token>
+        <value>
+          5*2^30
+        </value>
+      </token>
+    </place>
 
     <place name="done" type="control"/>
     <place name="config_initialized" type="config"/>
