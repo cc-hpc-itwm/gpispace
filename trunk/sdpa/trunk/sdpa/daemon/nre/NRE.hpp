@@ -259,7 +259,7 @@ void NRE<T, U>::action_configure(const StartUpEvent &se)
 	// should set/update this dynamically, as a function of number of workers and their
 	// processing capacities
 
-	ptr_daemon_cfg_->put("nmax_ext_job_req", 10U);
+	ptr_daemon_cfg_->put("nmax_ext_job_req", 2U);
 	ptr_daemon_cfg_->put("polling interval", 50 * 1000); //0.1s
 }
 
