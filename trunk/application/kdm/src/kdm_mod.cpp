@@ -182,7 +182,9 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   if (handle_TT == 0)
     throw std::runtime_error ("KDM::initialize handle_TT == 0");
 
-  LOG (DEBUG, "handle_TT " << Job.globTTbufsizelocal);
+  LOG(INFO, "Job.globTTbufsizelocal = " << Job.globTTbufsizelocal);
+
+  LOG (DEBUG, "handle_TT " << handle_TT);
 
   put (output, "config", "handle_Job", static_cast<long>(handle_Job));
   put (output, "config", "scratch_Job", static_cast<long>(scratch_Job));
