@@ -49,9 +49,10 @@ static std::string center (std::string const & text, const std::size_t len)
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
 {
-  std::cout << "waiting for job to return..." << std::flush;
   boost::system_time poll_start = boost::get_system_time();
   std::cerr << "starting at: " << poll_start << std::endl;
+
+  std::cout << "waiting for job to return..." << std::flush;
 
   int exit_code(4);
   std::size_t fail_count(0);
