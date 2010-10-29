@@ -44,9 +44,9 @@ namespace fhg
       acceptor_.bind(endpoint);
       acceptor_.listen();
 
-      io_service_.post (boost::bind (&self::update_my_location, this));
-
       accept_new ();
+
+      io_service_.post (boost::bind (&self::update_my_location, this));
     }
 
     peer_t::~peer_t()
@@ -188,9 +188,9 @@ namespace fhg
         // lookup location information
         std::string prefix ("p2p.peer");
         prefix += "." + boost::lexical_cast<std::string>(addr);
-        kvs::values_type location (kvs::get_tree (prefix + "." + "location"));
+        kvs::values_type peer_info (kvs::get_tree (prefix));
 
-        if (location.empty())
+        if (peer_info.empty())
         {
           LOG(WARN, "could not lookup location information for " << addr);
           try
@@ -205,8 +205,10 @@ namespace fhg
           return;
         }
 
-        host_t h (location.at(prefix + ".location.host"));
-        port_t p (location.at(prefix + ".location.port"));
+        host_t h (peer_info.at(prefix + ".location.host"));
+        port_t p (peer_info.at(prefix + ".location.port"));
+        std::string n (peer_info.at(prefix + ".name"));
+        reverse_lookup_cache_[addr] = n;
 
         // store message in out queue
         //    connect_handler -> sends messages from out queue
@@ -217,6 +219,7 @@ namespace fhg
         cd.connection = (new connection_t(io_service_, cookie_, this));
         cd.connection->local_address (my_addr_);
         cd.connection->remote_address (addr);
+        cd.name = n;
 
         to_send_t to_send;
         to_send.message = *m;
@@ -384,6 +387,7 @@ namespace fhg
         to_send.message.header.dst = a;
         to_send.message.header.type_of_msg = p2p::type_of_message_traits::HELLO_PACKET;
 
+        cd.connection->start ();
         cd.o_queue.push_front (to_send);
         start_sender (a);
       }
@@ -518,6 +522,9 @@ namespace fhg
           LOG(DEBUG, "connection between " << my_addr_ << " and " << m->header.src << " successfully established");
 
           c->remote_address (m->header.src);
+
+          resolve_addr (m->header.src); // use side-effect to update cache
+
           connection_data_t & cd = connections_[m->header.src];
           if (cd.connection != 0)
           {
@@ -583,6 +590,20 @@ namespace fhg
           to_send.handler (to_send.message.header.dst, errc::make_error_code(errc::operation_canceled));
           cd.o_queue.pop_front();
         }
+
+        // the handler might async recv again...
+        std::list<to_recv_t> tmp (m_to_recv);
+        m_to_recv.clear();
+
+        while (! tmp.empty())
+        {
+          to_recv_t & to_recv = tmp.front();
+          using namespace boost::system;
+          to_recv.handler (c->remote_address(), errc::make_error_code(errc::operation_canceled));
+          tmp.pop_front();
+        }
+
+        c->stop();
 
         connections_.erase(c->remote_address());
       }
