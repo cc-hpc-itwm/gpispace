@@ -31,7 +31,10 @@ namespace fhg
           typedef std::string key_type;
 
           virtual ~kvsc()
-          {}
+          {
+            DLOG(TRACE, "kvsc destructor");
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+          }
 
           void start ( std::string const & server_address
                      , std::string const & server_port
@@ -40,7 +43,7 @@ namespace fhg
                      , const std::size_t max_connection_attempts = 11
                      )
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             kvs_.start ( server_address, server_port
                        , auto_reconnect
@@ -51,14 +54,14 @@ namespace fhg
 
           void stop ()
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             kvs_.stop();
           }
 
           void put (fhg::com::kvs::message::put::map_type const & e)
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -70,7 +73,7 @@ namespace fhg
           template <typename Val>
           void put (key_type const & k, Val v)
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -83,7 +86,7 @@ namespace fhg
           fhg::com::kvs::message::list::map_type
           get(key_type const & k) const
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -96,7 +99,7 @@ namespace fhg
 
           void del (key_type const & k)
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -108,7 +111,7 @@ namespace fhg
 
           void save () const
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -120,7 +123,7 @@ namespace fhg
 
           void load ()
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -133,7 +136,7 @@ namespace fhg
           fhg::com::kvs::message::list::map_type
           list (std::string const & regexp = "")
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -146,7 +149,7 @@ namespace fhg
 
           void clear (std::string const & regexp = "")
           {
-            boost::lock_guard<boost::mutex> lock (mtx_);
+            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
@@ -156,7 +159,7 @@ namespace fhg
             DLOG(TRACE, "clear( "<< regexp << ") := " << m);
           }
         private:
-          mutable boost::mutex mtx_;
+          mutable boost::recursive_mutex mtx_;
           mutable tcp_client kvs_;
 
           template <typename Client>
@@ -225,7 +228,12 @@ namespace fhg
 
         ~kvs_mgr ()
         {
-          delete kvsc_; kvsc_ = 0;
+          // TODO: unfortunately, we cannot delete the kvsc here, since it might
+          // still  be required  during program  shutdown  (statically allocated
+          // memory  is deallocated  in  an unspecified  order,  I guess).  This
+          // means, deleting the pointer here, might cause a segfault ;-(
+          //
+          // delete kvsc_; kvsc_ = 0;
         }
 
         client::kvsc & kvs()
