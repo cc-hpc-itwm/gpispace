@@ -30,6 +30,8 @@ namespace sdpa
       // convert event to fhg::com::message_t
       if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
       {
+        DLOG(TRACE, "sending event: " << sdpa_event->str());
+
         fhg::com::message_t msg;
         msg.header.dst = m_peer.resolve_name (sdpa_event->to());
         msg.header.src = m_peer.address();
@@ -72,8 +74,9 @@ namespace sdpa
         {
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-          evt->from () = m_peer.resolve_addr (addr);
-          evt->to () = m_peer.name();
+          DLOG(TRACE, "received event: " << evt->str());
+          //evt->from () = m_peer.resolve_addr (addr);
+          //evt->to () = m_peer.name();
           ForwardStrategy::perform (evt);
         }
         catch (std::exception const & ex)
@@ -87,6 +90,7 @@ namespace sdpa
       {
         if (addr != m_peer.address())
         {
+          // TODO: resolve could fail...
           LOG(WARN, "connection to " << m_peer.resolve_addr(addr) << " lost: " << ec);
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( m_peer.resolve_addr(addr)

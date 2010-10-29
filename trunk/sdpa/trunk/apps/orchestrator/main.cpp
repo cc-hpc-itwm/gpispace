@@ -27,7 +27,7 @@ int main (int argc, char **argv)
 	desc.add_options()
 	   ("help", "Display this message")
 	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("0.0.0.0:5000"), "Orchestrator's url")
+	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
 	   ("workflow-directory", po::value<std::string>(&workflow_directory)->default_value("/"), "directory where workflows can be found")
 	   ;
 
@@ -43,7 +43,7 @@ int main (int argc, char **argv)
 	}
 
 	std::cout <<"Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl<<std::endl;
-	
+
 	FHGLOG_SETUP();
 	//	fhg::log::Configurator::configure();
 

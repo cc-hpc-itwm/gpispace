@@ -7,9 +7,9 @@
 #include <fhglog/Configuration.hpp>
 
 #include <seda/StageRegistry.hpp>
-#include <seda/comm/comm.hpp>
-#include <seda/comm/ConnectionFactory.hpp>
-#include <seda/comm/ConnectionStrategy.hpp>
+//#include <seda/comm/comm.hpp>
+//#include <seda/comm/ConnectionFactory.hpp>
+//#include <seda/comm/ConnectionStrategy.hpp>
 #include <sdpa/client/ClientEvents.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
@@ -25,6 +25,8 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <sdpa/events/CodecStrategy.hpp>
+
+#include <sdpa/com/NetworkStrategy.hpp>
 
 #include <sdpa/version.hpp>
 
@@ -409,6 +411,18 @@ void Client::action_configure_network(const config_t &cfg)
 {
   LOG(DEBUG, "configuring network components...");
 
+  sdpa::com::NetworkStrategy::ptr_t net
+    (new sdpa::com::NetworkStrategy( client_stage_->name()
+                                   , "sdpac" // TODO encode user, pid, etc
+                                   , fhg::com::host_t ("0.0.0.0")
+                                   , fhg::com::port_t ("0")
+                                   )
+    );
+  seda::Stage::Ptr output (new seda::Stage(output_stage_, net));
+  seda::StageRegistry::instance().insert (output);
+  output->start ();
+
+  /*
   const std::string net_stage_name(client_stage_->name()+".from-net");
   {
     LOG(TRACE, "setting up decoding...");
@@ -443,7 +457,7 @@ void Client::action_configure_network(const config_t &cfg)
     seda::StageRegistry::instance().insert(output);
     output->start();
   }
-
+  */
   LOG(DEBUG, "network configuration complete");
 }
 

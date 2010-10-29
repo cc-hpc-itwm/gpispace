@@ -48,11 +48,8 @@ if (USE_BOOST_SC)
 	target_link_libraries(sdpa-daemon sdpa-jobFSM_BSC sdpa-daemonFSM_BSC)
 endif (USE_BOOST_SC)
 
-target_link_libraries(sdpa-daemon ${GWES_LIBRARY})
-target_link_libraries(sdpa-daemon ${GWDL_LIBRARY})
-target_link_libraries(sdpa-daemon ${LIBXSLT_LIBRARIES})
-target_link_libraries(sdpa-daemon ${LIBXML2_LIBRARIES})
 target_link_libraries(sdpa-daemon ${ZLIB_LIBRARIES})
+target_link_libraries(sdpa-daemon sdpa-com)
 
 install(FILES ${hdrs}
   DESTINATION include/sdpa/daemon

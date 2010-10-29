@@ -28,7 +28,7 @@ int main (int argc, char **argv)
 	desc.add_options()
 	   ("help", "Display this message")
 	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
-	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("0.0.0.0:5001"), "Aggregator's url")
+	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("localhost"), "Aggregator's url")
 	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("orch_url,p",  po::value<std::string>(&orchUrl)->default_value("127.0.0.1:5000"), "Orchestrator's url");
 

@@ -279,9 +279,9 @@ namespace sdpa { namespace daemon {
 	  unsigned int m_nExternalJobs;
 
 	private:
-	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
-	  seda::comm::ServiceThread service_thread_;
-	  sdpa_msg_delivery_service delivery_service_;
+  //	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
+  //	  seda::comm::ServiceThread service_thread_;
+  //	  sdpa_msg_delivery_service delivery_service_;
 
 	  void messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr);
 
