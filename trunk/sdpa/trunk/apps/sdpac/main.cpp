@@ -51,6 +51,7 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
 {
   std::cout << "waiting for job to return..." << std::flush;
   boost::system_time poll_start = boost::get_system_time();
+  std::cerr << "starting at: " << poll_start << std::endl;
 
   int exit_code(4);
   std::size_t fail_count(0);
@@ -96,6 +97,7 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
   boost::system_time poll_end = boost::get_system_time();
   boost::posix_time::time_period tp(poll_start, poll_end);
 
+  std::cerr << "stopped at: " << poll_end << std::endl;
   std::cerr << "execution time: " << tp.length() << std::endl;
   return exit_code;
 }
