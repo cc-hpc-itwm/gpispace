@@ -14,6 +14,7 @@ echo "semaphores: $sema"
 shms=$( echo $( pbsdsh -u -o -s ipcs -m | grep ^0x | awk '{print $2;}' ) )
 echo "shared mems: $shms"
 
+pbsdsh -u pkill sdpa-gpi
 for q in $msgq; do
   pbsdsh -u ipcrm -q $q
 done
