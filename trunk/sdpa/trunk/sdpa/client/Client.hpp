@@ -35,8 +35,8 @@ namespace sdpa { namespace client {
     void perform(const seda::IEvent::Ptr &);
 
     // API
-    static Client::ptr_t create(const std::string &name_prefix="sdpa.apps.client"
-                              , const std::string &output_stage="sdpa.apps.client.out");
+    static Client::ptr_t create(const std::string &name_prefix="sdpac"
+                              , const std::string &output_stage="sdpac-out");
 
     static config_t config()
     {
@@ -48,7 +48,7 @@ namespace sdpa { namespace client {
          "name of the orchestrator")
         ("location", po::value<std::string>()->default_value("0.0.0.0:0"),
          "location of the client")
-        ("name", po::value<std::string>()->default_value("sdpa.app.client"),
+        ("name", po::value<std::string>()->default_value("sdpac"),
          "name of the client")
         ("config,C", po::value<std::string>()->default_value(home + "/.sdpa/configs/sdpac.rc"),
          "path to the configuration file")

@@ -483,10 +483,10 @@ void Client::action_shutdown_network()
 {
   DMLOG(DEBUG, "shutting network compents down...");
   seda::StageRegistry::instance().lookup(output_stage_)->stop();
-  seda::StageRegistry::instance().lookup(client_stage_->name() + ".from-net")->stop();
+  //  seda::StageRegistry::instance().lookup(client_stage_->name() + ".from-net")->stop();
 
   seda::StageRegistry::instance().remove(output_stage_);
-  seda::StageRegistry::instance().remove(client_stage_->name() + ".from-net");
+  //  seda::StageRegistry::instance().remove(client_stage_->name() + ".from-net");
 }
 
 void Client::action_submit(const seda::IEvent::Ptr &e)
