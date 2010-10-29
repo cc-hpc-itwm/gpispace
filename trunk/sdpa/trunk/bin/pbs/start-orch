@@ -2,7 +2,9 @@
 test -r ~/.init-screen.env && source ~/.init-screen.env
 
 debug=false
-url="0.0.0.0:5000"
+#url="0.0.0.0:5000"
+bind_addr="`hostname`"
+name="orchestrator"
 
 while getopts ":hgo:l:" opt; do
   case $opt in
@@ -10,12 +12,16 @@ while getopts ":hgo:l:" opt; do
 	  debug=true
 	;;
 	l)
-	  url=$OPTARG
+	  bind_addr=$OPTARG
 	;;
+        n)
+          name=$OPTARG
+        ;;
 	h)
-	  echo "usage: $0 [-h] [-g] [-l url]" >&2
+	  echo "usage: $0 [-h] [-g] [-l interface] [-n name]" >&2
 	  echo "    -h : print this help" >&2
-	  echo "    -l : url to listen on (default: $url)" >&2
+	  echo "    -l : address to listen on (default: $bind_addr)" >&2
+	  echo "    -n : name (default: $name)" >&2
 	  echo "    -g : run within gdb" >&2
 	  exit 0
 	;;
@@ -25,11 +31,11 @@ while getopts ":hgo:l:" opt; do
   esac
 done
 
-echo "Running Orchestrator at: $url on `hostname`"
+echo "Running $name at $bind_addr"
 
 if $debug ; then
   echo "running within gdb..."
-  gdb -ex run --args orchestrator -u $url -n orchestrator
+  gdb -ex run --args orchestrator -u "$bind_addr" -n "${name}"
 else
-  orchestrator -u $url -n orchestrator >/scratch/$USER/sdpa/orch.log 2>&1
+  orchestrator -u "$bind_addr" -n "${name}" >/scratch/$USER/sdpa/orch.log 2>&1
 fi

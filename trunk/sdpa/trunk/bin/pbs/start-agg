@@ -1,31 +1,41 @@
 #!/bin/sh
-test -r ~/.init-screen.env && source ~/.init-screen.env
+
+if [ -r ~/.init-screen.env ]; then
+    source ~/.init-screen.env
+fi
 
 debug=false
-url="0.0.0.0:5001"
-master="$SDPA_MASTER"
-if [ -z "$master" ]; then
-  echo "assuming local host, since SDPA_MASTER is not set!"
-  master="`hostname`"
-fi
-orch_url="$master:5000"
+#url="0.0.0.0:5001"
+bind_addr="`hostname`"
+name="aggregator"
+orch="orchestrator"
 
-while getopts ":hgo:l:" opt; do
+#master="$SDPA_MASTER"
+#if [ -z "$master" ]; then
+#  echo "assuming local host, since SDPA_MASTER is not set!"
+#  master="`hostname`"
+#fi
+#orch_url="$master:5000"
+
+while getopts ":hgo:l:n:" opt; do
   case $opt in
 	o)
-	  orch_url=$OPTARG
+	  orch=$OPTARG
 	;;
 	g)
 	  debug=true
 	;;
 	l)
-	  url=$OPTARG
+	  bind_addr=$OPTARG
 	;;
+        n)
+          name=$OPTARG
+        ;;
 	h)
-	  echo "usage: $0 [-h] [-g] [-l url] [-o orch-url]" >&2
+	  echo "usage: $0 [-h] [-g] [-l interface] [-o orch] [-n name]" >&2
 	  echo "    -h : print this help" >&2
-	  echo "    -l : url to listen on (default: $url)" >&2
-	  echo "    -o : orchestrator (default: $orch_url)" >&2
+	  echo "    -l : url to listen on (default: $bind_addr)" >&2
+	  echo "    -o : orchestrator (default: $orch)" >&2
 	  echo "    -g : run within gdb" >&2
 	  exit 0
 	;;
@@ -35,12 +45,11 @@ while getopts ":hgo:l:" opt; do
   esac
 done
 
-echo "Running Aggregator at: $url on `hostname`"
-echo "Using Orchestrator at: $orch_url"
+echo "Running $name at $bind_addr with parent $orch"
 
 if $debug ; then
   echo "running within gdb..."
-  gdb -ex run --args aggregator -n aggregator -m orchestrator -p $orch_url -u $url
+  gdb -ex run --args aggregator -n "${name}" -m "${orch}" -u "${bind_addr}"
 else
-  aggregator -n aggregator -m orchestrator -p $orch_url -u $url >/scratch/$USER/sdpa/agg.log 2>&1
+  aggregator -n "${name}" -m "${orch}" -u "${bind_addr}" >/scratch/$USER/sdpa/agg.log 2>&1
 fi

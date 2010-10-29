@@ -4,10 +4,11 @@ if [ -r ~/.init-screen.env ]; then
     source ~/.init-screen.env
 fi
 
-name="nre.`hostname`"
+debug=false
+bind_addr="`hostname`"
+name="nre-`hostname -s`"
 agg="aggregator"
-agg_host=
-agg_port=5001
+
 gui_url="$SDPA_GUI"
 if [ -z "$gui_url" ]
 then
@@ -18,15 +19,6 @@ rank=0
 if [ -n "$1" ]; then
   rank=$1
 fi
-
-if [ -n "$SDPA_MASTER" ]; then
-  agg_host="$SDPA_MASTER"
-else
-  echo "E: i don't know where my aggregator is, sorry!"
-  exit 1
-fi
-
-agg_url="$agg_host:$agg_port"
 
 fvm_pc_cfg="/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg"
 if [ -n "$SDPA_FVM_PC_CFG" ]; then
@@ -54,8 +46,6 @@ while read k v; do
     esac
 done < "$fvm_pc_cfg"
 
-echo "using aggregator at: $agg_url"
-
 echo -n "killing process-container..."
 killall nre-pcd >/dev/null 2>&1
 sleep 1
@@ -67,10 +57,11 @@ echo ""
 
 test -d "/scratch/$USER/sdpa" || mkdir -p "/scratch/$USER/sdpa"
 
+echo "Running $name at $bind_addr with parent $agg"
 nre-pcd --rank "$rank" \
     --load "$SDPA_LIBEXEC/libfvm-pc.so" \
     --load "$SDPA_LIBEXEC/libsinc.so" \
     -a "$SDPA_LIBEXEC" \
   >/scratch/$USER/sdpa/pc.`hostname`.log 2>&1 &
 sleep 1
-nre --url "0.0.0.0" --name "$name" --gui_url="$gui_url" --agg_name="$agg" --agg_url="$agg_url" >/scratch/$USER/sdpa/nre.`hostname`.log 2>&1 &
+nre --url "${bind_addr}" --name "${name}" --gui_url="$gui_url" --agg_name="$agg" >/scratch/$USER/sdpa/nre.`hostname`.log 2>&1 &
