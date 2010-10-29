@@ -579,8 +579,8 @@ namespace we { namespace mgmt {
           }
           catch (std::exception const& ex)
           {
-            LOG(FATAL, "error during manager command handling: " << ex.what());
-            throw;
+            LOG(ERROR, "error during manager command handling: " << ex.what());
+            //            throw;
           }
         }
         DLOG(TRACE, "manager thread stopped...");
