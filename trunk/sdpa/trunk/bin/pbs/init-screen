@@ -8,7 +8,8 @@ on_master=0
 master=
 node_name=`hostname`
 start_fhglog=0
-start_fvm=0
+start_kvs=0
+start_gpi=0
 
 case "$1" in
   -h|--help)
@@ -109,6 +110,8 @@ export PC_LIBRARY_PATH="\$HOME/.sdpa/modules"
 export PC_MODULE_DATA="\$HOME/.sdpa/moddata"
 EOF
 	fi
+
+	source "$env_file"
 fi
 
 if [ $# -gt 0 ]; then
@@ -121,7 +124,8 @@ else
 		rename_master=1
 		switch_to_master=1
 		start_fhglog=1
-		start_fvm=1
+		start_gpi=1
+		start_kvs=1
 	fi
 fi
 
@@ -133,18 +137,23 @@ fi
 headnode="$PBS_O_HOST"
 
 if [ $start_fhglog -eq 1 ]; then
-	killall fhglogd
+#	killall fhglogd
 	echo "starting log-server on master node"
-	ssh -Y -t "$headnode" screen -D -RR -X "screen -t log ssh -Y -t $master" # fhglog-server"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t log ssh -Y -t $master" # fhglogd"
 fi
 
-if [ $start_fvm -eq 1 ]; then
-	echo "starting fvm-server on master node"
-	ssh -Y -t "$headnode" screen -D -RR -X "screen -t fvm ssh -Y -t $master" # /opt/cluster/PV-4D.pspro/bin/petry/fvm_sdpa_standalone"
+if [ $start_kvs -eq 1 ]; then
+	echo "starting kvs-daemon on master node"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t kvs ssh -Y -t $master" # fhgkvsd
+fi
+
+if [ $start_gpi -eq 1 ]; then
+	echo "starting gpi on master node"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t gpi ssh -Y -t $master"
 	ssh -Y -t "$headnode" screen -D -RR -X "screen -t orch ssh -Y -t $master"
 	ssh -Y -t "$headnode" screen -D -RR -X "screen -t agg ssh -Y -t $master"
+	ssh -Y -t "$headnode" screen -D -RR -X "screen -t sdpac ssh -Y -t $master"
 fi
-
 
 if [ -z "$headnode" ]; then
 	echo "I don't know what my headnode is"
