@@ -213,9 +213,10 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
                              / per_offset_volumes
                              );
 
-  bunch_store_per_node = std::min ( bunch_store_per_node
-				  , per_offset_bunches * offsets_at_once
-				  );
+  bunch_store_per_node = 
+    std::min ( bunch_store_per_node
+	     , (per_offset_bunches * offsets_at_once) / fvmGetNodeCount()
+	     );
 
   size_store_bunch = bunch_store_per_node * fvmGetNodeCount();
 
@@ -225,31 +226,59 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   const fvmAllocHandle_t scratch_bunch
     (alloc (Job.BunchMemSize, "scratch_bunch", memsizeGPI));
 
+  const long offsets (Job.n_offset);
+
+  // machine
+  put (output, "config", "threads.N", static_cast<long>(NThreads));
+
+  // system
   put (output, "config", "handle.job", static_cast<long>(handle_Job));
   put (output, "config", "scratch.job", static_cast<long>(scratch_Job));
+
+  // problem, derived
+  put (output, "config", "offsets", offsets);
+  put (output, "config", "per.offset.volumes", per_offset_volumes);
+  put (output, "config", "per.offset.bunches", per_offset_bunches);
+  put (output, "config", "loadTT.parallel", static_cast<long>(fvmGetNodeCount()));
   put (output, "config", "handle.TT", static_cast<long>(handle_TT));
-  put (output, "config", "threads.N", static_cast<long>(NThreads));
+
+  // tuning
+  put (output, "config", "size.store.bunch", size_store_bunch);
+
+  const long work_parts (offsets * per_offset_volumes);
+  long copies (1);
+
+  while (work_parts * copies < 2 * fvmGetNodeCount())
+    {
+      ++copies;
+    }
+
+  put (output, "config", "per.volume.copies", copies);
+
+  LOG_IF ( WARN
+	 , copies > 8
+	 ,  "#copies == " << copies << ", does this make any sense?"
+         << " Probably you are running a quite small problem"
+         << " on a quite large machine!?"
+	 );
+ 
+  // tuning: volumes_per_node could be higher
+  const long size_store_volume (volumes_per_node * fvmGetNodeCount());
+
+  put (output, "config", "size.store.volume", size_store_volume);
+
+  // tuning, derived?
+  put ( output, "config", "assign.most"
+      , std::min (size_store_bunch, per_offset_bunches) / 2
+      );
+
+  // tuning induced
   put (output, "config", "handle.bunch", static_cast<long>(handle_bunch));
   put (output, "config", "scratch.bunch", static_cast<long>(scratch_bunch));
   put (output, "config", "handle.volume", static_cast<long>(handle_volume));
   put (output, "config", "scratch.volume", static_cast<long>(scratch_volume));
 
-  put (output, "config", "offsets", static_cast<long> (Job.n_offset));
-  put (output, "config", "per.offset.volumes", per_offset_volumes);
-  put (output, "config", "per.offset.bunches", per_offset_bunches);
-  put (output, "config", "per.volume.copies", 1L);
-  put (output, "config", "loadTT.parallel", static_cast<long>(fvmGetNodeCount()));
-
-  put (output, "config", "size.store.bunch", size_store_bunch);
-
-  const long size_store_volume (volumes_per_node * fvmGetNodeCount());
-
-  put (output, "config", "size.store.volume", size_store_volume);
-
-  put ( output, "config", "assign.most"
-      , std::min (size_store_bunch, per_offset_bunches) / 2
-      );
-
+  // WORK HERE: overcome this by using virtual offsetclasses
   if ( get<long> (output, "config", "size.store.volume")
      < get<long> (output, "config", "per.offset.volumes")
      )
@@ -526,15 +555,88 @@ static void process (void *, const we::loader::input_t & input, we::loader::outp
 
 static void reduce (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const value::type & volume (get<value::type> (input, "volume"));
-  const value::type & sum (get<value::type> (input, "sum"));
+  const value::type & config (get<value::type> (input, "config"));
+  const value::type & pair (get<value::type> (input, "pair"));
+  const value::type & volume (get<value::type> (pair, "vol"));
+  const value::type & sum (get<value::type> (pair, "sum.volume"));
 
   MLOG (INFO, "reduce: volume " << volume);
   MLOG (INFO, "reduce: sum " << sum);
 
-  throw std::runtime_error ("reduce not yet implemented");
+  const long & vid (get<long>(volume, "volume.id"));
+  const long & sid (get<long>(sum, "volume.id"));
+  const long & volume_sid (get<long>(volume, "store.id"));
+  const long & sum_sid (get<long>(sum, "store.id"));
+  const fvmAllocHandle_t & handle_volume (get<long>(config, "handle.volume"));
+  const fvmAllocHandle_t & scratch_volume (get<long>(config, "scratch.volume"));
 
-  put (output, "sum", sum);
+  MigrationJob Job;
+
+  get_Job (config, Job);
+
+  float * pVMMemVol ((float *)((char *)fvmGetShmemPtr()));
+  float * pVMMemSum ((float *)((char *)fvmGetShmemPtr() + Job.SubVolMemSize));
+
+  point3D<float> X0(Job.MigVol.first_x_coord.v,
+		   Job.MigVol.first_y_coord.v,
+		   Job.MigVol.first_z_coord);
+  point3D<int>   Nx(Job.MigVol.nx_xlines,
+		   Job.MigVol.ny_inlines,
+		   Job.MigVol.nz);
+  point3D<float> dx(Job.MigVol.dx_between_xlines,
+		   Job.MigVol.dy_between_inlines,
+		   Job.MigVol.dz);
+  MigVol3D Full(X0,Nx,dx);
+
+
+  MigSubVol3D VolSub(Full,vid+1,Job.NSubVols);
+  MigSubVol3D SumSub(Full,sid+1,Job.NSubVols);
+
+  if (  VolSub.getNx() != SumSub.getNx()
+     || VolSub.getNy() != SumSub.getNy()
+     || VolSub.getNz() != SumSub.getNz()
+     )
+    {
+      throw std::runtime_error ("reduce: size conflict!");
+    }
+
+  // get the data
+  waitComm (fvmGetGlobalData ( handle_volume
+			     , volume_sid * Job.SubVolMemSize
+			     , Job.SubVolMemSize
+			     , 0
+			     , scratch_volume
+			     )
+	   );
+
+
+  waitComm (fvmGetGlobalData ( handle_volume
+			     , sum_sid * Job.SubVolMemSize
+			     , Job.SubVolMemSize
+			     , Job.SubVolMemSize
+			     , scratch_volume
+			     )
+	   );
+
+  // calculate SumSub += VolSub
+  for ( long i (0)
+      ; i < VolSub.getNx() * VolSub.getNy() * VolSub.getNz()
+      ; ++i
+      )
+    {
+      pVMMemSum[i] += pVMMemVol[i];
+    }
+
+  // store the result
+  waitComm (fvmPutGlobalData ( handle_volume
+			     , sum_sid * Job.SubVolMemSize
+			     , Job.SubVolMemSize
+			     , Job.SubVolMemSize
+			     , scratch_volume
+			     )
+	   );
+
+  put (output, "pair", pair);
 }
 
 // ************************************************************************* //
