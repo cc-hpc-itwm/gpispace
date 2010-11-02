@@ -12,10 +12,14 @@
     <place name="file_config" type="string">
       <token>
         <value>
-          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
         </value>
       </token>
     </place>
+
+<!--
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
+-->
 
     <place name="memsizeGPI" type="long">
       <token>
@@ -300,6 +304,9 @@
         </expression>
         <condition>
           !stack_empty (${volume.assigned.bunch.id})
+        </condition>
+        <condition>
+          ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
         <condition>
           ${bunch.bunch.bunch.id} :eq: stack_top (${volume.assigned.bunch.id})
