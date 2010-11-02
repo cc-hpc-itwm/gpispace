@@ -12,5 +12,6 @@
   <include-structs href="volume/with_store.xml"/>
   <include-structs href="volume/in_progress.xml"/>
   <include-structs href="volume/in_reduction.xml"/>
+  <include-structs href="volume/pair_to_reduce.xml"/>
 
 </structs>
