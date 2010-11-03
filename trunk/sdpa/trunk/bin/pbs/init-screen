@@ -35,23 +35,23 @@ important environment variables:
 EOF
 }
 
-while getopts ":hf:m:" opt; do
+while getopts ":hf:n:d:s:" opt; do
     case $opt in
 	h)
 	    usage
 	    exit 0
 	    ;;
-	s)
-	    scratch_dir=$OPTARG
-	    ;;
-	n)
-	    screen_name=$OPTARG
-	    ;;
-	m)
-	    master_name=$OPTARG
-	    ;;
 	f)
 	    node_file=$OPTARG
+	    ;;
+	n)
+	    head_node=$OPTARG
+	    ;;
+	d)
+	    scratch_dir=$OPTARG
+	    ;;
+	s)
+	    screen_name=$OPTARG
 	    ;;
 	\?)
 	    echo "invalid option: $OPTARG" >&2
