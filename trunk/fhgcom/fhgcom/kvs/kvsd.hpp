@@ -161,26 +161,45 @@ namespace fhg
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
           explicit
-          kvsd (const std::string & file)
+          kvsd (const std::string & file, const bool write_through=false)
             : file_(file)
-            , write_through_enabled_(false)
+            , write_through_enabled_(write_through)
           {
             try
             {
               LOG(DEBUG, "loading contents from file storage: " << file);
               load ();
-              write_through_enabled_ = true;
             }
             catch (std::exception const & ex)
             {
               LOG(WARN, "could not load file storage: " << ex.what());
-              write_through_enabled_ = false;
             }
           }
 
           virtual ~kvsd()
           {
-            write_through();
+            save();
+          }
+
+          bool toggle_write_through ()
+          {
+            bool old (write_through_enabled_);
+            write_through_enabled_ = ! write_through_enabled_;
+            return old;
+          }
+
+          void enable_write_through ()
+          {
+            write_through_enabled_ = true;
+          }
+          void disable_write_through ()
+          {
+            write_through_enabled_ = false;
+          }
+
+          bool is_write_through_enabled () const
+          {
+            return write_through_enabled_;
           }
 
           void put (fhg::com::kvs::message::put::map_type const & m)
@@ -287,11 +306,9 @@ namespace fhg
               lock_t lock(mutex_);
               store_.clear ();
               store_.insert (tmp_map_.begin(), tmp_map_.end());
-              write_through_enabled_ = true;
             }
             else
             {
-              write_through_enabled_ = false;
               throw std::runtime_error ("could not load from file: " + file);
             }
           }
@@ -349,7 +366,6 @@ namespace fhg
               catch (std::exception const & ex)
               {
                 LOG(WARN, "write-through failed: " << ex.what());
-                write_through_enabled_ = false;
               }
             }
           }
