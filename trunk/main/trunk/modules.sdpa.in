@@ -8,15 +8,9 @@ module-whatis   "[module-info name] adds SDPA to the environment"
 # Tcl script use only
 
 conflict soft/sdpa
-set version 1.5.1
-set compiler gcc
-set prefix   /p/hpc/soft/sdpa/${version}
-
+set prefix @CMAKE_INSTALL_PREFIX@
 prepend-path    PATH              ${prefix}/bin
 prepend-path    PATH              ${prefix}/bin/pbs
 prepend-path    LD_LIBRARY_PATH   ${prefix}/lib
 setenv          SDPA_LIBEXEC      ${prefix}/libexec
-#
-# todo set SDPA_SCRATCh and some other directories here depending on user's
-# home...
-#
+setenv          SDPA_HOME         ${prefix}

@@ -3,7 +3,7 @@ project(sdpa_main)
 
 include (./version.cmake)
 
-set(PROJECT_REVISION CACHE STRING "Source code revision")
+set(PROJECT_REVISION     CACHE STRING "Source code revision")
 set(PROJECT_BUILD    "0" CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture" CACHE STRING "Project description")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
@@ -20,40 +20,51 @@ OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
 OPTION(ENABLE_SDPA_GPI "Build the sdpa-gpi interface" YES)
 OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 
-function(get_foo_revision_info REV_INFO)
+function(get_revision_info REV_INFO)
   execute_process(
-	COMMAND svn info
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	OUTPUT_VARIABLE _out
-	RESULT_VARIABLE _res
-  )
+    COMMAND svn info
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE _out
+    ERROR_VARIABLE _err
+    RESULT_VARIABLE _res
+    )
   if (NOT _res)
-	string (REGEX MATCH "Revision: [0-9]+" _rev ${_out})
-	string (REPLACE "Revision: " "r" _rev ${_rev})
+    string (REGEX MATCH "Revision: [0-9]+" _rev ${_out})
+    string (REPLACE "Revision: " "r" _rev ${_rev})
     set (${REV_INFO} ${_rev} PARENT_SCOPE)
   else(_res)
-	execute_process(
-	  COMMAND git describe
-	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	  OUTPUT_VARIABLE _out_git
-	  RESULT_VARIABLE _res_git
-	)
-	if (NOT _res_git)
-	  set (${REV_INFO} ${_out_git} PARENT_SCOPE)
-	else (_res_git)
-		message(WARNING "Could not discover revision information")
-	endif (NOT _res_git)
+    execute_process(
+      COMMAND git describe
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      OUTPUT_VARIABLE _out_git
+      ERROR_VARIABLE _err_git
+      RESULT_VARIABLE _res_git
+      )
+    if (NOT _res_git)
+      set (${REV_INFO} ${_out_git} PARENT_SCOPE)
+    else (_res_git)
+      message(WARNING "Could not discover revision information")
+    endif (NOT _res_git)
   endif (NOT _res)
 endfunction()
 
+# TODO: WORK HERE this does not seem to work with ccmake, cmake however does the right thing (TM) (I think)
 if (PROJECT_REVISION)
 else (PROJECT_REVISION)
-  get_foo_revision_info (PROJECT_REVISION)
+  get_revision_info (PROJECT_REVISION)
+  if (NOT PROJECT_REVISION)
+    message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
+  else (NOT PROJECT_REVISION)
+    message (STATUS "Revision: ${PROJECT_REVISION}")
+    set(PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
+  endif (NOT PROJECT_REVISION)
 endif (PROJECT_REVISION)
 message (STATUS "Revision: ${PROJECT_REVISION}")
+set(PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/modules.sdpa.in    ${CMAKE_CURRENT_BINARY_DIR}/module.${PROJECT_REVISION} @ONLY)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
