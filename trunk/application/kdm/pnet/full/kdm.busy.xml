@@ -155,6 +155,26 @@
 
     <place name="volume_in_progress" type="volume_in_progress"/>
 
+    <place name="trigger_select_volume" type="control">
+      <token>
+        <value>[]</value>
+      </token>
+    </place>
+
+    <transition name="select_volume" priority="2">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="volume" type="volume_in_progress"/>
+        <out name="volume" type="volume_in_progress"/>
+        <expression></expression>
+      </defun>
+      <connect-in port="trigger" place="trigger_select_volume"/>
+      <connect-in port="volume" place="volume_in_progress"/>
+      <connect-out port="volume" place="volume_selected"/>
+    </transition>
+
+    <place name="volume_selected" type="volume_in_progress"/>
+
     <!-- ****************************************************************** -->
 
     <transition name="assign" priority="1">
@@ -202,8 +222,8 @@
       <connect-in port="state" place="volume_state"/>
       <connect-out port="state" place="volume_state"/>
 
-      <connect-in port="volume" place="volume_in_progress"/>
-      <connect-out port="volume" place="volume_in_progress"/>
+      <connect-in port="volume" place="volume_selected"/>
+      <connect-out port="volume" place="volume_selected"/>
     </transition>
 
     <transition name="fully_assigned" priority="2">
@@ -211,25 +231,52 @@
         <in name="config" type="config"/>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${trigger} := []
+        </expression>
         <condition>
           stack_size (${volume.assigned.bunch.id}) :ge: ${config.assign.most}
         </condition>
       </defun>
       <connect-read port="config" place="config"/>
-      <connect-in port="volume" place="volume_in_progress"/>
+      <connect-in port="volume" place="volume_selected"/>
       <connect-out port="volume" place="volume_to_process"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
     </transition>
 
     <transition name="take_anyway">
       <defun>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${trigger} := []
+        </expression>
         <condition>
           stack_size (${volume.assigned.bunch.id}) :gt: 0
         </condition>
       </defun>
-      <connect-in port="volume" place="volume_in_progress"/>
+      <connect-in port="volume" place="volume_selected"/>
       <connect-out port="volume" place="volume_to_process"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
+    </transition>
+
+    <transition name="give_back">
+      <defun>
+        <in name="volume" type="volume_in_progress"/>
+        <out name="volume" type="volume_in_progress"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${trigger} := []
+        </expression>
+        <condition>
+          stack_size (${volume.assigned.bunch.id}) :eq: 0
+        </condition>
+      </defun>
+      <connect-in port="volume" place="volume_selected"/>
+      <connect-out port="volume" place="volume_in_progress"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
     </transition>
 
     <place name="volume_to_process" type="volume_in_progress"/>
@@ -363,42 +410,48 @@
 
     <place name="volume_done" type="volume_state"/>
 
-    <transition name="reduce_start">
+    <transition name="reduce_start" priority="1">
       <defun>
         <in name="state" type="volume_state"/>
         <in name="volume" type="volume_in_progress"/>
         <out name="sum" type="volume_in_reduction"/>
+        <out name="trigger" type="control"/>
         <expression>
           ${sum.volume} := ${volume.volume};
           ${sum.left} := ${state.copies} - 1;
+          ${trigger} := []
         </expression>
         <condition>
           ${state.volume} :eq: ${volume.volume.volume}
         </condition>
       </defun>
       <connect-in port="state" place="volume_done"/>
-      <connect-in port="volume" place="volume_in_progress"/>
+      <connect-in port="volume" place="volume_selected"/>
       <connect-out port="sum" place="volume_in_reduction"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
     </transition>
 
     <place name="volume_in_reduction" type="volume_in_reduction"/>
 
-    <transition name="reduce_pair">
+    <transition name="reduce_pair" priority="1">
       <defun>
         <in name="sum" type="volume_in_reduction"/>
         <in name="vol" type="volume_in_progress"/>
         <out name="pair" type="pair_to_reduce"/>
+        <out name="trigger" type="control"/>
         <expression>
           ${pair.sum} := ${sum};
-          ${pair.vol} := ${vol.volume}
+          ${pair.vol} := ${vol.volume};
+          ${trigger} := []
         </expression>
         <condition>
           ${sum.volume.volume} :eq: ${vol.volume.volume}
         </condition>
       </defun>
-      <connect-in port="vol" place="volume_in_progress"/>
+      <connect-in port="vol" place="volume_selected"/>
       <connect-in port="sum" place="volume_in_reduction"/>
       <connect-out port="pair" place="pair_to_reduce"/>
+      <connect-out port="trigger" place="trigger_select_volume"/>
     </transition>
 
     <place name="pair_to_reduce" type="pair_to_reduce"/>
