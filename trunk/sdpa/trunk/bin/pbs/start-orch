@@ -2,11 +2,10 @@
 test -r ~/.init-screen.env && source ~/.init-screen.env
 
 debug=false
-#url="0.0.0.0:5000"
 bind_addr="`hostname`"
 name="orchestrator"
 
-while getopts ":hgo:l:" opt; do
+while getopts ":hgn:l:" opt; do
   case $opt in
 	g)
 	  debug=true

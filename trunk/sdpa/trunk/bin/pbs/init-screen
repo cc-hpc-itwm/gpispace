@@ -1,27 +1,31 @@
 #!/bin/bash
 
-# get the list of nodes
-nodes=
-switch_to_master=0
-rename_master=0
-on_master=0
-master=
-node_name=`hostname`
-start_fhglog=0
-start_kvs=0
-start_gpi=0
+head_node="${SDPA_HEAD_NODE}"
+if [ -z "$head_node" ] ; then
+    head_node="${PBS_O_HOST}"
+fi
 
-case "$1" in
-  -h|--help)
-	cat <<EOF
-usage $0 [-h|--help] [node...]
-  initializes a screen session on the given nodes or on all
-  nodes
+node_file="${SDPA_NODEFILE}"
+if [ -z "$node_file" ] ; then
+    node_file="${PBS_NODEFILE}"
+fi
+scratch_dir="$SDPA_SCRATCH_DIR"
+screen_name=
 
-environment variables:
+function usage ()
+{
+	cat >&2 <<EOF
+usage $0 [-h] [-f node-file] [-n head-node] [-d scratch-dir] [-s screen-name]
+
+   -f node-file (=$node_file)     specifies the node file to use
+   -n head node (=$head_node)     specifies the head node host (where screen runs)
+   -d scratch dir (=$scratch_dir) path to a (shared) scratch directory
+   -s screen name (=$screen_name) the name of the screen session
+
+important environment variables:
 	export IN_INIT_SCREEN="$IN_INIT_SCREEN"
-	#export PBS_O_HOST="$PBS_O_HOST"
-        export SDPA_SCRATCH="$SDPA_SCRATCH"
+	export SDPA_HEAD_NODE="$head_node"
+        export SDPA_SCRATCH_DIR="$scratch_dir"
 	export SDPA_GUI="$SDPA_GUI"
 	export SDPA_MASTER="$SDPA_MASTER"
 	export FHGLOG_to_console="$FHGLOG_to_console"
@@ -29,20 +33,42 @@ environment variables:
 	export FHGLOG_threaded="$FHGLOG_threaded"
         export KVS_URL="$KVS_URL"
 EOF
-    exit 0
-	;;
-  *)
-	# ignore
-	;;
-esac
+}
+
+while getopts ":hf:m:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	s)
+	    scratch_dir=$OPTARG
+	    ;;
+	n)
+	    screen_name=$OPTARG
+	    ;;
+	m)
+	    master_name=$OPTARG
+	    ;;
+	f)
+	    node_file=$OPTARG
+	    ;;
+	\?)
+	    echo "invalid option: $OPTARG" >&2
+	    echo "try $0 -h to get a list of options" >&2
+	    exit 1
+    esac
+done
 
 function log ()
 {
-    echo "$@" >/dev/stderr
+    echo "$@" >&2
 }
 
-if [ ! -d "${SDPA_SCRATCH}" ] ; then
-    log "W: SDPA_SCRATCH is not defined, please enter it now or export it before!"
+
+# sanity check for scratch directory
+if [ ! -d "${scratch_dir}" ] ; then
+    log "W: scratch_dir is not defined, please enter it now or export SDPA_SCRATCH_DIR before!"
     read -p "type in scratch dir to use: " scratch_dir
 
     if [ -z "$scratch_dir" ] ; then
@@ -50,10 +76,12 @@ if [ ! -d "${SDPA_SCRATCH}" ] ; then
     fi
 
     if [ ! -d "$scratch_dir" ] ; then
-	read -n 1 -p "W: $scratch_dir does not exist, shall i create it [y/N]? " do_create
+	read -n 1 -p "W: $scratch_dir does not exist, shall i create it for you [y/N]? " do_create
 	case "$do_create" in
 	    y|Y)
-		mkdir -p "$scratch_dir"
+		if ! mkdir -p "$scratch_dir" ; then
+		    exit 1
+		fi
 		;;
 	    *)
 		log "bye."
@@ -61,84 +89,104 @@ if [ ! -d "${SDPA_SCRATCH}" ] ; then
 		;;
 	esac
     fi
-    if [ ! -d "$scratch_dir" ] ; then
-        log "bye."
-        exit 1
-    fi
-    SDPA_SCRATCH="$scratch_dir"
 fi
 
-if [ -z "$SDPA_SCRATCH" ] ; then
-    log "# E: SDPA_SCRATCH is still undefined, Bye."
+if [ ! -d "${scratch_dir}" -o ! -w "${scratch_dir}" ] ; then
+    log "scratch-dir ${scratch_dir} still does not exist or cannot be written do, giving up" >&2
     exit 1
 fi
 
-if [ -z "$SDPA_NODEFILE" ] ; then
-    export SDPA_NODEFILE="$HOME/.init-screen.nodes"
-    log "# W: SDPA_NODEFILE is not defined, asuming $SDPA_NODEFILE"
-fi
+export SDPA_SCRATCH_DIR="$scratch_dir"
 
-if [ ! -r "$SDPA_NODEFILE" ] ; then
-    :
-fi
+# sanity check for node file
+if [ -z "$node_file" ] ; then
+    log "W: node_file is not defined, please enter it now or export SDPA_NODEFILE."
+    read -p "type in node file to use: " node_file
 
-if [ -r "$PBS_NODEFILE" ]; then
-    log "Running on the initial master node..."
-    on_master=1
-    master="$node_name"
-else
-    log "Running on slave $node_name..."
-fi
-
-TABLE="$HOME/.init-screen.tab"
-if [ $on_master -eq 1 ]; then
-    if [ -r "$TABLE" ]; then
-	if grep -q "$master" "$TABLE"; then
-	    log "# It seems, that there is already another screen environment running."
-	    log "#"
-	    log "# hint:"
-	    log "#   possibly running on: `cat ${TABLE} | awk '{print $3}'`"
-	    log "#"
-	    log "# Please remove the entry from ${TABLE} and retry."
-	fi
+    if [ -z "$node_file" -o ! -r "$node_file" ] ; then
+	log "cannot access node_file!" >&2
+        exit 1
     fi
+fi
+export SDPA_NODEFILE="$node_file"
 
-#	echo "Checking node availability..."
-#	check-nodes
-#	rc=$?
-#	if [[ $rc -ne 0 ]]; then
-#	  log "$rc node(s) failed the availability test, giving up!"
-#	  exit $rc
-#	fi
+node_name=`hostname -s`
+first_node=$( head -n 1 "$node_file" )
+if [ x"$first_node" != x"$node_name" ] ; then
+    log "Sorry, but I have to be run on the master node ($first_node)!"
+    exit 1
+fi
 
-    tmp=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
-    tmp=`echo $master $tmp`
-    echo "${PS_JOBCOOKIE} = $tmp" > "${TABLE}"
+# check head node
+if [ -z "$head_node" ] ; then
+    log "Sorry, I don't know my head node, can you help me out here?"
+    read -p "head node to use: " head_node
+fi
 
-    env_file="$HOME/.init-screen.env"
+if ! ping -c 1 "$head_node" >/dev/null 2>&1 ; then
+    log "head-node $head_node is not reachable ;-("
+    exit 1
+fi
 
-    log "clearing .init-screen.env..."
-    rm -f "$env_file"
-    log "writing environment info to $env_file..."
+job_id="${PBS_JOB_ID}"
+if [ -z "$job_id" ] ; then
+    job_id="job.$head_node.$RANDOM"
+fi
 
-    test -d "$HOME/.sdpa/data" || mkdir -p "$HOME/.sdpa/data"
+master="$node_name"
+TABLE="$HOME/.init-screen.tab"
+if [ -r "$TABLE" ]; then
+    if grep -q "$master" "$TABLE"; then
+	log "# It seems, that there is already another screen environment running."
+	log "#"
+	log "# hint:"
+	log "#   possibly running on: `cat ${TABLE} | awk '{print $3}'`"
+	read -n 1 -p "Do you want me to fix this? [y/N] " ignore_running
+	case $ignore_running in
+	    y|Y)
+		/bin/rm -f "${TABLE}"
+		;;
+	    *)
+		exit 0
+		;;
+	esac
+    fi
+fi
 
-    SDPA_LOG_DIR="$SDPA_SCRATCH/log"
-    test -d "$SDPA_LOG_DIR" || mkdir -p "$SDPA_LOG_DIR"
+tmp=`cat $node_file | grep -v "$master" | uniq`
+tmp=`echo $master $tmp`
+echo "${job_id} = $tmp" > "${TABLE}"
 
-    cat > "$env_file" <<EOF
+env_file="$HOME/.init-screen.env"
+
+log "clearing .init-screen.env..."
+/bin/rm -f "$env_file"
+log "writing environment info to $env_file..."
+
+test -d "$HOME/.sdpa/data" || mkdir -p "$HOME/.sdpa/data"
+
+export SDPA_LOG_DIR="$scratch_dir/log"
+test -d "$SDPA_LOG_DIR" || mkdir -p "$SDPA_LOG_DIR"
+
+cat > "$env_file" <<EOF
 #
 # init screen internal
 #
 export IN_INIT_SCREEN="yes"
-#export PBS_O_HOST="$PBS_O_HOST"
-test -r "$HOME/.init-screen.mod" && source "$HOME/.init-screen.mod"
+export SDPA_HEAD_NODE="$head_node"
+
+function log ()
+{
+  echo "\$@" >&2
+  test -x "`which fhglogc 2>/dev/null`" && fhglogc -t "\$0" -p 2 -m "\$@"
+}
+
 #
 # sdpa config
 #
 export SDPA_MASTER="$master"
-export SDPA_SCRATCH="$SDPA_SCRATCH"
-export SDPA_LOG_DIR="$SDPA_SCRATCH/log"
+export SDPA_SCRATCH_DIR="$SDPA_SCRATCH_DIR"
+export SDPA_LOG_DIR="$SDPA_LOG_DIR"
 #
 # logging config
 #
@@ -157,107 +205,67 @@ export KVS_STORE="$HOME/.sdpa/data/kvs.dat"
 test -r "$HOME/.init-screen.rc" && source "$HOME/.init-screen.rc"
 EOF
 
-    if [ ! -r "$HOME/.init-screen.rc" ]; then
-	log "creating default .init-screen.rc file..."
-	cat > "$HOME/.init-screen.rc" <<EOF
+if [ ! -r "$HOME/.init-screen.rc" ]; then
+    log "creating default .init-screen.rc file..."
+    cat > "$HOME/.init-screen.rc" <<EOF
 export PC_LIBRARY_PATH="\$HOME/.sdpa/modules"
 export PC_MODULE_DATA="\$HOME/.sdpa/moddata"
 EOF
-    fi
-    cat > "$HOME/.init-screen.mod" <<EOF
-#!/bin/bash
-#
-# helper function definitions
-#
-# log <message to be logged>
-function log ()
+fi
+
+function open_screen_window ()
 {
-  echo "$@" >/dev/stderr
-  test -x `which fhglogc` && fhglogc -t "$0" -p 2 -m "$@"
+    title="${1:?}"
+    node="${2:?}"
+    log "opening screen window $title on node $node"
+    ssh -Y -t "$head_node" screen -D -RR -r -X "screen -t $title ssh -Y -t $node"
 }
-EOF
-fi
 
-if [ $# -gt 0 ]; then
-    nodes=$@
-else
-    if [ -r "$PBS_NODEFILE" ]; then
-	log "using nodes from $PBS_NODEFILE"
-	nodes=`cat $PBS_NODEFILE | sort -u | grep -v "$master" | sort -n`
-	nodes=`echo $master $nodes`
-	rename_master=1
-	switch_to_master=1
-	start_fhglog=1
-	start_gpi=1
-	start_kvs=1
-    fi
-fi
+# fix permissions on ~/.Xauthority?
+touch $HOME/.Xauthority
+chmod u=rw,g=,o= $HOME/.Xauthority
 
-if [ -z "$nodes" ]; then
-    log "Nothing to do"
-    exit 0
-fi
+for t in log kvs gpi orch agg sdpac ; do
+    open_screen_window "$t" "$master"
+done
+open_screen_window "master:$master" "$master"
 
-headnode="$PBS_O_HOST"
+log "using slave nodes from ${node_file}..."
+nodes=`cat ${node_file} | grep -v "$master" | uniq`
+num_nodes=`echo $nodes | wc -w`
+max_nodes=${SDPA_MAX_SCREEN_NODES:=16}
 
-if [ $start_fhglog -eq 1 ]; then
-#	killall fhglogd
-    log "starting log-server on master node"
-    ssh -Y -t "$headnode" screen -D -RR -X "screen -t log ssh -Y -t $master" # fhglogd"
-fi
-
-if [ $start_kvs -eq 1 ]; then
-    log "starting kvs-daemon on master node"
-    ssh -Y -t "$headnode" screen -D -RR -X "screen -t kvs ssh -Y -t $master" # fhgkvsd
-fi
-
-if [ $start_gpi -eq 1 ]; then
-    log "starting gpi on master node"
-    ssh -Y -t "$headnode" screen -D -RR -X "screen -t gpi ssh -Y -t $master"
-    ssh -Y -t "$headnode" screen -D -RR -X "screen -t orch ssh -Y -t $master"
-    ssh -Y -t "$headnode" screen -D -RR -X "screen -t agg ssh -Y -t $master"
-    ssh -Y -t "$headnode" screen -D -RR -X "screen -t sdpac ssh -Y -t $master"
-fi
-
-if [ -z "$headnode" ]; then
-    log "I don't know what my headnode is"
-    exit 1
-fi
-
-numnodes=`echo $nodes | wc -w`
-maxnodes=10
-
-if [ $numnodes -gt $maxnodes ]; then
-    read -n 1 -p "Do you really want to start screen sessions on $numnodes nodes (configured maximum=$maxnodes)? [y/N]: " answer
+open_slave_screens=true
+if [ $num_nodes -gt $max_nodes ] ; then
+    read -n 1 -p "Do you really want to start screen sessions on $num_nodes nodes (configured maximum=$max_nodes)? [y/N]: " answer
     case "$answer" in
 	y|Y)
-	    echo "ok, I'll do as you whish"
+	    log "ok, I'll do as you whish"
+	    open_slave_screens=true
 	    ;;
 	*)
-	    echo "Puh."
-	    exit 0
+	    open_slave_screens=false
+	    log "Puh."
 	    ;;
     esac
 fi
-log "going to start screen session on nodes:" $nodes
-for n in $nodes; do
-    title="$n"
-    if [ $rename_master -eq 1 -a x"$n" == x"$master" ]; then
-	title="master:$n"
-    fi
-    if [ x"$n" == x"$master" ]; then
-	ssh -Y -t "$headnode" screen -D -RR -X "screen -t $title ssh -Y -t $n"
-	ssh -Y -t "$headnode" screen -D -RR -X "screen -t $n ssh -Y -t $n" &
-    else
-	ssh -Y -t "$headnode" screen -D -RR -X "screen -t $title ssh -Y -t $n" &
-    fi
-done
-wait
+
+if [ "$open_slave_screens" == "true" ] ; then
+    log "going to start screen session on nodes:" $nodes
+    bunch_size=16
+    count=0
+    for n in $nodes; do
+	open_screen_window "$n" "$n" &
+	count=$(( count + 1 ))
+	if [ $count -ge $bunch_size ] ; then
+	    wait
+	    count=0
+	fi
+    done
+    wait
+    ssh -Y -t "$head_node" screen -D -RR -r -X 'select 0'
+fi
+
 echo "# Please execute the following commands:"
 echo "source $HOME/.init-screen.env"
-echo "trap \"rm $HOME/.init-screen.nodes\" EXIT"
-
-if [ $switch_to_master -eq 1 ] ; then
-    log "# switching to master-node screen"
-    ssh -Y -t "$headnode" screen -X select master
-fi
+echo "trap \"rm -f $HOME/.init-screen.env\" EXIT"

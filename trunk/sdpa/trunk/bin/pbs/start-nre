@@ -1,33 +1,11 @@
 #!/bin/bash
+test -r ~/.init-screen.env && source ~/.init-screen.env
 
-if [ -r ~/.init-screen.env ]; then
-    source ~/.init-screen.env
-fi
-
-debug=false
-bind_addr="`hostname`"
-name="nre-`hostname -s`"
-agg="aggregator"
-
+# set some default values
 gui_url="$SDPA_GUI"
 if [ -z "$gui_url" ]
 then
   gui_url="lts019.itwm.fhg.de:9001"
-fi
-
-if [ -z "$SDPA_LOG_DIR" ] ; then
-  echo "# SDPA_LOG_DIR is not set!"
-  exit 1
-fi
-
-if [ ! -w "$SDPA_LOG_DIR" ] ; then
-  echo "# SDPA_LOG_DIR=\"$SDPA_LOG_DIR\" is not writable!"
-  exit 1
-fi
-
-rank=0
-if [ -n "$1" ]; then
-  rank=$1
 fi
 
 gpi_cfg=
@@ -37,13 +15,80 @@ elif [ -r "$HOME/.sdpa/configs/gpi.rc" ] ; then
   gpi_cfg="$HOME/.sdpa/configs/gpi.rc"
 elif [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_HOME/etc/gpi/sdpa-gpi.cfg" ] ; then
   gpi_cfg="$SDPA_HOME/etc/gpi/sdpa-gpi.cfg"
-else
-  echo "# could not figure out, which config file to use!"
-  echo "#    the following might help:"
-  echo "#"
-  echo "#       set SDPA_GPI_CFG (current: $SDPA_GPI_CFG)"
-  echo "#       create \$HOME/.sdpa/configs/gpi.rc"
-  echo "#       create \$SDPA_HOME/etc/gpi/sdpa-gpi.cfg"
+fi
+
+debug=false
+bind_addr="`hostname`"
+name="nre-`hostname -s`"
+parent="aggregator"
+rank=0
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $0 [options]
+
+    -h: print this help
+    -r rank (=$rank): set the rank of this nre
+    -c gpi-cfg (=$gpi_cfg): path to the gpi cfg
+    -m ip:port: monitor address
+    -l address (=$bind_addr): address to bind to
+    -p parent (=$parent): parent to connect to
+EOF
+}
+
+while getopts ":hr:n:c:m:l:p:" opt; do
+    case $opt in
+	r)
+	    rank=$OPTARG
+	    ;;
+	n)
+	    name=$OPTARG
+	    ;;
+	c)
+	    gpi_cfg=$OPTARG
+	    ;;
+	m)
+	    gui_url=$OPTARG
+	    ;;
+	l)
+	    bind_addr=$OPTARG
+	    ;;
+	p)
+	    parent=$OPTARG
+	    ;;
+	h)
+	    usage
+	    exit 0
+	    ;;
+	\?)
+	    echo "invalid option: -$OPTARG" >&2
+	    echo "try: $0 -h" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+if [ ! -r "$gpi_cfg" ] ; then
+  cat >&2 <<EOF
+# could not figure out, which config file to use!
+#    the following might help:
+#
+#       set SDPA_GPI_CFG (current: $SDPA_GPI_CFG)
+#       create \$HOME/.sdpa/configs/gpi.rc
+#       create \$SDPA_HOME/etc/gpi/sdpa-gpi.cfg
+EOF
+  exit 1
+fi
+
+# sanity checks
+if [ -z "$SDPA_LOG_DIR" ] ; then
+  echo "# SDPA_LOG_DIR is not set!"
+  exit 1
+fi
+
+if [ ! -w "$SDPA_LOG_DIR" ] ; then
+  echo "# SDPA_LOG_DIR=\"$SDPA_LOG_DIR\" is not writable!"
   exit 1
 fi
 
@@ -76,16 +121,16 @@ killall nre >/dev/null 2>&1
 sleep 1
 
 log "Running $name with rank $rank at $bind_addr with parent $agg"
-FHGLOG_to_file="$SDPA_LOG_DIR/pc.`hostname`.log" nre-pcd \
+nre-pcd \
     --rank "$rank" \
     --load "$SDPA_LIBEXEC/libfvm-pc.so" \
     --load "$SDPA_LIBEXEC/libsinc.so" \
-    -a "$SDPA_LIBEXEC" &
+    -a "$SDPA_LIBEXEC" > $SDPA_LOG_DIR/pc.`hostname`.log" 2>&1 &
 
 sleep 1
 
-FHGLOG_to_file="$SDPA_LOG_DIR/nre.`hostname`.log" nre \
+nre \
     --url "${bind_addr}" \
     --name "${name}" \
     --gui_url="$gui_url" \
-    --agg_name="$agg" &
+    --agg_name="$parent" > $SDPA_LOG_DIR/nre.`hostname`.log" 2>&1 &
