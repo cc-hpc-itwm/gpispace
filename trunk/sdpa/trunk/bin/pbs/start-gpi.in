@@ -1,0 +1,47 @@
+#!/bin/bash
+
+source ~/.init-screen.env
+
+# set some default values
+gpi_cfg="@GPI_CONFIG_PATH@"
+if [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_GPI_CFG" ] ; then
+  gpi_cfg="$SDPA_GPI_CFG"
+elif [ -r "$HOME/.sdpa/configs/gpi.rc" ] ; then
+  gpi_cfg="$HOME/.sdpa/configs/gpi.rc"
+elif [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_HOME/etc/gpi/sdpa-gpi.cfg" ] ; then
+  gpi_cfg="$SDPA_HOME/etc/gpi/sdpa-gpi.cfg"
+fi
+
+gpi_bin_path="@GPI_BINARY_DIR@"
+gpi_exe="$( which sdpa-gpi 2>/dev/null )"
+if [ -z "$gpi_exe" ] ; then
+    log "Sorry, no sdpa-gpi binary found in PATH"
+    exit 1
+fi
+
+gpi_bin="$( basename ${gpi_exe} )"
+
+ask_copy=false
+if [ ! -x "${gpi_bin_path}/${gpi_bin}" ] ; then
+   log "sdpa-gpi does not seem to be installed in $gpi_bin_path"
+   ask_copy=true
+else
+    ts_inst=$( stat -c %Y "${gpi_bin_path}/${gpi_bin}" )
+    ts_cand=$( stat -c %Y "${gpi_exe}" )
+    if [ $ts_cand -gt $ts_inst ] ; then
+	log "candidate ${gpi_exe} is newer than the one in ${gpi_bin_path}"
+	ask_copy=true
+    fi
+fi
+
+read -t 60 -n 1 -p "Do you want me to copy \"$gpi_exe\" to \"$gpi_bin_path\"? [y/N] " install_gpi
+echo
+case "$install_gpi" in
+    y|Y)
+	cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
+	;;
+    *)
+	;;
+esac
+
+"${gpi_bin_path}/${gpi_bin}" -c "$gpi_cfg"
