@@ -31,11 +31,13 @@ while getopts ":hgo:l:" opt; do
   esac
 done
 
-echo "Running $name at $bind_addr"
+log "Running $name at $bind_addr"
 
 if $debug ; then
-  echo "running within gdb..."
-  gdb -ex run --args orchestrator -u "$bind_addr" -n "${name}"
+  log "running within gdb..."
+  FHGLOG_to_console="stderr" gdb -ex run --args orchestrator -u "$bind_addr" -n "${name}"
 else
-  orchestrator -u "$bind_addr" -n "${name}" >/scratch/$USER/sdpa/orch.log 2>&1
+  FHGLOG_to_file="$SDPA_LOG_DIR/orch.log" orchestrator \
+     -u "$bind_addr" \
+     -n "${name}"
 fi

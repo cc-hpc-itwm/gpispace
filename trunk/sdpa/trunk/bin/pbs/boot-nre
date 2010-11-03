@@ -1,4 +1,9 @@
 #!/bin/sh
+
+if [ -r ~/.init-screen.env ]; then
+    source ~/.init-screen.env
+fi
+
 if [ ! -r "$PBS_NODEFILE" ]; then
   echo "E: must be run on head node"
   exit 2
@@ -33,11 +38,12 @@ for node_num in $nodes; do
   count=$(( count + 1 ))
 
   node_name=$( uniq $PBS_NODEFILE | tail -n +$node_num | head -n 1 )
-  rm -f /scratch/$USER/sdpa/nre.$node_name.log
-  rm -f /scratch/$USER/sdpa/pc.$node_name.log
+  rm -f "$SDPA_LOG_DIR/nre.$node_name.log"
+  rm -f "$SDPA_LOG_DIR/pc.$node_name.log"
   rank=$(( $node_num - 1 ))
 
-  echo "starting nre on $node_name (rank: $rank)..."
+  log "starting nre on $node_name (rank: $rank)..."
+
   ssh -x $node_name start-nre $rank >/dev/null 2>&1 &
   if [ $count -gt $bunch_size ] ; then
       wait

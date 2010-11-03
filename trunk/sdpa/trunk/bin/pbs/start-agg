@@ -10,13 +10,6 @@ bind_addr="`hostname`"
 name="aggregator"
 orch="orchestrator"
 
-#master="$SDPA_MASTER"
-#if [ -z "$master" ]; then
-#  echo "assuming local host, since SDPA_MASTER is not set!"
-#  master="`hostname`"
-#fi
-#orch_url="$master:5000"
-
 while getopts ":hgo:l:n:" opt; do
   case $opt in
 	o)
@@ -45,11 +38,11 @@ while getopts ":hgo:l:n:" opt; do
   esac
 done
 
-echo "Running $name at $bind_addr with parent $orch"
+log "Running $name at $bind_addr with parent $orch"
 
 if $debug ; then
-  echo "running within gdb..."
+  log "running within gdb..."
   gdb -ex run --args aggregator -n "${name}" -m "${orch}" -u "${bind_addr}"
 else
-  aggregator -n "${name}" -m "${orch}" -u "${bind_addr}" >/scratch/$USER/sdpa/agg.log 2>&1
+  FHGLOG_to_file="$SDPA_LOG_DIR/agg.log" aggregator -n "${name}" -m "${orch}" -u "${bind_addr}"
 fi

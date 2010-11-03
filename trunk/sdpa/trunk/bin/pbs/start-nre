@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -r ~/.init-screen.env ]; then
     source ~/.init-screen.env
@@ -28,40 +28,42 @@ fi
 while read k v; do
     case "$k" in
 	SHMSZ)
-	    echo "using shmsz $v"
+	    log "using shmsz $v"
 	    export FVM_PC_SHMSZ="$v"
 	    ;;
 	FVMSZ)
-	    echo "using fvmsz $v"
+	    log "using fvmsz $v"
 	    export FVM_PC_FVMSZ="$v"
 	    ;;
 	MSQFILE)
-	    echo "using msq $v"
+	    log "using msq $v"
 	    export FVM_PC_MSQ="$v"
 	    ;;
 	SHMFILE)
-	    echo "using shm $v"
+	    log "using shm $v"
 	    export FVM_PC_SHM="$v"
 	    ;;
     esac
 done < "$fvm_pc_cfg"
 
-echo -n "killing process-container..."
+log "killing process-container..."
 killall nre-pcd >/dev/null 2>&1
 sleep 1
-echo ""
-echo -n "killing old nre..."
+log "killing old nre..."
 killall nre >/dev/null 2>&1
 sleep 1
-echo ""
 
-test -d "/scratch/$USER/sdpa" || mkdir -p "/scratch/$USER/sdpa"
-
-echo "Running $name at $bind_addr with parent $agg"
-nre-pcd --rank "$rank" \
+log "Running $name with rank $rank at $bind_addr with parent $agg"
+FHGLOG_to_file="$SDPA_LOG_DIR/pc.`hostname`.log" nre-pcd \
+    --rank "$rank" \
     --load "$SDPA_LIBEXEC/libfvm-pc.so" \
     --load "$SDPA_LIBEXEC/libsinc.so" \
-    -a "$SDPA_LIBEXEC" \
-  >/scratch/$USER/sdpa/pc.`hostname`.log 2>&1 &
+    -a "$SDPA_LIBEXEC" &
+
 sleep 1
-nre --url "${bind_addr}" --name "${name}" --gui_url="$gui_url" --agg_name="$agg" >/scratch/$USER/sdpa/nre.`hostname`.log 2>&1 &
+
+FHGLOG_to_file="$SDPA_LOG_DIR/nre.`hostname`.log" nre \
+    --url "${bind_addr}" \
+    --name "${name}" \
+    --gui_url="$gui_url" \
+    --agg_name="$agg" &
