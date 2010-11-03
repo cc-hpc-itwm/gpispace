@@ -120,7 +120,7 @@ log "killing old nre..."
 killall nre >/dev/null 2>&1
 sleep 1
 
-log "Running $name with rank $rank at $bind_addr with parent $agg"
+log "Running $name with rank $rank at $bind_addr with parent $parent"
 nre-pcd \
     --rank "$rank" \
     --load "$SDPA_LIBEXEC/libfvm-pc.so" \
