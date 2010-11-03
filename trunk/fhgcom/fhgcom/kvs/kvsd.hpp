@@ -178,7 +178,7 @@ namespace fhg
 
           virtual ~kvsd()
           {
-            save();
+            write_through ();
           }
 
           bool toggle_write_through ()
@@ -282,6 +282,8 @@ namespace fhg
               lock_t lock(mutex_);
               std::map<std::string, std::string> tmp_map_ (store_.begin(), store_.end());
               ar << boost::serialization::make_nvp("kvsd", tmp_map_);
+
+              LOG(INFO, "saved " << store_.size() << " entries");
             }
             else
             {
@@ -306,6 +308,8 @@ namespace fhg
               lock_t lock(mutex_);
               store_.clear ();
               store_.insert (tmp_map_.begin(), tmp_map_.end());
+
+              LOG(INFO, "loaded " << store_.size() << " entries");
             }
             else
             {
