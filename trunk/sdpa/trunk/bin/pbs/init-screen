@@ -108,7 +108,10 @@ if [ -z "$node_file" ] ; then
         exit 1
     fi
 fi
-export SDPA_NODEFILE="$node_file"
+
+cp "$node_file" "$HOME/.init-screen.nodefile"
+
+export SDPA_NODEFILE="$HOME/.init-screen.nodefile"
 
 node_name=`hostname -s`
 first_node=$( head -n 1 "$node_file" )
@@ -187,6 +190,7 @@ function log ()
 export SDPA_MASTER="$master"
 export SDPA_SCRATCH_DIR="$SDPA_SCRATCH_DIR"
 export SDPA_LOG_DIR="$SDPA_LOG_DIR"
+export SDPA_NODEFILE="$HOME/.init-screen.nodefile"
 #
 # logging config
 #

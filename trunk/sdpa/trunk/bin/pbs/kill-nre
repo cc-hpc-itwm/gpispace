@@ -1,13 +1,16 @@
-#!/bin/sh
-if [ ! -r "$PBS_NODEFILE" ]; then
-  echo "E: must be run on head node"
-  exit 2
+#!/bin/bash
+
+source ~/.init-screen.env
+
+if [ ! -r "$SDPA_NODEFILE" ]; then
+    log "Cannot access nodefile: $SDPA_NODEFILE"
+    exit 2
 fi
 
-node_max=$( uniq $PBS_NODEFILE | wc -l )
+node_max=$( uniq $SDPA_NODEFILE | wc -l )
 nodes=$( echo $( seq 1 $node_max ) )
 if [ $# -lt 1 ]; then
-  echo "killing all NREs..."
+    log "killing all NREs..."
 else
   nodes=$@
 fi
@@ -21,8 +24,8 @@ for node_num in $nodes; do
 
   count=$(( count + 1 ))
 
-  node_name=$( uniq $PBS_NODEFILE | tail -n +$node_num | head -n 1 )
-  echo "killing nre on $node_name..."
+  node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
+  log "killing nre on $node_name..."
   ssh -x $node_name killall nre-pcd >/dev/null 2>&1 &
   ssh -x $node_name killall nre >/dev/null 2>&1 &
   if [ $count -gt $bunch_size ] ; then

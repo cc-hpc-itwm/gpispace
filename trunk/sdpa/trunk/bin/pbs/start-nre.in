@@ -8,7 +8,7 @@ then
   gui_url="lts019.itwm.fhg.de:9001"
 fi
 
-gpi_cfg=
+gpi_cfg="@GPI_CONFIG_PATH@"
 if [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_GPI_CFG" ] ; then
   gpi_cfg="$SDPA_GPI_CFG"
 elif [ -r "$HOME/.sdpa/configs/gpi.rc" ] ; then
@@ -125,7 +125,7 @@ nre-pcd \
     --rank "$rank" \
     --load "$SDPA_LIBEXEC/libfvm-pc.so" \
     --load "$SDPA_LIBEXEC/libsinc.so" \
-    -a "$SDPA_LIBEXEC" > $SDPA_LOG_DIR/pc.`hostname`.log" 2>&1 &
+    -a "$SDPA_LIBEXEC" > "$SDPA_LOG_DIR/pc.`hostname`.log" 2>&1 &
 
 sleep 1
 
@@ -133,4 +133,4 @@ nre \
     --url "${bind_addr}" \
     --name "${name}" \
     --gui_url="$gui_url" \
-    --agg_name="$parent" > $SDPA_LOG_DIR/nre.`hostname`.log" 2>&1 &
+    --agg_name="$parent" > "$SDPA_LOG_DIR/nre.`hostname`.log" 2>&1 &
