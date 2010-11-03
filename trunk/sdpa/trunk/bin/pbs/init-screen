@@ -257,7 +257,7 @@ echo "# Please execute the following commands:"
 echo "source $HOME/.init-screen.env"
 echo "trap \"rm $HOME/.init-screen.nodes\" EXIT"
 
-if [ $switch_to_master -eq 1 ]; then
+if [ $switch_to_master -eq 1 ] ; then
     log "# switching to master-node screen"
     ssh -Y -t "$headnode" screen -X select master
 fi
