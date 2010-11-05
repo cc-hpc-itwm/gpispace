@@ -1,8 +1,9 @@
 #ifndef  FHG_LOG_LOGMACROS_INC
 #define  FHG_LOG_LOGMACROS_INC
 
-#include <fhglog/LoggerApi.hpp>
 #include <fhglog/util.hpp>
+#include <fhglog/LoggerApi.hpp>
+#include <fhglog/Configuration.hpp>
 #include <sstream>
 
 namespace fhg { namespace log {

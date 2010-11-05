@@ -2,7 +2,6 @@
 #define FHGLOG_CONFIGURATION_HPP 1
 
 #include <fhglog/fhglog-config.hpp>
-#include <fhglog/fhglog.hpp>
 #include <fhglog/DefaultConfiguration.hpp>
 
 #include <iostream>
