@@ -8,15 +8,57 @@ if [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_GPI_CFG" ] ; then
   gpi_cfg="$SDPA_GPI_CFG"
 elif [ -r "$HOME/.sdpa/configs/gpi.rc" ] ; then
   gpi_cfg="$HOME/.sdpa/configs/gpi.rc"
-elif [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_HOME/etc/gpi/sdpa-gpi.cfg" ] ; then
+elif [ -r "$SDPA_HOME/etc/gpi/sdpa-gpi.cfg" ] ; then
   gpi_cfg="$SDPA_HOME/etc/gpi/sdpa-gpi.cfg"
 fi
 
 gpi_bin_path="@GPI_BINARY_DIR@"
+if [ -n "$GPI_BINARY_DIR" -a -w "$GPI_BINARY_DIR" ] ; then
+  gpi_bin_path="$GPI_BINARY_DIR"
+elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
+  gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
+fi
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $0 [options]
+
+    -h: print this help
+    -d gpid directory (=$gpi_bin_path): priviledged binary path for the gpid
+    -c gpi-cfg (=$gpi_cfg): path to the gpi cfg
+EOF
+}
+
+while getopts ":hd:c" opt; do
+    case $opt in
+	d)
+	    gpi_bin_path=$OPTARG
+	    ;;
+	c)
+	    gpi_cfg=$OPTARG
+	    ;;
+	h)
+	    usage
+	    exit 0
+	    ;;
+	\?)
+	    echo "invalid option: -$OPTARG" >&2
+	    echo "try: $0 -h" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+if [ -z "$gpi_bin_path" ] ; then
+  log "could not deduce GPI_BINARY_DIR, please use compile time variable GPI_BINARY_DIR or export GPI_BINARY_DIR or pass via commandline!"
+  exit 1
+fi
+
 gpi_exe="$( which sdpa-gpi 2>/dev/null )"
 if [ -z "$gpi_exe" ] ; then
-    log "Sorry, no sdpa-gpi binary found in PATH"
-    exit 1
+  log "Sorry, no sdpa-gpi binary found in PATH"
+  exit 1
 fi
 
 gpi_bin="$( basename ${gpi_exe} )"
@@ -39,11 +81,29 @@ if [ $ask_copy == "true" ] ; then
     echo
     case "$install_gpi" in
 	y|Y)
-	    cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
+	    if [ ! -d "$gpi_bin_path" ] ; then
+		tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
+		if [ $? -ne 0 ] ; then
+		    log "could not create $gpi_bin_path: $tmp"
+		fi
+	    fi
+
+	    if [ -w "$gpi_bin_path" ] ; then
+		cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
+	    else
+		log "$gpi_bin_path does exist, but i am not allowed to write to it!"
+	    fi
 	    ;;
 	*)
 	    ;;
     esac
 fi
 
-"${gpi_bin_path}/${gpi_bin}" -c "$gpi_cfg"
+if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
+    # TODO: the new sdpa-gpi should actually respect the passed config...
+    log "starting sdpa-gpi at $gpi_bin_path/$gpi_bin with config from $gpi_cfg"
+    "${gpi_bin_path}/${gpi_bin}" -c "$gpi_cfg"
+else
+    log "cannot execute $gpi_bin_path/$gpi_bin, giving up."
+    exit 2
+fi
