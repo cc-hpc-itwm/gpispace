@@ -14,7 +14,9 @@ add_executable (sdpa-gpi fvm_standalone.c)
 target_link_libraries (sdpa-gpi
   sdpa-gpi-lib
   sdpa-gpi-datastructures
-  ${EXT_LIBRARIES})
+  ${EXT_LIBRARIES}
+  ${MMGR_LIBRARIES}
+  )
 
 set_target_properties(sdpa-gpi
   PROPERTIES

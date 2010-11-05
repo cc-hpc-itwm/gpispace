@@ -31,7 +31,10 @@ set (GPI_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/etc/gpi/sdpa-gpi.cfg" CACHE STRING
 set (EXT_LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/lib64)
 set (EXT_LIBRARIES ${EXT_LIBRARIES} ${EXT_LIBRARY_DIR}/libibverbs12.so)
 set (EXT_LIBRARIES ${EXT_LIBRARIES} ${EXT_LIBRARY_DIR}/libPv4dVM4.a)
-set (EXT_LIBRARIES ${EXT_LIBRARIES} ${EXT_LIBRARY_DIR}/libmmgr.a)
+
+# TODO move into FindGPI.cmake
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${EXT_LIBRARY_DIR}/libibverbs15.so)
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${EXT_LIBRARY_DIR}/libGPI.a)
 
 if (GPI_BINARY_DIR)
 else (GPI_BINARY_DIR)
@@ -50,7 +53,26 @@ if(CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 
+## check for boost
+set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
+set(Boost_FIND_QUIETLY false)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization program_options test_exec_monitor iostreams)
+# we need at least 1.36 so check for it
+if (Boost_MAJOR_VERSION LESS 1)
+    message(FATAL_ERROR "At least Boost 1.36 is required")
+endif(Boost_MAJOR_VERSION LESS 1)
+if (Boost_MINOR_VERSION LESS 36)
+    message(FATAL_ERROR "At least Boost 1.36 is required")
+endif (Boost_MINOR_VERSION LESS 36)
+message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
+
+find_package (FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+
 find_package (MMGR REQUIRED)
 include_directories(${MMGR_INCLUDE_DIR})
 
 add_subdirectory(src)
+add_subdirectory(bin)

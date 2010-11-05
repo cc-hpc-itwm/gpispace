@@ -5,10 +5,12 @@
 #include <semaphore.h>
 
 #define ALIGN64  __attribute__ ((aligned (64)))
-#define MCTP2_MAX_THREADS (64)
+#define MCTP2_MAX_THREADS (128)
 #define MCTP2_MAX_LOCKS   (16)
 #define MCTP2_MAX_POOLS   (4)
 
+//mc-extension
+#define MCTP2_ENUM_ALL (0xffffffff)
 
 //data structures, used only internally
 typedef struct{
@@ -67,7 +69,7 @@ public:
   // If it should not be in one of the thread groups as the other threads, one
   // may create a separate "dummy" thread pool with one thread just for main().
   int mctpRegisterThread();
-
+   
   //thread management
 
   // Start a thread, it will execute the given function.
@@ -96,10 +98,10 @@ public:
   void mctpSyncThreadsRelaxed();
   // Same as above, but implemented using mutexes (futexes), i.e. not busy waiting.
   void mctpSyncThreadsPassive();
-
+  
 
   //image tile to render (rt option)
-  int mctpGetTileID();
+  long mctpGetTileID();
   void mctpClearTileCounter();
 
 private:
@@ -107,12 +109,12 @@ private:
   //methods
   int mctpInit();
   int mctpInitUser(const unsigned int cores);
-
+  
   void mctp_futex_init(const int nr);
   void mctp_futex_cleanup();
   int  mctp_barrier_init(mctp2BarrierPtr *br);
   int  mctp_barrier_destroy(mctp2BarrierPtr *b);
-
+  
   void mctpInsertThread2Map(pthread_t tid);
   int  mctpGetNumberOfCoresInternal();
   void mctpRegisterSigHandlers();
@@ -122,16 +124,16 @@ private:
   //data
   int poolID;
   int totalElem;
-
+  
   unsigned int futex_still_needed;
   unsigned int futex_initial_needed;
   pthread_mutex_t futex_mutex0;
-
-  pthread_mutex_t  mctpStatusLock;
+    
+  pthread_mutex_t  mctpStatusLock; 
   pthread_mutex_t  mctpGlbFutexLock;
   mctp2BarrierPtr  mctp_thread_ba1;
-
-
+  
+  
   volatile long mctpGlobalIDCnt;
   volatile long mctpThreadStatus[MCTP2_MAX_THREADS];
   mctp2ThreadID glbThreadID[MCTP2_MAX_THREADS];
@@ -139,7 +141,7 @@ private:
 
   int futex_event;
   sem_t mctpThreadUp;
-  unsigned long mctp_atomic_cnt;
+  long mctp_atomic_tile_cnt;
 
 };//end of class
 
@@ -193,8 +195,7 @@ int mctp2GetMaxThreads();
 int mctp2GetMaxLocks();
 
 
-// Thread affinity
-// Use e.g. systemTopology.exe (in /prog/PV-4D/bin/) to determine affinity mask
+// Old deprecated Thread affinity, max cores=64
 
 // Returns the affinity mask of the calling thread.
 void mctp2GetAffinityMask(unsigned long *mask);
@@ -202,7 +203,23 @@ void mctp2GetAffinityMask(unsigned long *mask);
 int  mctp2SetAffinityMask(const unsigned long mask);
 // Set the affinity mask of the calling thread so that it will be bound to
 // the CPU with the given number nr.
-void mctp2Thread2CoreAffinity(unsigned int nr);//[0..N]
+void mctp2Thread2CoreAffinity(unsigned int nr);//[0..63]
+
+
+// New MC-Extension
+
+//only available/activated on modern procs
+int mctp2InitMCExtension();
+int mctp2CleanupMCExtension();
+int mctp2HasHT();
+int mctp2EnableHT();//default: enabled if available
+int mctp2DisableHT();
+int mctp2GetSocketCount();
+int mctp2GetPhyCoreCount();
+int mctp2GetThreadsPerCore();
+int mctp2SetSocketAffinity(const unsigned int socket);
+int mctp2SetGenericAffinityMask(const unsigned int socket,const unsigned int core,const unsigned int htThread);
+int mctp2GetCpu();
 
 
 //new thread save/cacheline aligned mallocCA
