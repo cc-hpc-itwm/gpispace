@@ -91,7 +91,7 @@ if [ $ask_copy == "true" ] ; then
 	    if [ -w "$gpi_bin_path" ] ; then
 		cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
 	    else
-		log "$gpi_bin_path does exist, but i am not allowed to write to it!"
+		log "$gpi_bin_path does not exist, or i am not allowed to write to it!"
 	    fi
 	    ;;
 	*)
