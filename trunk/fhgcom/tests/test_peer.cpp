@@ -300,3 +300,61 @@ BOOST_AUTO_TEST_CASE ( send_large_data )
   peer_1.stop();
   thrd_1.join ();
 }
+
+BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports )
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"));
+  boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
+
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"));
+  boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
+
+  peer_1.start();
+  peer_2.start();
+
+  try
+  {
+    peer_1.send(peer_2.name (), "hello world!");
+  }
+  catch (std::exception const & ex)
+  {
+    BOOST_ERROR ( ex.what() );
+  }
+
+  peer_1.stop();
+  thrd_1.join ();
+
+  peer_2.stop();
+  thrd_2.join ();
+}
+
+BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports_reuse )
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"));
+  boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
+
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"));
+  boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
+
+  peer_1.start();
+  peer_2.start();
+
+  try
+  {
+    peer_1.send(peer_2.name (), "hello world!");
+  }
+  catch (std::exception const & ex)
+  {
+    BOOST_ERROR ( ex.what() );
+  }
+
+  peer_1.stop();
+  thrd_1.join ();
+
+  peer_2.stop();
+  thrd_2.join ();
+}
