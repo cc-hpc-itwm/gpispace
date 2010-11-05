@@ -23,6 +23,12 @@ using we::loader::put;
 
 // ************************************************************************* //
 
+template<typename T>
+T divru (const T & a, const T & b)
+{
+  return (a == 0) ? 0 : (1 + (a-1) / b);
+}
+
 static unsigned long sizeofJob (void)
 {
   return sizeof(MigrationJob);
@@ -49,6 +55,8 @@ static fvmAllocHandle_t alloc ( const long & size
                               , long & memsizeGPI
                               )
 {
+  MLOG (INFO, "alloc: " << descr << ": " << size << " bytes");
+
   const fvmAllocHandle_t h (fvmGlobalAlloc (size));
 
   if (h == 0)
@@ -57,6 +65,8 @@ static fvmAllocHandle_t alloc ( const long & size
     }
 
   memsizeGPI -= size;
+
+  MLOG (INFO, "alloc: still free " << memsizeGPI << " bytes");
 
   return h;
 }
@@ -172,6 +182,8 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   Job.BunchMemSize = getSizeofTD(Job);
   Job.shift_for_TT = Job.SubVolMemSize + Job.BunchMemSize;
 
+  MLOG(INFO, "Job.BunchMemSize = " << Job.BunchMemSize);
+
   // Check whether the travel time table covers the entire output volume
 
   // Touch the offset gather
@@ -189,44 +201,54 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   const fvmAllocHandle_t handle_TT (alloc (Job.globTTbufsizelocal, "handle_TT", memsizeGPI));
 
-  long volumes_per_node (1);
+  const long per_offset_volumes (Job.NSubVols);
+  const long offsets (Job.n_offset);
+  const long node_count (fvmGetNodeCount());
 
-  while (volumes_per_node * fvmGetNodeCount() < Job.NSubVols)
-    {
-      volumes_per_node += 1;
-    }
+  // WORK HERE: overcome this by using virtual offsetclasses
+  const long volumes_per_node (divru (per_offset_volumes, node_count));
 
   const fvmAllocHandle_t handle_volume
     (alloc (volumes_per_node * Job.SubVolMemSize, "handle_volume", memsizeGPI));
 
   const fvmAllocHandle_t scratch_volume (alloc (Job.SubVolMemSize, "scratch_volume", memsizeGPI));
 
-  const long per_offset_bunches (static_cast<long>(Nbid_in_pid (1, 1, Job)));
+  const long work_parts (offsets * per_offset_volumes);
+
+  // TUNING: the 2: at least (k=2) times P workparts
+  long copies (divru (2 * node_count, work_parts));
 
   // buffer for readTT, is 10 MiB enough?
-  long size_store_bunch ((memsizeGPI - (10<<20)) / Job.BunchMemSize);
+  long bunch_store_per_node ((memsizeGPI - (10<<20)) / Job.BunchMemSize);
 
-  long bunch_store_per_node (size_store_bunch / fvmGetNodeCount() - 1);
+  const long per_offset_bunches (static_cast<long>(Nbid_in_pid (1, 1, Job)));
 
-  const long per_offset_volumes (Job.NSubVols);
-  const long offsets_at_once ( (volumes_per_node * fvmGetNodeCount()) 
-                             / per_offset_volumes
-                             );
+  long offsets_at_once (divru ( volumes_per_node * node_count 
+			      , copies * per_offset_volumes
+			      )
+		       );
 
   bunch_store_per_node = 
     std::min ( bunch_store_per_node
-	     , (per_offset_bunches * offsets_at_once) / fvmGetNodeCount()
+	     , divru ( per_offset_bunches * offsets_at_once
+		     , node_count
+		     )
 	     );
 
-  size_store_bunch = bunch_store_per_node * fvmGetNodeCount();
+  if (bunch_store_per_node < 2)
+    {
+      throw std::runtime_error ("bunch_store_per_node < 2");
+    }
+
+  bunch_store_per_node = 3;
+
+  const long size_store_bunch ((bunch_store_per_node - 1) * node_count);
 
   const fvmAllocHandle_t handle_bunch
-    (alloc (bunch_store_per_node * Job.BunchMemSize, "handle_bunch", memsizeGPI));
+    (alloc ((bunch_store_per_node - 1) * Job.BunchMemSize, "handle_bunch", memsizeGPI));
 
   const fvmAllocHandle_t scratch_bunch
     (alloc (Job.BunchMemSize, "scratch_bunch", memsizeGPI));
-
-  const long offsets (Job.n_offset);
 
   // machine
   put (output, "config", "threads.N", static_cast<long>(NThreads));
@@ -239,20 +261,14 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   put (output, "config", "offsets", offsets);
   put (output, "config", "per.offset.volumes", per_offset_volumes);
   put (output, "config", "per.offset.bunches", per_offset_bunches);
-  put (output, "config", "loadTT.parallel", static_cast<long>(fvmGetNodeCount()));
+
+  put (output, "config", "loadTT.parallel"
+      , std::max (1L, static_cast<long>(fvmGetNodeCount())/2L)
+      );
   put (output, "config", "handle.TT", static_cast<long>(handle_TT));
 
   // tuning
   put (output, "config", "size.store.bunch", size_store_bunch);
-
-  const long work_parts (offsets * per_offset_volumes);
-  long copies (1);
-
-  while (work_parts * copies < 2 * fvmGetNodeCount())
-    {
-      ++copies;
-    }
-
   put (output, "config", "per.volume.copies", copies);
 
   LOG_IF ( WARN
@@ -263,13 +279,13 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 	 );
  
   // tuning: volumes_per_node could be higher
-  const long size_store_volume (volumes_per_node * fvmGetNodeCount());
+  const long size_store_volume (volumes_per_node * node_count);
 
   put (output, "config", "size.store.volume", size_store_volume);
 
   // tuning, derived?
   put ( output, "config", "assign.most"
-      , std::min (size_store_bunch, per_offset_bunches) / 2
+      , divru (size_store_bunch, offsets_at_once) / 2
       );
 
   // tuning induced
