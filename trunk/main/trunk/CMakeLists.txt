@@ -11,8 +11,8 @@ set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM" CACHE STRING "Copyright
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version")
 
-set (GPI_BINARY_DIR  "/opt/cluster/GPI/bin" CACHE STRING "path to the GPI binary directory")
-set (GPI_CONFIG_PATH "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg" CACHE STRING "path to the sdpa-gpi config file")
+#set (GPI_BINARY_DIR  "/opt/cluster/GPI/bin" CACHE STRING "path to the GPI binary directory")
+#set (GPI_CONFIG_PATH "/p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg" CACHE STRING "path to the sdpa-gpi config file")
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION(ENABLE_APPLICATION "Build with application" YES)
