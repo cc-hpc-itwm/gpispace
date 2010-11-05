@@ -1,5 +1,7 @@
 #!/bin/bash
 
+test -r "$HOME/.init-screen.cfg" && source "$HOME/.init-screen.cfg"
+
 head_node="${SDPA_HEAD_NODE}"
 if [ -z "$head_node" ] ; then
     head_node="${PBS_O_HOST}"
@@ -11,8 +13,6 @@ if [ -z "$node_file" ] ; then
 fi
 scratch_dir="$SDPA_SCRATCH_DIR"
 screen_name=
-
-
 
 # example ~/.screenrc
 
@@ -33,6 +33,8 @@ usage $0 [-h] [-f node-file] [-n head-node] [-d scratch-dir] [-s screen-name]
    -n head node (=$head_node)     specifies the head node host (where screen runs)
    -d scratch dir (=$scratch_dir) path to a (shared) scratch directory
    -s screen name (=$screen_name) the name of the screen session
+   -c                             configure init-screen
+   -l                             print shell code to load init-screen environment
 
 important environment variables:
 	export IN_INIT_SCREEN="$IN_INIT_SCREEN"
@@ -47,10 +49,57 @@ important environment variables:
 EOF
 }
 
-while getopts ":hf:n:d:s:" opt; do
+function configure ()
+{
+    # creates $HOME/.init-screen.cfg
+    cat <<EOF
+The "scratch"  directory should be a directory  you are allowed to  write to and
+that is shared among all nodes. I will create a "log" directory within that into
+which all components are going to log.
+
+EOF
+    read -p "scratch directory to use: " scratch_dir
+
+    cat <<EOF
+
+Now I  need a host:ip  string on which  the graphical monitor interface  will be
+running.  It does not  have to  run all  the time,  but if  you want  to monitor
+activities, I need to know that location. Please make sure that nobody else uses
+this location.
+
+EOF
+    read -p "location of the monitor gui [host:ip]: " gui_url
+
+    # create config
+    cat > "$HOME/.init-screen.cfg" <<EOF
+export SDPA_SCRATCH_DIR="$scratch_dir"
+export SDPA_GUI="$gui_url"
+EOF
+
+    cat <<EOF
+Your configuration file in ~/.init-screen.cfg  has been created. To finish setup
+of init-screen, please add the following line to your ~/.bashrc:
+
+   eval \$(init-screen -l)
+EOF
+}
+
+function print_load_instructions ()
+{
+# please pass the following to the 'eval' function
+     cat <<EOF
+if test -r ~/.init-screen.tab ; then if grep -q "`hostname -s`" ~/.init-screen.tab ; then if test -r ~/.init-screen.env ; then source ~/.init-screen.env; fi; fi; fi
+EOF
+}
+
+while getopts ":hclf:n:d:s:" opt; do
     case $opt in
 	h)
 	    usage
+	    exit 0
+	    ;;
+	c)
+	    configure
 	    exit 0
 	    ;;
 	f)
@@ -65,6 +114,10 @@ while getopts ":hf:n:d:s:" opt; do
 	s)
 	    screen_name=$OPTARG
 	    ;;
+	l)
+	    print_load_instructions
+	    exit 0
+	    ;;
 	\?)
 	    echo "invalid option: $OPTARG" >&2
 	    echo "try $0 -h to get a list of options" >&2
@@ -76,6 +129,11 @@ function log ()
 {
     echo "$@" >&2
 }
+
+if [ ! -e "$HOME/.init-screen.cfg" ] ; then
+    log "E: \"$HOME/.init-screen.cfg\" does not exist, please run $0 -c to create one."
+    exit 1
+fi
 
 # sanity check for scratch directory
 if [ ! -d "${scratch_dir}" ] ; then
