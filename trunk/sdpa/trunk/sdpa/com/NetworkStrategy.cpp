@@ -52,7 +52,7 @@ namespace sdpa
     {
       m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, &m_peer)));
       m_peer.start ();
-      m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1, _2));
+      m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
     }
 
     void NetworkStrategy::onStageStop (std::string const &)
@@ -61,22 +61,18 @@ namespace sdpa
       m_thread->join ();
     }
 
-    void NetworkStrategy::handle_recv (fhg::com::p2p::address_t addr, boost::system::error_code const & ec)
+    void NetworkStrategy::handle_recv (boost::system::error_code const & ec)
     {
       static sdpa::events::Codec codec;
 
       if (! ec)
       {
         // convert m_message to event
-        assert (addr == m_message.header.src);
-
         try
         {
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
           DLOG(TRACE, "received event: " << evt->str());
-          //evt->from () = m_peer.resolve_addr (addr);
-          //evt->to () = m_peer.name();
           ForwardStrategy::perform (evt);
         }
         catch (std::exception const & ex)
@@ -84,23 +80,24 @@ namespace sdpa
           LOG(WARN, "could not handle incoming message: " << ex.what());
         }
 
-        m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1, _2));
+        m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
       }
       else // if (ec != eof)
       {
+        const fhg::com::p2p::address_t & addr = m_message.header.src;
         if (addr != m_peer.address())
         {
-          // TODO: resolve could fail...
-          LOG(WARN, "connection to " << m_peer.resolve_addr(addr) << " lost: " << ec);
+          LOG(WARN, "connection to " << m_peer.resolve (addr, "*unknown*") << " lost: " << ec);
+
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( m_peer.resolve_addr(addr)
+            error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
                                                , m_peer.name()
                                                , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
           ForwardStrategy::perform (error);
-          m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1, _2));
+          m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
         }
         else
         {

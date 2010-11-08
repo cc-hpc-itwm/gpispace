@@ -52,10 +52,12 @@ namespace fhg
           m_signal.V();
         }
 
+        /*
         void notify()
         {
           notify (T());
         }
+        */
 
         std::size_t count () const
         {

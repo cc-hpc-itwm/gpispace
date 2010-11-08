@@ -260,11 +260,12 @@ BOOST_AUTO_TEST_CASE ( send_to_nonexisting_peer )
 
   try
   {
-    peer_1.send("peer-2", "hello world!");
+    peer_1.send("some-unknown-peer", "hello world!");
+    BOOST_ERROR ( "send to unknown peer did not fail with an exception!" );
   }
   catch (std::exception const & ex)
   {
-    BOOST_ERROR ( ex.what() );
+    // ok
   }
 
   peer_1.stop();
