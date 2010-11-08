@@ -846,9 +846,11 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
                   try
                   {
                     worker_id_t worker_id(error.from());
-                    const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-                    assert (pWorker);
+                    // pWorker is not used below?
+
+                    //const Worker::ptr_t& pWorker = findWorker(worker_id);
+                    //assert (pWorker);
 
                     MLOG(INFO, "worker " << worker_id << " went down (clean). Tell WorkerManager to remove it!");
                     ptr_scheduler_->delWorker(worker_id);
