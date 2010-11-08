@@ -264,7 +264,7 @@ export SDPA_NODEFILE="$HOME/.init-screen.nodefile"
 # logging config
 #
 export FHGLOG_to_server="$master"
-unset  FHGLOG_to_console
+#unset  FHGLOG_to_console
 export FHGLOG_threaded="false"
 export FHGLOG_level="WARN"
 #
