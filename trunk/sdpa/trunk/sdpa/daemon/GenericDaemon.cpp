@@ -450,7 +450,7 @@ bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &
   return true;
 }
 
-Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
 	try {
 		return  ptr_scheduler_->findWorker(worker_id);
@@ -843,17 +843,23 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 		}
 		case ErrorEvent::SDPA_ENODE_SHUTDOWN:
 		{
-			worker_id_t worker_id(error.from());
-			const Worker::ptr_t& pWorker = findWorker(worker_id);
-			if(pWorker)
-			{
-				MLOG(INFO, "worker " << worker_id << " went down (clean). Tell to WorkerManager to remove it!");
-				ptr_scheduler_->delWorker(worker_id);
-			}
-			else
-				MLOG(INFO, "The component " << error.from() << " went down (clean).");
+                  try
+                  {
+                    worker_id_t worker_id(error.from());
+                    const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-			break;
+                    assert (pWorker);
+
+                    MLOG(INFO, "worker " << worker_id << " went down (clean). Tell WorkerManager to remove it!");
+                    ptr_scheduler_->delWorker(worker_id);
+                  }
+                  catch (std::exception const & ex)
+                  {
+                    (void)ex;
+
+                    DLOG(TRACE, "worker not found (ignored): " << ex.what ());
+                  }
+                  break;
 		}
 		default:
 		{

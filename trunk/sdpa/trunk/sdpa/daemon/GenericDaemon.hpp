@@ -133,7 +133,7 @@ namespace sdpa { namespace daemon {
 
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
-	  Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
+	  const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
 	  virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
 
 	  std::string master()const { return master_;}
