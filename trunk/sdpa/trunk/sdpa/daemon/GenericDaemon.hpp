@@ -128,7 +128,7 @@ namespace sdpa { namespace daemon {
 	  virtual void activityCancelled(const id_type& id, const std::string& data);
 
 	  //virtual void configure_network();
-	  virtual void configure_network( std::string daemonUrl, std::string masterName = "", std::string masterUrl = "" );
+	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
 
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
@@ -279,12 +279,6 @@ namespace sdpa { namespace daemon {
 	  unsigned int m_nExternalJobs;
 
 	private:
-  //	  typedef seda::comm::delivery_service<sdpa::events::SDPAEvent::Ptr, sdpa::events::SDPAEvent::message_id_type, seda::Stage> sdpa_msg_delivery_service;
-  //	  seda::comm::ServiceThread service_thread_;
-  //	  sdpa_msg_delivery_service delivery_service_;
-
-	  void messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr);
-
 	  mutable mutex_type ext_job_cnt_mtx_;
   };
 }}

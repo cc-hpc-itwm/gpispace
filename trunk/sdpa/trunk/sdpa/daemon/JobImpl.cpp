@@ -169,13 +169,13 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& /* evt */)
     {
-      DLOG(TRACE, "acknowledged cancelling job " << id());
+    	DLOG(TRACE, "acknowledged cancelling job " << id());
     	// TODO: Notify WFE that the job e.job_id() was canceled (send a CancelJobAckEvent event to the stage WFE)
     }
 
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
     {
-      DLOG(TRACE, "delete job " << id());
+    	DLOG(TRACE, "delete job " << id());
     	b_marked_for_del_ = true;
 
     	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id(), e.id()) );
@@ -185,7 +185,7 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
-      DLOG(TRACE, "query status of job " << id() << " status: " << getStatus());
+    	DLOG(TRACE, "query status of job " << id() << " status: " << getStatus());
 
     	JobStatusReplyEvent::status_t status = getStatus();
 

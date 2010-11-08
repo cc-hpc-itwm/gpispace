@@ -34,7 +34,7 @@ int main (int argc, char **argv)
 	   ("name,n", po::value<std::string>(&nreName)->default_value("NRE_0"), "NRE's logical name")
 	   ("url,u",  po::value<std::string>(&nreUrl)->default_value("localhost"), "NRE's url")
 	   ("agg_name,m",  po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
-	   ("agg_url,p",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
+	   //("agg_url,p",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
 	   ("worker_url,w",  po::value<std::string>(&workerUrl)->default_value("127.0.0.1:8000"), "Worker's url")
 	   ("gui_url,g",  po::value<std::string>(&guiUrl)->default_value("127.0.0.1:9000"), "GUI's url")
 	   ;
@@ -55,18 +55,14 @@ int main (int argc, char **argv)
     <<" having the master "<<aggName<<"("<<aggUrl<<")"<<std::endl
     <<" with the nre-worker running at "<<workerUrl<<std::endl;
 
-  sdpa::daemon::NRE< RealWorkflowEngine
-                   , sdpa::nre::worker::NreWorkerClient
-                   >::ptr_t ptrNRE
-    = sdpa::daemon::NRE< RealWorkflowEngine
-                       , sdpa::nre::worker::NreWorkerClient
-                       >::create( nreName
-                                , nreUrl
-                                , aggName
-                                , aggUrl
-                                , workerUrl
-                                , guiUrl
-                                );
+  sdpa::daemon::NRE< RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t ptrNRE
+    = sdpa::daemon::NRE< RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create( nreName
+																						, nreUrl
+																						, aggName
+																						//, aggUrl
+																						, workerUrl
+																						, guiUrl
+																						);
 
   try {
     sdpa::daemon::NRE< RealWorkflowEngine

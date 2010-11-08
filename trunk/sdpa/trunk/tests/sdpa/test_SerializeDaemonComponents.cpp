@@ -235,7 +235,7 @@ void WorkerSerializationTest::testAggregatorSerialization()
 {
 	std::cout<<std::endl<<"----------------Begin  testAggregatorSerialization----------------"<<std::endl;
 	std::string filename = "testSerializeAggregator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	Aggregator<DummyWorkflowEngine>::ptr_t pAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0", "127.0.0.1:7000");
+	Aggregator<DummyWorkflowEngine>::ptr_t pAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001","orchestrator_0"); //, "127.0.0.1:7000");
 
 	pAgg->ptr_scheduler_ = SchedulerImpl::ptr_t(new SchedulerImpl());
 	SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pAgg->ptr_scheduler_.get());
@@ -840,7 +840,7 @@ void WorkerSerializationTest::testBackupRecoverOrch()
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
-	std::string strWorkflow = read_workflow("workflows/masterworkflow-sdpa-test.gwdl");
+	std::string strWorkflow = read_workflow("workflows/stresstest.pnet");
 
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);

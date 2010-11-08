@@ -38,6 +38,7 @@
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/tokenizer.hpp>
 
 
 using namespace std;
@@ -61,7 +62,6 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_bRegistered(false),
 	  m_nRank(0),
 	  m_nExternalJobs(0)
-          //        , delivery_service_(service_thread_.io_service(), 500)
 {
 }
 
@@ -79,7 +79,6 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_bRegistered(false),
 	  m_nRank(0),
 	  m_nExternalJobs(0)
-          //        , delivery_service_(service_thread_.io_service(), 500)
 {
 	if(!toMasterStageName.empty())
 	{
@@ -111,7 +110,6 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  m_bRegistered(false),
 	  m_nRank(0),
 	  m_nExternalJobs(0)
-          //        , delivery_service_(service_thread_.io_service(), 500)
 {
 }
 
@@ -141,37 +139,65 @@ void GenericDaemon::create_daemon_stage(const GenericDaemon::ptr_t& ptr_daemon )
 //    the configure_network should get a config structure
 //    the peer needs the following: address to bind to, port to use (0 by default)
 //    name of the master is not required, actually, the master can be stored in the kvs...
-void GenericDaemon::configure_network( std::string bind_addr, std::string masterName, std::string masterUrl )
+
+// Remarks bind_addr it's hostname or IP address or IPv6
+//void GenericDaemon::configure_network( const std::string& bind_addr, const std::string& bind_port )
+void GenericDaemon::configure_network( const std::string& daemonUrl, const std::string& masterName )
 {
 	SDPA_LOG_DEBUG("configuring network components...");
 
-        try
-        {
-          const std::string prefix(daemon_stage_->name()+".net");
-          sdpa::com::NetworkStrategy::ptr_t net
-            (new sdpa::com::NetworkStrategy( daemon_stage_->name()
-                                           , name()
-                                           , fhg::com::host_t (bind_addr)
-                                           , fhg::com::port_t ("0")
-                                           )
-            );
-          seda::Stage::Ptr output (new seda::Stage(prefix, net));
-          seda::StageRegistry::instance().insert (output);
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
-          ptr_to_master_stage_ = ptr_to_slave_stage_ = output.get();
-          output->start ();
+    boost::char_separator<char> sep(":");
+    tokenizer tok(daemonUrl, sep);
 
-          if (! masterName.empty())
-            setMaster(masterName);
-        }
-        catch (std::exception const &ex)
-        {
-          LOG(ERROR, "could not configure network component: " << ex.what());
-          throw;
-        }
+    vector< string > vec;
+    vec.assign(tok.begin(),tok.end());
 
-        // TODO: rewrite the startup
-        /*
+    if( vec.empty() || vec.size() > 2 )
+    {
+    	LOG(ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
+    	return;
+    }
+    else
+    {
+    	std::string bind_addr = vec[0];
+    	std::string bind_port("0");
+
+    	if( vec.size() == 2)
+    		bind_port = vec[1];
+
+    	SDPA_LOG_INFO("Host: "<<bind_addr<<", port: "<<bind_port);
+
+		try
+		{
+		  const std::string prefix(/*daemon_stage_->*/name()+".net");
+		  sdpa::com::NetworkStrategy::ptr_t net
+			(new sdpa::com::NetworkStrategy( /*daemon_stage_->*/name()
+										   , name()
+										   , fhg::com::host_t (bind_addr)
+										   , fhg::com::port_t (bind_port)
+										   )
+			);
+
+		  seda::Stage::Ptr output (new seda::Stage(prefix, net));
+		  seda::StageRegistry::instance().insert (output);
+
+		  ptr_to_master_stage_ = ptr_to_slave_stage_ = output.get();
+		  output->start ();
+
+		  if (! masterName.empty())
+			setMaster(masterName);
+		}
+		catch (std::exception const &ex)
+		{
+		  LOG(ERROR, "could not configure network component: " << ex.what());
+		  throw;
+		}
+    }
+
+		// TODO: rewrite the startup
+		/*
 	try {
 		SDPA_LOG_DEBUG("setting up decoding...");
 		seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
@@ -217,7 +243,7 @@ void GenericDaemon::configure_network( std::string bind_addr, std::string master
 		SDPA_LOG_ERROR("Exception occurred when trying to start the network stage: "<<ex.what());
 		throw;
 	}
-        */
+		*/
 }
 
 void GenericDaemon::shutdown_network()
@@ -225,6 +251,7 @@ void GenericDaemon::shutdown_network()
 
     if( !master().empty() && is_registered())
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
+
 
     /*
 	SDPA_LOG_DEBUG("shutting-down the network components of the daemon "<<daemon_stage_->name());
@@ -287,7 +314,14 @@ void GenericDaemon::start( const GenericDaemon::ptr_t& ptr_daemon,  sdpa::util::
 
 void GenericDaemon::stop()
 {
+	// shutdown the daemon stage
 	seda::StageRegistry::instance().lookup(name())->stop();
+
+	SDPA_LOG_DEBUG("shutdown the network stage...");
+	std::string network_stage_name(/*daemon_stage_->*/name()+".net");
+
+	//shutdown the network stage
+	seda::StageRegistry::instance().lookup(network_stage_name)->stop();
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -320,12 +354,6 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 	DMLOG(TRACE, "daemon stage is being started");
     //	MLOG(INFO, "registering myself (" << name() << ")...");
 
-        /*
-	DMLOG(TRACE, "starting delivery service...");
-	delivery_service_.register_callback_handler(boost::bind(&GenericDaemon::messageDeliveryFailed, this, _1));
-	delivery_service_.start();
-	service_thread_.start();
-        */
 	DMLOG(TRACE, "starting my scheduler...");
 
 	try
@@ -345,9 +373,6 @@ void GenericDaemon::onStageStop(const std::string & /* stageName */)
 	DMLOG(TRACE, "daemon stage is being stopped");
 	// stop the scheduler thread
 	ptr_scheduler_->stop();
-
-        //	service_thread_.stop();
-        //	delivery_service_.stop();
 
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
@@ -404,8 +429,6 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, 
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
 {
 	try {
-          //		delivery_service_.send(to_slave_stage(), pEvt, pEvt->id(), timeout, retries);
-          //		DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
           to_slave_stage()->send(pEvt);
 	}
 	catch(const QueueFull&)
@@ -424,13 +447,7 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, s
 
 bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid)
 {
-  //return delivery_service_.acknowledge(mid);
   return true;
-}
-
-void GenericDaemon::messageDeliveryFailed(sdpa::events::SDPAEvent::Ptr e)
-{
-  MLOG(ERROR, "delivery of message[" << e->id() << "] failed: " << e->str());
 }
 
 Worker::ptr_t GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -826,8 +843,16 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 		}
 		case ErrorEvent::SDPA_ENODE_SHUTDOWN:
 		{
-			MLOG(INFO, "worker " << error.from() << " went down (clean)");
-			ptr_scheduler_->delWorker(error.from());
+			worker_id_t worker_id(error.from());
+			const Worker::ptr_t& pWorker = findWorker(worker_id);
+			if(pWorker)
+			{
+				MLOG(INFO, "worker " << worker_id << " went down (clean). Tell to WorkerManager to remove it!");
+				ptr_scheduler_->delWorker(worker_id);
+			}
+			else
+				MLOG(INFO, "The component " << error.from() << " went down (clean).");
+
 			break;
 		}
 		default:

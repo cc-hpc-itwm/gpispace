@@ -24,6 +24,14 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/tests_config.hpp)
 
+add_subdirectory(workflows)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
+	COMMAND ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc 
+	ARGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
+    COMMENT "Invoke command: ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet" VERBATIM
+)
+       
 set (test_srcs
   SchedulerTestImpl.cpp
   test_Components.cpp
@@ -37,10 +45,10 @@ set (test_srcs
   test_SerializeSharedPtr.cpp
   test_UUID.cpp
   test_Worker.cpp
-
   ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 )
-
+                   
 ADD_LIBRARY(sdpa-test ${test_srcs})
 target_link_libraries(sdpa-test
 	 sdpa-daemon
@@ -72,5 +80,5 @@ target_link_libraries(mini_test_suite uuid)
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
-# copy workflows over to the build directory
-add_subdirectory(workflows)
+#add_dependencies (sdpa-test ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
+                   

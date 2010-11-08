@@ -28,24 +28,26 @@ namespace sdpa { namespace tests {
 
       // disabled for now: suiteOfTests->addTest( ModuleTest::suite() );
 
+      /*
       suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
       suiteOfTests->addTest( JobIdTest::suite() );
       suiteOfTests->addTest( ConfigTest::suite() );
-      // suiteOfTests->addTest( FSMPerformanceTest::suite() );
+
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       suiteOfTests->addTest( LoadBalancerTest::suite() );
+      */
 
-      // obsolete, see later
+      //obsolete, see later
       //suiteOfTests->addTest( D2D2DDummyWfEngTest::suite() );
       //suiteOfTests->addTest( D2D2DRealWfEngTest:suite() );
 
       suiteOfTests->addTest( TestComponents::suite() );
 
-      suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
+      /*suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
       suiteOfTests->addTest( TestSerializeJobPtr::suite() );
-      suiteOfTests->addTest( WorkerSerializationTest::suite() );
+      suiteOfTests->addTest( WorkerSerializationTest::suite() );*/
 
 
       return suiteOfTests;

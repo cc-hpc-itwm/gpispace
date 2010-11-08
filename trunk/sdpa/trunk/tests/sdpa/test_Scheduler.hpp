@@ -21,7 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/memory.hpp"
 #include "sdpa/logging.hpp"
-#include "SchedulerTestImpl.hpp"
+//#include "SchedulerTestImpl.hpp"
 
 namespace sdpa {
 		namespace tests {

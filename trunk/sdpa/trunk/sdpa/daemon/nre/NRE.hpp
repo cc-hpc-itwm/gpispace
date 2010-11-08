@@ -48,7 +48,7 @@ namespace sdpa {
 		NRE( const std::string& name = ""
                    , const std::string& url = ""
                    , const std::string& masterName = ""
-                   , const std::string& masterUrl = ""
+                   //, const std::string& masterUrl = ""
                    , const std::string& workerUrl = ""
                    , const std::string& guiUrl = ""
                    // TODO: fixme, this is ugly
@@ -63,7 +63,7 @@ namespace sdpa {
                 , SDPA_INIT_LOGGER(name)
                 , url_(url)
                 , masterName_(masterName)
-                , masterUrl_(masterUrl)
+                //, masterUrl_(masterUrl)
                 , workerUrl_(workerUrl)
                 , m_guiServ("SDPA", guiUrl)
                 , bLaunchNrePcd_(bLaunchNrePcd)
@@ -91,8 +91,8 @@ namespace sdpa {
 				int nStatus;
 
 				//kill pcd here
-				//kill(0,SIGTERM);
-                                kill(0, 0);
+				kill(0,SIGTERM);
+				//kill(0, 0);
 
 				c = wait(&nStatus);
 				if( WIFEXITED(nStatus) )
@@ -110,18 +110,19 @@ namespace sdpa {
 						}
 				}
 			}
-                        if (ptr_workflow_engine_)
-                        {
-                          DLOG(TRACE, "deleting workflow engine...");
-                          delete ptr_workflow_engine_;
-                          ptr_workflow_engine_ = NULL;
-                        }
+
+			if (ptr_workflow_engine_)
+			{
+			  DLOG(TRACE, "deleting workflow engine...");
+			  delete ptr_workflow_engine_;
+			  ptr_workflow_engine_ = NULL;
+			}
 		}
 
 		static ptr_t create( const std::string& name
                                    , const std::string& url
                                    , const std::string& masterName
-                                   , const std::string& masterUrl
+                                   //, const std::string& masterUrl
                                    , const std::string& workerUrl
                                    , const std::string guiUrl = "127.0.0.1:9000"
                                    // TODO: fixme, this is ugly
@@ -134,7 +135,7 @@ namespace sdpa {
 			 return ptr_t(new NRE<T, U>( name
                                                    , url
                                                    , masterName
-                                                   , masterUrl
+                                                   //, masterUrl
                                                    , workerUrl
                                                    , guiUrl
                                                    , bLaunchNrePcd
@@ -167,7 +168,7 @@ namespace sdpa {
 
 		const std::string& url() const {return url_;}
 		const std::string& masterName() const { return masterName_; }
-		const std::string& masterUrl() const { return masterUrl_; }
+		//const std::string& masterUrl() const { return masterUrl_; }
 
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int)
@@ -175,8 +176,8 @@ namespace sdpa {
 			ar & boost::serialization::base_object<DaemonFSM>(*this);
 			ar & url_; //boost::serialization::make_nvp("url_", url_);
 			ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
-			ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
-			//ar & workerUrl_;
+			//ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
+			ar & workerUrl_;
 			//ar & m_guiServ;
 		}
 
@@ -203,7 +204,7 @@ namespace sdpa {
 
 		std::string url_;
 		std::string masterName_;
-		std::string masterUrl_;
+		//std::string masterUrl_;
 		std::string workerUrl_;
 		gui_service m_guiServ;
 		bool bLaunchNrePcd_;
@@ -229,7 +230,7 @@ template <typename T, typename U>
 void NRE<T, U>:: start(NRE<T, U>::ptr_t ptrNRE)
 {
 	dsm::DaemonFSM::create_daemon_stage(ptrNRE);
-	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName(), ptrNRE->masterUrl() );
+	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName() );
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
 	dsm::DaemonFSM::start(ptrNRE, ptrCfg);
 }

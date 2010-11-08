@@ -32,12 +32,13 @@ namespace sdpa {
 			SDPA_DECLARE_LOGGER();
 
 			Aggregator( const std::string& name = "", const std::string& url = "",
-						const std::string& masterName = "", const std::string& masterUrl = "")
+						const std::string& masterName = "")
+			//, const std::string& masterUrl = "")
 			: DaemonFSM( name, create_workflow_engine<T>() ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
-				  masterName_(masterName),
-				  masterUrl_(masterUrl)
+				  masterName_(masterName)
+				 //, masterUrl_(masterUrl)
 			{
 				SDPA_LOG_DEBUG("Aggregator constructor called ...");
 				//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
@@ -48,10 +49,10 @@ namespace sdpa {
 
 			static ptr_t create( const std::string& name,
 							     const std::string& url,
-								 const std::string& masterName,
-								 const std::string& masterUrl )
+								 const std::string& masterName )
+								 //,const std::string& masterUrl )
 			{
-				 return ptr_t( new Aggregator<T>( name, url, masterName, masterUrl));
+				 return ptr_t( new Aggregator<T>( name, url, masterName )); //, masterUrl));
 			}
 
 			static void start(ptr_t ptrAgg);
@@ -69,7 +70,7 @@ namespace sdpa {
 
 			const std::string& url() const {return url_;}
 			const std::string& masterName() const { return masterName_; }
-			const std::string& masterUrl() const { return masterUrl_; }
+			//const std::string& masterUrl() const { return masterUrl_; }
 
 			template <class Archive>
 			void serialize(Archive& ar, const unsigned int)
@@ -77,7 +78,7 @@ namespace sdpa {
 				ar & boost::serialization::base_object<DaemonFSM>(*this);
 				ar & url_; //boost::serialization::make_nvp("url_", url_);
 				ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
-				ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
+				//ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
 			}
 
 			virtual void backup( const std::string& );
@@ -89,13 +90,13 @@ namespace sdpa {
 			private:
 			Scheduler* create_scheduler()
 			{
-                          DLOG(TRACE, "creating aggregator scheduler...");
+				DLOG(TRACE, "creating aggregator scheduler...");
 				return new SchedulerAgg(this);
 			}
 
 			std::string url_;
 			std::string masterName_;
-			std::string masterUrl_;
+			//std::string masterUrl_;
 		};
 	}
 }
@@ -124,7 +125,7 @@ template <typename T>
 void Aggregator<T>::start(Aggregator<T>::ptr_t ptrAgg)
 {
 	dsm::DaemonFSM::create_daemon_stage(ptrAgg);
-	ptrAgg->configure_network( ptrAgg->url(), ptrAgg->masterName(), ptrAgg->masterUrl());
+	ptrAgg->configure_network( ptrAgg->url(), ptrAgg->masterName() );
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
 	dsm::DaemonFSM::start(ptrAgg, ptrCfg);
 }

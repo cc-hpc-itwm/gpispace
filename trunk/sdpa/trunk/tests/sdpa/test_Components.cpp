@@ -115,6 +115,8 @@ void TestComponents::setUp()
 { //initialize and start the finite state machine
 	SDPA_LOG_DEBUG("setUP");
 
+	//Don't forget to start ./fhgcom/bin/fhgkvsd !!!!!!!!!!!!!!!!!!
+
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -136,17 +138,19 @@ void TestComponents::tearDown()
 	m_ptrCli->shutdown_network();
 	m_ptrCli.reset();
 	seda::StageRegistry::instance().clear();
+
+	//Don't forget to stop ./fhgcom/bin/fhgkvsd !!!!!!!!!!!!!!!!!!
 }
 
 
 void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 {
 	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndNreWorkerSpawnedByNRE *****"<<std::endl);
-	string strGuiUrl = "";
-	string workerUrl = "127.0.0.1:12500";
-	string orchestratorPort = "127.0.0.1:12000";
-	string aggregatorPort = "127.0.0.1:12001";
-	string nrePort = "127.0.0.1:12002";
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
 
 	bool bLaunchNrePcd = true;
 
@@ -154,11 +158,11 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	SDPA_LOG_DEBUG("Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", orchestratorPort, "workflows");
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::start(ptrOrch);
 
 	SDPA_LOG_DEBUG("Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", aggregatorPort,"orchestrator_0", orchestratorPort);
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -171,7 +175,9 @@ void TestComponents::testActivityRealWeAllCompAndNreWorkerSpawnedByNRE()
 	SDPA_LOG_DEBUG("Create the NRE ...");
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
-				                             nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl,
+				                             addrNRE,"aggregator_0",
+				                             workerUrl,
+				                             strGuiUrl,
 				                             bLaunchNrePcd,
 				                             TESTS_NRE_PCD_BIN_PATH,
 				                             v_fake_PC_search_path,
@@ -295,27 +301,27 @@ void TestComponents::startPcdAndDaemons(const std::string& workerUrl) throw (std
 void TestComponents::startDaemons(const std::string& workerUrl)
 {
 	string strGuiUrl = "";
-	string orchestratorPort = "127.0.0.1:12000";
-	string aggregatorPort = "127.0.0.1:12001";
-	string nrePort = "127.0.0.1:12002";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
 	bool bLaunchNrePcd = false;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	SDPA_LOG_DEBUG("Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", orchestratorPort, "workflows");
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::start(ptrOrch);
 
 	SDPA_LOG_DEBUG("Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", aggregatorPort,"orchestrator_0", orchestratorPort);
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and real GWES
 	SDPA_LOG_DEBUG("Create the NRE ...");
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
-											 nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl );
+											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 
 	try {
@@ -371,26 +377,26 @@ void TestComponents::testActivityRealWeAllCompActExec()
 	SDPA_LOG_DEBUG("***** testActivityRealWeAllCompAndActExec *****"<<std::endl);
 	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:12500";
-	string orchestratorPort = "127.0.0.1:12000";
-	string aggregatorPort = "127.0.0.1:12001";
-	string nrePort = "127.0.0.1:12002";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
 	bool bLaunchNrePcd = false;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	SDPA_LOG_DEBUG("Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", orchestratorPort, "workflows");
+	sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::start(ptrOrch);
 
 	SDPA_LOG_DEBUG("Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", aggregatorPort,"orchestrator_0", orchestratorPort);
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and dummy WE
 	SDPA_LOG_DEBUG("Create the NRE ...");
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl );
+		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	SDPA_LOG_DEBUG("starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
@@ -476,26 +482,26 @@ void TestComponents::testActivityDummyWeAllCompActExec()
 	SDPA_LOG_DEBUG("***** testActivityDummyWeAllCompAndNreWorker *****"<<std::endl);
 	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:12500";
-	string orchestratorPort = "127.0.0.1:12000";
-	string aggregatorPort = "127.0.0.1:12001";
-	string nrePort = "127.0.0.1:12002";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
 	bool bLaunchNrePcd = false;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	SDPA_LOG_DEBUG("The test workflow is "<<m_strWorkflow);
 
 	SDPA_LOG_DEBUG("Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", orchestratorPort, "workflows");
+	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
 	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::start(ptrOrch);
 
 	SDPA_LOG_DEBUG("Create the Aggregator ...");
-	sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", aggregatorPort,"orchestrator_0", orchestratorPort);
+	sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
 
 	// use external scheduler and dummy WE
 	SDPA_LOG_DEBUG("Create the NRE ...");
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", nrePort,"aggregator_0", aggregatorPort, workerUrl, strGuiUrl );
+		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	SDPA_LOG_DEBUG("starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
