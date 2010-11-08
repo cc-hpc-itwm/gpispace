@@ -44,5 +44,5 @@ if $debug ; then
   log "running within gdb..."
   gdb -ex run --args aggregator -n "${name}" -m "${orch}" -u "${bind_addr}"
 else
-  FHGLOG_to_file="$SDPA_LOG_DIR/agg.log" aggregator -n "${name}" -m "${orch}" -u "${bind_addr}"
+  FHGLOG_to_file="$SDPA_LOG_DIR/agg.`hostname -s`.log" aggregator -n "${name}" -m "${orch}" -u "${bind_addr}"
 fi
