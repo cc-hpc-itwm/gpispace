@@ -16,6 +16,7 @@ namespace sdpa
                                      )
       : super (next_stage)
       , m_peer (peer_name, host, port)
+      , m_shutting_down (false)
     {}
 
     NetworkStrategy::~NetworkStrategy ()
@@ -50,6 +51,8 @@ namespace sdpa
 
     void NetworkStrategy::onStageStart (std::string const &s)
     {
+      m_shutting_down = false;
+
       super::onStageStart (s);
 
       m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, &m_peer)));
@@ -59,6 +62,8 @@ namespace sdpa
 
     void NetworkStrategy::onStageStop (std::string const & s)
     {
+      m_shutting_down = true;
+
       m_peer.stop();
       m_thread->join ();
 
@@ -86,7 +91,7 @@ namespace sdpa
 
         m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
       }
-      else // if (ec != eof)
+      else if (! m_shutting_down)
       {
         const fhg::com::p2p::address_t & addr = m_message.header.src;
         if (addr != m_peer.address())

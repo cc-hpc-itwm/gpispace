@@ -37,6 +37,7 @@ namespace sdpa
       fhg::com::peer_t m_peer;
       fhg::com::message_t m_message;
       shared_ptr<boost::thread> m_thread;
+      bool m_shutting_down;
     };
   }
 }
