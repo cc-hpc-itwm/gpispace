@@ -32,8 +32,7 @@ namespace fhg
       typedef peer_t self;
 
     public:
-      //      typedef void (*handler_t)(boost::system::error_code const &);
-      typedef boost::function <void (p2p::address_t, boost::system::error_code const &)> handler_t;
+      typedef boost::function <void (boost::system::error_code const &)> handler_t;
 
       peer_t ( std::string const & name
              , host_t const & host
@@ -73,6 +72,10 @@ namespace fhg
       p2p::address_t resolve_name (std::string const &);
       void resolve_name (std::string const & name, p2p::address_t & addr);
       void resolve_addr (p2p::address_t const & addr, std::string & name);
+
+      p2p::address_t resolve (std::string const & name);
+      std::string    resolve (p2p::address_t const & addr, std::string const & dflt = "*unknown*");
+
     protected:
       void handle_system_data (connection_t *, const message_t *m);
       void handle_user_data   (connection_t *, const message_t *m);
