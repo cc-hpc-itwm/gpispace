@@ -847,19 +847,25 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
                   {
                     worker_id_t worker_id(error.from());
 
-                    // pWorker is not used below?
-
-                    //const Worker::ptr_t& pWorker = findWorker(worker_id);
-                    //assert (pWorker);
+                    findWorker(worker_id);
 
                     MLOG(INFO, "worker " << worker_id << " went down (clean). Tell WorkerManager to remove it!");
                     ptr_scheduler_->delWorker(worker_id);
+                  }
+                  catch (WorkerNotFoundException const & /*ignored*/)
+                  {
+                    if (error.from() == master_)
+                    {
+                      LOG(WARN, "master (" << master_ << ") went down");
+
+                      LOG(ERROR, "TODO: implement me. everything should stay alive, messages to master have to be kept though");
+                    }
                   }
                   catch (std::exception const & ex)
                   {
                     (void)ex;
 
-                    DLOG(TRACE, "worker not found (ignored): " << ex.what ());
+                    LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
                   }
                   break;
 		}
