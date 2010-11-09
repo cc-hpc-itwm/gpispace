@@ -197,7 +197,6 @@ namespace fhg
           try
           {
             using namespace boost::system;
-            DLOG(DEBUG, "calling completion handler with: " << errc::make_error_code (errc::no_such_process));
             completion_handler(errc::make_error_code (errc::no_such_process));
           }
           catch (std::exception const & ex)
