@@ -233,7 +233,12 @@ namespace fhg
         boost::asio::ip::tcp::resolver::query query(h, p);
         boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
 
-        LOG(DEBUG, "initiating connection to " << addr << " at " << endpoint);
+        LOG( DEBUG
+           , my_addr_ << " (" << name_ << ")"
+           << " connecting to "
+           << addr << " (" << n << ")"
+           << " at " << endpoint
+           );
         cd.connection->socket().async_connect( endpoint
                                              , boost::bind ( &self::connection_established
                                                            , this
