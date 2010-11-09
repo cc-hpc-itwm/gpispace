@@ -354,25 +354,16 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 	DMLOG(TRACE, "daemon stage is being started");
     //	MLOG(INFO, "registering myself (" << name() << ")...");
 
-	DMLOG(TRACE, "starting my scheduler...");
-
-	try
-	{
-		ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
-		ptr_scheduler_->start();
-	} catch (...)
-	{
-		ptr_scheduler_->stop();
-		ptr_scheduler_.reset();
-		throw;
-	}
 }
 
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
 {
 	DMLOG(TRACE, "daemon stage is being stopped");
-	// stop the scheduler thread
-	ptr_scheduler_->stop();
+        if (ptr_scheduler_)
+        {
+          // stop the scheduler thread
+          ptr_scheduler_->stop();
+        }
 
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
@@ -500,6 +491,11 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	SDPA_LOG_INFO("Configuring myself (generic)...");
 
 	// use for now as below, later read from config file
+        // TODO: move this to "property" style:
+        //    dot separated
+        //    hierarchies / categories
+        //    retrieve values maybe from kvs?
+        //    no spaces
 	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
 	ptr_daemon_cfg_->put("upper bound polling interval", 5 * 1000*1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  2 * 1000 * 1000);
@@ -510,9 +506,23 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
-	// check if the system should be recovered
-	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_INFO("configuration was ok");
+  // check if the system should be recovered
+  // should be overriden by the orchestrator, aggregator and NRE
+  SDPA_LOG_INFO("configuration (generic) was ok");
+
+  try
+  {
+    LOG(INFO, "starting scheduler...");
+    ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
+    ptr_scheduler_->start();
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(ERROR, "scheduler could not be started: " << ex.what());
+    ptr_scheduler_->stop();
+    ptr_scheduler_.reset();
+    throw;
+  }
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent &)
@@ -524,6 +534,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 {
 	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 	// save the current state of the system .i.e serialize the daemon's state
+        // stop scheduler...
 }
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)

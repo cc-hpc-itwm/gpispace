@@ -265,8 +265,10 @@ void NRE<T, U>::action_configure(const StartUpEvent &se)
 }
 
 template <typename T, typename U>
-void NRE<T, U>::action_config_ok(const ConfigOkEvent&)
+void NRE<T, U>::action_config_ok(const ConfigOkEvent& e)
 {
+        GenericDaemon::action_config_ok (e);
+
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuration (nre) was ok");
 
