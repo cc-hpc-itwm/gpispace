@@ -31,7 +31,7 @@ namespace fhg
                  , const std::string & service
                  , const bool reuse_addr = true
                  );
-
+      void stop ();
     private:
 
       void accept ();
