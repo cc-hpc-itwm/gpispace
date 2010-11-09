@@ -285,8 +285,13 @@ namespace fhg
 
       if (ec)
       {
-        LOG(WARN, "recv failed: " << ec);
-        throw boost::system::system_error(ec);
+        LOG_IF( WARN
+              , ec.value() != boost::asio::error::eof
+              , "recv failed: " << ec << ": " << ec.message();
+              );
+        throw boost::system::system_error ( ec.value()
+                                          , boost::asio::error::get_misc_category()
+                                          );
       }
 
       std::size_t data_size = 0;
@@ -314,8 +319,13 @@ namespace fhg
 
       if (ec)
       {
-        LOG(WARN, "recv failed: " << ec);
-        throw boost::system::system_error(ec);
+        LOG_IF( WARN
+              , ec.value() != boost::asio::error::eof
+              , "recv failed: " << ec << ": " << ec.message();
+              );
+        throw boost::system::system_error ( ec.value()
+                                          , boost::asio::error::get_misc_category()
+                                          );
       }
 
       DLOG( TRACE
