@@ -74,5 +74,8 @@ include_directories(${FhgLog_INCLUDE_DIR})
 find_package (MMGR REQUIRED)
 include_directories(${MMGR_INCLUDE_DIR})
 
+find_package (UTIL REQUIRED)
+include_directories(${MMGR_INCLUDE_DIR})
+
 add_subdirectory(src)
 add_subdirectory(bin)
