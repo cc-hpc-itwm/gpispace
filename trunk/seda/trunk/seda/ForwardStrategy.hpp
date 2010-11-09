@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,13 +16,14 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
 #ifndef SEDA_FORWARD_STRATEGY_HPP
 #define SEDA_FORWARD_STRATEGY_HPP 1
 
+#include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
 namespace seda {
@@ -30,8 +31,8 @@ namespace seda {
     public:
         explicit
         ForwardStrategy(const std::string& a_next)
-            : Strategy("fwd-to-"+a_next), _next(a_next) {}
-        
+          : Strategy("fwd-to-"+a_next), _next(a_next) {}
+
         ForwardStrategy(const std::string& a_name, const std::string& a_next)
             : Strategy(a_name), _next(a_next) {}
         virtual ~ForwardStrategy() {}
@@ -40,8 +41,13 @@ namespace seda {
 
         virtual void next(const std::string& a_next) { _next = a_next; }
         virtual const std::string& next() const { return _next; }
+
+      virtual void onStageStart(const std::string&);
+      virtual void onStageStop(const std::string&);
+
     private:
         std::string _next;
+      Stage::Ptr _next_stage;
     };
 }
 

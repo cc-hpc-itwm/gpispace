@@ -513,6 +513,11 @@ void SchedulerImpl::stop()
          );
 }
 
+static bool is_root_node (std::string const & n)
+{
+  return n == sdpa::daemon::ORCHESTRATOR;
+}
+
 bool SchedulerImpl::post_request(bool force)
 {
 	if(!ptr_comm_handler_)
@@ -526,7 +531,7 @@ bool SchedulerImpl::post_request(bool force)
 	sdpa::util::time_type current_time = sdpa::util::now();
 	sdpa::util::time_type difftime = current_time - m_last_request_time;
 
-	if(force || (sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered()) )
+	if(force || (! is_root_node (ptr_comm_handler_->name()) &&  ptr_comm_handler_->is_registered()) )
 	{
 		if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
 		{
@@ -555,7 +560,12 @@ void SchedulerImpl::send_life_sign()
 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
-	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+         // TODO: remove life signs completely
+         //    just make sure, that a un-registered worker tries to connect *forever*
+
+         //	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+         // this condition has already been checked...
+	 if(! is_root_node (ptr_comm_handler_->name()))
 	 {
 		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
 		 {
@@ -575,15 +585,18 @@ void SchedulerImpl::check_post_request()
 		return;
 	}
 
-	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+        if( ! is_root_node (ptr_comm_handler_->name()))
 	 {
-		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
-		 // post job request if number_of_jobs() < #registered workers +1
-		 if( jobs_to_be_scheduled.size() <= numberOfWorkers() + 3 )
-			 post_request();
-		 else //send a LS
-			 send_life_sign();
-	 }
+           // TODO: remove requests
+           if (ptr_comm_handler_->is_registered() && jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
+           {
+             post_request();
+           }
+           else
+           {
+             send_life_sign();
+           }
+         }
 }
 
 void SchedulerImpl::run()

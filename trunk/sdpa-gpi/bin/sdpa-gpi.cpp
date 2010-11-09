@@ -139,6 +139,10 @@ int main (int ac, char *av[])
     killProcsGPI();
     return EXIT_GPI_ERROR;
   }
+  else
+  {
+    LOG(INFO, "GPI started: version: " << getVersionGPI());
+  }
 
   const int rank = getRankGPI ();
 

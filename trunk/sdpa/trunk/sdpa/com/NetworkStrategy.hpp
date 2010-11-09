@@ -16,6 +16,7 @@ namespace sdpa
     {
     public:
       typedef NetworkStrategy self;
+      typedef seda::ForwardStrategy super;
       typedef shared_ptr<NetworkStrategy> ptr_t;
 
       NetworkStrategy ( std::string const & next_stage
@@ -36,6 +37,7 @@ namespace sdpa
       fhg::com::peer_t m_peer;
       fhg::com::message_t m_message;
       shared_ptr<boost::thread> m_thread;
+      bool m_shutting_down;
     };
   }
 }

@@ -14,8 +14,9 @@ namespace sdpa
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : seda::ForwardStrategy (next_stage)
+      : super (next_stage)
       , m_peer (peer_name, host, port)
+      , m_shutting_down (false)
     {}
 
     NetworkStrategy::~NetworkStrategy ()
@@ -48,17 +49,25 @@ namespace sdpa
       }
     }
 
-    void NetworkStrategy::onStageStart (std::string const &)
+    void NetworkStrategy::onStageStart (std::string const &s)
     {
+      m_shutting_down = false;
+
+      super::onStageStart (s);
+
       m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, &m_peer)));
       m_peer.start ();
       m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
     }
 
-    void NetworkStrategy::onStageStop (std::string const &)
+    void NetworkStrategy::onStageStop (std::string const & s)
     {
+      m_shutting_down = true;
+
       m_peer.stop();
       m_thread->join ();
+
+      super::onStageStop (s);
     }
 
     void NetworkStrategy::handle_recv (boost::system::error_code const & ec)
@@ -73,7 +82,7 @@ namespace sdpa
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
           DLOG(TRACE, "received event: " << evt->str());
-          ForwardStrategy::perform (evt);
+          super::perform (evt);
         }
         catch (std::exception const & ex)
         {
@@ -82,7 +91,7 @@ namespace sdpa
 
         m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
       }
-      else // if (ec != eof)
+      else if (! m_shutting_down)
       {
         const fhg::com::p2p::address_t & addr = m_message.header.src;
         if (addr != m_peer.address())
@@ -96,7 +105,7 @@ namespace sdpa
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
-          ForwardStrategy::perform (error);
+          super::perform (error);
           m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
         }
         else

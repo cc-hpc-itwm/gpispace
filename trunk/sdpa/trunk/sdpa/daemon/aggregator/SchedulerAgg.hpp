@@ -75,7 +75,8 @@ namespace sdpa {
 	 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
-	 	 if( ptr_comm_handler_->is_registered() )
+
+                 //if( ptr_comm_handler_->is_registered() )
 	 	 {
 	 		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
 	 		 {
@@ -85,10 +86,10 @@ namespace sdpa {
 	 			 m_last_life_sign_time = current_time;
 	 		 }
 	 	 }
-		 else
-		 {
-			 DMLOG(DEBUG, "not sending life-sign, i am not registered yet");
-		 }
+		 // else
+		 // {
+		 //         DMLOG(DEBUG, "not sending life-sign, i am not registered yet");
+		 // }
 	 }
 
 	 void check_post_request()
@@ -103,7 +104,7 @@ namespace sdpa {
 	 	 }
 		 else
 		 {
-			 DMLOG(DEBUG, "not requesting job, i am not registered yet");
+                   send_life_sign ();
 		 }
 	 }
 

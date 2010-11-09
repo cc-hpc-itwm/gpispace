@@ -145,7 +145,7 @@ void Orchestrator<T>::action_configure(const StartUpEvent &se)
 }
 
 template <typename T>
-void Orchestrator<T>::action_config_ok(const ConfigOkEvent&)
+void Orchestrator<T>::action_config_ok(const ConfigOkEvent& e)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuration (orchestrator) was ok");
@@ -154,6 +154,8 @@ void Orchestrator<T>::action_config_ok(const ConfigOkEvent&)
 	  ptr_daemon_cfg_->writeTo (sstr);
 	  SDPA_LOG_INFO("config: " << sstr.str());
 	}
+
+        GenericDaemon::action_config_ok (e);
 }
 
 template <typename T>
