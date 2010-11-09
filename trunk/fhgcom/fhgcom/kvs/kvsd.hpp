@@ -161,18 +161,21 @@ namespace fhg
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
           explicit
-          kvsd (const std::string & file, const bool write_through=false)
+          kvsd (const std::string & file = "", const bool write_through=false)
             : file_(file)
             , write_through_enabled_(write_through)
           {
-            try
+            if (! file_.empty())
             {
-              LOG(DEBUG, "loading contents from file storage: " << file);
-              load ();
-            }
-            catch (std::exception const & ex)
-            {
-              LOG(WARN, "could not load file storage: " << ex.what());
+              try
+              {
+                LOG(DEBUG, "loading contents from file storage: " << file);
+                load ();
+              }
+              catch (std::exception const & ex)
+              {
+                LOG(WARN, "could not load file storage: " << ex.what());
+              }
             }
           }
 
