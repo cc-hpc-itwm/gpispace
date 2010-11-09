@@ -18,6 +18,11 @@ tcp_server::tcp_server ( io_service_pool & pool
 {
 }
 
+void tcp_server::stop ()
+{
+  acceptor_.close();
+}
+
 void tcp_server::start ()
 {
   start (host_, service_, reuse_addr_);
