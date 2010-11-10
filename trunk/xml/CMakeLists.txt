@@ -26,6 +26,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
+find_package(FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+
 include(FindUTIL REQUIRED)
 if (UTIL_FOUND)
   include_directories(${UTIL_INCLUDE_DIR})
