@@ -61,6 +61,8 @@ static fvmAllocHandle_t alloc ( const long & size
 
   if (h == 0)
     {
+      MLOG (INFO, "h == 0");
+
       throw std::runtime_error ("KDM::initialize " + descr + " == 0");
     }
 
@@ -76,9 +78,11 @@ static fvmAllocHandle_t alloc ( const long & size
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const std::string & filename (get<std::string> (input, "file_config"));
+  const std::string & file_param (get<std::string> (input, "file_param"));
   long memsizeGPI (get<long> (input, "memsizeGPI"));
 
   MLOG (INFO, "initialize: filename " << filename);
+  MLOG (INFO, "initialize: file_param " << file_param);
   MLOG (INFO, "initialize: memsizeGPI " << memsizeGPI);
 
   const int NThreads (4);
@@ -176,15 +180,10 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
     Job.SubVolMemSize=MigSubVol.getSizeofSVD(); //subvol mem size
   }
 
-  //WORK HERE: add sizeof scratch space here
-  //  Job.ReqVMMemSize = Job.globTTbufsizelocal + 2 * sizeofJob();
-
   Job.BunchMemSize = getSizeofTD(Job);
   Job.shift_for_TT = Job.SubVolMemSize + Job.BunchMemSize;
 
   MLOG(INFO, "Job.BunchMemSize = " << Job.BunchMemSize);
-
-  // Check whether the travel time table covers the entire output volume
 
   // Touch the offset gather
   MigrationFileHandler MFHandler;
@@ -215,8 +214,8 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   const long work_parts (offsets * per_offset_volumes);
 
-  // TUNING: the 2: at least (k=2) times P workparts
-  long copies (divru (2 * node_count, work_parts));
+  // TUNING: the 3: at least (k=3) times P workparts
+  long copies (divru (3 * node_count, work_parts));
 
   // buffer for readTT, is 10 MiB enough?
   long bunch_store_per_node ((memsizeGPI - (10<<20)) / Job.BunchMemSize);
@@ -235,10 +234,12 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 		     )
 	     );
 
-  if (bunch_store_per_node < 2)
-    {
-      throw std::runtime_error ("bunch_store_per_node < 2");
-    }
+//   if (bunch_store_per_node < 2)
+//     {
+//       MLOG (INFO, "bunch_store_per_node < 2");
+
+//       throw std::runtime_error ("bunch_store_per_node < 2");
+//     }
 
   bunch_store_per_node = 3;
 
@@ -274,8 +275,8 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   LOG_IF ( WARN
 	 , copies > 8
 	 ,  "#copies == " << copies << ", does this make any sense?"
-         << " Probably you are running a quite small problem"
-         << " on a quite large machine!?"
+         << " Probably you are running quite a small problem"
+         << " on quite a large machine!?"
 	 );
  
   // tuning: volumes_per_node could be higher
@@ -296,11 +297,33 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   // WORK HERE: overcome this by using virtual offsetclasses
   if ( get<long> (output, "config", "size.store.volume")
-     < get<long> (output, "config", "per.offset.volumes")
+     < ( get<long> (output, "config", "per.offset.volumes")
+       * get<long> (output, "config", "per.volume.copies")
+       )
      )
     {
+      MLOG (INFO, "need at least as many volume stores as volumes per offset");
+
       throw std::runtime_error
         ("need at least as many volume stores as volumes per offset");
+    }
+
+  std::ifstream param (file_param.c_str());
+
+  if (param.good())
+    {
+      while (!param.eof())
+	{
+	  std::string field;
+	  param >> field;
+	  long val;
+	  param >> val;
+	  if (field.size())
+	    {
+	      MLOG (INFO, "from param_file: config." << field << " = " << val);
+	      put (output, "config", field, val);
+	    }
+	}
     }
 
   MLOG (INFO, "initialize: config " << get<value::type>(output, "config"));
