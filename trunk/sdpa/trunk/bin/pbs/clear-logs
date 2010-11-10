@@ -1,0 +1,114 @@
+#!/bin/bash
+
+CLEAR_LOGS_REQUIRE_FORCE=true
+
+test -r ~/.init-screen.env && source ~/.init-screen.env
+
+dry_run=false
+use_force=false
+remove_all=false
+remove_unknown=false
+dir="$SDPA_LOG_DIR"
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $0 [-h] [-x] [-n] [-f]
+
+   -h: this help
+   -a: remove all logfiles
+   -x: remove 'unknown' logfiles (not matching x.host.log)
+   -n: dry-run
+   -f: force execution
+   -d logdir: specifiy directory to work on (default: $dir)
+
+you may set CLEAR_LOGS_REQUIRE_FORCE to "true" or "false" in order
+to control the default behavior (current: $CLEAR_LOGS_REQUIRE_FORCE)
+EOF
+}
+
+function is_fake_mode ()
+{
+    if [ "$dry_run" == "true" ] ; then
+	return 0
+    elif [ "$CLEAR_LOGS_REQUIRE_FORCE" == "true" -a "$use_force" == "false" ] ; then
+	return 0
+    fi
+    return 1
+}
+
+function remove ()
+{
+    target="$1"
+    info="$2"
+    if is_fake_mode ; then
+	echo "would remove: $logfile $2" >&2
+    else
+	echo "(not yet implemented) rm -f $logfile" >&2
+    fi
+}
+
+while getopts ":hxanfd:" opt ; do
+    case "$opt" in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	x)
+	    remove_unknown=true
+	    ;;
+	a)
+	    remove_all=true
+	    ;;
+	n)
+	    dry_run=true
+	    ;;
+	f)
+	    use_force=true
+	    ;;
+	d)
+	    dir="$OPTARG"
+	    ;;
+	\?)
+	    echo "invalid option: $OPTARG" >&2
+	    echo "try $0 -h to get a list of options" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+if [ ! -w "$dir" ] ; then
+    echo "you don't have write access to $dir" >&2
+    exit 2
+fi
+
+if [ -z "$SDPA_NODEFILE" ] ; then
+    echo "W: SDPA_NODEFILE is not defined!" >&2
+    if [ $force == "false" ] ; then
+	echo "switching to dry_run for safety reasons, specify -f to override" >&2
+	dry_run="true"
+    fi
+fi
+
+for logfile in "$dir/*.log"; do
+    base=$( basename "$logfile" )
+    # logfile name format: comp.host.log
+    node=$( echo "$base" | cut -d. -f 2 2>/dev/null)
+    if [ $? -eq 0 -a -n "$node" ] ; then
+	if ! grep -q -e "$node" "$SDPA_NODEFILE" </dev/null ; then
+	    remove "$logfile"
+	else
+	    if [ $remove_all == "true" ] ; then
+		remove "$logfile" "(all)"
+	    fi
+	fi
+    else
+	if [ $remove_unknown == "true" ] ; then
+	    remove "$logfile" "(unknown)"
+	fi
+    fi
+done
+
+for logfile in "$dir/*.log"; do
+    :> "$logfile"
+done
