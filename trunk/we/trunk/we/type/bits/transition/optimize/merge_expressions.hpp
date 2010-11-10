@@ -391,7 +391,13 @@ namespace we { namespace type {
               {
                 const pid_t pid (trans.inner_to_outer (p->first));
 
+                namespace prop = we::type::property::traverse;
+
+                prop::stack_type stack
+                  (prop::dfs (net.get_place(pid).get_property(), "real"));
+
                 if (  net.out_of_place (pid).empty()
+                   && stack.empty()
                    && !is_associated (trans_parent, pid)
                    )
                   {
