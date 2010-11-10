@@ -19,6 +19,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <csignal>
+#include <cstdio>
 
 #include <boost/asio.hpp>
 
@@ -362,9 +363,15 @@ cont:
      			case SIGTERM:
      			case SIGKILL:
      			case SIGHUP:
+                          LOG(INFO, "unloading modules, implement me!");
+                          break;
      			case SIGINT:
      				signal_ignored = false;
      				break;
+                        case SIGUSR2:
+                          DLOG(TRACE, "flushing streams");
+                          fflush(NULL);
+                          break;
      			default:
      				LOG(INFO, "ignoring signal: " << sig);
      				break;
