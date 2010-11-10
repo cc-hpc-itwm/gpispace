@@ -339,6 +339,10 @@ if [ "$open_slave_screens" == "true" ] ; then
     ssh -Y -t "$head_node" screen -D -RR -r -X 'select 0'
 fi
 
+echo "# entering new shell, please logout twice from this window"
 echo "# Please execute the following commands:"
-echo "source $HOME/.init-screen.env"
-echo "trap \"rm -f $HOME/.init-screen.env\" EXIT"
+echo "trap \"rm -f \$HOME/.init-screen.env\" EXIT"
+
+# use the sideeffect that it will source the init-screen.env
+# you have to logout twice now ;-(
+exec $SHELL
