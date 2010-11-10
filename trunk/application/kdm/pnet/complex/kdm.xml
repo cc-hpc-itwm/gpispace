@@ -13,13 +13,13 @@
     <place name="file_config" type="string">
       <token>
         <value>
-          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_C3NA.rahn.xml"
+       "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
         </value>
       </token>
    </place>
    <!--
        "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
-       "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_C3NA.rahn.xml"
     -->
    <place name="done" type="control"/>
 
