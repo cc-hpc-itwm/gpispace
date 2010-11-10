@@ -41,10 +41,18 @@ function remove ()
 {
     target="$1"
     info="$2"
-    if is_fake_mode ; then
-	echo "would remove: $logfile $2" >&2
-    else
-	echo "(not yet implemented) rm -f $logfile" >&2
+    if [ -e "$target" ] ; then
+	if is_fake_mode ; then
+	    echo "would remove: $target $2" >&2
+	else
+	    dirof=$( dirname "$target" )
+	    filen=$( basename "$target" )
+	    tmp=$( echo "$filen" | sed -e 's/\*/\\*/' )
+	    err=$( rm -f -- "\'$dirof/$tmp\'" 2>&1 )
+	    if [ $? -ne 0 ] ; then
+		echo "W: failed to remove $target: $err" >&2
+	    fi
+	fi
     fi
 }
 
@@ -84,18 +92,20 @@ fi
 
 if [ -z "$SDPA_NODEFILE" ] ; then
     echo "W: SDPA_NODEFILE is not defined!" >&2
-    if [ $force == "false" ] ; then
-	echo "switching to dry_run for safety reasons, specify -f to override" >&2
+    if [ $use_force == "false" ] ; then
+	echo "I: switching to dry_run for safety reasons, specify -f to override" >&2
 	dry_run="true"
+    else
+	echo "I: probably removing all files"
     fi
 fi
 
-for logfile in "$dir/*.log"; do
+for logfile in $dir/*.log ; do
     base=$( basename "$logfile" )
     # logfile name format: comp.host.log
     node=$( echo "$base" | cut -d. -f 2 2>/dev/null)
     if [ $? -eq 0 -a -n "$node" ] ; then
-	if ! grep -q -e "$node" "$SDPA_NODEFILE" </dev/null ; then
+	if ! grep -q -e "$node" "$SDPA_NODEFILE" </dev/null 2>/dev/null; then
 	    remove "$logfile"
 	else
 	    if [ $remove_all == "true" ] ; then
