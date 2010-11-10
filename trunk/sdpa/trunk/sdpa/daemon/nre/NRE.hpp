@@ -91,7 +91,10 @@ namespace sdpa {
 				int nStatus;
 
 				//kill pcd here
-				kill(0, 0);
+				pid_t pidPcd = dynamic_cast<SchedulerNRE<U>*>(ptr_scheduler_.get())->nre_worker_client().getPcdPid();
+				//pid_t pidPcd = dynamic_pointer_cast<sdpa::shared_ptr<SchedulerNRE, Scheduler::ptr_t>(ptr_scheduler_)->nre_worker_client().getPcdPid();
+
+				kill(pidPcd, SIGTERM);
 
 				c = wait(&nStatus);
 				if( WIFEXITED(nStatus) )
