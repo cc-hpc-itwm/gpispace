@@ -158,7 +158,7 @@ namespace fhg
           compound_appender->addAppender
             (Appender::ptr_t(new FileAppender( "log-file"
                                              , to_file_
-                                             , default_format::LONG()
+                                             , default_format::SHORT()
                                              )
                             )
             );
