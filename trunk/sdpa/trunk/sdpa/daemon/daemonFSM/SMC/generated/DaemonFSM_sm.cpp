@@ -123,6 +123,13 @@ namespace sdpa
                 return;
             }
 
+            void SMC_DaemonFSM_Down::Default(DaemonFSMContext& context)
+            {
+
+
+                return;
+            }
+
             void SMC_DaemonFSM_Down::Error(DaemonFSMContext& context, const sdpa::events::ErrorEvent& event)
             {
 

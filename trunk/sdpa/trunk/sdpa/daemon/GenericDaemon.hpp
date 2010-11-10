@@ -243,8 +243,11 @@ namespace sdpa { namespace daemon {
 
 	  SDPA_DECLARE_LOGGER();
 
+	  // obsolete
 	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, IWorkflowEngine* );
+	  // obsolete
 	  GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
+	  // current
 	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
 
 	  virtual Scheduler* create_scheduler()
@@ -277,6 +280,9 @@ namespace sdpa { namespace daemon {
 
 	  sdpa::util::time_type m_ullPollingInterval;
 	  unsigned int m_nExternalJobs;
+
+	  std::string m_to_master_stage_name_;
+	  std::string m_to_slave_stage_name_;
 
 	private:
 	  mutable mutex_type ext_job_cnt_mtx_;

@@ -98,6 +98,7 @@ namespace sdpa { namespace nre { namespace worker {
       , nre_pcd_binary_(fvmPCBinary)
       , nre_pcd_search_path_(fvmPCSearchPath)
       , nre_pcd_pre_load_(fvmPCPreLoad)
+      , pidPcd(-1)
     { }
 
     ~NreWorkerClient()
@@ -144,9 +145,9 @@ namespace sdpa { namespace nre { namespace worker {
 		if( nre_pcd_do_exec_ )
        	{
        		LOG(INFO, "Try to spawn nre-pcd with fork!");
-       		pid_t pID = fork();
+       		pidPcd = fork();
 
-			if (pID == 0)  // child
+			if (pidPcd == 0)  // child
 			{
 				// Code only executed by child process
 				LOG(INFO, "After fork, I'm the child process ...");
@@ -211,7 +212,7 @@ namespace sdpa { namespace nre { namespace worker {
 					exit(1);
 				}
 			}
-			else if (pID < 0)            // failed to fork
+			else if (pidPcd < 0)            // failed to fork
 			{
 				LOG(ERROR, "Failed to fork!");
                 throw std::runtime_error ("fork failed: " + std::string(strerror(errno)));
@@ -381,6 +382,8 @@ namespace sdpa { namespace nre { namespace worker {
 
     	return std::make_pair(ACTIVITY_FINISHED, "empty result");
 	}
+
+    pid_t getPcdPid() { return pidPcd; }
 
   private:
 	void ping() throw (NrePcdIsDead)
@@ -673,6 +676,8 @@ namespace sdpa { namespace nre { namespace worker {
     std::string nre_pcd_binary_;
     std::vector<std::string> nre_pcd_search_path_;
     std::vector<std::string> nre_pcd_pre_load_;
+
+    pid_t pidPcd;
   };
 }}}
 

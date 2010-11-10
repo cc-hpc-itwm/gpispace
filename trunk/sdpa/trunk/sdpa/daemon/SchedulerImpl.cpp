@@ -513,6 +513,7 @@ void SchedulerImpl::stop()
          );
 }
 
+//use only for testing purposes!
 static bool is_root_node (std::string const & n)
 {
   return n == sdpa::daemon::ORCHESTRATOR;

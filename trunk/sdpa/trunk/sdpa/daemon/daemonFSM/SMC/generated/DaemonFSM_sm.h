@@ -78,6 +78,7 @@ namespace sdpa
                 : SMC_DaemonFSM_Default(name, stateId)
                 {};
 
+                void Default(DaemonFSMContext& context);
                 void Error(DaemonFSMContext& context, const sdpa::events::ErrorEvent& event);
                 void StartUp(DaemonFSMContext& context, const sdpa::events::StartUpEvent& event);
             };

@@ -33,6 +33,7 @@ namespace sdpa {
 			        typedef boost::recursive_mutex mutex_type;
 			      	typedef boost::unique_lock<mutex_type> lock_type;
 
+			      	// obsolete
 			      	DaemonFSM(	const std::string &name,
 								seda::Stage* ptrToMasterStage,
 								seda::Stage* ptrToSlaveStage,
@@ -44,6 +45,7 @@ namespace sdpa {
                                           DLOG(TRACE, "Daemon state machine created");
 					}
 
+			      	// obsolete
 			      	DaemonFSM(  const std::string &name,
 								IWorkflowEngine*  pArgSdpa2Gwes,
 								const std::string& toMasterStageName,

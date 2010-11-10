@@ -28,6 +28,13 @@ Down
 	Error(event: const sdpa::events::ErrorEvent&)
 	  nil
 	  {}
+	  
+	  
+	Default()
+    	nil
+    	{
+    		
+    	}
 }
 
 Configuring
