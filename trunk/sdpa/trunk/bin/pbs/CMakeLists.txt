@@ -12,6 +12,7 @@ set (prgs
   status-nre
   fvm-cleanup
   init-screen
+  clear-logs
 )
 
 install(PROGRAMS ${prgs}
