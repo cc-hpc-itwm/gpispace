@@ -91,25 +91,29 @@ namespace sdpa {
 				int nStatus;
 
 				//kill pcd here
-				pid_t pidPcd = dynamic_cast<SchedulerNRE<U>*>(ptr_scheduler_.get())->nre_worker_client().getPcdPid();
-				//pid_t pidPcd = dynamic_pointer_cast<sdpa::shared_ptr<SchedulerNRE, Scheduler::ptr_t>(ptr_scheduler_)->nre_worker_client().getPcdPid();
-
-				kill(pidPcd, SIGTERM);
-
-				c = wait(&nStatus);
-				if( WIFEXITED(nStatus) )
+				SchedulerNRE<U>* pSchedNRE = dynamic_cast<SchedulerNRE<U>*>(ptr_scheduler_.get());
+				if( pSchedNRE )
 				{
-					if( WEXITSTATUS(nStatus) != 0 )
+					pid_t pidPcd = pSchedNRE->nre_worker_client().getPcdPid();
+					//pid_t pidPcd = dynamic_pointer_cast<sdpa::shared_ptr<SchedulerNRE, Scheduler::ptr_t>(ptr_scheduler_)->nre_worker_client().getPcdPid();
+
+					kill(pidPcd, SIGTERM);
+
+					c = wait(&nStatus);
+					if( WIFEXITED(nStatus) )
 					{
-						std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-						LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-					}
-					else
-						if( WIFSIGNALED(nStatus) )
+						if( WEXITSTATUS(nStatus) != 0 )
 						{
-							std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-							LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+							std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+							LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
 						}
+						else
+							if( WIFSIGNALED(nStatus) )
+							{
+								std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+								LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+							}
+					}
 				}
 			}
 
