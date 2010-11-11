@@ -9,18 +9,20 @@ use_force=false
 remove_all=false
 remove_unknown=false
 dir="$SDPA_LOG_DIR"
+match_comp=
 
 function usage ()
 {
     cat >&2 <<EOF
-usage: $0 [-h] [-x] [-n] [-f] [-d dir]
+usage: $0 [-h] [-a] [-x] [-n] [-f] [-d dir] [-c component]
 
    -h: this help
    -a: remove all logfiles
-   -x: remove 'unknown' logfiles (not matching x.host.log)
+   -x: remove 'unknown' logfiles (not matching component.host.log)
    -n: dry-run
    -f: force execution
    -d logdir: specifiy directory to work on (default: $dir)
+   -c component: remove only log files from this component
 
 you may set CLEAR_LOGS_REQUIRE_FORCE to "true" or "false" in order
 to control the default behavior (current: $CLEAR_LOGS_REQUIRE_FORCE)
@@ -53,7 +55,7 @@ function remove ()
     fi
 }
 
-while getopts ":hxanfd:" opt ; do
+while getopts ":hxanfd:c:" opt ; do
     case "$opt" in
 	h)
 	    usage
@@ -73,6 +75,9 @@ while getopts ":hxanfd:" opt ; do
 	    ;;
 	d)
 	    dir="$OPTARG"
+	    ;;
+	c)
+	    match_comp="$OPTARG"
 	    ;;
 	\?)
 	    echo "invalid option: $OPTARG" >&2
@@ -100,8 +105,15 @@ fi
 for logfile in "$dir"/*.log ; do
     base=$( basename "$logfile" )
     # logfile name format: comp.host.log
+    comp=$( echo "$base" | cut -d. -f 1 2>/dev/null)
     node=$( echo "$base" | cut -d. -f 2 2>/dev/null)
-    if [ $? -eq 0 -a -n "$node" ] ; then
+    tail=$( echo "$base" | cut -d. -f 3 2>/dev/null)
+    err=$?
+    if [ -n "$match_comp" -a "$match_comp" != "$comp" ] ; then
+	continue
+    fi
+
+    if [ $err -eq 0 -a -n "$node" -a x"$tail" == x"log" ] ; then
 	if ! grep -q -e "$node" "$SDPA_NODEFILE" </dev/null 2>/dev/null; then
 	    remove "$logfile"
 	else
@@ -114,8 +126,15 @@ for logfile in "$dir"/*.log ; do
 	    remove "$logfile" "(unknown)"
 	fi
     fi
-done
 
-for logfile in "$dir"/*.log; do
-    test -e "$logfile" && :> "$logfile"
+    if [ -e "$logfile" ] ; then
+	if is_fake_mode ; then
+	    echo "would clear: $logfile" >&2
+	else
+	    err=$( :> "$logfile" 2>&2 )
+	    if [ $? -ne 0 ] ; then
+		echo "W: could not clear $logfile: $err"
+	    fi
+	fi
+    fi
 done
