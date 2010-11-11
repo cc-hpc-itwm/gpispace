@@ -1,6 +1,7 @@
 # -*- mode: cmake; -*-
 
 set(tc_srcs
+  test_config.cpp
 )
 
 foreach (tc_src ${tc_srcs})
