@@ -15,7 +15,7 @@
 #include <cassert>
 #include <iostream>
 
-void master_shutdown_handler (int signal)
+static void master_shutdown_handler (int signal)
 {
   LOG(INFO, "GPI master process terminating due to signal: " << signal);
   killProcsGPI();
@@ -23,14 +23,14 @@ void master_shutdown_handler (int signal)
   exit (0);
 }
 
-void slave_shutdown_handler (int signal)
+static void slave_shutdown_handler (int signal)
 {
   LOG(INFO, "GPI slave process terminating due to signal: " << signal);
   shutdownGPI();
   exit (0);
 }
 
-int check_node (const int rank, const unsigned short port)
+static int check_node (const int rank, const unsigned short port)
 {
   int errors (0);
 
@@ -133,6 +133,22 @@ int main (int ac, char *av[])
     //    environment variables do not work on the slaves
     // should  be sufficient  to just  transmit  the location  information of  the
     // logserver and a log-level
+
+    // barrier
+    //
+    // sanity check config at (dmaPtr())
+    //    configure logging -> only network for now!
+    //    open unix stream and listen
+    //
+    // allreduce config status
+    //    if  all say  OK, everything  is good,  otherwise fail  with designated
+    //    error-codes
+    //
+    // start worker-pool that handles PC connections
+    // start thread that accepts connections on unix stream
+    //    just hands them over to the worker-pool
+    //
+    // barrier
   }
 
   int rc = 0;
