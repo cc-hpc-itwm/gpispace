@@ -13,7 +13,7 @@ dir="$SDPA_LOG_DIR"
 function usage ()
 {
     cat >&2 <<EOF
-usage: $0 [-h] [-x] [-n] [-f]
+usage: $0 [-h] [-x] [-n] [-f] [-d dir]
 
    -h: this help
    -a: remove all logfiles
@@ -45,10 +45,7 @@ function remove ()
 	if is_fake_mode ; then
 	    echo "would remove: $target $2" >&2
 	else
-	    dirof=$( dirname "$target" )
-	    filen=$( basename "$target" )
-	    tmp=$( echo "$filen" | sed -e 's/\*/\\*/' )
-	    err=$( rm -f -- "\'$dirof/$tmp\'" 2>&1 )
+	    err=$( rm -f -- "$target" 2>&1 )
 	    if [ $? -ne 0 ] ; then
 		echo "W: failed to remove $target: $err" >&2
 	    fi
@@ -100,7 +97,7 @@ if [ -z "$SDPA_NODEFILE" ] ; then
     fi
 fi
 
-for logfile in $dir/*.log ; do
+for logfile in "$dir"/*.log ; do
     base=$( basename "$logfile" )
     # logfile name format: comp.host.log
     node=$( echo "$base" | cut -d. -f 2 2>/dev/null)
@@ -119,6 +116,6 @@ for logfile in $dir/*.log ; do
     fi
 done
 
-for logfile in "$dir/*.log"; do
-    :> "$logfile"
+for logfile in "$dir"/*.log; do
+    test -e "$logfile" && :> "$logfile"
 done
