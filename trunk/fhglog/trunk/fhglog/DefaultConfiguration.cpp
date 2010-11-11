@@ -3,6 +3,9 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/CompoundAppender.hpp>
 #include <fhglog/ThreadedAppender.hpp>
+#include <fhglog/SynchronizedAppender.hpp>
+#include <algorithm> // std::transform
+#include <cctype>    // std::tolower
 
 namespace fhg
 {
@@ -17,6 +20,8 @@ namespace fhg
         // FIXME: broken if set to true
       , threaded_(false)
       , color_("auto")
+      , disabled_(false)
+      , synchronize_(false)
     {}
 
     void DefaultConfiguration::default_configuration ()
@@ -52,12 +57,24 @@ namespace fhg
       {
         std::string key(entry->first);
         std::string val(entry->second);
-        parse_key_value(key, val);
+        if (key.find ("FHGLOG_") != std::string::npos)
+        {
+          // strip key and make lowercase
+          key = key.substr(7);
+          std::transform( key.begin()
+                        , key.end()
+                        , key.begin()
+                        , tolower
+                        );
+          parse_key_value(key, val);
+        }
       }
     }
 
     bool DefaultConfiguration::check_config()
     {
+      if (disabled_) return true;
+
       if (to_console_.empty()
          && to_server_.empty()
          && to_file_.empty()
@@ -71,6 +88,9 @@ namespace fhg
 
     void DefaultConfiguration::configure()
     {
+      if (disabled_)
+        return;
+
       std::string fmt (default_format::SHORT());
 
       StreamAppender::ColorMode color_mode (StreamAppender::COLOR_OFF);
@@ -158,7 +178,7 @@ namespace fhg
           compound_appender->addAppender
             (Appender::ptr_t(new FileAppender( "log-file"
                                              , to_file_
-                                             , default_format::SHORT()
+                                             , fmt
                                              )
                             )
             );
@@ -194,13 +214,21 @@ namespace fhg
       std::clog << "D: loglevel set to " << level_ << std::endl;
 #endif
       getLogger().setLevel(level_);
+
       if (threaded_)
       {
         getLogger().addAppender(Appender::ptr_t(new ThreadedAppender(compound_appender)));
       }
       else
       {
-        getLogger().addAppender(compound_appender);
+        if (synchronize_)
+        {
+          getLogger().addAppender(Appender::ptr_t(new SynchronizedAppender (compound_appender)));
+        }
+        else
+        {
+          getLogger().addAppender(compound_appender);
+        }
       }
     }
 
@@ -213,43 +241,50 @@ namespace fhg
 
     void DefaultConfiguration::parse_key_value(const std::string &key, const std::string &val)
     {
-      if (key == "FHGLOG_level")
+      if (key == "level")
       {
         level_ = LogLevel(val);
       }
-      else if (key == "FHGLOG_format")
+      else if (key == "format")
       {
         fmt_string_ = val;
       }
-      else if (key == "FHGLOG_to_console")
+      else if (key == "to_console")
       {
         to_console_ = val;
       }
-      else if (key == "FHGLOG_to_file")
+      else if (key == "to_file")
       {
         to_file_ = val;
       }
-      else if (key == "FHGLOG_to_server")
+      else if (key == "to_server")
       {
         to_server_ = val;
       }
-      else if (key == "FHGLOG_threaded" && (val == "no" || val == "false" || val == "0"))
+      else if (key == "threaded" && (val == "yes" || val == "true" || val == "1"))
       {
-        threaded_ = false;
+        threaded_ = true;
       }
-      else if (key == "FHGLOG_color")
+      else if (key == "color")
       {
         color_ = val;
       }
-      else if (key.substr(0, 6) == "FHGLOG")
+      else if (key == "synch")
+      {
+        synchronize_ = true;
+      }
+      else if (key == "disabled")
+      {
+#ifndef NDEBUG_FHGLOG
+        std::clog << "D: logging disabled due to environment FHGLOG_disabled" << std::endl;
+#endif
+        disabled_ = true;
+      }
+      else
       {
 #ifndef NDEBUG_FHGLOG
         std::clog << "D: ignoring key: " << key << std::endl;
 #endif
-      }
-      else
-      {
-        // completely ignore
       }
     }
   }

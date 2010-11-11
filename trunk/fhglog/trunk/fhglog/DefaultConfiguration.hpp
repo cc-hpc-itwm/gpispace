@@ -29,11 +29,16 @@ namespace fhg { namespace log {
     private:
       /*
        * This configuration takes the following environment variables into account (case sensitive):
-       *  FHGLOG_level                      // log everything with at least this level, defaults to TRACE
-       *  FHGLOG_format=log-format          // defaults to the default format in Formatter
-       *  FHGLOG_to_console={stdout,stderr,stdlog} // log to stdout, stderr, clog
-       *  FHGLOG_to_file=path to logfile    // log to specified file
-       *  FHGLOG_to_server=ip:port          // log to the specified server
+       *
+       *  FHGLOG_level                     log everything with at least this level, defaults to TRACE
+       *  FHLGOG_color={auto,on,off}       colorized output
+       *  FHGLOG_format=log-format         defaults to the default format in Formatter
+       *  FHGLOG_to_console={stdout,stderr,stdlog} log to stdout, stderr, clog
+       *  FHGLOG_to_file=path to logfile   log to specified file
+       *  FHGLOG_to_server=ip:port         log to the specified server
+       *  FHGLOG_threaded={yes,true,1}     make logging appear from a separate thread (unsafe)
+       *  FHGLOG_disabled={anything}       disable logging if defined
+       *  FHGLOG_synch={anything}          make logging synchronized (very expensive!)
        */
       void parse_environment();
       bool check_config();
@@ -50,6 +55,8 @@ namespace fhg { namespace log {
       std::string fmt_string_;
       bool threaded_;
       std::string color_;
+      bool disabled_;
+      bool synchronize_;
     };
   }
 }
