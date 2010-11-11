@@ -60,7 +60,6 @@ target_link_libraries(sdpa-test
 	 sdpa-util
 	 sdpa
 	 seda
-	 seda-comm
      ${CPPUNIT_STATIC_LIBRARIES}
 #     ${FVM_FAKE_STATIC_LIBRARY}
 #     ${MMGR_LIBRARY}
@@ -79,6 +78,27 @@ target_link_libraries(mini_test_suite uuid)
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
+
+
+
+set( srcs
+  	test_AgentInteraction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
+)
+
+
+add_executable(test_agents_suite ${srcs})
+
+target_link_libraries(test_agents_suite  seda sdpa-daemon
+									 sdpa-client
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})
+									 
+add_test(test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_agents_suite)
 
 #add_dependencies (sdpa-test ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
                    

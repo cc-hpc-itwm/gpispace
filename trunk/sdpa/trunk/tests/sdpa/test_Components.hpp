@@ -25,6 +25,13 @@
 #include <seda/Strategy.hpp>
 #include <sdpa/client/ClientApi.hpp>
 
+#include <boost/thread.hpp>
+#include <fhgcom/io_service_pool.hpp>
+#include <fhgcom/tcp_server.hpp>
+#include <fhgcom/kvs/kvsd.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
+
+using namespace fhg::com;
 
 namespace sdpa {
 		namespace tests {
@@ -57,11 +64,21 @@ namespace sdpa {
 			private:
 			  SDPA_DECLARE_LOGGER();
 
-			  sdpa::client::ClientApi::ptr_t m_ptrCli;
 			  std::string m_strWorkflow;
+
+			  /*io_service_pool pool;
+			  tcp_server server;
+			  boost::thread thrd;*/
+
+			  fhg::com::io_service_pool *m_ptrPool;
+			  fhg::com::kvs::server::kvsd *m_ptrKvsd;
+			  fhg::com::tcp_server *m_ptrServ;
+			  boost::thread *m_ptrThrd;
 
 			  int m_nITER;
 			  int m_sleep_interval ;
+			  bool bStarted;
+			  int nRemainingTests;
 			};
 		}
 }
