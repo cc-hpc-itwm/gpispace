@@ -16,10 +16,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_INCLUDE_PATH})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set (GPI_PRIV_DIR  CACHE STRING "path to the priviledged GPI binary directory")
 set (GPI_CONF_PATH
-  "${CMAKE_INSTALL_PREFIX}/etc/gpi/sdpa-gpi.cfg"
+  "${CMAKE_INSTALL_PREFIX}/etc/gpi/gpi-space.cfg"
   CACHE
   STRING "path to the default location of the config file"
   )

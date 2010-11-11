@@ -8,6 +8,9 @@
 
 #include <GPI/GPI.h>
 
+#include <gpi-space/config/node_config.hpp>
+#include <gpi-space/config/node_config_io.hpp>
+
 #include <csignal>
 #include <cassert>
 #include <iostream>
@@ -115,12 +118,22 @@ static const int EXIT_GPI_ERROR = 8;
 
 int main (int ac, char *av[])
 {
-  // TODO:
-  //    configure fhglog manually!!!
-  //    environment variables do not work on the slaves
-  // should  be sufficient  to just  transmit  the location  information of  the
-  // logserver and a log-level
-  FHGLOG_SETUP (ac, av);
+  if (isMasterProcGPI (ac, av))
+  {
+    FHGLOG_SETUP (ac, av);
+
+    // read config
+    gpi_space::config::node_config_t nc;
+    std::cout << nc << std::endl;
+  }
+  else
+  {
+    // TODO:
+    //    configure fhglog manually!!!
+    //    environment variables do not work on the slaves
+    // should  be sufficient  to just  transmit  the location  information of  the
+    // logserver and a log-level
+  }
 
   int rc = 0;
 
