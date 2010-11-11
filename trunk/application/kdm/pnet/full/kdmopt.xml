@@ -264,6 +264,7 @@
         <in name="processed" type="volume_in_progress"/>
         <in name="state" type="volume_state"/>
         <out name="state" type="volume_state"/>
+        <in name="credit_volume_check_done" type="control"/>
         <expression>
           ${state.bunches.left}
             := ${state.bunches.left}
@@ -273,8 +274,14 @@
       </defun>
       <connect-in port="processed" place="update_volume_state"/>
       <connect-in port="state" place="volume_state"/>
-      <connect-out port="state" place="volume_state"/>
+      <connect-out port="state" place="volume_check_done"/>
+      <connect-in port="credit_volume_check_done" place="credit_volume_check_done"/>
     </transition>
+
+    <place name="volume_check_done" type="volume_state"/>
+    <place name="credit_volume_check_done" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <!-- ****************************************************************** -->
 
@@ -284,6 +291,7 @@
         <out name="bunch" type="bunch_loaded"/>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
+        <in name="credit_bunch_check_done" type="control"/>
         <expression>
           ${bunch.wait} := ${bunch.wait} - 1;
 
@@ -306,9 +314,13 @@
       <connect-out port="bunch" place="bunch_check_done"/>
       <connect-in port="volume" place="update_bunch_state"/>
       <connect-out port="volume" place="update_bunch_state"/>
+      <connect-in port="credit_bunch_check_done" place="credit_bunch_check_done"/>
     </transition>
 
     <place name="bunch_check_done" type="bunch_loaded"/>
+    <place name="credit_bunch_check_done" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <transition name="unassigned">
       <defun>
@@ -329,8 +341,10 @@
       <defun>
         <in name="bunch" type="bunch_loaded"/>
         <out name="store" type="store_bunch"/>
+        <out name="credit_bunch_check_done" type="control"/>
         <expression>
-          ${store} := ${bunch.bunch.store}
+          ${store} := ${bunch.bunch.store};
+          ${credit_bunch_check_done} := []
         </expression>
         <condition>
           ${bunch.wait} :le: 0
@@ -338,13 +352,16 @@
       </defun>
       <connect-in port="bunch" place="bunch_check_done"/>
       <connect-out port="store" place="store_bunch"/>
+      <connect-out port="credit_bunch_check_done" place="credit_bunch_check_done"/>
     </transition>
 
     <transition name="bunch_not_done">
       <defun>
         <in name="bunch" type="bunch_loaded"/>
         <out name="bunch" type="bunch_loaded"/>
+        <out name="credit_bunch_check_done" type="control"/>
         <expression>
+          ${credit_bunch_check_done} := []
         </expression>
         <condition>
           ${bunch.wait} :gt: 0
@@ -352,21 +369,43 @@
       </defun>
       <connect-in port="bunch" place="bunch_check_done"/>
       <connect-out port="bunch" place="bunch_loaded"/>
+      <connect-out port="credit_bunch_check_done" place="credit_bunch_check_done"/>
     </transition>
 
     <!-- ****************************************************************** -->
+
+    <transition name="volume_not_done">
+      <defun>
+        <in name="state" type="volume_state"/>
+        <out name="state" type="volume_state"/>
+        <out name="credit_volume_check_done" type="control"/>
+        <expression>
+          ${credit_volume_check_done} := []
+        </expression>
+        <condition>
+          ${state.bunches.left} :gt: 0
+        </condition>
+      </defun>
+      <connect-in port="state" place="volume_check_done"/>
+      <connect-out port="state" place="volume_state"/>
+      <connect-out port="credit_volume_check_done" place="credit_volume_check_done"/>
+    </transition>
 
     <transition name="volume_done">
       <defun>
         <in name="state" type="volume_state"/>
         <out name="state" type="volume_state"/>
-        <expression></expression>
+        <out name="credit_volume_check_done" type="control"/>
+        <expression>
+          ${credit_volume_check_done} := []
+        </expression>
         <condition>
           ${state.bunches.left} :le: 0
         </condition>
       </defun>
-      <connect-in port="state" place="volume_state"/>
+      <connect-in port="state" place="volume_check_done"/>
       <connect-out port="state" place="volume_done"/>
+      <connect-out port="credit_volume_check_done" place="credit_volume_check_done"/>
     </transition>
 
     <place name="volume_done" type="volume_state"/>
