@@ -54,11 +54,11 @@ static void selftest ( void *
 
   std::ifstream ifs ("/scratch/petry/plane.2000.10000.sgy");
   ifs.read (buf, num_bytes);
-  
+
   long ec (process::execute ( "sufrac"
                             , buf, num_bytes
                             , buf, num_bytes
-                            , 8192
+                            , PIPE_BUF
                             )
           );
 
