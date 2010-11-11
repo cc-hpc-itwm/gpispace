@@ -3,6 +3,7 @@
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
 
+#include <limits>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -43,7 +44,7 @@ static long exec_impl ( std::string const & command
   int out_pipe[2];
   int err_pipe[2];
   long ec (0);
-  
+
   if (pipe(in_pipe) < 0)
   {
     LOG(ERROR, "opening input pipe failed: " << strerror(errno));
@@ -51,7 +52,7 @@ static long exec_impl ( std::string const & command
   }
   fcntl (in_pipe[0], F_SETFD, O_NONBLOCK);
   fcntl (in_pipe[1], F_SETFD, O_NONBLOCK);
-  
+
   if (pipe(out_pipe) < 0)
   {
     LOG(ERROR, "opening output pipe failed: " << strerror(errno));
@@ -59,7 +60,7 @@ static long exec_impl ( std::string const & command
   }
   fcntl (out_pipe[0], F_SETFD, O_NONBLOCK);
   fcntl (out_pipe[1], F_SETFD, O_NONBLOCK);
-  
+
   if (pipe(err_pipe) < 0)
   {
     LOG(ERROR, "opening error pipe failed: " << strerror(errno));
@@ -73,10 +74,10 @@ static long exec_impl ( std::string const & command
   {
     std::vector<std::string> cmdline;
     fhg::log::split (command, " ", std::back_inserter (cmdline));
-    
+
     char ** av = new char*[cmdline.size()+1];
     av[cmdline.size()] = (char*)(NULL);
-    
+
     std::size_t idx (0);
     for ( std::vector<std::string>::const_iterator it (cmdline.begin())
 	; it != cmdline.end()
@@ -87,7 +88,7 @@ static long exec_impl ( std::string const & command
       memcpy(av[idx], it->c_str(), it->size());
       av[idx][it->size()] = (char)0;
     }
-    
+
     std::stringstream sstr_cmd;
     for(size_t k=0; k<idx; k++)
       sstr_cmd << av[idx];
@@ -97,7 +98,7 @@ static long exec_impl ( std::string const & command
       if (i != in_pipe[0] && i != out_pipe[1] && i != err_pipe[1])
 	close (i);
     }
-    
+
     close (in_pipe[1]);
     close (out_pipe[0]);
     close (err_pipe[0]);
@@ -105,7 +106,7 @@ static long exec_impl ( std::string const & command
     dup2(in_pipe[0], 0);
     dup2(out_pipe[1], 1);
     dup2(out_pipe[1], 2);
-    
+
     //    if ( execve( av[0], av, environ) < 0 )
     if ( execvp( av[0], av ) < 0 )
     {
@@ -125,7 +126,7 @@ static long exec_impl ( std::string const & command
     int in_to_child = in_pipe[1];
     int out_from_child = out_pipe[0];
     int err_from_child = err_pipe[0];
-    
+
     LOG(INFO, "initiating read/write loop");
 
     const char *src = (const char*)(input);
@@ -167,7 +168,7 @@ static long exec_impl ( std::string const & command
       timeout.tv_nsec = 0;
 
       if (nfds == 0) break;
-      
+
       int ready = pselect (nfds + 1, &rd, &wr, NULL, &timeout, NULL);
       if (ready < 0 && errno == EINTR)
       {
@@ -199,6 +200,10 @@ static long exec_impl ( std::string const & command
 	    LOG(TRACE, "closing output stream from child");
 	    close (out_from_child);
 	    out_from_child = -1;
+
+            // close write stream to avoid SIGPIPE
+            close (in_to_child);
+            in_to_child = -1;
 	  }
 	  else
 	  {
@@ -211,7 +216,7 @@ static long exec_impl ( std::string const & command
 	if (err_from_child >= 0 && FD_ISSET(err_from_child, &rd))
 	{
 	  DLOG(TRACE, "error available");
-	  
+
 	  char c;
 	  r = read (err_from_child, &c, 1);
 	  if (r < 1)
@@ -219,11 +224,14 @@ static long exec_impl ( std::string const & command
 	    DLOG(TRACE, "closing error stream from child: " << err_str.str());
 	    close (err_from_child);
 	    err_from_child = -1;
+
+            // close write stream
+            close (in_to_child);
+            in_to_child = -1;
 	  }
 	  else
 	  {
 	    err_str << c;
-    
 	  }
 	}
 
@@ -233,7 +241,7 @@ static long exec_impl ( std::string const & command
 
 	  size_t avail (size_in - bytes_wr);
 
-	  r = write (in_to_child, src, std::min (size_t(4<<10), avail));
+	  r = write (in_to_child, src, std::min (std::size_t(PIPE_BUF), avail));
 
 	  if (r < 1)
 	  {
@@ -248,7 +256,7 @@ static long exec_impl ( std::string const & command
 	    src += r;
 	  }
 	}
-	
+
 	DLOG(TRACE, "wr = " << bytes_wr << " rd = " << bytes_rd);
 
 	if (bytes_rd == size_out && bytes_wr == size_in)
@@ -258,7 +266,7 @@ static long exec_impl ( std::string const & command
 	}
       }
     }
-    
+
     int status (0);
     waitpid (pid_child, &status, 0);
     if (WIFEXITED(status))
@@ -282,7 +290,7 @@ static long exec_impl ( std::string const & command
     LOG(ERROR, "could not fork child: " << strerror(errno));
     throw std::runtime_error ("could not fork child: " + std::string (strerror(errno)));
   }
-  
+
   return ec;
 }
 
@@ -420,7 +428,7 @@ static void trap_impl (void * ptr, const long & num
 {
   if (t == -1.f)
     throw std::runtime_error ("trap called but not configured");
-		
+
 
     const long NTraces( num );
     if (NTraces <= 0)
@@ -480,7 +488,7 @@ static void bandpass_impl ( void * ptr, const long & num
     // initialize the band pass filter for each sample
     float * filterarray = new float[Nfft];
     for (int iarray = 0; iarray < Nfft; iarray++)
-    { 
+    {
 	const float frequ( iarray/(dt*Nfft) );
 
 	filterarray [iarray] = 1.0f;
@@ -513,7 +521,7 @@ static void bandpass_impl ( void * ptr, const long & num
 	{
 	    fftarray[2*it] = Data_ptr[it];
 	}
-	
+
 	fft(-1, Nfft, fftarray);
 	for (int iarray = 0; iarray < Nfft; iarray++)
 	{
@@ -523,7 +531,7 @@ static void bandpass_impl ( void * ptr, const long & num
 	    fftarray[2*iarray+1] = newim;
 	}
 	fft(1, Nfft, fftarray);
-	
+
 	for (int it = 0; it < NSample; it++)
 	    Data_ptr[it] = fftarray[2*it]/Nfft;
     }
@@ -576,12 +584,12 @@ static void frac_impl (void * ptr, const long & num)
     // initialize the frac array to omega for each sample
     float * filterarray = new float[Nfft];
     for (int iarray = 0; iarray < Nfft/2; iarray++)
-    { 
+    {
 	float omega = 2.f*2.f*M_PI*iarray/(dt*Nfft);
 	filterarray[iarray] = omega;
     }
     for (int iarray = Nfft/2; iarray < Nfft; iarray++)
-    { 
+    {
 	filterarray[iarray] = 0.f;
     }
 
@@ -596,7 +604,7 @@ static void frac_impl (void * ptr, const long & num)
 	{
 	    fftarray[2*it] = Data_ptr[it];
 	}
-	
+
 	fft(-1, Nfft, fftarray);
 	for (int iarray = 0; iarray < Nfft; iarray++)
 	{
@@ -606,7 +614,7 @@ static void frac_impl (void * ptr, const long & num)
 	    fftarray[2*iarray+1] = newim;
 	}
 	fft(1, Nfft, fftarray);
-	
+
 	for (int it = 0; it < NSample; it++)
 	    Data_ptr[it] = fftarray[2*it]/Nfft;
     }
@@ -645,7 +653,7 @@ static void tpow_impl (void * ptr, const long & num,
     // initialize the tpow filter for each sample
     float * filterarray = new float[NSample];
     for (int iarray = 0; iarray < NSample; iarray++)
-    { 
+    {
 	const float TT = std::max(dt, t0 + iarray * dt);
 	filterarray[iarray] = pow(TT, tpow);
     }
@@ -658,7 +666,7 @@ static void tpow_impl (void * ptr, const long & num,
 	{
 	    Data_ptr[iarray] *= filterarray[iarray];
 	}
-	
+
     }
 
     delete[] filterarray;
