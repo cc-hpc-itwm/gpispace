@@ -86,36 +86,7 @@ namespace sdpa {
 			detach_observer( &m_guiServ );
 
 			if(bLaunchNrePcd_)
-			{
-				int c;
-				int nStatus;
-
-				//kill pcd here
-				SchedulerNRE<U>* pSchedNRE = dynamic_cast<SchedulerNRE<U>*>(ptr_scheduler_.get());
-				if( pSchedNRE )
-				{
-					pid_t pidPcd = pSchedNRE->nre_worker_client().getPcdPid();
-					//pid_t pidPcd = dynamic_pointer_cast<sdpa::shared_ptr<SchedulerNRE, Scheduler::ptr_t>(ptr_scheduler_)->nre_worker_client().getPcdPid();
-
-					kill(pidPcd, SIGTERM);
-
-					c = wait(&nStatus);
-					if( WIFEXITED(nStatus) )
-					{
-						if( WEXITSTATUS(nStatus) != 0 )
-						{
-							std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-							LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-						}
-						else
-							if( WIFSIGNALED(nStatus) )
-							{
-								std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-								LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
-							}
-					}
-				}
-			}
+				shutdownNrePcd();
 
 			if (ptr_workflow_engine_)
 			{
@@ -187,6 +158,8 @@ namespace sdpa {
 			//ar & m_guiServ;
 		}
 
+		void shutdownNrePcd();
+
 		virtual void backup( const std::string& strArchiveName );
 	    virtual void recover( const std::string& strArchiveName );
 
@@ -244,16 +217,19 @@ void NRE<T, U>:: start(NRE<T, U>::ptr_t ptrNRE)
 template <typename T, typename U>
 void NRE<T, U>::shutdown(NRE<T, U>::ptr_t ptrNRE)
 {
-  LOG(INFO, "shutting down...");
-  ptrNRE->shutdown_network();
-  ptrNRE->stop();
+	if(ptrNRE->bLaunchNrePcd_)
+		ptrNRE->shutdownNrePcd();
 
-  if (ptrNRE->ptr_workflow_engine_)
-  {
-    DLOG(TRACE, "deleting workflow engine");
-    delete ptrNRE->ptr_workflow_engine_;
-    ptrNRE->ptr_workflow_engine_ = NULL;
-  }
+	LOG(INFO, "shutting down...");
+	ptrNRE->shutdown_network();
+	ptrNRE->stop();
+
+	if (ptrNRE->ptr_workflow_engine_)
+	{
+		DLOG(TRACE, "deleting workflow engine");
+		delete ptrNRE->ptr_workflow_engine_;
+		ptrNRE->ptr_workflow_engine_ = NULL;
+	}
 }
 
 template <typename T, typename U>
@@ -579,6 +555,40 @@ void NRE<T, U>::recover( const std::string& strArchiveName )
 	{
 		cout <<"Exception occurred: " << e.what() << endl;
 	}
+}
+
+template <typename T, typename U>
+void NRE<T, U>::shutdownNrePcd()
+{
+
+	int c;
+	int nStatus;
+
+	//kill pcd here
+	SchedulerNRE<U>* pSchedNRE = dynamic_cast<SchedulerNRE<U>*>(ptr_scheduler_.get());
+	if( pSchedNRE )
+	{
+		pid_t pidPcd = pSchedNRE->nre_worker_client().getPcdPid();
+		//pid_t pidPcd = dynamic_pointer_cast<sdpa::shared_ptr<SchedulerNRE, Scheduler::ptr_t>(ptr_scheduler_)->nre_worker_client().getPcdPid();
+
+		kill(pidPcd, SIGTERM);
+
+		c = wait(&nStatus);
+		if( WIFEXITED(nStatus) )
+		{
+			if( WEXITSTATUS(nStatus) != 0 )
+			{
+				std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+				LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
+			}
+			else
+				if( WIFSIGNALED(nStatus) )
+				{
+					std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+					LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+				}
+		}
+				}
 }
 
 #endif //SDPA_NRE_HPP

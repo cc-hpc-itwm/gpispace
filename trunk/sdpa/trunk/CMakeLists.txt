@@ -29,6 +29,10 @@ OPTION(USE_SMC_SC "Build the project using the state-machine compiler" YES)
 OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
 OPTION(USE_GWES "Use GWES" NO)
 
+if (NO_IMPLICIT_TEMPLATES)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-implicit-templates")
+endif (NO_IMPLICIT_TEMPLATES)
+
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
