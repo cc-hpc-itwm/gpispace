@@ -17,7 +17,7 @@ namespace gpi_space
     {
       nc.memory_size = (1<<20);
       nc.provide_api |= api::UNIX_STREAM;
-      strncpy (nc.sockets_path, MAX_PATH_LEN, "/tmp/test..cfg");
+      strncpy (nc.sockets_path, "/tmp/test.cfg", MAX_PATH_LEN);
       return is;
     }
   }
