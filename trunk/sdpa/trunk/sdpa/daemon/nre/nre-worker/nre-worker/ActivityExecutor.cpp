@@ -360,11 +360,11 @@ cont:
      			LOG(DEBUG, "got signal: " << sig);
      			switch (sig)
      			{
-     			case SIGTERM:
-     			case SIGKILL:
      			case SIGHUP:
                           LOG(INFO, "unloading modules, implement me!");
                           break;
+     			case SIGTERM: // fall through
+     			case SIGKILL:
      			case SIGINT:
      				signal_ignored = false;
      				break;
