@@ -121,8 +121,6 @@ static long exec_impl ( std::string const & command
     close (out_pipe[1]);
     close (err_pipe[1]);
 
-    usleep (5000);
-
     int in_to_child = in_pipe[1];
     int out_from_child = out_pipe[0];
     int err_from_child = err_pipe[0];
@@ -272,12 +270,12 @@ static long exec_impl ( std::string const & command
     if (WIFEXITED(status))
     {
       ec = WEXITSTATUS(status);
-      MLOG(INFO, "child exited with exitcode: " << ec);
+      LOG_IF(WARN, ec != 0, "child exited with exitcode: " << ec << " error: " << err_str.str());
     }
     else if (WIFSIGNALED(status))
     {
       ec = -WTERMSIG(status);
-      MLOG(INFO, "child exited due to signal: " << -ec);
+      MLOG(WARN, "child exited due to signal: " << -ec);
     }
     else
     {
@@ -728,7 +726,11 @@ static void execW ( void * state
 
   void * buf (fvmGetShmemPtr());
 
-  exec_impl (cmd, buf, (std::size_t)size, buf, (std::size_t)size);
+  int ec (exec_impl (cmd, buf, (std::size_t)size, buf, (std::size_t)size));
+  if (ec)
+  {
+    throw std::runtime_error ("process execution failed with non-zero exitcode: " + boost::lexical_cast<std::string>(ec));
+  }
 
   // communicate back
 
