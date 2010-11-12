@@ -56,6 +56,7 @@ class SdpaWnd : public QWidget
     QGridLayout *m_pLastGL;
     QScrollArea *m_pScrollArea;
     QCheckBox *m_cbAutoFollow;
+    QCheckBox *m_cbEnable;
     QWidget *m_pWidget;
     QLabel *m_pParActLabel;
     QLabel *m_pActLabel;

@@ -79,20 +79,24 @@ SdpaWnd::SdpaWnd( QWidget *parent ) : QWidget(parent)
   m_cbAutoFollow  = new QCheckBox("auto follow");
   m_cbAutoFollow->setChecked(true);
 
+  m_cbEnable = new QCheckBox("enabled");
+  m_cbEnable->setChecked (true);
+
   QGridLayout *g = new QGridLayout();
-  g->addWidget( m_pScrollArea, 0, 0, 6, 1 );
+  g->addWidget( m_pScrollArea, 0, 0, 7, 1 );
   g->addWidget( m_pResetB, 0, 1, 1, 2 );
   g->addWidget( m_cbAutoFollow, 1, 1 );
+  g->addWidget( m_cbEnable, 1, 2 );
   //  g->addWidget( lCreate, 1, 1 );
   //  g->addWidget( new QLabel( "create" ), 1, 2 );
-  g->addWidget( lRun, 2, 1 );
-  g->addWidget( new QLabel( "run" ), 2, 2 );
-  g->addWidget( lOk, 3, 1 );
-  g->addWidget( new QLabel( "success" ), 3, 2 );
-  g->addWidget( lFailed, 4, 1 );
-  g->addWidget( new QLabel( "failed" ), 4, 2 );
-  g->addLayout( m_pLastGL, 6, 0 );
-  g->setRowStretch( 5, 1 );
+  g->addWidget( lRun, 3, 1 );
+  g->addWidget( new QLabel( "run" ), 3, 2 );
+  g->addWidget( lOk, 4, 1 );
+  g->addWidget( new QLabel( "success" ), 4, 2 );
+  g->addWidget( lFailed, 5, 1 );
+  g->addWidget( new QLabel( "failed" ), 5, 2 );
+  g->addLayout( m_pLastGL, 7, 0 );
+  g->setRowStretch( 6, 1 );
   setLayout( g );
 
   connect( this, SIGNAL( numParallelActivitiesChanged(int) ), this, SLOT( updateParallelActivities(int))  );
@@ -111,8 +115,10 @@ void SdpaWnd::updateParallelActivities (int activities)
 
 bool SdpaWnd::event( QEvent * e )
 {
-  DataCostumerEvent<WndUpdateParameter> * dce = NULL;
+  if (! m_cbEnable->isChecked())
+    return QWidget::event (e);
 
+  DataCostumerEvent<WndUpdateParameter> * dce = NULL;
 
   switch(e->type())
   {
