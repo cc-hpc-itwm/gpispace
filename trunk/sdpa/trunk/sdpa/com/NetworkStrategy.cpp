@@ -41,7 +41,7 @@ namespace sdpa
         msg.data.assign (encoded_evt.begin(), encoded_evt.end());
         msg.header.length = msg.data.size();
 
-        m_peer.async_send (&msg, boost::bind (&self::handle_send, this, _1));
+        m_peer.async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
       }
       else
       {
@@ -70,9 +70,23 @@ namespace sdpa
       super::onStageStop (s);
     }
 
-    void NetworkStrategy::handle_send (boost::system::error_code const & ec)
+    void NetworkStrategy::handle_send ( seda::IEvent::Ptr const &e
+                                      , boost::system::error_code const & ec
+                                      )
     {
-      LOG_IF(WARN, ec, "sending failed");
+      if (ec)
+      {
+        LOG(WARN, "send failed: ec = " << ec << " event = " << e->str());
+
+        if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
+        {
+          sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
+          if (err)
+          {
+            super::perform (err);
+          }
+        }
+      }
     }
 
     void NetworkStrategy::handle_recv (boost::system::error_code const & ec)

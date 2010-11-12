@@ -31,7 +31,7 @@ namespace sdpa
       void onStageStart (std::string const & s);
       void onStageStop  (std::string const & s);
     private:
-      void handle_send (boost::system::error_code const & ec);
+      void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);
 
       fhg::com::peer_t m_peer;
