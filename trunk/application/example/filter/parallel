@@ -76,6 +76,8 @@ cleanup ()
 {
   rm -f "${script}"
   rm -f "${filter_cfg}"
+  rm -f "$filter_dir/loop.xml"
+  rm -f "$filter_dir/su4.pnet"
 }
 trap cleanup EXIT
 
@@ -96,10 +98,24 @@ echo "ok" >/dev/stderr
 echo -n "-: compiling job description..." >/dev/stderr
 pnetc "$filter_dir/loop.xml" -I "$pnet_lib" > "$filter_dir/su4.pnet"
 if [ $? -ne 0 ] ; then
-  echo "E: generating failed!"
+  echo "E: generating failed!" >&2
   exit 2
 fi
 echo "ok" >/dev/stderr
 
-sdpac -w submit $filter_dir/su4.pnet
-test -e "${script}" && rm -f "${script}"
+jobid=$( sdpac submit "$filter_dir/su4.pnet" 2>&1 )
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Could not submit job: $jobid" >&2
+  exit $ec
+fi
+echo "JOB-ID := $jobid"
+sdpac wait "$jobid"
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Job execution failed: $ec" >&2
+else
+  echo "Success."
+fi
+sdpac delete "$jobid"
+exit $ec
