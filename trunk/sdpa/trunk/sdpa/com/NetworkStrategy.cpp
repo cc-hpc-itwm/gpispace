@@ -41,7 +41,7 @@ namespace sdpa
         msg.data.assign (encoded_evt.begin(), encoded_evt.end());
         msg.header.length = msg.data.size();
 
-        m_peer.send (&msg);
+        m_peer.async_send (&msg, boost::bind (&self::handle_send, this, _1));
       }
       else
       {
@@ -68,6 +68,11 @@ namespace sdpa
       m_thread->join ();
 
       super::onStageStop (s);
+    }
+
+    void NetworkStrategy::handle_send (boost::system::error_code const & ec)
+    {
+      LOG_IF(WARN, ec, "sending failed");
     }
 
     void NetworkStrategy::handle_recv (boost::system::error_code const & ec)
