@@ -28,7 +28,7 @@ for node_num in $nodes; do
   log "killing nre on $node_name..."
   ssh -x $node_name killall nre-pcd >/dev/null 2>&1 &
   ssh -x $node_name killall nre >/dev/null 2>&1 &
-  if [ $count -gt $bunch_size ] ; then
+  if [ $count -ge $bunch_size ] ; then
       wait
       count=0
   fi
