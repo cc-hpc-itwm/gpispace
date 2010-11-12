@@ -7,11 +7,11 @@ if [ $? -eq 0 ]; then
 fi
 
 # gather all message queue zombies
-msgq=$( echo $( pbsdsh -u -o -s ipcs -q | grep ^0x | awk '{print $2;}' ) )
+msgq=$( echo $( pbsdsh -u -o -s ipcs -q | grep ^0x | awk '{print $2;}' | sort -u ) )
 echo "message queues: $msgq"
-sema=$( echo $( pbsdsh -u -o -s ipcs -s | grep ^0x | awk '{print $2;}' ) )
+sema=$( echo $( pbsdsh -u -o -s ipcs -s | grep ^0x | awk '{print $2;}' | sort -u ) )
 echo "semaphores: $sema"
-shms=$( echo $( pbsdsh -u -o -s ipcs -m | grep ^0x | awk '{print $2;}' ) )
+shms=$( echo $( pbsdsh -u -o -s ipcs -m | grep ^0x | awk '{print $2;}' | sort -u ) )
 echo "shared mems: $shms"
 
 pbsdsh -u pkill sdpa-gpi
