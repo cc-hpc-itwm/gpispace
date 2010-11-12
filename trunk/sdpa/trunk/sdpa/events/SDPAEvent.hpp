@@ -24,6 +24,8 @@
 #include <sdpa/memory.hpp>
 #include <sdpa/events/EventHandler.hpp>
 
+#include <boost/system/error_code.hpp>
+
 namespace sdpa { namespace events {
   class SDPAEvent : public seda::IEvent {
     public:
@@ -44,6 +46,12 @@ namespace sdpa { namespace events {
       virtual std::string str() const = 0;
 
       virtual void handleBy(EventHandler *) = 0;
+
+      virtual Ptr create_reply (boost::system::error_code const &)
+      {
+        // null pointer by default
+        return Ptr();
+      }
     protected:
       SDPAEvent()
         : IEvent()
