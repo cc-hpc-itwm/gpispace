@@ -346,23 +346,12 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 		return false;
 	}
 
-    // TODO  this call  is just  for  now here,  there should  be an  active
-    // component checking dropped connections.
-
 	// fix this later -> use a monitoring thread
 	if(bDelNonRespWorkers)
 		deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("node_timeout"));
 
 	if( ptr_worker_man_ )
 	{
-		if( numberOfWorkers()==0 )
-		{
-			LOG(WARN, "No worker registered, marking job as failed: " << jobId);
-
-			ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
-			return false;
-		}
-
 		// if no preferences are explicitly set for this job
 		DLOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
 
@@ -445,11 +434,19 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 
 void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 {
-	schedule_with_constraints(jobId);
+	// check if there are any responsive workers left
+	// delete non_responsive workers
 
 	// schedule_round_robin(jobId);
 	// fairly re-distribute tasks, if necessary
 	// ptr_worker_man_->balanceWorkers();
+	if( !numberOfWorkers() )
+	{
+		LOG(WARN, "No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
+		throw NoWorkerFoundException();
+	}
+	else
+		schedule_with_constraints(jobId);
 }
 
 // obsolete, only for testing purposes!
@@ -459,7 +456,7 @@ void SchedulerImpl::start_job(const sdpa::job_id_t &jobId) {
 
 void SchedulerImpl::schedule(sdpa::job_id_t& jobId)
 {
-  DLOG(TRACE, "Scheduler::schedule (" << jobId.str() << ")");
+	DLOG(TRACE, "Scheduler::schedule (" << jobId.str() << ")");
 	jobs_to_be_scheduled.push(jobId);
 }
 
@@ -561,11 +558,11 @@ void SchedulerImpl::send_life_sign()
 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
-         // TODO: remove life signs completely
-         //    just make sure, that a un-registered worker tries to connect *forever*
+	 // TODO: remove life signs completely
+	 //    just make sure, that a un-registered worker tries to connect *forever*
 
-         //	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
-         // this condition has already been checked...
+	 //	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	 // this condition has already been checked...
 	 if(! is_root_node (ptr_comm_handler_->name()))
 	 {
 		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
@@ -586,18 +583,18 @@ void SchedulerImpl::check_post_request()
 		return;
 	}
 
-        if( ! is_root_node (ptr_comm_handler_->name()))
-	 {
-           // TODO: remove requests
-           if (ptr_comm_handler_->is_registered() && jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
-           {
-             post_request();
-           }
-           else
-           {
-             send_life_sign();
-           }
-         }
+	if( ! is_root_node (ptr_comm_handler_->name()))
+	{
+		// TODO: remove requests
+        if (ptr_comm_handler_->is_registered() && jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
+        {
+        	post_request();
+        }
+        else
+        {
+        	send_life_sign();
+        }
+	}
 }
 
 void SchedulerImpl::run()
@@ -619,6 +616,7 @@ void SchedulerImpl::run()
 			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
+
 			if(pJob->is_local())
 				schedule_local(jobId);
 			else
@@ -626,13 +624,24 @@ void SchedulerImpl::run()
 				// if it's an NRE just execute it!
 				// Attention!: an NRE has no WorkerManager!!!!
 				// or has an Worker Manager and the workers are threads
-				schedule_remote(jobId);
+
+				try
+				{
+					schedule_remote(jobId);
+				}
+				catch( const NoWorkerFoundException& ex)
+				{
+					SDPA_LOG_DEBUG("No valid worker found! Try to re-schedule the job later, on any available worker"<<jobId.str());
+
+					// do so as when no preferences were set, just ignore them right now
+					schedule_anywhere(jobId);
+				}
 			}
 		}
-		catch(JobNotFoundException& ex)
+		catch(const JobNotFoundException& ex)
 		{
 			SDPA_LOG_DEBUG("Job not found! Could not schedule the job "<<ex.job_id().str());
-                        throw;
+            throw;
 		}
 		catch( const boost::thread_interrupted & )
 		{
@@ -646,8 +655,8 @@ void SchedulerImpl::run()
 		}
 		catch ( const std::exception &ex )
 		{
-		  MLOG(ERROR, "exception in scheduler thread: " << ex.what());
-                  throw;
+			MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+            throw;
 		}
 	}
 }
