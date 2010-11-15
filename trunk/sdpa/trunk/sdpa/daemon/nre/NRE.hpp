@@ -571,6 +571,12 @@ void NRE<T, U>::shutdownNrePcd()
 		pid_t pidPcd = pSchedNRE->nre_worker_client().getPcdPid();
 		//pid_t pidPcd = dynamic_pointer_cast<sdpa::shared_ptr<SchedulerNRE, Scheduler::ptr_t>(ptr_scheduler_)->nre_worker_client().getPcdPid();
 
+		if (pidPcd <= 1)
+		{
+			LOG(ERROR, "cannot send TERM signal to child with pid: " << pidPcd);
+			throw std::runtime_error ("pcd does not have a valid pid (<= 1)");
+		}
+
 		kill(pidPcd, SIGTERM);
 
 		c = wait(&nStatus);
