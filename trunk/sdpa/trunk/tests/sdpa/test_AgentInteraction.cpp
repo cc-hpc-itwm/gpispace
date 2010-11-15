@@ -100,7 +100,7 @@ namespace sdpa { namespace tests { namespace worker {
 struct MyFixture
 {
 	MyFixture()
-			: m_nITER(10)
+			: m_nITER(1)
 			, m_sleep_interval(1000000)
 	{ //initialize and start the finite state machine
 
@@ -216,8 +216,6 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 		return;
 	}
 
-	sleep (5);
-
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -322,8 +320,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 		return;
 	}
 
-	sleep (5);
-
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -349,7 +345,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(m_sleep_interval);
+			usleep(5*m_sleep_interval);
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -434,7 +430,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpawnedByTest terminated!");
 }
 
-
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 {
 	LOG( DEBUG, "***** testActivityRealWeAllCompAndActExec *****"<<std::endl);
@@ -499,8 +494,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 		return;
 	}
 
-	sleep (5);
-
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -509,7 +502,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
-
 
 	for( int k=0; k<m_nITER; k++ )
 	{
@@ -541,8 +533,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator<RealWorkflowEngine>::shutdown(ptrOrch);
 
-	// processor container terminates ...
-	//fvm_pc.leave();
+	// process container terminates ...
 	LOG( INFO, "terminating...");
 	if (! executor->stop())
 		LOG( WARN, "executor did not stop correctly...");
@@ -555,7 +546,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	sleep(1);
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndActExec with fvm-pc terminated!");
 }
-
 
 BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 {
@@ -619,8 +609,6 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 		return;
 	}
-
-	sleep (5);
 
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
