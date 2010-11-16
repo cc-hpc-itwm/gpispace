@@ -42,7 +42,7 @@ namespace sdpa {
 						 SDPA_INIT_LOGGER(name+"FSM"),
 						 m_fsmContext(*this)
 					{
-                                          DLOG(TRACE, "Daemon state machine created");
+			      		DLOG(TRACE, "Daemon state machine created");
 					}
 
 			      	// obsolete
@@ -54,7 +54,7 @@ namespace sdpa {
 						  SDPA_INIT_LOGGER(name+"FSM"),
 						  m_fsmContext(*this)
 					{
-                                          DLOG(TRACE, "Daemon state machine created");
+                        DLOG(TRACE, "Daemon state machine created");
 					}
 
 			     	DaemonFSM( const std::string &name = "", IWorkflowEngine* pArgSdpa2Gwes = NULL )
@@ -62,11 +62,12 @@ namespace sdpa {
 						  SDPA_INIT_LOGGER(name+"FSM"),
 						  m_fsmContext(*this)
 					{
-                                          DLOG(TRACE, "Daemon state machine created");
+			     		DLOG(TRACE, "Daemon state machine created");
 					}
 
-					virtual ~DaemonFSM() {
-                                          DLOG(TRACE, "Daemon State machine destroyed");
+					virtual ~DaemonFSM()
+					{
+                        DLOG(TRACE, "Daemon State machine destroyed");
 					}
 
 					//void handleDaemonEvent(const seda::IEvent::Ptr& pEvent);void handleStartUpEvent(const StartUpEvent::Ptr& pEvent);

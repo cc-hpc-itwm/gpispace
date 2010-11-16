@@ -27,6 +27,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 add_subdirectory(workflows)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
+	DEPENDS ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml
+	DEPENDS pnetc
 	COMMAND ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc 
 	ARGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
     COMMENT "Invoke command: ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet" VERBATIM
@@ -81,13 +83,13 @@ add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
 
 
-set( srcs
+set( test_agents_srcs
   	test_AgentInteraction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 
 
-add_executable(test_agents_suite ${srcs})
+add_executable(test_agents_suite ${test_agents_srcs})
 
 target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 sdpa-client
@@ -98,7 +100,25 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 uuid
 									 ${Boost_LIBRARIES})
 									 
-add_test(test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_agents_suite)
+add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_agents_suite )
+
+set( test_orch_empty_we_srcs
+  	test_OrchestratorEmptyWE.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
+)
+
+
+add_executable(test_orchestrator_empty_we ${test_orch_empty_we_srcs})
+
+target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
+									 sdpa-client
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})
+add_test( test_orchestrator_empty_we ${CMAKE_CURRENT_BINARY_DIR}/test_orchestrator_empty_we )
 
 #add_dependencies (sdpa-test ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
                    

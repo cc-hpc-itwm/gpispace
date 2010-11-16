@@ -37,7 +37,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
 
-
 using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
@@ -205,55 +204,6 @@ void GenericDaemon::configure_network( const std::string& daemonUrl, const std::
 		  throw;
 		}
     }
-
-		// TODO: rewrite the startup
-		/*
-	try {
-		SDPA_LOG_DEBUG("setting up decoding...");
-		seda::ForwardStrategy::Ptr fwd_to_daemon_strategy(new seda::ForwardStrategy(daemon_stage_->name()));
-		sdpa::events::DecodeStrategy::ptr_t decode_strategy(new sdpa::events::DecodeStrategy(prefix+"-decode", fwd_to_daemon_strategy));
-		seda::Stage::Ptr decode_stage(new seda::Stage(prefix+"-decode", decode_strategy));
-		seda::StageRegistry::instance().insert(decode_stage);
-		decode_stage->start();
-	}
-	catch(std::exception const& ex)
-	{
-		SDPA_LOG_ERROR("Exception occurred when trying to start the decoding stage: "<<ex.what());
-		throw;
-	}
-
-	try {
-		SDPA_LOG_DEBUG("setting up the network stage...");
-		seda::comm::ConnectionFactory connFactory;
-		seda::comm::ConnectionParameters params("udp", daemonUrl, daemon_stage_->name());
-		seda::comm::Connection::ptr_t conn = connFactory.createConnection(params);
-		// master known service: give the port as a parameter
-		if( !masterName.empty() &&  !masterUrl.empty() )
-		{
-			setMaster(masterName);
-			conn->locator()->insert( masterName, masterUrl);
-		}
-
-		seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy(prefix+"-decode", conn));
-		seda::Stage::Ptr network_stage(new seda::Stage(prefix, conn_s));
-		seda::StageRegistry::instance().insert(network_stage);
-		network_stage->start();
-
-		SDPA_LOG_DEBUG("setting up the output/encoding stage...");
-		seda::ForwardStrategy::Ptr fwd_to_net_strategy(new seda::ForwardStrategy(network_stage->name()));
-		sdpa::events::EncodeStrategy::ptr_t encode_strategy(new sdpa::events::EncodeStrategy(prefix+"-encode", fwd_to_net_strategy));
-		seda::Stage::Ptr encode_stage(new seda::Stage(prefix+"-encode", encode_strategy));
-		seda::StageRegistry::instance().insert(encode_stage);
-
-		ptr_to_master_stage_ = ptr_to_slave_stage_ = encode_stage.get();
-		encode_stage->start();
-	}
-	catch(std::exception const & ex)
-	{
-		SDPA_LOG_ERROR("Exception occurred when trying to start the network stage: "<<ex.what());
-		throw;
-	}
-		*/
 }
 
 void GenericDaemon::shutdown_network()
@@ -261,29 +211,6 @@ void GenericDaemon::shutdown_network()
 
     if( !master().empty() && is_registered())
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
-
-
-    /*
-	SDPA_LOG_DEBUG("shutting-down the network components of the daemon "<<daemon_stage_->name());
-	const std::string prefix(daemon_stage_->name()+".net");
-
-	SDPA_LOG_DEBUG("shutdown the decoding stage...");
-	std::string decode_stage_name = prefix+"-decode";
-	seda::Stage::Ptr decode_stage = seda::StageRegistry::instance().lookup(decode_stage_name);
-	decode_stage->stop();
-
-	SDPA_LOG_DEBUG("shutdown the network stage...");
-	std::string network_stage_name = prefix;
-	seda::Stage::Ptr network_stage = seda::StageRegistry::instance().lookup(network_stage_name);
-	network_stage->stop();
-
-	SDPA_LOG_DEBUG("shutdown the encoding stage...");
-	std::string encode_stage_name = prefix+"-encode";
-	seda::Stage::Ptr encode_stage = seda::StageRegistry::instance().lookup(encode_stage_name);
-
-	encode_stage->stop();
-    */
-	//ptr_to_master_stage_ = ptr_to_slave_stage_ = NULL;
 }
 
 void GenericDaemon::start(const GenericDaemon::ptr_t& ptr_daemon )
@@ -759,6 +686,15 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	// First, check if the job 'job_id' wasn't already submitted!
 	try {
 		ptr_job_man_->findJob(e.job_id());
+		// The job already exists -> generate an error message that the job already exists
+		DLOG(TRACE, "The job with job-id: " << e.job_id()<<" exist already into the JobManager. Reply to "<< e.from()<<" with an error!");
+
+		if( e.from() != sdpa::daemon::WE ) //e.to())
+		{
+			ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, "The job already exist!") );
+			sendEventToMaster(pErrorEvt);
+		}
+
 		return;
 	} catch(const JobNotFoundException&){
           DLOG(TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
@@ -1078,7 +1014,7 @@ Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFo
 
 void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
 {
-  DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
 	workflowEngine()->failed( jobId.str(), reason );
 	jobManager()->deleteJob(jobId);
 }
