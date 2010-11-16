@@ -23,7 +23,7 @@
 
 // for job_desc_t
 #include <sdpa/types.hpp>
-#include <sdpa/uuidgen.hpp>
+#include <sdpa/events/id_generator.hpp>
 #include <map>
 
 #include <boost/config.hpp>
@@ -49,13 +49,7 @@ using namespace sdpa;
 typedef std::map<id_type, id_type> map_t;
 typedef map_t::value_type id_pair;
 
-
-/*struct f_id_gen {
-	id_type operator()()
-			{ std::string str; return str; }
-};*/
-
-static std::string id_gen() { JobId jobId; return jobId.str(); }
+static std::string id_gen() { return id_generator<std::string>::instance().next(); }
 
 typedef boost::function<id_type()> Function_t;
 
