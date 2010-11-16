@@ -29,10 +29,7 @@
 #include <sdpa/events/ConfigOkEvent.hpp>
 
 #include <sdpa/com/NetworkStrategy.hpp>
-
-#include <sdpa/uuid.hpp>
-#include <sdpa/uuidgen.hpp>
-
+#include <sdpa/events/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
@@ -62,8 +59,10 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_strAgentUID(id_generator<std::string>::instance().next()),
 	  m_nExternalJobs(0)
 {
+
 }
 
 GenericDaemon::GenericDaemon(	const std::string &name,
@@ -81,6 +80,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_strAgentUID(id_generator<std::string>::instance().next()),
 	  m_nExternalJobs(0),
 	  m_to_master_stage_name_(toMasterStageName),
 	  m_to_slave_stage_name_(toSlaveStageName)
@@ -117,6 +117,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
+	  m_strAgentUID(id_generator<std::string>::instance().next()),
 	  m_nExternalJobs(0),
 	  m_to_master_stage_name_(name+".net"),
 	  m_to_slave_stage_name_ (name+".net")

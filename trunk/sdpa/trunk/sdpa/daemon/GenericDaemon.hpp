@@ -23,7 +23,6 @@
 #include <seda/comm/ServiceThread.hpp>
 
 #include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/util/Config.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
@@ -277,6 +276,7 @@ namespace sdpa { namespace daemon {
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
 	  unsigned int m_nRank;
+	  std::string m_strAgentUID;
 
 	  sdpa::util::time_type m_ullPollingInterval;
 	  unsigned int m_nExternalJobs;
