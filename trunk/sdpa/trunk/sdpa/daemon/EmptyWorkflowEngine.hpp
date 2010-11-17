@@ -81,7 +81,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-  bool failed(const id_type& activityId, const result_type&  result )
+    bool failed(const id_type& activityId, const result_type&  result )
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
@@ -107,7 +107,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
      * This is a callback listener method to monitor activities submitted
      * to the SDPA using the method Gwes2Sdpa.submit().
     */
-  bool finished(const id_type& activityId, const result_type& result )
+	bool finished(const id_type& activityId, const result_type& result )
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
 
@@ -214,7 +214,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
      * completion of the cancelling process by calling the
      * callback method Gwes2Sdpa::cancelled.
      */
-  bool cancel(const id_type& wfid, const reason_type& reason)
+    bool cancel(const id_type& wfid, const reason_type& reason)
 	{
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
