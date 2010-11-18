@@ -29,8 +29,6 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/Worker.hpp>
 
-#define MSG_RETRY_CNT 50
-
 namespace sdpa { namespace daemon {
 
 const std::string ORCHESTRATOR("orchestrator") ;

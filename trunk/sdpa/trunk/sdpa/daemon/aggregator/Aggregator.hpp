@@ -165,7 +165,7 @@ void Aggregator<T>::action_config_ok(const ConfigOkEvent& e)
 
 	SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank()));
-        sendEventToMaster (pEvtWorkerReg, MSG_RETRY_CNT);
+        sendEventToMaster (pEvtWorkerReg);
 }
 
 template <typename T>
@@ -185,22 +185,22 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
-        DLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
+	DLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
 
-        // TODO: WORK HERE refactor all this
-        if (pEvt->from() != sdpa::daemon::WE)
-        {
-          // send a JobFinishedAckEvent back to the worker/slave
-          JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt
-            (new JobFinishedAckEvent( name()
-                                    , pEvt->from()
-                                    , pEvt->job_id()
-                                    , pEvt->id()
-                                    )
-            );
-          // send the event to the slave
-          sendEventToSlave(pEvtJobFinishedAckEvt);
-        }
+	// TODO: WORK HERE refactor all this
+	if (pEvt->from() != sdpa::daemon::WE)
+	{
+		// send a JobFinishedAckEvent back to the worker/slave
+		JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt
+		(new JobFinishedAckEvent( name()
+								, pEvt->from()
+								, pEvt->job_id()
+								, pEvt->id()
+								)
+		);
+	  // send the event to the slave
+	  sendEventToSlave(pEvtJobFinishedAckEvt);
+	}
 
 	//put the job into the state Finished
 	Job::ptr_t pJob;
@@ -229,7 +229,7 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
                           );
 
 			// send the event to the master
-			sendEventToMaster(pEvtJobFinished, MSG_RETRY_CNT);
+			sendEventToMaster(pEvtJobFinished);
 		}
 		catch(QueueFull const &)
 		{
@@ -343,7 +343,7 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 			// send the event to the master
-			sendEventToMaster(pEvtJobFailedEvent, MSG_RETRY_CNT);
+			sendEventToMaster(pEvtJobFailedEvent);
 		}
 		catch(QueueFull const &)
 		{

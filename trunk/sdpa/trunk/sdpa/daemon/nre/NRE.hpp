@@ -264,7 +264,7 @@ void NRE<T, U>::action_config_ok(const ConfigOkEvent& e)
 
 	SDPA_LOG_INFO("NRE (" << name() << ") sending registration event to master (" << master() << ") my rank=" << rank());
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank() ));
-	sendEventToMaster (pEvtWorkerReg, MSG_RETRY_CNT);
+	sendEventToMaster (pEvtWorkerReg);
 }
 
 template <typename T, typename U>
@@ -304,7 +304,7 @@ void NRE<T, U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 			JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 			// send the event to the master
-			sendEventToMaster(pEvtJobFinished, MSG_RETRY_CNT);
+			sendEventToMaster(pEvtJobFinished);
 			// delete it from the map when you receive a JobFinishedAckEvent!
 		}
 		catch(QueueFull const &)
@@ -367,7 +367,7 @@ void NRE<T, U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
 
 			// send the event to the master
-			sendEventToMaster(pEvtJobFailedEvent, MSG_RETRY_CNT);
+			sendEventToMaster(pEvtJobFailedEvent);
 			// delete it from the map when you receive a JobFaileddAckEvent!
 		}
 		catch(QueueFull const &)

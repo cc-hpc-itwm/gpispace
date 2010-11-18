@@ -121,6 +121,7 @@ namespace sdpa { namespace daemon {
 
 	  virtual void submitWorkflow(const id_type& id, const encoded_type& );
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason);
+
 	  virtual void activityCancelled(const id_type& id, const std::string& data);
 
 	  //virtual void configure_network();
