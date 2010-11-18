@@ -200,7 +200,7 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
           return;
 	}
 
-	// It's an worker who sent the message
+	// It's an worker who has sent the message
 	if( (pEvt->from() != sdpa::daemon::WE) )
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
@@ -209,7 +209,9 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		try {
 			SDPA_LOG_DEBUG("Inform WE that the activity "<<act_id<<" finished");
             result_type output = pEvt->result();
-            ptr_workflow_engine_->finished(act_id, output);
+
+            if(ptr_workflow_engine_)
+            	ptr_workflow_engine_->finished(act_id, output);
 
             try {
             	ptr_scheduler_->deleteWorkerJob ( worker_id, act_id );
@@ -253,23 +255,23 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
-        DLOG(TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
+	DLOG(TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
 
-        if (pEvt->from() != sdpa::daemon::WE)
-        {
-          // send a JobFinishedAckEvent back to the worker/slave
-          JobFailedAckEvent::Ptr evt
-            (new JobFailedAckEvent ( name()
-                                   , pEvt->from()
-                                   , pEvt->job_id()
-                                   , pEvt->id()
-                                   )
-            );
-          // send the event to the slave
-          sendEventToSlave(evt);
-        }
+	if (pEvt->from() != sdpa::daemon::WE)
+	{
+	  // send a JobFinishedAckEvent back to the worker/slave
+	  JobFailedAckEvent::Ptr evt
+		(new JobFailedAckEvent ( name()
+							   , pEvt->from()
+							   , pEvt->job_id()
+							   , pEvt->id()
+							   )
+		);
+	  // send the event to the slave
+	  sendEventToSlave(evt);
+	}
 
-	//put the job into the state Finished
+	//put the job into the state Failed
 	Job::ptr_t pJob;
 	try {
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
@@ -277,47 +279,42 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	}
 	catch(const JobNotFoundException &){
 		SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
-                return;
+        return;
 	}
 
-	if(pEvt->from() == sdpa::daemon::WE )
-	{
-		pJob->setResult(pEvt->result());
-	}
-	else
-	{
-		Worker::worker_id_t worker_id = pEvt->from();
-                id_type actId = pJob->id().str();
+	Worker::worker_id_t worker_id = pEvt->from();
+	id_type actId = pJob->id().str();
+
+	try {
+		SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" failed");
+		result_type output = pEvt->result();
+
+		if(ptr_workflow_engine_)
+			ptr_workflow_engine_->failed(actId, output);
 
 		try {
-                  SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" failed");
-                  result_type output = pEvt->result();
-                  ptr_workflow_engine_->failed(actId, output);
-
-                  try {
-                    ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
-                  }
-                  catch(const WorkerNotFoundException&)
-                  {
-                    SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-                  }
-                  catch(const JobNotDeletedException&)
-                  {
-                    SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
-                  }
-
-                  try {
-                    //delete it also from job_map_
-                    ptr_job_man_->deleteJob(pEvt->job_id());
-                  }
-                  catch(const JobNotDeletedException&)
-                  {
-                    SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
-                  }
+			ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
 		}
-		catch(...) {
-                  SDPA_LOG_ERROR("Unexpected exception occurred!");
+		catch(const WorkerNotFoundException&)
+		{
+			SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
 		}
+		catch(const JobNotDeletedException&)
+		{
+			SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
+		}
+
+		try {
+			//delete it also from job_map_
+			ptr_job_man_->deleteJob(pEvt->job_id());
+		}
+		catch(const JobNotDeletedException&)
+		{
+			SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
+		}
+	}
+	catch(...) {
+			  SDPA_LOG_ERROR("Unexpected exception occurred!");
 	}
 }
 
@@ -329,7 +326,7 @@ void Orchestrator<T>::handleCancelJobEvent(const CancelJobEvent* pEvt )
   DLOG(TRACE, "handleCancelJob(" << pEvt->job_id() << ")");
 
 	try {
-                Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->CancelJob(pEvt);
 		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
@@ -379,7 +376,8 @@ void Orchestrator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
             }
 
             // inform WE that the activity was canceled
-            ptr_workflow_engine_->cancelled(pEvt->job_id());
+            if(ptr_workflow_engine_)
+            	ptr_workflow_engine_->cancelled(pEvt->job_id());
           }
 	}
 	catch(const JobNotFoundException&)

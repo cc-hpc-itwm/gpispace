@@ -332,7 +332,7 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	}
 	catch(JobNotFoundException const &){
 		SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
-                return;
+		return;
 	}
 
 	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid

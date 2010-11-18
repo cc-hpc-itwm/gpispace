@@ -202,9 +202,10 @@ namespace sdpa { namespace daemon {
     	setResult(evt.result());
     }
 
-    void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& /* evt */)
+    void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& evt )
     {
-      DLOG(TRACE, "job failed " << id());
+    	DLOG(TRACE, "job failed " << id());
+    	setResult(evt.result());
     }
 
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
