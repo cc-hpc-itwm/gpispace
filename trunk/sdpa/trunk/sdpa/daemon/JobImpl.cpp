@@ -196,9 +196,10 @@ namespace sdpa { namespace daemon {
 		pComm->sendEventToMaster(pStatReply);
     }
 
-    void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& /* evt */)
+    void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
     {
-      DLOG(TRACE, "job finished " << id());
+    	DLOG(TRACE, "The job " << id()<<" finished. Set the result now!");
+    	setResult(evt.result());
     }
 
     void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& /* evt */)

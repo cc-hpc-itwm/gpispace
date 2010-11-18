@@ -200,13 +200,8 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
           return;
 	}
 
-	// TODO: refactor/rewrite this!
-	if( (pEvt->from() == sdpa::daemon::WE) )
-	{
-		// can't this be done within pJob->JobFinished()?
-		pJob->setResult(pEvt->result());
-	}
-	else
+	// It's an worker who sent the message
+	if( (pEvt->from() != sdpa::daemon::WE) )
 	{
 		Worker::worker_id_t worker_id = pEvt->from();
         id_type act_id = pEvt->job_id();
