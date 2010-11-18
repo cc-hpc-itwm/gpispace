@@ -1030,27 +1030,6 @@ const we::preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& j
 	}
 }
 
-void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& reason)
-{
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
-	workflowEngine()->failed( jobId.str(), reason );
-	jobManager()->deleteJob(jobId);
-}
-
-void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
-{
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
-	workflowEngine()->finished( jobId.str(), result );
-	jobManager()->deleteJob(jobId);
-}
-
-void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
-{
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
-	workflowEngine()->cancelled( jobId.str() );
-	jobManager()->deleteJob(jobId);
-}
-
 void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
 {
 	if(!ptr_workflow_engine_)

@@ -369,7 +369,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpywnedByNRE terminated!");
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 {
 	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
@@ -663,6 +662,5 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	sleep(1);
 	LOG( DEBUG, "The test case testActivityDummyWeAllCompAndNreWorker terminated!");
 }
-#endif
 
 BOOST_AUTO_TEST_SUITE_END()

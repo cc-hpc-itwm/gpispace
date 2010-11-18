@@ -137,6 +137,10 @@ namespace sdpa {
 		void handleCancelJobEvent(const CancelJobEvent* );
 		void handleCancelJobAckEvent(const CancelJobAckEvent* );
 
+		virtual void workerJobFailed(const job_id_t&, const std::string& result /*or reason*/) ;
+		virtual void workerJobFinished(const job_id_t & id, const result_type& result );
+	    virtual void workerJobCancelled(const job_id_t& id);
+
 		void activityCreated( const id_type& id, const std::string& data );
 		void activityStarted( const id_type& id, const std::string& data );
 		void activityFinished( const id_type& id, const std::string& data );
@@ -595,6 +599,30 @@ void NRE<T, U>::shutdownNrePcd()
 				}
 		}
 				}
+}
+
+template <typename T, typename U>
+void NRE<T, U>::workerJobFailed(const job_id_t& jobId, const std::string& reason)
+{
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
+	workflowEngine()->failed( jobId.str(), reason );
+	jobManager()->deleteJob(jobId);
+}
+
+template <typename T, typename U>
+void NRE<T, U>::workerJobFinished(const job_id_t& jobId, const result_type & result)
+{
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
+	workflowEngine()->finished( jobId.str(), result );
+	jobManager()->deleteJob(jobId);
+}
+
+template <typename T, typename U>
+void NRE<T, U>::workerJobCancelled(const job_id_t& jobId)
+{
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
+	workflowEngine()->cancelled( jobId.str() );
+	jobManager()->deleteJob(jobId);
 }
 
 #endif //SDPA_NRE_HPP

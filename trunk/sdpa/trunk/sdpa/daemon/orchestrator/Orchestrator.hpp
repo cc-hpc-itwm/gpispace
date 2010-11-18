@@ -32,8 +32,9 @@ namespace daemon {
 
 		Orchestrator(  	const std::string &name = "",
 						const std::string& url = "",
-                            const std::string &/*workflow_directory*/ = "")
-			: DaemonFSM( name, new T(this, boost::bind(&GenericDaemon::gen_id, this) ) ),
+                        const std::string &/*workflow_directory*/ = "",
+                        const bool& bHasWe = true)
+		: DaemonFSM( name, bHasWe?new T(this, boost::bind(&GenericDaemon::gen_id, this) ):NULL ),
 			  SDPA_INIT_LOGGER(name),
 			  url_(url)
 		{
