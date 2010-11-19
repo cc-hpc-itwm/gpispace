@@ -186,13 +186,15 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
 
+	typedef void OrchWorkflowEngine;
+
 	bool bLaunchNrePcd = true;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows", false);
 	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");

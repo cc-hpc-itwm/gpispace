@@ -21,11 +21,13 @@
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
+//#include <boost/type_traits/is_void.hpp>
 
 namespace sdpa {
 namespace daemon {
       template <typename T>
-	  class Orchestrator : public dsm::DaemonFSM {
+	  class Orchestrator : public dsm::DaemonFSM
+	  {
 	  public:
 		typedef sdpa::shared_ptr<Orchestrator<T> > ptr_t;
 		SDPA_DECLARE_LOGGER();
@@ -33,21 +35,20 @@ namespace daemon {
 		Orchestrator(  	const std::string &name = "",
 						const std::string& url = "",
                         const std::string &/*workflow_directory*/ = "",
-                        const bool& bHasWe = true)
-		: DaemonFSM( name, bHasWe?new T(this, boost::bind(&GenericDaemon::gen_id, this) ):NULL ),
-			  SDPA_INIT_LOGGER(name),
-			  url_(url)
+                        const bool& bHasWe = true )
+		: DaemonFSM( name, /*boost::is_void<T>::value*/ bHasWe?NULL:new T(this, boost::bind(&GenericDaemon::gen_id, this) )),
+		  SDPA_INIT_LOGGER(name),
+		  url_(url)
 		{
 			SDPA_LOG_DEBUG("Orchestrator constructor called ...");
-
-			//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new SchedulerOrch(this));
 		}
 
 		static ptr_t create( const std::string& name,
 							 const std::string& url,
-							 const std::string &workflow_directory )
+							 const std::string &workflow_directory,
+							 const bool& bHasWe = true )
 		{
-			return ptr_t(new Orchestrator<T>( name, url, workflow_directory ));
+			return ptr_t(new Orchestrator<T>( name, url, workflow_directory, bHasWe ) );
 		}
 
 		virtual ~Orchestrator();
@@ -92,6 +93,28 @@ namespace daemon {
 
 		std::string url_;
 	  };
+
+	  // specialization
+	  /*template <>
+	  class Orchestrator<void>: public dsm::DaemonFSM
+	  {
+		  public:
+
+		  SDPA_DECLARE_LOGGER();
+			Orchestrator(  	const std::string &name = "",
+							const std::string& url = "",
+	                        const std::string &= "")
+			: 	DaemonFSM( name, NULL),
+				SDPA_INIT_LOGGER(name),
+				url_(url)
+			{
+				SDPA_LOG_DEBUG("Orchestrator constructor called ...");
+			}
+
+		  private:
+			std::string url_;
+	  };
+	  */
 	}
 }
 
@@ -132,8 +155,11 @@ void Orchestrator<T>::shutdown( Orchestrator<T>::ptr_t ptrOrch )
 	ptrOrch->shutdown_network();
 	ptrOrch->stop();
 
-	delete ptrOrch->ptr_workflow_engine_;
-	ptrOrch->ptr_workflow_engine_ = NULL;
+	if( ptrOrch->hasWorkflowEngine() )
+	{
+		delete ptrOrch->ptr_workflow_engine_;
+		ptrOrch->ptr_workflow_engine_ = NULL;
+	}
 }
 
 template <typename T>
@@ -156,7 +182,7 @@ void Orchestrator<T>::action_config_ok(const ConfigOkEvent& e)
 	  SDPA_LOG_INFO("config: " << sstr.str());
 	}
 
-        GenericDaemon::action_config_ok (e);
+	GenericDaemon::action_config_ok (e);
 }
 
 template <typename T>
@@ -210,7 +236,7 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 			SDPA_LOG_DEBUG("Inform WE that the activity "<<act_id<<" finished");
             result_type output = pEvt->result();
 
-            if(ptr_workflow_engine_)
+            if( hasWorkflowEngine() )
             	ptr_workflow_engine_->finished(act_id, output);
 
             try {
@@ -231,13 +257,16 @@ void Orchestrator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 						 );
 			}
 
-			try {
-				//delete it also from job_map_
-				ptr_job_man_->deleteJob(act_id);
-			}
-			catch(JobNotDeletedException const &)
+			if( hasWorkflowEngine() )
 			{
-				SDPA_LOG_WARN("The JobManager could not delete the job "<< act_id);
+				try {
+					//delete it also from job_map_
+					ptr_job_man_->deleteJob(act_id);
+				}
+				catch(JobNotDeletedException const &)
+				{
+					SDPA_LOG_WARN("The JobManager could not delete the job "<< act_id);
+				}
 			}
 
 		}catch(...) {
@@ -289,7 +318,7 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" failed");
 		result_type output = pEvt->result();
 
-		if(ptr_workflow_engine_)
+		if( hasWorkflowEngine() )
 			ptr_workflow_engine_->failed(actId, output);
 
 		try {
@@ -304,13 +333,16 @@ void Orchestrator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 			SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
 		}
 
-		try {
-			//delete it also from job_map_
-			ptr_job_man_->deleteJob(pEvt->job_id());
-		}
-		catch(const JobNotDeletedException&)
+		if( hasWorkflowEngine() )
 		{
-			SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
+			try {
+				//delete it also from job_map_
+				ptr_job_man_->deleteJob(pEvt->job_id());
+			}
+			catch(const JobNotDeletedException&)
+			{
+				SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
+			}
 		}
 	}
 	catch(...) {
@@ -364,20 +396,31 @@ void Orchestrator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
           if( pEvt->from() != sdpa::daemon::WE  )
           {
-            try {
-              ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
-            }
-            catch(const WorkerNotFoundException&) {
-              SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-            }
-            catch(const JobNotDeletedException&)
-            {
-              SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worke "<<worker_id<<"'s queues ...");
-            }
+        	  try {
+        		  ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
+        	  }
+        	  catch(const WorkerNotFoundException&) {
+        		  SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+        	  }
+        	  catch(const JobNotDeletedException&)
+        	  {
+        		  SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worke "<<worker_id<<"'s queues ...");
+        	  }
 
-            // inform WE that the activity was canceled
-            if(ptr_workflow_engine_)
-            	ptr_workflow_engine_->cancelled(pEvt->job_id());
+        	  // inform WE that the activity was canceled
+        	  if( hasWorkflowEngine() )
+        	  {
+        		  ptr_workflow_engine_->cancelled(pEvt->job_id());
+
+        		  try {
+        			  //delete it also from job_map_
+        			  ptr_job_man_->deleteJob(pEvt->job_id());
+        		  }
+        		  catch(const JobNotDeletedException&)
+        		  {
+        			  SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
+        		  }
+        	  }
           }
 	}
 	catch(const JobNotFoundException&)
@@ -413,13 +456,11 @@ void Orchestrator<T>::backup( const std::string& strArchiveName )
 {
 	try
 	{
-		//print();
-
 		Orchestrator* ptrOrch(this);
 		std::ofstream ofs( strArchiveName.c_str() );
 		boost::archive::text_oarchive oa(ofs);
 		oa.register_type(static_cast<Orchestrator<T>*>(NULL));
-		oa.register_type(static_cast<T*>(NULL));
+		//oa.register_type(static_cast<T*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
 		oa.register_type(static_cast<GenericDaemon*>(NULL));
 		oa.register_type(static_cast<SchedulerOrch*>(NULL));
@@ -445,7 +486,7 @@ void Orchestrator<T>::recover( const std::string& strArchiveName )
 		std::ifstream ifs( strArchiveName.c_str() );
 		boost::archive::text_iarchive ia(ifs);
 		ia.register_type(static_cast<Orchestrator<T>*>(NULL));
-		ia.register_type(static_cast<T*>(NULL));
+		//ia.register_type(static_cast<T*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerOrch*>(NULL));

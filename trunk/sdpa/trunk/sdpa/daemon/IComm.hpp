@@ -65,6 +65,8 @@ const std::string USER("user");
 	  virtual unsigned int& rank() = 0;
 	  virtual bool requestsAllowed(const sdpa::util::time_type&) = 0;
 
+	  virtual bool hasWorkflowEngine() = 0;
+
 	  //GUI notification methods
 	  virtual void activityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
 	  virtual void activityStarted(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }

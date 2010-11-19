@@ -56,10 +56,8 @@ namespace sdpa {
                    , const std::string & fvmPCBinary = ""
                    , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
                    , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
-                   )
-		: dsm::DaemonFSM( name
-                                , create_workflow_engine<T>()
-                                )
+                   , const bool& bHasWe = true)
+					: dsm::DaemonFSM( name, bHasWe?new T(this, boost::bind(&GenericDaemon::gen_id, this) ):NULL )
                 , SDPA_INIT_LOGGER(name)
                 , url_(url)
                 , masterName_(masterName)
@@ -107,6 +105,7 @@ namespace sdpa {
                                    , const std::string & fvmPCBinary = ""
                                    , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
                                    , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                                   , const bool& bHasWe = true
                                    )
 		{
 			 return ptr_t(new NRE<T, U>( name
@@ -119,6 +118,7 @@ namespace sdpa {
                                                    , fvmPCBinary
                                                    , fvmPCSearchPath
                                                    , fvmPCPreLoad
+                                                   , bHasWe
                                                    )
                                      );
 		}
@@ -228,7 +228,7 @@ void NRE<T, U>::shutdown(NRE<T, U>::ptr_t ptrNRE)
 	ptrNRE->shutdown_network();
 	ptrNRE->stop();
 
-	if (ptrNRE->ptr_workflow_engine_)
+	if ( ptrNRE->hasWorkflowEngine() )
 	{
 		DLOG(TRACE, "deleting workflow engine");
 		delete ptrNRE->ptr_workflow_engine_;
@@ -604,25 +604,34 @@ void NRE<T, U>::shutdownNrePcd()
 template <typename T, typename U>
 void NRE<T, U>::workerJobFailed(const job_id_t& jobId, const std::string& reason)
 {
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
-	workflowEngine()->failed( jobId.str(), reason );
-	jobManager()->deleteJob(jobId);
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
+		workflowEngine()->failed( jobId.str(), reason );
+		jobManager()->deleteJob(jobId);
+	}
 }
 
 template <typename T, typename U>
 void NRE<T, U>::workerJobFinished(const job_id_t& jobId, const result_type & result)
 {
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
-	workflowEngine()->finished( jobId.str(), result );
-	jobManager()->deleteJob(jobId);
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
+		workflowEngine()->finished( jobId.str(), result );
+		jobManager()->deleteJob(jobId);
+	}
 }
 
 template <typename T, typename U>
 void NRE<T, U>::workerJobCancelled(const job_id_t& jobId)
 {
-	DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
-	workflowEngine()->cancelled( jobId.str() );
-	jobManager()->deleteJob(jobId);
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
+		workflowEngine()->cancelled( jobId.str() );
+		jobManager()->deleteJob(jobId);
+	}
 }
 
 #endif //SDPA_NRE_HPP

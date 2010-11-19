@@ -208,7 +208,6 @@ void GenericDaemon::configure_network( const std::string& daemonUrl, const std::
 
 void GenericDaemon::shutdown_network()
 {
-
     if( !master().empty() && is_registered())
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
 }
@@ -323,11 +322,11 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
 {
 	DMLOG(TRACE, "daemon stage is being stopped");
-        if (ptr_scheduler_)
-        {
-          // stop the scheduler thread
-          ptr_scheduler_->stop();
-        }
+	if (ptr_scheduler_)
+	{
+		// stop the scheduler thread
+		ptr_scheduler_->stop();
+	}
 
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
@@ -691,7 +690,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 		if( e.from() != sdpa::daemon::WE ) //e.to())
 		{
-			ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, "The job already exist!") );
+			ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, "The job already exists!") );
 			sendEventToMaster(pErrorEvt);
 		}
 
@@ -714,7 +713,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 		// check if the message comes from outside/slave or from WFE
 		// if it comes from outside set it as local
-		if(e.from() != sdpa::daemon::WE ) //e.to())
+		if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() ) //e.to())
 		{
 			LOG(DEBUG, "got new job from " << e.from() << " = " << job_id);
 			pJob->set_local(true);
@@ -722,7 +721,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 		ptr_scheduler_->schedule(job_id);
 
-		if(pJob->is_local())
+		if( e.from() != sdpa::daemon::WE )
 		{
 			//send back to the user a SubmitJobAckEvent
 			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));

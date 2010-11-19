@@ -31,10 +31,11 @@ namespace sdpa {
 			typedef sdpa::shared_ptr<Aggregator<T> > ptr_t;
 			SDPA_DECLARE_LOGGER();
 
-			Aggregator( const std::string& name = "", const std::string& url = "",
-						const std::string& masterName = "")
-			//, const std::string& masterUrl = "")
-			: DaemonFSM( name, create_workflow_engine<T>() ),
+			Aggregator( const std::string& name = "",
+						const std::string& url = "",
+						const std::string& masterName = "",
+						const bool& bHasWe = true )
+			: DaemonFSM( name, bHasWe?new T(this, boost::bind(&GenericDaemon::gen_id, this) ):NULL ),
 				  SDPA_INIT_LOGGER(name),
 				  url_(url),
 				  masterName_(masterName)
@@ -49,10 +50,10 @@ namespace sdpa {
 
 			static ptr_t create( const std::string& name,
 							     const std::string& url,
-								 const std::string& masterName )
-								 //,const std::string& masterUrl )
+								 const std::string& masterName,
+								 const bool& bHasWe = true )
 			{
-				 return ptr_t( new Aggregator<T>( name, url, masterName )); //, masterUrl));
+				 return ptr_t( new Aggregator<T>( name, url, masterName, bHasWe )); //, masterUrl));
 			}
 
 			static void start(ptr_t ptrAgg);
@@ -136,8 +137,11 @@ void Aggregator<T>::shutdown(Aggregator<T>::ptr_t ptrAgg)
 	ptrAgg->shutdown_network();
 	ptrAgg->stop();
 
-	delete ptrAgg->ptr_workflow_engine_;
-	ptrAgg->ptr_workflow_engine_ = NULL;
+	if(ptrAgg->hasWorkflowEngine())
+	{
+		delete ptrAgg->ptr_workflow_engine_;
+		ptrAgg->ptr_workflow_engine_ = NULL;
+	}
 }
 
 template <typename T>
@@ -264,7 +268,8 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
                   // exactly    that    transition    should    be
                   // executed. I.e. all this code should go to the
                   // FSM callback routine.
-                  ptr_workflow_engine_->finished(actId, output);
+                  if( hasWorkflowEngine() )
+                	  ptr_workflow_engine_->finished(actId, output);
 
                   try {
                     ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
@@ -279,14 +284,17 @@ void Aggregator<T>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
                     SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
                   }
 
-                  try {
-                    //delete it also from job_map_
-                    ptr_job_man_->deleteJob(pEvt->job_id());
-                  }
-                  catch(JobNotDeletedException const &)
+                  if( hasWorkflowEngine() )
                   {
-                    SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
-                    throw;
+					  try {
+						//delete it also from job_map_
+						ptr_job_man_->deleteJob(pEvt->job_id());
+					  }
+					  catch(JobNotDeletedException const &)
+					  {
+						SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+						throw;
+					  }
                   }
                 }
                 catch(std::exception const & ex) {
@@ -373,7 +381,9 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 			SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
 			result_type output = pEvt->result();
-			ptr_workflow_engine_->failed(actId, output);
+
+			if( hasWorkflowEngine() )
+				ptr_workflow_engine_->failed(actId, output);
 
 			try {
 				ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
@@ -387,11 +397,14 @@ void Aggregator<T>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 				SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
 			}
 
-			try {
-				//delete it also from job_map_
-				ptr_job_man_->deleteJob(pEvt->job_id());
-			}catch(JobNotDeletedException const &){
-				SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+			if( hasWorkflowEngine() )
+			{
+				try {
+					//delete it also from job_map_
+					ptr_job_man_->deleteJob(pEvt->job_id());
+				}catch(JobNotDeletedException const &){
+					SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+				}
 			}
 		}
 		catch(std::exception const & ex)
@@ -455,7 +468,7 @@ void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 			// only if the job was already submitted, send ack to master
 			sendEventToMaster(pCancelAckEvt);
 
-			// if I'm not the orchestrator delete effectively the job
+			// if I'm not the orchestrator, delete effectively the job
 			ptr_job_man_->deleteJob(pEvt->job_id());
 
 		}
@@ -475,7 +488,17 @@ void Aggregator<T>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
     		// tell WE that the activity was cancelled
     		id_type actId = pJob->id();
-    		ptr_workflow_engine_->cancelled(actId);
+    		if( hasWorkflowEngine() )
+    		{
+    			ptr_workflow_engine_->cancelled(actId);
+
+				try {
+					//delete it also from job_map_
+					ptr_job_man_->deleteJob(pEvt->job_id());
+				}catch(JobNotDeletedException const &){
+					SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+				}
+			}
     	}
 	}
 	catch(JobNotFoundException const &)

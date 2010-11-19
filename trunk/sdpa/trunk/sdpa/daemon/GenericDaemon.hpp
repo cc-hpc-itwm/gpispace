@@ -200,6 +200,8 @@ namespace sdpa { namespace daemon {
 	  void decExtJobsCnt();
 	  unsigned int extJobsCnt();
 
+	  virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
+
   protected:
 
 	 // observe workflow engine
