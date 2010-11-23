@@ -105,7 +105,11 @@ namespace fhg
       while (! connections_.empty ())
       {
         connection_data_t & cd = connections_.begin()->second;
-        cd.connection->stop();
+        if (cd.connection)
+          cd.connection->stop();
+        if (cd.loopback)
+          cd.loopback->stop();
+
         while (! cd.o_queue.empty())
         {
           to_send_t & to_send = cd.o_queue.front();
@@ -429,6 +433,8 @@ namespace fhg
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
     {
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+
       assert (connections_.find (a) != connections_.end());
       connection_data_t & cd = connections_.at (a);
       assert (! cd.o_queue.empty());
