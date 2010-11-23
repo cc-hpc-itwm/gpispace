@@ -20,13 +20,15 @@ namespace fhg
                    , port_t const & port
                    , std::string const & cookie
                    )
-      : name_(name)
+      : stopped_(true)
+      , name_(name)
       , host_(host)
       , port_(port)
       , cookie_(cookie)
       , my_addr_(p2p::address_t(name))
       , started_()
       , io_service_()
+      , io_service_work_(new boost::asio::io_service::work(io_service_))
       , acceptor_(io_service_)
       , connections_()
       , listen_(0)
@@ -35,18 +37,6 @@ namespace fhg
       {
         throw std::runtime_error ("peer_t(): invalid argument: name must not contain '.'!");
       }
-
-      boost::asio::ip::tcp::resolver resolver(io_service_);
-      boost::asio::ip::tcp::resolver::query query(host, port);
-      boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-      acceptor_.open(endpoint.protocol());
-      acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-      acceptor_.bind(endpoint);
-      acceptor_.listen();
-
-      accept_new ();
-
-      io_service_.post (boost::bind (&self::update_my_location, this));
     }
 
     peer_t::~peer_t()
@@ -68,14 +58,46 @@ namespace fhg
 
     void peer_t::start()
     {
+      {
+        boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+
+        if (! stopped_)
+          return;
+
+        boost::asio::ip::tcp::resolver resolver(io_service_);
+        boost::asio::ip::tcp::resolver::query query(host_, port_);
+        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+        acceptor_.open(endpoint.protocol());
+        acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+        acceptor_.bind(endpoint);
+        acceptor_.listen();
+
+        accept_new ();
+
+        io_service_.post (boost::bind (&self::update_my_location, this));
+      }
+
+      int ec (0);
       // todo introduce timeout to event::wait()
-      fhg::util::thread::event<int>::value_type ec;
       started_.wait (ec);
+
+      if (ec)
+      {
+        stop();
+        throw std::runtime_error ("peer "+name_+" could not be started!");
+      }
+
+      {
+        boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+        stopped_ = false;
+      }
     }
 
     void peer_t::stop()
     {
       boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+
+      if (stopped_) return;
 
       DLOG(TRACE, "stopping peer " << name());
 
@@ -155,6 +177,8 @@ namespace fhg
         using namespace boost::system;
         to_recv.handler (errc::make_error_code(errc::operation_canceled));
       }
+
+      stopped_ = true;
     }
 
     void peer_t::send ( const std::string & to
