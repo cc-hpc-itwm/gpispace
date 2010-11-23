@@ -131,6 +131,7 @@ namespace fhg
 
       mutable boost::recursive_mutex mutex_;
 
+      bool stopped_;
       std::string name_;
       std::string host_;
       std::string port_;
@@ -139,6 +140,7 @@ namespace fhg
       fhg::util::thread::event<int> started_;
 
       boost::asio::io_service io_service_;
+      boost::shared_ptr<boost::asio::io_service::work> io_service_work_;
       boost::asio::ip::tcp::acceptor acceptor_;
 
       typedef boost::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;

@@ -15,7 +15,9 @@ namespace sdpa
                                      , fhg::com::port_t const & port
                                      )
       : super (next_stage)
-      , m_peer (peer_name, host, port)
+      , m_name (peer_name)
+      , m_host (host)
+      , m_port (port)
       , m_shutting_down (false)
     {}
 
@@ -34,14 +36,14 @@ namespace sdpa
         DLOG(TRACE, "sending event: " << sdpa_event->str());
 
         fhg::com::message_t msg;
-        msg.header.dst = m_peer.resolve_name (sdpa_event->to());
-        msg.header.src = m_peer.address();
+        msg.header.dst = m_peer->resolve_name (sdpa_event->to());
+        msg.header.src = m_peer->address();
 
         const std::string encoded_evt (codec.encode(sdpa_event));
         msg.data.assign (encoded_evt.begin(), encoded_evt.end());
         msg.header.length = msg.data.size();
 
-        m_peer.async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
+        m_peer->async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
       }
       else
       {
@@ -55,17 +57,23 @@ namespace sdpa
 
       super::onStageStart (s);
 
-      m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, &m_peer)));
-      m_peer.start ();
-      m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+      m_peer.reset (new fhg::com::peer_t ( m_name
+                                         , fhg::com::host_t (m_host)
+                                         , fhg::com::port_t (m_port)
+                                         )
+                   );
+      m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, m_peer)));
+      m_peer->start ();
+      m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
     }
 
     void NetworkStrategy::onStageStop (std::string const & s)
     {
       m_shutting_down = true;
 
-      m_peer.stop();
-      m_thread->join ();
+      m_peer->stop();
+      m_thread->join();
+      m_peer.reset();
 
       super::onStageStop (s);
     }
@@ -108,28 +116,28 @@ namespace sdpa
           LOG(WARN, "could not handle incoming message: " << ex.what());
         }
 
-        m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+        m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
       }
       else if (! m_shutting_down)
       {
         const fhg::com::p2p::address_t & addr = m_message.header.src;
-        if (addr != m_peer.address())
+        if (addr != m_peer->address())
         {
-          LOG(WARN, "connection to " << m_peer.resolve (addr, "*unknown*") << " lost: " << ec);
+          LOG(WARN, "connection to " << m_peer->resolve (addr, "*unknown*") << " lost: " << ec);
 
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
-                                               , m_peer.name()
+            error(new sdpa::events::ErrorEvent ( m_peer->resolve(addr, "*unknown*")
+                                               , m_peer->name()
                                                , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
           super::perform (error);
-          m_peer.async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+          m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
         }
         else
         {
-          LOG(TRACE, m_peer.name() << " is shutting down");
+          LOG(TRACE, m_peer->name() << " is shutting down");
         }
       }
     }
