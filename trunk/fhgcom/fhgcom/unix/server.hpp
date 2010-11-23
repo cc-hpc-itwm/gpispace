@@ -15,6 +15,7 @@ namespace fhg
         explicit
         server ( boost::asio::io_service & io_service
                , std::string const & path
+               , int mode = 0600
                );
 
         void start (bool reuse_address = true);
