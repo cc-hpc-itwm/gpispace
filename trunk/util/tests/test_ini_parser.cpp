@@ -1,0 +1,107 @@
+#define BOOST_TEST_MODULE UtilThreadEventTest
+#include <boost/test/unit_test.hpp>
+
+#include <fhg/util/ini-parser.hpp>
+
+#include <boost/unordered_map.hpp>
+#include <boost/bind.hpp>
+
+static int dummy_handler( std::string const &
+                        , std::string const &
+                        , std::string const &
+                        )
+{
+  return 0;
+}
+
+struct parse_into_map_t
+{
+  typedef boost::unordered_map<std::string, std::string> entries_t;
+  typedef boost::unordered_map<std::string, entries_t> sections_t;
+
+  int handle ( std::string const & sec
+             , std::string const & key
+             , std::string const & val
+             )
+  {
+    entries_t & e = sections[sec];
+    e[key] = val;
+    return 0;
+  }
+
+  std::string get ( std::string const & sec
+                  , std::string const & key
+                  , std::string const & def
+                  )
+  {
+    try
+    {
+      return sections.at(sec).at(key);
+    }
+    catch (std::exception const &)
+    {
+      return def;
+    }
+  }
+
+  sections_t sections;
+};
+
+BOOST_AUTO_TEST_CASE ( parse_no_such_file )
+{
+  try
+  {
+    fhg::util::ini::parse ("/this/file/does/not/exist", &dummy_handler);
+  }
+  catch (fhg::util::ini::exception::parse_error const & pe)
+  {
+    BOOST_CHECK (true);
+  }
+}
+
+BOOST_AUTO_TEST_CASE ( parse_key_value_with_spaces )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("foo = bar");
+  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  BOOST_CHECK_EQUAL (m.get("", "foo", "baz"), "bar");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_key_value_without_spaces )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("foo=bar");
+  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  BOOST_CHECK_EQUAL (m.get("", "foo", "baz"), "bar");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_section_key_value )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("[test]\nfoo=bar");
+  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  BOOST_CHECK_EQUAL (m.get("test", "foo", "baz"), "bar");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_section_key_value_with_space )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("[ test   ]\nfoo=bar");
+  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  BOOST_CHECK_EQUAL (m.get("test", "foo", "baz"), "bar");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_comment )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("; comment 1\n# comment 2");
+  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  BOOST_CHECK_EQUAL (m.get("test", "foo", ""), "");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_include )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("%include <file>");
+  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+}

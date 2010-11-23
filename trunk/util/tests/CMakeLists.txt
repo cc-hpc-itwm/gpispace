@@ -3,6 +3,7 @@
 set(tc_srcs
   test_semaphore.cpp
   test_event.cpp
+  test_ini_parser.cpp
 )
 
 foreach (tc_src ${tc_srcs})
