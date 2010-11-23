@@ -1,0 +1,29 @@
+#ifndef FHG_COM_UNIX_SERVER_HPP
+#define FHG_COM_UNIX_SERVER_HPP 1
+
+#include <string>
+
+namespace fhg
+{
+  namespace com
+  {
+    namespace unix
+    {
+      class server
+      {
+      public:
+        explicit
+        server ( boost::asio::io_service & io_service
+               , std::string const & path
+               );
+
+        void start (bool reuse_address = true);
+      private:
+        boost::asio::io_service & io_service;
+        std::string m_path;
+      };
+    }
+  }
+}
+
+#endif
