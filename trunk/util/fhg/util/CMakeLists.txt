@@ -9,6 +9,9 @@ set (hdrs
   starts_with.hpp
   util.hpp
   warnings.hpp
+
+  ini-parser.hpp
+  ini-parser.tcc
 )
 
 install(FILES ${hdrs}
