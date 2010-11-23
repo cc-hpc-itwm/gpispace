@@ -3,11 +3,6 @@
 
 #include <fhgcom/unix/connection.hpp>
 
-struct backend
-{
-  on_connect (
-};
-
 BOOST_AUTO_TEST_CASE (test_server)
 {
   using namespace fhg::com::unix;
