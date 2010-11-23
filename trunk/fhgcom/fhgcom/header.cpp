@@ -9,6 +9,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <boost/thread.hpp>
+
 namespace fhg
 {
   namespace com
@@ -22,9 +24,28 @@ namespace fhg
         return u;
       }
 
+      namespace detail
+      {
+        struct fhg_com_gen_uuid
+        {
+          fhg_com_gen_uuid ()
+            : m_gen (fhg_com_uuid())
+          {}
+
+          boost::uuids::uuid operator () (std::string const & name)
+          {
+            boost::lock_guard<boost::mutex> lock(m_mutex);
+            return m_gen (name);
+          }
+        private:
+          mutable boost::mutex m_mutex;
+          boost::uuids::name_generator m_gen;
+        };
+      }
+
       static boost::uuids::uuid fhg_com_gen_uuid(std::string const & name)
       {
-        static boost::uuids::name_generator gen (fhg_com_uuid());
+        static detail::fhg_com_gen_uuid gen;
         return gen(name);
       }
 
