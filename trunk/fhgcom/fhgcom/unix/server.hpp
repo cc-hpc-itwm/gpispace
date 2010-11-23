@@ -20,8 +20,9 @@ namespace fhg
 
         void start (bool reuse_address = true);
       private:
-        boost::asio::io_service & io_service;
+        boost::asio::io_service & m_io_service;
         std::string m_path;
+        int m_mode;
       };
     }
   }
