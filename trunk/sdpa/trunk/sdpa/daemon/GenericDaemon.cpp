@@ -522,7 +522,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 	}
 	catch(WorkerNotFoundException const &)
 	{
-		SDPA_LOG_ERROR("got LS from unknown worker: " << e.from());
+		SDPA_LOG_WARN("got LS from unknown worker: " << e.from());
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
 		sendEventToSlave(pErrorEvt);
