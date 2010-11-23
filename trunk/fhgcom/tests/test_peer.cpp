@@ -15,8 +15,8 @@
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
-static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("1234"); return s; }
+static const std::string &kvs_host () { static std::string s("localhost"); return s; }
+static const std::string &kvs_port () { static std::string s("1234"); return s; }
 
 struct F
 {
@@ -70,7 +70,7 @@ struct F
 
 BOOST_FIXTURE_TEST_SUITE( s, F )
 
-BOOST_AUTO_TEST_CASE ( setup_dummy )
+BOOST_AUTO_TEST_CASE ( check_setup )
 {
   // make sure that the kvs is reachable...
   using namespace fhg::com;
