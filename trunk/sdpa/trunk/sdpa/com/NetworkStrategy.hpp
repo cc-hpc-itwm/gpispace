@@ -34,7 +34,11 @@ namespace sdpa
       void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);
 
-      fhg::com::peer_t m_peer;
+      const std::string m_name;
+      const std::string m_host;
+      const std::string m_port;
+
+      shared_ptr<fhg::com::peer_t> m_peer;
       fhg::com::message_t m_message;
       shared_ptr<boost::thread> m_thread;
       bool m_shutting_down;
