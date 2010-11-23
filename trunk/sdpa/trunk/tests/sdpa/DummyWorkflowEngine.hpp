@@ -62,14 +62,14 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     typedef std::string internal_id_type;
 
 
-    DummyWorkflowEngine( IDaemon* pIDaemon, Function_t f  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
+    DummyWorkflowEngine( IDaemon* pIDaemon = NULL, Function_t f =id_gen  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
     	pIDaemon_ = pIDaemon;
     	fct_id_gen_ = f;
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
-    void registerDaemon(IDaemon* pIDaemon )
+    void connect(IDaemon* pIDaemon )
     {
     	pIDaemon_ = pIDaemon;
     }

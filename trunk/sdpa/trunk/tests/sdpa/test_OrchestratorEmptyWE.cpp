@@ -36,7 +36,7 @@
 #include <sdpa/client/ClientApi.hpp>
 
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <seda/StageRegistry.hpp>
@@ -49,6 +49,8 @@
 
 #include <we/loader/module.hpp>
 #include <sdpa/daemon/EmptyWorkflowEngine.hpp>
+#include <we/mgmt/basic_layer.hpp>
+#include <we/mgmt/layer.hpp>
 
 namespace po = boost::program_options;
 
@@ -56,6 +58,8 @@ using namespace std;
 using namespace sdpa::tests;
 
 #define NO_GUI ""
+
+typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("12100"); return s; }
@@ -194,8 +198,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows", false);
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::start(ptrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
@@ -228,7 +232,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
-		sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
 	}
@@ -270,7 +274,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::shutdown(ptrOrch);
+	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
@@ -281,8 +285,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
-
-#if 0
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
@@ -298,8 +300,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::start(ptrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
@@ -332,7 +334,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
-		sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
 	}
@@ -374,7 +376,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::shutdown(ptrOrch);
+	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
@@ -385,6 +387,109 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
+BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
+{
+	LOG( DEBUG, "***** testOrchestratorRealWe *****"<<std::endl);
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	bool bLaunchNrePcd = true;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::start(ptrOrch);
+
+	LOG( DEBUG, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	// use external scheduler and real GWES
+	LOG( DEBUG, "Create the NRE ...");
+	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+				                             addrNRE,"aggregator_0",
+				                             workerUrl,
+				                             strGuiUrl,
+				                             bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
+
+	try {
+		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+
+		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+
+		return;
+	}
+
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+	for( int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+
+		LOG( DEBUG, "*****JOB #"<<k<<"******");
+
+		std::string job_status = ptrCli->queryJob(job_id_user);
+		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = ptrCli->queryJob(job_id_user);
+			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(5*m_sleep_interval);
+		}
+
+		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+		ptrCli->retrieveResults(job_id_user);
+
+		LOG( DEBUG, "User: delete the job "<<job_id_user);
+		ptrCli->deleteJob(job_id_user);
+	}
+
+	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+
+	ptrCli->shutdown_network();
+    ptrCli.reset();
+	seda::StageRegistry::instance().stopAll();
+	seda::StageRegistry::instance().clear();
+
+	sleep(1);
+	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
+}
+
+#if 0
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
@@ -400,8 +505,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::start(ptrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator 0 ...");
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
@@ -439,7 +544,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
 		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg_1);
-		sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
 	}
@@ -482,7 +587,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
 	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg_1);
-	sdpa::daemon::Orchestrator<EmptyWorkflowEngine>::shutdown(ptrOrch);
+	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	ptrCli->shutdown_network();
     ptrCli.reset();

@@ -12,7 +12,7 @@
 
 //#include <tests/sdpa/test_D2D2DDummyWfEng.hpp>
 //#include <tests/sdpa/test_D2D2DRealWfEng.hpp>
-#include <tests/sdpa/test_Components.hpp>
+//#include <tests/sdpa/test_Components.hpp>
 
 #include <tests/sdpa/test_LoadBalancer.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
@@ -43,7 +43,7 @@ namespace sdpa { namespace tests {
       //suiteOfTests->addTest( D2D2DDummyWfEngTest::suite() );
       //suiteOfTests->addTest( D2D2DRealWfEngTest:suite() );
 
-      suiteOfTests->addTest( TestComponents::suite() );
+      //suiteOfTests->addTest( TestComponents::suite() );
 
       /*suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
       suiteOfTests->addTest( TestSerializeJobPtr::suite() );

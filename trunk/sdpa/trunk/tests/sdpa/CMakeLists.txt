@@ -36,13 +36,13 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
        
 set (test_srcs
   SchedulerTestImpl.cpp
-  test_Components.cpp
+#  test_Components.cpp
   test_Config.cpp
   test_JobFSM_SMC.cpp
   test_JobId.cpp
   test_LoadBalancer.cpp
-  test_Scheduler.cpp
-  test_SerializeDaemonComponents.cpp
+#  test_Scheduler.cpp
+#  test_SerializeDaemonComponents.cpp
   test_SerializeJobPtr.cpp
   test_SerializeSharedPtr.cpp
   test_UUID.cpp
@@ -82,9 +82,8 @@ add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
 
-
 set( test_agents_srcs
-  	test_AgentInteraction.cpp
+  	test_Agents.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 
