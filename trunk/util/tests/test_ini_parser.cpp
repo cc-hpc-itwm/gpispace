@@ -44,20 +44,26 @@ struct parse_into_map_t
   std::string get ( std::string const & sec
                   , std::string const & key
                   , std::string const & def
-                  , std::string const * secid = NULL
                   )
   {
     try
     {
-      std::string k (secid ? (sec + "." + *secid) : sec);
-      k += ".";
-      k += key;
+      std::string k (sec + "." + key);
       return entries.at(k);
     }
     catch (std::exception const &)
     {
       return def;
     }
+  }
+
+  std::string get ( std::string const & sec
+                  , std::string const & sec_id
+                  , std::string const & key
+                  , std::string const & def
+                  )
+  {
+    return get (sec + "." + sec_id, key, def);
   }
 
   entries_t entries;
@@ -107,6 +113,30 @@ BOOST_AUTO_TEST_CASE ( parse_section_key_value_with_space )
   BOOST_CHECK_EQUAL (m.get("test", "foo", "baz"), "bar");
 }
 
+BOOST_AUTO_TEST_CASE ( parse_section_with_empty_id )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("[test \"\"]\nfoo=bar");
+  fhg::util::ini::parse (sstr, boost::ref(m));
+  BOOST_CHECK_EQUAL (m.get("test", "", "foo", "baz"), "bar");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_section_with_id )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("[test \"id\"]\nfoo=bar");
+  fhg::util::ini::parse (sstr, boost::ref(m));
+  BOOST_CHECK_EQUAL (m.get("test", "id", "foo", "baz"), "bar");
+}
+
+BOOST_AUTO_TEST_CASE ( parse_section_with_dot_id )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("[test \"id.1\"]\nfoo=bar");
+  fhg::util::ini::parse (sstr, boost::ref(m));
+  BOOST_CHECK_EQUAL (m.get("test", "id.1", "foo", "baz"), "bar");
+}
+
 BOOST_AUTO_TEST_CASE ( parse_comment )
 {
   parse_into_map_t m;
@@ -132,10 +162,6 @@ BOOST_AUTO_TEST_CASE ( parse_invalid_line )
     BOOST_CHECK(false);
   }
   catch (fhg::util::ini::exception::parse_error const &)
-  {
-    // ok
-  }
-  catch (std::exception const &)
   {
     // ok
   }
