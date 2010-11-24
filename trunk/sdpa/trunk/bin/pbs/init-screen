@@ -1,5 +1,6 @@
 #!/bin/bash
 
+init_screen_ver=1
 test -r "$HOME/.init-screen.cfg" && source "$HOME/.init-screen.cfg"
 
 head_node="${SDPA_HEAD_NODE}"
@@ -58,7 +59,7 @@ that is shared among all nodes. I will create a "log" directory within that into
 which all components are going to log.
 
 EOF
-    read -p "scratch directory to use: " scratch_dir
+    read -p "  scratch directory to use: " scratch_dir
 
     cat <<EOF
 
@@ -68,19 +69,28 @@ activities, I need to know that location. Please make sure that nobody else uses
 this location.
 
 EOF
-    read -p "location of the monitor gui [host:ip]: " gui_url
+    read -p "  location of the monitor gui [host:ip]: " gui_url
 
     # create config
     cat > "$HOME/.init-screen.cfg" <<EOF
+export INIT_SCREEN_VER="$init_screen_ver"
 export SDPA_SCRATCH_DIR="$scratch_dir"
 export SDPA_GUI="$gui_url"
 EOF
 
     cat <<EOF
-Your configuration file in ~/.init-screen.cfg  has been created. To finish setup
-of init-screen, please add the following line to your ~/.bashrc:
+
+Congratulations,    your    configuration    file    has    been    stored    in
+~/.init-screen.cfg.
+
+To  finish the  setup of  init-screen,  please add  the following  line to  your
+~/.bashrc:
 
    eval \$(init-screen -l)
+
+You can do so, by executing
+
+   echo 'eval \$(init-screen -l)' >> ~/.bashrc
 EOF
 }
 
@@ -88,7 +98,7 @@ function print_load_instructions ()
 {
 # please pass the following to the 'eval' function
      cat <<EOF
-if test -r ~/.init-screen.tab ; then if grep -q "`hostname -s`" ~/.init-screen.tab ; then if test -r ~/.init-screen.env ; then source ~/.init-screen.env; fi; fi; fi
+if test -r ~/.init-screen.tab ; then if grep -q "\$(hostname -s)" ~/.init-screen.tab ; then if test -r ~/.init-screen.env ; then source ~/.init-screen.env; fi; fi; fi
 EOF
 }
 
@@ -132,6 +142,11 @@ function log ()
 
 if [ ! -e "$HOME/.init-screen.cfg" ] ; then
     log "E: \"$HOME/.init-screen.cfg\" does not exist, please run $0 -c to create one."
+    exit 1
+fi
+
+if [ x"$init_screen_ver" != x"$INIT_SCREEN_VER" ] ; then
+    log "E: \"$HOME/.init-screen.cfg\" is outdated and needs to be recreated. Please run $0 -c"
     exit 1
 fi
 
