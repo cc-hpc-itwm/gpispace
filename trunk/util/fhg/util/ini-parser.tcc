@@ -167,12 +167,14 @@ namespace fhg
 
         void parse_impl (std::istream & is, state_t & state)
         {
-          do
+          while (is)
           {
             std::getline (is, state.line);
+            if (! is)
+              break;
             ++state.lineno;
             parse_line (state.line, state);
-          } while (is);
+          }
         }
       }
 
