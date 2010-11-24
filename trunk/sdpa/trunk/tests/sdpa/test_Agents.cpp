@@ -37,7 +37,7 @@
 
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/aggregator/Aggregator.hpp>
+#include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <seda/StageRegistry.hpp>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
@@ -197,8 +197,8 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and real GWES
 	LOG( DEBUG, "Create the NRE ...");
@@ -215,7 +215,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 		return;
@@ -258,7 +258,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 	}
 
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 	ptrCli->shutdown_network();
@@ -290,8 +290,8 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	}
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 
@@ -453,8 +453,8 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and dummy WE
 	LOG( DEBUG, "Create the NRE ...");
@@ -493,7 +493,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 		return;
@@ -535,7 +535,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	}
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	// process container terminates ...
@@ -570,8 +570,8 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator<DummyWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<DummyWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and dummy WE
 	LOG( DEBUG, "Create the NRE ...");
@@ -609,7 +609,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-		sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 		return;
@@ -652,7 +652,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	}
 
 	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator<DummyWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	LOG( INFO, "terminating...");

@@ -4,6 +4,7 @@ set (hdrs
   Codec.hpp
   ExecutionContext.hpp
   messages.hpp
+ # NREFactory.hpp
   NRE.hpp
   NreWorkerClient.hpp
   SchedulerNRE.hpp

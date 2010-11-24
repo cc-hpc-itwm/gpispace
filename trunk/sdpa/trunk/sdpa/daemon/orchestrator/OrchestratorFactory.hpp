@@ -19,8 +19,7 @@
 #define SDPA_ORCHESTRATORTOR_FACTORY_HPP 1
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
-
+//#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
 
 namespace sdpa {
 namespace daemon {

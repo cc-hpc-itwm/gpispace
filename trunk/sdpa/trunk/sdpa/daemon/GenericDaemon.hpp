@@ -187,9 +187,9 @@ namespace sdpa { namespace daemon {
 	  T* create_workflow_engine()
 	  {
 		  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-                  assert (pWfE);
-                  ptr_workflow_engine_ = pWfE;
-                  return pWfE;
+		  assert (pWfE);
+          ptr_workflow_engine_ = pWfE;
+          return pWfE;
 	  }
 
 	  void create_workflow_engine( IWorkflowEngine* pWfEArg ) { ptr_workflow_engine_ = pWfEArg; }

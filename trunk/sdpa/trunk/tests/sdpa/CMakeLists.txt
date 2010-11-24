@@ -102,7 +102,7 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_agents_suite )
 
 set( test_orch_empty_we_srcs
-  	test_OrchestratorEmptyWE.cpp
+  	test_OrchDifferentWEs.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 

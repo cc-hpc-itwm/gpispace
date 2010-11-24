@@ -4,8 +4,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set (hdrs
-  Aggregator.hpp
-  SchedulerAgg.hpp
+	AggregatorFactory
+  	Aggregator.hpp
+  	SchedulerAgg.hpp
   )
 
 install(FILES ${hdrs}

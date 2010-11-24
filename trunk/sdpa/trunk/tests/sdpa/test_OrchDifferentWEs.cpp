@@ -37,7 +37,7 @@
 
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/daemon/aggregator/Aggregator.hpp>
+#include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <seda/StageRegistry.hpp>
 
@@ -202,8 +202,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 	}
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	ptrCli->shutdown_network();
@@ -304,8 +304,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
@@ -375,7 +375,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	}
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	ptrCli->shutdown_network();
@@ -406,8 +406,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 	}
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	ptrCli->shutdown_network();
@@ -509,12 +509,12 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator 0 ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	LOG( DEBUG, "Create the Aggregator 1 ...");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::ptr_t ptrAgg_1 = sdpa::daemon::Aggregator<RealWorkflowEngine>::create("aggregator_1", addrAgg,"aggregator_0");
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::start(ptrAgg_1);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg_1 = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_1", addrAgg,"aggregator_0");
+	sdpa::daemon::Aggregator::start(ptrAgg_1);
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -542,8 +542,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
-		sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg_1);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg);
+		sdpa::daemon::Aggregator::shutdown(ptrAgg_1);
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 		return;
@@ -585,8 +585,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 	}
 
 	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg);
-	sdpa::daemon::Aggregator<RealWorkflowEngine>::shutdown(ptrAgg_1);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg);
+	sdpa::daemon::Aggregator::shutdown(ptrAgg_1);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
 	ptrCli->shutdown_network();
