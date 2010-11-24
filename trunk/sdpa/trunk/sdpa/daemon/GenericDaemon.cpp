@@ -722,7 +722,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 		// if it comes from outside set it as local
 		if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() ) //e.to())
 		{
-			LOG(DEBUG, "got new job from " << e.from() << " = " << job_id);
+			LOG(INFO, "got new job from " << e.from() << " = " << job_id);
 			pJob->set_local(true);
 		}
 
