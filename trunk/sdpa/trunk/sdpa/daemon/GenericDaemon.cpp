@@ -121,6 +121,13 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  m_to_master_stage_name_(name+".net"),
 	  m_to_slave_stage_name_ (name+".net")
 {
+	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
+	//     e.g. kvs::get ("sdpa.daemon.<name>")
+	//          if exists: throw
+	//          else:
+	//             (fhg::com::)kvs::put ("sdpa.daemon.<name>.id", m_strAgentUID)
+	//             kvs::put ("sdpa.daemon.<name>.pid", getpid())
+	//                - remove them in destructor
 }
 
 GenericDaemon::~GenericDaemon()
@@ -506,7 +513,7 @@ void GenericDaemon::action_interrupt(const InterruptEvent&)
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
-  DLOG(TRACE, "Received LS from the worker " << e.from());
+	DLOG(TRACE, "Received LS from the worker " << e.from());
 
     /*
     o timestamp, load, other probably useful information

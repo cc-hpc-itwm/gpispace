@@ -39,6 +39,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <sdpa/daemon/IWorkflowEngine.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <boost/function.hpp>
 
 #include <we/mgmt/bits/traits.hpp>
@@ -61,18 +62,22 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     typedef std::string internal_id_type;
 
 
-    EmptyWorkflowEngine( IDaemon* pIDaemon = NULL, Function_t f = id_gen ) : SDPA_INIT_LOGGER("sdpa.tests.EmptyGwes")
+    EmptyWorkflowEngine( IAgent* pIAgent = NULL, Function_t f = id_gen ) : SDPA_INIT_LOGGER("sdpa.tests.EmptyGwes")
 	{
-    	pIDaemon_ = pIDaemon;
+    	pIAgent_ = pIAgent;
     	fct_id_gen_ = f;
     	SDPA_LOG_DEBUG("Empty workflow engine created ...");
     }
 
-    void registerDaemon(IDaemon* pIDaemon )
+    void connect(IAgent* pIAgent )
     {
-    	pIDaemon_ = pIDaemon;
+    	pIAgent_ = pIAgent;
     }
 
+    void set_id_generator ( Function_t f = id_gen )
+    {
+    	fct_id_gen_ = f;
+    }
 
     /**
      * Notify the GWES that an activity has failed
@@ -85,11 +90,11 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
 			id_type workflowId = map_Act2Wf_Ids_[activityId];
-			pIDaemon_->failed(workflowId, result);
+			pIAgent_->failed(workflowId, result);
 
 			lock_type lock(mtx_);
 			map_Act2Wf_Ids_.erase(activityId);
@@ -111,11 +116,11 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
 
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
 			id_type workflowId = map_Act2Wf_Ids_[activityId];
-			pIDaemon_->finished(workflowId, result);
+			pIAgent_->finished(workflowId, result);
 
 			//delete the entry corresp to activityId;
 			lock_type lock(mtx_);
@@ -143,7 +148,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		* transition from * to terminated.
 		*/
 
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
 			id_type workflowId = map_Act2Wf_Ids_[activityId];
@@ -158,7 +163,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 
 			// if no activity left, declare the workflow cancelled
 			if(bAllActFinished)
-				pIDaemon_->cancelled(workflowId);
+				pIAgent_->cancelled(workflowId);
 
 			return true;
 		}
@@ -200,10 +205,10 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
 		// ship the same activity/workflow description
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			SDPA_LOG_DEBUG("Submit new activity ...");
-			pIDaemon_->submit(act_id, wf_desc);
+			pIAgent_->submit(act_id, wf_desc);
 		}
     }
 
@@ -219,7 +224,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
 		lock_type lock(mtx_);
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
 
@@ -227,7 +232,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 				if( it->second == wfid )
 				{
 					id_type activityId = it->first;
-					pIDaemon_->cancel(activityId, reason);
+					pIAgent_->cancel(activityId, reason);
 				}
 		}
 
@@ -237,7 +242,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 
 
   public:
-    mutable IDaemon *pIDaemon_;
+    mutable IAgent *pIAgent_;
 
   private:
     map_t map_Act2Wf_Ids_;

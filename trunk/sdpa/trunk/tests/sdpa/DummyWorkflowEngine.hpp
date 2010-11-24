@@ -39,6 +39,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <sdpa/daemon/IWorkflowEngine.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <boost/function.hpp>
 
 #include <we/mgmt/bits/traits.hpp>
@@ -49,7 +50,7 @@ using namespace sdpa;
 typedef std::map<id_type, id_type> map_t;
 typedef map_t::value_type id_pair;
 
-static std::string id_gen() { return id_generator<std::string>::instance().next(); }
+static std::string id_gen_f() { return id_generator<std::string>::instance().next(); }
 
 typedef boost::function<id_type()> Function_t;
 
@@ -62,16 +63,16 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     typedef std::string internal_id_type;
 
 
-    DummyWorkflowEngine( IDaemon* pIDaemon = NULL, Function_t f =id_gen  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
+    DummyWorkflowEngine( IAgent* pIAgent = NULL, Function_t f = id_gen_f  ) : SDPA_INIT_LOGGER("sdpa.tests.DummyGwes")
 	{
-    	pIDaemon_ = pIDaemon;
+    	pIAgent_ = pIAgent;
     	fct_id_gen_ = f;
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
-    void connect(IDaemon* pIDaemon )
+    void connect(IAgent* pIAgent )
     {
-    	pIDaemon_ = pIDaemon;
+    	pIAgent_ = pIAgent;
     }
 
     we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
@@ -91,12 +92,12 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
 			id_type workflowId = map_Act2Wf_Ids_[activityId];
 			result_type wf_result;
-			pIDaemon_->failed(workflowId, wf_result);
+			pIAgent_->failed(workflowId, wf_result);
 
 			lock_type lock(mtx_);
 			map_Act2Wf_Ids_.erase(activityId);
@@ -118,13 +119,13 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
 
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
 			id_type workflowId = map_Act2Wf_Ids_[activityId];
 
 			result_type wf_result;
-			pIDaemon_->finished(workflowId, wf_result);
+			pIAgent_->finished(workflowId, wf_result);
 
 			//delete the entry corresp to activityId;
 			lock_type lock(mtx_);
@@ -152,7 +153,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		* transition from * to terminated.
 		*/
 
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
 			id_type workflowId = map_Act2Wf_Ids_[activityId];
@@ -167,7 +168,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 
 			// if no activity left, declare the workflow cancelled
 			if(bAllActFinished)
-				pIDaemon_->cancelled(workflowId);
+				pIAgent_->cancelled(workflowId);
 
 			return true;
 		}
@@ -210,10 +211,10 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 
 		// ship the same activity/workflow description
 		encoded_type act_desc = wf_desc;
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			SDPA_LOG_DEBUG("Submit new activity ...");
-			pIDaemon_->submit(act_id, act_desc);
+			pIAgent_->submit(act_id, act_desc);
 		}
     }
 
@@ -229,7 +230,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
 		lock_type lock(mtx_);
-		if(pIDaemon_)
+		if(pIAgent_)
 		{
 			SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
 
@@ -238,7 +239,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 				{
 					id_type activityId = it->first;
 					reason_type reason;
-					pIDaemon_->cancel(activityId, reason);
+					pIAgent_->cancel(activityId, reason);
 				}
 		}
 
@@ -262,7 +263,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     }
 
   public:
-    mutable IDaemon *pIDaemon_;
+    mutable IAgent *pIAgent_;
 
   private:
     map_t map_Act2Wf_Ids_;
@@ -277,7 +278,7 @@ inline void save_construct_data(
     Archive & ar, const DummyWorkflowEngine* t, const unsigned int
 ){
     // save data required to construct instance
-    ar << t->pIDaemon_;
+    ar << t->pIAgent_;
 }
 
 template<class Archive>
@@ -285,11 +286,11 @@ inline void load_construct_data(
     Archive & ar, DummyWorkflowEngine* t, const unsigned int
 ){
     // retrieve data from archive required to construct new instance
-	IDaemon *pIDaemon;
-    ar >> pIDaemon;
+	IAgent *pIAgent;
+    ar >> pIAgent;
 
     // invoke inplace constructor to initialize instance of my_class
-    ::new(t)DummyWorkflowEngine(pIDaemon, id_gen);
+    ::new(t)DummyWorkflowEngine(pIAgent, id_gen);
 }
 }} // namespace ...
 

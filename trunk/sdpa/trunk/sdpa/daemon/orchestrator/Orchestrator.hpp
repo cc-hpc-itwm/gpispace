@@ -87,4 +87,6 @@ namespace daemon {
 	}
 }
 
+#include <sdpa/daemon/orchestrator/Orchestrator.cpp>
+
 #endif //SDPA_ORCHESTRATORTOR_HPP

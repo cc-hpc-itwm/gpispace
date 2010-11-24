@@ -11,7 +11,10 @@
 #include <sdpa/util/Config.hpp>
 
 #include <boost/program_options.hpp>
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
+#include <we/mgmt/layer.hpp>
+
+typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -48,8 +51,8 @@ int main (int argc, char **argv)
 	//	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Orchestrator<RealWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<RealWorkflowEngine>::create( orchName, orchUrl, workflow_directory );
-		sdpa::daemon::Orchestrator<RealWorkflowEngine>::start(ptrOrch);
+		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create( orchName, orchUrl, workflow_directory );
+		sdpa::daemon::Orchestrator::start(ptrOrch);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -85,7 +88,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Orchestrator<RealWorkflowEngine>::shutdown(ptrOrch);
+		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 	} catch( std::exception& ) {
 			std::cout<<"Could not start the Orchestrator!"<<std::endl;
 		}

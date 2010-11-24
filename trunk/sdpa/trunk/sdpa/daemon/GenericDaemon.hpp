@@ -24,6 +24,7 @@
 
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/util/Config.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -59,7 +60,7 @@ namespace sdpa { namespace daemon {
 						public sdpa::daemon::IComm,
 						public seda::Strategy,
 						public sdpa::events::EventHandler,
-						public IDaemon,
+						public IAgent,
 						boost::noncopyable
 {
   public:
@@ -148,7 +149,6 @@ namespace sdpa { namespace daemon {
 
 	  virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
 
-	  virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
 	  virtual bool is_registered() const { return m_bRegistered;}
 
 	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
@@ -187,20 +187,23 @@ namespace sdpa { namespace daemon {
 	  T* create_workflow_engine()
 	  {
 		  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-		  // pWfE->sig_submitted.connect( &GenericDaemon::observe_submitted<T> );
-		  // pWfE->sig_finished.connect(  &GenericDaemon::observe_finished<T> );
-		  // pWfE->sig_failed.connect(    &GenericDaemon::observe_failed<T> );
-		  // pWfE->sig_cancelled.connect( &GenericDaemon::observe_cancelled<T> );
-		  // pWfE->sig_executing.connect( &GenericDaemon::observe_executing<T> );
 
-		  return pWfE;
+		  if( ptr_workflow_engine_ = dynamic_cast<IWorkflowEngine*>(pWfE) )
+		  {
+			  SDPA_LOG_ERROR("Invalid workflow engine. It doesn't implement the required interface!");
+			  return NULL;
+		  }
+		  else
+			  return pWfE;
 	  }
+
+	  void create_workflow_engine( IWorkflowEngine* pWfEArg ) { ptr_workflow_engine_ = pWfEArg; }
+	  virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
+	  virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
 
 	  void incExtJobsCnt();
 	  void decExtJobsCnt();
 	  unsigned int extJobsCnt();
-
-	  virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
 
   protected:
 
