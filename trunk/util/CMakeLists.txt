@@ -59,6 +59,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 # Reflect the package structure
 add_subdirectory(fhg)
 add_subdirectory(rewrite)
+add_subdirectory(bin)
 
 include(CTest)
 if (BUILD_TESTING)
