@@ -294,6 +294,7 @@
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
         <in name="credit_bunch_check_done" type="control"/>
+        <in name="credit_volume_check_unassigned" type="control"/>
         <expression>
           ${bunch.wait} := ${bunch.wait} - 1;
 
@@ -302,9 +303,6 @@
           ${volume.assigned.store.id}
             := stack_pop (${volume.assigned.store.id});
         </expression>
-        <condition>
-          !stack_empty (${volume.assigned.bunch.id})
-        </condition>
         <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
@@ -315,9 +313,15 @@
       <connect-in port="bunch" place="bunch_loaded"/>
       <connect-out port="bunch" place="bunch_check_done"/>
       <connect-in port="volume" place="update_bunch_state"/>
-      <connect-out port="volume" place="update_bunch_state"/>
+      <connect-out port="volume" place="volume_check_unassigned"/>
       <connect-in port="credit_bunch_check_done" place="credit_bunch_check_done"/>
+      <connect-in port="credit_volume_check_unassigned" place="credit_volume_check_unassigned"/>
     </transition>
+
+    <place name="volume_check_unassigned" type="volume_in_progress"/>
+    <place name="credit_volume_check_unassigned" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <place name="bunch_check_done" type="bunch_loaded"/>
     <place name="credit_bunch_check_done" type="control">
@@ -328,13 +332,34 @@
       <defun>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
-        <expression></expression>
+        <out name="credit_volume_check_unassigned" type="control"/>
+        <expression>
+          ${credit_volume_check_unassigned} := []
+        </expression>
         <condition>
           stack_empty (${volume.assigned.bunch.id})
         </condition>
       </defun>
-      <connect-in port="volume" place="update_bunch_state"/>
+      <connect-in port="volume" place="volume_check_unassigned"/>
       <connect-out port="volume" place="volume_in_progress"/>
+      <connect-out port="credit_volume_check_unassigned" place="credit_volume_check_unassigned"/>
+    </transition>
+
+    <transition name="not_unassigned">
+      <defun>
+        <in name="volume" type="volume_in_progress"/>
+        <out name="volume" type="volume_in_progress"/>
+        <out name="credit_volume_check_unassigned" type="control"/>
+        <expression>
+          ${credit_volume_check_unassigned} := []
+        </expression>
+        <condition>
+          !stack_empty (${volume.assigned.bunch.id})
+        </condition>
+      </defun>
+      <connect-in port="volume" place="volume_check_unassigned"/>
+      <connect-out port="volume" place="update_bunch_state"/>
+      <connect-out port="credit_volume_check_unassigned" place="credit_volume_check_unassigned"/>
     </transition>
 
     <!-- ****************************************************************** -->
