@@ -8,15 +8,15 @@
       <property key="GIBI">2^30</property>
       <property key="SIZE_OF_LONG">8</property>
 
-      <property key="aggregator">10</property>
-      <property key="nre">10</property>
+      <property key="aggregator">5</property>
+      <property key="nre">5</property>
       <property key="seed">long(1000.0 * pi)</property>
       <property key="bytes_to_transfer">192 * ${MIBI}</property>
 
       <!-- when true, the full shmem segment is verified, not only the data -->
       <property key="verify_all_mem">false</property>
-      <property key="verify">false</property>
-      <property key="communicate">false</property>
+      <property key="verify">true</property>
+      <property key="communicate">true</property>
 
       <property key="num_long_to_transfer">
          ${bytes_to_transfer} div ${SIZE_OF_LONG}
