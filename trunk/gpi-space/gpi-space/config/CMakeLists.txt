@@ -6,6 +6,7 @@ set (hdrs
   node_config.hpp
   node_config_io.hpp
   node_config_io.tpp
+  logging.hpp
 
   ini/ini.h
   )
