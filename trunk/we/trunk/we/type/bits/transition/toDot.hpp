@@ -183,11 +183,13 @@ namespace we { namespace type {
           const std::string prefix ("pretty.dot.color");
 
           internal = prop.get_with_default (prefix + ".internal", "white");
-          external = prop.get_with_default (prefix + ".external", "grey");
+          external = prop.get_with_default (prefix + ".external", "dimgray");
           modcall = prop.get_with_default (prefix + ".modcall", "yellow");
           expression = prop.get_with_default (prefix + ".expression", "white");
           node = prop.get_with_default (prefix + ".node", "white");
-          subnet_internal = prop.get_with_default (prefix + ".subnet_internal", "wheat");
+          subnet_internal = prop.get_with_default ( prefix + ".subnet_internal"
+                                                  , "grey"
+                                                  );
         }
       }
 
