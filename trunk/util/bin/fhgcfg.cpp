@@ -193,11 +193,6 @@ int main (int ac, char *av[])
   {
     key_desc_t k;
     parse_key (key, k);
-
-    std::cout << k.sec << std::endl;
-    std::cout << k.sec_id << std::endl;
-    std::cout << k.sec_id_valid << std::endl;
-
     std::cout << m.get (k, val) << std::endl;
   }
 
