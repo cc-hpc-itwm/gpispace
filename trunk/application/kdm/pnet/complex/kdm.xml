@@ -1,4 +1,4 @@
-<defun name="kdm_complex" internal="false">
+<defun name="kdm_complex">
 
   <include-structs href="types/config.xml"/>
   <include-structs href="types/volume.xml"/>

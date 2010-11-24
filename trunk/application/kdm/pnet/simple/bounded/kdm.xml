@@ -1,4 +1,4 @@
-<defun name="kdm_simple" internal="false">
+<defun name="kdm_simple">
 
   <include-properties href="prop/pretty.dot.xml"/>
   <include-structs href="types.xml"/>

@@ -1,4 +1,4 @@
-<defun internal="false" name="process">
+<defun name="wait_bunch">
   <include-structs href="types.xml"/>
 
   <in name="bunch" type="BUNCH"  place="bunch"/>

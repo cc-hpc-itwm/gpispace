@@ -347,7 +347,7 @@ namespace xml
             ( name()
             , we_net
             , condition()
-            , fun.internal.get_with_default (false)
+            , fun.internal.get_with_default (true)
             , fun.prop
             );
 
