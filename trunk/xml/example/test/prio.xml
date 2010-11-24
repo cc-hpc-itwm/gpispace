@@ -1,0 +1,41 @@
+<defun name="prio">
+  <in name="a" type="long" place="a"/>
+  <in name="b" type="long" place="b"/>
+  <out name="c" type="long" place="c"/>
+  <net>
+    <place name="a" type="long"/>
+    <place name="c" type="long"/>
+    <place name="b" type="long"/>
+
+    <transition name="sum" priority="1">
+      <defun>
+        <in name="a" type="long"/>
+        <in name="b" type="long"/>
+        <out name="c" type="long"/>
+        <expression>${c} := ${a} + ${b}</expression>
+      </defun>
+      <connect-in port="a" place="a"/>
+      <connect-in port="b" place="b"/>
+      <connect-out port="c" place="c"/>
+    </transition>
+
+    <defun name="take_anyway">
+      <in name="x" type="long"/>
+      <out name="x" type="long"/>
+      <expression></expression>
+    </defun>
+
+    <transition name="take_anyway_a">
+      <use name="take_anyway"/>
+      <connect-in port="x" place="a"/>
+      <connect-out port="x" place="c"/>
+    </transition>
+
+    <transition name="take_anyway_b">
+      <use name="take_anyway"/>
+      <connect-in port="x" place="b"/>
+      <connect-out port="x" place="c"/>
+    </transition>
+
+  </net>
+</defun>
