@@ -176,6 +176,7 @@ namespace we { namespace type {
         static std::string modcall;
         static std::string expression;
         static std::string node;
+        static std::string subnet_internal;
 
         inline void init (const we::type::property::type & prop)
         {
@@ -186,6 +187,7 @@ namespace we { namespace type {
           modcall = prop.get_with_default (prefix + ".modcall", "yellow");
           expression = prop.get_with_default (prefix + ".expression", "white");
           node = prop.get_with_default (prefix + ".node", "white");
+          subnet_internal = prop.get_with_default (prefix + ".subnet_internal", "wheat");
         }
       }
 
@@ -705,7 +707,10 @@ namespace we { namespace type {
             break;
           case content::subnet:
             level (s, l + 1) <<
-              bgcolor (t.is_internal() ? color::internal : color::external)
+              bgcolor ( t.is_internal()
+                      ? color::subnet_internal
+                      : color::external
+                      )
               ;
             break;
           default: throw std::runtime_error

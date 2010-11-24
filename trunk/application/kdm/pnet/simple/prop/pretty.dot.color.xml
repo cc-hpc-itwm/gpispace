@@ -5,5 +5,6 @@
     <property key="external" value="grey"/>
     <property key="expression" value="white"/>
     <property key="node" value="white"/>
+    <property key="subnet_internal" value="wheat"/>
   </properties>
 </props>
