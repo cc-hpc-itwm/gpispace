@@ -13,6 +13,7 @@ namespace fhg
     namespace ini
     {
       typedef boost::function<int ( std::string const & section
+                                  , std::string const * section_id // 3 states: set, empty, notset (=NULL)
                                   , std::string const & key
                                   , std::string const & value
                                   ) > entry_handler_t;

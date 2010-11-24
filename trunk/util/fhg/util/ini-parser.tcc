@@ -70,6 +70,8 @@ namespace fhg
             , file ("")
             , dir ("")
             , section ("")
+            , section_id ("")
+            , section_id_set (false)
             , line ("")
             , lineno (0)
             , handler (ahandler)
@@ -82,22 +84,30 @@ namespace fhg
             return true;
           }
 
-          template <typename T>
-          void warn  (T const & t)
+          template <typename Ex>
+          void warn  (Ex const & e)
           {
-            if (is_enabled(t))
+            if (is_enabled(e))
             {
               if (Werror)
               {
+                std::cerr << "W: Warnings treated as errors!" << std::endl;
                 // warnings treated as errors
-                error (t);
+                error (e);
+              }
+              else
+              {
+                std::cerr << "W: parser error in line " << lineno << ": " << line << ":" << std::endl;
+                std::cerr << "     " << e.what() << std::endl;
               }
             }
           }
 
-          void error (std::exception const & e)
+          template <typename Ex>
+          void error (Ex const & e)
           {
-            std::cerr << "E: parser error in line " << lineno << ": " << line << ": " << e.what() << std::endl;
+            std::cerr << "E: parser error in line " << lineno << ": " << line << ":" << std::endl;
+            std::cerr << "     " << e.what() << std::endl;
             throw e;
           }
 
@@ -105,6 +115,8 @@ namespace fhg
           std::string file;
           std::string dir;
           std::string section;
+          std::string section_id;
+          bool section_id_set;
           std::string line;
           int lineno;
           entry_handler_t handler;
@@ -112,15 +124,51 @@ namespace fhg
           bool Werror;
         };
 
+        void split_section_head ( std::string const & hd
+                                , state_t & state
+                                )
+        {
+          std::string::size_type sec_id_pos (hd.find (" "));
+          if (sec_id_pos != std::string::npos)
+          {
+            std::string sec_name = hd.substr(0, sec_id_pos);
+            std::string sec_id = hd.substr(sec_id_pos+1);
+            boost::trim (sec_name);
+            boost::trim (sec_id);
+            if ( sec_id.size() < 2
+               || (sec_id[0] != '"' && sec_id[sec_id.size()-1] != '"')
+               )
+            {
+              state.error (exception::parse_error("invalid section header"));
+            }
+            else
+            {
+              sec_id = sec_id.substr(1, sec_id.size() - 2);
+              state.section    = sec_name;
+              state.section_id = sec_id;
+              state.section_id_set = true;
+            }
+          }
+          else
+          {
+            state.section = hd;
+            state.section_id_set = false;
+          }
+        }
+
         void parse_section_header (std::string const & line, state_t & state)
         {
-          state.section = line.substr (1, line.size() - 2);
-          boost::trim (state.section);
+          std::string section_head(line.substr (1, line.size() - 2));
+          boost::trim (section_head);
+          split_section_head ( section_head, state );
         }
 
         void parse_include (std::string const & line, state_t & state)
         {
-          state.error (exception::parse_error("%include is not yet implemented"));
+          state.warn
+            (exception::parse_error
+            ("%include is not yet implemented")
+            );
         }
 
         void parse_key_value (std::string const & line, state_t & state)
@@ -132,7 +180,11 @@ namespace fhg
           boost::trim (key);
           boost::trim (val);
 
-          int ec = state.handler (state.section, key, val);
+          int ec = state.handler ( state.section
+                                 , state.section_id_set ? &state.section_id : NULL
+                                 , key
+                                 , val
+                                 );
           if (ec)
           {
             state.error (exception::parse_error("handler failed: " + boost::lexical_cast<std::string>(ec)));

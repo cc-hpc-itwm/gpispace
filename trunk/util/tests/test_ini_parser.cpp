@@ -7,6 +7,7 @@
 #include <boost/bind.hpp>
 
 static int dummy_handler( std::string const &
+                        , std::string const *
                         , std::string const &
                         , std::string const &
                         )
@@ -17,26 +18,41 @@ static int dummy_handler( std::string const &
 struct parse_into_map_t
 {
   typedef boost::unordered_map<std::string, std::string> entries_t;
-  typedef boost::unordered_map<std::string, entries_t> sections_t;
+
+  int operator () ( std::string const & sec
+                  , std::string const * secid
+                  , std::string const & key
+                  , std::string const & val
+                  )
+  {
+    return handle (sec,secid,key,val);
+  }
 
   int handle ( std::string const & sec
+             , std::string const * secid
              , std::string const & key
              , std::string const & val
              )
   {
-    entries_t & e = sections[sec];
-    e[key] = val;
+    std::string k (secid ? (sec + "." + *secid) : sec);
+    k += ".";
+    k += key;
+    entries[k] = val;
     return 0;
   }
 
   std::string get ( std::string const & sec
                   , std::string const & key
                   , std::string const & def
+                  , std::string const * secid = NULL
                   )
   {
     try
     {
-      return sections.at(sec).at(key);
+      std::string k (secid ? (sec + "." + *secid) : sec);
+      k += ".";
+      k += key;
+      return entries.at(k);
     }
     catch (std::exception const &)
     {
@@ -44,7 +60,7 @@ struct parse_into_map_t
     }
   }
 
-  sections_t sections;
+  entries_t entries;
 };
 
 BOOST_AUTO_TEST_CASE ( parse_no_such_file )
@@ -63,7 +79,7 @@ BOOST_AUTO_TEST_CASE ( parse_key_value_with_spaces )
 {
   parse_into_map_t m;
   std::stringstream sstr ("foo = bar");
-  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  fhg::util::ini::parse (sstr, boost::ref(m));
   BOOST_CHECK_EQUAL (m.get("", "foo", "baz"), "bar");
 }
 
@@ -71,7 +87,7 @@ BOOST_AUTO_TEST_CASE ( parse_key_value_without_spaces )
 {
   parse_into_map_t m;
   std::stringstream sstr ("foo=bar");
-  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  fhg::util::ini::parse (sstr, boost::ref(m));
   BOOST_CHECK_EQUAL (m.get("", "foo", "baz"), "bar");
 }
 
@@ -79,7 +95,7 @@ BOOST_AUTO_TEST_CASE ( parse_section_key_value )
 {
   parse_into_map_t m;
   std::stringstream sstr ("[test]\nfoo=bar");
-  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  fhg::util::ini::parse (sstr, boost::ref(m));
   BOOST_CHECK_EQUAL (m.get("test", "foo", "baz"), "bar");
 }
 
@@ -87,7 +103,7 @@ BOOST_AUTO_TEST_CASE ( parse_section_key_value_with_space )
 {
   parse_into_map_t m;
   std::stringstream sstr ("[ test   ]\nfoo=bar");
-  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  fhg::util::ini::parse (sstr, boost::ref(m));
   BOOST_CHECK_EQUAL (m.get("test", "foo", "baz"), "bar");
 }
 
@@ -95,7 +111,7 @@ BOOST_AUTO_TEST_CASE ( parse_comment )
 {
   parse_into_map_t m;
   std::stringstream sstr ("; comment 1\n# comment 2");
-  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  fhg::util::ini::parse (sstr, boost::ref(m));
   BOOST_CHECK_EQUAL (m.get("test", "foo", ""), "");
 }
 
@@ -103,5 +119,24 @@ BOOST_AUTO_TEST_CASE ( parse_include )
 {
   parse_into_map_t m;
   std::stringstream sstr ("%include <file>");
-  fhg::util::ini::parse (sstr, boost::bind (&parse_into_map_t::handle, &m, _1, _2, _3));
+  fhg::util::ini::parse (sstr, boost::ref(m));
+}
+
+BOOST_AUTO_TEST_CASE ( parse_invalid_line )
+{
+  parse_into_map_t m;
+  std::stringstream sstr ("illegal line here");
+  try
+  {
+    fhg::util::ini::parse (sstr, boost::ref(m));
+    BOOST_CHECK(false);
+  }
+  catch (fhg::util::ini::exception::parse_error const &)
+  {
+    // ok
+  }
+  catch (std::exception const &)
+  {
+    // ok
+  }
 }
