@@ -187,14 +187,9 @@ namespace sdpa { namespace daemon {
 	  T* create_workflow_engine()
 	  {
 		  T* pWfE = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-
-		  if( ptr_workflow_engine_ = dynamic_cast<IWorkflowEngine*>(pWfE) )
-		  {
-			  SDPA_LOG_ERROR("Invalid workflow engine. It doesn't implement the required interface!");
-			  return NULL;
-		  }
-		  else
-			  return pWfE;
+                  assert (pWfE);
+                  ptr_workflow_engine_ = pWfE;
+                  return pWfE;
 	  }
 
 	  void create_workflow_engine( IWorkflowEngine* pWfEArg ) { ptr_workflow_engine_ = pWfEArg; }
