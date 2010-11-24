@@ -14,7 +14,7 @@
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <we/mgmt/layer.hpp>
 
-typedef we::mgmt::layer<id_type, we::activity_t> WorkflowEngineType;
+typedef void WorkflowEngineType;
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
