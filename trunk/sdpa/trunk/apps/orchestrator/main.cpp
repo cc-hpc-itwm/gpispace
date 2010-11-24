@@ -14,7 +14,7 @@
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <we/mgmt/layer.hpp>
 
-typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
+typedef we::mgmt::layer<id_type, we::activity_t> WorkflowEngineType;
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -51,7 +51,7 @@ int main (int argc, char **argv)
 	//	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create( orchName, orchUrl, workflow_directory );
+		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl, workflow_directory );
 		sdpa::daemon::Orchestrator::start(ptrOrch);
 
 		LOG(DEBUG, "waiting for signals...");
