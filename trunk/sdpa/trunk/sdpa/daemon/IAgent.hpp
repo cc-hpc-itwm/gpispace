@@ -41,6 +41,8 @@ struct IAgent
     virtual bool failed(const id_type & id, const result_type & result) = 0;
     virtual bool cancelled(const id_type & id) = 0;
 
+    virtual ~IAgent () {}
+
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive&, const unsigned int ){}
