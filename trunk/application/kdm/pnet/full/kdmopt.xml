@@ -392,6 +392,7 @@
     <transition name="no_reduce_start">
       <defun>
         <in name="volume" type="volume_in_progress"/>
+        <in name="credit_reduce_pair" type="control"/>
         <out name="volume" type="volume_in_progress"/>
         <out name="credit_volume_reduce_start" type="control"/>
         <expression>
@@ -399,8 +400,9 @@
         </expression>
       </defun>
       <connect-in port="volume" place="volume_reduce_start"/>
-      <connect-out port="volume" place="volume_in_progress"/>
+      <connect-out port="volume" place="pre_reduce_pair_in_progress"/>
       <connect-out port="credit_volume_reduce_start" place="credit_volume_reduce_start"/>
+      <connect-in port="credit_reduce_pair" place="credit_reduce_pair"/>
     </transition>
 
     <!-- ****************************************************************** -->
@@ -488,23 +490,88 @@
 
     <place name="volume_in_reduction" type="volume_in_reduction"/>
 
-    <transition name="reduce_pair">
+    <!-- ****************************************************************** -->
+
+    <!-- Grünewald Transformation for reduce_pair -->
+
+    <place name="credit_reduce_pair" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <place name="pre_reduce_pair_in_progress" type="volume_in_progress"/>
+    <place name="pre_reduce_pair_in_reduction" type="volume_in_reduction"/>
+
+    <transition name="reduce_pair_in_progress" priority="1">
       <defun>
         <in name="sum" type="volume_in_reduction"/>
         <in name="vol" type="volume_in_progress"/>
         <out name="pair" type="pair_to_reduce"/>
+        <out name="credit_reduce_pair" type="control"/>
         <expression>
           ${pair.sum} := ${sum};
-          ${pair.vol} := ${vol.volume}
+          ${pair.vol} := ${vol.volume};
+          ${credit_reduce_pair} := []
+        </expression>
+        <condition>
+          ${sum.volume.volume} :eq: ${vol.volume.volume}
+        </condition>
+      </defun>
+      <connect-in port="vol" place="pre_reduce_pair_in_progress"/>
+      <connect-in port="sum" place="volume_in_reduction"/>
+      <connect-out port="pair" place="pair_to_reduce"/>
+      <connect-out port="credit_reduce_pair" place="credit_reduce_pair"/>
+    </transition>
+
+    <transition name="reduce_pair_in_reduction" priority="1">
+      <defun>
+        <in name="sum" type="volume_in_reduction"/>
+        <in name="vol" type="volume_in_progress"/>
+        <out name="pair" type="pair_to_reduce"/>
+        <out name="credit_reduce_pair" type="control"/>
+        <expression>
+          ${pair.sum} := ${sum};
+          ${pair.vol} := ${vol.volume};
+          ${credit_reduce_pair} := []
         </expression>
         <condition>
           ${sum.volume.volume} :eq: ${vol.volume.volume}
         </condition>
       </defun>
       <connect-in port="vol" place="volume_in_progress"/>
-      <connect-in port="sum" place="volume_in_reduction"/>
+      <connect-in port="sum" place="pre_reduce_pair_in_reduction"/>
       <connect-out port="pair" place="pair_to_reduce"/>
+      <connect-out port="credit_reduce_pair" place="credit_reduce_pair"/>
     </transition>
+
+    <transition name="no_reduce_pair_in_progress">
+      <defun>
+        <in name="vol" type="volume_in_progress"/>
+        <out name="vol" type="volume_in_progress"/>
+        <out name="credit_reduce_pair" type="control"/>
+        <expression>
+          ${credit_reduce_pair} := []
+        </expression>
+      </defun>
+      <connect-in port="vol" place="pre_reduce_pair_in_progress"/>
+      <connect-out port="vol" place="volume_in_progress"/>
+      <connect-out port="credit_reduce_pair" place="credit_reduce_pair"/>
+    </transition>
+
+    <transition name="no_reduce_pair_in_reduction">
+      <defun>
+        <in name="sum" type="volume_in_reduction"/>
+        <out name="sum" type="volume_in_reduction"/>
+        <out name="credit_reduce_pair" type="control"/>
+        <expression>
+          ${credit_reduce_pair} := []
+        </expression>
+      </defun>
+      <connect-in port="sum" place="pre_reduce_pair_in_reduction"/>
+      <connect-out port="sum" place="volume_in_reduction"/>
+      <connect-out port="credit_reduce_pair" place="credit_reduce_pair"/>
+    </transition>
+
+    <!-- ****************************************************************** -->
 
     <place name="pair_to_reduce" type="pair_to_reduce"/>
 
@@ -568,6 +635,7 @@
         <in name="sum" type="volume_in_reduction"/>
         <out name="sum" type="volume_in_reduction"/>
         <out name="credit_volume_check_reduce_done" type="control"/>
+        <in name="credit_reduce_pair" type="control"/>
         <expression>
           ${credit_volume_check_reduce_done} := []
         </expression>
@@ -576,8 +644,9 @@
         </condition>
       </defun>
       <connect-in port="sum" place="volume_check_reduce_done"/>
-      <connect-out port="sum" place="volume_in_reduction"/>
+      <connect-out port="sum" place="pre_reduce_pair_in_reduction"/>
       <connect-out port="credit_volume_check_reduce_done" place="credit_volume_check_reduce_done"/>
+      <connect-in port="credit_reduce_pair" place="credit_reduce_pair"/>
     </transition>
 
     <place name="volume_to_be_written" type="volume_with_store"/>
