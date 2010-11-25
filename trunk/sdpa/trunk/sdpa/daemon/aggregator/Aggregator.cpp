@@ -96,7 +96,7 @@ void Aggregator::action_interrupt(const InterruptEvent&)
 
 void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
-        assert (pEvt);
+	assert (pEvt);
 
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
@@ -126,17 +126,15 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		pJob->JobFinished(pEvt);
 	}
 	catch(JobNotFoundException const &)
-        {
-          SDPA_LOG_WARN( "got finished message for old/unknown Job "
-                       << pEvt->job_id()
-                       );
+	{
+          SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
           return;
 	}
 
-	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
 	{
-	  statistics::dump_maps();
-	  statistics::reset_maps();
+		statistics::dump_maps();
+		statistics::reset_maps();
 
 		try {
 			// forward it up
@@ -175,7 +173,6 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		try {
                   id_type actId = pEvt->job_id();
 
-                  SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
                   result_type output = pEvt->result();
 
                   // this  should only  be called  once, therefore
@@ -185,10 +182,14 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
                   // executed. I.e. all this code should go to the
                   // FSM callback routine.
                   if( hasWorkflowEngine() )
+                  {
+                	  SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
                 	  ptr_workflow_engine_->finished(actId, output);
+                  }
 
                   try {
-                    ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
+                	  SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker"<<worker_id);
+                	  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
                   }
                   catch(WorkerNotFoundException const &)
                   {
@@ -259,7 +260,7 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		return;
 	}
 
-	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES
 		try {
@@ -295,13 +296,16 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		try {
 			id_type actId = pJob->id().str();
 
-			SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
 			result_type output = pEvt->result();
 
 			if( hasWorkflowEngine() )
+			{
+				SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" failed");
 				ptr_workflow_engine_->failed(actId, output);
+			}
 
 			try {
+				SDPA_LOG_DEBUG("Remove the job "<< pJob->id()<<" from the worker"<<worker_id);
 				ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
 			}
 			catch(WorkerNotFoundException const &)
@@ -377,7 +381,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	    DLOG(TRACE, "The job state is: "<<pJob->getStatus());
 
     	// should send acknowlwdgement
-    	if( pEvt->from() == sdpa::daemon::WE  ) // the message comes from GWES, forward it to the master
+    	if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() ) // forward the message to the master
 		{
 			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), master(), pEvt->job_id(), pEvt->id()));
 
@@ -391,6 +395,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     	else // the message comes from an worker, forward it to workflow engine
     	{
     		try {
+    			SDPA_LOG_DEBUG("Remove the job "<< pJob->id()<<" from the worker"<<worker_id);
 				ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
     		}
     		catch(WorkerNotFoundException const &)
@@ -406,6 +411,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     		id_type actId = pJob->id();
     		if( hasWorkflowEngine() )
     		{
+    			SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" was cancelled");
     			ptr_workflow_engine_->cancelled(actId);
 
 				try {
