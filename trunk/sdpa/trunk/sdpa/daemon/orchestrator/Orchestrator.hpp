@@ -32,8 +32,7 @@ namespace daemon {
 		SDPA_DECLARE_LOGGER();
 
 		Orchestrator(  	const std::string &name = "",
-						const std::string& url = "",
-                        const std::string &/*workflow_directory*/ = "" )
+						const std::string& url = "" )
 		: DaemonFSM( name, NULL ),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url)

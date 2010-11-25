@@ -192,7 +192,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
@@ -565,7 +565,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");

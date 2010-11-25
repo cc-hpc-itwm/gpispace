@@ -31,7 +31,7 @@ int main (int argc, char **argv)
 	   ("help", "Display this message")
 	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-	   ("workflow-directory", po::value<std::string>(&workflow_directory)->default_value("/"), "directory where workflows can be found")
+	  // ("workflow-directory", po::value<std::string>(&workflow_directory)->default_value("/"), "directory where workflows can be found")
 	   ;
 
 	po::variables_map vm;
@@ -51,7 +51,7 @@ int main (int argc, char **argv)
 	//	fhg::log::Configurator::configure();
 
 	try {
-		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl, workflow_directory );
+		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl  );
 		sdpa::daemon::Orchestrator::start(ptrOrch);
 
 		LOG(DEBUG, "waiting for signals...");

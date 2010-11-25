@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator ...");
@@ -505,7 +505,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
 	LOG( DEBUG, "Create the Aggregator 0 ...");

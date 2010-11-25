@@ -28,13 +28,12 @@ namespace daemon {
 		struct OrchestratorFactory
 		{
 			static Orchestrator::ptr_t create( 	const std::string& name,
-												const std::string& url,
-												const std::string &workflow_directory )
+												const std::string& url )
 			{
 
 
 
-				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, workflow_directory) );
+				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
 				pOrch->create_workflow_engine<T>();
 				return pOrch;
 			}
@@ -44,10 +43,9 @@ namespace daemon {
 		struct OrchestratorFactory<void>
 		{
 			static Orchestrator::ptr_t create( 	const std::string& name,
-												const std::string& url,
-												const std::string &workflow_directory )
+												const std::string& url )
 			{
-				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, workflow_directory) );
+				Orchestrator::ptr_t pOrch( new Orchestrator( name, url) );
 				return pOrch;
 			}
 		};
