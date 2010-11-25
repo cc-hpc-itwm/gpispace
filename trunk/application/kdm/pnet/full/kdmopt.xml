@@ -135,8 +135,8 @@
         </expression>
       </defun>
       <connect-in port="volume_state" place="volume_state_pre"/>
-      <connect-out port="volume_state" place="volume_state"/>
-      <connect-read port="credit_update_volume_state" place="credit_update_volume_state"/>
+      <connect-out port="volume_state" place="pre_update_volume_state_state"/>
+      <connect-in port="credit_update_volume_state" place="credit_update_volume_state"/>
     </transition>
 
     <!-- ****************************************************************** -->
@@ -163,10 +163,9 @@
 
     <!-- ****************************************************************** -->
 
-    <transition name="assign">
+    <transition name="assign" priority="1">
       <defun>
 
-        <in name="config" type="config"/>
         <in name="bunch" type="bunch_loaded"/>
 
         <in name="state" type="volume_state"/>
@@ -202,7 +201,6 @@
         </condition>
       </defun>
 
-      <connect-read port="config" place="config"/>
       <connect-read port="bunch" place="bunch_loaded"/>
 
       <connect-in port="state" place="volume_state"/>
@@ -212,12 +210,15 @@
       <connect-out port="volume" place="volume_in_progress"/>
     </transition>
 
-<!--
-    <transition name="fully_assigned">
+    <!-- ****************************************************************** -->
+
+    <transition name="fully_assigned" priority="1">
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
+        <expression>
+        </expression>
         <condition>
           stack_size (${volume.assigned.bunch.id}) :ge: ${config.assign.most}
         </condition>
@@ -226,7 +227,6 @@
       <connect-in port="volume" place="volume_in_progress"/>
       <connect-out port="volume" place="volume_to_process"/>
     </transition>
--->
 
     <transition name="take_anyway">
       <defun>
@@ -267,32 +267,91 @@
 
     <!-- ****************************************************************** -->
 
+    <!-- Grünewald Transformation for update_volume_state -->
+
     <place name="credit_update_volume_state" type="control">
       <token><value>[]</value></token>
     </place>
+
+    <place name="pre_update_volume_state_processed" type="volume_in_progress"/>
+    <place name="pre_update_volume_state_state" type="volume_state"/>
 
     <struct name="pair_prog_state">
       <field name="in_progress" type="volume_in_progress"/>
       <field name="state" type="volume_state"/>
     </struct>
 
-    <transition name="match_update_volume_state">
+    <transition name="match_update_volume_state_processed" priority="1">
       <defun>
         <in name="processed" type="volume_in_progress"/>
         <in name="state" type="volume_state"/>
         <out name="pair" type="pair_prog_state"/>
+        <out name="credit_update_volume_state" type="control"/>
         <expression>
           ${pair.in_progress} := ${processed};
-          ${pair.state} := ${state}
+          ${pair.state} := ${state};
+          ${credit_update_volume_state} := []
+        </expression>
+        <condition>
+          ${state.volume} :eq: ${processed.volume.volume}
+        </condition>
+      </defun>
+      <connect-in port="processed" place="pre_update_volume_state_processed"/>
+      <connect-in port="state" place="volume_state"/>
+      <connect-out port="pair" place="pair_update_volume_state"/>
+      <connect-out port="credit_update_volume_state" place="credit_update_volume_state"/>
+    </transition>
+
+    <transition name="match_update_volume_state_state" priority="1">
+      <defun>
+        <in name="processed" type="volume_in_progress"/>
+        <in name="state" type="volume_state"/>
+        <out name="pair" type="pair_prog_state"/>
+        <out name="credit_update_volume_state" type="control"/>
+        <expression>
+          ${pair.in_progress} := ${processed};
+          ${pair.state} := ${state};
+          ${credit_update_volume_state} := []
         </expression>
         <condition>
           ${state.volume} :eq: ${processed.volume.volume}
         </condition>
       </defun>
       <connect-in port="processed" place="volume_processed"/>
-      <connect-in port="state" place="volume_state"/>
+      <connect-in port="state" place="pre_update_volume_state_state"/>
       <connect-out port="pair" place="pair_update_volume_state"/>
+      <connect-out port="credit_update_volume_state" place="credit_update_volume_state"/>
     </transition>
+
+    <transition name="no_match_update_volume_state_processed">
+      <defun>
+        <in name="processed" type="volume_in_progress"/>
+        <out name="processed" type="volume_in_progress"/>
+        <out name="credit_update_volume_state" type="control"/>
+        <expression>
+          ${credit_update_volume_state} := []
+        </expression>
+      </defun>
+      <connect-in port="processed" place="pre_update_volume_state_processed"/>
+      <connect-out port="processed" place="volume_processed"/>
+      <connect-out port="credit_update_volume_state" place="credit_update_volume_state"/>
+    </transition>
+
+    <transition name="no_match_update_volume_state_state">
+      <defun>
+        <in name="state" type="volume_state"/>
+        <out name="state" type="volume_state"/>
+        <out name="credit_update_volume_state" type="control"/>
+        <expression>
+          ${credit_update_volume_state} := []
+        </expression>
+      </defun>
+      <connect-in port="state" place="pre_update_volume_state_state"/>
+      <connect-out port="state" place="volume_state"/>
+      <connect-out port="credit_update_volume_state" place="credit_update_volume_state"/>
+    </transition>
+
+    <!-- ****************************************************************** -->
 
     <place name="pair_update_volume_state" type="pair_prog_state"/>
 
@@ -329,8 +388,8 @@
         </expression>
       </defun>
       <connect-in port="volume" place="volume_processed_pre"/>
-      <connect-out port="volume" place="volume_processed"/>
-      <connect-read port="credit_update_volume_state" place="credit_update_volume_state"/>
+      <connect-out port="volume" place="pre_update_volume_state_processed"/>
+      <connect-in port="credit_update_volume_state" place="credit_update_volume_state"/>
     </transition>
 
     <place name="volume_check_done" type="volume_state"/>
