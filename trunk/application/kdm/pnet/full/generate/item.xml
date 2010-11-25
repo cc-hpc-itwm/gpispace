@@ -123,6 +123,7 @@
         <in name="store" type="store_bunch"/>
         <out name="state" type="state"/>
         <out name="bunch" type="bunch_with_store"/>
+        <in name="credit_state_bunch_check_break" type="control"/>
         <expression>
           ${bunch.bunch.id} := ${state.bunch.id};
           ${bunch.bunch.offset.id} := ${state.offset.id};
@@ -143,6 +144,7 @@
       <connect-in port="store" place="store_bunch"/>
       <connect-out port="state" place="state_bunch_check_break"/>
       <connect-out port="bunch" place="bunch_with_store"/>
+      <connect-in port="credit_state_bunch_check_break" place="credit_state_bunch_check_break"/>
     </transition>
 
     <place name="state_volume" type="state"/>
@@ -165,6 +167,7 @@
         <in name="state" type="state"/>
         <out name="state" type="state"/>
         <out name="volume" type="volume_state"/>
+        <in name="credit_state_copy_check_break" type="control"/>
         <expression>
           ${volume.volume.id} := ${state.volume.id};
           ${volume.volume.offset.id} := ${state.offset.id};
@@ -177,23 +180,50 @@
         <condition>${state.volume.id} :lt: ${state.volume.max}</condition>
       </defun>
       <connect-in port="state" place="state_volume"/>
-      <connect-out port="state" place="state_copy"/>
+      <connect-out port="state" place="state_copy_check_break"/>
       <connect-out port="volume" place="volume_state"/>
+      <connect-in port="credit_state_copy_check_break" place="credit_state_copy_check_break"/>
     </transition>
 
     <place name="state_copy" type="state"/>
+    <place name="state_copy_check_break" type="state"/>
+    <place name="credit_state_copy_check_break" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <transition name="break_copy">
       <defun>
         <in name="state" type="state"/>
         <out name="state" type="state"/>
+        <out name="credit_state_copy_check_break" type="control"/>
         <expression>
-          ${state.volume.id} := ${state.volume.id} + 1
+          ${state.volume.id} := ${state.volume.id} + 1;
+          ${credit_state_copy_check_break} := []
         </expression>
-        <condition>${state.copy.id} :ge: ${state.copy.max}</condition>
+        <condition>
+          ${state.copy.id} :ge: ${state.copy.max}
+        </condition>
       </defun>
-      <connect-in port="state" place="state_copy"/>
+      <connect-in port="state" place="state_copy_check_break"/>
       <connect-out port="state" place="state_volume"/>
+      <connect-out port="credit_state_copy_check_break" place="credit_state_copy_check_break"/>
+    </transition>
+
+    <transition name="not_break_copy">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="credit_state_copy_check_break" type="control"/>
+        <expression>
+          ${credit_state_copy_check_break} := []
+        </expression>
+        <condition>
+          ${state.copy.id} :lt: ${state.copy.max}
+        </condition>
+      </defun>
+      <connect-in port="state" place="state_copy_check_break"/>
+      <connect-out port="state" place="state_copy"/>
+      <connect-out port="credit_state_copy_check_break" place="credit_state_copy_check_break"/>
     </transition>
 
     <place name="store_volume" type="store_volume" virtual="true"/>
@@ -216,6 +246,7 @@
         <out name="state" type="state"/>
         <out name="state_assign" type="state_assign"/>
         <in name="credit_state_assign_check_break" type="control"/>
+        <in name="credit_state_copy_check_break" type="control"/>
         <expression>
           ${state_assign.volume_with_store.volume.id}
             := ${state.volume.id};
@@ -234,13 +265,13 @@
 
           ${state.copy.id} := ${state.copy.id} + 1
         </expression>
-        <condition>${state.copy.id} :lt: ${state.copy.max}</condition>
       </defun>
       <connect-in port="state" place="state_copy"/>
-      <connect-out port="state" place="state_copy"/>
+      <connect-out port="state" place="state_copy_check_break"/>
       <connect-in port="store" place="store_volume"/>
       <connect-out port="state_assign" place="state_assign_check_break"/>
       <connect-in port="credit_state_assign_check_break" place="credit_state_assign_check_break"/>
+      <connect-in port="credit_state_copy_check_break" place="credit_state_copy_check_break"/>
     </transition>
 
     <transition name="break_assign">
@@ -288,6 +319,7 @@
         <out name="state" type="state_assign"/>
         <in name="assoc" type="map"/>
         <out name="assoc" type="map"/>
+        <in name="credit_state_assign_check_break" type="control"/>
         <expression>
           ${assoc} := map_assign ( ${assoc}
                                  , ${state.bunch_store_to_assign.id}
@@ -302,6 +334,7 @@
       <connect-out port="state" place="state_assign_check_break"/>
       <connect-in port="assoc" place="assoc"/>
       <connect-out port="assoc" place="assoc"/>
+      <connect-in port="credit_state_assign_check_break" place="credit_state_assign_check_break"/>
     </transition>
 
   </net>
