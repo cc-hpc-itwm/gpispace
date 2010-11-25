@@ -2,6 +2,11 @@
 
   <include-structs href="types.xml"/>
 
+  <struct name="pair_prog_state">
+    <field name="in_progress" type="volume_in_progress"/>
+    <field name="state" type="volume_state"/>
+  </struct>
+
   <in name="file_config" type="string" place="file_config"/>
   <in name="file_param" type="string" place="file_param"/>
   <in name="memsizeGPI" type="long" place="memsizeGPI"/>
@@ -163,16 +168,14 @@
 
     <!-- ****************************************************************** -->
 
-    <transition name="assign" priority="1">
+    <transition name="match_assign" priority="1">
       <defun>
 
         <in name="bunch" type="bunch_loaded"/>
-
         <in name="state" type="volume_state"/>
-        <out name="state" type="volume_state"/>
-
         <in name="volume" type="volume_in_progress"/>
-        <out name="volume" type="volume_in_progress"/>
+
+        <out name="pair" type="pair_prog_state"/>
 
         <expression>
           ${volume.assigned.bunch.id}
@@ -187,7 +190,10 @@
           ${state.bunches.seen.id}
             := bitset_insert ( ${state.bunches.seen.id}
                              , ${bunch.bunch.bunch.id}
-                             )
+                             );
+
+          ${pair.in_progress} := ${volume};
+          ${pair.state} := ${state};
         </expression>
 
         <condition>
@@ -202,30 +208,74 @@
       </defun>
 
       <connect-read port="bunch" place="bunch_loaded"/>
-
       <connect-in port="state" place="volume_state"/>
-      <connect-out port="state" place="volume_state_pre"/>
-
       <connect-in port="volume" place="volume_in_progress"/>
-      <connect-out port="volume" place="volume_in_progress"/>
+
+      <connect-out port="pair" place="pair_assign"/>
+    </transition>
+
+    <place name="pair_assign" type="pair_prog_state"/>
+
+    <transition name="assign_leave">
+      <defun>
+        <in name="pair" type="pair_prog_state"/>
+        <out name="volume" type="volume_in_progress"/>
+        <out name="state" type="volume_state"/>
+        <in name="credit_volume_check_fully_assigned" type="control"/>
+        <expression>
+          ${volume} := ${pair.in_progress};
+          ${state} := ${pair.state};
+        </expression>
+      </defun>
+      <connect-in port="pair" place="pair_assign"/>
+      <connect-out port="state" place="volume_state_pre"/>
+      <connect-out port="volume" place="volume_check_fully_assigned"/>
+      <connect-in port="credit_volume_check_fully_assigned" place="credit_volume_check_fully_assigned"/>
     </transition>
 
     <!-- ****************************************************************** -->
 
-    <transition name="fully_assigned" priority="1">
+    <place name="volume_check_fully_assigned" type="volume_in_progress"/>
+    <place name="credit_volume_check_fully_assigned" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <transition name="fully_assigned">
       <defun>
         <in name="config" type="config"/>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
+        <out name="credit_volume_check_fully_assigned" type="control"/>
         <expression>
+          ${credit_volume_check_fully_assigned} := []
         </expression>
         <condition>
           stack_size (${volume.assigned.bunch.id}) :ge: ${config.assign.most}
         </condition>
       </defun>
       <connect-read port="config" place="config"/>
-      <connect-in port="volume" place="volume_in_progress"/>
+      <connect-in port="volume" place="volume_check_fully_assigned"/>
       <connect-out port="volume" place="volume_to_process"/>
+      <connect-out port="credit_volume_check_fully_assigned" place="credit_volume_check_fully_assigned"/>
+    </transition>
+
+    <transition name="not_fully_assigned">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="volume" type="volume_in_progress"/>
+        <out name="volume" type="volume_in_progress"/>
+        <out name="credit_volume_check_fully_assigned" type="control"/>
+        <expression>
+          ${credit_volume_check_fully_assigned} := []
+        </expression>
+        <condition>
+          stack_size (${volume.assigned.bunch.id}) :lt: ${config.assign.most}
+        </condition>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="volume" place="volume_check_fully_assigned"/>
+      <connect-out port="volume" place="volume_in_progress"/>
+      <connect-out port="credit_volume_check_fully_assigned" place="credit_volume_check_fully_assigned"/>
     </transition>
 
     <transition name="take_anyway">
@@ -275,11 +325,6 @@
 
     <place name="pre_update_volume_state_processed" type="volume_in_progress"/>
     <place name="pre_update_volume_state_state" type="volume_state"/>
-
-    <struct name="pair_prog_state">
-      <field name="in_progress" type="volume_in_progress"/>
-      <field name="state" type="volume_state"/>
-    </struct>
 
     <transition name="match_update_volume_state_processed" priority="1">
       <defun>
