@@ -16,9 +16,6 @@
  * =====================================================================================
  */
 #include <seda/StageRegistry.hpp>
-//#include <seda/comm/comm.hpp>
-//#include <seda/comm/ConnectionFactory.hpp>
-//#include <seda/comm/ConnectionStrategy.hpp>
 #include <sdpa/events/CodecStrategy.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
