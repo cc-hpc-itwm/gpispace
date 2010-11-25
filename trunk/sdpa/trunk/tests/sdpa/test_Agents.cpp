@@ -38,7 +38,7 @@
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
-#include <sdpa/daemon/nre/NRE.hpp>
+#include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
@@ -50,7 +50,6 @@
 
 #include <we/loader/module.hpp>
 #include <sdpa/daemon/EmptyWorkflowEngine.hpp>
-//#include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/layer.hpp>
 
 namespace po = boost::program_options;
@@ -202,13 +201,13 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	// use external scheduler and real GWES
 	LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 
 	try {
-		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
@@ -216,7 +215,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 		return;
 	}
@@ -259,7 +258,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 	ptrCli->shutdown_network();
 	ptrCli.reset();
@@ -301,8 +300,8 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	// use external scheduler and real GWES
 	LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
 				                             strGuiUrl,
@@ -312,13 +311,13 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
@@ -360,7 +359,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
@@ -458,8 +457,8 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	// use external scheduler and dummy WE
 	LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
@@ -486,7 +485,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	LOG( DEBUG, "starting the NRE ...");
 	try {
-		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
@@ -494,7 +493,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 		return;
 	}
@@ -534,7 +533,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
@@ -575,8 +574,8 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 	// use external scheduler and dummy WE
 	LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
@@ -602,7 +601,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	}
 
 	try {
-		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
@@ -610,7 +609,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 
 		return;
 	}
@@ -651,7 +650,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
