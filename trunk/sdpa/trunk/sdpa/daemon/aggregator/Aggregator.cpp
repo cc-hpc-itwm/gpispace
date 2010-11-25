@@ -135,6 +135,9 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
 	{
+	  statistics::dump_maps();
+	  statistics::reset_maps();
+
 		try {
 			// forward it up
 			JobFinishedEvent::Ptr pEvtJobFinished

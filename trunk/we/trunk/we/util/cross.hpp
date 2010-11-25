@@ -158,6 +158,18 @@ namespace cross
     bool has_more (void) const { return _has_more; }
     void operator ++ () { step (0, map.begin(), shift.begin()); }
 
+    unsigned long size (void) const
+    {
+      unsigned long size (1);
+
+      for (it_t pos (map.begin()); pos != map.end(); ++pos)
+	{
+	  size *= pos->second.size();
+	}
+
+      return size;
+    }
+
     iterator<MAP> operator * (void) const { return iterator<MAP> (map, pos); }
   };
 }
