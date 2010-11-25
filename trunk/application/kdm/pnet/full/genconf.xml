@@ -9,9 +9,10 @@
   <net>
 
 <!--
+
           "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_C3NA.rahn"
           "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model"
-          "/fhgfs/HPC/rahn/kdm/Kirchhoff_C3NA.rahn"
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_C3NA.rahn"
 -->
     <properties name="pnetc">
       <properties name="context">

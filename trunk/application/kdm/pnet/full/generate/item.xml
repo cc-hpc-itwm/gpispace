@@ -127,6 +127,7 @@
           ${bunch.bunch.id} := ${state.bunch.id};
           ${bunch.bunch.offset.id} := ${state.offset.id};
           ${bunch.store} := ${store};
+          ${bunch.volumes.seen.id} := {};
 
           ${state.bunch.id} := ${state.bunch.id} + 1
         </expression>
@@ -169,7 +170,6 @@
           ${volume.volume.offset.id} := ${state.offset.id};
           ${volume.copies} := ${state.copy.max};
 
-          ${volume.bunches.seen.id} := {};
           ${volume.bunches.left} := ${state.bunch.max};
 
           ${state.copy.id} := 0L;

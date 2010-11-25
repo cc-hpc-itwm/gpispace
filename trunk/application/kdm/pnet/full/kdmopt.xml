@@ -2,7 +2,12 @@
 
   <include-structs href="types.xml"/>
 
-  <struct name="pair_prog_state">
+  <struct name="pair_bunch_volume">
+    <field name="bunch" type="bunch_loaded"/>
+    <field name="volume" type="volume_in_progress"/>
+  </struct>
+
+  <struct name="pair_volume_in_progress_volume_state">
     <field name="in_progress" type="volume_in_progress"/>
     <field name="state" type="volume_state"/>
   </struct>
@@ -172,10 +177,9 @@
       <defun>
 
         <in name="bunch" type="bunch_loaded"/>
-        <in name="state" type="volume_state"/>
         <in name="volume" type="volume_in_progress"/>
 
-        <out name="pair" type="pair_prog_state"/>
+        <out name="pair" type="pair_bunch_volume"/>
 
         <expression>
           ${volume.assigned.bunch.id}
@@ -187,48 +191,44 @@
                           , ${bunch.bunch.store.id}
                           );
 
-          ${state.bunches.seen.id}
-            := bitset_insert ( ${state.bunches.seen.id}
-                             , ${bunch.bunch.bunch.id}
+          ${bunch.bunch.volumes.seen.id}
+            := bitset_insert ( ${bunch.bunch.volumes.seen.id}
+                             , ${volume.volume.volume.id}
                              );
 
-          ${pair.in_progress} := ${volume};
-          ${pair.state} := ${state};
+          ${pair.bunch} := ${bunch};
+          ${pair.volume} := ${volume};
         </expression>
 
-        <condition>
-          ${state.volume} :eq: ${volume.volume.volume}
-        </condition>
         <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
         <condition>
-          !bitset_is_element (${state.bunches.seen.id}, ${bunch.bunch.bunch.id})
+          !bitset_is_element (${bunch.bunch.volumes.seen.id}, ${volume.volume.volume.id})
         </condition>
       </defun>
 
-      <connect-read port="bunch" place="bunch_loaded"/>
-      <connect-in port="state" place="volume_state"/>
+      <connect-in port="bunch" place="bunch_loaded"/>
       <connect-in port="volume" place="volume_in_progress"/>
 
       <connect-out port="pair" place="pair_assign"/>
     </transition>
 
-    <place name="pair_assign" type="pair_prog_state"/>
+    <place name="pair_assign" type="pair_bunch_volume"/>
 
     <transition name="assign_leave">
       <defun>
-        <in name="pair" type="pair_prog_state"/>
+        <in name="pair" type="pair_bunch_volume"/>
         <out name="volume" type="volume_in_progress"/>
-        <out name="state" type="volume_state"/>
+        <out name="bunch" type="bunch_loaded"/>
         <in name="credit_volume_check_fully_assigned" type="control"/>
         <expression>
-          ${volume} := ${pair.in_progress};
-          ${state} := ${pair.state};
+          ${bunch} := ${pair.bunch};
+          ${volume} := ${pair.volume};
         </expression>
       </defun>
       <connect-in port="pair" place="pair_assign"/>
-      <connect-out port="state" place="volume_state_pre"/>
+      <connect-out port="bunch" place="bunch_loaded"/>
       <connect-out port="volume" place="volume_check_fully_assigned"/>
       <connect-in port="credit_volume_check_fully_assigned" place="credit_volume_check_fully_assigned"/>
     </transition>
@@ -330,7 +330,7 @@
       <defun>
         <in name="processed" type="volume_in_progress"/>
         <in name="state" type="volume_state"/>
-        <out name="pair" type="pair_prog_state"/>
+        <out name="pair" type="pair_volume_in_progress_volume_state"/>
         <out name="credit_update_volume_state" type="control"/>
         <expression>
           ${pair.in_progress} := ${processed};
@@ -351,7 +351,7 @@
       <defun>
         <in name="processed" type="volume_in_progress"/>
         <in name="state" type="volume_state"/>
-        <out name="pair" type="pair_prog_state"/>
+        <out name="pair" type="pair_volume_in_progress_volume_state"/>
         <out name="credit_update_volume_state" type="control"/>
         <expression>
           ${pair.in_progress} := ${processed};
@@ -398,11 +398,11 @@
 
     <!-- ****************************************************************** -->
 
-    <place name="pair_update_volume_state" type="pair_prog_state"/>
+    <place name="pair_update_volume_state" type="pair_volume_in_progress_volume_state"/>
 
     <transition name="update_volume_state">
       <defun>
-        <in name="pair" type="pair_prog_state"/>
+        <in name="pair" type="pair_volume_in_progress_volume_state"/>
         <out name="processed" type="volume_in_progress"/>
         <out name="state" type="volume_state"/>
         <in name="credit_volume_check_done" type="control"/>

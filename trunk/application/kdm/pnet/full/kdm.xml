@@ -10,13 +10,6 @@
 
   <net>
 
-<!--
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_C3NA.rahn"
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model"
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL"
-"/fhgfs/HPC/rahn/kdm/Kirchhoff_C3NA.rahn"
--->
-
     <properties name="pnetc">
       <properties name="context">
         <property key="file">
@@ -150,11 +143,8 @@
     <transition name="assign">
       <defun>
 
-        <in name="config" type="config"/>
         <in name="bunch" type="bunch_loaded"/>
-
-        <in name="state" type="volume_state"/>
-        <out name="state" type="volume_state"/>
+        <out name="bunch" type="bunch_loaded"/>
 
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
@@ -169,28 +159,22 @@
                           , ${bunch.bunch.store.id}
                           );
 
-          ${state.bunches.seen.id}
-            := bitset_insert ( ${state.bunches.seen.id}
-                             , ${bunch.bunch.bunch.id}
+          ${bunch.bunch.volumes.seen.id}
+            := bitset_insert ( ${bunch.bunch.volumes.seen.id}
+                             , ${volume.volume.volume.id}
                              )
         </expression>
 
         <condition>
-          ${state.volume} :eq: ${volume.volume.volume}
-        </condition>
-        <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
         <condition>
-          !bitset_is_element (${state.bunches.seen.id}, ${bunch.bunch.bunch.id})
+          !bitset_is_element (${bunch.bunch.volumes.seen.id}, ${volume.volume.volume.id})
         </condition>
       </defun>
 
-      <connect-read port="config" place="config"/>
-      <connect-read port="bunch" place="bunch_loaded"/>
-
-      <connect-in port="state" place="volume_state"/>
-      <connect-out port="state" place="volume_state"/>
+      <connect-in port="bunch" place="bunch_loaded"/>
+      <connect-out port="bunch" place="bunch_loaded"/>
 
       <connect-in port="volume" place="volume_in_progress"/>
       <connect-out port="volume" place="volume_in_progress"/>

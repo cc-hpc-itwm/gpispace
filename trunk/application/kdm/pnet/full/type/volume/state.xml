@@ -5,9 +5,6 @@
     <field name="copies" type="long"/>
 
     <struct name="bunches">
-      <struct name="seen">
-        <field name="id" type="bitset"/>
-      </struct>
       <field name="left" type="long"/>
     </struct>
   </struct>
