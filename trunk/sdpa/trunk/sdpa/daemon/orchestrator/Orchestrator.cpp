@@ -128,13 +128,16 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
         id_type act_id = pEvt->job_id();
 
 		try {
-			SDPA_LOG_DEBUG("Inform WE that the activity "<<act_id<<" finished");
             result_type output = pEvt->result();
 
             if( hasWorkflowEngine() )
+            {
+            	SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<act_id<<" finished");
             	ptr_workflow_engine_->finished(act_id, output);
+            }
 
             try {
+            	SDPA_LOG_DEBUG("Remove job "<<act_id<<" from the worker "<<worker_id;);
             	ptr_scheduler_->deleteWorkerJob ( worker_id, act_id );
 			}
 			catch(WorkerNotFoundException const &)
@@ -214,9 +217,13 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 		result_type output = pEvt->result();
 
 		if( hasWorkflowEngine() )
+		{
+			SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
 			ptr_workflow_engine_->failed(actId, output);
+		}
 
 		try {
+			SDPA_LOG_DEBUG("Remove job "<<actId<<" from the worker "<<worker_id;);
 			ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
 		}
 		catch(const WorkerNotFoundException&)
@@ -292,6 +299,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
           if( pEvt->from() != sdpa::daemon::WE  )
           {
         	  try {
+        		  SDPA_LOG_DEBUG("Remove job "<<pJob->id()<<" from the worker "<<worker_id;);
         		  ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
         	  }
         	  catch(const WorkerNotFoundException&) {
@@ -299,12 +307,13 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         	  }
         	  catch(const JobNotDeletedException&)
         	  {
-        		  SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worke "<<worker_id<<"'s queues ...");
+        		  SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
         	  }
 
         	  // inform WE that the activity was canceled
         	  if( hasWorkflowEngine() )
         	  {
+        		  SDPA_LOG_DEBUG("Tell the workflow engine that the activity "<<pEvt->job_id()<<" was cancelled");
         		  ptr_workflow_engine_->cancelled(pEvt->job_id());
 
         		  try {
