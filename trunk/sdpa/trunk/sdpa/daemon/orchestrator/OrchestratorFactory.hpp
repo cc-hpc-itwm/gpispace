@@ -52,22 +52,6 @@ namespace daemon {
 			}
 		};
 
-		/*template <>
-		struct OrchestratorFactory<EmptyWorkflowEngine>
-		{
-			static Orchestrator::ptr_t create( 	const std::string& name,
-												const std::string& url,
-												const std::string &workflow_directory )
-			{
-
-
-
-				Orchestrator::ptr_t pOrch( new Orchestrator( name, url, workflow_directory) );
-				pOrch->create_workflow_engine( new EmptyWorkflowEngine(pOrch.get()) );
-				return pOrch;
-			}
-		};*/
-
 	}
 }
 

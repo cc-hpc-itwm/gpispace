@@ -52,23 +52,6 @@ namespace daemon {
 				return pAgg;
 			}
 		};
-
-		/*template <>
-		struct AggregatorFactory<EmptyWorkflowEngine>
-		{
-			static Aggregator::ptr_t create( 	const std::string& name,
-												const std::string& url,
-												const std::string &workflow_directory )
-			{
-
-
-
-				Aggregator::ptr_t pAgg( new Aggregator( name, url, workflow_directory) );
-				pAgg->create_workflow_engine( new EmptyWorkflowEngine(pAgg.get()) );
-				return pAgg;
-			}
-		};*/
-
 	}
 }
 

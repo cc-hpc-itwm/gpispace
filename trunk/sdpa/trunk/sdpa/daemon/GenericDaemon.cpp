@@ -1074,3 +1074,33 @@ unsigned int GenericDaemon::extJobsCnt()
 {
 	return m_nExternalJobs;
 }
+
+void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& reason)
+{
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
+		workflowEngine()->failed( jobId.str(), reason );
+		jobManager()->deleteJob(jobId);
+	}
+}
+
+void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
+{
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "informing workflow engine that " << jobId << " has finished");
+		workflowEngine()->finished( jobId.str(), result );
+		jobManager()->deleteJob(jobId);
+	}
+}
+
+void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
+{
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
+		workflowEngine()->cancelled( jobId.str() );
+		jobManager()->deleteJob(jobId);
+	}
+}

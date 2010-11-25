@@ -34,7 +34,6 @@ typedef std::string result_type;
 typedef std::string reason_type;
 typedef std::string encoded_type;
 
-
 typedef we::mgmt::basic_layer<id_type, result_type, reason_type, encoded_type> IWorkflowEngine;
 
 #endif //IWORKFLOWENGINE_HPP
