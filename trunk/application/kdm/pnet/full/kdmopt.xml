@@ -365,7 +365,6 @@
     <place name="credit_volume_match_reduce_start" type="control">
       <token><value>[]</value></token>
     </place>
-    <place name="volume_reduce_start" type="volume_in_reduction"/>
 
     <transition name="match_reduce_start" priority="1">
       <defun>
@@ -373,6 +372,7 @@
         <in name="state" type="volume_state"/>
         <out name="sum" type="volume_in_reduction"/>
         <out name="credit_volume_match_reduce_start" type="control"/>
+        <in name="credit_volume_check_reduce_done" type="control"/>
         <expression>
           ${sum.volume} := ${volume.volume};
           ${sum.left} := ${state.copies} - 1;
@@ -384,8 +384,9 @@
       </defun>
       <connect-in port="volume" place="volume_match_reduce_start"/>
       <connect-in port="state" place="volume_done"/>
-      <connect-out port="sum" place="volume_reduce_start"/>
+      <connect-out port="sum" place="volume_check_reduce_done"/>
       <connect-out port="credit_volume_match_reduce_start" place="credit_volume_match_reduce_start"/>
+      <connect-in port="credit_volume_check_reduce_done" place="credit_volume_check_reduce_done"/>
     </transition>
 
     <transition name="no_match_reduce_start">
@@ -484,19 +485,6 @@
     </transition>
 
     <place name="volume_done" type="volume_state"/>
-
-    <transition name="reduce_start">
-      <defun>
-        <in name="sum" type="volume_in_reduction"/>
-        <in name="credit_volume_check_reduce_done" type="control"/>
-        <out name="sum" type="volume_in_reduction"/>
-        <expression>
-        </expression>
-      </defun>
-      <connect-in port="sum" place="volume_reduce_start"/>
-      <connect-in port="credit_volume_check_reduce_done" place="credit_volume_check_reduce_done"/>
-      <connect-out port="sum" place="volume_check_reduce_done"/>
-    </transition>
 
     <place name="volume_in_reduction" type="volume_in_reduction"/>
 
