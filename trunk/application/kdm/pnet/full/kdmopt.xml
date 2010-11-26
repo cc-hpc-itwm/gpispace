@@ -58,6 +58,7 @@
     <place name="config_initialized" type="config"/>
 
     <place name="store_bunch" type="store_bunch"/>
+    <place name="store_bunch_pre" type="store_bunch"/>
     <place name="store_volume" type="store_volume"/>
 
     <place name="bunch_store_assoc_offset" type="map"/>
@@ -112,7 +113,7 @@
     <transition name="generate_store" inline="true">
       <include-function href="generate/store.xml"/>
       <connect-in port="config" place="config_generate_store"/>
-      <connect-out port="store_bunch" place="store_bunch"/>
+      <connect-out port="store_bunch" place="store_bunch_pre"/>
       <connect-out port="store_volume" place="store_volume"/>
       <connect-out port="number_store_volume" place="number_store_volume"/>
       <connect-out port="number_store_bunch" place="number_store_bunch"/>
@@ -124,6 +125,7 @@
     <transition name="generate_item" inline="true">
       <include-function href="generate/item.xml"/>
       <place-map virtual="store_bunch" real="store_bunch"/>
+      <place-map virtual="store_bunch_pre" real="store_bunch_pre"/>
       <place-map virtual="store_volume" real="store_volume"/>
       <place-map virtual="assoc" real="bunch_store_assoc_offset"/>
       <connect-in port="config" place="config_generate_item"/>
@@ -705,7 +707,7 @@
         </condition>
       </defun>
       <connect-in port="bunch" place="bunch_check_done"/>
-      <connect-out port="store" place="store_bunch"/>
+      <connect-out port="store" place="store_bunch_pre"/>
       <connect-out port="credit_bunch_check_done" place="credit_bunch_check_done"/>
     </transition>
 
