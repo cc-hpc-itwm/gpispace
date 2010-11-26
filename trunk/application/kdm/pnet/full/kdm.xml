@@ -177,34 +177,6 @@
       <connect-out port="bunch" place="bunch_loaded"/>
 
       <connect-in port="volume" place="volume_in_progress"/>
-      <connect-out port="volume" place="volume_in_progress"/>
-    </transition>
-
-<!--
-    <transition name="fully_assigned">
-      <defun>
-        <in name="config" type="config"/>
-        <in name="volume" type="volume_in_progress"/>
-        <out name="volume" type="volume_in_progress"/>
-        <condition>
-          stack_size (${volume.assigned.bunch.id}) :ge: ${config.assign.most}
-        </condition>
-      </defun>
-      <connect-read port="config" place="config"/>
-      <connect-in port="volume" place="volume_in_progress"/>
-      <connect-out port="volume" place="volume_to_process"/>
-    </transition>
--->
-
-    <transition name="take_anyway">
-      <defun>
-        <in name="volume" type="volume_in_progress"/>
-        <out name="volume" type="volume_in_progress"/>
-        <condition>
-          stack_size (${volume.assigned.bunch.id}) :gt: 0
-        </condition>
-      </defun>
-      <connect-in port="volume" place="volume_in_progress"/>
       <connect-out port="volume" place="volume_to_process"/>
     </transition>
 
@@ -277,9 +249,6 @@
             := stack_pop (${volume.assigned.store.id});
         </expression>
         <condition>
-          !stack_empty (${volume.assigned.bunch.id})
-        </condition>
-        <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
         <condition>
@@ -288,19 +257,6 @@
       </defun>
       <connect-in port="bunch" place="bunch_loaded"/>
       <connect-out port="bunch" place="bunch_loaded"/>
-      <connect-in port="volume" place="update_bunch_state"/>
-      <connect-out port="volume" place="update_bunch_state"/>
-    </transition>
-
-    <transition name="unassigned">
-      <defun>
-        <in name="volume" type="volume_in_progress"/>
-        <out name="volume" type="volume_in_progress"/>
-        <expression></expression>
-        <condition>
-          stack_empty (${volume.assigned.bunch.id})
-        </condition>
-      </defun>
       <connect-in port="volume" place="update_bunch_state"/>
       <connect-out port="volume" place="volume_in_progress"/>
     </transition>
