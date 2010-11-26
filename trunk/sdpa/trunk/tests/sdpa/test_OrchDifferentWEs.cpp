@@ -70,12 +70,13 @@ namespace sdpa { namespace tests { namespace worker {
   {
   public:
     explicit
-    NreWorkerClient( const std::string & /*nre_worker_location*/
-                   , const bool /*bLaunchNrePcd*/ = false
-                   , const char* /*szNrePcdBinPath*/ = ""
-                   , const char* /*szKDMModulesPath*/ = ""
-                   , const char* /*szFvmPCModule*/ = ""
-                   )
+    NreWorkerClient( const std::string &nre_worker_location
+                      // TODO: fixme, this is ugly
+                      , bool bLaunchNrePcd = false
+                      , const std::string & fvmPCBinary = ""
+                      , const std::vector<std::string>& fvmPCSearchPath = std::vector<std::string>()
+                      , const std::vector<std::string>& fvmPCPreLoad = std::vector<std::string>()
+                      )
     : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
 
     void set_ping_interval(unsigned long /*seconds*/){}
@@ -84,16 +85,20 @@ namespace sdpa { namespace tests { namespace worker {
 
     void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
 
-    unsigned int start() throw (std::exception){ LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
+    unsigned int start() throw (std::exception) { LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
     void stop() throw (std::exception) { LOG( INFO, "Stop the test NreWorkerClient ...");}
 
     void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
+
+    pid_t getPcdPid() { return -2; }
 
     sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
 	{
     	LOG( INFO, "Execute the activity "<<in_activity);
     	LOG( INFO, "Report activity finished ...");
-    	return std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result");
+
+    	sdpa::nre::worker::execution_result_t exec_res(std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result"));
+    	return exec_res;
 	}
 
   private:
@@ -192,8 +197,9 @@ BOOST_AUTO_TEST_CASE( testOrchAandAggNoWe )
 	string addrNRE = "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
+	typedef sdpa::tests::worker::NreWorkerClient WorkerClient;
 
-	bool bLaunchNrePcd = true;
+	bool bLaunchNrePcd = false;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -214,8 +220,8 @@ BOOST_AUTO_TEST_CASE( testOrchAandAggNoWe )
 
 	// use external scheduler and real GWES
 	LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<void, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
 				                             strGuiUrl,
@@ -225,13 +231,13 @@ BOOST_AUTO_TEST_CASE( testOrchAandAggNoWe )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		sdpa::daemon::NRE<WorkerClient>::start(ptrNRE_0);
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
 		sdpa::daemon::Aggregator::shutdown(ptrAgg);
 		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
@@ -273,7 +279,7 @@ BOOST_AUTO_TEST_CASE( testOrchAandAggNoWe )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
 	sdpa::daemon::Aggregator::shutdown(ptrAgg);
 	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
 
@@ -286,7 +292,6 @@ BOOST_AUTO_TEST_CASE( testOrchAandAggNoWe )
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
@@ -702,6 +707,5 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
-#endif
 
 BOOST_AUTO_TEST_SUITE_END()

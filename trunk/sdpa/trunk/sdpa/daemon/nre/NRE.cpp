@@ -110,15 +110,14 @@ void NRE<U>::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	}
 	catch(JobNotFoundException const &){
 		SDPA_LOG_ERROR("Job "<<pEvt->job_id()<<" not found!");
-                return;
+		return;
 	}
 
-	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
 	{
 		try {
 			// forward it up
-			JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
-
+			JobFinishedEvent::Ptr pEvtJobFinished( new JobFinishedEvent(name(), master(), pEvt->job_id(), pEvt->result()) );
 			// send the event to the master
 			sendEventToMaster(pEvtJobFinished);
 			// delete it from the map when you receive a JobFinishedAckEvent!
@@ -172,7 +171,7 @@ void NRE<U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
         return;
 	}
 
-	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE ||  !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator
@@ -244,7 +243,7 @@ void NRE<U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
                 return;
 	}
 
-	if( pEvt->from() == sdpa::daemon::WE ) // use a predefined variable here of type enum or use typeid
+	if( pEvt->from() == sdpa::daemon::WE ||  !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
 	{
 		// the message comes from GWES, this is a local job
 		// if I'm not the orchestrator

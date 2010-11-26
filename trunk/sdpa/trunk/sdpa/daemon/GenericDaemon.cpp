@@ -1080,6 +1080,13 @@ void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& re
 		workflowEngine()->failed( jobId.str(), reason );
 		jobManager()->deleteJob(jobId);
 	}
+	else
+	{
+		// annonymous worker
+		DLOG(TRACE, "Sent JobFailedEvent to self for the job"<<jobId);
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), jobId, reason ));
+		sendEventToSelf(pEvtJobFailed);
+	}
 }
 
 void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
@@ -1090,6 +1097,13 @@ void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type &
 		workflowEngine()->finished( jobId.str(), result );
 		jobManager()->deleteJob(jobId);
 	}
+	else
+	{
+		// annonymous worker
+		DLOG(TRACE, "Sent JobFinishedEvent to self for the job"<<jobId);
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent("", name(), jobId, result));
+		sendEventToSelf(pEvtJobFinished);
+	}
 }
 
 void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
@@ -1099,5 +1113,12 @@ void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
 		DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
 		workflowEngine()->cancelled( jobId.str() );
 		jobManager()->deleteJob(jobId);
+	}
+	else
+	{
+		// annonymous worker
+		DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
+		CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), name(), jobId, SDPAEvent::message_id_type()));
+		sendEventToSelf(pEvtCancelJobAck);
 	}
 }
