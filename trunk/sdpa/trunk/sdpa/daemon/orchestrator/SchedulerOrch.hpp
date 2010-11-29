@@ -16,8 +16,8 @@
  * =====================================================================================
  */
 
-#ifndef SDPA_SchedulerOrch_HPP
-#define SDPA_SchedulerOrch_HPP 1
+#ifndef SDPA_SCHEDULERORCH_HPP
+#define SDPA_SCHEDULERORCH_HPP 1
 
 #include <sdpa/daemon/SchedulerImpl.hpp>
 
@@ -48,7 +48,7 @@ namespace sdpa {
 	 }
 
 	 friend class boost::serialization::access;
-	 friend class sdpa::tests::WorkerSerializationTest;
+	 //friend class sdpa::tests::WorkerSerializationTest;
 
   private:
 	  SDPA_DECLARE_LOGGER();

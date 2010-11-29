@@ -559,9 +559,9 @@ void SchedulerImpl::send_life_sign()
 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
 	 // TODO: remove life signs completely
-	 //    just make sure, that a un-registered worker tries to connect *forever*
+	 // just make sure, that a un-registered worker tries to connect *forever*
 
-	 //	 if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
+	 //	if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
 	 // this condition has already been checked...
 	 if(! is_root_node (ptr_comm_handler_->name()))
 	 {

@@ -85,7 +85,6 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	}
 
 	friend class boost::serialization::access;
-	friend class sdpa::tests::WorkerSerializationTest;
 
 	void print_states();
 private:

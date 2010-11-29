@@ -161,8 +161,7 @@ namespace sdpa {
 	    virtual void recover( const std::string& strArchiveName );
 
 		friend class boost::serialization::access;
-		friend class sdpa::tests::WorkerSerializationTest;
-
+		//friend class sdpa::tests::WorkerSerializationTest;
 
 	  protected:
 

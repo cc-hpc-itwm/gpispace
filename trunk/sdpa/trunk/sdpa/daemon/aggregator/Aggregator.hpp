@@ -73,7 +73,7 @@ namespace sdpa {
 			virtual void recover( const std::string& );
 
 			friend class boost::serialization::access;
-			friend class sdpa::tests::WorkerSerializationTest;
+			//friend class sdpa::tests::WorkerSerializationTest;
 
 			private:
 			Scheduler* create_scheduler()

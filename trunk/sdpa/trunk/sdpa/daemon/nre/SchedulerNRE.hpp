@@ -298,7 +298,7 @@ namespace sdpa {
 
 
 	 friend class boost::serialization::access;
-	 friend class sdpa::tests::WorkerSerializationTest;
+	 //friend class sdpa::tests::WorkerSerializationTest;
 
 	 template <class Archive>
 	 void serialize(Archive& ar, const unsigned int)

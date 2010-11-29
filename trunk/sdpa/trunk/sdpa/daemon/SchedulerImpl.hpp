@@ -28,7 +28,6 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
-#include <tests/sdpa/test_SerializeDaemonComponents.hpp>
 
 namespace sdpa {
 	namespace daemon {
@@ -95,7 +94,6 @@ namespace sdpa {
 	}
 
 	friend class boost::serialization::access;
-	friend class sdpa::tests::WorkerSerializationTest;
 
 	void print();
   protected:

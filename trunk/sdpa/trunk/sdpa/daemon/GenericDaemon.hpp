@@ -68,6 +68,8 @@ namespace sdpa { namespace daemon {
 	  typedef boost::unique_lock<mutex_type> lock_type;
 
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
+
+	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
 	  virtual ~GenericDaemon();
 
 	  // API
@@ -167,6 +169,9 @@ namespace sdpa { namespace daemon {
 
 	  virtual bool requestsAllowed(const sdpa::util::time_type&);
 
+	  Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+	  void  setScheduler(Scheduler* p) {ptr_scheduler_ = Scheduler::ptr_t(p);}
+
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)
 	  {
@@ -176,7 +181,6 @@ namespace sdpa { namespace daemon {
 	  }
 
 	  friend class boost::serialization::access;
-	  friend class sdpa::tests::WorkerSerializationTest;
 
 	  virtual void print()
 	  {
@@ -248,8 +252,7 @@ namespace sdpa { namespace daemon {
 	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, IWorkflowEngine* );
 	  // obsolete
 	  GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
-	  // current
-	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
+
 
 	  virtual Scheduler* create_scheduler()
 	  {
