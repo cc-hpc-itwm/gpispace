@@ -36,13 +36,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
        
 set (test_srcs
   SchedulerTestImpl.cpp
-#  test_Components.cpp
   test_Config.cpp
   test_JobFSM_SMC.cpp
   test_JobId.cpp
   test_LoadBalancer.cpp
-#  test_Scheduler.cpp
-#  test_SerializeDaemonComponents.cpp
+  test_Scheduler.cpp
   test_SerializeJobPtr.cpp
   test_SerializeSharedPtr.cpp
   test_UUID.cpp
@@ -81,12 +79,28 @@ target_link_libraries(mini_test_suite uuid)
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
+set( test_serialize_agents_srcs
+  	test_SerializeAgents.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
+)
+
+add_executable(test_serialize_agents_suite ${test_serialize_agents_srcs})
+
+target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
+									 sdpa-client
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})
+									 
+add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_agents_suite )
 
 set( test_agents_srcs
   	test_Agents.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
-
 
 add_executable(test_agents_suite ${test_agents_srcs})
 

@@ -23,16 +23,15 @@
 #include <time.h>
 #include <sdpa/util/util.hpp>
 #include <fstream>
-#include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
-#include <sdpa/daemon/SchedulerImpl.hpp>
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
-using namespace sdpa::fsm::smc;
+//using namespace sdpa::fsm::smc;
 
 const int NWORKERS = 5;
 const int NJOBS    = 20;
@@ -63,7 +62,7 @@ void SchedulerTest::testDelWorker( )
 {
 	// first re-schedule the work:
 	// inspect all queues and re-schedule each job
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
 	ostringstream oss;
 	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
@@ -130,7 +129,7 @@ void SchedulerTest::testDelWorker( )
 
 void SchedulerTest::testSchedulerWithNoPrefs()
 {
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
 	ostringstream oss;
 	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
@@ -183,7 +182,7 @@ void SchedulerTest::testSchedulerWithNoPrefs()
 
 void SchedulerTest::testSchedulerWithPrefs()
 {
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
 	ostringstream oss;
 	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
@@ -246,7 +245,7 @@ void SchedulerTest::testSchedulerWithPrefs()
 /*
 void SchedulerTest::testSchedulerWithPrefsAndReScheduling()
 {
-	sdpa::daemon::Orchestrator<DummyWorkflowEngine>::ptr_t ptrOrch = sdpa::daemon::Orchestrator<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000", "workflows");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
 	ostringstream oss;
 	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));

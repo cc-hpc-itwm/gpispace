@@ -9,7 +9,6 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
-#include <tests/sdpa/test_SerializeDaemonComponents.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
 using namespace sdpa::daemon;
@@ -50,7 +49,6 @@ class SchedulerTestImpl : public Scheduler {
 	}
 
 	friend class boost::serialization::access;
-	friend class sdpa::tests::WorkerSerializationTest;
 
 	void print();
   private:

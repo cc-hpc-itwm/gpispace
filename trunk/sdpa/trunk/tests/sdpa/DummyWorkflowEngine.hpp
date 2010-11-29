@@ -290,7 +290,7 @@ inline void load_construct_data(
     ar >> pIAgent;
 
     // invoke inplace constructor to initialize instance of my_class
-    ::new(t)DummyWorkflowEngine(pIAgent, id_gen);
+    ::new(t)DummyWorkflowEngine(pIAgent, id_gen_f);
 }
 }} // namespace ...
 
