@@ -14,7 +14,9 @@
  *        Company:  Fraunhofer ITWM
  *
  * =====================================================================================*/
-#include "test_SerializeJobPtr.hpp"
+#define BOOST_TEST_MODULE TestSerializeJobPtrs
+#include <boost/test/unit_test.hpp>
+
 #include <iostream>
 #include <cstddef>
 #include <fstream>
@@ -36,12 +38,14 @@
 #include <sdpa/daemon/JobManager.hpp>
 
 #include <boost/serialization/export.hpp>
+#include <sdpa/JobId.hpp>
+#include "sdpa/memory.hpp"
+#include "sdpa/logging.hpp"
+
+using namespace sdpa;
 
 using namespace std;
 using namespace sdpa::tests;
-//using namespace dsm;
-
-CPPUNIT_TEST_SUITE_REGISTRATION( TestSerializeJobPtr );
 
 namespace sdpa {
 	namespace unit_test {
@@ -107,28 +111,19 @@ namespace sdpa {
 }}
 
 
-//using namespace sdpa::unit_tests;
-//using namespace sdpa::daemon;
-
-TestSerializeJobPtr::TestSerializeJobPtr() :SDPA_INIT_LOGGER("sdpa.tests. TestSerializeJobPtr")
-{}
-
-TestSerializeJobPtr::~TestSerializeJobPtr()
-{}
-
-void TestSerializeJobPtr::setUp() { //initialize and start the finite state machine
-	SDPA_LOG_DEBUG("setUp");
-}
-
-void TestSerializeJobPtr::tearDown()
+struct MyFixture
 {
-	SDPA_LOG_DEBUG("tearDown");
-}
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests. TestSerializeJobPtr"){}
+	~MyFixture(){}
+	 SDPA_DECLARE_LOGGER();
+};
+
+BOOST_FIXTURE_TEST_SUITE( test_SerializeJobPtr, MyFixture )
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::unit_test::Job )
 BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
 
-void TestSerializeJobPtr::testSerializeJobPtr()
+BOOST_AUTO_TEST_CASE(testSerializeJobPtr )
 {
 	std::cout<<"Testing the serialization of a normal job pointer ..."<<std::endl;
 	std::string filename = "testSerializeJobPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -160,7 +155,7 @@ void TestSerializeJobPtr::testSerializeJobPtr()
 	delete p2;
 }
 
-void TestSerializeJobPtr::testSerializeSdpaJobPtr()
+BOOST_AUTO_TEST_CASE( testSerializeSdpaJobPtr )
 {
 	std::cout<<"Testing the serialization of a shared job pointer ..."<<std::endl;
 	std::string filename = "testSerializeSdpaJobPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -192,7 +187,7 @@ void TestSerializeJobPtr::testSerializeSdpaJobPtr()
 	delete p2;
 }
 
-void TestSerializeJobPtr::testSerializeMapJobPtr()
+BOOST_AUTO_TEST_CASE( testSerializeMapJobPtr )
 {
 	std::cout<<"Testing the serialization of a map of normal job pointers ..."<<std::endl;
     std::string filename = "testSerializeMapJobPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -238,7 +233,7 @@ void TestSerializeJobPtr::testSerializeMapJobPtr()
 			delete iter->second;
 }
 
-void TestSerializeJobPtr::testSerializeSdpaJobSharedPtr()
+BOOST_AUTO_TEST_CASE(testSerializeSdpaJobSharedPtr )
 {
 	std::cout<<"Testing the serialization of a job shared pointer ..."<<std::endl;
 	std::string filename = "testSerializeSdpaJobSharedPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -268,7 +263,7 @@ void TestSerializeJobPtr::testSerializeSdpaJobSharedPtr()
 	std::cout<<"The restored values from the archive follow:\n\n"<<p2->print_info()<<endl;
 }
 
-void TestSerializeJobPtr::testSerializeMapSdpaJobSharedPtr()
+BOOST_AUTO_TEST_CASE( testSerializeMapSdpaJobSharedPtr )
 {
 	std::cout<<"Testing the serialization of a map of job shared pointers ..."<<std::endl;
 	std::string filename = "testSerializeMapSdpaJobSharedPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -329,7 +324,7 @@ void TestSerializeJobPtr::testSerializeMapSdpaJobSharedPtr()
 BOOST_SERIALIZATION_SHARED_PTR(sdpa::daemon::JobManager)
 
 
-void TestSerializeJobPtr::testSerializeJobManager()
+BOOST_AUTO_TEST_CASE( testSerializeJobManager )
 {
 	std::cout<<"serialize the JobManager (with boost::shared_ptr)"<<std::endl;
 	std::string filename = "testSerializeJobMan.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -396,7 +391,7 @@ void TestSerializeJobPtr::testSerializeJobManager()
 }
 
 
-void TestSerializeJobPtr::testSerializeJobFSMShPtr()
+BOOST_AUTO_TEST_CASE( testSerializeJobFSMShPtr )
 {
 	std::cout<<"Testing the serialization of a job state chart ..."<<std::endl;
 	std::string filename = "testSerializeJobFSMShPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -426,3 +421,4 @@ void TestSerializeJobPtr::testSerializeJobFSMShPtr()
 	std::cout<<"The restored values from the archive follow:\n\n"<<p2->print_info()<<endl;
 }
 
+BOOST_AUTO_TEST_SUITE_END()

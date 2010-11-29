@@ -41,7 +41,6 @@ set (test_srcs
   test_JobId.cpp
   test_LoadBalancer.cpp
   test_Scheduler.cpp
-  test_SerializeJobPtr.cpp
   test_SerializeSharedPtr.cpp
   test_UUID.cpp
   test_Worker.cpp
@@ -78,6 +77,19 @@ target_link_libraries(mini_test_suite uuid)
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
+
+
+add_executable(test_serialize_jobptr_suite test_SerializeJobPtr.cpp)
+
+target_link_libraries(test_serialize_jobptr_suite  seda sdpa-daemon
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})
+									 
+add_test( test_serialize_jobptr_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_jobptr_suite )
 
 set( test_serialize_agents_srcs
   	test_SerializeAgents.cpp

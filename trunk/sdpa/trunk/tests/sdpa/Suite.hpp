@@ -10,14 +10,9 @@
 //#include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 
-//#include <tests/sdpa/test_D2D2DDummyWfEng.hpp>
-//#include <tests/sdpa/test_D2D2DRealWfEng.hpp>
-//#include <tests/sdpa/test_Components.hpp>
-
 #include <tests/sdpa/test_LoadBalancer.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
 #include <tests/sdpa/test_SerializeSharedPtr.hpp>
-#include <tests/sdpa/test_SerializeJobPtr.hpp>
 
 namespace sdpa { namespace tests {
   class Suite : public CPPUNIT_NS::TestFixture {
@@ -36,14 +31,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       suiteOfTests->addTest( LoadBalancerTest::suite() );
 
-      //obsolete, see later
-      //suiteOfTests->addTest( D2D2DDummyWfEngTest::suite() );
-      //suiteOfTests->addTest( D2D2DRealWfEngTest:suite() );
-
       suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
-      suiteOfTests->addTest( TestSerializeJobPtr::suite() );
-     // suiteOfTests->addTest( WorkerSerializationTest::suite() );
-
 
       return suiteOfTests;
     }
