@@ -326,7 +326,7 @@ inline std::ostream & operator << ( std::ostream & s
       ; it != activity.input.end()
       ; ++it
       )
-    s << show_token_input_t (net, *it);
+    s << show_token_input_t (show_activity.first, *it);
 
   return s;
 }
