@@ -91,7 +91,7 @@ namespace statistics
     return (pos == m.end()) ? 0 : pos->second;
   }
 
-  static void reset_maps ()
+  static inline void reset_maps ()
   {
     get_time_map().clear();
     get_call_map().clear();
@@ -102,25 +102,25 @@ namespace statistics
     get_max_size_map().clear();
   }
 
-  static void dump_maps ()
+  static inline void dump_maps ()
   {
-    for ( time_map_t::const_iterator pos (get_time_map().begin())
-        ; pos != get_time_map().end()
-	; ++pos
-	)
-      {
-	LOG( INFO
-	   , "stat_map " 
-	   << std::setw(12) << std::setprecision(5) << pos->second 
-	   << " call " << std::setw(10) << value (get_call_map(), pos->first)
-	   << " eval " << std::setw(10) << value (get_eval_map(), pos->first)
-	   << " max_eval " << std::setw(10) << value (get_max_eval_map(), pos->first)
-	   << " max_size " << std::setw(10) << value (get_max_size_map(), pos->first)
-	   << " true " << std::setw(10) << value (get_true_map(), pos->first)
-	   << " false " << std::setw(10) << value (get_false_map(), pos->first)
-	   << " " << pos->first
-	   );
-      }
+//     for ( time_map_t::const_iterator pos (get_time_map().begin())
+//         ; pos != get_time_map().end()
+// 	; ++pos
+// 	)
+//       {
+// 	LOG( INFO
+// 	   , "stat_map "
+// 	   << std::setw(12) << std::setprecision(5) << pos->second
+// 	   << " call " << std::setw(10) << value (get_call_map(), pos->first)
+// 	   << " eval " << std::setw(10) << value (get_eval_map(), pos->first)
+// 	   << " max_eval " << std::setw(10) << value (get_max_eval_map(), pos->first)
+// 	   << " max_size " << std::setw(10) << value (get_max_size_map(), pos->first)
+// 	   << " true " << std::setw(10) << value (get_true_map(), pos->first)
+// 	   << " false " << std::setw(10) << value (get_false_map(), pos->first)
+// 	   << " " << pos->first
+// 	   );
+//       }
   }
 }
 
@@ -209,7 +209,7 @@ namespace condition
 	{
 	  statistics::get_time_map()[expression_] += statistics::current_time();
 	  statistics::get_true_map()[expression_] += 1;
-	  
+
 	  return true;
 	}
 
@@ -234,7 +234,7 @@ namespace condition
 	      statistics::get_time_map()[expression_] += statistics::current_time();
 
 	      statistics::get_true_map()[expression_] += 1;
-	      statistics::get_max_eval_map()[expression_] 
+	      statistics::get_max_eval_map()[expression_]
 		= std::max ( statistics::get_max_eval_map()[expression_]
 			   , eval
 			   );
@@ -246,7 +246,7 @@ namespace condition
       statistics::get_time_map()[expression_] += statistics::current_time();
 
       statistics::get_false_map()[expression_] += 1;
-      statistics::get_max_eval_map()[expression_] 
+      statistics::get_max_eval_map()[expression_]
 	= std::max ( statistics::get_max_eval_map()[expression_]
 		   , eval
 		   );
