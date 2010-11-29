@@ -325,14 +325,14 @@ void NRE<U>::activityCancelled( const id_type& id, const std::string& data )
 template <typename U>
 void NRE<U>::backup( const std::string& strArchiveName )
 {
-	/*try
+	try
 	{
           print();
           ptr_t ptrNRE_0(this);
           std::ofstream ofs(strArchiveName.c_str());
           boost::archive::text_oarchive oa(ofs);
           oa.register_type(static_cast<NRE<U>*>(NULL));
-          oa.register_type(static_cast<T*>(NULL));
+          //oa.register_type(static_cast<T*>(NULL));
           oa.register_type(static_cast<DaemonFSM*>(NULL));
           oa.register_type(static_cast<GenericDaemon*>(NULL));
           oa.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -345,19 +345,19 @@ void NRE<U>::backup( const std::string& strArchiveName )
 	catch(exception &e)
 	{
           cout <<"Exception occurred: "<< e.what() << endl;
-	}*/
+	}
 }
 
 template <typename U>
 void NRE<U>::recover( const std::string& strArchiveName )
 {
-	/*try
+	try
 	{
 		ptr_t ptrRestoredNRE_0(this);
 		std::ifstream ifs(strArchiveName.c_str());
 		boost::archive::text_iarchive ia(ifs);
 		ia.register_type(static_cast<NRE<U>*>(NULL));
-		ia.register_type(static_cast<T*>(NULL));
+		//ia.register_type(static_cast<T*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
 		ia.register_type(static_cast<GenericDaemon*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
@@ -373,7 +373,7 @@ void NRE<U>::recover( const std::string& strArchiveName )
 	catch(exception &e)
 	{
 		cout <<"Exception occurred: " << e.what() << endl;
-	}*/
+	}
 }
 
 template <typename U>

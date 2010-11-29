@@ -39,7 +39,7 @@
 
 using namespace std;
 using namespace sdpa::tests;
-using namespace sdpa::fsm::smc;
+//using namespace dsm;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( TestSerializeJobPtr );
 

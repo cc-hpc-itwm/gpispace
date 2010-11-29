@@ -358,7 +358,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
 
 void Orchestrator::backup( const std::string& strArchiveName )
 {
-	/*try
+	try
 	{
 		Orchestrator* ptrOrch(this);
 		std::ofstream ofs( strArchiveName.c_str() );
@@ -378,13 +378,13 @@ void Orchestrator::backup( const std::string& strArchiveName )
 	{
 		cout <<"Exception occurred: "<< e.what() << endl;
 		return ;
-	}*/
+	}
 }
 
 
 void Orchestrator::recover( const std::string& strArchiveName )
 {
-	/*try
+	try
 	{
 		Orchestrator* pRestoredOrch(this);
 		std::ifstream ifs( strArchiveName.c_str() );
@@ -405,5 +405,5 @@ void Orchestrator::recover( const std::string& strArchiveName )
 	{
 		cout <<"Exception occurred: " << e.what() << endl;
 		return;
-	}*/
+	}
 }

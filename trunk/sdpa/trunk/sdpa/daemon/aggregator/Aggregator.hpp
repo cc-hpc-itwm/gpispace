@@ -67,7 +67,6 @@ namespace sdpa {
 				ar & boost::serialization::base_object<DaemonFSM>(*this);
 				ar & url_; //boost::serialization::make_nvp("url_", url_);
 				ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
-				//ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
 			}
 
 			virtual void backup( const std::string& );

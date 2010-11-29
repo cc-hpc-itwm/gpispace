@@ -7,7 +7,7 @@ set (srcs
   )
 
 ADD_LIBRARY(sdpa-daemonFSM_BSC ${srcs})
-target_link_libraries(sdpa-daemonFSM_BSC sdpa-events sdpa_daemon)
+#target_link_libraries(sdpa-daemonFSM_BSC sdpa-events sdpa_daemon)
 
 install(FILES ${hdrs}
   DESTINATION include/sdpa/daemonFSM/BSC
