@@ -12,7 +12,6 @@
 
 #include <tests/sdpa/test_LoadBalancer.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
-#include <tests/sdpa/test_SerializeSharedPtr.hpp>
 
 namespace sdpa { namespace tests {
   class Suite : public CPPUNIT_NS::TestFixture {
@@ -30,8 +29,6 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       suiteOfTests->addTest( LoadBalancerTest::suite() );
-
-      suiteOfTests->addTest( TestSerializeSharedPtr::suite() );
 
       return suiteOfTests;
     }

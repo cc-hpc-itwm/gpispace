@@ -78,6 +78,18 @@ target_link_libraries(mini_test_suite uuid)
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
+add_executable(test_serialize_sharedptr_suite test_SerializeSharedPtr.cpp)
+
+target_link_libraries(test_serialize_sharedptr_suite  seda sdpa-daemon
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})
+									 
+add_test( test_serialize_sharedptr_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_sharedptr_suite )
+
 
 add_executable(test_serialize_jobptr_suite test_SerializeJobPtr.cpp)
 

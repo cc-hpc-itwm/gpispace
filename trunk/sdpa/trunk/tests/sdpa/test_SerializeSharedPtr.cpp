@@ -13,7 +13,9 @@
  *        Company:  Fraunhofer ITWM
  *
  * ===================================================================================== */
-#include "test_SerializeSharedPtr.hpp"
+#define BOOST_TEST_MODULE TestSerializeSharedPtr
+#include <boost/test/unit_test.hpp>
+
 #include <iostream>
 #include <cstddef>
 #include <fstream>
@@ -33,11 +35,10 @@
 #include "boost/serialization/map.hpp"
 
 #include <boost/serialization/export.hpp>
+#include "sdpa/memory.hpp"
+#include "sdpa/logging.hpp"
 
 using namespace std;
-using namespace sdpa::tests;
-
-CPPUNIT_TEST_SUITE_REGISTRATION( TestSerializeSharedPtr );
 
 class Test
 {
@@ -93,24 +94,17 @@ BOOST_SERIALIZATION_SHARED_PTR(DERIVED)
 
 int Test::count = 0;
 
-TestSerializeSharedPtr::TestSerializeSharedPtr() : SDPA_INIT_LOGGER("sdpa.tests.TestSerializeSharedPtr")
+struct MyFixture
 {
-}
+	MyFixture() : SDPA_INIT_LOGGER("sdpa.tests.TestSerializeSharedPtr") {}
+	~MyFixture(){}
 
-TestSerializeSharedPtr::~TestSerializeSharedPtr()
-{}
+	SDPA_DECLARE_LOGGER();
+};
 
+BOOST_FIXTURE_TEST_SUITE( test_SerializeSharedPtr, MyFixture )
 
-void TestSerializeSharedPtr::setUp() { //initialize and start the finite state machine
-	SDPA_LOG_DEBUG("TestSerializeSharedPtr::setUp");
-}
-
-void TestSerializeSharedPtr::tearDown()
-{
-	SDPA_LOG_DEBUG("TestSerializeSharedPtr::tearDown");
-}
-
-void TestSerializeSharedPtr::testSerializeBoostShPtrToTxt()
+BOOST_AUTO_TEST_CASE(testSerializeBoostShPtrToTxt)
 {
 	/*std::string filename(boost::archive::tmpdir());
 	filename += "testArchShPtr.txt";*/
@@ -141,7 +135,7 @@ void TestSerializeSharedPtr::testSerializeBoostShPtrToTxt()
 }
 
 
-void TestSerializeSharedPtr::testSerializeBoostShPtrToXml()
+BOOST_AUTO_TEST_CASE(testSerializeBoostShPtrToXml)
 {
 	/*std::string filename(boost::archive::tmpdir());
 	filename += "testArchShPtr.txt";*/
@@ -182,7 +176,7 @@ void infoPtrs(boost::shared_ptr<Test> &ptrSh1, boost::shared_ptr<Test> &ptrSh2)
     std::cout << "unique element count = " << Test::count << std::endl;
 }
 
-void TestSerializeSharedPtr::testSerializeBoostShPtrDerived()
+BOOST_AUTO_TEST_CASE(testSerializeBoostShPtrDerived)
 {
 	std::cout<<"Testing the serialization of a boost::shared_ptr to a derived class into a file ..."<<std::endl;
     std::string filename = "testSerializeBoostShPtrDerived.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -252,7 +246,7 @@ void TestSerializeSharedPtr::testSerializeBoostShPtrDerived()
     infoPtrs(ptrSh1, ptrSh2);
 }
 
-void TestSerializeSharedPtr::testSerializeNormalPtr()
+BOOST_AUTO_TEST_CASE(testSerializeNormalPtr )
 {
 	std::cout<<"Testing serialization of an object pointed by a normal pointer into a text file ..."<<std::endl;
     std::string filename = "testSerializeNormalPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -367,7 +361,7 @@ void TestSerializeSharedPtr::testSerializeNormalPtr()
 	delete p1; delete p2;
 }
 
-void TestSerializeSharedPtr::testSerializeMapPtr()
+BOOST_AUTO_TEST_CASE(testSerializeMapPtr)
 {
 	std::cout<<"Test map of pointers serialization ..."<<std::endl;
     std::string filename = "testSerializeMapPtr.txt"; // = boost::archive::tmpdir());filename += "/testfile";
@@ -412,3 +406,4 @@ void TestSerializeSharedPtr::testSerializeMapPtr()
 			delete iter->second;
 }
 
+BOOST_AUTO_TEST_SUITE_END()
