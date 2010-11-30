@@ -10,7 +10,6 @@
 //#include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 
-#include <tests/sdpa/test_LoadBalancer.hpp>
 #include <tests/sdpa/test_Scheduler.hpp>
 
 namespace sdpa { namespace tests {
@@ -28,7 +27,7 @@ namespace sdpa { namespace tests {
 
       suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
-      suiteOfTests->addTest( LoadBalancerTest::suite() );
+      //suiteOfTests->addTest( LoadBalancerTest::suite() );
 
       return suiteOfTests;
     }

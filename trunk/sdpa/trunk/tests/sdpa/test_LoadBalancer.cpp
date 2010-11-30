@@ -15,7 +15,9 @@
  *
  * =====================================================================================
  */
-#include "test_LoadBalancer.hpp"
+#define BOOST_TEST_MODULE TestLoadBalancer
+#include <boost/test/unit_test.hpp>
+
 #include <iostream>
 #include <string>
 #include <list>
@@ -34,29 +36,17 @@ using namespace sdpa::fsm::smc;
 
 const int NWORKERS = 10;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( LoadBalancerTest );
 
-LoadBalancerTest::LoadBalancerTest() : SDPA_INIT_LOGGER("sdpa.tests.LoadBalancerTest")
+struct MyFixture
 {
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}
+	~MyFixture(){}
+	 SDPA_DECLARE_LOGGER();
+};
 
-}
+BOOST_FIXTURE_TEST_SUITE( test_LoadBalancer, MyFixture )
 
-LoadBalancerTest::~LoadBalancerTest()
-{
-}
-
-void LoadBalancerTest::setUp()
-{
-	SDPA_LOG_DEBUG("setUP");
-	//initialize and start the finite state machine
-}
-
-void LoadBalancerTest::tearDown()
-{
-	SDPA_LOG_DEBUG("tearDown");
-}
-
-void LoadBalancerTest::testLoadBalancer()
+BOOST_AUTO_TEST_CASE(testLoadBalancer)
 {
 	WorkerManager wm;
 	ostringstream oss;
@@ -86,7 +76,7 @@ void LoadBalancerTest::testLoadBalancer()
 		}
 		catch(const NoWorkerFoundException& ex) {
 			SDPA_LOG_ERROR("No worker found!");
-			CPPUNIT_ASSERT (false);
+			BOOST_CHECK(false);
 			break;
 		}
 	}
@@ -100,7 +90,7 @@ void LoadBalancerTest::testLoadBalancer()
 		}
 		catch(const NoWorkerFoundException& ex) {
 			SDPA_LOG_ERROR("No worker found!");
-			CPPUNIT_ASSERT (false);
+			BOOST_CHECK(false);
 			break;
 		}
 	}
@@ -117,8 +107,10 @@ void LoadBalancerTest::testLoadBalancer()
 		}
 		catch(const NoWorkerFoundException& ex) {
 			SDPA_LOG_ERROR("No worker found!");
-			CPPUNIT_ASSERT (false);
+			BOOST_CHECK(false);
 			break;
 		}
 	}
 }
+
+BOOST_AUTO_TEST_SUITE_END()
