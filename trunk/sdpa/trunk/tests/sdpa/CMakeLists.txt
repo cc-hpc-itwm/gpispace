@@ -37,13 +37,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 set (test_srcs
   SchedulerTestImpl.cpp
   test_Config.cpp
-  test_JobFSM_SMC.cpp
-  test_JobId.cpp
-  test_LoadBalancer.cpp
-  test_Scheduler.cpp
-  test_SerializeSharedPtr.cpp
   test_UUID.cpp
-  test_Worker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 )

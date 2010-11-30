@@ -39,7 +39,7 @@ const int NJOBS    = 20;
 
 struct MyFixture
 {
-	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testScheduler"){}
 	~MyFixture(){}
 	 SDPA_DECLARE_LOGGER();
 };

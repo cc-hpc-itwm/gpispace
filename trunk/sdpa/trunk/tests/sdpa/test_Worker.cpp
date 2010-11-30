@@ -7,15 +7,39 @@
 #include <sdpa/JobId.hpp>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+#include "sdpa/logging.hpp"
 
 using namespace sdpa::daemon;
 using namespace sdpa;
 
 struct MyFixture
 {
-	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testWorker"){}
 	~MyFixture(){}
 	 SDPA_DECLARE_LOGGER();
+
+	 typedef SynchronizedQueue<std::list<int> > queue_type;
+
+	 struct thread_data
+	 {
+	   thread_data(queue_type *a_q) : q(a_q), val(0) {}
+	   void operator()() {
+	     try
+	     {
+	       for (;;)
+	       {
+	         val += q->pop_and_wait();
+	         std::cout<<"-";
+	       }
+	     }
+	     catch (const boost::thread_interrupted &irq)
+	     {
+	    	 std::cout<<"x";
+	     }
+	   }
+	   queue_type *q;
+	   int val;
+	 };
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Worker, MyFixture )
@@ -42,11 +66,12 @@ BOOST_AUTO_TEST_CASE(testGetNextJob) {
 
   job_id_t jobIdNext = worker.get_next_job(sdpa::job_id_t::invalid_job_id());
   BOOST_CHECK(worker.pending().empty()); // pending is empty now
-  BOOST_CHECK(! worker.submitted().empty()); // submitted has one job
-  BOOST_CHECK_EQUAL(jobIdNext, jobId);
+  BOOST_CHECK(!worker.submitted().empty()); // submitted has one job
+  BOOST_CHECK(jobIdNext == jobId);
 }
 
-BOOST_AUTO_TEST_CASE(testAcknowledge) {
+BOOST_AUTO_TEST_CASE(testAcknowledge)
+{
   Worker worker("w0", 0, "localhost");
 
   job_id_t jobId("1");
@@ -62,62 +87,47 @@ BOOST_AUTO_TEST_CASE(testAcknowledge) {
   BOOST_CHECK(ackResult);
   BOOST_CHECK(worker.pending().empty()); // pending still empty
   BOOST_CHECK(worker.submitted().empty()); // submitted is now empty
-  BOOST_CHECK(! worker.acknowledged().empty()); // added to acknowledged
+  BOOST_CHECK(!worker.acknowledged().empty()); // added to acknowledged
 }
-
-
-typedef SynchronizedQueue<std::list<int> > queue_type;
-struct thread_data {
-  thread_data(queue_type *a_q) : q(a_q), val(0) {}
-  void operator()() {
-    try
-    {
-      for (;;)
-      {
-        val += q->pop_and_wait();
-        std::cout << "-";
-      }
-    }
-    catch (const boost::thread_interrupted &irq)
-    {
-      std::cout << "x";
-    }
-  }
-  queue_type *q;
-  int val;
-};
   
-BOOST_AUTO_TEST_CASE(testQueue) {
-  std::cout << "testing synchronized queue..." << std::endl;
-  queue_type test_queue;
-  thread_data thrd_data(&test_queue);
-  boost::thread thrd(boost::ref(thrd_data));
-  std::cout << "pushing..." << std::endl;
-  for (std::size_t cnt(0); cnt < 10; ++cnt)
-  {
-    std::cout << "+";
-    test_queue.push(42);
-    std::cout.flush();
-    if (cnt % 2 == 0) sleep(1);
+BOOST_AUTO_TEST_CASE(testQueue)
+{
+	SDPA_LOG_INFO("testing synchronized queue...");
+	queue_type test_queue;
+	thread_data thrd_data(&test_queue);
+	boost::thread thrd(boost::ref(thrd_data));
+
+	SDPA_LOG_INFO("pushing...");
+	for (std::size_t cnt(0); cnt < 10; ++cnt)
+	{
+		SDPA_LOG_INFO("+");
+		test_queue.push(42);
+
+		if (cnt % 2 == 0)
+			sleep(1);
   }
+
   thrd.interrupt();
   thrd.join();
-  std::cout << std::endl;
-  std::cout << thrd_data.val << std::endl;
+
+  SDPA_LOG_INFO(thrd_data.val);
+
   BOOST_CHECK(thrd_data.val >= 42);
 
-  std::cout << "removing queue entries...";
+  SDPA_LOG_INFO("removing queue entries...");
+
   while (! test_queue.empty()) test_queue.pop();
-  std::cout << "done." << std::endl;
+  SDPA_LOG_INFO("done.");
 
   try
   {
-    std::cout << "popping from empty queue";
-    test_queue.pop_and_wait(boost::posix_time::milliseconds(10));
-    std::cout << "FAILED" << std::endl;
-  } catch (const QueueEmpty &)
+	  SDPA_LOG_INFO("popping from empty queue");
+	  test_queue.pop_and_wait(boost::posix_time::milliseconds(10));
+	  SDPA_LOG_INFO("FAILED");
+  }
+  catch (const QueueEmpty &)
   {
-    std::cout << "OK" << std::endl;
+	  SDPA_LOG_INFO("OK");
   }
 }
 
