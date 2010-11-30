@@ -1,0 +1,8 @@
+<structs>
+
+  <struct name="volume_in_reduction">
+    <field name="volume" type="volume_with_store"/>
+    <field name="left" type="long"/>
+  </struct>
+
+</structs>

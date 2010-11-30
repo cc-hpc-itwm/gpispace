@@ -1,0 +1,17 @@
+<structs>
+
+  <struct name="volume">
+    <field name="id" type="long"/>
+
+    <struct name="offset">
+      <field name="id" type="long"/>
+    </struct>
+  </struct>
+
+  <include-structs href="volume/state.xml"/>
+  <include-structs href="volume/with_store.xml"/>
+  <include-structs href="volume/in_progress.xml"/>
+  <include-structs href="volume/in_reduction.xml"/>
+  <include-structs href="volume/pair_to_reduce.xml"/>
+
+</structs>
