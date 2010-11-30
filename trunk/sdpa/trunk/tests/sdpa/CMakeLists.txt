@@ -64,19 +64,20 @@ target_link_libraries(sdpa-test
 #     ${MMGR_LIBRARY}
 	 ${Boost_LIBRARIES})
 
-add_executable(sdpa_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/sdpa_test_suite.cpp)
-target_link_libraries(sdpa_test_suite sdpa-test)
-target_link_libraries(sdpa_test_suite dl)
-target_link_libraries(sdpa_test_suite uuid)
-
-add_executable(mini_test_suite ${CMAKE_CURRENT_SOURCE_DIR}/mini_test_suite.cpp)
-target_link_libraries(mini_test_suite sdpa-test)
-target_link_libraries(mini_test_suite dl)
-target_link_libraries(mini_test_suite uuid)
 
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
-add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
+
+
+add_executable(test_jobid_suite test_JobId.cpp)
+target_link_libraries(test_jobid_suite  seda sdpa-daemon
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})					 
+add_test( test_jobid_suite ${CMAKE_CURRENT_BINARY_DIR}/test_jobid_suite )
 
 add_executable(test_scheduler_suite test_Scheduler.cpp)
 target_link_libraries(test_scheduler_suite  seda sdpa-daemon

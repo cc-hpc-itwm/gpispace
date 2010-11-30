@@ -1,57 +1,69 @@
+
+#define BOOST_TEST_MODULE TestJobId
+#include <boost/test/unit_test.hpp>
+
 #include <iostream>
 #include <sstream>
 
-#include "test_JobId.hpp"
 #include <sdpa/util/util.hpp>
 #include <sdpa/JobId.hpp>
+#include "sdpa/memory.hpp"
+#include "sdpa/logging.hpp"
+#include <assert.h>
 
 using namespace sdpa;
-using namespace sdpa::tests;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( sdpa::tests::JobIdTest );
+struct MyFixture
+{
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testJobId"){}
+	~MyFixture(){}
+	 SDPA_DECLARE_LOGGER();
+};
 
-void JobIdTest::setUp() {
-}
+BOOST_FIXTURE_TEST_SUITE( test_JobId, MyFixture )
 
-void JobIdTest::tearDown() {
-}
-
-void JobIdTest::testDefaultConstructor() {
+BOOST_AUTO_TEST_CASE(testDefaultConstructor)
+{
   JobId jid1;
   JobId jid2;
   JobId jid3;
 
-  CPPUNIT_ASSERT(jid1 != jid2);
-  CPPUNIT_ASSERT(jid1 != jid3);
-  CPPUNIT_ASSERT(jid2 != jid3);
+  BOOST_CHECK(jid1 != jid2);
+  BOOST_CHECK(jid1 != jid3);
+  BOOST_CHECK(jid2 != jid3);
 }
 
-void JobIdTest::testAutoConversionFromString() {
+BOOST_AUTO_TEST_CASE(testAutoConversionFromString)
+{
   const std::string EXPECTED("010203040506070809101112131415");
   JobId jid1 = EXPECTED;
-  CPPUNIT_ASSERT_EQUAL(EXPECTED, jid1.str());
+  BOOST_CHECK(EXPECTED == jid1.str());
 
   JobId jid2 = "foo";
-  CPPUNIT_ASSERT_EQUAL(std::string("foo"), jid2.str());
+  BOOST_CHECK(std::string("foo") == jid2.str());
 
   JobId jid3 = std::string("bar");
-  CPPUNIT_ASSERT_EQUAL(std::string("bar"), jid3.str());
+  BOOST_CHECK(std::string("bar") == jid3.str());
 }
 
-void JobIdTest::testAutoConversionToString() {
+BOOST_AUTO_TEST_CASE(testAutoConversionToString)
+{
   const std::string EXPECTED("010203040506070809101112131415");
   JobId jid(EXPECTED);
   const std::string actual(jid);
-  CPPUNIT_ASSERT_EQUAL(EXPECTED, actual);
+  BOOST_CHECK(EXPECTED == actual);
 
   const std::string jidString = jid;
-  CPPUNIT_ASSERT_EQUAL(jidString, jid.str());
+  BOOST_CHECK(jidString == jid.str());
 }
 
-void JobIdTest::testStream() {
+BOOST_AUTO_TEST_CASE(testStream)
+{
   JobId jid;
   std::ostringstream sstr;
   sstr << jid;
 
-  CPPUNIT_ASSERT_EQUAL(jid.str(), sstr.str());
+  BOOST_CHECK(jid.str() == sstr.str());
 }
+
+BOOST_AUTO_TEST_SUITE_END()
