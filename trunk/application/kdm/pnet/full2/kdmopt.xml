@@ -122,11 +122,12 @@
       <include-function href="load/bunch.xml"/>
       <connect-read port="config" place="config"/>
       <connect-in port="bunch_with_store" place="bunch_with_store"/>
-      <connect-out port="bunch_loaded" place="pre_bunch_loaded"/>
+      <connect-out port="bunch_loaded" place="bunch_loaded_pre_assign"/>
     </transition>
 
     <place name="bunch_loaded" type="bunch_loaded"/>
-    <place name="pre_bunch_loaded" type="bunch_loaded"/>
+    <place name="bunch_loaded_pre_assign" type="bunch_loaded"/>
+    <place name="bunch_loaded_pre_unassign" type="bunch_loaded"/>
 
     <transition name="take_bunch_loaded_for_assign">
       <defun>
@@ -136,11 +137,23 @@
         <expression>
         </expression>
       </defun>
-      <connect-in port="bunch" place="pre_bunch_loaded"/>
+      <connect-in port="bunch" place="bunch_loaded_pre_assign"/>
       <connect-out port="bunch" place="pre_assign_bunch_loaded"/>
       <connect-in port="credit" place="credit_assign"/>
     </transition>
 
+    <transition name="take_bunch_loaded_for_unassign">
+      <defun>
+        <in name="bunch" type="bunch_loaded"/>
+        <out name="bunch" type="bunch_loaded"/>
+        <in name="credit" type="control"/>
+        <expression>
+        </expression>
+      </defun>
+      <connect-in port="bunch" place="bunch_loaded_pre_unassign"/>
+      <connect-out port="bunch" place="pre_unassign_bunch_loaded"/>
+      <connect-in port="credit" place="credit_unassign"/>
+    </transition>
 
     <!-- ****************************************************************** -->
 
@@ -148,11 +161,11 @@
       <include-function href="init/volume.xml"/>
       <connect-read port="config" place="config"/>
       <connect-in port="volume_with_store" place="volume_with_store"/>
-      <connect-out port="volume_in_progress" place="pre_volume_in_progress"/>
+      <connect-out port="volume_in_progress" place="volume_in_progress_pre_assign"/>
     </transition>
 
     <place name="volume_in_progress" type="volume_in_progress"/>
-    <place name="pre_volume_in_progress" type="volume_in_progress"/>
+    <place name="volume_in_progress_pre_assign" type="volume_in_progress"/>
 
     <transition name="take_volume_in_progress_for_assign">
       <defun>
@@ -162,7 +175,7 @@
         <expression>
         </expression>
       </defun>
-      <connect-in port="volume" place="pre_volume_in_progress"/>
+      <connect-in port="volume" place="volume_in_progress_pre_assign"/>
       <connect-out port="volume" place="pre_assign_volume_in_progress"/>
       <connect-in port="credit" place="credit_assign"/>
     </transition>
@@ -208,7 +221,7 @@
       </defun>
 
       <connect-in port="bunch" place="pre_assign_bunch_loaded"/>
-      <connect-out port="bunch" place="pre_bunch_loaded"/>
+      <connect-out port="bunch" place="bunch_loaded_pre_assign"/>
 
       <connect-in port="volume" place="volume_in_progress"/>
       <connect-out port="volume" place="volume_to_process"/>
@@ -248,7 +261,7 @@
       </defun>
 
       <connect-in port="bunch" place="bunch_loaded"/>
-      <connect-out port="bunch" place="pre_bunch_loaded"/>
+      <connect-out port="bunch" place="bunch_loaded_pre_assign"/>
 
       <connect-in port="volume" place="pre_assign_volume_in_progress"/>
       <connect-out port="volume" place="volume_to_process"/>
@@ -323,6 +336,20 @@
     </specialize>
 
     <place name="update_bunch_state" type="volume_in_progress"/>
+    <place name="update_bunch_state_pre_unassign" type="volume_in_progress"/>
+
+    <transition name="take_update_bunch_state_for_unassign">
+      <defun>
+        <in name="volume" type="volume_in_progress"/>
+        <out name="volume" type="volume_in_progress"/>
+        <in name="credit" type="control"/>
+        <expression>
+        </expression>
+      </defun>
+      <connect-in port="volume" place="update_bunch_state_pre_unassign"/>
+      <connect-out port="volume" place="pre_unassign_update_bunch_state"/>
+      <connect-in port="credit" place="credit_unassign"/>
+    </transition>
 
     <!-- ****************************************************************** -->
 
@@ -348,17 +375,56 @@
 
     <!-- ****************************************************************** -->
 
-    <transition name="unassign">
+    <place name="credit_unassign" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <place name="pre_unassign_bunch_loaded" type="bunch_loaded"/>
+    <place name="pre_unassign_update_bunch_state" type="volume_in_progress"/>
+
+    <transition name="unassign_bunch_loaded" priority="1">
       <defun>
         <in name="bunch" type="bunch_loaded"/>
         <out name="bunch" type="bunch_loaded"/>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
+        <out name="credit_unassign" type="control"/>
         <expression>
           ${bunch.wait} := ${bunch.wait} - 1;
 
           ${volume.assigned.bunch.id} := -1L;
           ${volume.assigned.store.id} := -1L;
+
+          ${credit_unassign} := []
+        </expression>
+        <condition>
+          ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
+        </condition>
+        <condition>
+          ${bunch.bunch.bunch.id} :eq: ${volume.assigned.bunch.id}
+        </condition>
+      </defun>
+      <connect-in port="bunch" place="pre_unassign_bunch_loaded"/>
+      <connect-out port="bunch" place="bunch_loaded_pre_assign"/>
+      <connect-in port="volume" place="update_bunch_state"/>
+      <connect-out port="volume" place="volume_in_progress_pre_assign"/>
+      <connect-out port="credit_unassign" place="credit_unassign"/>
+    </transition>
+
+    <transition name="unassign_update_bunch_state" priority="1">
+      <defun>
+        <in name="bunch" type="bunch_loaded"/>
+        <out name="bunch" type="bunch_loaded"/>
+        <in name="volume" type="volume_in_progress"/>
+        <out name="volume" type="volume_in_progress"/>
+        <out name="credit_unassign" type="control"/>
+        <expression>
+          ${bunch.wait} := ${bunch.wait} - 1;
+
+          ${volume.assigned.bunch.id} := -1L;
+          ${volume.assigned.store.id} := -1L;
+
+          ${credit_unassign} := []
         </expression>
         <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
@@ -368,9 +434,38 @@
         </condition>
       </defun>
       <connect-in port="bunch" place="bunch_loaded"/>
-      <connect-out port="bunch" place="pre_bunch_loaded"/>
-      <connect-in port="volume" place="update_bunch_state"/>
-      <connect-out port="volume" place="pre_volume_in_progress"/>
+      <connect-out port="bunch" place="bunch_loaded_pre_assign"/>
+      <connect-in port="volume" place="pre_unassign_update_bunch_state"/>
+      <connect-out port="volume" place="volume_in_progress_pre_assign"/>
+      <connect-out port="credit_unassign" place="credit_unassign"/>
+    </transition>
+
+    <transition name="no_unassign_bunch_loaded">
+      <defun>
+        <in name="bunch" type="bunch_loaded"/>
+        <out name="bunch" type="bunch_loaded"/>
+        <out name="credit_unassign" type="control"/>
+        <expression>
+          ${credit_unassign} := []
+        </expression>
+      </defun>
+      <connect-in port="bunch" place="pre_unassign_bunch_loaded"/>
+      <connect-out port="bunch" place="bunch_loaded"/>
+      <connect-out port="credit_unassign" place="credit_unassign"/>
+    </transition>
+
+    <transition name="no_unassign_update_bunch_state">
+      <defun>
+        <in name="volume" type="volume_in_progress"/>
+        <out name="volume" type="volume_in_progress"/>
+        <out name="credit_unassign" type="control"/>
+        <expression>
+          ${credit_unassign} := []
+        </expression>
+      </defun>
+      <connect-in port="volume" place="pre_unassign_update_bunch_state"/>
+      <connect-out port="volume" place="update_bunch_state"/>
+      <connect-out port="credit_unassign" place="credit_unassign"/>
     </transition>
 
     <!-- ****************************************************************** -->
@@ -402,7 +497,7 @@
         </condition>
       </defun>
       <connect-in port="bunch" place="check_bunch_done"/>
-      <connect-out port="bunch" place="bunch_loaded"/>
+      <connect-out port="bunch" place="bunch_loaded_pre_unassign"/>
     </transition>
 
     <!-- ****************************************************************** -->
@@ -422,7 +517,7 @@
       <connect-in port="state" place="check_volume_done"/>
       <connect-out port="state" place="volume_done"/>
       <connect-in port="processed" place="wait_update_bunch_state"/>
-      <connect-out port="processed" place="update_bunch_state"/>
+      <connect-out port="processed" place="update_bunch_state_pre_unassign"/>
     </transition>
 
     <transition name="not_volume_done">
@@ -440,7 +535,7 @@
       <connect-in port="state" place="check_volume_done"/>
       <connect-out port="state" place="volume_state"/>
       <connect-in port="processed" place="wait_update_bunch_state"/>
-      <connect-out port="processed" place="update_bunch_state"/>
+      <connect-out port="processed" place="update_bunch_state_pre_unassign"/>
     </transition>
 
     <place name="volume_done" type="volume_state"/>
