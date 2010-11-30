@@ -20,7 +20,6 @@
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
-#include <tests/sdpa/test_Scheduler.hpp>
 
 namespace sdpa {
 namespace daemon {
@@ -70,8 +69,6 @@ namespace daemon {
 		virtual void recover( const std::string& strArchiveName );
 
 		friend class boost::serialization::access;
-		//friend class sdpa::tests::WorkerSerializationTest;
-		friend class sdpa::tests::SchedulerTest;
 
 	  private:
 		Scheduler* create_scheduler()
