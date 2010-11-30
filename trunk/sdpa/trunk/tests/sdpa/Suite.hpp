@@ -8,7 +8,7 @@
 //#include <tests/sdpa/test_JobId.hpp>
 #include <tests/sdpa/test_Config.hpp>
 //#include <tests/sdpa/test_FSMPerformance.hpp>
-#include <tests/sdpa/test_JobFSM_SMC.hpp>
+//#include <tests/sdpa/test_JobFSM_SMC.hpp>
 
 //#include <tests/sdpa/test_Scheduler.hpp>
 
@@ -23,7 +23,7 @@ namespace sdpa { namespace tests {
 //      suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
  //     suiteOfTests->addTest( JobIdTest::suite() );
-      suiteOfTests->addTest( ConfigTest::suite() );
+ //     suiteOfTests->addTest( ConfigTest::suite() );
 
       //suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
