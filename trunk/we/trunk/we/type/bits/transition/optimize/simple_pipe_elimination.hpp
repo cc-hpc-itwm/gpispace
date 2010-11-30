@@ -123,6 +123,16 @@ namespace we { namespace type {
             const petri_net::pid_t pid_A (in->second);
             const petri_net::pid_t pid_B (out->second);
 
+            if (net.get_maybe_capacity (pid_A).isJust())
+              {
+                return fhg::util::Nothing<pid_pair_vec_type>();
+              }
+
+            if (net.get_maybe_capacity (pid_B).isJust())
+              {
+                return fhg::util::Nothing<pid_pair_vec_type>();
+              }
+
             const eid_t eid (net.get_eid_in (tid, pid_A));
 
             if (petri_net::is_pt_read (net.get_edge_info (eid).type))
