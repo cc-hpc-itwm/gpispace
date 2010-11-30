@@ -266,9 +266,24 @@
         </expression>
       </defun>
       <connect-in port="bunch" place="pre_assign_bunch_loaded"/>
-      <connect-out port="bunch" place="bunch_loaded"/>
+      <connect-out port="bunch" place="wait_check_bunch_done"/>
       <connect-out port="credit_assign" place="credit_assign"/>
     </transition>
+
+    <place name="wait_check_bunch_done" type="bunch_loaded"/>
+
+    <transition name="start_check_bunch_done">
+      <defun>
+        <in name="bunch" type="bunch_loaded"/>
+        <out name="bunch" type="bunch_loaded"/>
+        <expression>
+        </expression>
+      </defun>
+      <connect-in port="bunch" place="wait_check_bunch_done"/>
+      <connect-out port="bunch" place="check_bunch_done"/>
+    </transition>
+
+    <place name="check_bunch_done" type="bunch_loaded" capacity="1"/>
 
     <transition name="no_assign_volume_in_progress">
       <defun>
@@ -371,8 +386,23 @@
           ${bunch.wait} :le: 0
         </condition>
       </defun>
-      <connect-in port="bunch" place="bunch_loaded"/>
+      <connect-in port="bunch" place="check_bunch_done"/>
       <connect-out port="store" place="store_bunch"/>
+    </transition>
+
+    <transition name="not_bunch_done">
+      <defun>
+        <in name="bunch" type="bunch_loaded"/>
+        <out name="bunch" type="bunch_loaded"/>
+        <expression>
+          ${store} := ${bunch.bunch.store}
+        </expression>
+        <condition>
+          ${bunch.wait} :gt: 0
+        </condition>
+      </defun>
+      <connect-in port="bunch" place="check_bunch_done"/>
+      <connect-out port="bunch" place="bunch_loaded"/>
     </transition>
 
     <!-- ****************************************************************** -->
