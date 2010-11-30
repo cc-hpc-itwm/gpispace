@@ -15,7 +15,9 @@
  *
  * =====================================================================================
  */
-#include "test_Scheduler.hpp"
+#define BOOST_TEST_MODULE TestLoadBalancer
+#include <boost/test/unit_test.hpp>
+
 #include <iostream>
 #include <string>
 #include <list>
@@ -31,34 +33,20 @@
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
-//using namespace sdpa::fsm::smc;
 
 const int NWORKERS = 5;
 const int NJOBS    = 20;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( SchedulerTest );
-
-SchedulerTest::SchedulerTest() : SDPA_INIT_LOGGER("sdpa.tests.SchedulerTest")
+struct MyFixture
 {
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}
+	~MyFixture(){}
+	 SDPA_DECLARE_LOGGER();
+};
 
-}
+BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
-SchedulerTest::~SchedulerTest()
-{
-}
-
-void SchedulerTest::setUp()
-{
-	SDPA_LOG_DEBUG("setUP");
-	//initialize and start the finite state machine
-}
-
-void SchedulerTest::tearDown()
-{
-	SDPA_LOG_DEBUG("tearDown");
-}
-
-void SchedulerTest::testDelWorker( )
+BOOST_AUTO_TEST_CASE(testDelWorker)
 {
 	// first re-schedule the work:
 	// inspect all queues and re-schedule each job
@@ -83,7 +71,7 @@ void SchedulerTest::testDelWorker( )
 		Job::ptr_t pJob( new JobFSM( job_id, ""));
 		pJob->set_local(false);
 
-		ptrOrch->ptr_job_man_->addJob(job_id, pJob);
+		ptrOrch->jobManager()->addJob(job_id, pJob);
 
 		//add later preferences to the jobs
 		ptr_scheduler_->schedule_remote(job_id);
@@ -127,7 +115,7 @@ void SchedulerTest::testDelWorker( )
 	SDPA_LOG_DEBUG("Worker deletion test finished!");
 }
 
-void SchedulerTest::testSchedulerWithNoPrefs()
+BOOST_AUTO_TEST_CASE(testSchedulerWithNoPrefs)
 {
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
@@ -150,7 +138,7 @@ void SchedulerTest::testSchedulerWithNoPrefs()
 		 Job::ptr_t pJob( new JobFSM( job_id, ""));
 		 pJob->set_local(false);
 
-		 ptrOrch->ptr_job_man_->addJob(job_id, pJob);
+		 ptrOrch->jobManager()->addJob(job_id, pJob);
 
 		 // add later preferences to the jobs
 		 ptr_scheduler_->schedule_remote(job_id);
@@ -180,7 +168,7 @@ void SchedulerTest::testSchedulerWithNoPrefs()
 	 ptr_scheduler_->stop();
 }
 
-void SchedulerTest::testSchedulerWithPrefs()
+BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 {
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
@@ -211,8 +199,8 @@ void SchedulerTest::testSchedulerWithPrefs()
 		job_pref.want( i%NWORKERS );
 		job_pref.want( (i%NWORKERS + 1)%NWORKERS );
 
-		ptrOrch->ptr_job_man_->addJob(job_id, pJob);
-		ptrOrch->ptr_job_man_->addJobPreferences(job_id, job_pref);
+		ptrOrch->jobManager()->addJob(job_id, pJob);
+		ptrOrch->jobManager()->addJobPreferences(job_id, job_pref);
 
 		//add later preferences to the jobs
 		ptr_scheduler_->schedule_remote(job_id);
@@ -243,7 +231,7 @@ void SchedulerTest::testSchedulerWithPrefs()
 }
 
 /*
-void SchedulerTest::testSchedulerWithPrefsAndReScheduling()
+BOOST_AUTO_TEST_CASE(testSchedulerWithPrefsAndReScheduling)
 {
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
@@ -274,8 +262,8 @@ void SchedulerTest::testSchedulerWithPrefsAndReScheduling()
 		job_pref.want( i%NWORKERS );
 		job_pref.want( (i%NWORKERS + 1)%NWORKERS );
 
-		ptrOrch->ptr_job_man_->addJob(job_id, pJob);
-		ptrOrch->ptr_job_man_->addJobPreferences(job_id, job_pref);
+		ptrOrch->jobManager()->addJob(job_id, pJob);
+		ptrOrch->jobManager()->addJobPreferences(job_id, job_pref);
 
 		//add later preferences to the jobs
 		ptr_scheduler_->schedule_remote(job_id);
@@ -307,3 +295,5 @@ void SchedulerTest::testSchedulerWithPrefsAndReScheduling()
 	 ptr_scheduler_->stop();
 }
 */
+
+BOOST_AUTO_TEST_SUITE_END()

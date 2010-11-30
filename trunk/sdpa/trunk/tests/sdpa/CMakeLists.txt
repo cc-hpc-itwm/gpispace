@@ -78,8 +78,17 @@ target_link_libraries(mini_test_suite uuid)
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 add_test(mini_test_suite ${CMAKE_CURRENT_BINARY_DIR}/mini_test_suite)
 
-add_executable(test_lb_suite test_LoadBalancer.cpp)
+add_executable(test_scheduler_suite test_Scheduler.cpp)
+target_link_libraries(test_scheduler_suite  seda sdpa-daemon
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})					 
+add_test( test_scheduler_suite ${CMAKE_CURRENT_BINARY_DIR}/test_scheduler_suite )
 
+add_executable(test_lb_suite test_LoadBalancer.cpp)
 target_link_libraries(test_lb_suite  seda sdpa-daemon
 									 sdpa-events
 									 sdpa-util
@@ -87,11 +96,9 @@ target_link_libraries(test_lb_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-									 
 add_test( test_lb_suite ${CMAKE_CURRENT_BINARY_DIR}/test_lb_suite )
 
 add_executable(test_serialize_sharedptr_suite test_SerializeSharedPtr.cpp)
-
 target_link_libraries(test_serialize_sharedptr_suite  seda sdpa-daemon
 									 sdpa-events
 									 sdpa-util
@@ -99,20 +106,17 @@ target_link_libraries(test_serialize_sharedptr_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-									 
 add_test( test_serialize_sharedptr_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_sharedptr_suite )
 
 
 add_executable(test_serialize_jobptr_suite test_SerializeJobPtr.cpp)
-
 target_link_libraries(test_serialize_jobptr_suite  seda sdpa-daemon
 									 sdpa-events
 									 sdpa-util
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})
-									 
+									 ${Boost_LIBRARIES})		 
 add_test( test_serialize_jobptr_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_jobptr_suite )
 
 set( test_serialize_agents_srcs
@@ -121,7 +125,6 @@ set( test_serialize_agents_srcs
 )
 
 add_executable(test_serialize_agents_suite ${test_serialize_agents_srcs})
-
 target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
 									 sdpa-client
 									 sdpa-events
@@ -129,8 +132,7 @@ target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})
-									 
+									 ${Boost_LIBRARIES})	 
 add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_agents_suite )
 
 set( test_agents_srcs
@@ -139,7 +141,6 @@ set( test_agents_srcs
 )
 
 add_executable(test_agents_suite ${test_agents_srcs})
-
 target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 sdpa-client
 									 sdpa-events
@@ -147,8 +148,7 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})
-									 
+									 ${Boost_LIBRARIES})		 
 add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_agents_suite )
 
 set( test_orch_empty_we_srcs
@@ -158,7 +158,6 @@ set( test_orch_empty_we_srcs
 
 
 add_executable(test_orchestrator_empty_we ${test_orch_empty_we_srcs})
-
 target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
 									 sdpa-client
 									 sdpa-events

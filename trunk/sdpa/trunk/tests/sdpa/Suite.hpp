@@ -10,7 +10,7 @@
 //#include <tests/sdpa/test_FSMPerformance.hpp>
 #include <tests/sdpa/test_JobFSM_SMC.hpp>
 
-#include <tests/sdpa/test_Scheduler.hpp>
+//#include <tests/sdpa/test_Scheduler.hpp>
 
 namespace sdpa { namespace tests {
   class Suite : public CPPUNIT_NS::TestFixture {
@@ -25,7 +25,7 @@ namespace sdpa { namespace tests {
       suiteOfTests->addTest( JobIdTest::suite() );
       suiteOfTests->addTest( ConfigTest::suite() );
 
-      suiteOfTests->addTest( SchedulerTest::suite() );
+      //suiteOfTests->addTest( SchedulerTest::suite() );
       suiteOfTests->addTest( JobFSMTest_SMC::suite() );
       //suiteOfTests->addTest( LoadBalancerTest::suite() );
 
