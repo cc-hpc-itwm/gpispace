@@ -197,14 +197,6 @@
       <type-map replace="T" with="volume_in_progress"/>
     </specialize>
 
-    <transition name="dist_volume_processed" inline="true">
-      <use name="dup_volume_in_progress"/>
-      <connect-in port="in" place="volume_processed"/>
-      <connect-out port="one" place="update_volume_state"/>
-      <connect-out port="two" place="update_bunch_state"/>
-    </transition>
-
-    <place name="update_volume_state" type="volume_in_progress"/>
     <place name="update_bunch_state" type="volume_in_progress"/>
 
     <!-- ****************************************************************** -->
@@ -212,6 +204,7 @@
     <transition name="update_volume_state">
       <defun>
         <in name="processed" type="volume_in_progress"/>
+        <out name="processed" type="volume_in_progress"/>
         <in name="state" type="volume_state"/>
         <out name="state" type="volume_state"/>
         <expression>
@@ -219,10 +212,14 @@
         </expression>
         <condition>${state.volume} :eq: ${processed.volume.volume}</condition>
       </defun>
-      <connect-in port="processed" place="update_volume_state"/>
+      <connect-in port="processed" place="volume_processed"/>
       <connect-in port="state" place="volume_state"/>
-      <connect-out port="state" place="volume_state"/>
+      <connect-out port="state" place="check_volume_done"/>
+      <connect-out port="processed" place="wait_update_bunch_state"/>
     </transition>
+
+    <place name="wait_update_bunch_state" type="volume_in_progress" capacity="1"/>
+    <place name="check_volume_done" type="volume_state" capacity="1"/>
 
     <!-- ****************************************************************** -->
 
@@ -273,14 +270,37 @@
     <transition name="volume_done">
       <defun>
         <in name="state" type="volume_state"/>
+        <in name="processed" type="volume_in_progress"/>
+        <out name="processed" type="volume_in_progress"/>
         <out name="state" type="volume_state"/>
-        <expression></expression>
+        <expression>
+        </expression>
         <condition>
           ${state.bunches.left} :le: 0
         </condition>
       </defun>
-      <connect-in port="state" place="volume_state"/>
+      <connect-in port="state" place="check_volume_done"/>
       <connect-out port="state" place="volume_done"/>
+      <connect-in port="processed" place="wait_update_bunch_state"/>
+      <connect-out port="processed" place="update_bunch_state"/>
+    </transition>
+
+    <transition name="not_volume_done">
+      <defun>
+        <in name="state" type="volume_state"/>
+        <in name="processed" type="volume_in_progress"/>
+        <out name="processed" type="volume_in_progress"/>
+        <out name="state" type="volume_state"/>
+        <expression>
+        </expression>
+        <condition>
+          ${state.bunches.left} :gt: 0
+        </condition>
+      </defun>
+      <connect-in port="state" place="check_volume_done"/>
+      <connect-out port="state" place="volume_state"/>
+      <connect-in port="processed" place="wait_update_bunch_state"/>
+      <connect-out port="processed" place="update_bunch_state"/>
     </transition>
 
     <place name="volume_done" type="volume_state"/>
