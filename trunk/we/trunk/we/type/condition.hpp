@@ -35,56 +35,56 @@ namespace statistics
   typedef boost::unordered_map<std::string, double> time_map_t;
   typedef boost::unordered_map<std::string, unsigned long> cnt_map_t;
 
-  static time_map_t & get_time_map ()
+  static inline time_map_t & get_time_map ()
   {
     static time_map_t time_map;
 
     return time_map;
   }
 
-  static cnt_map_t & get_call_map ()
+  static inline cnt_map_t & get_call_map ()
   {
     static cnt_map_t map;
 
     return map;
   }
 
-  static cnt_map_t & get_eval_map ()
+  static inline cnt_map_t & get_eval_map ()
   {
     static cnt_map_t map;
 
     return map;
   }
 
-  static cnt_map_t & get_false_map ()
+  static inline cnt_map_t & get_false_map ()
   {
     static cnt_map_t map;
 
     return map;
   }
 
-  static cnt_map_t & get_true_map ()
+  static inline cnt_map_t & get_true_map ()
   {
     static cnt_map_t map;
 
     return map;
   }
 
-  static cnt_map_t & get_max_eval_map ()
+  static inline cnt_map_t & get_max_eval_map ()
   {
     static cnt_map_t map;
 
     return map;
   }
 
-  static cnt_map_t & get_max_size_map ()
+  static inline cnt_map_t & get_max_size_map ()
   {
     static cnt_map_t map;
 
     return map;
   }
 
-  static unsigned long value (const cnt_map_t & m, const std::string & key)
+  static inline unsigned long value (const cnt_map_t & m, const std::string & key)
   {
     cnt_map_t::const_iterator pos (m.find (key));
 
