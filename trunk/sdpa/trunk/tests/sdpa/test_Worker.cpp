@@ -7,7 +7,7 @@
 #include <sdpa/JobId.hpp>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
-#include "sdpa/logging.hpp"
+#include <sdpa/logging.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa;
