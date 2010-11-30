@@ -68,6 +68,15 @@ target_link_libraries(sdpa-test
 # adding the tests
 add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
 
+add_executable(test_worker_suite test_Worker.cpp)
+target_link_libraries(test_worker_suite  seda sdpa-daemon
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})					 
+add_test( test_worker_suite ${CMAKE_CURRENT_BINARY_DIR}/test_worker_suite )
 
 add_executable(test_jobid_suite test_JobId.cpp)
 target_link_libraries(test_jobid_suite  seda sdpa-daemon

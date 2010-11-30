@@ -1,72 +1,68 @@
+#define BOOST_TEST_MODULE TestWorker
+#include <boost/test/unit_test.hpp>
+
 #include <iostream>
 
-#include "test_Worker.hpp"
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/JobId.hpp>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
-using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( sdpa::tests::WorkerTest );
+struct MyFixture
+{
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}
+	~MyFixture(){}
+	 SDPA_DECLARE_LOGGER();
+};
 
-WorkerTest::WorkerTest() {
-}
+BOOST_FIXTURE_TEST_SUITE( test_Worker, MyFixture )
 
-WorkerTest::~WorkerTest() {
-}
-
-void WorkerTest::setUp() {
-}
-
-void WorkerTest::tearDown() {
-}
-
-void WorkerTest::testDispatch() {
+BOOST_AUTO_TEST_CASE(testDispatch) {
   Worker worker("w0", 0, "localhost");
-  CPPUNIT_ASSERT(worker.pending().empty());
+  BOOST_CHECK(worker.pending().empty());
 
   job_id_t jobId("1");
   worker.dispatch(jobId);
 
-  CPPUNIT_ASSERT(!worker.pending().empty());
-  CPPUNIT_ASSERT( *worker.pending().begin() == jobId );
+  BOOST_CHECK(!worker.pending().empty());
+  BOOST_CHECK( *worker.pending().begin() == jobId );
   worker.pending().clear();
 }
 
-void WorkerTest::testGetNextJob() {
+BOOST_AUTO_TEST_CASE(testGetNextJob) {
   Worker worker("w0", 0, "localhost");
 
   job_id_t jobId("1");
   worker.dispatch(jobId);
 
-  CPPUNIT_ASSERT(!worker.pending().empty());
+  BOOST_CHECK(!worker.pending().empty());
 
   job_id_t jobIdNext = worker.get_next_job(sdpa::job_id_t::invalid_job_id());
-  CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty now
-  CPPUNIT_ASSERT(! worker.submitted().empty()); // submitted has one job
-  CPPUNIT_ASSERT_EQUAL(jobIdNext, jobId);
+  BOOST_CHECK(worker.pending().empty()); // pending is empty now
+  BOOST_CHECK(! worker.submitted().empty()); // submitted has one job
+  BOOST_CHECK_EQUAL(jobIdNext, jobId);
 }
 
-void WorkerTest::testAcknowledge() {
+BOOST_AUTO_TEST_CASE(testAcknowledge) {
   Worker worker("w0", 0, "localhost");
 
   job_id_t jobId("1");
   worker.dispatch(jobId);
 
-  CPPUNIT_ASSERT(! worker.pending().empty());
+  BOOST_CHECK(! worker.pending().empty());
 
   job_id_t jobIdNext = worker.get_next_job(sdpa::job_id_t::invalid_job_id());
-  CPPUNIT_ASSERT(worker.pending().empty()); // pending is empty
-  CPPUNIT_ASSERT(! worker.submitted().empty()); // submitted is not empty anymore
+  BOOST_CHECK(worker.pending().empty()); // pending is empty
+  BOOST_CHECK(! worker.submitted().empty()); // submitted is not empty anymore
 
   bool ackResult = worker.acknowledge(jobIdNext);
-  CPPUNIT_ASSERT(ackResult);
-  CPPUNIT_ASSERT(worker.pending().empty()); // pending still empty
-  CPPUNIT_ASSERT(worker.submitted().empty()); // submitted is now empty
-  CPPUNIT_ASSERT(! worker.acknowledged().empty()); // added to acknowledged
+  BOOST_CHECK(ackResult);
+  BOOST_CHECK(worker.pending().empty()); // pending still empty
+  BOOST_CHECK(worker.submitted().empty()); // submitted is now empty
+  BOOST_CHECK(! worker.acknowledged().empty()); // added to acknowledged
 }
 
 
@@ -91,7 +87,7 @@ struct thread_data {
   int val;
 };
   
-void WorkerTest::testQueue() {
+BOOST_AUTO_TEST_CASE(testQueue) {
   std::cout << "testing synchronized queue..." << std::endl;
   queue_type test_queue;
   thread_data thrd_data(&test_queue);
@@ -108,7 +104,7 @@ void WorkerTest::testQueue() {
   thrd.join();
   std::cout << std::endl;
   std::cout << thrd_data.val << std::endl;
-  CPPUNIT_ASSERT(thrd_data.val >= 42);
+  BOOST_CHECK(thrd_data.val >= 42);
 
   std::cout << "removing queue entries...";
   while (! test_queue.empty()) test_queue.pop();
@@ -125,3 +121,4 @@ void WorkerTest::testQueue() {
   }
 }
 
+BOOST_AUTO_TEST_SUITE_END()

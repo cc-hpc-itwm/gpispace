@@ -3,7 +3,7 @@
 
 #include <cppunit/TestFixture.h>
 
-#include <tests/sdpa/test_Worker.hpp>
+//#include <tests/sdpa/test_Worker.hpp>
 #include <tests/sdpa/test_UUID.hpp>
 //#include <tests/sdpa/test_JobId.hpp>
 #include <tests/sdpa/test_Config.hpp>
@@ -20,9 +20,9 @@ namespace sdpa { namespace tests {
 
       // disabled for now: suiteOfTests->addTest( ModuleTest::suite() );
 
-      suiteOfTests->addTest( WorkerTest::suite() );
+//      suiteOfTests->addTest( WorkerTest::suite() );
       suiteOfTests->addTest( UUIDTest::suite() );
-      suiteOfTests->addTest( JobIdTest::suite() );
+ //     suiteOfTests->addTest( JobIdTest::suite() );
       suiteOfTests->addTest( ConfigTest::suite() );
 
       //suiteOfTests->addTest( SchedulerTest::suite() );
