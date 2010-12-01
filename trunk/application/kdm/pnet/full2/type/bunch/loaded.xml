@@ -1,8 +1,0 @@
-<structs>
-
-  <struct name="bunch_loaded">
-    <field name="bunch" type="bunch_with_store"/>
-    <field name="wait" type="long"/>
-  </struct>
-
-</structs>
