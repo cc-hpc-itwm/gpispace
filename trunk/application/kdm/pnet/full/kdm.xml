@@ -3,7 +3,6 @@
   <include-structs href="types.xml"/>
 
   <in name="file_config" type="string" place="file_config"/>
-  <in name="file_param" type="string" place="file_param"/>
   <in name="memsizeGPI" type="long" place="memsizeGPI"/>
 
   <out name="done" type="control" place="done"/>
@@ -20,10 +19,6 @@
 
     <place name="file_config" type="string">
       <token><value>${file} + ".xml"</value></token>
-    </place>
-
-    <place name="file_param" type="string">
-      <token><value>${file} + ".param.text"</value></token>
     </place>
 
     <place name="memsizeGPI" type="long">
@@ -49,7 +44,6 @@
     <transition name="init_config" inline="true">
       <include-function href="init/config.xml"/>
       <connect-in port="file_config" place="file_config"/>
-      <connect-in port="file_param" place="file_param"/>
       <connect-in port="memsizeGPI" place="memsizeGPI"/>
       <connect-out port="config" place="config_initialized"/>
       <connect-out port="assoc" place="bunch_store_assoc_offset"/>

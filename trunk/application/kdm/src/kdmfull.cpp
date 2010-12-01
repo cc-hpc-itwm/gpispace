@@ -78,11 +78,9 @@ static fvmAllocHandle_t alloc ( const long & size
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
   const std::string & filename (get<std::string> (input, "file_config"));
-  const std::string & file_param (get<std::string> (input, "file_param"));
   long memsizeGPI (get<long> (input, "memsizeGPI"));
 
   MLOG (INFO, "initialize: filename " << filename);
-  MLOG (INFO, "initialize: file_param " << file_param);
   MLOG (INFO, "initialize: memsizeGPI " << memsizeGPI);
 
   const int NThreads (4);
@@ -222,7 +220,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   const long per_offset_bunches (static_cast<long>(Nbid_in_pid (1, 1, Job)));
 
-  long offsets_at_once (divru ( volumes_per_node * node_count 
+  long offsets_at_once (divru ( volumes_per_node * node_count
 			      , copies * per_offset_volumes
 			      )
 		       );
@@ -276,7 +274,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
          << " Probably you are running quite a small problem"
          << " on quite a large machine!?"
 	 );
- 
+
   // tuning: volumes_per_node could be higher
   const long size_store_volume (volumes_per_node * node_count);
 
