@@ -192,6 +192,8 @@ namespace xml
 
         fhg::util::maybe<bool> finline;
 
+        fhg::util::maybe<bool> internal;
+
         // ***************************************************************** //
 
         const connect_vec_type & in (void) const { return _in.elements(); }
@@ -468,6 +470,23 @@ namespace xml
           }
 
         fun.name = trans.name;
+
+        if (fun.internal.isJust())
+          {
+            if (trans.internal.isJust())
+              {
+                if (*trans.internal != *fun.internal)
+                  {
+                    state.warn ( warning::overwrite_function_internal_trans
+                               ( trans.name
+                               , trans.path
+                               )
+                               );
+                  }
+
+                fun.internal = trans.internal;
+              }
+          }
 
         fun.cond.insert ( fun.cond.end()
                         , trans.cond.begin()
@@ -883,6 +902,7 @@ namespace xml
         s << level (t.level)     << "transition (" << std::endl;
         s << level (t.level + 1) << "name = " << t.name << std::endl;
         s << level (t.level + 1) << "path = " << t.path << std::endl;
+        s << level (t.level + 1) << "internal = " << t.internal << std::endl;
 
         s << level(t.level+1) << "properties = " << std::endl;
 

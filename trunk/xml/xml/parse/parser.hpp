@@ -1309,6 +1309,10 @@ namespace xml
       t.finline = fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                                     , optional (node, "inline")
                                                     );
+      t.internal =
+        fhg::util::fmap<std::string, bool>( fhg::util::read_bool
+                                          , optional (node, "internal")
+                                          );
 
       for ( xml_node_type * child (node->first_node())
           ; child

@@ -68,6 +68,7 @@ namespace xml
         bool _Wport_not_connected;
         bool _Wunexpected_element;
         bool _Woverwrite_function_name_trans;
+        bool _Woverwrite_function_internal_trans;
         bool _Wproperty_overwritten;
         bool _Wtype_map_duplicate;
         bool _Wtype_get_duplicate;
@@ -93,6 +94,7 @@ namespace xml
         std::string _OWport_not_connected;
         std::string _OWunexpected_element;
         std::string _OWoverwrite_function_name_trans;
+        std::string _OWoverwrite_function_internal_trans;
         std::string _OWproperty_overwritten;
         std::string _OWtype_map_duplicate;
         std::string _OWtype_get_duplicate;
@@ -175,6 +177,7 @@ namespace xml
           , _Wport_not_connected (true)
           , _Wunexpected_element (true)
           , _Woverwrite_function_name_trans (false)
+          , _Woverwrite_function_internal_trans (false)
           , _Wproperty_overwritten (true)
           , _Wtype_map_duplicate (true)
           , _Wtype_get_duplicate (true)
@@ -199,6 +202,7 @@ namespace xml
           , _OWport_not_connected ("Wport-not-connected")
           , _OWunexpected_element ("Wunexpected-element")
           , _OWoverwrite_function_name_trans ("Woverwrite-function-name-trans")
+          , _OWoverwrite_function_internal_trans ("Woverwrite-function-internal-trans")
           , _OWproperty_overwritten ("Wproperty-overwritten")
           , _OWtype_map_duplicate ("Wtype-map-duplicate")
           , _OWtype_get_duplicate ("Wtype-get-duplicate")
@@ -315,6 +319,7 @@ namespace xml
           GET_PROP (Wport_not_connected)
           GET_PROP (Wunexpected_element)
           GET_PROP (Woverwrite_function_name_trans)
+          GET_PROP (Woverwrite_function_internal_trans)
           GET_PROP (Wproperty_overwritten)
           GET_PROP (Wtype_map_duplicate)
           GET_PROP (Wtype_get_duplicate)
@@ -375,6 +380,7 @@ namespace xml
         ACCESS(Wport_not_connected)
         ACCESS(Wunexpected_element)
         ACCESS(Woverwrite_function_name_trans)
+        ACCESS(Woverwrite_function_internal_trans)
         ACCESS(Wproperty_overwritten)
         ACCESS(Wtype_map_duplicate)
         ACCESS(Wtype_get_duplicate)
@@ -406,6 +412,7 @@ namespace xml
         WARN(port_not_connected)
         WARN(unexpected_element)
         WARN(overwrite_function_name_trans)
+        WARN(overwrite_function_internal_trans)
         WARN(property_overwritten)
         WARN(type_map_duplicate)
         WARN(type_get_duplicate)
@@ -518,6 +525,10 @@ namespace xml
             ( _OWoverwrite_function_name_trans.c_str()
             , VAL(Woverwrite_function_name_trans)
             , "warn when overwriting a function name with a transition name"
+            )
+            ( _OWoverwrite_function_internal_trans.c_str()
+            , VAL(Woverwrite_function_internal_trans)
+            , "warn when overwriting a function internal flag by the transition internal flag"
             )
             ( _OWproperty_overwritten.c_str()
             , VAL(Wproperty_overwritten)
