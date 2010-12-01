@@ -227,21 +227,19 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 			      )
 		       );
 
-  bunch_store_per_node = 
+  bunch_store_per_node = 1 +
     std::min ( bunch_store_per_node
 	     , divru ( per_offset_bunches * offsets_at_once
 		     , node_count
 		     )
 	     );
 
-//   if (bunch_store_per_node < 2)
-//     {
-//       MLOG (INFO, "bunch_store_per_node < 2");
+  if (bunch_store_per_node < 3)
+    {
+      MLOG (INFO, "bunch_store_per_node < 3");
 
-//       throw std::runtime_error ("bunch_store_per_node < 2");
-//     }
-
-  bunch_store_per_node = 3;
+      throw std::runtime_error ("bunch_store_per_node < 3");
+    }
 
   const long size_store_bunch ((bunch_store_per_node - 1) * node_count);
 
@@ -306,24 +304,6 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
       throw std::runtime_error
         ("need at least as many volume stores as volumes per offset");
-    }
-
-  std::ifstream param (file_param.c_str());
-
-  if (param.good())
-    {
-      while (!param.eof())
-	{
-	  std::string field;
-	  param >> field;
-	  long val;
-	  param >> val;
-	  if (field.size())
-	    {
-	      MLOG (INFO, "from param_file: config." << field << " = " << val);
-	      put (output, "config", field, val);
-	    }
-	}
     }
 
   MLOG (INFO, "initialize: config " << get<value::type>(output, "config"));
