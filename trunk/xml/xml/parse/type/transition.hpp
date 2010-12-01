@@ -473,16 +473,13 @@ namespace xml
 
         if (fun.internal.isJust())
           {
-            if (trans.internal.isJust())
+            if (trans.internal.isJust() && *trans.internal != *fun.internal)
               {
-                if (*trans.internal != *fun.internal)
-                  {
-                    state.warn ( warning::overwrite_function_internal_trans
-                               ( trans.name
-                               , trans.path
-                               )
-                               );
-                  }
+                state.warn ( warning::overwrite_function_internal_trans
+                           ( trans.name
+                           , trans.path
+                           )
+                           );
 
                 fun.internal = trans.internal;
               }
