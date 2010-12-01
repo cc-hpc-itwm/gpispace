@@ -1,0 +1,56 @@
+<defun name="kdm_genconf">
+
+  <in name="file_config" type="string" place="file_config"/>
+  <in name="file_out" type="string" place="file_out"/>
+  <in name="memsizeGPI" type="long" place="memsizeGPI"/>
+
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+<!--
+
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_C3NA.rahn"
+          "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model"
+          "/fhgfs/HPC/rahn/kdm/Kirchhoff_C3NA.rahn"
+-->
+    <properties name="pnetc">
+      <properties name="context">
+        <property key="file">
+"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL"
+
+        </property>
+      </properties>
+    </properties>
+
+    <place name="file_config" type="string">
+      <token><value>${file} + ".xml"</value></token>
+    </place>
+
+    <place name="file_out" type="string">
+      <token><value>${file} + ".param.text"</value></token>
+    </place>
+
+    <place name="memsizeGPI" type="long">
+      <token><value>5*2^30</value></token>
+    </place>
+
+    <place name="done" type="control"/>
+
+    <transition name="genconfig">
+      <defun>
+        <in name="file_config" type="string"/>
+        <in name="file_out" type="string"/>
+        <in name="memsizeGPI" type="long"/>
+        <out name="done" type="control"/>
+        <module name="kdmfull_genconf"
+                function="genconf (file_config, file_out, memsizeGPI)"
+        />
+      </defun>
+      <connect-in port="file_config" place="file_config"/>
+      <connect-in port="file_out" place="file_out"/>
+      <connect-in port="memsizeGPI" place="memsizeGPI"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>
