@@ -321,7 +321,7 @@
         <in name="config" type="config"/>
         <in name="volume" type="volume_in_progress"/>
         <out name="volume" type="volume_in_progress"/>
-        <module name="kdmfull2" function="process (config, volume)"/>
+        <module name="kdmfull" function="process (config, volume)"/>
       </defun>
       <connect-read port="config" place="config_process"/>
       <connect-in port="volume" place="volume_to_process"/>
@@ -604,7 +604,7 @@
         <in name="config" type="config"/>
         <in name="pair" type="pair_to_reduce"/>
         <out name="pair" type="pair_to_reduce"/>
-        <module name="kdmfull2" function="reduce (pair)"/>
+        <module name="kdmfull" function="reduce (pair)"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="pair" place="pair_to_reduce"/>
@@ -653,7 +653,7 @@
         <in name="config" type="config"/>
         <in name="volume" type="volume_with_store"/>
         <out name="volume" type="volume_with_store"/>
-        <module name="kdmfull2" function="write (config, volume)"/>
+        <module name="kdmfull" function="write (config, volume)"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="volume" place="volume_to_be_written"/>
@@ -732,7 +732,7 @@
         <in name="config" type="config"/>
         <in name="trigger" type="control"/>
         <out name="trigger" type="control"/>
-        <module name="kdmfull2" function="finalize (config)"/>
+        <module name="kdmfull" function="finalize (config)"/>
       </defun>
       <connect-in port="config" place="config"/>
       <connect-in port="trigger" place="done_cleanup"/>

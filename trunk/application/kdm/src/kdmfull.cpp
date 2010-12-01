@@ -725,9 +725,9 @@ static void finalize (void *, const we::loader::input_t & input, we::loader::out
 
 // ************************************************************************* //
 
-WE_MOD_INITIALIZE_START (kdmfull2);
+WE_MOD_INITIALIZE_START (kdmfull);
 {
-  LOG(INFO, "WE_MOD_INITIALIZE_START (kdmfull2)");
+  LOG(INFO, "WE_MOD_INITIALIZE_START (kdmfull)");
 
   WE_REGISTER_FUN (initialize);
   WE_REGISTER_FUN (loadTT);
@@ -738,10 +738,10 @@ WE_MOD_INITIALIZE_START (kdmfull2);
   WE_REGISTER_FUN (write);
   WE_REGISTER_FUN (finalize);
 }
-WE_MOD_INITIALIZE_END (kdmfull2);
+WE_MOD_INITIALIZE_END (kdmfull);
 
-WE_MOD_FINALIZE_START (kdmfull2);
+WE_MOD_FINALIZE_START (kdmfull);
 {
-  LOG(INFO, "WE_MOD_FINALIZE_START (kdmfull2)");
+  LOG(INFO, "WE_MOD_FINALIZE_START (kdmfull)");
 }
-WE_MOD_FINALIZE_END (kdmfull2);
+WE_MOD_FINALIZE_END (kdmfull);

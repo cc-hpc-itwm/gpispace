@@ -16,7 +16,7 @@
         <in name="config" type="config"/>
         <in name="bunch" type="bunch_with_store"/>
         <out name="bunch" type="bunch_with_store"/>
-        <module name="kdmfull2" function="load (bunch)"/>
+        <module name="kdmfull" function="load (bunch)"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="bunch" place="bunch_with_store"/>

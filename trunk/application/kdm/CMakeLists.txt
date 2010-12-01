@@ -133,7 +133,7 @@ set (KDM_COMPLEX_MOD_SRCS src/kdm_complex_mod.cpp
   ${KDM_MOD_PROCESS_SRCS}
 )
 
-set (KDM_FULL2_MOD_SRCS src/kdmfull2.cpp
+set (KDM_FULL_MOD_SRCS src/kdmfull.cpp
   ${KDM_MOD_INITIALIZE_SRCS}
   ${KDM_MOD_INITIALIZE_SUBVOL_SRCS}
   ${KDM_MOD_PROCESS_SRCS}
@@ -188,8 +188,8 @@ set_target_properties(kdm_mod PROPERTIES OUTPUT_NAME kdm)
 add_library(kdm_complex_mod SHARED ${KDM_COMPLEX_MOD_SRCS})
 set_target_properties(kdm_complex_mod PROPERTIES OUTPUT_NAME kdm_complex)
 
-add_library(kdmfull2_mod SHARED ${KDM_FULL2_MOD_SRCS})
-set_target_properties(kdmfull2_mod PROPERTIES OUTPUT_NAME kdmfull2)
+add_library(kdmfull_mod SHARED ${KDM_FULL_MOD_SRCS})
+set_target_properties(kdmfull_mod PROPERTIES OUTPUT_NAME kdmfull)
 
 add_library(filter_mod SHARED ${FILTER_MOD_SRCS})
 set_target_properties(filter_mod PROPERTIES OUTPUT_NAME filter)
@@ -208,7 +208,7 @@ install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
   DESTINATION libexec
   COMPONENT modules)
 
-install(TARGETS kdm_mod kdm_complex_mod kdmfull2_mod
+install(TARGETS kdm_mod kdm_complex_mod kdmfull_mod
   LIBRARY
   DESTINATION libexec
   COMPONENT modules)
