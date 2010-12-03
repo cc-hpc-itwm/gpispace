@@ -78,7 +78,20 @@
       <connect-in port="credit_state_bunch_check_break" place="credit_state_bunch_check_break"/>
     </transition>
 
+    <place name="wait_state_bunch" type="state"/>
     <place name="state_bunch" type="state"/>
+
+    <transition name="take_state_bunch">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <in name="credit" type="control"/>
+        <expression></expression>
+      </defun>
+      <connect-in port="state" place="wait_state_bunch"/>
+      <connect-out port="state" place="state_bunch"/>
+      <connect-read port="credit" place="credit_step_bunch"/>
+    </transition>
 
     <place name="state_bunch_check_break" type="state"/>
     <place name="credit_state_bunch_check_break" type="control">
@@ -109,12 +122,29 @@
         <condition>${state.bunch.id} :lt: ${state.bunch.max}</condition>
       </defun>
       <connect-in port="state" place="state_bunch_check_break"/>
-      <connect-out port="state" place="state_bunch"/>
+      <connect-out port="state" place="wait_state_bunch"/>
       <connect-out port="credit_state_bunch_check_break" place="credit_state_bunch_check_break"/>
     </transition>
 
     <place name="assoc" type="map" virtual="true"/>
-    <place name="store_bunch" type="store_bunch" virtual="true"/>
+    <place name="store_bunch_put" type="store_bunch" virtual="true"/>
+    <place name="store_bunch_get" type="store_bunch" virtual="true"/>
+
+    <transition name="take_store_bunch">
+      <defun>
+        <in name="store" type="store_bunch"/>
+        <out name="store" type="store_bunch"/>
+        <in name="credit" type="control"/>
+        <expression></expression>
+      </defun>
+      <connect-in port="store" place="store_bunch_put"/>
+      <connect-out port="store" place="store_bunch_get"/>
+      <connect-read port="credit" place="credit_step_bunch"/>
+    </transition>
+
+    <place name="credit_step_bunch" type="control">
+      <token><value>[]</value></token>
+    </place>
 
     <transition name="step_bunch">
       <defun>
@@ -140,7 +170,7 @@
       </defun>
       <connect-in port="state" place="state_bunch"/>
       <connect-read port="assoc" place="assoc"/>
-      <connect-in port="store" place="store_bunch"/>
+      <connect-in port="store" place="store_bunch_get"/>
       <connect-out port="state" place="state_bunch_check_break_wait"/>
       <connect-out port="bunch" place="bunch_with_store"/>
     </transition>

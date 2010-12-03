@@ -9,6 +9,11 @@
 
   <net>
 
+<!--
+"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL"
+          "/fhgfs/HPC/rahn/kdm/Kirchhoff_C3NA.rahn"
+-->
+
     <properties name="pnetc">
       <properties name="context">
         <property key="file">
@@ -32,7 +37,8 @@
     <place name="done" type="control"/>
     <place name="config_initialized" type="config"/>
 
-    <place name="store_bunch" type="store_bunch"/>
+    <place name="store_bunch_put" type="store_bunch"/>
+    <place name="store_bunch_get" type="store_bunch"/>
     <place name="store_volume" type="store_volume"/>
 
     <place name="bunch_store_assoc_offset" type="map"/>
@@ -86,7 +92,7 @@
     <transition name="generate_store" inline="true">
       <include-function href="generate/store.xml"/>
       <connect-in port="config" place="config_generate_store"/>
-      <connect-out port="store_bunch" place="store_bunch"/>
+      <connect-out port="store_bunch" place="store_bunch_put"/>
       <connect-out port="store_volume" place="store_volume"/>
       <connect-out port="number_store_volume" place="number_store_volume"/>
       <connect-out port="number_store_bunch" place="number_store_bunch"/>
@@ -97,7 +103,8 @@
 
     <transition name="generate_item" inline="true">
       <include-function href="generate/item.xml"/>
-      <place-map virtual="store_bunch" real="store_bunch"/>
+      <place-map virtual="store_bunch_put" real="store_bunch_put"/>
+      <place-map virtual="store_bunch_get" real="store_bunch_get"/>
       <place-map virtual="store_volume" real="store_volume"/>
       <place-map virtual="assoc" real="bunch_store_assoc_offset"/>
       <connect-in port="config" place="config_generate_item"/>
@@ -207,6 +214,9 @@
         </expression>
 
         <condition>
+          "assign_bunch_loaded" != ""
+        </condition>
+        <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
         <condition>
@@ -246,6 +256,9 @@
           ${credit_assign} := [];
         </expression>
 
+        <condition>
+          "assign_volume_in_progress" != ""
+        </condition>
         <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
@@ -399,6 +412,9 @@
           ${credit_update_volume_state} := [];
         </expression>
         <condition>
+          "update_volume_state_volume_processed" != ""
+        </condition>
+        <condition>
           ${state.volume} :eq: ${processed.volume.volume}
         </condition>
       </defun>
@@ -421,6 +437,9 @@
           ${pair.state} := ${state};
           ${credit_update_volume_state} := [];
         </expression>
+        <condition>
+          "update_volume_state_volume_state" != ""
+        </condition>
         <condition>
           ${state.volume} :eq: ${processed.volume.volume}
         </condition>
@@ -499,6 +518,9 @@
           ${credit_unassign} := []
         </expression>
         <condition>
+          "unassign_bunch_loaded" != ""
+        </condition>
+        <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
         <condition>
@@ -527,6 +549,9 @@
 
           ${credit_unassign} := []
         </expression>
+        <condition>
+          "unassign_update_bunch_state" != ""
+        </condition>
         <condition>
           ${bunch.bunch.bunch.offset.id} :eq: ${volume.volume.volume.offset.id}
         </condition>
@@ -583,7 +608,7 @@
         </condition>
       </defun>
       <connect-in port="bunch" place="check_bunch_done"/>
-      <connect-out port="store" place="store_bunch"/>
+      <connect-out port="store" place="store_bunch_put"/>
     </transition>
 
     <transition name="not_bunch_done">
@@ -781,7 +806,7 @@
 
     <transition name="eat_store" inline="true">
       <include-function href="eat/store.xml"/>
-      <place-map virtual="store_bunch" real="store_bunch"/>
+      <place-map virtual="store_bunch" real="store_bunch_get"/>
       <place-map virtual="store_volume" real="store_volume"/>
       <connect-in port="number_store_volume" place="number_store_volume"/>
       <connect-in port="number_store_bunch" place="number_store_bunch"/>
