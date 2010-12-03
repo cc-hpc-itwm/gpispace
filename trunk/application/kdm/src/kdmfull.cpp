@@ -202,8 +202,14 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
   const long offsets (Job.n_offset);
   const long node_count (fvmGetNodeCount());
 
+  MLOG(INFO, "per_offset_volumes = " << per_offset_volumes);
+  MLOG(INFO, "offsets = " << offsets);
+  MLOG(INFO, "node_count = " << node_count);
+
   // WORK HERE: overcome this by using virtual offsetclasses
   const long volumes_per_node (divru (per_offset_volumes, node_count));
+
+  MLOG(INFO, "volumes_per_node = " << volumes_per_node);
 
   const fvmAllocHandle_t handle_volume
     (alloc (volumes_per_node * Job.SubVolMemSize, "handle_volume", memsizeGPI));
@@ -212,18 +218,28 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   const long work_parts (offsets * per_offset_volumes);
 
+  MLOG (INFO, "work_parts = " << work_parts);
+
   // TUNING: the 3: at least (k=3) times P workparts
   long copies (divru (3 * node_count, work_parts));
+
+  MLOG (INFO, "copies = " << copies);
 
   // buffer for readTT, is 10 MiB enough?
   long bunch_store_per_node ((memsizeGPI - (10<<20)) / Job.BunchMemSize);
 
+  MLOG (INFO, "bunch_store_per_node = " << bunch_store_per_node);
+
   const long per_offset_bunches (static_cast<long>(Nbid_in_pid (1, 1, Job)));
+
+  MLOG (INFO, "per_offset_bunches = " << per_offset_bunches);
 
   long offsets_at_once (divru ( volumes_per_node * node_count
 			      , copies * per_offset_volumes
 			      )
 		       );
+
+  MLOG (INFO, "offsets_at_once  = " << offsets_at_once);
 
   bunch_store_per_node = 1 +
     std::min ( bunch_store_per_node
@@ -232,14 +248,20 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 		     )
 	     );
 
-  if (bunch_store_per_node < 3)
-    {
-      MLOG (INFO, "bunch_store_per_node < 3");
+  MLOG (INFO, "bunch_store_per_node = " << bunch_store_per_node);
 
-      throw std::runtime_error ("bunch_store_per_node < 3");
+  std::cout << "BEEEP" << std::endl;
+
+  if (bunch_store_per_node < 2)
+    {
+      MLOG (INFO, "bunch_store_per_node < 2");
+
+      throw std::runtime_error ("bunch_store_per_node < 2");
     }
 
   const long size_store_bunch ((bunch_store_per_node - 1) * node_count);
+
+  MLOG (INFO, "size_store_bunch = " << size_store_bunch);
 
   const fvmAllocHandle_t handle_bunch
     (alloc ((bunch_store_per_node - 1) * Job.BunchMemSize, "handle_bunch", memsizeGPI));
