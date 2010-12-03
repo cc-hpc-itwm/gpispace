@@ -516,12 +516,6 @@ void SchedulerImpl::stop()
          );
 }
 
-//use only for testing purposes!
-static bool is_root_node (std::string const & n)
-{
-  return n == sdpa::daemon::ORCHESTRATOR;
-}
-
 bool SchedulerImpl::post_request(bool force)
 {
 	if(!ptr_comm_handler_)

@@ -69,7 +69,7 @@ namespace sdpa { namespace daemon {
 
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 
-	  GenericDaemon( const std::string name = sdpa::daemon::ORCHESTRATOR, IWorkflowEngine* pArgSdpa2Gwes = NULL );
+	  GenericDaemon( const std::string name = "orchestrator_0", IWorkflowEngine* pArgSdpa2Gwes = NULL );
 	  virtual ~GenericDaemon();
 
 	  // API
