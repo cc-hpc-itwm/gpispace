@@ -70,7 +70,7 @@ namespace sdpa {
 	 	return bReqPosted;
 	 }
 
-	 void send_life_sign()
+	 /*void send_life_sign()
 	 {
 	 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
@@ -85,7 +85,7 @@ namespace sdpa {
 	 			 m_last_life_sign_time = current_time;
 	 		 }
 	 	 }
-	 }
+	 }*/
 
 	 void check_post_request()
 	 {
@@ -93,9 +93,7 @@ namespace sdpa {
 	 	 {
 	 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
 	 		 // post job request if number_of_jobs() < #registered workers +1
-	 		 if( !post_request() )
-				 //send a LS
-	 			 send_life_sign();
+	 		 post_request();
 	 	 }
 		 else
 		 {

@@ -102,6 +102,8 @@ namespace sdpa {
 
 	  bool bStopRequested;
 	  boost::thread m_thread;
+	  boost::thread m_threadLifeSign;
+
 	  mutable sdpa::daemon::IComm* ptr_comm_handler_;
 	  SDPA_DECLARE_LOGGER();
 	  boost::posix_time::time_duration m_timeout;

@@ -57,6 +57,7 @@ namespace daemon {
 		void handleRetrieveJobResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
 
 		const std::string& url() const {return url_;}
+		bool is_orchestrator() { return true; }
 
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int)

@@ -492,6 +492,10 @@ void SchedulerImpl::start()
    }
 
    m_thread = boost::thread(boost::bind(&SchedulerImpl::run, this));
+
+   if( !ptr_comm_handler_->is_orchestrator() )
+	   m_threadLifeSign = boost::thread(boost::bind(&SchedulerImpl::send_life_sign, this));
+
    SDPA_LOG_DEBUG("Scheduler thread started ...");
 }
 
@@ -501,6 +505,8 @@ void SchedulerImpl::stop()
    m_thread.interrupt();
    DLOG(TRACE, "Scheduler thread before join ...");
    m_thread.join();
+   if(!ptr_comm_handler_->is_orchestrator() )
+	   m_threadLifeSign.join();
 
    DLOG(TRACE, "Scheduler thread joined ...");
 
@@ -529,7 +535,7 @@ bool SchedulerImpl::post_request(bool force)
 	sdpa::util::time_type current_time = sdpa::util::now();
 	sdpa::util::time_type difftime = current_time - m_last_request_time;
 
-	if(force || (! is_root_node (ptr_comm_handler_->name()) &&  ptr_comm_handler_->is_registered()) )
+	if(force || ( !ptr_comm_handler_->is_orchestrator()  &&  ptr_comm_handler_->is_registered() ) )
 	{
 		if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
 		{
@@ -546,27 +552,16 @@ bool SchedulerImpl::post_request(bool force)
 	return bReqPosted;
 }
 
-void SchedulerImpl::send_life_sign()
+void  SchedulerImpl::send_life_sign()
 {
-	if(!ptr_comm_handler_)
-	{
-		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-		stop();
-		return ;
-	}
-
 	 sdpa::util::time_type current_time = sdpa::util::now();
 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
 
-	 // TODO: remove life signs completely
-	 // just make sure, that a un-registered worker tries to connect *forever*
-
-	 //	if( sdpa::daemon::ORCHESTRATOR != ptr_comm_handler_->name() &&  ptr_comm_handler_->is_registered() )
-	 // this condition has already been checked...
-	 if(! is_root_node (ptr_comm_handler_->name()))
+	 if( ptr_comm_handler_->is_registered() )
 	 {
 		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
 		 {
+			 DMLOG(TRACE, "sending life-sign to: " << ptr_comm_handler_->master());
 			 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
 			 ptr_comm_handler_->sendEventToMaster(pEvtLS);
 			 m_last_life_sign_time = current_time;
@@ -583,16 +578,12 @@ void SchedulerImpl::check_post_request()
 		return;
 	}
 
-	if( ! is_root_node (ptr_comm_handler_->name()))
+	if( !ptr_comm_handler_->is_orchestrator())
 	{
 		// TODO: remove requests
         if (ptr_comm_handler_->is_registered() && jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
         {
         	post_request();
-        }
-        else
-        {
-        	send_life_sign();
         }
 	}
 }

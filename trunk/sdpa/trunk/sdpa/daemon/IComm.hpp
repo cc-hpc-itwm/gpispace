@@ -66,6 +66,7 @@ const std::string USER("user");
 	  virtual bool requestsAllowed(const sdpa::util::time_type&) = 0;
 
 	  virtual bool hasWorkflowEngine() = 0;
+	  virtual bool is_orchestrator() = 0;
 
 	  //GUI notification methods
 	  virtual void activityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
