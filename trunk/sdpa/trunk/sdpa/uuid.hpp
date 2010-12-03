@@ -1,35 +1,16 @@
 #ifndef SDPA_UUID_HPP
 #define SDPA_UUID_HPP 1
 
-#include <string>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace sdpa {
-  class uuid {
-  public:
-    typedef unsigned char uuid_t[16];
-
-    uuid(const uuid &other);
-
-    explicit
-    uuid(const uuid_t &data);
-
-    uuid();
-
-    ~uuid();
-
-    uuid &operator=(const uuid &rhs);
-	operator std::string() const { return str(); }
-
-    const uuid_t &data() const { return uuid_; }
-    uuid_t &data() { dirty_ = true; return uuid_; }
-
-    const std::string &str() const;
-  private:
-    void set(const uuid_t &data);
-
-    uuid_t uuid_;
-    mutable bool dirty_;
-    mutable std::string str_tmp_;
+  struct uuid {
+	  boost::uuids::uuid uid_;
+	  uuid() {}
+	  uuid( const boost::uuids::uuid& uid) : uid_(uid) {}
+	  std::string str() { return boost::lexical_cast<std::string>(uid_); }
   };
 }
 

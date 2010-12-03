@@ -21,7 +21,6 @@ set (hdrs
 
 set (srcs
   JobId.cpp
-  uuid.cpp
   uuidgen.cpp
 )
 

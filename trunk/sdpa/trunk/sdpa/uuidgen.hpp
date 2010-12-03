@@ -4,17 +4,11 @@
 #include <sdpa/uuid.hpp>
 
 namespace sdpa {
-  enum uuid_version_t {
-    uuid_default,
-    uuid_random,
-    uuid_time
-  };
-
   class uuidgen {
   public:
-    void generate(uuid &uid, uuid_version_t version = uuid_default);
-    void operator()(uuid &uid, uuid_version_t version = uuid_default){
-      return generate(uid, version);
+    void generate(uuid &uid);
+    void operator()(uuid &uid){
+      return generate(uid);
     }
   };
 }

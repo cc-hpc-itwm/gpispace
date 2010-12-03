@@ -1,21 +1,16 @@
 #include "JobId.hpp"
 #include "uuidgen.hpp"
+#include  <sdpa/events/id_generator.hpp>
 
 using namespace sdpa;
 
-JobId::JobId()
-  : id_()
+JobId::JobId() : id_(sdpa::events::id_generator::instance().next())
 {
-  uuid uid;
-  uuidgen gen;
-  gen(uid);
-  id_ = uid.str();
 }
 
 JobId::JobId(const std::string &s)
   : id_(s)
 {
-
 }
 
 JobId::JobId(const char *s)

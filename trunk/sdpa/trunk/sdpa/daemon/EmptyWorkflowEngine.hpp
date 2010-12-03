@@ -51,7 +51,7 @@ typedef std::map<id_type, id_type> map_t;
 typedef map_t::value_type id_pair;
 
 typedef boost::function<id_type()> Function_t;
-static std::string id_gen() { return id_generator<std::string>::instance().next(); }
+static std::string id_gen() { return id_generator::instance().next(); }
 
 class EmptyWorkflowEngine : public IWorkflowEngine {
   private:

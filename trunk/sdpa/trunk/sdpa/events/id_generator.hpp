@@ -23,7 +23,6 @@
 #include <sdpa/uuidgen.hpp>
 
 namespace sdpa { namespace events {
-  template <typename T>
   class id_generator
   {
   private:
@@ -37,13 +36,13 @@ namespace sdpa { namespace events {
 	  return gen;
 	}
 
-	T next()
+	std::string next()
 	{
 	  lock_type lock(mtx_);
 	  static sdpa::uuidgen gen;
 	  sdpa::uuid id;
 	  gen(id);
-	  return id;
+	  return id.str();
 	}
 
   private:

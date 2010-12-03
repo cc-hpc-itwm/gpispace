@@ -3,16 +3,16 @@
 
 using namespace sdpa;
 
-void uuidgen::generate(sdpa::uuid &uid, sdpa::uuid_version_t version) {
-  switch (version) {
-    case sdpa::uuid_random:
-      uuid_generate_random(uid.data());
-      break;
-    case sdpa::uuid_time:
-      uuid_generate_time(uid.data());
-      break;
-    default:
-      uuid_generate(uid.data());
-      break;
-  }
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/random_generator.hpp>
+
+void uuidgen::generate(sdpa::uuid &uid)
+{
+	boost::uuids::random_generator gen;
+	uid = gen();
+
+	/*boost::mt19937 ran;
+	ran.seed(time(NULL)); // one should likely seed in a better way
+	boost::uuids::basic_random_generator<boost::mt19937> gen(&ran);
+	uid = gen();*/
 }
