@@ -41,7 +41,7 @@ void Aggregator::start(Aggregator::ptr_t ptrAgg)
 	dsm::DaemonFSM::create_daemon_stage(ptrAgg);
 	ptrAgg->configure_network( ptrAgg->url(), ptrAgg->masterName() );
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-	dsm::DaemonFSM::start(ptrAgg, ptrCfg);
+	ptrAgg->configure(ptrCfg);
 }
 
 

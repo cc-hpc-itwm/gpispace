@@ -75,7 +75,7 @@ namespace sdpa { namespace daemon {
 	  // API
 	  static void create_daemon_stage(const GenericDaemon::ptr_t& ptr_daemon );
 	  static void start(const GenericDaemon::ptr_t& daemon );
-	  static void start(const GenericDaemon::ptr_t& ptr_daemon, sdpa::util::Config::ptr_t ptrCfg);
+	  void configure(sdpa::util::Config::ptr_t ptrCfg);
 	  void stop();
 
 	  virtual void perform(const seda::IEvent::Ptr&);

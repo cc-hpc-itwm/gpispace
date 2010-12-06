@@ -31,7 +31,7 @@ void NRE<U>:: start(NRE<U>::ptr_t ptrNRE)
 	dsm::DaemonFSM::create_daemon_stage(ptrNRE);
 	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName() );
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-	dsm::DaemonFSM::start(ptrNRE, ptrCfg);
+	ptrNRE->configure(ptrCfg);
 }
 
 template <typename U>

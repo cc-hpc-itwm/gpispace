@@ -242,22 +242,22 @@ void GenericDaemon::start(const GenericDaemon::ptr_t& ptr_daemon )
 	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
 }
 
-void GenericDaemon::start( const GenericDaemon::ptr_t& ptr_daemon,  sdpa::util::Config::ptr_t ptrConfig )
+void GenericDaemon::configure(sdpa::util::Config::ptr_t ptrConfig )
 {
-	ptr_daemon->ptr_daemon_cfg_ = ptrConfig; // initialize it with default options
+	ptr_daemon_cfg_ = ptrConfig; // initialize it with default options
 
 	// The stage uses 2 threads
-	ptr_daemon->daemon_stage()->start();
+	daemon_stage()->start();
 
 	//start-up the the daemon
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
-	ptr_daemon->daemon_stage()->send(pEvtStartUp);
+	sendEventToSelf(pEvtStartUp);
 
 	sleep(1);
 
 	// configuration done
 	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
-	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
+	sendEventToSelf(pEvtConfigOk);
 }
 
 void GenericDaemon::stop()
