@@ -50,7 +50,7 @@ using namespace sdpa;
 typedef std::map<id_type, id_type> map_t;
 typedef map_t::value_type id_pair;
 
-static std::string id_gen_f() { return id_generator<std::string>::instance().next(); }
+static std::string id_gen_f() { return id_generator::instance().next(); }
 
 typedef boost::function<id_type()> Function_t;
 
