@@ -89,8 +89,8 @@
         <expression></expression>
       </defun>
       <connect-in port="state" place="wait_state_bunch"/>
-      <connect-out port="state" place="state_bunch"/>
-      <connect-read port="credit" place="credit_step_bunch"/>
+      <connect-out port="state" place="pre_step_bunch_state_bunch"/>
+      <connect-in port="credit" place="credit_step_bunch"/>
     </transition>
 
     <place name="state_bunch_check_break" type="state"/>
@@ -139,18 +139,122 @@
         <expression></expression>
       </defun>
       <connect-in port="store" place="store_bunch_put"/>
-      <connect-out port="store" place="store_bunch_get"/>
-      <connect-read port="credit" place="credit_step_bunch"/>
+      <connect-out port="store" place="pre_step_bunch_store_bunch_get"/>
+      <connect-in port="credit" place="credit_step_bunch"/>
     </transition>
 
     <place name="credit_step_bunch" type="control">
       <token><value>[]</value></token>
     </place>
 
-    <transition name="step_bunch">
+    <place name="pre_step_bunch_state_bunch" type="state"/>
+    <place name="pre_step_bunch_store_bunch_get" type="store_bunch"/>
+
+    <transition name="step_bunch_state_bunch" priority="1">
       <defun>
         <in name="state" type="state"/>
         <in name="assoc" type="map"/>
+        <in name="store" type="store_bunch"/>
+        <out name="state" type="state"/>
+        <out name="bunch" type="bunch_with_store"/>
+        <out name="credit_step_bunch" type="control"/>
+        <expression>
+          ${bunch.bunch.id} := ${state.bunch.id};
+          ${bunch.bunch.offset.id} := ${state.offset.id};
+          ${bunch.store} := ${store};
+          ${bunch.volumes.seen.id} := {};
+
+          ${state.bunch.id} := ${state.bunch.id} + 1;
+
+          ${credit_step_bunch} := []
+        </expression>
+        <condition>
+          "step_bunch_state_bunch" != ""
+        </condition>
+        <condition>
+          map_is_assigned (${assoc}, ${store.id})
+        </condition>
+        <condition>
+          ${state.offset.id} :eq: map_get_assignment (${assoc}, ${store.id})
+        </condition>
+      </defun>
+      <connect-in port="state" place="pre_step_bunch_state_bunch"/>
+      <connect-read port="assoc" place="assoc"/>
+      <connect-in port="store" place="store_bunch_get"/>
+      <connect-out port="state" place="state_bunch_check_break_wait"/>
+      <connect-out port="bunch" place="bunch_with_store"/>
+      <connect-out port="credit_step_bunch" place="credit_step_bunch"/>
+    </transition>
+
+    <transition name="step_bunch_store_bunch_get" priority="1">
+      <defun>
+        <in name="state" type="state"/>
+        <in name="assoc" type="map"/>
+        <in name="store" type="store_bunch"/>
+        <out name="state" type="state"/>
+        <out name="bunch" type="bunch_with_store"/>
+        <out name="credit_step_bunch" type="control"/>
+        <expression>
+          ${bunch.bunch.id} := ${state.bunch.id};
+          ${bunch.bunch.offset.id} := ${state.offset.id};
+          ${bunch.store} := ${store};
+          ${bunch.volumes.seen.id} := {};
+
+          ${state.bunch.id} := ${state.bunch.id} + 1;
+
+          ${credit_step_bunch} := []
+        </expression>
+        <condition>
+          "step_bunch_store_bunch_get" != ""
+        </condition>
+        <condition>
+          map_is_assigned (${assoc}, ${store.id})
+        </condition>
+        <condition>
+          ${state.offset.id} :eq: map_get_assignment (${assoc}, ${store.id})
+        </condition>
+      </defun>
+      <connect-in port="state" place="state_bunch"/>
+      <connect-read port="assoc" place="assoc"/>
+      <connect-in port="store" place="pre_step_bunch_store_bunch_get"/>
+      <connect-out port="state" place="state_bunch_check_break_wait"/>
+      <connect-out port="bunch" place="bunch_with_store"/>
+      <connect-out port="credit_step_bunch" place="credit_step_bunch"/>
+    </transition>
+
+    <transition name="no_step_bunch_state_bunch">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="credit_step_bunch" type="control"/>
+        <expression>
+          ${credit_step_bunch} := []
+        </expression>
+      </defun>
+      <connect-in port="state" place="pre_step_bunch_state_bunch"/>
+      <connect-out port="state" place="state_bunch"/>
+      <connect-out port="credit_step_bunch" place="credit_step_bunch"/>
+    </transition>
+
+    <transition name="no_step_bunch_store_bunch_get">
+      <defun>
+        <in name="store" type="store_bunch"/>
+        <out name="store" type="store_bunch"/>
+        <out name="credit_step_bunch" type="control"/>
+        <expression>
+          ${credit_step_bunch} := []
+        </expression>
+      </defun>
+      <connect-in port="store" place="pre_step_bunch_store_bunch_get"/>
+      <connect-out port="store" place="store_bunch_get"/>
+      <connect-out port="credit_step_bunch" place="credit_step_bunch"/>
+    </transition>
+
+    <transition name="step_bunch" priority="3">
+      <defun>
+        <in name="state" type="state"/>
+        <in name="assoc" type="map"/>
+        <out name="assoc" type="map"/>
         <in name="store" type="store_bunch"/>
         <out name="state" type="state"/>
         <out name="bunch" type="bunch_with_store"/>
@@ -163,6 +267,9 @@
           ${state.bunch.id} := ${state.bunch.id} + 1
         </expression>
         <condition>
+          "step_bunch" != ""
+        </condition>
+        <condition>
           map_is_assigned (${assoc}, ${store.id})
         </condition>
         <condition>
@@ -170,10 +277,22 @@
         </condition>
       </defun>
       <connect-in port="state" place="state_bunch"/>
-      <connect-read port="assoc" place="assoc"/>
+      <connect-in port="assoc" place="pre_step_bunch_assoc"/>
+      <connect-out port="assoc" place="assoc"/>
       <connect-in port="store" place="store_bunch_get"/>
       <connect-out port="state" place="state_bunch_check_break_wait"/>
       <connect-out port="bunch" place="bunch_with_store"/>
+    </transition>
+
+    <transition name="no_step_bunch" priority="2">
+      <defun>
+        <in name="assoc" type="map"/>
+        <out name="assoc" type="map"/>
+        <expression>
+        </expression>
+      </defun>
+      <connect-in port="assoc" place="pre_step_bunch_assoc"/>
+      <connect-out port="assoc" place="assoc"/>
     </transition>
 
     <place name="state_bunch_check_break_wait" type="state"/>
@@ -342,8 +461,10 @@
       <connect-out port="volume" place="volume_with_store"/>
       <connect-out port="credit_state_assign_check_break" place="credit_state_assign_check_break"/>
       <connect-in port="assoc" place="assoc_assign"/>
-      <connect-out port="assoc" place="assoc"/>
+      <connect-out port="assoc" place="pre_step_bunch_assoc"/>
     </transition>
+
+    <place name="pre_step_bunch_assoc" type="map"/>
 
     <transition name="not_break_assign">
       <defun>
