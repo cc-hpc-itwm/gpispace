@@ -310,30 +310,49 @@ typedef deque<pnet_t::output_t> deque_output_t;
 // ************************************************************************* //
 // div log stuff
 
-typedef std::pair<const pnet_t &,const pnet_t::token_input_t &> show_token_input_t;
+struct show_token_input_t
+{
+  show_token_input_t ( const pnet_t & n
+                     , const pnet_t::token_input_t & inp
+                     )
+    : net (n)
+    , input (inp)
+  {}
+
+  const pnet_t & net;
+  const pnet_t::token_input_t & input;
+};
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_token_input_t & show_token_input
                                   )
 {
-  const pnet_t & net (show_token_input.first);
-  const pnet_t::token_input_t & token_input (show_token_input.second);
-
   return s << "{"
-           << Function::Transition::get_token<token_t>(token_input)
+           << Function::Transition::get_token<token_t>(show_token_input.input)
            << " on "
-           << net.get_place (Function::Transition::get_pid<token_t>(token_input))
+           << show_token_input.net.get_place (Function::Transition::get_pid<token_t>(show_token_input.input))
            << "}";
 }
 
-typedef std::pair<const pnet_t &,const pnet_t::activity_t &> show_activity_t;
+struct show_activity_t
+{
+  show_activity_t ( const pnet_t & n
+                  , const pnet_t::activity_t & a
+                  )
+    : net (n)
+    , activity (a)
+  {}
+
+  const pnet_t & net;
+  const pnet_t::activity_t & activity;
+};
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_activity_t & show_activity
                                   )
 {
-  const pnet_t & net (show_activity.first);
-  const pnet_t::activity_t & activity (show_activity.second);
+  const pnet_t & net (show_activity.net);
+  const pnet_t::activity_t & activity (show_activity.activity);
 
   s << "activity" << ": " << net.get_transition (activity.tid).t << ":";
 
@@ -348,14 +367,25 @@ static std::ostream & operator << ( std::ostream & s
   return s;
 }
 
-typedef std::pair<const pnet_t &,const pnet_t::output_t &> show_output_t;
+struct show_output_t
+{
+  show_output_t ( const pnet_t & n
+                , const pnet_t::output_t & o
+                )
+    : net (n)
+    , output (o)
+  {}
+
+  const pnet_t & net;
+  const pnet_t::output_t & output;
+};
 
 static std::ostream & operator << ( std::ostream & s
                                   , const show_output_t & show_output
                                   )
 {
-  const pnet_t & net (show_output.first);
-  const pnet_t::output_t & output (show_output.second);
+  const pnet_t & net (show_output.net);
+  const pnet_t::output_t & output (show_output.output);
 
   s << " output: ";
 
