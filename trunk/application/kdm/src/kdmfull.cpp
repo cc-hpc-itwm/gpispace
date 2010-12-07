@@ -243,7 +243,7 @@ static void initialize (void *, const we::loader::input_t & input, we::loader::o
 
   bunch_store_per_node = 1 +
     std::min ( bunch_store_per_node
-	     , divru ( per_offset_bunches * offsets_at_once
+	     , divru ( per_offset_bunches * 2 * offsets_at_once
 		     , node_count
 		     )
 	     );
