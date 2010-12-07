@@ -10,13 +10,16 @@
 
 <!--
        <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"</value>
-       <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"</value>
+       <value></value>
        <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_ImpResp.xml"</value>
+"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.ImpResp.xml"</value>
 -->
 
    <place name="config_file" type="string">
      <token>
-       <value>"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.ImpResp.xml"</value>
+       <value>
+"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
+</value>
      </token>
    </place>
    <place name="done" type="control"/>

@@ -9,14 +9,14 @@
   <net>
 <!--
 "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
 "/fhgfs/HPC/rahn/kdm/Kirchhoff_C3NA.rahn.xml"
+"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
 -->
 
    <place name="config_file" type="string">
      <token>
        <value>
-"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL.xml"
+"/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
 </value>
      </token>
    </place>
