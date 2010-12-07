@@ -253,6 +253,8 @@ void GenericDaemon::configure(sdpa::util::Config::ptr_t ptrConfig )
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
 	sendEventToSelf(pEvtStartUp);
 
+	// add here a condition variable and wait
+	// until notified -> when an event of type ConfigOkEvent/ConfigNokEvent arrives
 	sleep(1);
 
 	// configuration done

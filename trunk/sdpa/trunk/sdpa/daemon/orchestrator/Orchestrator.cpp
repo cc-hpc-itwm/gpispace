@@ -39,8 +39,8 @@ Orchestrator::~Orchestrator()
 void Orchestrator::start( Orchestrator::ptr_t ptrOrch )
 {
 	dsm::DaemonFSM::create_daemon_stage(ptrOrch);
-	ptrOrch->configure_network( ptrOrch->url() );
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
+	ptrOrch->configure_network( ptrOrch->url() );
 	ptrOrch->configure(ptrCfg);
 }
 
