@@ -48,7 +48,7 @@
         <in name="volume" type="VOLUME" />
         <in name="config" type="CONFIG" />
         <out name="volume" type="VOLUME" />
-        <module name="kdm" function="init_volume" />
+        <module name="kdm" function="init_volume (config, volume)" />
       </defun>
       <connect-in place="volume_in" port="volume" />
       <connect-read place="config" port="config" />
@@ -108,7 +108,7 @@
         <in name="bunch" type="BUNCH"/>
         <in name="config" type="CONFIG" />
         <out name="bunch" type="BUNCH" />
-        <module name="kdm" function="load"/>
+        <module name="kdm" function="load (config, bunch)"/>
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="bunch"  port="bunch" />
@@ -121,7 +121,7 @@
         <in  name="bunch"   type="BUNCH"/>
         <in  name="config"  type="CONFIG"/>
         <out name="bunch" type="BUNCH" />
-        <module name="kdm" function="process"/>
+        <module name="kdm" function="process (config, bunch)"/>
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="bunch_loaded"  port="bunch" />
@@ -187,7 +187,7 @@
         <in  name="config"  type="CONFIG"/>
         <in  name="volume"  type="VOLUME"/>
         <out name="volume"    type="VOLUME" />
-        <module name="kdm" function="write"/>
+        <module name="kdm" function="write (config, volume)"/>
       </defun>
       <connect-read  place="config" port="config" />
       <connect-in  place="volume" port="volume" />

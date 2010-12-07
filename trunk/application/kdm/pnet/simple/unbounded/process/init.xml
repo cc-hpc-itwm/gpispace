@@ -14,7 +14,7 @@
         <in name="volume" type="VOLUME" />
         <in name="config" type="CONFIG" />
         <out name="volume" type="VOLUME" />
-        <module name="kdm" function="init_volume" />
+        <module name="kdm" function="init_volume (config, volume)" />
       </defun>
       <connect-in place="volume_in" port="volume" />
       <connect-read place="config" port="config" />

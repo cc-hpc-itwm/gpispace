@@ -28,7 +28,7 @@
      <defun>
        <in name="config_file" type="string"/>
        <out name="config" type="CONFIG" />
-       <module name="kdm" function="initialize"/>
+       <module name="kdm" function="config initialize (config_file)"/>
      </defun>
      <connect-in place="config_file" port="config_file"/>
      <connect-out port="config" place="config"/>
@@ -216,7 +216,7 @@
             <defun internal="false">
               <in  name="config" type="CONFIG" />
               <out name="trigger" type="control" />
-              <module name="kdm" function="finalize"/>
+              <module name="kdm" function="trigger finalize (config)"/>
             </defun>
             <connect-in place="config_finalize" port="config"/>
             <connect-out place="done" port="trigger"/>

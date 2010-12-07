@@ -349,7 +349,7 @@
         <in name="config" type="config"/>
         <in name="pair" type="pair_to_reduce"/>
         <out name="pair" type="pair_to_reduce"/>
-        <module name="kdmfull" function="reduce (pair)"/>
+        <module name="kdmfull" function="reduce (config, pair)"/>
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="pair" place="pair_to_reduce"/>
@@ -477,7 +477,7 @@
         <in name="config" type="config"/>
         <in name="trigger" type="control"/>
         <out name="trigger" type="control"/>
-        <module name="kdmfull" function="finalize (config)"/>
+        <module name="kdmfull" function="trigger finalize (config)"/>
       </defun>
       <connect-in port="config" place="config"/>
       <connect-in port="trigger" place="done_cleanup"/>

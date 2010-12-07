@@ -105,7 +105,7 @@
         <in  name="config"  type="CONFIG"/>
         <in  name="volume"  type="VOLUME"/>
         <out name="volume"    type="VOLUME" />
-        <module name="kdm" function="write"/>
+        <module name="kdm" function="write (config, volume)"/>
       </defun>
       <connect-in  place="config" port="config" />
       <connect-in  place="volume" port="volume" />

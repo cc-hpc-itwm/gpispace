@@ -15,7 +15,7 @@
         <in name="bunch" type="BUNCH"/>
         <in name="config" type="CONFIG" />
         <out name="bunch" type="BUNCH" />
-        <module name="kdm" function="load"/>
+        <module name="kdm" function="load (config, bunch)"/>
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="bunch"  port="bunch" />
@@ -30,7 +30,7 @@
         <in name="bunch" type="BUNCH"/>
         <in name="config" type="CONFIG" />
         <out name="bunch" type="BUNCH" />
-        <module name="filter" function="bandpass"/>
+        <module name="filter" function="bandpass (config, bunch)"/>
       </defun>
       <connect-read place="config" port="config" />
       <connect-in   place="bunch_loaded"  port="bunch" />
@@ -45,7 +45,7 @@
         <in  name="bunch"   type="BUNCH"/>
         <in  name="config"  type="CONFIG"/>
         <out name="bunch" type="BUNCH" />
-        <module name="kdm" function="process"/>
+        <module name="kdm" function="process (config, bunch)"/>
       </defun>
       <connect-in place="config" port="config" />
       <connect-in place="bunch_to_process"  port="bunch" />
