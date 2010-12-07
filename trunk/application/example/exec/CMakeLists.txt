@@ -43,7 +43,6 @@ set (mods
     exec_mod
 )
 set (xmls
-    exec.xml
 )
 
 install(TARGETS ${mods}
