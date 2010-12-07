@@ -243,9 +243,14 @@ namespace fhg
           void clear (std::string const & /*regexp*/)
           {
             lock_t lock(mutex_);
+
+            const std::size_t count (store_.size());
+
             store_.clear ();
 
             write_through ();
+
+            LOG(INFO, "cleared " << count << " entries");
           }
 
           void del (key_type const & k)
