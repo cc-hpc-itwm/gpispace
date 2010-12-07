@@ -194,6 +194,8 @@ int main (int argc, char **argv)
   }
 #endif
 
+  statistics::dump_maps();
+
   std::cerr << "Everything done." << std::endl;
 
   return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);

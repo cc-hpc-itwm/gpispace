@@ -18,6 +18,7 @@
     <place name="N" type="long"/>
     <place name="pair" type="PAIR"/>
     <place name="state" type="state"/>
+    <place name="check_break" type="state" capacity="1"/>
 
     <place name="credit" type="control" virtual="true"/>
 
@@ -34,7 +35,7 @@
       </defun>
       <connect-in port="tag" place="tag"/>
       <connect-in port="N" place="N"/>
-      <connect-out port="state" place="state"/>
+      <connect-out port="state" place="check_break"/>
     </transition>
 
     <transition name="step">
@@ -47,13 +48,10 @@
           ${pair} := ${state.pair};
           ${state.pair.id} := ${state.pair.id} + 1
         </expression>
-        <condition>
-          ${state.pair.id} :lt: ${state.max}
-        </condition>
       </defun>
       <connect-in port="state" place="state"/>
       <connect-in port="credit" place="credit"/>
-      <connect-out port="state" place="state"/>
+      <connect-out port="state" place="check_break"/>
       <connect-out port="pair" place="pair"/>
     </transition>
 
@@ -66,7 +64,21 @@
           ${state.pair.id} :ge: ${state.max}
         </condition>
       </defun>
-      <connect-in port="state" place="state"/>
+      <connect-in port="state" place="check_break"/>
+    </transition>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <expression>
+        </expression>
+        <condition>
+          ${state.pair.id} :lt: ${state.max}
+        </condition>
+      </defun>
+      <connect-out port="state" place="state"/>
+      <connect-in port="state" place="check_break"/>
     </transition>
   </net>
 </template>

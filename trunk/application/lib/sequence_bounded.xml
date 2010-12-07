@@ -1,4 +1,4 @@
-<defun>
+<defun name="sequence_bounded">
   <in name="amount" type="long" place="N"/>
   <out name="out" type="long" place="id"/>
 
@@ -12,6 +12,7 @@
     <place name="state" type="state"/>
     <place name="id" type="long"/>
     <place name="credit" type="control" virtual="true"/>
+    <place name="check_break" type="state" capacity="1"/>
 
     <transition name="init">
       <defun>
@@ -22,7 +23,7 @@
         </expression>
       </defun>
       <connect-in place="N" port="N"/>
-      <connect-out port="state" place="state"/>
+      <connect-out port="state" place="check_break"/>
     </transition>
 
     <transition name="break">
@@ -31,7 +32,18 @@
         <expression></expression>
         <condition>${state.id} :ge: ${state.max}</condition>
       </defun>
-      <connect-in place="state" port="state"/>
+      <connect-in place="check_break" port="state"/>
+    </transition>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <expression></expression>
+        <condition>${state.id} :lt: ${state.max}</condition>
+      </defun>
+      <connect-in place="check_break" port="state"/>
+      <connect-out place="state" port="state"/>
     </transition>
 
     <transition name="step">
@@ -43,11 +55,10 @@
         <expression>
           ${id} := ${state.id}; ${state.id} := ${state.id} + 1
         </expression>
-        <condition>${state.id} :lt: ${state.max}</condition>
       </defun>
       <connect-in place="state" port="state"/>
       <connect-in place="credit" port="credit"/>
-      <connect-out place="state" port="state"/>
+      <connect-out place="check_break" port="state"/>
       <connect-out place="id" port="id"/>
     </transition>
   </net>

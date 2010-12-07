@@ -104,23 +104,23 @@ namespace statistics
 
   static inline void dump_maps ()
   {
-//     for ( time_map_t::const_iterator pos (get_time_map().begin())
-//         ; pos != get_time_map().end()
-// 	; ++pos
-// 	)
-//       {
-// 	LOG( INFO
-// 	   , "stat_map "
-// 	   << std::setw(12) << std::setprecision(5) << pos->second
-// 	   << " call " << std::setw(10) << value (get_call_map(), pos->first)
-// 	   << " eval " << std::setw(10) << value (get_eval_map(), pos->first)
-// 	   << " max_eval " << std::setw(10) << value (get_max_eval_map(), pos->first)
-// 	   << " max_size " << std::setw(10) << value (get_max_size_map(), pos->first)
-// 	   << " true " << std::setw(10) << value (get_true_map(), pos->first)
-// 	   << " false " << std::setw(10) << value (get_false_map(), pos->first)
-// 	   << " " << pos->first
-// 	   );
-//       }
+    for ( time_map_t::const_iterator pos (get_time_map().begin())
+        ; pos != get_time_map().end()
+	; ++pos
+	)
+      {
+	LOG( INFO
+	   , "stat_map "
+	   << std::setw(12) << std::setprecision(5) << pos->second
+	   << " call " << std::setw(10) << value (get_call_map(), pos->first)
+	   << " eval " << std::setw(10) << value (get_eval_map(), pos->first)
+	   << " max_eval " << std::setw(10) << value (get_max_eval_map(), pos->first)
+	   << " max_size " << std::setw(10) << value (get_max_size_map(), pos->first)
+	   << " true " << std::setw(10) << value (get_true_map(), pos->first)
+	   << " false " << std::setw(10) << value (get_false_map(), pos->first)
+	   << " " << pos->first
+	   );
+      }
   }
 }
 

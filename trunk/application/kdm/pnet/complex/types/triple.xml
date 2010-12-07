@@ -1,8 +1,0 @@
-<structs>
-  <struct name="triple">
-    <field name="tag" type="long"/>
-    <field name="id" type="long"/>
-    <field name="store" type="long"/>
-  </struct>
-</structs>
-

@@ -1,0 +1,21 @@
+<defun name="use_sequence">
+  <in name="n" type="long" place="n"/>
+  <out name="out" type="long" place="out"/>
+  <net>
+    <place name="n" type="long"/>
+    <place name="out" type="long"/>
+    <place name="intermediate" type="long"/>
+
+    <transition name="outer" inline="true">
+      <include-function href="lib/sequence.xml"/>
+      <connect-in port="amount" place="n"/>
+      <connect-out port="out" place="intermediate"/>
+    </transition>
+
+    <transition name="inner" inline="true">
+      <include-function href="lib/sequence.xml"/>
+      <connect-in port="amount" place="intermediate"/>
+      <connect-out port="out" place="out"/>
+    </transition>
+  </net>
+</defun>
