@@ -54,7 +54,7 @@ target_link_libraries(sdpa-test
 
 
 # adding the tests
-add_test(sdpa_test_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_suite)
+add_test(sdpa_test_suite sdpa_test_suite)
 
 
 add_executable(test_config_suite test_Config.cpp)
@@ -65,7 +65,7 @@ target_link_libraries(test_config_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_config_suite ${CMAKE_CURRENT_BINARY_DIR}/test_config_suite )
+add_test( test_config_suite test_config_suite )
 
 add_executable(test_worker_suite test_Worker.cpp)
 target_link_libraries(test_worker_suite  seda sdpa-daemon
@@ -75,7 +75,7 @@ target_link_libraries(test_worker_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_worker_suite ${CMAKE_CURRENT_BINARY_DIR}/test_worker_suite )
+add_test( test_worker_suite test_worker_suite )
 
 add_executable(test_jobid_suite test_JobId.cpp)
 target_link_libraries(test_jobid_suite  seda sdpa-daemon
@@ -85,7 +85,7 @@ target_link_libraries(test_jobid_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_jobid_suite ${CMAKE_CURRENT_BINARY_DIR}/test_jobid_suite )
+add_test( test_jobid_suite test_jobid_suite )
 
 add_executable(test_scheduler_suite test_Scheduler.cpp)
 target_link_libraries(test_scheduler_suite  seda sdpa-daemon
@@ -95,7 +95,7 @@ target_link_libraries(test_scheduler_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_scheduler_suite ${CMAKE_CURRENT_BINARY_DIR}/test_scheduler_suite )
+add_test( test_scheduler_suite test_scheduler_suite )
 
 add_executable(test_lb_suite test_LoadBalancer.cpp)
 target_link_libraries(test_lb_suite  seda sdpa-daemon
@@ -105,7 +105,7 @@ target_link_libraries(test_lb_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_lb_suite ${CMAKE_CURRENT_BINARY_DIR}/test_lb_suite )
+add_test( test_lb_suite test_lb_suite )
 
 add_executable(test_serialize_sharedptr_suite test_SerializeSharedPtr.cpp)
 target_link_libraries(test_serialize_sharedptr_suite  seda sdpa-daemon
@@ -115,7 +115,7 @@ target_link_libraries(test_serialize_sharedptr_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_serialize_sharedptr_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_sharedptr_suite )
+add_test( test_serialize_sharedptr_suite test_serialize_sharedptr_suite )
 
 
 add_executable(test_serialize_jobptr_suite test_SerializeJobPtr.cpp)
@@ -126,7 +126,7 @@ target_link_libraries(test_serialize_jobptr_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_serialize_jobptr_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_jobptr_suite )
+add_test(test_serialize_jobptr_suite test_serialize_jobptr_suite)
 
 set( test_serialize_agents_srcs
   	test_SerializeAgents.cpp
@@ -142,7 +142,7 @@ target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_agents_suite )
+add_test(test_serialize_agents_suite test_serialize_agents_suite)
 
 set( test_agents_srcs
   	test_Agents.cpp
@@ -158,7 +158,7 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_agents_suite )
+add_test(test_agents_suite test_agents_suite)
 
 set( test_orch_empty_we_srcs
   	test_OrchDifferentWEs.cpp
@@ -175,6 +175,4 @@ target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
 									 dl
 									 uuid
 									 ${Boost_LIBRARIES})
-add_test( test_orchestrator_empty_we ${CMAKE_CURRENT_BINARY_DIR}/test_orchestrator_empty_we )
-
-#add_dependencies (sdpa-test ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
+add_test( test_orchestrator_empty_we test_orchestrator_empty_we )
