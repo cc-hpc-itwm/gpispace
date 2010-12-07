@@ -3,7 +3,7 @@
  *
  *       Filename:  test_udp.cpp
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  10/25/2009 04:24:41 PM
@@ -36,44 +36,6 @@ int main(int argc, char **argv)
   seda::comm::initialize(argc, argv);
 
   int errcount(0);
-
-  {
-    seda::comm::ConnectionFactory cFactory;
-    seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1");
-    seda::comm::Connection::ptr_t conn = cFactory.createConnection(params);
-    {
-      LOG(DEBUG, "use count = " << conn.use_count());
-      LOG(DEBUG, "conn = " << conn.get());
-      seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy("unknown", conn));
-      LOG(DEBUG, "use count = " << conn_s->connection().use_count());
-      LOG(DEBUG, "conn = " << conn_s->connection().get());
-      conn_s->onStageStart("foo");
-      conn_s->onStageStop("foo");
-    }
-  }
-
-  {
-    seda::comm::ConnectionFactory::ptr_t cFactory(new seda::comm::ConnectionFactory());
-    seda::StageFactory::Ptr sFactory(new seda::StageFactory());
-
-    seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1");
-    seda::comm::Connection::ptr_t conn = cFactory->createConnection(params);
-    {
-      LOG(DEBUG, "use count = " << conn.use_count());
-      LOG(DEBUG, "conn = " << conn.get());
-      seda::comm::ConnectionStrategy::ptr_t net(new seda::comm::ConnectionStrategy("p1-final", conn));
-      seda::Stage::Ptr net_stage(sFactory->createStage("p1-net", net));
-
-      net_stage->start();
-      net_stage->stop();
-
-      LOG(DEBUG, "use count = " << net->connection().use_count());
-      LOG(DEBUG, "conn = " << net->connection().get());
-    }
-
-    seda::StageRegistry::instance().stopAll();
-    seda::StageRegistry::instance().clear();
-  }
 
   {
     // allocate factories

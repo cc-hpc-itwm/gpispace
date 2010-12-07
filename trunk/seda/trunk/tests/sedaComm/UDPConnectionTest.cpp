@@ -116,22 +116,6 @@ void UDPConnectionTest::testConnectionSharedPointer()
   }
 }
 
-void UDPConnectionTest::testConnectionStrategyMinimal()
-{
-  seda::comm::ConnectionFactory cFactory;
-  seda::comm::ConnectionParameters params("udp", "127.0.0.1", "process-1");
-  seda::comm::Connection::ptr_t conn = cFactory.createConnection(params);
-  {
-    LOG(DEBUG, "use count = " << conn.use_count());
-    LOG(DEBUG, "conn = " << conn.get());
-    seda::comm::ConnectionStrategy::ptr_t conn_s(new seda::comm::ConnectionStrategy("unknown", conn));
-    LOG(DEBUG, "use count = " << conn_s->connection().use_count());
-    LOG(DEBUG, "conn = " << conn_s->connection().get());
-    conn_s->onStageStart("foo");
-    conn_s->onStageStop("foo");
-  }
-}
-
 void UDPConnectionTest::testConnectionStrategy() {
   try {
     // allocate factories
