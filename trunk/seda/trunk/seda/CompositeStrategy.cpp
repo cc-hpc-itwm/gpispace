@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -38,6 +38,24 @@ void CompositeStrategy::remove(const Strategy::Ptr& s) {
     if (*it == s) {
       _children.erase(it); break;
     }
+  }
+}
+
+void CompositeStrategy::onStageStart(const std::string& s)
+{
+  for (std::list<Strategy::Ptr>::const_iterator it(_children.begin());
+       it != _children.end();
+       it++) {
+    (*it)->onStageStart(s);
+  }
+}
+
+void CompositeStrategy::onStageStop(const std::string& s)
+{
+  for (std::list<Strategy::Ptr>::const_iterator it(_children.begin());
+       it != _children.end();
+       it++) {
+    (*it)->onStageStop(s);
   }
 }
 

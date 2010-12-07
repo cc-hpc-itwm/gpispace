@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -69,19 +69,23 @@ namespace seda { namespace comm {
 
     const Connection::ptr_t &connection() { return conn_; }
 
-    virtual void onStageStart(const std::string &)
+    virtual void onStageStart(const std::string & s)
     {
+      ForwardStrategy::onStageStart (s);
+
       DLOG(DEBUG, "starting underlying connection..." << connection().get() << " count = " << connection().use_count() );
       conn_->registerListener(this);
       conn_->start();
       DLOG(DEBUG, "started");
     }
-    virtual void onStageStop(const std::string &)
+    virtual void onStageStop(const std::string & s)
     {
       DLOG(DEBUG, "stopping underlying connection...");
       conn_->removeListener(this);
       conn_->stop();
       DLOG(DEBUG, "stopped");
+
+      ForwardStrategy::onStageStop (s);
     }
   private:
     seda::comm::Connection::ptr_t conn_;

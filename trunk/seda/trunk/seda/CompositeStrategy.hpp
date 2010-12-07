@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
 
    This file is part of seda.
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with seda; see the file COPYING.  If not, write to
    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  
+   Boston, MA 02111-1307, USA.
 
 */
 
@@ -30,13 +30,15 @@ namespace seda {
   class CompositeStrategy : public seda::Strategy {
   public:
     typedef seda::shared_ptr<CompositeStrategy> Ptr;
-    
+
     CompositeStrategy(const std::string& name);
     ~CompositeStrategy() {}
 
     void add(const seda::Strategy::Ptr&);
     void remove(const seda::Strategy::Ptr&);
 
+    void onStageStart(const std::string& s);
+    void onStageStop(const std::string& s);
     void perform(const seda::IEvent::Ptr&);
   private:
     std::list<seda::Strategy::Ptr> _children;
