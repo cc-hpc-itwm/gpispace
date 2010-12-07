@@ -8,6 +8,9 @@
 <![CDATA[${c} := ${a} + 1]]>
 ${d} := 2*${a}
 </expression>
+<expression>
+${another} := ${expression}
+</expression>
     <condition><![CDATA[${a} < 10]]>
                <!-- huhu -->
                ${a} &gt; 20

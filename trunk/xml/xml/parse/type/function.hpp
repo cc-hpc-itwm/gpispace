@@ -434,6 +434,13 @@ namespace xml
 
         // ***************************************************************** //
 
+        void add_expression (const expression_type & e)
+        {
+          boost::apply_visitor (visitor::join (e), f);
+        }
+
+        // ***************************************************************** //
+
         const port_vec_type & in (void) const { return _in.elements(); }
         const port_vec_type & out (void) const { return _out.elements(); }
 

@@ -445,8 +445,10 @@ namespace xml
                 }
               else if (child_name == "expression")
                 {
-                  f.f = type::expression_type
-                    (parse_cdata (child, state.file_in_progress()));
+                  f.add_expression
+                    ( type::expression_type
+                      (parse_cdata (child, state.file_in_progress()))
+                    );
                 }
               else if (child_name == "module")
                 {
