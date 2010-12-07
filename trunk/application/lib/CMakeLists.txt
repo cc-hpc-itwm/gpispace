@@ -6,7 +6,6 @@ set (xmls
   eatN.xml
   make_pair.xml
   sequence_bounded.xml
-  sequence_wanted.xml
   sequence.xml
   tagged_sequence_bounded.xml
   tagged_sequence.xml
