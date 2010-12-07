@@ -27,11 +27,3 @@ install (TARGETS pnet2dot
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
-
-add_executable(pnet2cpp pnet2cpp.cpp)
-target_link_libraries(pnet2cpp ${Boost_LIBRARIES})
-set_target_properties(pnet2cpp PROPERTIES LINK_FLAGS "-static")
-install (TARGETS pnet2cpp
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
