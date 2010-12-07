@@ -8,6 +8,7 @@
     <place name="done" type="control"/>
     <place name="run" type="control"/>
     <place name="what" type="T" virtual="true"/>
+    <place name="check_break" type="long" capacity="1"/>
     <transition name="run">
       <defun>
         <in name="trigger" type="control"/>
@@ -17,7 +18,7 @@
       </defun>
       <connect-in port="trigger" place="run"/>
       <connect-in port="N" place="N_in"/>
-      <connect-out port="Nout" place="N"/>
+      <connect-out port="Nout" place="check_break"/>
     </transition>
     <transition name="step">
       <defun>
@@ -27,18 +28,35 @@
         <expression>${wait} := ${wait} - 1</expression>
       </defun>
       <connect-in port="wait" place="N"/>
-      <connect-out port="wait" place="N"/>
+      <connect-out port="wait" place="check_break"/>
       <connect-in port="x" place="what"/>
     </transition>
     <transition name="break">
       <defun>
         <in name="wait" type="long"/>
         <out name="done" type="control"/>
-        <expression>${done} := []</expression>
-        <condition>${wait} == 0</condition>
+        <expression>
+          ${done} := []
+        </expression>
+        <condition>
+          ${wait} :le: 0
+        </condition>
       </defun>
-      <connect-in port="wait" place="N"/>
+      <connect-in port="wait" place="check_break"/>
       <connect-out port="done" place="done"/>
+    </transition>
+    <transition name="not_break">
+      <defun>
+        <in name="wait" type="long"/>
+        <out name="wait" type="long"/>
+        <expression>
+        </expression>
+        <condition>
+          ${wait} :gt: 0
+        </condition>
+      </defun>
+      <connect-in port="wait" place="check_break"/>
+      <connect-out port="wait" place="N"/>
     </transition>
   </net>
 </template>
