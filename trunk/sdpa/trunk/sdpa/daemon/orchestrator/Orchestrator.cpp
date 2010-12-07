@@ -38,7 +38,6 @@ Orchestrator::~Orchestrator()
 
 void Orchestrator::start( Orchestrator::ptr_t ptrOrch )
 {
-	dsm::DaemonFSM::create_daemon_stage(ptrOrch);
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
 	ptrOrch->configure_network( ptrOrch->url() );
 	ptrOrch->configure(ptrCfg);
@@ -48,7 +47,7 @@ void Orchestrator::start( Orchestrator::ptr_t ptrOrch )
 void Orchestrator::shutdown( Orchestrator::ptr_t ptrOrch )
 {
 	ptrOrch->shutdown_network();
-	ptrOrch->stop();
+	ptrOrch->stop_daemon_stage();
 
 	if( ptrOrch->hasWorkflowEngine() )
 	{

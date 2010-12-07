@@ -21,6 +21,8 @@
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
 #include <sdpa/daemon/EmptyWorkflowEngine.hpp>
 
+#include <seda/Stage.hpp>
+#include <seda/StageRegistry.hpp>
 
 namespace sdpa {
 namespace daemon {
@@ -37,6 +39,9 @@ namespace daemon {
 
 				Aggregator::ptr_t pAgg( new Aggregator( name, url, workflow_directory) );
 				pAgg->create_workflow_engine<T>();
+				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
+				pAgg->setStage(daemon_stage.get());
+				seda::StageRegistry::instance().insert(daemon_stage);
 				return pAgg;
 			}
 		};
@@ -49,6 +54,9 @@ namespace daemon {
 												const std::string &workflow_directory )
 			{
 				Aggregator::ptr_t pAgg( new Aggregator( name, url, workflow_directory) );
+				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
+				pAgg->setStage(daemon_stage.get());
+				seda::StageRegistry::instance().insert(daemon_stage);
 				return pAgg;
 			}
 		};

@@ -38,7 +38,6 @@ Aggregator::~Aggregator()
 
 void Aggregator::start(Aggregator::ptr_t ptrAgg)
 {
-	dsm::DaemonFSM::create_daemon_stage(ptrAgg);
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
 	ptrAgg->configure_network( ptrAgg->url(), ptrAgg->masterName() );
 	ptrAgg->configure(ptrCfg);
@@ -48,7 +47,7 @@ void Aggregator::start(Aggregator::ptr_t ptrAgg)
 void Aggregator::shutdown(Aggregator::ptr_t ptrAgg)
 {
 	ptrAgg->shutdown_network();
-	ptrAgg->stop();
+	ptrAgg->stop_daemon_stage();
 
 	if(ptrAgg->hasWorkflowEngine())
 	{

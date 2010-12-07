@@ -73,10 +73,9 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  static void create_daemon_stage(const GenericDaemon::ptr_t& ptr_daemon );
 	  static void start(const GenericDaemon::ptr_t& daemon );
 	  void configure(sdpa::util::Config::ptr_t ptrCfg);
-	  void stop();
+	  void stop_daemon_stage();
 
 	  virtual void perform(const seda::IEvent::Ptr&);
 
@@ -209,6 +208,16 @@ namespace sdpa { namespace daemon {
 	  void decExtJobsCnt();
 	  unsigned int extJobsCnt();
 
+	  void setStage(seda::Stage* stage)
+	  {
+		   assert (stage);
+		   if(stage)
+			  daemon_stage_ = stage;
+		   else
+			  daemon_stage_ = NULL;
+	  }
+
+
   protected:
 
 	 // observe workflow engine
@@ -263,15 +272,6 @@ namespace sdpa { namespace daemon {
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
 	  IWorkflowEngine*  ptr_workflow_engine_;
-
-	  void setStage(seda::Stage* stage)
-	  {
-          assert (stage);
-          if(stage)
-        	  daemon_stage_ = stage;
-          else
-        	  daemon_stage_ = NULL;
-	  }
 
 	  seda::Stage* ptr_to_master_stage_;
 	  seda::Stage* ptr_to_slave_stage_;

@@ -285,8 +285,9 @@ BOOST_AUTO_TEST_CASE( testOrchAandAggNoWe )
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
+
+    //seda::StageRegistry::instance().stopAll();
+	//seda::StageRegistry::instance().clear();
 
 	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
@@ -389,8 +390,9 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
+
+    //seda::StageRegistry::instance().stopAll();
+	//seda::StageRegistry::instance().clear();
 
 	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
@@ -491,8 +493,9 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
+
+    //seda::StageRegistry::instance().stopAll();
+	//seda::StageRegistry::instance().clear();
 
 	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
@@ -593,8 +596,9 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
+
+    //seda::StageRegistry::instance().stopAll();
+	//seda::StageRegistry::instance().clear();
 
 	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
@@ -701,8 +705,9 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
+
+    //seda::StageRegistry::instance().stopAll();
+	//seda::StageRegistry::instance().clear();
 
 	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");

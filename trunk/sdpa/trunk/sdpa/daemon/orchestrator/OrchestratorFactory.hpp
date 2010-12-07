@@ -20,6 +20,8 @@
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 //#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
+#include <seda/Stage.hpp>
+#include <seda/StageRegistry.hpp>
 
 namespace sdpa {
 namespace daemon {
@@ -35,6 +37,9 @@ namespace daemon {
 
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
 				pOrch->create_workflow_engine<T>();
+				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
+				pOrch->setStage(daemon_stage.get());
+				seda::StageRegistry::instance().insert(daemon_stage);
 				return pOrch;
 			}
 		};
@@ -46,6 +51,9 @@ namespace daemon {
 												const std::string& url )
 			{
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
+				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
+				pOrch->setStage(daemon_stage.get());
+				seda::StageRegistry::instance().insert(daemon_stage);
 				return pOrch;
 			}
 		};

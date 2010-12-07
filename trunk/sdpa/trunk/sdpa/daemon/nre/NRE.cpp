@@ -28,7 +28,6 @@ using namespace sdpa::events;
 template <typename U>
 void NRE<U>:: start(NRE<U>::ptr_t ptrNRE)
 {
-	dsm::DaemonFSM::create_daemon_stage(ptrNRE);
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
 	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName() );
 	ptrNRE->configure(ptrCfg);
@@ -42,7 +41,7 @@ void NRE<U>::shutdown(NRE<U>::ptr_t ptrNRE)
 
 	LOG(INFO, "shutting down...");
 	ptrNRE->shutdown_network();
-	ptrNRE->stop();
+	ptrNRE->stop_daemon_stage();
 
 	if ( ptrNRE->hasWorkflowEngine() )
 	{

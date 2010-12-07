@@ -142,13 +142,6 @@ GenericDaemon::~GenericDaemon()
 	daemon_stage_ = NULL;
 }
 
-void GenericDaemon::create_daemon_stage(const GenericDaemon::ptr_t& ptr_daemon )
-{
-	seda::Stage::Ptr daemon_stage( new seda::Stage(ptr_daemon->name() + "", ptr_daemon, 1) );
-	ptr_daemon->setStage(daemon_stage.get());
-	seda::StageRegistry::instance().insert(daemon_stage);
-}
-
 // TODO: work here
 //    the configure_network should get a config structure
 //    the peer needs the following: address to bind to, port to use (0 by default)
@@ -262,7 +255,7 @@ void GenericDaemon::configure(sdpa::util::Config::ptr_t ptrConfig )
 	sendEventToSelf(pEvtConfigOk);
 }
 
-void GenericDaemon::stop()
+void GenericDaemon::stop_daemon_stage()
 {
 	// shutdown the daemon stage
 	seda::StageRegistry::instance().lookup(name())->stop();
