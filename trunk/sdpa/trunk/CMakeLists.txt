@@ -62,19 +62,6 @@ if(CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 
-## PkgConfig is helpful
-include(FindPkgConfig)
-if ( PKG_CONFIG_FOUND )
-   pkg_check_modules (CPPUNIT REQUIRED cppunit>=1.12)
-   message(STATUS "CPPUnit: -I${CPPUNIT_INCLUDE_DIRS} -L${CPPUNIT_LIBRARY_DIRS} -l${CPPUNIT_LIBRARIES}")
-
-else  ( PKG_CONFIG_FOUND )
-  message(FATAL "No PKGCONFIG found - hoping for the best.")
-    # search packages by hand
-    # CPPunit
-    ##include(FindCppUnit)
-endif ( PKG_CONFIG_FOUND )
-
 # seda library
 include(FindSEDA)
 # check for seda

@@ -1,5 +1,4 @@
 # -*- mode: cmake; -*-
-## add the CPPUNIT stuff
 
 set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
@@ -16,9 +15,6 @@ message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
 set(TESTS_NRE_PCD_BIN "${CMAKE_BINARY_DIR}/sdpa/sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd")
 message(STATUS "nre-pcd binary path set to: ${TESTS_NRE_PCD_BIN}")
 
-include_directories(${CPPUNIT_INCLUDE_DIRS})
-link_directories(${CPPUNIT_LIBRARY_DIRS})
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -29,19 +25,18 @@ add_subdirectory(workflows)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 	DEPENDS ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml
 	DEPENDS pnetc
-	COMMAND ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc 
+	COMMAND ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc
 	ARGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
     COMMENT "Invoke command: ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet" VERBATIM
 )
-       
+
 set (test_srcs
   SchedulerTestImpl.cpp
   test_Config.cpp
-  test_UUID.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 )
-                   
+
 ADD_LIBRARY(sdpa-test ${test_srcs})
 target_link_libraries(sdpa-test
 	 sdpa-daemon
@@ -53,7 +48,6 @@ target_link_libraries(sdpa-test
 	 sdpa-util
 	 sdpa
 	 seda
-     ${CPPUNIT_STATIC_LIBRARIES}
 #     ${FVM_FAKE_STATIC_LIBRARY}
 #     ${MMGR_LIBRARY}
 	 ${Boost_LIBRARIES})
@@ -70,7 +64,7 @@ target_link_libraries(test_config_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})					 
+									 ${Boost_LIBRARIES})
 add_test( test_config_suite ${CMAKE_CURRENT_BINARY_DIR}/test_config_suite )
 
 add_executable(test_worker_suite test_Worker.cpp)
@@ -80,7 +74,7 @@ target_link_libraries(test_worker_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})					 
+									 ${Boost_LIBRARIES})
 add_test( test_worker_suite ${CMAKE_CURRENT_BINARY_DIR}/test_worker_suite )
 
 add_executable(test_jobid_suite test_JobId.cpp)
@@ -90,7 +84,7 @@ target_link_libraries(test_jobid_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})					 
+									 ${Boost_LIBRARIES})
 add_test( test_jobid_suite ${CMAKE_CURRENT_BINARY_DIR}/test_jobid_suite )
 
 add_executable(test_scheduler_suite test_Scheduler.cpp)
@@ -100,7 +94,7 @@ target_link_libraries(test_scheduler_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})					 
+									 ${Boost_LIBRARIES})
 add_test( test_scheduler_suite ${CMAKE_CURRENT_BINARY_DIR}/test_scheduler_suite )
 
 add_executable(test_lb_suite test_LoadBalancer.cpp)
@@ -131,7 +125,7 @@ target_link_libraries(test_serialize_jobptr_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})		 
+									 ${Boost_LIBRARIES})
 add_test( test_serialize_jobptr_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_jobptr_suite )
 
 set( test_serialize_agents_srcs
@@ -147,7 +141,7 @@ target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})	 
+									 ${Boost_LIBRARIES})
 add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/test_serialize_agents_suite )
 
 set( test_agents_srcs
@@ -163,7 +157,7 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 uuid
-									 ${Boost_LIBRARIES})		 
+									 ${Boost_LIBRARIES})
 add_test( test_agents_suite ${CMAKE_CURRENT_BINARY_DIR}/sdpa_test_agents_suite )
 
 set( test_orch_empty_we_srcs
@@ -184,4 +178,3 @@ target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
 add_test( test_orchestrator_empty_we ${CMAKE_CURRENT_BINARY_DIR}/test_orchestrator_empty_we )
 
 #add_dependencies (sdpa-test ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
-                   

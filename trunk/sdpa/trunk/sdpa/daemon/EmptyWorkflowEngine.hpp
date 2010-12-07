@@ -18,7 +18,6 @@
 #ifndef EMPTY_WORKFLOW_ENGINE_HPP
 #define EMPTY_WORKFLOW_ENGINE_HPP 1
 
-#include <cppunit/extensions/HelperMacros.h>
 #include "sdpa/logging.hpp"
 
 // for job_desc_t
