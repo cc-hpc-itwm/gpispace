@@ -141,6 +141,8 @@ struct MyFixture
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 		//stop the finite state machine
+		seda::StageRegistry::instance().stopAll();
+		seda::StageRegistry::instance().clear();
 
 		m_ptrPool->stop ();
 		m_ptrThrd->join ();
@@ -148,6 +150,7 @@ struct MyFixture
 		delete m_ptrServ;
 		delete m_ptrKvsd;
 		delete m_ptrPool;
+		sleep(1);
 	}
 
 	string read_workflow(string strFileName)
@@ -262,10 +265,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	ptrCli->shutdown_network();
 	ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
 
-	sleep(1);
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_suite_agent_int, MyFixture )
@@ -366,10 +366,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
 
-	sleep(1);
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpywnedByNRE terminated!");
 }
 
@@ -544,10 +541,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	ptrCli->shutdown_network();
 	ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
 
-	sleep(1);
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndActExec with fvm-pc terminated!");
 }
 
@@ -623,7 +617,6 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
-
 	for( int k=0; k<m_nITER; k++ )
 	{
 		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
@@ -660,10 +653,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 	ptrCli->shutdown_network();
 	ptrCli.reset();
-	seda::StageRegistry::instance().stopAll();
-	seda::StageRegistry::instance().clear();
 
-	sleep(1);
 	LOG( DEBUG, "The test case testActivityDummyWeAllCompAndNreWorker terminated!");
 }
 

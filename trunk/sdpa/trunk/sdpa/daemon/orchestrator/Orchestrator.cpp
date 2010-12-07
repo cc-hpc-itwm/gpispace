@@ -47,7 +47,7 @@ void Orchestrator::start( Orchestrator::ptr_t ptrOrch )
 void Orchestrator::shutdown( Orchestrator::ptr_t ptrOrch )
 {
 	ptrOrch->shutdown_network();
-	ptrOrch->stop_daemon_stage();
+	ptrOrch->stop_stages();
 
 	if( ptrOrch->hasWorkflowEngine() )
 	{

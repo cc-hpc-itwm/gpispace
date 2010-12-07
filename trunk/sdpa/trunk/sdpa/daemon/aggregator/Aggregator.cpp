@@ -47,7 +47,7 @@ void Aggregator::start(Aggregator::ptr_t ptrAgg)
 void Aggregator::shutdown(Aggregator::ptr_t ptrAgg)
 {
 	ptrAgg->shutdown_network();
-	ptrAgg->stop_daemon_stage();
+	ptrAgg->stop_stages();
 
 	if(ptrAgg->hasWorkflowEngine())
 	{

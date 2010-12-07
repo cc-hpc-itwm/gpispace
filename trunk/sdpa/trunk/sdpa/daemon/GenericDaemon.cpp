@@ -129,7 +129,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 
 GenericDaemon::~GenericDaemon()
 {
-  DLOG(TRACE, "GenericDaemon destructor called ...");
+	DLOG(TRACE, "GenericDaemon destructor called ...");
 
 	if(ptr_workflow_engine_)
 	{
@@ -143,9 +143,9 @@ GenericDaemon::~GenericDaemon()
 }
 
 // TODO: work here
-//    the configure_network should get a config structure
-//    the peer needs the following: address to bind to, port to use (0 by default)
-//    name of the master is not required, actually, the master can be stored in the kvs...
+// the configure_network should get a config structure
+// the peer needs the following: address to bind to, port to use (0 by default)
+// name of the master is not required, actually, the master can be stored in the kvs...
 
 // Remarks bind_addr it's hostname or IP address or IPv6
 //void GenericDaemon::configure_network( const std::string& bind_addr, const std::string& bind_port )
@@ -255,14 +255,19 @@ void GenericDaemon::configure(sdpa::util::Config::ptr_t ptrConfig )
 	sendEventToSelf(pEvtConfigOk);
 }
 
-void GenericDaemon::stop_daemon_stage()
+void GenericDaemon::stop_stages()
 {
-	// shutdown the daemon stage
-	seda::StageRegistry::instance().lookup(name())->stop();
-
 	SDPA_LOG_DEBUG("shutdown the network stage...");
 	//shutdown the network stage
+
+	//  shutdown the peer and remove the information from kvs
 	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
+	// shutdown the daemon stage
+	SDPA_LOG_DEBUG("shutdown the daemon stage...");
+	seda::StageRegistry::instance().lookup(name())->stop();
+	seda::StageRegistry::instance().remove(name());
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)

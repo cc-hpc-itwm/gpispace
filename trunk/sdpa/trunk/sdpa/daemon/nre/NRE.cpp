@@ -41,7 +41,7 @@ void NRE<U>::shutdown(NRE<U>::ptr_t ptrNRE)
 
 	LOG(INFO, "shutting down...");
 	ptrNRE->shutdown_network();
-	ptrNRE->stop_daemon_stage();
+	ptrNRE->stop_stages();
 
 	if ( ptrNRE->hasWorkflowEngine() )
 	{

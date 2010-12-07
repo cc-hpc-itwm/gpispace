@@ -147,6 +147,8 @@ struct MyFixture
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 		//stop the finite state machine
+		seda::StageRegistry::instance().stopAll();
+		seda::StageRegistry::instance().clear();
 
 		m_ptrPool->stop ();
 		m_ptrThrd->join ();
@@ -154,6 +156,8 @@ struct MyFixture
 		delete m_ptrServ;
 		delete m_ptrKvsd;
 		delete m_ptrPool;
+
+		sleep(1);
 	}
 
 	string read_workflow(string strFileName)
@@ -286,10 +290,6 @@ BOOST_AUTO_TEST_CASE( testOrchAandAggNoWe )
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
-    //seda::StageRegistry::instance().stopAll();
-	//seda::StageRegistry::instance().clear();
-
-	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
@@ -391,10 +391,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorNoWe )
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
-    //seda::StageRegistry::instance().stopAll();
-	//seda::StageRegistry::instance().clear();
-
-	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
@@ -494,10 +490,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
-    //seda::StageRegistry::instance().stopAll();
-	//seda::StageRegistry::instance().clear();
-
-	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
@@ -597,10 +589,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
-    //seda::StageRegistry::instance().stopAll();
-	//seda::StageRegistry::instance().clear();
-
-	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
@@ -706,10 +694,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
-    //seda::StageRegistry::instance().stopAll();
-	//seda::StageRegistry::instance().clear();
-
-	sleep(1);
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
