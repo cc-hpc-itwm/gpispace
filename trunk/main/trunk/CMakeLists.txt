@@ -83,6 +83,8 @@ else (DEBUG_FHGLOG)
   add_definitions("-DNDEBUG_FHGLOG")
 endif (DEBUG_FHGLOG)
 
+add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
+
 if (DISABLE_FHGLOG)
   add_definitions("-DFHGLOG_DISABLE_LOGGING=1")
 endif (DISABLE_FHGLOG)
