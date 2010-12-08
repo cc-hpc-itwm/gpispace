@@ -20,3 +20,4 @@ install(FILES ${hdrs}
 
 add_subdirectory(parse)
 add_subdirectory(thread)
+add_subdirectory(filesystem)
