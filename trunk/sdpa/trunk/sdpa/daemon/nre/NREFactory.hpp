@@ -22,6 +22,7 @@
 #include <sdpa/daemon/EmptyWorkflowEngine.hpp>
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
+#include <typeinfo>
 
 namespace sdpa {
 namespace daemon {
@@ -44,6 +45,7 @@ namespace daemon {
 
 
 
+				LOG( DEBUG, "Create NRE \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
 				typename sdpa::shared_ptr<NRE<U> > pNRE( new NRE<U>( name
 													   , url
 													   , masterName
@@ -80,6 +82,7 @@ namespace daemon {
 												   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
 												   )
 			{
+				LOG( DEBUG, "Create NRE "<<name<<" with no workflow engine " );
 				typename sdpa::shared_ptr<NRE<U> > pNRE( new NRE<U>(   name
 														   , url
 														   , masterName

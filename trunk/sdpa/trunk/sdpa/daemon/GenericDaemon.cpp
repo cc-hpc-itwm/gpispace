@@ -325,13 +325,6 @@ void GenericDaemon::onStageStart(const std::string & /* stageName */)
 
 void GenericDaemon::onStageStop(const std::string & /* stageName */)
 {
-	DMLOG(TRACE, "daemon stage is being stopped");
-	if (ptr_scheduler_)
-	{
-		// stop the scheduler thread
-		ptr_scheduler_->stop();
-	}
-
 	ptr_to_master_stage_ = NULL;
 	ptr_to_slave_stage_ = NULL;
 }

@@ -23,6 +23,7 @@
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
+#include <typeinfo>
 
 namespace sdpa {
 namespace daemon {
@@ -36,7 +37,7 @@ namespace daemon {
 			{
 
 
-
+				LOG( DEBUG, "Create aggregator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
 				Aggregator::ptr_t pAgg( new Aggregator( name, url, workflow_directory) );
 				pAgg->create_workflow_engine<T>();
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
@@ -53,6 +54,7 @@ namespace daemon {
 												const std::string& url,
 												const std::string &workflow_directory )
 			{
+				LOG( DEBUG, "Create Aggregator "<<name<<" with no workflow engine" );
 				Aggregator::ptr_t pAgg( new Aggregator( name, url, workflow_directory) );
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
 				pAgg->setStage(daemon_stage.get());

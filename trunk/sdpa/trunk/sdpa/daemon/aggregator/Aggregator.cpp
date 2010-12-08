@@ -46,6 +46,9 @@ void Aggregator::start(Aggregator::ptr_t ptrAgg)
 
 void Aggregator::shutdown(Aggregator::ptr_t ptrAgg)
 {
+	LOG(TRACE, "Stop the scheduler now!");
+	ptrAgg->scheduler()->stop();
+
 	ptrAgg->shutdown_network();
 	ptrAgg->stop_stages();
 

@@ -22,6 +22,7 @@
 //#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>
+#include <typeinfo>
 
 namespace sdpa {
 namespace daemon {
@@ -34,7 +35,7 @@ namespace daemon {
 			{
 
 
-
+				LOG( DEBUG, "Create orchestrator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
 				pOrch->create_workflow_engine<T>();
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
@@ -50,6 +51,7 @@ namespace daemon {
 			static Orchestrator::ptr_t create( 	const std::string& name,
 												const std::string& url )
 			{
+				LOG( DEBUG, "Create Orchestrator "<<name<<" with no workflow engine" );
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
 				pOrch->setStage(daemon_stage.get());

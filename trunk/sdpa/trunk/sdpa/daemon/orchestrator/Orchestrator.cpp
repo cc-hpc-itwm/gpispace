@@ -43,9 +43,12 @@ void Orchestrator::start( Orchestrator::ptr_t ptrOrch )
 	ptrOrch->configure(ptrCfg);
 }
 
-
 void Orchestrator::shutdown( Orchestrator::ptr_t ptrOrch )
 {
+	// stop scheduler threads
+	LOG(TRACE, "Stop the scheduler now!");
+	ptrOrch->scheduler()->stop();
+
 	ptrOrch->shutdown_network();
 	ptrOrch->stop_stages();
 
@@ -56,7 +59,6 @@ void Orchestrator::shutdown( Orchestrator::ptr_t ptrOrch )
 	}
 }
 
-
 void Orchestrator::action_configure(const StartUpEvent &se)
 {
 	GenericDaemon::action_configure (se);
@@ -64,7 +66,6 @@ void Orchestrator::action_configure(const StartUpEvent &se)
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuring myeself (orchestrator)...");
 }
-
 
 void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 {
@@ -78,7 +79,6 @@ void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 
 	GenericDaemon::action_config_ok (e);
 }
-
 
 void Orchestrator::action_interrupt(const InterruptEvent&)
 {

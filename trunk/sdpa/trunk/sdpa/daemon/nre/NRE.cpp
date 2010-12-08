@@ -39,6 +39,10 @@ void NRE<U>::shutdown(NRE<U>::ptr_t ptrNRE)
 	if(ptrNRE->bLaunchNrePcd_)
 		ptrNRE->shutdownNrePcd();
 
+	LOG(TRACE, "Stop the scheduler now!");
+	// stop the scheduler thread
+	ptrNRE->scheduler()->stop();
+
 	LOG(INFO, "shutting down...");
 	ptrNRE->shutdown_network();
 	ptrNRE->stop_stages();
