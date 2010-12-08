@@ -100,7 +100,6 @@ namespace fhg
       if (stopped_) return;
 
       DLOG(TRACE, "stopping peer " << name());
-
       {
         io_service_.stop();
 
@@ -459,7 +458,12 @@ namespace fhg
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
 
-      assert (connections_.find (a) != connections_.end());
+      if (connections_.find (a) == connections_.end())
+      {
+    	  LOG(WARN, "could not send message to " << a << " connection already closed: " << ec);
+    	  return;
+      }
+
       connection_data_t & cd = connections_.at (a);
       assert (! cd.o_queue.empty());
 
