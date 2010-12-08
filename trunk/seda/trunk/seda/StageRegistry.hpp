@@ -27,6 +27,7 @@
 #include <seda/StageNotFound.hpp>
 #include <seda/StageAlreadyRegistered.hpp>
 #include <boost/unordered_map.hpp>
+#include <list>
 
 namespace seda {
     /**
@@ -91,6 +92,7 @@ namespace seda {
         void clear();
     private:
         typedef boost::unordered_map<std::string, Stage::Ptr> stage_map_t;
+        typedef std::list<std::string> stage_names_t;
 
         StageRegistry();
         StageRegistry(const StageRegistry&);
@@ -98,6 +100,7 @@ namespace seda {
 
         SEDA_DECLARE_LOGGER();
         stage_map_t _stages;
+        stage_names_t _stage_names;
     };
 }
 

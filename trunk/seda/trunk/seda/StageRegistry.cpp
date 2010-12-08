@@ -39,6 +39,7 @@ void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) thr
         throw StageAlreadyRegistered(name);
     } catch (const StageNotFound &) {
         _stages.insert(std::make_pair(name, stage));
+        _stage_names.push_back (name);
         SEDA_LOG_DEBUG("added stage `" << name << "'");
     }
 }
@@ -63,6 +64,7 @@ bool StageRegistry::remove(const std::string &name) {
         return false;
     } else {
         _stages.erase(it);
+        _stage_names.remove (name);
         return true;
     }
 }
@@ -77,20 +79,29 @@ const Stage::Ptr StageRegistry::lookup(const std::string& name) const throw (Sta
 }
 
 void StageRegistry::startAll() {
-    stage_map_t::iterator it(_stages.begin());
-    while (it != _stages.end()) {
-        it->second->start(); it++;
-    }
+  // start everything in order of addition
+  for ( stage_names_t::const_iterator n (_stage_names.begin())
+      ; n != _stage_names.end()
+      ; ++n
+      )
+  {
+    _stages.at (*n)->start();
+  }
 }
 
 void StageRegistry::stopAll() {
-    stage_map_t::iterator it(_stages.begin());
-    while (it != _stages.end()) {
-        it->second->stop(); it++;
-    }
+  // stop everything in reverse order of addition
+  for ( stage_names_t::const_reverse_iterator n (_stage_names.rbegin())
+      ; n != _stage_names.rend()
+      ; ++n
+      )
+  {
+    _stages.at (*n)->stop();
+  }
 }
 
 void StageRegistry::clear() {
     SEDA_LOG_DEBUG("removing all registered stages");
     _stages.clear();
+    _stage_names.clear();
 }
