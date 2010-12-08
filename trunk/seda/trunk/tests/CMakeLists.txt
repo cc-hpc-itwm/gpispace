@@ -1,8 +1,7 @@
 # -*- mode: cmake; -*-
 
-# add the CPPUNIT stuff
-include_directories(${CPPUNIT_INCLUDE_DIRS})
-link_directories(${CPPUNIT_LIBRARY_DIRS})
+find_package (CppUnit REQUIRED)
+include_directories(${CppUnit_INCLUDE_DIR})
 
 add_subdirectory(seda)
 

@@ -54,18 +54,6 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include(TargetDoc.cmake OPTIONAL)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-## PkgConfig is helpful
-include(FindPkgConfig)
-if ( PKG_CONFIG_FOUND )
-  if (BUILD_TESTING)
-    pkg_check_modules (CPPUNIT cppunit>=1.12)
-    message(STATUS "CPPUnit: ${CPPUNIT_CFLAGS} ${CPPUNIT_LDFLAGS} STATIC=${CPPUNIT_STATIC_LDFLAGS}")
-  endif (BUILD_TESTING)
-
-else  ( PKG_CONFIG_FOUND )
-  message("No PKGCONFIG found - hoping for the best.")
-endif ( PKG_CONFIG_FOUND )
-
 ## logging
 if (ENABLE_LOGGING)
   message(STATUS "Project: '${PROJECT_NAME}'")
@@ -120,14 +108,13 @@ if (CMAKE_USE_PTHREADS_INIT)
   link_libraries(-lpthread)
 endif(CMAKE_USE_PTHREADS_INIT)
 
-include(CTest)
-
 # Reflect the package structure
 add_subdirectory(seda)
 if (WITH_COMM)
   add_subdirectory(seda/comm)
 endif (WITH_COMM)
 
+include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)
