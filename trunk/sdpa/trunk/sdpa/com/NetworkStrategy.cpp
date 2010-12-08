@@ -53,9 +53,9 @@ namespace sdpa
 
     void NetworkStrategy::onStageStart (std::string const &s)
     {
-      m_shutting_down = false;
-
       super::onStageStart (s);
+
+      m_shutting_down = false;
 
       m_peer.reset (new fhg::com::peer_t ( m_name
                                          , fhg::com::host_t (m_host)
