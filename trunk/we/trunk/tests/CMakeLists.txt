@@ -1,8 +1,8 @@
 # -*- mode: cmake; -*-
 
 # search for libreadline
-find_package (Readline REQUIRED)
-include_directories (${Readline_INCLUDE_DIR})
+find_package (LibReadline REQUIRED)
+include_directories (${LibReadline_INCLUDE_DIR})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -68,8 +68,8 @@ function(construct_tests )
     add_executable(${tc_name} ${tc_src})
     target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
     target_link_libraries(${tc_name} ${Boost_LIBRARIES})
+    target_link_libraries(${tc_name} ${LibReadline_LIBRARY_SHARED})
     target_link_libraries(${tc_name} dl)
-    target_link_libraries(${tc_name} ${Readline_LIBRARY_SHARED})
     get_target_property(LOC ${tc_name} LOCATION_)
     add_test(${tc_name} ${LOC})
   endforeach(tc_src ${tc_srcs})
