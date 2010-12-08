@@ -1,64 +1,39 @@
-# - Find the cppunit library.
-# Find the native cppunit includes and library
-# This module defines
-#  CPPUNIT_INCLUDE_DIR, where to find jpeglib.h, etc.
-#  CPPUNIT_LIBRARIES, the libraries needed to use CPPUNIT.
-#  CPPUNIT_FOUND, If false, do not try to use CPPUNIT.
-# also defined, but not for general use are
-#  CPPUNIT_LIBRARY, where to find the CPPUNIT library.
+# -*- mode: cmake; -*-
+# locates cppunit
+# This file defines:
+# * CppUnit_FOUND if libreadline was found
+# * CppUnit_LIBRARY The lib to link to (currently only a static unix lib)
+# * CppUnit_LIBRARY_SHARED The lib to link to (currently only a static unix lib)
+# * CppUnit_INCLUDE_DIR
 
-IF(WIN32 AND MSVC)
-  SET(CPPUNIT_HOME $ENV{CPPUNIT_HOME})
-ELSE(WIN32 AND MSVC)
-  FIND_PATH(CPPUNIT_INCLUDE_DIR cppunit/Priority.hh
-    PATHS ${CMAKE_INCLUDE_PATH} /usr/local/include /usr/include
-    PATH_SUFFIXES include
+if (NOT CppUnit_FIND_QUIETLY)
+  message(STATUS "FindCppUnit check")
+endif (NOT CppUnit_FIND_QUIETLY)
+
+find_path (CppUnit_INCLUDE_DIR
+  NAMES "cppunit/TestSuite.h"
+  HINTS ${CPPUNIT_HOME} ENV CPPUNIT_HOME
+  PATH_SUFFIXES include
   )
-ENDIF(WIN32 AND MSVC)
 
-SET(CPPUNIT_NAMES ${CPPUNIT_NAMES} cppunitD cppunit)
-FIND_LIBRARY(CPPUNIT_LIBRARY
-  NAMES ${CPPUNIT_NAMES}
-  PATHS ${CMAKE_INCLUDE_PATH} /usr/local/include /usr/include
-  PATH_SUFFIXES lib
-)
+find_library (CppUnit_LIBRARY
+  NAMES libcppunit.a
+  HINTS ${CPPUNIT_HOME} ENV CPPUNIT_HOME
+  PATH_SUFFIXES lib lib64
+  )
+find_library (CppUnit_LIBRARY_SHARED
+  NAMES libcppunit.so
+  HINTS ${CPPUNIT_HOME} ENV CPPUNIT_HOME
+  PATH_SUFFIXES lib lib64
+  )
 
-#message(STATUS "LIB: ${CPPUNIT_LIBRARY}, INC: ${CPPUNIT_INCLUDE_DIR}")
-
-SET(CPPUNIT_INCLUDE_DIR "${CPPUNIT_HOME}/include")
-SET(CPPUNIT_STATIC_LIBRARY_DIRS "${CPPUNIT_HOME}/include")
-SET(CPPUNIT_STATIC_LIBRARIES "${CPPUNIT_HOME}/lib/cppunit.lib")
-
-IF (CPPUNIT_LIBRARY AND CPPUNIT_INCLUDE_DIR)
-    SET(CPPUNIT_LIBRARIES ${CPPUNIT_LIBRARY})
-    SET(CPPUNIT_FOUND "YES")
-ELSE (CPPUNIT_LIBRARY AND CPPUNIT_INCLUDE_DIR)
-  SET(CPPUNIT_FOUND "NO")
-ENDIF (CPPUNIT_LIBRARY AND CPPUNIT_INCLUDE_DIR)
-    SET(CPPUNIT_FOUND "YES")
-
-
-IF (CPPUNIT_FOUND)
-   IF (NOT CPPUNIT_FIND_QUIETLY)
-      MESSAGE(STATUS "Found CPPUNIT: ${CPPUNIT_LIBRARIES}")
-   ENDIF (NOT CPPUNIT_FIND_QUIETLY)
-ELSE (CPPUNIT_FOUND)
-   IF (CPPUNIT_FIND_REQUIRED)
-      MESSAGE(FATAL_ERROR "Could not find CPPUNIT library")
-   ENDIF (CPPUNIT_FIND_REQUIRED)
-ENDIF (CPPUNIT_FOUND)
-
-# Deprecated declarations.
-SET (NATIVE_CPPUNIT_INCLUDE_PATH ${CPPUNIT_INCLUDE_DIR} )
-GET_FILENAME_COMPONENT (NATIVE_CPPUNIT_LIB_PATH ${CPPUNIT_LIBRARY} PATH)
-
-
-message(STATUS "CPPUNIT Libpath: ${CPPUNIT_STATIC_LIBRARIES}")
-message(STATUS "CPPUNIT INCpath: ${CPPUNIT_INCLUDE_DIR}")
-message(STATUS "CPPUNIT: -I${CPPUNIT_STATIC_INCLUDE_DIRS} -L${CPPUNIT_STATIC_LIBRARY_DIRS} -l${CPPUNIT_STATIC_LIBRARIES}")
-
-MARK_AS_ADVANCED(
-  CPPUNIT_STATIC_LIBRARIES
-  CPPUNIT_LIBRARY
-  CPPUNIT_INCLUDE_DIR
-)
+if (CppUnit_INCLUDE_DIR AND CppUnit_LIBRARY)
+  set (CppUnit_FOUND TRUE)
+  if (NOT CppUnit_FIND_QUIETLY)
+    message (STATUS "Found CppUnit headers in ${CppUnit_INCLUDE_DIR} and libraries ${CppUnit_LIBRARY} ${CppUnit_LIBRARY_SHARED}")
+  endif (NOT CppUnit_FIND_QUIETLY)
+else (CppUnit_INCLUDE_DIR AND CppUnit_LIBRARY)
+  if (CppUnit_FIND_REQUIRED)
+    message (FATAL_ERROR "CppUnit could not be found!")
+  endif (CppUnit_FIND_REQUIRED)
+endif (CppUnit_INCLUDE_DIR AND CppUnit_LIBRARY)
