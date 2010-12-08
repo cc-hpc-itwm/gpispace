@@ -22,6 +22,7 @@
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/maybe.hpp>
+#include <fhg/util/filesystem/mkdir.hpp>
 
 #include <iostream>
 
@@ -692,9 +693,33 @@ namespace xml
 
       // ***************************************************************** //
 
-      inline void structs_to_cpp ( std::ostream & os
-                                 , const struct_vec_type & structs
-                                 , const int l
+      inline void struct_to_cpp ( const struct_t & s
+                                , const boost::filesystem::path & prefix
+                                )
+      {
+        const boost::filesystem::path file
+          (prefix / "pnetc" / "type" / (s.name + ".hpp"));
+
+        if (!fhg::util::mkdirs (file))
+          {
+            throw std::runtime_error ( "BUMMER: could not create directory "
+                                     + file.parent_path().string()
+                                     );
+          }
+
+        std::ofstream stream (file.string().c_str());
+
+        if (!stream.good())
+          {
+            throw std::runtime_error
+              ("BUMMER: could not open " + file.string() + " for writing");
+          }
+
+        signature::cpp::cpp_header (stream, s.sig, s.name, s.path);
+      }
+
+      inline void structs_to_cpp ( const struct_vec_type & structs
+                                 , const boost::filesystem::path & prefix
                                  )
       {
         for ( struct_vec_type::const_iterator pos (structs.begin())
@@ -702,16 +727,7 @@ namespace xml
             ; ++pos
             )
           {
-            os << std::endl;
-            os << level (l+1) << "namespace " << pos->name << std::endl;
-            os << level (l+1) << "{" << std::endl;
-            os << level (l+2) << "// defined in " << pos->path << std::endl;
-            os << std::endl;
-
-            os << level (l+2);
-            signature::cpp::cpp_struct (os, pos->sig, pos->name, l+2);
-
-            os << level (l+1) << "} // " << pos->name << std::endl;
+            struct_to_cpp (*pos, prefix);
           }
       }
 
@@ -723,14 +739,11 @@ namespace xml
         class struct_to_cpp : public boost::static_visitor<void>
         {
         private:
-          std::ostream & os;
-          const int l;
+          const boost::filesystem::path & prefix;
 
         public:
-          struct_to_cpp ( std::ostream & _os
-                        , const int & _l
-                        )
-            : os (_os), l(_l)
+          struct_to_cpp (const boost::filesystem::path & _prefix)
+            : prefix (_prefix)
           {}
 
           void operator () (const expression_type &) const {}
@@ -741,14 +754,13 @@ namespace xml
 
       // ***************************************************************** //
 
-      inline void struct_to_cpp ( std::ostream & os
-                                , const function_type & f
-                                , const int l = 1
+      inline void struct_to_cpp ( const function_type & f
+                                , const boost::filesystem::path & prefix
                                 )
       {
-        structs_to_cpp (os, f.structs, l);
+        structs_to_cpp (f.structs, prefix);
 
-        boost::apply_visitor (visitor::struct_to_cpp(os, l), f.f);
+        boost::apply_visitor (visitor::struct_to_cpp(prefix), f.f);
       }
 
       // ******************************************************************* //

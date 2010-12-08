@@ -78,18 +78,9 @@ main (int argc, char ** argv)
       std::cerr << f << std::endl;
     }
 
-  if (state->struct_to_cpp())
+  if (state->path_to_cpp().size() > 0)
     {
-      std::ostream & os (std::cerr);
-
-      signature::cpp::cpp_includes (os);
-
-      os << "namespace pnetc" << std::endl;
-      os << "{" << std::endl;
-
-      xml::parse::type::struct_to_cpp (os, f);
-
-      os << "} // pnetc" << std::endl;
+      xml::parse::type::struct_to_cpp (f, state->path_to_cpp());
     }
 
   // optimize f

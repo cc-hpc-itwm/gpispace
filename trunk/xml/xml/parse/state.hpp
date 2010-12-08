@@ -81,7 +81,7 @@ namespace xml
         bool _no_inline;
         bool _synthesize_virtual_places;
 
-        bool _struct_to_cpp;
+        std::string _path_to_cpp;
 
         std::string _Osearch_path;
         std::string _Osearch_path_short;
@@ -109,7 +109,7 @@ namespace xml
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
 
-        std::string _Ostruct_to_cpp;
+        std::string _Opath_to_cpp;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -195,7 +195,7 @@ namespace xml
           , _no_inline (false)
           , _synthesize_virtual_places (false)
 
-          , _struct_to_cpp ()
+          , _path_to_cpp ()
 
           , _Osearch_path ("search-path"), _Osearch_path_short("I")
           , _Oignore_properties ("ignore-properties")
@@ -222,7 +222,7 @@ namespace xml
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
 
-          , _Ostruct_to_cpp ("struct-to-cpp")
+          , _Opath_to_cpp ("path-to-cpp")
         {}
 
         int & level (void) { return _level; }
@@ -306,9 +306,13 @@ namespace xml
 
               return true;
             }
-          else if (path[1] == _Osearch_path)
+          else if (path.size() == 2 && path[1] == _Osearch_path)
             {
               _search_path.push_back (value); return true;
+            }
+          else if (path.size() == 2 && path[1] == _Opath_to_cpp)
+            {
+              _path_to_cpp = value; return true;
             }
 
 #define GET_PROP(x)                                               \
@@ -341,8 +345,6 @@ namespace xml
           GET_PROP (no_inline)
           GET_PROP (synthesize_virtual_places)
 
-          GET_PROP (struct_to_cpp)
-
 #undef GET_PROP
           else
             {
@@ -371,6 +373,11 @@ namespace xml
             ? fs::path("<stdin>")
             : _in_progress.back()
             ;
+        }
+
+        const std::string & path_to_cpp (void) const
+        {
+          return _path_to_cpp;
         }
 
         // ***************************************************************** //
@@ -403,8 +410,6 @@ namespace xml
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
-
-        ACCESS(struct_to_cpp)
 
 #undef ACCESS
 
@@ -583,9 +588,9 @@ namespace xml
             , VAL(synthesize_virtual_places)
             , "if set, ignore the keyword inline"
             )
-            ( _Ostruct_to_cpp.c_str()
-            , VAL(struct_to_cpp)
-            , "print the cpp definitions of the structs"
+            ( _Opath_to_cpp.c_str()
+            , po::value<std::string>(&_path_to_cpp)
+            , "path for cpp output (empty for no cpp output)"
             )
             ;
 #undef VAL

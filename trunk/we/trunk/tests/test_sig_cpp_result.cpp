@@ -8,7 +8,7 @@
 int
 main ()
 {
-  cross c;
+  pnetc::cross::cross c;
 
   c._bool = true;
   c._char = 'a';
@@ -27,11 +27,11 @@ main ()
   c.v.start.x = 0.0;
   c.v.start.y = -1.0;
 
-  std::cout << to_value (c) << std::endl;
+  std::cout << pnetc::cross::to_value (c) << std::endl;
 
-  cross c2 (from_value (to_value (c)));
+  pnetc::cross::cross c2 (pnetc::cross::from_value (pnetc::cross::to_value (c)));
 
-  std::cout << to_value(c2) << std::endl;
+  std::cout << pnetc::cross::to_value(c2) << std::endl;
 
   return EXIT_SUCCESS;
 }
