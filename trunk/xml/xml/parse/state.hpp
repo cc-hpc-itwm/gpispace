@@ -40,7 +40,7 @@ namespace xml
 
       using namespace warning;
 
-      typedef std::vector<fs::path> search_path_type;
+      typedef std::vector<std::string> search_path_type;
       typedef std::vector<fs::path> in_progress_type;
 
       // ******************************************************************* //
@@ -81,6 +81,8 @@ namespace xml
         bool _no_inline;
         bool _synthesize_virtual_places;
 
+        bool _struct_to_cpp;
+
         std::string _Osearch_path;
         std::string _Osearch_path_short;
         std::string _Oignore_properties;
@@ -106,6 +108,8 @@ namespace xml
         std::string _Oprint_internal_structures;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
+
+        std::string _Ostruct_to_cpp;
 
         template<typename W>
         void generic_warn (const W & w, const bool & active) const
@@ -133,7 +137,7 @@ namespace xml
             }
 
           const fs::path from_actual_file
-            (file_in_progress().branch_path() / file);
+            (file_in_progress().parent_path() / file);
 
           if (fs::exists (from_actual_file))
             {
@@ -150,7 +154,8 @@ namespace xml
                   continue;
                 }
 
-              const fs::path path (*dir / file);
+              const fs::path pre (*dir);
+              const fs::path path (pre / file);
 
               if (fs::exists (path))
                 {
@@ -190,6 +195,8 @@ namespace xml
           , _no_inline (false)
           , _synthesize_virtual_places (false)
 
+          , _struct_to_cpp ()
+
           , _Osearch_path ("search-path"), _Osearch_path_short("I")
           , _Oignore_properties ("ignore-properties")
           , _OWerror ("Werror")
@@ -214,6 +221,8 @@ namespace xml
           , _Oprint_internal_structures ("print-internal-structures")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
+
+          , _Ostruct_to_cpp ("struct-to-cpp")
         {}
 
         int & level (void) { return _level; }
@@ -332,6 +341,8 @@ namespace xml
           GET_PROP (no_inline)
           GET_PROP (synthesize_virtual_places)
 
+          GET_PROP (struct_to_cpp)
+
 #undef GET_PROP
           else
             {
@@ -392,6 +403,8 @@ namespace xml
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
+
+        ACCESS(struct_to_cpp)
 
 #undef ACCESS
 
@@ -569,6 +582,10 @@ namespace xml
             ( _Osynthesize_virtual_places.c_str()
             , VAL(synthesize_virtual_places)
             , "if set, ignore the keyword inline"
+            )
+            ( _Ostruct_to_cpp.c_str()
+            , VAL(struct_to_cpp)
+            , "print the cpp definitions of the structs"
             )
             ;
 #undef VAL

@@ -1,0 +1,17 @@
+<defun name="generate">
+  <struct name="point">
+    <field name="x" type="double"/>
+    <field name="y" type="double"/>
+  </struct>
+
+  <struct name="vector">
+    <field name="start" type="point"/>
+    <field name="end" type="point"/>
+  </struct>
+
+  <in name="deg" type="double"/>
+  <in name="point" type="point"/>
+  <out name="point" type="point"/>
+
+  <module name="point" function="rotate (point, deg)"/>
+</defun>

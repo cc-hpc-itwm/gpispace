@@ -17,6 +17,16 @@ namespace signature
 {
   namespace cpp
   {
+    inline void level (std::ostream & s, const unsigned int & j)
+    {
+      for (unsigned int i (0); i < j; ++i)
+        {
+          s << "  ";
+        }
+    }
+
+    // ******************************************************************** //
+
     namespace visitor
     {
       // ****************************************************************** //
@@ -68,12 +78,19 @@ namespace signature
 
         std::ostream & operator () (const literal::type_name_t & t) const
         {
-          level (l+1); s << "x." << fieldname << " = value::get<"
-                         << literal::cpp::translate (t)
-                         << "> (v_" << (l-1)
-                         << ");"
-                         << std::endl
-                         ;
+          level (l+1);
+          s << "x." << fieldname << " = ";
+
+          if (literal::cpp::known (t))
+            {
+              s << "value::get<" << literal::cpp::translate (t) << ">";
+            }
+          else
+            {
+              s << t << "::from_value";
+            }
+
+          s << " (v_" << (l-1) << ");" << std::endl;
 
           return s;
         }
@@ -137,8 +154,18 @@ namespace signature
         std::ostream & operator () (const literal::type_name_t & t) const
         {
           level (l); s << "v_" << (l-1) << "[\"" << levelname << "\"]"
-                       << " = " << "x." << fieldname << ";"
-                       << std::endl;
+                       << " = ";
+
+          if (literal::cpp::known (t))
+            {
+              s << "x." << fieldname;
+            }
+          else
+            {
+              s << t << "::to_value (x." << fieldname << ")";
+            }
+
+          s << ";" << std::endl;
 
           return s;
         }
@@ -203,7 +230,7 @@ namespace signature
 
         std::ostream & operator () (const literal::type_name_t & t) const
         {
-          return s << literal::cpp::translate (t);
+          return s << literal::cpp::try_translate (t);
         }
 
         std::ostream & operator () (const structured_t & map) const
@@ -239,25 +266,25 @@ namespace signature
     inline void cpp_struct ( std::ostream & os
                            , const type & s
                            , const std::string & n
+                           , const unsigned int & l = 1
                            )
     {
-      boost::apply_visitor (visitor::cpp_struct (n, os), s.desc());
+      boost::apply_visitor (visitor::cpp_struct (n, os, l), s.desc());
 
       os << ";" << std::endl;
 
-      os << n << " from_value (const value::type & v_0)" << std::endl;
+      level (os, l); os << n << " from_value (const value::type & v_" << (l-1) << ")" << std::endl;
+      level (os, l); os << "{" << std::endl;
+      level (os, l); os << "  " << n << " x;" << std::endl;
 
-      os << "{" << std::endl;
-      os << "  " << n << " x;" << std::endl;
+      boost::apply_visitor (visitor::cpp_from_value (os, l), s.desc());
 
-      boost::apply_visitor (visitor::cpp_from_value (os), s.desc());
+      level (os, l); os << "  return x;" << std::endl;
+      level (os, l); os << "}" << std::endl;
 
-      os << "  return x;" << std::endl;
-      os << "}" << std::endl;
+      level (os, l); os << "value::type to_value (const " << n << " & x)" << std::endl;
 
-      os << "value::type to_value (const " << n << " & x)" << std::endl;
-
-      boost::apply_visitor (visitor::cpp_to_value (os), s.desc());
+      boost::apply_visitor (visitor::cpp_to_value (os, l), s.desc());
     }
 
     inline void cpp_struct (std::ostream & os, const type & s)
@@ -359,6 +386,16 @@ namespace signature
 
     // ********************************************************************* //
 
+    inline void cpp_includes (std::ostream & os)
+    {
+      os << "#include <we/type/bitsetofint.hpp>"   << std::endl;
+      os << "#include <we/type/control.hpp>"       << std::endl;
+      os << "#include <we/type/value.hpp>"         << std::endl;
+      os << "#include <we/type/value/cpp/get.hpp>" << std::endl;
+      os << "#include <string>"                    << std::endl;
+      os                                           << std::endl;
+    }
+
     inline void cpp_header ( std::ostream & os
                            , const type & s
                            , const std::string & n
@@ -370,22 +407,14 @@ namespace signature
       os << "#ifndef _SIG_CPP_HEADER_" << n << std::endl;
       os << "#define _SIG_CPP_HEADER_" << n << " 1 " << std::endl;
       os << std::endl;
-      os << "// needed types" << std::endl;
-      os << "#include <we/type/control.hpp>" << std::endl;
-      os << "#include <we/type/bitsetofint.hpp>" << std::endl;
-      os << "#include <string>" << std::endl;
-      os << std::endl;
-      os << "// for the connection to value::type" << std::endl;
-      os << "#include <we/type/value.hpp>" << std::endl;
-      os << "#include <we/type/value/cpp/get.hpp>" << std::endl;
-      os << std::endl;
+
+      cpp_includes (os);
 
       cpp_struct (os, s, n);
 
       os << std::endl;
 
 #if 0
-      os << "// for the operator <<" << std::endl;
       os << "#include <we/type/literal.hpp>" << std::endl;
       os << "#include <we/type/literal/show.hpp>" << std::endl;
       os << "#include <iostream>" << std::endl;

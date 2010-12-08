@@ -84,6 +84,7 @@ else (DEBUG_FHGLOG)
 endif (DEBUG_FHGLOG)
 
 add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
+add_definitions("-DBOOST_FILESYSTEM_NO_DEPRECATED")
 
 if (DISABLE_FHGLOG)
   add_definitions("-DFHGLOG_DISABLE_LOGGING=1")

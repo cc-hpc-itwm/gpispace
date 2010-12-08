@@ -37,6 +37,18 @@ namespace literal
       {
         return m.at (t);
       }
+
+      const map_type::mapped_type try_translate (const type_name_t & t) const
+      {
+        map_type::const_iterator pos (m.find (t));
+
+        return (pos != m.end()) ? pos->second : (t + "::" + t);
+      }
+
+      bool known (const type_name_t & t) const
+      {
+        return m.find (t) != m.end();
+      }
     };
 
     inline const name::map_type::mapped_type & translate (const type_name_t & t)
@@ -44,6 +56,21 @@ namespace literal
       static name n;
 
       return n.translate (t);
+    }
+
+    inline const name::map_type::mapped_type
+    try_translate (const type_name_t & t)
+    {
+      static name n;
+
+      return n.try_translate (t);
+    }
+
+    inline bool known (const type_name_t & t)
+    {
+      static name n;
+
+      return n.known (t);
     }
 
     struct names_reserved

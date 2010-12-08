@@ -18,6 +18,7 @@
 #include <we/type/property.hpp>
 
 #include <we/we.hpp>
+#include <we/type/signature/cpp.hpp>
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/maybe.hpp>
@@ -688,6 +689,67 @@ namespace xml
             );
         }
       };
+
+      // ***************************************************************** //
+
+      inline void structs_to_cpp ( std::ostream & os
+                                 , const struct_vec_type & structs
+                                 , const int l
+                                 )
+      {
+        for ( struct_vec_type::const_iterator pos (structs.begin())
+            ; pos != structs.end()
+            ; ++pos
+            )
+          {
+            os << std::endl;
+            os << level (l+1) << "namespace " << pos->name << std::endl;
+            os << level (l+1) << "{" << std::endl;
+            os << level (l+2) << "// defined in " << pos->path << std::endl;
+            os << std::endl;
+
+            os << level (l+2);
+            signature::cpp::cpp_struct (os, pos->sig, pos->name, l+2);
+
+            os << level (l+1) << "} // " << pos->name << std::endl;
+          }
+      }
+
+
+      // ***************************************************************** //
+
+      namespace visitor
+      {
+        class struct_to_cpp : public boost::static_visitor<void>
+        {
+        private:
+          std::ostream & os;
+          const int l;
+
+        public:
+          struct_to_cpp ( std::ostream & _os
+                        , const int & _l
+                        )
+            : os (_os), l(_l)
+          {}
+
+          void operator () (const expression_type &) const {}
+          void operator () (const mod_type &) const {}
+          void operator () (const net_type & n) const {}
+        };
+      }
+
+      // ***************************************************************** //
+
+      inline void struct_to_cpp ( std::ostream & os
+                                , const function_type & f
+                                , const int l = 1
+                                )
+      {
+        structs_to_cpp (os, f.structs, l);
+
+        boost::apply_visitor (visitor::struct_to_cpp(os, l), f.f);
+      }
 
       // ******************************************************************* //
 

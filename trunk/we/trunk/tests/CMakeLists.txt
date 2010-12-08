@@ -53,6 +53,7 @@ set(tc_srcs
     test_user_defined_transition_function.cpp
     test_sig_cpp.cpp
     test_try_gen.cpp
+    test_gen.cpp
    )
 
 # answer module

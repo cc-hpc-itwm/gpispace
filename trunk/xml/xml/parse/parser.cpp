@@ -78,6 +78,20 @@ main (int argc, char ** argv)
       std::cerr << f << std::endl;
     }
 
+  if (state->struct_to_cpp())
+    {
+      std::ostream & os (std::cerr);
+
+      signature::cpp::cpp_includes (os);
+
+      os << "namespace pnetc" << std::endl;
+      os << "{" << std::endl;
+
+      xml::parse::type::struct_to_cpp (os, f);
+
+      os << "} // pnetc" << std::endl;
+    }
+
   // optimize f
 
   we::transition_t trans (f.synthesize<we::activity_t> (*state));
