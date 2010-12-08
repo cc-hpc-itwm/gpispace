@@ -194,16 +194,16 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	LOG( DEBUG, "Create the Orchestrator ...");
+	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	LOG( DEBUG, "Create the Aggregator ...");
+	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and real GWES
-	LOG( DEBUG, "Create the NRE ...");
+	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
@@ -284,11 +284,11 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	LOG( DEBUG, "Create the Orchestrator ...");
+	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	LOG( DEBUG, "Create the Aggregator ...");
+	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
 
 	// use external scheduler and real GWES
-	LOG( DEBUG, "Create the NRE ...");
+	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
@@ -444,16 +444,16 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	LOG( DEBUG, "Create the Orchestrator ...");
+	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	LOG( DEBUG, "Create the Aggregator ...");
+	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and dummy WE
-	LOG( DEBUG, "Create the NRE ...");
+	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
@@ -558,16 +558,16 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	LOG( DEBUG, "Create the Orchestrator ...");
+	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch);
 	sdpa::daemon::Orchestrator::start(ptrOrch);
 
-	LOG( DEBUG, "Create the Aggregator ...");
+	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	sdpa::daemon::Aggregator::start(ptrAgg);
 
 	// use external scheduler and dummy WE
-	LOG( DEBUG, "Create the NRE ...");
+	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
