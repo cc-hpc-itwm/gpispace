@@ -26,7 +26,7 @@ message(STATUS "CMake is configured to look in ${CMAKE_MODULE_PATH} for modules"
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext/include)
 include_directories(${CMAKE_INCLUDE_PATH})
 
-set (GPI_BINARY_DIR  CACHE STRING "path to the GPI binary directory")
+set (GPI_PRIV_DIR  CACHE STRING "path to the GPI priviledged directory")
 set (GPI_CONFIG_PATH "${CMAKE_INSTALL_PREFIX}/etc/gpi/sdpa-gpi.cfg" CACHE STRING "path to the sdpa-gpi config file")
 set (EXT_LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/lib64)
 set (EXT_LIBRARIES ${EXT_LIBRARIES} ${EXT_LIBRARY_DIR}/libibverbs12.so)
@@ -36,10 +36,10 @@ set (EXT_LIBRARIES ${EXT_LIBRARIES} ${EXT_LIBRARY_DIR}/libPv4dVM4.a)
 set (GPI_LIBRARIES ${GPI_LIBRARIES} ${EXT_LIBRARY_DIR}/libibverbs15.so)
 set (GPI_LIBRARIES ${GPI_LIBRARIES} ${EXT_LIBRARY_DIR}/libGPI.a)
 
-if (GPI_BINARY_DIR)
-else (GPI_BINARY_DIR)
-  message(FATAL_ERROR "please define GPI_BINARY_DIR and set it to the priviledged gpid directory")
-endif(GPI_BINARY_DIR)
+if (GPI_PRIV_DIR)
+else (GPI_PRIV_DIR)
+  message(FATAL_ERROR "please define GPI_PRIV_DIR and set it to the priviledged gpid directory")
+endif(GPI_PRIV_DIR)
 
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})

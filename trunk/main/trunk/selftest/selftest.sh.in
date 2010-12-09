@@ -8,7 +8,7 @@ mydir=$( cd $( dirname $( which $0 ) ) && pwd  )
 PATH="${mydir}:$PATH"
 
 # please set these variables to "meaningful" values on your system
-sdpa_gpi="@GPI_BINARY_DIR@/sdpa-gpi"
+sdpa_gpi="@GPI_PRIV_DIR@/sdpa-gpi"
 pcd_cfg="@GPI_CONFIG_PATH@"
 libexec="@CMAKE_INSTALL_PREFIX@/libexec"
 logfile=sdpa-selftest.log

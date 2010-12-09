@@ -28,5 +28,5 @@ install (TARGETS sdpa-gpi
   COMPONENT applications)
 #install (TARGETS sdpa-gpi
 #  RUNTIME
-#  DESTINATION ${GPI_BINARY_DIR}
+#  DESTINATION ${GPI_PRIV_DIR}
 #  COMPONENT applications)
