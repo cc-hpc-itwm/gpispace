@@ -1,9 +1,10 @@
-#include <boost/test/minimal.hpp>
+#define BOOST_TEST_MODULE StoreTest
+#include <boost/test/unit_test.hpp>
 
 #include <fhgcom/kvs/store.hpp>
 #include <fhgcom/kvs/backend.hpp>
 
-int test_main(int, char *[])
+BOOST_AUTO_TEST_CASE ( output_test )
 {
   using namespace fhg::com::kvs;
   // create max size with cache of size 1
@@ -11,8 +12,8 @@ int test_main(int, char *[])
   detail::null_backend b;
   store_t store (b, 1);
 
-  BOOST_REQUIRE( store.cache_size() == 1 );
-  BOOST_REQUIRE( store.num_cached() == 0 );
+  BOOST_CHECK_EQUAL( store.cache_size(), 1 );
+  BOOST_CHECK_EQUAL( store.num_cached(), 0 );
 
   put (store, "fhgcom.tests.test_store.i", "42");
   BOOST_REQUIRE( store.num_cached() == 1 );
@@ -37,6 +38,4 @@ int test_main(int, char *[])
   {
     // expected
   }
-
-  return boost::exit_success;
 }
