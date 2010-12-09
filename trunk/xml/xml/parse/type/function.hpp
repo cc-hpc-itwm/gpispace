@@ -789,15 +789,18 @@ namespace xml
                                 , const state::type & state
                                 )
       {
-        const boost::filesystem::path prefix (state.path_to_cpp());
-        const boost::filesystem::path path (prefix / "pnetc" / "type");
+        typedef boost::filesystem::path path_t;
+
+        const path_t prefix (state.path_to_cpp());
+        const path_t relative (path_t ("pnetc") / path_t ("type"));
+        const path_t path (prefix / relative);
 
         if (!fhg::util::mkdirs (path))
           {
             throw error::could_not_create_directory (path);
           }
 
-        const boost::filesystem::path file (path / (s.name + ".hpp"));
+        const path_t file (path / (s.name + ".hpp"));
 
         if (boost::filesystem::exists (file))
           {
@@ -813,7 +816,7 @@ namespace xml
 
         state.verbose ("write to " + file.string());
 
-        signature::cpp::cpp_header (stream, s.sig, s.name, s.path);
+        signature::cpp::cpp_header (stream, s.sig, s.name, s.path, relative);
       }
 
       inline void structs_to_cpp ( const struct_vec_type & structs
