@@ -44,9 +44,6 @@ namespace sdpa {
 
 			virtual ~Aggregator();
 
-			static void start(ptr_t ptrAgg);
-			static void shutdown(ptr_t ptrAgg);
-
 			void action_configure( const sdpa::events::StartUpEvent& );
 			void action_config_ok( const sdpa::events::ConfigOkEvent& );
 			void action_interrupt( const sdpa::events::InterruptEvent& );
@@ -57,8 +54,8 @@ namespace sdpa {
 			void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
 			void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
 
-			const std::string& url() const {return url_;}
-			const std::string& masterName() const { return masterName_; }
+			const std::string url() const {return url_;}
+			const std::string masterName() const { return masterName_; }
 			//const std::string& masterUrl() const { return masterUrl_; }
 
 			template <class Archive>

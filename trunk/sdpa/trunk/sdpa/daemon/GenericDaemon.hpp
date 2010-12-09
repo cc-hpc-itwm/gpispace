@@ -76,6 +76,10 @@ namespace sdpa { namespace daemon {
 	  static void start(const GenericDaemon::ptr_t& daemon );
 	  void configure(sdpa::util::Config::ptr_t ptrCfg);
 	  void stop_stages();
+	  //virtual void configure_network();
+	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
+	  virtual void shutdown_network();
+	  static void shutdown( const GenericDaemon::ptr_t& daemon );
 
 	  virtual void perform(const seda::IEvent::Ptr&);
 
@@ -129,10 +133,6 @@ namespace sdpa { namespace daemon {
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason);
 
 	  virtual void activityCancelled(const id_type& id, const std::string& data);
-
-	  //virtual void configure_network();
-	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
-	  virtual void shutdown_network();
 
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
@@ -203,6 +203,9 @@ namespace sdpa { namespace daemon {
 	  virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
 	  virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
 	  virtual bool is_orchestrator() { return false; }
+
+	  virtual const std::string url() const {return std::string();}
+	  virtual const std::string masterName() const { return  std::string(); }
 
 	  void incExtJobsCnt();
 	  void decExtJobsCnt();

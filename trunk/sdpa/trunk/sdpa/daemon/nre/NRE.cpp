@@ -26,36 +26,6 @@ using namespace sdpa::daemon;
 using namespace sdpa::events;
 
 template <typename U>
-void NRE<U>:: start(NRE<U>::ptr_t ptrNRE)
-{
-	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-	ptrNRE->configure_network( ptrNRE->url(), ptrNRE->masterName() );
-	ptrNRE->configure(ptrCfg);
-}
-
-template <typename U>
-void NRE<U>::shutdown(NRE<U>::ptr_t ptrNRE)
-{
-	if(ptrNRE->bLaunchNrePcd_)
-		ptrNRE->shutdownNrePcd();
-
-	LOG(TRACE, "Stop the scheduler now!");
-	// stop the scheduler thread
-	ptrNRE->scheduler()->stop();
-
-	LOG(INFO, "shutting down...");
-	ptrNRE->shutdown_network();
-	ptrNRE->stop_stages();
-
-	if ( ptrNRE->hasWorkflowEngine() )
-	{
-		DLOG(TRACE, "deleting workflow engine");
-		delete ptrNRE->ptr_workflow_engine_;
-		ptrNRE->ptr_workflow_engine_ = NULL;
-	}
-}
-
-template <typename U>
 void NRE<U>::action_configure(const StartUpEvent &se)
 {
 	GenericDaemon::action_configure (se);
@@ -378,44 +348,3 @@ void NRE<U>::recover( const std::string& strArchiveName )
 		cout <<"Exception occurred: " << e.what() << endl;
 	}
 }
-
-template <typename U>
-void NRE<U>::shutdownNrePcd()
-{
-
-	int c;
-	int nStatus;
-
-	//kill pcd here
-	SchedulerNRE<U>* pSchedNRE = dynamic_cast<SchedulerNRE<U>*>(ptr_scheduler_.get());
-	if( pSchedNRE )
-	{
-		pid_t pidPcd = pSchedNRE->nre_worker_client().getPcdPid();
-		//pid_t pidPcd = dynamic_pointer_cast<sdpa::shared_ptr<SchedulerNRE, Scheduler::ptr_t>(ptr_scheduler_)->nre_worker_client().getPcdPid();
-
-		if (pidPcd <= 1)
-		{
-			LOG(ERROR, "cannot send TERM signal to child with pid: " << pidPcd);
-			throw std::runtime_error ("pcd does not have a valid pid (<= 1)");
-		}
-
-		kill(pidPcd, SIGTERM);
-
-		c = wait(&nStatus);
-		if( WIFEXITED(nStatus) )
-		{
-			if( WEXITSTATUS(nStatus) != 0 )
-			{
-				std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-				LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-			}
-			else
-				if( WIFSIGNALED(nStatus) )
-				{
-					std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-					LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
-				}
-		}
-				}
-}
-

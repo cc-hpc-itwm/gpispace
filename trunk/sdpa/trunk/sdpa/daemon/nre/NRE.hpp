@@ -77,13 +77,10 @@ namespace sdpa {
 
 		virtual ~NRE()
 		{
-                  DLOG(TRACE, "NRE destructor called ...");
+            DLOG(TRACE, "NRE destructor called ...");
 
 			daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
-
-			if(bLaunchNrePcd_)
-				shutdownNrePcd();
 
 			if (ptr_workflow_engine_)
 			{
@@ -120,9 +117,6 @@ namespace sdpa {
                                      );
 		}
 
-      	static void start( NRE<U>::ptr_t ptrNRE );
-		static void shutdown( NRE<U>::ptr_t ptrNRE );
-
 		void action_configure( const sdpa::events::StartUpEvent& );
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
 		void action_interrupt( const sdpa::events::InterruptEvent& );
@@ -140,8 +134,8 @@ namespace sdpa {
 		void activityFailed( const id_type& id, const std::string& data );
 		void activityCancelled( const id_type& id, const std::string& data );
 
-		const std::string& url() const {return url_;}
-		const std::string& masterName() const { return masterName_; }
+		const std::string url() const {return url_;}
+		const std::string masterName() const { return masterName_; }
 		//const std::string& masterUrl() const { return masterUrl_; }
 
 		template <class Archive>
@@ -155,7 +149,7 @@ namespace sdpa {
 			//ar & m_guiServ;
 		}
 
-		void shutdownNrePcd();
+		//void shutdownNrePcd();
 
 		virtual void backup( const std::string& strArchiveName );
 	    virtual void recover( const std::string& strArchiveName );

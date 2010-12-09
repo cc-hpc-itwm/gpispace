@@ -209,30 +209,33 @@ void GenericDaemon::shutdown_network()
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
 }
 
-void GenericDaemon::start(const GenericDaemon::ptr_t& ptr_daemon )
+
+void GenericDaemon::start( const GenericDaemon::ptr_t& ptrDaemon )
 {
-	ptr_daemon->ptr_daemon_cfg_ = sdpa::util::Config::create(); // initialize it with default options
+	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
+	ptrDaemon->configure_network( ptrDaemon->url(), ptrDaemon->masterName() );
+	ptrDaemon->configure(ptrCfg);
+}
 
-	// The stage uses 2 threads
-	ptr_daemon->daemon_stage()->start();
+void GenericDaemon::shutdown( const GenericDaemon::ptr_t& ptrDaemon )
+{
+	LOG(INFO, "Shutting down...");
+	LOG(TRACE, "Stop the scheduler now!");
+	// stop the scheduler thread
+	ptrDaemon->scheduler()->stop();
 
-	//start-up the the daemon
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
-	ptr_daemon->daemon_stage()->send(pEvtStartUp);
+	LOG(INFO, "Shutdown the network...");
+	ptrDaemon->shutdown_network();
 
-	// the following code should go into the "transition function" of StartupEvent
-	// action_configure?
-	// we should however wait on some condition variable that is notified by either ConfigOk or ConfigNok
-	//    1. send Startup (Config)
-	//    2. wait_for_config_done ()
-	//    3. if (config_ok) return 0;
-	//    4. if (config_nok) throw ()
+	LOG(INFO, "Stop the stages...");
+	ptrDaemon->stop_stages();
 
-	sleep(1);
-
-	// configuration done
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
-	ptr_daemon->daemon_stage()->send(pEvtConfigOk);
+	if ( ptrDaemon->hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "deleting workflow engine");
+		delete ptrDaemon->ptr_workflow_engine_;
+		ptrDaemon->ptr_workflow_engine_ = NULL;
+	}
 }
 
 void GenericDaemon::configure(sdpa::util::Config::ptr_t ptrConfig )

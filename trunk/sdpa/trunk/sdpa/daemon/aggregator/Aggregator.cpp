@@ -35,31 +35,6 @@ Aggregator::~Aggregator()
 	daemon_stage_ = NULL;
 }
 
-
-void Aggregator::start(Aggregator::ptr_t ptrAgg)
-{
-	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-	ptrAgg->configure_network( ptrAgg->url(), ptrAgg->masterName() );
-	ptrAgg->configure(ptrCfg);
-}
-
-
-void Aggregator::shutdown(Aggregator::ptr_t ptrAgg)
-{
-	LOG(TRACE, "Stop the scheduler now!");
-	ptrAgg->scheduler()->stop();
-
-	ptrAgg->shutdown_network();
-	ptrAgg->stop_stages();
-
-	if(ptrAgg->hasWorkflowEngine())
-	{
-		delete ptrAgg->ptr_workflow_engine_;
-		ptrAgg->ptr_workflow_engine_ = NULL;
-	}
-}
-
-
 void Aggregator::action_configure(const StartUpEvent &se)
 {
 	GenericDaemon::action_configure (se);

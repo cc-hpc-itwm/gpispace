@@ -41,9 +41,6 @@ namespace daemon {
 
 		virtual ~Orchestrator();
 
-		static void start(ptr_t ptrOrch);
-		static void shutdown(ptr_t ptrOrch);
-
 		void action_configure( const sdpa::events::StartUpEvent& );
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
 		void action_interrupt( const sdpa::events::InterruptEvent& );
@@ -56,7 +53,7 @@ namespace daemon {
 
 		void handleRetrieveJobResultsEvent( const sdpa::events::RetrieveJobResultsEvent* pEvt );
 
-		const std::string& url() const {return url_;}
+		const std::string url() const {return url_;}
 		bool is_orchestrator() { return true; }
 
 		template <class Archive>

@@ -36,29 +36,6 @@ Orchestrator::~Orchestrator()
 	daemon_stage_ = NULL;
 }
 
-void Orchestrator::start( Orchestrator::ptr_t ptrOrch )
-{
-	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-	ptrOrch->configure_network( ptrOrch->url() );
-	ptrOrch->configure(ptrCfg);
-}
-
-void Orchestrator::shutdown( Orchestrator::ptr_t ptrOrch )
-{
-	// stop scheduler threads
-	LOG(TRACE, "Stop the scheduler now!");
-	ptrOrch->scheduler()->stop();
-
-	ptrOrch->shutdown_network();
-	ptrOrch->stop_stages();
-
-	if( ptrOrch->hasWorkflowEngine() )
-	{
-		delete ptrOrch->ptr_workflow_engine_;
-		ptrOrch->ptr_workflow_engine_ = NULL;
-	}
-}
-
 void Orchestrator::action_configure(const StartUpEvent &se)
 {
 	GenericDaemon::action_configure (se);
