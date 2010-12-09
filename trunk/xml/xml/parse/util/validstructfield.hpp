@@ -9,20 +9,23 @@
 
 #include <we/type/literal/cpp.hpp>
 
+#include <xml/parse/util/valid_name.hpp>
+
 namespace xml
 {
   namespace parse
   {
-    inline std::string validate_field_name ( const std::string & name
-                                           , const boost::filesystem::path & path
-                                           )
+    inline std::string
+    validate_field_name ( const std::string & name
+                        , const boost::filesystem::path & path
+                        )
     {
       if (literal::cpp::reserved (name))
         {
           throw error::invalid_field_name (name, path);
         }
 
-      return name;
+      return validate_name (name, "fieldname", path);
     }
   }
 }

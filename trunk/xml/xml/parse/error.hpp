@@ -1188,9 +1188,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      static const std::string invalid_characters = ".,()";
-
-      class invalid_character : public generic
+      class invalid_name : public generic
       {
       private:
         std::string nice ( const std::string & name
@@ -1201,17 +1199,17 @@ namespace xml
           std::ostringstream s;
 
           s << type << " " << name
-            << " is invalid: forbidden characters are " << invalid_characters
+            << " is invalid (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
             << " in " << path
             ;
 
           return s.str();
         }
       public:
-        invalid_character ( const std::string & name
-                          , const std::string & type
-                          , const boost::filesystem::path & path
-                          )
+        invalid_name ( const std::string & name
+                     , const std::string & type
+                     , const boost::filesystem::path & path
+                     )
           : generic (nice (name, type, path))
         {}
       };
