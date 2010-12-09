@@ -53,10 +53,6 @@ target_link_libraries(sdpa-test
 	 ${Boost_LIBRARIES})
 
 
-# adding the tests
-add_test(sdpa_test_suite sdpa_test_suite)
-
-
 add_executable(test_config_suite test_Config.cpp)
 target_link_libraries(test_config_suite  seda sdpa-daemon
 									 sdpa-events
