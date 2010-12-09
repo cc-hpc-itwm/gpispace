@@ -232,6 +232,36 @@ namespace sdpa { namespace nre { namespace worker {
     }
 
 
+    void shutdownNrePcd()
+    {
+    	int c;
+    	int nStatus;
+		if (pidPcd <= 1)
+		{
+			LOG(ERROR, "cannot send TERM signal to child with pid: " << pidPcd);
+			throw std::runtime_error ("pcd does not have a valid pid (<= 1)");
+		}
+
+		kill(pidPcd, SIGTERM);
+
+		c = wait(&nStatus);
+		if( WIFEXITED(nStatus) )
+		{
+			if( WEXITSTATUS(nStatus) != 0 )
+			{
+				std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+				LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
+			}
+			else
+				if( WIFSIGNALED(nStatus) )
+				{
+					std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+					LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+				}
+		}
+    }
+
+
     unsigned int start( ) throw (std::exception)
     {
     	// start first the nre-pcd!!!! if bSpawnNrepcd is set
@@ -326,8 +356,11 @@ namespace sdpa { namespace nre { namespace worker {
 
     void stop()
     {
-      if (service_thread_ == NULL)
-        return;
+    	if (service_thread_ == NULL)
+    		return;
+
+    	if(nre_pcd_do_exec_)
+    		shutdownNrePcd();
 
 		LOG(TRACE, "stopping nre-pcd connection");
 		io_service_.stop();
