@@ -131,9 +131,13 @@ GenericDaemon::~GenericDaemon()
 {
 	DLOG(TRACE, "GenericDaemon destructor called ...");
 
-	if(ptr_workflow_engine_)
+	// remove stages
+	//seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+	//seda::StageRegistry::instance().remove(name());
+
+	if ( hasWorkflowEngine() )
 	{
-		DLOG(TRACE, "deleting workflow engine...");
+		DLOG(TRACE, "deleting workflow engine");
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
@@ -220,27 +224,9 @@ void GenericDaemon::start()
 void GenericDaemon::shutdown()
 {
 	// here one should only generate a message of type interrupt
-
-	// the following code shoud be executed in
-	// action action_interrupt!!
-
-	LOG(INFO, "Shutting down...");
-	LOG(TRACE, "Stop the scheduler now!");
-	// stop the scheduler thread
-	scheduler()->stop();
-
-	LOG(INFO, "Shutdown the network...");
-	shutdown_network();
-
-	LOG(INFO, "Stop the stages...");
-	stop_stages();
-
-	if ( hasWorkflowEngine() )
-	{
-		DLOG(TRACE, "deleting workflow engine");
-		delete ptr_workflow_engine_;
-		ptr_workflow_engine_ = NULL;
-	}
+	SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
+	InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
+    sendEventToSelf(pEvtInterrupt);
 }
 
 void GenericDaemon::configure(sdpa::util::Config::ptr_t ptrConfig )
@@ -270,12 +256,11 @@ void GenericDaemon::stop_stages()
 
 	//  shutdown the peer and remove the information from kvs
 	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+	//seda::StageRegistry::instance().remove(m_to_master_stage_name_);
 
 	// shutdown the daemon stage
 	SDPA_LOG_DEBUG("shutdown the daemon stage...");
 	seda::StageRegistry::instance().lookup(name())->stop();
-	seda::StageRegistry::instance().remove(name());
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -289,6 +274,22 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	{
 		SDPA_LOG_WARN("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
 	}
+}
+
+void GenericDaemon::handleInterruptEvent(const sdpa::events::InterruptEvent* ptr )
+{
+	// save the current state of the system .i.e serialize the daemon's state
+	// the following code shoud be executed on action action_interrupt!!
+	LOG(INFO, "Shutting down...");
+	LOG(TRACE, "Stop the scheduler now!");
+	// stop the scheduler thread
+	scheduler()->stop();
+
+	LOG(INFO, "Shutdown the network...");
+	shutdown_network();
+
+	LOG(INFO, "Stop the stages...");
+	stop_stages();
 }
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
@@ -367,11 +368,15 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
 {
 	try {
-		  assert (to_master_stage() != NULL);
-
-          to_master_stage()->send(pEvt);
-          //delivery_service_.send(to_master_stage(), pEvt, pEvt->id(), timeout, retries);
-          //DLOG(TRACE, "Sent " << pEvt->str() << " to " << pEvt->to() << ": message-id: " << pEvt->id());
+		  if(to_master_stage())
+		  {
+			  to_master_stage()->send(pEvt);
+			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		  }
+		  else
+		  {
+			  SDPA_LOG_ERROR("The master stage does not exist!");
+		  }
 	}
 	catch(const QueueFull&)
 	{
@@ -390,9 +395,15 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, 
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
 {
 	try {
-		  assert (to_slave_stage() != NULL);
-
-          to_slave_stage()->send(pEvt);
+		  if( to_slave_stage() )
+		  {
+			  to_slave_stage()->send(pEvt);
+			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		  }
+		  else
+		  {
+			  SDPA_LOG_ERROR("The slave stage does not exist!");
+		  }
 	}
 	catch(const QueueFull&)
 	{
@@ -505,8 +516,6 @@ void GenericDaemon::action_config_nok(const ConfigNokEvent &)
 void GenericDaemon::action_interrupt(const InterruptEvent&)
 {
 	SDPA_LOG_DEBUG("Call 'action_interrupt'");
-	// save the current state of the system .i.e serialize the daemon's state
-        // stop scheduler...
 }
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)

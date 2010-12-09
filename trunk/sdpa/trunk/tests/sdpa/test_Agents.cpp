@@ -26,7 +26,6 @@
 #include <fhgcom/tcp_server.hpp>
 
 #include <boost/thread.hpp>
-
 #include "tests_config.hpp"
 
 #include "sdpa/memory.hpp"
@@ -48,7 +47,6 @@
 #include <boost/filesystem/path.hpp>
 #include <sys/wait.h>
 
-#include <we/loader/module.hpp>
 #include <sdpa/daemon/EmptyWorkflowEngine.hpp>
 #include <we/mgmt/layer.hpp>
 
