@@ -487,6 +487,26 @@ namespace xml
           : generic (nice (name, port, type_in, type_out, path))
         {}
       };
+
+      // ******************************************************************* //
+
+      class overwrite_file : public generic
+      {
+      private:
+        std::string nice (const boost::filesystem::path & file) const
+        {
+          std::ostringstream s;
+
+          s << "overwrite the file " << file;
+
+          return s.str();
+        }
+
+      public:
+        overwrite_file (const boost::filesystem::path & file)
+          : generic (nice (file))
+        {}
+      };
     }
   }
 }

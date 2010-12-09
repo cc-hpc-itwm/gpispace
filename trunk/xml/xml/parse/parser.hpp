@@ -1428,6 +1428,8 @@ namespace xml
       f.type_check (state);
       f.sanity_check (state);
 
+      type::find_module_calls (f);
+
       return f;
     }
   }

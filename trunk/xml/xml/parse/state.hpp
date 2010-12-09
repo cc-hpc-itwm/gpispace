@@ -76,15 +76,18 @@ namespace xml
         bool _Windependent_place;
         bool _Windependent_transition;
         bool _Wconflicting_port_types;
+        bool _Woverwrite_file;
 
         bool _print_internal_structures;
         bool _no_inline;
         bool _synthesize_virtual_places;
 
+        std::string _verbose_file;
+        mutable bool _verbose_file_opened;
+        mutable std::ofstream _verbose_stream;
         std::string _path_to_cpp;
 
         std::string _Osearch_path;
-        std::string _Osearch_path_short;
         std::string _Oignore_properties;
         std::string _OWerror;
         std::string _OWall;
@@ -104,11 +107,13 @@ namespace xml
         std::string _OWindependent_place;
         std::string _OWindependent_transition;
         std::string _OWconflicting_port_types;
+        std::string _OWoverwrite_file;
 
         std::string _Oprint_internal_structures;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
 
+        std::string _Overbose_file;
         std::string _Opath_to_cpp;
 
         template<typename W>
@@ -190,14 +195,17 @@ namespace xml
           , _Windependent_place (true)
           , _Windependent_transition (true)
           , _Wconflicting_port_types (true)
+          , _Woverwrite_file (true)
 
           , _print_internal_structures (false)
           , _no_inline (false)
           , _synthesize_virtual_places (false)
 
-          , _path_to_cpp ()
+          , _verbose_file ("")
+          , _verbose_file_opened (false)
+          , _path_to_cpp ("")
 
-          , _Osearch_path ("search-path"), _Osearch_path_short("I")
+          , _Osearch_path ("search-path,I")
           , _Oignore_properties ("ignore-properties")
           , _OWerror ("Werror")
           , _OWall ("Wall")
@@ -217,12 +225,14 @@ namespace xml
           , _OWindependent_place ("Windependent-place")
           , _OWindependent_transition ("Windependent-transition")
           , _OWconflicting_port_types ("Wconflicting-port-types")
+          , _OWoverwrite_file ("Woverwrite-file")
 
           , _Oprint_internal_structures ("print-internal-structures")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
 
-          , _Opath_to_cpp ("path-to-cpp")
+          , _Overbose_file ("verbose-file,v")
+          , _Opath_to_cpp ("path-to-cpp,g")
         {}
 
         int & level (void) { return _level; }
@@ -340,6 +350,7 @@ namespace xml
           GET_PROP (Windependent_place)
           GET_PROP (Windependent_transition)
           GET_PROP (Wconflicting_port_types)
+          GET_PROP (Woverwrite_file)
 
           GET_PROP (print_internal_structures)
           GET_PROP (no_inline)
@@ -382,6 +393,28 @@ namespace xml
 
         // ***************************************************************** //
 
+        void verbose (const std::string & msg) const
+        {
+          if (_verbose_file.size() > 0)
+            {
+              if (!_verbose_file_opened)
+                {
+                  _verbose_stream.open (_verbose_file.c_str());
+
+                  if (!_verbose_stream.good())
+                    {
+                      throw error::could_not_open_file (_verbose_file);
+                    }
+
+                  _verbose_file_opened = true;
+                }
+
+              _verbose_stream << msg << std::endl;
+            }
+        }
+
+        // ***************************************************************** //
+
 #define ACCESS(x)                                       \
         const bool & x (void) const { return _ ## x; }  \
         bool & x (void){ return _ ## x; }
@@ -406,6 +439,7 @@ namespace xml
         ACCESS(Windependent_place)
         ACCESS(Windependent_transition)
         ACCESS(Wconflicting_port_types)
+        ACCESS(Woverwrite_file)
 
         ACCESS(print_internal_structures)
         ACCESS(no_inline)
@@ -438,6 +472,7 @@ namespace xml
         WARN(independent_place)
         WARN(independent_transition)
         WARN(conflicting_port_types)
+        WARN(overwrite_file)
 
 #undef WARN
 
@@ -493,107 +528,119 @@ namespace xml
 
         void add_options (po::options_description & desc)
         {
-#define VAL(x) po::value<bool>(&_ ## x)->default_value (_ ## x)
+#define TYPEDVAL(t,x) po::value<t>(&_ ## x)->default_value (_ ## x)
+#define BOOLVAL(x) TYPEDVAL(bool,x)
+#define STRINGVAL(x) TYPEDVAL(std::string,x)
 
           desc.add_options ()
-            ( (_Osearch_path + "," + _Osearch_path_short).c_str()
+            ( _Overbose_file.c_str()
+            , STRINGVAL(verbose_file)
+            , "verbose output goes there, empty for no verbose output"
+            )
+            ( _Osearch_path.c_str()
             , po::value<search_path_type>(&_search_path)
             , "search path"
             )
+            ( _Opath_to_cpp.c_str()
+            , STRINGVAL(path_to_cpp)
+            , "path for cpp output (empty for no cpp output)"
+            )
             ( _Oignore_properties.c_str()
-            , VAL(ignore_properties)
+            , BOOLVAL(ignore_properties)
             , "when set to true, no properties are parsed"
             )
             ( _OWerror.c_str()
-            , VAL(Werror)
+            , BOOLVAL(Werror)
             , "cast warnings to errors"
             )
             ( _OWall.c_str()
-            , VAL(Wall)
+            , BOOLVAL(Wall)
             , "turn on all warnings"
             )
             ( _OWoverwrite_function_name_as.c_str()
-            , VAL(Woverwrite_function_name_as)
+            , BOOLVAL(Woverwrite_function_name_as)
             , "warn when overwriting a function name by 'as'"
             )
             ( _OWoverwrite_template_name_as.c_str()
-            , VAL(Woverwrite_template_name_as)
+            , BOOLVAL(Woverwrite_template_name_as)
             , "warn when overwriting a template name by 'as'"
             )
             ( _OWshadow.c_str()
-            , VAL(Wshadow)
+            , BOOLVAL(Wshadow)
             , "warn when shadowing a struct definition"
             )
             ( _OWdefault_construction.c_str()
-            , VAL(Wdefault_construction)
+            , BOOLVAL(Wdefault_construction)
             , "warn when default construct (part of) tokens"
             )
             ( _OWunused_field.c_str()
-            , VAL(Wunused_field)
+            , BOOLVAL(Wunused_field)
             , "warn when given fields in tokens are unused"
             )
             ( _OWport_not_connected.c_str()
-            , VAL(Wport_not_connected)
+            , BOOLVAL(Wport_not_connected)
             , "warn when ports are not connected"
             )
             ( _OWunexpected_element.c_str()
-            , VAL(Wunexpected_element)
+            , BOOLVAL(Wunexpected_element)
             , "warn when unexpected elements occur"
             )
             ( _OWoverwrite_function_name_trans.c_str()
-            , VAL(Woverwrite_function_name_trans)
+            , BOOLVAL(Woverwrite_function_name_trans)
             , "warn when overwriting a function name with a transition name"
             )
             ( _OWoverwrite_function_internal_trans.c_str()
-            , VAL(Woverwrite_function_internal_trans)
+            , BOOLVAL(Woverwrite_function_internal_trans)
             , "warn when overwriting a function internal flag by the transition internal flag"
             )
             ( _OWproperty_overwritten.c_str()
-            , VAL(Wproperty_overwritten)
+            , BOOLVAL(Wproperty_overwritten)
             , "warn when overwriting a property"
             )
             ( _OWtype_map_duplicate.c_str()
-            , VAL(Wtype_map_duplicate)
+            , BOOLVAL(Wtype_map_duplicate)
             , "warn about duplicate type maps"
             )
             ( _OWtype_get_duplicate.c_str()
-            , VAL(Wtype_get_duplicate)
+            , BOOLVAL(Wtype_get_duplicate)
             , "warn about duplicate type gets"
             )
             ( _OWoverwrite_context.c_str()
-            , VAL(Woverwrite_context)
+            , BOOLVAL(Woverwrite_context)
             , "warn when overwriting values in global context"
             )
             ( _OWindependent_place.c_str()
-            , VAL(Windependent_place)
+            , BOOLVAL(Windependent_place)
             , "warn when a place has no connection at all"
             )
             ( _OWindependent_transition.c_str()
-            , VAL(Windependent_transition)
+            , BOOLVAL(Windependent_transition)
             , "warn when a transition has no connection at all"
             )
             ( _OWconflicting_port_types.c_str()
-            , VAL(Wconflicting_port_types)
+            , BOOLVAL(Wconflicting_port_types)
             , "warn when in/out port has conflicting types"
             )
+            ( _OWoverwrite_file.c_str()
+            , BOOLVAL(Woverwrite_file)
+            , "warn when a file is overwritten"
+            )
             ( _Oprint_internal_structures.c_str()
-            , VAL(print_internal_structures)
+            , BOOLVAL(print_internal_structures)
             , "if set the parser dumps the internal structures right before synthesize"
             )
             ( _Ono_inline.c_str()
-            , VAL(no_inline)
+            , BOOLVAL(no_inline)
             , "if set, ignore the keyword inline"
             )
             ( _Osynthesize_virtual_places.c_str()
-            , VAL(synthesize_virtual_places)
+            , BOOLVAL(synthesize_virtual_places)
             , "if set, ignore the keyword inline"
             )
-            ( _Opath_to_cpp.c_str()
-            , po::value<std::string>(&_path_to_cpp)
-            , "path for cpp output (empty for no cpp output)"
-            )
             ;
-#undef VAL
+#undef TYPEDVAL
+#undef BOOLVAL
+#undef STRINGVAL
 
           _options_optimize.add_options (desc);
         }

@@ -415,6 +415,7 @@ namespace xml
                                , boost::recursive_wrapper<net_type>
                                > type;
 
+        bool contains_a_module_call;
         struct_vec_type structs;
 
         fhg::util::maybe<std::string> name;
@@ -693,33 +694,130 @@ namespace xml
 
       // ***************************************************************** //
 
+      inline bool find_module_calls (function_type &);
+
+      namespace visitor
+      {
+        template<typename NET, typename TRANS>
+        class transition_find_module_calls : public boost::static_visitor<bool>
+        {
+        private:
+          const NET & net;
+          const TRANS & trans;
+
+        public:
+          transition_find_module_calls (const NET & _net, const TRANS & _trans)
+            : net (_net)
+            , trans (_trans)
+          {}
+
+          bool operator () (function_type & f) const
+          {
+            return xml::parse::type::find_module_calls (f);
+          }
+
+          bool operator () (use_type & u) const
+          {
+            function_type fun;
+
+            if (!net.get_function (u.name, fun))
+              {
+                throw error::unknown_function
+                  (u.name, trans.name, trans.path);
+              }
+
+            return xml::parse::type::find_module_calls (fun);
+          }
+        };
+      }
+
+      template<typename NET>
+      inline bool find_module_calls (NET & n)
+      {
+        n.contains_a_module_call = false;
+
+        for ( typename NET::transition_vec_type::iterator pos
+                (n.transitions().begin())
+            ; pos != n.transitions().end()
+            ; ++pos
+            )
+          {
+            n.contains_a_module_call
+              |= boost::apply_visitor
+              ( visitor::transition_find_module_calls<NET, transition_type> (n, *pos)
+              , pos->f
+              );
+          }
+
+        return n.contains_a_module_call;
+      }
+
+      namespace visitor
+      {
+        template<typename NET>
+        class find_module_calls : public boost::static_visitor<bool>
+        {
+        public:
+          bool operator () (expression_type &) const
+          {
+            return false;
+          }
+
+          bool operator () (mod_type &) const
+          {
+            return true;
+          }
+
+          bool operator () (NET & n) const
+          {
+            return xml::parse::type::find_module_calls<NET> (n);
+          }
+        };
+      }
+
+      inline bool find_module_calls (function_type & f)
+      {
+        f.contains_a_module_call
+          = boost::apply_visitor (visitor::find_module_calls<net_type>(), f.f);
+
+        return f.contains_a_module_call;
+      }
+
+      // ***************************************************************** //
+
       inline void struct_to_cpp ( const struct_t & s
-                                , const boost::filesystem::path & prefix
+                                , const state::type & state
                                 )
       {
-        const boost::filesystem::path file
-          (prefix / "pnetc" / "type" / (s.name + ".hpp"));
+        const boost::filesystem::path prefix (state.path_to_cpp());
+        const boost::filesystem::path path (prefix / "pnetc" / "type");
 
-        if (!fhg::util::mkdirs (file))
+        if (!fhg::util::mkdirs (path))
           {
-            throw std::runtime_error ( "BUMMER: could not create directory "
-                                     + file.parent_path().string()
-                                     );
+            throw error::could_not_create_directory (path);
+          }
+
+        const boost::filesystem::path file (path / (s.name + ".hpp"));
+
+        if (boost::filesystem::exists (file))
+          {
+            state.warn (warning::overwrite_file (file));
           }
 
         std::ofstream stream (file.string().c_str());
 
         if (!stream.good())
           {
-            throw std::runtime_error
-              ("BUMMER: could not open " + file.string() + " for writing");
+            throw error::could_not_open_file (file);
           }
+
+        state.verbose ("write to " + file.string());
 
         signature::cpp::cpp_header (stream, s.sig, s.name, s.path);
       }
 
       inline void structs_to_cpp ( const struct_vec_type & structs
-                                 , const boost::filesystem::path & prefix
+                                 , const state::type & state
                                  )
       {
         for ( struct_vec_type::const_iterator pos (structs.begin())
@@ -727,40 +825,93 @@ namespace xml
             ; ++pos
             )
           {
-            struct_to_cpp (*pos, prefix);
+            struct_to_cpp (*pos, state);
           }
       }
 
-
       // ***************************************************************** //
+
+      inline void struct_to_cpp (const function_type &, const state::type &);
 
       namespace visitor
       {
+        class transition_struct_to_cpp : public boost::static_visitor<void>
+        {
+        private:
+          const state::type & state;
+
+        public:
+          transition_struct_to_cpp (const state::type & _state)
+            : state (_state)
+          {}
+
+          void operator () (const function_type & f) const
+          {
+            struct_to_cpp (f, state);
+          }
+
+          template<typename T> void operator () (const T &) const {}
+        };
+
+        template<typename NET>
         class struct_to_cpp : public boost::static_visitor<void>
         {
         private:
-          const boost::filesystem::path & prefix;
+          const state::type & state;
 
         public:
-          struct_to_cpp (const boost::filesystem::path & _prefix)
-            : prefix (_prefix)
+          struct_to_cpp (const state::type & _state)
+            : state (_state)
           {}
 
-          void operator () (const expression_type &) const {}
-          void operator () (const mod_type &) const {}
-          void operator () (const net_type & n) const {}
+          void operator () (const NET & n) const
+          {
+            if (!n.contains_a_module_call)
+              {
+                return;
+              }
+
+            structs_to_cpp (n.structs, state);
+
+            for ( typename NET::function_vec_type::const_iterator pos
+                   (n.functions().begin())
+                ; pos != n.functions().end()
+                ; ++pos
+                )
+              {
+                xml::parse::type::struct_to_cpp (*pos, state);
+              }
+
+            for ( typename NET::transition_vec_type::const_iterator pos
+                   (n.transitions().begin())
+                ; pos != n.transitions().end()
+                ; ++pos
+                )
+              {
+                boost::apply_visitor ( transition_struct_to_cpp (state)
+                                     , pos->f
+                                     );
+              }
+          }
+
+          template<typename T> void operator () (const T &) const {}
         };
       }
 
       // ***************************************************************** //
 
       inline void struct_to_cpp ( const function_type & f
-                                , const boost::filesystem::path & prefix
+                                , const state::type & state
                                 )
       {
-        structs_to_cpp (f.structs, prefix);
+        if (!f.contains_a_module_call)
+          {
+            return;
+          }
 
-        boost::apply_visitor (visitor::struct_to_cpp(prefix), f.f);
+        structs_to_cpp (f.structs, state);
+
+        boost::apply_visitor (visitor::struct_to_cpp<net_type>(state), f.f);
       }
 
       // ******************************************************************* //
@@ -775,6 +926,7 @@ namespace xml
           << ", internal = " << f.internal
           << std::endl;
         s << level (f.level+1) << "path = " << f.path << std::endl;
+        s << level (f.level+1) << "contains_a_module_call = " << f.contains_a_module_call << std::endl;
         ;
 
         s << level(f.level+1) << "properties = " << std::endl;

@@ -1387,6 +1387,50 @@ namespace xml
 
       // ******************************************************************* //
 
+      class could_not_open_file : public generic
+      {
+      private:
+        std::string nice (const std::string & file) const
+        {
+          std::ostringstream s;
+
+          s << "could not open file " << file;
+
+          return s.str();
+        }
+
+      public:
+        could_not_open_file (const boost::filesystem::path & file)
+          : generic (nice (file.string()))
+        {}
+
+        could_not_open_file (const std::string & file)
+          : generic (nice (file))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class could_not_create_directory : public generic
+      {
+      private:
+        std::string nice (const boost::filesystem::path & path) const
+        {
+          std::ostringstream s;
+
+          s << "could not create directory " << path;
+
+          return s.str();
+        }
+
+      public:
+        could_not_create_directory (const boost::filesystem::path & path)
+          : generic (nice (path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class weparse : public generic
       {
       public:

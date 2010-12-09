@@ -80,14 +80,10 @@ main (int argc, char ** argv)
 
   if (state->path_to_cpp().size() > 0)
     {
-      xml::parse::type::struct_to_cpp (f, state->path_to_cpp());
+      xml::parse::type::struct_to_cpp (f, *state);
     }
 
-  // optimize f
-
   we::transition_t trans (f.synthesize<we::activity_t> (*state));
-
-  // optimize trans
 
   we::type::optimize::optimize (trans, state->options_optimize());
 

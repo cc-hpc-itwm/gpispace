@@ -19,10 +19,8 @@ namespace fhg
         ;
     }
 
-    inline bool mkdirs (const boost::filesystem::path & file)
+    inline bool mkdirs (const boost::filesystem::path & path)
     {
-      const boost::filesystem::path path (file.parent_path());
-
       bool res (true);
 
       boost::filesystem::path stack (".");

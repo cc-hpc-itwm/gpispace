@@ -46,6 +46,7 @@ namespace xml
         typedef std::vector<transition_type> transition_vec_type;
         typedef std::vector<specialize_type> specialize_vec_type;
 
+        bool contains_a_module_call;
         struct_vec_type structs;
 
         boost::filesystem::path path;
@@ -81,6 +82,10 @@ namespace xml
         }
 
         const transition_vec_type & transitions (void) const
+        {
+          return _transitions.elements();
+        }
+        transition_vec_type & transitions (void)
         {
           return _transitions.elements();
         }
@@ -624,6 +629,7 @@ namespace xml
       {
         s << level(n.level) << "net" << std::endl;
         s << level(n.level+1) << "path = " << n.path << std::endl;
+        s << level(n.level+1) << "contains_a_module_call = " << n.contains_a_module_call << std::endl;
         s << level(n.level+1) << "properties = " << std::endl;
 
         n.prop.writeTo (s, n.level+2);
