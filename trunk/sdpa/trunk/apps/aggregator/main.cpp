@@ -52,7 +52,7 @@ int main (int argc, char **argv)
 
 	try {
 		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName); //, orchUrl );
-		sdpa::daemon::Aggregator::start(ptrAgg);
+		ptrAgg->start();
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -88,7 +88,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
+		ptrAgg->shutdown();
 	} catch ( std::exception& ){
 			std::cout<<"Could not start the Aggregator!"<<std::endl;
 		}

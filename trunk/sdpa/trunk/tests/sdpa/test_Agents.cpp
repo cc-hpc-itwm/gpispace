@@ -150,7 +150,7 @@ struct MyFixture
 		delete m_ptrServ;
 		delete m_ptrKvsd;
 		delete m_ptrPool;
-		sleep(1);
+		//sleep(1);
 	}
 
 	string read_workflow(string strFileName)
@@ -196,11 +196,11 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
@@ -210,15 +210,15 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 
 	try {
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		ptrOrch->shutdown();
+		ptrAgg->shutdown();
+		ptrNRE_0->shutdown();
 
 		return;
 	}
@@ -231,7 +231,6 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
-
 
 	for( int k=0; k<m_nITER; k++ )
 	{
@@ -259,13 +258,12 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+	ptrOrch->shutdown();
+	ptrAgg->shutdown();
+	ptrNRE_0->shutdown();
 
 	ptrCli->shutdown_network();
 	ptrCli.reset();
-
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_suite_agent_int, MyFixture )
@@ -286,11 +284,11 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -311,15 +309,15 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -359,9 +357,9 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
 
 
 	ptrCli->shutdown_network();
@@ -446,11 +444,11 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
@@ -482,15 +480,15 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	LOG( DEBUG, "starting the NRE ...");
 	try {
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		ptrOrch->shutdown();
+		ptrAgg->shutdown();
+		ptrNRE_0->shutdown();
 
 		return;
 	}
@@ -530,9 +528,9 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
 
 	// process container terminates ...
 	LOG( INFO, "terminating...");
@@ -560,11 +558,11 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
@@ -595,15 +593,15 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	}
 
 	try {
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
+		ptrOrch->shutdown();
+		ptrAgg->shutdown();
+		ptrNRE_0->shutdown();
 
 		return;
 	}
@@ -643,9 +641,9 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
 
 	LOG( INFO, "terminating...");
 	if (! executor->stop())

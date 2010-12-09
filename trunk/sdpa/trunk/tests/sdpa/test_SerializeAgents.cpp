@@ -903,8 +903,7 @@ BOOST_FIXTURE_TEST_CASE( testBackupRecoverOrch, MyFixture )
 
 	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
-
+	ptrOrch->start();
 
 	LOG( DEBUG, "CSubmit 5 jobs to the orchestrator ...");
 	for(int k=0; k<5; k++ )
@@ -913,7 +912,7 @@ BOOST_FIXTURE_TEST_CASE( testBackupRecoverOrch, MyFixture )
 	ptrOrch->print();
 	LOG( DEBUG, "Bakcup the orchestrator ino the file "<<filename);
 	ptrOrch->backup(filename);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrOrch->shutdown();
 	sleep(1);
 
 	ptrCli->shutdown_network();
@@ -922,11 +921,11 @@ BOOST_FIXTURE_TEST_CASE( testBackupRecoverOrch, MyFixture )
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 	ptrRecOrch->recover(filename);
-	sdpa::daemon::Orchestrator::start(ptrRecOrch);
+	ptrRecOrch->start();
 
 	sleep(1);
 
-	sdpa::daemon::Orchestrator::shutdown(ptrRecOrch);
+	ptrRecOrch->shutdown();
 	sleep(1);
 
 	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;

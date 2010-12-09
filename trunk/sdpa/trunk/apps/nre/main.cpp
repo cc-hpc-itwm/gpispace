@@ -68,7 +68,7 @@ int main (int argc, char **argv)
 																	);
 
   try {
-    sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE);
+	  ptrNRE->start();
 
     LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
@@ -107,7 +107,7 @@ int main (int argc, char **argv)
     LOG(ERROR, "Could not start the NRE: " << ex.what() );
   }
 
-  sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::shutdown(ptrNRE);
+  ptrNRE->shutdown();
 
   seda::StageRegistry::instance().stopAll();
   seda::StageRegistry::instance().clear();

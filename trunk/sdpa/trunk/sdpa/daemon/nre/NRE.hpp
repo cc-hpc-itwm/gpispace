@@ -149,8 +149,6 @@ namespace sdpa {
 			//ar & m_guiServ;
 		}
 
-		//void shutdownNrePcd();
-
 		virtual void backup( const std::string& strArchiveName );
 	    virtual void recover( const std::string& strArchiveName );
 

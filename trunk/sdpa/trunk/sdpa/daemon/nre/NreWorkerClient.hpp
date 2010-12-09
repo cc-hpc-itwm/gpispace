@@ -416,8 +416,6 @@ namespace sdpa { namespace nre { namespace worker {
     	return std::make_pair(ACTIVITY_FINISHED, "empty result");
 	}
 
-    pid_t getPcdPid() { return pidPcd; }
-
   private:
 	void ping() throw (NrePcdIsDead)
 	{

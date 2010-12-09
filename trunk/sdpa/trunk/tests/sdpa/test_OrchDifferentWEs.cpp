@@ -91,8 +91,6 @@ namespace sdpa { namespace tests { namespace worker {
 
     void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
 
-    pid_t getPcdPid() { return -2; }
-
     sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
 	{
     	LOG( INFO, "Execute the activity "<<in_activity);
@@ -208,11 +206,11 @@ BOOST_AUTO_TEST_CASE( testAllWithNoWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -233,15 +231,15 @@ BOOST_AUTO_TEST_CASE( testAllWithNoWe )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<WorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -267,9 +265,9 @@ retry:	try {
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-				sdpa::daemon::Aggregator::shutdown(ptrAgg);
-				sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
 
 				return;
 			}
@@ -300,9 +298,9 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	 ptrNRE_0->shutdown();
+	 ptrAgg->Aggregator::shutdown();
+	 ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
@@ -329,11 +327,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -354,15 +352,15 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<WorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -390,9 +388,9 @@ retry:	try {
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-				sdpa::daemon::Aggregator::shutdown(ptrAgg);
-				sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
 
 				return;
 			}
@@ -423,9 +421,9 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
@@ -450,11 +448,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -475,15 +473,15 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -511,13 +509,9 @@ retry:	try {
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-				sdpa::daemon::Aggregator::shutdown(ptrAgg);
-				sdpa::daemon::Orchestrator::shutdown(ptrOrch);
-
-
-
-
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
 
 				return;
 			}
@@ -548,9 +542,9 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
@@ -576,11 +570,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -601,15 +595,15 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<WorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -638,9 +632,9 @@ retry:	try {
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-				sdpa::daemon::Aggregator::shutdown(ptrAgg);
-				sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
 
 				return;
 			}
@@ -671,9 +665,9 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
@@ -699,15 +693,15 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
-	sdpa::daemon::Orchestrator::start(ptrOrch);
+	ptrOrch->start();
 
 	LOG( DEBUG, "Create the Aggregator 0 ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg);
+	ptrAgg->start();
 
 	LOG( DEBUG, "Create the Aggregator 1 ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg_1 = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_1", addrAgg,"aggregator_0");
-	sdpa::daemon::Aggregator::start(ptrAgg_1);
+	ptrAgg_1->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -728,16 +722,16 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 				                             v_module_preload );
 
 	try {
-		sdpa::daemon::NRE<WorkerClient>::start(ptrNRE_0);
+		ptrNRE_0->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg);
-		sdpa::daemon::Aggregator::shutdown(ptrAgg_1);
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrAgg_1->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -764,9 +758,10 @@ retry:  try {
 			{
 				//LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-				sdpa::daemon::Aggregator::shutdown(ptrAgg);
-				sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrAgg_1->shutdown();
+				ptrOrch->shutdown();
 
 				return;
 			}
@@ -797,10 +792,10 @@ retry:  try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	sdpa::daemon::NRE<WorkerClient>::shutdown(ptrNRE_0);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg);
-	sdpa::daemon::Aggregator::shutdown(ptrAgg_1);
-	sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrAgg_1->shutdown();
+	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
     ptrCli.reset();

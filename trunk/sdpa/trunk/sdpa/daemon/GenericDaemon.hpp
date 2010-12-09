@@ -73,13 +73,16 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  static void start(const GenericDaemon::ptr_t& daemon );
+
+	  void start();
 	  void configure(sdpa::util::Config::ptr_t ptrCfg);
 	  void stop_stages();
 	  //virtual void configure_network();
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
-	  static void shutdown( const GenericDaemon::ptr_t& daemon );
+	  void shutdown();
+
+
 
 	  virtual void perform(const seda::IEvent::Ptr&);
 

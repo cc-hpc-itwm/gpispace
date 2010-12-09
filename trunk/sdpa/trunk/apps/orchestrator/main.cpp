@@ -52,7 +52,7 @@ int main (int argc, char **argv)
 
 	try {
 		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl  );
-		sdpa::daemon::Orchestrator::start(ptrOrch);
+		ptrOrch->start();
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -88,7 +88,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		sdpa::daemon::Orchestrator::shutdown(ptrOrch);
+		ptrOrch->shutdown();
 	} catch( std::exception& ) {
 			std::cout<<"Could not start the Orchestrator!"<<std::endl;
 		}

@@ -210,31 +210,36 @@ void GenericDaemon::shutdown_network()
 }
 
 
-void GenericDaemon::start( const GenericDaemon::ptr_t& ptrDaemon )
+void GenericDaemon::start()
 {
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-	ptrDaemon->configure_network( ptrDaemon->url(), ptrDaemon->masterName() );
-	ptrDaemon->configure(ptrCfg);
+	configure_network( url(), masterName() );
+	configure(ptrCfg);
 }
 
-void GenericDaemon::shutdown( const GenericDaemon::ptr_t& ptrDaemon )
+void GenericDaemon::shutdown()
 {
+	// here one should only generate a message of type interrupt
+
+	// the following code shoud be executed in
+	// action action_interrupt!!
+
 	LOG(INFO, "Shutting down...");
 	LOG(TRACE, "Stop the scheduler now!");
 	// stop the scheduler thread
-	ptrDaemon->scheduler()->stop();
+	scheduler()->stop();
 
 	LOG(INFO, "Shutdown the network...");
-	ptrDaemon->shutdown_network();
+	shutdown_network();
 
 	LOG(INFO, "Stop the stages...");
-	ptrDaemon->stop_stages();
+	stop_stages();
 
-	if ( ptrDaemon->hasWorkflowEngine() )
+	if ( hasWorkflowEngine() )
 	{
 		DLOG(TRACE, "deleting workflow engine");
-		delete ptrDaemon->ptr_workflow_engine_;
-		ptrDaemon->ptr_workflow_engine_ = NULL;
+		delete ptr_workflow_engine_;
+		ptr_workflow_engine_ = NULL;
 	}
 }
 
