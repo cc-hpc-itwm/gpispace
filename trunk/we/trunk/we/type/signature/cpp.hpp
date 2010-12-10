@@ -82,18 +82,18 @@ namespace signature
         std::ostream & operator () (const literal::type_name_t & t) const
         {
           level (l+1);
-          s << "x." << fieldname << " = ";
+          s << "x." << fieldname << " = value::get<";
 
           if (literal::cpp::known (t))
             {
-              s << "value::get<" << literal::cpp::translate (t) << ">";
+              s << literal::cpp::translate (t);
             }
           else
             {
-              s << t << "::from_value";
+              s << "::pnetc::type::" << t << "::" << t;
             }
 
-          s << " (v_" << (l-1) << ");" << std::endl;
+          s << "> (v_" << (l-1) << ");" << std::endl;
 
           return s;
         }
@@ -165,7 +165,10 @@ namespace signature
             }
           else
             {
-              s << t << "::to_value (x." << fieldname << ")";
+              s << "::pnetc::type::" << t << "::to_value ("
+                << "x." << fieldname
+                << ")"
+                ;
             }
 
           s << ";" << std::endl;
@@ -284,7 +287,16 @@ namespace signature
 
         std::ostream & operator () (const literal::type_name_t & t) const
         {
-          return s << literal::cpp::try_translate (t);
+          if (literal::cpp::known (t))
+            {
+              s << literal::cpp::translate (t);
+            }
+          else
+            {
+              s << "::pnetc::type::" << t << "::" << t;
+            }
+
+          return s;
         }
 
         std::ostream & operator () (const structured_t & map) const
@@ -479,15 +491,18 @@ namespace signature
 
       os << "namespace pnetc"                                    << std::endl;
       os << "{"                                                  << std::endl;
+      os << "  namespace type"                                   << std::endl;
+      os << "  {"                                                << std::endl;
       os                                                         << std::endl;
       os << "  // defined in " << defpath                        << std::endl;
       os                                                         << std::endl;
-      os << "  namespace " << n                                  << std::endl;
-      os << "  {"                                                << std::endl;
+      os << "    namespace " << n                                << std::endl;
+      os << "    {"                                              << std::endl;
 
-      os << "    "; cpp_struct (os, s, n, 2);
+      os << "      "; cpp_struct (os, s, n, 3);
 
-      os << "  } // " << n                                       << std::endl;
+      os << "    } // " << n                                     << std::endl;
+      os << "  } // type"                                        << std::endl;
       os << "} // pnetc"                                         << std::endl;
       os                                                         << std::endl;
 
