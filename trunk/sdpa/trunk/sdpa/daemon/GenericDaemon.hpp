@@ -75,19 +75,14 @@ namespace sdpa { namespace daemon {
 	  // API
 
 	  void start();
-	  void configure(sdpa::util::Config::ptr_t ptrCfg);
 	  void stop_stages();
 	  //virtual void configure_network();
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
+	  void configure(sdpa::util::Config::ptr_t ptrConfig );
 	  void shutdown();
 
-
-
 	  virtual void perform(const seda::IEvent::Ptr&);
-
-	  virtual void onStageStart(const std::string &stageName);
-	  virtual void onStageStop(const std::string &stageName);
 
 	  // daemon actions
 	  virtual void action_configure( const sdpa::events::StartUpEvent& );
@@ -116,6 +111,7 @@ namespace sdpa { namespace daemon {
 	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
 	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
 	  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
+	  virtual void handleStartUpEvent(const sdpa::events::StartUpEvent* ptr );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
@@ -153,10 +149,10 @@ namespace sdpa { namespace daemon {
 	  Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException);
 
 	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
-	  virtual seda::Stage* to_master_stage() const { return ptr_to_master_stage_ ; }
-	  virtual seda::Stage* to_slave_stage() const { return ptr_to_slave_stage_ ; }
+	  virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
+	  virtual seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
 
-	  virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
+	  //virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
 
 	  virtual bool is_registered() const { return m_bRegistered;}
 
@@ -280,8 +276,8 @@ namespace sdpa { namespace daemon {
 	  Scheduler::ptr_t 	ptr_scheduler_;
 	  IWorkflowEngine*  ptr_workflow_engine_;
 
-	  seda::Stage* ptr_to_master_stage_;
-	  seda::Stage* ptr_to_slave_stage_;
+	  seda::Stage::Ptr ptr_to_master_stage_;
+	  seda::Stage::Ptr ptr_to_slave_stage_;
 
 	  seda::Stage* daemon_stage_;
 	  std::string master_;

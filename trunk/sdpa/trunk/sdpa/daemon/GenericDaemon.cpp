@@ -70,8 +70,6 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  ptr_to_master_stage_(NULL),
-	  ptr_to_slave_stage_(NULL),
 	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
@@ -107,8 +105,6 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  ptr_to_master_stage_(NULL),
-	  ptr_to_slave_stage_(NULL),
 	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
@@ -132,8 +128,8 @@ GenericDaemon::~GenericDaemon()
 	DLOG(TRACE, "GenericDaemon destructor called ...");
 
 	// remove stages
-	//seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-	//seda::StageRegistry::instance().remove(name());
+	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+	seda::StageRegistry::instance().remove(name());
 
 	if ( hasWorkflowEngine() )
 	{
@@ -194,7 +190,7 @@ void GenericDaemon::configure_network( const std::string& daemonUrl, const std::
 		  seda::StageRegistry::instance().insert (network_stage);
 		  network_stage->start ();
 
-		  //ptr_to_master_stage_ = ptr_to_slave_stage_ = output.get();
+		  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 
 		  if (! masterName.empty())
 			setMaster(masterName);
@@ -213,9 +209,9 @@ void GenericDaemon::shutdown_network()
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
 }
 
-
 void GenericDaemon::start()
 {
+	// create configuration
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
 	configure_network( url(), masterName() );
 	configure(ptrCfg);
@@ -256,7 +252,6 @@ void GenericDaemon::stop_stages()
 
 	//  shutdown the peer and remove the information from kvs
 	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-	//seda::StageRegistry::instance().remove(m_to_master_stage_name_);
 
 	// shutdown the daemon stage
 	SDPA_LOG_DEBUG("shutdown the daemon stage...");
@@ -274,6 +269,11 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	{
 		SDPA_LOG_WARN("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
 	}
+}
+
+void GenericDaemon::handleStartUpEvent(const sdpa::events::StartUpEvent* ptr )
+{
+	// to be implemented!!!!!!!!!!!!!!!!!!
 }
 
 void GenericDaemon::handleInterruptEvent(const sdpa::events::InterruptEvent* ptr )
@@ -302,40 +302,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
 {
 	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
-}
-
-void GenericDaemon::onStageStart(const std::string & /* stageName */)
-{
-	DMLOG(TRACE, "daemon stage is being started");
-    //	MLOG(INFO, "registering myself (" << name() << ")...");
-
-	try
-	{
-		assert (ptr_to_master_stage_ == NULL);
-		assert (ptr_to_slave_stage_ == NULL);
-
-		// there could be different stages for client/master sides, currently they are the same though
-		seda::Stage::Ptr master_network_stage
-		   (seda::StageRegistry::instance().lookup (m_to_master_stage_name_));
-		ptr_to_master_stage_ = master_network_stage.get();
-
-		seda::Stage::Ptr slave_network_stage
-		   (seda::StageRegistry::instance().lookup (m_to_slave_stage_name_));
-		ptr_to_slave_stage_ = slave_network_stage.get();
-	}
-	catch (std::exception const & ex)
-	{
-		LOG(ERROR, "could not lookup network stage: " << name() << ".net");
-		ptr_to_master_stage_ = NULL;
-		ptr_to_slave_stage_ = NULL;
-		throw;
-	}
-}
-
-void GenericDaemon::onStageStop(const std::string & /* stageName */)
-{
-	ptr_to_master_stage_ = NULL;
-	ptr_to_slave_stage_ = NULL;
 }
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
@@ -368,7 +334,7 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
 {
 	try {
-		  if(to_master_stage())
+		  if( to_master_stage().get() )
 		  {
 			  to_master_stage()->send(pEvt);
 			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
@@ -395,7 +361,7 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, 
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
 {
 	try {
-		  if( to_slave_stage() )
+		  if( to_slave_stage().get() )
 		  {
 			  to_slave_stage()->send(pEvt);
 			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
