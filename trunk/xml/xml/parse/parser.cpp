@@ -73,16 +73,6 @@ main (int argc, char ** argv)
 
   xml::parse::type::function_type f (xml::parse::frontend (*state, input));
 
-  if (state->print_internal_structures())
-    {
-      std::cerr << f << std::endl;
-    }
-
-  if (state->path_to_cpp().size() > 0)
-    {
-      xml::parse::type::struct_to_cpp (f, *state);
-    }
-
   we::transition_t trans (f.synthesize<we::activity_t> (*state));
 
   we::type::optimize::optimize (trans, state->options_optimize());

@@ -1430,6 +1430,23 @@ namespace xml
 
       type::find_module_calls (f);
 
+      if (state.path_to_cpp().size() > 0)
+        {
+          xml::parse::type::struct_to_cpp (f, state);
+        }
+
+      if (state.internal_structures_file().size() > 0)
+        {
+          const std::string file (state.internal_structures_file());
+          std::ofstream stream (file.c_str());
+
+          if (!stream.good())
+            {
+              throw error::could_not_open_file (file);
+            }
+
+          stream << f << std::endl;
+        }
       return f;
     }
   }

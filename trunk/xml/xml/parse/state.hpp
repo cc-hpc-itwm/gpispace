@@ -78,7 +78,7 @@ namespace xml
         bool _Wconflicting_port_types;
         bool _Woverwrite_file;
 
-        bool _print_internal_structures;
+        std::string _internal_structures_file;
         bool _no_inline;
         bool _synthesize_virtual_places;
 
@@ -109,7 +109,7 @@ namespace xml
         std::string _OWconflicting_port_types;
         std::string _OWoverwrite_file;
 
-        std::string _Oprint_internal_structures;
+        std::string _Ointernal_structures_file;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
 
@@ -197,7 +197,7 @@ namespace xml
           , _Wconflicting_port_types (true)
           , _Woverwrite_file (true)
 
-          , _print_internal_structures (false)
+          , _internal_structures_file ("")
           , _no_inline (false)
           , _synthesize_virtual_places (false)
 
@@ -227,7 +227,7 @@ namespace xml
           , _OWconflicting_port_types ("Wconflicting-port-types")
           , _OWoverwrite_file ("Woverwrite-file")
 
-          , _Oprint_internal_structures ("print-internal-structures")
+          , _Ointernal_structures_file ("internal-structures-file,r")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
 
@@ -324,6 +324,10 @@ namespace xml
             {
               _path_to_cpp = value; return true;
             }
+          else if (path.size() == 2 && path[1] == _Ointernal_structures_file)
+            {
+              _internal_structures_file = value; return true;
+            }
 
 #define GET_PROP(x)                                               \
           else if (path.size() == 2 && path[1] == _O ## x)        \
@@ -352,7 +356,6 @@ namespace xml
           GET_PROP (Wconflicting_port_types)
           GET_PROP (Woverwrite_file)
 
-          GET_PROP (print_internal_structures)
           GET_PROP (no_inline)
           GET_PROP (synthesize_virtual_places)
 
@@ -389,6 +392,11 @@ namespace xml
         const std::string & path_to_cpp (void) const
         {
           return _path_to_cpp;
+        }
+
+        const std::string & internal_structures_file (void) const
+        {
+          return _internal_structures_file;
         }
 
         // ***************************************************************** //
@@ -441,7 +449,6 @@ namespace xml
         ACCESS(Wconflicting_port_types)
         ACCESS(Woverwrite_file)
 
-        ACCESS(print_internal_structures)
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
 
@@ -533,17 +540,21 @@ namespace xml
 #define STRINGVAL(x) TYPEDVAL(std::string,x)
 
           desc.add_options ()
-            ( _Overbose_file.c_str()
-            , STRINGVAL(verbose_file)
-            , "verbose output goes there, empty for no verbose output"
-            )
             ( _Osearch_path.c_str()
             , po::value<search_path_type>(&_search_path)
             , "search path"
             )
+            ( _Overbose_file.c_str()
+            , STRINGVAL(verbose_file)
+            , "verbose output goes there, empty for no verbose output"
+            )
             ( _Opath_to_cpp.c_str()
             , STRINGVAL(path_to_cpp)
-            , "path for cpp output (empty for no cpp output)"
+            , "path for cpp output, empty for no cpp output"
+            )
+            ( _Ointernal_structures_file.c_str()
+            , STRINGVAL(internal_structures_file)
+            , "file to dump internal structures, empty for no dump"
             )
             ( _Oignore_properties.c_str()
             , BOOLVAL(ignore_properties)
@@ -624,10 +635,6 @@ namespace xml
             ( _OWoverwrite_file.c_str()
             , BOOLVAL(Woverwrite_file)
             , "warn when a file is overwritten"
-            )
-            ( _Oprint_internal_structures.c_str()
-            , BOOLVAL(print_internal_structures)
-            , "if set the parser dumps the internal structures right before synthesize"
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)
