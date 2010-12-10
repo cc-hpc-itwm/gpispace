@@ -472,6 +472,11 @@ namespace xml
           return is_known_port_in (name) || is_known_port_out (name);
         }
 
+        bool is_known_port_inout (const std::string & name) const
+        {
+          return is_known_port_in (name) && is_known_port_out (name);
+        }
+
         // ***************************************************************** //
 
         std::string condition (void) const
@@ -757,15 +762,118 @@ namespace xml
         template<typename NET>
         class find_module_calls : public boost::static_visitor<bool>
         {
+        private:
+          const function_type & f;
+
         public:
+          find_module_calls (const function_type & _f) : f (_f) {}
+
           bool operator () (expression_type &) const
           {
             return false;
           }
 
-          bool operator () (mod_type &) const
+          bool operator () (mod_type & mod) const
           {
+#define STRANGE(msg) THROW_STRANGE(  msg << " in module "     \
+                                  << mod.name << " function " \
+                                  << mod.function             \
+                                  )
+
+            std::cerr << "MODULE: " << mod.name
+                      << " " << mod.function
+                      << " port_return " << mod.port_return
+                      << " port_arg " << fhg::util::show ( mod.port_arg.begin()
+                                                         , mod.port_arg.end()
+                                                         )
+                      << std::endl;
+
+            if (mod.port_return.isJust())
+              {
+                port_type port;
+
+                if (!f.get_port_out (*mod.port_return, port))
+                  {
+                    STRANGE ("unknown return port " << *mod.port_return);
+                  }
+
+                std::cerr << "port_return " << *mod.port_return
+                          << " :: " << port.type
+                          << std::endl;
+              }
+
+            for ( port_arg_vec_type::const_iterator name (mod.port_arg.begin())
+                ; name != mod.port_arg.end()
+                ; ++name
+                )
+              {
+                if (!f.is_known_port (*name))
+                  {
+                    STRANGE ("unknown arg port " << *name);
+                  }
+
+                if (f.is_known_port_inout (*name))
+                  {
+                    port_type port_in;
+                    port_type port_out;
+
+                    if (!f.get_port_in (*name, port_in))
+                      {
+                        STRANGE ("failed to get port_in " << *name);
+                      }
+
+                    if (!f.get_port_out (*name, port_out))
+                      {
+                        STRANGE ("failed to get port_out " << *name);
+                      }
+
+                    if (port_in.type != port_out.type)
+                      {
+                        STRANGE ("in-type " << port_in.type
+                                << " != out-type " << port_out.type
+                                << " for port_inout " << *name
+                                );
+                      }
+
+                    std::cerr << "port_inout " << *name
+                              << " :: " << port_in.type
+                              << std::endl;
+                  }
+                else if (f.is_known_port_in (*name))
+                  {
+                    port_type port_in;
+
+                    if (!f.get_port_in (*name, port_in))
+                      {
+                        STRANGE ("failed to get port_in " << *name);
+                      }
+
+                    std::cerr << "port_in " << *name
+                              << " :: " << port_in.type
+                              << std::endl;
+                  }
+                else if (f.is_known_port_out (*name))
+                  {
+                    port_type port_out;
+
+                    if (!f.get_port_in (*name, port_out))
+                      {
+                        STRANGE ("failed to get port_out " << *name);
+                      }
+
+                    std::cerr << "port_out " << *name
+                              << " :: " << port_out.type
+                              << std::endl;
+                  }
+                else
+                  {
+                    STRANGE ("port " << *name << " is not known at all");
+                  }
+              }
+
             return true;
+
+#undef STRANGE
           }
 
           bool operator () (NET & n) const
@@ -778,7 +886,7 @@ namespace xml
       inline bool find_module_calls (function_type & f)
       {
         f.contains_a_module_call
-          = boost::apply_visitor (visitor::find_module_calls<net_type>(), f.f);
+          = boost::apply_visitor (visitor::find_module_calls<net_type>(f), f.f);
 
         return f.contains_a_module_call;
       }

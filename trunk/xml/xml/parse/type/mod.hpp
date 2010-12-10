@@ -22,11 +22,10 @@ namespace xml
   {
     namespace type
     {
+      typedef std::vector<std::string> port_arg_vec_type;
+
       struct mod_type
       {
-      private:
-        typedef std::vector<std::string> port_arg_vec_type;
-
       public:
         std::string name;
         std::string function;
