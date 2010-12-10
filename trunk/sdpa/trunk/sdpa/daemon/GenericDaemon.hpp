@@ -295,6 +295,7 @@ namespace sdpa { namespace daemon {
 
 	private:
 	  mutable mutex_type ext_job_cnt_mtx_;
+	  bool m_bRequestsAllowed;
   };
 }}
 

@@ -86,7 +86,7 @@ namespace sdpa {
 
 	bool post_request(bool force = false)
 	{
-		DMLOG(TRACE, "post request: force=" << force);
+		//DMLOG(TRACE, "post request: force=" << force);
 	 	bool bReqPosted = false;
 	 	sdpa::util::time_type current_time = sdpa::util::now();
 	 	sdpa::util::time_type diff_time = current_time - m_last_request_time;
@@ -102,10 +102,10 @@ namespace sdpa {
 	 		update_request_time(current_time);
 	 		bReqPosted = true;
 	 	}
-		else
+		/*else
 		{
 			DMLOG(TRACE, "not polling, difftime=" << diff_time << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
-		}
+		}*/
 
 	 	return bReqPosted;
 	 }

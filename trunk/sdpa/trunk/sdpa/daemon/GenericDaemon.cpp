@@ -56,7 +56,8 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_bRegistered(false),
 	  m_nRank(0),
 	  m_strAgentUID(id_generator::instance().next()),
-	  m_nExternalJobs(0)
+	  m_nExternalJobs(0),
+	  m_bRequestsAllowed(false)
 {
 
 }
@@ -77,7 +78,8 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_strAgentUID(id_generator::instance().next()),
 	  m_nExternalJobs(0),
 	  m_to_master_stage_name_(toMasterStageName),
-	  m_to_slave_stage_name_(toSlaveStageName)
+	  m_to_slave_stage_name_(toSlaveStageName),
+	  m_bRequestsAllowed(false)
 {
 	/*if(!toMasterStageName.empty())
 	{
@@ -112,7 +114,8 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  m_strAgentUID(id_generator::instance().next()),
 	  m_nExternalJobs(0),
 	  m_to_master_stage_name_(name+".net"),
-	  m_to_slave_stage_name_ (name+".net")
+	  m_to_slave_stage_name_ (name+".net"),
+	  m_bRequestsAllowed(false)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
 	//     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -215,6 +218,7 @@ void GenericDaemon::start()
 	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
 	configure_network( url(), masterName() );
 	configure(ptrCfg);
+	m_bRequestsAllowed = true;
 }
 
 void GenericDaemon::shutdown()
@@ -282,6 +286,7 @@ void GenericDaemon::handleInterruptEvent(const sdpa::events::InterruptEvent* ptr
 	// the following code shoud be executed on action action_interrupt!!
 	LOG(INFO, "Shutting down...");
 	LOG(TRACE, "Stop the scheduler now!");
+	m_bRequestsAllowed = false;
 	// stop the scheduler thread
 	scheduler()->stop();
 
@@ -425,6 +430,8 @@ bool GenericDaemon::requestsAllowed( const sdpa::util::time_type& difftime )
 	// if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
 	// reset it to the value specified by config first time when m_nExternalJobs becomes positive
 	// don't forget to decrement m_nExternalJobs when the job is finished !
+	if(!m_bRequestsAllowed)
+		return false;
 
 	if( extJobsCnt() == 0 && m_ullPollingInterval < ptr_daemon_cfg_->get<unsigned int>("upper bound polling interval") )
 		m_ullPollingInterval  = m_ullPollingInterval + 10000;
