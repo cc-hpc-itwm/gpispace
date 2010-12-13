@@ -8,7 +8,7 @@
 
 namespace gpi_space
 {
-  namespace config
+  namespace node
   {
 #if defined(PATH_MAX)
 #  define MAXPATHLEN PATH_MAX
@@ -17,19 +17,12 @@ namespace gpi_space
 #endif
     static const std::size_t MAX_PATH_LEN = MAXPATHLEN;
 
-    namespace api
+    struct config
     {
-      static const int UNIX_STREAM = 0x01;
-    }
-
-    struct node_config_t
-    {
-      node_config_t ()
-        : provide_api (0)
-        , daemonize (false)
+      config ()
+        : daemonize (false)
       {}
 
-      uint32_t provide_api;
       bool daemonize;
       char sockets_path[MAX_PATH_LEN];
 

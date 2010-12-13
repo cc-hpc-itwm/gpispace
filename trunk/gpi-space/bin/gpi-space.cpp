@@ -14,6 +14,7 @@
 #include <csignal>
 #include <cassert>
 #include <iostream>
+#include <fstream>
 
 static int MAX_OPEN_DMA_REQUESTS (1);
 static int number_of_nodes (1);
@@ -85,7 +86,7 @@ static int check_node (const int rank, const unsigned short port)
   return errors;
 }
 
-int check_gpi_environment (int ac, char * av[])
+static int check_gpi_environment (int ac, char * av[])
 {
   int errors (0);
 
@@ -96,7 +97,8 @@ int check_gpi_environment (int ac, char * av[])
     const unsigned short port (getPortGPI());
 
     // check a single node
-    for (int rank (0); rank < number_of_nodes; ++rank)
+    const int num_nodes (generateHostlistGPI());
+    for (int rank (0); rank < num_nodes; ++rank)
     {
       errors += check_node (rank, port);
     }
@@ -127,7 +129,7 @@ enum gpi_space_error_t
     , GPI_INTERNAL_ERROR = 42
   };
 
-static int distribute_config (const gpi_space::config::node_config_t & cfg)
+static int distribute_config (const gpi_space::node::config & cfg)
 {
   LOG(DEBUG, "distributing config...");
 
@@ -180,10 +182,10 @@ static int distribute_config (const gpi_space::config::node_config_t & cfg)
   return GPI_NO_ERROR;
 }
 
-static int receive_config (gpi_space::config::node_config_t & cfg)
+static int receive_config (gpi_space::node::config & cfg)
 {
   int src_rank (-2);
-  int ec = recvDmaPassiveGPI (0, sizeof (gpi_space::config::node_config_t), &src_rank);
+  int ec = recvDmaPassiveGPI (0, sizeof (gpi_space::node::config), &src_rank);
   if (ec == 0)
   {
     if (src_rank != 0)
@@ -192,7 +194,7 @@ static int receive_config (gpi_space::config::node_config_t & cfg)
     }
     else
     {
-      memcpy (&cfg, getDmaMemPtrGPI(), sizeof (gpi_space::config::node_config_t));
+      memcpy (&cfg, getDmaMemPtrGPI(), sizeof (gpi_space::node::config));
     }
   }
   else
@@ -203,7 +205,7 @@ static int receive_config (gpi_space::config::node_config_t & cfg)
   return GPI_NO_ERROR;
 }
 
-static int master_code (const gpi_space::config::node_config_t & cfg)
+static int master_code (const gpi_space::node::config & cfg)
 {
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
@@ -263,12 +265,12 @@ static int master_code (const gpi_space::config::node_config_t & cfg)
   return rc;
 }
 
-static void configure (const gpi_space::config::node_config_t & cfg)
+static void configure (const gpi_space::node::config & cfg)
 {
 
 }
 
-static int slave_code (const gpi_space::config::node_config_t & cfg, const int rank)
+static int slave_code (const gpi_space::node::config & cfg, const int rank)
 {
   configure (cfg);
 
@@ -286,47 +288,26 @@ int main (int ac, char *av[])
     }
   }
 
-  gpi_space::config::node_config_t node_config;
+  int rc (GPI_NO_ERROR);
 
+  gpi_space::node::config node_config;
   if (isMasterProcGPI (ac, av))
   {
     FHGLOG_SETUP (ac, av);
+
     // read config from file
-    node_config.gpi.memory_size = (1024 << 20);
-  }
-  else
-  {
-    // barrier
+    std::string config_file ("/etc/gpi-space.rc");
+    if (ac > 1)
+    {
+      config_file = av[1];
+    }
 
-    // TODO:
-    //    configure fhglog manually!!!
-    //    environment variables do not work on the slaves
-    // should  be sufficient  to just  transmit  the location  information of  the
-    // logserver and a log-level
+    LOG(TRACE, "reading config from: " << config_file);
 
-    // barrier
-    //
-    // sanity check config at (dmaPtr())
-    //    configure logging -> only network for now!
-    //    open unix stream and listen
-    //
-    // allreduce config status
-    //    if  all say  OK, everything  is good,  otherwise fail  with designated
-    //    error-codes
-    //
-    // start worker-pool that handles PC connections
-    // start thread that accepts connections on unix stream
-    //    just hands them over to the worker-pool
-    //
-    // barrier
-  }
+    std::ifstream ifs (config_file.c_str());
+    ifs >> node_config;
 
-  int rc (GPI_NO_ERROR);
-
-  // initialize globals
-  if (isMasterProcGPI (ac,av))
-  {
-    number_of_nodes = generateHostlistGPI();
+    LOG(TRACE, "read config: " << std::endl << node_config);
   }
 
   rc = check_gpi_environment (ac, av);
@@ -349,46 +330,55 @@ int main (int ac, char *av[])
     LOG(INFO, "GPI started: version: " << getVersionGPI());
   }
 
+  // initialize (static) globals
+  number_of_nodes = generateHostlistGPI();
+  MAX_OPEN_DMA_REQUESTS = getQueueDepthGPI();
   const int rank = getRankGPI ();
 
-  if (rank < 0)
-  {
-    LOG(ERROR, "something is very very wrong, rank = " << rank);
-    return GPI_INTERNAL_ERROR;
-  }
-
-  sighandler_t shutdown_handler = &slave_shutdown_handler;
   if (0 == rank)
   {
-    shutdown_handler = &master_shutdown_handler;
-  }
+    signal (SIGINT,  master_shutdown_handler);
+    signal (SIGTERM, master_shutdown_handler);
 
-  signal (SIGINT,  shutdown_handler);
-  signal (SIGTERM, shutdown_handler);
-
-  if (0 == rank)
-  {
     rc = distribute_config (node_config);
+    // configure
+    allReduceGPI (&rc, &rc, 1, GPI_MAX, GPI_INT);
+
     if (rc == 0)
     {
       rc = master_code ( node_config );
     }
+    else
+    {
+      LOG(ERROR, "configuration on at least one node failed!");
+    }
   }
   else if (rank > 0)
   {
+    signal (SIGINT,  slave_shutdown_handler);
+    signal (SIGTERM, slave_shutdown_handler);
+
     rc = receive_config (node_config);
+
+    // configure
+    allReduceGPI (&rc, &rc, 1, GPI_MAX, GPI_INT);
+
     if (rc == 0)
     {
       rc = slave_code ( node_config, rank );
     }
+    else
+    {
+      LOG(ERROR, "configuration on at least one node failed!");
+    }
   }
   else
   {
-    LOG(FATAL, "Bazinga! rank = " << rank);
+    LOG(FATAL, "Bazinga! Something is very very wrong, rank = " << rank);
     rc = GPI_INTERNAL_ERROR;
   }
 
-  barrierGPI ();
+  barrierGPI();
 
   LOG(DEBUG, "gpi process (rank " << rank << ") terminated with exitcode " << rc);
 
