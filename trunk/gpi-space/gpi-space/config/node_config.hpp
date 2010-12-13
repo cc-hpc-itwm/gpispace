@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <limits>
 #include <gpi-space/config/logging.hpp>
+#include <gpi-space/config/gpi.hpp>
 
 namespace gpi_space
 {
@@ -23,11 +24,17 @@ namespace gpi_space
 
     struct node_config_t
     {
+      node_config_t ()
+        : provide_api (0)
+        , daemonize (false)
+      {}
+
       uint32_t provide_api;
-      uint64_t memory_size;
+      bool daemonize;
       char sockets_path[MAX_PATH_LEN];
 
       logging::config logging;
+      gpi::config gpi;
     };
   }
 }

@@ -1,6 +1,26 @@
 #ifndef GPI_SPACE_CONFIG_LOGGING_HPP
 #define GPI_SPACE_CONFIG_LOGGING_HPP 1
 
+/*
+  [logger ""]
+  level = MIN
+  appender = logserver logfile
+
+  [appender "logserver"]
+  type = server
+  level = DEF
+
+  host = localhost
+  port = 2438
+
+  [appender "logfile"]
+  type = file
+  level = MIN
+
+  path = /tmp/foo/bar.log
+  mode = 0600
+*/
+
 namespace gpi_space
 {
   namespace logging

@@ -9,14 +9,14 @@ namespace gpi_space
   {
     std::ostream & operator <<(std::ostream & os, node_config_t const & nc)
     {
-      os << "implement me";
+      os << nc.gpi.memory_size;
       return os;
     }
 
     std::istream & operator >>(std::istream & is, node_config_t & nc)
     {
-      nc.memory_size = (1<<20);
       nc.provide_api |= api::UNIX_STREAM;
+      nc.gpi.memory_size = (1<<20);
       strncpy (nc.sockets_path, "/tmp/test.cfg", MAX_PATH_LEN);
       return is;
     }
