@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( testAllWithNoWe )
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
-	 for( int k=0; k<m_nITER; k++ )
+	for( int k=0; k<m_nITER; k++ )
 	{
 		sdpa::job_id_t job_id_user; int nTrials = 0;;
 retry:	try {
@@ -675,6 +675,7 @@ retry:	try {
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe2Aggs *****"<<std::endl);
@@ -802,5 +803,6 @@ retry:  try {
 
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe2Aggs terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

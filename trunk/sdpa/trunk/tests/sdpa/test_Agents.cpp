@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-#define BOOST_TEST_MODULE TestAgentInteraction
+#define BOOST_TEST_MODULE TestAgents
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
@@ -50,6 +50,8 @@
 #include <sdpa/daemon/EmptyWorkflowEngine.hpp>
 #include <we/mgmt/layer.hpp>
 
+const int NMAXTRIALS=3;
+
 namespace po = boost::program_options;
 
 using namespace std;
@@ -62,42 +64,6 @@ typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("12100"); return s; }
 
-namespace sdpa { namespace tests { namespace worker {
-  class NreWorkerClient
-  {
-  public:
-    explicit
-    NreWorkerClient( const std::string & /*nre_worker_location*/
-                   , const bool /*bLaunchNrePcd*/ = false
-                   , const char* /*szNrePcdBinPath*/ = ""
-                   , const char* /*szKDMModulesPath*/ = ""
-                   , const char* /*szFvmPCModule*/ = ""
-                   )
-    : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
-
-    void set_ping_interval(unsigned long /*seconds*/){}
-    void set_ping_timeout(unsigned long /*seconds*/){}
-    void set_ping_trials(std::size_t /*max_tries*/){}
-
-    void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
-
-    unsigned int start() throw (std::exception){ LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
-    void stop() throw (std::exception) { LOG( INFO, "Stop the test NreWorkerClient ...");}
-
-    void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
-
-    sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
-	{
-    	LOG( INFO, "Execute the activity "<<in_activity);
-    	LOG( INFO, "Report activity finished ...");
-    	return std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result");
-	}
-
-  private:
-    std::string nre_worker_location_;
-    SDPA_DECLARE_LOGGER();
-  };
-}}}
 
 struct MyFixture
 {
@@ -148,7 +114,7 @@ struct MyFixture
 		delete m_ptrServ;
 		delete m_ptrKvsd;
 		delete m_ptrPool;
-		//sleep(1);
+		sleep(1);
 	}
 
 	string read_workflow(string strFileName)
@@ -170,6 +136,119 @@ struct MyFixture
 
 	void startDaemons(const std::string& workerUrl);
 
+	unsigned int startNrePcd( string &nre_worker_location_, string nre_pcd_binary_, vector<string> nre_pcd_search_path_, vector<string> nre_pcd_pre_load_ )
+	{
+		unsigned int rc = 0;
+
+		// check here whether the nre-pcd is running or not
+		LOG(INFO, "Try to spawn nre-pcd with fork!");
+		pidPcd_ = fork();
+
+		if (pidPcd_ == 0)  // child
+		{
+			// Code only executed by child process
+			LOG(INFO, "After fork, I'm the child process ...");
+			try {
+				std::vector<std::string> cmdline;
+				cmdline.push_back ( nre_pcd_binary_ );
+
+				//LOG(INFO, std::string("nre_pcd_binary_ = ") + cmdline[0] );
+
+				cmdline.push_back("-l");
+				cmdline.push_back(nre_worker_location_.c_str());
+
+				for( vector<string>::const_iterator it (nre_pcd_search_path_.begin())
+				  ; it != nre_pcd_search_path_.end()
+				  ; ++it
+				  )
+				{
+					cmdline.push_back("--append-search-path");
+					cmdline.push_back(*it);
+				}
+
+				for( vector<string>::const_iterator it (nre_pcd_pre_load_.begin()); it != nre_pcd_pre_load_.end(); ++it )
+				{
+					cmdline.push_back("--load");
+					cmdline.push_back(*it);
+				}
+
+				char ** av = new char*[cmdline.size()+1];
+				av[cmdline.size()] = (char*)(NULL);
+
+				std::size_t idx (0);
+				for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+				  ; it != cmdline.end()
+				  ; ++it, ++idx
+				  )
+				{
+					//LOG(INFO, std::string("cmdline[")<<idx<<"]=" << cmdline[idx] );
+
+					av[idx] = new char[it->size()+1];
+					memcpy(av[idx], it->c_str(), it->size());
+					av[idx][it->size()] = (char)0;
+				}
+
+				std::stringstream sstr_cmd;
+				for(size_t k=0; k<idx; k++)
+					sstr_cmd << av[idx];
+
+				LOG(DEBUG, std::string("Try to launch the nre-pcd with the following the command line:\n") + sstr_cmd.str() );
+
+				if ( execv( nre_pcd_binary_.c_str(), av) < 0 )
+				{
+					throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() );
+				}
+				// not reached
+			}
+			catch(const std::exception& ex)
+			{
+				LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
+				exit(1);
+			}
+		}
+		else if (pidPcd_ < 0)            // failed to fork
+		{
+			LOG(ERROR, "Failed to fork!");
+			throw std::runtime_error ("fork failed: " + std::string(strerror(errno)));
+		}
+		else  // parent
+		{
+			// Code only executed by parent process
+			sleep(2);
+		}
+
+		return rc;
+	}
+
+	void shutdownNrePcd()
+	{
+		int c;
+		int nStatus;
+		if (pidPcd_ <= 1)
+		{
+			LOG(ERROR, "cannot send TERM signal to child with pid: " << pidPcd_);
+			throw std::runtime_error ("pcd does not have a valid pid (<= 1)");
+		}
+
+		kill(pidPcd_, SIGTERM);
+
+		c = wait(&nStatus);
+		if( WIFEXITED(nStatus) )
+		{
+			if( WEXITSTATUS(nStatus) != 0 )
+			{
+				std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
+				LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
+			}
+			else
+				if( WIFSIGNALED(nStatus) )
+				{
+					std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
+					LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
+				}
+		}
+	}
+
 	int m_nITER;
 	int m_sleep_interval ;
     std::string m_strWorkflow;
@@ -178,6 +257,8 @@ struct MyFixture
 	fhg::com::kvs::server::kvsd *m_ptrKvsd;
 	fhg::com::tcp_server *m_ptrServ;
 	boost::thread *m_ptrThrd;
+
+	pid_t pidPcd_;
 };
 
 
@@ -203,12 +284,11 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE",
 											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
-
 	try {
-		ptrNRE_0->start();
+		ptrNRE->start();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
@@ -216,7 +296,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 		ptrOrch->shutdown();
 		ptrAgg->shutdown();
-		ptrNRE_0->shutdown();
+		ptrNRE->shutdown();
 
 		return;
 	}
@@ -232,7 +312,26 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	for( int k=0; k<m_nITER; k++ )
 	{
-		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+		sdpa::job_id_t job_id_user; int nTrials = 0;;
+retry:	try {
+			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrNRE->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
+
+				return;
+			}
+			else
+				goto retry;
+
+		}
 
 		LOG( DEBUG, "*****JOB #"<<k<<"******");
 
@@ -258,7 +357,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	ptrOrch->shutdown();
 	ptrAgg->shutdown();
-	ptrNRE_0->shutdown();
+	ptrNRE->shutdown();
 
 	ptrCli->shutdown_network();
 	ptrCli.reset();
@@ -331,7 +430,27 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	for( int k=0; k<m_nITER; k++ )
 	{
-		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+		//sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+		sdpa::job_id_t job_id_user; int nTrials = 0;;
+retry:	try {
+			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
+
+				return;
+			}
+			else
+				goto retry;
+
+		}
 
 		LOG( DEBUG, "*****JOB #"<<k<<"******");
 
@@ -359,7 +478,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
 
-
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
@@ -374,55 +492,24 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 
 	int c;
    	int nStatus;
-   	string strID;
 
-   	pid_t pID = vfork();
-   	LOG(INFO, "Try to launch the nre-pcd ...");
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back( TESTS_EXAMPLE_STRESSTEST_MODULES_PATH );
 
-   	if (pID == 0)  // child
-   	{
-		// Code only executed by child process
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back( TESTS_FVM_PC_FAKE_MODULE );
 
-		strID = "nre-pcd: ";
-
-	    execl(  TESTS_NRE_PCD_BIN_PATH,
-	            "nre-pcd",
-				"-l", workerUrl.c_str(),
-				"-a", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH,
-				"--load", TESTS_FVM_PC_FAKE_MODULE,
-				NULL );
+	try {
+		startNrePcd( workerUrl, TESTS_NRE_PCD_BIN_PATH, v_fake_PC_search_path, v_module_preload );
 	}
-	else if (pID < 0)            // failed to fork
+	catch(const std::exception& ex)
 	{
-		LOG(ERROR, "Failed to fork!");
-		exit(1);
-		// Throw exception
+		LOG( DEBUG, "Could not start the process container daemon!");
+		throw;
 	}
-	else                                   // parent
-	{
-	  	// Code only executed by parent process
-	   	strID = "NREWorkerClient";
-	  	startDaemons(workerUrl);
 
-	  	//kill pcd here
-	  	kill( pID, SIGTERM );
-
-		c = wait(&nStatus);
-	   	if( WIFEXITED(nStatus) )
-	   	{
-	   		if( WEXITSTATUS(nStatus) != 0 )
-	   		{
-	   			std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-	   			LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-	   		}
-	   		else
-	   			if( WIFSIGNALED(nStatus) )
-	   			{
-	   				std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-	   				LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
-	   			}
-	   	}
-	}
+	startDaemons(workerUrl);
+	shutdownNrePcd();
 
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpawnedByTest terminated!");
 }
@@ -502,7 +589,27 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	for( int k=0; k<m_nITER; k++ )
 	{
-		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+		//sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+		sdpa::job_id_t job_id_user; int nTrials = 0;;
+retry:	try {
+			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
+
+				return;
+			}
+			else
+				goto retry;
+
+		}
 
 		LOG( DEBUG, "*****JOB #"<<k<<"******");
 
@@ -526,14 +633,14 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	ptrNRE_0->shutdown();
-	ptrAgg->shutdown();
-	ptrOrch->shutdown();
-
 	// process container terminates ...
 	LOG( INFO, "terminating...");
 	if (! executor->stop())
 		LOG( WARN, "executor did not stop correctly...");
+
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
 	ptrCli.reset();
@@ -615,7 +722,27 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 	for( int k=0; k<m_nITER; k++ )
 	{
-		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+		//sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
+		sdpa::job_id_t job_id_user; int nTrials = 0;;
+retry:	try {
+			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
+
+				return;
+			}
+			else
+				goto retry;
+
+		}
 
 		LOG( DEBUG, "*****JOB #"<<k<<"******");
 
