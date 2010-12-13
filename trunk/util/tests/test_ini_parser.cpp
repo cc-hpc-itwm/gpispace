@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE UtilThreadEventTest
+#define BOOST_TEST_MODULE UtilIniParser
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/ini-parser.hpp>
