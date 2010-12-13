@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "migrationjob.h"
+#include <stdio.h>
 
 MigrationJob::MigrationJob()
 {
