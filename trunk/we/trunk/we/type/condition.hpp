@@ -142,11 +142,13 @@ namespace condition
 
   class type
   {
+  public:
+    typedef expr::parse::parser parser_t;
+    typedef expr::eval::context context_t;
+
   private:
     std::string expression_;
-    typedef expr::parse::parser parser_t;
     parser_t parser;
-    typedef expr::eval::context context_t;
     mutable context_t context;
 
     typedef boost::function<std::string (const petri_net::pid_t &)> translate_t;
