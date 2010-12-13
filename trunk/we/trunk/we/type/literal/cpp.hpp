@@ -12,48 +12,75 @@ namespace literal
 {
   namespace cpp
   {
-    struct name
+    struct info
     {
     public:
       typedef boost::unordered_map<type_name_t, std::string> map_type;
 
     private:
-      map_type m;
+      map_type trans;
+      map_type inc;
+
+      std::string wrap_include (const std::string & file) const
+      {
+        return (file.size() > 0) ? ("#include <" + file + ">\n") : file;
+      }
 
     public:
-      name (void) : m ()
+      info (void) : trans (), inc ()
       {
-        m[literal::CONTROL] = "control";
-        m[literal::BOOL]    = "bool";
-        m[literal::LONG]    = "long";
-        m[literal::DOUBLE]  = "double";
-        m[literal::CHAR]    = "char";
-        m[literal::STRING]  = "std::string";
-        m[literal::BITSET]  = "bitsetofint::type";
-        m[literal::STACK]   = "std::vector<long>";
+        trans[literal::CONTROL] = "control";
+        trans[literal::BOOL]    = "bool";
+        trans[literal::LONG]    = "long";
+        trans[literal::DOUBLE]  = "double";
+        trans[literal::CHAR]    = "char";
+        trans[literal::STRING]  = "std::string";
+        trans[literal::BITSET]  = "bitsetofint::type";
+        trans[literal::STACK]   = "std::vector<long>";
+
+        inc[literal::CONTROL] = wrap_include ("we/type/control.hpp");
+        inc[literal::BOOL]    = wrap_include ("");
+        inc[literal::LONG]    = wrap_include ("");
+        inc[literal::DOUBLE]  = wrap_include ("");
+        inc[literal::CHAR]    = wrap_include ("");
+        inc[literal::STRING]  = wrap_include ("string");
+        inc[literal::BITSET]  = wrap_include ("we/type/bitsetofint.hpp");
+        inc[literal::STACK]   = wrap_include ("vector");
       }
 
       const map_type::mapped_type & translate (const type_name_t & t) const
       {
-        return m.at (t);
+        return trans.at (t);
+      }
+
+      const map_type::mapped_type & include (const type_name_t & t) const
+      {
+        return inc.at (t);
       }
 
       bool known (const type_name_t & t) const
       {
-        return m.find (t) != m.end();
+        return trans.find (t) != trans.end();
       }
     };
 
-    inline const name::map_type::mapped_type & translate (const type_name_t & t)
+    inline const info::map_type::mapped_type & translate (const type_name_t & t)
     {
-      static name n;
+      static info i;
 
-      return n.translate (t);
+      return i.translate (t);
+    }
+
+    inline const info::map_type::mapped_type & include (const type_name_t & t)
+    {
+      static info i;
+
+      return i.include (t);
     }
 
     inline bool known (const type_name_t & t)
     {
-      static name n;
+      static info n;
 
       return n.known (t);
     }

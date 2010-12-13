@@ -14,6 +14,8 @@
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 
+#include <boost/unordered_set.hpp>
+
 #include <we/type/literal/valid_name.hpp>
 #include <we/type/property.hpp>
 
@@ -759,6 +761,116 @@ namespace xml
 
       namespace visitor
       {
+        typedef boost::unordered_set<std::string> type_list;
+
+        struct port_with_type
+        {
+        public:
+          std::string name;
+          std::string type;
+
+          port_with_type ( const std::string & _name
+                         , const std::string & _type
+                         )
+            : name (_name), type (_type)
+          {}
+        };
+
+        typedef std::vector<port_with_type> port_list;
+
+        inline void mod_includes (std::ostream & os, const type_list & types)
+        {
+          for ( type_list::const_iterator type (types.begin())
+              ; type != types.end()
+              ; ++type
+              )
+            {
+              if (!literal::cpp::known (*type))
+                {
+                  os << "#include <"
+                     << "pnetc/type/" << *type << ".hpp"
+                     << ">"
+                     << std::endl;
+                }
+              else
+                {
+                  os << literal::cpp::include (*type);
+                }
+            }
+        }
+
+        inline void namespace_open ( std::ostream & os
+                                   , const mod_type & mod
+                                   )
+        {
+          os << "namespace pnetc" << std::endl
+             << "{" << std::endl
+             << "  namespace op" << std::endl
+             << "  {" << std::endl
+             << "    namespace " << mod.name << std::endl
+             << "    {" << std::endl
+            ;
+        }
+
+        inline void namespace_close (std::ostream & os
+                                   , const mod_type & mod
+                                   )
+        {
+          os << "    } // " << mod.name << std::endl
+             << "  } // op" << std::endl
+             << "} // pnetc" << std::endl
+            ;
+        }
+
+        inline std::string mk_type (const std::string & type)
+        {
+          return literal::cpp::known (type)
+            ? literal::cpp::translate (type)
+            : ("::pnetc::type::" + type)
+            ;
+        }
+
+        inline void
+        mod_signature ( std::ostream & os
+                      , const fhg::util::maybe<port_with_type> & port_return
+                      , const port_list & ports_const
+                      , const port_list & ports_mutable
+                      , const mod_type & mod
+                      )
+        {
+          os << "      "
+             << (port_return.isJust() ? mk_type ((*port_return).type) : "void")
+             << " "
+             << mod.function
+             << " "
+             << "("
+            ;
+
+          bool first (true);
+
+          for ( port_list::const_iterator port (ports_const.begin())
+              ; port != ports_const.end()
+              ; ++port, first = false
+              )
+            {
+              os << (first ? "" : ", ")
+                 << "const " << mk_type (port->type) << " & " << port->name
+                ;
+            }
+
+          for ( port_list::const_iterator port (ports_mutable.begin())
+              ; port != ports_mutable.end()
+              ; ++port, first = false
+              )
+            {
+              os << (first ? "" : ", ")
+                 << mk_type (port->type) << " & " << port->name
+                ;
+            }
+
+          os << ")";
+        }
+
         template<typename NET>
         class find_module_calls : public boost::static_visitor<bool>
         {
@@ -773,6 +885,11 @@ namespace xml
             return false;
           }
 
+          bool operator () (NET & n) const
+          {
+            return xml::parse::type::find_module_calls<NET> (n);
+          }
+
           bool operator () (mod_type & mod) const
           {
 #define STRANGE(msg) THROW_STRANGE(  msg << " in module "     \
@@ -780,13 +897,10 @@ namespace xml
                                   << mod.function             \
                                   )
 
-            std::cerr << "MODULE: " << mod.name
-                      << " " << mod.function
-                      << " port_return " << mod.port_return
-                      << " port_arg " << fhg::util::show ( mod.port_arg.begin()
-                                                         , mod.port_arg.end()
-                                                         )
-                      << std::endl;
+            port_list ports_const;
+            port_list ports_mutable;
+            fhg::util::maybe<port_with_type> port_return;
+            type_list types;
 
             if (mod.port_return.isJust())
               {
@@ -797,9 +911,8 @@ namespace xml
                     STRANGE ("unknown return port " << *mod.port_return);
                   }
 
-                std::cerr << "port_return " << *mod.port_return
-                          << " :: " << port.type
-                          << std::endl;
+                port_return = port_with_type (*mod.port_return, port.type);
+                types.insert (port.type);
               }
 
             for ( port_arg_vec_type::const_iterator name (mod.port_arg.begin())
@@ -835,9 +948,18 @@ namespace xml
                                 );
                       }
 
-                    std::cerr << "port_inout " << *name
-                              << " :: " << port_in.type
-                              << std::endl;
+                    if (    mod.port_return.isJust()
+                       && (*mod.port_return == port_in.name)
+                       )
+                      {
+                        ports_const.push_back (port_with_type (*name, port_in.type));
+                        types.insert (port_in.type);
+                      }
+                    else
+                      {
+                        ports_mutable.push_back (port_with_type (*name, port_in.type));
+                        types.insert (port_in.type);
+                      }
                   }
                 else if (f.is_known_port_in (*name))
                   {
@@ -848,22 +970,29 @@ namespace xml
                         STRANGE ("failed to get port_in " << *name);
                       }
 
-                    std::cerr << "port_in " << *name
-                              << " :: " << port_in.type
-                              << std::endl;
+                    ports_const.push_back (port_with_type (*name, port_in.type));
+                    types.insert (port_in.type);
                   }
                 else if (f.is_known_port_out (*name))
                   {
                     port_type port_out;
 
-                    if (!f.get_port_in (*name, port_out))
+                    if (!f.get_port_out (*name, port_out))
                       {
                         STRANGE ("failed to get port_out " << *name);
                       }
 
-                    std::cerr << "port_out " << *name
-                              << " :: " << port_out.type
-                              << std::endl;
+                    if (    mod.port_return.isJust()
+                       && (*mod.port_return == port_out.name)
+                       )
+                      {
+                        // do nothing, it is the return port
+                      }
+                    else
+                      {
+                        ports_mutable.push_back (port_with_type (*name, port_out.type));
+                        types.insert (port_out.type);
+                      }
                   }
                 else
                   {
@@ -871,14 +1000,58 @@ namespace xml
                   }
               }
 
+            std::ofstream stream ("/dev/stderr");
+
+            stream << std::endl << ">>> BEGIN "
+                   << "pnetc/op/" << mod.name << "/" << mod.function << ".hpp"
+                   << std::endl;
+
+            mod_includes (stream, types);
+
+            stream << std::endl;
+
+            namespace_open (stream, mod);
+
+            mod_signature (stream, port_return, ports_const, ports_mutable, mod);
+
+            stream << ";" << std::endl;
+
+            namespace_close (stream, mod);
+
+            stream << "<<< END "
+                      << "pnetc/op/" << mod.name << "/" << mod.function << ".hpp"
+                      << std::endl;
+
+
+            stream << std::endl << ">>> BEGIN "
+                   << "pnetc/op/" << mod.name << "/" << mod.function << ".cpp"
+                   << std::endl;
+
+            stream << "#include <"
+                   << "pnetc/op/" << mod.name << "/" << mod.function << ".hpp"
+                   << ">"
+                   << std::endl;
+
+            stream << std::endl;
+
+            namespace_open (stream, mod);
+
+            mod_signature (stream, port_return, ports_const, ports_mutable, mod);
+
+            stream << std::endl
+                   << "      {" << std::endl
+                   << "        // INSERT CODE HERE" << std::endl
+                   << "      }" << std::endl
+              ;
+
+            namespace_close (stream, mod);
+
+            stream << "<<< END "
+                      << "pnetc/op/" << mod.name << "/" << mod.function << ".cpp"
+                      << std::endl;
+
             return true;
-
 #undef STRANGE
-          }
-
-          bool operator () (NET & n) const
-          {
-            return xml::parse::type::find_module_calls<NET> (n);
           }
         };
       }

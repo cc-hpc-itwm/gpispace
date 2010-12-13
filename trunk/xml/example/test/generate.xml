@@ -9,9 +9,67 @@
     <field name="end" type="point"/>
   </struct>
 
-  <in name="deg" type="double"/>
-  <in name="point" type="point"/>
-  <out name="point" type="point"/>
+  <net>
 
-  <module name="point" function="rotate (point, deg)"/>
+    <transition name="rotate">
+      <defun>
+        <in name="deg" type="double"/>
+        <in name="point" type="point"/>
+        <out name="point" type="point"/>
+
+        <module name="point" function="rotate (point, deg)"/>
+      </defun>
+    </transition>
+
+    <transition name="out">
+      <defun>
+        <in name="in" type="long"/>
+        <out name="out" type="long"/>
+        <module name="mod" function="fout (in, out)"/>
+      </defun>
+    </transition>
+
+    <transition name="outreturn">
+      <defun>
+        <in name="in" type="long"/>
+        <out name="out" type="long"/>
+        <module name="mod" function="out foutreturn (in)"/>
+      </defun>
+    </transition>
+
+    <transition name="inout">
+      <defun>
+        <in name="in" type="long"/>
+        <in name="inout" type="long"/>
+        <out name="inout" type="long"/>
+        <module name="mod" function="finout (in, inout)"/>
+      </defun>
+    </transition>
+
+    <transition name="inoutreturn">
+      <defun>
+        <in name="in" type="long"/>
+        <in name="inout" type="long"/>
+        <out name="inout" type="long"/>
+        <module name="mod" function="inout finoutreturn (in, inout)"/>
+      </defun>
+    </transition>
+
+    <transition name="types">
+      <defun>
+        <in name="p_control" type="control"/>
+        <in name="p_bool" type="bool"/>
+        <in name="p_long" type="long"/>
+        <in name="p_double" type="double"/>
+        <in name="p_char" type="char"/>
+        <in name="p_string" type="string"/>
+        <in name="p_bitset" type="bitset"/>
+        <in name="p_stack" type="stack"/>
+        <module name="mm"
+                function="fun (p_control,p_bool,p_long,p_double,p_char,p_string,p_bitset,p_stack)"
+        />
+      </defun>
+    </transition>
+
+  </net>
 </defun>
