@@ -37,7 +37,7 @@ namespace sdpa { namespace events {
     public:
         typedef sdpa::shared_ptr<ConfigNokEvent> Ptr;
 
-        ConfigNokEvent() : MgmtEvent("illegal-src", "illegal-dst") { }
+        ConfigNokEvent(const address_t& a_from="", const address_t& a_to="") : MgmtEvent(a_from, a_to) { }
 
     	virtual ~ConfigNokEvent() { }
 

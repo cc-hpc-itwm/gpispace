@@ -37,7 +37,7 @@ namespace sdpa { namespace events {
     public:
         typedef sdpa::shared_ptr<ConfigOkEvent> Ptr;
 
-        ConfigOkEvent() : MgmtEvent("","") { }
+        ConfigOkEvent(const address_t& a_from="", const address_t& a_to="") : MgmtEvent(a_from, a_to) { }
 
     	virtual ~ConfigOkEvent() { } 
 

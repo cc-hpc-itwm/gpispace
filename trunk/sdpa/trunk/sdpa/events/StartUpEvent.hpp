@@ -37,7 +37,7 @@ namespace sdpa { namespace events {
     public:
       typedef sdpa::shared_ptr<StartUpEvent> Ptr;
 
-      StartUpEvent() : MgmtEvent("","") { }
+      StartUpEvent(const address_t& a_from="", const address_t& a_to="") : MgmtEvent(a_from, a_to) { }
 
       virtual ~StartUpEvent() { }
 
