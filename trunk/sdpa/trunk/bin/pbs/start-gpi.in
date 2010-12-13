@@ -106,8 +106,13 @@ if [ $ask_copy == "true" ] ; then
 fi
 
 if [ -x "$gpi_bin_path/$gpi_exe" ] ; then
-    log "starting $gpi_bin_path/$gpi_exe with config from $gpi_cfg"
-    "${gpi_bin_path}/${gpi_exe}" -c "$gpi_cfg"
+    if [ -n "$gpi_cfg" ] ; then
+	log "starting $gpi_bin_path/$gpi_exe with config from $gpi_cfg"
+	"${gpi_bin_path}/${gpi_exe}" "$gpi_cfg"
+    else
+	log "starting $gpi_bin_path/$gpi_exe (using default config)"
+	"${gpi_bin_path}/${gpi_exe}"
+    fi
 else
     log "cannot execute $gpi_bin_path/$gpi_bin, giving up."
     exit 2
