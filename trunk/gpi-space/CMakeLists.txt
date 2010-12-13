@@ -72,7 +72,7 @@ find_package (MMGR REQUIRED)
 include_directories(${MMGR_INCLUDE_DIR})
 
 find_package (UTIL REQUIRED)
-include_directories(${MMGR_INCLUDE_DIR})
+include_directories(${UTIL_INCLUDE_DIR})
 
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
