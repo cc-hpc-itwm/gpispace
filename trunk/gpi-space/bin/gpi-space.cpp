@@ -15,6 +15,9 @@
 #include <cassert>
 #include <iostream>
 
+static int MAX_OPEN_DMA_REQUESTS (1);
+static int number_of_nodes (1);
+
 static void master_shutdown_handler (int signal)
 {
   LOG(INFO, "GPI master process terminating due to signal: " << signal);
@@ -55,7 +58,7 @@ static int check_node (const int rank, const unsigned short port)
 
       if (findProcGPI (host) == 0)
       {
-        LOG(WARN, "another GPI binary is still running and blocking port, trying to kill it now");
+        LOG(WARN, "another GPI binary is still running and blocking the port, trying to kill it now");
         if (killProcsGPI() == 0)
         {
           LOG(INFO, "successfully killed old processes");
@@ -90,7 +93,6 @@ int check_gpi_environment (int ac, char * av[])
   {
     LOG(INFO, "GPI environment check initiating");
 
-    const int number_of_nodes (generateHostlistGPI());
     const unsigned short port (getPortGPI());
 
     // check a single node
@@ -112,22 +114,190 @@ int check_gpi_environment (int ac, char * av[])
   return errors;
 }
 
-static const int EXIT_GENERAL_FAILURE = 1;
-static const int EXIT_GPI_CHECK_FAILED = 4;
-static const int EXIT_GPI_ERROR = 8;
-
-int main (int ac, char *av[])
-{
-  if (isMasterProcGPI (ac, av))
+enum gpi_space_error_t
   {
-    FHGLOG_SETUP (ac, av);
+      GPI_NO_ERROR = 0
+    , GPI_GENERAL_FAILURE = 1
+    , GPI_CHECK_FAILED = 4
+    , GPI_STARTUP_FAILED = 5
+    , GPI_WRITE_DMA_FAILED = 9
+    , GPI_PASSIVE_SEND_FAILED = 10
+    , GPI_PASSIVE_RECV_FAILED = 11
 
-    // read config
-    gpi_space::config::node_config_t nc;
-    std::cout << nc << std::endl;
+    , GPI_INTERNAL_ERROR = 42
+  };
+
+static int distribute_config (const gpi_space::config::node_config_t & cfg)
+{
+  LOG(DEBUG, "distributing config...");
+
+  memcpy (getDmaMemPtrGPI(), &cfg, sizeof (cfg));
+
+  int ec (GPI_NO_ERROR);
+
+  // distribute to all
+  int success_count (0);
+  for (int n (1); n < number_of_nodes; ++n)
+  {
+    // this code will only execute if we have a really large number of nodes...
+    if (openDMAPassiveRequestsGPI() == MAX_OPEN_DMA_REQUESTS)
+    {
+      ec = waitDmaPassiveGPI();
+      if (ec < 0)
+      {
+        LOG(ERROR, "error during waitDmaPassiveGPI(): " << ec);
+        return GPI_INTERNAL_ERROR;
+      }
+      else
+      {
+        success_count += ec;
+      }
+    }
+
+    ec = sendDmaPassiveGPI( 0, sizeof(cfg), n );
+    if (ec != 0)
+    {
+      LOG(ERROR, "could not initiate passive send node config to node: " << n << ": " << ec);
+      return GPI_PASSIVE_SEND_FAILED;
+    }
+  }
+
+  if (openDMAPassiveRequestsGPI () > 0)
+  {
+    ec = waitDmaPassiveGPI();
+    if (ec < 1)
+    {
+      LOG(ERROR, "not all passive sends completed after wait(): " << ec);
+      return GPI_PASSIVE_SEND_FAILED;
+    }
+    else
+    {
+      success_count += ec;
+    }
+  }
+
+  LOG(INFO, "config sucessfully distributed to " << success_count << " nodes");
+  return GPI_NO_ERROR;
+}
+
+static int receive_config (gpi_space::config::node_config_t & cfg)
+{
+  int src_rank (-2);
+  int ec = recvDmaPassiveGPI (0, sizeof (gpi_space::config::node_config_t), &src_rank);
+  if (ec == 0)
+  {
+    if (src_rank != 0)
+    {
+      return GPI_INTERNAL_ERROR;
+    }
+    else
+    {
+      memcpy (&cfg, getDmaMemPtrGPI(), sizeof (gpi_space::config::node_config_t));
+    }
   }
   else
   {
+    return GPI_PASSIVE_RECV_FAILED;
+  }
+
+  return GPI_NO_ERROR;
+}
+
+static int master_code (const gpi_space::config::node_config_t & cfg)
+{
+  static const std::string prompt ("Please type \"q\" followed by return to quit: ");
+
+  LOG(INFO, "master running");
+
+  int rc (GPI_NO_ERROR);
+
+  // fire up message handling threads...
+
+  if (cfg.daemonize)
+  {
+    // daemonize...
+
+    // wait for signals
+  }
+  else
+  {
+    bool done (false);
+
+    do
+    {
+      std::cout << prompt;
+
+      std::string line;
+      std::getline (std::cin, line);
+      if (line.empty())
+        continue;
+
+      char c = line[0];
+      switch (c)
+      {
+      case 'q':
+        done = true;
+        rc = 0;
+        break;
+      case 'l':
+        std::cerr << "list of attached processes:" << std::endl;
+        std::cerr << "    implement me" << std::endl;
+        break;
+      case 'h':
+      case '?':
+        std::cerr << "list of supported commands:"             << std::endl;
+        std::cerr                                              << std::endl;
+        std::cerr << "    h|? - print this help"               << std::endl;
+        std::cerr << "      p - list all attached processes"   << std::endl;
+        std::cerr << "d [num] - detach process #num or first"  << std::endl;
+        std::cerr << "      s - print statistics"              << std::endl;
+        std::cerr << "      a - list allocations"              << std::endl;
+        std::cerr << "f [num] - remove an allocation (or all)" << std::endl;
+        break;
+      default:
+        std::cerr << "command not understood, please use \"h\"" << std::endl;
+        break;
+      }
+    }  while (! done);
+  }
+  return rc;
+}
+
+static void configure (const gpi_space::config::node_config_t & cfg)
+{
+
+}
+
+static int slave_code (const gpi_space::config::node_config_t & cfg, const int rank)
+{
+  configure (cfg);
+
+  LOG(INFO, "slave (rank " << rank << ") running");
+  int rc (GPI_NO_ERROR);
+  return rc;
+}
+
+int main (int ac, char *av[])
+{
+  {
+    for (int i (0) ; i < ac; ++i)
+    {
+      std::cerr << "   av[" << i << "] = " << av[i] << std::endl;
+    }
+  }
+
+  gpi_space::config::node_config_t node_config;
+
+  if (isMasterProcGPI (ac, av))
+  {
+    FHGLOG_SETUP (ac, av);
+    // read config from file
+    node_config.gpi.memory_size = (1024 << 20);
+  }
+  else
+  {
+    // barrier
+
     // TODO:
     //    configure fhglog manually!!!
     //    environment variables do not work on the slaves
@@ -151,22 +321,28 @@ int main (int ac, char *av[])
     // barrier
   }
 
-  int rc = 0;
+  int rc (GPI_NO_ERROR);
+
+  // initialize globals
+  if (isMasterProcGPI (ac,av))
+  {
+    number_of_nodes = generateHostlistGPI();
+  }
 
   rc = check_gpi_environment (ac, av);
   if (rc != 0)
   {
     killProcsGPI();
     shutdownGPI();
-    return EXIT_GPI_CHECK_FAILED;
+    return GPI_CHECK_FAILED;
   }
 
-  rc = startGPI (ac, av, "", 1024 << 20);
+  rc = startGPI (ac, av, "", node_config.gpi.memory_size);
   if (rc != 0)
   {
     LOG(ERROR, "GPI startup failed with error: " << rc);
     killProcsGPI();
-    return EXIT_GPI_ERROR;
+    return GPI_STARTUP_FAILED;
   }
   else
   {
@@ -178,7 +354,7 @@ int main (int ac, char *av[])
   if (rank < 0)
   {
     LOG(ERROR, "something is very very wrong, rank = " << rank);
-    return EXIT_GPI_ERROR;
+    return GPI_INTERNAL_ERROR;
   }
 
   sighandler_t shutdown_handler = &slave_shutdown_handler;
@@ -192,22 +368,29 @@ int main (int ac, char *av[])
 
   if (0 == rank)
   {
-    LOG(INFO, "master");
-
-    // wait for user to terminate me
-    char c;
-    std::cin >> c;
+    rc = distribute_config (node_config);
+    if (rc == 0)
+    {
+      rc = master_code ( node_config );
+    }
   }
-  else if (rank < 0)
+  else if (rank > 0)
   {
-    LOG(FATAL, "Bazinga! rank = " << rank);
+    rc = receive_config (node_config);
+    if (rc == 0)
+    {
+      rc = slave_code ( node_config, rank );
+    }
   }
   else
   {
-    LOG(INFO, "slave " << rank);
+    LOG(FATAL, "Bazinga! rank = " << rank);
+    rc = GPI_INTERNAL_ERROR;
   }
 
   barrierGPI ();
 
-  return 0;
+  LOG(DEBUG, "gpi process (rank " << rank << ") terminated with exitcode " << rc);
+
+  return rc;
 }
