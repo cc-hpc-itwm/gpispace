@@ -19,6 +19,8 @@ elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
   gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
 fi
 
+gpi_exe="sdpa-gpi"
+
 function usage ()
 {
     cat >&2 <<EOF
@@ -27,10 +29,11 @@ usage: $0 [options]
     -h: print this help
     -d gpid directory (=$gpi_bin_path): priviledged binary path for the gpid
     -c gpi-cfg (=$gpi_cfg): path to the gpi cfg
+    -x gpi-exe (=$gpi_exe): gpi program to use
 EOF
 }
 
-while getopts ":hd:c" opt; do
+while getopts ":hd:c:x:" opt; do
     case $opt in
 	d)
 	    gpi_bin_path=$OPTARG
@@ -41,6 +44,9 @@ while getopts ":hd:c" opt; do
 	h)
 	    usage
 	    exit 0
+	    ;;
+	x)
+	    gpi_exe=$OPTARG
 	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
@@ -55,29 +61,28 @@ if [ -z "$gpi_bin_path" ] ; then
   exit 1
 fi
 
-gpi_exe="$( which sdpa-gpi 2>/dev/null )"
-if [ -z "$gpi_exe" ] ; then
-  log "Sorry, no sdpa-gpi binary found in PATH"
+gpi_exe_path="$( which ${gpi_exe} 2>/dev/null )"
+if [ ! -x "${gpi_exe_path}" ] ; then
+  log "Sorry, no ${gpi_exe} binary found in PATH"
   exit 1
 fi
-
-gpi_bin="$( basename ${gpi_exe} )"
+gpi_exe="$(basename ${gpi_exe_path})"
 
 ask_copy=false
-if [ ! -x "${gpi_bin_path}/${gpi_bin}" ] ; then
-   log "sdpa-gpi does not seem to be installed in $gpi_bin_path"
+if [ ! -x "${gpi_bin_path}/${gpi_exe}" ] ; then
+   log "${gpi_exe} does not seem to be installed in $gpi_bin_path"
    ask_copy=true
 else
-    ts_inst=$( stat -c %Y "${gpi_bin_path}/${gpi_bin}" )
-    ts_cand=$( stat -c %Y "${gpi_exe}" )
+    ts_inst=$( stat -c %Y "${gpi_bin_path}/${gpi_exe}" )
+    ts_cand=$( stat -c %Y "${gpi_exe_path}" )
     if [ $ts_cand -gt $ts_inst ] ; then
-	log "candidate ${gpi_exe} is newer than the one in ${gpi_bin_path}"
+	log "candidate ${gpi_exe_path} is newer than the one in ${gpi_bin_path}"
 	ask_copy=true
     fi
 fi
 
 if [ $ask_copy == "true" ] ; then
-    read -t 60 -n 1 -p "Do you want me to copy \"$gpi_exe\" to \"$gpi_bin_path\"? [y/N] " install_gpi
+    read -t 60 -n 1 -p "Do you want me to copy \"$gpi_exe_path\" to \"$gpi_bin_path\"? [y/N] " install_gpi
     echo
     case "$install_gpi" in
 	y|Y)
@@ -85,11 +90,12 @@ if [ $ask_copy == "true" ] ; then
 		tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
 		if [ $? -ne 0 ] ; then
 		    log "could not create $gpi_bin_path: $tmp"
+		    exit 1
 		fi
 	    fi
 
 	    if [ -w "$gpi_bin_path" ] ; then
-		cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
+		cp "${gpi_exe_path}" "${gpi_bin_path}/${gpi_exe}"
 	    else
 		log "$gpi_bin_path does not exist, or i am not allowed to write to it!"
 	    fi
@@ -99,10 +105,9 @@ if [ $ask_copy == "true" ] ; then
     esac
 fi
 
-if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
-    # TODO: the new sdpa-gpi should actually respect the passed config...
-    log "starting sdpa-gpi at $gpi_bin_path/$gpi_bin with config from $gpi_cfg"
-    "${gpi_bin_path}/${gpi_bin}" -c "$gpi_cfg"
+if [ -x "$gpi_bin_path/$gpi_exe" ] ; then
+    log "starting $gpi_bin_path/$gpi_exe with config from $gpi_cfg"
+    "${gpi_bin_path}/${gpi_exe}" -c "$gpi_cfg"
 else
     log "cannot execute $gpi_bin_path/$gpi_bin, giving up."
     exit 2
