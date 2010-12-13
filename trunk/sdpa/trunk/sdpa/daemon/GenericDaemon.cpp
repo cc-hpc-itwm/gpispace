@@ -81,22 +81,17 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_to_slave_stage_name_(toSlaveStageName),
 	  m_bRequestsAllowed(false)
 {
-	/*if(!toMasterStageName.empty())
+	if(!toMasterStageName.empty())
 	{
 		seda::Stage::Ptr pshToMasterStage = seda::StageRegistry::instance().lookup(toMasterStageName);
-		ptr_to_master_stage_ = pshToMasterStage.get();
+		ptr_to_master_stage_ = pshToMasterStage;
 	}
-	else
-		ptr_to_master_stage_ = NULL;
-
 
 	if(!toSlaveStageName.empty())
 	{
 		seda::Stage::Ptr pshToSlaveStage = seda::StageRegistry::instance().lookup(toSlaveStageName);
-		ptr_to_slave_stage_ = pshToSlaveStage.get();
+		ptr_to_slave_stage_ = pshToSlaveStage;
 	}
-	else
-		ptr_to_slave_stage_ = NULL;*/
 }
 
 // current constructor
@@ -145,6 +140,19 @@ GenericDaemon::~GenericDaemon()
 	daemon_stage_ = NULL;
 }
 
+void GenericDaemon::start()
+{
+	// create configuration
+	ptr_daemon_cfg_ = sdpa::util::Config::create();
+
+	// The stage uses 2 threads
+	daemon_stage()->start();
+
+	//start-up the the daemon
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
+	sendEventToSelf(pEvtStartUp);
+}
+
 // TODO: work here
 // the configure_network should get a config structure
 // the peer needs the following: address to bind to, port to use (0 by default)
@@ -191,7 +199,7 @@ void GenericDaemon::configure_network( const std::string& daemonUrl, const std::
 
 		  seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, net));
 		  seda::StageRegistry::instance().insert (network_stage);
-		  network_stage->start ();
+		  //network_stage->start ();
 
 		  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 
@@ -212,41 +220,12 @@ void GenericDaemon::shutdown_network()
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
 }
 
-void GenericDaemon::start()
-{
-	// create configuration
-	sdpa::util::Config::ptr_t ptrCfg = sdpa::util::Config::create();
-	configure_network( url(), masterName() );
-	configure(ptrCfg);
-	m_bRequestsAllowed = true;
-}
-
 void GenericDaemon::shutdown()
 {
 	// here one should only generate a message of type interrupt
 	SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
 	InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
     sendEventToSelf(pEvtInterrupt);
-}
-
-void GenericDaemon::configure(sdpa::util::Config::ptr_t ptrConfig )
-{
-	ptr_daemon_cfg_ = ptrConfig; // initialize it with default options
-
-	// The stage uses 2 threads
-	daemon_stage()->start();
-
-	//start-up the the daemon
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent());
-	sendEventToSelf(pEvtStartUp);
-
-	// add here a condition variable and wait
-	// until notified -> when an event of type ConfigOkEvent/ConfigNokEvent arrives
-	sleep(1);
-
-	// configuration done
-	ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent());
-	sendEventToSelf(pEvtConfigOk);
 }
 
 void GenericDaemon::stop_stages()
@@ -275,13 +254,90 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	}
 }
 
-void GenericDaemon::handleStartUpEvent(const sdpa::events::StartUpEvent* ptr )
+//actions
+void GenericDaemon::action_configure(const StartUpEvent&)
 {
-	// to be implemented!!!!!!!!!!!!!!!!!!
+	// should be overriden by the orchestrator, aggregator and NRE
+	SDPA_LOG_INFO("Configuring myself (generic)...");
+
+	// use for now as below, later read from config file
+	// TODO: move this to "property" style:
+	//    dot separated
+	//    hierarchies / categories
+	//    retrieve values maybe from kvs?
+	//    no spaces
+	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
+	ptr_daemon_cfg_->put("upper bound polling interval", 5 * 1000*1000 );
+	ptr_daemon_cfg_->put("life-sign interval",  2 * 1000 * 1000);
+	ptr_daemon_cfg_->put("node_timeout",        6 * 1000 * 1000);
+
+	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
+
+	bool bConfigOk  = true;
+	try {
+		configure_network( url(), masterName() );
+
+	    LOG(INFO, "starting scheduler...");
+	    ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
+	    ptr_scheduler_->start();
+
+	    // start the network stage
+	    ptr_to_master_stage_->start();
+	}
+	catch (std::exception const &ex)
+	{
+		LOG(ERROR, "Exception occurred while trying to configure the network " << ex.what());
+
+		ptr_scheduler_->stop();
+		ptr_scheduler_.reset();
+
+		ptr_to_master_stage_->stop();
+		bConfigOk  = false;
+	}
+
+	if( bConfigOk )
+	{
+		// if the configuration step was ok send a ConfigOkEvent
+		ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
+		sendEventToSelf(pEvtConfigOk);
+	}
+	else //if not
+	{
+		// if the configuration step was ok send a ConfigOkEvent
+		ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
+		sendEventToSelf(pEvtConfigNok);
+
+		m_bRequestsAllowed = false;
+	}
 }
 
-void GenericDaemon::handleInterruptEvent(const sdpa::events::InterruptEvent* ptr )
+void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
+	// check if the system should be recovered
+	// should be overriden by the orchestrator, aggregator and NRE
+	SDPA_LOG_INFO("configuration (generic) was ok");
+	m_bRequestsAllowed = true;
+}
+
+void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
+{
+	SDPA_LOG_FATAL("configuration was not ok!");
+
+	// save the current state of the system .i.e serialize the daemon's state
+	// the following code shoud be executed on action action_interrupt!!
+	LOG(INFO, "Shutting down...");
+	m_bRequestsAllowed = false;
+
+	LOG(INFO, "Shutdown the network...");
+	shutdown_network();
+
+	LOG(INFO, "Stop the stages...");
+	stop_stages();
+}
+
+void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
+{
+	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 	// save the current state of the system .i.e serialize the daemon's state
 	// the following code shoud be executed on action action_interrupt!!
 	LOG(INFO, "Shutting down...");
@@ -295,200 +351,6 @@ void GenericDaemon::handleInterruptEvent(const sdpa::events::InterruptEvent* ptr
 
 	LOG(INFO, "Stop the stages...");
 	stop_stages();
-}
-
-void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
-{
-	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
-    acknowledge (pRegAckEvt->id());
-	m_bRegistered = true;
-}
-
-void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
-{
-	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
-}
-
-void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
-{
-	try {
-		if(daemon_stage_)
-		{
-			daemon_stage_->send(pEvt);
-			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-		}
-		else
-		{
-			SDPA_LOG_ERROR("Daemon stage not defined! ");
-		}
-	}
-	catch(const seda::QueueFull&)
-	{
-		SDPA_LOG_WARN("Could not send event. The queue is full!");
-	}
-	catch(const seda::StageNotFound& ex)
-	{
-		SDPA_LOG_ERROR("Stage not found! "<<ex.what());
-	}
-	catch(const std::exception& ex)
-	{
-		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-	}
-}
-
-void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
-{
-	try {
-		  if( to_master_stage().get() )
-		  {
-			  to_master_stage()->send(pEvt);
-			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-		  }
-		  else
-		  {
-			  SDPA_LOG_ERROR("The master stage does not exist!");
-		  }
-	}
-	catch(const QueueFull&)
-	{
-		SDPA_LOG_WARN("Could not send event. The queue is full!");
-	}
-	catch(const seda::StageNotFound& )
-	{
-		SDPA_LOG_ERROR("Stage "<<to_master_stage()->name()<<" not found!");
-	}
-	catch(const std::exception& ex)
-	{
-		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-	}
-}
-
-void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
-{
-	try {
-		  if( to_slave_stage().get() )
-		  {
-			  to_slave_stage()->send(pEvt);
-			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-		  }
-		  else
-		  {
-			  SDPA_LOG_ERROR("The slave stage does not exist!");
-		  }
-	}
-	catch(const QueueFull&)
-	{
-		SDPA_LOG_WARN("Could not send event. The queue is full!");
-	}
-	catch(const seda::StageNotFound& )
-	{
-		SDPA_LOG_ERROR("Stage "<<to_slave_stage()->name()<<" not found!");
-	}
-	catch(const std::exception& ex)
-	{
-		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-	}
-}
-
-bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid)
-{
-  return true;
-}
-
-Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
-{
-	try {
-		return  ptr_scheduler_->findWorker(worker_id);
-	}
-	catch(const WorkerNotFoundException& ex) {
-          throw ex;
-	}
-}
-
-const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
-{
-	try {
-		return  ptr_scheduler_->findWorker(job_id);
-	}
-	catch(const NoWorkerFoundException& ex) {
-		  throw ex;
-	}
-}
-
-void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
-{
-	try {
-		ptr_scheduler_->addWorker(workerId, rank);
-	}catch( const WorkerAlreadyExistException& ex )
-	{
-		throw ex;
-	}
-}
-
-bool GenericDaemon::requestsAllowed( const sdpa::util::time_type& difftime )
-{
-	// if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
-	// reset it to the value specified by config first time when m_nExternalJobs becomes positive
-	// don't forget to decrement m_nExternalJobs when the job is finished !
-	if(!m_bRequestsAllowed)
-		return false;
-
-	if( extJobsCnt() == 0 && m_ullPollingInterval < ptr_daemon_cfg_->get<unsigned int>("upper bound polling interval") )
-		m_ullPollingInterval  = m_ullPollingInterval + 10000;
-
-	return (difftime>m_ullPollingInterval) &&
-		   (m_nExternalJobs<cfg()->get<unsigned int>("nmax_ext_job_req"));
-}
-
-//actions
-void GenericDaemon::action_configure(const StartUpEvent&)
-{
-	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_INFO("Configuring myself (generic)...");
-
-	// use for now as below, later read from config file
-        // TODO: move this to "property" style:
-        //    dot separated
-        //    hierarchies / categories
-        //    retrieve values maybe from kvs?
-        //    no spaces
-	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
-	ptr_daemon_cfg_->put("upper bound polling interval", 5 * 1000*1000 );
-	ptr_daemon_cfg_->put("life-sign interval",  2 * 1000 * 1000);
-	ptr_daemon_cfg_->put("node_timeout",        6 * 1000 * 1000);
-
-	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
-}
-
-void GenericDaemon::action_config_ok(const ConfigOkEvent&)
-{
-  // check if the system should be recovered
-  // should be overriden by the orchestrator, aggregator and NRE
-  SDPA_LOG_INFO("configuration (generic) was ok");
-
-  try
-  {
-    LOG(INFO, "starting scheduler...");
-    ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
-    ptr_scheduler_->start();
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(ERROR, "scheduler could not be started: " << ex.what());
-    ptr_scheduler_->stop();
-    ptr_scheduler_.reset();
-    throw;
-  }
-}
-
-void GenericDaemon::action_config_nok(const ConfigNokEvent &)
-{
-	SDPA_LOG_FATAL("configuration was not ok!");
-}
-
-void GenericDaemon::action_interrupt(const InterruptEvent&)
-{
-	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 }
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
@@ -1053,6 +915,148 @@ void GenericDaemon::decExtJobsCnt()
 unsigned int GenericDaemon::extJobsCnt()
 {
 	return m_nExternalJobs;
+}
+void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
+{
+	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
+    acknowledge (pRegAckEvt->id());
+	m_bRegistered = true;
+}
+
+void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
+{
+	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
+}
+
+void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
+{
+	try {
+		if(daemon_stage_)
+		{
+			daemon_stage_->send(pEvt);
+			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		}
+		else
+		{
+			SDPA_LOG_ERROR("Daemon stage not defined! ");
+		}
+	}
+	catch(const seda::QueueFull&)
+	{
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& ex)
+	{
+		SDPA_LOG_ERROR("Stage not found! "<<ex.what());
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+	}
+}
+
+void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
+{
+	try {
+		  if( to_master_stage().get() )
+		  {
+			  to_master_stage()->send(pEvt);
+			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		  }
+		  else
+		  {
+			  SDPA_LOG_ERROR("The master stage does not exist!");
+		  }
+	}
+	catch(const QueueFull&)
+	{
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& )
+	{
+		SDPA_LOG_ERROR("Stage "<<to_master_stage()->name()<<" not found!");
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+	}
+}
+
+void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
+{
+	try {
+		  if( to_slave_stage().get() )
+		  {
+			  to_slave_stage()->send(pEvt);
+			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		  }
+		  else
+		  {
+			  SDPA_LOG_ERROR("The slave stage does not exist!");
+		  }
+	}
+	catch(const QueueFull&)
+	{
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& )
+	{
+		SDPA_LOG_ERROR("Stage "<<to_slave_stage()->name()<<" not found!");
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+	}
+}
+
+bool GenericDaemon::acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid)
+{
+  return true;
+}
+
+Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+{
+	try {
+		return  ptr_scheduler_->findWorker(worker_id);
+	}
+	catch(const WorkerNotFoundException& ex) {
+          throw ex;
+	}
+}
+
+const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+{
+	try {
+		return  ptr_scheduler_->findWorker(job_id);
+	}
+	catch(const NoWorkerFoundException& ex) {
+		  throw ex;
+	}
+}
+
+void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
+{
+	try {
+		ptr_scheduler_->addWorker(workerId, rank);
+	}catch( const WorkerAlreadyExistException& ex )
+	{
+		throw ex;
+	}
+}
+
+bool GenericDaemon::requestsAllowed( const sdpa::util::time_type& difftime )
+{
+	// if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
+	// reset it to the value specified by config first time when m_nExternalJobs becomes positive
+	// don't forget to decrement m_nExternalJobs when the job is finished !
+	if(!m_bRequestsAllowed)
+		return false;
+
+	if( extJobsCnt() == 0 && m_ullPollingInterval < ptr_daemon_cfg_->get<unsigned int>("upper bound polling interval") )
+		m_ullPollingInterval  = m_ullPollingInterval + 10000;
+
+	return (difftime>m_ullPollingInterval) &&
+		   (m_nExternalJobs<cfg()->get<unsigned int>("nmax_ext_job_req"));
 }
 
 void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& reason)

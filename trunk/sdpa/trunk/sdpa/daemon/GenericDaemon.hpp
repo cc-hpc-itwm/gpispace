@@ -76,10 +76,8 @@ namespace sdpa { namespace daemon {
 
 	  void start();
 	  void stop_stages();
-	  //virtual void configure_network();
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
-	  void configure(sdpa::util::Config::ptr_t ptrConfig );
 	  void shutdown();
 
 	  virtual void perform(const seda::IEvent::Ptr&);
@@ -110,8 +108,7 @@ namespace sdpa { namespace daemon {
 	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
 	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
 	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
-	  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
-	  virtual void handleStartUpEvent(const sdpa::events::StartUpEvent* ptr );
+	  //virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
