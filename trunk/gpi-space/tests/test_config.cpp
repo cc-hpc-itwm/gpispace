@@ -27,8 +27,7 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE ( config_io )
 {
-  using namespace gpi_space::config;
-  node_config_t nc;
+  gpi_space::node::config nc;
   std::ostringstream s;
   s << nc;
   LOG(DEBUG, "cfg = " << s.str());
