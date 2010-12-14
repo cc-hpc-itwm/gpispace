@@ -21,11 +21,23 @@ find_library (LibReadline_LIBRARY
   HINTS ${LIBREADLINE_HOME} ENV LIBREADLINE_HOME
   PATH_SUFFIXES lib lib64
   )
+find_library(LibTermcap_LIBRARY
+  NAMES libtermcap.a
+  HINTS ${LIBTERMCAP_HOME} ENV LIBTERMCAP_HOME
+  PATH_SUFFIXES lib lib64
+)
 find_library (LibReadline_LIBRARY_SHARED
   NAMES libreadline.so
   HINTS ${LIBREADLINE_HOME} ENV LIBREADLINE_HOME
   PATH_SUFFIXES lib lib64
   )
+find_library (LibTermcap_LIBRARY_SHARED
+  NAMES libtermcap.so
+  HINTS ${LIBTERMCAP_HOME} ENV LIBTERMCAP_HOME
+  PATH_SUFFIXES lib lib64
+)
+set(LibReadline_LIBRARY ${LibReadline_LIBRARY} ${LibTermcap_LIBRARY})
+set(LibReadline_LIBRARY_SHARED ${LibReadline_LIBRARY_SHARED} ${LibTermcap_LIBRARY_SHARED})
 
 if (LibReadline_INCLUDE_DIR AND LibReadline_LIBRARY)
   set (LibReadline_FOUND TRUE)
