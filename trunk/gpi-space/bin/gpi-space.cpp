@@ -129,7 +129,7 @@ enum gpi_space_error_t
     , GPI_INTERNAL_ERROR = 42
   };
 
-static int distribute_config (const gpi_space::node::config & cfg)
+static int distribute_config (const gpi_space::config & cfg)
 {
   LOG(DEBUG, "distributing config...");
 
@@ -182,10 +182,10 @@ static int distribute_config (const gpi_space::node::config & cfg)
   return GPI_NO_ERROR;
 }
 
-static int receive_config (gpi_space::node::config & cfg)
+static int receive_config (gpi_space::config & cfg)
 {
   int src_rank (-2);
-  int ec = recvDmaPassiveGPI (0, sizeof (gpi_space::node::config), &src_rank);
+  int ec = recvDmaPassiveGPI (0, sizeof (gpi_space::config), &src_rank);
   if (ec == 0)
   {
     if (src_rank != 0)
@@ -194,7 +194,7 @@ static int receive_config (gpi_space::node::config & cfg)
     }
     else
     {
-      memcpy (&cfg, getDmaMemPtrGPI(), sizeof (gpi_space::node::config));
+      memcpy (&cfg, getDmaMemPtrGPI(), sizeof (gpi_space::config));
     }
   }
   else
@@ -205,7 +205,7 @@ static int receive_config (gpi_space::node::config & cfg)
   return GPI_NO_ERROR;
 }
 
-static int master_code (const gpi_space::node::config & cfg)
+static int master_code (const gpi_space::config & cfg)
 {
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
@@ -215,7 +215,7 @@ static int master_code (const gpi_space::node::config & cfg)
 
   // fire up message handling threads...
 
-  if (cfg.daemonize)
+  if (cfg.node.daemonize)
   {
     // daemonize...
 
@@ -265,12 +265,12 @@ static int master_code (const gpi_space::node::config & cfg)
   return rc;
 }
 
-static void configure (const gpi_space::node::config & cfg)
+static void configure (const gpi_space::config & cfg)
 {
 
 }
 
-static int slave_code (const gpi_space::node::config & cfg, const int rank)
+static int slave_code (const gpi_space::config & cfg, const int rank)
 {
   configure (cfg);
 
@@ -290,7 +290,7 @@ int main (int ac, char *av[])
 
   int rc (GPI_NO_ERROR);
 
-  gpi_space::node::config node_config;
+  gpi_space::config node_config;
   if (isMasterProcGPI (ac, av))
   {
     FHGLOG_SETUP (ac, av);

@@ -7,7 +7,18 @@ namespace gpi_space
   {
     struct config
     {
-      uint64_t memory_size;
+      config ()
+        : network_type (0)
+        , mtu (2048)
+        , port (10820)
+        , processes (0)
+      {}
+
+      uint64_t       memory_size;
+      int            network_type;
+      unsigned int   mtu;
+      unsigned short port;
+      unsigned int   processes;
     };
   }
 }

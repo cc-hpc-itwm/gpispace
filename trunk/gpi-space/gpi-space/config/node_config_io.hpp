@@ -7,11 +7,8 @@
 
 namespace gpi_space
 {
-  namespace node
-  {
-    std::ostream & operator <<(std::ostream & os, config const & nc);
-    std::istream & operator >>(std::istream & is, config & nc);
-  }
+  std::ostream & operator <<(std::ostream & os, config const & nc);
+  std::istream & operator >>(std::istream & is, config & nc);
 }
 
 #include "node_config_io.tpp"
