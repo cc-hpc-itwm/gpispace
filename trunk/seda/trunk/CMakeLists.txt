@@ -86,7 +86,6 @@ if (Boost_MINOR_VERSION LESS 36)
 endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
 
 ## find zlib
 find_package(ZLIB REQUIRED)
@@ -103,10 +102,6 @@ configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PRO
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 # Make sure all subdirectories include correctly
-link_directories(${${PROJECT_NAME}_BINARY_DIR})
-if (CMAKE_USE_PTHREADS_INIT)
-  link_libraries(-lpthread)
-endif(CMAKE_USE_PTHREADS_INIT)
 
 # Reflect the package structure
 add_subdirectory(seda)
