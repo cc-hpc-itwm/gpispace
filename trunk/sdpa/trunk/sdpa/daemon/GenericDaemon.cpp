@@ -51,7 +51,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
-	  //daemon_stage_(NULL),
+	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -71,7 +71,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  //daemon_stage_(NULL),
+	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -102,7 +102,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  //daemon_stage_(NULL),
+	  daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -123,7 +123,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 
 GenericDaemon::~GenericDaemon()
 {
-	DLOG(TRACE, "GenericDaemon destructor called ...");
+	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 
 	// remove the network stage
 	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
@@ -133,13 +133,13 @@ GenericDaemon::~GenericDaemon()
 
 	if ( hasWorkflowEngine() )
 	{
-		DLOG(TRACE, "deleting workflow engine");
+		SDPA_LOG_DEBUG("deleting the workflow engine ...");
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
 
 	// Allocated outside and passed as a parameter
-	//daemon_stage_ = NULL;
+	daemon_stage_ = NULL;
 }
 
 void GenericDaemon::start()

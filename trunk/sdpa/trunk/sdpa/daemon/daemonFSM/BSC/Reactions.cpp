@@ -171,13 +171,13 @@ sc::result Down::react(const sc::exception_thrown &)
 
 sc::result Configuring::react( const ConfigOkEvent& e)
 {
-	SDPA_LOG_DEBUG("React to  ConfigOkEvent");
+	//SDPA_LOG_DEBUG("React to  ConfigOkEvent");
 	return transit<Up>(&DaemonFSM::action_config_ok, e);
 }
 
 sc::result Configuring::react( const ConfigNokEvent& e)
 {
-	SDPA_LOG_DEBUG("React to  ConfigNokEvent");
+	//SDPA_LOG_DEBUG("React to  ConfigNokEvent");
 	return transit<Down>(&DaemonFSM::action_config_nok, e);
 }
 
@@ -204,43 +204,43 @@ sc::result Configuring::react(const sc::exception_thrown &)
 
 sc::result Up::react(const InterruptEvent& e)
 {
-	SDPA_LOG_DEBUG("React to  InterruptEvent");
+	////SDPA_LOG_DEBUG("React to  InterruptEvent");
 	return transit<Down>(&DaemonFSM::action_interrupt, e);
 }
 
 sc::result Up::react(const LifeSignEvent& e )
 {
-	SDPA_LOG_DEBUG("React to  LifeSignEvent");
+	////SDPA_LOG_DEBUG("React to  LifeSignEvent");
 	return transit<Up>(&DaemonFSM::action_lifesign, e);
 }
 
 sc::result Up::react(const DeleteJobEvent& e)
 {
-	SDPA_LOG_DEBUG("React to  DeleteJobEvent");
+	////SDPA_LOG_DEBUG("React to  DeleteJobEvent");
 	return transit<Up>(&DaemonFSM::action_delete_job, e);
 }
 
 sc::result Up::react(const RequestJobEvent& e)
 {
-	SDPA_LOG_DEBUG("React to  RequestJobEvent");
+	////SDPA_LOG_DEBUG("React to  RequestJobEvent");
 	return transit<Up>(&DaemonFSM::action_request_job, e);
 }
 
 sc::result Up::react(const SubmitJobEvent& e )
 {
-	SDPA_LOG_DEBUG("React to  SubmitJobEvent");
+	////SDPA_LOG_DEBUG("React to  SubmitJobEvent");
    	return transit<Up>(&DaemonFSM::action_submit_job, e);
 }
 
 sc::result Up::react(const ConfigRequestEvent& e )
 {
-	SDPA_LOG_DEBUG("React to  ConfigRequestEvent");
+	////SDPA_LOG_DEBUG("React to  ConfigRequestEvent");
    	return transit<Up>(&DaemonFSM::action_config_request, e);
 }
 
 sc::result Up::react( const sdpa::events::WorkerRegistrationEvent& e)
 {
-	SDPA_LOG_DEBUG("React to  WorkerRegistrationEvent");
+	//SDPA_LOG_DEBUG("React to  WorkerRegistrationEvent");
 	return transit<Up>(&DaemonFSM::action_register_worker, e);
 }
 

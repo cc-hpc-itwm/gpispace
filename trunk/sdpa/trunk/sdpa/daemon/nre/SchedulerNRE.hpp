@@ -102,30 +102,9 @@ namespace sdpa {
 	 		update_request_time(current_time);
 	 		bReqPosted = true;
 	 	}
-		/*else
-		{
-			DMLOG(TRACE, "not polling, difftime=" << diff_time << " interval=" << ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval"));
-		}*/
 
 	 	return bReqPosted;
 	 }
-
-	 /*void send_life_sign()
-	 {
-	 	 sdpa::util::time_type current_time = sdpa::util::now();
-	 	 sdpa::util::time_type difftime = current_time - m_last_life_sign_time;
-
-	 	 if( ptr_comm_handler_->is_registered() )
-	 	 {
-	 		 if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("life-sign interval") )
-	 		 {
-				 DMLOG(TRACE, "sending life-sign to: " << ptr_comm_handler_->master());
-	 			 LifeSignEvent::Ptr pEvtLS( new LifeSignEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-	 			 ptr_comm_handler_->sendEventToMaster(pEvtLS);
-	 			 m_last_life_sign_time = current_time;
-	 		 }
-	 	 }
-	 }*/
 
 	 void check_post_request()
 	 {
@@ -289,7 +268,7 @@ namespace sdpa {
 	 		}
 	 		catch ( const std::exception &ex )
 	 		{
-	 		  MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+	 			MLOG(ERROR, "exception in scheduler thread: " << ex.what());
 	 		}
 	 	}
 	 }

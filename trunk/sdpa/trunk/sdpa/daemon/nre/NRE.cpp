@@ -51,9 +51,9 @@ void NRE<U>::action_config_ok(const ConfigOkEvent& e)
 	ptr_daemon_cfg_->writeTo (sstr);
 	SDPA_LOG_INFO("config: " << sstr.str());
 
-	SDPA_LOG_INFO("NRE (" << name() << ") sending registration event to master (" << master() << ") my rank=" << rank());
+	/*SDPA_LOG_INFO("NRE (" << name() << ") sending registration event to master (" << master() << ") my rank=" << rank());
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank() ));
-	sendEventToMaster (pEvtWorkerReg);
+	sendEventToMaster (pEvtWorkerReg);*/
 }
 
 template <typename U>

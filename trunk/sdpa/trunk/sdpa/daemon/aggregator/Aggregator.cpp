@@ -57,9 +57,9 @@ void Aggregator::action_config_ok(const ConfigOkEvent& e)
 	  SDPA_LOG_INFO("config: " << sstr.str());
 	}
 
-	SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
+	/*SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank()));
-        sendEventToMaster (pEvtWorkerReg);
+	sendEventToMaster (pEvtWorkerReg);*/
 }
 
 void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )

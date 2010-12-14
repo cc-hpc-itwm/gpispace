@@ -61,7 +61,7 @@ namespace daemon {
 				pNRE->template create_workflow_engine<T>();
 
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pNRE, 1) );
-				pNRE->setStage(daemon_stage);
+				pNRE->setStage(daemon_stage.get());
 				seda::StageRegistry::instance().insert(daemon_stage);
 				return pNRE;
 			}
@@ -97,7 +97,7 @@ namespace daemon {
                       );
 
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pNRE, 1) );
-				pNRE->setStage(daemon_stage);
+				pNRE->setStage(daemon_stage.get());
 				seda::StageRegistry::instance().insert(daemon_stage);
 
 				return pNRE;
