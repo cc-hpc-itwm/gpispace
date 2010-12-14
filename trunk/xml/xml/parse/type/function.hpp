@@ -24,7 +24,11 @@
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/maybe.hpp>
-#include <fhg/util/filesystem/mkdir.hpp>
+
+#include <fhg/util/filesystem.hpp>
+#include <fhg/util/cpp.hpp>
+
+namespace cpp_util = ::fhg::util::cpp;
 
 #include <iostream>
 
@@ -701,7 +705,38 @@ namespace xml
 
       // ***************************************************************** //
 
-      inline bool find_module_calls (function_type &);
+      inline std::ofstream & mk_fstream ( std::ofstream & stream
+                                        , const state::type & state
+                                        , const boost::filesystem::path & file
+                                        )
+      {
+        boost::filesystem::path path (file);
+
+        path.remove_filename();
+
+        if (!fhg::util::mkdirs (path))
+          {
+            throw error::could_not_create_directory (path);
+          }
+
+        if (boost::filesystem::exists (file))
+          {
+            state.warn (warning::overwrite_file (file));
+          }
+
+        stream.open (file.string().c_str());
+
+        if (!stream.good())
+          {
+            throw error::could_not_open_file (file);
+          }
+
+        return stream;
+      }
+
+      // ***************************************************************** //
+
+      inline bool find_module_calls (const state::type &, function_type &);
 
       namespace visitor
       {
@@ -709,18 +744,23 @@ namespace xml
         class transition_find_module_calls : public boost::static_visitor<bool>
         {
         private:
+          const state::type & state;
           const NET & net;
           const TRANS & trans;
 
         public:
-          transition_find_module_calls (const NET & _net, const TRANS & _trans)
-            : net (_net)
+          transition_find_module_calls ( const state::type & _state
+                                       , const NET & _net
+                                       , const TRANS & _trans
+                                       )
+            : state (_state)
+            , net (_net)
             , trans (_trans)
           {}
 
           bool operator () (function_type & f) const
           {
-            return xml::parse::type::find_module_calls (f);
+            return xml::parse::type::find_module_calls (state, f);
           }
 
           bool operator () (use_type & u) const
@@ -733,13 +773,13 @@ namespace xml
                   (u.name, trans.name, trans.path);
               }
 
-            return xml::parse::type::find_module_calls (fun);
+            return xml::parse::type::find_module_calls (state, fun);
           }
         };
       }
 
       template<typename NET>
-      inline bool find_module_calls (NET & n)
+      inline bool find_module_calls (const state::type & state, NET & n)
       {
         n.contains_a_module_call = false;
 
@@ -751,7 +791,9 @@ namespace xml
           {
             n.contains_a_module_call
               |= boost::apply_visitor
-              ( visitor::transition_find_module_calls<NET, transition_type> (n, *pos)
+              ( visitor::transition_find_module_calls< NET
+                                                     , transition_type
+                                                     > (state, n, *pos)
               , pos->f
               );
           }
@@ -787,14 +829,12 @@ namespace xml
             {
               if (!literal::cpp::known (*type))
                 {
-                  os << "#include <"
-                     << "pnetc/type/" << *type << ".hpp"
-                     << ">"
-                     << std::endl;
+                  cpp_util::include
+                    (os, cpp_util::path::type() / cpp_util::make::hpp (*type));
                 }
               else
                 {
-                  os << literal::cpp::include (*type);
+                  cpp_util::include (os, literal::cpp::include (*type));
                 }
             }
         }
@@ -803,7 +843,8 @@ namespace xml
                                    , const mod_type & mod
                                    )
         {
-          os << "namespace pnetc" << std::endl
+          os << std::endl
+             << "namespace pnetc" << std::endl
              << "{" << std::endl
              << "  namespace op" << std::endl
              << "  {" << std::endl
@@ -816,9 +857,9 @@ namespace xml
                                    , const mod_type & mod
                                    )
         {
-          os << "    } // " << mod.name << std::endl
-             << "  } // op" << std::endl
-             << "} // pnetc" << std::endl
+          os << "    } // namespace " << mod.name << std::endl
+             << "  } // namespace op" << std::endl
+             << "} // namespace pnetc" << std::endl
             ;
         }
 
@@ -826,7 +867,7 @@ namespace xml
         {
           return literal::cpp::known (type)
             ? literal::cpp::translate (type)
-            : ("::pnetc::type::" + type)
+            : cpp_util::access::make ("", "pnetc", "type", type)
             ;
         }
 
@@ -838,13 +879,28 @@ namespace xml
                       , const mod_type & mod
                       )
         {
-          os << "      "
-             << (port_return.isJust() ? mk_type ((*port_return).type) : "void")
-             << " "
-             << mod.function
-             << " "
-             << "("
+          std::ostringstream pre;
+
+          pre << "      "
+              << (port_return.isJust() ? mk_type ((*port_return).type) : "void")
+              << " "
+              << mod.function
+              << " "
             ;
+
+          os << pre.str() << "(";
+
+          const std::string spre (pre.str());
+
+          std::string white;
+
+          for ( std::string::const_iterator pos (spre.begin())
+              ; pos != spre.end()
+              ; ++pos
+              )
+            {
+              white.push_back (' ');
+            }
 
           bool first (true);
 
@@ -853,8 +909,9 @@ namespace xml
               ; ++port, first = false
               )
             {
-              os << (first ? "" : ", ")
+              os << (first ? " " : (white + ", "))
                  << "const " << mk_type (port->type) << " & " << port->name
+                 << std::endl
                 ;
             }
 
@@ -863,22 +920,29 @@ namespace xml
               ; ++port, first = false
               )
             {
-              os << (first ? "" : ", ")
+              os << (first ? " " : (white + ", "))
                  << mk_type (port->type) << " & " << port->name
+                 << std::endl
                 ;
             }
 
-          os << ")";
+          os << white << ")";
         }
 
         template<typename NET>
         class find_module_calls : public boost::static_visitor<bool>
         {
         private:
+          const state::type & state;
           const function_type & f;
 
         public:
-          find_module_calls (const function_type & _f) : f (_f) {}
+          find_module_calls ( const state::type & _state
+                            , const function_type & _f
+                            )
+            : state (_state)
+            , f (_f)
+          {}
 
           bool operator () (expression_type &) const
           {
@@ -887,7 +951,7 @@ namespace xml
 
           bool operator () (NET & n) const
           {
-            return xml::parse::type::find_module_calls<NET> (n);
+            return xml::parse::type::find_module_calls<NET> (state, n);
           }
 
           bool operator () (mod_type & mod) const
@@ -999,67 +1063,86 @@ namespace xml
                     STRANGE ("port " << *name << " is not known at all");
                   }
               }
+#undef STRANGE
 
-            std::ofstream stream ("/dev/stderr");
+            typedef boost::filesystem::path path_t;
 
-            stream << std::endl << ">>> BEGIN "
-                   << "pnetc/op/" << mod.name << "/" << mod.function << ".hpp"
-                   << std::endl;
+            const path_t prefix (state.path_to_cpp());
+            const path_t path (prefix / cpp_util::path::op() / mod.name);
+            const std::string file_hpp (cpp_util::make::hpp (mod.function));
+            const std::string file_cpp (cpp_util::make::cpp (mod.function));
 
-            mod_includes (stream, types);
+            {
+              const path_t file (path / file_hpp);
 
-            stream << std::endl;
+              std::ofstream stream; mk_fstream (stream, state, file);
 
-            namespace_open (stream, mod);
+              cpp_util::header_gen_full (stream);
+              cpp_util::include_guard_begin
+                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
 
-            mod_signature (stream, port_return, ports_const, ports_mutable, mod);
+              mod_includes (stream, types);
 
-            stream << ";" << std::endl;
+              namespace_open (stream, mod);
 
-            namespace_close (stream, mod);
+              mod_signature ( stream
+                            , port_return, ports_const, ports_mutable, mod
+                            );
 
-            stream << "<<< END "
-                      << "pnetc/op/" << mod.name << "/" << mod.function << ".hpp"
-                      << std::endl;
+              stream << ";" << std::endl;
 
+              namespace_close (stream, mod);
 
-            stream << std::endl << ">>> BEGIN "
-                   << "pnetc/op/" << mod.name << "/" << mod.function << ".cpp"
-                   << std::endl;
+              stream << std::endl;
 
-            stream << "#include <"
-                   << "pnetc/op/" << mod.name << "/" << mod.function << ".hpp"
-                   << ">"
-                   << std::endl;
+              cpp_util::include_guard_end
+                (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
 
-            stream << std::endl;
+              stream.close();
+            }
 
-            namespace_open (stream, mod);
+            {
+              const path_t file (path / file_cpp);
 
-            mod_signature (stream, port_return, ports_const, ports_mutable, mod);
+              std::ofstream stream; mk_fstream (stream, state, file);
 
-            stream << std::endl
-                   << "      {" << std::endl
-                   << "        // INSERT CODE HERE" << std::endl
-                   << "      }" << std::endl
-              ;
+              cpp_util::header_gen (stream);
 
-            namespace_close (stream, mod);
+              cpp_util::include ( stream
+                                , cpp_util::path::op() / file_hpp
+                                );
 
-            stream << "<<< END "
-                      << "pnetc/op/" << mod.name << "/" << mod.function << ".cpp"
-                      << std::endl;
+              namespace_open (stream, mod);
+
+              mod_signature ( stream
+                            , port_return, ports_const, ports_mutable, mod
+                            );
+
+              stream << std::endl
+                     << "      {" << std::endl
+                     << "        // INSERT CODE HERE" << std::endl
+                     << "      }" << std::endl
+                ;
+
+              namespace_close (stream, mod);
+
+              stream.close();
+            }
 
             return true;
-#undef STRANGE
           }
         };
       }
 
-      inline bool find_module_calls (function_type & f)
+      inline bool find_module_calls ( const state::type & state
+                                    , function_type & f
+                                    )
       {
         f.contains_a_module_call
-          = boost::apply_visitor (visitor::find_module_calls<net_type>(f), f.f);
+          = boost::apply_visitor
+          ( visitor::find_module_calls<net_type>(state, f)
+          , f.f
+          );
 
         return f.contains_a_module_call;
       }
@@ -1073,31 +1156,17 @@ namespace xml
         typedef boost::filesystem::path path_t;
 
         const path_t prefix (state.path_to_cpp());
-        const path_t relative (path_t ("pnetc") / path_t ("type"));
-        const path_t path (prefix / relative);
+        const path_t file
+          (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name));
 
-        if (!fhg::util::mkdirs (path))
-          {
-            throw error::could_not_create_directory (path);
-          }
-
-        const path_t file (path / (s.name + ".hpp"));
-
-        if (boost::filesystem::exists (file))
-          {
-            state.warn (warning::overwrite_file (file));
-          }
-
-        std::ofstream stream (file.string().c_str());
-
-        if (!stream.good())
-          {
-            throw error::could_not_open_file (file);
-          }
+        std::ofstream stream; mk_fstream (stream, state, file);
 
         state.verbose ("write to " + file.string());
 
-        signature::cpp::cpp_header (stream, s.sig, s.name, s.path, relative);
+        signature::cpp::cpp_header
+          (stream, s.sig, s.name, s.path, cpp_util::path::type());
+
+        stream.close();
       }
 
       inline void structs_to_cpp ( const struct_vec_type & structs

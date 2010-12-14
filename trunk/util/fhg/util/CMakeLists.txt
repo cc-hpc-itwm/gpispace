@@ -10,6 +10,9 @@ set (hdrs
   util.hpp
   warnings.hpp
 
+  filesystem.hpp
+  cpp.hpp
+
   ini-parser.hpp
   ini-parser.tcc
 )
@@ -21,3 +24,4 @@ install(FILES ${hdrs}
 add_subdirectory(parse)
 add_subdirectory(thread)
 add_subdirectory(filesystem)
+add_subdirectory(cpp)

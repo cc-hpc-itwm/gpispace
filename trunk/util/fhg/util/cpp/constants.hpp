@@ -1,0 +1,88 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#ifndef _FHG_UTIL_CPP_CONSTANTS
+#define _FHG_UTIL_CPP_CONSTANTS 1
+
+#include <fhg/util/cpp/types.hpp>
+
+#include <string>
+
+namespace fhg
+{
+  namespace util
+  {
+    namespace cpp
+    {
+#define CONSTANT(type,name,cons)                 \
+        inline type const & name (void)          \
+        {                                        \
+          static type ret (cons);                \
+                                                 \
+          return ret;                            \
+        }
+
+      namespace path
+      {
+        CONSTANT (path_type, pnetc, "pnetc")
+        CONSTANT (path_type, type , pnetc() / "type")
+        CONSTANT (path_type, op   , pnetc() / "op")
+      }
+
+      namespace access
+      {
+        inline std::string make (const std::string & x, const std::string & y)
+        {
+          return x + "::" + y;
+        }
+
+        inline std::string make ( const std::string & a
+                                , const std::string & b
+                                , const std::string & c
+                                )
+        {
+          return make (a, make (b, c));
+        }
+
+        inline std::string make ( const std::string & a
+                                , const std::string & b
+                                , const std::string & c
+                                , const std::string & d
+                                )
+        {
+          return make (a, b, make (c, d));
+        }
+
+        CONSTANT (std::string, type, make ("", "pnetc", "type"))
+        CONSTANT (std::string, value_type, make ("", "value", "type"))
+      }
+
+      namespace extension
+      {
+        CONSTANT (std::string, hpp, "hpp")
+        CONSTANT (std::string, cpp, "cpp")
+
+        inline std::string extend (const std::string & x, const std::string & e)
+        {
+          return x + "." + e;
+        }
+      }
+
+      namespace make
+      {
+        inline std::string hpp (const std::string & name)
+        {
+          return extension::extend (name, extension::hpp());
+        }
+
+        inline std::string cpp (const std::string & name)
+        {
+          return extension::extend (name, extension::cpp());
+        }
+      }
+
+#undef CONSTANT
+    }
+  }
+}
+
+#endif

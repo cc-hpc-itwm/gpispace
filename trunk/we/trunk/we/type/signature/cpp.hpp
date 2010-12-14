@@ -10,6 +10,10 @@
 #include <fhg/util/show.hpp>
 #include <fhg/util/maybe.hpp>
 
+#include <fhg/util/cpp.hpp>
+
+namespace cpp_util = fhg::util::cpp;
+
 #include <iostream>
 #include <string>
 
@@ -82,7 +86,9 @@ namespace signature
         std::ostream & operator () (const literal::type_name_t & t) const
         {
           level (l+1);
-          s << "x." << fieldname << " = value::get<";
+          s << "x." << fieldname
+            << " = " << cpp_util::access::make ("", "value", "get")
+            << "<";
 
           if (literal::cpp::known (t))
             {
@@ -90,7 +96,7 @@ namespace signature
             }
           else
             {
-              s << "::pnetc::type::" << t << "::" << t;
+              s << cpp_util::access::make (cpp_util::access::type(), t, t);
             }
 
           s << "> (v_" << (l-1) << ");" << std::endl;
@@ -107,10 +113,13 @@ namespace signature
             {
               level (l+1); s << "{" << std::endl;
 
-              level (l+2); s << "const value::type & v_" << l << " "
-                             << "(value::get_level (\"" << field->first << "\""
-                             << ", v_" << (l-1) << "));"
-                             << std::endl;
+              level (l+2);
+              s << "const " << cpp_util::access::value_type()
+                << " & v_" << l << " "
+                << "(" << cpp_util::access::make ("", "value", "get_level")
+                <<  "(\"" << field->first << "\"" << ", v_" << (l-1) << ")"
+                << ");"
+                << std::endl;
 
               boost::apply_visitor
                 ( cpp_from_value (longer (field->first), s, l+1)
@@ -165,9 +174,10 @@ namespace signature
             }
           else
             {
-              s << "::pnetc::type::" << t << "::to_value ("
-                << "x." << fieldname
-                << ")"
+              s << cpp_util::access::make ( cpp_util::access::type()
+                                          , t, "to_value"
+                                          )
+                << "(x." << fieldname << ")"
                 ;
             }
 
@@ -180,7 +190,8 @@ namespace signature
         {
           level (l); s << "{" << std::endl;
 
-          level (l+1); s << "value::structured_t v_" << l << ";"
+          level (l+1); s << cpp_util::access::make ("","value","structured_t")
+                         << " v_" << l << ";"
                          << std::endl
                          ;
 
@@ -203,10 +214,11 @@ namespace signature
             {
               level (l+1); s << "v_" << (l-1) << "[\"" << levelname << "\"]"
                              << " = " << "v_" << l << ";"
-                             << std::endl;
+                             << std::endl
+                             ;
             }
 
-          level (l); s << "}" << std::endl;
+          level (l); s << "} // to_value " << levelname << std::endl;
 
           return s;
         }
@@ -240,9 +252,10 @@ namespace signature
             {
               if (seen.find (t) == seen.end())
                 {
-                  boost::filesystem::path file (incpath / (t + ".hpp"));
+                  const boost::filesystem::path file
+                    (incpath / cpp_util::make::hpp (t));
 
-                  os << "#include <" << file.string() << ">" << std::endl;
+                  cpp_util::include (os, file);
 
                   seen.insert (t);
                 }
@@ -293,7 +306,7 @@ namespace signature
             }
           else
             {
-              s << "::pnetc::type::" << t << "::" << t;
+              s << cpp_util::access::make (cpp_util::access::type(), t, t);
             }
 
           return s;
@@ -337,20 +350,25 @@ namespace signature
     {
       boost::apply_visitor (visitor::cpp_struct (n, os, l), s.desc());
 
-      os << ";" << std::endl;
+      os << "; // struct " << n << std::endl;
       os << std::endl;
 
-      level (os, l); os << n << " from_value (const value::type & v_" << (l-1) << ")" << std::endl;
+      level (os, l); os << n << " from_value (const "
+                        << cpp_util::access::value_type()
+                        << "& v_" << (l-1) << ")"
+                        << std::endl;
       level (os, l); os << "{" << std::endl;
       level (os, l); os << "  " << n << " x;" << std::endl;
 
       boost::apply_visitor (visitor::cpp_from_value (os, l), s.desc());
 
       level (os, l); os << "  return x;" << std::endl;
-      level (os, l); os << "}" << std::endl;
+      level (os, l); os << "} // from_value " << std::endl;
       os << std::endl;
 
-      level (os, l); os << "value::type to_value (const " << n << " & x)" << std::endl;
+      level (os, l); os << cpp_util::access::value_type()
+                        << " to_value (const " << n << " & x)"
+                        << std::endl;
 
       boost::apply_visitor (visitor::cpp_to_value (os, l), s.desc());
     }
@@ -389,8 +407,11 @@ namespace signature
 
           s << field_local << " = \" << ";
 
-          s << "literal::show (literal::type (x"
-            << fhg::util::show (field_global) << ")) << std::endl;"
+          s << cpp_util::access::make ("","literal","show")
+            << "(" << cpp_util::access::make ("", "literal", "type")
+            << "(x" << fhg::util::show (field_global) << ")"
+            << ")"
+            << " << std::endl;"
             << std::endl
             ;
 
@@ -436,10 +457,11 @@ namespace signature
                          , const std::string & n
                          )
     {
-      os << "#include <we/type/literal.hpp>"      << std::endl;
-      os << "#include <we/type/literal/show.hpp>" << std::endl;
-      os << "#include <iostream>"                 << std::endl;
-      os                                          << std::endl;
+      cpp_util::include (os, "we/type/literal.hpp");
+      cpp_util::include (os, "we/type/literal/show.hpp");
+      cpp_util::include (os, "iostream");
+
+      os << std::endl;
 
       os << "inline std::ostream & operator << (std::ostream & s, const "
          << n << " & x)"                          << std::endl;
@@ -466,20 +488,16 @@ namespace signature
                            , const boost::filesystem::path & incpath
                            )
     {
-      os << "// DO NOT EDIT THIS FILE!"                          << std::endl;
-      os << "// bugs or questions: sdpa-dev@itwm.fraunhofer.de"  << std::endl;
-      os                                                         << std::endl;
+      cpp_util::header_gen_full (os);
+      cpp_util::include_guard_begin (os, "PNETC_TYPE_" + n);
 
-      os << "#ifndef _PNETC_TYPE_" << n                          << std::endl;
-      os << "#define _PNETC_TYPE_" << n << " 1 "                 << std::endl;
-      os                                                         << std::endl;
+      cpp_util::include (os, "we/type/bitsetofint.hpp");
+      cpp_util::include (os, "we/type/control.hpp");
+      cpp_util::include (os, "we/type/value.hpp");
+      cpp_util::include (os, "we/type/value/cpp/get.hpp");
+      cpp_util::include (os, "string");
 
-      os << "#include <we/type/bitsetofint.hpp>"                 << std::endl;
-      os << "#include <we/type/control.hpp>"                     << std::endl;
-      os << "#include <we/type/value.hpp>"                       << std::endl;
-      os << "#include <we/type/value/cpp/get.hpp>"               << std::endl;
-      os << "#include <string>"                                  << std::endl;
-      os                                                         << std::endl;
+      os << std::endl;
 
       visitor::seen_type seen;
 
@@ -487,31 +505,28 @@ namespace signature
                            , s.desc()
                            );
 
-      os                                                         << std::endl;
-
       os << "namespace pnetc"                                    << std::endl;
       os << "{"                                                  << std::endl;
       os << "  namespace type"                                   << std::endl;
       os << "  {"                                                << std::endl;
       os                                                         << std::endl;
-      os << "  // defined in " << defpath                        << std::endl;
-      os                                                         << std::endl;
+      os << "    // defined in " << defpath                      << std::endl;
       os << "    namespace " << n                                << std::endl;
       os << "    {"                                              << std::endl;
 
       os << "      "; cpp_struct (os, s, n, 3);
 
-      os << "    } // " << n                                     << std::endl;
-      os << "  } // type"                                        << std::endl;
-      os << "} // pnetc"                                         << std::endl;
+      os << "    } // namespace " << n                           << std::endl;
+      os << "  } // namespace type"                              << std::endl;
+      os << "} // namespace pnetc"                               << std::endl;
       os                                                         << std::endl;
 
-      os << "#endif"                                             << std::endl;
+      cpp_util::include_guard_end (os, "PNETC_TYPE_" + n);
     }
 
     inline void cpp_header (std::ostream & os, const type & s)
     {
-      cpp_header (os, s, s.nice()
+      cpp_header ( os, s, s.nice()
                  , boost::filesystem::path ("<unknown>")
                  , boost::filesystem::path ("")
                  );

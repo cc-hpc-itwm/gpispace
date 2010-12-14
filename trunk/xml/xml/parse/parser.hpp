@@ -1428,10 +1428,10 @@ namespace xml
       f.type_check (state);
       f.sanity_check (state);
 
-      type::find_module_calls (f);
-
       if (state.path_to_cpp().size() > 0)
         {
+          type::find_module_calls (state, f);
+
           xml::parse::type::struct_to_cpp (f, state);
         }
 

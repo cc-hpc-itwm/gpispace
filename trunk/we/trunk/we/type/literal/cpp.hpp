@@ -21,11 +21,6 @@ namespace literal
       map_type trans;
       map_type inc;
 
-      std::string wrap_include (const std::string & file) const
-      {
-        return (file.size() > 0) ? ("#include <" + file + ">\n") : file;
-      }
-
     public:
       info (void) : trans (), inc ()
       {
@@ -38,14 +33,14 @@ namespace literal
         trans[literal::BITSET]  = "bitsetofint::type";
         trans[literal::STACK]   = "std::vector<long>";
 
-        inc[literal::CONTROL] = wrap_include ("we/type/control.hpp");
-        inc[literal::BOOL]    = wrap_include ("");
-        inc[literal::LONG]    = wrap_include ("");
-        inc[literal::DOUBLE]  = wrap_include ("");
-        inc[literal::CHAR]    = wrap_include ("");
-        inc[literal::STRING]  = wrap_include ("string");
-        inc[literal::BITSET]  = wrap_include ("we/type/bitsetofint.hpp");
-        inc[literal::STACK]   = wrap_include ("vector");
+        inc[literal::CONTROL] = "we/type/control.hpp";
+        inc[literal::BOOL]    = "";
+        inc[literal::LONG]    = "";
+        inc[literal::DOUBLE]  = "";
+        inc[literal::CHAR]    = "";
+        inc[literal::STRING]  = "string";
+        inc[literal::BITSET]  = "we/type/bitsetofint.hpp";
+        inc[literal::STACK]   = "vector";
       }
 
       const map_type::mapped_type & translate (const type_name_t & t) const

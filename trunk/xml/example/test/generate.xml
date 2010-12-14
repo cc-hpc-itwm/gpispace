@@ -65,8 +65,9 @@
         <in name="p_string" type="string"/>
         <in name="p_bitset" type="bitset"/>
         <in name="p_stack" type="stack"/>
+        <in name="p_stack2" type="stack"/>
         <module name="mm"
-                function="fun (p_control,p_bool,p_long,p_double,p_char,p_string,p_bitset,p_stack)"
+                function="fun (p_control,p_bool,p_long,p_double,p_char,p_string,p_bitset,p_stack,p_stack2)"
         />
       </defun>
     </transition>
