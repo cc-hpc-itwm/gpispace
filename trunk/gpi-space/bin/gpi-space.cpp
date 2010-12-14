@@ -11,6 +11,10 @@
 #include <gpi-space/config/node_config.hpp>
 #include <gpi-space/config/node_config_io.hpp>
 
+#include <stdio.h> // snprintf
+#include <unistd.h> // getuid
+#include <sys/types.h> // uid_t
+#include <pwd.h> // getpwuid
 #include <csignal>
 #include <cassert>
 #include <iostream>
@@ -120,13 +124,15 @@ enum gpi_space_error_t
   {
       GPI_NO_ERROR = 0
     , GPI_GENERAL_FAILURE = 1
+    , GPI_CONFIG_ERROR = 2
     , GPI_CHECK_FAILED = 4
     , GPI_STARTUP_FAILED = 5
     , GPI_WRITE_DMA_FAILED = 9
     , GPI_PASSIVE_SEND_FAILED = 10
     , GPI_PASSIVE_RECV_FAILED = 11
 
-    , GPI_INTERNAL_ERROR = 42
+    , GPI_INTERNAL_ERROR = 23
+    , GPI_TIMEOUT = 42
   };
 
 static int distribute_config (const gpi_space::config & cfg)
@@ -205,11 +211,11 @@ static int receive_config (gpi_space::config & cfg)
   return GPI_NO_ERROR;
 }
 
-static int master_code (const gpi_space::config & cfg)
+static int main_loop (const gpi_space::config & cfg, const int rank)
 {
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
-  LOG(INFO, "master running");
+  LOG(INFO, "gpi-space on rank " << rank << " running");
 
   int rc (GPI_NO_ERROR);
 
@@ -221,7 +227,7 @@ static int master_code (const gpi_space::config & cfg)
 
     // wait for signals
   }
-  else
+  else if (rank == 0)
   {
     bool done (false);
 
@@ -265,18 +271,37 @@ static int master_code (const gpi_space::config & cfg)
   return rc;
 }
 
-static void configure (const gpi_space::config & cfg)
+static void init_config (gpi_space::config & cfg)
 {
+  // quick hack
+  std::string user_name;
+  {
+    std::stringstream sstr;
+    passwd * pw_entry (getpwuid(getuid()));
+    if (pw_entry)
+    {
+      sstr << pw_entry->pw_name;
+    }
+    else
+    {
+      LOG(WARN, "could not lookup username from uid " << getuid() << ": " << errno);
+      sstr << getuid();
+    }
+    user_name = sstr.str();
+  }
 
+  snprintf ( cfg.node.sockets_path
+           , gpi_space::node::MAX_PATH_LEN
+           , "/var/tmp/GPI-Space-S-%s"
+           , user_name.c_str()
+           );
+  cfg.gpi.memory_size = (1 << 20);
 }
 
-static int slave_code (const gpi_space::config & cfg, const int rank)
+static int configure (const gpi_space::config & cfg)
 {
-  configure (cfg);
-
-  LOG(INFO, "slave (rank " << rank << ") running");
-  int rc (GPI_NO_ERROR);
-  return rc;
+  // configure logging, etc.
+  return 0;
 }
 
 int main (int ac, char *av[])
@@ -301,12 +326,19 @@ int main (int ac, char *av[])
     {
       config_file = av[1];
     }
-
     LOG(TRACE, "reading config from: " << config_file);
 
-    std::ifstream ifs (config_file.c_str());
-    ifs >> node_config;
-
+    try
+    {
+      init_config (node_config);
+      std::ifstream ifs (config_file.c_str());
+      ifs >> node_config;
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "could not read config file: " << config_file << ": " << ex.what());
+      return GPI_CONFIG_ERROR;
+    }
     LOG(TRACE, "read config: " << std::endl << node_config);
   }
 
@@ -341,17 +373,6 @@ int main (int ac, char *av[])
     signal (SIGTERM, master_shutdown_handler);
 
     rc = distribute_config (node_config);
-    // configure
-    allReduceGPI (&rc, &rc, 1, GPI_MAX, GPI_INT);
-
-    if (rc == 0)
-    {
-      rc = master_code ( node_config );
-    }
-    else
-    {
-      LOG(ERROR, "configuration on at least one node failed!");
-    }
   }
   else if (rank > 0)
   {
@@ -359,23 +380,28 @@ int main (int ac, char *av[])
     signal (SIGTERM, slave_shutdown_handler);
 
     rc = receive_config (node_config);
-
-    // configure
-    allReduceGPI (&rc, &rc, 1, GPI_MAX, GPI_INT);
-
-    if (rc == 0)
-    {
-      rc = slave_code ( node_config, rank );
-    }
-    else
-    {
-      LOG(ERROR, "configuration on at least one node failed!");
-    }
   }
   else
   {
     LOG(FATAL, "Bazinga! Something is very very wrong, rank = " << rank);
     rc = GPI_INTERNAL_ERROR;
+  }
+
+  // common code starts here
+
+  if (0 == rc)
+  {
+    rc = configure(node_config);
+    allReduceGPI (&rc, &rc, 1, GPI_MAX, GPI_INT);
+
+    if (rc == 0)
+    {
+      rc = main_loop(node_config, rank);
+    }
+    else
+    {
+      LOG(ERROR, "configuration on at least one node failed!");
+    }
   }
 
   barrierGPI();
