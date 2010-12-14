@@ -940,7 +940,7 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
 	try {
-		if(ptr_daemon_stage_)
+		if(ptr_daemon_stage_.lock())
 		{
 			ptr_daemon_stage_.lock()->send(pEvt);
 			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
