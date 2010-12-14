@@ -22,8 +22,12 @@ install (TARGETS loader
 
 add_executable(pnet2dot pnet2dot.cpp)
 target_link_libraries(pnet2dot ${Boost_LIBRARIES})
-set_target_properties(pnet2dot PROPERTIES LINK_FLAGS "-static")
-install (TARGETS pnet2dot
+
+add_executable(pnet2dot.static pnet2dot.cpp)
+target_link_libraries(pnet2dot.static ${Boost_LIBRARIES})
+set_target_properties(pnet2dot.static PROPERTIES LINK_FLAGS "-static")
+
+install (TARGETS pnet2dot pnet2dot.static
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
