@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# This script is used on dell02.hpc.devnet to run the Continuous build of PreStackPro.
+# It is started via cron as user pspro (see crontab -e).
+# It sets up some required environment variables, sets up the Intel compiler, and then runs ctest.
+
+host=`hostname`
+
+if [ "$host" != "build_suse11" ]; then
+  exit
+fi
+
+#export PATH=/home/pspro/inst/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/opt/kde3/bin:/usr/lib/jvm/jre/bin:/usr/lib/mit/bin
+
+export CTEST=//usr/bin/ctest
+
+unset http_proxy
+
+echo "Running ctest"
+
+# set additional directory where cmake will search for stuff:
+#export CMAKE_PREFIX_PATH=/p/hpc/psp/vr3-nightly-test-support
+
+$CTEST -V -S /home/projects/sdpa/Dashboards/SDPAContinuous.cmake
