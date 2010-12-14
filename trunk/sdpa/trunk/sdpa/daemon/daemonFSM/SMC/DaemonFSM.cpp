@@ -41,6 +41,8 @@ void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
 {
 	lock_type lock(mtx_);
 	GetContext().Interrupt(*pEvent);
+
+	GenericDaemon::handleInterruptEvent(pEvent);
 }
 
 void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)

@@ -69,76 +69,79 @@ void DaemonFSM :: print_states()
 void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process StartUpEvent");
+	//SDPA_LOG_DEBUG("Process StartUpEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process ConfigOkEvent");
+	//SDPA_LOG_DEBUG("Process ConfigOkEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process ConfigNokEvent");
+	//SDPA_LOG_DEBUG("Process ConfigNokEvent");
 	process_event(*pEvent);
 }
+
 void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process InterruptEvent");
+	//SDPA_LOG_DEBUG("Process InterruptEvent");
 	process_event(*pEvent);
+
+	GenericDaemon::handleInterruptEvent(pEvent);
 }
 
 void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process WorkerRegistrationEvent");
+	//SDPA_LOG_DEBUG("Process WorkerRegistrationEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleDeleteJobEvent(const DeleteJobEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process DeleteJobEvent");
+	//SDPA_LOG_DEBUG("Process DeleteJobEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleSubmitJobEvent(const SubmitJobEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process SubmitJobEvent");
+	//SDPA_LOG_DEBUG("Process SubmitJobEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleLifeSignEvent(const LifeSignEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process LifeSignEvent");
+	//SDPA_LOG_DEBUG("Process LifeSignEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleRequestJobEvent(const RequestJobEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process RequestJobEvent");
+	//SDPA_LOG_DEBUG("Process RequestJobEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleConfigRequestEvent(const ConfigRequestEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process ConfigRequestEvent");
+	//SDPA_LOG_DEBUG("Process ConfigRequestEvent");
 	process_event(*pEvent);
 }
 
 void DaemonFSM::handleErrorEvent(const ErrorEvent* pEvent)
 {
 	lock_type lock(mtx_);
-	SDPA_LOG_DEBUG("Process ErrorEvent");
+	//SDPA_LOG_DEBUG("Process ErrorEvent");
 	process_event(*pEvent);
 }
 
