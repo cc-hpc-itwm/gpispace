@@ -79,7 +79,7 @@ namespace sdpa {
 		{
             DLOG(TRACE, "NRE destructor called ...");
 
-			daemon_stage_ = NULL;
+			//daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
 
 			if (ptr_workflow_engine_)
@@ -119,7 +119,6 @@ namespace sdpa {
 
 		void action_configure( const sdpa::events::StartUpEvent& );
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
-		void action_interrupt( const sdpa::events::InterruptEvent& );
 
 		bool cancel(const id_type&, const reason_type & );
 

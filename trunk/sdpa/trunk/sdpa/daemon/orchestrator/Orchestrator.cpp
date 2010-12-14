@@ -33,7 +33,7 @@ using namespace sdpa::events;
 Orchestrator::~Orchestrator()
 {
 	SDPA_LOG_DEBUG("Orchestrator destructor called ...");
-	daemon_stage_ = NULL;
+	//daemon_stage_ = NULL;
 }
 
 void Orchestrator::action_configure(const StartUpEvent &se)
@@ -56,14 +56,6 @@ void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 
 	GenericDaemon::action_config_ok (e);
 }
-
-void Orchestrator::action_interrupt(const InterruptEvent&)
-{
-	SDPA_LOG_DEBUG("Call 'action_interrupt'");
-	// save the current state of the system .i.e serialize the daemon's state
-
-}
-
 
 void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {

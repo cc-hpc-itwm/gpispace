@@ -32,7 +32,7 @@ using namespace sdpa::events;
 Aggregator::~Aggregator()
 {
 	SDPA_LOG_DEBUG("Aggregator destructor called ...");
-	daemon_stage_ = NULL;
+	//daemon_stage_ = NULL;
 }
 
 void Aggregator::action_configure(const StartUpEvent &se)
@@ -47,7 +47,7 @@ void Aggregator::action_configure(const StartUpEvent &se)
 
 void Aggregator::action_config_ok(const ConfigOkEvent& e)
 {
-        GenericDaemon::action_config_ok (e);
+    GenericDaemon::action_config_ok (e);
 
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuration (aggregator) was ok");
@@ -61,15 +61,6 @@ void Aggregator::action_config_ok(const ConfigOkEvent& e)
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank()));
         sendEventToMaster (pEvtWorkerReg);
 }
-
-
-void Aggregator::action_interrupt(const InterruptEvent&)
-{
-	SDPA_LOG_DEBUG("Call 'action_interrupt'");
-	// save the current state of the system .i.e serialize the daemon's state
-
-}
-
 
 void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {

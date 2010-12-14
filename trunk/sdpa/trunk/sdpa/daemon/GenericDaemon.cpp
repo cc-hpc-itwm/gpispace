@@ -51,7 +51,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
-	  daemon_stage_(NULL),
+	  //daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -71,7 +71,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  daemon_stage_(NULL),
+	  //daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -102,7 +102,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  daemon_stage_(NULL),
+	  //daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -125,8 +125,10 @@ GenericDaemon::~GenericDaemon()
 {
 	DLOG(TRACE, "GenericDaemon destructor called ...");
 
-	// remove stages
+	// remove the network stage
 	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
+	// remove the daemon stage
 	seda::StageRegistry::instance().remove(name());
 
 	if ( hasWorkflowEngine() )
@@ -137,7 +139,7 @@ GenericDaemon::~GenericDaemon()
 	}
 
 	// Allocated outside and passed as a parameter
-	daemon_stage_ = NULL;
+	//daemon_stage_ = NULL;
 }
 
 void GenericDaemon::start()
@@ -266,6 +268,9 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	//    hierarchies / categories
 	//    retrieve values maybe from kvs?
 	//    no spaces
+
+	// Read these from a configuration file !!!!!!!!
+	// if this does not exist, use default values
 	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
 	ptr_daemon_cfg_->put("upper bound polling interval", 5 * 1000*1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  2 * 1000 * 1000);

@@ -43,7 +43,6 @@ namespace daemon {
 
 		void action_configure( const sdpa::events::StartUpEvent& );
 		void action_config_ok( const sdpa::events::ConfigOkEvent& );
-		void action_interrupt( const sdpa::events::InterruptEvent& );
 
 		void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
 		void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );

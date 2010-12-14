@@ -41,7 +41,7 @@ namespace daemon {
 				Aggregator::ptr_t pAgg( new Aggregator( name, url, workflow_directory) );
 				pAgg->create_workflow_engine<T>();
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
-				pAgg->setStage(daemon_stage.get());
+				pAgg->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
 				return pAgg;
 			}
@@ -57,7 +57,7 @@ namespace daemon {
 				LOG( DEBUG, "Create Aggregator "<<name<<" with no workflow engine" );
 				Aggregator::ptr_t pAgg( new Aggregator( name, url, workflow_directory) );
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
-				pAgg->setStage(daemon_stage.get());
+				pAgg->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
 				return pAgg;
 			}

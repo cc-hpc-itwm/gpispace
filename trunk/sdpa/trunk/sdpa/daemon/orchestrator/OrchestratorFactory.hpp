@@ -39,7 +39,7 @@ namespace daemon {
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
 				pOrch->create_workflow_engine<T>();
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
-				pOrch->setStage(daemon_stage.get());
+				pOrch->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
 				return pOrch;
 			}
@@ -54,7 +54,7 @@ namespace daemon {
 				LOG( DEBUG, "Create Orchestrator "<<name<<" with no workflow engine" );
 				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
-				pOrch->setStage(daemon_stage.get());
+				pOrch->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
 				return pOrch;
 			}

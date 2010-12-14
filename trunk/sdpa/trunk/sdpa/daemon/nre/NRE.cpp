@@ -42,7 +42,7 @@ void NRE<U>::action_configure(const StartUpEvent &se)
 template <typename U>
 void NRE<U>::action_config_ok(const ConfigOkEvent& e)
 {
-        GenericDaemon::action_config_ok (e);
+    GenericDaemon::action_config_ok (e);
 
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuration (nre) was ok");
@@ -54,14 +54,6 @@ void NRE<U>::action_config_ok(const ConfigOkEvent& e)
 	SDPA_LOG_INFO("NRE (" << name() << ") sending registration event to master (" << master() << ") my rank=" << rank());
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank() ));
 	sendEventToMaster (pEvtWorkerReg);
-}
-
-template <typename U>
-void NRE<U>::action_interrupt(const InterruptEvent&)
-{
-	SDPA_LOG_DEBUG("Call 'action_interrupt'");
-	// save the current state of the system .i.e serialize the daemon's state
-
 }
 
 template <typename U>
