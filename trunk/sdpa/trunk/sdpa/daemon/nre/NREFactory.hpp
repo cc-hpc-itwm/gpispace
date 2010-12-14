@@ -30,7 +30,7 @@ namespace daemon {
 		template <typename T, typename U >
 		struct NREFactory
 		{
-			static typename sdpa::shared_ptr<NRE<U> > create(   const std::string& name
+			static typename NRE<U>::ptr_t create(   const std::string& name
 												   , const std::string& url
 												   , const std::string& masterName
 												   //, const std::string& masterUrl
@@ -46,7 +46,7 @@ namespace daemon {
 
 
 				LOG( DEBUG, "Create NRE \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-				typename sdpa::shared_ptr<NRE<U> > pNRE( new NRE<U>( name
+				typename NRE<U>::ptr_t pNRE( new NRE<U>( name
 													   , url
 													   , masterName
 													   //, masterUrl
@@ -61,7 +61,7 @@ namespace daemon {
 				pNRE->template create_workflow_engine<T>();
 
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pNRE, 1) );
-				pNRE->setStage(daemon_stage.get());
+				pNRE->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
 				return pNRE;
 			}
@@ -70,7 +70,7 @@ namespace daemon {
 		template <typename U>
 		struct NREFactory<void, U>
 		{
-			static typename sdpa::shared_ptr<NRE<U> > create(  const std::string& name
+			static typename NRE<U>::ptr_t create(  const std::string& name
 												   , const std::string& url
 												   , const std::string& masterName
 												   //, const std::string& masterUrl
@@ -83,7 +83,7 @@ namespace daemon {
 												   )
 			{
 				LOG( DEBUG, "Create NRE "<<name<<" with no workflow engine " );
-				typename sdpa::shared_ptr<NRE<U> > pNRE( new NRE<U>(   name
+				typename NRE<U>::ptr_t pNRE( new NRE<U>(   name
 														   , url
 														   , masterName
 														   //, masterUrl
@@ -97,7 +97,7 @@ namespace daemon {
                       );
 
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pNRE, 1) );
-				pNRE->setStage(daemon_stage.get());
+				pNRE->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
 
 				return pNRE;

@@ -108,7 +108,7 @@ namespace sdpa { namespace daemon {
 	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
 	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
 	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
-	  //virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
+	  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
@@ -145,15 +145,9 @@ namespace sdpa { namespace daemon {
 
 	  Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException);
 
-	  virtual seda::Stage* daemon_stage() { return daemon_stage_; }
-
-	  void setStage(seda::Stage* stage)
+	  void setStage(const seda::Stage::Ptr& stage)
 	  {
-		   assert (stage);
-		   if(stage)
-			  daemon_stage_ = stage;
-		   else
-			  daemon_stage_ = NULL;
+		  ptr_daemon_stage_ = stage ;
 	  }
 
 	  virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
@@ -276,7 +270,8 @@ namespace sdpa { namespace daemon {
 	  seda::Stage::Ptr ptr_to_master_stage_;
 	  seda::Stage::Ptr ptr_to_slave_stage_;
 
-	  seda::Stage* daemon_stage_;
+	  sdpa::weak_ptr<seda::Stage> ptr_daemon_stage_;
+	  //seda::Stage* ptr_daemon_stage_;
 	  std::string master_;
 
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;

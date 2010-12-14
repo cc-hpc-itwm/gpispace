@@ -68,7 +68,7 @@ namespace sdpa {
                 , nre_pcd_search_path_(fvmPCSearchPath)
                 , nre_pcd_pre_load_(fvmPCPreLoad)
 		{
-			SDPA_LOG_DEBUG("NRE constructor called ...");
+			SDPA_LOG_DEBUG("NRE's constructor called ...");
 
 			// attach gui observer
 			SDPA_LOG_DEBUG("Attach GUI observer ...");
@@ -77,17 +77,10 @@ namespace sdpa {
 
 		virtual ~NRE()
 		{
-            DLOG(TRACE, "NRE destructor called ...");
+			SDPA_LOG_DEBUG("NRE's destructor called ...");
 
 			//daemon_stage_ = NULL;
 			detach_observer( &m_guiServ );
-
-			if (ptr_workflow_engine_)
-			{
-			  DLOG(TRACE, "deleting workflow engine...");
-			  delete ptr_workflow_engine_;
-			  ptr_workflow_engine_ = NULL;
-			}
 		}
 
 		static ptr_t create( const std::string& name

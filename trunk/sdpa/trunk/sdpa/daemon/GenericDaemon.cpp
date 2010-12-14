@@ -51,7 +51,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
 	  ptr_to_master_stage_(ptrToMasterStage),
 	  ptr_to_slave_stage_(ptrToSlaveStage),
-	  daemon_stage_(NULL),
+	  //ptr_daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -71,7 +71,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  daemon_stage_(NULL),
+	  //ptr_daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -102,7 +102,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  ptr_job_man_(new JobManager()),
 	  ptr_scheduler_(),
 	  ptr_workflow_engine_(pArgSdpa2Gwes),
-	  daemon_stage_(NULL),
+	  //ptr_daemon_stage_(NULL),
 	  master_(""),
 	  m_bRegistered(false),
 	  m_nRank(0),
@@ -139,7 +139,7 @@ GenericDaemon::~GenericDaemon()
 	}
 
 	// Allocated outside and passed as a parameter
-	daemon_stage_ = NULL;
+	//ptr_daemon_stage_ = NULL;
 }
 
 void GenericDaemon::start()
@@ -148,7 +148,7 @@ void GenericDaemon::start()
 	ptr_daemon_cfg_ = sdpa::util::Config::create();
 
 	// The stage uses 2 threads
-	daemon_stage()->start();
+	ptr_daemon_stage_.lock()->start();
 
 	//start-up the the daemon
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
@@ -235,12 +235,12 @@ void GenericDaemon::stop_stages()
 	SDPA_LOG_DEBUG("shutdown the network stage...");
 	//shutdown the network stage
 
-	//  shutdown the peer and remove the information from kvs
-	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-
 	// shutdown the daemon stage
 	SDPA_LOG_DEBUG("shutdown the daemon stage...");
 	seda::StageRegistry::instance().lookup(name())->stop();
+
+	//  shutdown the peer and remove the information from kvs
+	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -282,7 +282,7 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	try {
 		configure_network( url(), masterName() );
 
-	    LOG(INFO, "starting scheduler...");
+		SDPA_LOG_INFO("starting scheduler...");
 	    ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
 	    ptr_scheduler_->start();
 
@@ -291,7 +291,7 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	}
 	catch (std::exception const &ex)
 	{
-		LOG(ERROR, "Exception occurred while trying to configure the network " << ex.what());
+		SDPA_LOG_ERROR("Exception occurred while trying to configure the network " << ex.what());
 
 		ptr_scheduler_->stop();
 		ptr_scheduler_.reset();
@@ -331,7 +331,6 @@ void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
 	// save the current state of the system .i.e serialize the daemon's state
 	// the following code shoud be executed on action action_interrupt!!
 	LOG(INFO, "Shutting down...");
-	m_bRequestsAllowed = false;
 
 	LOG(INFO, "Shutdown the network...");
 	shutdown_network();
@@ -340,22 +339,27 @@ void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
 	stop_stages();
 }
 
+void GenericDaemon::handleInterruptEvent(const InterruptEvent* pEvent)
+{
+	SDPA_LOG_INFO("Shutting down...");
+	SDPA_LOG_INFO("Stop the scheduler now!");
+
+	// stop the scheduler thread
+	scheduler()->stop();
+
+	SDPA_LOG_INFO("Shutdown the network...");
+	shutdown_network();
+
+	SDPA_LOG_INFO("Stop the stages...");
+	stop_stages();
+}
+
 void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 {
 	SDPA_LOG_DEBUG("Call 'action_interrupt'");
 	// save the current state of the system .i.e serialize the daemon's state
 	// the following code shoud be executed on action action_interrupt!!
-	LOG(INFO, "Shutting down...");
-	LOG(TRACE, "Stop the scheduler now!");
 	m_bRequestsAllowed = false;
-	// stop the scheduler thread
-	scheduler()->stop();
-
-	LOG(INFO, "Shutdown the network...");
-	shutdown_network();
-
-	LOG(INFO, "Stop the stages...");
-	stop_stages();
 }
 
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
@@ -936,9 +940,9 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
 	try {
-		if(daemon_stage_)
+		if(ptr_daemon_stage_)
 		{
-			daemon_stage_->send(pEvt);
+			ptr_daemon_stage_.lock()->send(pEvt);
 			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 		}
 		else

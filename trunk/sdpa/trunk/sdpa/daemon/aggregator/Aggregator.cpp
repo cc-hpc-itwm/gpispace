@@ -31,8 +31,7 @@ using namespace sdpa::events;
 
 Aggregator::~Aggregator()
 {
-	SDPA_LOG_DEBUG("Aggregator destructor called ...");
-	//daemon_stage_ = NULL;
+	SDPA_LOG_INFO("Aggregator's destructor called ...");
 }
 
 void Aggregator::action_configure(const StartUpEvent &se)

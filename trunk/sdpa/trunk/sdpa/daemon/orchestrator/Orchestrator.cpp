@@ -32,7 +32,7 @@ using namespace sdpa::events;
 
 Orchestrator::~Orchestrator()
 {
-	SDPA_LOG_DEBUG("Orchestrator destructor called ...");
+	SDPA_LOG_DEBUG("Orchestrator's destructor called ...");
 	//daemon_stage_ = NULL;
 }
 

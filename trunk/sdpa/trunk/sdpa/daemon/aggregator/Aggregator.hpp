@@ -37,7 +37,7 @@ namespace sdpa {
 			  url_(url),
 			  masterName_(masterName)
 			{
-				SDPA_LOG_DEBUG("Aggregator constructor called ...");
+				SDPA_LOG_DEBUG("Aggregator's constructor called ...");
 				//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
 			}
 

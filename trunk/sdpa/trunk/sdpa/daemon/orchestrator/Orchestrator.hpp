@@ -36,7 +36,7 @@ namespace daemon {
 		  SDPA_INIT_LOGGER(name),
 		  url_(url)
 		{
-			SDPA_LOG_DEBUG("Orchestrator constructor called ...");
+			SDPA_LOG_DEBUG("Orchestrator's constructor called ...");
 		}
 
 		virtual ~Orchestrator();
