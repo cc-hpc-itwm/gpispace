@@ -477,9 +477,9 @@ namespace sdpa { namespace nre { namespace worker {
     {
       counter_mgr(T *counter)
         : counter_(counter)
-      { *counter_++; }
+      { *counter_ += 1; }
 
-      ~counter_mgr() { *counter_--; }
+      ~counter_mgr() { *counter_ -= 1; }
 
       T *counter_;
     };

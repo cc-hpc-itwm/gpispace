@@ -490,8 +490,9 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 
 	string workerUrl = "127.0.0.1:12500";
 
-	int c;
-   	int nStatus;
+// UNUSED
+// 	int c;
+//    	int nStatus;
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back( TESTS_EXAMPLE_STRESSTEST_MODULES_PATH );
