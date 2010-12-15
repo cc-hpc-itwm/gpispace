@@ -59,7 +59,6 @@ namespace daemon {
 													   ) );
 
 				pNRE->template create_workflow_engine<T>();
-
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pNRE, 1) );
 				pNRE->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);

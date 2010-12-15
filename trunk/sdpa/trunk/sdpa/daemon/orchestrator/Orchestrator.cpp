@@ -47,14 +47,15 @@ void Orchestrator::action_configure(const StartUpEvent &se)
 void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 {
 	// should be overriden by the orchestrator, aggregator and NRE
+
+	GenericDaemon::action_config_ok (e);
+
 	SDPA_LOG_INFO("Configuration (orchestrator) was ok");
 	{
 	  std::ostringstream sstr;
 	  ptr_daemon_cfg_->writeTo (sstr);
 	  SDPA_LOG_INFO("config: " << sstr.str());
 	}
-
-	GenericDaemon::action_config_ok (e);
 }
 
 void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )

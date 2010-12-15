@@ -33,7 +33,7 @@ namespace daemon {
 		{
 			static Aggregator::ptr_t create( 	const std::string& name,
 												const std::string& url,
-												const std::string &masterName )
+												const std::string& masterName )
 			{
 
 
