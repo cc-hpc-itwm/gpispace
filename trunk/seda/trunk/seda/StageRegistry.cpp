@@ -102,6 +102,7 @@ void StageRegistry::stopAll() {
 
 void StageRegistry::clear() {
     SEDA_LOG_DEBUG("removing all registered stages");
+    stopAll();
     _stages.clear();
     _stage_names.clear();
 }
