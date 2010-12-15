@@ -75,7 +75,6 @@ namespace sdpa {
 
 	virtual void check_post_request();
 	virtual bool post_request(bool force = false);
-	virtual void send_life_sign();
 	virtual void update_request_time(const sdpa::util::time_type& new_time ) { m_last_request_time = new_time; }
 
 	void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
@@ -102,13 +101,11 @@ namespace sdpa {
 
 	  bool bStopRequested;
 	  boost::thread m_thread;
-	  boost::thread m_threadLifeSign;
 
 	  mutable sdpa::daemon::IComm* ptr_comm_handler_;
 	  SDPA_DECLARE_LOGGER();
 	  boost::posix_time::time_duration m_timeout;
 	  sdpa::util::time_type m_last_request_time;
-	  sdpa::util::time_type m_last_life_sign_time;
   };
 }}
 

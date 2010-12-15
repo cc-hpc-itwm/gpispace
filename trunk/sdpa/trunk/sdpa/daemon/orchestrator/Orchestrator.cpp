@@ -145,7 +145,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 {
-        assert (pEvt);
+	assert (pEvt);
 
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob

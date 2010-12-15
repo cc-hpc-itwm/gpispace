@@ -35,7 +35,18 @@ namespace sdpa {
 	 {
 	 }
 
-	 virtual ~SchedulerOrch() {};
+	 virtual ~SchedulerOrch()
+	 {
+		try
+		{
+		  LOG(TRACE, "destructing SchedulerOrch");
+		  stop();
+		}
+		catch (std::exception const & ex)
+		{
+		  LOG(ERROR, "could not stop SchedulerOrch: " << ex.what());
+		}
+	 }
 
 	 bool post_request( bool ) { return false; }
 	 void send_life_sign() { /*do nothing*/ }

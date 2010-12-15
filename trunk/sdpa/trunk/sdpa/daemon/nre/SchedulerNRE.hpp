@@ -51,7 +51,7 @@ namespace sdpa {
       {
         try
         {
-          DLOG(TRACE, "destructing SchedulerNRE");
+          LOG(TRACE, "destructing SchedulerNRE");
           stop();
         }
         catch (std::exception const & ex)

@@ -37,7 +37,18 @@ namespace sdpa {
 
 	}
 
-	 virtual ~SchedulerAgg() {};
+	 virtual ~SchedulerAgg()
+	 {
+		try
+		{
+		  LOG(TRACE, "destructing SchedulerAgg");
+		  stop();
+		}
+		catch (std::exception const & ex)
+		{
+		  LOG(ERROR, "could not stop SchedulerAgg: " << ex.what());
+		}
+	 }
 
 	 bool post_request(bool force = false)
 	 {

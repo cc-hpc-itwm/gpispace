@@ -106,6 +106,8 @@ struct MyFixture
 		LOG(DEBUG, "Fixture's destructor called ...");
 		//stop the finite state machine
 		seda::StageRegistry::instance().stopAll();
+
+		LOG(DEBUG, "Clear StageRegistry ...");
 		seda::StageRegistry::instance().clear();
 
 		m_ptrPool->stop ();
@@ -489,10 +491,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
 
 	string workerUrl = "127.0.0.1:12500";
-
-// UNUSED
-// 	int c;
-//    	int nStatus;
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back( TESTS_EXAMPLE_STRESSTEST_MODULES_PATH );

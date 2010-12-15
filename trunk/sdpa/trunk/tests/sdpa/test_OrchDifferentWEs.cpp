@@ -147,6 +147,7 @@ struct MyFixture
 		LOG(DEBUG, "Fixture's destructor called ...");
 		//stop the finite state machine
 		seda::StageRegistry::instance().stopAll();
+		LOG(DEBUG, "Clear StageRegistry ...");
 		seda::StageRegistry::instance().clear();
 
 		m_ptrPool->stop ();
@@ -155,6 +156,7 @@ struct MyFixture
 		delete m_ptrServ;
 		delete m_ptrKvsd;
 		delete m_ptrPool;
+		sleep(1);
 	}
 
 	string read_workflow(string strFileName)
