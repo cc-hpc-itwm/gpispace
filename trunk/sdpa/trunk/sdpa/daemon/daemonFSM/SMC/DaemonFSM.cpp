@@ -28,21 +28,36 @@ void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 
 void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
 {
-	lock_type lock(mtx_);
-	GetContext().ConfigOk(*pEvent);
+	{
+		lock_type lock(mtx_);
+		GetContext().ConfigOk(*pEvent);
+		m_bStarted = true;
+	}
+
+	cond_can_start_.notify_one();
+
 }
 
 void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
 {
-	lock_type lock(mtx_);
-	GetContext().ConfigNok(*pEvent);
+	{
+		lock_type lock(mtx_);
+		GetContext().ConfigNok(*pEvent);
+		m_bStarted = true;
+		m_bConfigOk = false;
+	}
+
+	cond_can_start_.notify_one();
 }
 void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
 {
-	lock_type lock(mtx_);
-	GetContext().Interrupt(*pEvent);
+	{
+		lock_type lock(mtx_);
+		GetContext().Interrupt(*pEvent);
+		m_bStopped = true;
+	}
 
-	GenericDaemon::handleInterruptEvent(pEvent);
+	cond_can_stop_.notify_one();
 }
 
 void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)
@@ -63,11 +78,11 @@ void DaemonFSM::handleSubmitJobEvent(const SubmitJobEvent* pEvent)
 	GetContext().SubmitJob(*pEvent);
 }
 
-void DaemonFSM::handleLifeSignEvent(const LifeSignEvent* pEvent)
+/*void DaemonFSM::handleLifeSignEvent(const LifeSignEvent* pEvent)
 {
 	lock_type lock(mtx_);
 	GetContext().LifeSign(*pEvent);
-}
+}*/
 
 void DaemonFSM::handleRequestJobEvent(const RequestJobEvent* pEvent)
 {

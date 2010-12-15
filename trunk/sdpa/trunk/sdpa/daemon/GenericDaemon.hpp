@@ -66,6 +66,7 @@ namespace sdpa { namespace daemon {
   public:
 	  typedef boost::recursive_mutex mutex_type;
 	  typedef boost::unique_lock<mutex_type> lock_type;
+	  typedef boost::condition_variable_any condition_type;
 
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 
@@ -87,7 +88,7 @@ namespace sdpa { namespace daemon {
 	  virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
 	  virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
 	  virtual void action_interrupt( const sdpa::events::InterruptEvent& );
-	  virtual void action_lifesign( const sdpa::events::LifeSignEvent& );
+	  //virtual void action_lifesign( const sdpa::events::LifeSignEvent& );
 	  virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
 	  virtual void action_request_job( const sdpa::events::RequestJobEvent& );
 	  virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
@@ -108,7 +109,7 @@ namespace sdpa { namespace daemon {
 	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
 	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
 	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
-	  virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
+	  //virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
@@ -257,7 +258,6 @@ namespace sdpa { namespace daemon {
 	  // obsolete
 	  GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
 
-
 	  virtual Scheduler* create_scheduler()
 	  {
 		  return NULL;
@@ -285,9 +285,19 @@ namespace sdpa { namespace daemon {
 	  std::string m_to_master_stage_name_;
 	  std::string m_to_slave_stage_name_;
 
+	  mutex_type mtx_;
+	  condition_type cond_can_stop_;
+	  condition_type cond_can_start_;
+
 	private:
 	  mutable mutex_type ext_job_cnt_mtx_;
 	  bool m_bRequestsAllowed;
+
+	protected:
+	  bool m_bStopped;
+	  bool m_bStarted;
+	  bool m_bConfigOk;
+
   };
 }}
 

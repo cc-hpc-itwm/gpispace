@@ -57,7 +57,10 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_nRank(0),
 	  m_strAgentUID(id_generator::instance().next()),
 	  m_nExternalJobs(0),
-	  m_bRequestsAllowed(false)
+	  m_bRequestsAllowed(false),
+	  m_bStopped(false),
+	  m_bStarted(false),
+	  m_bConfigOk(false)
 {
 
 }
@@ -79,7 +82,10 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_nExternalJobs(0),
 	  m_to_master_stage_name_(toMasterStageName),
 	  m_to_slave_stage_name_(toSlaveStageName),
-	  m_bRequestsAllowed(false)
+	  m_bRequestsAllowed(false),
+	  m_bStopped(false),
+	  m_bStarted(false),
+	  m_bConfigOk(false)
 {
 	if(!toMasterStageName.empty())
 	{
@@ -110,7 +116,10 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  m_nExternalJobs(0),
 	  m_to_master_stage_name_(name+".net"),
 	  m_to_slave_stage_name_ (name+".net"),
-	  m_bRequestsAllowed(false)
+	  m_bRequestsAllowed(false),
+	  m_bStopped(false),
+	  m_bStarted(false),
+	  m_bConfigOk(false)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
 	//     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -153,6 +162,15 @@ void GenericDaemon::start()
 	//start-up the the daemon
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
 	sendEventToSelf(pEvtStartUp);
+
+	lock_type lock(mtx_);
+	while(!m_bStarted)
+		cond_can_start_.wait(lock);
+
+	if(!m_bConfigOk)
+	{
+		SDPA_LOG_DEBUG("Could not configure "<<name()<<". Giving up now!");
+	}
 }
 
 // TODO: work here
@@ -228,19 +246,39 @@ void GenericDaemon::shutdown()
 	SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
 	InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
     sendEventToSelf(pEvtInterrupt);
+
+    // wait to be stopped
+    {
+    	lock_type lock(mtx_);
+    	while(!m_bStopped)
+    		cond_can_stop_.wait(lock);
+    }
+
+    SDPA_LOG_INFO("Shutting down...");
+	SDPA_LOG_INFO("Stop the scheduler now!");
+
+	// stop the scheduler thread
+	scheduler()->stop();
+
+	SDPA_LOG_INFO("Shutdown the network...");
+	shutdown_network();
+
+	SDPA_LOG_INFO("Stop the stages...");
+	stop_stages();
 }
 
 void GenericDaemon::stop_stages()
 {
-	SDPA_LOG_DEBUG("shutdown the network stage...");
+	SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
 	//shutdown the network stage
 
 	// shutdown the daemon stage
-	SDPA_LOG_DEBUG("shutdown the daemon stage...");
+	SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
 	seda::StageRegistry::instance().lookup(name())->stop();
 
 	//  shutdown the peer and remove the information from kvs
 	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+	ptr_daemon_stage_.reset();
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -278,41 +316,39 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 
 	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
 
-	bool bConfigOk  = true;
 	try {
 		configure_network( url(), masterName() );
 
 		SDPA_LOG_INFO("starting scheduler...");
-	    ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
-	    ptr_scheduler_->start();
-
-	    // start the network stage
-	    ptr_to_master_stage_->start();
+	    m_bConfigOk = true;
 	}
 	catch (std::exception const &ex)
 	{
 		SDPA_LOG_ERROR("Exception occurred while trying to configure the network " << ex.what());
-
-		ptr_scheduler_->stop();
-		ptr_scheduler_.reset();
-
-		ptr_to_master_stage_->stop();
-		bConfigOk  = false;
+		m_bConfigOk = false;
 	}
 
-	if( bConfigOk )
+	if( m_bConfigOk )
 	{
+		ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
+		ptr_scheduler_->start();
+
+		// start the network stage
+		ptr_to_master_stage_->start();
+
+		m_bRequestsAllowed = true;
+
 		// if the configuration step was ok send a ConfigOkEvent
 		ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
 		sendEventToSelf(pEvtConfigOk);
 	}
 	else //if not
 	{
+		m_bRequestsAllowed = false;
+
 		// if the configuration step was ok send a ConfigOkEvent
 		ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
 		sendEventToSelf(pEvtConfigNok);
-
-		m_bRequestsAllowed = false;
 	}
 }
 
@@ -326,32 +362,8 @@ void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
 {
-	SDPA_LOG_FATAL("configuration was not ok!");
+	SDPA_LOG_ERROR("configuration was not ok!");
 
-	// save the current state of the system .i.e serialize the daemon's state
-	// the following code shoud be executed on action action_interrupt!!
-	LOG(INFO, "Shutting down...");
-
-	LOG(INFO, "Shutdown the network...");
-	shutdown_network();
-
-	LOG(INFO, "Stop the stages...");
-	stop_stages();
-}
-
-void GenericDaemon::handleInterruptEvent(const InterruptEvent* pEvent)
-{
-	SDPA_LOG_INFO("Shutting down...");
-	SDPA_LOG_INFO("Stop the scheduler now!");
-
-	// stop the scheduler thread
-	scheduler()->stop();
-
-	SDPA_LOG_INFO("Shutdown the network...");
-	shutdown_network();
-
-	SDPA_LOG_INFO("Stop the stages...");
-	stop_stages();
 }
 
 void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
@@ -362,18 +374,10 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 	m_bRequestsAllowed = false;
 }
 
+/*
 void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 {
 	DLOG(TRACE, "Received LS from the worker " << e.from());
-
-    /*
-    o timestamp, load, other probably useful information
-    o last_job_id the id of the last received job identification
-    o the aggregator first sends a request for configuration to its orchestrator
-    o the orchestrator allocates an internal data structure to keep track of the state of the aggregator
-    o this datastructure is being updated everytime a message is received
-	o an aggregator is supposed to be unavailable when no messages have been received for a (configurable) period of time
-     */
 	try {
           Worker::ptr_t ptrWorker = findWorker(e.from());
           ptrWorker->update();
@@ -388,6 +392,7 @@ void GenericDaemon::action_lifesign(const LifeSignEvent& e)
 		SDPA_LOG_ERROR("Unexpected exception occurred!");
 	}
 }
+*/
 
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {

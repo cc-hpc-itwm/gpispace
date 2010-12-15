@@ -146,7 +146,7 @@ struct MyFixture
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 		//stop the finite state machine
-		seda::StageRegistry::instance().stopAll();
+		//seda::StageRegistry::instance().stopAll();
 		LOG(DEBUG, "Clear StageRegistry ...");
 		seda::StageRegistry::instance().clear();
 

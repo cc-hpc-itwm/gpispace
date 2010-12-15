@@ -81,7 +81,7 @@ namespace sdpa { namespace daemon {
 	  job_map_t job_map_;
 	  job_map_t job_map_marked_for_del_;
 	  mutable mutex_type mtx_;
-          boost::condition_variable_any free_slot_;
+      boost::condition_variable_any free_slot_;
 	  preference_map_t job_preferences_;
   };
 }}

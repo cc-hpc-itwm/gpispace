@@ -61,7 +61,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
 
 Client::~Client()
 {
-  DMLOG(TRACE, "destroying client api");
+  MLOG(TRACE, "destroying client api");
 }
 
 void Client::perform(const seda::IEvent::Ptr &event)

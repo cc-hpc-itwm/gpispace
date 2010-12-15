@@ -67,7 +67,6 @@ void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int
 	}
 }
 
-
 void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 {
   assert (pQueue);

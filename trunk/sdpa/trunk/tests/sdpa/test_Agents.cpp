@@ -105,10 +105,8 @@ struct MyFixture
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 		//stop the finite state machine
-		seda::StageRegistry::instance().stopAll();
+		//seda::StageRegistry::instance().stopAll();
 
-		LOG(DEBUG, "Clear StageRegistry ...");
-		seda::StageRegistry::instance().clear();
 
 		m_ptrPool->stop ();
 		m_ptrThrd->join ();
@@ -476,16 +474,44 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
+	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
 	ptrNRE_0->shutdown();
+	//ptrNRE_0.reset();
+	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
+
+	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
 	ptrAgg->shutdown();
+	//ptrAgg.reset();
+	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
+
+	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
 	ptrOrch->shutdown();
+	//ptrOrch.reset();
+	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
+    LOG(WARN, "NRE_0 refcount = "<<seda::StageRegistry::instance().lookup("NRE_0").use_count());
+	LOG(WARN, "aggregator_0 refcount = "<<seda::StageRegistry::instance().lookup("aggregator_0").use_count());
+	LOG(WARN, "orchestrator_0 refcount = "<<seda::StageRegistry::instance().lookup("orchestrator_0").use_count());
+
+	seda::StageRegistry::instance().print_info();
+
+	LOG(DEBUG, "Clear StageRegistry ...");
+	seda::StageRegistry::instance().clear();
+
+	seda::StageRegistry::instance().print_info();
+
+	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
+	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
+	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
+
+
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpywnedByNRE terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 {
 	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
@@ -778,5 +804,6 @@ retry:	try {
 
 	LOG( DEBUG, "The test case testActivityDummyWeAllCompAndNreWorker terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

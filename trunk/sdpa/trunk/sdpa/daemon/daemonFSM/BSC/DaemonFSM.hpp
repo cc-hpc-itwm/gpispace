@@ -41,8 +41,6 @@ struct Up;
 struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<DaemonFSM, Down>
 {
 	typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
 
 	DaemonFSM(	const std::string &name,
 				seda::Stage* ptrToMasterStage,
@@ -68,7 +66,7 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pEvent);
 	virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* pEvent);
 	virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* pEvent);
-	virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent* pEvent);
+	//virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent* pEvent);
 	virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent* pEvent);
 	virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent* pEvent);
 	virtual void handleErrorEvent(const sdpa::events::ErrorEvent* pEvent);
@@ -89,7 +87,7 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	void print_states();
 private:
 	SDPA_DECLARE_LOGGER();
-	mutex_type mtx_;
+	//mutex_type mtx_;
 };
 
 struct Down : sc::simple_state<Down, DaemonFSM>

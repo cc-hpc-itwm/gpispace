@@ -75,25 +75,39 @@ void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 
 void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
 {
-	lock_type lock(mtx_);
 	//SDPA_LOG_DEBUG("Process ConfigOkEvent");
-	process_event(*pEvent);
+	{
+		lock_type lock(mtx_);
+		process_event(*pEvent);
+		m_bStarted = true;
+	}
+
+	cond_can_start_.notify_one();
 }
 
 void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
 {
-	lock_type lock(mtx_);
 	//SDPA_LOG_DEBUG("Process ConfigNokEvent");
-	process_event(*pEvent);
+	{
+		lock_type lock(mtx_);
+		process_event(*pEvent);
+		m_bStarted = true;
+		m_bConfigOk = false;
+	}
+
+	cond_can_start_.notify_one();
 }
 
 void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
 {
-	lock_type lock(mtx_);
 	//SDPA_LOG_DEBUG("Process InterruptEvent");
-	process_event(*pEvent);
+	{
+		lock_type lock(mtx_);
+		process_event(*pEvent);
+		m_bStopped = true;
+	}
 
-	GenericDaemon::handleInterruptEvent(pEvent);
+	cond_can_stop_.notify_one();
 }
 
 void DaemonFSM::handleWorkerRegistrationEvent(const WorkerRegistrationEvent* pEvent)
@@ -117,12 +131,13 @@ void DaemonFSM::handleSubmitJobEvent(const SubmitJobEvent* pEvent)
 	process_event(*pEvent);
 }
 
+/*
 void DaemonFSM::handleLifeSignEvent(const LifeSignEvent* pEvent)
 {
 	lock_type lock(mtx_);
 	//SDPA_LOG_DEBUG("Process LifeSignEvent");
 	process_event(*pEvent);
-}
+}*/
 
 void DaemonFSM::handleRequestJobEvent(const RequestJobEvent* pEvent)
 {
