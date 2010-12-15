@@ -4,9 +4,9 @@
 # It is started via cron as user pspro (see crontab -e).
 # It sets up some required environment variables, sets up the Intel compiler, and then runs ctest.
 
-host=`hostname`
+host=`hostname | sed -e 's%build_.*%build%'`
 
-if [ "$host" != "build_suse11" ]; then
+if [ "$host" != "build" ]; then
   exit
 fi
 
@@ -21,4 +21,4 @@ echo "Running ctest"
 # set additional directory where cmake will search for stuff:
 #export CMAKE_PREFIX_PATH=/p/hpc/psp/vr3-nightly-test-support
 
-$CTEST -V -S /home/projects/sdpa/Dashboards/SDPAContinuous.cmake
+$CTEST -V -S ${HOME}/Dashboards/SDPAContinuous.cmake

@@ -13,10 +13,11 @@
 
 # The PreStack Pro repository:
 set(KDE_CTEST_VCS svn)
-set(KDE_CTEST_VCS_REPOSITORY https://svn.itwm.fhg.de/svn/SDPA/trunk)
+set(KDE_CTEST_VCS_REPOSITORY https://svn.itwm.fhg.de/svn/SDPA)
 set(KDE_CTEST_AVOID_SPACES TRUE)
 set(KDE_CTEST_BUILD_SUFFIX "")
 #set(KDE_CTEST_VCS_PATH "main/trunk")
+set(KDE_CTEST_VCS_PATH "trunk")
 set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA_continious")
 set(KDE_CTEST_PARALLEL_LEVEL 1)
 ##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)

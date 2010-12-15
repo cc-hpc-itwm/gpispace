@@ -8,8 +8,9 @@
 
 
 # only do something on dell02 (and not on dell01, 03 and 04)
-host=`hostname`
-if [ "$host" != "build_suse11" ]; then
+host=`hostname | sed -e 's%build_.*%build%'`
+
+if [ "$host" != "build" ]; then
   exit
 fi
 
@@ -19,5 +20,5 @@ unset http_proxy
 
 echo "Running ctest"
 
-$CTEST -S /home/projects/sdpa/Dashboards/SDPANightly.cmake -V -VV
+$CTEST -S ${HOME}/Dashboards/SDPANightly.cmake -V -VV
 

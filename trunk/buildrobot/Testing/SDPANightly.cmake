@@ -11,10 +11,11 @@
 
 # The PreStack Pro repository:
 set(KDE_CTEST_VCS svn)
-set(KDE_CTEST_VCS_REPOSITORY https://svn.itwm.fhg.de/svn/SDPA/trunk)
+set(KDE_CTEST_VCS_REPOSITORY https://svn.itwm.fhg.de/svn/SDPA)
 set(KDE_CTEST_AVOID_SPACES TRUE)
 set(KDE_CTEST_BUILD_SUFFIX "")
 #set(KDE_CTEST_VCS_PATH "main/trunk")
+set(KDE_CTEST_VCS_PATH "trunk")
 set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA_nightly")
 set(KDE_CTEST_PARALLEL_LEVEL 1)
 ##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)
@@ -36,7 +37,7 @@ ctest_update(SOURCE "${CTEST_SOURCE_DIRECTORY}" )
 set(CTEST_SOURCE_DIRECTORY "${CTEST_SOURCE_DIRECTORY}/main/trunk")
 
 # read additional settings, like maximum number warnings, warning exceptions, etc.
-include("${CTEST_SOURCE_DIRECTORY}/main/trunk/CTestConfig.cmake")
+include("${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake")
 include("${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
 
