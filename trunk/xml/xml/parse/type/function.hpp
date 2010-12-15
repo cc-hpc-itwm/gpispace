@@ -793,7 +793,10 @@ namespace xml
                 ; ++fun
                 )
               {
-                stream << "  WE_REGISTER_FUN (" << fun->name << ");" << std::endl;
+                stream << "  WE_REGISTER_FUN ("
+                       << cpp_util::access::make ("", "pnetc", "op", mod->first, fun->name)
+                       << ");"
+                       << std::endl;
               }
             stream << "}" << std::endl;
             stream << "WE_MOD_INITIALIZE_END (" << mod->first << ");" << std::endl;
@@ -946,7 +949,7 @@ namespace xml
         {
           return literal::cpp::known (type)
             ? literal::cpp::translate (type)
-            : cpp_util::access::make ("", "pnetc", "type", type)
+            : cpp_util::access::make ("", "pnetc", "type", type, type)
             ;
         }
 
@@ -959,7 +962,7 @@ namespace xml
           if (literal::cpp::known (port.type))
             {
               os << "& " << port.name << " ("
-                 << "::we::loader::get<" << literal::cpp::translate (port.type) << ">"
+                 << "::we::loader::get< " << literal::cpp::translate (port.type) << " >"
                  << "(input, \"" << port.name << "\")"
                  << ")"
                 ;
@@ -967,9 +970,9 @@ namespace xml
           else
             {
               os << port.name << " ("
-                 << cpp_util::access::make ("", "pnetc", port.type, "from_value")
+                 << cpp_util::access::make ("", "pnetc", "type", port.type, "from_value")
                  << "("
-                 << "::we::loader::get<" << cpp_util::access::value_type() << ">"
+                 << "::we::loader::get< " << cpp_util::access::value_type() << " >"
                  << "(input, \"" << port.name << "\")"
                  << ")"
                  << ")"
@@ -1079,7 +1082,7 @@ namespace xml
 
           os << "      "
              << "static void " << mod.function
-             << " (void *, const ::we::loader::input_t & input, const ::we::loader::output_t & output)"
+             << " (void *, const ::we::loader::input_t & input, ::we::loader::output_t & output)"
              << std::endl
              << "      "
              << "{" << std::endl;
@@ -1398,7 +1401,7 @@ namespace xml
               cpp_util::header_gen (stream);
 
               cpp_util::include ( stream
-                                , cpp_util::path::op() / file_hpp
+                                , cpp_util::path::op() / mod.name / file_hpp
                                 );
 
               namespace_open (stream, mod);

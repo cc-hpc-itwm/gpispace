@@ -88,7 +88,7 @@ namespace signature
           level (l+1);
           s << "x." << fieldname
             << " = " << cpp_util::access::make ("", "value", "get")
-            << "<";
+            << "< ";
 
           if (literal::cpp::known (t))
             {
@@ -99,7 +99,7 @@ namespace signature
               s << cpp_util::access::make (cpp_util::access::type(), t, t);
             }
 
-          s << "> (v_" << (l-1) << ");" << std::endl;
+          s << " > (v_" << (l-1) << ");" << std::endl;
 
           return s;
         }
@@ -353,7 +353,7 @@ namespace signature
       os << "; // struct " << n << std::endl;
       os << std::endl;
 
-      level (os, l); os << n << " from_value (const "
+      level (os, l); os << "inline " << n << " from_value (const "
                         << cpp_util::access::value_type()
                         << "& v_" << (l-1) << ")"
                         << std::endl;
@@ -366,7 +366,7 @@ namespace signature
       level (os, l); os << "} // from_value " << std::endl;
       os << std::endl;
 
-      level (os, l); os << cpp_util::access::value_type()
+      level (os, l); os << "inline " << cpp_util::access::value_type()
                         << " to_value (const " << n << " & x)"
                         << std::endl;
 

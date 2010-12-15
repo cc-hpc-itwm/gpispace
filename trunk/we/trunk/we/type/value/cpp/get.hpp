@@ -13,7 +13,7 @@
 
 namespace value
 {
-  namespace visitor
+  namespace cpp
   {
     namespace exception
     {
@@ -77,16 +77,16 @@ namespace value
   }
 
   template <typename T>
-  typename visitor::get<T const &>::result_type
+  typename cpp::get<T const &>::result_type
   get (const type & v)
   {
-    return boost::apply_visitor (visitor::get<T const &>(), v);
+    return boost::apply_visitor (cpp::get<T const &>(), v);
   }
 
   inline const type &
   get_level (const signature::field_name_t & field, const type & v)
   {
-    return boost::apply_visitor (visitor::get_level (field), v);
+    return boost::apply_visitor (cpp::get_level (field), v);
   }
 }
 
