@@ -14,6 +14,7 @@ check_host() {
     case "$dummy" in
       sles-release*)
         export QTDIR=/opt/qt/4.4.3
+	export PATH=${QTDIR}/bin:$PATH
         echo "Is SLES"
         ;;
       openSUSE-release*)
@@ -21,6 +22,7 @@ check_host() {
       ;;
       centos-release*)
         export QTDIR=/opt/qt/4.4.3
+	export PATH=${QTDIR}/bin:$PATH
         echo "Is CentOS"
       ;;
     esac
