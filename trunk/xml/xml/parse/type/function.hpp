@@ -15,6 +15,7 @@
 #include <boost/filesystem.hpp>
 
 #include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <we/type/literal/valid_name.hpp>
 #include <we/type/property.hpp>
@@ -31,6 +32,7 @@
 namespace cpp_util = ::fhg::util::cpp;
 
 #include <iostream>
+#include <sstream>
 
 namespace xml
 {
@@ -736,7 +738,78 @@ namespace xml
 
       // ***************************************************************** //
 
-      inline bool find_module_calls (const state::type &, function_type &);
+      struct fun_info_type
+      {
+        std::string name;
+        std::string code;
+
+        fun_info_type (const std::string & _name, const std::string & _code)
+          : name (_name)
+          , code (_code)
+        {}
+      };
+
+      typedef std::vector<fun_info_type> fun_info_list_type;
+
+      typedef boost::unordered_map<std::string,fun_info_list_type> fun_info_map;
+
+      typedef boost::filesystem::path path_t;
+
+      inline void mk_wrapper ( const state::type & state
+                             , const fun_info_map & m
+                             )
+      {
+        const path_t prefix (state.path_to_cpp());
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            const path_t file ( prefix
+                              / cpp_util::path::op()
+                              / cpp_util::make::cpp (mod->first)
+                              );
+
+            std::ofstream stream; mk_fstream (stream, state, file);
+
+            cpp_util::include (stream, "we/loader/macros.hpp");
+
+            const fun_info_list_type & funs (mod->second);
+
+            for ( fun_info_list_type::const_iterator fun (funs.begin())
+                ; fun != funs.end()
+                ; ++fun
+                )
+              {
+                stream << std::endl << fun->code;
+              }
+
+            stream << std::endl;
+            stream << "WE_MOD_INITIALIZE_START (" << mod->first << ");" << std::endl;
+            stream << "{" << std::endl;
+            for ( fun_info_list_type::const_iterator fun (funs.begin())
+                ; fun != funs.end()
+                ; ++fun
+                )
+              {
+                stream << "  WE_REGISTER_FUN (" << fun->name << ");" << std::endl;
+              }
+            stream << "}" << std::endl;
+            stream << "WE_MOD_INITIALIZE_END (" << mod->first << ");" << std::endl;
+
+            stream << std::endl;
+            stream << "WE_MOD_FINALIZE_START (" << mod->first << ");" << std::endl;
+            stream << "{" << std::endl;
+            stream << "}" << std::endl;
+            stream << "WE_MOD_FINALIZE_END (" << mod->first << ");" << std::endl;
+          }
+      }
+
+      inline bool find_module_calls ( const state::type &
+                                    , function_type &
+                                    , fun_info_map &
+                                    );
 
       namespace visitor
       {
@@ -747,20 +820,23 @@ namespace xml
           const state::type & state;
           const NET & net;
           const TRANS & trans;
+          fun_info_map & m;
 
         public:
           transition_find_module_calls ( const state::type & _state
                                        , const NET & _net
                                        , const TRANS & _trans
+                                       , fun_info_map & _m
                                        )
             : state (_state)
             , net (_net)
             , trans (_trans)
+            , m (_m)
           {}
 
           bool operator () (function_type & f) const
           {
-            return xml::parse::type::find_module_calls (state, f);
+            return xml::parse::type::find_module_calls (state, f, m);
           }
 
           bool operator () (use_type & u) const
@@ -773,13 +849,16 @@ namespace xml
                   (u.name, trans.name, trans.path);
               }
 
-            return xml::parse::type::find_module_calls (state, fun);
+            return xml::parse::type::find_module_calls (state, fun, m);
           }
         };
       }
 
       template<typename NET>
-      inline bool find_module_calls (const state::type & state, NET & n)
+      inline bool find_module_calls ( const state::type & state
+                                    , NET & n
+                                    , fun_info_map & m
+                                    )
       {
         n.contains_a_module_call = false;
 
@@ -793,7 +872,7 @@ namespace xml
               |= boost::apply_visitor
               ( visitor::transition_find_module_calls< NET
                                                      , transition_type
-                                                     > (state, n, *pos)
+                                                     > (state, n, *pos, m)
               , pos->f
               );
           }
@@ -871,6 +950,60 @@ namespace xml
             ;
         }
 
+        inline std::string mk_get (const port_with_type & port)
+        {
+          std::ostringstream os;
+
+          os << mk_type (port.type) << " ";
+
+          if (literal::cpp::known (port.type))
+            {
+              os << "& " << port.name << " ("
+                 << "::we::loader::get<" << literal::cpp::translate (port.type) << ">"
+                 << "(input, \"" << port.name << "\")"
+                 << ")"
+                ;
+            }
+          else
+            {
+              os << port.name << " ("
+                 << cpp_util::access::make ("", "pnetc", port.type, "from_value")
+                 << "("
+                 << "::we::loader::get<" << cpp_util::access::value_type() << ">"
+                 << "(input, \"" << port.name << "\")"
+                 << ")"
+                 << ")"
+                ;
+            }
+
+          os << ";" << std::endl;
+
+          return os.str();
+        }
+
+        inline std::string mk_value (const port_with_type & port)
+        {
+          std::ostringstream os;
+
+          if (literal::cpp::known (port.type))
+            {
+              os << port.name;
+            }
+          else
+            {
+              os << cpp_util::access::make ( ""
+                                           , "pnetc"
+                                           , "type"
+                                           , port.type
+                                           , "to_value"
+                                           )
+                 << " (" << port.name << ")"
+                ;
+            }
+
+          return os.str();
+        }
+
         inline void
         mod_signature ( std::ostream & os
                       , const fhg::util::maybe<port_with_type> & port_return
@@ -929,19 +1062,160 @@ namespace xml
           os << white << ")";
         }
 
+        inline void
+        mod_wrapper ( std::ostream & os
+                    , const mod_type & mod
+                    , const path_t file_hpp
+                    , const port_list & ports_const
+                    , const port_list & ports_mutable
+                    , const fhg::util::maybe<port_with_type> & port_return
+                    )
+        {
+          cpp_util::include ( os
+                            , cpp_util::path::op() / mod.name / file_hpp
+                            );
+
+          namespace_open (os, mod);
+
+          os << "      "
+             << "static void " << mod.function
+             << " (void *, const ::we::loader::input_t & input, const ::we::loader::output_t & output)"
+             << std::endl
+             << "      "
+             << "{" << std::endl;
+
+          for ( port_list::const_iterator port (ports_const.begin())
+              ; port != ports_const.end()
+              ; ++port
+              )
+            {
+              os << "      "
+                 << "  const " << mk_get (*port);
+            }
+
+          for ( port_list::const_iterator port (ports_mutable.begin())
+              ; port != ports_mutable.end()
+              ; ++port
+              )
+            {
+              os << "      "
+                 << "  " << mk_get (*port);
+            }
+
+          os << std::endl;
+
+          os << "      "
+             << "  ";
+
+          bool first_put (true);
+
+          if (port_return.isJust())
+            {
+              first_put = false;
+
+              os << "::we::loader::put (output"
+                 << ", \"" << (*port_return).name << "\""
+                 << ", "
+                ;
+
+              if (!literal::cpp::known ((*port_return).type))
+                {
+                  os << cpp_util::access::make ( ""
+                                               , "pnetc"
+                                               , "type"
+                                               , (*port_return).type
+                                               , "to_value"
+                                               )
+                     << " ("
+                    ;
+                }
+            }
+
+          os << cpp_util::access::make ( ""
+                                       , "pnetc"
+                                       , "op"
+                                       , mod.name
+                                       , mod.function
+                                       )
+             << " ("
+            ;
+
+          bool first_param (true);
+
+          for ( port_list::const_iterator port (ports_const.begin())
+              ; port != ports_const.end()
+              ; ++port, first_param = false
+              )
+            {
+              os << (first_param ? "" : ", ") << port->name;
+            }
+
+          for ( port_list::const_iterator port (ports_mutable.begin())
+              ; port != ports_mutable.end()
+              ; ++port, first_param = false
+              )
+            {
+              os << (first_param ? "" : ", ") << port->name;
+            }
+
+          os << ")";
+
+          if (port_return.isJust())
+            {
+              os << ")";
+
+              if (!literal::cpp::known ((*port_return).type))
+                {
+                  os << ")";
+                }
+            }
+
+          os << ";" << std::endl;
+
+          for ( port_list::const_iterator port (ports_mutable.begin())
+              ; port != ports_mutable.end()
+              ; ++port
+              )
+            {
+              if (first_put)
+                {
+                  os << std::endl;
+
+                  first_put = false;
+                }
+
+              os << "      "
+                 << "  ::we::loader::put (output"
+                 << ", \"" << port->name << "\""
+                 << ", " << mk_value (*port)
+                 << ")"
+                 << ";"
+                 << std::endl
+                ;
+            }
+
+          os << "      "
+             << "} // " << mod.function << std::endl;
+
+          namespace_close (os, mod);
+        }
+
         template<typename NET>
         class find_module_calls : public boost::static_visitor<bool>
         {
         private:
           const state::type & state;
           const function_type & f;
+          fun_info_map & m;
 
         public:
           find_module_calls ( const state::type & _state
                             , const function_type & _f
+                            , fun_info_map & _m
                             )
             : state (_state)
             , f (_f)
+            , m (_m)
           {}
 
           bool operator () (expression_type &) const
@@ -951,7 +1225,7 @@ namespace xml
 
           bool operator () (NET & n) const
           {
-            return xml::parse::type::find_module_calls<NET> (state, n);
+            return xml::parse::type::find_module_calls<NET> (state, n, m);
           }
 
           bool operator () (mod_type & mod) const
@@ -1065,12 +1339,27 @@ namespace xml
               }
 #undef STRANGE
 
-            typedef boost::filesystem::path path_t;
-
             const path_t prefix (state.path_to_cpp());
             const path_t path (prefix / cpp_util::path::op() / mod.name);
             const std::string file_hpp (cpp_util::make::hpp (mod.function));
             const std::string file_cpp (cpp_util::make::cpp (mod.function));
+
+            {
+              std::ostringstream stream;
+
+              mod_wrapper ( stream
+                          , mod
+                          , file_hpp
+                          , ports_const
+                          , ports_mutable
+                          , port_return
+                          );
+
+              m[mod.name].push_back (fun_info_type ( mod.function
+                                                   , stream.str()
+                                                   )
+                                    );
+            }
 
             {
               const path_t file (path / file_hpp);
@@ -1136,11 +1425,12 @@ namespace xml
 
       inline bool find_module_calls ( const state::type & state
                                     , function_type & f
+                                    , fun_info_map & m
                                     )
       {
         f.contains_a_module_call
           = boost::apply_visitor
-          ( visitor::find_module_calls<net_type>(state, f)
+          ( visitor::find_module_calls<net_type>(state, f, m)
           , f.f
           );
 
@@ -1184,7 +1474,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      inline void struct_to_cpp (const function_type &, const state::type &);
+      inline void struct_to_cpp (const state::type &, const function_type &);
 
       namespace visitor
       {
@@ -1200,7 +1490,7 @@ namespace xml
 
           void operator () (const function_type & f) const
           {
-            struct_to_cpp (f, state);
+            struct_to_cpp (state, f);
           }
 
           template<typename T> void operator () (const T &) const {}
@@ -1232,7 +1522,7 @@ namespace xml
                 ; ++pos
                 )
               {
-                xml::parse::type::struct_to_cpp (*pos, state);
+                xml::parse::type::struct_to_cpp (state, *pos);
               }
 
             for ( typename NET::transition_vec_type::const_iterator pos
@@ -1253,8 +1543,8 @@ namespace xml
 
       // ***************************************************************** //
 
-      inline void struct_to_cpp ( const function_type & f
-                                , const state::type & state
+      inline void struct_to_cpp ( const state::type & state
+                                , const function_type & f
                                 )
       {
         if (!f.contains_a_module_call)

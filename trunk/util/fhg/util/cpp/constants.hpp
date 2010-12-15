@@ -52,6 +52,16 @@ namespace fhg
           return make (a, b, make (c, d));
         }
 
+        inline std::string make ( const std::string & a
+                                , const std::string & b
+                                , const std::string & c
+                                , const std::string & d
+                                , const std::string & e
+                                )
+        {
+          return make (a, b, c, make (d, e));
+        }
+
         CONSTANT (std::string, type, make ("", "pnetc", "type"))
         CONSTANT (std::string, value_type, make ("", "value", "type"))
       }

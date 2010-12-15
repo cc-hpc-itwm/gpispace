@@ -1430,9 +1430,13 @@ namespace xml
 
       if (state.path_to_cpp().size() > 0)
         {
-          type::find_module_calls (state, f);
+          type::fun_info_map m;
 
-          xml::parse::type::struct_to_cpp (f, state);
+          type::find_module_calls (state, f, m);
+
+          type::mk_wrapper (state, m);
+
+          type::struct_to_cpp (state, f);
         }
 
       if (state.internal_structures_file().size() > 0)

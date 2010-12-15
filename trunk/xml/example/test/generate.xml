@@ -66,8 +66,19 @@
         <in name="p_bitset" type="bitset"/>
         <in name="p_stack" type="stack"/>
         <in name="p_stack2" type="stack"/>
+
+        <out name="p_control" type="control"/>
+        <out name="p_bool" type="bool"/>
+        <out name="p_long" type="long"/>
+        <out name="p_double" type="double"/>
+        <out name="p_char" type="char"/>
+        <out name="p_string" type="string"/>
+        <out name="p_bitset" type="bitset"/>
+        <out name="p_stack" type="stack"/>
+        <out name="p_stack2" type="stack"/>
+
         <module name="mm"
-                function="fun (p_control,p_bool,p_long,p_double,p_char,p_string,p_bitset,p_stack,p_stack2)"
+                function="p_control fun (p_control,p_bool,p_long,p_double,p_char,p_string,p_bitset,p_stack,p_stack2)"
         />
       </defun>
     </transition>
