@@ -19,8 +19,13 @@
 #ifndef WE_LOADER_TYPES_HPP
 #define WE_LOADER_TYPES_HPP 1
 
-#include <we/we.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/get.hpp>
+
+#include <we/expr/eval/context.hpp>
+
 #include <vector>
+#include <list>
 
 namespace we
 {
@@ -38,35 +43,12 @@ namespace we
     typedef std::list<std::string> param_names_list_t;
     typedef std::pair<WrapperFunction, param_names_list_t> parameterized_function_t;
 
-    // ********************************************************************** //
-    // PUT
-
-    // on port, complete token
     inline void put ( output_t & o
                     , const std::string & key
                     , const value::type & val
                     )
     {
       o.bind (key, val);
-    }
-
-    // on port, subtoken by path
-    inline void put ( output_t & o
-                    , const std::string & key
-                    , const value::path_type & path
-                    , const value::type & val
-                    )
-    {
-      o.bind<value::path_type> (key, path, val);
-    }
-
-    inline void put ( output_t & o
-                    , const std::string & key
-                    , const std::string & path
-                    , const value::type & val
-                    )
-    {
-      o.bind<std::string> (key, path, val);
     }
 
     // on port, complete literal
@@ -78,30 +60,6 @@ namespace we
     {
       put (o, key, value::type (val));
     }
-
-    // on port, subliteral by string-path
-    template<typename T>
-    inline void put ( output_t & o
-                    , const std::string & key
-                    , const value::path_type & path
-                    , const T & val
-                    )
-    {
-      put (o, key, path, value::type (val));
-    }
-
-    template <typename T>
-    inline void put ( output_t & o
-                    , const std::string & key
-                    , const std::string & path
-                    , const T & val
-                    )
-    {
-      put (o, key, path, value::type (val));
-    }
-
-    // ********************************************************************** //
-    // GET
 
     // getting something means to get a literal value...
     template <typename T>
@@ -117,53 +75,6 @@ namespace we
     get<value::type> (const input_t & i, const std::string & key)
     {
       return i.value (key);
-    }
-
-    // get with an additional path into the value
-    template <typename T>
-    inline typename value::visitor::get<T const &>::result_type
-    get ( const input_t & i
-        , const std::string & key
-        , const value::path_type & path_in_value
-        )
-    {
-      return value::get<T>(path_in_value, i.value (key));
-    }
-
-    template <typename T>
-    inline typename value::visitor::get<T const &>::result_type
-    get ( const input_t & i
-        , const std::string & key
-        , const std::string & path_in_value
-        )
-    {
-      return value::get<T>(path_in_value, i.value (key));
-    }
-
-    // get from an earlier extracted value::type
-    template <typename T>
-    inline typename value::visitor::get<T const &>::result_type
-    get (const value::type & v)
-    {
-      return value::get<T>(v);
-    }
-
-    template <typename T>
-    inline typename value::visitor::get<T const &>::result_type
-    get ( const value::type & v
-        , const value::path_type & path_in_value
-        )
-    {
-      return value::get<T>(path_in_value, v);
-    }
-
-    template <typename T>
-    inline typename value::visitor::get<T const &>::result_type
-    get ( const value::type & v
-        , const std::string & path_in_value
-        )
-    {
-      return value::get<T>(path_in_value, v);
     }
   }
 }

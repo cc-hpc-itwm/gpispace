@@ -1,4 +1,5 @@
 #include <we/loader/macros.hpp>
+#include <we/loader/putget.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -12,6 +13,7 @@
 #include "TraceData.hpp"
 
 #include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
 
 using we::loader::get;
 using we::loader::put;

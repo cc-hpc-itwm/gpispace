@@ -1,4 +1,5 @@
 #include <we/loader/macros.hpp>
+#include <we/loader/putget.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <fvm-pc/util.hpp>
@@ -171,7 +172,7 @@ static void trap_impl (TraceBunch & Bunch, const float & t)
 {
   if (t == -1.f)
     throw std::runtime_error ("trap called but not configured");
-		
+
 
     const int NTraces( Bunch.getNTB() );
 
@@ -225,7 +226,7 @@ static void bandpass_impl ( TraceBunch & Bunch
     // initialize the band pass filter for each sample
     float * filterarray = new float[Nfft];
     for (int iarray = 0; iarray < Nfft; iarray++)
-    { 
+    {
 	const float frequ( iarray/(dt*Nfft) );
 
 	filterarray [iarray] = 1.0f;
@@ -253,7 +254,7 @@ static void bandpass_impl ( TraceBunch & Bunch
     {
 	volatile char * pTraceData = Bunch.getTrace(i)->getDataPtr();
 	TraceData Trace(pTraceData,NSample);
-	
+
 	float* Data_ptr = (float*) Trace.getTPtr();
 
 	memset(fftarray, 0, 2*Nfft*sizeof(float));
@@ -261,7 +262,7 @@ static void bandpass_impl ( TraceBunch & Bunch
 	{
 	    fftarray[2*it] = Data_ptr[it];
 	}
-	
+
 	fft(-1, Nfft, fftarray);
 	for (int iarray = 0; iarray < Nfft; iarray++)
 	{
@@ -271,7 +272,7 @@ static void bandpass_impl ( TraceBunch & Bunch
 	    fftarray[2*iarray+1] = newim;
 	}
 	fft(1, Nfft, fftarray);
-	
+
 	for (int it = 0; it < NSample; it++)
 	    Data_ptr[it] = fftarray[2*it]/Nfft;
     }
@@ -323,12 +324,12 @@ static void frac_impl (TraceBunch & Bunch)
     // initialize the frac array to omega for each sample
     float * filterarray = new float[Nfft];
     for (int iarray = 0; iarray < Nfft/2; iarray++)
-    { 
+    {
 	float omega = 2.f*2.f*M_PI*iarray/(dt*Nfft);
 	filterarray[iarray] = omega;
     }
     for (int iarray = Nfft/2; iarray < Nfft; iarray++)
-    { 
+    {
 	filterarray[iarray] = 0.f;
     }
 
@@ -338,7 +339,7 @@ static void frac_impl (TraceBunch & Bunch)
     {
 	volatile char * pTraceData = Bunch.getTrace(i)->getDataPtr();
 	TraceData Trace(pTraceData,NSample);
-	
+
 	float* Data_ptr = (float*) Trace.getTPtr();
 
 	memset(fftarray, 0, 2*Nfft*sizeof(float));
@@ -346,7 +347,7 @@ static void frac_impl (TraceBunch & Bunch)
 	{
 	    fftarray[2*it] = Data_ptr[it];
 	}
-	
+
 	fft(-1, Nfft, fftarray);
 	for (int iarray = 0; iarray < Nfft; iarray++)
 	{
@@ -356,7 +357,7 @@ static void frac_impl (TraceBunch & Bunch)
 	    fftarray[2*iarray+1] = newim;
 	}
 	fft(1, Nfft, fftarray);
-	
+
 	for (int it = 0; it < NSample; it++)
 	    Data_ptr[it] = fftarray[2*it]/Nfft;
     }
@@ -375,7 +376,7 @@ static void frac ( void * state
 
 // ************************************************************************* //
 
-static void tpow_impl (TraceBunch & Bunch, 
+static void tpow_impl (TraceBunch & Bunch,
 		       const float & tpow)
 {
 //     if (tpow == 0.f)
@@ -394,7 +395,7 @@ static void tpow_impl (TraceBunch & Bunch,
     // initialize the tpow filter for each sample
     float * filterarray = new float[NSample];
     for (int iarray = 0; iarray < NSample; iarray++)
-    { 
+    {
 	const float TT = std::max(dt, t0 + iarray * dt);
 	filterarray[iarray] = pow(TT, tpow);
     }
@@ -403,14 +404,14 @@ static void tpow_impl (TraceBunch & Bunch,
     {
 	volatile char * pTraceData = Bunch.getTrace(i)->getDataPtr();
 	TraceData Trace(pTraceData,NSample);
-	
+
 	float* Data_ptr = (float*) Trace.getTPtr();
 
 	for (int iarray = 0; iarray < NSample; iarray++)
 	{
 	    Data_ptr[iarray] *= filterarray[iarray];
 	}
-	
+
     }
 
     delete[] filterarray;
