@@ -8,11 +8,38 @@
 
 
 # only do something on dell02 (and not on dell01, 03 and 04)
+
 host=`hostname | sed -e 's%build_.*%build%'`
+
+check_host() {
+  which rpm > /dev/null 2>&1
+  rc=$?
+  if [ "$rc" !=  "0" ]; then
+    echo "Not an rpm based system."
+  else
+    dummy=`rpm -qf /etc/issue`
+    case "$dummy" in 
+      sles-release*)
+        export QTDIR=/opt/qt/4.4.3
+        echo "Is SLES"
+        ;;
+      openSUSE-release*)
+        echo "Is SUSE"
+      ;;
+      centos-release*)
+        export QTDIR=/opt/qt/4.4.3
+        echo "Is CentOS"
+      ;;
+    esac
+  fi
+
+}
 
 if [ "$host" != "build" ]; then
   exit
 fi
+
+check_host
 
 export CTEST=/usr/bin/ctest
 

@@ -4,11 +4,37 @@
 # It is started via cron as user pspro (see crontab -e).
 # It sets up some required environment variables, sets up the Intel compiler, and then runs ctest.
 
+check_host() {
+  which rpm > /dev/null 2>&1
+  rc=$?
+  if [ "$rc" !=  "0" ]; then
+    echo "Not an rpm based system."
+  else
+    dummy=`rpm -qf /etc/issue`
+    case "$dummy" in
+      sles-release*)
+        export QTDIR=/opt/qt/4.4.3
+        echo "Is SLES"
+        ;;
+      openSUSE-release*)
+        echo "Is SUSE"
+      ;;
+      centos-release*)
+        export QTDIR=/opt/qt/4.4.3
+        echo "Is CentOS"
+      ;;
+    esac
+  fi
+
+}
+
 host=`hostname | sed -e 's%build_.*%build%'`
 
 if [ "$host" != "build" ]; then
   exit
 fi
+
+check_host
 
 #export PATH=/home/pspro/inst/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/opt/kde3/bin:/usr/lib/jvm/jre/bin:/usr/lib/mit/bin
 
