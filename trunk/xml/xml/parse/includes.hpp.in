@@ -1,0 +1,62 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#ifndef _XML_PARSE_INCLUDE_HPP
+#define _XML_PARSE_INCLUDE_HPP 1
+
+#include <vector>
+#include <boost/filesystem.hpp>
+
+namespace pnetc
+{
+  namespace includes
+  {
+    namespace fs = boost::filesystem;
+
+    inline const fs::path & root ()
+    {
+      static const fs::path ret ("@WE_INCLUDE_SRC_DIR@");
+
+      return ret;
+    }
+
+    typedef std::vector<boost::filesystem::path> name_list;
+
+    namespace detail
+    {
+      struct includes
+      {
+      private:
+        name_list _names;
+
+      public:
+        includes () : _names ()
+        {
+          _names.push_back (fs::path ("we/loader/IModule.hpp"));
+          _names.push_back (fs::path ("we/loader/exceptions.hpp"));
+          _names.push_back (fs::path ("we/loader/macros.hpp"));
+          _names.push_back (fs::path ("we/loader/types.hpp"));
+          _names.push_back (fs::path ("we/type/bitsetofint.hpp"));
+          _names.push_back (fs::path ("we/type/control.hpp"));
+          _names.push_back (fs::path ("we/type/literal.hpp"));
+          _names.push_back (fs::path ("we/type/signature/types.hpp"));
+          _names.push_back (fs::path ("we/type/value.hpp"));
+          _names.push_back (fs::path ("we/type/value/container/container.hpp"));
+          _names.push_back (fs::path ("we/type/value/container/exception.hpp"));
+          _names.push_back (fs::path ("we/type/value/container/type.hpp"));
+          _names.push_back (fs::path ("we/type/value/cpp/get.hpp"));
+        }
+
+        const name_list & names () const { return _names; }
+      };
+    }
+
+    inline const name_list & includes ()
+    {
+      static const detail::includes is;
+
+      return is.names();
+    }
+  }
+}
+
+#endif

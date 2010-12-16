@@ -12,6 +12,7 @@ set (hdrs
   validprefix.hpp
   validstructfield.hpp
   weparse.hpp
+  mk_fstream.hpp
   )
 
 install (FILES ${hdrs}

@@ -13,6 +13,9 @@
 #include <xml/parse/types.hpp>
 #include <xml/parse/state.hpp>
 
+#include <xml/parse/headerlist.hpp>
+#include <xml/parse/headergen.hpp>
+
 #include <we/type/signature.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
@@ -1435,6 +1438,11 @@ namespace xml
           type::find_module_calls (state, f, m);
 
           type::mk_wrapper (state, m);
+
+          includes::descr_list list;
+
+          includes::mk_list (list);
+          includes::we_header_gen (state, list);
 
           type::struct_to_cpp (state, f);
         }

@@ -7,7 +7,26 @@ set (hdrs
   warning.hpp
   )
 
-add_executable(pnetc parser.cpp)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
+                ${CMAKE_CURRENT_BINARY_DIR}/includes.hpp
+                @ONLY
+               )
+
+add_executable(includes includes.cpp)
+target_link_libraries(includes ${Boost_LIBRARIES})
+
+set (headerlist_hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/headerlist.hpp
+    )
+set (headerlist_gen
+     includes
+    )
+add_custom_command(OUTPUT ${headerlist_hpp}
+                   COMMAND ${headerlist_gen} > ${headerlist_hpp}
+                   DEPENDS ${headerlist_gen}
+                  )
+
+add_executable(pnetc parser.cpp ${headerlist_hpp})
 target_link_libraries(pnetc ${Boost_LIBRARIES})
 
 add_executable(pnetc.static parser.cpp)

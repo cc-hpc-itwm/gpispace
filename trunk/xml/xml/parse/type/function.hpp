@@ -8,6 +8,7 @@
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/property.hpp>
+#include <xml/parse/util/mk_fstream.hpp>
 
 #include <vector>
 
@@ -707,37 +708,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      inline std::ofstream & mk_fstream ( std::ofstream & stream
-                                        , const state::type & state
-                                        , const boost::filesystem::path & file
-                                        )
-      {
-        boost::filesystem::path path (file);
-
-        path.remove_filename();
-
-        if (!fhg::util::mkdirs (path))
-          {
-            throw error::could_not_create_directory (path);
-          }
-
-        if (boost::filesystem::exists (file))
-          {
-            state.warn (warning::overwrite_file (file));
-          }
-
-        stream.open (file.string().c_str());
-
-        if (!stream.good())
-          {
-            throw error::could_not_open_file (file);
-          }
-
-        return stream;
-      }
-
-      // ***************************************************************** //
-
       struct fun_info_type
       {
         std::string name;
@@ -771,7 +741,7 @@ namespace xml
                               / cpp_util::make::cpp (mod->first)
                               );
 
-            std::ofstream stream; mk_fstream (stream, state, file);
+            std::ofstream stream; util::mk_fstream (stream, state, file);
 
             cpp_util::include (stream, "we/loader/macros.hpp");
 
@@ -1369,7 +1339,7 @@ namespace xml
             {
               const path_t file (path / file_hpp);
 
-              std::ofstream stream; mk_fstream (stream, state, file);
+              std::ofstream stream; util::mk_fstream (stream, state, file);
 
               cpp_util::header_gen_full (stream);
               cpp_util::include_guard_begin
@@ -1398,7 +1368,7 @@ namespace xml
             {
               const path_t file (path / file_cpp);
 
-              std::ofstream stream; mk_fstream (stream, state, file);
+              std::ofstream stream; util::mk_fstream (stream, state, file);
 
               cpp_util::header_gen (stream);
 
@@ -1454,7 +1424,7 @@ namespace xml
         const path_t file
           (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name));
 
-        std::ofstream stream; mk_fstream (stream, state, file);
+        std::ofstream stream; util::mk_fstream (stream, state, file);
 
         state.verbose ("write to " + file.string());
 
