@@ -11,7 +11,7 @@ namespace module
     we::mgmt::type::detail::printer<we::activity_t, std::ostream> printer (act, std::cout);
 
     // construct context
-    typedef expr::eval::context context_t;
+    typedef we::loader::input_t context_t;
     typedef we::activity_t::input_t input_t;
     typedef we::activity_t::output_t output_t;
     typedef we::activity_t::token_type token_type;
@@ -28,8 +28,9 @@ namespace module
       const token_type token   = top->first;
       const port_id_t  port_id = top->second;
 
-      context.bind
-        ( we::type::detail::translate_port_to_name ( act.transition()
+      we::loader::put
+        ( context
+        , we::type::detail::translate_port_to_name ( act.transition()
                                                    , port_id
                                                    )
         , token.value

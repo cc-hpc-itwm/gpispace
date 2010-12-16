@@ -273,7 +273,7 @@ namespace condition
         {
           return false;
         }
-      catch (const expr::exception::eval::missing_binding &)
+      catch (const value::container::exception::missing_binding &)
         {
           return false;
         }

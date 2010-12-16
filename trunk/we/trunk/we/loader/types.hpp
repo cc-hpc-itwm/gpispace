@@ -20,9 +20,9 @@
 #define WE_LOADER_TYPES_HPP 1
 
 #include <we/type/value.hpp>
-#include <we/type/value/get.hpp>
+#include <we/type/value/cpp/get.hpp>
 
-#include <we/expr/eval/context.hpp>
+#include <we/type/value/container/container.hpp>
 
 #include <vector>
 #include <list>
@@ -33,8 +33,8 @@ namespace we
   {
     class IModule;
 
-    typedef expr::eval::context input_t;
-    typedef expr::eval::context output_t;
+    typedef value::container::type input_t;
+    typedef value::container::type output_t;
 
     typedef void (*InitializeFunction)(IModule*, unsigned int);
     typedef void (*FinalizeFunction)(IModule*);
@@ -48,7 +48,7 @@ namespace we
                     , const value::type & val
                     )
     {
-      o.bind (key, val);
+      value::container::bind (o, key, val);
     }
 
     // on port, complete literal
@@ -63,10 +63,10 @@ namespace we
 
     // getting something means to get a literal value...
     template <typename T>
-    inline typename value::visitor::get<T const &>::result_type
+    inline const T &
     get (const input_t & i, const std::string & key)
     {
-      return value::get<T>(i.value(key));
+      return value::get<T>(value::container::value (i, key));
     }
 
     // ...but not when stated explicitely be a value::type
@@ -74,7 +74,7 @@ namespace we
     inline const value::type &
     get<value::type> (const input_t & i, const std::string & key)
     {
-      return i.value (key);
+      return value::container::value (i, key);
     }
   }
 }

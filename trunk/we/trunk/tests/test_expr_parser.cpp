@@ -72,7 +72,7 @@ int main (int ac, char **)
                              << parser.eval_front (context)
                              << endl;
                       }
-                    catch (const expr::exception::eval::missing_binding & e)
+                    catch (const value::container::exception::missing_binding & e)
                       {
                         cout << e.what() << endl;
                       }

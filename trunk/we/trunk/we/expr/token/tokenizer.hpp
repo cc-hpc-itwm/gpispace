@@ -13,6 +13,8 @@
 
 #include <we/type/control.hpp>
 
+#include <we/type/value/container/type.hpp>
+
 #include <fhg/util/show.hpp>
 
 #include <string>
@@ -25,7 +27,7 @@ namespace expr
 {
   namespace token
   {
-    typedef std::vector<std::string> key_vec_t;
+    typedef value::container::key_vec_t key_vec_t;
 
     struct tokenizer
     {

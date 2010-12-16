@@ -290,7 +290,7 @@ namespace xml
                                            )
                        );
                 }
-              catch (const expr::exception::eval::missing_binding &)
+              catch (const value::container::exception::missing_binding &)
                 {
                   /* do nothing, that's what we want */
                 }
