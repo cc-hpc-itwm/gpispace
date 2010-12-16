@@ -9,6 +9,7 @@
 
 # only do something on dell02 (and not on dell01, 03 and 04)
 
+have_intel=no
 host=`hostname | sed -e 's%build_.*%build%'`
 
 check_host() {
@@ -22,6 +23,7 @@ check_host() {
       sles-release*)
         export QTDIR=/opt/qt/4.4.3
         export PATH=${QTDIR}/bin:$PATH
+	have_intel=yes
         echo "Is SLES"
         ;;
       openSUSE-release*)
@@ -50,4 +52,12 @@ unset http_proxy
 echo "Running ctest"
 
 $CTEST -S ${HOME}/Dashboards/SDPANightly.cmake -V -VV
+
+if [ "$have_intel" != "yes" ]; then
+  exit
+fi
+
+# now compile with intel compiler
+. /home/toolsLinux/compiler/config.icc1181
+$CTEST -S ${HOME}/Dashboards/SDPANightly_intel.cmake -V -VV
 
