@@ -10,6 +10,7 @@
 
 #include <gpi-space/config/config.hpp>
 #include <gpi-space/config/config_io.hpp>
+#include <gpi-space/config/parser.hpp>
 
 #include <stdio.h> // snprintf
 #include <unistd.h> // getuid
@@ -315,7 +316,7 @@ int main (int ac, char *av[])
 
   int rc (GPI_NO_ERROR);
 
-  gpi_space::config node_config;
+  gpi_space::config config;
   if (isMasterProcGPI (ac, av))
   {
     FHGLOG_SETUP (ac, av);
@@ -328,18 +329,19 @@ int main (int ac, char *av[])
     }
     LOG(TRACE, "reading config from: " << config_file);
 
+    gpi_space::parser::config_parser_t cfg_parser;
     try
     {
-      init_config (node_config);
-      std::ifstream ifs (config_file.c_str());
-      ifs >> node_config;
+      gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
+      init_config (config);
+      config.load (cfg_parser);
     }
     catch (std::exception const & ex)
     {
       LOG(ERROR, "could not read config file: " << config_file << ": " << ex.what());
       return GPI_CONFIG_ERROR;
     }
-    LOG(TRACE, "read config: " << std::endl << node_config);
+    LOG(TRACE, "read config: " << std::endl << config);
   }
 
   rc = check_gpi_environment (ac, av);
@@ -350,7 +352,7 @@ int main (int ac, char *av[])
     return GPI_CHECK_FAILED;
   }
 
-  rc = startGPI (ac, av, "", node_config.gpi.memory_size);
+  rc = startGPI (ac, av, "", config.gpi.memory_size);
   if (rc != 0)
   {
     LOG(ERROR, "GPI startup failed with error: " << rc);
@@ -372,14 +374,14 @@ int main (int ac, char *av[])
     signal (SIGINT,  master_shutdown_handler);
     signal (SIGTERM, master_shutdown_handler);
 
-    rc = distribute_config (node_config);
+    rc = distribute_config (config);
   }
   else if (rank > 0)
   {
     signal (SIGINT,  slave_shutdown_handler);
     signal (SIGTERM, slave_shutdown_handler);
 
-    rc = receive_config (node_config);
+    rc = receive_config (config);
   }
   else
   {
@@ -391,12 +393,12 @@ int main (int ac, char *av[])
 
   if (0 == rc)
   {
-    rc = configure(node_config);
+    rc = configure(config);
     allReduceGPI (&rc, &rc, 1, GPI_MAX, GPI_INT);
 
     if (rc == 0)
     {
-      rc = main_loop(node_config, rank);
+      rc = main_loop(config, rank);
     }
     else
     {

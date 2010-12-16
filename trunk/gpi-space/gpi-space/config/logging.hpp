@@ -1,6 +1,10 @@
 #ifndef GPI_SPACE_CONFIG_LOGGING_HPP
 #define GPI_SPACE_CONFIG_LOGGING_HPP 1
 
+#include <gpi-space/config/config-data.hpp>
+
+#include <boost/lexical_cast.hpp>
+
 /*
   [logger ""]
   level = MIN
@@ -76,6 +80,11 @@ namespace gpi_space
     {
       enum { max_sinks = 3 };
       sink_t sink[max_sinks];
+
+      template <typename Mapping>
+      void load (Mapping const &)
+      {
+      }
     };
   }
 }

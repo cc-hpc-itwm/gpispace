@@ -6,6 +6,8 @@
 #include <gpi-space/config/logging.hpp>
 #include <gpi-space/config/gpi.hpp>
 
+#include <boost/lexical_cast.hpp>
+
 namespace gpi_space
 {
   struct config
@@ -13,6 +15,14 @@ namespace gpi_space
     node::config node;
     gpi::config gpi;
     logging::config logging;
+
+    template <typename Mapping>
+    void load (Mapping const & m)
+    {
+      node.load (m);
+      gpi.load (m);
+      logging.load (m);
+    }
   };
 }
 
