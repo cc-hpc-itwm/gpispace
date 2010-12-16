@@ -180,11 +180,51 @@ namespace fhg
           boost::trim (key);
           boost::trim (val);
 
-          int ec = state.handler ( state.section
-                                 , state.section_id_set ? &state.section_id : NULL
-                                 , key
-                                 , val
-                                 );
+          if (val.size())
+          {
+            if (val[0] == '"')
+            {
+              if (val[val.size()-1] != '"')
+              {
+                state.error
+                  (exception::parse_error
+                  ("invalid value: " + val + ": missing closing \"")
+                  );
+              }
+              else
+              {
+                val = val.substr(1, val.size() - 2);
+              }
+            }
+          }
+
+          if (state.section.empty())
+          {
+            state.error
+              (exception::parse_error
+              ("key does not contain a section: " + key)
+              );
+          }
+
+          int ec (0);
+          if (! state.section_id_set)
+          {
+            ec = state.handler ( key_desc_t ( state.section
+                                            , key
+                                            )
+                               , val
+                               );
+          }
+          else
+          {
+            ec = state.handler ( key_desc_t ( state.section
+                                            , key
+                                            , state.section_id
+                                            )
+                               , val
+                               );
+          }
+
           if (ec)
           {
             state.error (exception::parse_error("handler failed: " + boost::lexical_cast<std::string>(ec)));

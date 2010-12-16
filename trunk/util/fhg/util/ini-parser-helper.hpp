@@ -2,6 +2,7 @@
 #define FHG_UTIL_INI_PARSER_HELPER_HPP 1
 
 #include <string>
+#include <fhg/util/ini-parser.hpp>
 
 namespace fhg
 {
@@ -9,60 +10,129 @@ namespace util
 {
 namespace ini
 {
-  template <typename MapType>
-  struct parse_into_map_t
+  namespace detail
   {
-    typedef MapType map_type;
-
-    int operator () ( std::string const & sec
-                    , std::string const * secid
-                    , std::string const & key
-                    , std::string const & val
-                    )
+    inline void unflatten ( std::string const & full_key, key_desc_t & key )
     {
-      return handle (sec,secid,key,val);
-    }
-
-    int handle ( std::string const & sec
-               , std::string const * secid
-               , std::string const & key
-               , std::string const & val
-               )
-    {
-      std::string k (secid ? (sec + "." + *secid) : sec);
-      k += ".";
-      k += key;
-      entries[k] = val;
-      return 0;
-    }
-
-    std::string get ( std::string const & sec
-                    , std::string const & key
-                    , std::string const & def
-                    )
-    {
-      try
+      std::string::size_type sec_pos (full_key.find_first_of ('.'));
+      if (sec_pos == std::string::npos)
       {
-        std::string k (sec + "." + key);
-        return entries.at(k);
+        throw std::runtime_error ("invalid key: " + full_key);
       }
-      catch (std::exception const &)
+
+      key.sec = full_key.substr(0, sec_pos);
+      if (key.sec.empty())
       {
-        return def;
+        throw std::runtime_error ("key does not contain a section: " + full_key);
+      }
+
+      std::string::size_type key_pos (full_key.find_last_of ('.'));
+      if (key_pos == std::string::npos)
+      {
+        throw std::runtime_error ("invalid key: " + full_key);
+      }
+
+      key.key = full_key.substr (key_pos+1);
+      if (key.key.empty())
+      {
+        throw std::runtime_error ("empty key: " + full_key);
+      }
+
+      if (sec_pos != key_pos)
+      {
+        key.id = boost::optional<std::string>(full_key.substr (sec_pos+1, key_pos - sec_pos - 1));
+      }
+      else
+      {
+        key.id = boost::optional<std::string>();
       }
     }
-
-    std::string get ( std::string const & sec
-                    , std::string const & sec_id
-                    , std::string const & key
-                    , std::string const & def
-                    )
+    inline key_desc_t unflatten ( std::string const & key )
     {
-      return get (sec + "." + sec_id, key, def);
+      key_desc_t k;
+      unflatten(key, k);
+      return k;
     }
 
-    map_type entries;
-  };
+    inline void flatten ( key_desc_t const & key, std::string & full_key )
+    {
+      full_key = key.sec;
+      if (key.id)
+        full_key += "." + *key.id;
+      full_key += "." + key.key;
+    }
+
+    inline std::string flatten ( key_desc_t const & key )
+    {
+      std::string k;
+      flatten(key, k);
+      return k;
+    }
+  }
+
+  namespace parser
+  {
+    template <typename MapType>
+    struct flat_map_parser_t
+    {
+      typedef MapType entries_t;
+
+      int operator () (key_desc_t const & key, std::string const & val)
+      {
+        return handle (key,val);
+      }
+
+      int handle (key_desc_t const & key, std::string const & val)
+      {
+        std::string flat_key (detail::flatten (key));
+        if (entries.find (flat_key) != entries.end())
+        {
+          return 1; // already there
+        }
+        else
+        {
+          entries [flat_key] = val;
+          return 0;
+        }
+      }
+
+      std::string get ( key_desc_t const & key, std::string const & def )
+      {
+        return get( detail::flatten( key ), def );
+      }
+      std::string get ( std::string const & key, std::string const & def )
+      {
+        try
+        {
+          return entries.at( key );
+        }
+        catch (std::exception const &)
+        {
+          return def;
+        }
+      }
+
+      void put ( std::string const & key, std::string const & val )
+      {
+        entries [key] = val;
+      }
+      void put ( key_desc_t const & key, std::string const & val )
+      {
+        put( detail::flatten( key ), val );
+      }
+
+      void del ( std::string const & key )
+      {
+        entries.erase( key );
+      }
+      void del ( key_desc_t const & key )
+      {
+        del( detail::flatten( key ) );
+      }
+
+      entries_t entries;
+    };
+  }
 }
 }
 }

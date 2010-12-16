@@ -5,6 +5,7 @@
 #include <string>
 
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 
 /*
   simple ini-file parser with some additional features:
@@ -63,9 +64,31 @@ namespace util
 {
 namespace ini
 {
-  typedef boost::function<int ( std::string const & section
-                              , std::string const * section_id // 3 states: set, empty, notset (=NULL)
-                              , std::string const & key
+  struct key_desc_t
+  {
+    key_desc_t ()
+    {}
+    key_desc_t ( std::string const & a_sec
+               , std::string const & a_key
+               )
+      : sec (a_sec)
+      , key (a_key)
+    {}
+    key_desc_t ( std::string const & a_sec
+               , std::string const & a_key
+               , std::string const & a_id
+               )
+      : sec (a_sec)
+      , key (a_key)
+      , id  (a_id)
+    {}
+
+    std::string sec;
+    std::string key;
+    boost::optional<std::string> id;
+  };
+
+  typedef boost::function<int ( key_desc_t const & desc
                               , std::string const & value
                               ) > entry_handler_t;
 

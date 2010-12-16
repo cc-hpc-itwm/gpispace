@@ -7,117 +7,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <fhg/util/ini-parser.hpp>
-
-struct key_desc_t
-{
-  std::string sec;
-  std::string sec_id;
-  bool sec_id_valid;
-  std::string key;
-};
-
-static void parse_key ( std::string const & full_key, key_desc_t & key )
-{
-  std::string::size_type sec_pos (full_key.find_first_of ('.'));
-  if (sec_pos == std::string::npos)
-  {
-    throw std::runtime_error ("invalid key: " + full_key);
-  }
-
-  key.sec = full_key.substr(0, sec_pos);
-  if (key.sec.empty())
-  {
-    throw std::runtime_error ("empty section: " + full_key);
-  }
-
-  std::string::size_type key_pos (full_key.find_last_of ('.'));
-  if (key_pos == std::string::npos)
-  {
-    throw std::runtime_error ("invalid key: " + full_key);
-  }
-
-  key.key = full_key.substr (key_pos+1);
-  if (key.key.empty())
-  {
-    throw std::runtime_error ("empty key: " + full_key);
-  }
-
-  if (sec_pos != key_pos)
-  {
-    key.sec_id = full_key.substr (sec_pos+1, key_pos - sec_pos - 1);
-    key.sec_id_valid = true;
-  }
-  else
-  {
-    key.sec_id_valid = false;
-  }
-}
-
-static void flatten_key ( key_desc_t const & key, std::string & full_key )
-{
-  full_key = key.sec;
-  if (key.sec_id_valid)
-    full_key += "." + key.sec_id;
-  full_key += "." + key.key;
-}
-
-static std::string flatten_key ( key_desc_t const & key )
-{
-  std::string k;
-  flatten_key(key, k);
-  return k;
-}
-
-struct flat_map_parser_t
-{
-  typedef boost::unordered_map<std::string, std::string> entries_t;
-
-  int operator () ( std::string const & sec
-                  , std::string const * secid
-                  , std::string const & key
-                  , std::string const & val
-                  )
-  {
-    return handle (sec,secid,key,val);
-  }
-
-  int handle ( std::string const & sec
-             , std::string const * secid
-             , std::string const & key
-             , std::string const & val
-             )
-  {
-    std::string k (secid ? (sec + "." + *secid) : sec);
-    k += ".";
-    k += key;
-    entries[k] = val;
-    return 0;
-  }
-
-  std::string get ( key_desc_t const & key, std::string const & def )
-  {
-    try
-    {
-      return entries.at( flatten_key (key) );
-    }
-    catch (std::exception const &)
-    {
-      return def;
-    }
-  }
-
-  void put ( key_desc_t const & key, std::string const & val )
-  {
-    entries [flatten_key(key)] = val;
-  }
-
-  void del ( key_desc_t const & key )
-  {
-    entries.erase (flatten_key(key));
-  }
-
-  entries_t entries;
-};
+#include <fhg/util/ini-parser-helper.hpp>
 
 int main (int ac, char *av[])
 {
@@ -160,6 +50,12 @@ int main (int ac, char *av[])
     return EXIT_SUCCESS;
   }
 
+  typedef
+    fhg::util::ini::parser::flat_map_parser_t < std::map< std::string
+                                                        , std::string
+                                                        >
+                                              > flat_map_parser_t;
+
   flat_map_parser_t m;
   try
   {
@@ -191,9 +87,7 @@ int main (int ac, char *av[])
   }
   else
   {
-    key_desc_t k;
-    parse_key (key, k);
-    std::cout << m.get (k, val) << std::endl;
+    std::cout << m.get (key, val) << std::endl;
   }
 
   return EXIT_SUCCESS;
