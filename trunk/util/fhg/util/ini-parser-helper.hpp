@@ -141,6 +141,10 @@ namespace ini
           key_desc_t k (detail::unflatten (kv->first));
           if (k.sec != cursec)
           {
+            if (!cursec.empty())
+            {
+              o << std::endl;
+            }
             // new section
             o << "[";
             o << k.sec;
