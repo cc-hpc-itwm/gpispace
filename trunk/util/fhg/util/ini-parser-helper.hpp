@@ -84,9 +84,13 @@ namespace ini
 
       int handle (key_desc_t const & key, std::string const & val)
       {
+          // TODO make this configurable -> i.e. hand in state somehow
+        const bool W_already_defined (false);
+
         std::string flat_key (detail::flatten (key));
-        if (entries.find (flat_key) != entries.end())
+        if (W_already_defined && entries.find (flat_key) != entries.end())
         {
+          std::cerr << "W: key already defined: " << flat_key << std::endl;
           return 1; // already there
         }
         else
@@ -133,13 +137,14 @@ namespace ini
       void write (std::ostream & o)
       {
         std::string cursec;
+        std::string curid;
         for ( typename entries_t::const_iterator kv (entries.begin())
             ; kv != entries.end()
             ; ++kv
             )
         {
           key_desc_t k (detail::unflatten (kv->first));
-          if (k.sec != cursec)
+          if (k.sec != cursec || (k.id && (*k.id != curid)))
           {
             if (!cursec.empty())
             {
@@ -151,6 +156,7 @@ namespace ini
             if (k.id)
             {
               o << " \"" << *k.id << "\"";
+              curid = *k.id;
             }
             o << "]";
             o << std::endl;
