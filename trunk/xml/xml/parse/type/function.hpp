@@ -806,6 +806,8 @@ namespace xml
             stream << "{" << std::endl;
             stream << "}" << std::endl;
             stream << "WE_MOD_FINALIZE_END (" << mod->first << ");" << std::endl;
+
+            stream.close();
           }
       }
 
