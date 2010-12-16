@@ -130,6 +130,37 @@ namespace ini
         del( detail::flatten( key ) );
       }
 
+      void write (std::ostream & o)
+      {
+        std::string cursec;
+        for ( typename entries_t::const_iterator kv (entries.begin())
+            ; kv != entries.end()
+            ; ++kv
+            )
+        {
+          key_desc_t k (detail::unflatten (kv->first));
+          if (k.sec != cursec)
+          {
+            // new section
+            o << "[";
+            o << k.sec;
+            if (k.id)
+            {
+              o << " \"" << *k.id << "\"";
+            }
+            o << "]";
+            o << std::endl;
+            cursec = k.sec;
+          }
+
+          o << "  ";
+          o << k.key;
+          o << " = ";
+          o << kv->second;
+          o << std::endl;
+        }
+      }
+
       entries_t entries;
     };
   }
