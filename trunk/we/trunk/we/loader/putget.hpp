@@ -63,7 +63,7 @@ namespace we
 
     // get with an additional path into the value
     template <typename T>
-    inline const T &
+    inline typename value::visitor::get<T const &>::result_type
     get ( const input_t & i
         , const std::string & key
         , const value::path_type & path_in_value
@@ -73,7 +73,7 @@ namespace we
     }
 
     template <typename T>
-    inline const T &
+    inline typename value::visitor::get<T const &>::result_type
     get ( const input_t & i
         , const std::string & key
         , const std::string & path_in_value
@@ -84,14 +84,14 @@ namespace we
 
     // get from an earlier extracted value::type
     template <typename T>
-    inline const T &
+    inline typename value::visitor::get<T const &>::result_type
     get (const value::type & v)
     {
       return value::get<T>(v);
     }
 
     template <typename T>
-    inline const T &
+    inline typename value::visitor::get<T const &>::result_type
     get ( const value::type & v
         , const value::path_type & path_in_value
         )
@@ -100,7 +100,7 @@ namespace we
     }
 
     template <typename T>
-    inline const T &
+    inline typename value::visitor::get<T const &>::result_type
     get ( const value::type & v
         , const std::string & path_in_value
         )

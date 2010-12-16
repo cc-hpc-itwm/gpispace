@@ -31,7 +31,9 @@ namespace literal
         trans[literal::CHAR]    = "char";
         trans[literal::STRING]  = "std::string";
         trans[literal::BITSET]  = "bitsetofint::type";
-        trans[literal::STACK]   = "std::vector<long>";
+        trans[literal::STACK]   = "std::deque<long>";
+        trans[literal::MAP]     = "std::map<long, long>";
+        trans[literal::SET]     = "std::set<long>";
 
         inc[literal::CONTROL] = "we/type/control.hpp";
         inc[literal::BOOL]    = "";
@@ -40,7 +42,9 @@ namespace literal
         inc[literal::CHAR]    = "";
         inc[literal::STRING]  = "string";
         inc[literal::BITSET]  = "we/type/bitsetofint.hpp";
-        inc[literal::STACK]   = "vector";
+        inc[literal::STACK]   = "deque";
+        inc[literal::MAP]     = "map";
+        inc[literal::SET]     = "set";
       }
 
       const map_type::mapped_type & translate (const type_name_t & t) const

@@ -6,6 +6,21 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 
+// force dependencies
+#include <we/loader/IModule.hpp>
+#include <we/loader/exceptions.hpp>
+#include <we/loader/macros.hpp>
+#include <we/loader/types.hpp>
+#include <we/type/bitsetofint.hpp>
+#include <we/type/control.hpp>
+#include <we/type/literal.hpp>
+#include <we/type/signature/types.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/container/container.hpp>
+#include <we/type/value/container/exception.hpp>
+#include <we/type/value/container/type.hpp>
+#include <we/type/value/cpp/get.hpp>
+
 namespace pnetc
 {
   namespace includes

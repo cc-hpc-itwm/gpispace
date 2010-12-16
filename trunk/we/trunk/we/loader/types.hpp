@@ -24,6 +24,8 @@
 
 #include <we/type/value/container/container.hpp>
 
+#include <we/type/literal.hpp>
+
 #include <vector>
 #include <list>
 
@@ -63,7 +65,7 @@ namespace we
 
     // getting something means to get a literal value...
     template <typename T>
-    inline const T &
+    inline typename value::cpp::get<T const &>::result_type
     get (const input_t & i, const std::string & key)
     {
       return value::get<T>(value::container::value (i, key));

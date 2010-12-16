@@ -1438,6 +1438,7 @@ namespace xml
           type::find_module_calls (state, f, m);
 
           type::mk_wrapper (state, m);
+          type::mk_makefile (state, m);
 
           includes::descr_list list;
 

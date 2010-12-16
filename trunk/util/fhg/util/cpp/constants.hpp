@@ -70,6 +70,8 @@ namespace fhg
       {
         CONSTANT (std::string, hpp, "hpp")
         CONSTANT (std::string, cpp, "cpp")
+        CONSTANT (std::string, so, "so")
+        CONSTANT (std::string, o, "o")
 
         inline std::string extend (const std::string & x, const std::string & e)
         {
@@ -87,6 +89,29 @@ namespace fhg
         inline std::string cpp (const std::string & name)
         {
           return extension::extend (name, extension::cpp());
+        }
+
+        inline std::string mod_so (const std::string & mod)
+        {
+          const path_type path (path::op() / (mod + "_mod"));
+
+          return extension::extend (path.string(), extension::so());
+        }
+
+        inline std::string obj (const std::string & mod)
+        {
+          const path_type path (path::op() / mod);
+
+          return extension::extend (path.string(), extension::o());
+        }
+
+        inline std::string obj ( const std::string & mod
+                               , const std::string & fun
+                               )
+        {
+          const path_type path (path::op() / mod / fun);
+
+          return extension::extend (path.string(), extension::o());
         }
       }
 

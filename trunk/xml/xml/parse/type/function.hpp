@@ -781,6 +781,95 @@ namespace xml
           }
       }
 
+      inline void mk_makefile ( const state::type & state
+                              , const fun_info_map & m
+                              )
+      {
+        const path_t prefix (state.path_to_cpp());
+        const path_t file (prefix / "Makefile");
+
+        std::ofstream stream; util::mk_fstream (stream, state, file);
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            stream << "MODULES += " << cpp_util::make::mod_so (mod->first)
+                                                                   << std::endl;
+          }
+
+        stream                                                     << std::endl;
+        stream << ".PHONY: default modules"                        << std::endl;
+        stream                                                     << std::endl;
+        stream << "default: $(MODULES)"                            << std::endl;
+        stream << "modules: $(MODULES) objcleandep"                << std::endl;
+        stream                                                     << std::endl;
+        stream << "INCLUDES += -I . -I $(BOOST_ROOT)/include"      << std::endl;
+        stream << "CXXFLAGS += -Wall -O3 -fPIC"                    << std::endl;
+        stream                                                     << std::endl;
+        stream << "%.o: %.cpp"                                     << std::endl;
+        stream << "\t$(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@"   << std::endl;
+        stream                                                     << std::endl;
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            const std::string objs ("OBJ_" + mod->first);
+            const fun_info_list_type & funs (mod->second);
+
+            for ( fun_info_list_type::const_iterator fun (funs.begin())
+                ; fun != funs.end()
+                ; ++fun
+                )
+              {
+                stream << objs << " += "
+                       << cpp_util::make::obj (mod->first, fun->name)
+                                                                   << std::endl;
+              }
+
+            stream << objs << " += " << cpp_util::make::obj (mod->first)
+                                                                   << std::endl;
+
+            stream                                                 << std::endl;
+            stream << cpp_util::make::mod_so (mod->first)
+                   << ": $(" << objs << ")"                        << std::endl;
+            stream << "\t$(CXX) $(CXXFLAGS) -shared $^ -o $@"      << std::endl;
+            stream                                                 << std::endl;
+          }
+
+        stream << ".PHONY: clean objclean modclean objcleandep"    << std::endl;
+        stream                                                     << std::endl;
+        stream << "clean: objclean modclean"                       << std::endl;
+        stream                                                     << std::endl;
+        stream << "objclean:"                                      << std::endl;
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            stream << "\t$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
+          }
+
+        stream                                                     << std::endl;
+        stream << "objcleandep: $(MODULES)"                        << std::endl;
+
+        for ( fun_info_map::const_iterator mod (m.begin())
+            ; mod != m.end()
+            ; ++mod
+            )
+          {
+            stream << "\t$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
+          }
+
+        stream                                                     << std::endl;
+        stream << "modclean:"                                      << std::endl;
+        stream << "\t$(RM) $(MODULES)"                             << std::endl;
+      }
+
       inline bool find_module_calls ( const state::type &
                                     , function_type &
                                     , fun_info_map &
@@ -925,7 +1014,9 @@ namespace xml
             ;
         }
 
-        inline std::string mk_get (const port_with_type & port)
+        inline std::string mk_get ( const port_with_type & port
+                                  , const std::string & amper = ""
+                                  )
         {
           std::ostringstream os;
 
@@ -933,7 +1024,7 @@ namespace xml
 
           if (literal::cpp::known (port.type))
             {
-              os << "& " << port.name << " ("
+              os << amper << port.name << " ("
                  << "::we::loader::get< " << literal::cpp::translate (port.type) << " >"
                  << "(input, \"" << port.name << "\")"
                  << ")"
@@ -1065,7 +1156,7 @@ namespace xml
               )
             {
               os << "      "
-                 << "  const " << mk_get (*port);
+                 << "  const " << mk_get (*port, "& ");
             }
 
           for ( port_list::const_iterator port (ports_mutable.begin())
