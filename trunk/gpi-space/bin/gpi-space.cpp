@@ -8,8 +8,8 @@
 
 #include <GPI/GPI.h>
 
-#include <gpi-space/config/node_config.hpp>
-#include <gpi-space/config/node_config_io.hpp>
+#include <gpi-space/config/config.hpp>
+#include <gpi-space/config/config_io.hpp>
 
 #include <stdio.h> // snprintf
 #include <unistd.h> // getuid
@@ -290,8 +290,8 @@ static void init_config (gpi_space::config & cfg)
     user_name = sstr.str();
   }
 
-  snprintf ( cfg.node.sockets_path
-           , gpi_space::node::MAX_PATH_LEN
+  snprintf ( cfg.node.socket_path
+           , gpi_space::MAX_PATH_LEN
            , "/var/tmp/GPI-Space-S-%s"
            , user_name.c_str()
            );

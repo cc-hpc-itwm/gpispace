@@ -3,8 +3,8 @@
 
 #include <fhglog/minimal.hpp>
 
-#include <gpi-space/config/node_config.hpp>
-#include <gpi-space/config/node_config_io.hpp>
+#include <gpi-space/config/config.hpp>
+#include <gpi-space/config/config_io.hpp>
 
 struct SetupLogging
 {

@@ -25,18 +25,46 @@ namespace gpi_space
 {
   namespace logging
   {
-    static const std::size_t MAX_HOST_LEN = 256;
+    enum type_code_t
+      {
+        TC_INVALID = 0   // i.e. disabled
+      , TC_SERVER = 1
+      , TC_FILE = 2
+      , TC_CONSOLE = 3
+      // more to come
+      };
 
     struct server_t
     {
-      char host[MAX_HOST_LEN];
+      char host[gpi_space::MAX_HOST_LEN];
       uint16_t port;
+    };
+
+    struct file_t
+    {
+      char path[gpi_space::MAX_PATH_LEN];
+      uint16_t mode;
+    };
+
+    struct console_t
+    {
+      enum console_type
+        {
+          CONSOLE_OUT
+        , CONSOLE_ERR
+        , CONSOLE_LOG
+        };
+      console_type which;
     };
 
     struct sink_t
     {
+      sink_t ()
+        : type (TC_INVALID)
+      {}
+
       uint16_t level; // log level
-      uint16_t type;  // 0 - server
+      uint16_t type;  // see type_code_t
 
       union
       {
@@ -46,8 +74,8 @@ namespace gpi_space
 
     struct config
     {
-      uint8_t num_sink;
-      sink_t sink[16];
+      enum { max_sinks = 3 };
+      sink_t sink[max_sinks];
     };
   }
 }
