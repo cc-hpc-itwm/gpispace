@@ -10,6 +10,8 @@
 
 #include <we/loader/macros.hpp>
 
+#include <fhg/util/show.hpp>
+
 //msgqueue
 static int pcQueueID;
 static key_t pcQueueKey;
