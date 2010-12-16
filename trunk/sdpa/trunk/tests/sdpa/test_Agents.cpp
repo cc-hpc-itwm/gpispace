@@ -485,27 +485,8 @@ retry:	try {
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
-<<<<<<< .mine
-=======
-
-    LOG(WARN, "NRE_0 refcount = "<<seda::StageRegistry::instance().lookup("NRE_0").use_count());
-	LOG(WARN, "aggregator_0 refcount = "<<seda::StageRegistry::instance().lookup("aggregator_0").use_count());
-	LOG(WARN, "orchestrator_0 refcount = "<<seda::StageRegistry::instance().lookup("orchestrator_0").use_count());
-
-        // MR 	seda::StageRegistry::instance().print_info();
-
-	LOG(DEBUG, "Clear StageRegistry ...");
-	seda::StageRegistry::instance().clear();
-
-        // MR	seda::StageRegistry::instance().print_info();
-
-	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
-	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
-	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
-
 
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpywnedByNRE terminated!");
->>>>>>> .r4329
 }
 
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
