@@ -1,9 +1,12 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
-  node_config.hpp
-  node_config_io.hpp
-  node_config_io.tpp
+  config-data.hpp
+  config.hpp
+  config_io.hpp
+  config_io.tpp
+  node.hpp
+  gpi.hpp
   logging.hpp
   )
 
