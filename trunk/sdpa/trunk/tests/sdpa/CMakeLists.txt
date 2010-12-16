@@ -162,7 +162,6 @@ set( test_orch_empty_we_srcs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 
-
 add_executable(test_orchestrator_empty_we ${test_orch_empty_we_srcs})
 target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
 									 sdpa-client
@@ -173,3 +172,17 @@ target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
 									 uuid
 									 ${Boost_LIBRARIES})
 add_test( test_orchestrator_empty_we test_orchestrator_empty_we )
+
+#test_StopRestartAgents
+set( test_stop_restart_agents_srcs test_StopRestartAgents.cpp )
+
+add_executable(test_stop_restart_agents ${test_stop_restart_agents_srcs})
+target_link_libraries(test_stop_restart_agents  seda sdpa-daemon
+									 sdpa-client
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 uuid
+									 ${Boost_LIBRARIES})
+add_test( test_stop_restart_agents test_stop_restart_agents )
