@@ -13,7 +13,7 @@
 #include <gpi-space/config/parser.hpp>
 
 #include <stdio.h> // snprintf
-#include <unistd.h> // getuid
+#include <unistd.h> // getuid, alarm
 #include <sys/types.h> // uid_t
 #include <pwd.h> // getpwuid
 #include <csignal>
@@ -23,6 +23,35 @@
 
 static int MAX_OPEN_DMA_REQUESTS (1);
 static int number_of_nodes (1);
+
+static bool gpi_started (false);
+static bool is_master (false);
+
+enum gpi_space_error_t
+  {
+      GPI_NO_ERROR = 0
+    , GPI_GENERAL_FAILURE = 1
+    , GPI_CONFIG_ERROR = 2
+    , GPI_CHECK_FAILED = 4
+    , GPI_STARTUP_FAILED = 5
+    , GPI_WRITE_DMA_FAILED = 9
+    , GPI_PASSIVE_SEND_FAILED = 10
+    , GPI_PASSIVE_RECV_FAILED = 11
+
+    , GPI_INTERNAL_ERROR = 23
+    , GPI_TIMEOUT = 42
+  };
+
+static void timeout_handler (int)
+{
+  if (! gpi_started)
+  {
+    LOG(INFO, "GPI startup timed out!");
+    killProcsGPI();
+
+    exit (GPI_TIMEOUT);
+  }
+}
 
 static void master_shutdown_handler (int signal)
 {
@@ -120,21 +149,6 @@ static int check_gpi_environment (int ac, char * av[])
 
   return errors;
 }
-
-enum gpi_space_error_t
-  {
-      GPI_NO_ERROR = 0
-    , GPI_GENERAL_FAILURE = 1
-    , GPI_CONFIG_ERROR = 2
-    , GPI_CHECK_FAILED = 4
-    , GPI_STARTUP_FAILED = 5
-    , GPI_WRITE_DMA_FAILED = 9
-    , GPI_PASSIVE_SEND_FAILED = 10
-    , GPI_PASSIVE_RECV_FAILED = 11
-
-    , GPI_INTERNAL_ERROR = 23
-    , GPI_TIMEOUT = 42
-  };
 
 static int distribute_config (const gpi_space::config & cfg)
 {
@@ -296,6 +310,7 @@ static void init_config (gpi_space::config & cfg)
            , "/var/tmp/GPI-Space-S-%s"
            , user_name.c_str()
            );
+  cfg.gpi.timeout_in_sec = 120;
 }
 
 static int configure (const gpi_space::config & cfg)
@@ -319,6 +334,8 @@ int main (int ac, char *av[])
   if (isMasterProcGPI (ac, av))
   {
     FHGLOG_SETUP (ac, av);
+
+    is_master = true;
 
     signal (SIGINT,  master_shutdown_handler);
     signal (SIGTERM, master_shutdown_handler);
@@ -345,6 +362,10 @@ int main (int ac, char *av[])
     }
     LOG(TRACE, "read config: " << std::endl << config);
   }
+  else
+  {
+    is_master = false;
+  }
 
   rc = check_gpi_environment (ac, av);
   if (rc != 0)
@@ -354,7 +375,16 @@ int main (int ac, char *av[])
     return GPI_CHECK_FAILED;
   }
 
+  if (is_master)
+  {
+    signal (SIGALRM, timeout_handler);
+    alarm ( config.gpi.timeout_in_sec );
+  }
+
+  gpi_started = false;
   rc = startGPI (ac, av, "", config.gpi.memory_size);
+  gpi_started = true;
+
   if (rc != 0)
   {
     LOG(ERROR, "GPI startup failed with error: " << rc);
