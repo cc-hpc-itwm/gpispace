@@ -496,12 +496,12 @@ retry:	try {
 	LOG(WARN, "aggregator_0 refcount = "<<seda::StageRegistry::instance().lookup("aggregator_0").use_count());
 	LOG(WARN, "orchestrator_0 refcount = "<<seda::StageRegistry::instance().lookup("orchestrator_0").use_count());
 
-	seda::StageRegistry::instance().print_info();
+        // MR 	seda::StageRegistry::instance().print_info();
 
 	LOG(DEBUG, "Clear StageRegistry ...");
 	seda::StageRegistry::instance().clear();
 
-	seda::StageRegistry::instance().print_info();
+        // MR	seda::StageRegistry::instance().print_info();
 
 	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
 	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
