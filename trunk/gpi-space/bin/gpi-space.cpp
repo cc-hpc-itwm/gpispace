@@ -296,7 +296,6 @@ static void init_config (gpi_space::config & cfg)
            , "/var/tmp/GPI-Space-S-%s"
            , user_name.c_str()
            );
-  cfg.gpi.memory_size = (1 << 20);
 }
 
 static int configure (const gpi_space::config & cfg)
@@ -320,6 +319,9 @@ int main (int ac, char *av[])
   if (isMasterProcGPI (ac, av))
   {
     FHGLOG_SETUP (ac, av);
+
+    signal (SIGINT,  master_shutdown_handler);
+    signal (SIGTERM, master_shutdown_handler);
 
     // read config from file
     std::string config_file ("/etc/gpi-space.rc");
