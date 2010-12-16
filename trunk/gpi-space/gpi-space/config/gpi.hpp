@@ -14,11 +14,14 @@ namespace gpi_space
         , mtu (2048)
         , port (10820)
         , processes (0)
+        , timeout_in_sec (120)
       {}
 
       template <typename Mapping>
       void load (Mapping const & m)
       {
+        timeout_in_sec = boost::lexical_cast<unsigned int>(m.get("gpi.timeout", "120"));
+
         {
           std::size_t multiplier (1);
           std::string mem_size
@@ -70,6 +73,7 @@ namespace gpi_space
       unsigned int   mtu;
       unsigned short port;
       unsigned int   processes;
+      unsigned int   timeout_in_sec;
     };
   }
 }
