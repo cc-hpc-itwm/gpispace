@@ -25,7 +25,10 @@
 using namespace seda;
 
 StageRegistry::StageRegistry() : SEDA_INIT_LOGGER("seda.stage-registry") {}
-StageRegistry::~StageRegistry() {}
+StageRegistry::~StageRegistry()
+{
+  clear ();
+}
 
 StageRegistry& StageRegistry::instance() {
     static StageRegistry _instance;
