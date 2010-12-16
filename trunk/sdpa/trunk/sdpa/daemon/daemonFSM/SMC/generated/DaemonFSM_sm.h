@@ -39,7 +39,6 @@ namespace sdpa
                 virtual void DeleteJob(DaemonFSMContext& context, const sdpa::events::DeleteJobEvent& event);
                 virtual void Error(DaemonFSMContext& context, const sdpa::events::ErrorEvent& event);
                 virtual void Interrupt(DaemonFSMContext& context, const sdpa::events::InterruptEvent& event);
-                virtual void LifeSign(DaemonFSMContext& context, const sdpa::events::LifeSignEvent& event);
                 virtual void RegisterWorker(DaemonFSMContext& context, const sdpa::events::WorkerRegistrationEvent& event);
                 virtual void RequestJob(DaemonFSMContext& context, const sdpa::events::RequestJobEvent& event);
                 virtual void StartUp(DaemonFSMContext& context, const sdpa::events::StartUpEvent& event);
@@ -108,7 +107,6 @@ namespace sdpa
                 void DeleteJob(DaemonFSMContext& context, const sdpa::events::DeleteJobEvent& event);
                 void Error(DaemonFSMContext& context, const sdpa::events::ErrorEvent& event);
                 void Interrupt(DaemonFSMContext& context, const sdpa::events::InterruptEvent& event);
-                void LifeSign(DaemonFSMContext& context, const sdpa::events::LifeSignEvent& event);
                 void RegisterWorker(DaemonFSMContext& context, const sdpa::events::WorkerRegistrationEvent& event);
                 void RequestJob(DaemonFSMContext& context, const sdpa::events::RequestJobEvent& event);
                 void SubmitJob(DaemonFSMContext& context, const sdpa::events::SubmitJobEvent& event);
@@ -169,11 +167,6 @@ namespace sdpa
                 void Interrupt(const sdpa::events::InterruptEvent& event)
                 {
                     (getState()).Interrupt(*this, event);
-                };
-
-                void LifeSign(const sdpa::events::LifeSignEvent& event)
-                {
-                    (getState()).LifeSign(*this, event);
                 };
 
                 void RegisterWorker(const sdpa::events::WorkerRegistrationEvent& event)

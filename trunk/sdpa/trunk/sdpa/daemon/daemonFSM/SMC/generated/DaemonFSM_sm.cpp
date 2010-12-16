@@ -83,12 +83,6 @@ namespace sdpa
                 return;
             }
 
-            void DaemonFSMState::LifeSign(DaemonFSMContext& context, const sdpa::events::LifeSignEvent& event)
-            {
-                Default(context);
-                return;
-            }
-
             void DaemonFSMState::RegisterWorker(DaemonFSMContext& context, const sdpa::events::WorkerRegistrationEvent& event)
             {
                 Default(context);
@@ -287,27 +281,6 @@ namespace sdpa
                     throw;
                 }
                 (context.getState()).Entry(context);
-
-                return;
-            }
-
-            void SMC_DaemonFSM_Up::LifeSign(DaemonFSMContext& context, const sdpa::events::LifeSignEvent& event)
-            {
-                DaemonFSM& ctxt = context.getOwner();
-
-                DaemonFSMState& EndStateName = context.getState();
-
-                context.clearState();
-                try
-                {
-                    ctxt.action_lifesign(event);
-                    context.setState(EndStateName);
-                }
-                catch (...)
-                {
-                    context.setState(EndStateName);
-                    throw;
-                }
 
                 return;
             }
