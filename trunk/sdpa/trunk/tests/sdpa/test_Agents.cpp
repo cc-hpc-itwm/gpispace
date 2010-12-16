@@ -104,9 +104,8 @@ struct MyFixture
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-		//stop the finite state machine
-		//seda::StageRegistry::instance().stopAll();
 
+		//seda::StageRegistry::instance().clear();
 
 		m_ptrPool->stop ();
 		m_ptrThrd->join ();
@@ -114,7 +113,6 @@ struct MyFixture
 		delete m_ptrServ;
 		delete m_ptrKvsd;
 		delete m_ptrPool;
-		sleep(1);
 	}
 
 	string read_workflow(string strFileName)
@@ -325,7 +323,8 @@ retry:	try {
 				ptrNRE->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -444,7 +443,8 @@ retry:	try {
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -476,21 +476,17 @@ retry:	try {
 
 	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
 	ptrNRE_0->shutdown();
-	//ptrNRE_0.reset();
-	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
 
 	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
 	ptrAgg->shutdown();
-	//ptrAgg.reset();
-	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
 
 	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
 	ptrOrch->shutdown();
-	//ptrOrch.reset();
-	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
+<<<<<<< .mine
+=======
 
     LOG(WARN, "NRE_0 refcount = "<<seda::StageRegistry::instance().lookup("NRE_0").use_count());
 	LOG(WARN, "aggregator_0 refcount = "<<seda::StageRegistry::instance().lookup("aggregator_0").use_count());
@@ -509,9 +505,9 @@ retry:	try {
 
 
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpywnedByNRE terminated!");
+>>>>>>> .r4329
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 {
 	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
@@ -628,7 +624,8 @@ retry:	try {
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -666,7 +663,6 @@ retry:	try {
 	ptrNRE_0->shutdown();
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
-
 	ptrCli->shutdown_network();
 	ptrCli.reset();
 
@@ -761,7 +757,8 @@ retry:	try {
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -804,6 +801,5 @@ retry:	try {
 
 	LOG( DEBUG, "The test case testActivityDummyWeAllCompAndNreWorker terminated!");
 }
-*/
 
 BOOST_AUTO_TEST_SUITE_END()

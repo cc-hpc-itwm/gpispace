@@ -71,6 +71,31 @@ void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 	lock_type lock(mtx_);
 	//SDPA_LOG_DEBUG("Process StartUpEvent");
 	process_event(*pEvent);
+
+	if( m_bConfigOk )
+	{
+		SDPA_LOG_INFO("Starting the scheduler...");
+		sdpa::daemon::Scheduler::ptr_t ptrSched(this->create_scheduler());
+		ptr_scheduler_ = ptrSched;
+		ptr_scheduler_->start();
+
+		// start the network stage
+		ptr_to_master_stage_->start();
+
+		m_bRequestsAllowed = true;
+
+		// if the configuration step was ok send a ConfigOkEvent
+		ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
+		sendEventToSelf(pEvtConfigOk);
+	}
+	else //if not
+	{
+		m_bRequestsAllowed = false;
+
+		// if the configuration step was ok send a ConfigOkEvent
+		ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
+		sendEventToSelf(pEvtConfigNok);
+	}
 }
 
 void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)

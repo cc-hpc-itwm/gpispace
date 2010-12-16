@@ -76,7 +76,7 @@ namespace sdpa { namespace daemon {
 	  // API
 
 	  void start();
-	  void stop_stages();
+	  void stop();
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
 	  void shutdown();
@@ -291,9 +291,9 @@ namespace sdpa { namespace daemon {
 
 	private:
 	  mutable mutex_type ext_job_cnt_mtx_;
-	  bool m_bRequestsAllowed;
 
 	protected:
+	  bool m_bRequestsAllowed;
 	  bool m_bStopped;
 	  bool m_bStarted;
 	  bool m_bConfigOk;

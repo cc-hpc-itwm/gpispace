@@ -145,10 +145,9 @@ struct MyFixture
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-		//stop the finite state machine
-		//seda::StageRegistry::instance().stopAll();
-		LOG(DEBUG, "Clear StageRegistry ...");
-		seda::StageRegistry::instance().clear();
+
+		//LOG(DEBUG, "Clear StageRegistry ...");
+		//seda::StageRegistry::instance().clear();
 
 		m_ptrPool->stop ();
 		m_ptrThrd->join ();
@@ -156,7 +155,6 @@ struct MyFixture
 		delete m_ptrServ;
 		delete m_ptrKvsd;
 		delete m_ptrPool;
-		sleep(1);
 	}
 
 	string read_workflow(string strFileName)
@@ -270,7 +268,8 @@ retry:	try {
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -393,7 +392,8 @@ retry:	try {
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -514,7 +514,8 @@ retry:	try {
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -637,7 +638,8 @@ retry:	try {
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -677,7 +679,6 @@ retry:	try {
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe2Aggs *****"<<std::endl);
@@ -765,7 +766,8 @@ retry:  try {
 				ptrAgg->shutdown();
 				ptrAgg_1->shutdown();
 				ptrOrch->shutdown();
-
+				ptrCli->shutdown_network();
+				ptrCli.reset();
 				return;
 			}
 			else
@@ -805,6 +807,5 @@ retry:  try {
 
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe2Aggs terminated!");
 }
-*/
 
 BOOST_AUTO_TEST_SUITE_END()

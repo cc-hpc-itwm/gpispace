@@ -133,22 +133,6 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 GenericDaemon::~GenericDaemon()
 {
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
-
-	// remove the network stage
-	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
-
-	// remove the daemon stage
-	seda::StageRegistry::instance().remove(name());
-
-	if ( hasWorkflowEngine() )
-	{
-		SDPA_LOG_DEBUG("deleting the workflow engine ...");
-		delete ptr_workflow_engine_;
-		ptr_workflow_engine_ = NULL;
-	}
-
-	// Allocated outside and passed as a parameter
-	//ptr_daemon_stage_ = NULL;
 }
 
 void GenericDaemon::start()
@@ -242,43 +226,53 @@ void GenericDaemon::shutdown_network()
 
 void GenericDaemon::shutdown()
 {
+	if(!m_bStopped)
+		stop();
+
+	SDPA_LOG_INFO("Remove the stages...");
+	// remove the network stage
+	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
+	// remove the daemon stage
+	seda::StageRegistry::instance().remove(name());
+
+	if ( hasWorkflowEngine() )
+	{
+		SDPA_LOG_DEBUG("Delete the workflow engine ...");
+		delete ptr_workflow_engine_;
+		ptr_workflow_engine_ = NULL;
+	}
+}
+
+void GenericDaemon::stop()
+{
 	// here one should only generate a message of type interrupt
 	SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
 	InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
-    sendEventToSelf(pEvtInterrupt);
+	sendEventToSelf(pEvtInterrupt);
 
-    // wait to be stopped
-    {
-    	lock_type lock(mtx_);
-    	while(!m_bStopped)
-    		cond_can_stop_.wait(lock);
-    }
+	// wait to be stopped
+	{
+		lock_type lock(mtx_);
+		while(!m_bStopped)
+			cond_can_stop_.wait(lock);
+	}
 
-    SDPA_LOG_INFO("Shutting down...");
+	SDPA_LOG_INFO("Shutting down...");
+
 	SDPA_LOG_INFO("Stop the scheduler now!");
-
-	// stop the scheduler thread
 	scheduler()->stop();
 
 	SDPA_LOG_INFO("Shutdown the network...");
 	shutdown_network();
-
-	SDPA_LOG_INFO("Stop the stages...");
-	stop_stages();
-}
-
-void GenericDaemon::stop_stages()
-{
-	SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
-	//shutdown the network stage
 
 	// shutdown the daemon stage
 	SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
 	seda::StageRegistry::instance().lookup(name())->stop();
 
 	//  shutdown the peer and remove the information from kvs
+	SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
 	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
-	ptr_daemon_stage_.reset();
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -318,8 +312,6 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 
 	try {
 		configure_network( url(), masterName() );
-
-		SDPA_LOG_INFO("starting scheduler...");
 	    m_bConfigOk = true;
 	}
 	catch (std::exception const &ex)
@@ -327,42 +319,19 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 		SDPA_LOG_ERROR("Exception occurred while trying to configure the network " << ex.what());
 		m_bConfigOk = false;
 	}
-
-	if( m_bConfigOk )
-	{
-		ptr_scheduler_ = Scheduler::ptr_t(this->create_scheduler());
-		ptr_scheduler_->start();
-
-		// start the network stage
-		ptr_to_master_stage_->start();
-
-		m_bRequestsAllowed = true;
-
-		// if the configuration step was ok send a ConfigOkEvent
-		ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
-		sendEventToSelf(pEvtConfigOk);
-	}
-	else //if not
-	{
-		m_bRequestsAllowed = false;
-
-		// if the configuration step was ok send a ConfigOkEvent
-		ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
-		sendEventToSelf(pEvtConfigNok);
-	}
 }
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
 	// check if the system should be recovered
 	// should be overriden by the orchestrator, aggregator and NRE
-	SDPA_LOG_INFO("configuration (generic) was ok");
+	SDPA_LOG_INFO("The configuration phase succeeded!");
 	m_bRequestsAllowed = true;
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
 {
-	SDPA_LOG_ERROR("configuration was not ok!");
+	SDPA_LOG_ERROR("the configuration phase failed!");
 
 }
 
