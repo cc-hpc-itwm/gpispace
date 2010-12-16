@@ -131,7 +131,7 @@ static int check_gpi_environment (int ac, char * av[])
     const unsigned short port (getPortGPI());
 
     // check a single node
-    const int num_nodes (generateHostlistGPI());
+    const int num_nodes (number_of_nodes);
     for (int rank (0); rank < num_nodes; ++rank)
     {
       errors += check_node (rank, port);
@@ -367,6 +367,7 @@ int main (int ac, char *av[])
     is_master = false;
   }
 
+  number_of_nodes = generateHostlistGPI();
   rc = check_gpi_environment (ac, av);
   if (rc != 0)
   {
@@ -397,7 +398,6 @@ int main (int ac, char *av[])
   }
 
   // initialize (static) globals
-  number_of_nodes = generateHostlistGPI();
   MAX_OPEN_DMA_REQUESTS = getQueueDepthGPI();
   const int rank = getRankGPI ();
 
