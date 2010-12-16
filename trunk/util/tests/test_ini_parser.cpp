@@ -94,6 +94,22 @@ BOOST_AUTO_TEST_CASE ( parse_section_with_dot_id )
   BOOST_CHECK_EQUAL (m.get("test.id.1.foo", "baz"), "bar");
 }
 
+BOOST_AUTO_TEST_CASE ( parse_section_with_multiple_dot_id )
+{
+  parse_into_map_t m;
+  {
+    std::stringstream sstr ("[test \"id.1.2.3.4\"]\nfoo=bar");
+    fhg::util::ini::parse (sstr, boost::ref(m));
+    BOOST_CHECK_EQUAL (m.get("test.id.1.2.3.4.foo", "baz"), "bar");
+  }
+
+  {
+    std::stringstream sstr ("[test \"id.1.2.3.5\"]\nfoo=bam");
+    fhg::util::ini::parse (sstr, boost::ref(m));
+    BOOST_CHECK_EQUAL (m.get("test.id.1.2.3.5.foo", "baz"), "bam");
+  }
+}
+
 BOOST_AUTO_TEST_CASE ( parse_comment )
 {
   parse_into_map_t m;
