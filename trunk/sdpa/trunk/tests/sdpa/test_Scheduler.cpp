@@ -111,6 +111,7 @@ BOOST_AUTO_TEST_CASE(testDelWorker)
 
 	ptr_scheduler_->stop();
 
+	seda::StageRegistry::instance().remove(ptrOrch->name());
 	sleep(1);
 	SDPA_LOG_DEBUG("Worker deletion test finished!");
 }
@@ -166,6 +167,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithNoPrefs)
 
 	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );
 	 ptr_scheduler_->stop();
+	 seda::StageRegistry::instance().remove(ptrOrch->name());
 }
 
 BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
@@ -228,6 +230,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 
 	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );
 	 ptr_scheduler_->stop();
+	 seda::StageRegistry::instance().remove(ptrOrch->name());
 }
 
 /*
