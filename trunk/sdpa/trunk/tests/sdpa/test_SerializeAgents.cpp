@@ -135,7 +135,6 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 {
 	std::cout<<std::endl<<"----------------Begin  testDummyWorkflowEngineSerialization----------------"<<std::endl;
 
-	/*
 	std::string filename = "testDummyWorkflowEngineSerialization.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
 	IWorkflowEngine* pWfEng = new DummyWorkflowEngine();
@@ -183,7 +182,6 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 		return;
 	}
 
-*/
 	std::cout<<std::endl<<"----------------End  testDummyWorkflowEngineSerialization----------------"<<std::endl;
 }
 
@@ -880,55 +878,6 @@ BOOST_AUTO_TEST_CASE(testSynchQueueSerialization)
 		sdpa::job_id_t jobIdRestored = jobQueueRestored.pop();
 		cout<<jobIdRestored.str()<<std::endl;
 	}
-}
-
-BOOST_FIXTURE_TEST_CASE( testBackupRecoverOrch, MyFixture )
-{
-	string addrOrch = "127.0.0.1";
-
-	std::cout<<std::endl<<"----------------Begin  testBackupRecoverOrch----------------"<<std::endl;
-	std::string filename = "testBackupRecover.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	LOG( DEBUG, "CSubmit 5 jobs to the orchestrator ...");
-	for(int k=0; k<5; k++ )
-		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
-
-	ptrOrch->print();
-	LOG( DEBUG, "Bakcup the orchestrator ino the file "<<filename);
-	ptrOrch->backup(filename);
-	ptrOrch->shutdown();
-	sleep(1);
-
-	ptrCli->shutdown_network();
-	seda::StageRegistry::instance().clear();
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
-	ptrRecOrch->recover(filename);
-	ptrRecOrch->start();
-
-	sleep(1);
-
-	ptrRecOrch->shutdown();
-	sleep(1);
-
-	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
