@@ -15,6 +15,8 @@ set (hdrs
 
   ini-parser.hpp
   ini-parser.tcc
+  ini-parser-except.hpp
+  ini-parser-helper.hpp
 )
 
 install(FILES ${hdrs}
