@@ -2,6 +2,7 @@
 // is able to read and write ini-style config files
 
 #include <iostream>
+#include <fstream>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <map>
@@ -14,7 +15,6 @@ int main (int ac, char *av[])
   namespace po = boost::program_options;
 
   std::string file_name ("-");
-
   std::string key;
   std::string val;
 
@@ -22,17 +22,22 @@ int main (int ac, char *av[])
   desc.add_options()
     ("help,h", "print this help")
     ("file,f", po::value<std::string>(&file_name)->default_value(file_name), "file to work on (-: stdin)")
-    ("key,k", po::value<std::string>(&key), "key to put or get")
     ("value,v", po::value<std::string>(&val), "value to store")
-    ("add,a", "add an entry")
-    ("del,d", "delete an entry")
+    ("add,a", po::value<std::string>(&key), "add an entry")
+    ("del,d", po::value<std::string>(&key), "delete an entry")
+    ("get,g", po::value<std::string>(&key), "get an entry")
     ("list,l", "list all entries")
     ;
+  po::positional_options_description pos_opts;
+  pos_opts.add("value", 1);
 
   po::variables_map vm;
   try
   {
-    po::store (po::parse_command_line (ac, av, desc), vm);
+    po::store( po::command_line_parser (ac, av)
+             . options(desc).positional(pos_opts).run()
+             , vm
+             );
     po::notify (vm);
   }
   catch (std::exception const & ex)
@@ -56,6 +61,7 @@ int main (int ac, char *av[])
                                                         >
                                               > flat_map_parser_t;
 
+  bool modified (false);
   flat_map_parser_t m;
   try
   {
@@ -75,7 +81,28 @@ int main (int ac, char *av[])
     return EXIT_FAILURE;
   }
 
-  if (vm.count ("list"))
+  if (vm.count ("add"))
+  {
+    if (val.empty())
+    {
+      std::cerr << "value is empty! use --help to get usage information" << std::endl;
+    }
+    else
+    {
+      m.put (key, val);
+      modified = true;
+    }
+  }
+  else if (vm.count ("get"))
+  {
+    std::cout << m.get (key, val) << std::endl;
+  }
+  else if (vm.count ("del"))
+  {
+    m.del (key);
+    modified = true;
+  }
+  else if (vm.count ("list"))
   {
     for ( flat_map_parser_t::entries_t::const_iterator e (m.entries.begin())
         ; e != m.entries.end()
@@ -85,9 +112,27 @@ int main (int ac, char *av[])
       std::cout << e->first << " = " << e->second << std::endl;
     }
   }
-  else
+
+  if (modified)
   {
-    std::cout << m.get (key, val) << std::endl;
+    try
+    {
+      if (file_name == "-")
+      {
+        m.write (std::cout);
+      }
+      else
+      {
+        std::ofstream ofs (file_name.c_str());
+        m.write (ofs);
+      }
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "could not write config: " << std::endl;
+      std::cerr << ex.what () << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   return EXIT_SUCCESS;
