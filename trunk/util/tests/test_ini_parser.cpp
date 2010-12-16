@@ -2,9 +2,12 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/ini-parser.hpp>
+#include <fhg/util/ini-parser-helper.hpp>
 
 #include <boost/unordered_map.hpp>
 #include <boost/bind.hpp>
+
+typedef fhg::util::ini::parse_into_map_t <boost::unordered_map<std::string, std::string> > parse_into_map_t;
 
 static int dummy_handler( std::string const &
                         , std::string const *
@@ -14,60 +17,6 @@ static int dummy_handler( std::string const &
 {
   return 0;
 }
-
-struct parse_into_map_t
-{
-  typedef boost::unordered_map<std::string, std::string> entries_t;
-
-  int operator () ( std::string const & sec
-                  , std::string const * secid
-                  , std::string const & key
-                  , std::string const & val
-                  )
-  {
-    return handle (sec,secid,key,val);
-  }
-
-  int handle ( std::string const & sec
-             , std::string const * secid
-             , std::string const & key
-             , std::string const & val
-             )
-  {
-    std::string k (secid ? (sec + "." + *secid) : sec);
-    k += ".";
-    k += key;
-    entries[k] = val;
-    return 0;
-  }
-
-  std::string get ( std::string const & sec
-                  , std::string const & key
-                  , std::string const & def
-                  )
-  {
-    try
-    {
-      std::string k (sec + "." + key);
-      return entries.at(k);
-    }
-    catch (std::exception const &)
-    {
-      return def;
-    }
-  }
-
-  std::string get ( std::string const & sec
-                  , std::string const & sec_id
-                  , std::string const & key
-                  , std::string const & def
-                  )
-  {
-    return get (sec + "." + sec_id, key, def);
-  }
-
-  entries_t entries;
-};
 
 BOOST_AUTO_TEST_CASE ( parse_no_such_file )
 {
