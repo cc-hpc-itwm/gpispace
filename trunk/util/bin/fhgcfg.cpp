@@ -4,7 +4,7 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/unordered_map.hpp>
+#include <map>
 
 #include <fhg/util/ini-parser.hpp>
 #include <fhg/util/ini-parser-helper.hpp>
