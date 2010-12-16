@@ -96,11 +96,11 @@ namespace ini
         }
       }
 
-      std::string get ( key_desc_t const & key, std::string const & def )
+      std::string get ( key_desc_t const & key, std::string const & def ) const
       {
         return get( detail::flatten( key ), def );
       }
-      std::string get ( std::string const & key, std::string const & def )
+      std::string get ( std::string const & key, std::string const & def ) const
       {
         try
         {
