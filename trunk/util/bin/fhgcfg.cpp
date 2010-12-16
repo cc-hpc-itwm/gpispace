@@ -26,7 +26,8 @@ int main (int ac, char *av[])
     ("add,a", po::value<std::string>(&key), "add an entry")
     ("del,d", po::value<std::string>(&key), "delete an entry")
     ("get,g", po::value<std::string>(&key), "get an entry")
-    ("list,l", "list all entries")
+    ("list,l",  "list all entries")
+    ("print,p", "print ini style format")
     ;
   po::positional_options_description pos_opts;
   pos_opts.add("value", 1);
@@ -111,6 +112,10 @@ int main (int ac, char *av[])
     {
       std::cout << e->first << " = " << e->second << std::endl;
     }
+  }
+  else if (vm.count("print"))
+  {
+    m.write (std::cout);
   }
 
   if (modified)
