@@ -100,7 +100,7 @@ namespace sdpa { namespace daemon {
 	  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*);
 
 	  // job event handlers
-	  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* pEvent);
+	  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
 	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
 	  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
 	  virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
@@ -108,12 +108,11 @@ namespace sdpa { namespace daemon {
 	  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
 	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
 	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
-	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ptr );
-	  //virtual void handleInterruptEvent(const sdpa::events::InterruptEvent* ptr );
+	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
-	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
-	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1); // 0 retries, 1 second timeout
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
 	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid);
 
       // WE interface
@@ -135,7 +134,7 @@ namespace sdpa { namespace daemon {
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
 	  const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
-	  virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
+	  virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid  = "") throw (WorkerAlreadyExistException);
 
 	  std::string master()const { return master_;}
 	  void setMaster( std::string masterName ){ master_=masterName;}
@@ -161,6 +160,7 @@ namespace sdpa { namespace daemon {
 	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
 	  const unsigned int& rank() const { return m_nRank; }
 	  unsigned int& rank() { return m_nRank; }
+	  const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
 	  //boost::bind(&sdpa_daemon::gen_id, this))
 	  std::string gen_id() { JobId jobId; return jobId.str(); }
@@ -277,7 +277,7 @@ namespace sdpa { namespace daemon {
 	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
 	  bool m_bRegistered;
 	  unsigned int m_nRank;
-	  std::string m_strAgentUID;
+	  sdpa::worker_id_t m_strAgentUID;
 
 	  sdpa::util::time_type m_ullPollingInterval;
 	  unsigned int m_nExternalJobs;

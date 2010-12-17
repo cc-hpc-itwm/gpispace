@@ -121,7 +121,8 @@ namespace sdpa {
 
 			// send worker registration event
 			SDPA_LOG_INFO("NRE (" << ptr_comm_handler_->name() << ") sending registration event to master (" << ptr_comm_handler_->master() << ") my rank=" << ptr_comm_handler_->rank());
-			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(ptr_comm_handler_->name(), ptr_comm_handler_->master(), ptr_comm_handler_->rank() ));
+			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(),
+																					ptr_comm_handler_->rank(), ptr_comm_handler_->agent_uuid()));
 			ptr_comm_handler_->sendEventToMaster(pEvtWorkerReg);
 
 			// use here a registration timeout

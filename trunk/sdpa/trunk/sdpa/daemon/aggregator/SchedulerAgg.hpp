@@ -61,7 +61,7 @@ namespace sdpa {
 	 	{
 	 		// post a new request to the master
 	 		// the slave posts a job request
-            //DMLOG(TRACE, "Post a new request to "<<ptr_comm_handler_->master());
+            MLOG(TRACE, "Post a new request to "<<ptr_comm_handler_->master());
 	 		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
 	 		ptr_comm_handler_->sendEventToMaster(pEvtReq);
 
@@ -84,7 +84,8 @@ namespace sdpa {
 		 {
 			 // send worker registration event
 			 SDPA_LOG_INFO("Aggregator (" << ptr_comm_handler_->name() << ") sending registration event to master (" << ptr_comm_handler_->master() << ")");
-			 WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(ptr_comm_handler_->name(), ptr_comm_handler_->master(), ptr_comm_handler_->rank()));
+			 WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(ptr_comm_handler_->name(), ptr_comm_handler_->master(),
+					                                                                ptr_comm_handler_->rank(), ptr_comm_handler_->agent_uuid()));
 			 ptr_comm_handler_->sendEventToMaster(pEvtWorkerReg);
 
 			 // use here a registration time-out !!!!!!!!!!!!!!!!!!!

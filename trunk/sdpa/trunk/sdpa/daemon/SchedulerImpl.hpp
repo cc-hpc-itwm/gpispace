@@ -58,7 +58,7 @@ namespace sdpa {
 	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
 
-	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
+	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
     virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 
     void declare_jobs_failed( Worker::JobQueue* pQueue );

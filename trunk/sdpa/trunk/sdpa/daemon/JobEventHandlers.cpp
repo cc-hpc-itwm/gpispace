@@ -83,10 +83,10 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 	}
 	catch(JobNotDeletedException const & ex)
 	{
-                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
 	}
 	catch(...) {
-                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
+        SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
 	}
 }
 
@@ -110,10 +110,10 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 	}
 	catch(JobNotDeletedException const & ex)
 	{
-                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
 	}
 	catch(...) {
-                SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
 	}
 }
 
@@ -123,22 +123,24 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->QueryJobStatus(pEvt); // should send back a message with the status
 	}
-	catch(JobNotFoundException const &)
+	catch(JobNotFoundException const& ex)
 	{
-		SDPA_LOG_WARN("job " << pEvt->job_id() << " could not be found!");
-                // TODO: should reply with an ERROR here
+		SDPA_LOG_WARN("Couldn't find the job " << pEvt->job_id() << "!");
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, ex.what()) );
+		sendEventToMaster(pErrorEvt);
 	}
 }
 
-void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* ptr )
+void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
 	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(ptr->job_id());
-		pJob->RetrieveJobResults(ptr);
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		pJob->RetrieveJobResults(pEvt);
 	}
-	catch(JobNotFoundException const &)
+	catch(JobNotFoundException const& ex)
 	{
-		SDPA_LOG_WARN("job " << ptr->job_id() << " could not be found!");
-                // TODO: should reply with an ERROR here
+		SDPA_LOG_WARN("Couldn't find the job " << pEvt->job_id() << "!");
+		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, ex.what()) );
+		sendEventToMaster(pErrorEvt);
 	}
 }

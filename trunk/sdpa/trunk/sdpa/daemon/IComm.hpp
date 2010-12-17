@@ -41,8 +41,8 @@ const std::string USER("user");
   public:
     virtual ~IComm() {}
 
-	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1) = 0;
-	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e, std::size_t retries = 0, unsigned long timeout = 1) = 0;
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e) = 0;
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e) = 0;
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e)=0;
 	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid) = 0;
 
@@ -63,6 +63,7 @@ const std::string USER("user");
 	  virtual sdpa::util::Config* cfg() const = 0;
 
 	  virtual unsigned int& rank() = 0;
+	  virtual const sdpa::worker_id_t& agent_uuid() = 0;
 	  virtual bool requestsAllowed(const sdpa::util::time_type&) = 0;
 
 	  virtual bool hasWorkflowEngine() = 0;

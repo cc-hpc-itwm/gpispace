@@ -25,6 +25,7 @@
 namespace sc = boost::statechart;
 #endif
 #include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/types.hpp>
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
@@ -40,14 +41,18 @@ namespace sdpa { namespace events {
         : MgmtEvent()
       {}
 
-      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank)
-		  : MgmtEvent(a_from, a_to), rank_(rank) { }
+      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank, const sdpa::worker_id_t& agent_uuid )
+		  : MgmtEvent(a_from, a_to), rank_(rank), agent_uuid_(agent_uuid) { }
 
       virtual ~WorkerRegistrationEvent() { }
 
       std::string str() const { return "WorkerRegistrationEvent"; }
+
       const int& rank() const { return rank_; }
       int& rank() { return rank_; }
+
+      const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_;}
+      sdpa::worker_id_t& agent_uuid() { return agent_uuid_;}
 
       virtual void handleBy(EventHandler *handler)
       {
@@ -56,6 +61,7 @@ namespace sdpa { namespace events {
 
     private:
       int rank_;
+      sdpa::worker_id_t agent_uuid_;
   };
 }}
 

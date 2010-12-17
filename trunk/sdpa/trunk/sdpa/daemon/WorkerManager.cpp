@@ -78,7 +78,7 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
 /**
  * add new worker
  */
-void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
+void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
 	lock_type lock(mtx_);
 
@@ -87,20 +87,27 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 	{
 		if( it->second->name() ==  workerId)
 		{
-			SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
+			//SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
 			bFound = true;
-			throw WorkerAlreadyExistException(workerId, rank);
+			throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
 		}
 
 		if( it->second->rank() == rank )
 		{
-			SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
+			//SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
 			bFound = true;
-			throw WorkerAlreadyExistException(workerId, rank);
+			throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
+		}
+
+		if( it->second->agent_uuid() == agent_uuid )
+		{
+			//SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
+			bFound = true;
+			throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
 		}
 	}
 
-	Worker::ptr_t pWorker( new Worker( workerId, rank ));
+	Worker::ptr_t pWorker( new Worker( workerId, rank, agent_uuid ));
 
 	worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 	rank_map_.insert(rank_map_t::value_type(rank, pWorker->name()));
@@ -326,7 +333,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
 
 const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
-  DLOG(TRACE, "Get the next job ...");
+	//SDPA_LOG_DEBUG("Get the next job ...");
 
 	sdpa::job_id_t jobId;
 
@@ -351,7 +358,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 				ptrWorker->submitted().push(jobId);
 				return jobId;
 			}
-			catch(const QueueEmpty& ex)
+			catch(const QueueEmpty& ex0)
 			{
 				// try to steal some work from other workers
 				// if not possible, throw an exception
@@ -364,9 +371,9 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 					return jobId;
 				}
-				catch( const NoJobScheduledException& ex )
+				catch( const NoJobScheduledException& ex1 )
 				{
-					throw ex;
+					throw ex1;
 				}
 			}
 		}

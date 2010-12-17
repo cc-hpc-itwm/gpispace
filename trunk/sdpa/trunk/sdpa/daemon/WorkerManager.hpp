@@ -45,7 +45,7 @@ namespace sdpa { namespace daemon {
 	  Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
 	  const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
-	  void addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException);
+	  void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
 	  void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 
       void detectTimedoutWorkers( sdpa::util::time_type const&, std::vector<Worker::worker_id_t> * = 0);

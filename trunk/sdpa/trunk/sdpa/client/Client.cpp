@@ -191,7 +191,8 @@ seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
-  MLOG(DEBUG,"submitting job with description = " << desc);
+  //MLOG(DEBUG,"submitting job with description = " << desc);
+	MLOG(DEBUG,"submitting new job ... " );
   client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
   DMLOG(TRACE,"waiting for a reply");
   try

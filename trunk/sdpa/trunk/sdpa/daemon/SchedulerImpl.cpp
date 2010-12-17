@@ -52,10 +52,10 @@ SchedulerImpl::~SchedulerImpl()
 	}
 }
 
-void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
+void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
 	try {
-		ptr_worker_man_->addWorker(workerId, rank);
+		ptr_worker_man_->addWorker(workerId, rank, agent_uuid);
 		// only with a round-robin schedule
 		// ptr_worker_man_->balanceWorkers();
 
@@ -596,7 +596,6 @@ void SchedulerImpl::run()
 				catch( const NoWorkerFoundException& ex)
 				{
 					SDPA_LOG_DEBUG("No valid worker found! Try to re-schedule the job later, on any available worker"<<jobId.str());
-
 					// do so as when no preferences were set, just ignore them right now
 					schedule_anywhere(jobId);
 				}

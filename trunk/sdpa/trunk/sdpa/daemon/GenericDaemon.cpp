@@ -343,26 +343,6 @@ void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
 	m_bRequestsAllowed = false;
 }
 
-/*
-void GenericDaemon::action_lifesign(const LifeSignEvent& e)
-{
-	DLOG(TRACE, "Received LS from the worker " << e.from());
-	try {
-          Worker::ptr_t ptrWorker = findWorker(e.from());
-          ptrWorker->update();
-	}
-	catch(WorkerNotFoundException const &)
-	{
-		SDPA_LOG_WARN("got LS from unknown worker: " << e.from());
-		// the worker should register first, before posting a job request
-		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-		sendEventToSlave(pErrorEvt);
-	} catch(...) {
-		SDPA_LOG_ERROR("Unexpected exception occurred!");
-	}
-}
-*/
-
 void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 {
 	LOG( INFO, e.from() << " requesting to delete job " << e.job_id() );
@@ -424,7 +404,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 void GenericDaemon::action_request_job(const RequestJobEvent& e)
 {
-	DLOG(DEBUG, "got job request from: " << e.from());
+	//SDPA_LOG_DEBUG("got job request from: " << e.from());
 
 	/*
 	the slave(aggregator) requests new executable jobs
@@ -459,7 +439,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description(), ""));
 
 			// Post a SubmitJobEvent to the slave who made the request
-			sendEventToSlave(pSubmitEvt, 0);
+			sendEventToSlave(pSubmitEvt);
 		}
 		else // send an error event
 		{
@@ -468,16 +448,16 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	}
 	catch(const NoJobScheduledException&)
 	{
-          DLOG (DEBUG, "No job was scheduled to be executed on the worker '"<<worker_id);
+		//SDPA_LOG_DEBUG("No job was scheduled to be executed on the worker '"<<worker_id);
 	}
 	catch(const WorkerNotFoundException&)
 	{
-		SDPA_LOG_INFO("worker " << worker_id << " is not registered, asking him to do so first");
+		SDPA_LOG_INFO("The worker " << worker_id << " is not registered! Sending him a notification ...");
 
 		// the worker should register first, before posting a job request
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
 
-		sendEventToSlave(pErrorEvt, 0);
+		sendEventToSlave(pErrorEvt);
 	}
 	catch(const QueueFull&)
 	{
@@ -496,7 +476,6 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 		SDPA_LOG_FATAL("Unknown error during request-job handling!");
 	}
 }
-
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
@@ -559,7 +538,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 			SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));
 
 			// There is a problem with this if uncommented
-			sendEventToMaster(pSubmitJobAckEvt, 0);
+			sendEventToMaster(pSubmitJobAckEvt);
 
 			if( !master_.empty() )
 				incExtJobsCnt();
@@ -615,21 +594,37 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		const unsigned long long node_timeout (cfg()->get<unsigned long long>("node_timeout", 30 * 1000 * 1000));
         ptr_scheduler_->deleteNonResponsiveWorkers (node_timeout);
 
-        LOG(TRACE, "Trying to registering new worker: " << worker_id << " with rank " << rank);
+        LOG(TRACE, "Trying to register new worker " << worker_id << ", with the rank " << rank);
 
-		addWorker( worker_id, rank );
+		addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
 
-		SDPA_LOG_INFO( "Registered the worker " << worker_id << " with the rank " << rank);
+		SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
 
 		// send back an acknowledgment
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		pWorkerRegAckEvt->id() = evtRegWorker.id();
-		sendEventToSlave(pWorkerRegAckEvt, 0);
+		sendEventToSlave(pWorkerRegAckEvt);
 	}
-	catch(WorkerAlreadyExistException const & ex)
+	catch(WorkerAlreadyExistException& ex)
 	{
-		SDPA_LOG_ERROR( "An worker with either the same id or the same rank already exist into the worker map! "
-        "id="<<ex.worker_id()<<", rank="<<ex.rank());
+		if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
+		{
+			SDPA_LOG_ERROR( "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
+			SDPA_LOG_ERROR( "Re-schedule the jobs");
+			scheduler()->re_schedule( worker_id );
+			SDPA_LOG_ERROR( "Delete worker "<<worker_id);
+			scheduler()->delWorker(worker_id);
+			SDPA_LOG_ERROR( "Add worker"<<worker_id );
+			addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
+
+			SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
+
+			// send back an acknowledgment
+			SDPA_LOG_INFO( "Send registration ack to the agent " << worker_id << ", with the rank " << rank);
+			WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+			pWorkerRegAckEvt->id() = evtRegWorker.id();
+			sendEventToSlave(pWorkerRegAckEvt);
+		}
 	}
 	catch(const QueueFull& ex)
 	{
@@ -655,38 +650,35 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 		}
 		case ErrorEvent::SDPA_EWORKERNOTREG:
 		{
-			MLOG(WARN, "my master forgot me and asked me to register again, sending WorkerRegistrationEvent");
-			WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from(), rank() ));
+			MLOG(WARN, "New instance of the master is up, sending new registration request!");
+			WorkerRegistrationEvent::Ptr pWorkerRegEvt(new WorkerRegistrationEvent(name(), error.from(), rank(), m_strAgentUID));
 			sendEventToMaster(pWorkerRegEvt);
 			break;
 		}
 		case ErrorEvent::SDPA_ENODE_SHUTDOWN:
 		{
-                  try
-                  {
-                    worker_id_t worker_id(error.from());
+			try
+			{
+				worker_id_t worker_id(error.from());
+				findWorker(worker_id);
 
-                    findWorker(worker_id);
-
-                    MLOG(INFO, "worker " << worker_id << " went down (clean). Tell WorkerManager to remove it!");
-                    ptr_scheduler_->delWorker(worker_id);
-                  }
-                  catch (WorkerNotFoundException const & /*ignored*/)
-                  {
-                    if (error.from() == master_)
-                    {
-                      LOG(WARN, "master (" << master_ << ") went down");
-
-                      LOG(ERROR, "TODO: implement me. everything should stay alive, messages to master have to be kept though");
-                    }
-                  }
-                  catch (std::exception const & ex)
-                  {
-                    (void)ex;
-
-                    LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
-                  }
-                  break;
+				MLOG(INFO, "worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
+				ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
+			}
+			catch (WorkerNotFoundException const& /*ignored*/)
+			{
+				if( error.from() == master() )
+				{
+					LOG(WARN, "Master " << master() << " went down");
+					LOG(ERROR, "The master went down. Mark the node as unregistered!");
+					m_bRegistered = false;
+				}
+			}
+			catch (std::exception const& ex)
+			{
+				LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
+			}
+			break;
 		}
 		default:
 		{
@@ -899,6 +891,7 @@ unsigned int GenericDaemon::extJobsCnt()
 {
 	return m_nExternalJobs;
 }
+
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
 	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
@@ -938,7 +931,7 @@ void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 	}
 }
 
-void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
+void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
 	try {
 		  if( to_master_stage().get() )
@@ -965,7 +958,7 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt, 
 	}
 }
 
-void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt, std::size_t retries, unsigned long timeout)
+void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
 	try {
 		  if( to_slave_stage().get() )
@@ -1017,10 +1010,10 @@ const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_i
 	}
 }
 
-void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank ) throw (WorkerAlreadyExistException)
+void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
 	try {
-		ptr_scheduler_->addWorker(workerId, rank);
+		ptr_scheduler_->addWorker(workerId, rank, agent_uuid);
 	}catch( const WorkerAlreadyExistException& ex )
 	{
 		throw ex;
