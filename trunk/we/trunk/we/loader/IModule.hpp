@@ -22,7 +22,6 @@
 #include <string>
 
 #include <we/loader/types.hpp>
-#include <we/loader/exceptions.hpp>
 
 namespace we {
   namespace loader {
@@ -35,16 +34,12 @@ namespace we {
 
       virtual void add_function( const std::string &function
                                , WrapperFunction f
-                               ) throw ( DuplicateFunction
-                                       , FunctionException
-                                       ) = 0;
+                               ) = 0;
 
       virtual void add_function( const std::string &function
                                , WrapperFunction f
                                , const param_names_list_t &parameters
-                               ) throw ( DuplicateFunction
-                                       , FunctionException
-                                       ) = 0;
+                               ) = 0;
 
       virtual void* state (void*) = 0;
       virtual void* state (void) = 0;

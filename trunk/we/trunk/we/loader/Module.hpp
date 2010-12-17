@@ -148,9 +148,7 @@ namespace we
 
       void add_function ( const std::string &function
                         , WrapperFunction f
-                        ) throw ( DuplicateFunction
-                                , FunctionException
-                                )
+                        )
       {
         return add_function(function, f, param_names_list_t());
       }
@@ -158,9 +156,7 @@ namespace we
       void add_function( const std::string &function
                        , WrapperFunction f
                        , const param_names_list_t &parameters
-                       ) throw ( DuplicateFunction
-                               , FunctionException
-                               )
+                       )
       {
 #if 0
         {

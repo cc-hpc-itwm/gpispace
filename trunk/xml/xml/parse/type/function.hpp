@@ -763,8 +763,9 @@ namespace xml
                 ; ++fun
                 )
               {
-                stream << "  WE_REGISTER_FUN ("
+                stream << "  WE_REGISTER_FUN_AS ("
                        << cpp_util::access::make ("", "pnetc", "op", mod->first, fun->name)
+                       << ",\"" << fun->name << "\""
                        << ");"
                        << std::endl;
               }

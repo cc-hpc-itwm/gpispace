@@ -99,7 +99,7 @@ namespace fhg
 
         inline std::string mod_so (const std::string & mod)
         {
-          const path_type path (path::op() / (mod + "_mod"));
+          const path_type path (path::op() / ("lib" + mod));
 
           return extension::extend (path.string(), extension::so());
         }

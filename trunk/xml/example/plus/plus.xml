@@ -1,0 +1,6 @@
+<defun name="plus">
+  <in name="x" type="long"/>
+  <in name="y" type="long"/>
+  <out name="sum" type="long"/>
+  <module name="sum" function="sum plus (x, y)"/>
+</defun>
