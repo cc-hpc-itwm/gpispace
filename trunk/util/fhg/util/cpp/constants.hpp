@@ -70,6 +70,7 @@ namespace fhg
       {
         CONSTANT (std::string, hpp, "hpp")
         CONSTANT (std::string, cpp, "cpp")
+        CONSTANT (std::string, tmpl, "cpp_tmpl")
         CONSTANT (std::string, so, "so")
         CONSTANT (std::string, o, "o")
 
@@ -89,6 +90,11 @@ namespace fhg
         inline std::string cpp (const std::string & name)
         {
           return extension::extend (name, extension::cpp());
+        }
+
+        inline std::string tmpl (const std::string & name)
+        {
+          return extension::extend (name, extension::tmpl());
         }
 
         inline std::string mod_so (const std::string & mod)

@@ -811,6 +811,14 @@ namespace xml
         stream << "%.o: %.cpp"                                     << std::endl;
         stream << "\t$(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@"   << std::endl;
         stream                                                     << std::endl;
+        stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
+        stream << "\t$(warning !!!)"                               << std::endl;
+        stream << "\t$(warning !!! COPY $*.cpp_tmpl TO $*.cpp)"    << std::endl;
+        stream << "\t$(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
+                                                                   << std::endl;
+        stream << "\t$(warning !!!)"                               << std::endl;
+        stream << "\tcp $^ $@"                                     << std::endl;
+        stream                                                     << std::endl;
 
         for ( fun_info_map::const_iterator mod (m.begin())
             ; mod != m.end()
@@ -1408,7 +1416,7 @@ namespace xml
             const path_t prefix (state.path_to_cpp());
             const path_t path (prefix / cpp_util::path::op() / mod.name);
             const std::string file_hpp (cpp_util::make::hpp (mod.function));
-            const std::string file_cpp (cpp_util::make::cpp (mod.function));
+            const std::string file_cpp (cpp_util::make::tmpl (mod.function));
 
             {
               std::ostringstream stream;
@@ -1466,6 +1474,8 @@ namespace xml
               cpp_util::include ( stream
                                 , cpp_util::path::op() / mod.name / file_hpp
                                 );
+              cpp_util::include (stream, "stdexcept");
+
 
               namespace_open (stream, mod);
 
@@ -1476,6 +1486,9 @@ namespace xml
               stream << std::endl
                      << "      {" << std::endl
                      << "        // INSERT CODE HERE" << std::endl
+                     << "        throw std::runtime_error (\""
+                     << mod.name << "::" << mod.function
+                     << ": not yet implemented\");" << std::endl
                      << "      }" << std::endl
                 ;
 
