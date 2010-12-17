@@ -1489,7 +1489,7 @@ namespace xml
                      << "        // INSERT CODE HERE" << std::endl
                      << "        throw std::runtime_error (\""
                      << mod.name << "::" << mod.function
-                     << ": not yet implemented\");" << std::endl
+                     << ": NOT YET IMPLEMENTED\");" << std::endl
                      << "      }" << std::endl
                 ;
 
