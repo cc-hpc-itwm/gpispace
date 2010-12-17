@@ -23,6 +23,8 @@ namespace xml
     namespace type
     {
       typedef std::vector<std::string> port_arg_vec_type;
+      typedef std::vector<std::string> cinclude_list_type;
+      typedef std::vector<std::string> link_list_type;
 
       struct mod_type
       {
@@ -31,6 +33,12 @@ namespace xml
         std::string function;
         fhg::util::maybe<std::string> port_return;
         port_arg_vec_type port_arg;
+
+        fhg::util::maybe<std::string> code;
+        cinclude_list_type cincludes;
+        link_list_type links;
+
+        int level;
 
         // ***************************************************************** //
 
@@ -74,11 +82,13 @@ namespace xml
         mod_type ( const std::string & _name
                  , const std::string & _function
                  , const boost::filesystem::path & path
+                 , const int _level
                  )
           : name (_name)
           , function ()
           , port_return ()
           , port_arg ()
+          , level (_level)
         {
           // implement the grammar
           // S -> R F A
@@ -166,15 +176,21 @@ namespace xml
 
       std::ostream & operator << (std::ostream & s, const mod_type & m)
       {
-        return s << "mod ("
-                 << "mod = " << m.name
-                 << ", function = " << m.function
-                 << ", port_return = " << m.port_return
-                 << ", port_arg = " << fhg::util::show ( m.port_arg.begin()
-                                                       , m.port_arg.end()
-                                                       )
-                 << ")"
-          ;
+        s << level (m.level) << "mod (" << std::endl;
+
+        s << level (m.level+1) << "mod = " << m.name << std::endl;
+        s << level (m.level+1) << "function = " << m.function << std::endl;
+        s << level (m.level+1) << "port_return = " << m.port_return << std::endl;
+        s << level (m.level+1) << "port_arg = "
+          << fhg::util::show (m.port_arg.begin(), m.port_arg.end()) << std::endl;
+
+        s << level (m.level+1) << "cincludes = "
+          << fhg::util::show (m.cincludes.begin(), m.cincludes.end()) << std::endl;
+        s << level (m.level+1) << "links = "
+          << fhg::util::show (m.links.begin(), m.links.end()) << std::endl;
+        s << level (m.level+1) << "code = " << m.code << std::endl;
+
+        return s << level (m.level) << ")";
       }
     }
   }

@@ -23,6 +23,7 @@
 #include <fhg/util/read.hpp>
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/join.hpp>
 
 #include <boost/lexical_cast.hpp>
 
@@ -455,7 +456,11 @@ namespace xml
                 }
               else if (child_name == "module")
                 {
+                  ++state.level();
+
                   f.f = mod_type (child, state);
+
+                  --state.level();
                 }
               else if (child_name == "net")
                 {
@@ -508,13 +513,60 @@ namespace xml
     // ********************************************************************* //
 
     static type::mod_type
-    mod_type (const xml_node_type * node, state::type & state)
+    mod_type ( const xml_node_type * node, state::type & state)
     {
-      return type::mod_type
+      type::mod_type mod
         ( required ("mod_type", node, "name", state.file_in_progress())
         , required ("mod_type", node, "function", state.file_in_progress())
         , state.file_in_progress()
+        , state.level()
         );
+
+      for ( xml_node_type * child (node->first_node())
+          ; child
+          ; child = child ? child->next_sibling() : child
+          )
+        {
+          const std::string child_name
+            (name_element (child, state.file_in_progress()));
+
+          if (child)
+            {
+              if (child_name == "cinclude")
+                {
+                  const std::string href
+                    (required ("mod_type", child, "href", state.file_in_progress()));
+
+                  mod.cincludes.push_back (href);
+                }
+              else if (child_name == "link")
+                {
+                  const std::string href
+                    (required ("mod_type", child, "href", state.file_in_progress()));
+
+                  mod.links.push_back (href);
+                }
+              else if (child_name == "code")
+                {
+                  const std::vector<std::string> cdata
+                    (parse_cdata (child, state.file_in_progress()));
+
+                  mod.code = fhg::util::join (cdata, "\n");
+                }
+              else
+                {
+                  state.warn
+                    ( warning::unexpected_element ( child_name
+                                                  , "mod_type"
+                                                  , state.file_in_progress()
+                                                  )
+                    );
+                }
+            }
+        }
+
+
+      return mod;
     }
 
     // ********************************************************************* //

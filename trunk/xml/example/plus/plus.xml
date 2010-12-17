@@ -2,5 +2,14 @@
   <in name="x" type="long"/>
   <in name="y" type="long"/>
   <out name="sum" type="long"/>
-  <module name="sum" function="sum plus (x, y)"/>
+  <module name="num" function="sum plus (x, y)">
+    <cinclude href="inc1"/>
+    <link href="link1"/>
+    <cinclude href="inc2"/>
+    <link href="link2"/>
+    <code>
+      <![CDATA[if (x < 4) { y += 23; }]]>
+      return x+y;
+    </code>
+  </module>
 </defun>
