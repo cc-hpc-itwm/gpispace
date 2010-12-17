@@ -199,7 +199,7 @@ static int distribute_config (const gpi_space::config & cfg)
     }
   }
 
-  LOG(INFO, "config sucessfully distributed to " << success_count << " nodes");
+  LOG(INFO, "config successfully distributed to " << success_count << " nodes");
   return GPI_NO_ERROR;
 }
 
@@ -283,6 +283,10 @@ static int main_loop (const gpi_space::config & cfg, const int rank)
       }
     }  while (! done);
   }
+  else
+  {
+
+  }
   return rc;
 }
 
@@ -315,7 +319,8 @@ static void init_config (gpi_space::config & cfg)
 
 static int configure (const gpi_space::config & cfg)
 {
-  // configure logging, etc.
+  LOG(INFO, "configuring...");
+  gpi_space::logging::configure (cfg.logging);
   return 0;
 }
 
@@ -360,7 +365,6 @@ int main (int ac, char *av[])
       LOG(ERROR, "could not read config file: " << config_file << ": " << ex.what());
       return GPI_CONFIG_ERROR;
     }
-    LOG(TRACE, "read config: " << std::endl << config);
   }
   else
   {
@@ -426,6 +430,7 @@ int main (int ac, char *av[])
   if (0 == rc)
   {
     rc = configure(config);
+    LOG_IF (ERROR, rc, "configuration on rank " << rank << " failed: " << rc);
     allReduceGPI (&rc, &rc, 1, GPI_MAX, GPI_INT);
 
     if (rc == 0)

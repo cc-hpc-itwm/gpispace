@@ -2,27 +2,40 @@
 #define GPI_SPACE_CONFIG_LOGGING_HPP 1
 
 #include <gpi-space/config/config-data.hpp>
+#include <fhglog/minimal.hpp>
+#include <fhg/util/getenv.hpp>
 
 #include <boost/lexical_cast.hpp>
 
 /*
+  ;; future
+
   [logger ""]
   level = MIN
-  appender = logserver logfile
+  sink = net
 
-  [appender "logserver"]
-  type = server
-  level = DEF
-
+  [sink "net"]
+  type = udp
   host = localhost
   port = 2438
 
-  [appender "logfile"]
-  type = file
+  [sink "console"]
   level = MIN
+  type = stream
+  stream = stderr
 
+  [sink "file"]
+  type = file
   path = /tmp/foo/bar.log
   mode = 0600
+
+  ;; now
+  [logging]
+  ; 0 - MIN (more output)
+  ; ...
+  ; 5 - MAX (less output)
+  level = 0
+  server = ip[:port]
 */
 
 namespace gpi_space
@@ -32,9 +45,9 @@ namespace gpi_space
     enum type_code_t
       {
         TC_INVALID = 0   // i.e. disabled
-      , TC_SERVER = 1
+      , TC_REMOTE = 1
       , TC_FILE = 2
-      , TC_CONSOLE = 3
+      , TC_STREAM = 3
       // more to come
       };
 
@@ -50,15 +63,15 @@ namespace gpi_space
       uint16_t mode;
     };
 
-    struct console_t
+    struct stream_t
     {
-      enum console_type
+      enum stream_type
         {
           CONSOLE_OUT
         , CONSOLE_ERR
         , CONSOLE_LOG
         };
-      console_type which;
+      stream_type which;
     };
 
     struct sink_t
@@ -67,12 +80,14 @@ namespace gpi_space
         : type (TC_INVALID)
       {}
 
-      uint16_t level; // log level
-      uint16_t type;  // see type_code_t
+      char    level[16]; // log level
+      uint8_t type;  // see type_code_t
 
       union
       {
         server_t server;
+        file_t file;
+        stream_t stream;
       };
     };
 
@@ -82,10 +97,40 @@ namespace gpi_space
       sink_t sink[max_sinks];
 
       template <typename Mapping>
-      void load (Mapping const &)
+      void load (Mapping const &cfg)
       {
+        // env before cfg file
+        std::string server
+          (fhg::util::getenv("FHGLOG_to_server", cfg.get ("logging.server", "localhost")));
+        std::string level
+          (fhg::util::getenv("FHGLOG_level",     cfg.get ("logging.level", "INFO")));
+
+        sink[0].type = TC_REMOTE;
+        snprintf (sink[0].server.host, gpi_space::MAX_HOST_LEN, "%s", server.c_str());
+        snprintf (sink[0].level      , 16                     , "%s", level.c_str());
       }
     };
+
+    // WORK HERE: this is just a quick hack to get things working...
+    void configure (config const & c)
+    {
+      for (std::size_t s (0); s < config::max_sinks; ++s)
+      {
+        switch (c.sink[s].type)
+        {
+        case TC_REMOTE:
+          {
+            setenv ("FHGLOG_to_server", c.sink[s].server.host, true);
+            setenv ("FHGLOG_level", c.sink[s].level, true);
+          }
+          break;
+        default:
+          break;
+        }
+      }
+
+      FHGLOG_SETUP();
+    }
   }
 }
 
