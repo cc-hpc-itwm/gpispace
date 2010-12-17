@@ -479,7 +479,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
-		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
 		ptrNRE_0->shutdown();
 		ptrAgg->shutdown();
