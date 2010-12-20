@@ -73,7 +73,8 @@ main ()
     {
       std::cout                                                    << std::endl;
       std::cout << "        {"                                     << std::endl;
-      std::cout << "          descr d (" << *name << ");"          << std::endl;
+      std::cout << "          descr d (\"" << name->string() << "\");"
+                                                                   << std::endl;
 
       boost::filesystem::ifstream file (root() / *name);
 
