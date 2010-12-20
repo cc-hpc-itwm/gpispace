@@ -25,8 +25,8 @@
 int main(int, char **)
 {
   using namespace sdpa::events;
-  fhg::log::Configurator::configure();  
-  
+  fhg::log::Configurator::configure();
+
   int errcount(0);
 
   Codec codec;
@@ -205,7 +205,7 @@ int main(int, char **)
       std::clog << "\tdecoded event is not a ConfigReplyEvent!" << std::endl;
     }
   }
-  
+
   {
     std::clog << "testing DeleteJobEvent...";
     DeleteJobEvent e("foo", "bar", "job-id-1");
@@ -355,7 +355,7 @@ int main(int, char **)
       std::clog << "\tdecoded event is not a JobFailedAckEvent!" << std::endl;
     }
   }
-  
+
   {
     std::clog << "testing JobFinishedEvent...";
     sdpa::job_result_t result;
@@ -415,7 +415,7 @@ int main(int, char **)
       std::clog << "\tdecoded event is not a JobFinishedAckEvent!" << std::endl;
     }
   }
-  
+
   {
     std::clog << "testing JobResultsReplyEvent...";
     sdpa::job_result_t result;
@@ -536,7 +536,11 @@ int main(int, char **)
 
   {
     std::clog << "testing WorkerRegistrationEvent...";
-    WorkerRegistrationEvent e("foo", "bar", 100);
+    const sdpa::events::SDPAEvent::address_t from ("from");
+    const sdpa::events::SDPAEvent::address_t to ("to");
+    const sdpa::worker_id_t worker_id ("worker_id");
+    const int rank (23);
+    WorkerRegistrationEvent e(from, to, rank, worker_id);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
