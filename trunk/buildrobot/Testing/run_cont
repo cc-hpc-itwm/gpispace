@@ -40,6 +40,7 @@ check_host
 
 #export PATH=/home/pspro/inst/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/opt/kde3/bin:/usr/lib/jvm/jre/bin:/usr/lib/mit/bin
 
+export LANG=en_US.UTF-8
 export CTEST=//usr/bin/ctest
 
 unset http_proxy
