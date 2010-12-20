@@ -41,7 +41,7 @@ namespace sdpa { namespace events {
         : MgmtEvent()
       {}
 
-      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank, const sdpa::worker_id_t& agent_uuid )
+      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank, const sdpa::worker_id_t& agent_uuid = "" )
 		  : MgmtEvent(a_from, a_to), rank_(rank), agent_uuid_(agent_uuid) { }
 
       virtual ~WorkerRegistrationEvent() { }
