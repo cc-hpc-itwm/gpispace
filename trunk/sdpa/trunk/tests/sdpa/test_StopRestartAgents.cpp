@@ -59,7 +59,7 @@ using namespace seda;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("12100"); return s; }
 
-const int NMAXTRIALS = 10;
+const int NMAXTRIALS = 3;
 
 namespace po = boost::program_options;
 
@@ -240,6 +240,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartOrch )
 	ptrOrch->shutdown();
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testStopRestartAgg )
 {
 	LOG( INFO, "***** testStopRestartAgg *****"<<std::endl);
@@ -452,6 +453,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartAll )
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
 }
+*/
 
 /*
 BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
@@ -470,6 +472,9 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
 	ptrOrch->start();
+
+	LOG( INFO, "Start the client thread ...");
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	LOG( INFO, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
@@ -500,9 +505,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
 		return;
 	}
 
-	LOG( INFO, "Start the client thread ...");
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
 	LOG( INFO, "Deliberately shutdown the aggregator now!");
 	ptrAgg->shutdown();
 
@@ -514,7 +516,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
 
 	// give some time to the NRE to re-register
 	sleep(5);
-	LOG( INFO, "The test case testStopRestartAgg_and_JobSubmitted terminated!");
 
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 	m_threadClient.join();
@@ -522,6 +523,8 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
+
+	LOG( INFO, "The test case testStopRestartAgg_and_JobSubmitted terminated!");
 
 }
 */

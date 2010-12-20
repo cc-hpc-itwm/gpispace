@@ -28,6 +28,7 @@
 #include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sstream>
+#include <sdpa/JobId.hpp>
 
 using namespace std;
 using namespace sdpa::tests;
@@ -56,8 +57,9 @@ BOOST_AUTO_TEST_CASE(testLoadBalancer)
 	for(int k=0;k<NWORKERS;k++)
 	{
 		oss.str("");
-		oss<<"Worker "<<k;
-		wm.addWorker(oss.str(), k);
+		oss<<"TestWorker_"<<k;
+		sdpa::JobId id;
+		wm.addWorker(oss.str(), k, id.str());
 	}
 
 	// submit jobs to the workers
@@ -71,8 +73,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancer)
 				sdpa::job_id_t jobId;
 				ptrCurrWorker->dispatch(jobId);
 			}
-
-
 		}
 		catch(const NoWorkerFoundException& ex) {
 			SDPA_LOG_ERROR("No worker found!");
