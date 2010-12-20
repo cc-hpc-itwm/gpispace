@@ -712,10 +712,15 @@ namespace xml
       {
         std::string name;
         std::string code;
+        link_list_type links;
 
-        fun_info_type (const std::string & _name, const std::string & _code)
+        fun_info_type ( const std::string & _name
+                      , const std::string & _code
+                      , const link_list_type & _links
+                      )
           : name (_name)
           , code (_code)
+          , links (_links)
         {}
       };
 
@@ -801,16 +806,24 @@ namespace xml
           }
 
         stream                                                     << std::endl;
+        stream << "### CONFIGURE SECTION"                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "CXXINCLUDE += -I . -I $(BOOST_ROOT)/include"    << std::endl;
+        stream << "CXXFLAGS += -Wall -O3 -fPIC"                    << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef CP"                                      << std::endl;
+        stream << "  CP = cp"                                      << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "### NO NEED TO CONFIGURE BELOW THIS LINE"       << std::endl;
+        stream                                                     << std::endl;
         stream << ".PHONY: default modules"                        << std::endl;
         stream                                                     << std::endl;
         stream << "default: $(MODULES)"                            << std::endl;
         stream << "modules: $(MODULES) objcleandep"                << std::endl;
         stream                                                     << std::endl;
-        stream << "INCLUDES += -I . -I $(BOOST_ROOT)/include"      << std::endl;
-        stream << "CXXFLAGS += -Wall -O3 -fPIC"                    << std::endl;
-        stream                                                     << std::endl;
         stream << "%.o: %.cpp"                                     << std::endl;
-        stream << "\t$(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@"   << std::endl;
+        stream << "\t$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $^ -o $@" << std::endl;
         stream                                                     << std::endl;
         stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
@@ -818,7 +831,7 @@ namespace xml
         stream << "\t$(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
                                                                    << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
-        stream << "\tcp $^ $@"                                     << std::endl;
+        stream << "\t$(CP) $^ $@"                                  << std::endl;
         stream                                                     << std::endl;
 
         for ( fun_info_map::const_iterator mod (m.begin())
@@ -844,7 +857,24 @@ namespace xml
 
             stream                                                 << std::endl;
             stream << cpp_util::make::mod_so (mod->first)
-                   << ": $(" << objs << ")"                        << std::endl;
+                   << ": $(" << objs << ")";
+
+            for ( fun_info_list_type::const_iterator fun (funs.begin())
+                ; fun != funs.end()
+                ; ++fun
+                )
+              {
+                for ( link_list_type::const_iterator link (fun->links.begin())
+                    ; link != fun->links.end()
+                    ; ++link
+                    )
+                  {
+                    stream << " " << *link;
+                  }
+              }
+
+            stream << std::endl;
+
             stream << "\t$(CXX) $(CXXFLAGS) -shared $^ -o $@"      << std::endl;
             stream                                                 << std::endl;
           }
@@ -1417,7 +1447,11 @@ namespace xml
             const path_t prefix (state.path_to_cpp());
             const path_t path (prefix / cpp_util::path::op() / mod.name);
             const std::string file_hpp (cpp_util::make::hpp (mod.function));
-            const std::string file_cpp (cpp_util::make::tmpl (mod.function));
+            const std::string file_cpp
+              ( mod.code.isJust()
+              ? cpp_util::make::cpp (mod.function)
+              : cpp_util::make::tmpl (mod.function)
+              );
 
             {
               std::ostringstream stream;
@@ -1432,6 +1466,7 @@ namespace xml
 
               m[mod.name].push_back (fun_info_type ( mod.function
                                                    , stream.str()
+                                                   , mod.links
                                                    )
                                     );
             }
@@ -1475,8 +1510,20 @@ namespace xml
               cpp_util::include ( stream
                                 , cpp_util::path::op() / mod.name / file_hpp
                                 );
-              cpp_util::include (stream, "stdexcept");
 
+              for ( cinclude_list_type::const_iterator inc
+                      (mod.cincludes.begin())
+                  ; inc != mod.cincludes.end()
+                  ; ++inc
+                  )
+                {
+                  cpp_util::include (stream, *inc);
+                }
+
+              if (mod.code.isNothing())
+                {
+                  cpp_util::include (stream, "stdexcept");
+                }
 
               namespace_open (stream, mod);
 
@@ -1484,14 +1531,21 @@ namespace xml
                             , port_return, ports_const, ports_mutable, mod
                             );
 
-              stream << std::endl
-                     << "      {" << std::endl
-                     << "        // INSERT CODE HERE" << std::endl
-                     << "        throw std::runtime_error (\""
-                     << mod.name << "::" << mod.function
-                     << ": NOT YET IMPLEMENTED\");" << std::endl
-                     << "      }" << std::endl
-                ;
+              stream << std::endl << "      {" << std::endl;
+
+              if (mod.code.isNothing())
+                {
+                  stream << "        // INSERT CODE HERE" << std::endl
+                         << "        throw std::runtime_error (\""
+                         << mod.name << "::" << mod.function
+                         << ": NOT YET IMPLEMENTED\");";
+                }
+              else
+                {
+                  stream << *mod.code;
+                }
+
+              stream << std::endl << "      }" << std::endl;
 
               namespace_close (stream, mod);
 

@@ -3,13 +3,8 @@
   <in name="y" type="long"/>
   <out name="sum" type="long"/>
   <module name="num" function="sum plus (x, y)">
-    <cinclude href="inc1"/>
-    <link href="link1"/>
-    <cinclude href="inc2"/>
-    <link href="link2"/>
-    <code>
-      <![CDATA[if (x < 4) { y += 23; }]]>
-      return x+y;
-    </code>
+    <cinclude href="test.hpp"/>
+    <link href="test.o"/>
+    <code>return x + y + v();</code>
   </module>
 </defun>
