@@ -99,12 +99,12 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 			throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
 		}
 
-		if( it->second->agent_uuid() == agent_uuid )
+		/*if( it->second->agent_uuid() == agent_uuid )
 		{
 			//SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
 			bFound = true;
 			throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
-		}
+		}*/
 	}
 
 	Worker::ptr_t pWorker( new Worker( workerId, rank, agent_uuid ));

@@ -251,11 +251,11 @@ sc::result Up::react(const InterruptEvent& e)
 	return transit<Down>(&DaemonFSM::action_interrupt, e);
 }
 
-sc::result Up::react(const LifeSignEvent& e )
+/*sc::result Up::react(const LifeSignEvent& e )
 {
 	////SDPA_LOG_DEBUG("React to  LifeSignEvent");
 	return transit<Up>(&DaemonFSM::action_lifesign, e);
-}
+}*/
 
 sc::result Up::react(const DeleteJobEvent& e)
 {

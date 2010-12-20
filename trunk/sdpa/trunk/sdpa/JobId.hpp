@@ -81,7 +81,7 @@ namespace sdpa {
     template <class Archive>
 	void serialize(Archive& ar, unsigned int /* version */)
 	{
-	  ar &  boost::serialization::make_nvp("JobID", id_);
+    	ar &  boost::serialization::make_nvp("JobID", id_);
 	}
 
 

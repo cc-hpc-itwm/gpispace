@@ -125,7 +125,7 @@ struct Configuring  : sc::simple_state<Configuring, DaemonFSM>
 struct Up : sc::simple_state<Up, DaemonFSM>
 {
 	typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
-                   sc::custom_reaction<sdpa::events::LifeSignEvent>,
+//                   sc::custom_reaction<sdpa::events::LifeSignEvent>,
                    sc::custom_reaction<sdpa::events::DeleteJobEvent>,
                    sc::custom_reaction<sdpa::events::RequestJobEvent>,
                    sc::custom_reaction<sdpa::events::SubmitJobEvent>,
@@ -138,7 +138,7 @@ struct Up : sc::simple_state<Up, DaemonFSM>
 	~Up() { }
 
 	sc::result react( const sdpa::events::InterruptEvent& );
-	sc::result react( const sdpa::events::LifeSignEvent& );
+//	sc::result react( const sdpa::events::LifeSignEvent& );
   	sc::result react( const sdpa::events::DeleteJobEvent& );
     sc::result react( const sdpa::events::RequestJobEvent& );
     sc::result react( const sdpa::events::SubmitJobEvent& );
