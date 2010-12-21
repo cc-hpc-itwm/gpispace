@@ -80,7 +80,7 @@ heap_mk (Size_t size)
 static inline void
 heap_copy (pheap_t dest, pheap_t src, Size_t size)
 {
-  if (dest == NULL)
+  if (dest == NULL || src == NULL)
     return;
 
   memcpy (dest->arr, src->arr, size * sizeof (Offset_t));
