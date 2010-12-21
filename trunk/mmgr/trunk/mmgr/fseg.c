@@ -8,7 +8,7 @@
 void
 fseg_ins (PFSeg_t PFSeg, const Key_t Key, const Value_t Value)
 {
-  PValue_t PVal = smap_get (PFSeg, Key);
+  PValue_t PVal = (PFSeg == NULL) ? NULL : smap_get (*PFSeg, Key);
   TrieMap_t TrieMap = (PVal == NULL) ? NULL : (TrieMap_t) (*PVal);
 
   *trie_ins (&TrieMap, Value, NULL) = Value;
