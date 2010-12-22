@@ -208,7 +208,6 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-/*
 BOOST_AUTO_TEST_CASE( testStopRestartOrch )
 {
 	LOG( INFO, "***** testStopRestartOrch *****"<<std::endl);
@@ -490,8 +489,8 @@ BOOST_AUTO_TEST_CASE( testStopRestartAll )
 	LOG( INFO, "The test case testStopRestartAll terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
-*/
 
+/*
 BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
 {
 	LOG( INFO, "***** testStopRestartAgg_and_JobSubmitted *****"<<std::endl);
@@ -571,6 +570,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
 	LOG( INFO, "The test case testStopRestartAgg_and_JobSubmitted terminated!");
 
 }
+*/
 
 /*
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrch )
