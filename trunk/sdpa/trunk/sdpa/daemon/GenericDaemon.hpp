@@ -19,8 +19,9 @@
 #define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
 
 #include <seda/Strategy.hpp>
-#include <seda/comm/delivery_service.hpp>
-#include <seda/comm/ServiceThread.hpp>
+
+//#include <seda/comm/delivery_service.hpp>
+//#include <seda/comm/ServiceThread.hpp>
 
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/util/Config.hpp>
