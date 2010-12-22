@@ -4,437 +4,307 @@
 #include <sstream>
 #include <string>
 #include <fstream>
-#include <cmath>
 
 #include <stdexcept>
-#include <limits>
 
-#include <unistd.h>
-#include <limits.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <poll.h>
-#include <sys/time.h>
-#include <sys/signal.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
-#include "process.hpp"
+#include <process.hpp>
+
+#include <boost/thread.hpp>
 
 namespace process
 {
-  process_t::process_t (std::string const & command_line)
-    : command_line_(command_line)
-    , child_pid_(-1)
-    , exit_code_(0)
+  namespace detail
   {
-    for (int stream (0); stream < 3; ++stream)
-    {
-      for (int side (0); side < 2; ++side)
-      {
-        pipe_[stream][side] = -1;
-      }
-    }
-  }
+    /* ********************************************************************* */
 
-  bool process_t::is_alive () const
-  {
-    if (child_pid_ < 1)
+    inline void do_error (const std::string & msg)
     {
-      return false;
+      std::ostringstream sstr;
+
+      sstr << msg << ": " << strerror (errno);
+
+      MLOG (ERROR, sstr.str());
+
+      throw std::runtime_error (sstr.str());
     }
 
-    for (;;)
+    template<typename T>
+    inline void do_error (const std::string & msg, T x)
     {
-      int status(0);
-      errno = 0;
-      int ec = waitpid(child_pid_, &status, WNOHANG);
-      if (ec == child_pid_)
-      {
-        child_pid_ = -1;
-        if (WIFEXITED (status))
+      std::ostringstream sstr;
+
+      sstr << msg << ": " << x;
+
+      do_error (sstr.str());
+    }
+
+    /* ********************************************************************* */
+
+    inline void do_close (int * fd)
+    {
+      if (close (*fd) < 0)
         {
-          exit_code_ = WEXITSTATUS(status);
-          MLOG(INFO, "child exited with exitcode: " << exit_code_);
-          return false;
+          do_error ("close failed");
         }
-        else if (WIFSIGNALED(status))
+
+      *fd = -1;
+    }
+
+    /* ********************************************************************* */
+
+    enum {RD = 0, WR = 1};
+
+    /* ********************************************************************* */
+
+    inline void prepare_parent_pipes (int in[2], int out[2])
+    {
+      do_close (in + RD);
+      do_close (out + WR);
+    }
+
+    /* ********************************************************************* */
+
+    inline void prepare_child_pipes (int in[2], int out[2])
+    {
+      do_close (in + WR);
+      do_close (out + RD);
+
+      if (in[RD] != STDIN_FILENO)
         {
-          exit_code_ = -WTERMSIG(status);
-          MLOG(INFO, "child exited due to signal: " << -exit_code_);
-          return false;
+          if (dup2 (in[RD], STDIN_FILENO) != STDIN_FILENO)
+            {
+              do_error ("dup to stdin failed");
+            }
+
+          do_close (in + RD);
         }
-      }
-      else if (ec == 0)
-      {
-        return true;
-      }
-      else
-      {
-        if (errno == EINTR)
-          continue;
-        else if (errno == ECHILD)
+
+      if (out[WR] != STDOUT_FILENO)
         {
-          MLOG(ERROR, "child is already dead!");
-          return false;
+          if (dup2 (out[WR], STDOUT_FILENO) != STDOUT_FILENO)
+            {
+              do_error ("dup to stdout failed");
+            }
+
+          do_close (out + WR);
         }
-        else
+    }
+  } // namespace detail
+
+  /* *********************************************************************** */
+
+  namespace thread
+  {
+    /* ********************************************************************* */
+
+    inline void reader ( int * fd
+                       , void * output
+                       , int & bytes_read
+                       , const int & block_size = PIPE_BUF
+                       )
+    {
+      DLOG (TRACE, "start thread read");
+
+      char * buf (static_cast<char *>(output));
+
+      while (*fd != -1)
         {
-          MLOG(ERROR, "STRANGE! " << strerror(errno));
-          child_pid_ = -1;
-          return false;
-        }
-      }
-    }
-    return true;
-  }
+          DLOG (TRACE, "try to read " << block_size << " bytes");
 
-  int process_t::terminate ()
-  {
-    int ec (0);
+          const int r (read (*fd, buf, block_size));
 
-    if (is_alive ())
-    {
-      bool dead (false);
-
-      // TODO: how to terminate and wait without blocking properly?
-      kill (child_pid_, SIGTERM);
-      for (int trial (0); trial < 3 && !dead; ++trial)
-      {
-        int status (0);
-        usleep (100);
-        if (waitpid(child_pid_, &status, WNOHANG) != 0)
-        {
-          if (WIFEXITED (status))
-          {
-            ec = WEXITSTATUS(status);
-            dead = true;
-            MLOG(INFO, "child exited with exitcode: " << ec);
-          } else if (WIFSIGNALED(status))
-          {
-            ec = -WTERMSIG(status);
-            dead = true;
-            MLOG(INFO, "child exited due to signal: " << -ec);
-          }
-        }
-      }
-      if (! dead)
-      {
-        MLOG(WARN, "killing child: " << child_pid_);
-
-        kill (child_pid_, SIGKILL);
-      }
-    }
-    return ec;
-  }
-
-  int process_t::wait (int options)
-  {
-    LOG(DEBUG, "waiting for child...");
-
-    if (child_pid_ > 0)
-    {
-      int status (0);
-      waitpid(child_pid_, &status, options);
-      if (WIFEXITED (status))
-      {
-        exit_code_ = WEXITSTATUS(status);
-        MLOG(INFO, "child exited with exitcode: " << exit_code_);
-      } else if (WIFSIGNALED(status))
-      {
-        exit_code_ = -WTERMSIG(status);
-        MLOG(INFO, "child exited due to signal: " << -exit_code_);
-      }
-      else
-      {
-        MLOG(ERROR, "STRANGE status after waitpid(): " << status << ": " << strerror(errno));
-        exit_code_ = 42;
-      }
-      child_pid_ = -1;
-
-      for (int stream = 0; stream < 3; ++stream)
-      {
-        close (pipe_[stream][0]); pipe_[stream][0] = -1;
-      }
-    }
-
-    return exit_code_;
-  }
-
-  void process_t::start ()
-  {
-    if (is_alive())
-    {
-      throw std::runtime_error ("already running!");
-    }
-
-    initialize_pipes ();
-    pid_t self (getpid());
-
-    errno = 0;
-    child_pid_ = fork();
-    if (child_pid_ == 0)
-    {
-      // never returns
-      child (self);
-    }
-    else if (child_pid_ > 0)
-    {
-      LOG(INFO, "child running with pid: " << child_pid_);
-
-      close (pipe_[0][1]);
-      close (pipe_[0][1]);
-      close (pipe_[0][1]);
-
-      return;
-    }
-    else
-    {
-      LOG(ERROR, "could not fork child: " << strerror(errno));
-      throw std::runtime_error ("could not fork child: " + std::string (strerror(errno)));
-    }
-  }
-
-  void process_t::child (const pid_t parent_pid)
-  {
-    dup2(pipe_[0][1], 0);
-    dup2(pipe_[1][1], 1);
-    dup2(pipe_[2][1], 2);
-
-    {
-      int fd (1024);
-      while ( fd --> 3 )
-      {
-        close (fd);
-      }
-    }
-
-    std::vector<std::string> cmdline;
-    fhg::log::split ( command_line_
-                    , " "
-                    , std::back_inserter (cmdline)
-                    );
-
-    char ** av = new char*[cmdline.size()+1];
-    av[cmdline.size()] = (char*)(NULL);
-
-    std::size_t idx (0);
-    for ( std::vector<std::string>::const_iterator it (cmdline.begin())
-	; it != cmdline.end()
-	; ++it, ++idx
-	)
-    {
-      av[idx] = new char[it->size()+1];
-      memcpy(av[idx], it->c_str(), it->size());
-      av[idx][it->size()] = (char)0;
-    }
-
-    if ( execvp( av[0], av ) < 0 )
-    {
-      std::cerr << "could not execute command line: " << command_line_ << std::endl;
-      _exit (127);
-    }
-  }
-
-  void process_t::communicate ( const void * input, const std::size_t input_size
-                            , void * output, const std::size_t output_size
-                            , const std::size_t buffer_size
-                            )
-  {
-    const int timeout = -1;
-
-    const std::size_t error_size (4096);
-    char error_buffer[error_size + 1];
-    error_buffer[error_size] = 0;
-
-    const char *src = (const char*)(input);
-    char *dst = (char*)(output);
-    char *err = error_buffer;
-
-    std::size_t bytes_wr (0);
-    std::size_t bytes_rd (0);
-    std::size_t bytes_er (0);
-
-    signal (SIGPIPE, SIG_IGN);
-
-    struct pollfd poll_fd[3];
-
-    // stderr
-    poll_fd[0].fd = pipe_[2][0];
-    poll_fd[0].events  = POLLIN;
-    poll_fd[0].revents = 0;
-
-    // stdout
-    poll_fd[1].fd = pipe_[1][0];
-    poll_fd[1].events  = POLLIN;
-    poll_fd[1].revents = 0;
-
-    // stdin
-    poll_fd[2].fd = pipe_[0][0];
-    poll_fd[2].events  = POLLOUT;
-    poll_fd[2].revents = 0;
-
-    do
-    {
-      errno = 0;
-      DLOG(TRACE, "polling...");
-      int ready = poll (poll_fd, 3, timeout);
-
-      for (int fd (0); fd < 3 && ready; ++fd)
-      {
-        if (poll_fd[fd].revents != 0)
-        {
-          --ready;
-          if (poll_fd[fd].revents & POLLERR)
-          {
-            LOG(WARN, "error on filedescriptor " << poll_fd[fd].fd);
-            if (poll_fd[fd].fd == pipe_[0][0])
+          if (r < 0)
             {
-              close (pipe_[0][0]);
-              pipe_[0][0] = poll_fd[fd].fd = -1;
+              detail::do_error ("read failed");
             }
-            LOG(WARN, "stopping to read/write...");
-            ready = 0;
-          }
-          else if (poll_fd[fd].revents & POLLHUP)
-          {
-            LOG(WARN, "hup on filedescriptor " << poll_fd[fd].fd);
-          }
-          else if (poll_fd[fd].revents & POLLNVAL)
-          {
-            LOG(WARN, "nval on filedescriptor " << poll_fd[fd].fd);
-          }
-          else if (poll_fd[fd].revents & POLLOUT)
-          {
-            DLOG(TRACE, "can write to " << poll_fd[fd].fd);
-            if (poll_fd[fd].fd == pipe_[0][0]) {
-              int wr = write ( pipe_[0][0]
-                             , src
-                             , std::min( buffer_size
-                                       , (input_size - bytes_wr)
-                                       )
-                             );
-              if (wr < 1)
-              {
-                DLOG(TRACE, "closing input stream");
-                close (pipe_[0][0]);
-                pipe_[0][0] = poll_fd[fd].fd = -1;
-              }
-              else
-              {
-                bytes_wr += wr;
-                src += wr;
-              }
-            }
-            else
+          else if (r == 0)
             {
-              LOG(ERROR, "STRANGE file descriptor ready to be read from: " << poll_fd[fd].fd);
-              throw std::runtime_error("STRANGE file descriptor ready to be read from!");
+              DLOG (TRACE, "read pipe closed");
+
+              *fd = -1;
             }
-          }
-          else if (poll_fd[fd].revents & POLLIN)
-          {
-            DLOG(TRACE, "data available on fd: " << poll_fd[fd].fd);
-            if (poll_fd[fd].fd == pipe_[1][0])
-            {
-              DLOG(TRACE, "child sent something on stdout");
-              int rd = read (pipe_[1][0], dst, output_size - bytes_rd);
-              if (rd < 1)
-              {
-                DLOG(TRACE, "closing output stream");
-                close (pipe_[1][0]);
-                pipe_[1][0] = -1;
-                poll_fd[fd].fd = -1;
-              }
-              else
-              {
-                bytes_rd += rd;
-                dst += rd;
-              }
-            }
-            else if (poll_fd[fd].fd == pipe_[2][0])
-            {
-              DLOG(TRACE, "child sent something on stderr");
-              int rd = read (pipe_[2][0], err, error_size - bytes_er);
-              if (rd < 1)
-              {
-                DLOG(TRACE, "closing error stream");
-                close (pipe_[2][0]);
-                pipe_[2][0] = poll_fd[fd].fd = -1;
-              }
-              else
-              {
-                DLOG(TRACE, "read: " << err);
-                bytes_er += rd;
-                err += rd;
-                if (bytes_er > error_size)
-                {
-                  bytes_er = 0;
-                  err = error_buffer;
-                }
-              }
-            }
-            else
-            {
-              LOG(WARN, "STRANGE file descriptor " << poll_fd[fd].fd << " ready for read");
-              throw std::runtime_error ("unknown filedescriptor!");
-            }
-          }
           else
-          {
-            LOG(ERROR, "STRANGE revents: " << poll_fd[fd].revents << " on fd " << poll_fd[fd].fd);
-            throw std::runtime_error ("STRANGE revents!");
-          }
+            {
+              buf += r;
+              bytes_read += r;
+
+              DLOG (TRACE, "read " << r << " bytes, sum " << bytes_read);
+            }
         }
-      }
 
-      if (! is_alive())
-      {
-        LOG(WARN, "child is gone");
-        break;
-      }
-    } while (true);
-
-    LOG(INFO, "read " << bytes_rd << "/" << output_size << " written " << bytes_wr << "/" << input_size);
-  }
-
-  int process_t::initialize_pipes ()
-  {
-    for (int stream (0); stream < 3; ++stream)
-    {
-      errno = 0;
-      if (pipe(pipe_[stream]) < 0)
-      {
-        LOG(ERROR, "opening pipe for stream " << stream << " failed: " << strerror(errno));
-        while (stream --> 0)
-        {
-          close (pipe_[stream][0]);
-          close (pipe_[stream][1]);
-        }
-        return -1;
-      }
-
-      fcntl (pipe_[stream][0], F_SETFD, O_NONBLOCK);
-      fcntl (pipe_[stream][1], F_SETFD, O_NONBLOCK);
+      DLOG (TRACE, "done thread read");
     }
 
-    int tmp = pipe_[0][0];
-    pipe_[0][0] = pipe_[0][1];
-    pipe_[0][1] = tmp;
+    /* ********************************************************************* */
 
-    return 0;
-  }
+    inline void writer ( int * fd
+                       , const void * input
+                       , int & bytes_left
+                       )
+    {
+      DLOG (TRACE, "start thread write");
 
-  int execute (std::string const & cmd
-              , const void * input, const std::size_t input_size
-              , void * output, const std::size_t output_size
-              , const std::size_t buffer_size
-              )
+      char * buf (static_cast<char *> (const_cast<void *> (input)));
+
+      while (*fd != -1 && bytes_left > 0)
+        {
+          DLOG (TRACE, "try to write " << bytes_left << " bytes");
+
+          const int w (write (*fd, buf, bytes_left));
+
+          if (w < 0)
+            {
+              detail::do_error ("write failed");
+            }
+          else if (w == 0)
+            {
+              DLOG (TRACE, "write pipe closed");
+
+              *fd = -1;
+            }
+          else
+            {
+              buf += w;
+              bytes_left -= w;
+
+              DLOG (TRACE, "written " << w << " bytes, left " << bytes_left);
+            }
+        }
+
+      detail::do_close (fd);
+
+      DLOG (TRACE, "done thread write");
+    }
+  } // namespace thread
+
+  /* *********************************************************************** */
+
+  std::size_t execute ( std::string const & command
+                      , const void * input, const std::size_t input_size
+                      , void * output
+                      )
   {
-    process_t proc (cmd);
-    proc.start ();
-    proc.communicate ( input, input_size
-                     , output, output_size
-                     , buffer_size
-                     );
-    return proc.wait ();
+    pid_t pid;
+
+    int in[2], out[2];
+
+    if ((pipe (in) < 0) || (pipe (out) < 0))
+      {
+        detail::do_error ("pipe failed");
+      }
+
+    DLOG (TRACE, "threads running");
+
+    if ((pid = fork()) < 0)
+      {
+        detail::do_error ("fork failed");
+      }
+    else if (pid == pid_t (0))
+      {
+        // child
+        DLOG (TRACE, "prepare pipes");
+
+        detail::prepare_child_pipes (in, out);
+
+        DLOG (TRACE, "prepare commandline");
+
+        std::vector<std::string> cmdline;
+        fhg::log::split (command, " ", std::back_inserter (cmdline));
+
+        char ** av = new char*[cmdline.size()+1];
+        av[cmdline.size()] = (char*)(NULL);
+
+        std::size_t idx (0);
+        for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+            ; it != cmdline.end()
+            ; ++it, ++idx
+            )
+          {
+            av[idx] = new char[it->size()+1];
+            memcpy(av[idx], it->c_str(), it->size());
+            av[idx][it->size()] = (char)0;
+          }
+
+        MLOG (INFO, "run command: " << command);
+
+        if (execvp(av[0], av) < 0)
+          {
+            detail::do_error ("exec failed");
+
+            _exit (-errno);
+          }
+      }
+    else
+      {
+        // parent
+        DLOG (TRACE, "prepare pipes");
+
+        detail::prepare_parent_pipes (in, out);
+
+        DLOG (TRACE, "start threads");
+
+        int bytes_read (0);
+        int bytes_left (input_size);
+
+        boost::thread thread_writer
+          ( thread::writer
+          , in + detail::WR
+          , input
+          , boost::ref (bytes_left)
+          );
+
+        boost::thread thread_reader
+          ( thread::reader
+          , out + detail::RD
+          , output
+          , boost::ref (bytes_read)
+          );
+
+        DLOG (TRACE, "await child");
+
+        int status (0);
+
+        waitpid (pid, &status, 0);
+
+        if (WIFEXITED (status))
+          {
+            const int ec (WEXITSTATUS(status));
+
+            if (ec != 0)
+              {
+                detail::do_error ("child exited with exitcode", ec);
+              }
+          }
+        else if (WIFSIGNALED (status))
+          {
+            const int ec (WTERMSIG(status));
+
+            detail::do_error ("child exited due to signal", ec);
+          }
+        else
+          {
+            detail::do_error ("strange child status", status);
+          }
+
+        DLOG (TRACE, "join threads");
+
+        thread_writer.join();
+        thread_reader.join();
+
+        MLOG (INFO, "finished command: " << command);
+
+        return bytes_read;
+      }
+
+    return -1;
   }
 }

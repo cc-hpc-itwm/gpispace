@@ -32,7 +32,7 @@ static void exec_wrapper ( void *
 
   MLOG (INFO, "exec:  = \"" << command << "\"");
 
-  long ec = process::execute (command, 0, 0, 0, 0, 0);
+  long ec = process::execute (command, 0, 0, 0);
 
   MLOG (INFO, "process returned with: " << ec);
   put (output, "ec", ec);
@@ -45,27 +45,29 @@ static void selftest ( void *
 		     , we::loader::output_t &
 		     )
 {
-  const std::size_t num_bytes = 82400000;
+  const std::size_t num_bytes = 274176000;
+
   char * buf (new char[num_bytes]);
+
   if (!buf)
   {
     throw std::runtime_error ("BUMMER! Not enough memory for exec.selftest!");
   }
 
-  std::ifstream ifs ("/scratch/petry/plane.2000.10000.sgy");
+  std::ifstream ifs ("/fhgfs/HPC/rahn/kdm/simple.app10.su");
   ifs.read (buf, num_bytes);
 
-  long ec (process::execute ( "sufrac"
-                            , buf, num_bytes
-                            , buf, num_bytes
-                            , PIPE_BUF
-                            )
-          );
+  std::size_t bytes_read
+    (process::execute ( "sustack"
+                      , buf, num_bytes
+                      , buf
+                      )
+    );
 
-  std::ofstream ofs ("/scratch/petry/plane.2000.10000.out.sgy");
-  ofs.write (buf, num_bytes);
+  std::ofstream ofs ("/fhgfs/HPC/rahn/kdm/simple.app10.su.stacked");
+  ofs.write (buf, bytes_read);
 
-  MLOG(INFO, "selftest: ec=" << ec);
+  MLOG(INFO, "selftest: bytes_read = " << bytes_read);
 }
 
 // ************************************************************************* //
