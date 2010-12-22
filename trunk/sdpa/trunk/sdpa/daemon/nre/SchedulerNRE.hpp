@@ -114,20 +114,6 @@ namespace sdpa {
 	 		 // post job request if number_of_jobs() < #registered workers +1
 	 		 post_request();
 	 	 }
-		 else
-		 {
-            // DMLOG(DEBUG, "not requesting job, i am not registered yet");
-			// send_life_sign ();
-
-			// send worker registration event
-			SDPA_LOG_INFO("NRE (" << ptr_comm_handler_->name() << ") sending registration event to master (" << ptr_comm_handler_->master() << ") my rank=" << ptr_comm_handler_->rank());
-			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master(),
-																					ptr_comm_handler_->rank(), ptr_comm_handler_->agent_uuid()));
-			ptr_comm_handler_->sendEventToMaster(pEvtWorkerReg);
-
-			// use here a registration timeout
-			sleep(1);
-		 }
 	 }
 
 	 virtual void execute(const sdpa::job_id_t& jobId) throw (std::exception)

@@ -1,20 +1,20 @@
 /*
- * =====================================================================================
- *
- *       Filename:  test_Scheduler.cpp
- *
- *    Description:  test the scheduler thread
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+* =====================================================================================
+*
+*       Filename:  test_LoadBalancer.cpp
+*
+*    Description:  test the scheduler thread
+*
+*        Version:  1.0
+*        Created:
+*       Revision:  none
+*       Compiler:  gcc
+*
+*         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
+*        Company:  Fraunhofer ITWM
+*
+* =====================================================================================
+*/
 #define BOOST_TEST_MODULE TestLoadBalancer
 #include <boost/test/unit_test.hpp>
 
@@ -25,7 +25,7 @@
 #include <time.h>
 #include <sdpa/util/util.hpp>
 #include <fstream>
-#include <sdpa/daemon/jobFSM/SMC/JobFSM.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sstream>
 #include <sdpa/JobId.hpp>
@@ -33,7 +33,6 @@
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
-using namespace sdpa::fsm::smc;
 
 const int NWORKERS = 10;
 

@@ -83,17 +83,17 @@ void SchedulerImpl::declare_jobs_failed( Worker::JobQueue* pQueue )
 {
   assert (pQueue);
 
-        while( !pQueue->empty() )
-	{
-		sdpa::job_id_t jobId = pQueue->pop_and_wait();
-		SDPA_LOG_INFO("Declare the job "<<jobId.str()<<" failed!");
+  while( !pQueue->empty() )
+  {
+	  sdpa::job_id_t jobId = pQueue->pop_and_wait();
+	  SDPA_LOG_INFO("Declare the job "<<jobId.str()<<" failed!");
 
-		if( ptr_comm_handler_ )
-			ptr_comm_handler_->workerJobFailed( jobId, "Worker timeout detected!");
-		else {
-			SDPA_LOG_ERROR("Invalid communication handler!");
-		}
-	}
+	  if( ptr_comm_handler_ )
+		  ptr_comm_handler_->workerJobFailed( jobId, "Worker timeout detected!");
+	  else {
+		  SDPA_LOG_ERROR("Invalid communication handler!");
+	  }
+  }
 }
 
 void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)

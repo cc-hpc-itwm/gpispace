@@ -155,6 +155,15 @@ void GenericDaemon::start()
 	{
 		SDPA_LOG_DEBUG("Could not configure "<<name()<<". Giving up now!");
 	}
+	else // can register now
+	{
+		if( !is_orchestrator() )
+		{
+			SDPA_LOG_INFO("Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
+			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank(), agent_uuid()));
+			sendEventToMaster(pEvtWorkerReg);
+		}
+	}
 }
 
 // TODO: work here
@@ -226,6 +235,9 @@ void GenericDaemon::shutdown_network()
 
 void GenericDaemon::shutdown()
 {
+	// should first notify my master
+	// that I will be shutdown
+
 	if(!m_bStopped)
 		stop();
 
@@ -303,10 +315,11 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 
 	// Read these from a configuration file !!!!!!!!
 	// if this does not exist, use default values
-	ptr_daemon_cfg_->put("polling interval",    1 * 1000 * 1000);
-	ptr_daemon_cfg_->put("upper bound polling interval", 5 * 1000*1000 );
-	ptr_daemon_cfg_->put("life-sign interval",  2 * 1000 * 1000);
-	ptr_daemon_cfg_->put("node_timeout",        6 * 1000 * 1000);
+	ptr_daemon_cfg_->put("polling interval",    			1 * 1000 * 1000);
+	ptr_daemon_cfg_->put("upper bound polling interval", 	5 * 1000 * 1000 );
+	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
+	ptr_daemon_cfg_->put("node_timeout",        			6 * 1000 * 1000); // 6s
+	ptr_daemon_cfg_->put("registration_timeout", 			2 * 1000 * 1000); // 2s
 
 	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
 
@@ -601,6 +614,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
 
 		// send back an acknowledgment
+		SDPA_LOG_INFO( "Send back to the worker " << worker_id << " a registration acknowledgment!" );
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		pWorkerRegAckEvt->id() = evtRegWorker.id();
 		sendEventToSlave(pWorkerRegAckEvt);
@@ -609,18 +623,18 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 	{
 		if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
 		{
-			SDPA_LOG_ERROR( "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
-			SDPA_LOG_ERROR( "Re-schedule the jobs");
+			LOG(TRACE, "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
+			LOG(TRACE, "Re-schedule the jobs");
 			scheduler()->re_schedule( worker_id );
-			SDPA_LOG_ERROR( "Delete worker "<<worker_id);
+			LOG(TRACE,"Delete worker "<<worker_id);
 			scheduler()->delWorker(worker_id);
-			SDPA_LOG_ERROR( "Add worker"<<worker_id );
+			LOG(TRACE, "Add worker"<<worker_id );
 			addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
 
-			SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
+			LOG(TRACE, "Registered the worker " << worker_id << ", with the rank " << rank);
 
 			// send back an acknowledgment
-			SDPA_LOG_INFO( "Send registration ack to the agent " << worker_id << ", with the rank " << rank);
+			LOG(TRACE,"Send registration ack to the agent " << worker_id << ", with the rank " << rank);
 			WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 			pWorkerRegAckEvt->id() = evtRegWorker.id();
 			sendEventToSlave(pWorkerRegAckEvt);
@@ -667,11 +681,18 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 			}
 			catch (WorkerNotFoundException const& /*ignored*/)
 			{
-				if( error.from() == master() )
+				if( !is_orchestrator() && error.from() == master() )
 				{
-					LOG(WARN, "Master " << master() << " went down");
-					LOG(ERROR, "The master went down. Mark the node as unregistered!");
+					SDPA_LOG_WARN("Master " << master() << " is down");
 					m_bRegistered = false;
+					const unsigned long reg_timeout( cfg()->get<unsigned long>("registration_timeout", 10 *1000*1000) );
+					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+					usleep(reg_timeout);
+
+					// try to re-register
+					SDPA_LOG_INFO("Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
+					WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master(), rank(), agent_uuid()));
+					sendEventToMaster(pEvtWorkerReg);
 				}
 			}
 			catch (std::exception const& ex)
@@ -894,7 +915,7 @@ unsigned int GenericDaemon::extJobsCnt()
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
-	SDPA_LOG_DEBUG("Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
+	LOG(TRACE, "Received WorkerRegistrationAckEvent from "<<pRegAckEvt->from());
     acknowledge (pRegAckEvt->id());
 	m_bRegistered = true;
 }

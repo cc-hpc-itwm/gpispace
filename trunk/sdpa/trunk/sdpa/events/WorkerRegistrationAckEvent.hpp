@@ -47,7 +47,8 @@ namespace sdpa { namespace events {
 
       virtual void handleBy(EventHandler *handler)
       {
-        handler->handleWorkerRegistrationAckEvent(this);
+    	  LOG(TRACE, "Handle registration acknowledgment from "<<from()<<" to "<<to());
+    	  handler->handleWorkerRegistrationAckEvent(this);
       }
   };
 }}
