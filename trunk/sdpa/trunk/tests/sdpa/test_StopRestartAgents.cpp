@@ -189,10 +189,24 @@ void MyFixture::run_client()
 			   job_status.find("Failed") == std::string::npos &&
 			   job_status.find("Cancelled") == std::string::npos)
 		{
-			job_status = ptrCli->queryJob(job_id_user);
-			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+			try {
+				job_status = ptrCli->queryJob(job_id_user);
+				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+				usleep(5*m_sleep_interval);
+			}
+			catch(const sdpa::client::ClientException& cliExc)
+			{
+				if(nTrials > NMAXTRIALS)
+				{
+					LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-			usleep(5*m_sleep_interval);
+					ptrCli->shutdown_network();
+					ptrCli.reset();
+					return;
+				}
+
+				sleep(5);
+			}
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -337,7 +351,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg )
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
 
-
 BOOST_AUTO_TEST_CASE( testStopRestartNRE )
 {
 	LOG( INFO, "***** testStopRestartNRE *****"<<std::endl);
@@ -462,7 +475,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartAll )
 
 	usleep(5*m_sleep_interval);
 
-	LOG( INFO, "Start new agent insatnces now (in reverse order!");
+	LOG( INFO, "Start new agent instances now (in reverse order!");
 	ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
@@ -489,6 +502,134 @@ BOOST_AUTO_TEST_CASE( testStopRestartAll )
 	LOG( INFO, "The test case testStopRestartAll terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
+
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrch1 )
+{
+	string addrOrch = "127.0.0.1";
+
+	std::cout<<std::endl<<"----------------Begin  testBackupRecoverOrch1----------------"<<std::endl;
+	std::string filename = "testBackupRecoverOrch1.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	ptrOrch->print();
+	LOG( DEBUG, "Backup the orchestrator ino the file "<<filename);
+	ptrOrch->backup(filename);
+	ptrOrch->shutdown();
+
+	sleep(5);
+
+	ptrCli->shutdown_network();
+	ptrCli.reset();
+
+	//seda::StageRegistry::instance().clear();
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrRecOrch->recover(filename);
+	ptrRecOrch->start();
+
+	sleep(1);
+
+	ptrRecOrch->shutdown();
+	sleep(1);
+
+	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;
+}
+
+/*
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrch2 )
+{
+	LOG( INFO, "***** testBackupRecoverOrch2 *****"<<std::endl);
+	std::string filename = "testBackupRecoverOrch2.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+
+
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	bool bLaunchNrePcd = true;
+	//typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+
+	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	LOG( INFO, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	LOG( INFO, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+											 addrNRE,"aggregator_0",
+											 workerUrl,
+											 strGuiUrl,
+											 bLaunchNrePcd,
+											 TESTS_NRE_PCD_BIN_PATH,
+											 v_fake_PC_search_path,
+											 v_module_preload );
+
+	try {
+		ptrNRE->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		return;
+	}
+
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	sleep(1);
+
+	LOG( DEBUG, "Backup the orchestrator to "<<filename);
+	ptrOrch->backup(filename);
+	ptrOrch->shutdown();
+
+	sleep(5);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrRecOrch->recover(filename);
+	ptrRecOrch->start();
+
+	// give some time to the NRE to re-register
+	sleep(5);
+
+	m_threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	sleep(1);
+
+	ptrNRE->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
+}
+*/
 
 /*
 BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
@@ -569,61 +710,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )
 
 	LOG( INFO, "The test case testStopRestartAgg_and_JobSubmitted terminated!");
 
-}
-*/
-
-/*
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrch )
-{
-	string addrOrch = "127.0.0.1";
-
-	std::cout<<std::endl<<"----------------Begin  testBackupRecoverOrch----------------"<<std::endl;
-	std::string filename = "testBackupRecover.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	LOG( DEBUG, "Submit 5 jobs to the orchestrator ...");
-	for(int k=0; k<5; k++ )
-		sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
-
-	ptrOrch->print();
-	LOG( DEBUG, "Bakcup the orchestrator ino the file "<<filename);
-	ptrOrch->backup(filename);
-	ptrOrch->shutdown();
-
-
-	sleep(1);
-
-	ptrCli->shutdown_network();
-	ptrCli.reset();
-
-	//seda::StageRegistry::instance().clear();
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
-	ptrRecOrch->recover(filename);
-	ptrRecOrch->start();
-
-	sleep(1);
-
-	ptrRecOrch->shutdown();
-	sleep(1);
-
-	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;
 }
 */
 

@@ -153,13 +153,14 @@ void GenericDaemon::start()
 
 	if(!m_bConfigOk)
 	{
-		SDPA_LOG_DEBUG("Could not configure "<<name()<<". Giving up now!");
+		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
 	}
 	else // can register now
 	{
+		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
 		if( !is_orchestrator() )
 		{
-			SDPA_LOG_INFO("Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
+			SDPA_LOG_INFO("Agent " << name() << " is sending a registration event to master (" << master() << ") now ...");
 			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank(), agent_uuid()));
 			sendEventToMaster(pEvtWorkerReg);
 		}
@@ -425,7 +426,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	this message can be seen as the trigger for a submitJob
 	it contains the id of the last job that has been received
 	the orchestrator answers to this message with a submitJob
-	 */
+	*/
 
 	// ATTENTION: you should submit/schedule only jobs that are in Pending state
 	// A job received from the user should be automatically put into the Running state
@@ -614,7 +615,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 		SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
 
 		// send back an acknowledgment
-		SDPA_LOG_INFO( "Send back to the worker " << worker_id << " a registration acknowledgment!" );
+		SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
 		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 		pWorkerRegAckEvt->id() = evtRegWorker.id();
 		sendEventToSlave(pWorkerRegAckEvt);
