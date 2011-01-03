@@ -109,7 +109,7 @@ namespace process
     inline void reader ( int * fd
                        , void * output
                        , int & bytes_read
-                       , const int & block_size = PIPE_BUF
+                       , const int & block_size
                        )
     {
       DLOG (TRACE, "start thread read");
@@ -267,6 +267,7 @@ namespace process
           , out + detail::RD
           , output
           , boost::ref (bytes_read)
+          , PIPE_BUF
           );
 
         DLOG (TRACE, "await child");
@@ -305,6 +306,6 @@ namespace process
         return bytes_read;
       }
 
-    return -1;
+    return 0;
   }
 }
