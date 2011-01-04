@@ -236,6 +236,26 @@ static int main_loop (const gpi_space::config & cfg, const int rank)
 
   // fire up message handling threads...
 
+  //   - passive receive thread
+  //       - hand message over to central daemon (N handler threads)
+  //       - handle it
+  //   - socket thread(s)
+  //       - attach process container interface
+  //       - attach control interface
+  //       - both  use  the  same  backend  but  use  different  protocols  to
+  //         communicate with the "client"
+  //
+  // passive -> +-------+
+  // control -> | queue | -> central worker pool
+  // process -> +-------+
+  //
+  //    work item:
+  //        - type
+  //        - input data
+  //        - output data
+  //        - callback function - void (work::ptr)
+  //
+
   if (cfg.node.daemonize)
   {
     // daemonize...
