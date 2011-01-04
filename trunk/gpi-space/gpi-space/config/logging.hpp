@@ -5,6 +5,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/util/getenv.hpp>
 
+#include <stdio.h> // snprintf
 #include <boost/lexical_cast.hpp>
 
 /*
