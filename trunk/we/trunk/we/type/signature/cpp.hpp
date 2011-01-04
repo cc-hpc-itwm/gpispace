@@ -53,7 +53,7 @@ namespace signature
         }
 
       public:
-        cpp_generic (std::ostream & _s, const unsigned int _l = 0)
+        cpp_generic (std::ostream & _s, const unsigned int & _l = 0)
           : s(_s), l (_l)
         {}
       };
@@ -86,20 +86,26 @@ namespace signature
         std::ostream & operator () (const literal::type_name_t & t) const
         {
           level (l+1);
-          s << "x." << fieldname
-            << " = " << cpp_util::access::make ("", "value", "get")
-            << "< ";
+          s << "x." << fieldname << " = ";
+
+
 
           if (literal::cpp::known (t))
             {
-              s << literal::cpp::translate (t);
+              s << cpp_util::access::make ("", "value", "get")
+                << "< "
+                << literal::cpp::translate (t)
+                << " >";
             }
           else
             {
-              s << cpp_util::access::make (cpp_util::access::type(), t, t);
+              s << cpp_util::access::make ( cpp_util::access::type()
+                                          , t
+                                          , "from_value"
+                                          );
             }
 
-          s << " > (v_" << (l-1) << ");" << std::endl;
+          s << " (v_" << (l-1) << ");" << std::endl;
 
           return s;
         }
@@ -388,39 +394,54 @@ namespace signature
         const std::string & field_local;
         const std::string & field_global;
 
+        const unsigned int l0;
+
       public:
         cpp_show ( std::ostream & _s
                  , const std::string & _field_local
                  , const std::string & _field_global
-                 , const unsigned int _l = 0
+                 , const unsigned int & _l0 = 0
+                 , const unsigned int & _l = 0
                  )
           : cpp_generic (_s, _l)
           , field_local (_field_local)
           , field_global (_field_global)
+          , l0 (_l0)
         {}
 
-        std::ostream & operator () (const literal::type_name_t &) const
+        std::ostream & operator () (const literal::type_name_t & t) const
         {
-          s << "  s << \"";
+          level (l0);
+
+          s << "s << \"";
 
           level (l);
 
           s << field_local << " = \" << ";
 
-          s << cpp_util::access::make ("","literal","show")
-            << "(" << cpp_util::access::make ("", "literal", "type")
-            << "(x" << fhg::util::show (field_global) << ")"
-            << ")"
-            << " << std::endl;"
-            << std::endl
-            ;
+          if (literal::cpp::known (t))
+            {
+              s << cpp_util::access::make ("","literal","show")
+                << "(" << cpp_util::access::make ("", "literal", "type")
+                << "(x" << fhg::util::show (field_global) << ")"
+                << ")"
+                ;
+            }
+          else
+            {
+              s << "x" << fhg::util::show (field_global);
+            }
+
+          s << " << std::endl;" << std::endl;
 
           return s;
         }
 
         std::ostream & operator () (const structured_t & map) const
         {
-          s << "  s << \"";
+          level (l0);
+
+          s << "s << \"";
 
           level (l);
 
@@ -435,15 +456,16 @@ namespace signature
                 ( cpp_show ( s
                            , field->first
                            , field_global + "." + field->first
+                           , l0
                            , l+1
                            )
                 , field->second
                 );
             }
 
-          s << "  s << \"";
+          level (l0);
 
-          level (l);
+          s << "s << \"";
 
           s << "}\" << std::endl;" << std::endl;
 
@@ -455,28 +477,39 @@ namespace signature
     inline void cpp_show ( std::ostream & os
                          , const type & s
                          , const std::string & n
+                         , const unsigned int & l = 0
                          )
     {
-      cpp_util::include (os, "we/type/literal.hpp");
-      cpp_util::include (os, "we/type/literal/show.hpp");
-      cpp_util::include (os, "iostream");
-
       os << std::endl;
+
+      level (os, l);
 
       os << "inline std::ostream & operator << (std::ostream & s, const "
          << n << " & x)"                          << std::endl;
+
+      level (os, l);
+
       os << "{"                                   << std::endl;
 
-      boost::apply_visitor (visitor::cpp_show (os, n, ""), s.desc());
+      boost::apply_visitor (visitor::cpp_show (os, n, "", l + 1), s.desc());
 
-      os << std::endl << "  return s;"            << std::endl;
+      os                                          << std::endl;
+
+      level (os, l);
+
+      os << "  return s;"                         << std::endl;
+
+      level (os, l);
 
       os << "}"                                   << std::endl;
     }
 
-    inline void cpp_show (std::ostream & os, const type & s)
+    inline void cpp_show ( std::ostream & os
+                         , const type & s
+                         , const unsigned int & l = 0
+                         )
     {
-      cpp_show (os, s, s.nice());
+      cpp_show (os, s, s.nice(), l);
     }
 
     // ********************************************************************* //
@@ -497,6 +530,11 @@ namespace signature
       cpp_util::include (os, "we/type/value/cpp/get.hpp");
       cpp_util::include (os, "string");
 
+      // for operator <<
+      cpp_util::include (os, "we/type/literal.hpp");
+      cpp_util::include (os, "we/type/literal/show.hpp");
+      cpp_util::include (os, "iostream");
+
       os << std::endl;
 
       visitor::seen_type seen;
@@ -515,6 +553,10 @@ namespace signature
       os << "    {"                                              << std::endl;
 
       os << "      "; cpp_struct (os, s, n, 3);
+
+      os                                                         << std::endl;
+
+      os << "      "; cpp_show (os, s, n, 3);
 
       os << "    } // namespace " << n                           << std::endl;
       os << "  } // namespace type"                              << std::endl;

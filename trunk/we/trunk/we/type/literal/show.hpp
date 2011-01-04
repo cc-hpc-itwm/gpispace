@@ -3,12 +3,11 @@
 #ifndef _WE_TYPE_LITERAL_SHOW_HPP
 #define _WE_TYPE_LITERAL_SHOW_HPP
 
-#include <fhg/util/show.hpp>
-
 #include <we/type/literal.hpp>
 
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include <iomanip>
 
@@ -16,6 +15,21 @@ namespace literal
 {
   namespace visitor
   {
+    namespace detail
+    {
+      template<typename T>
+      inline std::string show (const T & x)
+      {
+        std::ostringstream s; s << x; return s.str();
+      }
+
+      template<>
+      inline std::string show<std::string> (const std::string & x)
+      {
+        return x;
+      }
+    }
+
     class show : public boost::static_visitor<std::string>
     {
     public:
@@ -26,12 +40,12 @@ namespace literal
 
       std::string operator () (const long & x) const
       {
-        return fhg::util::show (x) + "L";
+        return detail::show (x) + "L";
       }
 
       std::string operator () (const char & x) const
       {
-        return "'" + fhg::util::show (x) + "'";
+        return "'" + detail::show (x) + "'";
       }
 
       std::string operator () (const std::string & x) const
@@ -105,7 +119,7 @@ namespace literal
       template<typename T>
       std::string operator () (const T & x) const
       {
-        return fhg::util::show (x);
+        return detail::show (x);
       }
     };
   }

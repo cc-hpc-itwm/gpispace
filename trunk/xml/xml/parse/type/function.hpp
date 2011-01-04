@@ -1114,6 +1114,7 @@ namespace xml
                       , const fhg::util::maybe<port_with_type> & port_return
                       , const port_list & ports_const
                       , const port_list & ports_mutable
+                      , const port_list & ports_out
                       , const mod_type & mod
                       )
         {
@@ -1164,6 +1165,17 @@ namespace xml
                 ;
             }
 
+          for ( port_list::const_iterator port (ports_out.begin())
+              ; port != ports_out.end()
+              ; ++port, first = false
+              )
+            {
+              os << (first ? " " : (white + ", "))
+                 << mk_type (port->type) << " & " << port->name
+                 << std::endl
+                ;
+            }
+
           os << white << ")";
         }
 
@@ -1173,6 +1185,7 @@ namespace xml
                     , const path_t file_hpp
                     , const port_list & ports_const
                     , const port_list & ports_mutable
+                    , const port_list & ports_out
                     , const fhg::util::maybe<port_with_type> & port_return
                     )
         {
@@ -1205,6 +1218,16 @@ namespace xml
             {
               os << "      "
                  << "  " << mk_get (*port);
+            }
+
+          for ( port_list::const_iterator port (ports_out.begin())
+              ; port != ports_out.end()
+              ; ++port
+              )
+            {
+              os << "      "
+                 << "  " << mk_type (port->type) << " " << port->name << ";"
+                 << std::endl;
             }
 
           os << std::endl;
@@ -1263,6 +1286,14 @@ namespace xml
               os << (first_param ? "" : ", ") << port->name;
             }
 
+          for ( port_list::const_iterator port (ports_out.begin())
+              ; port != ports_out.end()
+              ; ++port, first_param = false
+              )
+            {
+              os << (first_param ? "" : ", ") << port->name;
+            }
+
           os << ")";
 
           if (port_return.isJust())
@@ -1279,6 +1310,28 @@ namespace xml
 
           for ( port_list::const_iterator port (ports_mutable.begin())
               ; port != ports_mutable.end()
+              ; ++port
+              )
+            {
+              if (first_put)
+                {
+                  os << std::endl;
+
+                  first_put = false;
+                }
+
+              os << "      "
+                 << "  ::we::loader::put (output"
+                 << ", \"" << port->name << "\""
+                 << ", " << mk_value (*port)
+                 << ")"
+                 << ";"
+                 << std::endl
+                ;
+            }
+
+          for ( port_list::const_iterator port (ports_out.begin())
+              ; port != ports_out.end()
               ; ++port
               )
             {
@@ -1342,6 +1395,7 @@ namespace xml
 
             port_list ports_const;
             port_list ports_mutable;
+            port_list ports_out;
             fhg::util::maybe<port_with_type> port_return;
             type_list types;
 
@@ -1433,7 +1487,7 @@ namespace xml
                       }
                     else
                       {
-                        ports_mutable.push_back (port_with_type (*name, port_out.type));
+                        ports_out.push_back (port_with_type (*name, port_out.type));
                         types.insert (port_out.type);
                       }
                   }
@@ -1461,6 +1515,7 @@ namespace xml
                           , file_hpp
                           , ports_const
                           , ports_mutable
+                          , ports_out
                           , port_return
                           );
 
@@ -1485,7 +1540,8 @@ namespace xml
               namespace_open (stream, mod);
 
               mod_signature ( stream
-                            , port_return, ports_const, ports_mutable, mod
+                            , port_return
+                            , ports_const, ports_mutable, ports_out, mod
                             );
 
               stream << ";" << std::endl;
@@ -1528,7 +1584,8 @@ namespace xml
               namespace_open (stream, mod);
 
               mod_signature ( stream
-                            , port_return, ports_const, ports_mutable, mod
+                            , port_return
+                            , ports_const, ports_mutable, ports_out, mod
                             );
 
               stream << std::endl << "      {" << std::endl;
