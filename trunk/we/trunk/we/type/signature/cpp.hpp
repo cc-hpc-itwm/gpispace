@@ -424,7 +424,7 @@ namespace signature
               s << cpp_util::access::make ("","literal","show")
                 << "(" << cpp_util::access::make ("", "literal", "type")
                 << "(x" << fhg::util::show (field_global) << ")"
-                << ")"
+                << ") << std::endl"
                 ;
             }
           else
@@ -432,7 +432,7 @@ namespace signature
               s << "x" << fhg::util::show (field_global);
             }
 
-          s << " << std::endl;" << std::endl;
+          s << ";" << std::endl;
 
           return s;
         }
