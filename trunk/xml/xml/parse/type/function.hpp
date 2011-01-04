@@ -808,7 +808,7 @@ namespace xml
         stream                                                     << std::endl;
         stream << "### CONFIGURE SECTION"                          << std::endl;
         stream                                                     << std::endl;
-        stream << "CXXINCLUDE += -I . -I $(BOOST_ROOT)/include"    << std::endl;
+        stream << "CXXINCLUDEPATHS += . $(BOOST_ROOT)/include"     << std::endl;
         stream << "CXXFLAGS += -Wall -O3 -fPIC"                    << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
@@ -823,7 +823,9 @@ namespace xml
         stream << "modules: $(MODULES) objcleandep"                << std::endl;
         stream                                                     << std::endl;
         stream << "%.o: %.cpp"                                     << std::endl;
-        stream << "\t$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $^ -o $@" << std::endl;
+        stream << "\t$(CXX)"                                                   ;
+        stream << " $(CXXFLAGS) $(addprefix -I ,$(CXXINCLUDEPATHS))"           ;
+        stream << " -c $^ -o $@"                                   << std::endl;
         stream                                                     << std::endl;
         stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
