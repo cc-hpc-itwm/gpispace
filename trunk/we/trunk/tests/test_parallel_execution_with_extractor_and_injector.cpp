@@ -226,11 +226,12 @@ public:
     , left (mean-sigma)
     , right (mean+sigma)
   {}
-  useconds_t usec (void)
+  unsigned int usec (void)
   {
     boost::lock_guard<boost::mutex> lock (mutex);
 
-    return 1e6 * std::min (std::max (left, rand()), right);
+    return static_cast<unsigned int>
+      (1e6 * std::min (std::max (left, rand()), right));
   }
 };
 
@@ -241,7 +242,16 @@ static void trans_work ( random_usec<Engine> & random
                        , pnet_t::output_t & output
                        )
 {
-  usleep (random.usec());
+  unsigned int usec (random.usec());
+
+  while (usec > 0)
+    {
+      const unsigned int s (std::min (999999u, usec));
+
+      usleep (s);
+
+      usec -= s;
+    }
 
   output.push_back (top_t (m[pid.pre_work], pid.post_work));
 }

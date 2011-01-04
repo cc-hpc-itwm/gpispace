@@ -156,7 +156,7 @@ static map_t build_map (const pnet_t::input_t & input)
       ; it != input.end()
       ; ++it
       )
-    m[Function::Transition::get_pid<token_t>(*it)] 
+    m[Function::Transition::get_pid<token_t>(*it)]
       = Function::Transition::get_token<token_t>(*it);
 
   return m;
@@ -183,7 +183,7 @@ static void set_trans ( pnet_t & net
                       , const trans_t & f
                       )
 {
-  net.set_transition_function (tid, Function::Transition::Generic<token_t> 
+  net.set_transition_function (tid, Function::Transition::Generic<token_t>
                                     (boost::bind(&make_trans, pid, f, _1, _2))
                               );
 }
@@ -228,11 +228,12 @@ public:
     , left (mean-sigma)
     , right (mean+sigma)
   {}
-  useconds_t usec (void)
+  unsigned int usec (void)
   {
     boost::lock_guard<boost::mutex> lock (mutex);
 
-    return 1e6 * std::min (std::max (left, rand()), right);
+    return static_cast<unsigned int>
+      (1e6 * std::min (std::max (left, rand()), right));
   }
 };
 
@@ -243,7 +244,16 @@ static void trans_work ( random_usec<Engine> & random
                        , pnet_t::output_t & output
                        )
 {
-  usleep (random.usec());
+  unsigned int usec (random.usec());
+
+  while (usec > 0)
+    {
+      const unsigned int s (std::min (999999u, usec));
+
+      usleep (s);
+
+      usec -= s;
+    }
 
   output.push_back (top_t (m[pid.pre_work], pid.post_work));
 }
@@ -298,7 +308,7 @@ static std::ostream & operator << (std::ostream & s, const pnet_t & n)
 template<typename NET>
 static void * worker (void * arg)
 {
-  petri_net::thread_safe_t<pnet_t> * thread_safe 
+  petri_net::thread_safe_t<pnet_t> * thread_safe
     ((petri_net::thread_safe_t<pnet_t> *)arg);
 
   while (1)
