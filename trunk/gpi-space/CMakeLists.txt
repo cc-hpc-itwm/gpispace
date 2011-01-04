@@ -47,8 +47,17 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)
     set(HAVE_PTHREAD_H 1)
-    link_libraries(${CMAKE_THREAD_LIBS_INIT})
+#    link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
+
+# header files
+include(CheckIncludeFile)
+check_include_file(sys/types.h HAVE_SYS_TYPES_H)
+if (HAVE_SYS_TYPES_H)
+else (HAVE_SYS_TYPES_H)
+  message(FATAL_ERROR "sys/types.h is required for mode_t")
+endif (HAVE_SYS_TYPES_H)
+
 
 ## check for boost
 set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
