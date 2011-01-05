@@ -118,18 +118,18 @@ namespace sdpa {
 
 	 virtual void execute(const sdpa::job_id_t& jobId) throw (std::exception)
 	 {
-		DLOG(TRACE, "Execute activity: " << jobId);
-		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-		id_type act_id = pJob->id().str();
+		 SDPA_LOG_INFO("Execute activity: "<< jobId);
+		 const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+		 id_type act_id = pJob->id().str();
 
-		sdpa::nre::worker::execution_result_t result;
-		encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
+		 sdpa::nre::worker::execution_result_t result;
+		 encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
 
 		if( !ptr_comm_handler_ )
 		{
 			SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
 			result_type output_fail;
-			ptr_comm_handler_->activityFailed(act_id, enc_act);
+			ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
 			//ptr_comm_handler_->workflowEngine()->failed(act_id, output_fail);
 			ptr_comm_handler_->workerJobFailed(jobId, output_fail);
 			return;
@@ -137,8 +137,9 @@ namespace sdpa {
 
 		try
 		{
-			ptr_comm_handler_->activityStarted(act_id, enc_act);
-			DLOG(TRACE, "walltime=" << pJob->walltime());
+			SDPA_LOG_INFO("Inform the NRE that the activity started!");
+			ptr_comm_handler_->notifyActivityStarted(act_id, enc_act);
+			SDPA_LOG_INFO("walltime=" << pJob->walltime());
 
 			pJob->Dispatch();
 			result = m_worker_.execute(enc_act, pJob->walltime());
@@ -163,7 +164,7 @@ namespace sdpa {
             DLOG(TRACE, "activity finished: " << act_id);
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->activityFinished(act_id, enc_act);
+			ptr_comm_handler_->notifyActivityFinished(act_id, enc_act);
 			//ptr_comm_handler_->workflowEngine()->finished(act_id, result.second);
 			ptr_comm_handler_->workerJobFinished(jobId, result.second);
 		}
@@ -172,7 +173,7 @@ namespace sdpa {
 			 DLOG(TRACE, "activity failed: " << act_id);
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->activityFailed(act_id, enc_act);
+			ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
 			//ptr_comm_handler_->workflowEngine()->failed(act_id, result.second);
 			ptr_comm_handler_->workerJobFailed(jobId, result.second);
 		}
@@ -182,14 +183,14 @@ namespace sdpa {
 
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->activityCancelled(act_id, enc_act);
+			ptr_comm_handler_->notifyActivityCancelled(act_id, enc_act);
 			//ptr_comm_handler_->workflowEngine()->cancelled(act_id);
 			ptr_comm_handler_->workerJobCancelled(jobId);
 		}
 		else
 		{
 			SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
-			ptr_comm_handler_->activityFailed(act_id, enc_act);
+			ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
 			//ptr_comm_handler_->workflowEngine()->failed(act_id, result.second);
 			ptr_comm_handler_->workerJobFailed(jobId, result.second);
 		}

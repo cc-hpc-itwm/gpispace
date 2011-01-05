@@ -33,6 +33,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -157,11 +158,38 @@ void GenericDaemon::start()
 	}
 	else // can register now
 	{
+		std::string filename( name()+".bkp" );
+
+		if ( !boost::filesystem::exists(filename) )
+		{
+			SDPA_LOG_WARN( "Can't find agent corresponding backup file "<<filename);
+		}
+		else
+		{
+			SDPA_LOG_WARN( "Recover the agent "<<name()<<" from the backup file "<<filename);
+			//recover(name()+".bkp");
+
+			// open the archive
+
+			std::ifstream ifs(filename.c_str());
+			boost::archive::text_iarchive ia(ifs);
+			ia.register_type(static_cast<JobManager*>(NULL));
+			ia.register_type(static_cast<JobImpl*>(NULL));
+			ia.register_type(static_cast<JobFSM*>(NULL));
+			// restore the schedule from the archive
+			ia >> ptr_job_man_;
+
+			ptr_job_man_->set_icomm(this);
+			//ptr_job_man_->recover(filename);
+			SDPA_LOG_WARN( "JobManager after recovering" );
+			ptr_job_man_->print();
+		}
+
 		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
 		if( !is_orchestrator() )
 		{
 			SDPA_LOG_INFO("Agent " << name() << " is sending a registration event to master (" << master() << ") now ...");
-			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank(), agent_uuid()));
+			WorkerRegistrationEvent::Ptr pEvtWorkerReg( new WorkerRegistrationEvent(name(), master(), rank(), agent_uuid()) );
 			sendEventToMaster(pEvtWorkerReg);
 		}
 	}
@@ -173,7 +201,7 @@ void GenericDaemon::start()
 // name of the master is not required, actually, the master can be stored in the kvs...
 
 // Remarks bind_addr it's hostname or IP address or IPv6
-//void GenericDaemon::configure_network( const std::string& bind_addr, const std::string& bind_port )
+// void GenericDaemon::configure_network( const std::string& bind_addr, const std::string& bind_port )
 void GenericDaemon::configure_network( const std::string& daemonUrl, const std::string& masterName )
 {
 	SDPA_LOG_DEBUG("configuring network components...");
@@ -255,6 +283,17 @@ void GenericDaemon::shutdown()
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
+
+
+	std::string filename( name()+".bkp" );
+	SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<filename);
+	//backup(name()+".bkp");
+	std::ofstream ofs(filename.c_str());
+	boost::archive::text_oarchive oa(ofs);
+	oa.register_type(static_cast<JobManager*>(NULL));
+	oa.register_type(static_cast<JobImpl*>(NULL));
+	oa.register_type(static_cast<JobFSM*>(NULL));
+	oa << ptr_job_man_;
 }
 
 void GenericDaemon::stop()
@@ -320,7 +359,7 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	ptr_daemon_cfg_->put("upper bound polling interval", 	5 * 1000 * 1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
 	ptr_daemon_cfg_->put("node_timeout",        			6 * 1000 * 1000); // 6s
-	ptr_daemon_cfg_->put("registration_timeout", 			2 * 1000 * 1000); // 2s
+	ptr_daemon_cfg_->put("registration_timeout", 			1 * 1000 * 1000); // 1s
 
 	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
 
@@ -1103,4 +1142,14 @@ void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
 		CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), name(), jobId, SDPAEvent::message_id_type()));
 		sendEventToSelf(pEvtCancelJobAck);
 	}
+}
+
+void GenericDaemon::backup( const std::string& strArchiveName )
+{
+	throw("Should be overridden by the agents");
+}
+
+void GenericDaemon::recover( const std::string& strArchiveName )
+{
+	throw("Should be overridden by the agents");
 }

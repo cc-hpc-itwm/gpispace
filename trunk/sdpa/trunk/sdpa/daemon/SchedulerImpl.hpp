@@ -94,7 +94,7 @@ namespace sdpa {
 
 	friend class boost::serialization::access;
 
-	void print();
+	virtual void print();
   protected:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;

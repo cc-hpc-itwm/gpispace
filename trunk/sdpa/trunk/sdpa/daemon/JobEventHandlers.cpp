@@ -120,6 +120,9 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 {
 	try {
+		SDPA_LOG_DEBUG("Look for the job "<<pEvt->job_id());
+		SDPA_LOG_DEBUG("JobManager's content: ");
+		ptr_job_man_->print();
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->QueryJobStatus(pEvt); // should send back a message with the status
 	}

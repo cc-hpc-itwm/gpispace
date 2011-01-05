@@ -219,7 +219,9 @@ namespace sdpa { namespace daemon {
 
     friend class boost::serialization::access;
 
-    void print() {
+    void print()
+    {
+    	lock_type lock(mtx_);
     	for( iterator it = begin(); it!= end(); it++)
     		std::cout<<*it<<" ";
     	std::cout<<std::endl;

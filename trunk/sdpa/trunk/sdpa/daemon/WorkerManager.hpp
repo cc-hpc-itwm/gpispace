@@ -82,6 +82,7 @@ namespace sdpa { namespace daemon {
 
 	  void print()
 	  {
+		  SDPA_LOG_DEBUG("The content of the common queue is: ");
 		  common_queue_.print();
 
 		  for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)

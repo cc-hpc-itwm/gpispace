@@ -106,7 +106,7 @@ namespace sdpa { namespace daemon {
 				// inform immediately WE that the corresponding activity was cancelled
 				id_type actId = evt.job_id();
 
-				pComm->activityCancelled( actId, "Activity cancelled from pending" );
+				pComm->notifyActivityCancelled( actId, "Activity cancelled from pending" );
 
 			}  catch(std::exception const & ex) {
                           SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
@@ -185,15 +185,18 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
-    	DLOG(TRACE, "query status of job " << id() << " status: " << getStatus());
+    	LOG(TRACE, "Query status of job " << id());
+    	LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
 
     	JobStatusReplyEvent::status_t status = getStatus();
 
-    	// Post a JobStatusReplyEvent to e.from()
+    	LOG(TRACE, "Prepare a JobStatusReplyEvent ...");
 		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id(), status));
 
-		// send status reply to master
+		LOG(TRACE, "Send status reply to master ...");
 		pComm->sendEventToMaster(pStatReply);
+
+		LOG(TRACE, "Leave JobImpl::action_query_job_status ...");
     }
 
     void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)

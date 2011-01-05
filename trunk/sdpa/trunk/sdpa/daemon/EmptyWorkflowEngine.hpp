@@ -68,6 +68,8 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     	SDPA_LOG_DEBUG("Empty workflow engine created ...");
     }
 
+    virtual bool is_real() { return false; }
+
     void connect(IAgent* pIAgent )
     {
     	pIAgent_ = pIAgent;

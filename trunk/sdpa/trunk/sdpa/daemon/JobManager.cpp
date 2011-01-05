@@ -128,20 +128,18 @@ std::vector<sdpa::job_id_t> JobManager::getJobIDList()
 
 std::string JobManager::print() const
 {
-	//lock_type lock(mtx_);
+	lock_type lock(mtx_);
 	std::ostringstream os;
 
-	os<<"Begin dump ..."<<std::endl;
+	os<<std::endl<<"Begin dump JobManager..."<<std::endl;
 
-        os<<"The list of jobs still owned by the JobManager:"<<std::endl;
-        for ( job_map_t::const_iterator it (job_map_.begin())
-            ; it != job_map_.end()
-            ; ++it
-            )
-        {
-          os << "  ---> job "<< it->second->id() << std::endl;
-        }
+	os<<"The list of jobs still owned by the JobManager:"<<std::endl;
+	for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
+	  os << "  ---> job "<< it->second->id() << std::endl;
 
+    os<<"End dump JobManager..."<<std::endl;
+
+    SDPA_LOG_DEBUG(os.str());
 	return os.str();
 }
 
@@ -182,4 +180,10 @@ void JobManager::waitForFreeSlot ()
 {
   lock_type lock(mtx_);
   free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
+}
+
+void JobManager::set_icomm(IComm* p)
+{
+	for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
+		it->second->set_icomm(p);
 }

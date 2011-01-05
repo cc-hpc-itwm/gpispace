@@ -74,6 +74,7 @@ namespace sdpa { namespace fsm { namespace smc {
 			    ar >> stateId;
 
 			    m_fsmContext.setState(m_fsmContext.valueOf(stateId));
+			    DLOG(TRACE, "Set the current state of the job "<<id.str()<<" to "<<getStatus()<<"!!!");
 			}
 
 			template<class Archive>

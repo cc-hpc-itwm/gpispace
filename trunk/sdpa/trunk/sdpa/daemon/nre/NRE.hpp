@@ -120,11 +120,11 @@ namespace sdpa {
 		void handleCancelJobEvent(const CancelJobEvent* );
 		void handleCancelJobAckEvent(const CancelJobAckEvent* );
 
-		void activityCreated( const id_type& id, const std::string& data );
-		void activityStarted( const id_type& id, const std::string& data );
-		void activityFinished( const id_type& id, const std::string& data );
-		void activityFailed( const id_type& id, const std::string& data );
-		void activityCancelled( const id_type& id, const std::string& data );
+		void notifyActivityCreated( const id_type& id, const std::string& data );
+		void notifyActivityStarted( const id_type& id, const std::string& data );
+		void notifyActivityFinished( const id_type& id, const std::string& data );
+		void notifyActivityFailed( const id_type& id, const std::string& data );
+		void notifyActivityCancelled( const id_type& id, const std::string& data );
 
 		const std::string url() const {return url_;}
 		const std::string masterName() const { return masterName_; }

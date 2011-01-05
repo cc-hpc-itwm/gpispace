@@ -21,6 +21,7 @@
 #include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <sdpa/serialize/unordered_map.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -28,6 +29,8 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/split_member.hpp>
+
 #include <we/we.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
@@ -41,7 +44,8 @@ namespace sdpa { namespace daemon {
 	  typedef sdpa::shared_ptr<JobManager> ptr_t;
 	  typedef boost::recursive_mutex mutex_type;
 	  typedef boost::unique_lock<mutex_type> lock_type;
-          typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
+	  //typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
+	  typedef std::map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
 	  typedef job_map_t::iterator iterator;
 
 	  iterator begin() { return job_map_.begin(); }
@@ -55,6 +59,7 @@ namespace sdpa { namespace daemon {
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
+	  void set_icomm(IComm*);
 
 	  void addJobPreferences( const sdpa::job_id_t&, const we::preference_t& ) throw (JobNotFoundException);
 	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
@@ -62,23 +67,43 @@ namespace sdpa { namespace daemon {
 	  std::string print() const;
 	  size_t number_of_jobs() const { return job_map_.size(); }
 
-          void waitForFreeSlot();
-          bool slotAvailable() const;
-	  template <class Archive>
+	  void waitForFreeSlot();
+      bool slotAvailable() const;
+
+	  /*template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)
+	  {
+		  ar & BOOST_SERIALIZATION_NVP(job_map_);
+		  ar & BOOST_SERIALIZATION_NVP(job_map_marked_for_del_);
+	  }*/
+
+      template<class Archive>
+      void save(Archive & ar, const unsigned int version) const
+	  {
+		  // note, version is always the latest when saving
+		  ar  & job_map_;
+		  ar  & job_map_marked_for_del_;
+	  }
+
+	  template<class Archive>
+	  void load(Archive & ar, const unsigned int version)
 	  {
 		  ar & job_map_;
 		  ar & job_map_marked_for_del_;
 	  }
+
+	  BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 
 	  friend class boost::serialization::access;
 	  // only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
+	  job_map_t job_map_;
   protected:
 	  SDPA_DECLARE_LOGGER();
-	  job_map_t job_map_;
+
 	  job_map_t job_map_marked_for_del_;
 	  mutable mutex_type mtx_;
       boost::condition_variable_any free_slot_;

@@ -184,9 +184,15 @@ namespace sdpa { namespace daemon {
 
 	  friend class boost::serialization::access;
 
+	  virtual void backup( const std::string& strArchiveName );
+	  virtual void recover( const std::string& strArchiveName );
+
 	  virtual void print()
 	  {
+		  SDPA_LOG_DEBUG("The content of the JobManager is:");
 		  ptr_job_man_->print();
+
+		  SDPA_LOG_DEBUG("The content of the Scheduler is:");
 		  ptr_scheduler_->print();
 	  }
 

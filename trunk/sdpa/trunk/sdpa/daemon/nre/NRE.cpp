@@ -253,38 +253,53 @@ bool  NRE<U>::cancel(const id_type& activityId, const reason_type& /* reason */)
 }
 
 template <typename U>
-void NRE<U>::activityCreated( const id_type& id, const std::string& data )
+void NRE<U>::notifyActivityCreated( const id_type& id, const std::string& data )
 {
- 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
- 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
+	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+	{
+		const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
+	}
 }
 
 template <typename U>
-void NRE<U>::activityStarted( const id_type& id, const std::string& data )
+void NRE<U>::notifyActivityStarted( const id_type& id, const std::string& data )
 {
- 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
- 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
+	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+	{
+		const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
+	}
 }
 
 template <typename U>
-void NRE<U>::activityFinished( const id_type& id, const std::string& data )
+void NRE<U>::notifyActivityFinished( const id_type& id, const std::string& data )
 {
- 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
- 	notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
+	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+	{
+		const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+		notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
+	}
 }
 
 template <typename U>
-void NRE<U>::activityFailed( const id_type& id, const std::string& data )
+void NRE<U>::notifyActivityFailed( const id_type& id, const std::string& data )
 {
- 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
- 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
+	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+	{
+		const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
+	}
 }
 
 template <typename U>
-void NRE<U>::activityCancelled( const id_type& id, const std::string& data )
+void NRE<U>::notifyActivityCancelled( const id_type& id, const std::string& data )
 {
- 	const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
- 	notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
+	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+	{
+		const std::string act_name (we::util::text_codec::decode<we::activity_t> (data).transition().name());
+		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
+	}
 }
 
 template <typename U>

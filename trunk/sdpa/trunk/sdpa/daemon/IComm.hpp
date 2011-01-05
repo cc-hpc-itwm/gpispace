@@ -70,11 +70,11 @@ const std::string USER("user");
 	  virtual bool is_orchestrator() = 0;
 
 	  //GUI notification methods
-	  virtual void activityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
-	  virtual void activityStarted(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
-	  virtual void activityFinished(const id_type&, const std::string& )  { throw std::runtime_error("not supported by this component"); }
-	  virtual void activityFailed(const id_type&, const std::string& )    { throw std::runtime_error("not supported by this component"); }
-	  virtual void activityCancelled(const id_type&, const std::string& ) { throw std::runtime_error("not supported by this component"); }
+	  virtual void notifyActivityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
+	  virtual void notifyActivityStarted(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
+	  virtual void notifyActivityFinished(const id_type&, const std::string& )  { throw std::runtime_error("not supported by this component"); }
+	  virtual void notifyActivityFailed(const id_type&, const std::string& )    { throw std::runtime_error("not supported by this component"); }
+	  virtual void notifyActivityCancelled(const id_type&, const std::string& ) { throw std::runtime_error("not supported by this component"); }
   };
 }}
 

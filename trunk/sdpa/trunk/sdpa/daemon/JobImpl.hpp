@@ -42,11 +42,12 @@ namespace sdpa { namespace daemon {
       	                const sdpa::daemon::IComm* pHandler = NULL,
       	                const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id());
 
-      virtual ~JobImpl();
+       virtual ~JobImpl();
 
         virtual const sdpa::job_id_t& id() const;
         virtual const sdpa::job_id_t& parent() const;
         virtual const sdpa::job_desc_t& description() const;
+        virtual void set_icomm(IComm* pArgComm) { pComm = pArgComm; }
 
         //virtual sdpa::worker_id_t& worker() { return worker_id_;}
 

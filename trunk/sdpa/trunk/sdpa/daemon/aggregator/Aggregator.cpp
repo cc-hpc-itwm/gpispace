@@ -43,7 +43,6 @@ void Aggregator::action_configure(const StartUpEvent &se)
 	SDPA_LOG_INFO("Configuring myeself (aggregator)...");
 }
 
-
 void Aggregator::action_config_ok(const ConfigOkEvent& e)
 {
     GenericDaemon::action_config_ok (e);

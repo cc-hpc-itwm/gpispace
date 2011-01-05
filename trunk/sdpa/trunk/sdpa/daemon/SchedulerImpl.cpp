@@ -626,7 +626,10 @@ void SchedulerImpl::run()
 
 void SchedulerImpl::print()
 {
+	//SDPA_LOG_DEBUG("The content of agent's "<<ptr_comm_handler_->name()<<" scheduler queue is:");
 	jobs_to_be_scheduled.print();
+
+	//SDPA_LOG_DEBUG("The content of agent's "<<ptr_comm_handler_->name()<<" WorkerManager is:");
 	ptr_worker_man_->print();
 }
 
