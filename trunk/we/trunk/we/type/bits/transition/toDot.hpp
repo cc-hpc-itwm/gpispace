@@ -60,31 +60,28 @@ namespace we { namespace type {
       inline std::string lines (const char & b, const std::string & s)
       {
         std::string l;
-        bool was_b (false);
 
-        for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
+        std::string::const_iterator pos (s.begin());
+        const std::string::const_iterator end (s.end());
+
+        while (pos != end)
           {
-            if (*pos == b && !was_b)
+            if (*pos == b)
               {
-                l += endl;
+                ++pos;
 
-                was_b = true;
+                while (pos != end && (isspace (*pos) || *pos == b))
+                  {
+                    ++pos;
+                  }
+
+                l += endl;
               }
             else
               {
-                if (was_b)
-                  {
-                    if (!isspace (*pos))
-                      {
-                        was_b = false;
+                l += *pos;
 
-                        l += *pos;
-                      }
-                  }
-                else
-                  {
-                    l += *pos;
-                  }
+                ++pos;
               }
           }
 
@@ -102,6 +99,7 @@ namespace we { namespace type {
           case '>': return "\\>";
           case '<': return "\\<";
           case '"': return "\\\"";
+          case '|': return "\\|";
           default: return fhg::util::show (c);
           }
       }
