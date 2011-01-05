@@ -1,0 +1,546 @@
+<defun name="sustack">
+
+  <in name="su_param" type="string" place="su_param"/>
+  <in name="shmem_per_node" type="long" place="shmem_per_node"/>
+  <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
+  <in name="file_input" type="string" place="file_input_IN"/>
+  <in name="file_output" type="string" place="file_output"/>
+
+  <out name="done" type="control" place="done"/>
+
+  <struct name="pos">
+    <field name="trace" type="long"/>
+    <field name="extendable" type="bool"/>
+  </struct>
+
+  <struct name="package">
+    <field name="left" type="pos"/>
+    <field name="right" type="pos"/>
+    <field name="size" type="long"/>
+  </struct>
+
+  <struct name="loaded_package">
+    <field name="package" type="package"/>
+    <field name="slot" type="long"/>
+  </struct>
+
+  <struct name="pair_of_packages">
+    <field name="x" type="loaded_package"/>
+    <field name="y" type="loaded_package"/>
+  </struct>
+
+  <struct name="write_info">
+    <field name="next_trace" type="long"/>
+    <field name="offset" type="long"/>
+  </struct>
+
+  <struct name="package_to_be_written">
+    <field name="loaded_package" type="loaded_package"/>
+    <field name="offset" type="long"/>
+  </struct>
+
+  <net>
+
+    <place name="su_param" type="string"/>
+    <place name="shmem_per_node" type="long"/>
+    <place name="gpi_mem_per_node" type="long"/>
+    <place name="file_input_IN" type="string"/>
+    <place name="file_input" type="string"/>
+    <place name="file_output" type="string"/>
+    <place name="done" type="control"/>
+
+    <transition name="get_input_size">
+      <defun>
+        <in name="file" type="string"/>
+        <out name="num_trace" type="long"/>
+        <out name="sizeof_trace" type="long"/>
+        <out name="file" type="string"/>
+        <module name="sustack"
+                function="file get_input_size (file, num_trace, sizeof_trace)">
+          <code><![CDATA[
+            num_trace = 13;
+            sizeof_trace = (4L << 10);
+
+            return file;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="file" place="file_input_IN"/>
+      <connect-out port="file" place="file_input"/>
+      <connect-out port="num_trace" place="num_trace"/>
+      <connect-out port="sizeof_trace" place="sizeof_trace"/>
+    </transition>
+
+    <place name="num_trace" type="long"/>
+    <place name="sizeof_trace" type="long"/>
+
+    <transition name="init">
+      <defun>
+        <in name="sizeof_trace" type="long"/>
+        <in name="shmem_per_node" type="long"/>
+        <in name="gpi_mem_per_node" type="long"/>
+        <out name="trace_per_bunch" type="long"/>
+        <out name="slot_per_node" type="long"/>
+        <out name="write_info" type="write_info"/>
+        <out name="give_back_trace" type="long"/>
+        <expression>
+          ${mem_per_node}    := min (${shmem_per_node}, ${gpi_mem_per_node});
+          ${trace_per_node}  := ${mem_per_node} div ${sizeof_trace};
+          ${trace_per_bunch} := ${trace_per_node} div 2;
+          ${size_per_bunch}  := ${trace_per_bunch} * ${sizeof_trace};
+          ${slot_per_node}   := ${gpi_mem_per_node} div ${size_per_bunch};
+
+          ${write_info.next_trace} := 0L;
+          ${write_info.offset}     := 0L;
+
+          ${give_back_trace} := 0L;
+        </expression>
+      </defun>
+      <connect-read port="sizeof_trace" place="sizeof_trace"/>
+      <connect-in port="shmem_per_node" place="shmem_per_node"/>
+      <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
+      <connect-out port="trace_per_bunch" place="trace_per_bunch"/>
+      <connect-out port="slot_per_node" place="slot_per_node"/>
+      <connect-out port="write_info" place="write_info"/>
+      <connect-out port="give_back_trace" place="give_back_trace"/>
+    </transition>
+
+    <place name="write_info" type="write_info"/>
+    <place name="give_back_trace" type="long"/>
+
+    <place name="trace_per_bunch" type="long"/>
+    <place name="slot_per_node" type="long"/>
+
+    <transition name="num_slot">
+      <defun>
+        <in name="slot_per_node" type="long"/>
+        <out name="slots" type="long"/>
+        <module name="sustack" function="slots num_slot (slot_per_node)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <code><![CDATA[
+            return slot_per_node * fvmGetNodeCount();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="slot_per_node" place="slot_per_node"/>
+      <connect-out port="slots" place="num_slots"/>
+    </transition>
+
+    <place name="num_slots" type="long"/>
+
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <specialize name="dup_control" use="dup">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="dup_num_slots" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="num_slots"/>
+      <connect-out port="one" place="num_slots_generate"/>
+      <connect-out port="two" place="num_slots_eat"/>
+    </transition>
+
+    <place name="num_slots_generate" type="long"/>
+    <place name="num_slots_eat" type="long"/>
+
+    <transition name="generate_slots" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="num_slots_generate"/>
+      <connect-out port="out" place="empty_slot"/>
+    </transition>
+
+    <place name="empty_slot" type="long"/>
+
+    <place name="new_package" type="loaded_package"/>
+    <place name="num_packages" type="long"/>
+
+    <transition name="generate_package" inline="true">
+      <include-function href="generate/package.xml"/>
+      <place-map virtual="empty_slot" real="empty_slot"/>
+      <connect-in port="trace_per_bunch" place="trace_per_bunch"/>
+      <connect-in port="num_trace" place="num_trace"/>
+      <connect-out port="package" place="new_package"/>
+      <connect-out port="num" place="num_packages"/>
+    </transition>
+
+    <transition name="load_package">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <in name="file" type="string"/>
+        <out name="package" type="loaded_package"/>
+        <module name="sustack" function="load_package (package)">
+          <cinclude href="print.hpp"/>
+          <code><![CDATA[
+            std::cerr << "*** LOAD ";
+
+            ::print::loaded_package (std::cerr, package);
+
+            std::cerr << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="file" place="file_input"/>
+      <connect-in port="package" place="new_package"/>
+      <connect-out port="package" place="loaded_package"/>
+    </transition>
+
+    <place name="loaded_package" type="loaded_package"/>
+
+    <transition name="sustack">
+      <defun>
+        <in name="loaded_package" type="loaded_package"/>
+        <in name="param" type="string"/>
+        <out name="loaded_package" type="loaded_package"/>
+        <module name="sustack" function="sustack (loaded_package, param)">
+          <cinclude href="print.hpp"/>
+          <code><![CDATA[
+            std::cerr << "*** CALL 'sustack " << param << "'"
+                      << " for ";
+
+            ::print::loaded_package (std::cerr, loaded_package);
+
+            std::cerr << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="param" place="su_param"/>
+      <connect-in port="loaded_package" place="loaded_package"/>
+      <connect-out port="loaded_package" place="package"/>
+    </transition>
+
+    <place name="package" type="loaded_package"/>
+    <place name="package_check_done" type="loaded_package" capacity="1"/>
+
+    <transition name="select_package">
+      <use name="select_package"/>
+      <connect-in port="x" place="package"/>
+      <connect-out port="x" place="package_check_done"/>
+    </transition>
+
+    <transition name="package_done">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression></expression>
+        <condition>
+          ${package.package.left.extendable} :eq: false
+        </condition>
+        <condition>
+          ${package.package.right.extendable} :eq: false
+        </condition>
+      </defun>
+      <connect-in port="package" place="package_check_done"/>
+      <connect-out port="package" place="done_package"/>
+    </transition>
+
+    <transition name="package_not_done">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression></expression>
+        <condition>
+          (${package.package.left.extendable} :eq: true)
+          ||
+          (${package.package.right.extendable} :eq: true)
+        </condition>
+      </defun>
+      <connect-in port="package" place="package_check_done"/>
+      <connect-out port="package" place="not_done_package"/>
+    </transition>
+
+    <place name="done_package" type="loaded_package"/>
+    <place name="not_done_package" type="loaded_package" capacity="1"/>
+
+    <place name="packages_to_match" type="loaded_package"/>
+
+
+    <transition name="match" priority="1">
+      <defun>
+        <in name="x" type="loaded_package"/>
+        <in name="y" type="loaded_package"/>
+        <out name="p" type="pair_of_packages"/>
+        <expression>
+          ${p.x} := ${x}; ${p.y} := ${y}
+        </expression>
+        <condition>
+          (${x.package.left.trace} :eq: ${y.package.right.trace})
+          ||
+          (${y.package.left.trace} :eq: ${x.package.right.trace})
+        </condition>
+      </defun>
+      <connect-in port="x" place="not_done_package"/>
+      <connect-in port="y" place="packages_to_match"/>
+      <connect-out port="p" place="pair_of_packages"/>
+    </transition>
+
+    <place name="pair_of_packages" type="pair_of_packages"/>
+
+    <transition name="no_match">
+      <defun>
+        <in name="x" type="loaded_package"/>
+        <out name="x" type="loaded_package"/>
+        <expression></expression>
+      </defun>
+      <connect-in port="x" place="not_done_package"/>
+      <connect-out port="x" place="packages_to_match"/>
+    </transition>
+
+    <transition name="sustack2">
+      <defun>
+        <in name="p" type="pair_of_packages"/>
+        <in name="param" type="string"/>
+        <out name="p" type="pair_of_packages"/>
+        <module name="sustack" function="sustack2 (p, param)">
+          <cinclude href="print.hpp"/>
+          <code><![CDATA[
+            ::pnetc::type::loaded_package::loaded_package & left
+              ( (p.x.package.left.trace == p.y.package.right.trace)
+              ? p.y
+              : p.x
+              );
+            ::pnetc::type::loaded_package::loaded_package & right
+              ( (p.x.package.left.trace == p.y.package.right.trace)
+              ? p.x
+              : p.y
+              );
+
+            std::cerr << "*** GOT packages:";
+
+            ::print::loaded_package (std::cerr, left);
+
+            std::cerr << " and ";
+
+            ::print::loaded_package (std::cerr, right);
+
+            std::cerr << std::endl;
+
+            std::cerr << "*** CALL 'sustack " << param << "'"
+                      << " for [" << left.package.left.trace << ".." << right.package.right.trace << ")"
+                      << "~" << (left.package.size + right.package.size)
+                      << std::endl;
+
+            left.package.right.extendable = false;
+            right.package.left.extendable = false;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="param" place="su_param"/>
+      <connect-in port="p" place="pair_of_packages"/>
+      <connect-out port="p" place="done_pair_of_packages"/>
+    </transition>
+
+    <place name="done_pair_of_packages" type="pair_of_packages"/>
+
+    <transition name="unpair">
+      <defun>
+        <in name="p" type="pair_of_packages"/>
+        <out name="x" type="loaded_package"/>
+        <out name="y" type="loaded_package"/>
+        <expression>
+          ${x} := ${p.x};
+          ${y} := ${p.y};
+        </expression>
+      </defun>
+      <connect-in port="p" place="done_pair_of_packages"/>
+      <connect-out port="x" place="done_package_1"/>
+      <connect-out port="y" place="done_package_2"/>
+    </transition>
+
+    <place name="done_package_1" type="loaded_package"/>
+    <place name="done_package_2" type="loaded_package"/>
+
+    <defun name="select_package">
+      <in name="x" type="loaded_package"/>
+      <out name="x" type="loaded_package"/>
+      <expression></expression>
+    </defun>
+
+    <transition name="back_1">
+      <use name="select_package"/>
+      <connect-in port="x" place="done_package_1"/>
+      <connect-out port="x" place="package_check_done"/>
+    </transition>
+
+    <transition name="back_2">
+      <use name="select_package"/>
+      <connect-in port="x" place="done_package_2"/>
+      <connect-out port="x" place="package_check_done"/>
+    </transition>
+
+    <transition name="select_writeable">
+      <defun>
+        <in name="write_info" type="write_info"/>
+        <out name="write_info" type="write_info"/>
+        <in name="p" type="loaded_package"/>
+        <out name="w" type="package_to_be_written"/>
+        <expression>
+          ${w.loaded_package} := ${p};
+          ${w.offset} := ${write_info.offset};
+
+          ${write_info.next_trace} := ${p.package.right.trace};
+          ${write_info.offset} := ${write_info.offset} + ${p.package.size};
+        </expression>
+        <condition>
+          ${write_info.next_trace} :eq: ${p.package.left.trace}
+        </condition>
+      </defun>
+      <connect-in port="write_info" place="write_info"/>
+      <connect-out port="write_info" place="write_info"/>
+      <connect-in port="p" place="done_package"/>
+      <connect-out port="w" place="package_to_be_written"/>
+    </transition>
+
+    <place name="package_to_be_written" type="package_to_be_written"/>
+
+    <transition name="write">
+      <defun>
+        <in name="w" type="package_to_be_written"/>
+        <in name="file" type="string"/>
+        <out name="p" type="loaded_package"/>
+        <module name="sustack" function="p write (w, file)">
+          <cinclude href="print.hpp"/>
+          <code><![CDATA[
+            const ::pnetc::type::loaded_package::loaded_package & p (w.loaded_package);
+
+            std::cerr << "*** WRITE ";
+
+            ::print::loaded_package (std::cerr, w.loaded_package);
+
+            std::cerr << " to " << file << ":" << w.offset
+                      << std::endl;
+
+            return p;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="file" place="file_output"/>
+      <connect-in port="w" place="package_to_be_written"/>
+      <connect-out port="p" place="package_written"/>
+    </transition>
+
+    <place name="package_written" type="loaded_package"/>
+
+    <transition name="back_loaded_package">
+      <defun>
+        <in name="loaded_package" type="loaded_package"/>
+        <in name="give_back_trace" type="long"/>
+        <out name="give_back_trace" type="long"/>
+        <out name="loaded_package" type="loaded_package"/>
+        <expression>
+          ${give_back_trace} := ${loaded_package.package.right.trace};
+        </expression>
+        <condition>
+          ${give_back_trace} :eq: ${loaded_package.package.left.trace}
+        </condition>
+      </defun>
+      <connect-in port="loaded_package" place="package_written"/>
+      <connect-out port="loaded_package" place="loaded_package_finished"/>
+      <connect-in port="give_back_trace" place="give_back_trace"/>
+      <connect-out port="give_back_trace" place="give_back_trace"/>
+    </transition>
+
+    <place name="loaded_package_finished" type="loaded_package"/>
+
+    <transition name="back_store">
+      <defun>
+        <in name="loaded_package" type="loaded_package"/>
+        <out name="package" type="package"/>
+        <out name="slot" type="long"/>
+        <expression>
+          ${package} := ${loaded_package.package};
+          ${slot} := ${loaded_package.slot};
+        </expression>
+      </defun>
+      <connect-in port="loaded_package" place="loaded_package_finished"/>
+      <connect-out port="package" place="package_finished"/>
+      <connect-out port="slot" place="empty_slot"/>
+    </transition>
+
+    <place name="package_finished" type="package"/>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_package" use="wait">
+      <type-map replace="T" with="package"/>
+    </specialize>
+
+    <transition name="wait_package">
+      <use name="wait_package"/>
+      <place-map virtual="wait" real="num_packages"/>
+      <connect-in port="trigger" place="package_finished"/>
+      <connect-out port="done" place="done_packages"/>
+    </transition>
+
+    <place name="done_packages" type="control"/>
+
+    <transition name="dup_done_packages" inline="true">
+      <use name="dup_control"/>
+      <connect-in port="in" place="done_packages"/>
+      <connect-out port="one" place="trigger_finalize"/>
+      <connect-out port="two" place="trigger_eat"/>
+    </transition>
+
+    <place name="trigger_finalize" type="control"/>
+    <place name="done_finalize" type="control"/>
+    <place name="trigger_eat" type="control"/>
+    <place name="done_eat" type="control"/>
+
+    <transition name="finalize">
+      <defun>
+        <in name="trigger" type="control"/>
+        <out name="trigger" type="control"/>
+        <module name="sustack" function="finalize (trigger)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cerr << "*** FINALIZE" << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="trigger" place="trigger_finalize"/>
+      <connect-out port="trigger" place="done_finalize"/>
+    </transition>
+
+    <include-template href="eatN.xml"/>
+    <specialize name="eat_long" use="eatN">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="eat_slots">
+      <use name="eat_long"/>
+      <place-map virtual="what" real="empty_slot"/>
+      <connect-in port="N" place="num_slots_eat"/>
+      <connect-in port="trigger" place="trigger_eat"/>
+      <connect-out port="done" place="done_eat"/>
+    </transition>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="done_eat" type="control"/>
+        <in name="done_finalize" type="control"/>
+        <in name="su_param" type="string"/>
+        <in name="file_input" type="string"/>
+        <in name="file_output" type="string"/>
+        <in name="sizeof_trace" type="long"/>
+        <in name="write_info" type="write_info"/>
+
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+
+      <connect-in port="done_eat" place="done_eat"/>
+      <connect-in port="done_finalize" place="done_finalize"/>
+      <connect-in port="su_param" place="su_param"/>
+      <connect-in port="file_input" place="file_input"/>
+      <connect-in port="file_output" place="file_output"/>
+      <connect-in port="sizeof_trace" place="sizeof_trace"/>
+      <connect-in port="write_info" place="write_info"/>
+
+      <connect-out port="done" place="done"/>
+    </transition>
+
+  </net>
+</defun>

@@ -1,0 +1,102 @@
+<defun>
+
+  <in name="trace_per_bunch" type="long" place="trace_per_bunch"/>
+  <in name="num_trace" type="long" place="num_trace"/>
+  <out name="package" type="loaded_package" place="package"/>
+  <out name="num" type="long" place="num"/>
+
+  <net>
+
+    <place name="trace_per_bunch" type="long"/>
+    <place name="num_trace" type="long"/>
+    <place name="package" type="loaded_package"/>
+    <place name="num" type="long"/>
+
+    <struct name="state">
+      <field name="max" type="long"/>
+      <field name="id" type="long"/>
+      <field name="inc" type="long"/>
+      <field name="num" type="long"/>
+    </struct>
+
+    <place name="check_break" type="state" capacity="1"/>
+    <place name="state" type="state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="inc" type="long"/>
+        <in name="max" type="long"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.max} := ${max};
+          ${state.inc} := ${inc};
+          ${state.id} := 0L;
+          ${state.num} := 0L;
+        </expression>
+      </defun>
+      <connect-in port="inc" place="trace_per_bunch"/>
+      <connect-in port="max" place="num_trace"/>
+      <connect-out port="state" place="check_break"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="num" type="long"/>
+        <expression>
+          ${num} := ${state.num}
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+      <connect-out port="num" place="num"/>
+    </transition>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <expression></expression>
+      </defun>
+      <condition>
+        ${state.id} :lt: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <place name="empty_slot" type="long" virtual="true"/>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <in name="slot" type="long"/>
+        <out name="state" type="state"/>
+        <out name="loaded_package" type="loaded_package"/>
+        <expression>
+          ${package.left.trace} := ${state.id};
+          ${package.left.extendable} := (${package.left.trace} :gt: 0L);
+
+          ${state.id} := ${state.id} + ${state.inc};
+
+          ${state.num} := ${state.num} + 1;
+
+          ${package.right.trace} := min (${state.max}, ${state.id});
+          ${package.right.extendable} := (${package.right.trace} :lt: ${state.max});
+
+          ${package.size} := ${package.right.trace} - ${package.left.trace};
+
+          ${loaded_package.package} := ${package};
+          ${loaded_package.slot} := ${slot};
+        </expression>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-in port="slot" place="empty_slot"/>
+      <connect-out port="state" place="check_break"/>
+      <connect-out port="loaded_package" place="package"/>
+    </transition>
+
+  </net>
+</defun>
