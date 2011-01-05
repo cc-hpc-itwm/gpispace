@@ -14,6 +14,9 @@
 #include <stack>
 #include <vector>
 
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+
 namespace we { namespace type {
     namespace optimize { namespace simple_pipe_elimination
     {
@@ -64,11 +67,13 @@ namespace we { namespace type {
         typedef typename port_t::name_type name_type;
         typedef petri_net::pid_t pid_t;
         typedef petri_net::pid_t eid_t;
+        typedef petri_net::tid_t tid_t;
         typedef petri_net::connection_t connection_t;
         typedef boost::unordered_map<name_type, pid_t> map_type;
         typedef typename transition_t::outer_to_inner_t outer_to_inner;
         typedef typename transition_t::inner_to_outer_t inner_to_outer;
         typedef boost::unordered_map<name_type, pid_t> map_type;
+        typedef boost::unordered_set<tid_t> tid_set_type;
 
         map_type map_in;
         map_type map_out;
@@ -107,6 +112,9 @@ namespace we { namespace type {
         bool all_in_equals_one (true);
         bool all_out_equals_one (true);
 
+        tid_set_type suc_in;
+        tid_set_type suc_out;
+
         for ( typename map_type::const_iterator in (map_in.begin())
             ; in != map_in.end()
             ; ++in
@@ -122,6 +130,27 @@ namespace we { namespace type {
 
             const petri_net::pid_t pid_A (in->second);
             const petri_net::pid_t pid_B (out->second);
+
+            all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
+            all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
+
+            for ( petri_net::adj_transition_const_it
+                    t (net.out_of_place (pid_A))
+                ; t.has_more()
+                ; ++t
+                )
+              {
+                suc_in.insert (*t);
+              }
+
+            for ( petri_net::adj_transition_const_it
+                    t (net.out_of_place (pid_B))
+                ; t.has_more()
+                ; ++t
+                )
+              {
+                suc_out.insert (*t);
+              }
 
             if (net.get_maybe_capacity (pid_A).isJust())
               {
@@ -139,9 +168,6 @@ namespace we { namespace type {
               {
                 return fhg::util::Nothing<pid_pair_vec_type>();
               }
-
-            all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
-            all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
 
             port_t port_A;
             port_t port_B;
@@ -166,9 +192,22 @@ namespace we { namespace type {
                 );
           }
 
-        if (!all_in_equals_one && !all_out_equals_one)
+        if (!(all_in_equals_one || all_out_equals_one))
           {
             return fhg::util::Nothing<pid_pair_vec_type>();
+          }
+        else
+          {
+            for ( tid_set_type::const_iterator t (suc_in.begin())
+                ; t != suc_in.end()
+                ; ++t
+                )
+              {
+                if (suc_out.find (*t) != suc_out.end())
+                  {
+                    return fhg::util::Nothing<pid_pair_vec_type>();
+                  }
+              }
           }
 
         return fhg::util::Just<pid_pair_vec_type> (pid_pair_vec);
