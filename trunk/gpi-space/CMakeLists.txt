@@ -57,6 +57,20 @@ else (HAVE_SYS_TYPES_H)
   message(FATAL_ERROR "sys/types.h is required for mode_t")
 endif (HAVE_SYS_TYPES_H)
 
+check_include_file(unistd.h HAVE_UNISTD_H)
+if (HAVE_UNISTD_H)
+else (HAVE_UNISTD_H)
+  message(FATAL_ERROR "unistd.h is required for sysconf")
+endif (HAVE_UNISTD_H)
+
+# symbols
+include(CheckSymbolExists)
+check_symbol_exists(_SC_GETPW_R_SIZE_MAX unistd.h HAVE_GETPW_R_SIZE_MAX)
+if (HAVE_GETPW_R_SIZE_MAX)
+else (HAVE_GETPW_R_SIZE_MAX)
+  message(FATAL_ERROR "_SC_GETPW_R_SIZE_MAX doesn't seem to be defined on this machine")
+endif (HAVE_GETPW_R_SIZE_MAX)
+
 ## check for boost
 set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
 set(Boost_FIND_QUIETLY false)
