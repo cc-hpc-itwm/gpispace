@@ -174,7 +174,7 @@ struct MyFixture
 		return os.str();
 	}
 
-	void startDaemons(const std::string& workerUrl);
+	//void startDaemons(const std::string& workerUrl);
 
 	int m_nITER;
 	int m_sleep_interval ;

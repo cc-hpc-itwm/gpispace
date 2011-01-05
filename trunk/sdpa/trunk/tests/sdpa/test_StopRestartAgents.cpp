@@ -67,6 +67,48 @@ namespace po = boost::program_options;
 typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 
+namespace sdpa { namespace tests { namespace worker {
+  class NreWorkerClient
+  {
+  public:
+    explicit
+    NreWorkerClient( const std::string &nre_worker_location
+                      // TODO: fixme, this is ugly
+                      , bool bLaunchNrePcd = false
+                      , const std::string & fvmPCBinary = ""
+                      , const std::vector<std::string>& fvmPCSearchPath = std::vector<std::string>()
+                      , const std::vector<std::string>& fvmPCPreLoad = std::vector<std::string>()
+                      )
+    : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
+
+    void set_ping_interval(unsigned long /*seconds*/){}
+    void set_ping_timeout(unsigned long /*seconds*/){}
+    void set_ping_trials(std::size_t /*max_tries*/){}
+
+    void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
+
+    unsigned int start() throw (std::exception) { LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
+    void stop() throw (std::exception) { LOG( INFO, "Stop the test NreWorkerClient ...");}
+
+    void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
+
+    sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
+	{
+    	LOG( INFO, "Execute the activity "<<in_activity);
+    	LOG( INFO, "Report activity finished ...");
+
+    	sdpa::nre::worker::execution_result_t exec_res(std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result"));
+    	return exec_res;
+	}
+
+  private:
+    std::string nre_worker_location_;
+    SDPA_DECLARE_LOGGER();
+  };
+}}}
+
+typedef sdpa::tests::worker::NreWorkerClient TestWorkerClient;
+
 struct MyFixture
 {
 	MyFixture()
@@ -222,6 +264,7 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
+/*
 BOOST_AUTO_TEST_CASE( testStopRestartOrch )
 {
 	LOG( INFO, "***** testStopRestartOrch *****"<<std::endl);
@@ -502,7 +545,9 @@ BOOST_AUTO_TEST_CASE( testStopRestartAll )
 	LOG( INFO, "The test case testStopRestartAll terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
+*/
 
+/*
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrch1 )
 {
 	string addrOrch = "127.0.0.1";
@@ -550,11 +595,11 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrch1 )
 
 	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;
 }
+*/
 
-/*
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrch2 )
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrchWithClient )
 {
-	LOG( INFO, "***** testBackupRecoverOrch2 *****"<<std::endl);
+	LOG( INFO, "***** testBackupRecoverOrchWithClient *****"<<std::endl);
 	std::string filename = "testBackupRecoverOrch2.txt"; // = boost::archive::tmpdir());filename += "/testfile";
 
 
@@ -564,7 +609,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrch2 )
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
 
-	bool bLaunchNrePcd = true;
+	bool bLaunchNrePcd = false;
 	//typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
@@ -572,7 +617,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrch2 )
 	ptrOrch->start();
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	ptrAgg->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -582,8 +627,8 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrch2 )
 	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
 
 	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, TestWorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0",
 											 workerUrl,
 											 strGuiUrl,
@@ -604,15 +649,17 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrch2 )
 
 	sleep(1);
 
-	LOG( DEBUG, "Backup the orchestrator to "<<filename);
-	ptrOrch->backup(filename);
+	LOG( DEBUG, "Shutdown the orchestrator");
+	//ptrOrch->backup(filename);
 	ptrOrch->shutdown();
 
 	sleep(5);
 
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrRecOrch->recover(filename);
+	//ptrRecOrch->recover(filename);
+
+	LOG( DEBUG, "Re-start the orchestrator");
 	ptrRecOrch->start();
 
 	// give some time to the NRE to re-register
@@ -629,7 +676,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrch2 )
 
 	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
 }
-*/
 
 /*
 BOOST_AUTO_TEST_CASE( testStopRestartAgg_and_JobSubmitted )

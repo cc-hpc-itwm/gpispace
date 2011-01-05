@@ -78,27 +78,14 @@ struct MyFixture
 
 		m_ptrPool = new fhg::com::io_service_pool(1);
 		m_ptrKvsd = new fhg::com::kvs::server::kvsd ("/tmp/notthere");
-		m_ptrServ = new fhg::com::tcp_server ( *m_ptrPool
-										  , *m_ptrKvsd
-										  , kvs_host ()
-										  , kvs_port ()
-										  , true
-										  );
+		m_ptrServ = new fhg::com::tcp_server ( *m_ptrPool, *m_ptrKvsd, kvs_host (), kvs_port (), true);
 
-		m_ptrThrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_ptrPool
-												)
-								   );
+		m_ptrThrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run, m_ptrPool) );
 
 		m_ptrServ->start();
 		sleep (1);
 
-		fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
-												, kvs_port()
-												, true
-												, boost::posix_time::seconds(10)
-												, 3
-												);
+		fhg::com::kvs::get_or_create_global_kvs ( kvs_host(), kvs_port(), true, boost::posix_time::seconds(10), 3);
 	}
 
 	~MyFixture()

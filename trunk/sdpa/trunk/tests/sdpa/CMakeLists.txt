@@ -60,7 +60,7 @@ target_link_libraries(test_config_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_config_suite test_config_suite )
 
@@ -70,7 +70,7 @@ target_link_libraries(test_worker_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_worker_suite test_worker_suite )
 
@@ -80,7 +80,7 @@ target_link_libraries(test_jobid_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_jobid_suite test_jobid_suite )
 
@@ -90,7 +90,7 @@ target_link_libraries(test_scheduler_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_scheduler_suite test_scheduler_suite )
 
@@ -100,7 +100,7 @@ target_link_libraries(test_lb_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_lb_suite test_lb_suite )
 
@@ -110,7 +110,7 @@ target_link_libraries(test_serialize_sharedptr_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_serialize_sharedptr_suite test_serialize_sharedptr_suite )
 
@@ -121,7 +121,7 @@ target_link_libraries(test_serialize_jobptr_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test(test_serialize_jobptr_suite test_serialize_jobptr_suite)
 
@@ -137,7 +137,7 @@ target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test(test_serialize_agents_suite test_serialize_agents_suite)
 
@@ -153,7 +153,7 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test(test_agents_suite test_agents_suite)
 
@@ -169,7 +169,7 @@ target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_orchestrator_empty_we test_orchestrator_empty_we )
 
@@ -183,6 +183,21 @@ target_link_libraries(test_stop_restart_agents  seda sdpa-daemon
 									 sdpa-util
 									 sdpa
 									 dl
-									 uuid
+									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_stop_restart_agents test_stop_restart_agents )
+
+
+#test_BackupRecover
+set( test_backup_recover_srcs test_BackupRecover )
+
+add_executable(test_backup_recover ${test_backup_recover_srcs})
+target_link_libraries(test_backup_recover  seda sdpa-daemon
+									 sdpa-client
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 #uuid
+									 ${Boost_LIBRARIES})
+add_test( test_backup_recover test_backup_recover )

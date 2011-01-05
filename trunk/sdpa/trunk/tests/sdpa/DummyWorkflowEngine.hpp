@@ -69,6 +69,8 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     	SDPA_LOG_DEBUG("Dummy workflow engine created ...");
     }
 
+    virtual bool is_real() { return false; }
+
     void connect(IAgent* pIAgent )
     {
     	pIAgent_ = pIAgent;
