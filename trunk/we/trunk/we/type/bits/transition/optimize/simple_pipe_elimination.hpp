@@ -115,6 +115,9 @@ namespace we { namespace type {
         tid_set_type suc_in;
         tid_set_type suc_out;
 
+        tid_set_type pred_in;
+        tid_set_type pred_out;
+
         for ( typename map_type::const_iterator in (map_in.begin())
             ; in != map_in.end()
             ; ++in
@@ -150,6 +153,24 @@ namespace we { namespace type {
                 )
               {
                 suc_out.insert (*t);
+              }
+
+            for ( petri_net::adj_transition_const_it
+                    t (net.in_to_place (pid_A))
+                ; t.has_more()
+                ; ++t
+                )
+              {
+                pred_in.insert (*t);
+              }
+
+            for ( petri_net::adj_transition_const_it
+                    t (net.in_to_place (pid_B))
+                ; t.has_more()
+                ; ++t
+                )
+              {
+                pred_out.insert (*t);
               }
 
             if (net.get_maybe_capacity (pid_A).isJust())
@@ -204,6 +225,17 @@ namespace we { namespace type {
                 )
               {
                 if (suc_out.find (*t) != suc_out.end())
+                  {
+                    return fhg::util::Nothing<pid_pair_vec_type>();
+                  }
+              }
+
+            for ( tid_set_type::const_iterator t (pred_in.begin())
+                ; t != pred_in.end()
+                ; ++t
+                )
+              {
+                if (pred_out.find (*t) != pred_out.end())
                   {
                     return fhg::util::Nothing<pid_pair_vec_type>();
                   }
