@@ -366,23 +366,76 @@ int main (int ac, char *av[])
     signal (SIGTERM, master_shutdown_handler);
 
     // read config from file
-    std::string config_file ("/etc/gpi-space.rc");
+    typedef std::vector<std::string> path_list_t;
+    path_list_t search_path;
+    search_path.push_back ("/etc/gpi.rc");
+
+    // user config
+    {
+      long pwent_size (sysconf(_SC_GETPW_R_SIZE_MAX));
+      if (pwent_size > 0)
+      {
+        char *buf = new char[pwent_size];
+        struct passwd pwent;
+        struct passwd *result (0);
+        int ec (0);
+        if ((ec = getpwuid_r(getuid(), &pwent, buf, pwent_size, &result)) == 0)
+        {
+          if (result)
+          {
+            std::string home_dir (pwent.pw_dir);
+            search_path.push_back (home_dir + "/.sdpa/configs/gpi.rc");
+          }
+          else
+          {
+            LOG(WARN, "could not retrieve passwd entry for uid: " << getuid());
+          }
+        }
+        else
+        {
+          LOG(ERROR, "an error occured while retrieving passwd entry for uid: " << getuid() << " = " << ec);
+        }
+        delete [] buf;
+      }
+      else
+      {
+        LOG(WARN, "could not get _SC_GETPW_R_SIZE_MAX from sysconf");
+      }
+    }
+
     if (ac > 1)
     {
-      config_file = av[1];
+      search_path.push_back (av[1]);
     }
-    LOG(TRACE, "reading config from: " << config_file);
 
     gpi_space::parser::config_parser_t cfg_parser;
+
+    for ( path_list_t::const_iterator p (search_path.begin())
+        ; p != search_path.end()
+        ; ++p
+        )
+    {
+      const std::string config_file (*p);
+      LOG(TRACE, "trying to read config from: " << config_file);
+      try
+      {
+        gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
+      }
+      catch (std::exception const & ex)
+      {
+        LOG(WARN, "could not read config file: " << config_file << ": " << ex.what());
+        continue;
+      }
+    }
+
     try
     {
-      gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
       init_config (config);
       config.load (cfg_parser);
     }
     catch (std::exception const & ex)
     {
-      LOG(ERROR, "could not read config file: " << config_file << ": " << ex.what());
+      LOG(ERROR, "could not configure: " << ex.what());
       return GPI_CONFIG_ERROR;
     }
   }
