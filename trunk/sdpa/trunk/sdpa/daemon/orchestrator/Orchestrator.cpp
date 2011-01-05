@@ -324,7 +324,16 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
 	}
 }
 
+void Orchestrator::backup( const std::string& strArchiveName )
+{
 
+}
+
+void Orchestrator::recover( const std::string& strArchiveName )
+{
+}
+
+/*
 void Orchestrator::backup( const std::string& strArchiveName )
 {
 	try
@@ -333,7 +342,6 @@ void Orchestrator::backup( const std::string& strArchiveName )
 		//std::ofstream ofs( strArchiveName.c_str() );
 		//boost::archive::text_oarchive oa(ofs);
 
-		/*
 		oa.register_type(static_cast<Orchestrator*>(NULL));
 		//oa.register_type(static_cast<T*>(NULL));
 		oa.register_type(static_cast<DaemonFSM*>(NULL));
@@ -345,7 +353,6 @@ void Orchestrator::backup( const std::string& strArchiveName )
 		oa.register_type(static_cast<JobImpl*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
 		oa << ptr_job_man_;
-		*/
 
 		SDPA_LOG_DEBUG("Successfully serialized the Orchestrator into "<<strArchiveName);
 		//ofs.close();
@@ -357,7 +364,6 @@ void Orchestrator::backup( const std::string& strArchiveName )
 	}
 }
 
-
 void Orchestrator::recover( const std::string& strArchiveName )
 {
 	try
@@ -366,7 +372,6 @@ void Orchestrator::recover( const std::string& strArchiveName )
 		std::ifstream ifs( strArchiveName.c_str() );
 		boost::archive::text_iarchive ia(ifs);
 
-		/*
 		ia.register_type(static_cast<Orchestrator*>(NULL));
 		//ia.register_type(static_cast<T*>(NULL));
 		ia.register_type(static_cast<DaemonFSM*>(NULL));
@@ -380,7 +385,7 @@ void Orchestrator::recover( const std::string& strArchiveName )
 		ia >> ptr_job_man_;
 
 		SDPA_LOG_DEBUG("Successfully de-serialized the Orchestrator from "<<strArchiveName);
-		ptr_job_man_->print();*/
+		ptr_job_man_->print();
 
 		ifs.close();
 	}
@@ -390,3 +395,4 @@ void Orchestrator::recover( const std::string& strArchiveName )
 		return;
 	}
 }
+*/
