@@ -150,6 +150,9 @@ set (FILTER_MOD_SRCS src/filter_mod.cpp
 
 set (SIMPLE_PROCESS_MOD_SRCS src/simple_process.cpp
      ${STANDALONE_SRCS}
+     ./src/determine_size.cpp
+     ./src/do_write.cpp
+     ./src/do_load.cpp
     )
 
 set (FILTER_TRACE_MOD_SRCS src/filter_trace_mod.cpp
@@ -172,6 +175,21 @@ set(SINC_INT_MOD_SRCS
 	./src/utils/filename.cpp
 	./src/structures/grid2d.cpp
 )
+
+add_library(determine_size STATIC
+            ./src/determine_size.cpp
+            ./src/utils/swap_bytes.cpp
+           )
+
+add_library(do_load STATIC
+            ./src/do_load.cpp
+            ./src/utils/swap_bytes.cpp
+           )
+
+add_library(do_write STATIC
+            ./src/do_write.cpp
+            ./src/utils/swap_bytes.cpp
+           )
 
 add_library(sinc_mod SHARED ${SINC_INT_MOD_SRCS})
 set_target_properties(sinc_mod PROPERTIES OUTPUT_NAME sinc)
