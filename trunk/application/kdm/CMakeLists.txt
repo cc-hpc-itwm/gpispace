@@ -176,17 +176,17 @@ set(SINC_INT_MOD_SRCS
 	./src/structures/grid2d.cpp
 )
 
-add_library(determine_size STATIC
+add_library(determine_size SHARED
             ./src/determine_size.cpp
             ./src/utils/swap_bytes.cpp
            )
 
-add_library(do_load STATIC
+add_library(do_load SHARED
             ./src/do_load.cpp
             ./src/utils/swap_bytes.cpp
            )
 
-add_library(do_write STATIC
+add_library(do_write SHARED
             ./src/do_write.cpp
             ./src/utils/swap_bytes.cpp
            )
