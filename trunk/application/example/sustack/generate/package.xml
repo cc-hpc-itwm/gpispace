@@ -1,14 +1,13 @@
 <defun>
 
-  <in name="trace_per_bunch" type="long" place="trace_per_bunch"/>
-  <in name="num_trace" type="long" place="num_trace"/>
+  <in name="config" type="config" place="config"/>
   <out name="package" type="loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
 
   <net>
 
-    <place name="trace_per_bunch" type="long"/>
-    <place name="num_trace" type="long"/>
+    <place name="config" type="config"/>
+
     <place name="package" type="loaded_package"/>
     <place name="num" type="long"/>
 
@@ -24,18 +23,16 @@
 
     <transition name="init">
       <defun>
-        <in name="inc" type="long"/>
-        <in name="max" type="long"/>
+        <in name="config" type="config"/>
         <out name="state" type="state"/>
         <expression>
-          ${state.max} := ${max};
-          ${state.inc} := ${inc};
+          ${state.max} := ${config.num.trace};
+          ${state.inc} := ${config.per.bunch.trace};
           ${state.id} := 0L;
           ${state.num} := 0L;
         </expression>
       </defun>
-      <connect-in port="inc" place="trace_per_bunch"/>
-      <connect-in port="max" place="num_trace"/>
+      <connect-in port="config" place="config"/>
       <connect-out port="state" place="check_break"/>
     </transition>
 

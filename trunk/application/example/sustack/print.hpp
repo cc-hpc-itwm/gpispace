@@ -6,13 +6,14 @@
 #include <pnetc/type/package_to_be_written.hpp>
 
 #include <iostream>
+#include <sstream>
 
 namespace print
 {
-  inline void package ( std::ostream & os
-                      , const ::pnetc::type::package::package & p
-                      )
+  inline std::string package (const ::pnetc::type::package::package & p)
   {
+    std::ostringstream os;
+
     os << "package "
        << (p.left.extendable ? "<" : "|")
        << p.left.trace
@@ -21,26 +22,31 @@ namespace print
        << (p.right.extendable ? ">" : "|")
        << " (" << p.size << ")"
       ;
+
+    return os.str();
   }
 
-  inline void loaded_package
-  ( std::ostream & os
-  , const ::pnetc::type::loaded_package::loaded_package & p
-  )
+  inline std::string loaded_package
+  (const ::pnetc::type::loaded_package::loaded_package & p)
   {
-    ::print::package (os, p.package);
+    std::ostringstream os;
 
-    os << " in slot " << p.slot;
+    os << ::print::package (p.package)
+       << " in slot " << p.slot
+       ;
+
+    return os.str();
   }
 
-  inline void package_to_be_written
-  ( std::ostream & os
-  , const ::pnetc::type::package_to_be_written::package_to_be_written & p
-  )
+  inline std::string package_to_be_written
+  (const ::pnetc::type::package_to_be_written::package_to_be_written & p)
   {
-    ::print::loaded_package (os, p.loaded_package);
+    std::ostringstream os;
 
-    std::cerr << " for offset " << p.offset;
+    os << ::print::loaded_package (p.loaded_package)
+       << " for offset " << p.offset;
+
+    return os.str();
   }
 }
 

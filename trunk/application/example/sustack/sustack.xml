@@ -3,8 +3,10 @@
   <in name="su_param" type="string" place="su_param"/>
   <in name="shmem_per_node" type="long" place="shmem_per_node"/>
   <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
-  <in name="file_input" type="string" place="file_input_IN"/>
+  <in name="file_input" type="string" place="file_input"/>
+  <in name="type_input" type="string" place="type_input"/>
   <in name="file_output" type="string" place="file_output"/>
+  <in name="type_output" type="string" place="type_output"/>
 
   <out name="done" type="control" place="done"/>
 
@@ -39,94 +41,44 @@
     <field name="offset" type="long"/>
   </struct>
 
+  <struct name="handle">
+    <field name="data" type="long"/>
+    <field name="scratch" type="long"/>
+  </struct>
+
+  <struct name="file">
+    <field name="name" type="string"/>
+    <field name="type" type="string"/>
+  </struct>
+
+  <struct name="config">
+    <struct name="file">
+      <field name="input" type="file"/>
+      <field name="output" type="file"/>
+    </struct>
+
+    <field name="handle" type="handle"/>
+
+    <struct name="size">
+      <field name="trace" type="long"/>
+      <field name="bunch" type="long"/>
+    </struct>
+
+    <struct name="per">
+      <struct name="bunch">
+        <field name="trace" type="long"/>
+      </struct>
+    </struct>
+
+    <struct name="num">
+      <field name="trace" type="long"/>
+      <field name="slot" type="long"/>
+    </struct>
+
+    <field name="param" type="string"/>
+  </struct>
+
   <net>
-
-    <place name="su_param" type="string"/>
-    <place name="shmem_per_node" type="long"/>
-    <place name="gpi_mem_per_node" type="long"/>
-    <place name="file_input_IN" type="string"/>
-    <place name="file_input" type="string"/>
-    <place name="file_output" type="string"/>
-    <place name="done" type="control"/>
-
-    <transition name="get_input_size">
-      <defun>
-        <in name="file" type="string"/>
-        <out name="num_trace" type="long"/>
-        <out name="sizeof_trace" type="long"/>
-        <out name="file" type="string"/>
-        <module name="sustack"
-                function="file get_input_size (file, num_trace, sizeof_trace)">
-          <code><![CDATA[
-            num_trace = 13;
-            sizeof_trace = (4L << 10);
-
-            return file;
-          ]]></code>
-        </module>
-      </defun>
-      <connect-in port="file" place="file_input_IN"/>
-      <connect-out port="file" place="file_input"/>
-      <connect-out port="num_trace" place="num_trace"/>
-      <connect-out port="sizeof_trace" place="sizeof_trace"/>
-    </transition>
-
-    <place name="num_trace" type="long"/>
-    <place name="sizeof_trace" type="long"/>
-
-    <transition name="init">
-      <defun>
-        <in name="sizeof_trace" type="long"/>
-        <in name="shmem_per_node" type="long"/>
-        <in name="gpi_mem_per_node" type="long"/>
-        <out name="trace_per_bunch" type="long"/>
-        <out name="slot_per_node" type="long"/>
-        <out name="write_info" type="write_info"/>
-        <out name="give_back_trace" type="long"/>
-        <expression>
-          ${mem_per_node}    := min (${shmem_per_node}, ${gpi_mem_per_node});
-          ${trace_per_node}  := ${mem_per_node} div ${sizeof_trace};
-          ${trace_per_bunch} := ${trace_per_node} div 2;
-          ${size_per_bunch}  := ${trace_per_bunch} * ${sizeof_trace};
-          ${slot_per_node}   := ${gpi_mem_per_node} div ${size_per_bunch};
-
-          ${write_info.next_trace} := 0L;
-          ${write_info.offset}     := 0L;
-
-          ${give_back_trace} := 0L;
-        </expression>
-      </defun>
-      <connect-read port="sizeof_trace" place="sizeof_trace"/>
-      <connect-in port="shmem_per_node" place="shmem_per_node"/>
-      <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
-      <connect-out port="trace_per_bunch" place="trace_per_bunch"/>
-      <connect-out port="slot_per_node" place="slot_per_node"/>
-      <connect-out port="write_info" place="write_info"/>
-      <connect-out port="give_back_trace" place="give_back_trace"/>
-    </transition>
-
-    <place name="write_info" type="write_info"/>
-    <place name="give_back_trace" type="long"/>
-
-    <place name="trace_per_bunch" type="long"/>
-    <place name="slot_per_node" type="long"/>
-
-    <transition name="num_slot">
-      <defun>
-        <in name="slot_per_node" type="long"/>
-        <out name="slots" type="long"/>
-        <module name="sustack" function="slots num_slot (slot_per_node)">
-          <cinclude href="fvm-pc/pc.hpp"/>
-          <code><![CDATA[
-            return slot_per_node * fvmGetNodeCount();
-          ]]></code>
-        </module>
-      </defun>
-      <connect-in port="slot_per_node" place="slot_per_node"/>
-      <connect-out port="slots" place="num_slots"/>
-    </transition>
-
-    <place name="num_slots" type="long"/>
 
     <include-template href="dup.xml"/>
     <specialize name="dup_long" use="dup">
@@ -136,20 +88,172 @@
       <type-map replace="T" with="control"/>
     </specialize>
 
-    <transition name="dup_num_slots" inline="true">
-      <use name="dup_long"/>
-      <connect-in port="in" place="num_slots"/>
-      <connect-out port="one" place="num_slots_generate"/>
-      <connect-out port="two" place="num_slots_eat"/>
+    <include-template href="4.xml"/>
+    <specialize name="quad_config" use="quad">
+      <type-map replace="T" with="config"/>
+    </specialize>
+
+    <place name="su_param" type="string"/>
+    <place name="shmem_per_node" type="long"/>
+    <place name="gpi_mem_per_node" type="long"/>
+    <place name="file_input" type="string"/>
+    <place name="file_output" type="string"/>
+    <place name="type_input" type="string"/>
+    <place name="type_output" type="string"/>
+    <place name="done" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <in name="file_input" type="string"/>
+        <in name="type_input" type="string"/>
+        <in name="file_output" type="string"/>
+        <in name="type_output" type="string"/>
+        <in name="shmem_per_node" type="long"/>
+        <in name="gpi_mem_per_node" type="long"/>
+        <in name="su_param" type="string"/>
+        <out name="write_info" type="write_info"/>
+        <out name="give_back_trace" type="long"/>
+        <out name="config" type="config"/>
+        <module name="sustack"
+                function="init ( file_input
+                               , type_input
+                               , file_output
+                               , type_output
+                               , su_param
+                               , shmem_per_node
+                               , gpi_mem_per_node
+                               , write_info
+                               , give_back_trace
+                               , config
+                               )">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="determine_size.hpp"/>
+          <cinclude href="stdexcept"/>
+          <cinclude href="fstream"/>
+          <code><![CDATA[
+            LOG (INFO, "INIT");
+
+            determine_size ( file_input
+                           , type_input
+                           , config.num.trace
+                           , config.size.trace
+                           );
+
+            LOG (INFO, "num.trace = " << config.num.trace);
+            LOG (INFO, "size.trace = " << config.size.trace);
+
+            const long mem_per_node (std::min ( shmem_per_node
+                                              , gpi_mem_per_node
+                                              )
+                                    );
+            const long trace_per_node (mem_per_node / config.size.trace);
+
+            config.per.bunch.trace = trace_per_node / 2;
+
+            LOG (INFO, "per.bunch.trace = " << config.per.bunch.trace);
+
+            if (config.per.bunch.trace < 1)
+              {
+                throw std::runtime_error ("not enough memory (shmem)");
+              }
+
+            config.size.bunch = config.per.bunch.trace * config.size.trace;
+            const long slot_per_node (gpi_mem_per_node / config.size.bunch);
+
+            if (slot_per_node < 2)
+              {
+                throw std::runtime_error ("not enough memory (gpi)");
+              }
+
+            config.num.slot = slot_per_node * fvmGetNodeCount();
+
+            LOG (INFO, "num.slot = " << config.num.slot);
+
+            config.handle.data = static_cast<long>
+              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.bunch));
+            config.handle.scratch = static_cast<long>
+              (fvmGlobalAlloc (                 1  * config.size.bunch));
+
+            if (config.handle.data == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.data == 0");
+              }
+
+            if (config.handle.scratch == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.scratch == 0");
+              }
+
+            config.file.input.name = file_input;
+            config.file.input.type = type_input;
+            config.file.output.name = file_output;
+            config.file.output.type = type_output;
+            config.param = su_param;
+
+            write_info.next_trace = give_back_trace = 0;
+            write_info.offset = 0;
+
+            {
+              std::ofstream out (config.file.output.name.c_str());
+
+              if (!out)
+                {
+                  throw std::runtime_error ("BUMMER! out not good");
+                }
+            }
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="file_input" place="file_input"/>
+      <connect-in port="type_input" place="type_input"/>
+      <connect-in port="file_output" place="file_output"/>
+      <connect-in port="type_output" place="type_output"/>
+      <connect-in port="shmem_per_node" place="shmem_per_node"/>
+      <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
+      <connect-in port="su_param" place="su_param"/>
+      <connect-out port="write_info" place="write_info"/>
+      <connect-out port="give_back_trace" place="give_back_trace"/>
+      <connect-out port="config" place="config_generated"/>
     </transition>
 
-    <place name="num_slots_generate" type="long"/>
-    <place name="num_slots_eat" type="long"/>
+    <place name="config_generated" type="config"/>
 
-    <transition name="generate_slots" inline="true">
-      <include-function href="sequence.xml"/>
-      <connect-in port="amount" place="num_slots_generate"/>
-      <connect-out port="out" place="empty_slot"/>
+    <transition name="scatter_config" inline="true">
+      <use name="quad_config"/>
+      <connect-in port="in" place="config_generated"/>
+      <connect-out port="one" place="config"/>
+      <connect-out port="two" place="config_generate_package"/>
+      <connect-out port="three" place="config_generate_slot"/>
+      <connect-out port="four" place="config_extract_eat_slot"/>
+    </transition>
+
+    <place name="config" type="config"/>
+    <place name="config_generate_package" type="config"/>
+    <place name="config_generate_slot" type="config"/>
+    <place name="config_extract_eat_slot" type="config"/>
+
+    <place name="write_info" type="write_info"/>
+    <place name="give_back_trace" type="long"/>
+
+    <transition name="extract_eat_slot">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="N" type="long"/>
+        <expression>
+          ${N} := ${config.num.slot}
+        </expression>
+      </defun>
+      <connect-in port="config" place="config_extract_eat_slot"/>
+      <connect-out port="N" place="num_slot_eat"/>
+    </transition>
+
+    <place name="num_slot_eat" type="long"/>
+
+    <transition name="generate_slot" inline="true">
+      <include-function href="generate/slot.xml"/>
+      <connect-in port="config" place="config_generate_slot"/>
+      <connect-out port="slot" place="empty_slot"/>
     </transition>
 
     <place name="empty_slot" type="long"/>
@@ -160,8 +264,7 @@
     <transition name="generate_package" inline="true">
       <include-function href="generate/package.xml"/>
       <place-map virtual="empty_slot" real="empty_slot"/>
-      <connect-in port="trace_per_bunch" place="trace_per_bunch"/>
-      <connect-in port="num_trace" place="num_trace"/>
+      <connect-in port="config" place="config_generate_package"/>
       <connect-out port="package" place="new_package"/>
       <connect-out port="num" place="num_packages"/>
     </transition>
@@ -169,20 +272,42 @@
     <transition name="load_package">
       <defun>
         <in name="package" type="loaded_package"/>
-        <in name="file" type="string"/>
+        <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
-        <module name="sustack" function="load_package (package)">
+        <module name="sustack" function="load_package ( package
+                                                      , config
+                                                      )">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <code><![CDATA[
-            std::cerr << "*** LOAD ";
+            LOG (INFO, "LOAD " << ::print::loaded_package (package));
 
-            ::print::loaded_package (std::cerr, package);
+            const long part (package.package.left.trace / config.per.bunch.trace);
+            const long size (package.package.size * config.size.trace);
 
-            std::cerr << std::endl;
+            do_load ( config.file.input.name
+                    , config.file.input.type
+                    , part
+                    , config.size.bunch
+                    , size
+                    , package.package.size
+                    , fvmGetShmemPtr()
+                    );
+
+            waitComm ( fvmPutGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.data)
+                       , package.slot * config.size.bunch
+                       , size
+                       , 0
+                       , static_cast<fvmAllocHandle_t> (config.handle.scratch)
+                       )
+                     );
           ]]></code>
         </module>
       </defun>
-      <connect-read port="file" place="file_input"/>
+      <connect-read port="config" place="config"/>
       <connect-in port="package" place="new_package"/>
       <connect-out port="package" place="loaded_package"/>
     </transition>
@@ -191,24 +316,30 @@
 
     <transition name="sustack">
       <defun>
-        <in name="loaded_package" type="loaded_package"/>
-        <in name="param" type="string"/>
-        <out name="loaded_package" type="loaded_package"/>
-        <module name="sustack" function="sustack (loaded_package, param)">
+        <in name="package" type="loaded_package"/>
+        <in name="config" type="config"/>
+        <out name="package" type="loaded_package"/>
+        <module name="sustack" function="sustack (package, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <code><![CDATA[
-            std::cerr << "*** CALL 'sustack " << param << "'"
-                      << " for ";
+            LOG (INFO, "STACK " << ::print::loaded_package (package));
 
-            ::print::loaded_package (std::cerr, loaded_package);
-
-            std::cerr << std::endl;
+            waitComm ( fvmGetGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.data)
+                       , package.slot * config.size.bunch
+                       , package.package.size * config.size.trace
+                       , 0
+                       , static_cast<fvmAllocHandle_t> (config.handle.scratch)
+                       )
+                     );
           ]]></code>
         </module>
       </defun>
-      <connect-read port="param" place="su_param"/>
-      <connect-in port="loaded_package" place="loaded_package"/>
-      <connect-out port="loaded_package" place="package"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="package" place="loaded_package"/>
+      <connect-out port="package" place="package"/>
     </transition>
 
     <place name="package" type="loaded_package"/>
@@ -291,9 +422,9 @@
     <transition name="sustack2">
       <defun>
         <in name="p" type="pair_of_packages"/>
-        <in name="param" type="string"/>
+        <in name="config" type="config"/>
         <out name="p" type="pair_of_packages"/>
-        <module name="sustack" function="sustack2 (p, param)">
+        <module name="sustack" function="sustack2 (p, config)">
           <cinclude href="print.hpp"/>
           <code><![CDATA[
             ::pnetc::type::loaded_package::loaded_package & left
@@ -307,17 +438,12 @@
               : p.y
               );
 
-            std::cerr << "*** GOT packages:";
-
-            ::print::loaded_package (std::cerr, left);
-
-            std::cerr << " and ";
-
-            ::print::loaded_package (std::cerr, right);
-
-            std::cerr << std::endl;
-
-            std::cerr << "*** CALL 'sustack " << param << "'"
+            std::cerr << "*** GOT packages:"
+                      << ::print::loaded_package (left)
+                      << " and "
+                      << ::print::loaded_package (right)
+                      << std::endl
+                      << "*** CALL 'sustack " << config.param << "'"
                       << " for [" << left.package.left.trace << ".." << right.package.right.trace << ")"
                       << "~" << (left.package.size + right.package.size)
                       << std::endl;
@@ -327,7 +453,7 @@
           ]]></code>
         </module>
       </defun>
-      <connect-read port="param" place="su_param"/>
+      <connect-read port="config" place="config"/>
       <connect-in port="p" place="pair_of_packages"/>
       <connect-out port="p" place="done_pair_of_packages"/>
     </transition>
@@ -397,27 +523,52 @@
 
     <transition name="write">
       <defun>
-        <in name="w" type="package_to_be_written"/>
-        <in name="file" type="string"/>
+        <in name="package_to_be_written" type="package_to_be_written"/>
+        <in name="config" type="config"/>
         <out name="p" type="loaded_package"/>
-        <module name="sustack" function="p write (w, file)">
+        <module name="sustack" function="p write (package_to_be_written, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="do_write.hpp"/>
           <cinclude href="print.hpp"/>
           <code><![CDATA[
-            const ::pnetc::type::loaded_package::loaded_package & p (w.loaded_package);
+            const ::pnetc::type::loaded_package::loaded_package & p
+              (package_to_be_written.loaded_package);
 
-            std::cerr << "*** WRITE ";
+            LOG (INFO, "WRITE " << ::print::loaded_package (p)
+                                << " to " << config.file.output.name
+                                << ":" << package_to_be_written.offset
+                );
 
-            ::print::loaded_package (std::cerr, w.loaded_package);
+            const long size (p.package.size * config.size.trace);
 
-            std::cerr << " to " << file << ":" << w.offset
-                      << std::endl;
+            if (size > 0)
+              {
+                waitComm ( fvmGetGlobalData
+                           ( static_cast<fvmAllocHandle_t> (config.handle.data)
+                           , p.slot * config.size.bunch
+                           , size
+                           , 0
+                           , static_cast<fvmAllocHandle_t> (config.handle.scratch)
+                           )
+                         );
+
+                do_write ( config.file.output.name
+                         , config.file.output.type
+                         , package_to_be_written.offset
+                         , config.size.trace
+                         , size
+                         , p.package.size
+                         , fvmGetShmemPtr()
+                         );
+              }
 
             return p;
           ]]></code>
         </module>
       </defun>
-      <connect-read port="file" place="file_output"/>
-      <connect-in port="w" place="package_to_be_written"/>
+      <connect-read port="config" place="config"/>
+      <connect-in port="package_to_be_written" place="package_to_be_written"/>
       <connect-out port="p" place="package_written"/>
     </transition>
 
@@ -490,15 +641,21 @@
     <transition name="finalize">
       <defun>
         <in name="trigger" type="control"/>
+        <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="sustack" function="finalize (trigger)">
-          <cinclude href="iostream"/>
+        <module name="sustack" function="finalize (trigger, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
-            std::cerr << "*** FINALIZE" << std::endl;
+            LOG (INFO, "FINALIZE");
+
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.data));
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.scratch));
           ]]></code>
         </module>
       </defun>
       <connect-in port="trigger" place="trigger_finalize"/>
+      <connect-in port="config" place="config"/>
       <connect-out port="trigger" place="done_finalize"/>
     </transition>
 
@@ -510,7 +667,7 @@
     <transition name="eat_slots">
       <use name="eat_long"/>
       <place-map virtual="what" real="empty_slot"/>
-      <connect-in port="N" place="num_slots_eat"/>
+      <connect-in port="N" place="num_slot_eat"/>
       <connect-in port="trigger" place="trigger_eat"/>
       <connect-out port="done" place="done_eat"/>
     </transition>
@@ -519,10 +676,6 @@
       <defun>
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
-        <in name="su_param" type="string"/>
-        <in name="file_input" type="string"/>
-        <in name="file_output" type="string"/>
-        <in name="sizeof_trace" type="long"/>
         <in name="write_info" type="write_info"/>
 
         <out name="done" type="control"/>
@@ -533,10 +686,6 @@
 
       <connect-in port="done_eat" place="done_eat"/>
       <connect-in port="done_finalize" place="done_finalize"/>
-      <connect-in port="su_param" place="su_param"/>
-      <connect-in port="file_input" place="file_input"/>
-      <connect-in port="file_output" place="file_output"/>
-      <connect-in port="sizeof_trace" place="sizeof_trace"/>
       <connect-in port="write_info" place="write_info"/>
 
       <connect-out port="done" place="done"/>
