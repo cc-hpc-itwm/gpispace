@@ -212,6 +212,11 @@ set_target_properties(filter_trace_mod PROPERTIES OUTPUT_NAME filter_trace)
 add_executable(standalone_test ${STANDALONE_SRCS})
 target_link_libraries(standalone_test pthread)
 
+install(TARGETS determine_size do_load do_write
+  LIBRARY
+  DESTINATION libexec
+  COMPONENT modules)
+
 install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
   LIBRARY
   DESTINATION libexec
