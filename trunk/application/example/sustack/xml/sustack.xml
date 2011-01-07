@@ -93,13 +93,29 @@
       <type-map replace="T" with="config"/>
     </specialize>
 
-    <place name="su_param" type="string"/>
-    <place name="shmem_per_node" type="long"/>
-    <place name="gpi_mem_per_node" type="long"/>
-    <place name="file_input" type="string"/>
-    <place name="file_output" type="string"/>
-    <place name="type_input" type="string"/>
-    <place name="type_output" type="string"/>
+    <place name="su_param" type="string">
+      <token><value>""</value></token>
+    </place>
+
+    <place name="shmem_per_node" type="long">
+      <token><value>4*4*2^10</value></token>
+    </place>
+    <place name="gpi_mem_per_node" type="long">
+      <token><value>4*4*2^10</value></token>
+    </place>
+    <place name="file_input" type="string">
+      <token><value>"/u/herc/rahn/test.dat"</value></token>
+    </place>
+    <place name="file_output" type="string">
+      <token><value>"/u/herc/rahn/test.dat.out"</value></token>
+    </place>
+    <place name="type_input" type="string">
+      <token><value>"su"</value></token>
+    </place>
+    <place name="type_output" type="string">
+      <token><value>"su"</value></token>
+    </place>
+
     <place name="done" type="control"/>
 
     <transition name="init">
@@ -287,6 +303,12 @@
             const long part (package.package.left.trace / config.per.bunch.trace);
             const long size (package.package.size * config.size.trace);
 
+            LOG (INFO, "do_load: part " << part
+                    << ", part_size "  << config.size.bunch
+                    << ", size " << size
+                    << ", num " << package.package.size
+                );
+
             do_load ( config.file.input.name
                     , config.file.input.type
                     , part
@@ -295,6 +317,10 @@
                     , package.package.size
                     , fvmGetShmemPtr()
                     );
+
+            LOG (INFO, "comm: off " << package.slot * config.size.bunch
+                    << ", size " << size
+                );
 
             waitComm ( fvmPutGlobalData
                        ( static_cast<fvmAllocHandle_t> (config.handle.data)
@@ -544,6 +570,10 @@
 
             if (size > 0)
               {
+                LOG (INFO, "comm: off " << p.slot * config.size.bunch
+                        << ", size " << size
+                    );
+
                 waitComm ( fvmGetGlobalData
                            ( static_cast<fvmAllocHandle_t> (config.handle.data)
                            , p.slot * config.size.bunch
@@ -552,6 +582,12 @@
                            , static_cast<fvmAllocHandle_t> (config.handle.scratch)
                            )
                          );
+
+                LOG (INFO, "do_write: part " << package_to_be_written.offset
+                        << ", part_size "  << config.size.trace
+                        << ", size " << size
+                        << ", num " << p.package.size
+                    );
 
                 do_write ( config.file.output.name
                          , config.file.output.type

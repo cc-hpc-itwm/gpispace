@@ -39,16 +39,13 @@
     <transition name="break">
       <defun>
         <in name="state" type="state"/>
-        <out name="num" type="long"/>
         <expression>
-          ${num} := ${state.num}
         </expression>
       </defun>
       <condition>
         ${state.id} :ge: ${state.max}
       </condition>
       <connect-in port="state" place="check_break"/>
-      <connect-out port="num" place="num"/>
     </transition>
 
     <transition name="not_break">
