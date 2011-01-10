@@ -59,7 +59,7 @@ CXXINCLUDEPATHS += $(TRUNK)/application/example/sustack/util
 ###############################################################################
 
 PNETC    = $(BUILD)/xml/xml/parse/pnetc
-WE_EXEC  = $(BUILD)/we/apps/we-exec
+WE_EXEC  = $(BUILD)/we/apps/we-exec --w 1
 PNET2DOT = $(BUILD)/we/apps/pnet2dot
 
 TEE      = /usr/bin/tee
