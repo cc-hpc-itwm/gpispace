@@ -263,11 +263,15 @@ export IN_INIT_SCREEN="yes"
 export SDPA_HEAD_NODE="$head_node"
 
 #
-# sdpa config
+# sdpa user config (keep synchronized with configure())
+#
+export SDPA_SCRATCH_DIR="$SDPA_SCRATCH_DIR"
+export SDPA_GUI="$SDPA_GUI"
+export SDPA_LOG_DIR="$SDPA_LOG_DIR"
+#
+# internal variables
 #
 export SDPA_MASTER="$master"
-export SDPA_SCRATCH_DIR="$SDPA_SCRATCH_DIR"
-export SDPA_LOG_DIR="$SDPA_LOG_DIR"
 export SDPA_NODEFILE="$HOME/.init-screen.nodefile"
 
 function log ()
