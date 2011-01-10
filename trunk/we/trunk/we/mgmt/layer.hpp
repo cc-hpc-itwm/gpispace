@@ -310,6 +310,56 @@ namespace we { namespace mgmt {
         return true;
       }
 
+      bool fill_in_info ( const external_id_type & id
+                        , activity_information_t & info
+                        ) const
+      {
+        DLOG(TRACE, "fill_in_info (" << id << ")");
+
+        try
+        {
+          internal_id_type int_id (map_to_internal (id));
+          {
+            lock_t lock(mutex_);
+            const descriptor_type & desc (lookup (int_id));
+            {
+              info.name = desc.name();
+              info.level = desc.activity().transition().is_internal();
+              if (desc.activity().is_suspended())
+              {
+                info.status = activity_information_t::SUSPENDED;
+              }
+              else if (desc.activity().is_cancelled())
+              {
+                info.status = activity_information_t::CANCELLED;
+              }
+              else if (desc.activity().is_failed())
+              {
+                info.status = activity_information_t::FAILED;
+              }
+              else if (desc.activity().is_finished())
+              {
+                info.status = activity_information_t::FINISHED;
+              }
+              else
+              {
+                info.status = activity_information_t::UNDEFINED;
+                info.data["in"] = desc.show_input();
+                info.data["out"] = desc.show_output();
+              }
+            }
+          }
+        }
+        catch (const std::exception &)
+        {
+          LOG(WARN, "could not look up activity information for " << id);
+          info.name = "unknown";
+          info.status = activity_information_t::UNDEFINED;
+          return false;
+        }
+        return true;
+      }
+
       // END: EXTERNAL API
 
       status_type status(const external_id_type & id) throw (std::exception)

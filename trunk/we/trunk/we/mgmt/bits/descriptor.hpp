@@ -276,6 +276,7 @@ namespace we
           lock_t lock(mutex_);
           activity_.collect_output();
           activity_.set_failed (false);
+          activity_.set_finished (true);
         }
 
         void failed ()
@@ -283,6 +284,7 @@ namespace we
           lock_t lock(mutex_);
           activity_.collect_output();
           activity_.set_failed (true);
+          activity_.set_finished (false);
           ++failure_counter_;
         }
 

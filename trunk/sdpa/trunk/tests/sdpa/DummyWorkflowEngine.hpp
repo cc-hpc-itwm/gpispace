@@ -247,6 +247,14 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		return true;
     }
 
+      bool fill_in_info ( const id_type & id
+                        , we::mgmt::activity_information_t &
+                        ) const
+      {
+        DLOG(TRACE, "fill_in_info (" << id << ")");
+        return false;
+      }
+
     template <class Archive>
 	void serialize(Archive& ar, const unsigned int)
 	{

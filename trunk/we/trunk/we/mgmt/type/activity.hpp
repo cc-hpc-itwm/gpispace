@@ -242,6 +242,20 @@ namespace we { namespace mgmt { namespace type {
     }
 
     inline
+    bool is_finished() const
+    {
+      shared_lock_t lock(mutex_);
+      return ( flags::flag_traits<flags::flags_t>::is_finished (flags_) );
+    }
+
+    inline
+    void set_finished(bool value = true)
+    {
+      unique_lock_t lock(mutex_);
+      flags::flag_traits<flags::flags_t>::set_finished (flags_, value);
+    }
+
+    inline
     const transition_type & transition() const
     {
       shared_lock_t lock(mutex_);

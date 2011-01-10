@@ -20,11 +20,33 @@
 #define WE_MGMT_BASIC_LAYER_HPP 1
 
 #include <string>
+#include <boost/unordered_map.hpp>
 #include <boost/serialization/access.hpp>
 
 namespace we
 {
   namespace mgmt {
+
+    struct activity_information_t
+    {
+      enum status_t
+      {
+        UNDEFINED = -1
+      , PENDING
+      , RUNNING
+      , FINISHED
+      , FAILED
+      , CANCELLED
+      , SUSPENDED
+      };
+
+      std::string name;
+      status_t status;
+      int level;
+
+      typedef boost::unordered_map<std::string, std::string> data_t;
+      data_t data;
+    };
 
     template < typename IdType
              , typename ResultType=std::string
@@ -44,6 +66,8 @@ namespace we
       virtual bool finished(const id_type & id, const result_type & result) = 0;
       virtual bool failed(const id_type & id, const result_type & result) = 0;
       virtual bool cancelled(const id_type & id) = 0;
+
+      virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
 
       virtual ~basic_layer() {}
 
