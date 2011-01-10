@@ -255,7 +255,7 @@ bool  NRE<U>::cancel(const id_type& activityId, const reason_type& /* reason */)
 template <typename U>
 void NRE<U>::notifyActivityCreated( const id_type& id, const std::string& data )
 {
-  //	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+  if(hasWorkflowEngine())
 	{
           we::mgmt::activity_information_t info;
           ptr_workflow_engine_->fill_in_info (id, info);
@@ -267,7 +267,7 @@ void NRE<U>::notifyActivityCreated( const id_type& id, const std::string& data )
 template <typename U>
 void NRE<U>::notifyActivityStarted( const id_type& id, const std::string& data )
 {
-  //MR	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+  if(hasWorkflowEngine())
 	{
           we::mgmt::activity_information_t info;
           ptr_workflow_engine_->fill_in_info (id, info);
@@ -279,7 +279,7 @@ void NRE<U>::notifyActivityStarted( const id_type& id, const std::string& data )
 template <typename U>
 void NRE<U>::notifyActivityFinished( const id_type& id, const std::string& data )
 {
-  //MR	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+  if(hasWorkflowEngine())
 	{
           we::mgmt::activity_information_t info;
           ptr_workflow_engine_->fill_in_info (id, info);
@@ -291,7 +291,7 @@ void NRE<U>::notifyActivityFinished( const id_type& id, const std::string& data 
 template <typename U>
 void NRE<U>::notifyActivityFailed( const id_type& id, const std::string& data )
 {
-  //MR	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+  if(hasWorkflowEngine())
 	{
           we::mgmt::activity_information_t info;
           ptr_workflow_engine_->fill_in_info (id, info);
@@ -303,12 +303,12 @@ void NRE<U>::notifyActivityFailed( const id_type& id, const std::string& data )
 template <typename U>
 void NRE<U>::notifyActivityCancelled( const id_type& id, const std::string& data )
 {
-  //MR	if(hasWorkflowEngine() && ptr_workflow_engine_->is_real())
+  if(hasWorkflowEngine())
 	{
           we::mgmt::activity_information_t info;
           ptr_workflow_engine_->fill_in_info (id, info);
           const std::string act_name (info.name);
-		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
+          notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );
 	}
 }
 
