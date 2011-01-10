@@ -262,12 +262,6 @@ cat > "$env_file" <<EOF
 export IN_INIT_SCREEN="yes"
 export SDPA_HEAD_NODE="$head_node"
 
-function log ()
-{
-  echo "\$@" >&2
-  test -x "`which fhglogc 2>/dev/null`" && fhglogc -t "\$0" -p 2 -m "\$@"
-}
-
 #
 # sdpa config
 #
@@ -275,6 +269,13 @@ export SDPA_MASTER="$master"
 export SDPA_SCRATCH_DIR="$SDPA_SCRATCH_DIR"
 export SDPA_LOG_DIR="$SDPA_LOG_DIR"
 export SDPA_NODEFILE="$HOME/.init-screen.nodefile"
+
+function log ()
+{
+  echo "\$@" >&2
+  test -x "`which fhglogc 2>/dev/null`" && fhglogc -U \$\{SDPA_MASTER\} -t "\$0" -p 2 -m "\$@"
+}
+
 #
 # logging config
 #
