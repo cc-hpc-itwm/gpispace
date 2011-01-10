@@ -12,6 +12,11 @@
 
 // ************************************************************************* //
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void determine_size ( const std::string & filename
                     , const std::string & type
                     , long & num       // number of traces in this file
@@ -56,3 +61,7 @@ void determine_size ( const std::string & filename
       throw std::runtime_error ("determine_size: unknown type " + type);
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

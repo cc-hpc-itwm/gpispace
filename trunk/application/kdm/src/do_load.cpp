@@ -12,6 +12,11 @@
 
 // ************************************************************************* //
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void do_load ( const std::string & filename
              , const std::string & type
              , const long & part      // ordinal number of this part
@@ -97,3 +102,7 @@ void do_load ( const std::string & filename
       throw std::runtime_error ("do_load: unknown type " + type);
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

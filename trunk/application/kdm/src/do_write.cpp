@@ -12,6 +12,11 @@
 
 // ************************************************************************* //
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void do_write ( const std::string & filename
               , const std::string & type
               , const long & part      // ordinal number of this part
@@ -114,3 +119,7 @@ void do_write ( const std::string & filename
       throw std::runtime_error ("do_write: unknown type " + type);
     }
 }
+
+#ifdef __cplusplus
+}
+#endif
