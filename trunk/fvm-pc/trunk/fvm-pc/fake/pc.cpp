@@ -369,6 +369,11 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 // wait on communication between fvm and pc
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
+  if (handle < 0)
+    {
+      throw std::runtime_error ("waitComm: invalid handle");
+    }
+
   // this is done only in the fake module, the communication is always synchronous!
   // error codes are encoded in the handle's value.
   return (fvmCommHandleState_t)handle;

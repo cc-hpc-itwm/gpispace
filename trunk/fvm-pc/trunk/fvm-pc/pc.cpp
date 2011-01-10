@@ -429,6 +429,11 @@ fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
   request.op = WAITCOMM;
   request.args.arg_commhandle  = handle;
 
+  if (handle < 0)
+    {
+      throw std::runtime_error ("waitComm: invalid handle");
+    }
+
   if(doRequest(request))
     perror("error doing request");
 
