@@ -17,6 +17,8 @@ PS = sustack.ps
 TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
 BUILD = $(TRUNK)/main/trunk/build45
 
+export BUILD
+
 ###############################################################################
 
 NOINLINE_NOT_ENDS_WITH += generate
@@ -38,9 +40,10 @@ PNETC_LIB += $(TRUNK)/application/lib
 ###############################################################################
 
 WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
-WE_EXEC_LOAD += $(BUILD)/application/kdm/libdo_load.so
-WE_EXEC_LOAD += $(BUILD)/application/kdm/libdo_write.so
-WE_EXEC_LOAD += $(BUILD)/application/kdm/libdetermine_size.so
+
+#WE_EXEC_LOAD += $(BUILD)/application/kdm/libdo_load.so
+#WE_EXEC_LOAD += $(BUILD)/application/kdm/libdo_write.so
+#WE_EXEC_LOAD += $(BUILD)/application/kdm/libdetermine_size.so
 
 WE_EXEC_LIBPATHS += $(TRUNK)/application/example/sustack/$(GEN)/pnetc/op
 
