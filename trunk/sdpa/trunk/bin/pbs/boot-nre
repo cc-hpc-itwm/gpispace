@@ -42,7 +42,7 @@ for node_num in $nodes; do
 
     log "starting nre on $node_name (rank: $rank)..."
 
-    ssh -x $node_name start-nre -r $rank >/dev/null 2>&1 &
+    ssh -x $node_name start-nre -r $rank $@ >/dev/null 2>&1 &
     if [ $count -ge $bunch_size ] ; then
 	wait
 	count=0
