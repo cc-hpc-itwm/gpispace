@@ -28,6 +28,7 @@
 #include <sdpa/types.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/Worker.hpp>
+#include <sdpa/JobId.hpp>
 
 namespace sdpa { namespace daemon {
 
@@ -43,8 +44,9 @@ const std::string USER("user");
 
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e) = 0;
 	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e) = 0;
-	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e)=0;
-	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid) = 0;
+	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
+	  virtual void requestRegistration() = 0;
+	  virtual void requestJob() = 0;
 
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException) = 0;
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw (JobNotFoundException) = 0;
@@ -65,9 +67,15 @@ const std::string USER("user");
 	  virtual unsigned int& rank() = 0;
 	  virtual const sdpa::worker_id_t& agent_uuid() = 0;
 	  virtual bool requestsAllowed(const sdpa::util::time_type&) = 0;
+	  virtual void schedule(const sdpa::job_id_t& job) = 0;
 
 	  virtual bool hasWorkflowEngine() = 0;
 	  virtual bool is_orchestrator() = 0;
+
+	  virtual void backup( const std::string& strArchiveName ) { throw std::runtime_error("not supported at this level"); }
+	  virtual void recover( const std::string& strArchiveName ) { throw std::runtime_error("not supported at this level"); }
+
+	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) = 0;
 
 	  //GUI notification methods
 	  virtual void notifyActivityCreated(const id_type&, const std::string& )   { throw std::runtime_error("not supported by this component"); }
