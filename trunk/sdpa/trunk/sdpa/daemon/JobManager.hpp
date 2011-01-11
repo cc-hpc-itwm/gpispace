@@ -44,8 +44,8 @@ namespace sdpa { namespace daemon {
 	  typedef sdpa::shared_ptr<JobManager> ptr_t;
 	  typedef boost::recursive_mutex mutex_type;
 	  typedef boost::unique_lock<mutex_type> lock_type;
-	  //typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
-	  typedef std::map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
+	  typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
+	  //typedef std::map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
 	  typedef job_map_t::iterator iterator;
 
 	  iterator begin() { return job_map_.begin(); }
@@ -59,7 +59,7 @@ namespace sdpa { namespace daemon {
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
-	  void set_icomm(IComm*);
+	  void updateJobInfo(IComm*);
 
 	  void addJobPreferences( const sdpa::job_id_t&, const we::preference_t& ) throw (JobNotFoundException);
 	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
@@ -70,6 +70,7 @@ namespace sdpa { namespace daemon {
 	  void waitForFreeSlot();
       bool slotAvailable() const;
 
+      void resubmitJobsAndResults(IComm* );
 	  /*template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)
 	  {
