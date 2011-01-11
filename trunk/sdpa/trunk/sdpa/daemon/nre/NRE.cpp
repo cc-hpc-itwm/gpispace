@@ -315,53 +315,46 @@ void NRE<U>::notifyActivityCancelled( const id_type& id, const std::string& data
 template <typename U>
 void NRE<U>::backup( const std::string& strArchiveName )
 {
-	/*try
-	{
-          print();
-          ptr_t ptrNRE_0(this);
-          std::ofstream ofs(strArchiveName.c_str());
-          boost::archive::text_oarchive oa(ofs);
-          oa.register_type(static_cast<NRE<U>*>(NULL));
-          //oa.register_type(static_cast<T*>(NULL));
-          oa.register_type(static_cast<DaemonFSM*>(NULL));
-          oa.register_type(static_cast<GenericDaemon*>(NULL));
-          oa.register_type(static_cast<SchedulerImpl*>(NULL));
-          //oa.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
-          oa.register_type(static_cast<SchedulerNRE<U>*>(NULL));
-          oa.register_type(static_cast<JobFSM*>(NULL));
-          //oa.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
-          oa << ptrNRE_0;
+	try {
+		//std::string strArchiveName(name()+".bkp");
+		SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+		std::ofstream ofs(strArchiveName.c_str());
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<JobManager*>(NULL));
+		oa.register_type(static_cast<JobImpl*>(NULL));
+		oa.register_type(static_cast<JobFSM*>(NULL));
+		oa << ptr_job_man_;
+
+		oa.register_type(static_cast<SchedulerNRE<U>*>(NULL));
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa<<ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
-          cout <<"Exception occurred: "<< e.what() << endl;
-	}*/
+		cout <<"Exception occurred: "<< e.what() << endl;
+		return;
+	}
 }
 
 template <typename U>
 void NRE<U>::recover( const std::string& strArchiveName )
 {
-	/*try
-	{
-		ptr_t ptrRestoredNRE_0(this);
+	try {
+		//std::string strArchiveName(name()+".bkp");
 		std::ifstream ifs(strArchiveName.c_str());
 		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<NRE<U>*>(NULL));
-		//ia.register_type(static_cast<T*>(NULL));
-		ia.register_type(static_cast<DaemonFSM*>(NULL));
-		ia.register_type(static_cast<GenericDaemon*>(NULL));
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		//ia.register_type(static_cast<SchedulerNRE<sdpa::nre::worker::NreWorkerClient>*>(NULL));
-		ia.register_type(static_cast<SchedulerNRE<U>*>(NULL));
+		ia.register_type(static_cast<JobManager*>(NULL));
+		ia.register_type(static_cast<JobImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
-		//ia.register_type(static_cast<sdpa::daemon::NRE*>(NULL));
-		ia >> ptrRestoredNRE_0;
+		// restore the schedule from the archive
+		ia >> ptr_job_man_;
 
-		std::cout<<std::endl<<"----------------The restored content of the NRE is:----------------"<<std::endl;
-		print();
+		ia.register_type(static_cast<SchedulerNRE<U>*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia>> ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
 		cout <<"Exception occurred: " << e.what() << endl;
-	}*/
+	}
 }
