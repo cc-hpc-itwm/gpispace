@@ -47,6 +47,8 @@ namespace sdpa { namespace daemon {
         virtual const sdpa::job_id_t& id() const;
         virtual const sdpa::job_id_t& parent() const;
         virtual const sdpa::job_desc_t& description() const;
+        virtual const sdpa::job_result_t& result() const { return result_; }
+
         virtual void set_icomm(IComm* pArgComm) { pComm = pArgComm; }
 
         //virtual sdpa::worker_id_t& worker() { return worker_id_;}
@@ -70,7 +72,7 @@ namespace sdpa { namespace daemon {
 		virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
 		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
 
-		virtual void setResult(const sdpa::job_result_t& arg_results) { result = arg_results; }
+		virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
 
 
 		virtual std::string print_info()
@@ -90,8 +92,9 @@ namespace sdpa { namespace daemon {
 			ar & desc_;
 			ar & parent_;
 			//ar & worker_id_;
-			ar & result;
+			ar & result_;
 			ar & walltime_;
+			ar & b_local_;
 		}
 
     protected:
@@ -104,14 +107,17 @@ namespace sdpa { namespace daemon {
 
         bool b_marked_for_del_;
         bool b_local_;
-        sdpa::job_result_t result;
+        sdpa::job_result_t result_;
 
         friend class boost::serialization::access;
         //sdpa::worker_id_t worker_id_;
         unsigned long walltime_;
     protected:
-       	/*mutable*/ IComm* pComm;
-        mutex_type mtx_;
+
+        //mutex_type mtx_;
+
+    public:
+     	/*mutable*/ IComm* pComm;
 
     };
 }}

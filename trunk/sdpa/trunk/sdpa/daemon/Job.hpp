@@ -41,6 +41,7 @@ namespace sdpa { namespace daemon {
         virtual const job_id_t & id() const = 0;
         virtual const job_id_t & parent() const = 0;
         virtual const job_desc_t & description() const = 0;
+        virtual const sdpa::job_result_t& result() const = 0;
         virtual void set_icomm(IComm* pArgComm) = 0;
 
         //virtual sdpa::worker_id_t& worker() = 0;
