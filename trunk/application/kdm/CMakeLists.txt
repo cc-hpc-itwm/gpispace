@@ -93,6 +93,9 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(FhgLog REQUIRED)
 include_directories (${FhgLog_INCLUDE_DIR})
 
+find_package(Process REQUIRED)
+include_directories (${PROCESS_INCLUDE_DIR})
+
 set(KDM_MOD_INITIALIZE_SRCS
 	./src/structures/migrationjob.cpp
    	./src/filehandler/checkreadmigrationjob.cpp
@@ -207,6 +210,7 @@ add_library (simple_process_mod SHARED ${SIMPLE_PROCESS_MOD_SRCS})
 set_target_properties(simple_process_mod PROPERTIES OUTPUT_NAME simple_process)
 
 add_library (filter_trace_mod SHARED ${FILTER_TRACE_MOD_SRCS})
+target_link_libraries(filter_trace_mod process.shared)
 set_target_properties(filter_trace_mod PROPERTIES OUTPUT_NAME filter_trace)
 
 add_executable(standalone_test ${STANDALONE_SRCS})

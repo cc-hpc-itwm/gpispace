@@ -39,6 +39,14 @@ include_directories (${FhgLog_INCLUDE_DIR})
 add_library(exec_mod SHARED process.cpp exec_mod.cpp)
 set_target_properties(exec_mod PROPERTIES OUTPUT_NAME exec)
 
+set (hdrs
+  process.hpp
+)
+
+add_library(process ${hdrs} process.cpp)
+add_library(process.shared SHARED ${hdrs} process.cpp)
+set_target_properties(process.shared PROPERTIES OUTPUT_NAME process)
+
 set (mods
     exec_mod
 )
@@ -53,3 +61,18 @@ install(TARGETS ${mods}
 install(FILES ${xmls}
   DESTINATION share/sdpa/xml/exec
   COMPONENT examples)
+
+install(FILES ${hrds}
+  DESTINATION include/process
+  COMPONENT headers
+)
+
+install(TARGETS process
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)
+
+install(TARGETS process.shared
+  LIBRARY
+  DESTINATION lib
+  COMPONENT libraries)
