@@ -31,9 +31,7 @@ using namespace sdpa::events;
 
 void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 {
-  DLOG(TRACE, "handleSubmitJobAckEvent: " << pEvent->job_id() << " from " << pEvent->from());
-
-  acknowledge(pEvent->id());
+	DLOG(TRACE, "handleSubmitJobAckEvent: " << pEvent->job_id() << " from " << pEvent->from());
 
 	Worker::worker_id_t worker_id = pEvent->from();
 	try {
@@ -69,7 +67,6 @@ void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* /* pEvt */)
 // respond to a worker that the JobFinishedEvent was received
 void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 {
-	acknowledge(pEvt->id());
    // The result was succesfully delivered, so I can delete the job from the job map
 	ostringstream os;
 	try {
@@ -94,7 +91,6 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 // respond to a worker that the JobFailedEvent was received
 void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 {
-	acknowledge(pEvt->id());
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
@@ -119,16 +115,24 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 
 void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 {
+	sdpa::job_id_t jobId = pEvt->job_id();
+
 	try {
-		SDPA_LOG_DEBUG("Look for the job "<<pEvt->job_id());
-		SDPA_LOG_DEBUG("JobManager's content: ");
-		ptr_job_man_->print();
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+
+		/*if( !is_scheduled(jobId) )
+		{
+			SDPA_LOG_DEBUG("The job "<<jobId<<" is not yet scheduled! Schedule it now.");
+			schedule(jobId);
+		}
+		else
+			SDPA_LOG_DEBUG("The job "<<jobId<<" is already scheduled!");*/
+
+		Job::ptr_t pJob = ptr_job_man_->findJob(jobId);
 		pJob->QueryJobStatus(pEvt); // should send back a message with the status
 	}
 	catch(JobNotFoundException const& ex)
 	{
-		SDPA_LOG_WARN("Couldn't find the job " << pEvt->job_id() << "!");
+		SDPA_LOG_WARN("Couldn't find the job " <<jobId<< "!");
 		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, ex.what()) );
 		sendEventToMaster(pErrorEvt);
 	}
