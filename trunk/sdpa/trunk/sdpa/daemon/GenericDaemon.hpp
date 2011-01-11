@@ -83,6 +83,7 @@ namespace sdpa { namespace daemon {
 	  void shutdown();
 
 	  virtual void perform(const seda::IEvent::Ptr&);
+	  virtual void schedule(const sdpa::job_id_t& job);
 
 	  // daemon actions
 	  virtual void action_configure( const sdpa::events::StartUpEvent& );
@@ -114,7 +115,10 @@ namespace sdpa { namespace daemon {
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
 	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
-	  virtual bool acknowledge(const sdpa::events::SDPAEvent::message_id_type &mid);
+	  virtual void requestRegistration();
+	  virtual void requestJob();
+
+	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
 
       // WE interface
 	  virtual void submit(const id_type & id, const encoded_type & );
@@ -183,9 +187,6 @@ namespace sdpa { namespace daemon {
 	  }
 
 	  friend class boost::serialization::access;
-
-	  virtual void backup( const std::string& strArchiveName );
-	  virtual void recover( const std::string& strArchiveName );
 
 	  virtual void print()
 	  {
