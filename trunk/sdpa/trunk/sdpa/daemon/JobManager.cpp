@@ -26,6 +26,11 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/map.hpp>
 
+#include <sdpa/daemon/JobImpl.hpp>
+#include <boost/pointer_cast.hpp>
+#include <boost/shared_ptr.hpp>
+#include <sdpa/daemon/IComm.hpp>
+
 using namespace std;
 using namespace sdpa::daemon;
 
@@ -135,7 +140,7 @@ std::string JobManager::print() const
 
 	os<<"The list of jobs still owned by the JobManager:"<<std::endl;
 	for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
-	  os << "  ---> job "<< it->second->id() << std::endl;
+	  os << "job "<< it->second->id()<<": state -> "<<it->second->getStatus()<< std::endl;
 
     os<<"End dump JobManager..."<<std::endl;
 
@@ -182,8 +187,70 @@ void JobManager::waitForFreeSlot ()
   free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }
 
-void JobManager::set_icomm(IComm* p)
+void JobManager::updateJobInfo(sdpa::daemon::IComm* p)
 {
-	for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
-		it->second->set_icomm(p);
+	for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
+	{
+		sdpa::daemon::Job* pJob = it->second.get();
+		pJob->set_icomm(p);
+
+		std::string job_status = pJob->getStatus();
+		SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
+
+		// not coming from WE
+		// and it's not already in jobs_to_be scheduled!
+		if( !p->is_scheduled(pJob->id()) )
+		{
+			// ATTENTION this attribute should be recovered
+			if( p->hasWorkflowEngine())
+				pJob->set_local(true);
+			else
+				pJob->set_local(false);
+
+			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" is not yet scheduled! Schedule it now.");
+			p->schedule(pJob->id());
+		}
+		else
+			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" is already scheduled!");
+	}
+}
+
+void JobManager::resubmitJobsAndResults(IComm* pComm)
+{
+	SDPA_LOG_INFO("Re-submit finished/failed/cancelled jobs)!");
+	SDPA_LOG_INFO("The JobManager has "<<job_map_.size()<<" jobs!");
+
+	for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
+	{
+		sdpa::daemon::Job* pJob = it->second.get();
+
+		std::string job_status = pJob->getStatus();
+		SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
+
+
+		if( pJob->is_local() && job_status.find("Finished") != std::string::npos )
+		{
+			// create jobFinishedEvent
+			sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(), pComm->master(), pJob->id(), pJob->result() ));
+
+			// send it to the master
+			pComm->sendEventToMaster(pEvtJobFinished);
+		}
+		else if( pJob->is_local() && job_status.find("Failed") != std::string::npos )
+			 {
+				// create jobFailedEvent
+				sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent( pComm->name(), pComm->master(), pJob->id(), pJob->result() ));
+
+				// send it to the master
+				pComm->sendEventToMaster(pEvtJobFailed);
+			 }
+			  else if( pJob->is_local() && job_status.find("Cancelled") != std::string::npos)
+				{
+					// create jobCancelledEvent
+				  	sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(), pComm->master(), pJob->id(), sdpa::events::SDPAEvent::message_id_type() ));
+
+				  	// send it to the master
+				  	pComm->sendEventToMaster(pEvtJobCancelled);
+				}
+	}
 }
