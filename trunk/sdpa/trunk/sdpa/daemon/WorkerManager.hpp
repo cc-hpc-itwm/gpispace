@@ -69,6 +69,8 @@ namespace sdpa { namespace daemon {
 	  void balanceWorkers();
 	  const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
 
+	  bool has_job(const sdpa::job_id_t& job_id);
+
 	  //only for testing purposes!
 	  friend class sdpa::tests::DaemonFSMTest_SMC;
 	  friend class sdpa::tests::DaemonFSMTest_BSC;

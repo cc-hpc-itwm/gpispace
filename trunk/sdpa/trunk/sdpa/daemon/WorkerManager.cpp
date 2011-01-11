@@ -387,7 +387,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
-	DLOG(TRACE, "Add the job " << jobId.str() );
+	SDPA_LOG_DEBUG( "Dispatch the job " << jobId.str() );
 	common_queue_.push(jobId);
 }
 
@@ -448,7 +448,6 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
         }
 }
 
-
 void WorkerManager::getListOfRegisteredRanks( std::vector<unsigned int>& v)
 {
 	 lock_type lock(mtx_);
@@ -462,3 +461,21 @@ void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& 
 	 owner_map().insert(WorkerManager::owner_map_t::value_type(job_id, worker_id));
 }
 
+bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
+{
+	if( common_queue_.find(job_id) != common_queue_.end() )
+	{
+		SDPA_LOG_DEBUG( "The job " << job_id<<" is in the common queue" );
+		return true;
+	}
+
+	 for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+		 if(iter->second->has_job( job_id ))
+		 {
+		     SDPA_LOG_DEBUG( "The job " << job_id<<" is already assigned to the worker "<<iter->first );
+			 return true;
+		 }
+
+	 return false;
+
+}
