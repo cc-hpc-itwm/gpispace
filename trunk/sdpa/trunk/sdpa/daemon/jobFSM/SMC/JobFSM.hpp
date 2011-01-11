@@ -24,11 +24,14 @@
 #include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/thread.hpp>
 
 namespace sdpa { namespace fsm { namespace smc {
 	class JobFSM : public sdpa::daemon::JobImpl {
 		public:
 			typedef sdpa::shared_ptr<JobFSM> Ptr;
+			typedef boost::recursive_mutex mutex_type;
+			typedef boost::unique_lock<mutex_type> lock_type;
 
 			JobFSM( const sdpa::job_id_t id = JobId(""),
 					const sdpa::job_desc_t desc = "",
@@ -39,7 +42,9 @@ namespace sdpa { namespace fsm { namespace smc {
                           DLOG(TRACE, "Job state machine created: " << id);
 			}
 
-          virtual ~JobFSM() { DLOG(TRACE, "Job state machine destroyed: " << id()); }
+
+
+            virtual ~JobFSM() { DLOG(TRACE, "Job state machine destroyed: " << id()); }
 
 			//transitions
 			void CancelJob(const sdpa::events::CancelJobEvent*);
@@ -51,12 +56,14 @@ namespace sdpa { namespace fsm { namespace smc {
 			void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
 			void Dispatch();
 
-			sdpa::status_t getStatus() { return m_status_; }
+			sdpa::status_t getStatus();
+
 			JobFSMContext& GetContext() { return m_fsmContext; }
 
 			template<class Archive>
 			void save(Archive & ar, const unsigned int) const
 			{
+				//lock_type lock(mtx_);
 				int stateId(m_fsmContext.getState().getId());
 
 			    // invoke serialization of the base class
@@ -67,14 +74,26 @@ namespace sdpa { namespace fsm { namespace smc {
 			template<class Archive>
 			void load(Archive & ar, const unsigned int)
 			{
+				lock_type lock(mtx_);
 				int stateId;
 
 			    // invoke serialization of the base class
 			    ar >> boost::serialization::base_object<JobImpl>(*this);
 			    ar >> stateId;
 
-			    m_fsmContext.setState(m_fsmContext.valueOf(stateId));
-			    DLOG(TRACE, "Set the current state of the job "<<id()<<" to "<<getStatus()<<"!!!");
+			    LOG(TRACE, "setState("<<id()<<") to "<<m_fsmContext.valueOf(stateId).getName()<<"!!!");
+			    JobFSMState& state = m_fsmContext.valueOf(stateId);
+			    m_fsmContext.setState(state);
+			    state.Entry(m_fsmContext);
+
+			   try {
+				   LOG(TRACE, "Current state is: "<<m_fsmContext.getState().getName());
+			   }
+			   catch( const statemap::StateUndefinedException& ex )
+			   {
+				   LOG(TRACE, "Current state is: UNDEFINED");
+			   }
+
 			}
 
 			template<class Archive>
@@ -88,7 +107,8 @@ namespace sdpa { namespace fsm { namespace smc {
 
 		private:
 			JobFSMContext m_fsmContext;
-			sdpa::status_t m_status_;
+			//sdpa::status_t m_status_;
+			mutex_type mtx_;
 	};
 }}}
 
