@@ -59,11 +59,8 @@ namespace sdpa {
 
 	 	if( force || ptr_comm_handler_->requestsAllowed(diff_time) )
 	 	{
-	 		// post a new request to the master
-	 		// the slave posts a job request
-            MLOG(TRACE, "Post a new request to "<<ptr_comm_handler_->master());
-	 		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-	 		ptr_comm_handler_->sendEventToMaster(pEvtReq);
+	 		ptr_comm_handler_->requestJob();
+	 		//SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
 
 	 		update_request_time(current_time);
 	 		bReqPosted = true;
@@ -76,10 +73,19 @@ namespace sdpa {
 	 {
 	 	 if( ptr_comm_handler_->is_registered() )
 	 	 {
-	 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
 	 		 // post job request if number_of_jobs() < #registered workers +1
 	 		 post_request();
 	 	 }
+	 	 else // try to re-register
+			 {
+	 		 	 SDPA_LOG_INFO("Try to re-register ...");
+	 		 	 const unsigned long reg_timeout( ptr_comm_handler_->cfg()->get<unsigned long>("registration_timeout", 1 *1000*1000) );
+	 		 	 SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+	 		 	 usleep(reg_timeout);
+
+	 		 	 ptr_comm_handler_->requestRegistration();
+			 }
+
 	 }
 
 
