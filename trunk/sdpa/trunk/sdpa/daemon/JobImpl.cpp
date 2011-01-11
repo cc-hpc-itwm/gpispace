@@ -185,18 +185,6 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
     {
-    	LOG(TRACE, "Query status of job " << id());
-    	LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
-
-    	JobStatusReplyEvent::status_t status = getStatus();
-
-    	LOG(TRACE, "Prepare a JobStatusReplyEvent ...");
-		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent(e.to(), e.from(), id(), status));
-
-		LOG(TRACE, "Send status reply to master ...");
-		pComm->sendEventToMaster(pStatReply);
-
-		LOG(TRACE, "Leave JobImpl::action_query_job_status ...");
     }
 
     void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
@@ -214,7 +202,7 @@ namespace sdpa { namespace daemon {
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
       DLOG(TRACE, "retrieving results of job " << id());
-    	const JobResultsReplyEvent::Ptr pResReply(new JobResultsReplyEvent(e.to(), e.from(), id(), result));
+    	const JobResultsReplyEvent::Ptr pResReply( new JobResultsReplyEvent( e.to(), e.from(), id(), result() ));
 
     	// reply the results to master
     	pComm->sendEventToMaster(pResReply);
