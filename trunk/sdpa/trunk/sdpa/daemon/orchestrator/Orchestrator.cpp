@@ -326,73 +326,46 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
 
 void Orchestrator::backup( const std::string& strArchiveName )
 {
-
-}
-
-void Orchestrator::recover( const std::string& strArchiveName )
-{
-}
-
-/*
-void Orchestrator::backup( const std::string& strArchiveName )
-{
-	try
-	{
-		//Orchestrator* ptrOrch(this);
-		//std::ofstream ofs( strArchiveName.c_str() );
-		//boost::archive::text_oarchive oa(ofs);
-
-		oa.register_type(static_cast<Orchestrator*>(NULL));
-		//oa.register_type(static_cast<T*>(NULL));
-		oa.register_type(static_cast<DaemonFSM*>(NULL));
-		oa.register_type(static_cast<GenericDaemon*>(NULL));
-		oa.register_type(static_cast<SchedulerOrch*>(NULL));
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));*/
-
-		/*oa.register_type(static_cast<JobManager*>(NULL));
+	try {
+		//std::string strArchiveName(name()+".bkp");
+		SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+		std::ofstream ofs(strArchiveName.c_str());
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<JobManager*>(NULL));
 		oa.register_type(static_cast<JobImpl*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
 		oa << ptr_job_man_;
 
-		SDPA_LOG_DEBUG("Successfully serialized the Orchestrator into "<<strArchiveName);
-		//ofs.close();
+		oa.register_type(static_cast<SchedulerOrch*>(NULL));
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa<<ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
 		cout <<"Exception occurred: "<< e.what() << endl;
-		return ;
+		return;
 	}
 }
 
 void Orchestrator::recover( const std::string& strArchiveName )
 {
-	try
-	{
-		//Orchestrator* pRestoredOrch(this);
-		std::ifstream ifs( strArchiveName.c_str() );
+
+	try {
+		//std::string strArchiveName(name()+".bkp");
+		std::ifstream ifs(strArchiveName.c_str());
 		boost::archive::text_iarchive ia(ifs);
-
-		ia.register_type(static_cast<Orchestrator*>(NULL));
-		//ia.register_type(static_cast<T*>(NULL));
-		ia.register_type(static_cast<DaemonFSM*>(NULL));
-		ia.register_type(static_cast<GenericDaemon*>(NULL));
-		ia.register_type(static_cast<SchedulerOrch*>(NULL));
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));*/
-
-		/*ia.register_type(static_cast<JobManager*>(NULL));
+		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
+		// restore the schedule from the archive
 		ia >> ptr_job_man_;
 
-		SDPA_LOG_DEBUG("Successfully de-serialized the Orchestrator from "<<strArchiveName);
-		ptr_job_man_->print();
-
-		ifs.close();
+		ia.register_type(static_cast<SchedulerOrch*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia>> ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
 		cout <<"Exception occurred: " << e.what() << endl;
-		return;
 	}
 }
-*/
