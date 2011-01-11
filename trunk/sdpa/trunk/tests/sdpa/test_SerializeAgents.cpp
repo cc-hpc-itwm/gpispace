@@ -131,6 +131,7 @@ struct MyFixture
 
 BOOST_AUTO_TEST_SUITE( test_SerializeAgents );
 
+/*
 BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 {
 	std::cout<<std::endl<<"----------------Begin  testDummyWorkflowEngineSerialization----------------"<<std::endl;
@@ -714,6 +715,7 @@ BOOST_AUTO_TEST_CASE(testDaemonSerialization)
 		return;
 	}
 }
+*/
 
 BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
 {

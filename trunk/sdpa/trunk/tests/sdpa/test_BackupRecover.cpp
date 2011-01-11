@@ -186,7 +186,6 @@ BOOST_AUTO_TEST_CASE(testBackupRecoverJobManager)
 	LOG(INFO, "JobManager after recovering" );
 	pJobManRestored->print();
 
-
 	std::ofstream ofs2("RecoveredJobManager.txt");
 	boost::archive::text_oarchive oa2(ofs2);
 	oa2.register_type(static_cast<sdpa::daemon::JobManager*>(NULL));
