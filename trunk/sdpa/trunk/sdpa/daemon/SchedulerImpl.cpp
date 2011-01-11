@@ -38,17 +38,17 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler )
 
 SchedulerImpl::~SchedulerImpl()
 {
-	LOG(TRACE, "Called the destructor of  SchedulerImpl ...");
+	SDPA_LOG_INFO( "Called the destructor of  SchedulerImpl ...");
 	try  {
 		stop();
 	}
 	catch (std::exception const & ex)
 	{
-          LOG(ERROR, "exception during SchedulerImpl::stop(): " << ex.what());
+		SDPA_LOG_ERROR("exception during SchedulerImpl::stop(): " << ex.what());
 	}
 	catch (...)
 	{
-          LOG(ERROR, "unexpected exception during SchedulerImpl::stop()");
+		SDPA_LOG_ERROR("unexpected exception during SchedulerImpl::stop()");
 	}
 }
 
@@ -185,7 +185,7 @@ void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & ti
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
-  DLOG(TRACE, "Called schedule_local ...");
+    SDPA_LOG_DEBUG("Called schedule_local ...");
 
 	id_type wf_id = jobId.str();
 
@@ -200,7 +200,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 		// Should set the workflow_id here, or send it together with the workflow description
-		DLOG(TRACE, "Submit the workflow attached to the job "<<wf_id<<" to WE");
+		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
 		pJob->Dispatch();
 		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 	}
@@ -452,9 +452,9 @@ void SchedulerImpl::start_job(const sdpa::job_id_t &jobId) {
 	SDPA_LOG_DEBUG("Start the job "<<jobId.str());
 }
 
-void SchedulerImpl::schedule(sdpa::job_id_t& jobId)
+void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-	DLOG(TRACE, "Scheduler::schedule (" << jobId.str() << ")");
+	SDPA_LOG_DEBUG("Schedule the job " << jobId.str());
 	jobs_to_be_scheduled.push(jobId);
 }
 
@@ -531,9 +531,8 @@ bool SchedulerImpl::post_request(bool force)
 		{
 			// post a new request to the master
 			// the slave posts a job request
-			SDPA_LOG_DEBUG("Post a new request to "<<ptr_comm_handler_->master());
-			RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( ptr_comm_handler_->name(), ptr_comm_handler_->master() ) );
-			ptr_comm_handler_->sendEventToMaster(pEvtReq);
+			ptr_comm_handler_->requestJob();
+
 			m_last_request_time = current_time;
 			bReqPosted = true;
 		}
@@ -626,10 +625,10 @@ void SchedulerImpl::run()
 
 void SchedulerImpl::print()
 {
-	//SDPA_LOG_DEBUG("The content of agent's "<<ptr_comm_handler_->name()<<" scheduler queue is:");
+	SDPA_LOG_DEBUG("The content of agent's scheduler queue is:");
 	jobs_to_be_scheduled.print();
 
-	//SDPA_LOG_DEBUG("The content of agent's "<<ptr_comm_handler_->name()<<" WorkerManager is:");
+	SDPA_LOG_DEBUG("The content of agent's WorkerManager is:");
 	ptr_worker_man_->print();
 }
 
@@ -691,5 +690,15 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
 		SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
 		throw ex2;
 	}
+}
+
+bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
+{
+	if( jobs_to_be_scheduled.find(job_id) != jobs_to_be_scheduled.end() )
+	{
+		return true;
+	}
+
+	return ptr_worker_man_->has_job(job_id);
 }
 
