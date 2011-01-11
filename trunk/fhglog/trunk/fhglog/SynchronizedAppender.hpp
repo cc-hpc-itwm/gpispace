@@ -19,59 +19,34 @@
 #ifndef FHG_LOG_SYNCHRONIZED_APPENDER_HPP
 #define FHG_LOG_SYNCHRONIZED_APPENDER_HPP 1
 
-#include <pthread.h>
 #include <fhglog/DecoratingAppender.hpp>
+#include <boost/thread.hpp>
 
 namespace fhg { namespace log {
   class SynchronizedAppender : public DecoratingAppender
   {
   private:
-    class Lock
-    {
-    public:
-      explicit
-      Lock(pthread_mutex_t *lock)
-        : lock_(lock)
-      {
-        pthread_mutex_lock(lock_);
-      }
-
-      ~Lock()
-      {
-        pthread_mutex_unlock(lock_);
-      }
-
-      private:
-        pthread_mutex_t *lock_;
-    };
+    typedef boost::recursive_mutex mutex_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
 
   public:
     explicit
     SynchronizedAppender(const Appender::ptr_t &appender)
       : DecoratingAppender(appender, "-sync")
-    {
-      pthread_mutex_init(&mtx_, NULL);
-    }
+    {}
 
     explicit
     SynchronizedAppender(Appender *appender)
       : DecoratingAppender(appender, "-sync")
-    {
-      pthread_mutex_init(&mtx_, NULL);
-    }
-
-    ~SynchronizedAppender()
-    {
-      pthread_mutex_destroy(&mtx_);
-    }
+    {}
 
     virtual void append(const LogEvent &evt)
     {
-      Lock lock(&mtx_);
+      lock_type lock (m_mutex);
       DecoratingAppender::append(evt);
     }
   private:
-    pthread_mutex_t mtx_;
+    mutable mutex_type m_mutex;
   };
 }}
 
