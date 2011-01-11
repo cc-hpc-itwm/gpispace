@@ -33,7 +33,18 @@ void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) { lock_ty
 void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt) { lock_type lock(mtx_); process_event(*pEvt); }
 void JobFSM::JobFailed(const sdpa::events::JobFailedEvent* pEvt) { lock_type lock(mtx_); process_event(*pEvt); }
 void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt); }
-void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt) { lock_type lock(mtx_);process_event(*pEvt); }
+
+void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt)
+{
+	lock_type lock(mtx_);
+	process_event(*pEvt);
+	LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
+
+	JobStatusReplyEvent::status_t status = getStatus();
+	JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
+	pComm->sendEventToMaster(pStatReply);
+}
+
 void JobFSM::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt) { lock_type lock(mtx_);process_event(*pEvt); }
 void JobFSM::Dispatch() {lock_type lock(mtx_); process_event(EvtBSCDispatch()); }
 

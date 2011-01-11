@@ -57,6 +57,8 @@ struct EvtBSCDispatch : sc::event< EvtBSCDispatch > {};
 struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, Pending>
 {
 	typedef sdpa::shared_ptr<JobFSM> Ptr;
+	typedef boost::recursive_mutex mutex_type;
+	typedef boost::unique_lock<mutex_type> lock_type;
 
 	JobFSM( const sdpa::job_id_t id = JobId(""),
 			const sdpa::job_desc_t desc = "",
@@ -129,6 +131,7 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 
 private:
 	SDPA_DECLARE_LOGGER();
+	mutex_type mtx_;
 };
 
 struct Pending : sc::simple_state<Pending, JobFSM>
