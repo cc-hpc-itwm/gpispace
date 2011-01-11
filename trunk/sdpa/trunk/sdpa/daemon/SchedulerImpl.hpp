@@ -41,7 +41,7 @@ namespace sdpa {
 	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL);
 	virtual ~SchedulerImpl();
 
-	virtual void schedule(sdpa::job_id_t& job);
+	virtual void schedule(const sdpa::job_id_t& job);
 	virtual void schedule_local(const sdpa::job_id_t &job);
 	virtual void schedule_remote(const sdpa::job_id_t &job);
 
@@ -52,6 +52,7 @@ namespace sdpa {
 
 	void re_schedule(Worker::JobQueue* pQueue );
 	void re_schedule(const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
+	virtual bool has_job(const sdpa::job_id_t& job_id);
 
 	virtual void start_job(const sdpa::job_id_t &job);
 
