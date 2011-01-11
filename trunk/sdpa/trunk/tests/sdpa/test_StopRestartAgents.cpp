@@ -674,7 +674,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 {
 	LOG( INFO, "***** testBackupRecoverOrchEmptyWfeWithClient *****"<<std::endl);
@@ -754,7 +753,5 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 
 	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
 }
-*/
-
 
 BOOST_AUTO_TEST_SUITE_END()
