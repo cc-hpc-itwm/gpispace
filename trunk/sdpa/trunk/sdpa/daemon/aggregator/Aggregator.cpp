@@ -410,19 +410,19 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 void Aggregator::backup( const std::string& strArchiveName )
 {
-	try
-	{
-		print();
-
-		Aggregator* ptrOrch(this);
-		std::ofstream ofs( strArchiveName.c_str() );
+	try {
+		//std::string strArchiveName(name()+".bkp");
+		SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+		std::ofstream ofs(strArchiveName.c_str());
 		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<Aggregator*>(NULL));
-		oa.register_type(static_cast<DaemonFSM*>(NULL));
-		oa.register_type(static_cast<GenericDaemon*>(NULL));
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa.register_type(static_cast<JobManager*>(NULL));
+		oa.register_type(static_cast<JobImpl*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
-		oa << ptrOrch;
+		oa << ptr_job_man_;
+
+		oa.register_type(static_cast<SchedulerAgg*>(NULL));
+		oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		oa<<ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
@@ -431,26 +431,25 @@ void Aggregator::backup( const std::string& strArchiveName )
 	}
 }
 
-
 void Aggregator::recover( const std::string& strArchiveName )
 {
-	try
-	{
-		Aggregator* pRestoredOrch(this);
-		std::ifstream ifs( strArchiveName.c_str() );
-		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<Aggregator*>(NULL));
-		ia.register_type(static_cast<DaemonFSM*>(NULL));
-		ia.register_type(static_cast<GenericDaemon*>(NULL));
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia.register_type(static_cast<JobFSM*>(NULL));
-		ia >> pRestoredOrch;
 
-		print();
+	try {
+		//std::string strArchiveName(name()+".bkp");
+		std::ifstream ifs(strArchiveName.c_str());
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<JobManager*>(NULL));
+		ia.register_type(static_cast<JobImpl*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		// restore the schedule from the archive
+		ia >> ptr_job_man_;
+
+		ia.register_type(static_cast<SchedulerAgg*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia>> ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
 		cout <<"Exception occurred: " << e.what() << endl;
 	}
 }
-
