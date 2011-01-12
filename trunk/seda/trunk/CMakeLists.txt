@@ -46,6 +46,7 @@ include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  include (UseCodeCoverage)
   include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
