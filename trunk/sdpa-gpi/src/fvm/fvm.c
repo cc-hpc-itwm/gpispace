@@ -89,6 +89,9 @@ int fvmInit(configFile_t config)
   //  usedHandlesStack = (stack_t *) calloc(1, sizeof(stack_t));
   usedHandlesStack = (stack_t *) malloc( sizeof(stack_t));
 
+  usedHandlesStack->numItems = 0;
+  usedHandlesStack->stackPtr = NULL;
+
   /* start array for holding handles */
   memset(handles, COMM_HANDLE_FREE, sizeof(handles));
 
@@ -189,7 +192,7 @@ int fvmWait4PC(configFile_t config)
 }
 
 /* ---------- Interface for Process Container requests (fvm internal side) */
-static fvmAllocHandle_t fvmGlobalAllocInternal(unsigned int size)
+static fvmAllocHandle_t fvmGlobalAllocInternal(fvmSize_t size)
 {
 
 #ifndef NDEBUGALLOC
@@ -199,7 +202,7 @@ static fvmAllocHandle_t fvmGlobalAllocInternal(unsigned int size)
   return fvmGlobalMMAlloc(size);
 }
 
-static fvmAllocHandle_t fvmLocalAllocInternal(unsigned int size)
+static fvmAllocHandle_t fvmLocalAllocInternal(fvmSize_t size)
 {
 
 #ifndef NDEBUGALLOC
@@ -272,7 +275,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
   MemSize_t scratchSize;
   Arena_t arena;
 
-  unsigned int offsetRank;
+  fvmSize_t offsetRank;
   fvmShmemOffset_t shmemInitialOffset;
   fvmOffset_t fvmInitialOffset;
   fvmOffset_t fvmInitialOffset_Locally;
@@ -282,7 +285,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
   size_t rest = 0;
   size_t currentTransferSize = 0;
   size_t availableSpace;
-  fvmCommHandle_t freeHandle;
+  fvmCommHandle_t freeHandle = -1;
 
 
   fvmAddress = getDmaMemPtrVM();
