@@ -1,6 +1,6 @@
 <defun name="sustack">
 
-  <in name="su_param" type="string" place="su_param"/>
+  <in name="key" type="string" place="key"/>
   <in name="shmem_per_node" type="long" place="shmem_per_node"/>
   <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
   <in name="file_input" type="string" place="file_input"/>
@@ -75,7 +75,7 @@
       <field name="slot" type="long"/>
     </struct>
 
-    <field name="param" type="string"/>
+    <field name="key" type="string"/>
   </struct>
 
   <net>
@@ -93,21 +93,21 @@
       <type-map replace="T" with="config"/>
     </specialize>
 
-    <place name="su_param" type="string">
-      <token><value>""</value></token>
+    <place name="key" type="string">
+      <token><value>"cdp"</value></token>
     </place>
 
     <place name="shmem_per_node" type="long">
-      <token><value>4240 * 4</value></token>
+      <token><value>100*2^20</value></token>
     </place>
     <place name="gpi_mem_per_node" type="long">
-      <token><value>4240 * 6</value></token>
+      <token><value>5*2^30</value></token>
     </place>
     <place name="file_input" type="string">
-      <token><value>"/u/herc/rahn/test.dat"</value></token>
+      <token><value>"/fhgfs/HPC/rahn/su/plane.b.dat"</value></token>
     </place>
     <place name="file_output" type="string">
-      <token><value>"/u/herc/rahn/test.dat.out"</value></token>
+      <token><value>"/fhgfs/HPC/rahn/su/plane.b.dat.stacked"</value></token>
     </place>
     <place name="type_input" type="string">
       <token><value>"su"</value></token>
@@ -126,7 +126,7 @@
         <in name="type_output" type="string"/>
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
-        <in name="su_param" type="string"/>
+        <in name="key" type="string"/>
         <out name="write_info" type="write_info"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
@@ -135,7 +135,7 @@
                                , type_input
                                , file_output
                                , type_output
-                               , su_param
+                               , key
                                , shmem_per_node
                                , gpi_mem_per_node
                                , write_info
@@ -206,7 +206,7 @@
             config.file.input.type = type_input;
             config.file.output.name = file_output;
             config.file.output.type = type_output;
-            config.param = su_param;
+            config.key = key;
 
             write_info.next_trace = give_back_trace = 0;
             write_info.offset = 0;
@@ -228,7 +228,7 @@
       <connect-in port="type_output" place="type_output"/>
       <connect-in port="shmem_per_node" place="shmem_per_node"/>
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
-      <connect-in port="su_param" place="su_param"/>
+      <connect-in port="key" place="key"/>
       <connect-out port="write_info" place="write_info"/>
       <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
@@ -296,10 +296,10 @@
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
         <module name="sustack" function="load (package, config)">
-          <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
           <link href="$(BUILD)/application/kdm/libdo_load.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
@@ -322,14 +322,7 @@
                     , fvmGetShmemPtr()
                     );
 
-            waitComm ( fvmPutGlobalData
-                       ( static_cast<fvmAllocHandle_t> (config.handle.data)
-                       , package.slot * config.size.bunch
-                       , size
-                       , 0
-                       , static_cast<fvmAllocHandle_t> (config.handle.scratch)
-                       )
-                     );
+            comm::put (config, package);
           ]]></code>
         </module>
       </defun>
@@ -346,20 +339,32 @@
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
         <module name="sustack" function="sustack (package, config)">
-          <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
+          <cinclude href="process.hpp"/>
+          <link href="$(BUILD)/application/example/exec/libprocess.so"/>
           <code><![CDATA[
-            LOG (INFO, "STACK " << ::print::loaded_package (package));
+            const std::string cmd ("sustack normpow=0.0 key=" + config.key);
 
-            waitComm ( fvmGetGlobalData
-                       ( static_cast<fvmAllocHandle_t> (config.handle.data)
-                       , package.slot * config.size.bunch
-                       , package.package.size * config.size.trace
-                       , 0
-                       , static_cast<fvmAllocHandle_t> (config.handle.scratch)
-                       )
-                     );
+            LOG (INFO, "STACK " << ::print::loaded_package (package)
+                                << " cmd '" << cmd << "'"
+                );
+
+            const long size (package.package.size * config.size.trace);
+
+            comm::get (config, package);
+
+            void * buf (fvmGetShmemPtr());
+
+            const std::size_t size_stacked
+              (process::execute (cmd, buf, size, buf));
+
+            package.package.size = size_stacked / config.size.trace;
+
+            comm::put (config, package);
+
+            LOG (INFO, "STACKED " << ::print::loaded_package (package));
           ]]></code>
         </module>
       </defun>
@@ -408,11 +413,10 @@
       <connect-out port="package" place="not_done_package"/>
     </transition>
 
-    <place name="done_package" type="loaded_package"/>
+    <place name="done_package" type="loaded_package" capacity="1"/>
     <place name="not_done_package" type="loaded_package" capacity="1"/>
 
     <place name="packages_to_match" type="loaded_package"/>
-
 
     <transition name="match" priority="1">
       <defun>
@@ -451,7 +455,11 @@
         <in name="config" type="config"/>
         <out name="p" type="pair_of_packages"/>
         <module name="sustack" function="sustack2 (p, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
+          <cinclude href="process.hpp"/>
           <code><![CDATA[
             ::pnetc::type::loaded_package::loaded_package & left
               ( (p.x.package.left.trace == p.y.package.right.trace)
@@ -464,18 +472,67 @@
               : p.y
               );
 
-            std::cerr << "*** GOT packages:"
-                      << ::print::loaded_package (left)
-                      << " and "
-                      << ::print::loaded_package (right)
-                      << std::endl
-                      << "*** CALL 'sustack " << config.param << "'"
-                      << " for [" << left.package.left.trace << ".." << right.package.right.trace << ")"
-                      << "~" << (left.package.size + right.package.size)
-                      << std::endl;
+            LOG (INFO, "STACK2: " << ::print::loaded_package (left)
+                    << " and " << ::print::loaded_package (right)
+                );
 
-            left.package.right.extendable = false;
-            right.package.left.extendable = false;
+            const std::string cmd ("sustack normpow=0.0 key=" + config.key);
+
+            const long size_left (left.package.size * config.size.trace);
+            const long size_right (right.package.size * config.size.trace);
+
+            if (size_left > 0)
+              {
+                comm::get (config, left);
+              }
+
+            if (size_right > 0)
+              {
+                comm::get (config, right, size_left);
+              }
+
+            if (size_left + size_right > 0)
+              {
+                void * buf (fvmGetShmemPtr());
+
+                const std::size_t size_stacked
+                  (process::execute (cmd, buf, size_left + size_right, buf));
+
+                const long traces_stacked (size_stacked / config.size.trace);
+
+                if (traces_stacked > config.per.bunch.trace)
+                  {
+                    left.package.size = config.per.bunch.trace;
+                    right.package.size = traces_stacked - config.per.bunch.trace;
+
+                    left.package.right.extendable = false;
+                    right.package.left.extendable = false;
+                  }
+                else
+                  {
+                    left.package.size = traces_stacked;
+                    left.package.right = right.package.right;
+
+                    right.package.left.extendable = false;
+                    right.package.right.extendable = false;
+                    right.package.size = 0;
+                  }
+              }
+
+
+            if (left.package.size > 0)
+              {
+                comm::put (config, left);
+              }
+
+            if (right.package.size > 0)
+              {
+                comm::put (config, right, config.size.bunch);
+              }
+
+            LOG (INFO, "STACKED2: " << ::print::loaded_package (left)
+                    << " and " << ::print::loaded_package (right)
+                );
           ]]></code>
         </module>
       </defun>
@@ -522,6 +579,35 @@
       <connect-out port="x" place="package_check_done"/>
     </transition>
 
+    <transition name="take_nonzero">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression></expression>
+      </defun>
+      <condition>
+        ${package.package.size} :gt: 0
+      </condition>
+      <connect-in port="package" place="done_package"/>
+      <connect-out port="package" place="writeable_package"/>
+    </transition>
+
+    <transition name="clear_zero">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression>
+        </expression>
+      </defun>
+      <condition>
+        ${package.package.size} :eq: 0
+      </condition>
+      <connect-in port="package" place="done_package"/>
+      <connect-out port="package" place="loaded_package_finished"/>
+    </transition>
+
+    <place name="writeable_package" type="loaded_package"/>
+
     <transition name="select_writeable">
       <defun>
         <in name="write_info" type="write_info"/>
@@ -541,7 +627,7 @@
       </defun>
       <connect-in port="write_info" place="write_info"/>
       <connect-out port="write_info" place="write_info"/>
-      <connect-in port="p" place="done_package"/>
+      <connect-in port="p" place="writeable_package"/>
       <connect-out port="w" place="package_to_be_written"/>
     </transition>
 
@@ -643,7 +729,7 @@
       <connect-out port="slot" place="empty_slot"/>
     </transition>
 
-    <place name="package_finished" type="package" capacity="1"/>
+    <place name="package_finished" type="package"/>
 
     <include-template href="wait.xml"/>
     <specialize name="wait_package" use="wait">

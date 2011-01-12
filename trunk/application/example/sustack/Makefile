@@ -1,4 +1,13 @@
 
+TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
+#TRUNK = /u/herc/rahn/SDPA/trunk
+BUILD = $(TRUNK)/main/trunk/build45
+UTIL = $(TRUNK)/application/example/sustack/util
+
+export BUILD
+
+###############################################################################
+
 XML_MAIN = xml/sustack.xml
 
 DEP += $(XML_MAIN)
@@ -6,18 +15,13 @@ DEP += xml/generate/package.xml
 DEP += xml/generate/slot.xml
 DEP += util/print.hpp
 DEP += Makefile
+DEP += $(UTIL)/print.hpp
+DEP += $(UTIL)/comm.hpp
 
 NET = sustack.pnet
 GEN = gen
 OUT = sustack.out
 PS = sustack.ps
-
-###############################################################################
-
-TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
-BUILD = $(TRUNK)/main/trunk/build45
-
-export BUILD
 
 ###############################################################################
 
@@ -41,23 +45,20 @@ PNETC_LIB += $(TRUNK)/application/lib
 
 WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
 
-#WE_EXEC_LOAD += $(BUILD)/application/kdm/libdo_load.so
-#WE_EXEC_LOAD += $(BUILD)/application/kdm/libdo_write.so
-#WE_EXEC_LOAD += $(BUILD)/application/kdm/libdetermine_size.so
-
 WE_EXEC_LIBPATHS += $(TRUNK)/application/example/sustack/$(GEN)/pnetc/op
 
 ###############################################################################
 
 CXXINCLUDEPATHS += $(TRUNK)/fvm-pc/trunk
 CXXINCLUDEPATHS += $(TRUNK)/fhglog/trunk
+CXXINCLUDEPATHS += $(TRUNK)/application/example/exec
 CXXINCLUDEPATHS += $(BUILD)/fhglog
 
 # determine_size, do_load, do_write
 CXXINCLUDEPATHS += $(TRUNK)/application/kdm/src
 
-# print.hpp
-CXXINCLUDEPATHS += $(TRUNK)/application/example/sustack/util
+# print.hpp, comm.hpp
+CXXINCLUDEPATHS += $(UTIL)
 
 ###############################################################################
 
@@ -89,11 +90,13 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 ###############################################################################
 
-.PHONY: default ps all out
+.PHONY: default ps all out net
 
 default: $(OUT)
 
 ps: $(PS) $(PS_NOINLINE)
+
+net: $(NET)
 
 all: ps default
 
