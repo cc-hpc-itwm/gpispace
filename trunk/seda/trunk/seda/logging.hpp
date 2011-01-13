@@ -84,7 +84,7 @@
 #endif // HAVE_FHGLOG
 #endif // ENABLE_LOGGING == 1
 
-#if not defined (SEDA_ENABLE_LOGGING)
+#ifndef SEDA_ENABLE_LOGGING
 
 #define SEDA_LDECLARE_LOGGER(logger)   void* __seda_unused_##logger
 #define SEDA_LDEFINE_LOGGER(logger, h)
