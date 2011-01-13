@@ -36,11 +36,13 @@ namespace seda {
                 _busy = true;
 
                 try {
-                  DLOG(TRACE, "handling event in stage " << _stage->name());
+                  //DLOG(TRACE, "handling event in stage " << _stage->name());
+                  SEDA_LOG_DEBUG("handling event in stage " << _stage->name());
 
                     _stage->strategy()->perform(e);
 
-                  DLOG(TRACE, "handled event in stage " << _stage->name());
+                  //DLOG(TRACE, "handled event in stage " << _stage->name());
+                  SEDA_LOG_DEBUG("handled event in stage " << _stage->name());
                 } catch (const seda::EventNotSupported&) {
                     Stage::Ptr systemEventHandler(StageRegistry::instance().lookup(_stage->getErrorHandler()));
                     if (systemEventHandler.get() != _stage) {
