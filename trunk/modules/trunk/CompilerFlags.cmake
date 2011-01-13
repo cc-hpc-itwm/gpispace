@@ -1,7 +1,10 @@
+# -*- mode: cmake; -*-
+
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions("-DNDEBUG")
 endif (${CMAKE_BUILD_TYPE} MATCHES "Release")
 
+if(NOT WIN32)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   include (CheckCXXSourceCompiles)
 
@@ -46,3 +49,4 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
     add_definitions("-D__aligned__=ignored")
   endif (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
 endif (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
+endif(NOT WIN32)

@@ -16,13 +16,21 @@ find_path (CppUnit_INCLUDE_DIR
   PATH_SUFFIXES include
   )
 
+if(WIN32)
+  set(LIBRARY_STATIC_NAME "cppunit.lib")
+  set(LIBRARY_SHARED_NAME "cppunit_dll.dll")
+ELSE(WIN32)
+  set(LIBRARY_STATIC_NAME "libcppunit.a")
+  set(LIBRARY_SHARED_NAME "libcppunit.so")
+ENDIF(WIN32)
+
 find_library (CppUnit_LIBRARY
-  NAMES libcppunit.a
+  NAMES ${LIBRARY_STATIC_NAME}
   HINTS ${CPPUNIT_HOME} ENV CPPUNIT_HOME
   PATH_SUFFIXES lib lib64
   )
 find_library (CppUnit_LIBRARY_SHARED
-  NAMES libcppunit.so
+  NAMES ${LIBRARY_SHARED_NAME}
   HINTS ${CPPUNIT_HOME} ENV CPPUNIT_HOME
   PATH_SUFFIXES lib lib64
   )
