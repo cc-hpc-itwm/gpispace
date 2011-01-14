@@ -76,7 +76,9 @@ namespace sdpa { namespace daemon {
 
 	  // API
 	  void start( const bfs::path backup_path = bfs::current_path() );
+	  void start( bfs::ifstream& ifs );
 	  void shutdown( const bfs::path backup_path = bfs::current_path() );
+	  void shutdown( bfs::ofstream& ofs );
 
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();

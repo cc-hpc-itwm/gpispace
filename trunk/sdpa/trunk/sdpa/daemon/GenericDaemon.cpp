@@ -144,18 +144,24 @@ void GenericDaemon::start( const bfs::path backup_path )
 	std::string file( name() + ".bkp");
 	bfs::path bkp_file(backup_path/file );
 
-	if( !boost::filesystem::exists(bkp_file) )
+	bfs::ifstream ifs(bkp_file);
+	if (ifs.fail())
 	{
-		SDPA_LOG_WARN( "Can't find agent corresponding backup file "<<bkp_file);
+		SDPA_LOG_WARN( "Can't find the backup file "<<bkp_file);
 	}
 	else
 	{
 		SDPA_LOG_WARN( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
-
-		bfs::ifstream ifs(bkp_file);
-
-		recover(ifs);
 	}
+
+	start(ifs);
+
+	ifs.close();
+}
+
+void GenericDaemon::start( bfs::ifstream& ifs )
+{
+	recover(ifs);
 
 	// The stage uses 2 threads
 	ptr_daemon_stage_.lock()->start();
@@ -193,6 +199,17 @@ void GenericDaemon::start( const bfs::path backup_path )
 
 void GenericDaemon::shutdown( const bfs::path backup_path )
 {
+	std::string file( name() + ".bkp");
+	bfs::path bkp_file(backup_path/file );
+	bfs::ofstream ofs(bkp_file);
+
+	shutdown(ofs);
+
+	ofs.close();
+}
+
+void GenericDaemon::shutdown( bfs::ofstream& ofs )
+{
 	// should first notify my master
 	// that I will be shutdown
 
@@ -212,11 +229,6 @@ void GenericDaemon::shutdown( const bfs::path backup_path )
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
-
-	std::string file( name() + ".bkp");
-	bfs::path bkp_file(backup_path/file );
-
-	bfs::ofstream ofs(bkp_file);
 
 	backup(ofs);
 }
