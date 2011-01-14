@@ -76,7 +76,7 @@ namespace sdpa { namespace events {
 
       virtual void handleBy(EventHandler *handler)
       {
-        handler->handleErrorEvent(this);
+    	  handler->handleErrorEvent(this);
       }
     private:
       error_code_t error_code_;

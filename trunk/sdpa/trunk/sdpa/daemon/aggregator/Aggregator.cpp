@@ -23,6 +23,7 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -408,12 +409,13 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 }
 
 
-void Aggregator::backup( const std::string& strArchiveName )
+void Aggregator::backup( const bfs::path& strArchiveName )
 {
 	try {
 		//std::string strArchiveName(name()+".bkp");
 		SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
-		std::ofstream ofs(strArchiveName.c_str());
+		bfs::ofstream ofs(strArchiveName);
+
 		boost::archive::text_oarchive oa(ofs);
 		oa.register_type(static_cast<JobManager*>(NULL));
 		oa.register_type(static_cast<JobImpl*>(NULL));
@@ -431,12 +433,13 @@ void Aggregator::backup( const std::string& strArchiveName )
 	}
 }
 
-void Aggregator::recover( const std::string& strArchiveName )
+void Aggregator::recover( const bfs::path& strArchiveName )
 {
 
 	try {
 		//std::string strArchiveName(name()+".bkp");
-		std::ifstream ifs(strArchiveName.c_str());
+		bfs::ifstream ifs(strArchiveName);
+
 		boost::archive::text_iarchive ia(ifs);
 		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));

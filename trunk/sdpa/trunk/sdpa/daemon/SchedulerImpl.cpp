@@ -594,9 +594,11 @@ void SchedulerImpl::run()
 				}
 				catch( const NoWorkerFoundException& ex)
 				{
-					SDPA_LOG_DEBUG("No valid worker found! Try to re-schedule the job later, on any available worker"<<jobId.str());
+					SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
 					// do so as when no preferences were set, just ignore them right now
-					schedule_anywhere(jobId);
+					//schedule_anywhere(jobId);
+
+					ptr_worker_man_->dispatchJob(jobId);
 				}
 			}
 		}

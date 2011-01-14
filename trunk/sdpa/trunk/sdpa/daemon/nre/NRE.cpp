@@ -20,6 +20,7 @@
 //#include <sdpa/daemon/nre/NRE.hpp>
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -313,12 +314,13 @@ void NRE<U>::notifyActivityCancelled( const id_type& id, const std::string& data
 }
 
 template <typename U>
-void NRE<U>::backup( const std::string& strArchiveName )
+void NRE<U>::backup( const bfs::path& strArchiveName )
 {
 	try {
 		//std::string strArchiveName(name()+".bkp");
 		SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
-		std::ofstream ofs(strArchiveName.c_str());
+		bfs::ofstream ofs(strArchiveName);
+
 		boost::archive::text_oarchive oa(ofs);
 		oa.register_type(static_cast<JobManager*>(NULL));
 		oa.register_type(static_cast<JobImpl*>(NULL));
@@ -337,11 +339,12 @@ void NRE<U>::backup( const std::string& strArchiveName )
 }
 
 template <typename U>
-void NRE<U>::recover( const std::string& strArchiveName )
+void NRE<U>::recover( const bfs::path& strArchiveName )
 {
 	try {
 		//std::string strArchiveName(name()+".bkp");
-		std::ifstream ifs(strArchiveName.c_str());
+		bfs::ifstream ifs(strArchiveName);
+
 		boost::archive::text_iarchive ia(ifs);
 		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));

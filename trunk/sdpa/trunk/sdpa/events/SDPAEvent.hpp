@@ -48,10 +48,11 @@ namespace sdpa { namespace events {
       virtual void handleBy(EventHandler *) = 0;
 
       virtual Ptr create_reply (boost::system::error_code const &)
-      {
-        // null pointer by default
-        return Ptr();
-      }
+     {
+    	  // null pointer by default
+    	  return Ptr();
+     }
+
     protected:
       SDPAEvent()
         : IEvent()

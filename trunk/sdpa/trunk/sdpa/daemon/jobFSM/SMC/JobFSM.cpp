@@ -23,9 +23,7 @@ using namespace sdpa::fsm::smc;
 void JobFSM::Dispatch()
 {
 	lock_type lock(mtx_);
-
 	m_fsmContext.Dispatch();
-
 }
 
 void JobFSM::CancelJob(const sdpa::events::CancelJobEvent* pEvt)
