@@ -201,7 +201,7 @@ namespace sdpa { namespace daemon {
 
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
-      DLOG(TRACE, "retrieving results of job " << id());
+    	DLOG(TRACE, "retrieving results of job " << id());
     	const JobResultsReplyEvent::Ptr pResReply( new JobResultsReplyEvent( e.to(), e.from(), id(), result() ));
 
     	// reply the results to master

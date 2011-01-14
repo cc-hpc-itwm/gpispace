@@ -81,7 +81,7 @@ namespace sdpa { namespace daemon {
 			os<<id_<<std::endl;
 			os<<desc_<<std::endl;
 			os<<parent_<<std::endl;
-			//os<<worker_id_<<std::endl;
+
 			return os.str();
 		}
 
@@ -91,7 +91,6 @@ namespace sdpa { namespace daemon {
 			ar & id_;
 			ar & desc_;
 			ar & parent_;
-			//ar & worker_id_;
 			ar & result_;
 			ar & walltime_;
 			ar & b_local_;
@@ -110,11 +109,9 @@ namespace sdpa { namespace daemon {
         sdpa::job_result_t result_;
 
         friend class boost::serialization::access;
-        //sdpa::worker_id_t worker_id_;
+
         unsigned long walltime_;
     protected:
-
-        //mutex_type mtx_;
 
     public:
      	/*mutable*/ IComm* pComm;
