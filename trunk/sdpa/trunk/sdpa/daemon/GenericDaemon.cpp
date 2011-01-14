@@ -33,9 +33,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/filesystem.hpp>
 
-#include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -105,7 +103,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 
 // current constructor
 // with network scommunication
-GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa2Gwes)
+GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa2Gwes )
 	: Strategy(name),
 	  SDPA_INIT_LOGGER(name),
 	  ptr_job_man_(new JobManager()),
@@ -138,21 +136,22 @@ GenericDaemon::~GenericDaemon()
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 }
 
-void GenericDaemon::start()
+void GenericDaemon::start( const bfs::path backup_path )
 {
 	// create configuration
 	ptr_daemon_cfg_ = sdpa::util::Config::create();
 
-	std::string filename( name()+".bkp" );
+	std::string file( name() + ".bkp");
+	bfs::path bkp_file(backup_path/file );
 
-	if ( !boost::filesystem::exists(filename) )
+	if( !boost::filesystem::exists(bkp_file) )
 	{
-		SDPA_LOG_WARN( "Can't find agent corresponding backup file "<<filename);
+		SDPA_LOG_WARN( "Can't find agent corresponding backup file "<<bkp_file);
 	}
 	else
 	{
-		SDPA_LOG_WARN( "Recover the agent "<<name()<<" from the backup file "<<filename);
-		recover(name()+".bkp");
+		SDPA_LOG_WARN( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
+		recover(bkp_file);
 	}
 
 	// The stage uses 2 threads
@@ -175,11 +174,13 @@ void GenericDaemon::start()
 
 		ptr_job_man_->updateJobInfo(this);
 
-		//ptr_job_man_->recover(filename);
-		SDPA_LOG_WARN( "JobManager after recovering" );
-		ptr_job_man_->print();
+		if( is_orchestrator() )
+		{
+			SDPA_LOG_WARN( "JobManager after recovering" );
+			ptr_job_man_->print();
 
-		SDPA_LOG_INFO("The JobManager has "<<ptr_job_man_->number_of_jobs()<<" jobs!");
+			SDPA_LOG_INFO("The JobManager has "<<ptr_job_man_->number_of_jobs()<<" jobs!");
+		}
 
 		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
 		if( !is_orchestrator() )
@@ -187,7 +188,7 @@ void GenericDaemon::start()
 	}
 }
 
-void GenericDaemon::shutdown()
+void GenericDaemon::shutdown( const bfs::path backup_path )
 {
 	// should first notify my master
 	// that I will be shutdown
@@ -209,7 +210,9 @@ void GenericDaemon::shutdown()
 		ptr_workflow_engine_ = NULL;
 	}
 
-	backup(name()+".bkp");
+	std::string file( name() + ".bkp");
+	bfs::path bkp_file(backup_path/file );
+	backup(bkp_file);
 }
 
 // TODO: work here
@@ -484,7 +487,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	}
 	catch(const NoJobScheduledException&)
 	{
-		//SDPA_LOG_DEBUG("No job was scheduled to be executed on the worker '"<<worker_id);
+		//SDPA_LOG_DEBUG("No job was scheduled to the worker '"<<worker_id);
 	}
 	catch(const WorkerNotFoundException&)
 	{
@@ -609,7 +612,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
 void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 {
-	DLOG(TRACE, "got config request from " << e.from());
+	//SDPA_LOG_DEBUG("got config request from " << e.from());
 	/*
 	 * on startup the aggregator tries to retrieve a configuration from its orchestrator
 	 * post ConfigReplyEvent/message that contains the configuration data for the requesting aggregator
@@ -693,7 +696,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 		{
 			SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
 			// mark the agen as not-registered
-			// m_bRegistered = false;
+
 			requestRegistration();
 
 			break;
@@ -714,20 +717,16 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 				SDPA_LOG_ERROR("The worker "<<worker_id << " was not found!");
 
 				// that's not true -> to be reviewed !
-				/*if( !is_orchestrator() && error.from() == master() )
+				if( !is_orchestrator() && error.from() == master() )
 				{
 					SDPA_LOG_WARN("Master " << master() << " is down");
-					m_bRegistered = false;
+
 					const unsigned long reg_timeout( cfg()->get<unsigned long>("registration_timeout", 10 *1000*1000) );
 					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
 					usleep(reg_timeout);
 
-					// try to re-register
-					SDPA_LOG_INFO("Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
-					WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master(), rank(), agent_uuid()));
-					sendEventToMaster(pEvtWorkerReg);
+					requestRegistration();
 				}
-				*/
 			}
 			catch (std::exception const& ex)
 			{
@@ -1149,7 +1148,7 @@ void GenericDaemon::requestJob()
 {
 	// post a new request to the master
 	// the slave posts a job request
-	DMLOG(TRACE, "Post a new request to "<<master());
+	//SDPA_LOG_DEBUG( "Post a new request to "<<master() );
 	RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master() ) );
 	sendEventToMaster(pEvtReq);
 }
@@ -1159,13 +1158,10 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 	if( ptr_scheduler_ )
 	{
 		ptr_scheduler_->schedule(jobId);
+		return;
 	}
-	else
-	{
-		std::ostringstream os;
-		os<<"The agent "<<name()<<" has no scheduler!";
-		SDPA_LOG_ERROR(os.str());
-		throw  std::exception() ;
-	}
+
+	SDPA_LOG_ERROR("The agent "<<name()<<" has no scheduler!");
+	throw  std::exception() ;
 }
 

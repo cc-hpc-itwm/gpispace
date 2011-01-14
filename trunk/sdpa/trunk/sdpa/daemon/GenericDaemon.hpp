@@ -75,12 +75,12 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
+	  void start( const bfs::path backup_path = bfs::current_path() );
+	  void shutdown( const bfs::path backup_path = bfs::current_path() );
 
-	  void start();
-	  void stop();
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
-	  void shutdown();
+	  void stop();
 
 	  virtual void perform(const seda::IEvent::Ptr&);
 	  virtual void schedule(const sdpa::job_id_t& job);
@@ -117,6 +117,8 @@ namespace sdpa { namespace daemon {
 	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
 	  virtual void requestRegistration();
 	  virtual void requestJob();
+
+	  virtual sdpa::status_t getStatus() { throw std::runtime_error("not implemented by the generic daemon!"); }
 
 	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
 
@@ -305,7 +307,6 @@ namespace sdpa { namespace daemon {
 	  bool m_bStopped;
 	  bool m_bStarted;
 	  bool m_bConfigOk;
-
   };
 }}
 
