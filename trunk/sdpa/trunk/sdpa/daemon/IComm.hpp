@@ -30,7 +30,9 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/JobId.hpp>
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+
+//#include <boost/filesystem.hpp>
 namespace bfs=boost::filesystem;
 
 namespace sdpa { namespace daemon {
@@ -75,8 +77,8 @@ const std::string USER("user");
 	  virtual bool hasWorkflowEngine() = 0;
 	  virtual bool is_orchestrator() = 0;
 
-	  virtual void backup( const bfs::path& strArchiveName ) { throw std::runtime_error("not supported at this level"); }
-	  virtual void recover( const bfs::path& strArchiveName ) { throw std::runtime_error("not supported at this level"); }
+	  virtual void backup( bfs::ofstream& ) { throw std::runtime_error("not supported at this level"); }
+	  virtual void recover(bfs::ifstream& ) { throw std::runtime_error("not supported at this level"); }
 
 	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) = 0;
 

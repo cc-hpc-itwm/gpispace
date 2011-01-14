@@ -141,8 +141,8 @@ namespace sdpa {
 			//ar & m_guiServ;
 		}
 
-		virtual void backup( const bfs::path& strArchiveName );
-	    virtual void recover( const bfs::path& strArchiveName );
+		virtual void backup( bfs::ofstream& );
+	    virtual void recover( bfs::ifstream& );
 
 		friend class boost::serialization::access;
 		//friend class sdpa::tests::WorkerSerializationTest;

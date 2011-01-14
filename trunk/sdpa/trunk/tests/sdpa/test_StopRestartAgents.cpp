@@ -545,54 +545,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAll )
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
 
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrch1 )
-{
-	string addrOrch = "127.0.0.1";
-
-	std::cout<<std::endl<<"----------------Begin  testBackupRecoverOrch1----------------"<<std::endl;
-	std::string filename = "testBackupRecoverOrch1.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	ptrOrch->print();
-	LOG( DEBUG, "Backup the orchestrator ino the file "<<filename);
-	ptrOrch->backup(filename);
-	ptrOrch->shutdown();
-
-	sleep(5);
-
-	ptrCli->shutdown_network();
-	ptrCli.reset();
-
-	//seda::StageRegistry::instance().clear();
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrRecOrch->recover(filename);
-	ptrRecOrch->start();
-
-	sleep(1);
-
-	ptrRecOrch->shutdown();
-	sleep(1);
-
-	std::cout<<std::endl<<"----------------End  testBackupRecoverOrch----------------"<<std::endl;
-}
-
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 {
 	LOG( INFO, "***** testBackupRecoverOrchNoWfeWithClient *****"<<std::endl);

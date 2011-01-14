@@ -151,7 +151,10 @@ void GenericDaemon::start( const bfs::path backup_path )
 	else
 	{
 		SDPA_LOG_WARN( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
-		recover(bkp_file);
+
+		bfs::ifstream ifs(bkp_file);
+
+		recover(ifs);
 	}
 
 	// The stage uses 2 threads
@@ -212,7 +215,10 @@ void GenericDaemon::shutdown( const bfs::path backup_path )
 
 	std::string file( name() + ".bkp");
 	bfs::path bkp_file(backup_path/file );
-	backup(bkp_file);
+
+	bfs::ofstream ofs(bkp_file);
+
+	backup(ofs);
 }
 
 // TODO: work here
