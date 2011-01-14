@@ -352,10 +352,21 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 		}
 		catch(const NoJobScheduledException& ex)
 		{
-			// if there is a job into the common queue serve it
 			try {
+
+				//SDPA_LOG_INFO("Try to get a job from the common queue");
+
+				/*SDPA_LOG_DEBUG("The content of the common queue is: ");
+				common_queue_.print();*/
+
 				jobId = common_queue_.pop();
+
+				/*SDPA_LOG_DEBUG("Popped the job "<<jobId<<"The content of the common queue is now: ");
+				common_queue_.print();*/
+
+				SDPA_LOG_INFO("Put the job into the submitted queue of the worker "<<worker_id);
 				ptrWorker->submitted().push(jobId);
+				ptrWorker->update();
 				return jobId;
 			}
 			catch(const QueueEmpty& ex0)
@@ -363,6 +374,8 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 				// try to steal some work from other workers
 				// if not possible, throw an exception
 				try {
+
+					//SDPA_LOG_INFO("Try to steal work from another worker ...");
 					jobId = stealWork(worker_id);
 					ptrWorker->submitted().push(jobId);
 
@@ -373,6 +386,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 				}
 				catch( const NoJobScheduledException& ex1 )
 				{
+					//SDPA_LOG_INFO("There is really no job to assign/steal for the worker "<<worker_id<<"  ...");
 					throw ex1;
 				}
 			}
@@ -388,7 +402,11 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
 	SDPA_LOG_DEBUG( "Dispatch the job " << jobId.str() );
+	/*SDPA_LOG_DEBUG( "Content of the common queue before: ");
+	common_queue_.print();*/
 	common_queue_.push(jobId);
+	/*SDPA_LOG_DEBUG( "Content of the common queue adterwards: " );
+	common_queue_.print();*/
 }
 
 void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
