@@ -1,6 +1,6 @@
-<defun name="sustack">
+<defun name="suwind">
 
-  <in name="key" type="string" place="key"/>
+  <in name="param" type="string" place="param"/>
   <in name="shmem_per_node" type="long" place="shmem_per_node"/>
   <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
   <in name="file_input" type="string" place="file_input"/>
@@ -75,7 +75,7 @@
       <field name="slot" type="long"/>
     </struct>
 
-    <field name="key" type="string"/>
+    <field name="param" type="string"/>
   </struct>
 
   <net>
@@ -93,8 +93,8 @@
       <type-map replace="T" with="config"/>
     </specialize>
 
-    <place name="key" type="string">
-      <token><value>"cdp"</value></token>
+    <place name="param" type="string">
+      <token><value>"itmin=10 itmax=20"</value></token>
     </place>
 
     <place name="shmem_per_node" type="long">
@@ -126,16 +126,16 @@
         <in name="type_output" type="string"/>
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
-        <in name="key" type="string"/>
+        <in name="param" type="string"/>
         <out name="write_info" type="write_info"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
-        <module name="sustack"
+        <module name="suwind"
                 function="init ( file_input
                                , type_input
                                , file_output
                                , type_output
-                               , key
+                               , param
                                , shmem_per_node
                                , gpi_mem_per_node
                                , write_info
@@ -206,7 +206,7 @@
             config.file.input.type = type_input;
             config.file.output.name = file_output;
             config.file.output.type = type_output;
-            config.key = key;
+            config.param = param;
 
             write_info.next_trace = give_back_trace = 0;
             write_info.offset = 0;
@@ -228,7 +228,7 @@
       <connect-in port="type_output" place="type_output"/>
       <connect-in port="shmem_per_node" place="shmem_per_node"/>
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
-      <connect-in port="key" place="key"/>
+      <connect-in port="param" place="param"/>
       <connect-out port="write_info" place="write_info"/>
       <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
@@ -295,7 +295,7 @@
         <in name="package" type="loaded_package"/>
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
-        <module name="sustack" function="load (package, config)">
+        <module name="suwind" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
@@ -333,20 +333,19 @@
 
     <place name="loaded_package" type="loaded_package"/>
 
-    <transition name="sustack">
+    <transition name="suwind">
       <defun>
         <in name="package" type="loaded_package"/>
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
-        <module name="sustack" function="sustack (package, config)">
+        <module name="suwind" function="suwind (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
           <link href="$(BUILD)/application/example/exec/libprocess.so"/>
           <code><![CDATA[
-//            const std::string cmd ("sustack normpow=0.0 key=" + config.key);
-            const std::string cmd ("/bin/cat");
+            const std::string cmd ("suwind normpow=0.0 param=" + config.param);
 
             LOG (INFO, "STACK " << ::print::loaded_package (package)
                                 << " cmd '" << cmd << "'"
@@ -371,242 +370,14 @@
       </defun>
       <connect-read port="config" place="config"/>
       <connect-in port="package" place="loaded_package"/>
-      <connect-out port="package" place="package"/>
+      <connect-out port="package" place="writeable_package"/>
     </transition>
-
-    <place name="package" type="loaded_package"/>
-    <place name="package_check_done" type="loaded_package" capacity="1"/>
-
-    <transition name="select_package">
-      <use name="select_package"/>
-      <connect-in port="x" place="package"/>
-      <connect-out port="x" place="package_check_done"/>
-    </transition>
-
-    <transition name="package_done">
-      <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
-        <expression></expression>
-        <condition>
-          ${package.package.left.extendable} :eq: false
-        </condition>
-        <condition>
-          ${package.package.right.extendable} :eq: false
-        </condition>
-      </defun>
-      <connect-in port="package" place="package_check_done"/>
-      <connect-out port="package" place="done_package"/>
-    </transition>
-
-    <transition name="package_not_done">
-      <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
-        <expression></expression>
-        <condition>
-          (${package.package.left.extendable} :eq: true)
-          ||
-          (${package.package.right.extendable} :eq: true)
-        </condition>
-      </defun>
-      <connect-in port="package" place="package_check_done"/>
-      <connect-out port="package" place="not_done_package"/>
-    </transition>
-
-    <place name="done_package" type="loaded_package" capacity="1"/>
-    <place name="not_done_package" type="loaded_package" capacity="1"/>
-
-    <place name="packages_to_match" type="loaded_package"/>
-
-    <transition name="match" priority="1">
-      <defun>
-        <in name="x" type="loaded_package"/>
-        <in name="y" type="loaded_package"/>
-        <out name="p" type="pair_of_packages"/>
-        <expression>
-          ${p.x} := ${x}; ${p.y} := ${y}
-        </expression>
-        <condition>
-          (${x.package.left.trace} :eq: ${y.package.right.trace})
-          ||
-          (${y.package.left.trace} :eq: ${x.package.right.trace})
-        </condition>
-      </defun>
-      <connect-in port="x" place="not_done_package"/>
-      <connect-in port="y" place="packages_to_match"/>
-      <connect-out port="p" place="pair_of_packages"/>
-    </transition>
-
-    <place name="pair_of_packages" type="pair_of_packages"/>
-
-    <transition name="no_match">
-      <defun>
-        <in name="x" type="loaded_package"/>
-        <out name="x" type="loaded_package"/>
-        <expression></expression>
-      </defun>
-      <connect-in port="x" place="not_done_package"/>
-      <connect-out port="x" place="packages_to_match"/>
-    </transition>
-
-    <transition name="sustack2">
-      <defun>
-        <in name="p" type="pair_of_packages"/>
-        <in name="config" type="config"/>
-        <out name="p" type="pair_of_packages"/>
-        <module name="sustack" function="sustack2 (p, config)">
-          <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="print.hpp"/>
-          <cinclude href="comm.hpp"/>
-          <cinclude href="process.hpp"/>
-          <code><![CDATA[
-            ::pnetc::type::loaded_package::loaded_package & left
-              ( (p.x.package.left.trace == p.y.package.right.trace)
-              ? p.y
-              : p.x
-              );
-            ::pnetc::type::loaded_package::loaded_package & right
-              ( (p.x.package.left.trace == p.y.package.right.trace)
-              ? p.x
-              : p.y
-              );
-
-            LOG (INFO, "STACK2: " << ::print::loaded_package (left)
-                    << " and " << ::print::loaded_package (right)
-                );
-
-//            const std::string cmd ("sustack normpow=0.0 key=" + config.key);
-            const std::string cmd ("/bin/cat");
-
-            const long size_left (left.package.size * config.size.trace);
-            const long size_right (right.package.size * config.size.trace);
-
-            if (size_left > 0)
-              {
-                comm::get (config, left);
-              }
-
-            if (size_right > 0)
-              {
-                comm::get (config, right, size_left);
-              }
-
-            if (size_left + size_right > 0)
-              {
-                void * buf (fvmGetShmemPtr());
-
-                const std::size_t size_stacked
-                  (process::execute (cmd, buf, size_left + size_right, buf));
-
-                const long traces_stacked (size_stacked / config.size.trace);
-
-                if (traces_stacked > config.per.bunch.trace)
-                  {
-                    left.package.size = config.per.bunch.trace;
-                    right.package.size = traces_stacked - config.per.bunch.trace;
-
-                    left.package.right.extendable = false;
-                    right.package.left.extendable = false;
-                  }
-                else
-                  {
-                    left.package.size = traces_stacked;
-                    left.package.right = right.package.right;
-
-                    right.package.left.extendable = false;
-                    right.package.right.extendable = false;
-                    right.package.size = 0;
-                  }
-              }
-
-
-            if (left.package.size > 0)
-              {
-                comm::put (config, left);
-              }
-
-            if (right.package.size > 0)
-              {
-                comm::put (config, right, config.size.bunch);
-              }
-
-            LOG (INFO, "STACKED2: " << ::print::loaded_package (left)
-                    << " and " << ::print::loaded_package (right)
-                );
-          ]]></code>
-        </module>
-      </defun>
-      <connect-read port="config" place="config"/>
-      <connect-in port="p" place="pair_of_packages"/>
-      <connect-out port="p" place="done_pair_of_packages"/>
-    </transition>
-
-    <place name="done_pair_of_packages" type="pair_of_packages"/>
-
-    <transition name="unpair">
-      <defun>
-        <in name="p" type="pair_of_packages"/>
-        <out name="x" type="loaded_package"/>
-        <out name="y" type="loaded_package"/>
-        <expression>
-          ${x} := ${p.x};
-          ${y} := ${p.y};
-        </expression>
-      </defun>
-      <connect-in port="p" place="done_pair_of_packages"/>
-      <connect-out port="x" place="done_package_1"/>
-      <connect-out port="y" place="done_package_2"/>
-    </transition>
-
-    <place name="done_package_1" type="loaded_package"/>
-    <place name="done_package_2" type="loaded_package"/>
 
     <defun name="select_package">
       <in name="x" type="loaded_package"/>
       <out name="x" type="loaded_package"/>
       <expression></expression>
     </defun>
-
-    <transition name="back_1">
-      <use name="select_package"/>
-      <connect-in port="x" place="done_package_1"/>
-      <connect-out port="x" place="package_check_done"/>
-    </transition>
-
-    <transition name="back_2">
-      <use name="select_package"/>
-      <connect-in port="x" place="done_package_2"/>
-      <connect-out port="x" place="package_check_done"/>
-    </transition>
-
-    <transition name="take_nonzero">
-      <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
-        <expression></expression>
-      </defun>
-      <condition>
-        ${package.package.size} :gt: 0
-      </condition>
-      <connect-in port="package" place="done_package"/>
-      <connect-out port="package" place="writeable_package"/>
-    </transition>
-
-    <transition name="clear_zero">
-      <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
-        <expression>
-        </expression>
-      </defun>
-      <condition>
-        ${package.package.size} :eq: 0
-      </condition>
-      <connect-in port="package" place="done_package"/>
-      <connect-out port="package" place="loaded_package_finished"/>
-    </transition>
 
     <place name="writeable_package" type="loaded_package"/>
 
@@ -640,7 +411,7 @@
         <in name="package_to_be_written" type="package_to_be_written"/>
         <in name="config" type="config"/>
         <out name="p" type="loaded_package"/>
-        <module name="sustack" function="p write (package_to_be_written, config)">
+        <module name="suwind" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
@@ -754,7 +525,7 @@
       <defun>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="sustack" function="finalize (trigger, config)">
+        <module name="suwind" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[

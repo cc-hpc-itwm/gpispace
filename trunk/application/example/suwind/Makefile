@@ -1,14 +1,16 @@
 
+MAIN = suwind
+
 TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
 #TRUNK = /u/herc/rahn/SDPA/trunk
 BUILD = $(TRUNK)/main/trunk/build45
-UTIL = $(TRUNK)/application/example/sustack/util
+UTIL = $(TRUNK)/application/example/$(MAIN)/util
 
 export BUILD
 
 ###############################################################################
 
-XML_MAIN = xml/sustack.xml
+XML_MAIN = xml/$(MAIN).xml
 
 DEP += $(XML_MAIN)
 DEP += xml/generate/package.xml
@@ -18,10 +20,10 @@ DEP += Makefile
 DEP += $(UTIL)/print.hpp
 DEP += $(UTIL)/comm.hpp
 
-NET = sustack.pnet
+NET = $(MAIN).pnet
 GEN = gen
-OUT = sustack.out
-PS = sustack.ps
+OUT = $(MAIN).out
+PS = $(MAIN).ps
 
 ###############################################################################
 
@@ -34,8 +36,8 @@ NOINLINE_NOT_STARTS_WITH += scatter
 NOINLINE_NOT_STARTS_WITH += eat
 NOINLINE_NOT_STARTS_WITH += wait
 
-NET_NOINLINE = sustack.noinline.pnet
-PS_NOINLINE = sustack.noinline.ps
+NET_NOINLINE = $(MAIN).noinline.pnet
+PS_NOINLINE = $(MAIN).noinline.ps
 
 ###############################################################################
 
@@ -45,7 +47,7 @@ PNETC_LIB += $(TRUNK)/application/lib
 
 WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
 
-WE_EXEC_LIBPATHS += $(TRUNK)/application/example/sustack/$(GEN)/pnetc/op
+WE_EXEC_LIBPATHS += $(TRUNK)/application/example/$(MAIN)/$(GEN)/pnetc/op
 
 LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
 
