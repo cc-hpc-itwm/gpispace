@@ -83,14 +83,7 @@ Up
 	{
 		action_submit_job(event);
 	}
-		
-	//event sent from the lower level
-	//LifeSign(event: const sdpa::events::LifeSignEvent& )
-	//nil
-	//{
-		//action_lifesign(event);
-	//}
-		
+			
 	//event sent from the lower level
 	RequestJob(event: const sdpa::events::RequestJobEvent& )
 	nil

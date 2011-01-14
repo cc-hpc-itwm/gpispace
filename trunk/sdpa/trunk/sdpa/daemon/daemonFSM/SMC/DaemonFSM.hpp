@@ -84,6 +84,7 @@ namespace sdpa {
 					virtual void handleErrorEvent(const sdpa::events::ErrorEvent* pEvent);
 
 
+					sdpa::status_t getStatus();
 					DaemonFSMContext& GetContext() { return m_fsmContext; }
 
 					template<class Archive>

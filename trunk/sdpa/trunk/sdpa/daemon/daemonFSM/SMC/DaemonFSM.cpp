@@ -25,6 +25,8 @@ void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 	lock_type lock(mtx_);
 	GetContext().StartUp(*pEvent);
 
+	//SDPA_LOG_INFO("Agent "<<name()<<"'s current state is: "<<getStatus());
+
 	if( m_bConfigOk )
 	{
 		SDPA_LOG_INFO("Starting the scheduler...");
@@ -38,6 +40,7 @@ void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 		m_bRequestsAllowed = true;
 
 		// if the configuration step was ok send a ConfigOkEvent
+		SDPA_LOG_INFO( "Sending to self a ConfigOkEvent!");
 		ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
 		sendEventToSelf(pEvtConfigOk);
 	}
@@ -46,6 +49,7 @@ void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 		m_bRequestsAllowed = false;
 
 		// if the configuration step was ok send a ConfigOkEvent
+		SDPA_LOG_INFO( "Sending to self a ConfigNokEvent!");
 		ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
 		sendEventToSelf(pEvtConfigNok);
 	}
@@ -59,6 +63,7 @@ void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)
 		m_bStarted = true;
 	}
 
+	//SDPA_LOG_INFO("Agent "<<name()<<"'s current state is: "<<getStatus());
 	cond_can_start_.notify_one();
 
 }
@@ -73,8 +78,11 @@ void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
 		m_bStopped = true;
 	}
 
+	//SDPA_LOG_INFO("Agent "<<name()<<"'s current state is: "<<getStatus());
 	cond_can_start_.notify_one();
 }
+
+
 void DaemonFSM::handleInterruptEvent(const InterruptEvent* pEvent)
 {
 	{
@@ -113,6 +121,7 @@ void DaemonFSM::handleSubmitJobEvent(const SubmitJobEvent* pEvent)
 void DaemonFSM::handleRequestJobEvent(const RequestJobEvent* pEvent)
 {
 	lock_type lock(mtx_);
+	//SDPA_LOG_INFO("Agent "<<name()<<"'s current state is: "<<getStatus());
 	GetContext().RequestJob(*pEvent);
 }
 
@@ -128,3 +137,17 @@ void DaemonFSM::handleErrorEvent(const ErrorEvent* pEvent)
 	GetContext().Error(*pEvent);
 }
 
+sdpa::status_t DaemonFSM ::getStatus()
+{
+	lock_type lock(mtx_);
+	std::string strStatus("UNDEFINED_STATE");
+
+	try {
+		return m_fsmContext.getState().getName();
+	}
+	catch( const statemap::StateUndefinedException& ex )
+	{
+		LOG(TRACE, "Oh, oh, UNDEFINED_STATE!!!!!");
+		return strStatus;
+	}
+}
