@@ -6,16 +6,236 @@
 config_file=""
 state_dir="$HOME/.sdpa/state"
 
+function setup ()
+{
+    if [ ! -d "$state_dir" ] ; then
+	msg=$( mkdir -p "$state_dir" 2>&1 )
+	if [ $? -ne 0 ] ; then
+	    echo "E: failed to create state-dir: $state_dir: $msg" >&2
+	    return 1
+	fi
+    fi
+    # read config file
+    # read pids etc
+    return 0
+}
+
+function cleanup ()
+{
+    # check state
+    # read pids
+    # kill processes
+    # clear state
+    return 0
+}
+
 function help ()
 {
     echo "usage: $0 {start|stop|status|submit <file>}" >&2
     return 0
 }
 
+function start_log ()
+{
+    echo "  - fhglog (disabled)" >&2
+    return 0
+}
+
+function is_proc_alive ()
+{
+    name="$1"
+    pid="$2"
+    shift 2
+
+    if [ -z "$name" ] ; then
+	echo "E: usage: is_proc_alive <binary> <pid>" >&2
+	exit 42
+    fi
+
+    if [ -z "$pid" ] ; then
+	return 1
+    fi
+
+    if grep -q "$name" /proc/$pid/cmdline >/dev/null 2>&1 ; then
+	if kill -0 "$pid" >/dev/null 2>&1 ; then
+	    return 0
+	else
+	    echo "E: $name: there seems to be an alien around!" >&2
+	    echo "E:       cannot send signal to $pid" >&2
+	    return 2 # not allowed to send signals!
+	fi
+    else
+	return 1 # not there
+    fi
+}
+
+function start_proc ()
+{
+    name="$1"
+    binary="$2"
+    shift 2
+
+    # check for old one
+    pid_file="$state_dir/$name.pid"
+    pid=$( cat "$pid_file" 2>/dev/null )
+    if is_proc_alive "$name" "$pid" ; then
+	echo "  * $name ($pid)" >&2
+    else
+	:> "$pid_file"
+	$binary $@ </dev/null >/dev/null 2>&1 &
+	pid=$!
+	sleep 0.5
+	if is_proc_alive "$name" "$pid" ; then
+	    echo "  + $name ($pid)" >&2
+	    echo "$pid" > "$pid_file"
+	    return 0
+	else
+	    echo "  - $name (dead)" >&2
+	    return 1
+	fi
+    fi
+}
+
+function stop_proc ()
+{
+    name="$1"
+    binary="$2"
+
+    pid_file="$state_dir/$name.pid"
+    pid=$( cat "$pid_file" 2>/dev/null )
+    if [ -n "$pid" ] ; then
+	echo -n "  sending TERM to $name ($pid)..." >&2
+	for (( i=0; i<3; ++i )); do
+	    if is_proc_alive "$name" "$pid" ; then
+		echo -n "."
+		kill -TERM "$pid"
+		sleep 1
+	    else
+		:> "$pid_file"
+		echo "ok" >&2
+		break
+	    fi
+	done
+    fi
+
+    if is_proc_alive "$name" "$pid" ; then
+	kill -9 "$pid"
+	echo "killed" >&2
+    else
+	killall "$name" >/dev/null 2>&1
+	return 0
+    fi
+}
+
+function start_kvs ()
+{
+    if ! start_proc "fhgkvsd" "fhgkvsd" ; then
+	echo "E: could not start kvs, giving up!" >&2
+	return 1
+    else
+	return 0
+    fi
+}
+
+function stop_kvs ()
+{
+    if stop_proc "fhgkvsd" "fhgkvsd" ; then
+	echo "  * kvs (down)" >&2
+    else
+	echo "E: could not stop kvs!" >&2
+    fi
+}
+
+function start_orch ()
+{
+    if ! start_proc "orchestrator" "start-orch" ; then
+	echo "E: could not start orchestrator, giving up!" >&2
+	return 1
+    else
+	return 0
+    fi
+}
+
+function stop_orch ()
+{
+    if stop_proc "orchestrator" "start-orch" ; then
+	echo "  * orchestrator (down)" >&2
+    else
+	echo "E: could not stop orchestrator" >&2
+    fi
+}
+
+function start_agg ()
+{
+    if ! start_proc "aggregator" "start-agg" ; then
+	echo "E: could not start aggregator, giving up!" >&2
+	return 1
+    else
+	return 0
+    fi
+}
+
+function stop_agg ()
+{
+    if stop_proc "aggregator" "start-agg" ; then
+	echo "  * aggregator (down)" >&2
+    else
+	echo "E: could not stop aggregator" >&2
+    fi
+}
+
+function start_nre ()
+{
+    boot-nre $@
+#    if ! start_proc "nre" "boot-nre" ; then
+#	echo "E: could not start nres, giving up!" >&2
+#	return 1
+#    else
+#	return 0
+#    fi
+}
+
+function stop_nre ()
+{
+    kill-nre $@
+#    if stop_proc "nre" "kill-nre" ; then
+#	echo "  * nre (down)" >&2
+#    else
+#	echo "E: could not stop nre" >&2
+#    fi
+}
+
+function start_gpi ()
+{
+    if ! start_proc "sdpa-gpi" "start-gpi" ; then
+	echo "E: could not start GPI, giving up!" >&2
+	return 1
+    else
+	return 0
+    fi
+}
+
+function stop_gpi ()
+{
+    if stop_proc "sdpa-gpi" "start-gpi" ; then
+	echo "  * gpi (down)" >&2
+    else
+	echo "E: could not stop gpi" >&2
+    fi
+}
+
+
 function start ()
 {
     # boot everything
     echo "starting everything..." >&2
+#    start_log
+    start_kvs
+    start_orch
+    start_agg
+    start_gpi
+    start_nre
+
     return 0
 }
 
@@ -23,14 +243,35 @@ function stop ()
 {
     # shut everything down
     echo "stopping everything..." >&2
+    stop_nre
+    stop_gpi
+    stop_agg
+    stop_orch
+    stop_kvs
     return 0
 }
 
 function status ()
 {
     # check system status
-    echo "system status: down" >&2
-    return 1
+    echo "system status:" >&2
+    dead_counter=0
+    for name in fhgkvsd orchestrator aggregator sdpa-gpi ; do
+	pid_file="$state_dir/$name.pid"
+	pid=$( cat "$pid_file" 2>/dev/null)
+	echo -n "  $name " >&2
+	if [ -z "$pid" ] ; then
+	    pid=$( pidof "$name" )
+	fi
+
+	if is_proc_alive "$name" "$pid" ; then
+	    echo "alive with pid $pid" >&2
+	else
+	    echo "dead"
+	    dead_counter=$(( dead_counter + 1 ))
+	fi
+    done
+    return $dead_counter
 }
 
 function submit ()
@@ -54,12 +295,20 @@ function submit ()
     fi
 }
 
+if ! setup ; then
+    exit $?
+fi
+
 case "$1" in
     start)
 	start
 	;;
     stop)
 	stop
+	;;
+    restart)
+	stop
+	start
 	;;
     status)
 	status
