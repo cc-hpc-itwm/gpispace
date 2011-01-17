@@ -36,7 +36,7 @@ if $debug ; then
   log "running within gdb..."
   FHGLOG_to_console="stderr" gdb -ex run --args orchestrator -u "$bind_addr" -n "${name}"
 else
-  FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" orchestrator \
+  FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec orchestrator \
      -u "$bind_addr" \
      -n "${name}"
 fi
