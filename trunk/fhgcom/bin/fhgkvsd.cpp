@@ -134,14 +134,23 @@ int main(int ac, char *av[])
   signal(SIGHUP, load_state);
 
 
-  fhg::com::tcp_server server ( pool
-                              , kvsd
-                              , server_address
-                              , server_port
-                              , reuse_address
-                              );
+  try
+  {
+    fhg::com::tcp_server server ( pool
+                                , kvsd
+                                , server_address
+                                , server_port
+                                , reuse_address
+                                );
 
-  server.start ();
-  pool.run();
+    server.start ();
+    pool.run();
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "could not start server: " << ex.what () << std::endl;
+    return EXIT_FAILURE;
+  }
+
   return 0;
 }
