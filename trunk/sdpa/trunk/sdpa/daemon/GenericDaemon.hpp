@@ -61,7 +61,7 @@ namespace sdpa { namespace daemon {
   namespace detail {
     inline bfs::path get_current_path (void)
     {
-      bfs::path p; bfs::current_path (p); return p;
+    	return bfs::path(bfs::current_path());
     }
   }
 
