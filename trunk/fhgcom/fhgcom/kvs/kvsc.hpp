@@ -354,8 +354,13 @@ namespace fhg
                                                      , const std::size_t max_connection_attempts = 11
                                                      )
       {
-        static kvs_mgr m (host, port, auto_reconnect, timeout, max_connection_attempts);
-        return m.kvs();
+        fhg::com::kvs::global::get_kvs_info().init( host
+                                                  , port
+                                                  , timeout
+                                                  , max_connection_attempts
+                                                  );
+        fhg::com::kvs::global::start();
+        return *global::get_kvs_info ().client;
       }
 
       inline client::kvsc & global_kvs ()

@@ -53,14 +53,6 @@ struct F
                                               , boost::posix_time::seconds(10)
                                               , 3
                                               );
-    /*
-    fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
-                                            , port_str.str()
-                                            , true
-                                            , boost::posix_time::seconds(10)
-                                            , 3
-                                            );
-    */
   }
 
   ~F ()
