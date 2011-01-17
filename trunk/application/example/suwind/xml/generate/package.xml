@@ -15,6 +15,7 @@
       <field name="max" type="long"/>
       <field name="id" type="long"/>
       <field name="inc" type="long"/>
+      <field name="size" type="long"/>
     </struct>
 
     <place name="check_break" type="state" capacity="1"/>
@@ -29,6 +30,7 @@
           ${state.max} := ${config.num.trace};
           ${state.inc} := ${config.per.bunch.trace};
           ${state.id} := 0L;
+          ${state.size} := ${config.size.trace};
           ${num} := 1 + (${state.max} - 1) div ${state.inc}
         </expression>
       </defun>
@@ -71,15 +73,14 @@
         <out name="state" type="state"/>
         <out name="loaded_package" type="loaded_package"/>
         <expression>
-          ${package.left.trace} := ${state.id};
-          ${package.left.extendable} := (${package.left.trace} :gt: 0L);
+          ${package.left} := ${state.id};
 
           ${state.id} := ${state.id} + ${state.inc};
 
-          ${package.right.trace} := min (${state.max}, ${state.id});
-          ${package.right.extendable} := (${package.right.trace} :lt: ${state.max});
+          ${package.right} := min (${state.max}, ${state.id});
 
-          ${package.size} := ${package.right.trace} - ${package.left.trace};
+          ${package.num.trace} := ${package.right} - ${package.left};
+          ${package.size.trace} := ${state.size};
 
           ${loaded_package.package} := ${package};
           ${loaded_package.slot} := ${slot};

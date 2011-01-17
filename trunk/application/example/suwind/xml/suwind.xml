@@ -10,25 +10,20 @@
 
   <out name="done" type="control" place="done"/>
 
-  <struct name="pos">
-    <field name="trace" type="long"/>
-    <field name="extendable" type="bool"/>
-  </struct>
-
   <struct name="package">
-    <field name="left" type="pos"/>
-    <field name="right" type="pos"/>
-    <field name="size" type="long"/>
+    <field name="left" type="long"/>
+    <field name="right" type="long"/>
+    <struct name="num">
+      <field name="trace" type="long"/>
+    </struct>
+    <struct name="size">
+      <field name="trace" type="long"/>
+    </struct>
   </struct>
 
   <struct name="loaded_package">
     <field name="package" type="package"/>
     <field name="slot" type="long"/>
-  </struct>
-
-  <struct name="pair_of_packages">
-    <field name="x" type="loaded_package"/>
-    <field name="y" type="loaded_package"/>
   </struct>
 
   <struct name="write_info">
@@ -94,7 +89,7 @@
     </specialize>
 
     <place name="param" type="string">
-      <token><value>"itmin=10 itmax=20"</value></token>
+      <token><value>"itmin=10 nt=10"</value></token>
     </place>
 
     <place name="shmem_per_node" type="long">
@@ -304,13 +299,13 @@
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
 
-            const long part (package.package.left.trace / config.per.bunch.trace);
-            const long size (package.package.size * config.size.trace);
+            const long part (package.package.left / config.per.bunch.trace);
+            const long size (package.package.num.trace * package.package.size.trace);
 
             LOG (INFO, "do_load: part " << part
                     << ", part_size "  << config.size.bunch
                     << ", size " << size
-                    << ", num " << package.package.size
+                    << ", num " << package.package.num.trace
                 );
 
             do_load ( config.file.input.name
@@ -318,7 +313,7 @@
                     , part
                     , config.size.bunch
                     , size
-                    , package.package.size
+                    , package.package.num.trace
                     , fvmGetShmemPtr()
                     );
 
@@ -345,26 +340,27 @@
           <cinclude href="process.hpp"/>
           <link href="$(BUILD)/application/example/exec/libprocess.so"/>
           <code><![CDATA[
-            const std::string cmd ("suwind normpow=0.0 param=" + config.param);
+            const std::string cmd ("suwind " + config.param);
 
-            LOG (INFO, "STACK " << ::print::loaded_package (package)
+            LOG (INFO, "SUWIND " << ::print::loaded_package (package)
                                 << " cmd '" << cmd << "'"
                 );
-
-            const long size (package.package.size * config.size.trace);
 
             comm::get (config, package);
 
             void * buf (fvmGetShmemPtr());
 
-            const std::size_t size_stacked
+            const long size
+              (package.package.num.trace * package.package.size.trace);
+
+            const std::size_t size_winded
               (process::execute (cmd, buf, size, buf));
 
-            package.package.size = size_stacked / config.size.trace;
+            package.package.size.trace = size_winded / package.package.num.trace;
 
             comm::put (config, package);
 
-            LOG (INFO, "STACKED " << ::print::loaded_package (package));
+            LOG (INFO, "WINDED " << ::print::loaded_package (package));
           ]]></code>
         </module>
       </defun>
@@ -391,11 +387,14 @@
           ${w.loaded_package} := ${p};
           ${w.offset} := ${write_info.offset};
 
-          ${write_info.next_trace} := ${p.package.right.trace};
-          ${write_info.offset} := ${write_info.offset} + ${p.package.size};
+          ${write_info.next_trace} := ${p.package.right};
+          ${write_info.offset} :=
+            ${write_info.offset} +
+            ${p.package.size.trace} * ${p.package.num.trace}
+          ;
         </expression>
         <condition>
-          ${write_info.next_trace} :eq: ${p.package.left.trace}
+          ${write_info.next_trace} :eq: ${p.package.left}
         </condition>
       </defun>
       <connect-in port="write_info" place="write_info"/>
@@ -426,7 +425,7 @@
                                 << ":" << package_to_be_written.offset
                 );
 
-            const long size (p.package.size * config.size.trace);
+            const long size (p.package.num.trace * p.package.size.trace);
 
             if (size > 0)
               {
@@ -440,17 +439,17 @@
                          );
 
                 LOG (INFO, "do_write: part " << package_to_be_written.offset
-                        << ", part_size "  << config.size.trace
+                        << ", part_size "  << 1
                         << ", size " << size
-                        << ", num " << p.package.size
+                        << ", num " << size * p.package.num.trace
                     );
 
                 do_write ( config.file.output.name
                          , config.file.output.type
                          , package_to_be_written.offset
-                         , config.size.trace
+                         , 1
                          , size
-                         , p.package.size
+                         , p.package.num.trace
                          , fvmGetShmemPtr()
                          );
               }
@@ -473,10 +472,10 @@
         <out name="give_back_trace" type="long"/>
         <out name="loaded_package" type="loaded_package"/>
         <expression>
-          ${give_back_trace} := ${loaded_package.package.right.trace};
+          ${give_back_trace} := ${loaded_package.package.right};
         </expression>
         <condition>
-          ${give_back_trace} :eq: ${loaded_package.package.left.trace}
+          ${give_back_trace} :eq: ${loaded_package.package.left}
         </condition>
       </defun>
       <connect-in port="loaded_package" place="package_written"/>

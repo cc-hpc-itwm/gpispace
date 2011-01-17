@@ -20,29 +20,22 @@ namespace comm
   , const long shmem_offset = 0
   )
   {
+    const long size (package.package.num.trace * package.package.size.trace);
+
     LOG (INFO, "comm::put " << ::print::loaded_package (package)
         << " offset " << package.slot * config.size.bunch
         << " to shmem_offset " << shmem_offset
-        << " (" << package.package.size * config.size.trace << " bytes)"
+        << " (" << size << " bytes)"
         );
 
-    try
-      {
     waitComm ( fvmPutGlobalData
                ( static_cast<fvmAllocHandle_t> (config.handle.data)
                , package.slot * config.size.bunch
-               , package.package.size * config.size.trace
+               , size
                , shmem_offset
                , static_cast<fvmAllocHandle_t> (config.handle.scratch)
                )
              );
-      }
-    catch (...)
-      {
-        LOG (INFO, "*** PUT FAILED");
-
-        throw;
-      }
   }
 
   inline void get
@@ -51,29 +44,22 @@ namespace comm
   , const long shmem_offset = 0
   )
   {
+    const long size (package.package.num.trace * package.package.size.trace);
+
     LOG (INFO, "comm::get " << ::print::loaded_package (package)
         << " offset " << package.slot * config.size.bunch
         << " from shmem_offset " << shmem_offset
-        << " (" << package.package.size * config.size.trace << " bytes)"
+        << " (" << size << " bytes)"
         );
 
-    try
-      {
     waitComm ( fvmGetGlobalData
                ( static_cast<fvmAllocHandle_t> (config.handle.data)
                , package.slot * config.size.bunch
-               , package.package.size * config.size.trace
+               , size
                , shmem_offset
                , static_cast<fvmAllocHandle_t> (config.handle.scratch)
                )
              );
-      }
-    catch (...)
-      {
-        LOG (INFO, "*** GET FAILED");
-
-        throw;
-      }
   }
 }
 

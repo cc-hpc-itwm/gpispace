@@ -15,13 +15,14 @@ namespace print
   {
     std::ostringstream os;
 
-    os << "package "
-       << (p.left.extendable ? "<" : "|")
-       << p.left.trace
+    os << "package ["
+       << p.left
        << ".."
-       << p.right.trace
-       << (p.right.extendable ? ">" : "|")
-       << " (" << p.size << ")"
+       << p.right
+       << ")"
+       << " (size " << p.num.trace << " x " << p.size.trace
+       << " = " << (p.num.trace * p.size.trace)
+       << ")"
       ;
 
     return os.str();
