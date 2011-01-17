@@ -16,7 +16,7 @@
 #include <fhgcom/tcp_server.hpp>
 
 static const std::string &kvs_host () { static std::string s("localhost"); return s; }
-static const std::string &kvs_port () { static std::string s("1234"); return s; }
+static const std::string &kvs_port () { static std::string s("0"); return s; }
 
 struct F
 {
@@ -43,12 +43,24 @@ struct F
 
     m_serv->start();
 
+    LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
+
+    std::ostringstream port_str;
+    port_str << m_serv->port ();
+
+    fhg::com::kvs::global::get_kvs_info().init( kvs_host()
+                                              , port_str.str()
+                                              , boost::posix_time::seconds(10)
+                                              , 3
+                                              );
+    /*
     fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
-                                            , kvs_port()
+                                            , port_str.str()
                                             , true
                                             , boost::posix_time::seconds(10)
                                             , 3
                                             );
+    */
   }
 
   ~F ()

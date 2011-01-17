@@ -32,6 +32,8 @@ namespace fhg
                  , const bool reuse_addr = true
                  );
       void stop ();
+
+      unsigned short port () const;
     private:
 
       void accept ();

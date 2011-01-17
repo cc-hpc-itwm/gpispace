@@ -23,6 +23,11 @@ void tcp_server::stop ()
   acceptor_.close();
 }
 
+unsigned short tcp_server::port () const
+{
+  return acceptor_.local_endpoint().port();
+}
+
 void tcp_server::start ()
 {
   start (host_, service_, reuse_addr_);

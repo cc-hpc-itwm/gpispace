@@ -244,6 +244,109 @@ namespace fhg
         client::kvsc * kvsc_;
       };
 
+      struct kvs_data
+      {
+        typedef boost::shared_ptr<client::kvsc> kvsc_ptr_t;
+
+        kvs_data ()
+          : is_configured (false)
+          , timeout (boost::posix_time::seconds (120))
+          , max_connection_attempts (11)
+        {}
+
+        void init ( std::string const & p_host = ""
+                  , std::string const & p_port = ""
+                  , const boost::posix_time::time_duration p_timeout = boost::posix_time::seconds (120)
+                  , const std::size_t p_max_connection_attempts = 11
+                  )
+        {
+          stop ();
+
+          client.reset (new client::kvsc);
+
+          if (p_host.empty() || p_port.empty())
+          {
+            if (getenv("KVS_URL"))
+            {
+              peer_info_t pi = peer_info_t::from_string (getenv("KVS_URL"));
+              host = pi.host();
+              port = pi.port();
+            }
+            else
+            {
+              host = "localhost";
+              port = "2439";
+            }
+          }
+          else
+          {
+            host = p_host;
+            port = p_port;
+          }
+
+          assert (! host.empty());
+          assert (! port.empty());
+
+          LOG(TRACE, "global kvs configured to be at: [" << host << "]:" << port);
+
+          is_configured = true;
+        }
+
+        void start ()
+        {
+          if (! is_configured)
+            init();
+          client->start ( host , port
+                        , true // autoconnect
+                        , timeout
+                        , max_connection_attempts
+                        );
+          is_started = true;
+        }
+
+        void stop ()
+        {
+          client.reset ();
+          is_configured = false;
+          is_started = false;
+        }
+
+        bool is_configured;
+        bool is_started;
+        boost::posix_time::time_duration timeout;
+        std::size_t max_connection_attempts;
+
+        std::string host;
+        std::string port;
+        kvsc_ptr_t  client;
+        boost::recursive_mutex mutex;
+      };
+
+      struct global
+      {
+        static void start ()
+        {
+          get_kvs_info ().start ();
+        }
+
+        static void stop ()
+        {
+          get_kvs_info ().stop ();
+        }
+
+        static void restart ()
+        {
+          stop ();
+          start ();
+        }
+
+        static kvs_data & get_kvs_info ()
+        {
+          static kvs_data d;
+          return d;
+        }
+      };
+
       inline client::kvsc & get_or_create_global_kvs ( std::string const & host = ""
                                                      , std::string const & port = ""
                                                      , const bool auto_reconnect = true
@@ -257,7 +360,10 @@ namespace fhg
 
       inline client::kvsc & global_kvs ()
       {
-        return get_or_create_global_kvs ();
+        if (! global::get_kvs_info ().is_started)
+          global::start();
+        return *global::get_kvs_info ().client;
+        //        return get_or_create_global_kvs ();
       }
 
       typedef fhg::com::kvs::message::list::map_type values_type;
