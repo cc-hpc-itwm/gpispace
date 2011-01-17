@@ -57,13 +57,6 @@
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
-  //MR Workaround for different signature in boost <1.44
-  namespace detail {
-    inline bfs::path get_current_path (void)
-    {
-    	return bfs::path(bfs::current_path());
-    }
-  }
 
   class GenericDaemon : public sdpa::daemon::GenericDaemonActions,
 						public sdpa::daemon::IComm,
@@ -83,9 +76,9 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  void start( const bfs::path backup_path = detail::get_current_path() );
+	  void start( const bfs::path backup_path = "." );
 	  void start( bfs::ifstream& ifs );
-	  void shutdown( const bfs::path backup_path = detail::get_current_path() );
+	  void shutdown( const bfs::path backup_path = "." );
 	  void shutdown( bfs::ofstream& ofs );
 
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
