@@ -1,0 +1,85 @@
+#!/bin/bash
+#
+# usage: sdpa {start|stop|status|submit file}
+#
+
+config_file=""
+state_dir="$HOME/.sdpa/state"
+
+function help ()
+{
+    echo "usage: $0 {start|stop|status|submit <file>}" >&2
+    return 0
+}
+
+function start ()
+{
+    # boot everything
+    echo "starting everything..." >&2
+    return 0
+}
+
+function stop ()
+{
+    # shut everything down
+    echo "stopping everything..." >&2
+    return 0
+}
+
+function status ()
+{
+    # check system status
+    echo "system status: down" >&2
+    return 1
+}
+
+function submit ()
+{
+    # check system health
+    #    if not running:
+    #       abort/ask
+    #    else
+    #       submit
+    net="$1"
+    if [ ! -r "$net" ] ; then
+	echo "E: submit: cannot read file: $net" >&2
+	return 42
+    else
+	echo "submitting file: $net" >&2
+	#jobid=$( sdpac submit $net )
+	#sdpac wait $jobid
+	#retrieve result
+	#delete job
+	return 0
+    fi
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    status)
+	status
+	;;
+    submit)
+	if [ -z "$2" ] ; then
+	    echo "E: submit requires a parameter" >&2
+	    exit 1
+	else
+	    submit "$2"
+	fi
+	;;
+    help)
+	help
+	;;
+    '')
+	help
+	;;
+    *)
+	echo "E: unknown command: $1, try '$0 help'" >&2
+	exit 1
+	;;
+esac
