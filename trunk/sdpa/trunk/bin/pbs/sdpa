@@ -22,10 +22,7 @@ function setup ()
 
 function cleanup ()
 {
-    # check state
-    # read pids
-    # kill processes
-    # clear state
+    clear-logs -f -a
     return 0
 }
 
@@ -129,7 +126,7 @@ function stop_proc ()
 
 function start_kvs ()
 {
-    if ! start_proc "fhgkvsd" "fhgkvsd" ; then
+    if ! start_proc "fhgkvsd" "fhgkvsd" "-C"; then
 	echo "E: could not start kvs, giving up!" >&2
 	return 1
     else
@@ -227,6 +224,7 @@ function stop_gpi ()
 
 function start ()
 {
+    cleanup
     # boot everything
     echo "starting everything..." >&2
 #    start_log
@@ -285,13 +283,40 @@ function submit ()
     if [ ! -r "$net" ] ; then
 	echo "E: submit: cannot read file: $net" >&2
 	return 42
+    fi
+
+    echo -n "checking system status..." >&2
+    status >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+	echo "dead" >&2
+	read -t 15 -n 1 -p "Do you want me to start it? [y/N] " do_start
+	case "$do_start" in
+	    y|Y|j|J)
+		if ! start ; then
+		    echo "Could not start, please check the logs" >&2
+		    return 3
+		fi
+		;;
+	    *)
+		return 1
+		;;
+	esac
+    fi
+
+    echo "submitting file: $net" >&2
+    jobid=$( sdpac submit "$net" 2>&1 )
+    if [ $? -ne 0 ] ; then
+	echo "Submission failed: $jobid"
+	return 4
     else
-	echo "submitting file: $net" >&2
-	#jobid=$( sdpac submit $net )
-	#sdpac wait $jobid
-	#retrieve result
-	#delete job
-	return 0
+	echo "$jobid" > "$state_dir/current_job"
+	sdpac wait "$jobid"
+	s=$( sdpac status "${jobid}" )
+	echo "$jobid -> $s" >&2
+	if echo "$s" | grep -q -i 'finish' ; then
+	    echo "Done." >&2
+	fi
+	sdpac delete "${jobid}"
     fi
 }
 
