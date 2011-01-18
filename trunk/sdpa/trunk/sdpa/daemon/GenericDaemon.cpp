@@ -136,13 +136,11 @@ GenericDaemon::~GenericDaemon()
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 }
 
-void GenericDaemon::start( const bfs::path backup_path )
+void GenericDaemon::start( const bfs::path& bkp_file )
 {
 	// create configuration
-	ptr_daemon_cfg_ = sdpa::util::Config::create();
-
-	std::string file( name() + ".bkp");
-	bfs::path bkp_file(backup_path/file );
+	//std::string file( name() + ".bkp");
+	//bfs::path bkp_file(backup_path/file );
 
 	bfs::ifstream ifs(bkp_file);
 	if (ifs.fail())
@@ -159,9 +157,22 @@ void GenericDaemon::start( const bfs::path backup_path )
 	ifs.close();
 }
 
-void GenericDaemon::start( bfs::ifstream& ifs )
+void GenericDaemon::start( std::istream& is )
 {
-	recover(ifs);
+	if( is.peek() != EOF )
+	{
+		SDPA_LOG_INFO( "The input stream is not empty! Attempting to recover the daemon "<<name());
+		recover(is);
+	}
+	else
+		SDPA_LOG_INFO( "The input stream is empty! No recovery operation carried out for the daemon "<<name());
+
+	start();
+}
+
+void GenericDaemon::start( )
+{
+	ptr_daemon_cfg_ = sdpa::util::Config::create();
 
 	// The stage uses 2 threads
 	ptr_daemon_stage_.lock()->start();
@@ -197,10 +208,11 @@ void GenericDaemon::start( bfs::ifstream& ifs )
 	}
 }
 
-void GenericDaemon::shutdown( const bfs::path backup_path )
+void GenericDaemon::shutdown( const bfs::path& bkp_file )
 {
-	std::string file( name() + ".bkp");
-	bfs::path bkp_file(backup_path/file );
+	//std::string file( name() + ".bkp");
+	//bfs::path bkp_file(backup_path/file );
+
 	bfs::ofstream ofs(bkp_file);
 
 	shutdown(ofs);
@@ -208,10 +220,22 @@ void GenericDaemon::shutdown( const bfs::path backup_path )
 	ofs.close();
 }
 
-void GenericDaemon::shutdown( bfs::ofstream& ofs )
+void GenericDaemon::shutdown( std::ostream& os )
 {
-	// should first notify my master
-	// that I will be shutdown
+	shutdown();
+
+	SDPA_LOG_INFO("Backup the daemon "<<name());
+	backup(os);
+}
+
+void GenericDaemon::shutdown()
+{
+	// I should first notify my master
+	if( !is_orchestrator() )
+	{
+		ErrorEvent::Ptr pErrEvt(new ErrorEvent(name(), master(), sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "shutdown"));
+		sendEventToMaster(pErrEvt);
+	}
 
 	if(!m_bStopped)
 		stop();
@@ -229,8 +253,6 @@ void GenericDaemon::shutdown( bfs::ofstream& ofs )
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
-
-	backup(ofs);
 }
 
 // TODO: work here
@@ -303,7 +325,7 @@ void GenericDaemon::shutdown_network()
 void GenericDaemon::stop()
 {
 	// here one should only generate a message of type interrupt
-	SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
+	SDPA_LOG_DEBUG("Send self an InterruptEvent...");
 	InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
 	sendEventToSelf(pEvtInterrupt);
 
@@ -347,7 +369,6 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 //actions
 void GenericDaemon::action_configure(const StartUpEvent&)
 {
-	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuring myself (generic)...");
 
 	// use for now as below, later read from config file
@@ -357,19 +378,23 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	//    retrieve values maybe from kvs?
 	//    no spaces
 
-	// Read these from a configuration file !!!!!!!!
+	// Read these values from a configuration file !!!!!!!!
 	// if this does not exist, use default values
+
 	ptr_daemon_cfg_->put("polling interval",    			1 * 1000 * 1000);
 	ptr_daemon_cfg_->put("upper bound polling interval", 	5 * 1000 * 1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
 	ptr_daemon_cfg_->put("node_timeout",        			6 * 1000 * 1000); // 6s
 	ptr_daemon_cfg_->put("registration_timeout", 			1 * 1000 * 1000); // 1s
 
+	// end reading confog file
+
 	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
 
 	try {
+		SDPA_LOG_ERROR("Try to configure the network now ... ");
 		configure_network( url(), masterName() );
-	    m_bConfigOk = true;
+		m_bConfigOk = true;
 	}
 	catch (std::exception const &ex)
 	{

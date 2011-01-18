@@ -76,10 +76,13 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  void start( const bfs::path backup_path = "." );
-	  void start( bfs::ifstream& ifs );
-	  void shutdown( const bfs::path backup_path = "." );
-	  void shutdown( bfs::ofstream& ofs );
+	  void start(); // no recovery
+	  void start( const bfs::path& backup_path ); // from cfg file!
+	  void start( std::istream& is );
+
+	  void shutdown(); // no backup
+	  void shutdown( const bfs::path& backup_path );
+	  void shutdown( std::ostream& os );
 
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
