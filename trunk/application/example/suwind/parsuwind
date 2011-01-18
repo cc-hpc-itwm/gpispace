@@ -46,7 +46,7 @@ abspath ${outf}
 abs_outf="$REPLY"
 
 xml_file_in="${parsuwind_dir}/xml/suwind.xml.in"
-xml_file="${parsuwind_dir}/xml/suwind.xml"
+xml_file="${parsuwind_dir}/xml/parsuwind.xml"
 pnet_file="${parsuwind_dir}/suwind.pnet"
 
 cleanup ()
