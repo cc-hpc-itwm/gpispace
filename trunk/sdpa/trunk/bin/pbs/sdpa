@@ -22,12 +22,24 @@ function setup ()
 
 function cleanup ()
 {
+    echo "cleaning up" >&2
+    echo "     - logs" >&2
     clear-logs -f -a
-    ipc-cleanup
-    echo "removing backups..." >&2
+    echo "     - IPC" >&2
+    ipc-cleanup >/dev/null 2>&1
+    echo "     - backup files" >&2
     for f in "$HOME"/*.bkp *.bkp ; do
 	if [ -e "$f" ] ; then
-	    rm -i "$f"
+	    read -t 5 -n 1 -p "       remove $f? [y/N] " do_rm
+	    case "$do_rm" in
+		y|Y|j|J)
+		    echo
+		    rm -f "$f"
+		    ;;
+		*)
+		    echo
+		    ;;
+	    esac
 	fi
     done
     return 0
@@ -275,17 +287,18 @@ function stop_gpi ()
 
 function start ()
 {
-    cleanup
-    # boot everything
-    echo "starting everything..." >&2
-#    start_log
-    start_kvs
-    start_orch
-    start_agg
-    start_gpi
-    start_nre
-
-    return 0
+    status >/dev/null 2>&1
+    if [ $? -eq 0 ] ; then
+	echo "E: still running!" >&2
+	return 1
+    else
+	echo "starting everything..." >&2
+	start_kvs
+	start_orch
+	start_agg
+	start_gpi
+	start_nre
+    fi
 }
 
 function stop ()
@@ -297,7 +310,6 @@ function stop ()
     stop_agg
     stop_orch
     stop_kvs
-    return 0
 }
 
 function status ()
