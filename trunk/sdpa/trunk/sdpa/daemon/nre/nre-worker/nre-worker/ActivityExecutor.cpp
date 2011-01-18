@@ -366,6 +366,9 @@ cont:
      		if (result == 0)
      		{
      			LOG(DEBUG, "got signal: " << sig);
+
+                        fflush (NULL);
+
      			switch (sig)
      			{
      			case SIGHUP:
@@ -374,20 +377,21 @@ cont:
      			case SIGTERM: // fall through
      			case SIGKILL:
      			case SIGINT:
-     				signal_ignored = false;
-     				break;
+                          signal_ignored = false;
+                          break;
+                        case SIGUSR1:
                         case SIGUSR2:
                           DLOG(TRACE, "flushing streams");
                           fflush(NULL);
                           break;
      			default:
-     				LOG(INFO, "ignoring signal: " << sig);
-     				break;
+                          LOG(INFO, "ignoring signal: " << sig);
+                          break;
      			}
      		}
      		else
      		{
-     			LOG(ERROR, "error while waiting for signal: " << result);
+                  LOG(ERROR, "error while waiting for signal: " << result);
      		}
      	}
 
