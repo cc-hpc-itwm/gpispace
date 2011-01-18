@@ -106,6 +106,9 @@ if [ $ask_copy == "true" ] ; then
 fi
 
 if [ -x "$gpi_bin_path/$gpi_exe" ] ; then
+
+    log "# Using config file in: $gpi_cfg"
+
     if [ -n "$gpi_cfg" ] ; then
 	log "starting $gpi_bin_path/$gpi_exe with config from $gpi_cfg"
 	exec "${gpi_bin_path}/${gpi_exe}" "$gpi_cfg"

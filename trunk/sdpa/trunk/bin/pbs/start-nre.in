@@ -79,6 +79,8 @@ if [ ! -r "$gpi_cfg" ] ; then
 #       create \$SDPA_HOME/etc/gpi/sdpa-gpi.cfg
 EOF
   exit 1
+else
+  log "# Using config file in: $gpi_cfg"
 fi
 
 # sanity checks
