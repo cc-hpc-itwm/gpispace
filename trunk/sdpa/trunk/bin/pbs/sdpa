@@ -23,6 +23,13 @@ function setup ()
 function cleanup ()
 {
     clear-logs -f -a
+    ipc-cleanup
+    echo "removing backups..." >&2
+    for f in "$HOME"/*.bkp *.bkp ; do
+	if [ -e "$f" ] ; then
+	    rm -i "$f"
+	fi
+    done
     return 0
 }
 
@@ -85,6 +92,7 @@ function start_proc ()
 	if is_proc_alive "$name" "$pid" ; then
 	    echo "  + $name ($pid)" >&2
 	    echo "$pid" > "$pid_file"
+	    disown -a
 	    return 0
 	else
 	    echo "  - $name (dead)" >&2
@@ -101,7 +109,7 @@ function stop_proc ()
     pid_file="$state_dir/$name.pid"
     pid=$( cat "$pid_file" 2>/dev/null )
     if [ -n "$pid" ] ; then
-	echo -n "  sending TERM to $name ($pid)..." >&2
+	echo -n "  sending SIGTERM to $name ($pid)..." >&2
 	for (( i=0; i<3; ++i )); do
 	    if is_proc_alive "$name" "$pid" ; then
 		echo -n "."
@@ -116,7 +124,7 @@ function stop_proc ()
     fi
 
     if is_proc_alive "$name" "$pid" ; then
-	kill -9 "$pid"
+	kill -KILL "$pid"
 	echo "killed" >&2
     else
 	killall "$name" >/dev/null 2>&1
@@ -181,25 +189,68 @@ function stop_agg ()
     fi
 }
 
+function node_loop ()
+{
+    if [ ! -r "$SDPA_NODEFILE" ] ; then
+	echo "Cannot read nodefile: $SDPA_NODEFILE" >&2
+	return 1
+    fi
+
+    body="$1"
+
+    node_max=$( uniq $SDPA_NODEFILE | wc -l )
+    nodes=$( echo $( seq 1 $node_max ) )
+    bunch_size=16
+    count=0
+    pids=""
+    for node_num in $nodes; do
+	count=$(( count + 1 ))
+	node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
+
+	echo "    * executing $@ on $node_name" >&2
+	rank=$(( $node_num - 1 ))
+	$body $node_name $rank &
+	if [ $count -ge $bunch_size ] ; then
+	    wait
+	    count=0
+	fi
+    done
+    wait
+}
+
 function start_nre ()
 {
-    boot-nre $@
-#    if ! start_proc "nre" "boot-nre" ; then
-#	echo "E: could not start nres, giving up!" >&2
-#	return 1
-#    else
-#	return 0
-#    fi
+    echo "  * nres" >&2
+    node_loop start_nre_on_node
+}
+
+function start_nre_on_node ()
+{
+    node=$1
+    rank=$2
+
+    rm -f "$SDPA_LOG_DIR/nre.$node.log"
+    rm -f "$SDPA_LOG_DIR/pc.$node.log"
+    ssh -x "$node" start-nre -r $rank >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+	echo "nre did not startup on node $node: $output" >&2
+	return 1
+    else
+	return 0
+    fi
+}
+
+function stop_nre_on_node ()
+{
+    node=$1
+    rank=$2
+    ssh -x $node stop-nre -r $rank
 }
 
 function stop_nre ()
 {
-    kill-nre $@
-#    if stop_proc "nre" "kill-nre" ; then
-#	echo "  * nre (down)" >&2
-#    else
-#	echo "E: could not stop nre" >&2
-#    fi
+    echo "  * nres" >&2
+    node_loop stop_nre_on_node
 }
 
 function start_gpi ()
