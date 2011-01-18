@@ -1,0 +1,27 @@
+#!/bin/sh
+
+for p in nre nre-pcd ; do
+    pid=$( pidof "$p" )
+    if [ $? -ne 0 ] ; then
+	continue
+    fi
+
+    alive=true
+    echo -n "Terminating $p ($pid)..."
+    for (( i=0; i < 3; ++i )); do
+	echo -n "."
+	kill -TERM $pid
+	if [ $? -ne 0 ] ; then
+	    alive=false
+	fi
+	if [ "$alive" == "false" ] ; then
+	    echo "ok."
+	    break
+	fi
+	sleep 0.5
+    done
+    if [ "$alive" == "true" ] ; then
+	kill -KILL $pid
+	echo "killed."
+    fi
+done

@@ -14,6 +14,8 @@ set (prgs
   fvm-cleanup
   init-screen
   clear-logs
+  ipc-cleanup
+  stop-nre
 )
 
 install(PROGRAMS ${prgs}
