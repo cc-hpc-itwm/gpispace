@@ -1,0 +1,29 @@
+#!/bin/bash
+
+xml_file=${1:?}
+pnet_file=${2:?}
+
+echo -n "-: compiling job description..." >/dev/stderr
+pnetc ${xml_file} -I "${PARSU_PNETC_LIB_DIR}" > ${pnet_file}
+if [ $? -ne 0 ] ; then
+  echo "E: generating failed!" >&2
+  exit 2
+fi
+echo "ok" >/dev/stderr
+
+jobid=$( sdpac submit ${pnet_file} 2>&1 )
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Could not submit job: $jobid" >&2
+  exit $ec
+fi
+echo "JOB-ID := $jobid"
+sdpac wait "$jobid"
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Job execution failed: $ec" >&2
+else
+  echo "Success."
+fi
+sdpac delete "$jobid"
+exit $ec

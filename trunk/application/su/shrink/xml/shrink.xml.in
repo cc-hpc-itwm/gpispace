@@ -344,7 +344,7 @@
             const std::string cmd (config.cmd);
 
             LOG (INFO, "SHRINK " << ::print::loaded_package (package)
-                                << " cmd '" << cmd << "'"
+                                 << cmd
                 );
 
             comm::get (config, package);

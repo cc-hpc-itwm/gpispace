@@ -1,18 +1,28 @@
 
 MAIN = shrink
 
-#TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
-TRUNK = /u/herc/rahn/SDPA/trunk
-BUILD = $(TRUNK)/main/trunk/build
-UTIL = $(TRUNK)/application/su/$(MAIN)/util
+TRUNK      = /u/herc/rahn/SDPA/trunk
+BUILD      = $(TRUNK)/main/trunk/build
+PATH_MAIN  = $(TRUNK)/application/su/$(MAIN)
+UTIL       = $(PATH_MAIN)/util
 
 export BUILD
 
+TEE      = /usr/bin/tee
+DOT      = /usr/bin/dot -Tps -Grankdir=LR
+RM       = /bin/rm -rf
+TOUCH    = /usr/bin/touch
+CAT      = /bin/cat
+CP       = /bin/cp
+
 ###############################################################################
 
-XML_MAIN = xml/$(MAIN).xml.in
+XML_MAIN    = xml/$(MAIN).xml
+XML_MAIN_IN = $(XML_MAIN).in
+MK_XML      = $(TRUNK)/application/su/$(MAIN)/mk.xml
 
-DEP += $(XML_MAIN)
+###############################################################################
+
 DEP += xml/generate/package.xml
 DEP += xml/generate/slot.xml
 DEP += util/print.hpp
@@ -23,7 +33,24 @@ DEP += $(UTIL)/comm.hpp
 NET = $(MAIN).pnet
 GEN = gen
 OUT = $(MAIN).out
-PS = $(MAIN).ps
+PS  = $(MAIN).ps
+
+PATH_LIB = $(PATH_MAIN)/$(GEN)/pnetc/op
+
+LIB = $(PATH_LIB)/lib$(MAIN).so
+
+###############################################################################
+
+FILE_INPUT       = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
+TYPE_INPUT       = segy
+FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded
+TYPE_OUTPUT      = segy
+CMD              = suwind itmin=10 nt=300
+SHMEM_PER_NODE   = 200 * 2^20
+GPI_MEM_PER_NODE = 600 * 2^20
+
+$(XML_MAIN): $(XML_MAIN_IN) $(DEP)
+	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" > $@
 
 ###############################################################################
 
@@ -70,11 +97,6 @@ PNETC    = $(BUILD)/xml/xml/parse/pnetc
 WE_EXEC  = LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH} $(BUILD)/we/apps/we-exec --w 1
 PNET2DOT = $(BUILD)/we/apps/pnet2dot
 
-TEE      = /usr/bin/tee
-DOT      = /usr/bin/dot -Tps -Grankdir=LR
-RM       = /bin/rm -rf
-TOUCH    = /usr/bin/touch
-
 ###############################################################################
 
 PNETC += $(addprefix -I ,$(PNETC_LIB))
@@ -106,18 +128,23 @@ all: ps default
 
 ###############################################################################
 
-$(NET): $(DEP)
+$(NET): $(XML_MAIN) $(DEP)
 	$(PNETC) $(XML_MAIN) -o $@
 
-$(NET_NOINLINE): $(DEP)
+$(NET_NOINLINE): $(XML_MAIN) $(DEP)
 	$(PNETC_NOINLINE) $(XML_MAIN) -o $@
 
 ###############################################################################
 
-$(GEN): $(DEP)
+$(GEN): $(XML_MAIN) $(DEP)
 	$(PNETC) $(XML_MAIN) -o /dev/null -g $@
 	CXXINCLUDEPATHS="$(CXXINCLUDEPATHS)" $(MAKE) -j -C $(GEN)
 	$(TOUCH) $@
+
+.PHONY: install
+
+install: $(GEN)
+	$(CP) $(LIB) $(SDPA_LIBEXEC)
 
 ###############################################################################
 
@@ -146,3 +173,4 @@ clean:
 	$(RM) $(PS)
 	$(RM) $(PS_NOINLINE)
 	$(RM) $(OUT)
+	$(RM) $(XML_MAIN)
