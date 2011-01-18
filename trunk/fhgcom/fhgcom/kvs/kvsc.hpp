@@ -342,8 +342,8 @@ namespace fhg
 
         static kvs_data & get_kvs_info ()
         {
-          static kvs_data d;
-          return d;
+          static kvs_data * d (new kvs_data);
+          return *d;
         }
       };
 
@@ -365,10 +365,10 @@ namespace fhg
 
       inline client::kvsc & global_kvs ()
       {
-        if (! global::get_kvs_info ().is_started)
-          global::start();
-        return *global::get_kvs_info ().client;
-        //        return get_or_create_global_kvs ();
+        return get_or_create_global_kvs ();
+        // if (! global::get_kvs_info ().is_started)
+        //   global::start();
+        // return *global::get_kvs_info ().client;
       }
 
       typedef fhg::com::kvs::message::list::map_type values_type;
