@@ -190,7 +190,15 @@ namespace sdpa { namespace nre { namespace worker {
         return;
       }
 
-      sdpa::shared_ptr<Message> rply(rqst->execute(this));
+      sdpa::shared_ptr<Message> rply;
+
+      try
+      {
+        rply = sdpa::shared_ptr<Message> (rqst->execute(this));
+      } catch (std::exception const & ex)
+      {
+        LOG(ERROR, "could not handle request: " << ex.what());
+      }
 
       try
       {
