@@ -1,12 +1,14 @@
 #!/bin/bash
 
-data_dir=${DATA_DIR:?}
+bin_dir=${PARSU_BIN_DIR:?}
+map_dir=${PARSU_MAP_DIR:?}
 
-filter_dir="$data_dir/filter"
-filter_cfg="$filter_dir/filt.conf"
-tune_cfg="$filter_dir/tune.conf"
-pnet_lib="$data_dir/../lib"
-#pnet_lib="/p/herc/itwm/hpc/ap/SDPA/application/lib"
+filter_dir="${map_dir}/filter"
+
+filter_cfg="${map_dir}/filt.conf"
+tune_cfg="${map_dir}/tune.conf"
+
+run="${bin_dir}/run"
 
 if [ $# -lt 5 ]; then
   echo "usage: $0 input-file input-type output-file output-type su-pipeline"
@@ -18,10 +20,14 @@ int=${2:?}
 outf=${3:?}
 outt=${4:?}
 prog=${5:?}
-shift 5
 
 if [ ! -r "$inf" ] ; then
   echo "E: cannot access $inf for reading, aborting" >/dev/stderr
+  exit 1
+fi
+
+if [ ${int} != ${outt} ] ; then
+  echo "E: input type must be the same as output type" >/dev/stderr
   exit 1
 fi
 
@@ -52,9 +58,9 @@ abspath ${outf}
 abs_outf="$REPLY"
 
 # create the shell script to execute the filter
-script=$( mktemp "$filter_dir/filter.sh.XXXXXX" )
+script=$( mktemp "${map_dir}/filter.sh.XXXXXX" )
 if [ $? -ne 0 ] ; then
-  echo "could not create temporary file in $filter_dir" >/dev/stderr
+  echo "could not create temporary file in ${map_dir}" >/dev/stderr
   exit 2
 fi
 
@@ -76,8 +82,8 @@ cleanup ()
 {
   rm -f "${script}"
   rm -f "${filter_cfg}"
-  rm -f "$filter_dir/loop.xml"
-  rm -f "$filter_dir/su4.pnet"
+  rm -f "${map_dir}/loop.xml"
+  rm -f "${map_dir}/su4.pnet"
 }
 trap cleanup EXIT
 
@@ -88,34 +94,11 @@ echo "-: generated config:" >/dev/stderr
 cat "${filter_cfg}" >/dev/stderr
 
 echo -n "-: generating job description..." >/dev/stderr
-sed -e "s,@CONFIG_FILE@,$filter_cfg," "$filter_dir/loop.xml.in" > "$filter_dir/loop.xml"
+sed -e "s,@CONFIG_FILE@,$filter_cfg," "${map_dir}/loop.xml.in" > "${map_dir}/loop.xml"
 if [ $? -ne 0 ] ; then
   echo "E: generating failed!" >/dev/stderr
   exit 2
 fi
 echo "ok" >/dev/stderr
 
-echo -n "-: compiling job description..." >/dev/stderr
-pnetc "$filter_dir/loop.xml" -I "$pnet_lib" > "$filter_dir/su4.pnet"
-if [ $? -ne 0 ] ; then
-  echo "E: generating failed!" >&2
-  exit 2
-fi
-echo "ok" >/dev/stderr
-
-jobid=$( sdpac submit "$filter_dir/su4.pnet" 2>&1 )
-ec=$?
-if [ $ec -ne 0 ] ; then
-  echo "Could not submit job: $jobid" >&2
-  exit $ec
-fi
-echo "JOB-ID := $jobid"
-sdpac wait "$jobid"
-ec=$?
-if [ $ec -ne 0 ] ; then
-  echo "Job execution failed: $ec" >&2
-else
-  echo "Success."
-fi
-sdpac delete "$jobid"
-exit $ec
+${run} "${map_dir}/loop.xml" "${map_dir}/su4.pnet"
