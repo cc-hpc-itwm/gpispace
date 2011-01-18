@@ -24,7 +24,7 @@ function cleanup ()
 {
     echo "cleaning up" >&2
     echo "     - logs" >&2
-    clear-logs -f -a
+    clear-logs -f -a -x
     echo "     - IPC" >&2
     ipc-cleanup >/dev/null 2>&1
     echo "     - backup files" >&2
@@ -93,12 +93,13 @@ function start_proc ()
 
     # check for old one
     pid_file="$state_dir/$name.pid"
+    log_file="$SDPA_LOG_DIR/$name.log"
     pid=$( cat "$pid_file" 2>/dev/null )
     if is_proc_alive "$name" "$pid" ; then
 	echo "  * $name ($pid)" >&2
     else
 	:> "$pid_file"
-	$binary $@ </dev/null >/dev/null 2>&1 &
+	$binary $@ </dev/null >"$log_file" 2>&1 &
 	pid=$!
 	sleep 0.5
 	if is_proc_alive "$name" "$pid" ; then
@@ -121,7 +122,7 @@ function stop_proc ()
     pid_file="$state_dir/$name.pid"
     pid=$( cat "$pid_file" 2>/dev/null )
     if [ -n "$pid" ] ; then
-	echo -n "  sending SIGTERM to $name ($pid)..." >&2
+	echo -n "    sending SIGTERM to $name ($pid)..." >&2
 	for (( i=0; i<3; ++i )); do
 	    if is_proc_alive "$name" "$pid" ; then
 		echo -n "."
@@ -156,10 +157,10 @@ function start_kvs ()
 
 function stop_kvs ()
 {
-    if stop_proc "fhgkvsd" "fhgkvsd" ; then
-	echo "  * kvs (down)" >&2
-    else
+    echo "  * fhgkvsd"
+    if ! stop_proc "fhgkvsd" "fhgkvsd" ; then
 	echo "E: could not stop kvs!" >&2
+	return 1
     fi
 }
 
@@ -175,10 +176,10 @@ function start_orch ()
 
 function stop_orch ()
 {
-    if stop_proc "orchestrator" "start-orch" ; then
-	echo "  * orchestrator (down)" >&2
-    else
+    echo "  * orchestrator"
+    if ! stop_proc "orchestrator" "start-orch" ; then
 	echo "E: could not stop orchestrator" >&2
+	return 1
     fi
 }
 
@@ -194,10 +195,10 @@ function start_agg ()
 
 function stop_agg ()
 {
-    if stop_proc "aggregator" "start-agg" ; then
-	echo "  * aggregator (down)" >&2
-    else
+    echo "  * aggregator"
+    if ! stop_proc "aggregator" "start-agg" ; then
 	echo "E: could not stop aggregator" >&2
+	return 1
     fi
 }
 
@@ -256,7 +257,7 @@ function stop_nre_on_node ()
 {
     node=$1
     rank=$2
-    ssh -x $node stop-nre -r $rank
+    ssh -x $node stop-nre -r $rank >/dev/null 2>&1
 }
 
 function stop_nre ()
@@ -278,11 +279,12 @@ function start_gpi ()
 
 function stop_gpi ()
 {
+    echo "  * gpi"
     if stop_proc "sdpa-gpi" "start-gpi" ; then
-	echo "  * gpi (down)" >&2
 	ipc-cleanup >/dev/null 2>&1
     else
 	echo "E: could not stop gpi" >&2
+	return 1
     fi
 }
 
