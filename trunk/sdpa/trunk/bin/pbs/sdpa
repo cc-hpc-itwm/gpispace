@@ -292,6 +292,7 @@ function start ()
 	echo "E: still running!" >&2
 	return 1
     else
+	cleanup
 	echo "starting everything..." >&2
 	start_kvs
 	start_orch
@@ -358,9 +359,12 @@ function submit ()
 		return 1
 		;;
 	    *)
+		echo
 		if ! start ; then
 		    echo "Could not start, please check the logs" >&2
 		    return 3
+		else
+		    sleep 5
 		fi
 		;;
 	esac
