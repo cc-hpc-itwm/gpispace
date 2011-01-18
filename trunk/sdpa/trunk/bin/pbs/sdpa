@@ -352,16 +352,16 @@ function submit ()
     status >/dev/null 2>&1
     if [ $? -ne 0 ] ; then
 	echo "dead" >&2
-	read -t 15 -n 1 -p "Do you want me to start it? [y/N] " do_start
+	read -t 15 -n 1 -p "Do you want me to start it? [Y/n] " do_start
 	case "$do_start" in
-	    y|Y|j|J)
+	    n|N)
+		return 1
+		;;
+	    *)
 		if ! start ; then
 		    echo "Could not start, please check the logs" >&2
 		    return 3
 		fi
-		;;
-	    *)
-		return 1
 		;;
 	esac
     else
