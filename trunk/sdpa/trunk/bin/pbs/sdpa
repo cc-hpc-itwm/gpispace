@@ -301,6 +301,8 @@ function submit ()
 		return 1
 		;;
 	esac
+    else
+	echo "ok" >&2
     fi
 
     echo "submitting file: $net" >&2
@@ -309,6 +311,7 @@ function submit ()
 	echo "Submission failed: $jobid"
 	return 4
     else
+	echo "  + job ($jobid)"
 	echo "$jobid" > "$state_dir/current_job"
 	sdpac wait "$jobid"
 	s=$( sdpac status "${jobid}" )
@@ -317,6 +320,9 @@ function submit ()
 	    echo "Done." >&2
 	fi
 	sdpac delete "${jobid}"
+	if [ $? -eq 0 ] ; then
+	    echo "  - job ($jobid)"
+	fi
     fi
 }
 
