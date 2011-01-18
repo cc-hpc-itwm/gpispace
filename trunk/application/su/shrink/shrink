@@ -16,7 +16,7 @@ inf=${1}
 int=${2}
 outf=${3}
 outt=${4}
-param=${5}
+cmd=${5}
 shmem_per_node=${6:-${shmem_per_node_default}}
 gpi_mem_per_node=${7:-${gpi_mem_per_node_default}}
 
@@ -61,7 +61,7 @@ echo -n "-: generating job description..." >/dev/stderr
 cat ${xml_file_in}                              |\
 sed "s|@SHMEM_PER_NODE@|${shmem_per_node}|"     |\
 sed "s|@GPI_MEM_PER_NODE@|${gpi_mem_per_node}|" |\
-sed "s|@PARAM@|${param}|"                       |\
+sed "s|@CMD@|${cmd}|"                           |\
 sed "s|@FILE_INPUT@|${abs_inf}|"                |\
 sed "s|@FILE_OUTPUT@|${abs_outf}|"              |\
 sed "s|@TYPE_INPUT@|${int}|"                    |\

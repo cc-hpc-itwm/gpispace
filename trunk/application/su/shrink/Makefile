@@ -1,16 +1,16 @@
 
-MAIN = suwind
+MAIN = shrink
 
 #TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
 TRUNK = /u/herc/rahn/SDPA/trunk
 BUILD = $(TRUNK)/main/trunk/build
-UTIL = $(TRUNK)/application/example/$(MAIN)/util
+UTIL = $(TRUNK)/application/su/$(MAIN)/util
 
 export BUILD
 
 ###############################################################################
 
-XML_MAIN = xml/$(MAIN).xml
+XML_MAIN = xml/$(MAIN).xml.in
 
 DEP += $(XML_MAIN)
 DEP += xml/generate/package.xml

@@ -1,6 +1,6 @@
-<defun name="suwind">
+<defun name="shrink">
 
-  <in name="param" type="string" place="param"/>
+  <in name="cmd" type="string" place="cmd"/>
   <in name="shmem_per_node" type="long" place="shmem_per_node"/>
   <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
   <in name="file_input" type="string" place="file_input"/>
@@ -70,7 +70,7 @@
       <field name="slot" type="long"/>
     </struct>
 
-    <field name="param" type="string"/>
+    <field name="cmd" type="string"/>
   </struct>
 
   <net>
@@ -90,27 +90,27 @@
 
     <!-- tuning -->
     <place name="shmem_per_node" type="long">
-      <token><value>200 * 2^20</value></token>
+      <token><value>@SHMEM_PER_NODE@</value></token>
     </place>
     <place name="gpi_mem_per_node" type="long">
-      <token><value>600 * 2^20</value></token>
+      <token><value>@GPI_MEM_PER_NODE@</value></token>
     </place>
 
     <!-- necessary parameters -->
-    <place name="param" type="string">
-      <token><value>"itmin=10 nt=300"</value></token>
+    <place name="cmd" type="string">
+      <token><value>"@CMD@"</value></token>
     </place>
     <place name="file_input" type="string">
-      <token><value>"/fhgfs/HPC/rahn/sgy/c3_na_reg.sgy"</value></token>
+      <token><value>"@FILE_INPUT@"</value></token>
     </place>
     <place name="file_output" type="string">
-      <token><value>"/fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded"</value></token>
+      <token><value>"@FILE_OUTPUT@"</value></token>
     </place>
     <place name="type_input" type="string">
-      <token><value>"segy"</value></token>
+      <token><value>"@TYPE_INPUT@"</value></token>
     </place>
     <place name="type_output" type="string">
-      <token><value>"segy"</value></token>
+      <token><value>"@TYPE_OUTPUT@"</value></token>
     </place>
 
     <place name="done" type="control"/>
@@ -123,16 +123,16 @@
         <in name="type_output" type="string"/>
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
-        <in name="param" type="string"/>
+        <in name="cmd" type="string"/>
         <out name="write_info" type="write_info"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
-        <module name="suwind"
+        <module name="shrink"
                 function="init ( file_input
                                , type_input
                                , file_output
                                , type_output
-                               , param
+                               , cmd
                                , shmem_per_node
                                , gpi_mem_per_node
                                , write_info
@@ -202,7 +202,7 @@
             config.file.input.type = type_input;
             config.file.output.name = file_output;
             config.file.output.type = type_output;
-            config.param = param;
+            config.cmd = cmd;
 
             write_info.next_trace = give_back_trace = 0;
             write_info.offset = 0;
@@ -224,7 +224,7 @@
       <connect-in port="type_output" place="type_output"/>
       <connect-in port="shmem_per_node" place="shmem_per_node"/>
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
-      <connect-in port="param" place="param"/>
+      <connect-in port="cmd" place="cmd"/>
       <connect-out port="write_info" place="write_info"/>
       <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
@@ -291,7 +291,7 @@
         <in name="package" type="loaded_package"/>
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
-        <module name="suwind" function="load (package, config)">
+        <module name="shrink" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
@@ -329,21 +329,21 @@
 
     <place name="loaded_package" type="loaded_package"/>
 
-    <transition name="suwind">
+    <transition name="shrink">
       <defun>
         <in name="package" type="loaded_package"/>
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
-        <module name="suwind" function="suwind (package, config)">
+        <module name="shrink" function="shrink (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
           <link href="$(BUILD)/application/example/exec/libprocess.so"/>
           <code><![CDATA[
-            const std::string cmd ("suwind " + config.param);
+            const std::string cmd (config.cmd);
 
-            LOG (INFO, "SUWIND " << ::print::loaded_package (package)
+            LOG (INFO, "SHRINK " << ::print::loaded_package (package)
                                 << " cmd '" << cmd << "'"
                 );
 
@@ -411,7 +411,7 @@
         <in name="package_to_be_written" type="package_to_be_written"/>
         <in name="config" type="config"/>
         <out name="p" type="loaded_package"/>
-        <module name="suwind" function="p write (package_to_be_written, config)">
+        <module name="shrink" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
@@ -525,7 +525,7 @@
       <defun>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="suwind" function="finalize (trigger, config)">
+        <module name="shrink" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
