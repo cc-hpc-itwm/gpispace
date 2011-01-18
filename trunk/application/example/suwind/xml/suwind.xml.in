@@ -88,27 +88,29 @@
       <type-map replace="T" with="config"/>
     </specialize>
 
-    <place name="param" type="string">
-      <token><value>"itmin=10 nt=10"</value></token>
-    </place>
-
+    <!-- tuning -->
     <place name="shmem_per_node" type="long">
-      <token><value>4240 * 4</value></token>
+      <token><value>@SHMEM_PER_NODE@</value></token>
     </place>
     <place name="gpi_mem_per_node" type="long">
-      <token><value>4240 * 8</value></token>
+      <token><value>@GPI_MEM_PER_NODE@</value></token>
+    </place>
+
+    <!-- necessary parameters -->
+    <place name="param" type="string">
+      <token><value>"@PARAM@"</value></token>
     </place>
     <place name="file_input" type="string">
-      <token><value>"/u/herc/rahn/test.dat"</value></token>
+      <token><value>"@FILE_INPUT@"</value></token>
     </place>
     <place name="file_output" type="string">
-      <token><value>"/u/herc/rahn/test.dat.out"</value></token>
+      <token><value>"@FILE_OUTPUT@"</value></token>
     </place>
     <place name="type_input" type="string">
-      <token><value>"su"</value></token>
+      <token><value>"@TYPE_INPUT@"</value></token>
     </place>
     <place name="type_output" type="string">
-      <token><value>"su"</value></token>
+      <token><value>"@TYPE_OUTPUT@"</value></token>
     </place>
 
     <place name="done" type="control"/>
@@ -159,9 +161,8 @@
                                               , gpi_mem_per_node
                                               )
                                     );
-            const long trace_per_node (mem_per_node / config.size.trace);
 
-            config.per.bunch.trace = trace_per_node / 2;
+            config.per.bunch.trace = mem_per_node / config.size.trace;
 
             LOG (INFO, "per.bunch.trace = " << config.per.bunch.trace);
 

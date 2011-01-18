@@ -1,0 +1,99 @@
+#!/bin/bash
+
+parsuwind_dir=${PARSUWIND_DIR:?}
+
+pnet_lib="${parsuwind_dir}/../../lib"
+
+shmem_per_node_default=$((200*2**20))
+gpi_mem_per_node_default=$((600*2**20))
+
+if [ $# -lt 5 ]; then
+  echo "usage: $0 input-file input-type output-file output-type suwind-params [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
+  exit 1
+fi
+
+inf=${1}
+int=${2}
+outf=${3}
+outt=${4}
+param=${5}
+shmem_per_node=${6:-${shmem_per_node_default}}
+gpi_mem_per_node=${7:-${gpi_mem_per_node_default}}
+
+if [ ! -r "$inf" ] ; then
+  echo "E: cannot access $inf for reading, aborting" >/dev/stderr
+  exit 1
+fi
+
+abspath ()
+{
+  p="$1"
+  case "$p" in
+	/*)
+	  REPLY="$p"
+	  ;;
+	*)
+	  REPLY="`pwd`/$p"
+	  ;;
+  esac
+  return 0
+}
+
+abspath ${inf}
+abs_inf="$REPLY"
+
+abspath ${outf}
+abs_outf="$REPLY"
+
+xml_file_in="${parsuwind_dir}/xml/suwind.xml.in"
+xml_file="${parsuwind_dir}/xml/suwind.xml"
+pnet_file="${parsuwind_dir}/suwind.pnet"
+
+cleanup ()
+{
+  rm -f ${xml_file}
+  rm -f ${pnet_file}
+}
+trap cleanup EXIT
+
+echo -n "-: generating job description..." >/dev/stderr
+
+cat ${xml_file_in}                              |\
+sed "s|@SHMEM_PER_NODE@|${shmem_per_node}|"     |\
+sed "s|@GPI_MEM_PER_NODE@|${gpi_mem_per_node}|" |\
+sed "s|@PARAM@|${param}|"                       |\
+sed "s|@FILE_INPUT@|${abs_inf}|"                |\
+sed "s|@FILE_OUTPUT@|${abs_outf}|"              |\
+sed "s|@TYPE_INPUT@|${int}|"                    |\
+sed "s|@TYPE_OUTPUT@|${outt}|"                   > ${xml_file}
+
+if [ $? -ne 0 ] ; then
+  echo "E: generating failed!" >/dev/stderr
+  exit 2
+fi
+echo "ok" >/dev/stderr
+
+echo -n "-: compiling job description..." >/dev/stderr
+pnetc ${xml_file} -I "$pnet_lib" > ${pnet_file}
+if [ $? -ne 0 ] ; then
+  echo "E: generating failed!" >&2
+  exit 2
+fi
+echo "ok" >/dev/stderr
+
+jobid=$( sdpac submit ${pnet_file} 2>&1 )
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Could not submit job: $jobid" >&2
+  exit $ec
+fi
+echo "JOB-ID := $jobid"
+sdpac wait "$jobid"
+ec=$?
+if [ $ec -ne 0 ] ; then
+  echo "Job execution failed: $ec" >&2
+else
+  echo "Success."
+fi
+sdpac delete "$jobid"
+exit $ec
