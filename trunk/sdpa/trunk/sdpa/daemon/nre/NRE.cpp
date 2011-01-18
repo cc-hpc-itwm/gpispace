@@ -313,7 +313,7 @@ void NRE<U>::notifyActivityCancelled( const id_type& id, const std::string& data
 }
 
 template <typename U>
-void NRE<U>::backup( bfs::ofstream& ofs  )
+void NRE<U>::backup( std::ostream& ofs  )
 {
 	try {
 		//std::string strArchiveName(name()+".bkp");
@@ -337,7 +337,7 @@ void NRE<U>::backup( bfs::ofstream& ofs  )
 }
 
 template <typename U>
-void NRE<U>::recover( bfs::ifstream& ifs  )
+void NRE<U>::recover( std::istream& ifs  )
 {
 	try {
 

@@ -324,13 +324,13 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
 	}
 }
 
-void Orchestrator::backup( bfs::ofstream& ofs )
+void Orchestrator::backup( std::ostream& os )
 {
 	try {
 		//std::string strArchiveName(name()+".bkp");
 		//SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
 
-		boost::archive::text_oarchive oa(ofs);
+		boost::archive::text_oarchive oa(os);
 		oa.register_type(static_cast<JobManager*>(NULL));
 		oa.register_type(static_cast<JobImpl*>(NULL));
 		oa.register_type(static_cast<JobFSM*>(NULL));
@@ -342,17 +342,17 @@ void Orchestrator::backup( bfs::ofstream& ofs )
 	}
 	catch(exception &e)
 	{
-		cout <<"Exception occurred: "<< e.what() << endl;
+		SDPA_LOG_FATAL("Exception occurred: "<< e.what());
 		return;
 	}
 }
 
-void Orchestrator::recover( bfs::ifstream& ifs )
+void Orchestrator::recover( std::istream& is )
 {
 
 	try {
 
-		boost::archive::text_iarchive ia(ifs);
+		boost::archive::text_iarchive ia(is);
 		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
@@ -365,6 +365,6 @@ void Orchestrator::recover( bfs::ifstream& ifs )
 	}
 	catch(exception &e)
 	{
-		cout <<"Exception occurred: " << e.what() << endl;
+		SDPA_LOG_FATAL("Exception occurred: "<< e.what());
 	}
 }

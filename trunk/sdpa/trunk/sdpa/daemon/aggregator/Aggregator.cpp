@@ -408,7 +408,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 }
 
 
-void Aggregator::backup( bfs::ofstream& ofs )
+void Aggregator::backup( std::ostream& ofs )
 {
 	try {
 		//std::string strArchiveName(name()+".bkp");
@@ -431,7 +431,7 @@ void Aggregator::backup( bfs::ofstream& ofs )
 	}
 }
 
-void Aggregator::recover( bfs::ifstream& ifs )
+void Aggregator::recover( std::istream& ifs )
 {
 
 	try {

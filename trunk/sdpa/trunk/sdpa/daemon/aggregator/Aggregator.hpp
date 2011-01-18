@@ -65,8 +65,8 @@ namespace sdpa {
 				ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
 			}
 
-			virtual void backup( bfs::ofstream& );
-			virtual void recover( bfs::ifstream& );
+			virtual void backup( std::ostream& );
+			virtual void recover( std::istream& );
 
 			friend class boost::serialization::access;
 			//friend class sdpa::tests::WorkerSerializationTest;

@@ -62,8 +62,8 @@ namespace daemon {
 			ar & url_; //boost::serialization::make_nvp("url_", url_);
 		}
 
-		virtual void backup( bfs::ofstream& );
-		virtual void recover( bfs::ifstream& );
+		virtual void backup( std::ostream& );
+		virtual void recover( std::istream& );
 
 		friend class boost::serialization::access;
 
