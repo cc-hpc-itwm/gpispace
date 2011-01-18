@@ -1,7 +1,7 @@
 
-TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
-#TRUNK = /u/herc/rahn/SDPA/trunk
-BUILD = $(TRUNK)/main/trunk/build45
+#TRUNK = /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk
+TRUNK = /u/herc/rahn/SDPA/trunk
+BUILD = $(TRUNK)/main/trunk/build
 UTIL = $(TRUNK)/application/example/sustack/util
 
 export BUILD
