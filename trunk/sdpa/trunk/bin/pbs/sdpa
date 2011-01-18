@@ -271,6 +271,7 @@ function start_gpi ()
 	echo "E: could not start GPI, giving up!" >&2
 	return 1
     else
+        sleep 5
 	return 0
     fi
 }
@@ -294,10 +295,10 @@ function start ()
     else
 	cleanup
 	echo "starting everything..." >&2
-	start_kvs
+	start_gpi
+        start_kvs
 	start_orch
 	start_agg
-	start_gpi
 	start_nre
     fi
 }
