@@ -39,8 +39,8 @@ namespace fhg
           void start ( std::string const & server_address
                      , std::string const & server_port
                      , const bool auto_reconnect = true
-                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
-                     , const std::size_t max_connection_attempts = 11
+                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (15)
+                     , const std::size_t max_connection_attempts = 3
                      )
           {
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
@@ -250,14 +250,14 @@ namespace fhg
 
         kvs_data ()
           : is_configured (false)
-          , timeout (boost::posix_time::seconds (120))
-          , max_connection_attempts (11)
+          , timeout (boost::posix_time::seconds (15))
+          , max_connection_attempts (3)
         {}
 
         void init ( std::string const & p_host = ""
                   , std::string const & p_port = ""
-                  , const boost::posix_time::time_duration p_timeout = boost::posix_time::seconds (120)
-                  , const std::size_t p_max_connection_attempts = 11
+                  , const boost::posix_time::time_duration p_timeout = boost::posix_time::seconds (15)
+                  , const std::size_t p_max_connection_attempts = 3
                   )
         {
           stop ();
@@ -350,8 +350,8 @@ namespace fhg
       inline client::kvsc & get_or_create_global_kvs ( std::string const & host = ""
                                                      , std::string const & port = ""
                                                      , const bool auto_reconnect = true
-                                                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
-                                                     , const std::size_t max_connection_attempts = 11
+                                                     , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (15)
+                                                     , const std::size_t max_connection_attempts = 3
                                                      )
       {
         fhg::com::kvs::global::get_kvs_info().init( host
