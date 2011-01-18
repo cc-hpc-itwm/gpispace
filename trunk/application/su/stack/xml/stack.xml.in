@@ -1,4 +1,4 @@
-<defun name="sustack">
+<defun name="stack">
 
   <in name="key" type="string" place="key"/>
   <in name="shmem_per_node" type="long" place="shmem_per_node"/>
@@ -94,26 +94,26 @@
     </specialize>
 
     <place name="key" type="string">
-      <token><value>"cdp"</value></token>
+      <token><value>"@KEY@"</value></token>
     </place>
 
     <place name="shmem_per_node" type="long">
-      <token><value>4240 * 4</value></token>
+      <token><value>@SHMEM_PER_NODE@</value></token>
     </place>
     <place name="gpi_mem_per_node" type="long">
-      <token><value>4240 * 8</value></token>
+      <token><value>@GPI_MEM_PER_NODE@</value></token>
     </place>
     <place name="file_input" type="string">
-      <token><value>"/u/herc/rahn/test.dat"</value></token>
+      <token><value>"@FILE_INPUT@"</value></token>
     </place>
     <place name="file_output" type="string">
-      <token><value>"/u/herc/rahn/test.dat.out"</value></token>
+      <token><value>"@FILE_OUTPUT@"</value></token>
     </place>
     <place name="type_input" type="string">
-      <token><value>"su"</value></token>
+      <token><value>"@TYPE_INPUT@"</value></token>
     </place>
     <place name="type_output" type="string">
-      <token><value>"su"</value></token>
+      <token><value>"@TYPE_OUTPUT@"</value></token>
     </place>
 
     <place name="done" type="control"/>
@@ -130,7 +130,7 @@
         <out name="write_info" type="write_info"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
-        <module name="sustack"
+        <module name="stack"
                 function="init ( file_input
                                , type_input
                                , file_output
@@ -295,7 +295,7 @@
         <in name="package" type="loaded_package"/>
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
-        <module name="sustack" function="load (package, config)">
+        <module name="stack" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
@@ -333,20 +333,19 @@
 
     <place name="loaded_package" type="loaded_package"/>
 
-    <transition name="sustack">
+    <transition name="stack">
       <defun>
         <in name="package" type="loaded_package"/>
         <in name="config" type="config"/>
         <out name="package" type="loaded_package"/>
-        <module name="sustack" function="sustack (package, config)">
+        <module name="stack" function="stack (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
           <link href="$(BUILD)/application/example/exec/libprocess.so"/>
           <code><![CDATA[
-//            const std::string cmd ("sustack normpow=0.0 key=" + config.key);
-            const std::string cmd ("/bin/cat");
+	    const std::string cmd ("sustack normpow=0.0 key=" + config.key);
 
             LOG (INFO, "STACK " << ::print::loaded_package (package)
                                 << " cmd '" << cmd << "'"
@@ -450,12 +449,12 @@
       <connect-out port="x" place="packages_to_match"/>
     </transition>
 
-    <transition name="sustack2">
+    <transition name="stack2">
       <defun>
         <in name="p" type="pair_of_packages"/>
         <in name="config" type="config"/>
         <out name="p" type="pair_of_packages"/>
-        <module name="sustack" function="sustack2 (p, config)">
+        <module name="stack" function="stack2 (p, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
@@ -477,8 +476,7 @@
                     << " and " << ::print::loaded_package (right)
                 );
 
-//            const std::string cmd ("sustack normpow=0.0 key=" + config.key);
-            const std::string cmd ("/bin/cat");
+            const std::string cmd ("sustack normpow=0.0 key=" + config.key);
 
             const long size_left (left.package.size * config.size.trace);
             const long size_right (right.package.size * config.size.trace);
@@ -640,7 +638,7 @@
         <in name="package_to_be_written" type="package_to_be_written"/>
         <in name="config" type="config"/>
         <out name="p" type="loaded_package"/>
-        <module name="sustack" function="p write (package_to_be_written, config)">
+        <module name="stack" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
@@ -754,7 +752,7 @@
       <defun>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="sustack" function="finalize (trigger, config)">
+        <module name="stack" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
