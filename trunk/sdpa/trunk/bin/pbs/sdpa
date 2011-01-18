@@ -47,7 +47,7 @@ function cleanup ()
 
 function help ()
 {
-    echo "usage: $0 {start|stop|status|submit <file>}" >&2
+    echo "usage: $0 {start|stop|status|cleanup|submit <file>}" >&2
     return 0
 }
 
@@ -267,7 +267,7 @@ function stop_nre ()
 
 function start_gpi ()
 {
-    if ! start_proc "sdpa-gpi" "start-gpi" ; then
+    if ! start_proc "sdpa-gpi" "start-gpi" "-f" ; then
 	echo "E: could not start GPI, giving up!" >&2
 	return 1
     else
@@ -280,6 +280,7 @@ function stop_gpi ()
 {
     if stop_proc "sdpa-gpi" "start-gpi" ; then
 	echo "  * gpi (down)" >&2
+	ipc-cleanup >/dev/null 2>&1
     else
 	echo "E: could not stop gpi" >&2
     fi
@@ -308,10 +309,10 @@ function stop ()
     # shut everything down
     echo "stopping everything..." >&2
     stop_nre
-    stop_gpi
     stop_agg
     stop_orch
     stop_kvs
+    stop_gpi
 }
 
 function status ()
@@ -411,6 +412,14 @@ case "$1" in
 	;;
     status)
 	status
+	;;
+    cleanup)
+	if status >/dev/null 2>&1 ; then
+	    echo "E: still running!" >&2
+	    exit 1
+	else
+	    cleanup
+	fi
 	;;
     submit)
 	if [ -z "$2" ] ; then
