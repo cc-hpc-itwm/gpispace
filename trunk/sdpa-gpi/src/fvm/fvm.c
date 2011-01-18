@@ -871,7 +871,7 @@ int fvmListenRequests()
 	}
 
 	i++;
-
+        fflush (NULL);
   } while(op_request.op != LEAVE);
   /* 	} while(i < 10); */
 

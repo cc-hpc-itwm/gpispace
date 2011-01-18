@@ -15,7 +15,7 @@
 
 void signal_handler(int sig){
         printf("Sig handler called...\n");
-	shutdownPv4dVM(); 
+	shutdownPv4dVM();
 	fvmLeave();
 	switch (sig)
 	{
@@ -66,20 +66,26 @@ int main(int argc, char *argv[])
     return -1;
   }
 
+  fflush (NULL);
+
   ret = startPv4dVM(argc, argv, "", config.fvmsize);
   if(ret !=0)
     return -1;
- 
+
+  fflush (NULL);
+
   pv4dBarrierVM();
 
-  //get hostnames 
+  //get hostnames
   nnodes = getNodeCountVM();
 
-  for(i=0;i<nnodes;i++){	
+  for(i=0;i<nnodes;i++){
     hosts[i] = getHostnameVM(i);
     pv4d_printf("host name %d : %s\n", hosts[i]);
 
   }
+
+  fflush (NULL);
 
   //initialize allocator
   fvmMMInit(getDmaMemPtrVM(), config.fvmsize, getRankVM(), nnodes, &(hosts[0]));
@@ -88,13 +94,17 @@ int main(int argc, char *argv[])
 
   pv4d_printf("Waiting for pc...\n");
 
+  fflush (NULL);
+
   //wait for PC to connect
   while(!fvmWait4PC(config)) {
-	  
+
     //loop waiting for requests
     fvmListenRequests();
 
     pv4d_printf("Waiting for pc...\n");
+
+    fflush (NULL);
 
     //initialize to wait for another
     if(fvmInit(config))
@@ -102,14 +112,15 @@ int main(int argc, char *argv[])
 	printf("error init\n");
 	return -1;
       }
-  
-	  
+
+
     /* 	  pv4d_printf("\nWaiting for the other nodes...\n"); */
     /* 	  pv4dBarrierVM(); */
   }
 /*   else */
 /*     pv4d_printf("Error waiting for pc\n"); */
 
+  fflush (NULL);
 
   shutdownPv4dVM();
   fvmLeave();
