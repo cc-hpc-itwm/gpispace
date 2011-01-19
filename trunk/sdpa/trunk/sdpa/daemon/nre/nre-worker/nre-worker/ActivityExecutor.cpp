@@ -198,6 +198,7 @@ namespace sdpa { namespace nre { namespace worker {
       } catch (std::exception const & ex)
       {
         LOG(ERROR, "could not handle request: " << ex.what());
+        LOG_FLUSH();
       }
 
       try
