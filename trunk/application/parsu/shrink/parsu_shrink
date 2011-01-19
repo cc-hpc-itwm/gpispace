@@ -1,15 +1,13 @@
 #!/bin/bash
 
-bin_dir=${PARSU_BIN_DIR:?}
 shrink_dir=${PARSU_SHRINK_DIR:?}
+tmp_dir=${PARSU_TMP_DIR:?}
 
-xml_dir="${shrink_dir}/xml"
-xml_file_in="${xml_dir}/shrink.xml.in"
-xml_file="${xml_dir}/parsu_shrink.xml"
-pnet_file="${shrink_dir}/shrink.pnet"
-
+xml_file_in="${shrink_dir}/xml/shrink.xml.in"
 mk_xml="${shrink_dir}/mk.xml"
-run="${bin_dir}/run"
+
+xml_file="${tmp_dir}/parsu_shrink.xml"
+pnet_file="${tmp_dir}/shrink.pnet"
 
 shmem_per_node_default=$((2**28))
 gpi_mem_per_node_default=$((2**30))
@@ -77,4 +75,4 @@ if [ $? -ne 0 ] ; then
 fi
 echo "ok" >/dev/stderr
 
-${run} ${xml_file} ${pnet_file}
+parsu_run ${xml_file} ${pnet_file}
