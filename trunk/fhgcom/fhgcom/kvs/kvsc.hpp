@@ -266,16 +266,23 @@ namespace fhg
 
           if (p_host.empty() || p_port.empty())
           {
-            if (getenv("KVS_URL"))
+            if (host.empty () || port.empty())
             {
-              peer_info_t pi = peer_info_t::from_string (getenv("KVS_URL"));
-              host = pi.host();
-              port = pi.port();
+              if (getenv("KVS_URL"))
+              {
+                peer_info_t pi = peer_info_t::from_string (getenv("KVS_URL"));
+                host = pi.host();
+                port = pi.port();
+              }
+              else
+              {
+                host = "localhost";
+                port = "2439";
+              }
             }
             else
             {
-              host = "localhost";
-              port = "2439";
+              // keep already stored ones
             }
           }
           else
