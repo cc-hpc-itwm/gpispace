@@ -136,15 +136,14 @@ std::string JobManager::print() const
 	lock_type lock(mtx_);
 	std::ostringstream os;
 
-	os<<std::endl<<"Begin dump JobManager..."<<std::endl;
+	SDPA_LOG_DEBUG("Begin dump JobManager...");
 
 	os<<"The list of jobs still owned by the JobManager:"<<std::endl;
 	for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
-	  os << "job "<< it->second->id()<<": state -> "<<it->second->getStatus()<< std::endl;
+	  SDPA_LOG_INFO(it->second->print_info());
 
-    os<<"End dump JobManager..."<<std::endl;
+	SDPA_LOG_DEBUG("End dump JobManager...");
 
-    SDPA_LOG_DEBUG(os.str());
 	return os.str();
 }
 
