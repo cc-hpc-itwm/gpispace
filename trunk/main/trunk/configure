@@ -78,7 +78,7 @@ fi
 
 cmake_flags=
 if [ -n "$build_rev" ] ; then
-    cmake_flags="$cmake_flags -DPROJECT_REVISION=\"$build_rev\""
+    cmake_flags="$cmake_flags -DPROJECT_REVISION=$build_rev"
 fi
 if [ "$build_debug" == "true" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Debug"
@@ -91,10 +91,10 @@ else
     cmake_flags="$cmake_flags -DBUILD_TESTING=OFF"
 fi
 if [ -n "$build_prefix" ] ; then
-    cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=\"$build_prefix\""
+    cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
 fi
 if [ -n "$build_gpi_priv_dir" ] ; then
-    cmake_flags="$cmake_flags -DGPI_PRIV_DIR=\"$build_gpi_priv_dir\""
+    cmake_flags="$cmake_flags -DGPI_PRIV_DIR=$build_gpi_priv_dir"
 fi
 
 cmake_flags="$cmake_flags $@"
