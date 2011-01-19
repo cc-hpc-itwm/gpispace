@@ -93,6 +93,10 @@ fi
 if [ -n "$build_prefix" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
 fi
+
+if [ -z "$build_gpi_priv_dir" ] ; then
+    build_gpi_priv_dir=$( grep GPI_PRIV_DIR ./CMakeCache.txt | cut -d= -f 2 | tr -d \" 2>&1 )
+fi
 if [ -n "$build_gpi_priv_dir" ] ; then
     cmake_flags="$cmake_flags -DGPI_PRIV_DIR=$build_gpi_priv_dir"
 fi
@@ -100,12 +104,17 @@ fi
 cmake_flags="$cmake_flags $@"
 
 cmd="cmake \"$src\" $cmake_flags"
-echo "-: configuring build tree"
-echo "-:     source: $src"
-echo "-:      build: `pwd`"
-echo "-:        rev: $build_rev"
-echo "-:      flags: $cmake_flags"
-echo
+echo "# configuring build tree"
+echo "# ======================"
+echo "#"
+echo "#   revision: $build_rev"
+echo "#     source: $src"
+echo "#      build: `pwd`"
+echo "#     prefix: $build_prefix"
+echo "#        gpi: $build_gpi_priv_dir"
+echo "#      tests: $build_tests"
+echo "#      debug: $build_debug"
+echo "#"
 echo "# cmake \"$src\" $cmake_flags"
 read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
 echo
