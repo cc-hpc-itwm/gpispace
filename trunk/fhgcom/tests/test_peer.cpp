@@ -45,11 +45,8 @@ struct F
 
     LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
 
-    std::ostringstream port_str;
-    port_str << m_serv->port ();
-
     fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-                                              , port_str.str()
+                                              , boost::lexical_cast<std::string>(m_serv->port())
                                               , boost::posix_time::seconds(10)
                                               , 3
                                               );
