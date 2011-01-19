@@ -68,6 +68,7 @@ int main (int ac, char *av[])
   {
     if (file_name == "-")
     {
+      std::cerr << "Reading from stdin..." << std::endl;
       fhg::util::ini::parse (std::cin, boost::ref(m));
     }
     else
@@ -77,9 +78,7 @@ int main (int ac, char *av[])
   }
   catch (std::exception const & ex)
   {
-    std::cerr << "could not parse config: " << std::endl;
-    std::cerr << ex.what () << std::endl;
-    return EXIT_FAILURE;
+    std::cerr << "W: could not parse config: " << ex.what () << std::endl;
   }
 
   if (vm.count ("add"))
