@@ -11,7 +11,7 @@
 #include <boost/thread.hpp>
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("1234"); return s; }
+static const std::string kvs_port () { static std::string s("0"); return s; }
 
 struct F
 {
@@ -23,7 +23,7 @@ struct F
   {
     FHGLOG_SETUP();
     m_pool = new fhg::com::io_service_pool(1);
-    m_kvsd = new fhg::com::kvs::server::kvsd ("/tmp/notthere");
+    m_kvsd = new fhg::com::kvs::server::kvsd ("");
     m_serv = new fhg::com::tcp_server ( *m_pool
                                       , *m_kvsd
                                       , kvs_host ()
@@ -36,14 +36,14 @@ struct F
                                );
 
     m_serv->start();
-    sleep (1);
 
-    fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
-                                            , kvs_port()
-                                            , true
-                                            , boost::posix_time::seconds(10)
-                                            , 3
-                                            );
+    LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
+
+    fhg::com::kvs::global::get_kvs_info().init( kvs_host()
+                                              , boost::lexical_cast<std::string>(m_serv->port())
+                                              , boost::posix_time::seconds(10)
+                                              , 3
+                                              );
   }
 
   ~F ()
@@ -99,9 +99,14 @@ BOOST_AUTO_TEST_CASE ( no_server_test )
   const std::string host ("localhost");
   const std::string port ("1234");
 
-  kvs::get_or_create_global_kvs (host, port, true, boost::posix_time::seconds(10), 3);
   try
   {
+    kvs::global::get_kvs_info().init
+      ( host
+      , port
+      , boost::posix_time::seconds(1)
+      , 1
+      );
     kvs::put ("test_global_int_kvs", 42);
     BOOST_CHECK(false);
   }
