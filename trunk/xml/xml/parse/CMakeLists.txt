@@ -12,14 +12,14 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
                 @ONLY
                )
 
-add_executable(includes includes.cpp)
-target_link_libraries(includes ${Boost_LIBRARIES})
+add_executable(gen-includes includes.cpp)
+target_link_libraries(gen-includes ${Boost_LIBRARIES})
 
 set (headerlist_hpp
     ${CMAKE_CURRENT_BINARY_DIR}/headerlist.hpp
     )
 set (headerlist_gen
-     includes
+     gen-includes
     )
 add_custom_command(OUTPUT ${headerlist_hpp}
                    COMMAND ${headerlist_gen} > ${headerlist_hpp}
@@ -29,7 +29,7 @@ add_custom_command(OUTPUT ${headerlist_hpp}
 add_executable(pnetc parser.cpp ${headerlist_hpp})
 target_link_libraries(pnetc ${Boost_LIBRARIES})
 
-add_executable(pnetc.static parser.cpp)
+add_executable(pnetc.static parser.cpp ${headerlist_hpp})
 target_link_libraries(pnetc.static ${Boost_LIBRARIES})
 set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 
