@@ -37,12 +37,12 @@ namespace seda {
 
                 try {
                   //DLOG(TRACE, "handling event in stage " << _stage->name());
-                  SEDA_LOG_DEBUG("handling event in stage " << _stage->name());
+                  //                  SEDA_LOG_DEBUG("handling event in stage " << _stage->name());
 
                     _stage->strategy()->perform(e);
 
                   //DLOG(TRACE, "handled event in stage " << _stage->name());
-                  SEDA_LOG_DEBUG("handled event in stage " << _stage->name());
+                  //SEDA_LOG_DEBUG("handled event in stage " << _stage->name());
                 } catch (const seda::EventNotSupported&) {
                     Stage::Ptr systemEventHandler(StageRegistry::instance().lookup(_stage->getErrorHandler()));
                     if (systemEventHandler.get() != _stage) {
@@ -60,7 +60,6 @@ namespace seda {
             } catch (const seda::StageNotFound& snf) {
                 SEDA_LOG_ERROR("event not handled, stage `" << snf.stageName() << "' could not be found!");
             } catch (const boost::thread_interrupted &irq) {
-                SEDA_LOG_DEBUG("interrupted");
                 break;
             } catch (const std::exception& ex) {
                 SEDA_LOG_ERROR("strategy execution failed: " << ex.what());
