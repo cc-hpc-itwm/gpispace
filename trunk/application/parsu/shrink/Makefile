@@ -3,7 +3,7 @@ MAIN = shrink
 
 TRUNK      = /u/herc/rahn/SDPA/trunk
 BUILD      = $(TRUNK)/main/trunk/build
-PATH_MAIN  = $(TRUNK)/application/su/$(MAIN)
+PATH_MAIN  = $(TRUNK)/application/parsu/$(MAIN)
 UTIL       = $(PATH_MAIN)/util
 
 export BUILD
@@ -19,7 +19,7 @@ CP       = /bin/cp
 
 XML_MAIN    = xml/$(MAIN).xml
 XML_MAIN_IN = $(XML_MAIN).in
-MK_XML      = $(TRUNK)/application/su/$(MAIN)/mk.xml
+MK_XML      = $(TRUNK)/application/parsu/$(MAIN)/mk.xml
 
 ###############################################################################
 
