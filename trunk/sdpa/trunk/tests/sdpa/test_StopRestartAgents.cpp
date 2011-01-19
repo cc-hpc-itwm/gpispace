@@ -94,7 +94,8 @@ namespace sdpa { namespace tests { namespace worker {
 
     sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
 	{
-    	LOG( INFO, "Execute the activity "<<in_activity);
+    	LOG( INFO, "Executing activity ...");
+    	sleep(1);
     	LOG( INFO, "Report activity finished ...");
 
     	sdpa::nre::worker::execution_result_t exec_res(std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result"));
@@ -143,6 +144,8 @@ struct MyFixture
 												, boost::posix_time::seconds(10)
 												, 3
 												);
+
+		m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	}
 
 	~MyFixture()
@@ -210,16 +213,20 @@ void MyFixture::run_client()
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
+
 	for( int k=0; k<m_nITER; k++ )
 	{
-		sdpa::job_id_t job_id_user; int nTrials = 0;
+		int nTrials = 0;
+		sdpa::job_id_t job_id_user;
 
 		try {
-			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
+
+			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
+			job_id_user = ptrCli->submitJob(m_strWorkflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials > NMAXTRIALS)
+			if(nTrials++ > NMAXTRIALS)
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
@@ -234,6 +241,7 @@ void MyFixture::run_client()
 		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
+		nTrials = 0;
 		while( job_status.find("Finished") == std::string::npos &&
 			   job_status.find("Failed") == std::string::npos &&
 			   job_status.find("Cancelled") == std::string::npos)
@@ -245,7 +253,7 @@ void MyFixture::run_client()
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
-				if(nTrials > NMAXTRIALS)
+				if(nTrials++ > NMAXTRIALS)
 				{
 					LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
@@ -258,11 +266,47 @@ void MyFixture::run_client()
 			}
 		}
 
-		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-		ptrCli->retrieveResults(job_id_user);
+		nTrials = 0;
 
-		LOG( DEBUG, "User: delete the job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
+		try {
+				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+				ptrCli->retrieveResults(job_id_user);
+				usleep(5*m_sleep_interval);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials++ > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
+
+			sleep(5);
+		}
+
+		nTrials = 0;
+
+		try {
+			LOG( DEBUG, "User: delete the job "<<job_id_user);
+			ptrCli->deleteJob(job_id_user);
+			usleep(5*m_sleep_interval);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials++ > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
+
+			sleep(5);
+		}
 	}
 
 	ptrCli->shutdown_network();
@@ -271,7 +315,6 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-/*
 BOOST_AUTO_TEST_CASE( testStopRestartOrch )
 {
 	LOG( INFO, "***** testStopRestartOrch *****"<<std::endl);
@@ -681,13 +724,10 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 
 	sleep(1);
 
-
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(sstrOrch);
 
-
 	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
-
 	sleep(5);
 
 	// now try to recover the system
@@ -709,7 +749,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 	ptrOrch->shutdown();
 
 	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
-}*/
+}
 
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 {
@@ -790,5 +830,85 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
 }
 
+/*
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
+{
+	LOG( INFO, "***** testBackupRecoverOrchRealWfeWithClient *****"<<std::endl);
+
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	bool bLaunchNrePcd = true;
+
+	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	LOG( INFO, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	LOG( INFO, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+											 addrNRE,"aggregator_0",
+											 workerUrl,
+											 strGuiUrl,
+											 bLaunchNrePcd,
+											 TESTS_NRE_PCD_BIN_PATH,
+											 v_fake_PC_search_path,
+											 v_module_preload );
+
+	try {
+		ptrNRE->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		return;
+	}
+
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	sleep(1);
+
+
+	LOG( DEBUG, "Shutdown the orchestrator");
+	ptrOrch->shutdown(sstrOrch);
+
+
+	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
+
+	sleep(5);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+
+	LOG( DEBUG, "Re-start the orchestrator");
+	ptrRecOrch->start(sstrOrch);
+
+	// give some time to the NRE to re-register
+	sleep(5);
+
+	m_threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	sleep(1);
+
+	ptrNRE->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
+}
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
