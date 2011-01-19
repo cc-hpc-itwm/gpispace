@@ -41,8 +41,8 @@ namespace fhg { namespace log {
       typedef boost::recursive_mutex mutex_type;
       typedef boost::lock_guard<mutex_type> lock_type;
 
-      static const Logger::ptr_t &get();
-      static const Logger::ptr_t &get(const std::string &name, const std::string &base = "default");
+      static Logger::ptr_t get();
+      static Logger::ptr_t get(const std::string &name, const std::string &base = "default");
 
       ~Logger() {}
 
@@ -63,8 +63,8 @@ namespace fhg { namespace log {
         return (*filter_)(evt);
       }
 
-      void log(const LogEvent &event) const;
-      void flush() const;
+      void log(const LogEvent &event);
+      void flush();
 
       const Appender::ptr_t &addAppender(const Appender::ptr_t &appender);
       const Appender::ptr_t &getAppender(const std::string &appender_name) const;

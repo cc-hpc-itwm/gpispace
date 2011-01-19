@@ -57,7 +57,8 @@ logger_t getLogger(const std::string &name, const std::string & base);
       inline void removeAppender(const std::string &appender_name) { impl_->removeAppender(appender_name); }
       inline void removeAllAppenders() { impl_->removeAllAppenders(); }
 
-      inline void log(const LogEvent &event) const { impl_->log(event); }
+      inline void log(const LogEvent &event) { impl_->log(event); }
+      inline void flush(void) { impl_->flush(); }
     private:
       explicit
       LoggerApi(logger_impl_t impl) : impl_(impl) {}

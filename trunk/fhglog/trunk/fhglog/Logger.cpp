@@ -11,12 +11,12 @@ using namespace fhg::log;
  * Logger implementation
  *
  */
-const Logger::ptr_t &Logger::get()
+Logger::ptr_t Logger::get()
 {
   return get("default");
 }
 
-const Logger::ptr_t &Logger::get(const std::string &a_name, const std::string & base)
+Logger::ptr_t Logger::get(const std::string &a_name, const std::string & base)
 {
   typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
   typedef boost::recursive_mutex mutex_type;
@@ -74,7 +74,7 @@ const LogLevel &Logger::getLevel() const
   return lvl_;
 }
 
-void Logger::log(const LogEvent &event) const
+void Logger::log(const LogEvent &event)
 {
   if (! isLevelEnabled(event.severity()))
     return;
@@ -110,6 +110,23 @@ void Logger::log(const LogEvent &event) const
                 << std::endl;
     }
     fhg::log::error_handler();
+  }
+}
+
+void Logger::flush (void)
+{
+  for (appender_list_t::const_iterator it(appenders_.begin());
+       it != appenders_.end();
+       ++it)
+  {
+    try
+    {
+      (*it)->flush ();
+    }
+    catch (std::exception const & ex)
+    {
+      std::clog << "could not flush " << (*it)->name() << ": " << ex.what() << std::endl;
+    }
   }
 }
 
