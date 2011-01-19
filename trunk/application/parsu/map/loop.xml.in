@@ -8,7 +8,7 @@
     <place name="desc" type="string">
       <token>
         <value>
-          "@CONFIG_FILE@"
+          "#CONFIG_FILE#"
         </value>
       </token>
     </place>

@@ -46,8 +46,8 @@ TYPE_INPUT       = segy
 FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded
 TYPE_OUTPUT      = segy
 CMD              = suwind itmin=10 nt=300
-SHMEM_PER_NODE   = 200 * 2^20
-GPI_MEM_PER_NODE = 600 * 2^20
+SHMEM_PER_NODE   = 2^28
+GPI_MEM_PER_NODE = 2^30
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
 	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" > $@

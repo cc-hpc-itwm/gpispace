@@ -1,9 +1,10 @@
 
+set (PARSU_SHRINK "share/sdpa/parsu/shrink")
+
 add_subdirectory (xml)
 
-set (PARSU_SHRINK_DIR
-    ${CMAKE_INSTALL_PREFIX}/share/sdpa/parsu/shrink
-)
+set (PARSU_SHRINK_DIR "${CMAKE_INSTALL_PREFIX}/${PARSU_SHRINK}")
+set (PARSU_PNETC_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${PNETC_LIB_DIR}")
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/parsu_shrink.in
                 ${CMAKE_CURRENT_BINARY_DIR}/parsu_shrink
@@ -23,6 +24,6 @@ set (helper
 )
 
 install(PROGRAMS ${helper}
-  DESTINATION share/sdpa/parsu/shrink
+  DESTINATION ${PARSU_SHRINK}
   COMPONENT parsu)
 

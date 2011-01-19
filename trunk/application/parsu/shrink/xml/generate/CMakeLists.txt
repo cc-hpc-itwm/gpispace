@@ -4,6 +4,6 @@ set (xml
   slot.xml
 )
 
-install(PROGRAMS ${xml}
-  DESTINATION share/sdpa/parsu/shrink/generate
+install(FILES ${xml}
+  DESTINATION ${PARSU_SHRINK}/generate
   COMPONENT parsu)

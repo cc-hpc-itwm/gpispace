@@ -1,3 +1,5 @@
+set (PNETC_LIB_DIR "share/sdpa/xml/lib")
+
 add_subdirectory(lib)
 add_subdirectory(example)
 add_subdirectory(kdm)

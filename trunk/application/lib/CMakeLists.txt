@@ -7,6 +7,7 @@ set (xmls
   make_pair.xml
   sequence_bounded.xml
   sequence.xml
+  sequence_control.xml
   tagged_sequence_bounded.xml
   tagged_sequence.xml
   trigger_if.xml
@@ -16,6 +17,6 @@ set (xmls
   )
 
 install (FILES ${xmls}
-  DESTINATION share/sdpa/xml/lib
+  DESTINATION ${PNETC_LIB_DIR}
   COMPONENT examples
   )
