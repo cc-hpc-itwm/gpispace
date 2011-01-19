@@ -45,23 +45,24 @@ namespace fhg { namespace log {
   } while (0)
 
 #if FHGLOG_DISABLE_LOGGING == 1
-#define __LOG(logger, level, msg)
-#define FHGLOG_SETUP(args...)
+#  define __LOG(logger, level, msg)
+#  define FHGLOG_SETUP(args...)
+#  define LOG_FLUSH()
 #else
-#define FHGLOG_SETUP(args...)                                           \
-  do                                                                    \
-  {                                                                     \
-     if (! #args[0])                                                    \
-     {                                                                  \
+#  define FHGLOG_SETUP(args...)                                         \
+    do                                                                  \
+    {                                                                   \
+      if (! #args[0])                                                   \
+      {                                                                 \
         fhg::log::configure();                                          \
-     }                                                                  \
-     else                                                               \
-     {                                                                  \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
         fhg::log::configure(args);                                      \
-     }                                                                  \
-  } while (0)
+      }                                                                 \
+    } while (0)
 
-#define __LOG(logger, level, msg)                                       \
+#  define __LOG(logger, level, msg)                                       \
     do {                                                                \
       using namespace fhg::log;                                         \
       if (logger.isLevelEnabled(LogLevel::level))                       \
@@ -74,6 +75,13 @@ namespace fhg { namespace log {
         }                                                               \
       }                                                                 \
     } while(0)
+
+#  define LOG_FLUSH()                                                   \
+    do                                                                  \
+    {                                                                   \
+      fhg::log::getLogger().flush();                                    \
+    } while (0)                                                         \
+
 #endif // if FHGLOG_ENABLED == 1
 
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
