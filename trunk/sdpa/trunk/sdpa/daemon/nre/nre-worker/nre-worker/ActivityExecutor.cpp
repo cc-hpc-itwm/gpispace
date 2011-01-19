@@ -362,37 +362,36 @@ cont:
      	bool signal_ignored = true;
      	while (signal_ignored)
      	{
-     		result = sigwait(&waitset, &sig);
-     		if (result == 0)
-     		{
-     			LOG(DEBUG, "got signal: " << sig);
+          fflush (NULL);
+          result = sigwait(&waitset, &sig);
+          if (result == 0)
+          {
+            LOG(DEBUG, "got signal: " << sig);
 
-                        fflush (NULL);
-
-     			switch (sig)
-     			{
-     			case SIGHUP:
-                          LOG(INFO, "unloading modules, implement me!");
-                          break;
-     			case SIGTERM: // fall through
-     			case SIGKILL:
-     			case SIGINT:
-                          signal_ignored = false;
-                          break;
-                        case SIGUSR1:
-                        case SIGUSR2:
-                          DLOG(TRACE, "flushing streams");
-                          fflush(NULL);
-                          break;
-     			default:
-                          LOG(INFO, "ignoring signal: " << sig);
-                          break;
-     			}
-     		}
-     		else
-     		{
-                  LOG(ERROR, "error while waiting for signal: " << result);
-     		}
+            switch (sig)
+            {
+            case SIGHUP:
+              LOG(INFO, "unloading modules, implement me!");
+              break;
+            case SIGTERM: // fall through
+            case SIGKILL:
+            case SIGINT:
+              signal_ignored = false;
+              break;
+            case SIGUSR1:
+            case SIGUSR2:
+              DLOG(TRACE, "flushing streams");
+              fflush(NULL);
+              break;
+            default:
+              LOG(INFO, "ignoring signal: " << sig);
+              break;
+            }
+          }
+          else
+          {
+            LOG(ERROR, "error while waiting for signal: " << result);
+          }
      	}
 
      	//fvm_pc.leave();
