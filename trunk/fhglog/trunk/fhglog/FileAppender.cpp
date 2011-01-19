@@ -23,11 +23,12 @@
 
 using namespace fhg::log;
 
-FileAppender::FileAppender(const std::string &a_name
-                         , const std::string &a_path
+FileAppender::FileAppender( const std::string &a_name
+                          , const std::string &a_path
                           , const std::string &fmt
-                         , int flush_interval
-                         , const std::ios_base::openmode &a_mode) throw (std::exception)
+                          , int flush_interval
+                          , const std::ios_base::openmode &a_mode
+                          )
   : Appender(a_name)
   , path_(a_path)
   , stream_()
@@ -56,24 +57,23 @@ FileAppender::~FileAppender() throw ()
   }
 }
 
-void FileAppender::flush() throw ()
+void FileAppender::flush()
 {
   try
   {
-    if (stream_.is_open()) stream_.flush();
-  } catch (...)
+    stream_.flush();
+  } catch (std::exception const & ex)
   {
-    // ignore
+    std::clog << "could not flush: " << ex.what();
   }
-  event_count_ = 0;
 }
 
-void FileAppender::close() throw (std::exception)
+void FileAppender::close()
 {
   stream_.close();
 }
 
-void FileAppender::open() throw (std::exception)
+void FileAppender::open()
 {
   stream_.open(path_.c_str(), mode_);
 #ifndef NDEBUG // FIXME: use a better marking message
@@ -82,16 +82,26 @@ void FileAppender::open() throw (std::exception)
   event_count_ = 0;
 }
 
-void FileAppender::reopen() throw (std::exception)
+void FileAppender::reopen()
 {
-  flush();
   close();
   open();
 }
 
 void FileAppender::append(const LogEvent &evt)
 {
-  stream_ << format(fmt_, evt);
-  if (++event_count_ >= flush_interval_)
-    flush();
+  try
+  {
+    stream_ << format(fmt_, evt);
+    if (++event_count_ >= flush_interval_)
+    {
+      flush();
+      event_count_ = 0;
+    }
+  }
+  catch (std::exception const & ex)
+  {
+    std::clog << "could not append to `" << path_ << "'" << std::endl;
+    reopen();
+  }
 }

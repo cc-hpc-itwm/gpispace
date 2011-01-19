@@ -40,7 +40,7 @@ namespace fhg { namespace log {
                     = std::ios_base::out
                     | std::ios_base::app
                     | std::ios_base::binary
-                ) throw (std::exception);
+                );
     virtual ~FileAppender() throw();
 
     const std::string &path() const
@@ -63,10 +63,10 @@ namespace fhg { namespace log {
       mode_ = a_mode;
     }
 
-    virtual void flush() throw ();
-    virtual void close() throw (std::exception);
-    virtual void open() throw (std::exception);
-    virtual void reopen() throw (std::exception);
+    virtual void flush();
+    virtual void close();
+    virtual void open();
+    virtual void reopen();
 
     virtual void append(const LogEvent &evt);
   private:
