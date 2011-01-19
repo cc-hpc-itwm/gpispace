@@ -80,15 +80,21 @@ cmake_flags=
 if [ -n "$build_rev" ] ; then
     cmake_flags="$cmake_flags -DPROJECT_REVISION=$build_rev"
 fi
+
 if [ "$build_debug" == "true" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Debug"
 else
     cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Release"
 fi
+
 if [ "$build_tests" == "true" ] ; then
     cmake_flags="$cmake_flags -DBUILD_TESTING=ON"
 else
     cmake_flags="$cmake_flags -DBUILD_TESTING=OFF"
+fi
+
+if [ -z "$build_prefix" ] ; then
+    build_prefix=$( grep CMAKE_INSTALL_PREFIX ./CMakeCache.txt | cut -d= -f 2 | tr -d \" 2>&1 )
 fi
 if [ -n "$build_prefix" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
