@@ -362,7 +362,8 @@ cont:
      	bool signal_ignored = true;
      	while (signal_ignored)
      	{
-          fflush (NULL);
+          LOG_FLUSH();
+
           result = sigwait(&waitset, &sig);
           if (result == 0)
           {
@@ -381,7 +382,7 @@ cont:
             case SIGUSR1:
             case SIGUSR2:
               DLOG(TRACE, "flushing streams");
-              fflush(NULL);
+              LOG_FLUSH();
               break;
             default:
               LOG(INFO, "ignoring signal: " << sig);
