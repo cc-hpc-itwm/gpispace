@@ -289,6 +289,8 @@ namespace fhg
           {
             host = p_host;
             port = p_port;
+            timeout = p_timeout;
+            max_connection_attempts = p_max_connection_attempts;
           }
 
           assert (! host.empty());
