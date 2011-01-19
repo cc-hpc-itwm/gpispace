@@ -233,9 +233,13 @@ void GenericDaemon::shutdown()
 	// I should first notify my master
 	if( !is_orchestrator() )
 	{
-		ErrorEvent::Ptr pErrEvt(new ErrorEvent(name(), master(), sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "shutdown"));
-		sendEventToMaster(pErrEvt);
+		notifyMaster(sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN);
+		notifyWorkers(sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN);
 	}
+
+	//wait for a while -> allow the daemon to deliver the messages
+
+	sleep(5);
 
 	if(!m_bStopped)
 		stop();
@@ -253,6 +257,19 @@ void GenericDaemon::shutdown()
 		delete ptr_workflow_engine_;
 		ptr_workflow_engine_ = NULL;
 	}
+}
+
+void GenericDaemon::notifyMaster(int errcode )
+{
+	//notify master
+	ErrorEvent::Ptr pErrEvt(new ErrorEvent(name(), master(), sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "shutdown"));
+	sendEventToMaster(pErrEvt);
+}
+
+void GenericDaemon::notifyWorkers(int errcode)
+{
+	// notify workers
+	scheduler()->notifyWorkers(errcode);
 }
 
 // TODO: work here
@@ -508,12 +525,22 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 		// you should consume from the  worker's pending list; put the job into the worker's submitted list
 		sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(worker_id, e.last_job_id());
+		SDPA_LOG_DEBUG("Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
 		const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
-		if( ptrJob.get() )
+		// INVESTIGATE HERE!
+		std::string job_status = ptrJob->getStatus();
+		bool bTerminal = false;
+		if( job_status.find("Finished") != std::string::npos ||
+					   job_status.find("Failed") != std::string::npos ||
+					   job_status.find("Cancelled") != std::string::npos )
+			bTerminal = true;
+
+		if( ptrJob.get() && !bTerminal )
 		{
 			// put the job into the Running state here
+			SDPA_LOG_DEBUG("The job status is "<<ptrJob->getStatus());
 			ptrJob->Dispatch(); // no event need to be sent
 
 			// create a SubmitJobEvent for the job job_id serialize and attach description
@@ -723,7 +750,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 {
-	LOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
+	SDPA_LOG_INFO("got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
 
 	// if it'a communication error, inspect all jobs and
 	// send results if they are in a terminal state

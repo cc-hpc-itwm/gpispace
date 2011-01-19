@@ -46,6 +46,7 @@ namespace daemon {
      virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & ) = 0;
 
 	 virtual size_t numberOfWorkers() = 0;
+	 virtual void notifyWorkers(int) = 0;
 
 	 virtual void schedule(const sdpa::job_id_t& jobId) = 0;
 	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref ) = 0;

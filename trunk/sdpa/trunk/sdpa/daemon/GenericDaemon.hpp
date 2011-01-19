@@ -229,6 +229,9 @@ namespace sdpa { namespace daemon {
 	  void decExtJobsCnt();
 	  unsigned int extJobsCnt();
 
+	  void notifyMaster(int);
+	  void notifyWorkers(int);
+
   protected:
 
 	 // observe workflow engine

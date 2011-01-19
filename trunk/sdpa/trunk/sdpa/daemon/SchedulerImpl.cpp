@@ -200,8 +200,18 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 		// Should set the workflow_id here, or send it together with the workflow description
-		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE");
+		SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. Workflow description follows: ");
+		SDPA_LOG_DEBUG(pJob->description());
+
 		pJob->Dispatch();
+
+		if(pJob->description().empty() )
+		{
+			SDPA_LOG_ERROR("Empty Workflow!!!!");
+			// declare job as failed
+		}
+
+
 		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 	}
 	catch(const NoWorkflowEngine& ex)
@@ -704,3 +714,16 @@ bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
 	return ptr_worker_man_->has_job(job_id);
 }
 
+
+void SchedulerImpl::notifyWorkers(int errcode)
+{
+	std::list<std::string> workerList;
+	ptr_worker_man_->getWorkerList(workerList);
+
+	for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
+	{
+		SDPA_LOG_INFO("Notify worker "<<*iter<<" that I'm gonna shutdown ...");
+		ErrorEvent::Ptr pErrEvt(new ErrorEvent( ptr_comm_handler_->name(), *iter , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "shutdown") );
+		ptr_comm_handler_->sendEventToMaster(pErrEvt);
+	}
+}

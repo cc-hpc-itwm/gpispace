@@ -66,6 +66,7 @@ namespace sdpa { namespace daemon {
 	  void make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id );
 
 	  size_t numberOfWorkers() { return worker_map_.size(); }
+	  void getWorkerList(std::list<std::string>& workerList);
 	  void balanceWorkers();
 	  const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
 
@@ -76,8 +77,12 @@ namespace sdpa { namespace daemon {
 	  friend class sdpa::tests::DaemonFSMTest_BSC;
 
 	  template <class Archive>
-	  void serialize(Archive& ar, const unsigned int) {
+	  void serialize(Archive& ar, const unsigned int)
+	  {
 		  ar & worker_map_;
+		  ar & rank_map_;
+		  ar & owner_map_;
+		  ar & common_queue_;
 	  }
 
 	  friend class boost::serialization::access;

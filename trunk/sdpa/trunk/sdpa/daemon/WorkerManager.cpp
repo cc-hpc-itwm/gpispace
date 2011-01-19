@@ -252,7 +252,7 @@ struct compare_workers
  */
 unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException)
 {
-        DLOG(TRACE, "Get the least loaded worker ...");
+    DLOG(TRACE, "Get the least loaded worker ...");
 
 	lock_type lock(mtx_);
 
@@ -456,14 +456,12 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
 		throw WorkerNotFoundException(workerId);
 	worker_map_.erase (w);
 
-        for (rank_map_t::iterator it (rank_map_.begin()); it != rank_map_.end(); ++it)
-        {
-          if (it->second == workerId)
-          {
-            rank_map_.erase (it);
-            break;
-          }
-        }
+	for (rank_map_t::iterator it (rank_map_.begin()); it != rank_map_.end(); ++it)
+		if (it->second == workerId)
+		{
+			rank_map_.erase (it);
+			break;
+		}
 }
 
 void WorkerManager::getListOfRegisteredRanks( std::vector<unsigned int>& v)
@@ -487,13 +485,19 @@ bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
 		return true;
 	}
 
-	 for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-		 if(iter->second->has_job( job_id ))
-		 {
-		     SDPA_LOG_DEBUG( "The job " << job_id<<" is already assigned to the worker "<<iter->first );
-			 return true;
-		 }
+	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+		if(iter->second->has_job( job_id ))
+		{
+			SDPA_LOG_DEBUG( "The job " << job_id<<" is already assigned to the worker "<<iter->first );
+			return true;
+		}
 
-	 return false;
+	return false;
+}
 
+void WorkerManager::getWorkerList(std::list<std::string>& workerList)
+{
+	lock_type lock(mtx_);
+	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+		workerList.push_back(iter->second->name());
 }

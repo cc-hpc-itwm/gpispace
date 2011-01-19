@@ -68,6 +68,7 @@ namespace sdpa {
     virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
+    virtual void notifyWorkers(int);
 
 	virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);

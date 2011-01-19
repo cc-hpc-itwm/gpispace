@@ -87,7 +87,7 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_run_job()
     {
-      DLOG(TRACE, "Process 'action_run_job'");
+    	DLOG(TRACE, "Process 'action_run_job'");
     }
 
     // transition from Pending to Cancelled

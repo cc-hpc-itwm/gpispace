@@ -342,7 +342,7 @@ void Orchestrator::backup( std::ostream& os )
 	}
 	catch(exception &e)
 	{
-		SDPA_LOG_FATAL("Exception occurred: "<< e.what());
+		SDPA_LOG_INFO("Exception occurred: "<< e.what());
 		return;
 	}
 }
@@ -359,12 +359,15 @@ void Orchestrator::recover( std::istream& is )
 		// restore the schedule from the archive
 		ia >> ptr_job_man_;
 
+		SDPA_LOG_INFO("Job manager after recovery: \n");
+		ptr_job_man_->print();
+
 		ia.register_type(static_cast<SchedulerOrch*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
 		ia>> ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
-		SDPA_LOG_FATAL("Exception occurred: "<< e.what());
+		SDPA_LOG_INFO("Exception occurred: "<< e.what());
 	}
 }

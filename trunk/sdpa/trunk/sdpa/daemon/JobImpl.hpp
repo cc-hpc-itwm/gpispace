@@ -78,9 +78,12 @@ namespace sdpa { namespace daemon {
 		virtual std::string print_info()
 		{
 			std::ostringstream os;
-			os<<id_<<std::endl;
-			os<<desc_<<std::endl;
-			os<<parent_<<std::endl;
+			os<<std::endl;
+			os<<"id: "<<id_<<std::endl;
+			os<<"type: "<<(b_local_?"local job":"remote job")<<std::endl;
+			os<<"status: "<<getStatus()<<std::endl;
+			os<<"parent: "<<parent_<<std::endl;
+			//os<<"description: "<<desc_<<std::endl;
 
 			return os.str();
 		}
