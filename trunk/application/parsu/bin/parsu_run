@@ -4,7 +4,7 @@ xml_file=${1:?}
 pnet_file=${2:?}
 
 echo -n "-: compiling job description..." >/dev/stderr
-pnetc ${xml_file} -I "${PARSU_PNETC_LIB_DIR}" > ${pnet_file}
+pnetc ${xml_file} -I ${PARSU_PNETC_LIB_DIR} > ${pnet_file}
 if [ $? -ne 0 ] ; then
   echo "E: generating failed!" >&2
   exit 2

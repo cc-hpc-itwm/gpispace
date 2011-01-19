@@ -1,9 +1,10 @@
 #!/bin/bash
 
-shrink_dir=${PARSU_SHRINK_DIR:?}
-tmp_dir=${PARSU_TMP_DIR:?}
+shrink_dir="@PARSU_SHRINK_DIR@"
 
-xml_file_in="${shrink_dir}/xml/shrink.xml.in"
+tmp_dir=${PARSU_TMP_DIR:-"/tmp"}
+
+xml_file_in="${shrink_dir}/shrink.xml.in"
 mk_xml="${shrink_dir}/mk.xml"
 
 xml_file="${tmp_dir}/parsu_shrink.xml"
@@ -75,4 +76,5 @@ if [ $? -ne 0 ] ; then
 fi
 echo "ok" >/dev/stderr
 
+PARSU_PNETC_LIB_DIR="${shrink_dir} -I ${PARSU_PNETC_LIB_DIR}" \
 parsu_run ${xml_file} ${pnet_file}
