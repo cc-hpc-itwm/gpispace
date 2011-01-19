@@ -20,6 +20,11 @@ function setup ()
     return 0
 }
 
+function configure ()
+{
+    return 0
+}
+
 function cleanup ()
 {
     echo "cleaning up" >&2
