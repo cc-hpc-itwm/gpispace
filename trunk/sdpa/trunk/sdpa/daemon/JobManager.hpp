@@ -71,13 +71,15 @@ namespace sdpa { namespace daemon {
       bool slotAvailable() const;
 
       void resubmitJobsAndResults(IComm* );
-	  /*template <class Archive>
+
+	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)
 	  {
 		  ar & BOOST_SERIALIZATION_NVP(job_map_);
 		  ar & BOOST_SERIALIZATION_NVP(job_map_marked_for_del_);
-	  }*/
+	  }
 
+	  /*
       template<class Archive>
       void save(Archive & ar, const unsigned int version) const
 	  {
@@ -94,6 +96,7 @@ namespace sdpa { namespace daemon {
 	  }
 
 	  BOOST_SERIALIZATION_SPLIT_MEMBER()
+	  */
 
 
 	  friend class boost::serialization::access;
