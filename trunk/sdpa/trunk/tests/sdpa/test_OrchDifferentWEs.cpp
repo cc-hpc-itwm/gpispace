@@ -64,7 +64,7 @@ using namespace sdpa::tests;
 typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("12100"); return s; }
+static const std::string kvs_port () { static std::string s("0"); return s; }
 
 namespace sdpa { namespace tests { namespace worker {
   class NreWorkerClient
@@ -111,50 +111,58 @@ struct MyFixture
 	MyFixture()
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
+			, m_pool (0)
+	    	, m_kvsd (0)
+	    	, m_serv (0)
+	    	, m_thrd (0)
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
 
 		LOG(DEBUG, "Fixture's constructor called ...");
 
-		m_ptrPool = new fhg::com::io_service_pool(1);
-		m_ptrKvsd = new fhg::com::kvs::server::kvsd ("/tmp/notthere");
-		m_ptrServ = new fhg::com::tcp_server ( *m_ptrPool
-										  , *m_ptrKvsd
+		m_pool = new fhg::com::io_service_pool(1);
+		m_kvsd = new fhg::com::kvs::server::kvsd ("");
+		m_serv = new fhg::com::tcp_server ( *m_pool
+										  , *m_kvsd
 										  , kvs_host ()
 										  , kvs_port ()
 										  , true
 										  );
-
-		m_ptrThrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_ptrPool
+		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
+												, m_pool
 												)
 								   );
 
-		m_ptrServ->start();
-		sleep (1);
+		m_serv->start();
 
-		fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
-												, kvs_port()
-												, true
-												, boost::posix_time::seconds(10)
-												, 3
-												);
+		LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
+
+		fhg::com::kvs::global::get_kvs_info().init( kvs_host()
+												  , boost::lexical_cast<std::string>(m_serv->port())
+												  , boost::posix_time::seconds(10)
+												  , 3
+												  );
+
+		m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	}
 
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 
-		//LOG(DEBUG, "Clear StageRegistry ...");
 		//seda::StageRegistry::instance().clear();
 
-		m_ptrPool->stop ();
-		m_ptrThrd->join ();
-		delete m_ptrThrd;
-		delete m_ptrServ;
-		delete m_ptrKvsd;
-		delete m_ptrPool;
+		sstrOrch.str("");
+		sstrAgg.str("");
+		sstrNRE.str("");
+
+		m_pool->stop ();
+		m_thrd->join ();
+		delete m_thrd;
+		delete m_serv;
+		delete m_kvsd;
+		delete m_pool;
 	}
 
 	string read_workflow(string strFileName)
@@ -174,16 +182,21 @@ struct MyFixture
 		return os.str();
 	}
 
-	//void startDaemons(const std::string& workerUrl);
-
 	int m_nITER;
 	int m_sleep_interval ;
     std::string m_strWorkflow;
 
-	fhg::com::io_service_pool *m_ptrPool;
-	fhg::com::kvs::server::kvsd *m_ptrKvsd;
-	fhg::com::tcp_server *m_ptrServ;
-	boost::thread *m_ptrThrd;
+    fhg::com::io_service_pool *m_pool;
+	fhg::com::kvs::server::kvsd *m_kvsd;
+	fhg::com::tcp_server *m_serv;
+	boost::thread *m_thrd;
+
+	std::stringstream sstrOrch;
+	std::stringstream sstrAgg;
+	std::stringstream sstrNRE;
+
+	boost::thread m_threadClient;
+	pid_t pidPcd_;
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_orchestrator_empty_we, MyFixture )
