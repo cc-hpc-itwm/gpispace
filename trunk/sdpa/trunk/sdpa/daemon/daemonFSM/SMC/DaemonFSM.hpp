@@ -109,11 +109,7 @@ namespace sdpa {
 						m_fsmContext.setState(m_fsmContext.valueOf(stateId));
 					}
 
-					template<class Archive>
-					void serialize( Archive & ar, const unsigned int file_version)
-					{
-						boost::serialization::split_member(ar, *this, file_version);
-					}
+					BOOST_SERIALIZATION_SPLIT_MEMBER()
 
 					friend class boost::serialization::access;
 					//friend class sdpa::tests::WorkerSerializationTest;

@@ -112,12 +112,6 @@ void DaemonFSM::handleSubmitJobEvent(const SubmitJobEvent* pEvent)
 	GetContext().SubmitJob(*pEvent);
 }
 
-/*void DaemonFSM::handleLifeSignEvent(const LifeSignEvent* pEvent)
-{
-	lock_type lock(mtx_);
-	GetContext().LifeSign(*pEvent);
-}*/
-
 void DaemonFSM::handleRequestJobEvent(const RequestJobEvent* pEvent)
 {
 	lock_type lock(mtx_);
