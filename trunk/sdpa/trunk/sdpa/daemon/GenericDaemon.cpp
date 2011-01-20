@@ -163,6 +163,17 @@ void GenericDaemon::start( std::istream& is )
 	{
 		SDPA_LOG_INFO( "The input stream is not empty! Attempting to recover the daemon "<<name());
 		recover(is);
+
+		ptr_job_man_->updateJobInfo(this);
+
+		if( is_orchestrator() )
+		{
+			SDPA_LOG_WARN( "JobManager after recovering" );
+			ptr_job_man_->print();
+
+			SDPA_LOG_INFO("Worker manager after recovery: \n");
+			scheduler()->print();
+		}
 	}
 	else
 		SDPA_LOG_INFO( "The input stream is empty! No recovery operation carried out for the daemon "<<name());
@@ -191,17 +202,6 @@ void GenericDaemon::start( )
 	}
 	else // can register now
 	{
-
-		ptr_job_man_->updateJobInfo(this);
-
-		if( is_orchestrator() )
-		{
-			SDPA_LOG_WARN( "JobManager after recovering" );
-			ptr_job_man_->print();
-
-			SDPA_LOG_INFO("The JobManager has "<<ptr_job_man_->number_of_jobs()<<" jobs!");
-		}
-
 		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
 		if( !is_orchestrator() )
 			requestRegistration();
