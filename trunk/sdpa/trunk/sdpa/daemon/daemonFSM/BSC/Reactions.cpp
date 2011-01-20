@@ -116,8 +116,10 @@ void DaemonFSM::handleConfigNokEvent(const ConfigNokEvent* pEvent)
 	{
 		lock_type lock(mtx_);
 		process_event(*pEvent);
+
 		m_bStarted = true;
 		m_bConfigOk = false;
+		m_bStopped = true;
 	}
 
 	cond_can_start_.notify_one();

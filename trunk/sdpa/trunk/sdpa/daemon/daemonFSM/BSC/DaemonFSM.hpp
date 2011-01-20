@@ -76,11 +76,29 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 		 sc::state_machine<DaemonFSM, Down>::process_event(e);
 	}
 
-	template <class Archive>
-	void serialize(Archive& ar, const unsigned int file_version )
+	template<class Archive>
+	void save(Archive & ar, const unsigned int) const
 	{
-		ar & boost::serialization::base_object<GenericDaemon>(*this);
+		int stateId(m_fsmContext.getState().getId());
+
+		// invoke serialization of the base class
+		ar << boost::serialization::base_object<GenericDaemon>(*this);
+		//ar << stateId;
 	}
+
+	template<class Archive>
+	void load(Archive & ar, const unsigned int)
+	{
+		int stateId;
+
+		// invoke serialization of the base class
+		ar >> boost::serialization::base_object<GenericDaemon>(*this);
+		//ar >> stateId;
+
+		//m_fsmContext.setState(m_fsmContext.valueOf(stateId));
+	}
+
+	BOOST_SERIALIZATION_SPLIT_MEMBER()
 
 	friend class boost::serialization::access;
 
