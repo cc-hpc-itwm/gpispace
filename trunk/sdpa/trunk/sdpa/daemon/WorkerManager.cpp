@@ -479,6 +479,7 @@ void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& 
 
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
 {
+	lock_type lock(mtx_);
 	if( common_queue_.find(job_id) != common_queue_.end() )
 	{
 		SDPA_LOG_DEBUG( "The job " << job_id<<" is in the common queue" );
