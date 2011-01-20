@@ -63,7 +63,7 @@ set(PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" F
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/modules.sdpa.in    ${CMAKE_CURRENT_BINARY_DIR}/module.${PROJECT_REVISION} @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/modules.sdpa.in    ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa     @ONLY)
 
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -143,3 +143,8 @@ if (ENABLE_APPLICATION)
 endif (ENABLE_APPLICATION)
 
 include(TargetDoc.cmake OPTIONAL)
+
+install (FILES ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa
+  DESTINATION etc/modules/sdpa
+  RENAME ${PROJECT_REVISION}
+  COMPONENT configurations)
