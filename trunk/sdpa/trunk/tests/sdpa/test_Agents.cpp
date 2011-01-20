@@ -62,8 +62,7 @@ using namespace sdpa::tests;
 typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
-static const std::string kvs_port () { static std::string s("12100"); return s; }
-
+static const std::string kvs_port () { static std::string s("0"); return s; }
 
 struct MyFixture
 {
@@ -77,15 +76,24 @@ struct MyFixture
 		LOG(DEBUG, "Fixture's constructor called ...");
 
 		m_ptrPool = new fhg::com::io_service_pool(1);
-		m_ptrKvsd = new fhg::com::kvs::server::kvsd ("/tmp/notthere");
-		m_ptrServ = new fhg::com::tcp_server ( *m_ptrPool, *m_ptrKvsd, kvs_host (), kvs_port (), true);
-
-		m_ptrThrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run, m_ptrPool) );
+		m_ptrKvsd = new fhg::com::kvs::server::kvsd ("");
+		m_ptrServ = new fhg::com::tcp_server ( *m_ptrPool
+										  , *m_ptrKvsd
+										  , kvs_host ()
+										  , kvs_port ()
+										  , true
+										  );
+		m_ptrThrd = new boost::thread( boost::bind( &fhg::com::io_service_pool::run, m_ptrPool ) );
 
 		m_ptrServ->start();
-		sleep (1);
 
-		fhg::com::kvs::get_or_create_global_kvs ( kvs_host(), kvs_port(), true, boost::posix_time::seconds(10), 3);
+		LOG(INFO, "kvs daemon is listening on port " << m_ptrServ->port ());
+
+		fhg::com::kvs::global::get_kvs_info().init( kvs_host()
+												  , boost::lexical_cast<std::string>(m_ptrServ->port())
+												  , boost::posix_time::seconds(10)
+												  , 3
+												  );
 	}
 
 	~MyFixture()
@@ -94,8 +102,9 @@ struct MyFixture
 
 		//seda::StageRegistry::instance().clear();
 
-		m_ptrPool->stop ();
-		m_ptrThrd->join ();
+		m_ptrPool->stop();
+		m_ptrThrd->join();
+
 		delete m_ptrThrd;
 		delete m_ptrServ;
 		delete m_ptrKvsd;
