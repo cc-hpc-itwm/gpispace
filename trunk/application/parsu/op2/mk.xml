@@ -9,6 +9,7 @@ TYPE_OUTPUT=${6:?}
 CMD=${7:?}
 SHMEM_PER_NODE=${8:?}
 GPI_MEM_PER_NODE=${9:?}
+BUILD=${10:?}
 
 /usr/bin/sed                                 \
   "s|@SHMEM_PER_NODE@|${SHMEM_PER_NODE}|     \
@@ -19,4 +20,5 @@ GPI_MEM_PER_NODE=${9:?}
   ;s|@FILE_OUTPUT@|${FILE_OUTPUT}|           \
   ;s|@TYPE1_INPUT@|${TYPE1_INPUT}|           \
   ;s|@TYPE2_INPUT@|${TYPE2_INPUT}|           \
-  ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|           "
+  ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|           \
+  ;s|@BUILD@|${BUILD}|                       "

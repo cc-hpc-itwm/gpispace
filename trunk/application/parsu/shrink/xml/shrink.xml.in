@@ -144,7 +144,7 @@
           <cinclude href="stdexcept"/>
           <cinclude href="fstream"/>
           <cinclude href="determine_size.hpp"/>
-          <link href="$(BUILD)/application/kdm/libdetermine_size.so"/>
+          <link href="@BUILD@/application/kdm/libdetermine_size.so"/>
           <code><![CDATA[
             LOG (INFO, "INIT");
 
@@ -296,7 +296,7 @@
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
-          <link href="$(BUILD)/application/kdm/libdo_load.so"/>
+          <link href="@BUILD@/application/kdm/libdo_load.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
 
@@ -339,7 +339,7 @@
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
-          <link href="$(BUILD)/application/example/exec/libprocess.so"/>
+          <link href="@BUILD@/application/example/exec/libprocess.so"/>
           <code><![CDATA[
             const std::string cmd (config.cmd);
 
@@ -355,7 +355,7 @@
               (package.package.num.trace * package.package.size.trace);
 
             const std::size_t size_winded
-              (process::execute (cmd, buf, size, buf));
+              (process::execute (cmd, buf, size, buf, size));
 
             package.package.size.trace = size_winded / package.package.num.trace;
 
@@ -416,7 +416,7 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
           <cinclude href="print.hpp"/>
-          <link href="$(BUILD)/application/kdm/libdo_write.so"/>
+          <link href="@BUILD@/application/kdm/libdo_write.so"/>
           <code><![CDATA[
             const ::pnetc::type::loaded_package::loaded_package & p
               (package_to_be_written.loaded_package);

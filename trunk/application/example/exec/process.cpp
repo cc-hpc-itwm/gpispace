@@ -26,15 +26,20 @@ namespace process
   {
     /* ********************************************************************* */
 
+    inline void put_error (const std::string & msg)
+    {
+      MLOG (ERROR, msg);
+
+      throw std::runtime_error (msg);
+    }
+
     inline void do_error (const std::string & msg)
     {
       std::ostringstream sstr;
 
       sstr << msg << ": " << strerror (errno);
 
-      MLOG (ERROR, sstr.str());
-
-      throw std::runtime_error (sstr.str());
+      put_error (sstr.str());
     }
 
     template<typename T>
@@ -108,8 +113,9 @@ namespace process
 
     inline void reader ( int * fd
                        , void * output
-                       , int & bytes_read
-                       , const int & block_size
+                       , const std::size_t & max_size
+                       , std::size_t & bytes_read
+                       , const std::size_t & block_size
                        )
     {
       DLOG (TRACE, "start thread read");
@@ -120,7 +126,11 @@ namespace process
         {
           DLOG (TRACE, "try to read " << block_size << " bytes");
 
-          const int r (read (*fd, buf, block_size));
+          const int r (read ( *fd
+                            , buf
+                            , std::max (block_size, max_size - bytes_read)
+                            )
+                      );
 
           if (r < 0)
             {
@@ -134,6 +144,11 @@ namespace process
             }
           else
             {
+              if (bytes_read >= max_size)
+                {
+                  detail::put_error ("buffer full but still data available");
+                }
+
               buf += r;
               bytes_read += r;
 
@@ -148,7 +163,8 @@ namespace process
 
     inline void writer ( int * fd
                        , const void * input
-                       , int & bytes_left
+                       , std::size_t & bytes_left
+                       , const std::size_t & block_size
                        )
     {
       DLOG (TRACE, "start thread write");
@@ -159,7 +175,7 @@ namespace process
         {
           DLOG (TRACE, "try to write " << bytes_left << " bytes");
 
-          const int w (write (*fd, buf, bytes_left));
+          const int w (write (*fd, buf, std::min (block_size, bytes_left)));
 
           if (w < 0)
             {
@@ -189,8 +205,10 @@ namespace process
   /* *********************************************************************** */
 
   std::size_t execute ( std::string const & command
-                      , const void * input, const std::size_t input_size
+                      , const void * input
+                      , const std::size_t & input_size
                       , void * output
+                      , const std::size_t & max_output_size
                       )
   {
     pid_t pid;
@@ -252,20 +270,22 @@ namespace process
 
         DLOG (TRACE, "start threads");
 
-        int bytes_read (0);
-        int bytes_left (input_size);
+        std::size_t bytes_read (0);
+        std::size_t bytes_left (input_size);
 
         boost::thread thread_writer
           ( thread::writer
           , in + detail::WR
           , input
           , boost::ref (bytes_left)
+          , PIPE_BUF
           );
 
         boost::thread thread_reader
           ( thread::reader
           , out + detail::RD
           , output
+          , max_output_size
           , boost::ref (bytes_read)
           , PIPE_BUF
           );

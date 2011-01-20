@@ -1,12 +1,10 @@
 
 MAIN = shrink
 
-TRUNK      = /u/herc/rahn/SDPA/trunk
-BUILD      = $(TRUNK)/main/trunk/build
+include ../make.defs
+
 PATH_MAIN  = $(TRUNK)/application/parsu/$(MAIN)
 UTIL       = $(PATH_MAIN)/util
-
-export BUILD
 
 TEE      = /usr/bin/tee
 DOT      = /usr/bin/dot -Tps -Grankdir=LR
@@ -41,16 +39,24 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-FILE_INPUT       = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
-TYPE_INPUT       = segy
-FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded
-TYPE_OUTPUT      = segy
-CMD              = suwind itmin=10 nt=300
-SHMEM_PER_NODE   = 2^28
-GPI_MEM_PER_NODE = 2^30
+#FILE_INPUT       = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
+#TYPE_INPUT       = segy
+#FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy.winded
+#TYPE_OUTPUT      = segy
+#CMD              = suwind itmin=10 nt=300
+#SHMEM_PER_NODE   = 2^28
+#GPI_MEM_PER_NODE = 2^30
+
+FILE_INPUT       = /u/herc/rahn/test.dat
+TYPE_INPUT       = su
+FILE_OUTPUT      = /u/herc/rahn/test.dat.out
+TYPE_OUTPUT      = su
+CMD              = cat
+SHMEM_PER_NODE   = 4240 * 2
+GPI_MEM_PER_NODE = 4240 * 6
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" > $@
+	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(BUILD)" > $@
 
 ###############################################################################
 
@@ -74,7 +80,7 @@ PNETC_LIB += $(TRUNK)/application/lib
 
 WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
 
-WE_EXEC_LIBPATHS += $(TRUNK)/application/example/$(MAIN)/$(GEN)/pnetc/op
+WE_EXEC_LIBPATHS += $(TRUNK)/application/parsu/$(MAIN)/$(GEN)/pnetc/op
 
 LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
 

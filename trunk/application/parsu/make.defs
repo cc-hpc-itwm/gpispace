@@ -1,0 +1,2 @@
+TRUNK = $(HOME)/SDPA/trunk
+BUILD = $(TRUNK)/main/trunk/build45

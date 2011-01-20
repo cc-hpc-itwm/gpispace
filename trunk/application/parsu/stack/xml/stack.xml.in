@@ -358,7 +358,7 @@
             void * buf (fvmGetShmemPtr());
 
             const std::size_t size_stacked
-              (process::execute (cmd, buf, size, buf));
+              (process::execute (cmd, buf, size, buf, size));
 
             package.package.size = size_stacked / config.size.trace;
 
@@ -496,7 +496,13 @@
                 void * buf (fvmGetShmemPtr());
 
                 const std::size_t size_stacked
-                  (process::execute (cmd, buf, size_left + size_right, buf));
+                  (process::execute ( cmd
+                                    , buf
+                                    , size_left + size_right
+                                    , buf
+                                    , size_left + size_right
+                                    )
+                  );
 
                 const long traces_stacked (size_stacked / config.size.trace);
 

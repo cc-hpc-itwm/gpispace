@@ -1,12 +1,10 @@
 
 MAIN = stack
 
-TRUNK      = /u/herc/rahn/SDPA/trunk
-BUILD      = $(TRUNK)/main/trunk/build
+include ../make.defs
+
 PATH_MAIN  = $(TRUNK)/application/parsu/$(MAIN)
 UTIL       = $(PATH_MAIN)/util
-
-export BUILD
 
 TEE      = /usr/bin/tee
 DOT      = /usr/bin/dot -Tps -Grankdir=LR
@@ -50,7 +48,7 @@ SHMEM_PER_NODE   = 200 * 2^20
 GPI_MEM_PER_NODE = 600 * 2^20
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(KEY)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" > $@
+	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(KEY)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(BUILD)" > $@
 
 ###############################################################################
 
@@ -74,7 +72,7 @@ PNETC_LIB += $(TRUNK)/application/lib
 
 WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
 
-WE_EXEC_LIBPATHS += $(TRUNK)/application/example/$(MAIN)/$(GEN)/pnetc/op
+WE_EXEC_LIBPATHS += $(TRUNK)/application/parsu/$(MAIN)/$(GEN)/pnetc/op
 
 LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
 

@@ -1,8 +1,8 @@
 
 MAIN = op2
 
-TRUNK      = /u/herc/rahn/SDPA/trunk
-BUILD      = $(TRUNK)/main/trunk/build
+include ../make.defs
+
 PATH_MAIN  = $(TRUNK)/application/parsu/$(MAIN)
 UTIL       = $(PATH_MAIN)/util
 
@@ -74,7 +74,7 @@ PNETC_LIB += $(TRUNK)/application/lib
 
 WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
 
-WE_EXEC_LIBPATHS += $(TRUNK)/application/example/$(MAIN)/$(GEN)/pnetc/op
+WE_EXEC_LIBPATHS += $(TRUNK)/application/parsu/$(MAIN)/$(GEN)/pnetc/op
 
 LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
 

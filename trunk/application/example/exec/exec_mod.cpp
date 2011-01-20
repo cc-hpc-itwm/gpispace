@@ -32,7 +32,7 @@ static void exec_wrapper ( void *
 
   MLOG (INFO, "exec:  = \"" << command << "\"");
 
-  long ec = process::execute (command, 0, 0, 0);
+  long ec = process::execute (command, 0, 0, 0, 0);
 
   MLOG (INFO, "process returned with: " << ec);
   put (output, "ec", ec);
@@ -60,7 +60,7 @@ static void selftest ( void *
   std::size_t bytes_read
     (process::execute ( "sustack"
                       , buf, num_bytes
-                      , buf
+                      , buf, num_bytes
                       )
     );
 

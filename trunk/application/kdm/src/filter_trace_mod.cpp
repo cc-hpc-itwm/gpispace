@@ -463,7 +463,13 @@ static void execW ( void * state
 
   void * buf (fvmGetShmemPtr());
 
-  std::size_t written (process::execute (cmd, buf, (std::size_t)size, buf));
+  std::size_t written (process::execute ( cmd
+                                        , buf
+                                        , (std::size_t)size
+                                        , buf
+                                        , (std::size_t)size
+                                        )
+                      );
 
   if (written != size)
     {
