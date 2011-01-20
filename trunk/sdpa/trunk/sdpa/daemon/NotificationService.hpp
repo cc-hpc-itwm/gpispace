@@ -83,7 +83,7 @@ namespace sdpa { namespace daemon {
 
     BasicNotificationService(const std::string &service, const std::string &destination_location)
       : service_(service)
-      , destination_(service, destination_location)
+      , m_destination_location (destination_location)
     {}
 
     notify_helper<BasicNotificationService> operator()() const
@@ -97,17 +97,27 @@ namespace sdpa { namespace daemon {
       {
         notify(boost::any_cast<event_t>(arg));
       }
-      catch (const boost::bad_any_cast &)
+      catch (const boost::bad_any_cast &ex)
       {
-
+        DLOG(TRACE, "NotificationService: could not update: " << ex.what());
       }
+    }
+
+    void open ()
+    {
+      destination_ = fhg::log::Appender::ptr_t
+        (new fhg::log::remote::RemoteAppender ( service_
+                                              , m_destination_location
+                                              )
+        );
     }
 
     ~BasicNotificationService() {}
   private:
     void notify(const event_t &evt)
     {
-      destination_.append(FHGLOG_MKEVENT_HERE(TRACE, encode(evt)));
+      if (destination_)
+        destination_->append(FHGLOG_MKEVENT_HERE(TRACE, encode(evt)));
     }
 
     std::string encode(const event_t &evt) const
@@ -119,7 +129,8 @@ namespace sdpa { namespace daemon {
     }
 
     std::string service_;
-    fhg::log::remote::RemoteAppender destination_;
+    std::string m_destination_location;
+    fhg::log::Appender::ptr_t destination_;
   };
 
   typedef BasicNotificationService<NotificationEvent> NotificationService;
