@@ -50,7 +50,7 @@ int main ()
   logger_t log(getLogger());
   logger_t rem(getLogger("remote"));
 
-  log.addAppender(Appender::ptr_t(new StreamAppender("console", std::clog, "%m")));
+  log.addAppender(Appender::ptr_t(new StreamAppender("console", std::clog, "%m%n")));
   rem.addAppender(Appender::ptr_t(new remote::RemoteAppender("remote", server)));
 
   CompoundAppender::ptr_t compound(new CompoundAppender("compound"));
@@ -71,7 +71,6 @@ int main ()
                                      , FHGLOG_DEFAULT_PORT
                                      )
     );
-
   {
     std::clog << "** testing remote logging...";
     rem.log(FHGLOG_MKEVENT_HERE(ERROR, message));
@@ -87,6 +86,23 @@ int main ()
       std::clog << "   expected: \"hello server!\"" << std::endl;
       std::clog << "     actual: \"" << msg << "\"" << std::endl;
       ++errcount;
+    }
+  }
+
+  {
+    std::clog << "** testing remote appender with illegal host...";
+    try
+    {
+      Appender::ptr_t remote_appender(new remote::RemoteAppender("remote", "unknown-host"));
+      remote_appender->append (FHGLOG_MKEVENT_HERE(ERROR, "BUMMER!"));
+      std::clog << "FAILED!" << std::endl;
+      std::clog << "   expected exception!" << std::endl;
+      ++errcount;
+    }
+    catch (std::exception const & ex)
+    {
+      std::clog << "OK!" << std::endl;
+      std::clog << "    exception text: " << ex.what() << std::endl;
     }
   }
 
