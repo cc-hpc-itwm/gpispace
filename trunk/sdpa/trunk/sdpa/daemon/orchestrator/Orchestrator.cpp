@@ -359,12 +359,15 @@ void Orchestrator::recover( std::istream& is )
 		// restore the schedule from the archive
 		ia >> ptr_job_man_;
 
-		SDPA_LOG_INFO("Job manager after recovery: \n");
-		ptr_job_man_->print();
+		//SDPA_LOG_INFO("Job manager after recovery: \n");
+		//ptr_job_man_->print();
 
 		ia.register_type(static_cast<SchedulerOrch*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
 		ia>> ptr_scheduler_;
+
+		//SDPA_LOG_INFO("Worker manager after recovery: \n");
+		//scheduler()->print();
 	}
 	catch(exception &e)
 	{
