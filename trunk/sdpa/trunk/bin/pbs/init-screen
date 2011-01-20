@@ -1,6 +1,6 @@
 #!/bin/bash
 
-init_screen_ver=1
+init_screen_ver=2
 test -r "$HOME/.init-screen.cfg" && source "$HOME/.init-screen.cfg"
 
 head_node="${SDPA_HEAD_NODE}"
@@ -8,32 +8,23 @@ if [ -z "$head_node" ] ; then
     head_node="${PBS_O_HOST}"
 fi
 
-node_file="${SDPA_NODEFILE}"
-if [ -z "$node_file" ] ; then
-    node_file="${PBS_NODEFILE}"
-fi
+node_file="${PBS_NODEFILE}"
 scratch_dir="$SDPA_SCRATCH_DIR"
+temp_dir="$SDPA_TEMP_DIR"
+gui_url="$SDPA_GUI"
 screen_name=
-
-# example ~/.screenrc
-
-# defutf8 on
-# startup_message off
-# caption always "%{= d} %{+b dr}%H%{= dg} | %c %{= dy}%d.%m.%Y | %{= dw}%?%-Lw%?%{b}%n*%f %t%?(%u)%?%{= dw}%?%+Lw%?%{= d}"
-# autodetach on
-# bind x
-# bind ^X
-# vbell off
 
 function usage ()
 {
 	cat >&2 <<EOF
 usage $0 [-h] [-f node-file] [-n head-node] [-d scratch-dir] [-s screen-name]
 
-   -f node-file (=$node_file)     specifies the node file to use
-   -n head node (=$head_node)     specifies the head node host (where screen runs)
-   -d scratch dir (=$scratch_dir) path to a (shared) scratch directory
+   -f node-file ($node_file)     specifies the node file to use
+   -n head node ($head_node)     specifies the head node host (where screen runs)
+   -d scratch dir ($scratch_dir) path to a (shared) scratch directory
+   -t temporary dir ($temp_dir)  path to a (local) temporary directory
    -s screen name (=$screen_name) the name of the screen session
+   -C                             clear state tracking files
    -c                             configure init-screen
    -l                             print shell code to load init-screen environment
 
@@ -41,7 +32,8 @@ important environment variables:
 	export IN_INIT_SCREEN="$IN_INIT_SCREEN"
 	export SDPA_HEAD_NODE="$head_node"
         export SDPA_SCRATCH_DIR="$scratch_dir"
-	export SDPA_GUI="$SDPA_GUI"
+        export SDPA_TEMP_DIR="$temp_dir"
+	export SDPA_GUI="$gui_url"
 	export SDPA_MASTER="$SDPA_MASTER"
 	export FHGLOG_to_console="$FHGLOG_to_console"
 	export FHGLOG_to_server="$FHGLOG_to_server"
@@ -52,16 +44,43 @@ EOF
 
 function configure ()
 {
+    echo "Starting configuration routine..."
+
     # creates $HOME/.init-screen.cfg
     cat <<EOF
+
+
+=====   Scratch directory  ====
+
 The "scratch"  directory should be a directory  you are allowed to  write to and
 that is shared among all nodes. I will create a "log" directory within that into
 which all components are going to log.
 
 EOF
-    read -p "  scratch directory to use: " scratch_dir
+    read -p "  scratch directory to use [$scratch_dir]: " new_scratch_dir
+    if [ -n "$new_scratch_dir" ] ; then
+	scratch_dir="$new_scratch_dir"
+    fi
 
     cat <<EOF
+
+
+=====   Node-local temporary directory  ====
+
+This  directory  should point  to  a  path that  is  local  to  each node,  like
+/var/tmp. It is used to create local temporary files that might be necessary for
+some executions.
+
+EOF
+    read -p "  temporary directory to use [$temp_dir]: " new_temp_dir
+    if [ -n "$new_temp_dir" ] ; then
+	temp_dir="$new_temp_dir"
+    fi
+
+    cat <<EOF
+
+
+=====   GUI configuration  ====
 
 Now I  need a host:ip  string on which  the graphical monitor interface  will be
 running.  It does not  have to  run all  the time,  but if  you want  to monitor
@@ -69,12 +88,58 @@ activities, I need to know that location. Please make sure that nobody else uses
 this location.
 
 EOF
-    read -p "  location of the monitor gui [host:ip]: " gui_url
+    read -p "  location of the monitor gui (host:ip) [$gui_url]: " new_gui_url
+    if [ -n "$new_gui_url" ] ; then
+	gui_url="$new_gui_url"
+    fi
+
+    if [ ! -e "$HOME/.screenrc" ] ; then
+	cat <<EOF
+
+====  Screen configuration  ====
+
+It seems that you  don't have a .screenrc yet. It is  recommended to create one,
+though. For  your convenience, I  can create an  example .screenrc file  for you
+with the following content:
+
+#
+# example .screenrc created by 'init-screen' on `date`
+#
+defutf8 on
+startup_message off
+caption always "%{= d} %{+b dr}%H%{= dg} | %c %{= dy}%d.%m.%Y | %{= dw}%?%-Lw%?%{b}%n*%f %t%?(%u)%?%{= dw}%?%+Lw%?%{= d}"
+autodetach on
+bind x
+bind ^X
+vbell off
+
+EOF
+	read -n 1 -p "  Shall I create this file now? [Y/n] " create_screenrc
+	case "$create_screenrc" in
+	    n|N)
+		;;
+	    *)
+		cat > ~/.screenrc <<EOF
+#
+# example .screenrc created by 'init-screen' on `date`
+#
+defutf8 on
+startup_message off
+caption always "%{= d} %{+b dr}%H%{= dg} | %c %{= dy}%d.%m.%Y | %{= dw}%?%-Lw%?%{b}%n*%f %t%?(%u)%?%{= dw}%?%+Lw%?%{= d}"
+autodetach on
+bind x
+bind ^X
+vbell off
+EOF
+		;;
+	esac
+    fi
 
     # create config
     cat > "$HOME/.init-screen.cfg" <<EOF
 export INIT_SCREEN_VER="$init_screen_ver"
 export SDPA_SCRATCH_DIR="$scratch_dir"
+export SDPA_TEMP_DIR="$temp_dir"
 export SDPA_GUI="$gui_url"
 EOF
 
@@ -102,7 +167,7 @@ if test -r ~/.init-screen.tab ; then if grep -q "\$(hostname -s)" ~/.init-screen
 EOF
 }
 
-while getopts ":hclf:n:d:s:" opt; do
+while getopts ":hcClf:n:d:s:" opt; do
     case $opt in
 	h)
 	    usage
@@ -110,6 +175,13 @@ while getopts ":hclf:n:d:s:" opt; do
 	    ;;
 	c)
 	    configure
+	    exit 0
+	    ;;
+	C)
+	    echo "clearing state files..." >&2
+	    rm -f ~/.init-screen.tab
+	    rm -f ~/.init-screen.env
+	    echo "please logout and reinitialize now"
 	    exit 0
 	    ;;
 	f)
@@ -151,28 +223,25 @@ if [ x"$init_screen_ver" != x"$INIT_SCREEN_VER" ] ; then
 fi
 
 # sanity check for scratch directory
+if [ -z "$scratch_dir" ] ; then
+    log "W: scrach_dir is not defined, please export SDPA_SCRATCH_DIR or put a definition in ~/.init-screen.cfg"
+    read -n 1 -p "scratch dir to use: " scratch_dir
+fi
+
 if [ ! -d "${scratch_dir}" ] ; then
-    log "W: scratch_dir is not defined, please enter it now or export SDPA_SCRATCH_DIR before!"
-    read -p "type in scratch dir to use: " scratch_dir
-
-    if [ -z "$scratch_dir" ] ; then
-        exit 1
-    fi
-
-    if [ ! -d "$scratch_dir" ] ; then
-	read -n 1 -p "W: $scratch_dir does not exist, shall i create it for you [y/N]? " do_create
-	case "$do_create" in
-	    y|Y)
-		if ! mkdir -p "$scratch_dir" ; then
-		    exit 1
-		fi
-		;;
-	    *)
-		log "bye."
+    read -n 1 -p "W: $scratch_dir does not exist, shall i create it for you [y/N]? " do_create
+    case "$do_create" in
+	y|Y)
+	    if ! mkdir -p "$scratch_dir" ; then
+		log "E: could not create directory!"
 		exit 1
-		;;
-	esac
-    fi
+	    fi
+	    ;;
+	*)
+	    log "bye."
+	    exit 0
+	    ;;
+    esac
 fi
 
 if [ ! -d "${scratch_dir}" -o ! -w "${scratch_dir}" ] ; then
@@ -181,19 +250,25 @@ if [ ! -d "${scratch_dir}" -o ! -w "${scratch_dir}" ] ; then
 fi
 
 export SDPA_SCRATCH_DIR="$scratch_dir"
+export SDPA_TEMP_DIR="$temp_dir"
 
 # sanity check for node file
 if [ -z "$node_file" ] ; then
-    log "W: node_file is not defined, please enter it now or export SDPA_NODEFILE."
+    log "W: node_file is not defined, please enter it now or export PBS_NODEFILE."
     read -p "type in node file to use: " node_file
+    node_file=$( eval echo "$node_file" )
+fi
 
-    if [ -z "$node_file" -o ! -r "$node_file" ] ; then
-	log "cannot access node_file!" >&2
-        exit 1
-    fi
+if [ ! -f "$node_file" -o ! -r "$node_file" ] ; then
+    log "E: cannot access node-file in $node_file: not a file or not readable!"
+    exit 1
 fi
 
 cp "$node_file" "$HOME/.init-screen.nodefile"
+if [ $? -ne 0 ] ; then
+    log "E: could not save node-file!"
+    exit 1
+fi
 
 export SDPA_NODEFILE="$HOME/.init-screen.nodefile"
 
@@ -211,7 +286,7 @@ if [ -z "$head_node" ] ; then
 fi
 
 if ! ping -c 1 "$head_node" >/dev/null 2>&1 ; then
-    log "head-node $head_node is not reachable ;-("
+    log "head-node ($head_node) is not reachable ;-("
     exit 1
 fi
 
@@ -360,9 +435,7 @@ if [ "$open_slave_screens" == "true" ] ; then
 fi
 
 echo "# entering new shell, please logout twice from this window"
-echo "# Please execute the following commands:"
-echo "trap \"rm -f \$HOME/.init-screen.env\" EXIT"
-
 # use the sideeffect that it will source the init-screen.env
 # you have to logout twice now ;-(
-exec $SHELL
+trap "init-screen -C" EXIT
+$SHELL
