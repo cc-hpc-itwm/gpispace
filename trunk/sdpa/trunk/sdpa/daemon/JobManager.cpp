@@ -136,13 +136,13 @@ std::string JobManager::print() const
 	lock_type lock(mtx_);
 	std::ostringstream os;
 
-	SDPA_LOG_DEBUG("Begin dump JobManager...");
+	SDPA_LOG_DEBUG("Begin dumping the JobManager...");
 
 	os<<"The list of jobs still owned by the JobManager:"<<std::endl;
 	for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
 	  SDPA_LOG_INFO(it->second->print_info());
 
-	SDPA_LOG_DEBUG("End dump JobManager...");
+	SDPA_LOG_DEBUG("End dumping the JobManager...");
 
 	return os.str();
 }
@@ -193,18 +193,24 @@ void JobManager::updateJobInfo(sdpa::daemon::IComm* p)
 		sdpa::daemon::Job* pJob = it->second.get();
 		pJob->set_icomm(p);
 
-		std::string job_status = pJob->getStatus();
-		SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
+		pJob->print_info();
 
-		// not coming from WE
+		// the job is in a terminal state do nothing
+		std::string job_status = pJob->getStatus();
+		if( job_status.find("Finished") != std::string::npos ||
+			job_status.find("Failed") != std::string::npos ||
+			job_status.find("Cancelled") != std::string::npos )
+				return;
+
+		// else, // not coming from WE
 		// and it's not already in jobs_to_be scheduled!
 		if( !p->is_scheduled(pJob->id()) )
 		{
 			// ATTENTION this attribute should be recovered
-			if( p->hasWorkflowEngine())
-				pJob->set_local(true);
-			else
-				pJob->set_local(false);
+			//if( p->hasWorkflowEngine())
+			//	pJob->set_local(true);
+			//else
+			//	pJob->set_local(false);
 
 			SDPA_LOG_DEBUG("The job "<<pJob->id()<<" is not yet scheduled! Schedule it now.");
 			p->schedule(pJob->id());
