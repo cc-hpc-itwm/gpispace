@@ -450,7 +450,7 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	// ptr_worker_man_->balanceWorkers();
 	if( !numberOfWorkers() )
 	{
-		LOG(WARN, "No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
+		SDPA_LOG_WARN("No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
 		throw NoWorkerFoundException();
 	}
 	else
