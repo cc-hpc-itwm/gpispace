@@ -78,6 +78,7 @@ fi
 
 cmake_flags=
 if [ -n "$build_rev" ] ; then
+    build_rev=$( echo $build_rev | sed -e 's/^v//' )
     cmake_flags="$cmake_flags -DPROJECT_REVISION=$build_rev"
 fi
 
