@@ -162,6 +162,23 @@ namespace process
       DLOG (TRACE, "done thread read");
     }
 
+    static void reader_from_file ( const std::string & filename
+                                 , void * buf
+                                 , const std::size_t max_size
+                                 , std::size_t & bytes_read
+                                 , const std::size_t & block_size
+                                 )
+    {
+      int fd (open (filename.c_str(), O_RDONLY));
+
+      if (fd == -1)
+        {
+          detail::do_error ("open file for reading failed", filename);
+        }
+
+      thread::reader (fd, buf, max_size, bytes_read, PIPE_BUF);
+    }
+
     /* ********************************************************************* */
 
     static void writer ( int fd
@@ -268,6 +285,28 @@ namespace process
                                , PIPE_BUF
                                );
     }
+
+    static boost::thread * reader ( void * buf
+                                  , std::string & filename
+                                  , const std::size_t max_size
+                                  , std::size_t & bytes_read
+                                  )
+    {
+      filename = detail::tempname ("read.");
+
+      if (mkfifo (filename.c_str(), S_IWUSR | S_IRUSR))
+        {
+          detail::do_error ("mkfifo failed", filename);
+        }
+
+      return new boost::thread ( thread::reader_from_file
+                               , filename
+                               , buf
+                               , max_size
+                               , bytes_read
+                               , PIPE_BUF
+                               );
+    }
   }
 
   /* *********************************************************************** */
@@ -314,13 +353,15 @@ namespace process
 
   /* *********************************************************************** */
 
-  std::size_t execute ( std::string const & command
-                      , const_buffer const & buf_stdin
-                      , buffer const & buf_stdout
-                      , file_const_buffer_list const & files_input
-                      , file_buffer_list const & files_output
-                      )
+  execute_return_type execute ( std::string const & command
+                              , const_buffer const & buf_stdin
+                              , buffer const & buf_stdout
+                              , file_const_buffer_list const & files_input
+                              , file_buffer_list const & files_output
+                              )
   {
+    execute_return_type ret;
+
     pid_t pid;
 
     int in[2], out[2];
@@ -332,6 +373,7 @@ namespace process
 
     detail::param_map param_map;
     boost::thread_group writers;
+    boost::thread_group readers;
 
     for ( file_const_buffer_list::const_iterator file_input (files_input.begin())
         ; file_input != files_input.end()
@@ -347,6 +389,25 @@ namespace process
                            );
 
         param_map[file_input->param()] = filename;
+      }
+
+    for ( file_buffer_list::const_iterator file_output (files_output.begin())
+        ; file_output != files_output.end()
+        ; ++file_output
+        )
+      {
+        std::string filename;
+
+        ret.bytes_read_files_output.push_back (0);
+
+        readers.add_thread (start::reader ( file_output->buf()
+                                          , filename
+                                          , file_output->size()
+                                          , ret.bytes_read_files_output.back()
+                                          )
+                           );
+
+        param_map[file_output->param()] = filename;
       }
 
     if ((pid = fork()) < 0)
@@ -405,8 +466,6 @@ namespace process
 
         DLOG (TRACE, "start threads");
 
-        std::size_t bytes_read (0);
-
         boost::thread thread_buf_stdin
           ( thread::writer
           , in[detail::WR]
@@ -420,7 +479,7 @@ namespace process
           , out[detail::RD]
           , buf_stdout.buf()
           , buf_stdout.size()
-          , boost::ref (bytes_read)
+          , boost::ref (ret.bytes_read_stdout)
           , PIPE_BUF
           );
 
@@ -456,12 +515,11 @@ namespace process
         thread_buf_stdout.join();
 
         writers.join_all();
+        readers.join_all();
 
         MLOG (INFO, "finished command: " << command);
-
-        return bytes_read;
       }
 
-    return 0;
+    return ret;
   }
 }

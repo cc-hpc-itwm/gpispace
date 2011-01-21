@@ -61,9 +61,24 @@ namespace process
   typedef std::list<file_const_buffer> file_const_buffer_list;
   typedef std::list<file_buffer> file_buffer_list;
 
+  struct execute_return_type
+  {
+  public:
+    typedef std::size_t size_type;
+    typedef std::list<size_type> size_list_type;
+
+    size_type bytes_read_stdout;
+    size_list_type bytes_read_files_output;
+
+    execute_return_type ()
+      : bytes_read_stdout (0)
+      , bytes_read_files_output (0)
+    {}
+  };
+
   // ********************************************************************** //
 
-  extern std::size_t execute
+  extern execute_return_type execute
   ( std::string const &              // command
   , const_buffer const &             // buf_stdin
   , buffer const &                   // buf_stdout
@@ -78,12 +93,14 @@ namespace process
                              , const std::size_t & max_output_size
                              )
   {
+    file_buffer_list files_output;
+
     return execute ( command
                    , const_buffer (input, input_size)
                    , buffer (output, max_output_size)
                    , file_const_buffer_list ()
-                   , file_buffer_list ()
-                   );
+                   , files_output
+                   ).bytes_read_stdout;
   }
 }
 
