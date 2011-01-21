@@ -5,8 +5,10 @@
 int
 main (int argc, char ** argv)
 {
-  if (argc < 2)
+  if (argc < 3)
     {
+      fprintf (stderr, "usage: %s file1 file2\n", argv[0]);
+
       exit (EXIT_FAILURE);
     }
 
@@ -16,6 +18,8 @@ main (int argc, char ** argv)
 
   if (!file[0])
     {
+      fprintf (stderr, "could not open %s\n", argv[1]);
+
       exit (EXIT_FAILURE);
     }
 
@@ -23,6 +27,8 @@ main (int argc, char ** argv)
 
   if (!file[1])
     {
+      fprintf (stderr, "could not open %s\n", argv[2]);
+
       exit (EXIT_FAILURE);
     }
 

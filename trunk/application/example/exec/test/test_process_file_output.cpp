@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <require.hpp>
+
 int
 main (int argc, char ** argv)
 {
@@ -36,8 +38,6 @@ main (int argc, char ** argv)
                    , files_output
                    );
 
-#define REQUIRE(b) if (!(b)) { exit (EXIT_FAILURE); }
-
   REQUIRE (part1[0] == '1');
   REQUIRE (part1[1] == '2');
   REQUIRE (part1[2] == '3');
@@ -49,6 +49,8 @@ main (int argc, char ** argv)
   REQUIRE (part2[2] == 'c');
   REQUIRE (part2[3] == 'd');
   REQUIRE (part2[4] == 'e');
+
+  std::cout << "SUCCESS" << std::endl;
 
   return EXIT_SUCCESS;
 }

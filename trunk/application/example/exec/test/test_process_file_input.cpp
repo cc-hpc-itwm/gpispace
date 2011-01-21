@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <require.hpp>
+
 int
 main (int argc, char ** argv)
 {
@@ -36,8 +38,6 @@ main (int argc, char ** argv)
                    , process::file_buffer_list ()
                    );
 
-#define REQUIRE(b) if (!(b)) { exit (EXIT_FAILURE); }
-
   REQUIRE (res[0] == '1');
   REQUIRE (res[1] == 'a');
   REQUIRE (res[2] == '2');
@@ -48,6 +48,8 @@ main (int argc, char ** argv)
   REQUIRE (res[7] == 'd');
   REQUIRE (res[8] == '5');
   REQUIRE (res[9] == 'e');
+
+  std::cout << "SUCCESS" << std::endl;
 
   return EXIT_SUCCESS;
 }

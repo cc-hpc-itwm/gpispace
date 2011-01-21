@@ -125,6 +125,8 @@ namespace process
 
       char * buf (static_cast<char *>(output));
 
+      bytes_read = 0;
+
       while (fd != -1)
         {
           DLOG (TRACE, "try to read " << block_size << " bytes");
@@ -147,11 +149,6 @@ namespace process
             }
           else
             {
-              if (bytes_read >= max_size)
-                {
-                  detail::put_error ("stdout buffer overflow");
-                }
-
               buf += r;
               bytes_read += r;
 
@@ -245,7 +242,7 @@ namespace process
 
   namespace detail
   {
-    static std::string tempname (const std::string & prefix)
+    static std::string tempname ()
     {
       static unsigned long i (0);
 
@@ -258,7 +255,29 @@ namespace process
           throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
         }
 
-      return dir + "/" + prefix + fhg::util::show (i++);
+      std::ostringstream sstr;
+
+      sstr << dir << "/" << "process." << getpid() << "." << i++;
+
+      return sstr.str();
+    }
+
+    static void fifo (std::string & filename)
+    {
+      int ec = 0;
+
+      do
+        {
+          filename = detail::tempname ();
+
+          ec = mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
+
+          if (ec != 0 && errno != EEXIST)
+            {
+              detail::do_error ("mkfifo failed", filename);
+            }
+        }
+      while (ec != 0);
     }
   }
 
@@ -271,12 +290,7 @@ namespace process
                                   , std::size_t bytes_left
                                   )
     {
-      filename = detail::tempname ("write.");
-
-      if (mkfifo (filename.c_str(), S_IWUSR | S_IRUSR))
-        {
-          detail::do_error ("mkfifo failed", filename);
-        }
+      detail::fifo (filename);
 
       return new boost::thread ( thread::writer_from_file
                                , filename
@@ -292,18 +306,13 @@ namespace process
                                   , std::size_t & bytes_read
                                   )
     {
-      filename = detail::tempname ("read.");
-
-      if (mkfifo (filename.c_str(), S_IWUSR | S_IRUSR))
-        {
-          detail::do_error ("mkfifo failed", filename);
-        }
+      detail::fifo (filename);
 
       return new boost::thread ( thread::reader_from_file
                                , filename
                                , buf
                                , max_size
-                               , bytes_read
+                               , boost::ref (bytes_read)
                                , PIPE_BUF
                                );
     }
@@ -391,19 +400,21 @@ namespace process
         param_map[file_input->param()] = filename;
       }
 
+    ret.bytes_read_files_output.resize (files_output.size());
+
+    std::size_t i (0);
+
     for ( file_buffer_list::const_iterator file_output (files_output.begin())
         ; file_output != files_output.end()
-        ; ++file_output
+        ; ++file_output, ++i
         )
       {
         std::string filename;
 
-        ret.bytes_read_files_output.push_back (0);
-
         readers.add_thread (start::reader ( file_output->buf()
                                           , filename
                                           , file_output->size()
-                                          , ret.bytes_read_files_output.back()
+                                          , ret.bytes_read_files_output[i]
                                           )
                            );
 

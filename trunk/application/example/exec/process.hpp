@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <vector>
 
 namespace process
 {
@@ -65,7 +66,7 @@ namespace process
   {
   public:
     typedef std::size_t size_type;
-    typedef std::list<size_type> size_list_type;
+    typedef std::vector<size_type> size_list_type;
 
     size_type bytes_read_stdout;
     size_list_type bytes_read_files_output;
