@@ -13,6 +13,7 @@ prepend-path    PATH              ${prefix}/bin/
 prepend-path    PATH              ${prefix}/bin/pbs/
 prepend-path    PATH              ${prefix}/bin/parsu/
 prepend-path    LD_LIBRARY_PATH   ${prefix}/lib/
+prepend-path    PC_LIBRARY_PATH   ${prefix}/libexec/
 setenv          SDPA_LIBEXEC      ${prefix}/libexec/
 setenv          SDPA_HOME         ${prefix}/
 setenv		SDPA_REVISION	  @PROJECT_REVISION@
