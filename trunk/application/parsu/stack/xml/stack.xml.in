@@ -147,7 +147,7 @@
           <cinclude href="stdexcept"/>
           <cinclude href="fstream"/>
           <cinclude href="determine_size.hpp"/>
-          <link href="$(BUILD)/application/kdm/libdetermine_size.so"/>
+          <link href="@BUILD@/application/kdm/libdetermine_size.so"/>
           <code><![CDATA[
             LOG (INFO, "INIT");
 
@@ -300,7 +300,7 @@
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
-          <link href="$(BUILD)/application/kdm/libdo_load.so"/>
+          <link href="@BUILD@/application/kdm/libdo_load.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
 
@@ -343,7 +343,7 @@
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
-          <link href="$(BUILD)/application/example/exec/libprocess.so"/>
+          <link href="@BUILD@/application/example/exec/libprocess.so"/>
           <code><![CDATA[
 	    const std::string cmd ("sustack normpow=0.0 key=" + config.key);
 
@@ -649,7 +649,7 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_write.hpp"/>
           <cinclude href="print.hpp"/>
-          <link href="$(BUILD)/application/kdm/libdo_write.so"/>
+          <link href="@BUILD@/application/kdm/libdo_write.so"/>
           <code><![CDATA[
             const ::pnetc::type::loaded_package::loaded_package & p
               (package_to_be_written.loaded_package);
