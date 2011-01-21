@@ -186,64 +186,6 @@ namespace fhg
         };
       }
 
-      // helper struct to initialize the global kvs in a thread safe way
-      struct kvs_mgr
-      {
-        explicit
-        kvs_mgr ( std::string const & host
-                , std::string const & port
-                , const bool auto_reconnect
-                , const boost::posix_time::time_duration timeout
-                , const std::size_t max_connection_attempts
-                )
-          : kvsc_(new client::kvsc)
-        {
-          std::string h (host);
-          std::string p (port);
-
-          if (h.empty() && p.empty())
-          {
-            if (getenv("KVS_URL"))
-            {
-              peer_info_t pi = peer_info_t::from_string (getenv("KVS_URL"));
-              h = pi.host();
-              p = pi.port();
-            }
-          }
-
-          if (h.empty())
-          {
-            h = "localhost";
-          }
-
-          if (p.empty())
-          {
-            // TODO configuration variables!
-            p = "2439";
-          }
-
-          LOG(TRACE, "global kvs auto-configured to be at: [" << h << "]:" << p);
-          kvsc_->start (h,p,auto_reconnect,timeout,max_connection_attempts);
-        }
-
-        ~kvs_mgr ()
-        {
-          // TODO: unfortunately, we cannot delete the kvsc here, since it might
-          // still  be required  during program  shutdown  (statically allocated
-          // memory  is deallocated  in  an unspecified  order,  I guess).  This
-          // means, deleting the pointer here, might cause a segfault ;-(
-          //
-          // delete kvsc_; kvsc_ = 0;
-        }
-
-        client::kvsc & kvs()
-        {
-          return *kvsc_;
-        }
-      private:
-        client::kvsc * kvsc_;
-      };
-
       struct kvs_data
       {
         typedef boost::shared_ptr<client::kvsc> kvsc_ptr_t;
@@ -260,9 +202,7 @@ namespace fhg
                   , const std::size_t p_max_connection_attempts = 3
                   )
         {
-          stop ();
-
-          client.reset (new client::kvsc);
+          bool modified (false);
 
           if (p_host.empty() || p_port.empty())
           {
@@ -279,6 +219,8 @@ namespace fhg
                 host = "localhost";
                 port = "2439";
               }
+
+              modified = true;
             }
             else
             {
@@ -291,12 +233,20 @@ namespace fhg
             port = p_port;
             timeout = p_timeout;
             max_connection_attempts = p_max_connection_attempts;
+
+            modified = true;
           }
 
           assert (! host.empty());
           assert (! port.empty());
 
-          LOG(TRACE, "global kvs configured to be at: [" << host << "]:" << port);
+          if (modified)
+          {
+            LOG(TRACE, "global kvs configured to be at: [" << host << "]:" << port);
+
+            stop ();
+            client.reset (new client::kvsc);
+          }
 
           is_configured = true;
         }
