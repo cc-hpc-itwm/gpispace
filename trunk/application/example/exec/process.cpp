@@ -19,6 +19,9 @@
 #include <process.hpp>
 
 #include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <fhg/util/show.hpp>
 
 namespace process
 {
@@ -111,7 +114,7 @@ namespace process
   {
     /* ********************************************************************* */
 
-    inline void reader ( int * fd
+    static void reader ( int fd
                        , void * output
                        , const std::size_t & max_size
                        , std::size_t & bytes_read
@@ -122,11 +125,11 @@ namespace process
 
       char * buf (static_cast<char *>(output));
 
-      while (*fd != -1)
+      while (fd != -1)
         {
           DLOG (TRACE, "try to read " << block_size << " bytes");
 
-          const int r (read ( *fd
+          const int r (read ( fd
                             , buf
                             , std::max (block_size, max_size - bytes_read)
                             )
@@ -134,19 +137,19 @@ namespace process
 
           if (r < 0)
             {
-              detail::do_error ("read failed");
+              detail::do_error ("read stdout failed");
             }
           else if (r == 0)
             {
               DLOG (TRACE, "read pipe closed");
 
-              *fd = -1;
+              fd = -1;
             }
           else
             {
               if (bytes_read >= max_size)
                 {
-                  detail::put_error ("buffer full but still data available");
+                  detail::put_error ("stdout buffer overflow");
                 }
 
               buf += r;
@@ -161,9 +164,9 @@ namespace process
 
     /* ********************************************************************* */
 
-    inline void writer ( int * fd
+    static void writer ( int fd
                        , const void * input
-                       , std::size_t & bytes_left
+                       , std::size_t bytes_left
                        , const std::size_t & block_size
                        )
     {
@@ -171,21 +174,21 @@ namespace process
 
       char * buf (static_cast<char *> (const_cast<void *> (input)));
 
-      while (*fd != -1 && bytes_left > 0)
+      while (fd != -1 && bytes_left > 0)
         {
           DLOG (TRACE, "try to write " << bytes_left << " bytes");
 
-          const int w (write (*fd, buf, std::min (block_size, bytes_left)));
+          const int w (write (fd, buf, std::min (block_size, bytes_left)));
 
           if (w < 0)
             {
-              detail::do_error ("write failed");
+              detail::do_error ("write stdin failed");
             }
           else if (w == 0)
             {
               DLOG (TRACE, "write pipe closed");
 
-              *fd = -1;
+              fd = -1;
             }
           else
             {
@@ -196,19 +199,126 @@ namespace process
             }
         }
 
-      detail::do_close (fd);
+      if (fd != -1)
+        {
+          detail::do_close (&fd);
+        }
 
       DLOG (TRACE, "done thread write");
+    }
+
+    static void writer_from_file ( const std::string & filename
+                                 , const void * buf
+                                 , std::size_t bytes_left
+                                 , const std::size_t & block_size
+                                 )
+    {
+      int fd (open (filename.c_str(), O_WRONLY));
+
+      if (fd == -1)
+        {
+          detail::do_error ("open file for writing failed", filename);
+        }
+
+      thread::writer (fd, buf, bytes_left, PIPE_BUF);
     }
   } // namespace thread
 
   /* *********************************************************************** */
 
+  namespace detail
+  {
+    static std::string tempname (const std::string & prefix)
+    {
+      static unsigned long i (0);
+
+      char * TMPDIR (getenv ("TMPDIR"));
+
+      std::string dir ((TMPDIR != NULL) ? TMPDIR : P_tmpdir);
+
+      if (dir.size() == 0)
+        {
+          throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
+        }
+
+      return dir + "/" + prefix + fhg::util::show (i++);
+    }
+  }
+
+  /* *********************************************************************** */
+
+  namespace start
+  {
+    static boost::thread * writer ( const void * buf
+                                  , std::string & filename
+                                  , std::size_t bytes_left
+                                  )
+    {
+      filename = detail::tempname ("write.");
+
+      if (mkfifo (filename.c_str(), S_IWUSR | S_IRUSR))
+        {
+          detail::do_error ("mkfifo failed", filename);
+        }
+
+      return new boost::thread ( thread::writer_from_file
+                               , filename
+                               , buf
+                               , bytes_left
+                               , PIPE_BUF
+                               );
+    }
+  }
+
+  /* *********************************************************************** */
+
+  namespace detail
+  {
+    struct param_map
+    {
+    private:
+      typedef boost::unordered_map <std::string, std::string> param_map_t;
+
+      param_map_t _map;
+
+    public:
+      param_map_t::mapped_type & operator [] (const param_map_t::key_type & key)
+      {
+        return _map[key];
+      }
+
+      param_map_t::const_iterator find (const param_map_t::key_type & key) const
+      {
+        return _map.find (key);
+      }
+
+      typedef param_map_t::const_iterator const_iterator;
+
+      const_iterator begin (void) const { return _map.begin(); }
+      const_iterator end (void) const { return _map.end(); }
+
+      ~param_map ()
+      {
+        for ( param_map_t::const_iterator param (_map.begin())
+            ; param != _map.end()
+            ; ++param
+            )
+          {
+            DLOG (TRACE, "unlink " << param->second);
+
+            unlink (param->second.c_str());
+          }
+      }
+    };
+  }
+
+  /* *********************************************************************** */
+
   std::size_t execute ( std::string const & command
-                      , const void * input
-                      , const std::size_t & input_size
-                      , void * output
-                      , const std::size_t & max_output_size
+                      , const_buffer const & buf_stdin
+                      , buffer const & buf_stdout
+                      , file_const_buffer_list const & files_input
+                      , file_buffer_list const & files_output
                       )
   {
     pid_t pid;
@@ -220,7 +330,24 @@ namespace process
         detail::do_error ("pipe failed");
       }
 
-    DLOG (TRACE, "threads running");
+    detail::param_map param_map;
+    boost::thread_group writers;
+
+    for ( file_const_buffer_list::const_iterator file_input (files_input.begin())
+        ; file_input != files_input.end()
+        ; ++file_input
+        )
+      {
+        std::string filename;
+
+        writers.add_thread (start::writer ( file_input->buf()
+                                          , filename
+                                          , file_input->size()
+                                          )
+                           );
+
+        param_map[file_input->param()] = filename;
+      }
 
     if ((pid = fork()) < 0)
       {
@@ -247,12 +374,20 @@ namespace process
             ; ++it, ++idx
             )
           {
-            av[idx] = new char[it->size()+1];
-            memcpy(av[idx], it->c_str(), it->size());
-            av[idx][it->size()] = (char)0;
+            const detail::param_map::const_iterator repl
+              (param_map.find (*it));
+
+            const std::string param ((repl != param_map.end())
+                                    ? std::string (repl->second)
+                                    : *it
+                                    );
+
+            av[idx] = new char[param.size()+1];
+            memcpy(av[idx], param.c_str(), param.size());
+            av[idx][param.size()] = (char)0;
           }
 
-        MLOG (INFO, "run command: " << command);
+        MLOG (INFO, "run command: " << fhg::util::show (av,av+cmdline.size()));
 
         if (execvp(av[0], av) < 0)
           {
@@ -271,21 +406,20 @@ namespace process
         DLOG (TRACE, "start threads");
 
         std::size_t bytes_read (0);
-        std::size_t bytes_left (input_size);
 
-        boost::thread thread_writer
+        boost::thread thread_buf_stdin
           ( thread::writer
-          , in + detail::WR
-          , input
-          , boost::ref (bytes_left)
+          , in[detail::WR]
+          , buf_stdin.buf()
+          , buf_stdin.size()
           , PIPE_BUF
           );
 
-        boost::thread thread_reader
+        boost::thread thread_buf_stdout
           ( thread::reader
-          , out + detail::RD
-          , output
-          , max_output_size
+          , out[detail::RD]
+          , buf_stdout.buf()
+          , buf_stdout.size()
           , boost::ref (bytes_read)
           , PIPE_BUF
           );
@@ -318,8 +452,10 @@ namespace process
 
         DLOG (TRACE, "join threads");
 
-        thread_writer.join();
-        thread_reader.join();
+        thread_buf_stdin.join();
+        thread_buf_stdout.join();
+
+        writers.join_all();
 
         MLOG (INFO, "finished command: " << command);
 

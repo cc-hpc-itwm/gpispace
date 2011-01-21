@@ -76,3 +76,5 @@ install(TARGETS process.shared
   LIBRARY
   DESTINATION lib
   COMPONENT libraries)
+
+add_subdirectory (test)
