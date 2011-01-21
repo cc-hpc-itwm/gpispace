@@ -1,2 +1,3 @@
-TRUNK = $(HOME)/SDPA/trunk
-BUILD = $(TRUNK)/main/trunk/build45
+DESTDIR     = $(SDPA_LIBEXEC)
+LIB_DESTDIR = $(HOME)/.sdpa/modules
+BUILD       = /fhgfs/HPC/petry/build/ap/

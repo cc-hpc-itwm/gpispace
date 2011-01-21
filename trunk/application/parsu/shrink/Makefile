@@ -1,6 +1,8 @@
 
 MAIN = shrink
 
+TRUNK = $(CURDIR)/../../../
+
 include ../make.defs
 
 PATH_MAIN  = $(TRUNK)/application/parsu/$(MAIN)
@@ -150,7 +152,7 @@ $(GEN): $(XML_MAIN) $(DEP)
 .PHONY: install
 
 install: $(GEN)
-	$(CP) $(LIB) $(SDPA_LIBEXEC)
+	$(CP) $(LIB) $(LIB_DESTDIR)
 
 ###############################################################################
 
