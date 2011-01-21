@@ -128,7 +128,7 @@ killall nre >/dev/null 2>&1
 sleep 1
 
 log "Running $name with rank $rank at $bind_addr with parent $parent"
-LD_LIBRARY_PATH=${SDPA_LIBEXEC}:${LD_LIBRARY_PATH} \
+LD_LIBRARY_PATH=${PC_LIBRARY_PATH}:${LD_LIBRARY_PATH} \
 FHGLOG_to_file="$SDPA_LOG_DIR/pc.`hostname -s`.log" nre-pcd \
     --rank "$rank" \
     --load "$SDPA_LIBEXEC/libfvm-pc.so" \
