@@ -29,7 +29,7 @@ shmem_per_node_default=$((2**28))
 gpi_mem_per_node_default=$((2**30))
 
 if [ $# -lt 5 ]; then
-  echo "usage: $0 input-file input-type output-file output-type \"su cmd\" [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
+  echo "usage: $0 input-file1 input-type1 input-file2 input-type2 output-file output-type operation [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
   exit 1
 fi
 
@@ -39,7 +39,7 @@ in2f=${3}
 in2t=${4}
 outf=${5}
 outt=${6}
-cmd=${7}
+op=${7}
 shmem_per_node=${8:-${shmem_per_node_default}}
 gpi_mem_per_node=${9:-${gpi_mem_per_node_default}}
 
@@ -92,7 +92,7 @@ cat "${xml_file_in}" | ${mk_xml}             \
                        "${in2t}"             \
                        "${abs_outf}"         \
                        "${outt}"             \
-                       "${cmd}"              \
+                       "${op}"               \
                        "${shmem_per_node}"   \
                        "${gpi_mem_per_node}" \
                      > "${xml_file}"

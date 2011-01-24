@@ -2,9 +2,9 @@
 add_subdirectory (generate)
 
 set (xml
-   shrink.xml.in
+   op2.xml.in
 )
 
 install(FILES ${xml}
-  DESTINATION ${PARSU_SHRINK}
+  DESTINATION ${PARSU_OPTWO}
   COMPONENT parsu)
