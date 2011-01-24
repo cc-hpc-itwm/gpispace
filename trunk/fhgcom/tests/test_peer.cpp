@@ -413,4 +413,35 @@ BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports_reuse )
   thrd_2.join ();
 }
 
+BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"));
+  boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
+  peer_1.start();
+
+  for (std::size_t i (0); i < 1000; ++i)
+  {
+    peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"));
+    boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
+    peer_2.start();
+
+    try
+    {
+      peer_1.send(peer_2.name (), "hello world!");
+    }
+    catch (std::exception const & ex)
+    {
+      BOOST_ERROR ( ex.what() );
+    }
+
+    peer_2.stop();
+    thrd_2.join ();
+  }
+
+  peer_1.stop();
+  thrd_1.join ();
+}
+
 BOOST_AUTO_TEST_SUITE_END()
