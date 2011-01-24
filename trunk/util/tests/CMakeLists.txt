@@ -4,6 +4,7 @@ set(tc_srcs
   test_semaphore.cpp
   test_event.cpp
   test_ini_parser.cpp
+  test_parent_path.cpp
 )
 
 foreach (tc_src ${tc_srcs})
