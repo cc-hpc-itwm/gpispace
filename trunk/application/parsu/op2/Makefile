@@ -1,6 +1,8 @@
 
 MAIN = op2
 
+TRUNK = $(CURDIR)/../../../
+
 include ../make.defs
 
 PATH_MAIN  = $(TRUNK)/application/parsu/$(MAIN)
@@ -39,18 +41,26 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-FILE1_INPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
-TYPE1_INPUT      = segy
-FILE2_INPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.su
+#FILE1_INPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
+#TYPE1_INPUT      = segy
+#FILE2_INPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.su
+#TYPE2_INPUT      = su
+#FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.diff.su
+#TYPE_OUTPUT      = su
+
+FILE1_INPUT      = /u/herc/rahn/test1.dat
+TYPE1_INPUT      = su
+FILE2_INPUT      = /u/herc/rahn/test2.dat
 TYPE2_INPUT      = su
-FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.sgy
-TYPE_OUTPUT      = segy
-CMD              = sudiff
-SHMEM_PER_NODE   = 2^28
-GPI_MEM_PER_NODE = 2^30
+FILE_OUTPUT      = /u/herc/rahn/test.sum
+TYPE_OUTPUT      = su
+
+OP               = sum
+SHMEM_PER_NODE   = 4240 * 4
+GPI_MEM_PER_NODE = 4240 * 10
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE1_INPUT)" "$(TYPE1_INPUT)" "$(FILE2_INPUT)" "$(TYPE2_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(CMD)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" > $@
+	$(CAT) $< | $(MK_XML) "$(FILE1_INPUT)" "$(TYPE1_INPUT)" "$(FILE2_INPUT)" "$(TYPE2_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(OP)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(BUILD)" > $@
 
 ###############################################################################
 
