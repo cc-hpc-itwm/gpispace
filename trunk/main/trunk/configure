@@ -4,7 +4,10 @@ if [ -e ./CMakeLists.txt ] ; then
   exit 1
 fi
 
-src=$( cd $( dirname "$0" ) && pwd )
+src=$( grep 'CMAKE_HOME_DIRECTORY' CMakeCache.txt | cut -d= -f 2 2>&1 )
+if [ $? -ne 0 ] ; then
+    src=$( cd $( dirname "$0" ) && pwd )
+fi
 
 function usage ()
 {
