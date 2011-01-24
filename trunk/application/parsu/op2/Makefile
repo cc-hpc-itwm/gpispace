@@ -154,7 +154,7 @@ $(GEN): $(XML_MAIN) $(DEP)
 .PHONY: install
 
 install: $(GEN)
-	$(CP) $(LIB) $(SDPA_LIBEXEC)
+	$(CP) $(LIB) $(LIB_DESTDIR)
 
 ###############################################################################
 
