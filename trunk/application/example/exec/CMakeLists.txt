@@ -77,4 +77,7 @@ install(TARGETS process.shared
   DESTINATION lib
   COMPONENT libraries)
 
-add_subdirectory (test)
+include (CTest)
+if (BUILD_TESTING)
+  add_subdirectory (test)
+endif (BUILD_TESTING)
