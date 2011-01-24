@@ -8,6 +8,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
@@ -27,6 +28,7 @@ namespace fhg
      */
     class peer_t : public connection_t::handler_t
                  , private boost::noncopyable
+                 , public boost::enable_shared_from_this<peer_t>
     {
     private:
       typedef peer_t self;
@@ -77,13 +79,11 @@ namespace fhg
       std::string    resolve (p2p::address_t const & addr, std::string const & dflt = "*unknown*");
 
     protected:
-      void handle_system_data (connection_t *, const message_t *m);
-      void handle_user_data   (connection_t *, const message_t *m);
-      void handle_error       (connection_t *, const boost::system::error_code & error);
+      void handle_system_data (connection_t::ptr_t, const message_t *m);
+      void handle_user_data   (connection_t::ptr_t, const message_t *m);
+      void handle_error       (connection_t::ptr_t, const boost::system::error_code & error);
 
     private:
-      typedef boost::shared_ptr<connection_t> connection_ptr_t;
-
       struct to_send_t
       {
         to_send_t ()
@@ -110,14 +110,12 @@ namespace fhg
       {
         connection_data_t ()
           : send_in_progress (false)
-          , connection (0)
-          , loopback (0)
           , name ("")
         {}
 
         bool send_in_progress;
-        connection_t *connection;
-        connection_t *loopback;
+        connection_t::ptr_t connection;
+        connection_t::ptr_t loopback;
         std::string name;
         std::deque<to_send_t> o_queue;
       };
@@ -149,10 +147,10 @@ namespace fhg
       typedef boost::unordered_map<p2p::address_t, connection_data_t> connections_t;
       connections_t connections_;
 
-      typedef boost::unordered_set<connection_t *> backlog_t;
+      typedef boost::unordered_set<connection_t::ptr_t> backlog_t;
       backlog_t backlog_;
 
-      connection_t * listen_;
+      connection_t::ptr_t listen_;
 
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;

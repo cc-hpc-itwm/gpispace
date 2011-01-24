@@ -27,7 +27,6 @@ namespace fhg
     {
       try
       {
-        set_callback_handler(0);
         stop();
         DLOG(TRACE, "connection destroyed");
         if (in_message_)
@@ -61,7 +60,7 @@ namespace fhg
 
     void connection_t::stop ()
     {
-      //      socket_.shutdown (both...);
+      socket_.shutdown (boost::asio::ip::tcp::socket::shutdown_both);
       socket_.close();
       // callback_handler_->handle_error (this, 0);
     }
@@ -76,7 +75,7 @@ namespace fhg
                              , boost::asio::buffer (&in_message_->header, sizeof(message_t::header_t))
                              , strand_.wrap
                              ( boost::bind ( &self::handle_read_header
-                                           , this
+                                           , get_this()
                                            , boost::asio::placeholders::error
                                            , boost::asio::placeholders::bytes_transferred
                                            )
@@ -103,7 +102,7 @@ namespace fhg
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
                                 ( boost::bind ( &self::handle_read_data
-                                              , this
+                                              , get_this()
                                               , boost::asio::placeholders::error
                                               , boost::asio::placeholders::bytes_transferred
                                               )
@@ -111,7 +110,8 @@ namespace fhg
       }
       else
       {
-        if (callback_handler_) callback_handler_->handle_error (this, ec);
+        stop ();
+        if (callback_handler_) callback_handler_->handle_error (get_this(), ec);
       }
     }
 
@@ -132,11 +132,11 @@ namespace fhg
           {
             if (p2p::type_of_message_traits::is_system_data(m->header.type_of_msg))
             {
-              callback_handler_->handle_system_data (this, m);
+              callback_handler_->handle_system_data (get_this(), m);
             }
             else
             {
-              callback_handler_->handle_user_data (this, m);
+              callback_handler_->handle_user_data (get_this(), m);
             }
 
             in_message_ = new message_t;
@@ -159,11 +159,13 @@ namespace fhg
       }
       else
       {
+        stop ();
+
         if (callback_handler_)
         {
           try
           {
-            callback_handler_->handle_error (this, ec);
+            callback_handler_->handle_error (get_this(), ec);
           }
           catch (std::exception const & ex)
           {
@@ -193,7 +195,7 @@ namespace fhg
       boost::asio::async_write( socket_
                               , d.to_buffers()
                               , strand_.wrap (boost::bind( &self::handle_write
-                                                         , this
+                                                         , get_this()
                                                          , boost::asio::placeholders::error
                                                          )
                                              )
@@ -223,8 +225,10 @@ namespace fhg
       }
       else
       {
+        stop ();
+
         if (callback_handler_)
-          callback_handler_->handle_error (this, ec);
+          callback_handler_->handle_error (get_this(), ec);
       }
     }
   }

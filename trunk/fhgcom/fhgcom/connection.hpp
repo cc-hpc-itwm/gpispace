@@ -12,6 +12,7 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <boost/system/error_code.hpp>
 
@@ -23,19 +24,22 @@ namespace fhg
   namespace com
   {
     class connection_t : private boost::noncopyable
+                       , public boost::enable_shared_from_this<connection_t>
     {
     private:
       typedef connection_t self;
 
     public:
+      typedef boost::shared_ptr<connection_t> ptr_t;
+
       class handler_t
       {
       public:
         virtual ~handler_t () {}
 
-        virtual void handle_system_data (connection_t *, const message_t *) = 0;
-        virtual void handle_user_data   (connection_t *, const message_t *) = 0;
-        virtual void handle_error       (connection_t *, const boost::system::error_code & error ) = 0;
+        virtual void handle_system_data (ptr_t connection, const message_t *) = 0;
+        virtual void handle_user_data   (ptr_t connection, const message_t *) = 0;
+        virtual void handle_error       (ptr_t connection, const boost::system::error_code & error ) = 0;
       };
 
       typedef boost::function <void (boost::system::error_code const &)> completion_handler_t;
@@ -51,6 +55,11 @@ namespace fhg
 
       handler_t * set_callback_handler ( handler_t * h );
 
+      ptr_t get_this ()
+      {
+        return shared_from_this();
+      }
+
       boost::asio::ip::tcp::socket & socket ();
 
       template <typename Handler>
@@ -58,6 +67,18 @@ namespace fhg
                       , Handler hdl
                       , boost::posix_time::time_duration timeout = boost::posix_time::pos_infin
                       );
+
+      template <typename SettableSocketOption>
+      void set_option(const SettableSocketOption & o)
+      {
+        socket_.set_option (o);
+      }
+
+      template <typename GettableSocketOption>
+      void get_option(GettableSocketOption & o) const
+      {
+        socket_.get_option (o);
+      }
 
       void start ();
       void stop ();
@@ -125,7 +146,7 @@ namespace fhg
                                   )
     {
       strand_.post (boost::bind( &self::start_send
-                               , this
+                               , get_this()
                                , to_send_t (msg, hdl, timeout)
                                ));
     }

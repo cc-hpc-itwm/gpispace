@@ -31,7 +31,6 @@ namespace fhg
       , io_service_work_(new boost::asio::io_service::work(io_service_))
       , acceptor_(io_service_)
       , connections_()
-      , listen_(0)
     {
       if (name.find ('.') != std::string::npos)
       {
@@ -74,7 +73,10 @@ namespace fhg
 
         accept_new ();
 
-        io_service_.post (boost::bind (&self::update_my_location, this));
+        io_service_.post (boost::bind ( &self::update_my_location
+                                      , this
+                                      )
+                         );
       }
 
       int ec (0);
@@ -100,9 +102,10 @@ namespace fhg
       if (stopped_) return;
 
       DLOG(TRACE, "stopping peer " << name());
-      {
-        io_service_.stop();
 
+      listen_.reset ();
+
+      {
         try
         {
           std::string prefix ("p2p.peer");
@@ -115,21 +118,12 @@ namespace fhg
         }
       }
 
-      while (! backlog_.empty())
-      {
-        (*backlog_.begin())->stop();
-        delete (*backlog_.begin());
-        backlog_.erase(backlog_.begin());
-      }
+      backlog_.clear ();
 
       // TODO: call pending handlers and delete pending messages
       while (! connections_.empty ())
       {
         connection_data_t & cd = connections_.begin()->second;
-        if (cd.connection)
-          cd.connection->stop();
-        if (cd.loopback)
-          cd.loopback->stop();
 
         while (! cd.o_queue.empty())
         {
@@ -139,27 +133,7 @@ namespace fhg
           cd.o_queue.pop_front();
         }
 
-        connection_t * conn = cd.connection;
-        connection_t * loop = cd.loopback;
         connections_.erase (connections_.begin());
-
-        if (loop)
-        {
-          loop->stop();
-          delete loop;
-        }
-        if (conn)
-        {
-          conn->stop();
-          delete conn;
-        }
-      }
-
-      if (listen_)
-      {
-        listen_->stop();
-        delete listen_;
-        listen_ = 0;
       }
 
       // remove pending
@@ -176,6 +150,8 @@ namespace fhg
         using namespace boost::system;
         to_recv.handler (errc::make_error_code(errc::operation_canceled));
       }
+
+      io_service_.stop();
 
       stopped_ = true;
     }
@@ -244,9 +220,22 @@ namespace fhg
         // async_connect (...);
         connection_data_t & cd = connections_[addr];
         cd.send_in_progress = false;
-        cd.connection = (new connection_t(io_service_, cookie_, this));
+        cd.connection =
+          connection_t::ptr_t(new connection_t( io_service_
+                                              , cookie_
+                                              , this
+                                              )
+                             );
         cd.connection->local_address (my_addr_);
         cd.connection->remote_address (addr);
+        {
+          boost::asio::socket_base::keep_alive o(true);
+          cd.connection->set_option (o);
+        }
+        {
+          boost::asio::socket_base::reuse_address o(true);
+          cd.connection->set_option (o);
+        }
         cd.name = n;
 
         to_send_t to_send;
@@ -282,7 +271,11 @@ namespace fhg
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
-        io_service_.post (boost::bind (&self::start_sender, this, addr));
+        io_service_.post (boost::bind ( &self::start_sender
+                                      , this
+                                      , addr
+                                      )
+                         );
       }
     }
 
@@ -448,6 +441,8 @@ namespace fhg
       else
       {
         LOG(WARN, "connection to " << a << " could not be established: " << ec);
+
+        handle_error (connections_.at (a).connection, ec);
         // TODO: remove connection data
         //     call handler for all o_queue elements
         //     call handler for all i_queue elements
@@ -478,7 +473,11 @@ namespace fhg
         {
           // TODO: wrap in strand...
           cd.connection->async_send ( &cd.o_queue.front().message
-                                    , boost::bind (&self::handle_send, this, a, _1)
+                                    , boost::bind ( &self::handle_send
+                                                  , this
+                                                  , a
+                                                  , _1
+                                                  )
                                     );
         }
         else
@@ -503,7 +502,11 @@ namespace fhg
 
       cd.send_in_progress = true;
       cd.connection->async_send ( &cd.o_queue.front().message
-                                , boost::bind (&self::handle_send, this, a, _1)
+                                , boost::bind ( &self::handle_send
+                                              , this
+                                              , a
+                                              , _1
+                                              )
                                 );
     }
 
@@ -543,7 +546,7 @@ namespace fhg
       // the connection will  call us back when it got the  hello packet or will
       // timeout
       listen_->start ();
-      listen_ = 0;
+      listen_.reset ();
 
       // create new connection to accept on
       accept_new ();
@@ -551,9 +554,13 @@ namespace fhg
 
     void peer_t::accept_new ()
     {
-      assert (0 == listen_);
+      assert (! listen_);
 
-      listen_ = new connection_t (io_service_, cookie_, this);
+      listen_ = connection_t::ptr_t (new connection_t
+                                    ( io_service_
+                                    , cookie_
+                                    , this
+                                    ));
       listen_->local_address(my_addr_);
       listen_->remote_address(p2p::address_t());
       acceptor_.async_accept( listen_->socket()
@@ -564,7 +571,7 @@ namespace fhg
                             );
     }
 
-    void peer_t::handle_system_data (connection_t *c, const message_t *m)
+    void peer_t::handle_system_data (connection_t::ptr_t c, const message_t *m)
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
 
@@ -577,7 +584,6 @@ namespace fhg
           LOG(ERROR, "protocol error between " << my_addr_ << " and " << m->header.src << " closing connection");
           // TODO remove from other maps
           c->stop();
-          delete c;
         }
         else
         {
@@ -600,7 +606,7 @@ namespace fhg
 
           connection_data_t & cd = connections_[m->header.src];
           cd.name = remote_name;
-          if (cd.connection != 0)
+          if (cd.connection)
           {
             // handle loopback connections correctly
             DLOG(TRACE, "connection already exists, it seems that i have initiated it");
@@ -620,7 +626,7 @@ namespace fhg
       delete m;
     }
 
-    void peer_t::handle_user_data   (connection_t *, const message_t *m)
+    void peer_t::handle_user_data   (connection_t::ptr_t c, const message_t *m)
     {
       assert (m);
 
@@ -646,7 +652,7 @@ namespace fhg
       }
     }
 
-    void peer_t::handle_error (connection_t *c, const boost::system::error_code & ec)
+    void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
     {
       assert ( c != NULL );
 
@@ -683,8 +689,6 @@ namespace fhg
           tmp.pop_front();
         }
 
-        c->stop();
-
         connections_.erase(c->remote_address());
       }
       else if (ec != 0)
@@ -696,7 +700,7 @@ namespace fhg
       }
       else
       {
-        LOG(WARN, "strange, ec == 0 in handle_error");
+        LOG(ERROR, "strange, ec == 0 in handle_error");
       }
     }
   }
