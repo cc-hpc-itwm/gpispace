@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FILE1_INPUT=${1:?}
+TYPE1_INPUT=${2:?}
+FILE2_INPUT=${3:?}
+TYPE2_INPUT=${4:?}
+FILE_OUTPUT=${5:?}
+TYPE_OUTPUT=${6:?}
+OP=${7:?}
+SHMEM_PER_NODE=${8:?}
+GPI_MEM_PER_NODE=${9:?}
+BUILD=${10:?}
+
+/usr/bin/sed                                 \
+  "s|@SHMEM_PER_NODE@|${SHMEM_PER_NODE}|     \
+  ;s|@GPI_MEM_PER_NODE@|${GPI_MEM_PER_NODE}| \
+  ;s|@OP@|${OP}|                             \
+  ;s|@FILE1_INPUT@|${FILE1_INPUT}|           \
+  ;s|@FILE2_INPUT@|${FILE2_INPUT}|           \
+  ;s|@FILE_OUTPUT@|${FILE_OUTPUT}|           \
+  ;s|@TYPE1_INPUT@|${TYPE1_INPUT}|           \
+  ;s|@TYPE2_INPUT@|${TYPE2_INPUT}|           \
+  ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|           \
+  ;s|@BUILD@|${BUILD}|                       "

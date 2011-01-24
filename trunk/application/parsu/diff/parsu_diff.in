@@ -1,0 +1,107 @@
+#!/bin/bash
+
+diff_dir="@PARSU_DIFF_DIR@"
+
+tmp_dir=${PARSU_TMP_DIR:-${TMPDIR}}
+
+if [ ! -d "${tmp_dir}" -a -w "${tmp_dir}" ] ; then
+  echo "E: no (writeable) temp dir given (is: \"${tmp_dir}\")"
+  echo "set PARSU_TMP_DIR or TMPDIR"
+  exit 1
+fi
+
+xml_file_in="${diff_dir}/diff.xml.in"
+mk_xml="${diff_dir}/mk.xml"
+
+xml_file=$( mktemp "${tmp_dir}/parsu_diff.xml.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
+  exit 2
+fi
+
+pnet_file=$( mktemp "${tmp_dir}/parsu_diff.pnet.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
+  exit 2
+fi
+
+shmem_per_node_default=$((2**28))
+gpi_mem_per_node_default=$((2**30))
+
+if [ $# -lt 5 ]; then
+  echo "usage: $0 input-file input-type output-file output-type \"su cmd\" [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
+  exit 1
+fi
+
+in1f=${1}
+in1t=${2}
+in2f=${3}
+in2t=${4}
+outf=${5}
+outt=${6}
+cmd=${7}
+shmem_per_node=${8:-${shmem_per_node_default}}
+gpi_mem_per_node=${9:-${gpi_mem_per_node_default}}
+
+if [ ! -r "${in1f}" ] ; then
+  echo "E: cannot access ${in1f} for reading, aborting" >/dev/stderr
+  exit 1
+fi
+
+if [ ! -r "${in2f}" ] ; then
+  echo "E: cannot access ${in2f} for reading, aborting" >/dev/stderr
+  exit 1
+fi
+
+abspath ()
+{
+  p="$1"
+  case "$p" in
+	/*)
+	  REPLY="$p"
+	  ;;
+	*)
+	  REPLY="`pwd`/$p"
+	  ;;
+  esac
+  return 0
+}
+
+abspath "${in1f}"
+abs_in1f="$REPLY"
+
+abspath "${in2f}"
+abs_in2f="$REPLY"
+
+abspath "${outf}"
+abs_outf="$REPLY"
+
+cleanup ()
+{
+  rm -f "${xml_file}"
+  rm -f "${pnet_file}"
+}
+trap cleanup EXIT
+
+echo -n "-: generating job description..." >/dev/stderr
+
+cat "${xml_file_in}" | ${mk_xml}             \
+                       "${abs_in1f}"         \
+                       "${in1t}"             \
+                       "${abs_in2f}"         \
+                       "${in2t}"             \
+                       "${abs_outf}"         \
+                       "${outt}"             \
+                       "${cmd}"              \
+                       "${shmem_per_node}"   \
+                       "${gpi_mem_per_node}" \
+                     > "${xml_file}"
+
+if [ $? -ne 0 ] ; then
+  echo "E: generating failed!" >/dev/stderr
+  exit 2
+fi
+echo "ok" >/dev/stderr
+
+PARSU_PNETC_LIB_DIR="${diff_dir} -I @PARSU_PNETC_LIB_DIR@" \
+parsu_run "${xml_file}" "${pnet_file}"
