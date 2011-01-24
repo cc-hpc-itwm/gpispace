@@ -28,11 +28,11 @@ main ()
     }
   catch (const std::runtime_error & e)
     {
+      std::cout << "catched exception:" << std::endl << e.what() << std::endl;
+
       REQUIRE (  std::string (e.what())
               == std::string ("redefinition of key: %redefinition%")
               );
-
-      std::cout << "catched exception:" << std::endl << e.what() << std::endl;
     }
 
   std::cout << "SUCCESS" << std::endl;
