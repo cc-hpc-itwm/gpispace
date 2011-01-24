@@ -39,3 +39,11 @@ add_dependencies (test_process_all rotate)
 add_test ("test_process_all"
            test_process_all ${CMAKE_CURRENT_BINARY_DIR}/rotate
          )
+
+add_executable (test_process_redefine test_process_redefine.cpp)
+target_link_libraries(test_process_redefine process)
+target_link_libraries(test_process_redefine ${FhgLog_LIBRARY})
+target_link_libraries(test_process_redefine ${Boost_LIBRARIES})
+target_link_libraries(test_process_redefine pthread)
+
+add_test ("test_process_redefine" test_process_redefine)

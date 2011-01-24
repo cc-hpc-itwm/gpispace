@@ -36,6 +36,16 @@ namespace process
       throw std::runtime_error (msg);
     }
 
+    template<typename T>
+    inline void put_error (const std::string & msg, T x)
+    {
+      std::ostringstream sstr;
+
+      sstr << msg << ": " << x;
+
+      put_error (sstr.str());
+    }
+
     inline void do_error (const std::string & msg)
     {
       std::ostringstream sstr;
@@ -332,6 +342,11 @@ namespace process
     public:
       param_map_t::mapped_type & operator [] (const param_map_t::key_type & key)
       {
+        if (this->find (key) != this->end())
+          {
+            put_error ("redefinition of key", key);
+          }
+
         return _map[key];
       }
 
