@@ -60,7 +60,10 @@ namespace fhg
 
     void connection_t::stop ()
     {
-      socket_.shutdown (boost::asio::ip::tcp::socket::shutdown_both);
+      if (socket_.is_open())
+      {
+        socket_.shutdown (boost::asio::ip::tcp::socket::shutdown_both);
+      }
       socket_.close();
       // callback_handler_->handle_error (this, 0);
     }
@@ -110,7 +113,6 @@ namespace fhg
       }
       else
       {
-        stop ();
         if (callback_handler_) callback_handler_->handle_error (get_this(), ec);
       }
     }
@@ -159,8 +161,6 @@ namespace fhg
       }
       else
       {
-        stop ();
-
         if (callback_handler_)
         {
           try
@@ -225,8 +225,6 @@ namespace fhg
       }
       else
       {
-        stop ();
-
         if (callback_handler_)
           callback_handler_->handle_error (get_this(), ec);
       }

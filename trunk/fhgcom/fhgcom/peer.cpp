@@ -103,6 +103,8 @@ namespace fhg
 
       DLOG(TRACE, "stopping peer " << name());
 
+      io_service_.stop();
+
       listen_.reset ();
 
       {
@@ -189,6 +191,8 @@ namespace fhg
 
       if (connections_.find(addr) == connections_.end())
       {
+        DLOG(TRACE, "initiating connection to " << m->header.dst);
+
         // lookup location information
         std::string prefix ("p2p.peer");
         prefix += "." + boost::lexical_cast<std::string>(addr);
@@ -196,7 +200,7 @@ namespace fhg
 
         if (peer_info.empty())
         {
-          LOG(WARN, "could not lookup location information for " << addr);
+          LOG(ERROR, "could not lookup location information for " << addr);
           try
           {
             using namespace boost::system;
@@ -214,6 +218,8 @@ namespace fhg
         std::string n (peer_info.at(prefix + ".name"));
         reverse_lookup_cache_[addr] = n;
 
+        DLOG(TRACE, "corresponding connection data: name=" << n << " host=" << std::string(h) << " port=" << std::string(p));
+
         // store message in out queue
         //    connect_handler -> sends messages from out queue
         //    error_handler -> clears messages from out queue
@@ -228,14 +234,7 @@ namespace fhg
                              );
         cd.connection->local_address (my_addr_);
         cd.connection->remote_address (addr);
-        {
-          boost::asio::socket_base::keep_alive o(true);
-          cd.connection->set_option (o);
-        }
-        {
-          boost::asio::socket_base::reuse_address o(true);
-          cd.connection->set_option (o);
-        }
+
         cd.name = n;
 
         to_send_t to_send;
@@ -425,6 +424,13 @@ namespace fhg
         DLOG(TRACE, "connection to " << a << " established: " << ec);
 
         connection_data_t & cd = connections_.at (a);
+
+        {
+          DLOG(TRACE, "setting socket option 'keep-alive' to 'true'");
+          boost::asio::socket_base::keep_alive o(true);
+          cd.connection->set_option (o);
+        }
+
         // send hello message
         to_send_t to_send;
         to_send.handler = dummy_handler;
@@ -539,17 +545,28 @@ namespace fhg
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
     {
-      DLOG(TRACE, "connection attempt from " << listen_->socket().remote_endpoint());
-      // TODO: work here schedule timeout
-      backlog_.insert (listen_);
+      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
 
-      // the connection will  call us back when it got the  hello packet or will
-      // timeout
-      listen_->start ();
-      listen_.reset ();
+      if (ec)
+      {
+        LOG(WARN, "accept() failed: " << ec);
+      }
+      else
+      {
+        if (listen_)
+        {
+          DLOG(TRACE, "connection attempt from " << listen_->socket().remote_endpoint());
+          // TODO: work here schedule timeout
+          backlog_.insert (listen_);
 
-      // create new connection to accept on
-      accept_new ();
+          // the connection will  call us back when it got the  hello packet or will
+          // timeout
+          listen_->start ();
+          listen_.reset ();
+        }
+
+        accept_new ();
+      }
     }
 
     void peer_t::accept_new ()
@@ -582,13 +599,17 @@ namespace fhg
         if (backlog_.find (c) == backlog_.end())
         {
           LOG(ERROR, "protocol error between " << my_addr_ << " and " << m->header.src << " closing connection");
-          // TODO remove from other maps
-          c->stop();
+          try
+          {
+            c->stop();
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(WARN, "could not stop connection: " << ex.what());
+          }
         }
         else
         {
-          backlog_.erase (c);
-
           c->remote_address (m->header.src);
           c->local_address (m->header.dst);
 
@@ -616,6 +637,8 @@ namespace fhg
           {
             cd.connection = c;
           }
+
+          backlog_.erase (c);
         }
         break;
       default:
@@ -664,7 +687,7 @@ namespace fhg
 
         LOG_IF( WARN
               , ec
-              , "error on connection to " << cd.name << " - closing it..."
+              , "error on connection to " << cd.name << " - closing it: " << ec
               );
 
         while (! cd.o_queue.empty())
