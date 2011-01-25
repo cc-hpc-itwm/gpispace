@@ -8,13 +8,13 @@ then
   gui_url="$( hostname -s ):9001"
 fi
 
-gpi_cfg="@GPI_CONFIG_PATH@"
+gpi_cfg=""
 if [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_GPI_CFG" ] ; then
   gpi_cfg="$SDPA_GPI_CFG"
-elif [ -r "$HOME/.sdpa/configs/gpi.rc" ] ; then
+elif [ -r "$HOME/.sdpa/configs/gpi.rc" -a -e "$HOME/.sdpa/configs/usenewgpi" ] ; then
   gpi_cfg="$HOME/.sdpa/configs/gpi.rc"
-elif [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_HOME/etc/gpi/sdpa-gpi.cfg" ] ; then
-  gpi_cfg="$SDPA_HOME/etc/gpi/sdpa-gpi.cfg"
+elif [ -r "$HOME/.sdpa/configs/sdpa-gpi.cfg" ] ; then
+  gpi_cfg="$HOME/.sdpa/configs/sdpa-gpi.cfg"
 fi
 
 debug=false
