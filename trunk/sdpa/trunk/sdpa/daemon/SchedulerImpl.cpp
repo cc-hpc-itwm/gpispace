@@ -86,10 +86,10 @@ void SchedulerImpl::declare_jobs_failed( Worker::JobQueue* pQueue )
   while( !pQueue->empty() )
   {
 	  sdpa::job_id_t jobId = pQueue->pop_and_wait();
-	  SDPA_LOG_INFO("Declare the job "<<jobId.str()<<" failed!");
+	  SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
 
 	  if( ptr_comm_handler_ )
-		  ptr_comm_handler_->workerJobFailed( jobId, "Worker timeout detected!");
+		  ptr_comm_handler_->workerJobFailed( jobId, "Worker timeout detected!" );
 	  else {
 		  SDPA_LOG_ERROR("Invalid communication handler!");
 	  }
@@ -490,9 +490,12 @@ const Worker::worker_id_t& SchedulerImpl::findWorker(const sdpa::job_id_t& job_i
 	}
 }
 
-void SchedulerImpl::start()
+void SchedulerImpl::start(IComm* p)
 {
-   bStopRequested = false;
+	if(p)
+		ptr_comm_handler_ = p;
+
+	bStopRequested = false;
    if(!ptr_comm_handler_)
    {
 	   SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
@@ -637,8 +640,13 @@ void SchedulerImpl::run()
 
 void SchedulerImpl::print()
 {
-	SDPA_LOG_DEBUG("The content of agent's scheduler queue is:");
-	jobs_to_be_scheduled.print();
+	if(!jobs_to_be_scheduled.empty())
+	{
+		SDPA_LOG_DEBUG("The content of agent's scheduler queue is:");
+		jobs_to_be_scheduled.print();
+	}
+	else
+		SDPA_LOG_DEBUG("No job to be scheduled left!");
 
 	SDPA_LOG_DEBUG("The content of agent's WorkerManager is:");
 	ptr_worker_man_->print();
@@ -715,15 +723,27 @@ bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
 }
 
 
-void SchedulerImpl::notifyWorkers(int errcode)
+void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& errcode)
 {
 	std::list<std::string> workerList;
 	ptr_worker_man_->getWorkerList(workerList);
 
-	for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
+	if(ptr_comm_handler_)
 	{
-		SDPA_LOG_INFO("Notify worker "<<*iter<<" that I'm gonna shutdown ...");
-		ErrorEvent::Ptr pErrEvt(new ErrorEvent( ptr_comm_handler_->name(), *iter , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "shutdown") );
-		ptr_comm_handler_->sendEventToMaster(pErrEvt);
+		if(workerList.empty())
+		{
+			SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
+			return;
+		}
+
+		for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
+		{
+			SDPA_LOG_INFO("Send notification to the worker "<<*iter<<" "<< errcode<<" ...");
+			ErrorEvent::Ptr pErrEvt(new ErrorEvent( ptr_comm_handler_->name(), *iter, errcode,  "worker notification") );
+			//ErrorEvent::SDPA_EWORKERNOTREG
+			ptr_comm_handler_->sendEventToMaster(pErrEvt);
+		}
 	}
+	else
+		SDPA_LOG_ERROR("No valid communication handler!");
 }

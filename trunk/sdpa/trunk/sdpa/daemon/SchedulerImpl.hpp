@@ -68,7 +68,7 @@ namespace sdpa {
     virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
-    virtual void notifyWorkers(int);
+    virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& );
 
 	virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
@@ -82,7 +82,7 @@ namespace sdpa {
 	void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
 	// thread related functions
-	virtual void start();
+	virtual void start(IComm*);
 	virtual void stop();
 	virtual void run();
 
@@ -97,7 +97,7 @@ namespace sdpa {
 	friend class boost::serialization::access;
 
 	virtual void print();
-  protected:
+  //protected:
 	  JobQueue jobs_to_be_scheduled;
 	  WorkerManager::ptr_t ptr_worker_man_;
 
