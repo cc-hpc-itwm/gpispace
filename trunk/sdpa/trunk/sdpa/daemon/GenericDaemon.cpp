@@ -431,7 +431,7 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	ptr_daemon_cfg_->put("polling interval",    			1 * 1000 * 1000);
 	ptr_daemon_cfg_->put("upper bound polling interval", 	5 * 1000 * 1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
-	ptr_daemon_cfg_->put("node_timeout",        			5 * 1000 * 1000); // 6s
+	ptr_daemon_cfg_->put("node_timeout",        		   20 * 1000 * 1000); // 6s
 	ptr_daemon_cfg_->put("registration_timeout", 			1 * 1000 * 1000); // 1s
 
 	// end reading confog file
