@@ -446,6 +446,320 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg )
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
 
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
+{
+	LOG( INFO, "***** testBackupRecoverOrchNoWfeWithClient *****"<<std::endl);
+
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+
+	bool bLaunchNrePcd = false;
+	//typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+
+	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	LOG( INFO, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	LOG( INFO, "Create the NRE ...");
+	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<void, TestWorkerClient>::create("NRE_0",
+											 addrNRE,"aggregator_0",
+											 workerUrl,
+											 strGuiUrl,
+											 bLaunchNrePcd,
+											 TESTS_NRE_PCD_BIN_PATH,
+											 v_fake_PC_search_path,
+											 v_module_preload );
+
+	try {
+		ptrNRE->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		return;
+	}
+
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	sleep(1);
+
+	LOG( DEBUG, "Shutdown the orchestrator");
+
+	ptrOrch->shutdown(sstrOrch);
+
+	sleep(5);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	//ptrRecOrch->recover(filename);
+
+	LOG( DEBUG, "Re-start the orchestrator");
+	ptrRecOrch->start(sstrOrch);
+
+	// give some time to the NRE to re-register
+	sleep(5);
+
+	m_threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	sleep(1);
+
+	ptrNRE->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
+}
+
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
+{
+	LOG( INFO, "***** testBackupRecoverOrchEmptyWfeWithClient *****"<<std::endl);
+
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	bool bLaunchNrePcd = false;
+
+	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	LOG( INFO, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	LOG( INFO, "Create the NRE ...");
+	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, TestWorkerClient>::create("NRE_0",
+											 addrNRE,"aggregator_0",
+											 workerUrl,
+											 strGuiUrl,
+											 bLaunchNrePcd,
+											 TESTS_NRE_PCD_BIN_PATH,
+											 v_fake_PC_search_path,
+											 v_module_preload );
+
+	try {
+		ptrNRE->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		return;
+	}
+
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	sleep(1);
+
+	LOG( DEBUG, "Shutdown the orchestrator");
+	ptrOrch->shutdown(sstrOrch);
+
+	//LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
+	sleep(5);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+
+	LOG( DEBUG, "Re-start the orchestrator");
+	ptrRecOrch->start(sstrOrch);
+
+	// give some time to the NRE to re-register
+	sleep(5);
+
+	m_threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	sleep(1);
+
+	ptrNRE->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
+}
+
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
+{
+	LOG( INFO, "***** testBackupRecoverOrchDummyWfeWithClient *****"<<std::endl);
+
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	bool bLaunchNrePcd = false;
+
+	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	LOG( INFO, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	LOG( INFO, "Create the NRE ...");
+	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<DummyWorkflowEngine, TestWorkerClient>::create("NRE_0",
+											 addrNRE,"aggregator_0",
+											 workerUrl,
+											 strGuiUrl,
+											 bLaunchNrePcd,
+											 TESTS_NRE_PCD_BIN_PATH,
+											 v_fake_PC_search_path,
+											 v_module_preload );
+
+	try {
+		ptrNRE->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		return;
+	}
+
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	sleep(1);
+
+
+	LOG( DEBUG, "Shutdown the orchestrator");
+	ptrOrch->shutdown(sstrOrch);
+
+
+	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
+
+	sleep(5);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+
+	LOG( DEBUG, "Re-start the orchestrator");
+	ptrRecOrch->start(sstrOrch);
+
+	// give some time to the NRE to re-register
+	sleep(5);
+
+	m_threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	sleep(1);
+
+	ptrNRE->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
+}
+
+BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
+{
+	LOG( INFO, "***** testBackupRecoverOrchRealWfeWithClient *****"<<std::endl);
+
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	bool bLaunchNrePcd = true;
+
+	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	LOG( INFO, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	LOG( INFO, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+											 addrNRE,"aggregator_0",
+											 workerUrl,
+											 strGuiUrl,
+											 bLaunchNrePcd,
+											 TESTS_NRE_PCD_BIN_PATH,
+											 v_fake_PC_search_path,
+											 v_module_preload );
+
+	try {
+		ptrNRE->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		return;
+	}
+
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	sleep(1);
+
+
+	LOG( DEBUG, "Shutdown the orchestrator");
+	ptrOrch->shutdown(sstrOrch);
+
+
+	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
+
+	sleep(5);
+
+	// now try to recover the system
+	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+
+	LOG( DEBUG, "Re-start the orchestrator");
+	ptrRecOrch->start(sstrOrch);
+
+	// give some time to the NRE to re-register
+	sleep(5);
+
+	m_threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	sleep(1);
+
+	ptrNRE->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( INFO, "The test case testBackupRecoverOrchRealWfeWithClient terminated!" );
+}
+
+/*
 BOOST_AUTO_TEST_CASE( testStopRestartNRE )
 {
 	LOG( INFO, "***** testStopRestartNRE *****"<<std::endl);
@@ -597,320 +911,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAll )
 
 	LOG( INFO, "The test case testStopRestartAll terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
-}
-
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
-{
-	LOG( INFO, "***** testBackupRecoverOrchNoWfeWithClient *****"<<std::endl);
-
-	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-
-
-	bool bLaunchNrePcd = false;
-	//typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<void, TestWorkerClient>::create("NRE_0",
-											 addrNRE,"aggregator_0",
-											 workerUrl,
-											 strGuiUrl,
-											 bLaunchNrePcd,
-											 TESTS_NRE_PCD_BIN_PATH,
-											 v_fake_PC_search_path,
-											 v_module_preload );
-
-	try {
-		ptrNRE->start();
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
-
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	sleep(1);
-
-	LOG( DEBUG, "Shutdown the orchestrator");
-
-	ptrOrch->shutdown(sstrOrch);
-
-	sleep(5);
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	//ptrRecOrch->recover(filename);
-
-	LOG( DEBUG, "Re-start the orchestrator");
-	ptrRecOrch->start(sstrOrch);
-
-	// give some time to the NRE to re-register
-	sleep(5);
-
-	m_threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
-
-	ptrNRE->shutdown();
-	ptrAgg->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
-}
-
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
-{
-	LOG( INFO, "***** testBackupRecoverOrchEmptyWfeWithClient *****"<<std::endl);
-
-	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-
-	bool bLaunchNrePcd = false;
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, TestWorkerClient>::create("NRE_0",
-											 addrNRE,"aggregator_0",
-											 workerUrl,
-											 strGuiUrl,
-											 bLaunchNrePcd,
-											 TESTS_NRE_PCD_BIN_PATH,
-											 v_fake_PC_search_path,
-											 v_module_preload );
-
-	try {
-		ptrNRE->start();
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
-
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	sleep(1);
-
-	LOG( DEBUG, "Shutdown the orchestrator");
-	ptrOrch->shutdown(sstrOrch);
-
-	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
-	sleep(5);
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-
-	LOG( DEBUG, "Re-start the orchestrator");
-	ptrRecOrch->start(sstrOrch);
-
-	// give some time to the NRE to re-register
-	sleep(5);
-
-	m_threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
-
-	ptrNRE->shutdown();
-	ptrAgg->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
-}
-
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
-{
-	LOG( INFO, "***** testBackupRecoverOrchDummyWfeWithClient *****"<<std::endl);
-
-	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-
-	bool bLaunchNrePcd = false;
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<DummyWorkflowEngine, TestWorkerClient>::create("NRE_0",
-											 addrNRE,"aggregator_0",
-											 workerUrl,
-											 strGuiUrl,
-											 bLaunchNrePcd,
-											 TESTS_NRE_PCD_BIN_PATH,
-											 v_fake_PC_search_path,
-											 v_module_preload );
-
-	try {
-		ptrNRE->start();
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
-
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	sleep(1);
-
-
-	LOG( DEBUG, "Shutdown the orchestrator");
-	ptrOrch->shutdown(sstrOrch);
-
-
-	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
-
-	sleep(5);
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-
-	LOG( DEBUG, "Re-start the orchestrator");
-	ptrRecOrch->start(sstrOrch);
-
-	// give some time to the NRE to re-register
-	sleep(5);
-
-	m_threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
-
-	ptrNRE->shutdown();
-	ptrAgg->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
-}
-
-/*
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
-{
-	LOG( INFO, "***** testBackupRecoverOrchRealWfeWithClient *****"<<std::endl);
-
-	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-
-	bool bLaunchNrePcd = true;
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE,"aggregator_0",
-											 workerUrl,
-											 strGuiUrl,
-											 bLaunchNrePcd,
-											 TESTS_NRE_PCD_BIN_PATH,
-											 v_fake_PC_search_path,
-											 v_module_preload );
-
-	try {
-		ptrNRE->start();
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
-
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-
-	sleep(1);
-
-
-	LOG( DEBUG, "Shutdown the orchestrator");
-	ptrOrch->shutdown(sstrOrch);
-
-
-	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
-
-	sleep(5);
-
-	// now try to recover the system
-	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-
-	LOG( DEBUG, "Re-start the orchestrator");
-	ptrRecOrch->start(sstrOrch);
-
-	// give some time to the NRE to re-register
-	sleep(5);
-
-	m_threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
-
-	ptrNRE->shutdown();
-	ptrAgg->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( INFO, "The test case testBackupRecoverOrchRealWfeWithClient terminated!" );
 }
 */
 
