@@ -173,7 +173,7 @@ void GenericDaemon::start( std::istream& is )
 
 		ptr_job_man_->updateJobInfo(this);
 
-		if( is_orchestrator() )
+		//if( is_orchestrator() )
 		{
 			SDPA_LOG_WARN( "JobManager after recovering:" );
 			ptr_job_man_->print();
