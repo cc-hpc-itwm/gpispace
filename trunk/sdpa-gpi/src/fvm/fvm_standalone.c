@@ -5,7 +5,8 @@
 #include <signal.h>
 #include <string.h>
 #include <errno.h>
-
+#include <sys/types.h>
+#include <pwd.h>
 
 #include <Pv4dVMLogger.h>
 #include <Pv4dVM4.h>
@@ -31,6 +32,17 @@ void signal_handler(int sig){
 	}
 }
 
+void init_config_path (char * buf, size_t len)
+{
+  struct passwd * pw_entry = getpwuid (getuid());
+  if (0 == pw_entry)
+  {
+    perror ("getpwuid");
+    exit (1);
+  }
+
+  snprintf (buf, len, "", pw_entry->pw_dir, "/.sdpa/configs/sdpa-gpi.cfg");
+}
 
 int main(int argc, char *argv[])
 {
@@ -40,12 +52,16 @@ int main(int argc, char *argv[])
   int nnodes;
 
   const char *hosts[1024];
+  char configpath[4096];
+  init_config_path (configpath, 4096);
 
+  /*
 #ifdef GPI_CONFIG_PATH
 	const char * configpath = GPI_CONFIG_PATH; //hardcoded default
 #else
 #   error "GPI_CONFIG_PATH must be defined in order to compile this file!"
 #endif
+  */
 
   int optionsParse = 4;
 
