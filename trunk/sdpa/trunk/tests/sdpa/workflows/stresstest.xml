@@ -9,7 +9,7 @@
       <property key="SIZE_OF_LONG">8</property>
 
       <property key="aggregator">1</property>
-      <property key="nre">3</property>
+      <property key="nre">1</property>
       <property key="seed">long(1000.0 * pi)</property>
       <property key="bytes_to_transfer">1 * ${MIBI}</property>
 
