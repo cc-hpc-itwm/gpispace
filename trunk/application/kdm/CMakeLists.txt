@@ -218,7 +218,7 @@ target_link_libraries(standalone_test pthread)
 
 install(TARGETS determine_size do_load do_write
   LIBRARY
-  DESTINATION libexec
+  DESTINATION lib
   COMPONENT modules)
 
 install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
