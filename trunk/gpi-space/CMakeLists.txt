@@ -18,13 +18,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set (GPI_PRIV_DIR  CACHE STRING "path to the priviledged GPI binary directory")
-set (GPI_CONF_PATH
-  "${CMAKE_INSTALL_PREFIX}/etc/gpi/gpi-space.cfg"
-  CACHE
-  STRING "path to the default location of the config file"
-  )
-
 # TODO move into FindGPI.cmake
 set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
 set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
@@ -32,11 +25,6 @@ set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
 set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
 
 include_directories (${GPI_INCLUDE_DIR})
-
-if (GPI_PRIV_DIR)
-else (GPI_PRIV_DIR)
-  message(FATAL_ERROR "please run cmake -DGPI_PRIV_DIR=... and set it to the priviledged directory of the gpi daemon")
-endif(GPI_PRIV_DIR)
 
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
