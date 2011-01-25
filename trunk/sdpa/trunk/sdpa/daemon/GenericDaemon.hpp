@@ -229,8 +229,8 @@ namespace sdpa { namespace daemon {
 	  void decExtJobsCnt();
 	  unsigned int extJobsCnt();
 
-	  void notifyMaster(int);
-	  void notifyWorkers(int);
+	  void notifyMaster(const sdpa::events::ErrorEvent::error_code_t&);
+	  void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t&);
 
   protected:
 
