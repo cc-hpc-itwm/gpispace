@@ -151,6 +151,10 @@ EOF
 	esac
     fi
 
+    # backup old config
+    if [ -e "$HOME/.init-screen.cfg" ] ; then
+	mv "$HOME/.init-screen.cfg" "$HOME/.init-screen.cfg.bak"
+    fi
     # create config
     cat > "$HOME/.init-screen.cfg" <<EOF
 export INIT_SCREEN_VER="$init_screen_ver"
@@ -368,30 +372,13 @@ cat > "$env_file" <<EOF
 #
 export IN_INIT_SCREEN="yes"
 export SDPA_HEAD_NODE="$head_node"
-
-#
-# sdpa user config (keep synchronized with configure())
-#
-export SDPA_SCRATCH_DIR="$SDPA_SCRATCH_DIR"
-export SDPA_GUI="$SDPA_GUI"
-export SDPA_LOG_DIR="$SDPA_LOG_DIR"
-#
-# internal variables
-#
 export SDPA_MASTER="$master"
 export SDPA_NODEFILE="$HOME/.init-screen.nodefile"
-
-function log ()
-{
-  echo "\$@" >&2
-  test -x "`which fhglogc 2>/dev/null`" && fhglogc -U \$SDPA_MASTER -t "\$0" -p 2 -m "\$@"
-}
 
 #
 # logging config
 #
 export FHGLOG_to_server="$master"
-#unset  FHGLOG_to_console
 export FHGLOG_threaded="false"
 export FHGLOG_level="WARN"
 #
@@ -399,6 +386,15 @@ export FHGLOG_level="WARN"
 #
 export KVS_URL="$master:2439"
 export KVS_STORE="$HOME/.sdpa/data/kvs.dat"
+
+function log ()
+{
+  echo "\$@" >&2
+  test -x "`which fhglogc 2>/dev/null`" && fhglogc -U \$SDPA_MASTER -t "\$0" -p 2 -m "\$@"
+}
+
+test -r "$HOME/.init-screen.cfg" && source "$HOME/.init-screen.cfg"
+
 #
 # user config follows (may override above values, please be careful!)
 #
@@ -408,7 +404,7 @@ EOF
 if [ ! -r "$HOME/.init-screen.rc" ]; then
     log "creating default .init-screen.rc file..."
     cat > "$HOME/.init-screen.rc" <<EOF
-export PC_LIBRARY_PATH="\$HOME/.sdpa/modules"
+export PC_LIBRARY_PATH="\$HOME/.sdpa/modules:${PC_LIBRARY_PATH}"
 export PC_MODULE_DATA="\$HOME/.sdpa/moddata"
 EOF
 fi
