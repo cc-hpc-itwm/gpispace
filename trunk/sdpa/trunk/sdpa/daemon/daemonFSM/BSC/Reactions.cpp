@@ -75,9 +75,9 @@ void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 	if( m_bConfigOk )
 	{
 		SDPA_LOG_INFO("Starting the scheduler...");
-		sdpa::daemon::Scheduler::ptr_t ptrSched(this->create_scheduler());
-		ptr_scheduler_ = ptrSched;
-		ptr_scheduler_->start();
+		//sdpa::daemon::Scheduler::ptr_t ptrSched(this->create_scheduler());
+		//ptr_scheduler_ = ptrSched;
+		ptr_scheduler_->start(this);
 
 		// start the network stage
 		ptr_to_master_stage_->start();
