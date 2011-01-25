@@ -303,8 +303,8 @@ function start ()
     else
 	cleanup
 	echo "starting everything..." >&2
-	start_gpi
         start_kvs
+	start_gpi
 	start_orch
 	start_agg
 	start_nre
@@ -318,8 +318,8 @@ function stop ()
     stop_nre
     stop_agg
     stop_orch
-    stop_kvs
     stop_gpi
+    stop_kvs
 }
 
 function status ()
