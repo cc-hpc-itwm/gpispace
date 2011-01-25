@@ -79,7 +79,7 @@ void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 	}
 }
 
-void SchedulerImpl::declare_jobs_failed( Worker::JobQueue* pQueue )
+void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
 {
   assert (pQueue);
 
@@ -119,10 +119,10 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
 		// or declare it failed
 
 		// declare the submitted jobs failed
-		declare_jobs_failed( &pWorker->submitted() );
+		declare_jobs_failed( worker_id, &pWorker->submitted() );
 
 		// declare the acknowledged jobs failed
-		declare_jobs_failed( &pWorker->acknowledged() );
+		declare_jobs_failed( worker_id, &pWorker->acknowledged() );
 
 		// re-schedule the pending jobs
 		re_schedule( &pWorker->pending() );
