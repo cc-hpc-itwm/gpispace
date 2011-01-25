@@ -1,6 +1,6 @@
 #!/bin/bash
 
-init_screen_ver=2
+init_screen_ver=3
 test -r "$HOME/.init-screen.cfg" && source "$HOME/.init-screen.cfg"
 
 head_node="${SDPA_HEAD_NODE}"
@@ -12,6 +12,7 @@ node_file="${PBS_NODEFILE}"
 scratch_dir="$SDPA_SCRATCH_DIR"
 temp_dir="$SDPA_TEMP_DIR"
 gui_url="$SDPA_GUI"
+gpi_priv_dir="$GPI_PRIV_DIR"
 screen_name=
 
 function usage ()
@@ -47,6 +48,21 @@ function configure ()
     echo "Starting configuration routine..."
 
     # creates $HOME/.init-screen.cfg
+    cat <<EOF
+
+
+=====   GPI priviledged directory  ====
+
+The "gpi priviledged" directory is the  directory that is used by the GPI daemon
+to execute  binary files. It should point  to a directory you  have write access
+to.
+
+EOF
+    read -p "  GPI priviledged directory to use [$gpi_priv_dir]: " new_gpi_priv_dir
+    if [ -n "$new_gpi_priv_dir" ] ; then
+	gpi_priv_dir="$new_gpi_priv_dir"
+    fi
+
     cat <<EOF
 
 
@@ -141,6 +157,7 @@ export INIT_SCREEN_VER="$init_screen_ver"
 export SDPA_SCRATCH_DIR="$scratch_dir"
 export SDPA_TEMP_DIR="$temp_dir"
 export SDPA_GUI="$gui_url"
+export GPI_PRIV_DIR="$gpi_priv_dir"
 EOF
 
     cat <<EOF
@@ -220,6 +237,21 @@ fi
 if [ x"$init_screen_ver" != x"$INIT_SCREEN_VER" ] ; then
     log "E: \"$HOME/.init-screen.cfg\" is outdated and needs to be recreated. Please run $0 -c"
     exit 1
+fi
+
+# GPI priviledged directory
+if [ ! -d "$gpi_priv_dir" ] ; then
+    log "W: priviledged GPI directory ($gpi_priv_dir) does not exist!"
+    tmp=$( mkdir -p "$gpi_priv_dir" 2>&1 )
+    if [ $? -ne 0 ] ; then
+	log "E: could not create $gpi_priv_dir: $tmp"
+	exit 1
+    fi
+else
+    if [ ! -w "$gpi_priv_dir" ] ; then
+	log "W: you are not permitted to write to the priviledged GPI directory."
+	log "I:     dir: $gpi_priv_dir"
+    fi
 fi
 
 # sanity check for scratch directory
