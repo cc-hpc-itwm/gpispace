@@ -243,6 +243,17 @@ if [ x"$init_screen_ver" != x"$INIT_SCREEN_VER" ] ; then
     exit 1
 fi
 
+# check GPI config
+if [ ! -e "$HOME/.sdpa/configs/sdpa-gpi.cfg" ] ; then
+    log "E: $HOME/.sdpa/configs/sdpa-gpi.cfg does not exist!"
+    log "I:    please copy it from $SDPA_HOME/etc/gpi/sdpa-gpi.cfg.tpl"
+    log "-:"
+    log "I:        cp $SDPA_HOME/etc/gpi/sdpa-gpi.cfg.tpl $HOME/.sdpa/configs/sdpa-gpi.cfg"
+    log "-:"
+    log "I:    edit the file to your needs and create the specified paths MSQFILE and SHMFILE"
+    exit 1
+fi
+
 # GPI priviledged directory
 if [ ! -d "$gpi_priv_dir" ] ; then
     log "W: priviledged GPI directory ($gpi_priv_dir) does not exist!"
