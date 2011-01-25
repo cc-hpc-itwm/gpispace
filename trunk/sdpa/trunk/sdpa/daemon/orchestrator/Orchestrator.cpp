@@ -66,7 +66,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
-	SDPA_LOG_INFO("handleJobFinished(" << pEvt->job_id() << ")");
+	//SDPA_LOG_INFO("handleJobFinished(" << pEvt->job_id() << ")");
 
 	if (pEvt->from() != sdpa::daemon::WE)
 	{
@@ -74,7 +74,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		JobFinishedAckEvent::Ptr evt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
 		// send the event to the slave
-		SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
+		//SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
 		sendEventToSlave(evt);
 	}
 

@@ -82,7 +82,6 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 			std::cout<<"State "<<typeid(*it).name()<<std::endl;
 	}
 
-
 	virtual void process_event( const boost::statechart::event_base & e) {
 		 sc::state_machine<JobFSM, Pending>::process_event(e);
     }
