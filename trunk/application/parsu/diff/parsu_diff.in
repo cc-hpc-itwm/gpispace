@@ -95,6 +95,7 @@ cat "${xml_file_in}" | ${mk_xml}             \
                        "${cmd}"              \
                        "${shmem_per_node}"   \
                        "${gpi_mem_per_node}" \
+                       "---BUILD---"         \
                      > "${xml_file}"
 
 if [ $? -ne 0 ] ; then
