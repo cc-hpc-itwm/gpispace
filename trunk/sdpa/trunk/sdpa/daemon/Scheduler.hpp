@@ -22,6 +22,7 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/serialization/access.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
 #include <we/we.hpp>
 
 namespace sdpa {
@@ -46,7 +47,7 @@ namespace daemon {
      virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & ) = 0;
 
 	 virtual size_t numberOfWorkers() = 0;
-	 virtual void notifyWorkers(int) = 0;
+	 virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& ) = 0;
 
 	 virtual void schedule(const sdpa::job_id_t& jobId) = 0;
 	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref ) = 0;
@@ -58,7 +59,7 @@ namespace daemon {
 
 	 //virtual void update_request_time(const sdpa::util::time_type& new_time ) = 0;
 
-	 virtual void start()=0;
+	 virtual void start(IComm*)=0;
 	 virtual void stop()=0;
 	 virtual void run()=0;
 	 virtual void print()=0;
