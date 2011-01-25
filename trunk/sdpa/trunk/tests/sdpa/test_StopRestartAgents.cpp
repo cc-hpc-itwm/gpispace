@@ -824,10 +824,9 @@ BOOST_AUTO_TEST_CASE( testStopRestartAggRealWeWithClient )
 	LOG( INFO, "The test case testStopRestartAggRealWeWithClient terminated!");
 }
 
-/*
-BOOST_AUTO_TEST_CASE( testStopRestartNRE )
+BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 {
-	LOG( INFO, "***** testStopRestartNRE *****"<<std::endl);
+	LOG( INFO, "***** testStopRestartNRERealWeWithClient *****"<<std::endl);
 
 	string strGuiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -854,14 +853,15 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRE )
 
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE,"aggregator_0",
-				                             workerUrl,
-				                             strGuiUrl,
-				                             bLaunchNrePcd,
-				                             TESTS_NRE_PCD_BIN_PATH,
-				                             v_fake_PC_search_path,
-				                             v_module_preload );
+		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create( "NRE_0",
+																					 addrNRE,
+																					 "aggregator_0",
+																					 workerUrl,
+																					 strGuiUrl,
+																					 bLaunchNrePcd,
+																					 TESTS_NRE_PCD_BIN_PATH,
+																					 v_fake_PC_search_path,
+																					 v_module_preload );
 
 	try {
 		ptrNRE->start();
@@ -871,22 +871,33 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRE )
 		return;
 	}
 
-	LOG( INFO, "Deliberately shutdown the NRE now!");
-	ptrNRE->shutdown(sstrOrch);
-	usleep(5*m_sleep_interval);
-	LOG( INFO, "Start a new instance of the NRE now!");
-	ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE,"aggregator_0",
-				                             workerUrl,
-				                             strGuiUrl,
-				                             bLaunchNrePcd,
-				                             TESTS_NRE_PCD_BIN_PATH,
-				                             v_fake_PC_search_path,
-				                             v_module_preload );
-	ptrNRE->start(sstrOrch);
+	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	sleep(1);
 
+	LOG( INFO, "Deliberately shutdown the NRE now!");
+	ptrNRE->shutdown(sstrNRE);
+
+	LOG( DEBUG, "After shutdown the content of sstrNRE is: \n"<<sstrNRE.str() );
+
+	usleep(5*m_sleep_interval);
+
+	LOG( INFO, "Start a new instance of the NRE now!");
+	ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create( "NRE_0",
+																				 addrNRE,
+																				 "aggregator_0",
+																				 workerUrl,
+																				 strGuiUrl,
+																				 bLaunchNrePcd,
+																				 TESTS_NRE_PCD_BIN_PATH,
+																				 v_fake_PC_search_path,
+																				 v_module_preload );
+
+	ptrNRE->start(sstrNRE);
 	// give some time to the NRE to re-register
 	sleep(5);
+
+	m_threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
@@ -895,88 +906,5 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRE )
 	LOG( INFO, "The test case testStopRestartNRE terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
-
-BOOST_AUTO_TEST_CASE( testStopRestartAll )
-{
-	LOG( INFO, "***** testStopRestartAll *****"<<std::endl);
-
-	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-
-	bool bLaunchNrePcd = true;
-	//typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE,"aggregator_0",
-				                             workerUrl,
-				                             strGuiUrl,
-				                             bLaunchNrePcd,
-				                             TESTS_NRE_PCD_BIN_PATH,
-				                             v_fake_PC_search_path,
-				                             v_module_preload );
-
-	try {
-		ptrNRE->start();
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
-
-	LOG( INFO, "Deliberately shutdown all agents now!");
-
-	ptrNRE->shutdown(sstrOrch);
-	ptrAgg->shutdown(sstrAgg);
-	ptrOrch->shutdown(sstrNRE);
-
-	usleep(5*m_sleep_interval);
-
-	LOG( INFO, "Start new agent instances now (in reverse order!");
-	ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE,"aggregator_0",
-				                             workerUrl,
-				                             strGuiUrl,
-				                             bLaunchNrePcd,
-				                             TESTS_NRE_PCD_BIN_PATH,
-				                             v_fake_PC_search_path,
-				                             v_module_preload );
-	ptrNRE->start(sstrNRE);
-
-	ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start(sstrAgg);
-
-	ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start(sstrOrch);
-
-	// give some time to the NRE to re-register
-	sleep(5);
-
-	ptrNRE->shutdown();
-	ptrAgg->shutdown();
-	ptrOrch->shutdown();
-
-	LOG( INFO, "The test case testStopRestartAll terminated!");
-	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
-}
-*/
 
 BOOST_AUTO_TEST_SUITE_END()
