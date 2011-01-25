@@ -353,6 +353,8 @@
 
             char * buf ((char *)(fvmGetShmemPtr()));
 
+            LOG (INFO, "file1 " << config.file.input1.name);
+
             do_load ( config.file.input1.name
                     , config.file.input1.type
                     , part
@@ -361,6 +363,8 @@
                     , package.package.num.trace
                     , buf
                     );
+
+            LOG (INFO, "file2 " << config.file.input2.name);
 
             do_load ( config.file.input2.name
                     , config.file.input2.type
@@ -389,16 +393,15 @@
         <out name="package" type="loaded_package"/>
         <module name="diff" function="diff (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="defs.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
+          <cinclude href="tracebunch.hpp"/>
+          <cinclude href="SegYHeader.h"/>
           <link href="@BUILD@/application/example/exec/libprocess.so"/>
           <code><![CDATA[
-            const std::string cmd ("suop2 %FILE1% %FILE2% op=" + config.op);
-
-            LOG (INFO, "DIFF " << ::print::loaded_package (package)
-                              << cmd
-                );
+            LOG (INFO, "DIFF-START " << ::print::loaded_package (package));
 
             comm::get (config, package);
 
@@ -407,33 +410,40 @@
             const unsigned long size
               (package.package.num.trace * package.package.size.trace);
 
-            process::file_const_buffer file1 (buf         , size/2, "%FILE1%");
-            process::file_const_buffer file2 (buf + size/2, size/2, "%FILE2%");
+            // BEGIN NEW STYLE AREA
 
-            process::file_const_buffer_list (files_input);
+            const unsigned nt
+              ((package.package.size.trace/2 - sizeof(SegYHeader))/sizeof(float));
 
-            files_input.push_back (file1);
-            files_input.push_back (file2);
+//            seislib::TraceBunch b1 (buf         , package.package.num.trace, nt);
+//            seislib::TraceBunch b2 (buf + size/2, package.package.num.trace, nt);
 
-            const process::execute_return_type ret
-              ( process::execute ( cmd
-                                 , process::const_buffer (NULL, 0)
-                                 , process::buffer (buf, size/2)
-                                 , files_input
-                                 , process::file_buffer_list ()
-                                 )
-              );
+//            std::cout << "** B1 " << b1 << std::endl;
+//            std::cout << "** B2 " << b2 << std::endl;
 
-            if (ret.bytes_read_stdout != size/2)
+            for (int i (0); i < package.package.num.trace; ++i)
               {
-                throw std::runtime_error ("strange return size");
+                seislib::Trace t1 (buf +          i * size / package.package.num.trace, nt);
+                seislib::Trace t2 (buf + size/2 + i * size / package.package.num.trace, nt);
+
+                t1 = t1 - t2;
               }
+
+            seislib::TraceBunch b1 (buf, package.package.num.trace, nt);
+
+            std::cout << "** BDIFF " << b1 << std::endl;
+
+            // GOAL: b1 = b1 - b2;
+
+            // ULTIMATE GOAL: b1 -= b2; (SUGAR BABY!)
+
+            // END NEW STYLE AREA
 
             package.package.size.trace /= 2;
 
             comm::put (config, package);
 
-            LOG (INFO, "DIFF " << ::print::loaded_package (package));
+            LOG (INFO, "DIFF-DONE " << ::print::loaded_package (package));
           ]]></code>
         </module>
       </defun>
