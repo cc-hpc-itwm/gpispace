@@ -89,12 +89,24 @@ namespace sdpa { namespace daemon {
 
 	  void print()
 	  {
-		  SDPA_LOG_DEBUG("The content of the common queue is: ");
-		  common_queue_.print();
+		  if(!common_queue_.empty())
+		  {
+			  SDPA_LOG_DEBUG("The content of the common queue is: ");
+			  common_queue_.print();
+		  }
+		  else
+			  SDPA_LOG_DEBUG("No job without preferences available!");
 
-		  for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
-			 (*it).second->print();
+		  if( worker_map_.begin() == worker_map_.end() )
+			  SDPA_LOG_DEBUG("The worker manager has NO worker! ");
+		  else
+		  {
+			  SDPA_LOG_DEBUG("The worker manager has workers! ");
+			  for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
+				  (*it).second->print();
+		  }
 	  }
+
 
 	  const worker_map_t&  worker_map() const { return worker_map_; }
 	  const rank_map_t& rank_map() const { return rank_map_; }
