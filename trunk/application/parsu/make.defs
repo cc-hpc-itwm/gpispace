@@ -1,4 +1,0 @@
-DESTDIR     = $(SDPA_LIBEXEC)
-LIB_DESTDIR = $(HOME)/.sdpa/modules
-#BUILD       = /fhgfs/HPC/petry/build/ap/
-BUILD       = /u/r/rahn/SDPA/trunk/main/trunk/build45
