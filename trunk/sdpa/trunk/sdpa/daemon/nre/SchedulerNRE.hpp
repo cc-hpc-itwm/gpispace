@@ -60,7 +60,7 @@ namespace sdpa {
         }
       };
 
-      void start()
+      void start(IComm* p)
       {
         SDPA_LOG_DEBUG("Starting NreWorkerClient ...");
         try
@@ -72,7 +72,7 @@ namespace sdpa {
           throw;
         }
 
-        SchedulerImpl::start();
+        SchedulerImpl::start(p);
       }
 
 	void stop()
