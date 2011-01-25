@@ -313,7 +313,7 @@ void NRE<U>::notifyActivityCancelled( const id_type& id, const std::string& data
 }
 
 template <typename U>
-void NRE<U>::backup( std::ostream& ofs  )
+void NRE<U>::backup( std::ostream& ofs )
 {
 	try {
 		//std::string strArchiveName(name()+".bkp");
@@ -325,9 +325,9 @@ void NRE<U>::backup( std::ostream& ofs  )
 		oa.register_type(static_cast<JobFSM*>(NULL));
 		oa << ptr_job_man_;
 
-		oa.register_type(static_cast<SchedulerNRE<U>*>(NULL));
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		oa<<ptr_scheduler_;
+		//oa.register_type(static_cast<SchedulerNRE<U>*>(NULL));
+		//oa.register_type(static_cast<SchedulerImpl*>(NULL));
+		//oa<<ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
@@ -337,8 +337,9 @@ void NRE<U>::backup( std::ostream& ofs  )
 }
 
 template <typename U>
-void NRE<U>::recover( std::istream& ifs  )
+void NRE<U>::recover( std::istream& ifs )
 {
+
 	try {
 
 		boost::archive::text_iarchive ia(ifs);
@@ -348,9 +349,9 @@ void NRE<U>::recover( std::istream& ifs  )
 		// restore the schedule from the archive
 		ia >> ptr_job_man_;
 
-		ia.register_type(static_cast<SchedulerNRE<U>*>(NULL));
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia>> ptr_scheduler_;
+		//ia.register_type(static_cast<SchedulerNRE<U>*>(NULL));
+		//ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		//ia>> ptr_scheduler_;
 	}
 	catch(exception &e)
 	{
