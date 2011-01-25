@@ -138,9 +138,14 @@ std::string JobManager::print() const
 
 	SDPA_LOG_DEBUG("Begin dumping the JobManager...");
 
-	os<<"The list of jobs still owned by the JobManager:"<<std::endl;
-	for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
-	  SDPA_LOG_INFO(it->second->print_info());
+	if( job_map_.begin() == job_map_.end() )
+		os<<"The JobManager is empty!";
+	else
+	{
+		os<<"The list of jobs still owned by the JobManager:"<<std::endl;
+		for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
+			SDPA_LOG_INFO(it->second->print_info());
+	}
 
 	SDPA_LOG_DEBUG("End dumping the JobManager...");
 
