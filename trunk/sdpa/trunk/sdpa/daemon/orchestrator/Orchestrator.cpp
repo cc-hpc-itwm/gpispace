@@ -66,7 +66,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
-	DLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
+	SDPA_LOG_INFO("handleJobFinished(" << pEvt->job_id() << ")");
 
 	if (pEvt->from() != sdpa::daemon::WE)
 	{
@@ -74,6 +74,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		JobFinishedAckEvent::Ptr evt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
 		// send the event to the slave
+		SDPA_LOG_INFO("Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
 		sendEventToSlave(evt);
 	}
 
@@ -82,7 +83,6 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	try {
 		pJob = ptr_job_man_->findJob(pEvt->job_id());
 		pJob->JobFinished(pEvt);
-
 	}
 	catch(JobNotFoundException const &)
 	{
@@ -151,7 +151,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
-	DLOG(TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
+	//SDPA_LOG_INFO( "handle JobFailed event (job " << pEvt->job_id() << ") received from "<<pEvt->from());
 
 	if (pEvt->from() != sdpa::daemon::WE)
 	{
@@ -178,46 +178,49 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         return;
 	}
 
-	Worker::worker_id_t worker_id = pEvt->from();
-	id_type actId = pJob->id().str();
-
-	try {
-		SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" failed");
-		result_type output = pEvt->result();
-
-		if( hasWorkflowEngine() )
-		{
-			SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
-			ptr_workflow_engine_->failed(actId, output);
-		}
+	// It's an worker who has sent the message
+	if( (pEvt->from() != sdpa::daemon::WE) )
+	{
+		Worker::worker_id_t worker_id = pEvt->from();
+		id_type actId = pJob->id().str();
 
 		try {
-			SDPA_LOG_DEBUG("Remove job "<<actId<<" from the worker "<<worker_id;);
-			ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
-		}
-		catch(const WorkerNotFoundException&)
-		{
-			SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-		}
-		catch(const JobNotDeletedException&)
-		{
-			SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
-		}
+			result_type output = pEvt->result();
 
-		if( hasWorkflowEngine() )
-		{
+			if( hasWorkflowEngine() )
+			{
+				SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" failed");
+				ptr_workflow_engine_->failed(actId, output);
+			}
+
 			try {
-				//delete it also from job_map_
-				ptr_job_man_->deleteJob(pEvt->job_id());
+				SDPA_LOG_DEBUG("Remove job "<<actId<<" from the worker "<<worker_id;);
+				ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
+			}
+			catch(const WorkerNotFoundException&)
+			{
+				SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
 			}
 			catch(const JobNotDeletedException&)
 			{
-				SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
+				SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
+			}
+
+			if( hasWorkflowEngine() )
+			{
+				try {
+					//delete it also from job_map_
+					ptr_job_man_->deleteJob(pEvt->job_id());
+				}
+				catch(const JobNotDeletedException&)
+				{
+					SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
+				}
 			}
 		}
-	}
-	catch(...) {
-			  SDPA_LOG_ERROR("Unexpected exception occurred!");
+		catch(...) {
+				  SDPA_LOG_ERROR("Unexpected exception occurred!");
+		}
 	}
 }
 
@@ -252,7 +255,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 	// if it comes from a slave, one should inform WFE -> subjob
 	// if it comes from WFE -> concerns the master job
 
-        DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
+    DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
 	// transition from Cancelling to Cancelled
 
