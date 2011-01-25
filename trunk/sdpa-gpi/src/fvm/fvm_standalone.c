@@ -41,7 +41,7 @@ void init_config_path (char * buf, size_t len)
     exit (1);
   }
 
-  snprintf (buf, len, "", pw_entry->pw_dir, "/.sdpa/configs/sdpa-gpi.cfg");
+  snprintf (buf, len, "%s/%s", pw_entry->pw_dir, ".sdpa/configs/sdpa-gpi.cfg");
 }
 
 int main(int argc, char *argv[])
