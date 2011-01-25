@@ -1,6 +1,6 @@
 #!/bin/bash
 
-init_screen_ver=3
+init_screen_ver=4
 test -r "$HOME/.init-screen.cfg" && source "$HOME/.init-screen.cfg"
 
 head_node="${SDPA_HEAD_NODE}"
@@ -10,6 +10,7 @@ fi
 
 node_file="${PBS_NODEFILE}"
 scratch_dir="$SDPA_SCRATCH_DIR"
+log_dir="$SDPA_LOG_DIR"
 temp_dir="$SDPA_TEMP_DIR"
 gui_url="$SDPA_GUI"
 gpi_priv_dir="$GPI_PRIV_DIR"
@@ -22,7 +23,6 @@ usage $0 [-h] [-f node-file] [-n head-node] [-d scratch-dir] [-s screen-name]
 
    -f node-file ($node_file)     specifies the node file to use
    -n head node ($head_node)     specifies the head node host (where screen runs)
-   -d scratch dir ($scratch_dir) path to a (shared) scratch directory
    -t temporary dir ($temp_dir)  path to a (local) temporary directory
    -s screen name (=$screen_name) the name of the screen session
    -C                             clear state tracking files
@@ -77,6 +77,7 @@ EOF
     if [ -n "$new_scratch_dir" ] ; then
 	scratch_dir="$new_scratch_dir"
     fi
+    log_dir="$scratch_dir/log"
 
     cat <<EOF
 
@@ -159,6 +160,7 @@ EOF
     cat > "$HOME/.init-screen.cfg" <<EOF
 export INIT_SCREEN_VER="$init_screen_ver"
 export SDPA_SCRATCH_DIR="$scratch_dir"
+export SDPA_LOG_DIR="$log_dir"
 export SDPA_TEMP_DIR="$temp_dir"
 export SDPA_GUI="$gui_url"
 export GPI_PRIV_DIR="$gpi_priv_dir"
@@ -188,7 +190,7 @@ if test -r ~/.init-screen.tab ; then if grep -q "\$(hostname -s)" ~/.init-screen
 EOF
 }
 
-while getopts ":hcClf:n:d:s:" opt; do
+while getopts ":hcClf:n:s:" opt; do
     case $opt in
 	h)
 	    usage
@@ -211,9 +213,6 @@ while getopts ":hcClf:n:d:s:" opt; do
 	n)
 	    head_node=$OPTARG
 	    ;;
-	d)
-	    scratch_dir=$OPTARG
-	    ;;
 	s)
 	    screen_name=$OPTARG
 	    ;;
@@ -223,7 +222,7 @@ while getopts ":hcClf:n:d:s:" opt; do
 	    ;;
 	\?)
 	    echo "invalid option: $OPTARG" >&2
-	    echo "try $0 -h to get a list of options" >&2
+	    echo "try `basename $0` -h to get a list of options" >&2
 	    exit 1
     esac
 done
@@ -234,12 +233,12 @@ function log ()
 }
 
 if [ ! -e "$HOME/.init-screen.cfg" ] ; then
-    log "E: \"$HOME/.init-screen.cfg\" does not exist, please run $0 -c to create one."
+    log "E: \"$HOME/.init-screen.cfg\" does not exist, please run `basename $0` -c to create one."
     exit 1
 fi
 
 if [ x"$init_screen_ver" != x"$INIT_SCREEN_VER" ] ; then
-    log "E: \"$HOME/.init-screen.cfg\" is outdated and needs to be recreated. Please run $0 -c"
+    log "E: \"$HOME/.init-screen.cfg\" is outdated and needs to be recreated. Please run `basename $0` -c"
     exit 1
 fi
 
@@ -294,6 +293,10 @@ fi
 if [ ! -d "${scratch_dir}" -o ! -w "${scratch_dir}" ] ; then
     log "scratch-dir ${scratch_dir} still does not exist or cannot be written do, giving up" >&2
     exit 1
+fi
+
+if [ ! -d "$log_dir" ] ; then
+    mkdir -p "$log_dir"
 fi
 
 export SDPA_SCRATCH_DIR="$scratch_dir"
