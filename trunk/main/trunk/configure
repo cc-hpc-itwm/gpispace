@@ -17,17 +17,15 @@ function usage ()
     echo "   -t : build tests" >&2
     echo "   -r : explicitly set revision" >&2
     echo "   -p : install prefix" >&2
-    echo "   -g : path to gpi priv dir" >&2
 }
 
 build_debug=false
 build_tests=false
 build_rev=
 build_prefix=
-build_gpi_priv_dir=
 
 count=0
-while getopts ":hdtr:p:g:" opt; do
+while getopts ":hdtr:p:" opt; do
     case $opt in
 	h)
 	    usage
@@ -48,10 +46,6 @@ while getopts ":hdtr:p:g:" opt; do
 	p)
 	    count=$(( count + 2 ))
 	    build_prefix="$OPTARG"
-	    ;;
-	g)
-	    count=$(( count + 2 ))
-	    build_gpi_priv_dir="$OPTARG"
 	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
@@ -104,13 +98,6 @@ if [ -n "$build_prefix" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
 fi
 
-if [ -z "$build_gpi_priv_dir" ] ; then
-    build_gpi_priv_dir=$( grep GPI_PRIV_DIR ./CMakeCache.txt | cut -d= -f 2 | tr -d \" 2>&1 )
-fi
-if [ -n "$build_gpi_priv_dir" ] ; then
-    cmake_flags="$cmake_flags -DGPI_PRIV_DIR=$build_gpi_priv_dir"
-fi
-
 cmake_flags="$cmake_flags $@"
 
 cmd="cmake \"$src\" $cmake_flags"
@@ -121,7 +108,6 @@ echo "#   revision: $build_rev"
 echo "#     source: $src"
 echo "#      build: `pwd`"
 echo "#     prefix: $build_prefix"
-echo "#        gpi: $build_gpi_priv_dir"
 echo "#      tests: $build_tests"
 echo "#      debug: $build_debug"
 echo "#"
