@@ -431,7 +431,7 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	ptr_daemon_cfg_->put("polling interval",    			1 * 1000 * 1000);
 	ptr_daemon_cfg_->put("upper bound polling interval", 	5 * 1000 * 1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
-	ptr_daemon_cfg_->put("node_timeout",        			20 * 1000 * 1000); // 6s
+	ptr_daemon_cfg_->put("node_timeout",        			5 * 1000 * 1000); // 6s
 	ptr_daemon_cfg_->put("registration_timeout", 			1 * 1000 * 1000); // 1s
 
 	// end reading confog file
@@ -1196,7 +1196,7 @@ bool GenericDaemon::requestsAllowed( const sdpa::util::time_type& difftime )
 		   (m_nExternalJobs<cfg()->get<unsigned int>("nmax_ext_job_req"));
 }
 
-void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& reason)
+void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
 {
 	if( hasWorkflowEngine() )
 	{
@@ -1207,12 +1207,12 @@ void GenericDaemon::workerJobFailed(const job_id_t& jobId, const std::string& re
 	else
 	{
 		DLOG(TRACE, "Sent JobFailedEvent to self for the job"<<jobId);
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(name(), name(), jobId, reason ));
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(worker_id, name(), jobId, reason ));
 		sendEventToSelf(pEvtJobFailed);
 	}
 }
 
-void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type & result)
+void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
 {
 	if( hasWorkflowEngine() )
 	{
@@ -1223,12 +1223,12 @@ void GenericDaemon::workerJobFinished(const job_id_t& jobId, const result_type &
 	else
 	{
 		SDPA_LOG_INFO("Sent self a jobFinishedEvent for the job"<<jobId);
-		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(name(), name(), jobId, result));
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(worker_id, name(), jobId, result));
 		sendEventToSelf(pEvtJobFinished);
 	}
 }
 
-void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
+void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
 {
 	if( hasWorkflowEngine() )
 	{
@@ -1239,7 +1239,7 @@ void GenericDaemon::workerJobCancelled(const job_id_t& jobId)
 	else
 	{
 		DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
-		CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(name(), name(), jobId, SDPAEvent::message_id_type()));
+		CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
 		sendEventToSelf(pEvtCancelJobAck);
 	}
 }

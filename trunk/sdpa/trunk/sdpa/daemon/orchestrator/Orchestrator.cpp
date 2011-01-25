@@ -224,12 +224,11 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	}
 }
 
-
 void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
-  assert (pEvt);
+	assert (pEvt);
 
-  DLOG(TRACE, "handleCancelJob(" << pEvt->job_id() << ")");
+	DLOG(TRACE, "handleCancelJob(" << pEvt->job_id() << ")");
 
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
@@ -246,10 +245,9 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 	}
 }
 
-
 void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
-        assert (pEvt);
+	assert (pEvt);
 
 	// check if the message comes from outside/slave or from WFE
 	// if it comes from a slave, one should inform WFE -> subjob

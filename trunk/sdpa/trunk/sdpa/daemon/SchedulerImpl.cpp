@@ -89,7 +89,7 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
 	  SDPA_LOG_INFO( "Declare the job "<<jobId.str()<<" failed!" );
 
 	  if( ptr_comm_handler_ )
-		  ptr_comm_handler_->workerJobFailed( jobId, "Worker timeout detected!" );
+		  ptr_comm_handler_->workerJobFailed(worker_id, jobId, "Worker timeout detected!" );
 	  else {
 		  SDPA_LOG_ERROR("Invalid communication handler!");
 	  }
@@ -268,7 +268,7 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 	catch(const NoWorkerFoundException&)
 	{
 		// put the job back into the queue
-		ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
+		ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
 		SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
 	}
 }
@@ -373,7 +373,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 				if(job_pref.is_mandatory())
 				{
 					LOG(WARN, "a job requested an empty list of mandatory nodes: " << jobId);
-					ptr_comm_handler_->workerJobFailed( jobId, "The list of nodes needed is empty!");
+					ptr_comm_handler_->workerJobFailed("", jobId, "The list of nodes needed is empty!");
 					return false;
 				}
 				else
@@ -402,7 +402,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 				if( job_pref.is_mandatory() )
 				{
 					LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_pref);
-					ptr_comm_handler_->workerJobFailed( jobId, "Couldn't match the mandatory preferences with a registered worker!");
+					ptr_comm_handler_->workerJobFailed("", jobId, "Couldn't match the mandatory preferences with a registered worker!");
 					return false;
 				}
 				else  // continue with the rest of the workers not in uset_excluded
@@ -418,7 +418,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 				}
 
                 // TODO: we had preferences but we could not fulfill them
-				ptr_comm_handler_->workerJobFailed( jobId, "The job had preferences which could not be fulfilled!");
+				ptr_comm_handler_->workerJobFailed("", jobId, "The job had preferences which could not be fulfilled!");
 				return false;
 			}
 		}
@@ -432,7 +432,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 	else
 	{
 		LOG(WARN, "could not schedule job: no worker available: " << jobId);
-		ptr_comm_handler_->workerJobFailed( jobId, "No worker available!");
+		ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
 		return false;
 	}
 
