@@ -809,7 +809,7 @@ namespace xml
         stream << "### CONFIGURE SECTION"                          << std::endl;
         stream                                                     << std::endl;
         stream << "CXXINCLUDEPATHS += . $(BOOST_ROOT)/include"     << std::endl;
-        stream << "CXXFLAGS += -Wall -O3 -fPIC"                    << std::endl;
+        stream << "CXXFLAGS += -O3 -fPIC"                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
         stream << "  CP = cp"                                      << std::endl;
