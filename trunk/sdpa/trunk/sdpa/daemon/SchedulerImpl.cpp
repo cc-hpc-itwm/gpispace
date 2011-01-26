@@ -105,11 +105,6 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
 
 		pWorker->set_timedout();
 
-		// TODO we have to  think about the implications of rescheduling
-		// already submitted jobs,  in the general case, it  is not safe
-		// to reschedule them!  For  pending jobs we can reschedule them
-		// without thinking twice, for all others we simply cannot!
-
 		// The jobs submitted by the WE should have set a property
 		// which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
 
@@ -348,7 +343,7 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
  */
 bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bDelNonRespWorkers )
 {
-  DLOG(TRACE, "Called schedule_with_contraints ...");
+	DLOG(TRACE, "Called schedule_with_contraints ...");
 
 	if(!ptr_comm_handler_)
 	{
@@ -357,14 +352,10 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 		return false;
 	}
 
-	// fix this later -> use a monitoring thread
-	if(bDelNonRespWorkers)
-		deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("node_timeout"));
-
 	if( ptr_worker_man_ )
 	{
 		// if no preferences are explicitly set for this job
-		DLOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
+		LOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
 
 		try
 		{
@@ -451,6 +442,14 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	// schedule_round_robin(jobId);
 	// fairly re-distribute tasks, if necessary
 	// ptr_worker_man_->balanceWorkers();
+	// fix this later -> use a monitoring thread
+	//if(bDelNonRespWorkers)
+	if(ptr_comm_handler_->cfg()->is_set("worker_timeout"))
+	{
+		//SDPA_LOG_WARN("Delete timed-out/non-responsive workers!");
+		deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("worker_timeout"));
+	}
+
 	if( !numberOfWorkers() )
 	{
 		SDPA_LOG_WARN("No worker found. The job " << jobId<<" wasn't assigned to any worker. Try later!");
