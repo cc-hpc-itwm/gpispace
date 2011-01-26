@@ -273,6 +273,17 @@ namespace fhg
       void parse (std::istream & is, entry_handler_t handler)
       {
         detail::state_t state (handler);
+        state.file = "<STDIN>";
+        detail::parse_impl (is, state);
+      }
+
+      void parse ( std::istream & is
+                 , std::string const & stream_desc
+                 , entry_handler_t handler
+                 )
+      {
+        detail::state_t state (handler);
+        state.file = stream_desc;
         detail::parse_impl (is, state);
       }
 

@@ -14,14 +14,14 @@ int main (int ac, char *av[])
 {
   namespace po = boost::program_options;
 
-  std::string file_name ("-");
+  std::string file_name;
   std::string key;
   std::string val;
 
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
-    ("file,f", po::value<std::string>(&file_name)->default_value(file_name), "file to work on (-: stdin)")
+    ("file,f", po::value<std::string>(&file_name), "file to work on (use - for stdin)")
     ("value,v", po::value<std::string>(&val), "value to store")
     ("add,a", po::value<std::string>(&key), "add an entry")
     ("del,d", po::value<std::string>(&key), "delete an entry")
@@ -69,7 +69,7 @@ int main (int ac, char *av[])
     if (file_name == "-")
     {
       std::cerr << "Reading from stdin..." << std::endl;
-      fhg::util::ini::parse (std::cin, boost::ref(m));
+      fhg::util::ini::parse (std::cin, "<STDIN>", boost::ref(m));
     }
     else
     {
