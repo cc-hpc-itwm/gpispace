@@ -39,14 +39,12 @@ const int NJOBS    = 20;
 
 struct MyFixture
 {
-	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testScheduler"){}
+	MyFixture() { FHGLOG_SETUP();}
 	~MyFixture(){}
-	 SDPA_DECLARE_LOGGER();
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
-/*
 BOOST_AUTO_TEST_CASE(testDelWorker)
 {
 	// first re-schedule the work:
@@ -54,10 +52,12 @@ BOOST_AUTO_TEST_CASE(testDelWorker)
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
 	ostringstream oss;
-	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
-	ptr_scheduler_->start();
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl);
+	ptr_scheduler_->start(ptrOrch.get());
 
-	// add a number of workers
+	sleep(1);
+
+	LOG(INFO, "add a number of workers ...");
 	for( int k=0; k<NWORKERS; k++ )
 	{
 		oss.str("");
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(testDelWorker)
 		ptr_scheduler_->addWorker(oss.str(), k);
 	}
 
-	// submit a number of remote jobs and schedule them
+	LOG(INFO, "submit a number of remote jobs and schedule them");
 	for(int i=0; i<NJOBS; i++)
 	{
 		JobId job_id;
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(testDelWorker)
 
 		ptrOrch->jobManager()->addJob(job_id, pJob);
 
-		//add later preferences to the jobs
+		LOG(INFO, "schedule remote the job "<<job_id);
 		ptr_scheduler_->schedule_remote(job_id);
 	}
 
@@ -87,34 +87,33 @@ BOOST_AUTO_TEST_CASE(testDelWorker)
 	ptr_scheduler_->getNextJob("Worker3","");
 	ptr_scheduler_->getNextJob("Worker4","");
 
-	SDPA_LOG_ERROR("Before re-scheduling ... ");
-	ptr_scheduler_->print();
-
 	// delete now the worker 2
 	oss.str("");
 	oss<<"Worker"<<2;
 	string worker_id(oss.str());
 
+	LOG(ERROR, "Scheduler's content before deleting the worker "<<worker_id);
+	ptr_scheduler_->print();
+
 	try
 	{
-		SDPA_LOG_ERROR("Delete the worker "<<worker_id<<" now ... ");
+		LOG(ERROR, "Delete the worker "<<worker_id<<" now ... ");
 		ptr_scheduler_->delWorker(worker_id);
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
-		SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
+		LOG(ERROR, "Cannot delete the worker "<<worker_id<<". Worker not found!");
 		throw ex;
 	}
 
-	SDPA_LOG_ERROR("After re-scheduling ... ");
+	LOG(ERROR, "After re-scheduling ... ");
 	ptr_scheduler_->print();
-
 
 	ptr_scheduler_->stop();
 
 	seda::StageRegistry::instance().remove(ptrOrch->name());
 	sleep(1);
-	SDPA_LOG_DEBUG("Worker deletion test finished!");
+	LOG(INFO, "Worker deletion test finished!");
 }
 
 BOOST_AUTO_TEST_CASE(testSchedulerWithNoPrefs)
@@ -122,8 +121,8 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithNoPrefs)
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
 	ostringstream oss;
-	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
-	ptr_scheduler_->start();
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl);
+	ptr_scheduler_->start(ptrOrch.get());
 
 	 // add a number of workers
 	 for( int k=0; k<NWORKERS; k++ )
@@ -157,16 +156,16 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithNoPrefs)
 
 			 try {
 				 sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(workerId, "");
-				 SDPA_LOG_DEBUG("The worker "<<workerId<<" was served the job "<<jobId.str() );
+				 LOG(DEBUG, "The worker "<<workerId<<" was served the job "<<jobId.str() );
 				 nJobsCompleted++;
 			 }
 			 catch( const NoJobScheduledException& ex )
 			 {
-				 SDPA_LOG_WARN("No job could be scheduled on the worker  "<<workerId );
+				 LOG(WARN, "No job could be scheduled on the worker  "<<workerId );
 			 }
 		 }
 
-	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );
+	 LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
 	 ptr_scheduler_->stop();
 	 seda::StageRegistry::instance().remove(ptrOrch->name());
 }
@@ -176,8 +175,8 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", "127.0.0.1:7000");
 
 	ostringstream oss;
-	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get()));
-	ptr_scheduler_->start();
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl);
+	ptr_scheduler_->start(ptrOrch.get());
 
 	 // add a number of workers
 	 for( int k=0; k<NWORKERS; k++ )
@@ -220,20 +219,18 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 
 			 try {
 				 sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(workerId, "");
-				 SDPA_LOG_DEBUG("The worker "<<workerId<<" was served the job "<<jobId.str() );
+				 LOG(DEBUG, "The worker "<<workerId<<" was served the job "<<jobId.str() );
 				 nJobsCompleted++;
 			 }
 			 catch( const NoJobScheduledException& ex )
 			 {
-				 SDPA_LOG_WARN("No job could be scheduled on the worker  "<<workerId );
+				 LOG(WARN, "No job could be scheduled on the worker  "<<workerId );
 			 }
 		 }
 
-	 SDPA_LOG_DEBUG("All "<<NJOBS<<" jobs were successfully executed!" );
+	 LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
 	 ptr_scheduler_->stop();
 	 seda::StageRegistry::instance().remove(ptrOrch->name());
 }
-
-*/
 
 BOOST_AUTO_TEST_SUITE_END()
