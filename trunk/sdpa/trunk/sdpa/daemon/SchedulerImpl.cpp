@@ -217,15 +217,17 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 	catch(const NoWorkflowEngine& ex)
 	{
 		SDPA_LOG_ERROR("No workflow engine!!!");
-		sdpa::job_result_t result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
+		sdpa::job_result_t result(ex.what());
+
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
 		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
 	catch(const JobNotFoundException& ex)
 	{
 		SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
-		sdpa::job_result_t result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
+		sdpa::job_result_t result(ex.what());
+
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
 		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
 	catch (std::exception const & ex)
@@ -233,8 +235,9 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 		SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
 		//send a JobFailed event
-		sdpa::job_result_t result;
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( ptr_comm_handler_->name(), ptr_comm_handler_->name(), jobId, result) );
+		sdpa::job_result_t result(ex.what());
+
+		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
 		ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
 	}
 }

@@ -111,10 +111,45 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 	}
 
 	friend class boost::serialization::access;
-	template <class Archive>
-	void serialize(Archive& ar, const unsigned int file_version )
+	template<class Archive>
+	void save(Archive & ar, const unsigned int) const
 	{
-		ar & boost::serialization::base_object<JobImpl>(*this);
+		//lock_type lock(mtx_);
+		//int stateId(m_fsmContext.getState().getId());
+
+		// invoke serialization of the base class
+		ar << boost::serialization::base_object<JobImpl>(*this);
+		ar << stateId;
+	}
+
+	template<class Archive>
+	void load(Archive & ar, const unsigned int)
+	{
+		lock_type lock(mtx_);
+		int stateId;
+
+		// invoke serialization of the base class
+		ar >> boost::serialization::base_object<JobImpl>(*this);
+		ar >> stateId;
+
+		//LOG(TRACE, "setState("<<id()<<") to "<<m_fsmContext.valueOf(stateId).getName()<<"!!!");
+		//m_fsmContext.setState(m_fsmContext.valueOf(stateId););
+		//state.Entry(m_fsmContext);
+
+	   try {
+		   LOG(TRACE, "Current state is: "<<getStatus());
+	   }
+	   catch( const statemap::StateUndefinedException& ex )
+	   {
+		   LOG(TRACE, "Current state is: UNDEFINED");
+	   }
+
+	}
+
+	template<class Archive>
+	void serialize( Archive & ar, const unsigned int file_version )
+	{
+		boost::serialization::split_member(ar, *this, file_version);
 	}
 
 	sdpa::status_t getStatus()
