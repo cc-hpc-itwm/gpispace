@@ -301,9 +301,9 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
+BOOST_AUTO_TEST_CASE( testJobSubmToWeFails )
 {
-	LOG( INFO, "***** testBackupRecoverOrchRealWfeWithClient *****"<<std::endl);
+	LOG( INFO, "***** testJobSubmToWeFails *****"<<std::endl);
 
 	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( INFO, "The test case testBackupRecoverOrchRealWfeWithClient terminated!" );
+	LOG( INFO, "The test case testJobSubmToWeFails terminated!" );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
