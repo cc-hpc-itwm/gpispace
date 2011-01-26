@@ -62,7 +62,7 @@ namespace fhg { namespace log {
       }                                                                 \
     } while (0)
 
-#  define __LOG(logger, level, msg)                                       \
+#  define __LOG(logger, level, msg)                                     \
     do {                                                                \
       using namespace fhg::log;                                         \
       if (logger.isLevelEnabled(LogLevel::level))                       \
