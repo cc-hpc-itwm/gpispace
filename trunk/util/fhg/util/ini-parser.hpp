@@ -93,6 +93,10 @@ namespace ini
                               ) > entry_handler_t;
 
   void parse (std::istream & is, entry_handler_t handler);
+  void parse ( std::istream & is
+             , std::string const & stream_descriptor
+             , entry_handler_t handler
+             );
   void parse (std::string const & path, entry_handler_t handler);
 }
 }
