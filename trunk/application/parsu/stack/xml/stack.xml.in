@@ -300,6 +300,7 @@
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
+          <cinclude href="process.hpp"/>
           <link href="@BUILD@/application/kdm/libdo_load.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
@@ -313,14 +314,30 @@
                     << ", num " << package.package.size
                 );
 
+            void * buf (fvmGetShmemPtr());
+
             do_load ( config.file.input.name
                     , config.file.input.type
                     , part
                     , config.size.bunch
                     , size
                     , package.package.size
-                    , fvmGetShmemPtr()
+                    , buf
                     );
+
+            const std::size_t size_cleaned
+              ( process::execute ( "segyclean"
+                                 , buf
+                                 , size
+                                 , buf
+                                 , size
+                                 )
+              );
+
+            if (size_cleaned != size)
+              {
+                throw std::runtime_error ("size after segyclean differs");
+              }
 
             comm::put (config, package);
           ]]></code>

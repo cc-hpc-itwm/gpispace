@@ -1,5 +1,15 @@
 #!/bin/bash
 
+echo
+echo "W: ######################################################"
+echo "W: # parsu_map is DEPRECATED, use parsu_shrink instead! #"
+echo "W: ######################################################"
+
+echo
+echo "W: ############################################################"
+echo "W: # parsu_map doesn't call segyclean after reading the data! #"
+echo "W: ############################################################"
+
 map_dir="@PARSU_MAP_DIR@"
 
 global_dir=${PARSU_GLOBAL_DIR:-"${HOME}"}
