@@ -63,7 +63,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_bStarted(false),
 	  m_bConfigOk(false)
 {
-
+	ptr_daemon_cfg_ = sdpa::util::Config::create();
 }
 
 GenericDaemon::GenericDaemon(	const std::string &name,
@@ -99,6 +99,8 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 		seda::Stage::Ptr pshToSlaveStage = seda::StageRegistry::instance().lookup(toSlaveStageName);
 		ptr_to_slave_stage_ = pshToSlaveStage;
 	}
+
+	ptr_daemon_cfg_ = sdpa::util::Config::create();
 }
 
 // current constructor
@@ -129,6 +131,8 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	//             (fhg::com::)kvs::put ("sdpa.daemon.<name>.id", m_strAgentUID)
 	//             kvs::put ("sdpa.daemon.<name>.pid", getpid())
 	//                - remove them in destructor
+
+	ptr_daemon_cfg_ = sdpa::util::Config::create();
 }
 
 GenericDaemon::~GenericDaemon()
@@ -196,8 +200,6 @@ void GenericDaemon::start( )
 		sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler());
 		ptr_scheduler_ = ptrSched;
 	}
-
-	ptr_daemon_cfg_ = sdpa::util::Config::create();
 
 	// The stage uses 2 threads
 	ptr_daemon_stage_.lock()->start();
@@ -431,7 +433,7 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	ptr_daemon_cfg_->put("polling interval",    			1 * 1000 * 1000);
 	ptr_daemon_cfg_->put("upper bound polling interval", 	5 * 1000 * 1000 );
 	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
-	ptr_daemon_cfg_->put("node_timeout",        		   20 * 1000 * 1000); // 6s
+	ptr_daemon_cfg_->put("worker_timeout",        		   20 * 1000 * 1000); // 6s
 	ptr_daemon_cfg_->put("registration_timeout", 			1 * 1000 * 1000); // 1s
 
 	// end reading confog file
@@ -730,8 +732,12 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 	// check if the worker evtRegWorker.from() has already registered!
 	try {
-		const unsigned long long node_timeout (cfg()->get<unsigned long long>("node_timeout", 30 * 1000 * 1000));
-        ptr_scheduler_->deleteNonResponsiveWorkers (node_timeout);
+
+		if(cfg()->is_set("worker_timeout"))
+		{
+			const unsigned long long worker_timeout (cfg()->get<unsigned long long>("worker_timeout", 30 * 1000 * 1000));
+			ptr_scheduler_->deleteNonResponsiveWorkers(worker_timeout);
+		}
 
         SDPA_LOG_INFO("Trying to register new worker " << worker_id << ", with the rank " << rank);
 
