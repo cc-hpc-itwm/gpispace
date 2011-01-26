@@ -18,6 +18,7 @@ OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
 OPTION(ENABLE_SDPA_GPI "Build the sdpa-gpi interface" YES)
 OPTION(ENABLE_GPI_SPACE "Build the gpi-space interface" YES)
 OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
+set(FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 
 function(get_revision_info REV_INFO)
   execute_process(
@@ -90,6 +91,8 @@ add_definitions("-fno-strict-aliasing")
 
 if (DISABLE_FHGLOG)
   add_definitions("-DFHGLOG_DISABLE_LOGGING=1")
+else (DISABLE_FHGLOG)
+  add_definitions("-DFHGLOG_STRIP_LEVEL=${FHGLOG_STRIP_LEVEL}")
 endif (DISABLE_FHGLOG)
 
 ##########################################################

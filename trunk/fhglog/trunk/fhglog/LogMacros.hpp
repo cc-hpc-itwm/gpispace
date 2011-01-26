@@ -1,10 +1,12 @@
 #ifndef  FHG_LOG_LOGMACROS_INC
 #define  FHG_LOG_LOGMACROS_INC
 
-#include <fhglog/util.hpp>
-#include <fhglog/LoggerApi.hpp>
-#include <fhglog/Configuration.hpp>
-#include <sstream>
+#if not defined(FHGLOG_DISABLE_LOGGING) || FHGLOG_DISABLE_LOGGING == 0
+#  include <fhglog/util.hpp>
+#  include <fhglog/LoggerApi.hpp>
+#  include <fhglog/Configuration.hpp>
+#  include <sstream>
+#endif
 
 namespace fhg { namespace log {
 
@@ -62,10 +64,16 @@ namespace fhg { namespace log {
       }                                                                 \
     } while (0)
 
+#ifndef FHGLOG_STRIP_LEVEL
+#  define FHGLOG_STRIP_LEVEL -1
+#endif
+
 #  define __LOG(logger, level, msg)                                     \
     do {                                                                \
       using namespace fhg::log;                                         \
-      if (logger.isLevelEnabled(LogLevel::level))                       \
+      if (  (LogLevel::level > FHGLOG_STRIP_LEVEL)                      \
+         && logger.isLevelEnabled(LogLevel::level)                      \
+         )                                                              \
       {                                                                 \
         FHGLOG_MKEVENT(__log_evt, level, "");                           \
         if (! logger.isFiltered(__log_evt))                             \
