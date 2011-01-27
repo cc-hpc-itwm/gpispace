@@ -50,6 +50,9 @@ namespace xml
           s.open ("connect-" + type);
           s.attr ("port", c.port);
           s.attr ("place", c.place);
+
+          ::we::type::property::dump::dump (s, c.prop);
+
           s.close ();
         }
       } // namespace dump

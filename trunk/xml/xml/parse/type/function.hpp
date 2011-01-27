@@ -1809,6 +1809,8 @@ namespace xml
             {
               s.open ("net");
 
+              ::we::type::property::dump::dump (s, net.prop);
+
               dumps (s, net.structs.begin(), net.structs.end());
               dumps (s, net.templates().begin(), net.templates().end(), true);
               dumps (s, net.specializes().begin(), net.specializes().end());
@@ -1829,6 +1831,8 @@ namespace xml
           s.open (is_template ? "template" : "defun");
           s.attr ("name", f.name);
           s.attr ("internal", f.internal);
+
+          ::we::type::property::dump::dump (s, f.prop);
 
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");

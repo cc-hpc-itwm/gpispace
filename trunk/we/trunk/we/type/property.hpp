@@ -18,6 +18,9 @@
 
 #include <fhg/util/maybe.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
 
 namespace we
 {
@@ -478,6 +481,63 @@ namespace we
       inline std::ostream & operator << (std::ostream & s, const type & t)
       {
         t.writeTo (s, 1); return s;
+      }
+
+      namespace dump
+      {
+        inline void dump ( xml_util::xmlstream &
+                         , const type &
+                         );
+
+        namespace visitor
+        {
+          class dump : public boost::static_visitor<void>
+          {
+          private:
+            xml_util::xmlstream & s;
+            const key_type & key;
+
+          public:
+            dump (xml_util::xmlstream & _s, const key_type & _key)
+              : s (_s)
+              , key (_key)
+            {}
+
+            void operator () (const value_type & v) const
+            {
+              s.open ("property");
+              s.attr ("key", key);
+              s.attr ("value", v);
+              s.close ();
+            }
+
+            template<typename T>
+            void operator () (const T & x) const
+            {
+              s.open ("properties");
+              s.attr ("name", key);
+
+              ::we::type::property::dump::dump (s, x);
+
+              s.close ();
+            }
+          };
+        }
+
+        inline void dump ( xml_util::xmlstream & s
+                         , const type & p
+                         )
+        {
+          for ( map_type::const_iterator pos (p.get_map().begin())
+              ; pos != p.get_map().end()
+              ; ++pos
+              )
+            {
+              boost::apply_visitor ( visitor::dump (s, pos->first)
+                                   , pos->second
+                                   );
+            }
+        }
       }
 
       // ******************************************************************* //

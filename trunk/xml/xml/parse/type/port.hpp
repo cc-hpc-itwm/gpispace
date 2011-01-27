@@ -141,6 +141,9 @@ namespace xml
           s.attr ("name", p.name);
           s.attr ("type", p.type);
           s.attr ("place", p.place);
+
+          ::we::type::property::dump::dump (s, p.prop);
+
           s.close();
         }
       } // namespace dump

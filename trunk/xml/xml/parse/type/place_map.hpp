@@ -48,6 +48,9 @@ namespace xml
           s.open ("place-map");
           s.attr ("virtual", p.place_virtual);
           s.attr ("real", p.place_real);
+
+          ::we::type::property::dump::dump (s, p.prop);
+
           s.close ();
         }
       } // namespace dump

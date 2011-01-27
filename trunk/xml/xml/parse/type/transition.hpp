@@ -925,6 +925,8 @@ namespace xml
           s.attr ("inline", t.finline);
           s.attr ("internal", t.internal);
 
+          ::we::type::property::dump::dump (s, t.prop);
+
           boost::apply_visitor (visitor::transition_dump (s), t.f);
 
           dumps (s, t.place_map().begin(), t.place_map().end());

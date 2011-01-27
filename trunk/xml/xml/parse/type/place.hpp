@@ -289,6 +289,8 @@ namespace xml
           s.attr ("capacity", p.capacity);
           s.attr ("virtual", p.is_virtual);
 
+          ::we::type::property::dump::dump (s, p.prop);
+
           for ( std::vector<token_type>::const_iterator tok (p.tokens.begin())
               ; tok != p.tokens.end()
               ; ++tok
