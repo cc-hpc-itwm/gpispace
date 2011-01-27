@@ -53,11 +53,6 @@ namespace xml
         }
       }
 
-      std::ostream & operator << (std::ostream & s, const expression_type & e)
-      {
-        return s << "expression (" << e.expression() << ") // expression";
-      }
-
       namespace visitor
       {
         class join : public boost::static_visitor<void>

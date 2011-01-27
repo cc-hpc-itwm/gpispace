@@ -292,7 +292,6 @@ namespace xml
       type::connect_type connect
         ( required ("connect_type", node, "place", state.file_in_progress())
         , required ("connect_type", node, "port", state.file_in_progress())
-        , state.level() + 2
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -346,7 +345,6 @@ namespace xml
       type::place_map_type place_map
         ( required ("place_map_type", node, "virtual", state.file_in_progress())
         , required ("place_map_type", node, "real", state.file_in_progress())
-        , state.level() + 2
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -400,7 +398,6 @@ namespace xml
       type::function_type f;
 
       f.path = state.file_in_progress();
-      f.level = state.level();
       f.name = optional (node, "name");
       f.internal =
         fhg::util::fmap<std::string, bool>( fhg::util::read_bool
@@ -456,19 +453,11 @@ namespace xml
                 }
               else if (child_name == "module")
                 {
-                  ++state.level();
-
                   f.f = mod_type (child, state);
-
-                  --state.level();
                 }
               else if (child_name == "net")
                 {
-                  ++state.level();
-
                   f.f = net_type (child, state);
-
-                  --state.level();
                 }
               else if (child_name == "condition")
                 {
@@ -519,7 +508,6 @@ namespace xml
         ( required ("mod_type", node, "name", state.file_in_progress())
         , required ("mod_type", node, "function", state.file_in_progress())
         , state.file_in_progress()
-        , state.level()
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -577,9 +565,6 @@ namespace xml
       type::net_type n;
 
       n.path = state.file_in_progress();
-      n.level = state.level();
-
-      ++state.level();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -736,8 +721,6 @@ namespace xml
             }
         }
 
-      --state.level();
-
       return n;
     }
 
@@ -766,8 +749,6 @@ namespace xml
                                              , optional (node, "virtual")
                                              )
         );
-
-      p.level = state.level();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -834,7 +815,6 @@ namespace xml
                         )
         , required ("port_type", node, "type", state.file_in_progress())
         , optional (node, "place")
-        , state.level() + 2
         );
 
       for ( xml_node_type * child (node->first_node())
@@ -1134,7 +1114,6 @@ namespace xml
                                    , state.file_in_progress()
                                    );
       s.sig = signature::structured_t();
-      s.level = state.level();
 
       gen_struct_type (node, state, s.sig);
 
@@ -1305,7 +1284,6 @@ namespace xml
         required ("specialize_type", node, "name", state.file_in_progress());
       s.use =
         required ("specialize_type", node, "use", state.file_in_progress());
-      s.level = state.level();
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -1351,7 +1329,6 @@ namespace xml
       type::transition_type t;
 
       t.path = state.file_in_progress();
-      t.level = state.level();
       t.name = validate_name ( validate_prefix ( name
                                                , "transition"
                                                , state.file_in_progress()
@@ -1390,11 +1367,7 @@ namespace xml
                                                     )
                                          );
 
-                  state.level() += 2;;
-
                   t.f = function_include (file, state);
-
-                  state.level() -= 2;
                 }
               else if (child_name == "use")
                 {
@@ -1403,16 +1376,11 @@ namespace xml
                                                   , "name"
                                                   , state.file_in_progress()
                                                   )
-                                       , state.level() + 2
                                        );
                 }
               else if (child_name == "defun")
                 {
-                  state.level() += 2;
-
                   t.f = function_type (child, state);
-
-                  state.level() -= 2;
                 }
               else if (child_name == "place-map")
                 {
@@ -1513,19 +1481,6 @@ namespace xml
           includes::we_header_gen (state, list);
 
           type::struct_to_cpp (state, f);
-        }
-
-      if (state.internal_structures_file().size() > 0)
-        {
-          const std::string file (state.internal_structures_file());
-          std::ofstream stream (file.c_str());
-
-          if (!stream.good())
-            {
-              throw error::could_not_open_file (file);
-            }
-
-          stream << f << std::endl;
         }
 
       return f;

@@ -31,7 +31,6 @@ namespace xml
         std::string name;
         signature::desc_t sig;
         boost::filesystem::path path;
-        int level;
       };
 
       inline bool operator == (const struct_t & a, const struct_t & b)
@@ -44,6 +43,8 @@ namespace xml
         return !(a == b);
       }
 
+      typedef std::vector<struct_t> struct_vec_type;
+
       namespace dump
       {
         inline void dump (xml_util::xmlstream & s, const struct_t & st)
@@ -53,17 +54,6 @@ namespace xml
                                );
         }
       }
-
-      inline std::ostream & operator << (std::ostream & s, const struct_t & st)
-      {
-        return s << level(st.level) << "struct (" << std::endl
-                 << level(st.level+1) << "name = " << st.name << std::endl
-                 << level(st.level+1) << "sig = " << st.sig << std::endl
-                 << level(st.level+1) << "path = " << st.path << std::endl
-                 << level(st.level) << ") // struct";
-      }
-
-      typedef std::vector<struct_t> struct_vec_type;
     }
 
     // ********************************************************************* //

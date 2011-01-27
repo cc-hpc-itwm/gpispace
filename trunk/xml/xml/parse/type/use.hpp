@@ -22,13 +22,9 @@ namespace xml
       struct use_type
       {
         std::string name;
-        int level;
 
-        use_type ( const std::string & _name
-                 , const int & _level
-                 )
+        explicit use_type (const std::string & _name)
           : name (_name)
-          , level (_level)
         {}
       };
 
@@ -40,14 +36,6 @@ namespace xml
           s.attr ("name", u.name);
           s.close ();
         }
-      }
-
-      std::ostream & operator << (std::ostream & s, const use_type & u)
-      {
-        return s << level (u.level) << "use (" << std::endl
-                 << level (u.level + 1) << "name = " << u.name << std::endl
-                 << level (u.level) << ") // use"
-          ;
       }
     }
   }

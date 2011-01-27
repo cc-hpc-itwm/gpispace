@@ -221,7 +221,6 @@ namespace xml
         std::vector<token_type> tokens;
         value_vec_type values;
         signature::type sig;
-        int level;
         we::type::property::type prop;
         fhg::util::maybe<bool> is_virtual;
 
@@ -304,40 +303,6 @@ namespace xml
           s.close();
         }
       } // namespace dump
-
-      // ******************************************************************* //
-
-      std::ostream & operator << (std::ostream & s, const place_type & p)
-      {
-        s << level(p.level)  << "place (" << std::endl;
-        s << level(p.level+1) << "name = " << p.name << std::endl;
-        s << level(p.level+1) << "type = " << p.type << std::endl;
-        s << level(p.level+1) << "sig = " << p.sig << std::endl;
-        s << level(p.level+1) << "capacity = " << p.capacity << std::endl;
-        s << level(p.level+1) << "virtual = " << p.is_virtual << std::endl;
-
-        for ( std::vector<token_type>::const_iterator tok (p.tokens.begin())
-            ; tok != p.tokens.end()
-            ; ++tok
-            )
-          {
-            s << level(p.level+1) << "token = " << *tok << std::endl;
-          }
-
-        for ( std::vector<value::type>::const_iterator val (p.values.begin())
-            ; val != p.values.end()
-            ; ++val
-            )
-          {
-            s << level(p.level+1) << "value = " << *val << std::endl;
-          }
-
-        s << level (p.level+1) << "properties = " << std::endl;
-
-        p.prop.writeTo (s, p.level+2);
-
-        return s << level(p.level) << ") // place";
-      }
     }
   }
 }

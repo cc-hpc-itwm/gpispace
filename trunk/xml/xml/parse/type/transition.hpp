@@ -185,8 +185,6 @@ namespace xml
 
         we::type::property::type prop;
 
-        int level;
-
         struct_vec_type structs;
 
         cond_vec_type cond;
@@ -946,78 +944,6 @@ namespace xml
 
           s.close ();
         }
-      }
-
-      // ******************************************************************* //
-
-      std::ostream & operator << (std::ostream & s, const transition_type & t)
-      {
-        s << level (t.level)     << "transition (" << std::endl;
-        s << level (t.level + 1) << "name = " << t.name << std::endl;
-        s << level (t.level + 1) << "path = " << t.path << std::endl;
-        s << level (t.level + 1) << "internal = " << t.internal << std::endl;
-
-        s << level(t.level+1) << "properties = " << std::endl;
-
-        t.prop.writeTo (s, t.level+2);
-
-        s << level (t.level + 1) << "place-map = " << std::endl;
-
-        for ( place_map_vec_type::const_iterator pos (t.place_map().begin())
-            ; pos != t.place_map().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level (t.level + 1) << "connect-in = " << std::endl;
-
-        for ( connect_vec_type::const_iterator pos (t.in().begin())
-            ; pos != t.in().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level (t.level + 1) << "connect-read = " << std::endl;
-
-        for ( connect_vec_type::const_iterator pos (t.read().begin())
-            ; pos != t.read().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level (t.level + 1) << "connect-out = " << std::endl;
-
-        for ( connect_vec_type::const_iterator pos (t.out().begin())
-            ; pos != t.out().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level(t.level+1) << "condition = " << std::endl;
-
-        for ( cond_vec_type::const_iterator pos (t.cond.begin())
-            ; pos != t.cond.end()
-            ; ++pos
-            )
-          {
-            s << level(t.level+2) << *pos << std::endl;
-          }
-
-        s << level (t.level + 1) << "def = " << std::endl;
-
-        boost::apply_visitor (visitor::show (s), t.f);
-
-        s << std::endl;
-
-        return s << level (t.level) << ") // transition";
       }
     }
   }

@@ -53,8 +53,6 @@ namespace xml
 
         we::type::property::type prop;
 
-        int level;
-
         xml::parse::struct_t::set_type structs_resolved;
 
         // ***************************************************************** //
@@ -622,100 +620,6 @@ namespace xml
 
           return pid_of_place;
       };
-
-      // ******************************************************************* //
-
-      std::ostream & operator << (std::ostream & s, const net_type & n)
-      {
-        s << level(n.level) << "net" << std::endl;
-        s << level(n.level+1) << "path = " << n.path << std::endl;
-        s << level(n.level+1) << "contains_a_module_call = " << n.contains_a_module_call << std::endl;
-        s << level(n.level+1) << "properties = " << std::endl;
-
-        n.prop.writeTo (s, n.level+2);
-
-        s << level(n.level+1) << "structs =" << std::endl;
-
-        for ( struct_vec_type::const_iterator pos (n.structs.begin())
-            ; pos != n.structs.end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level (n.level+1) << "resolved structs = " << std::endl;
-
-        namespace st = xml::parse::struct_t;
-
-        for ( st::set_type::const_iterator pos (n.structs_resolved.begin())
-            ; pos != n.structs_resolved.end()
-            ; ++pos
-            )
-          {
-            type::struct_t deep (pos->second);
-
-            deep.level = n.level + 1;
-
-            s << deep << std::endl;
-          }
-
-        s << level(n.level+1) << "specializes =" << std::endl;
-
-        for ( net_type::specialize_vec_type::const_iterator pos
-                (n.specializes().begin())
-            ; pos != n.specializes().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level(n.level+1) << "templates =" << std::endl;
-
-        for ( net_type::template_vec_type::const_iterator pos
-                (n.templates().begin())
-            ; pos != n.templates().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level(n.level+1) << "functions =" << std::endl;
-
-        for ( net_type::function_vec_type::const_iterator pos
-                (n.functions().begin())
-            ; pos != n.functions().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level(n.level+1) << "places =" << std::endl;
-
-        for ( place_vec_type::const_iterator pos (n.places().begin())
-            ; pos != n.places().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level(n.level+1) << "transitions =" << std::endl;
-
-        for ( net_type::transition_vec_type::const_iterator pos
-                (n.transitions().begin())
-            ; pos != n.transitions().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        return s << level (n.level) << ") //net";
-      }
     }
   }
 }

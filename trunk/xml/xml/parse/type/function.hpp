@@ -441,8 +441,6 @@ namespace xml
 
         boost::filesystem::path path;
 
-        int level;
-
         xml::parse::struct_t::set_type structs_resolved;
 
         bool was_template;
@@ -1853,94 +1851,6 @@ namespace xml
           s.close ();
         }
       } // namespace dump
-
-      // ******************************************************************* //
-
-      inline
-      std::ostream & operator << (std::ostream & s, const function_type & f)
-      {
-        s << level(f.level) << "function (" << std::endl;
-
-        s << level(f.level+1)
-          << "name = " << f.name
-          << ", internal = " << f.internal
-          << std::endl;
-        s << level (f.level+1) << "path = " << f.path << std::endl;
-        s << level (f.level+1) << "contains_a_module_call = " << f.contains_a_module_call << std::endl;
-        ;
-
-        s << level(f.level+1) << "properties = " << std::endl;
-
-        f.prop.writeTo (s, f.level+2);
-
-        s << level(f.level+1) << "port_in = " << std::endl;
-
-        for ( port_vec_type::const_iterator pos (f.in().begin())
-            ; pos != f.in().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level(f.level+1) << "port_out = " << std::endl;
-
-        for ( port_vec_type::const_iterator pos (f.out().begin())
-            ; pos != f.out().end()
-            ; ++pos
-            )
-          {
-            s << *pos << std::endl;
-          }
-
-        s << level(f.level+1) << "structs = " << std::endl;
-
-        for ( struct_vec_type::const_iterator pos (f.structs.begin())
-            ; pos != f.structs.end()
-            ; ++pos
-            )
-          {
-            type::struct_t deep (*pos);
-
-            deep.level = f.level + 2;
-
-            s << deep << std::endl;
-          }
-
-        s << level (f.level+1) << "resolved structs = " << std::endl;
-
-        namespace st = xml::parse::struct_t;
-
-        for ( st::set_type::const_iterator pos (f.structs_resolved.begin())
-            ; pos != f.structs_resolved.end()
-            ; ++pos
-            )
-          {
-            type::struct_t deep (pos->second);
-
-            deep.level = f.level + 2;
-
-            s << deep << std::endl;
-          }
-
-        s << level(f.level+1) << "condition = " << std::endl;
-
-        for ( cond_vec_type::const_iterator pos (f.cond.begin())
-            ; pos != f.cond.end()
-            ; ++pos
-            )
-          {
-            s << level(f.level+2) << *pos << std::endl;
-          }
-
-        s << level(f.level+1) << "fun = " << std::endl;
-
-        boost::apply_visitor (visitor::show (s, f.level+1), f.f);
-
-        s << std::endl;
-
-        return s << level(f.level) << ") // function";
-      }
     }
   }
 }

@@ -28,18 +28,18 @@ namespace xml
         std::string place_real;
         std::string name;
         we::type::property::type prop;
-        int level;
 
         place_map_type ( const std::string & _place_virtual
                        , const std::string & _place_real
-                       , const int & _level
                        )
           : place_virtual (_place_virtual)
           , place_real (_place_real)
           , name (_place_virtual + " <-> " + _place_real)
-          , level (_level)
         {}
       };
+
+      typedef std::vector<place_map_type> place_map_vec_type;
+      typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
 
       namespace dump
       {
@@ -54,21 +54,6 @@ namespace xml
           s.close ();
         }
       } // namespace dump
-
-      std::ostream & operator << (std::ostream & s, const place_map_type & p)
-      {
-        s << level(p.level)  << "place_map (" << std::endl;
-        s << level(p.level+1) << "virtual = " << p.place_virtual << std::endl;
-        s << level(p.level+1) << "real = " << p.place_real << std::endl;
-        s << level(p.level+1) << "properties = " << std::endl;
-
-        p.prop.writeTo (s, p.level+2);
-
-        return s << level(p.level) << ") // place_map";
-      }
-
-      typedef std::vector<place_map_type> place_map_vec_type;
-      typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
     }
   }
 }

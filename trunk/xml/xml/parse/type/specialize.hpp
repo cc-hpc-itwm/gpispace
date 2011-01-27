@@ -23,7 +23,6 @@ namespace xml
       {
         std::string name;
         std::string use;
-        int level;
         type_map_type type_map;
         type_get_type type_get;
       };
@@ -133,39 +132,6 @@ namespace xml
           s.close ();
         }
       } // namespace dump
-
-      inline std::ostream &
-      operator << (std::ostream & s, const specialize_type & sp)
-      {
-        s << level (sp.level) << "specialize (" << std::endl;
-        s << level (sp.level + 1) << "name = " << sp.name << std::endl;
-        s << level (sp.level + 1) << "use = " << sp.use << std::endl;
-
-        s << level (sp.level + 1) << "type-map = " << std::endl;
-
-        for ( type_map_type::const_iterator pos (sp.type_map.begin())
-            ; pos != sp.type_map.end()
-            ; ++pos
-            )
-          {
-            s << level (sp.level + 2)
-              << pos->first << " => " << pos->second
-              << std::endl
-              ;
-          }
-
-        s << level (sp.level + 1) << "type-get = " << std::endl;
-
-        for ( type_get_type::const_iterator pos (sp.type_get.begin())
-            ; pos != sp.type_get.end()
-            ; ++pos
-            )
-          {
-            s << level (sp.level + 2) << *pos << std::endl;
-          }
-
-        return s << level (sp.level) << ") // specialize";
-      }
     }
   }
 }

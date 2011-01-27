@@ -32,19 +32,16 @@ namespace xml
         std::string type;
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;
-        int level;
 
         port_type () : name (), type (), place () {}
 
         port_type ( const std::string & _name
                   , const std::string & _type
                   , const fhg::util::maybe<std::string> & _place
-                  , const int & _level
                   )
           : name (_name)
           , type (_type)
           , place (_place)
-          , level (_level)
         {}
 
         void specialize ( const type::type_map_type & map_in
@@ -147,21 +144,6 @@ namespace xml
           s.close();
         }
       } // namespace dump
-
-      // ******************************************************************* //
-
-      std::ostream & operator << (std::ostream & s, const port_type & p)
-      {
-        s << level(p.level)  << "port (" << std::endl;
-        s << level(p.level+1) << "name = " << p.name << std::endl;
-        s << level(p.level+1) << "type = " << p.type << std::endl;
-        s << level(p.level+1) << "place = " << p.place << std::endl;
-        s << level(p.level+1) << "properties = " << std::endl;
-
-        p.prop.writeTo (s, p.level+2);
-
-        return s << level(p.level) << ") // port";
-      }
     }
   }
 }

@@ -51,7 +51,6 @@ namespace xml
         typedef expr::eval::context context_t;
 
       private:
-        int _level;
         search_path_type _search_path;
         in_progress_type _in_progress;
         property::path_type _prop_path;
@@ -78,7 +77,6 @@ namespace xml
         bool _Wconflicting_port_types;
         bool _Woverwrite_file;
 
-        std::string _internal_structures_file;
         std::string _dump_xml_file;
         bool _no_inline;
         bool _synthesize_virtual_places;
@@ -110,7 +108,6 @@ namespace xml
         std::string _OWconflicting_port_types;
         std::string _OWoverwrite_file;
 
-        std::string _Ointernal_structures_file;
         std::string _Odump_xml_file;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
@@ -175,8 +172,7 @@ namespace xml
 
       public:
         type (void)
-          : _level (0)
-          , _search_path ()
+          : _search_path ()
           , _in_progress ()
           , _ignore_properties (false)
           , _Werror (false)
@@ -199,7 +195,6 @@ namespace xml
           , _Wconflicting_port_types (true)
           , _Woverwrite_file (true)
 
-          , _internal_structures_file ("")
           , _dump_xml_file ("")
           , _no_inline (false)
           , _synthesize_virtual_places (false)
@@ -230,7 +225,6 @@ namespace xml
           , _OWconflicting_port_types ("Wconflicting-port-types")
           , _OWoverwrite_file ("Woverwrite-file")
 
-          , _Ointernal_structures_file ("internal-structures-file,r")
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
@@ -239,7 +233,6 @@ namespace xml
           , _Opath_to_cpp ("path-to-cpp,g")
         {}
 
-        int & level (void) { return _level; }
         const search_path_type & search_path (void) const
         {
           return _search_path;
@@ -328,10 +321,6 @@ namespace xml
             {
               _path_to_cpp = value; return true;
             }
-          else if (path.size() == 2 && path[1] == _Ointernal_structures_file)
-            {
-              _internal_structures_file = value; return true;
-            }
           else if (path.size() == 2 && path[1] == _Odump_xml_file)
             {
               _dump_xml_file = value; return true;
@@ -400,11 +389,6 @@ namespace xml
         const std::string & path_to_cpp (void) const
         {
           return _path_to_cpp;
-        }
-
-        const std::string & internal_structures_file (void) const
-        {
-          return _internal_structures_file;
         }
 
         const std::string & dump_xml_file (void) const
@@ -564,10 +548,6 @@ namespace xml
             ( _Opath_to_cpp.c_str()
             , STRINGVAL(path_to_cpp)
             , "path for cpp output, empty for no cpp output"
-            )
-            ( _Ointernal_structures_file.c_str()
-            , STRINGVAL(internal_structures_file)
-            , "file to dump internal structures, empty for no dump"
             )
             ( _Odump_xml_file.c_str()
             , STRINGVAL(dump_xml_file)

@@ -30,38 +30,6 @@ namespace xml
 
       template<typename Net, typename Trans>
       class transition_get_function;
-
-      // generic show visitor
-      struct level { int l; level (int _l) : l(_l) {} };
-
-      std::ostream & operator << (std::ostream & s, const level & l)
-      {
-        for (int i (0); i < l.l; ++i)
-          {
-            s << "  ";
-          }
-        return s;
-      }
-
-      namespace visitor
-      {
-        class show : public boost::static_visitor<std::ostream &>
-        {
-        private:
-          std::ostream & s;
-          const level & l;
-
-        public:
-          show (std::ostream & _s) : s (_s), l (0) {}
-          show (std::ostream & _s, const level & _l) : s (_s), l (_l) {}
-
-          template<typename T>
-          std::ostream & operator () (const T & x) const
-          {
-            return s << l << x;
-          }
-        };
-      }
     }
   }
 }

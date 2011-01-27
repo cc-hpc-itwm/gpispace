@@ -478,11 +478,6 @@ namespace we
         }
       };
 
-      inline std::ostream & operator << (std::ostream & s, const type & t)
-      {
-        t.writeTo (s, 1); return s;
-      }
-
       namespace dump
       {
         inline void dump ( xml_util::xmlstream &
@@ -538,6 +533,15 @@ namespace we
                                    );
             }
         }
+      }
+
+      inline std::ostream & operator << (std::ostream & s, const type & t)
+      {
+        xml_util::xmlstream xml (s);
+
+        dump::dump (xml, t);
+
+        return s;
       }
 
       // ******************************************************************* //
