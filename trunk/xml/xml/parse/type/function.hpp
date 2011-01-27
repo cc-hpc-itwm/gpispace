@@ -1832,9 +1832,11 @@ namespace xml
 
           ::we::type::property::dump::dump (s, f.prop);
 
+          dumps (s, f.structs.begin(), f.structs.end());
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");
-          dumps (s, f.structs.begin(), f.structs.end());
+
+          boost::apply_visitor (visitor::function_dump<net_type> (s), f.f);
 
           for ( cond_vec_type::const_iterator cond (f.cond.begin())
               ; cond != f.cond.end()
@@ -1845,8 +1847,6 @@ namespace xml
               s.content (*cond);
               s.close ();
             }
-
-          boost::apply_visitor (visitor::function_dump<net_type> (s), f.f);
 
           s.close ();
         }

@@ -35,7 +35,7 @@
     <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
   </xsd:complexType>
 
-  <xsd:complexType name="cinlude_type">
+  <xsd:complexType name="cinclude_type">
     <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
   </xsd:complexType>
 
@@ -104,15 +104,15 @@
   </xsd:complexType>
 
   <xsd:complexType name="mod_type">
-    <xsd:attribute name="name" type="xsd:ID" use="required"/>
-    <xsd:attribute name="function" type="xsd:string" use="required"/>
     <xsd:sequence>
-      <xsd:choice minOccurs="0" maxOccurs="unbouned">
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="cinclude" type="cinclude_type"/>
         <xsd:element name="link" type="link_type"/>
       </xsd:choice>
       <xsd:element minOccurs="0" maxOccurs="1" name="code" type="xsd:string"/>
     </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:ID" use="required"/>
+    <xsd:attribute name="function" type="xsd:string" use="required"/>
   </xsd:complexType>
 
   <xsd:complexType name="type_map_type">
