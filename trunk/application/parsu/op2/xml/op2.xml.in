@@ -457,12 +457,6 @@
       <connect-out port="package" place="writeable_package"/>
     </transition>
 
-    <defun name="select_package">
-      <in name="x" type="loaded_package"/>
-      <out name="x" type="loaded_package"/>
-      <expression></expression>
-    </defun>
-
     <place name="writeable_package" type="loaded_package"/>
 
     <transition name="select_writeable">
