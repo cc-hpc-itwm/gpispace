@@ -22,6 +22,9 @@
 #include <we/type/id.hpp>
 
 #include <fhg/util/maybe.hpp>
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
 
 #include <rewrite/validprefix.hpp>
 
@@ -891,6 +894,57 @@ namespace xml
 
         return;
       };
+
+      // ******************************************************************* //
+
+      namespace dump
+      {
+        namespace visitor
+        {
+          class transition_dump : public boost::static_visitor<void>
+          {
+          private:
+            xml_util::xmlstream & s;
+
+          public:
+            transition_dump (xml_util::xmlstream & _s) : s (_s) {}
+
+            template<typename T>
+            void operator () (const T & x) const
+            {
+              ::xml::parse::type::dump::dump (s, x);
+            }
+          };
+        } // namespace visitor
+
+        inline void dump (xml_util::xmlstream & s, const transition_type & t)
+        {
+          s.open ("transition");
+          s.attr ("name", t.name);
+          s.attr ("priority", t.priority);
+          s.attr ("inline", t.finline);
+          s.attr ("internal", t.internal);
+
+          boost::apply_visitor (visitor::transition_dump (s), t.f);
+
+          dumps (s, t.place_map().begin(), t.place_map().end());
+          dumps (s, t.read().begin(), t.read().end(), "read");
+          dumps (s, t.in().begin(), t.in().end(), "in");
+          dumps (s, t.out().begin(), t.out().end(), "out");
+
+          for ( cond_vec_type::const_iterator cond (t.cond.begin())
+              ; cond != t.cond.end()
+              ; ++cond
+              )
+            {
+              s.open ("condition");
+              s.content (*cond);
+              s.close();
+            }
+
+          s.close ();
+        }
+      }
 
       // ******************************************************************* //
 

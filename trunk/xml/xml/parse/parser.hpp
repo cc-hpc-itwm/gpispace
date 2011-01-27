@@ -1478,6 +1478,21 @@ namespace xml
       type::function_type f
         (state.generic_parse<type::function_type> (parse_function, input));
 
+      if (state.dump_xml_file().size() > 0)
+        {
+          const std::string file (state.dump_xml_file());
+          std::ofstream stream (file.c_str());
+
+          if (!stream.good())
+            {
+              throw error::could_not_open_file (file);
+            }
+
+          fhg::util::xml::xmlstream s (stream);
+
+          xml::parse::type::dump::dump (s, f);
+        }
+
       f.specialize (state);
       f.resolve (state, f.forbidden_below());
       f.type_check (state);
@@ -1512,6 +1527,7 @@ namespace xml
 
           stream << f << std::endl;
         }
+
       return f;
     }
   }

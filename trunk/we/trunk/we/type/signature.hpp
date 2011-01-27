@@ -20,6 +20,10 @@
 
 #include <map>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace signature
 {
   struct structured_t;
@@ -77,6 +81,97 @@ namespace signature
 
   namespace visitor
   {
+    class dump : public boost::static_visitor<void>
+    {
+    private:
+      const std::string & name;
+      xml_util::xmlstream & s;
+
+    public:
+      dump (const std::string & _name, xml_util::xmlstream & _s)
+        : name (_name)
+        , s (_s)
+      {}
+
+      void operator () (const literal::type_name_t & t) const
+      {
+        s.open ("field");
+        s.attr ("name", name);
+        s.attr ("type", t);
+        s.close ();
+      }
+
+      void operator () (const structured_t & map) const
+      {
+        s.open ("struct");
+        s.attr ("name", name);
+
+        for ( structured_t::const_iterator field (map.begin())
+            ; field != map.end()
+            ; ++field
+            )
+          {
+            boost::apply_visitor (dump (field->first, s), field->second);
+          }
+
+        s.close();
+      }
+    };
+
+    class dump_token : public boost::static_visitor<void>
+    {
+    private:
+      const std::string & name;
+      xml_util::xmlstream & s;
+
+      void open () const
+      {
+        if (name.size() > 0)
+          {
+            s.open ("field");
+            s.attr ("name", name);
+          }
+        else
+          {
+            s.open ("token");
+          }
+      }
+
+    public:
+      dump_token (const std::string & _name, xml_util::xmlstream & _s)
+        : name (_name)
+        , s (_s)
+      {}
+
+      void operator () (const literal::type_name_t & t) const
+      {
+        open();
+
+        s.open ("value");
+        s.content (t);
+        s.close ();
+
+        s.close();
+      }
+
+      void operator () (const structured_t & map) const
+      {
+        open();
+
+        for ( structured_t::const_iterator field (map.begin())
+            ; field != map.end()
+            ; ++field
+            )
+          {
+            boost::apply_visitor ( dump_token (field->first, s)
+                                 , field->second
+                                 );
+          }
+
+        s.close();
+      }
+    };
+
     class show : public boost::static_visitor<std::ostream &>
     {
     private:

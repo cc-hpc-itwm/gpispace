@@ -30,7 +30,10 @@
 #include <fhg/util/filesystem.hpp>
 #include <fhg/util/cpp.hpp>
 
+#include <fhg/util/xml.hpp>
+
 namespace cpp_util = ::fhg::util::cpp;
+namespace xml_util = ::fhg::util::xml;
 
 #include <iostream>
 #include <sstream>
@@ -1749,6 +1752,103 @@ namespace xml
 
         boost::apply_visitor (visitor::struct_to_cpp<net_type>(state), f.f);
       }
+
+      // ******************************************************************* //
+
+      namespace dump
+      {
+        void dump ( xml_util::xmlstream &
+                  , const function_type &
+                  , const bool
+                  );
+
+        void dump ( xml_util::xmlstream &
+                  , const transition_type &
+                  );
+
+        template<typename IT>
+        inline void dumps (xml_util::xmlstream & s, IT pos, const IT & end)
+        {
+          for (; pos != end; ++pos)
+            {
+              ::xml::parse::type::dump::dump (s, *pos);
+            }
+        }
+
+        template<typename IT, typename T>
+        inline void dumps ( xml_util::xmlstream & s
+                          , IT pos
+                          , const IT & end
+                          , const T & x
+                          )
+        {
+          for (; pos != end; ++pos)
+            {
+              ::xml::parse::type::dump::dump (s, *pos, x);
+            }
+        }
+
+        namespace visitor
+        {
+          template<typename NET>
+          class function_dump : public boost::static_visitor<void>
+          {
+          private:
+            xml_util::xmlstream & s;
+
+          public:
+            function_dump (xml_util::xmlstream & _s) : s (_s) {}
+
+            template<typename T>
+            void operator () (const T & x) const
+            {
+              ::xml::parse::type::dump::dump (s, x);
+            }
+
+            void operator () (const NET & net) const
+            {
+              s.open ("net");
+
+              dumps (s, net.structs.begin(), net.structs.end());
+              dumps (s, net.templates().begin(), net.templates().end(), true);
+              dumps (s, net.specializes().begin(), net.specializes().end());
+              dumps (s, net.functions().begin(), net.functions().end(), false);
+              dumps (s, net.places().begin(), net.places().end());
+              dumps (s, net.transitions().begin(), net.transitions().end());
+
+              s.close ();
+            }
+          };
+        } // namespace visitor
+
+        inline void dump ( xml_util::xmlstream & s
+                         , const function_type & f
+                         , const bool is_template = false
+                         )
+        {
+          s.open (is_template ? "template" : "defun");
+          s.attr ("name", f.name);
+          s.attr ("internal", f.internal);
+
+          dumps (s, f.in().begin(), f.in().end(), "in");
+          dumps (s, f.out().begin(), f.out().end(), "out");
+          dumps (s, f.structs.begin(), f.structs.end());
+
+          for ( cond_vec_type::const_iterator cond (f.cond.begin())
+              ; cond != f.cond.end()
+              ; ++cond
+              )
+            {
+              s.open ("condition");
+              s.content (*cond);
+              s.close ();
+            }
+
+          boost::apply_visitor (visitor::function_dump<net_type> (s), f.f);
+
+          s.close ();
+        }
+      } // namespace dump
 
       // ******************************************************************* //
 

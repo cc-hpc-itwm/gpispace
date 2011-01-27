@@ -19,6 +19,8 @@ set (hdrs
   ini-parser-helper.hpp
 
   getenv.hpp
+
+  xml.hpp
 )
 
 install(FILES ${hdrs}
@@ -29,3 +31,4 @@ add_subdirectory(parse)
 add_subdirectory(thread)
 add_subdirectory(filesystem)
 add_subdirectory(cpp)
+add_subdirectory(test)

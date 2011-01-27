@@ -10,6 +10,10 @@
 
 #include <we/type/property.hpp>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace xml
 {
   namespace parse
@@ -35,6 +39,20 @@ namespace xml
           , level (_level)
         {}
       };
+
+      namespace dump
+      {
+        inline void dump ( xml_util::xmlstream & s
+                         , const connect_type & c
+                         , const std::string & type
+                         )
+        {
+          s.open ("connect-" + type);
+          s.attr ("port", c.port);
+          s.attr ("place", c.place);
+          s.close ();
+        }
+      } // namespace dump
 
       std::ostream & operator << (std::ostream & s, const connect_type & c)
       {

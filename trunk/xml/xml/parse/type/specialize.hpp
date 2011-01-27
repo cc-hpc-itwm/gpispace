@@ -9,6 +9,10 @@
 
 #include <boost/unordered_map.hpp>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace xml
 {
   namespace parse
@@ -34,7 +38,7 @@ namespace xml
       {
         namespace st = xml::parse::struct_t;
 
-        const st::set_type known_structs 
+        const st::set_type known_structs
           ( st::join ( global
                      , st::join ( st::make (parent_structs)
                                 , st::make (child_structs)
@@ -83,7 +87,7 @@ namespace xml
             ; ++s
             )
           {
-            s->sig = boost::apply_visitor 
+            s->sig = boost::apply_visitor
               ( xml::parse::struct_t::specialize (map, state)
               , s->sig
               );
@@ -96,6 +100,39 @@ namespace xml
               }
           }
       }
+
+      namespace dump
+      {
+        inline void dump (xml_util::xmlstream & s, const specialize_type & sp)
+        {
+          s.open ("specialize");
+          s.attr ("name", sp.name);
+          s.attr ("use", sp.use);
+
+          for ( type_map_type::const_iterator tm (sp.type_map.begin())
+              ; tm != sp.type_map.end()
+              ; ++tm
+              )
+            {
+              s.open ("type-map");
+              s.attr ("replace", tm->first);
+              s.attr ("with", tm->second);
+              s.close ();
+            }
+
+          for ( type_get_type::const_iterator tg (sp.type_get.begin())
+              ; tg != sp.type_get.end()
+              ; ++tg
+              )
+            {
+              s.open ("type-get");
+              s.attr ("name", *tg);
+              s.close ();
+            }
+
+          s.close ();
+        }
+      } // namespace dump
 
       inline std::ostream &
       operator << (std::ostream & s, const specialize_type & sp)

@@ -10,6 +10,8 @@
 #include <boost/variant.hpp>
 #include <boost/call_traits.hpp>
 
+#include <stdexcept>
+
 namespace fhg
 {
   namespace util

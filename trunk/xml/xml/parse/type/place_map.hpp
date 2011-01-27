@@ -11,6 +11,10 @@
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace xml
 {
   namespace parse
@@ -36,6 +40,17 @@ namespace xml
           , level (_level)
         {}
       };
+
+      namespace dump
+      {
+        inline void dump (xml_util::xmlstream & s, const place_map_type & p)
+        {
+          s.open ("place-map");
+          s.attr ("virtual", p.place_virtual);
+          s.attr ("real", p.place_real);
+          s.close ();
+        }
+      } // namespace dump
 
       std::ostream & operator << (std::ostream & s, const place_map_type & p)
       {

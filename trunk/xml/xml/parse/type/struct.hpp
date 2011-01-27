@@ -16,6 +16,10 @@
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace xml
 {
   namespace parse
@@ -38,6 +42,16 @@ namespace xml
       inline bool operator != (const struct_t & a, const struct_t & b)
       {
         return !(a == b);
+      }
+
+      namespace dump
+      {
+        inline void dump (xml_util::xmlstream & s, const struct_t & st)
+        {
+          boost::apply_visitor ( signature::visitor::dump (st.name, s)
+                               , st.sig
+                               );
+        }
       }
 
       inline std::ostream & operator << (std::ostream & s, const struct_t & st)
@@ -87,7 +101,7 @@ namespace xml
 
         return set;
       }
-      
+
       // ******************************************************************* //
 
       inline set_type join ( const set_type & above
@@ -143,7 +157,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      class get_literal_type_name 
+      class get_literal_type_name
         : public boost::static_visitor<literal::type_name_t>
       {
       public:
@@ -165,15 +179,15 @@ namespace xml
       private:
         const boost::filesystem::path path;
         const set_type & sig_set;
-      
+
       public:
         resolve ( const set_type & _sig_set
                 , const boost::filesystem::path & _path
-                ) 
+                )
           : path (_path)
           , sig_set (_sig_set)
         {}
-      
+
         bool operator () (literal::type_name_t & t) const
         {
           return literal::valid_name (t);
@@ -187,7 +201,7 @@ namespace xml
               )
             {
               const bool resolved (boost::apply_visitor (*this, pos->second));
-            
+
               if (!resolved)
                 {
                   const literal::type_name_t child_name
@@ -228,7 +242,7 @@ namespace xml
           : map_in (_map_in)
           , state (_state)
         {}
-      
+
         signature::desc_t operator () (literal::type_name_t & t) const
         {
           const type::type_map_type::const_iterator mapped (map_in.find (t));

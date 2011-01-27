@@ -29,6 +29,9 @@
 #include <boost/filesystem.hpp>
 
 #include <fhg/util/maybe.hpp>
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
 
 namespace xml
 {
@@ -273,6 +276,32 @@ namespace xml
       };
 
       typedef std::vector<place_type> place_vec_type;
+
+      // ******************************************************************* //
+
+      namespace dump
+      {
+        inline void dump (xml_util::xmlstream & s, const place_type & p)
+        {
+          s.open ("place");
+          s.attr ("name", p.name);
+          s.attr ("type", p.type);
+          s.attr ("capacity", p.capacity);
+          s.attr ("virtual", p.is_virtual);
+
+          for ( std::vector<token_type>::const_iterator tok (p.tokens.begin())
+              ; tok != p.tokens.end()
+              ; ++tok
+              )
+            {
+              boost::apply_visitor ( signature::visitor::dump_token ("", s)
+                                   , *tok
+                                   );
+            }
+
+          s.close();
+        }
+      } // namespace dump
 
       // ******************************************************************* //
 

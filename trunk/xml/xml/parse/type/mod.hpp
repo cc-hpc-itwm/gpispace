@@ -16,6 +16,10 @@
 
 #include <vector>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace xml
 {
   namespace parse
@@ -173,6 +177,78 @@ namespace xml
             }
         }
       };
+
+      namespace dump
+      {
+        inline std::string dump_fun (const mod_type & m)
+        {
+          std::ostringstream s;
+
+          if (m.port_return.isJust())
+            {
+              s << *m.port_return << " ";
+            }
+
+          s << m.function;
+
+          s << " (";
+
+          bool first (true);
+
+          for ( port_arg_vec_type::const_iterator arg (m.port_arg.begin())
+              ; arg != m.port_arg.end()
+              ; ++arg, first = false
+              )
+            {
+              if (!first)
+                {
+                  s << ", ";
+                }
+
+              s << *arg;
+            }
+
+          s << ")";
+
+          return s.str();
+        }
+
+        inline void dump (xml_util::xmlstream & s, const mod_type & m)
+        {
+          s.open ("module");
+          s.attr ("name", m.name);
+          s.attr ("function", dump_fun (m));
+
+          for ( cinclude_list_type::const_iterator inc (m.cincludes.begin())
+              ; inc != m.cincludes.end()
+              ; ++inc
+              )
+            {
+              s.open ("cinclude");
+              s.attr ("href", *inc);
+              s.close ();
+            }
+
+          for ( link_list_type::const_iterator link (m.links.begin())
+              ; link != m.links.end()
+              ; ++link
+              )
+            {
+              s.open ("link");
+              s.attr ("href", *link);
+              s.close ();
+            }
+
+          if (m.code.isJust())
+            {
+              s.open ("code");
+              s.content ("<![CDATA[" + *m.code + "]]>");
+              s.close ();
+            }
+
+          s.close ();
+        }
+      }
 
       std::ostream & operator << (std::ostream & s, const mod_type & m)
       {

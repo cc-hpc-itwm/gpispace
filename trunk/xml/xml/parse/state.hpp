@@ -79,6 +79,7 @@ namespace xml
         bool _Woverwrite_file;
 
         std::string _internal_structures_file;
+        std::string _dump_xml_file;
         bool _no_inline;
         bool _synthesize_virtual_places;
 
@@ -110,6 +111,7 @@ namespace xml
         std::string _OWoverwrite_file;
 
         std::string _Ointernal_structures_file;
+        std::string _Odump_xml_file;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
 
@@ -198,6 +200,7 @@ namespace xml
           , _Woverwrite_file (true)
 
           , _internal_structures_file ("")
+          , _dump_xml_file ("")
           , _no_inline (false)
           , _synthesize_virtual_places (false)
 
@@ -228,6 +231,7 @@ namespace xml
           , _OWoverwrite_file ("Woverwrite-file")
 
           , _Ointernal_structures_file ("internal-structures-file,r")
+          , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
 
@@ -328,6 +332,10 @@ namespace xml
             {
               _internal_structures_file = value; return true;
             }
+          else if (path.size() == 2 && path[1] == _Odump_xml_file)
+            {
+              _dump_xml_file = value; return true;
+            }
 
 #define GET_PROP(x)                                               \
           else if (path.size() == 2 && path[1] == _O ## x)        \
@@ -397,6 +405,11 @@ namespace xml
         const std::string & internal_structures_file (void) const
         {
           return _internal_structures_file;
+        }
+
+        const std::string & dump_xml_file (void) const
+        {
+          return _dump_xml_file;
         }
 
         // ***************************************************************** //
@@ -555,6 +568,10 @@ namespace xml
             ( _Ointernal_structures_file.c_str()
             , STRINGVAL(internal_structures_file)
             , "file to dump internal structures, empty for no dump"
+            )
+            ( _Odump_xml_file.c_str()
+            , STRINGVAL(dump_xml_file)
+            , "file to dump the folded and pretty xml, empty for no dump"
             )
             ( _Oignore_properties.c_str()
             , BOOLVAL(ignore_properties)

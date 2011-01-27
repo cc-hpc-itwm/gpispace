@@ -15,6 +15,9 @@
 #include <we/type/property.hpp>
 
 #include <fhg/util/maybe.hpp>
+#include <fhg/util/xml.hpp>
+
+namespace xmlutil = ::fhg::util::xml;
 
 namespace xml
 {
@@ -124,6 +127,23 @@ namespace xml
             }
         }
       };
+
+      // ******************************************************************* //
+
+      namespace dump
+      {
+        inline void dump ( xml_util::xmlstream & s
+                         , const port_type & p
+                         , const std::string & direction
+                         )
+        {
+          s.open (direction);
+          s.attr ("name", p.name);
+          s.attr ("type", p.type);
+          s.attr ("place", p.place);
+          s.close();
+        }
+      } // namespace dump
 
       // ******************************************************************* //
 

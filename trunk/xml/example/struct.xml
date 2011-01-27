@@ -17,7 +17,7 @@
 </place>
 -->
 <place name="place_long" type="long">
-<token><value>42</value></token>
+<token><value>42 * 23</value></token>
 </place>
 <place name="place_double" type="double">
 <token><value>47.11e-23</value></token>
@@ -83,7 +83,6 @@
   <field name="color"><value>0xeeeeee</value></field>
   <field name="point">
     <field name="z"><value>23.4</value></field>
-    <field name="y"/>
     <field name="jitter"/>
   </field>
 </token>

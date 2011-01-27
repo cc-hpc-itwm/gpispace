@@ -10,6 +10,10 @@
 
 #include <boost/variant.hpp>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace xml
 {
   namespace parse
@@ -33,6 +37,21 @@ namespace xml
           return fhg::util::join (expressions.begin(), expressions.end(), "; ");
         }
       };
+
+      namespace dump
+      {
+        inline void dump (xml_util::xmlstream & s, const expression_type & e)
+        {
+          s.open ("expression");
+
+          if (e.expression().size() > 0)
+            {
+              s.content (e.expression());
+            }
+
+          s.close ();
+        }
+      }
 
       std::ostream & operator << (std::ostream & s, const expression_type & e)
       {

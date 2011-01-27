@@ -7,6 +7,10 @@
 
 #include <iostream>
 
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
+
 namespace xml
 {
   namespace parse
@@ -22,11 +26,21 @@ namespace xml
 
         use_type ( const std::string & _name
                  , const int & _level
-                 ) 
-          : name (_name) 
+                 )
+          : name (_name)
           , level (_level)
         {}
       };
+
+      namespace dump
+      {
+        void inline dump (xml_util::xmlstream & s, const use_type & u)
+        {
+          s.open ("use");
+          s.attr ("name", u.name);
+          s.close ();
+        }
+      }
 
       std::ostream & operator << (std::ostream & s, const use_type & u)
       {
