@@ -5,51 +5,56 @@ namespace gpi
 {
   namespace error
   {
-    struct succes
+    namespace errc
     {
-      static const int value = 0;
-    };
+      enum errc_t
+        {
+          success = 0,
+          unknown,
+          timeout
+        };
+    }
 
-    struct general
-    {
-      static const int value = 1;
-    };
-
-    struct timeout
-    {
-      static const int value = 42;
-    };
-
-    struct code_t
+    class code_t
     {
     public:
-      template <typename T>
-      code_t ()
-        : code (T::value)
+      explicit code_t (int val)
+        : m_val (val)
       {}
 
-      const int code;
+      virtual ~code_t () {}
+      virtual const char * name() const = 0;
+      int value () const { return m_val; }
+    private:
+      int m_val;
     };
 
-    namespace detail
+    struct success : public code_t
     {
-      template <>
-      std::string message<0> ()
-      {
-        return "success";
-      }
+      success ()
+        : code_t (errc::success)
+      {}
 
-      template <int I>
-      std::string message ()
-      {
-        return "unknown";
-      }
-    }
+      const char * name () const { return "success"; }
+    };
 
-    std::string message (code_t const & ec)
+    struct unknown : public code_t
     {
-      return detail::message<ec.code> ();
-    }
+      unknown ()
+        : code_t (errc::unknown)
+      {}
+
+      const char * name () const { return "success"; }
+    };
+
+    struct timeout : public code_t
+    {
+      timeout ()
+        : code_t (errc::timeout)
+      {}
+
+      const char * name () const { return "timeout"; }
+    };
   }
 }
 
