@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE PeerTest
+#define BOOST_TEST_MODULE GpiSpaceConfigTest
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/minimal.hpp>
