@@ -2,6 +2,7 @@
 
 set (hdrs
   gpi-space.hpp
+  types.hpp
   )
 
 set (srcs
