@@ -27,6 +27,7 @@ namespace gpi
 
     handler_t::handler_t ()
       : m_next_connection_id (0)
+      , m_signals_in_progress (0)
       , m_stopping (false)
       , m_started (false)
     {}
@@ -60,6 +61,8 @@ namespace gpi
                                             )
                                )
             );
+
+          m_signals_in_progress = 0;
           m_started = true;
         }
       }
@@ -79,12 +82,6 @@ namespace gpi
 
         this->raise (0);
 
-        DLOG(TRACE, "interrupting handler");
-        //        m_handler_thread->interrupt ();
-
-        DLOG(TRACE, "joining handler");
-        //        m_handler_thread->join ();
-
         m_started = false;
 
         DLOG(TRACE, "stopped.");
@@ -96,7 +93,7 @@ namespace gpi
     void handler_t::wait ()
     {
       boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
-      while (! m_signal_queue.empty())
+      while (m_started && (!m_signal_queue.empty() || m_signals_in_progress))
       {
         m_signal_delivered.wait (lock);
       }
@@ -122,7 +119,7 @@ namespace gpi
 
     void handler_t::disconnect (const connection_t & con)
     {
-      boost::unique_lock<boost::mutex> lock (m_signal_map_mutex);
+      boost::unique_lock<boost::recursive_mutex> lock (m_signal_map_mutex);
 
       function_list_t & fun_list (m_signal_map[con.m_sig]);
       for ( function_list_t::iterator fun(fun_list.begin())
@@ -130,9 +127,9 @@ namespace gpi
           ; ++fun
           )
       {
-        if (fun->first == con.m_id)
+        if (fun->id == con.m_id)
         {
-          fun = fun_list.erase (fun);
+          fun->dispose = true;
           break;
         }
       }
@@ -143,11 +140,11 @@ namespace gpi
                                                     , signal_handler_function_t f
                                                     )
     {
-      boost::unique_lock<boost::mutex> lock (m_signal_map_mutex);
+      boost::unique_lock<boost::recursive_mutex> lock (m_signal_map_mutex);
       connection_id_t next_id (++m_next_connection_id);
 
       m_signal_map[ sig ].push_back
-        (std::make_pair(next_id, f));
+        (registered_function_t (next_id, f));
 
       DLOG(TRACE, "signal handler registered for signal " << sig);
 
@@ -159,9 +156,22 @@ namespace gpi
       char buf[1024];
       sigset_t restrict;
 
-      sigfillset (&restrict);
+      //      sigfillset (&restrict);
+      sigemptyset (&restrict);
       sigdelset (&restrict, SIGTSTP);
       sigdelset (&restrict, SIGCONT);
+
+      sigaddset (&restrict, SIGTSTP);
+      sigaddset (&restrict, SIGCONT);
+      sigaddset (&restrict, SIGINT);
+      sigaddset (&restrict, SIGTERM);
+      sigaddset (&restrict, SIGSEGV);
+      sigaddset (&restrict, SIGFPE);
+      sigaddset (&restrict, SIGBUS);
+      sigaddset (&restrict, SIGUSR1);
+      sigaddset (&restrict, SIGUSR2);
+      sigaddset (&restrict, SIGHUP);
+
       pthread_sigmask (SIG_BLOCK, &restrict, 0);
       pthread_sigmask (SIG_UNBLOCK, 0, &restrict);
 
@@ -215,7 +225,12 @@ namespace gpi
 
         try
         {
-          deliver_signal (sig);
+          std::size_t count (0);
+
+          LOG(TRACE, "delivering signal " << sig);
+          count = deliver_signal (sig);
+          LOG(TRACE, "delivered signal " << count << " times");
+
           signal_delivered (sig);
         }
         catch (std::exception const & ex)
@@ -236,28 +251,42 @@ namespace gpi
       }
       signal_t s (m_signal_queue.front());
       m_signal_queue.pop_front ();
+      ++m_signals_in_progress;
       return s;
     }
 
     void handler_t::signal_delivered (const signal_t &)
     {
       boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      --m_signals_in_progress;
       m_signal_delivered.notify_all ();
     }
 
-    void handler_t::deliver_signal (const signal_t & s)
+    std::size_t handler_t::deliver_signal (const signal_t & s)
     {
-      boost::unique_lock<boost::mutex> lock (m_signal_map_mutex);
-      LOG(INFO, "delivering signal: " << s);
+      boost::unique_lock<boost::recursive_mutex> lock (m_signal_map_mutex);
+
+      std::size_t count (0);
 
       function_list_t & fun_list (m_signal_map[s]);
-      for ( function_list_t::const_iterator fun(fun_list.begin())
+      for ( function_list_t::iterator fun(fun_list.begin())
           ; fun != fun_list.end()
-          ; ++fun
+          ; // manual increment
           )
       {
-        fun->second (s);
+        if (! fun->dispose)
+        {
+          fun->fun (s);
+          ++fun;
+          ++count;
+        }
+        else
+        {
+          fun = fun_list.erase (fun);
+        }
       }
+
+      return count;
     }
   }
 }

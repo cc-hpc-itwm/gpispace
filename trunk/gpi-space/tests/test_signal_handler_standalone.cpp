@@ -5,11 +5,11 @@
 
 #include <gpi-space/signal_handler.hpp>
 
-static bool got_signal (false);
+gpi::signal::handler_t::connection_t con;
 
-static int handle_signal (int)
+static int handle_int (int)
 {
-  got_signal = true;
+  con.disconnect ();
   return 0;
 }
 
@@ -29,8 +29,11 @@ int main ()
 
   gpi::signal::handler().start ();
 
-  gpi::signal::handler().connect (2, handle_term);
-  gpi::signal::handler().connect (15, handle_term);
+  con = gpi::signal::handler().connect (SIGINT, handle_int);
+  gpi::signal::handler().connect (SIGALRM, handle_term);
+  gpi::signal::handler().connect (SIGTERM, handle_term);
+
+  alarm (10);
 
   gpi::signal::handler().join ();
 

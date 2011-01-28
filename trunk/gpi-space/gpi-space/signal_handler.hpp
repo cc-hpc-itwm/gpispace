@@ -19,7 +19,35 @@ namespace gpi
       typedef int signal_t;
       typedef uint64_t connection_id_t;
       typedef boost::function<int (signal_t)> signal_handler_function_t;
-      typedef std::pair <connection_id_t, signal_handler_function_t> registered_function_t;
+
+    private:
+      struct registered_function_t
+      {
+        registered_function_t ( const connection_id_t an_id
+                              , signal_handler_function_t a_fun
+                              , bool one_shot = false
+                              )
+          : id (an_id)
+          , fun (a_fun)
+          , dispose (false)
+          , is_one_shot (one_shot)
+        {}
+
+        int operator () (int s)
+        {
+          if (is_one_shot)
+          {
+            dispose = true;
+          }
+          return fun(s);
+        }
+
+        connection_id_t id;
+        signal_handler_function_t fun;
+        bool dispose;
+        bool is_one_shot;
+      };
+    public:
       typedef std::vector<registered_function_t> function_list_t;
       typedef boost::unordered_map <signal_t, function_list_t> signal_map_t;
       typedef std::deque<signal_t> signal_queue_t;
@@ -49,6 +77,23 @@ namespace gpi
         handler_t * m_hdl;
       };
 
+      struct scoped_connection_t : public connection_t
+      {
+        explicit
+        scoped_connection_t (const connection_t & c)
+          : connection_t (c)
+        {}
+
+        ~scoped_connection_t ()
+        {
+          disconnect ();
+        }
+
+      private:
+        scoped_connection_t ();
+        scoped_connection_t (const scoped_connection_t &);
+      };
+
       static handler_t & get ();
 
       void start();
@@ -58,7 +103,7 @@ namespace gpi
       void raise (const signal_t);
 
       template <typename Fun>
-      connection_t connect(const signal_t s, Fun & f)
+      connection_t connect(const signal_t s, Fun f)
       {
         return connect_impl(s, f);
       }
@@ -76,12 +121,13 @@ namespace gpi
       void worker_thread_main ();
 
       signal_t next_signal ();
-      void deliver_signal (const signal_t & s);
+      std::size_t deliver_signal (const signal_t & s);
       void signal_delivered (const signal_t & s);
 
       connection_id_t m_next_connection_id;
+      std::size_t m_signals_in_progress;
       boost::mutex m_signal_queue_mutex;
-      boost::mutex m_signal_map_mutex;
+      boost::recursive_mutex m_signal_map_mutex;
       boost::mutex m_mutex;
       boost::condition_variable_any m_signal_arrived;
       boost::condition_variable_any m_signal_delivered;
