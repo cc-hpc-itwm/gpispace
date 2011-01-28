@@ -2,6 +2,7 @@
 #include <fhglog/minimal.hpp>
 
 #include <limits>
+#include <csignal>
 
 #include "gpi.hpp"
 
@@ -69,6 +70,11 @@ namespace gpi
       void gpi_api_t::start (const gpi::timeout_t timeout)
       {
         // 1. register alarm signal handler
+        signal_handler::timeout_handler_t<gpi_api_t, &handle_alarm> handler;
+        sighandler_t old (signal (SIGALRM, handler));
+        alarm (timeout);
+        signal (SIGALRM, old);
+
         // 2. start alarm
         // 3. start gpi
         // 4a. if alarm before start_gpi returns
@@ -145,7 +151,7 @@ namespace gpi
       void gpi_api_t::wait_passive ( void );
 
       // ***** private functions
-      void handle_alarm (int)
+      void gpi_api_t::handle_alarm (int)
       {
         m_startup_done = false;
         throw exception::startup_failed ("timeout");
