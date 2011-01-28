@@ -1,0 +1,277 @@
+#include "signal_handler.hpp"
+
+#include <signal.h> // sigwait...
+#include <string.h> // strerror_r
+#include <errno.h>  // errno
+#include <pthread.h> // pthread_sigmask
+
+#include <fhglog/minimal.hpp>
+
+namespace gpi
+{
+  namespace signal
+  {
+    namespace {
+      std::string show (const siginfo_t & info)
+      {
+        std::ostringstream sstr;
+        sstr << "information about signal " << info.si_signo << std::endl;
+        sstr << "   signal = " << info.si_signo << std::endl;
+        sstr << "   errno  = " << info.si_errno << std::endl;
+        sstr << "   code   = " << info.si_code  << std::endl;
+        sstr << "   pid    = " << info.si_pid   << std::endl;
+        sstr << "   uid    = " << info.si_uid   << std::endl;
+        return sstr.str();
+      }
+    }
+
+    handler_t::handler_t ()
+      : m_next_connection_id (0)
+      , m_stopping (false)
+      , m_started (false)
+    {}
+
+    // API
+    handler_t & handler_t::get ()
+    {
+      static handler_t handler;
+      return handler;
+    }
+
+    void handler_t::start ()
+    {
+      {
+        boost::unique_lock<boost::mutex> lock;
+        if (! m_started)
+        {
+          m_stopping = false;
+
+          DLOG(TRACE, "starting...");
+
+          m_handler_thread = thread_ptr_t
+            (new boost::thread (boost::bind ( &handler_t::handler_thread_main
+                                            , this
+                                            )
+                               )
+            );
+          m_worker_thread = thread_ptr_t
+            (new boost::thread (boost::bind ( &handler_t::worker_thread_main
+                                            , this
+                                            )
+                               )
+            );
+          m_started = true;
+        }
+      }
+
+      return;
+    }
+
+    void handler_t::stop ()
+    {
+      boost::unique_lock<boost::mutex> lock (m_mutex);
+
+      if (m_started)
+      {
+        m_stopping = true;
+
+        DLOG(TRACE, "stopping...");
+
+        std::cerr << "my id      = " << boost::this_thread::get_id() << std::endl;
+        std::cerr << "worker id  = " << m_worker_thread->get_id()  << std::endl;
+        std::cerr << "handler id = " << m_handler_thread->get_id() << std::endl;
+
+        if (m_worker_thread->get_id() != boost::this_thread::get_id())
+        {
+          DLOG(TRACE, "interrupting worker");
+
+          m_worker_thread->interrupt ();
+
+          DLOG(TRACE, "joining worker");
+
+          m_worker_thread->join ();
+        }
+        if (m_handler_thread->get_id() != boost::this_thread::get_id())
+        {
+          DLOG(TRACE, "interrupting handler");
+          m_handler_thread->interrupt ();
+
+          DLOG(TRACE, "joining handler");
+          m_handler_thread->join ();
+        }
+
+        m_started = false;
+
+        DLOG(TRACE, "stopped.");
+      }
+
+      m_stopped.notify_all ();
+    }
+
+    void handler_t::wait ()
+    {
+      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      while (! m_signal_queue.empty())
+      {
+        m_signal_delivered.wait (lock);
+      }
+    }
+
+    void handler_t::join ()
+    {
+      boost::unique_lock<boost::mutex> lock (m_mutex);
+      while (m_started)
+      {
+        m_stopped.wait (lock);
+      }
+    }
+
+    void handler_t::raise (const signal_t sig)
+    {
+      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      m_signal_queue.push_back (sig);
+      m_signal_arrived.notify_one ();
+    }
+
+    void handler_t::disconnect (const connection_t & con)
+    {
+      boost::unique_lock<boost::mutex> lock (m_signal_map_mutex);
+
+      function_list_t & fun_list (m_signal_map[con.m_sig]);
+      for ( function_list_t::iterator fun(fun_list.begin())
+          ; fun != fun_list.end()
+          ; ++fun
+          )
+      {
+        if (fun->first == con.m_id)
+        {
+          fun = fun_list.erase (fun);
+          break;
+        }
+      }
+    }
+
+    // private implementation
+    handler_t::connection_t handler_t::connect_impl ( const signal_t sig
+                                                    , signal_handler_function_t f
+                                                    )
+    {
+      boost::unique_lock<boost::mutex> lock (m_signal_map_mutex);
+      connection_id_t next_id (++m_next_connection_id);
+
+      m_signal_map[ sig ].push_back
+        (std::make_pair(next_id, f));
+
+      DLOG(TRACE, "signal handler registered for signal " << sig);
+
+      return connection_t (sig, next_id, *this);
+    }
+
+    void handler_t::handler_thread_main ()
+    {
+      char buf[1024];
+      sigset_t restrict;
+      //sigemptyset (&restrict);
+      sigfillset (&restrict);
+      pthread_sigmask (SIG_BLOCK, &restrict, 0);
+      pthread_sigmask (SIG_UNBLOCK, 0, &restrict);
+
+      std::cerr << "handler thread's signal mask: " << std::endl;
+      std::cerr << "   SIGNAL   BLOCKED" << std::endl;
+      for (int i (1); i < (SIGRTMAX+1) ; ++i)
+      {
+        std::cerr << "   " << i << " " << (!sigismember(&restrict, i)) << std::endl;
+      }
+
+      while (!m_stopping)
+      {
+        boost::this_thread::interruption_point ();
+
+        siginfo_t sig_info;
+
+        struct timespec timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_nsec = 500 * 1000 * 1000;
+
+        DLOG(TRACE, "handler waiting for signals");
+
+        int ec = sigtimedwait (&restrict, &sig_info, &timeout);
+        //        int ec = sigwaitinfo (&restrict,&sig_info);
+
+        if (ec >= 0)
+        {
+          DLOG(TRACE, "got signal: " << show (sig_info));
+          this->raise (sig_info.si_signo);
+        }
+        else if (errno != EAGAIN)
+        {
+          LOG( ERROR
+             , "sigwait() returned an error [" << ec << "]: " << strerror_r ( errno
+                                                                            , buf
+                                                                            , sizeof(buf)
+                                                                            )
+             );
+        }
+      }
+
+      DLOG(TRACE, "main handler terminating");
+    }
+
+    void handler_t::worker_thread_main ()
+    {
+      while (!m_stopping)
+      {
+        boost::this_thread::interruption_point ();
+
+        DLOG(TRACE, "worker waiting for signals");
+
+        signal_t sig (next_signal());
+
+        try
+        {
+          deliver_signal (sig);
+          signal_delivered (sig);
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(WARN, "error during signal handling: " << ex.what());
+        }
+      }
+
+      DLOG(TRACE, "worker terminating");
+    }
+
+    handler_t::signal_t handler_t::next_signal ()
+    {
+      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      while (m_signal_queue.empty())
+      {
+        m_signal_arrived.wait (lock);
+      }
+      signal_t s (m_signal_queue.front());
+      m_signal_queue.pop_front ();
+      return s;
+    }
+
+    void handler_t::signal_delivered (const signal_t &)
+    {
+      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      m_signal_delivered.notify_all ();
+    }
+
+    void handler_t::deliver_signal (const signal_t & s)
+    {
+      boost::unique_lock<boost::mutex> lock (m_signal_map_mutex);
+      LOG(INFO, "delivering signal: " << s);
+
+      function_list_t & fun_list (m_signal_map[s]);
+      for ( function_list_t::const_iterator fun(fun_list.begin())
+          ; fun != fun_list.end()
+          ; ++fun
+          )
+      {
+        fun->second (s);
+      }
+    }
+  }
+}

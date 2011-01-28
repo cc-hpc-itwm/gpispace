@@ -4,10 +4,13 @@ set (hdrs
   gpi-space.hpp
   types.hpp
   error.hpp
+
+  signal_handler.hpp
   )
 
 set (srcs
   gpi-space.cpp
+  signal_handler.cpp
   )
 
 if (NO_IMPLICIT_TEMPLATES)
