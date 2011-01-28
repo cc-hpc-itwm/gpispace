@@ -44,7 +44,7 @@ namespace fhg { namespace log {
       static Logger::ptr_t get();
       static Logger::ptr_t get(const std::string &name, const std::string &base = "default");
 
-      ~Logger() {}
+      ~Logger();
 
       const std::string &name() const;
       const std::string &parent() const;
