@@ -1,15 +1,15 @@
-#define LOG_COMPONENT gpi
-#include <fhglog/minimal.hpp>
+#include "gpi.hpp"
 
-#include <limits>
 #include <csignal> // sigwait
 #include <cstring> // strerror
+#include <limits>
+
+#include <GPI/GPI.h>
+
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
-#include "gpi.hpp"
-
-#include <GPI/GPI.h>
+#include <fhglog/minimal.hpp>
 
 namespace gpi
 {
