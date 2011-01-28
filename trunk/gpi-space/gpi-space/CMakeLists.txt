@@ -15,6 +15,7 @@ if (NO_IMPLICIT_TEMPLATES)
 endif (NO_IMPLICIT_TEMPLATES)
 
 add_subdirectory(config)
+add_subdirectory(server)
 
 ADD_LIBRARY(gpi-space-static ${hdrs} ${srcs})
 #ADD_LIBRARY(gpi-space-shared SHARED ${hdrs} ${srcs})

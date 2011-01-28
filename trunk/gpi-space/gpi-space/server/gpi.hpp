@@ -5,6 +5,7 @@
 #include <gpi-space/error.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 
 namespace gpi
 {
@@ -16,29 +17,29 @@ namespace gpi
       {
         explicit
         gpi_error (gpi::error::code_t const & ec)
-          : std::runtime_error (gpi::error::message (ec))
-          , error_code (ec)
-          , user_message (gpi::error::message (ec))
-          , message ("gpi::error[" + boost::lexical_cast<std::string>(ec) + "]: " + gpi::error::message (ec))
+          : std::runtime_error (ec.name())
+          , value (ec.value())
+          , user_message ()
+          , message ("gpi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name())
         {}
 
         explicit
-        gpi_error (gpi::error::code_t const & ec, gpi::error::message_t const & m)
-          : std::runtime_error (gpi::error::message (ec))
-          , error_code (ec)
+        gpi_error (gpi::error::code_t const & ec, std::string const & m)
+          : std::runtime_error (ec.name ())
+          , value (ec.value())
           , user_message (m)
-          , message ("gpi::error[" + boost::lexical_cast<std::string>(ec) + "]: " + gpi::error::message (ec) + ": " + user_message)
+          , message ("gpi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name() + ": " + user_message)
         {}
 
-        ~gpi_error () throw () {}
+        virtual ~gpi_error () throw () {}
 
         virtual const char * what () const throw ()
         {
           return message.c_str();
         }
 
-        const gpi::error::code_t error_code;
-        const gpi::error::message_t user_message;
+        int value;
+        const std::string user_message;
         const std::string message;
       };
     }
@@ -119,14 +120,16 @@ namespace gpi
         void wait_passive ( void );
 
       private:
-        void handle_alarm (int);
+        void handle_signal (int);
+        void signal_handler (void); // thread entry
 
         int   m_ac;
-        char *m_av[];
+        char **m_av;
         bool  m_startup_done;
         mutable rank_t m_rank;
         mutable size_t m_num_nodes;
         mutable size_t m_mem_size;
+        boost::shared_ptr<boost::thread> m_signal_handler;
       };
     }
   }
