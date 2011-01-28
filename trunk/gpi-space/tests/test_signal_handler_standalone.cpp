@@ -34,7 +34,5 @@ int main ()
 
   gpi::signal::handler().join ();
 
-  LOG_FLUSH ();
-
   return 0;
 }
