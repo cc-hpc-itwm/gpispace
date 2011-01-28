@@ -2,45 +2,133 @@
 #define GPI_SPACE_SERVER_HPP 1
 
 #include <gpi-space/types.hpp>
+#include <gpi-space/error.hpp>
+
+#include <boost/lexical_cast.hpp>
 
 namespace gpi
 {
   namespace server
   {
-    class api_t
+    namespace exception
     {
-    public:
-      void init (int ac, char *av[]);
+      struct gpi_error : public std::runtime_error
+      {
+        explicit
+        gpi_error (gpi::error::code_t const & ec)
+          : std::runtime_error (gpi::error::message (ec))
+          , error_code (ec)
+          , user_message (gpi::error::message (ec))
+          , message ("gpi::error[" + boost::lexical_cast<std::string>(ec) + "]: " + gpi::error::message (ec))
+        {}
 
-      void set_memory_size (const gpi::size_t);
+        explicit
+        gpi_error (gpi::error::code_t const & ec, gpi::error::message_t const & m)
+          : std::runtime_error (gpi::error::message (ec))
+          , error_code (ec)
+          , user_message (m)
+          , message ("gpi::error[" + boost::lexical_cast<std::string>(ec) + "]: " + gpi::error::message (ec) + ": " + user_message)
+        {}
 
-      // wrapped C function calls
-      void start (const gpi::timeout_t timeout);
-      void stop ();
-      void kill ();
+        ~gpi_error () throw () {}
 
-      gpi::size_t number_of_counters () const;
-      gpi::size_t number_of_queues () const;
-      gpi::size_t queue_depth () const;
-      gpi::version_t version () const;
-      gpi::port_t port () const;
-      gpi::size_t number_of_nodes () const;
-      std::string hostname (const gpi::rank_t) const;
-      gpi::rank_t rank () const;
-      void * dma_ptr ();
+        virtual const char * what () const throw ()
+        {
+          return message.c_str();
+        }
 
-      void set_network_type (const gpi::network_type_t);
-      void set_port (const gpi::port_t);
-      void set_mtu (const gpi::size_t);
-      void set_number_of_processes (const gpi::size_t);
+        const gpi::error::code_t error_code;
+        const gpi::error::message_t user_message;
+        const std::string message;
+      };
+    }
 
-      bool ping (const gpi::rank_t) const;
-      bool ping (std::string const & hostname) const;
-      bool is_master () const;
-      bool is_slave o() const;
+    namespace real
+    {
+      class gpi_api_t
+      {
+      public:
+        gpi_api_t ();
+        ~gpi_api_t();
 
-      void barrier () const;
-    };
+        void init (int ac, char *av[]);
+
+        void set_memory_size (const gpi::size_t);
+
+        // wrapped C function calls
+        void start (const gpi::timeout_t timeout);
+        void stop ();
+        void kill ();
+
+        gpi::size_t number_of_counters () const;
+        gpi::size_t number_of_queues () const;
+        gpi::size_t queue_depth () const;
+        gpi::version_t version () const;
+        gpi::port_t port () const;
+        gpi::size_t number_of_nodes () const;
+        std::string hostname (const gpi::rank_t) const;
+        gpi::rank_t rank () const;
+        void * dma_ptr (void);
+
+        void set_network_type (const gpi::network_type_t);
+        void set_port (const gpi::port_t);
+        void set_mtu (const gpi::size_t);
+        void set_number_of_processes (const gpi::size_t);
+
+        bool ping (const gpi::rank_t) const;
+        bool ping (std::string const & hostname) const;
+        bool is_master (void) const;
+        bool is_slave (void) const;
+
+        void barrier (void) const;
+
+        void read_dma ( const offset_t local_offset
+                      , const offset_t remote_offset
+                      , const size_t amount
+                      , const rank_t from_node
+                      , const queue_desc_t queue
+                      );
+        void write_dma ( const offset_t local_offset
+                       , const offset_t remote_offset
+                       , const size_t amount
+                       , const rank_t to_node
+                       , const queue_desc_t queue
+                       );
+
+        void send_dma ( const offset_t local_offset
+                      , const size_t amount
+                      , const rank_t to_node
+                      , const queue_desc_t queue
+                      );
+        void recv_dma ( const offset_t local_offset
+                      , const size_t size
+                      , const rank_t from_node
+                      , const queue_desc_t queue
+                      );
+
+        size_t wait_dma (const queue_desc_t queue);
+
+        void send_passive ( const offset_t local_offset
+                          , const size_t size
+                          , const rank_t to_rank
+                          );
+        void recv_passive ( const offset_t local_offset
+                          , const size_t size
+                          , rank_t & from_rank
+                          );
+        void wait_passive ( void );
+
+      private:
+        void handle_alarm (int);
+
+        int   m_ac;
+        char *m_av[];
+        bool  m_startup_done;
+        mutable rank_t m_rank;
+        mutable size_t m_num_nodes;
+        mutable size_t m_mem_size;
+      };
+    }
   }
 }
 
