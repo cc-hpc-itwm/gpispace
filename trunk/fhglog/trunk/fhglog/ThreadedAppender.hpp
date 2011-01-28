@@ -103,6 +103,7 @@ namespace fhg { namespace log {
 	  {
 		flushed_.wait(lock);
 	  }
+          DecoratingAppender::flush ();
 	}
   private:
 	void log_thread_loop()
@@ -142,7 +143,7 @@ namespace fhg { namespace log {
 		}
 	  }
 	}
-	
+
 	private:
 	  boost::thread log_thread_;
 	  mutex_type mtx_;
