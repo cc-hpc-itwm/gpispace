@@ -184,7 +184,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
 	id_type wf_id = jobId.str();
 
-	if(!ptr_comm_handler_)
+	if( !ptr_comm_handler_ )
 	{
 		SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
 		stop();
@@ -205,7 +205,6 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 			SDPA_LOG_ERROR("Empty Workflow!!!!");
 			// declare job as failed
 		}
-
 
 		ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
 	}
@@ -289,7 +288,6 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 	// if the worker is marked for deletion don't schedule any job on it
 	// should have a monitoring thread that detects the timedout nodes
 	// add a boolean variable to the worker bTimedout or not
-
 	try
 	{
 		const Worker::worker_id_t worker_id = ptr_worker_man_->worker(rank);

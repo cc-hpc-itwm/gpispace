@@ -216,11 +216,11 @@ target_link_libraries(test_JobSubmToWeFails  seda sdpa-daemon
 									 ${Boost_LIBRARIES})
 add_test( test_JobSubmToWeFails test_JobSubmToWeFails )
 
-#test_TimedoutWorkers
-set( test_TimedoutWorkers_srcs test_TimedoutWorkers.cpp )
+#test_ConcurrentClients
+set( test_ConcurrentClients_srcs test_ConcurrentClients.cpp )
 
-add_executable(test_TimedoutWorkers ${test_TimedoutWorkers_srcs})
-target_link_libraries(test_TimedoutWorkers  seda sdpa-daemon
+add_executable(test_ConcurrentClients ${test_ConcurrentClients_srcs})
+target_link_libraries(test_ConcurrentClients  seda sdpa-daemon
 									 sdpa-client
 									 sdpa-events
 									 sdpa-util
@@ -228,4 +228,4 @@ target_link_libraries(test_TimedoutWorkers  seda sdpa-daemon
 									 dl
 									 #uuid
 									 ${Boost_LIBRARIES})
-add_test( test_TimedoutWorkers test_TimedoutWorkers )
+add_test( test_ConcurrentClients test_ConcurrentClients )

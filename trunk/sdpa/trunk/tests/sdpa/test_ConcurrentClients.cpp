@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestStopRestartAgents
+#define BOOST_TEST_MODULE TestTimedoutWorkers
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
@@ -59,7 +59,8 @@ using namespace seda;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
-const int NMAXTRIALS = 3;
+const int NMAXTRIALS = 10000;
+const int NMAXTHRDS = 10;
 
 namespace po = boost::program_options;
 
@@ -169,7 +170,7 @@ struct MyFixture
 		delete m_pool;
 	}
 
-	void run_client();
+	void run_client(int i);
 
 	string read_workflow(string strFileName)
 	{
@@ -205,7 +206,7 @@ struct MyFixture
 	pid_t pidPcd_;
 };
 
-void MyFixture::run_client()
+void MyFixture::run_client(int i)
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
@@ -213,7 +214,14 @@ void MyFixture::run_client()
 	cav.push_back("--orchestrator=orchestrator_0");
 	config.parse_command_line(cav);
 
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	std::ostringstream oss;
+	oss<<"client_"<<i;
+
+	std::string outstage("sdpa.apps.");
+	outstage += oss.str();
+	outstage += (".out");
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, oss.str(), outstage );
 	ptrCli->configure_network( config );
 
 
@@ -224,7 +232,7 @@ void MyFixture::run_client()
 
 		try {
 
-			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
+			//LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
 			job_id_user = ptrCli->submitJob(m_strWorkflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
@@ -318,11 +326,11 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testOrchAggNoNres )
-{
-	LOG( INFO, "***** testOrchAggNoNres *****"<<std::endl);
 
-	/*
+BOOST_AUTO_TEST_CASE( testConcurrentClients )
+{
+	LOG( INFO, "***** testJobSubmToWeFails *****"<<std::endl);
+
 	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
@@ -345,48 +353,45 @@ BOOST_AUTO_TEST_CASE( testOrchAggNoNres )
 	std::vector<std::string> v_module_preload;
 	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
 
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	LOG( INFO, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+											 addrNRE,"aggregator_0",
+											 workerUrl,
+											 strGuiUrl,
+											 bLaunchNrePcd,
+											 TESTS_NRE_PCD_BIN_PATH,
+											 v_fake_PC_search_path,
+											 v_module_preload );
+
+	try {
+		ptrNRE->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		return;
+	}
+
+	boost::thread* arrThreadClient = new boost::thread[NMAXTHRDS];
+
+	for(int i=0;i<NMAXTHRDS;i++)
+		arrThreadClient[i] = boost::thread(boost::bind(&MyFixture::run_client, this, i));
 	sleep(5);
 
-	m_threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
+	for(int i=0;i<NMAXTHRDS;i++)
+	{
+		arrThreadClient[i].join();
+		LOG( INFO, "The client thread "<<i<<" joined the main thread°!" );
+	}
 
 	sleep(1);
 
+	ptrNRE->shutdown();
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
-	*/
 
-	LOG( INFO, "The test case testOrchAggNoNres terminated!" );
+	LOG( INFO, "The test case testJobSubmToWeFails terminated!" );
 }
 
-BOOST_AUTO_TEST_CASE( testOrchNoAgg )
-{
-	LOG( INFO, "***** testOrchNoAgg *****"<<std::endl);
-
-	/*string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-
-	bool bLaunchNrePcd = true;
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	sleep(5);
-
-	m_threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
-
-	ptrOrch->shutdown();*/
-
-	LOG( INFO, "The test case testOrchNoAgg terminated!" );
-}
 
 BOOST_AUTO_TEST_SUITE_END()
