@@ -198,7 +198,7 @@ namespace sdpa { namespace nre { namespace worker {
       } catch (std::exception const & ex)
       {
         LOG(ERROR, "could not handle request: " << ex.what());
-        LOG_FLUSH();
+        FHGLOG_FLUSH();
       }
 
       try
@@ -363,7 +363,7 @@ cont:
      	bool signal_ignored = true;
      	while (signal_ignored)
      	{
-          LOG_FLUSH();
+          FHGLOG_FLUSH();
 
           result = sigwait(&waitset, &sig);
           if (result == 0)
@@ -383,7 +383,7 @@ cont:
             case SIGUSR1:
             case SIGUSR2:
               DLOG(TRACE, "flushing streams");
-              LOG_FLUSH();
+              FHGLOG_FLUSH();
               break;
             default:
               LOG(INFO, "ignoring signal: " << sig);

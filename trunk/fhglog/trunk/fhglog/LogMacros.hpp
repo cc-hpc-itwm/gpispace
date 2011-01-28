@@ -49,7 +49,7 @@ namespace fhg { namespace log {
 #if FHGLOG_DISABLE_LOGGING == 1
 #  define __LOG(logger, level, msg)
 #  define FHGLOG_SETUP(args...)
-#  define LOG_FLUSH()
+#  define FHGLOG_FLUSH()
 #else
 #  define FHGLOG_SETUP(args...)                                         \
     do                                                                  \
@@ -84,7 +84,7 @@ namespace fhg { namespace log {
       }                                                                 \
     } while(0)
 
-#  define LOG_FLUSH()                                                   \
+#  define FHGLOG_FLUSH()                                                   \
     do                                                                  \
     {                                                                   \
       fhg::log::getLogger().flush();                                    \
