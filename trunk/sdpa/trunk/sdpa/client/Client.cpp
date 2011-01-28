@@ -55,7 +55,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , name_(a_name)
   , output_stage_(output_stage)
   , fsm_(*this)
-  , timeout_(5000U)
+  , timeout_(500U)
   , my_location_("127.0.0.1:0")
 { }
 
@@ -414,8 +414,8 @@ void Client::action_configure_network(const config_t &cfg)
 
   sdpa::com::NetworkStrategy::ptr_t net
     (new sdpa::com::NetworkStrategy( client_stage_->name()
-                                   , "sdpac" // TODO encode user, pid, etc
-                                   , fhg::com::host_t ("0.0.0.0")
+                                   , client_stage_->name() //"sdpac" // TODO encode user, pid, etc
+                                   , fhg::com::host_t ("127.0.0.1")
                                    , fhg::com::port_t ("0")
                                    )
     );
