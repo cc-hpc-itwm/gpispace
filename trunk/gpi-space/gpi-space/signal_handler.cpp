@@ -77,28 +77,13 @@ namespace gpi
 
         DLOG(TRACE, "stopping...");
 
-        std::cerr << "my id      = " << boost::this_thread::get_id() << std::endl;
-        std::cerr << "worker id  = " << m_worker_thread->get_id()  << std::endl;
-        std::cerr << "handler id = " << m_handler_thread->get_id() << std::endl;
+        this->raise (0);
 
-        if (m_worker_thread->get_id() != boost::this_thread::get_id())
-        {
-          DLOG(TRACE, "interrupting worker");
+        DLOG(TRACE, "interrupting handler");
+        //        m_handler_thread->interrupt ();
 
-          m_worker_thread->interrupt ();
-
-          DLOG(TRACE, "joining worker");
-
-          m_worker_thread->join ();
-        }
-        if (m_handler_thread->get_id() != boost::this_thread::get_id())
-        {
-          DLOG(TRACE, "interrupting handler");
-          m_handler_thread->interrupt ();
-
-          DLOG(TRACE, "joining handler");
-          m_handler_thread->join ();
-        }
+        DLOG(TRACE, "joining handler");
+        //        m_handler_thread->join ();
 
         m_started = false;
 
@@ -123,6 +108,8 @@ namespace gpi
       while (m_started)
       {
         m_stopped.wait (lock);
+        m_handler_thread->join ();
+        m_worker_thread->join ();
       }
     }
 
@@ -171,17 +158,12 @@ namespace gpi
     {
       char buf[1024];
       sigset_t restrict;
-      //sigemptyset (&restrict);
+
       sigfillset (&restrict);
+      sigdelset (&restrict, SIGTSTP);
+      sigdelset (&restrict, SIGCONT);
       pthread_sigmask (SIG_BLOCK, &restrict, 0);
       pthread_sigmask (SIG_UNBLOCK, 0, &restrict);
-
-      std::cerr << "handler thread's signal mask: " << std::endl;
-      std::cerr << "   SIGNAL   BLOCKED" << std::endl;
-      for (int i (1); i < (SIGRTMAX+1) ; ++i)
-      {
-        std::cerr << "   " << i << " " << (!sigismember(&restrict, i)) << std::endl;
-      }
 
       while (!m_stopping)
       {
@@ -197,6 +179,8 @@ namespace gpi
 
         int ec = sigtimedwait (&restrict, &sig_info, &timeout);
         //        int ec = sigwaitinfo (&restrict,&sig_info);
+
+        if (m_stopping) break;
 
         if (ec >= 0)
         {
@@ -226,6 +210,8 @@ namespace gpi
         DLOG(TRACE, "worker waiting for signals");
 
         signal_t sig (next_signal());
+
+        if (m_stopping) break;
 
         try
         {
