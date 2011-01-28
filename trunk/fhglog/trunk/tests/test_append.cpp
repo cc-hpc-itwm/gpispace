@@ -29,6 +29,8 @@ class FormattingNullAppender : public fhg::log::Appender
     {
       format (fmt_, evt);
     }
+
+  void flush () {}
 private:
   std::string fmt_;
 };

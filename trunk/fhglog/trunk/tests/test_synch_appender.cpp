@@ -38,6 +38,8 @@ public:
     ++count;
   }
 
+  void flush () {}
+
   std::size_t count;
 };
 

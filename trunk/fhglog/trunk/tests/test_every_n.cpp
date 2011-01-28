@@ -41,6 +41,7 @@ public:
     return vec_;
   }
 
+  void flush () {}
 private:
   container_type & vec_;
   std::string fmt_;

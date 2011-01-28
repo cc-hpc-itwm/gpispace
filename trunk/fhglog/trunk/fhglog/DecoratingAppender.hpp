@@ -50,6 +50,11 @@ namespace fhg { namespace log {
       {
         return real_appender_;
       }
+
+    void flush(void)
+    {
+      real_appender_->flush();
+    }
     private:
       Appender::ptr_t real_appender_;
   };

@@ -45,6 +45,12 @@ namespace fhg { namespace log {
       lock_type lock (m_mutex);
       DecoratingAppender::append(evt);
     }
+
+    virtual void flush(void)
+    {
+      lock_type lock (m_mutex);
+      DecoratingAppender::flush();
+    }
   private:
     mutable mutex_type m_mutex;
   };

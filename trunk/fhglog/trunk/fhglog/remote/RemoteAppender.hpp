@@ -49,6 +49,7 @@ namespace fhg { namespace log { namespace remote {
     const std::string &host() const { return host_; }
     const unsigned short &port() const { return port_; }
     void append(const LogEvent &evt);
+    void flush(void) {}
   private:
     void open();
     void close();

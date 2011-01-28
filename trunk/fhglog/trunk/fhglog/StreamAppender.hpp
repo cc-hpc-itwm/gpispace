@@ -48,6 +48,7 @@ namespace fhg { namespace log {
       ~StreamAppender() {}
 
       void append(const LogEvent &evt);
+      void flush (void);
     private:
       std::ostream &stream_;
       std::string fmt_;

@@ -55,6 +55,14 @@ namespace fhg { namespace log {
 	  {
 		appenders_.clear();
 	  }
+
+    virtual void flush(void)
+    {
+      for (appender_list::iterator a(appenders_.begin()); a != appenders_.end(); ++a)
+      {
+        (*a)->flush();
+      }
+    }
     private:
 	  appender_list appenders_;
   };

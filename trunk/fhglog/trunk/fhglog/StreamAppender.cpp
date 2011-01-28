@@ -66,3 +66,9 @@ StreamAppender::append(const LogEvent &evt)
   if (color_mode_ == COLOR_ON)
     stream_ << get_color_map().reset_escape_code();
 }
+
+void
+StreamAppender::flush (void)
+{
+  stream_.flush();
+}

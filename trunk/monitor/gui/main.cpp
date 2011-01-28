@@ -123,6 +123,8 @@ class GuiAppender : public fhg::log::Appender
     // we do not notify the update_thread, since he does a timed wait
   }
 
+  void flush () {}
+
   private:
     void update_thread()
     {

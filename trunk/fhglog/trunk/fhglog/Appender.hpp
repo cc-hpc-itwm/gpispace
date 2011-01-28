@@ -14,7 +14,7 @@ namespace fhg { namespace log {
       virtual ~Appender() {}
 
       virtual void append(const LogEvent &evt) = 0;
-      virtual void flush (void) {};
+      virtual void flush (void) = 0;
 
       const std::string &name() const { return name_; }
     protected:

@@ -35,6 +35,7 @@ public:
   {
     service_.stop();
   }
+  void flush () {}
   boost::asio::io_service & service_;
 };
 
