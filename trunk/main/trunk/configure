@@ -4,8 +4,8 @@ if [ -e ./CMakeLists.txt ] ; then
   exit 1
 fi
 
-src=$( grep 'CMAKE_HOME_DIRECTORY' CMakeCache.txt | cut -d= -f 2 2>&1 )
-if [ $? -ne 0 ] ; then
+src=$( grep 'CMAKE_HOME_DIRECTORY' CMakeCache.txt 2>/dev/null | cut -d= -f 2 )
+if [ $? -ne 0 -o -z "$src" ] ; then
     src=$( cd $( dirname "$0" ) && pwd )
 fi
 
