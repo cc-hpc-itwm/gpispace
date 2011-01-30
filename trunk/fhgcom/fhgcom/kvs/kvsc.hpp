@@ -90,7 +90,7 @@ namespace fhg
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::get(k)
+                    , fhg::com::kvs::message::msg_get(k)
                     , m
                     );
             DLOG(TRACE, "get(" << k << ") := " << m);

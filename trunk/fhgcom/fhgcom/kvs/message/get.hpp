@@ -18,17 +18,18 @@ namespace fhg
     {
       namespace message
       {
-        struct get
+        struct msg_get
         {
-          get () {}
+          msg_get ()
+          {}
 
           explicit
-          get (const std::string & k)
+          msg_get (const std::string & k)
             : key_(k)
           {}
 
           const std::string & key () const { return key_; }
-          bool operator==(const get & rhs) const
+          bool operator==(const msg_get & rhs) const
           {
             return key_ == rhs.key_;
           }

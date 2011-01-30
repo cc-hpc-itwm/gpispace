@@ -27,7 +27,7 @@ namespace fhg
               stream_ << "PUT (.to be filled.)";
             }
 
-            void operator() (get const & m)
+            void operator() (msg_get const & m)
             {
               stream_ << "GET " << m.key();
             }

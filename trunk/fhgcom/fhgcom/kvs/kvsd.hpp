@@ -49,7 +49,7 @@ namespace fhg
           }
 
           fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::get const & m)
+          operator () (fhg::com::kvs::message::msg_get const & m)
           {
             DLOG(TRACE, "get (" << m.key() << ")");
             try
@@ -266,7 +266,8 @@ namespace fhg
               {
                 if (it->first.substr(0, k.size()) == k)
                 {
-                  store_.quick_erase (it);
+                  //                  store_.quick_erase (it);
+                  store_.erase (it);
                   changed = true;
                 }
               }

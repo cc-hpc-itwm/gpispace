@@ -28,7 +28,7 @@ namespace fhg
       namespace message
       {
         typedef boost::variant< put
-                              , get
+                              , msg_get
                               , del
                               , error
                               , msg_save
