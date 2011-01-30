@@ -1,13 +1,5 @@
-#include <fhglog/fhglog.hpp>
-
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <fstream>
-
-#include <stdexcept>
-
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -16,12 +8,19 @@
 #include <errno.h>
 #include <string.h>
 
-#include <process.hpp>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <fstream>
+#include <stdexcept>
 
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <fhglog/minimal.hpp>
 #include <fhg/util/show.hpp>
+
+#include <process.hpp>
 
 namespace process
 {
