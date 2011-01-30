@@ -4,10 +4,7 @@ if [ -e ./CMakeLists.txt ] ; then
   exit 1
 fi
 
-src=$( grep 'CMAKE_HOME_DIRECTORY' CMakeCache.txt 2>/dev/null | cut -d= -f 2 )
-if [ $? -ne 0 -o -z "$src" ] ; then
-    src=$( cd $( dirname "$0" ) && pwd )
-fi
+src=$( cd $( dirname "$0" ) && pwd )
 
 function usage ()
 {
@@ -29,6 +26,40 @@ build_apps=true
 build_gpi=true
 build_rev=
 build_prefix=
+
+function get_cmake_cache_entry ()
+{
+    cache_entry="$1"
+    variable="$2"
+
+    result=$( grep "$cache_entry" CMakeCache.txt 2>/dev/null | cut -d= -f 2 )
+    if [ $? -eq 0 -a -n "$result" ] ; then
+	case "$result" in
+	    ON)
+		result="true"
+		;;
+	    OFF)
+		result="false"
+		;;
+	    *)
+		;;
+	esac
+	eval "$variable=$result"
+	return 0
+    else
+	return 1
+    fi
+}
+
+# initialize from CMakeCache.txt
+if [ -r "CMakeCache.txt" ] ; then
+    get_cmake_cache_entry CMAKE_HOME_DIRECTORY src
+    get_cmake_cache_entry BUILD_TESTING build_tests
+    get_cmake_cache_entry BUILD_STATIC_BINARIES build_static
+    get_cmake_cache_entry ENABLE_APPLICATION build_apps
+    get_cmake_cache_entry ENABLE_GPI_SPACE build_gpi
+    get_cmake_cache_entry CMAKE_INSTALL_PREFIX build_prefix
+fi
 
 count=0
 while getopts ":hdtTsSaAgGr:p:" opt; do
@@ -157,12 +188,14 @@ echo "# configuring build tree"
 echo "# ======================"
 echo "#"
 echo "#   revision: $build_rev"
+echo "#     prefix: $build_prefix"
 echo "#     source: $src"
 echo "#      build: `pwd`"
-echo "#     prefix: $build_prefix"
-echo "#      tests: $build_tests"
-echo "#     static: $build_static"
+echo "#"
 echo "#      debug: $build_debug"
+echo "#      tests: $build_tests"
+echo "#       apps: $build_apps"
+echo "#     static: $build_static"
 echo "#"
 echo "# cmake \"$src\" $cmake_flags"
 read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
