@@ -20,8 +20,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # TODO move into FindGPI.cmake
 set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
 set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
 
 include_directories (${GPI_INCLUDE_DIR})
@@ -74,6 +72,9 @@ endif (Boost_MINOR_VERSION LESS 36)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
+find_package (IBVerbs REQUIRED)
+include_directories(${IBVerbs_INCLUDE_DIR})
+
 find_package (FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
@@ -82,6 +83,9 @@ include_directories(${MMGR_INCLUDE_DIR})
 
 find_package (UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
+
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBVerbs_LIBRARY})
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
 
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
