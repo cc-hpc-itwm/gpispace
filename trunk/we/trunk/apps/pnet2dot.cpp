@@ -16,7 +16,7 @@
 
 namespace detail {
   template<typename Activity, typename Pred>
-  void dot (std::ostream & os, const Activity & a, const Pred & pred)
+  void to_dot (std::ostream & os, const Activity & a, const Pred & pred)
   {
     we::type::dot::id_type id (0);
 
@@ -24,7 +24,7 @@ namespace detail {
 
     os << "digraph " << a.transition().name() << " {" << std::endl;
     os << "compound=true" << std::endl;
-    os << we::type::dot::dot (a.transition(), id, pred);
+    os << we::type::dot::to_dot (a.transition(), id, pred);
     os << "} /* " << a.transition().name() << " */" << std::endl;
   }
 }
@@ -192,7 +192,7 @@ main (int argc, char ** argv)
       we::util::text_codec::decode (stream, act);
     }
 
-  detail::dot (std::cout, act, options);
+  detail::to_dot (std::cout, act, options);
 
   return EXIT_SUCCESS;
 }

@@ -329,7 +329,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template <typename P, typename E, typename T, typename Pred>
-      inline std::string dot
+      inline std::string to_dot
       ( const transition_t<P,E,T> &
       , id_type &
       , const options<Pred> &
@@ -514,7 +514,7 @@ namespace we { namespace type {
               const id_type id_trans (++id);
               const petri_net::prio_t prio (net.get_transition_priority (*t));
 
-              s << dot<P, E, T> (trans, id, opts, l + 1, prio);
+              s << to_dot<P, E, T> (trans, id, opts, l + 1, prio);
 
               for ( typename transition_t::inner_to_outer_t::const_iterator
                       connection (trans.inner_to_outer_begin())
@@ -599,7 +599,7 @@ namespace we { namespace type {
       // ******************************************************************* //
 
       template <typename P, typename E, typename T, typename Pred>
-      inline std::string dot
+      inline std::string to_dot
       ( const transition_t<P,E,T> & t
       , id_type & id
       , const options<Pred> & opts
