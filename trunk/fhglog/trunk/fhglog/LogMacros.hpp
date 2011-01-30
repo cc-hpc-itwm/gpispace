@@ -84,7 +84,7 @@ namespace fhg { namespace log {
       }                                                                 \
     } while(0)
 
-#  define FHGLOG_FLUSH()                                                   \
+#  define FHGLOG_FLUSH()                                                \
     do                                                                  \
     {                                                                   \
       fhg::log::getLogger().flush();                                    \
@@ -92,9 +92,28 @@ namespace fhg { namespace log {
 
 #endif // if FHGLOG_ENABLED == 1
 
+// log to a specific logger
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)
-#define MLOG(level, msg) LLOG(level, ::fhg::log::getLogger(::fhg::log::get_module_name_from_path(__FILE__)), msg)
+
+// log to a logger with the name of the filename the statement is in
+#define MLOG(level, msg)                                                \
+    LLOG( level                                                         \
+        , ::fhg::log::getLogger                                         \
+        (::fhg::log::get_module_name_from_path(__FILE__))               \
+        , msg                                                           \
+        )
+
+    // log to a named logger (component)
+#define CLOG(level, component, msg)                                     \
+    LLOG( level                                                         \
+        , ::fhg::log::getLogger(component)                              \
+        , msg                                                           \
+        )
+
+    // just log
 #define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
+
+    // log if some condition is true
 #define LOG_IF(level, condition, msg)                                   \
     do                                                                  \
     {                                                                   \
@@ -104,6 +123,8 @@ namespace fhg { namespace log {
       }                                                                 \
     }                                                                   \
     while (0)
+
+    // log something if a condition is true, something else otherwise
 #define LOG_IF_ELSE(level, condition, then_msg, else_msg)               \
     do                                                                  \
     {                                                                   \
@@ -118,6 +139,7 @@ namespace fhg { namespace log {
     }                                                                   \
     while (0)
 
+    // log only every Nth message
 #define LOG_EVERY_N(level, N, msg) FHGLOG_DO_EVERY_N(N, LOG(level, msg))
 #define LOG_EVERY_N_IF(level, N, condition, msg) FHGLOG_DO_EVERY_N_IF(condition, N, LOG(level, msg))
 
@@ -125,6 +147,7 @@ namespace fhg { namespace log {
 
 #define DLLOG(level, logger, msg)
 #define DMLOG(level, msg)
+#define DCLOG(level, compnent, msg)
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
 #define DLOG_IF_ELSE(level, condition, m1, m2)
@@ -135,6 +158,7 @@ namespace fhg { namespace log {
 
 #define DLLOG(level, logger, msg) LLOG(level, logger, msg)
 #define DMLOG(level, msg) MLOG(level, msg)
+#define DCLOG(level, compponent, msg) CLOG(level, component, msg)
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
 #define DLOG_IF_ELSE(level, condition, msg1, msg2) LOG_IF_ELSE(level, condition, msg1, msg2)
