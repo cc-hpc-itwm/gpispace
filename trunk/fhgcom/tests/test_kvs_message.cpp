@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE( put_test )
 BOOST_AUTO_TEST_CASE( get_test )
 {
   fhg::com::kvs::message::type m1
-    (fhg::com::kvs::message::get("foo"));
+    (fhg::com::kvs::message::msg_get("foo"));
 
   std::stringstream sstr;
   {
