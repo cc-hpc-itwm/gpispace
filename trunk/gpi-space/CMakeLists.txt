@@ -21,6 +21,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # TODO move into FindGPI.cmake
 set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
 set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
+#set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBVerbs_LIBRARY})
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
 
 include_directories (${GPI_INCLUDE_DIR})
 
@@ -83,9 +86,6 @@ include_directories(${MMGR_INCLUDE_DIR})
 
 find_package (UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
-
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBVerbs_LIBRARY})
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
 
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
