@@ -28,15 +28,21 @@ add_custom_command(OUTPUT ${headerlist_hpp}
 
 add_executable(pnetc parser.cpp ${headerlist_hpp})
 target_link_libraries(pnetc ${Boost_LIBRARIES})
-
-add_executable(pnetc.static parser.cpp ${headerlist_hpp})
-target_link_libraries(pnetc.static ${Boost_LIBRARIES})
-set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
-
-install (TARGETS pnetc pnetc.static
+install (TARGETS pnetc
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
+
+if (ENABLE_STATIC_BINARIES)
+  add_executable(pnetc.static parser.cpp ${headerlist_hpp})
+  target_link_libraries(pnetc.static ${Boost_LIBRARIES})
+  set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
+
+  install (TARGETS pnetc.static
+    RUNTIME
+    DESTINATION bin
+    COMPONENT applications)
+endif (ENABLE_STATIC_BINARIES)
 
 install (FILES ${hdrs}
   DESTINATION include/xml/parse
