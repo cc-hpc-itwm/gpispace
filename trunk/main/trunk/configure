@@ -11,11 +11,13 @@ fi
 
 function usage ()
 {
-    echo "$0 [-h] [-d] [-t|-T] [-s|-S] [-r version] [-p prefix]" >&2
+    echo "$0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-r version] [-p prefix]" >&2
     echo "   -h  : print help" >&2
     echo "   -d  : debug build" >&2
+    echo "   -aA : build apps (a:yes A:no)" >&2
     echo "   -tT : build tests (t:yes T:no)" >&2
     echo "   -sS : build static (s:yes S:no)" >&2
+    echo "   -gG : build gpi (g:yes G:no)" >&2
     echo "   -r  : explicitly set revision" >&2
     echo "   -p  : install prefix" >&2
 }
@@ -23,11 +25,13 @@ function usage ()
 build_debug=false
 build_tests=false
 build_static=false
+build_apps=true
+build_gpi=true
 build_rev=
 build_prefix=
 
 count=0
-while getopts ":hdtTsSr:p:" opt; do
+while getopts ":hdtTsSaAgGr:p:" opt; do
     case $opt in
 	h)
 	    usage
@@ -36,6 +40,14 @@ while getopts ":hdtTsSr:p:" opt; do
 	d)
 	    count=$(( count + 1 ))
 	    build_debug=true
+	    ;;
+	a)
+	    count=$(( count + 1 ))
+	    build_apps=true
+	    ;;
+	A)
+	    count=$(( count + 1 ))
+	    build_apps=false
 	    ;;
 	t)
 	    count=$(( count + 1 ))
@@ -52,6 +64,14 @@ while getopts ":hdtTsSr:p:" opt; do
 	S)
 	    count=$(( count + 1 ))
 	    build_static=false
+	    ;;
+	g)
+	    count=$(( count + 1 ))
+	    build_gpi=true
+	    ;;
+	G)
+	    count=$(( count + 1 ))
+	    build_gpi=false
 	    ;;
 	r)
 	    count=$(( count + 2 ))
@@ -109,6 +129,18 @@ if [ "$build_static" == "true" ] ; then
     cmake_flags="$cmake_flags -DBUILD_STATIC_BINARIES=ON"
 else
     cmake_flags="$cmake_flags -DBUILD_STATIC_BINARIES=OFF"
+fi
+
+if [ "$build_apps" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_APPLICATION=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_APPLICATION=OFF"
+fi
+
+if [ "$build_gpi" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_GPI_SPACE=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_GPI_SPACE=OFF"
 fi
 
 if [ -z "$build_prefix" ] ; then
