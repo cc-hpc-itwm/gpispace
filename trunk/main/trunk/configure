@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ -e ./CMakeLists.txt ] ; then
   echo "F: This script is intended to be executed in a build directory!"
   exit 1
@@ -11,21 +11,23 @@ fi
 
 function usage ()
 {
-    echo "$0 [-h] [-d] [-t] [-r version] [-p prefix]" >&2
-    echo "   -h : print help" >&2
-    echo "   -d : debug build" >&2
-    echo "   -t : build tests" >&2
-    echo "   -r : explicitly set revision" >&2
-    echo "   -p : install prefix" >&2
+    echo "$0 [-h] [-d] [-t|-T] [-s|-S] [-r version] [-p prefix]" >&2
+    echo "   -h  : print help" >&2
+    echo "   -d  : debug build" >&2
+    echo "   -tT : build tests (t:yes T:no)" >&2
+    echo "   -sS : build static (s:yes S:no)" >&2
+    echo "   -r  : explicitly set revision" >&2
+    echo "   -p  : install prefix" >&2
 }
 
 build_debug=false
 build_tests=false
+build_static=false
 build_rev=
 build_prefix=
 
 count=0
-while getopts ":hdtr:p:" opt; do
+while getopts ":hdtTsSr:p:" opt; do
     case $opt in
 	h)
 	    usage
@@ -38,6 +40,18 @@ while getopts ":hdtr:p:" opt; do
 	t)
 	    count=$(( count + 1 ))
 	    build_tests=true
+	    ;;
+	T)
+	    count=$(( count + 1 ))
+	    build_tests=false
+	    ;;
+	s)
+	    count=$(( count + 1 ))
+	    build_static=true
+	    ;;
+	S)
+	    count=$(( count + 1 ))
+	    build_static=false
 	    ;;
 	r)
 	    count=$(( count + 2 ))
@@ -57,7 +71,7 @@ done
 shift $count
 
 if [ -z "$build_rev" ] ; then
-    build_rev=$( cd "$src" && git describe 2>/dev/null )
+    build_rev=$( cd "$src" && git describe --tags 2>/dev/null )
     if [ $? != 0 ]; then
 	echo "W: could not get version information from git, trying svn..."
 	build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
@@ -91,6 +105,12 @@ else
     cmake_flags="$cmake_flags -DBUILD_TESTING=OFF"
 fi
 
+if [ "$build_static" == "true" ] ; then
+    cmake_flags="$cmake_flags -DBUILD_STATIC_BINARIES=ON"
+else
+    cmake_flags="$cmake_flags -DBUILD_STATIC_BINARIES=OFF"
+fi
+
 if [ -z "$build_prefix" ] ; then
     build_prefix=$( grep CMAKE_INSTALL_PREFIX ./CMakeCache.txt | cut -d= -f 2 | tr -d \" 2>&1 )
 fi
@@ -109,6 +129,7 @@ echo "#     source: $src"
 echo "#      build: `pwd`"
 echo "#     prefix: $build_prefix"
 echo "#      tests: $build_tests"
+echo "#     static: $build_static"
 echo "#      debug: $build_debug"
 echo "#"
 echo "# cmake \"$src\" $cmake_flags"
