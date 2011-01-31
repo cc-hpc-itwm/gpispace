@@ -119,15 +119,8 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 
 	try {
 
-		/*if( !is_scheduled(jobId) )
-		{
-			SDPA_LOG_DEBUG("The job "<<jobId<<" is not yet scheduled! Schedule it now.");
-			schedule(jobId);
-		}
-		else
-			SDPA_LOG_DEBUG("The job "<<jobId<<" is already scheduled!");*/
-
 		Job::ptr_t pJob = ptr_job_man_->findJob(jobId);
+		//SDPA_LOG_INFO("The job "<<jobId<<" has the status "<<pJob->getStatus());
 		pJob->QueryJobStatus(pEvt); // should send back a message with the status
 	}
 	catch(JobNotFoundException const& ex)
