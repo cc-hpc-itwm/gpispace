@@ -219,8 +219,8 @@ add_test( test_JobSubmToWeFails test_JobSubmToWeFails )
 #test_ConcurrentClients
 set( test_ConcurrentClients_srcs test_ConcurrentClients.cpp )
 
-add_executable(test_ConcurrentClients ${test_ConcurrentClients_srcs})
-target_link_libraries(test_ConcurrentClients  seda sdpa-daemon
+add_executable(test_concurrent_clients ${test_ConcurrentClients_srcs})
+target_link_libraries(test_concurrent_clients  seda sdpa-daemon
 									 sdpa-client
 									 sdpa-events
 									 sdpa-util
@@ -228,4 +228,4 @@ target_link_libraries(test_ConcurrentClients  seda sdpa-daemon
 									 dl
 									 #uuid
 									 ${Boost_LIBRARIES})
-add_test( test_ConcurrentClients test_ConcurrentClients )
+add_test( test_concurrent_clients test_concurrent_clients )
