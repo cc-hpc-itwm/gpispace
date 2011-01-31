@@ -49,11 +49,15 @@ void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt)
 	lock_type lock(mtx_);
 	m_fsmContext.QueryJobStatus(pEvt);
 
-	LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
+	//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
 	JobStatusReplyEvent::status_t status = getStatus();
-	JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
-	pComm->sendEventToMaster(pStatReply);
-
+	if(pComm)
+	{
+		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
+		pComm->sendEventToMaster(pStatReply);
+	}
+	else
+		LOG(TRACE, "Could not send back job status reply. Invalid communication handler!");
 }
 
 void JobFSM::JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
