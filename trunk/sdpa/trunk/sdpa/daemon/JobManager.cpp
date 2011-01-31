@@ -193,6 +193,7 @@ void JobManager::waitForFreeSlot ()
 
 void JobManager::updateJobInfo(sdpa::daemon::IComm* p)
 {
+	lock_type lock(mtx_);
 	for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
 	{
 		sdpa::daemon::Job* pJob = it->second.get();
@@ -227,6 +228,7 @@ void JobManager::updateJobInfo(sdpa::daemon::IComm* p)
 
 void JobManager::resubmitJobsAndResults(IComm* pComm)
 {
+	lock_type lock(mtx_);
 	SDPA_LOG_INFO("Re-submit finished/failed/cancelled jobs)!");
 	SDPA_LOG_INFO("The JobManager has "<<job_map_.size()<<" jobs!");
 
