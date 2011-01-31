@@ -24,14 +24,14 @@ int main (int argc, char **argv)
 {
 	string orchName;
 	string orchUrl;
-	string workflow_directory;
+	string backup_file;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
 	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-	  // ("workflow-directory", po::value<std::string>(&workflow_directory)->default_value("/"), "directory where workflows can be found")
+	   ("backup_file,f", po::value<std::string>(&backup_file)->default_value("./orchestrator.bkp"), "Orchestrator's backup file")
 	   ;
 
 	po::variables_map vm;
@@ -52,7 +52,7 @@ int main (int argc, char **argv)
 
 	try {
 		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl  );
-		ptrOrch->start();
+		ptrOrch->start(backup_file);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -88,7 +88,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		ptrOrch->shutdown();
+		ptrOrch->shutdown(backup_file);
 	} catch( std::exception& ) {
 			std::cout<<"Could not start the Orchestrator!"<<std::endl;
 		}

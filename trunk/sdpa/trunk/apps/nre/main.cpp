@@ -31,6 +31,7 @@ int main (int argc, char **argv)
 	string aggUrl;
 	string workerUrl;
 	string guiUrl;
+	string backup_file;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -41,6 +42,7 @@ int main (int argc, char **argv)
 	   //("agg_url,p",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
 	   ("worker_url,w",  po::value<std::string>(&workerUrl)->default_value("127.0.0.1:8000"), "Worker's url")
 	   ("gui_url,g",  po::value<std::string>(&guiUrl)->default_value("127.0.0.1:9000"), "GUI's url")
+	   ("backup_file,f", po::value<std::string>(&backup_file)->default_value("./nre.bkp"), "NRE's backup file")
 	   ;
 
   po::variables_map vm;
@@ -68,7 +70,7 @@ int main (int argc, char **argv)
 																	);
 
   try {
-	  ptrNRE->start();
+	  ptrNRE->start(backup_file);
 
     LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
@@ -107,7 +109,7 @@ int main (int argc, char **argv)
     LOG(ERROR, "Could not start the NRE: " << ex.what() );
   }
 
-  ptrNRE->shutdown();
+  ptrNRE->shutdown(backup_file);
 
   seda::StageRegistry::instance().stopAll();
   seda::StageRegistry::instance().clear();

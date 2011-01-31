@@ -26,14 +26,16 @@ int main (int argc, char **argv)
 	string aggUrl;
 	string orchName;
 	string orchUrl;
+	string backup_file;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
 	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
 	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("localhost"), "Aggregator's url")
-	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name");
-	   //("orch_url,p",  po::value<std::string>(&orchUrl)->default_value("127.0.0.1:5000"), "Orchestrator's url");
+	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
+	   ("backup_file,f", po::value<std::string>(&backup_file)->default_value("./aggregator.bkp"), "Aggregator's backup file")
+	   ;
 
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -52,7 +54,7 @@ int main (int argc, char **argv)
 
 	try {
 		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName); //, orchUrl );
-		ptrAgg->start();
+		ptrAgg->start(backup_file);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -88,7 +90,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		ptrAgg->shutdown();
+		ptrAgg->shutdown(backup_file);
 	} catch ( std::exception& ){
 			std::cout<<"Could not start the Aggregator!"<<std::endl;
 		}
