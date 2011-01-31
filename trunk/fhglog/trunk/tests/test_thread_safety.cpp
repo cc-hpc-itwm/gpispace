@@ -48,6 +48,8 @@ void *thread(void *arg)
   return arg;
 }
 
+static std::ostringstream logstream;
+
 int main (int , char **)
 {
   using namespace fhg::log;
@@ -55,7 +57,6 @@ int main (int , char **)
   int errcount(0);
   logger_t root(getLogger());
 
-  std::ostringstream logstream;
   root.addAppender(Appender::ptr_t(new SynchronizedAppender(new StreamAppender("stringstream", logstream, "%m"))));
 
   {
