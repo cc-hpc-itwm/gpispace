@@ -262,7 +262,7 @@ void GenericDaemon::shutdown( std::ostream& os )
 void GenericDaemon::shutdown()
 {
 	// I should first notify my master
-	if( !is_orchestrator() )
+	/*if( !is_orchestrator() )
 	{
 		notifyMaster(sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN);
 		//notifyWorkers(sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN);
@@ -270,7 +270,7 @@ void GenericDaemon::shutdown()
 
 	//wait for a while -> allow the daemon to deliver the messages
 
-	sleep(5);
+	sleep(5);*/
 
 	if(!m_bStopped)
 		stop();
