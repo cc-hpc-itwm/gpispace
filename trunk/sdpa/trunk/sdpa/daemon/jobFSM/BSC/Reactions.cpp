@@ -38,7 +38,7 @@ void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt)
 {
 	lock_type lock(mtx_);
 	process_event(*pEvt);
-	LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
+	//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
 
 	JobStatusReplyEvent::status_t status = getStatus();
 	JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
