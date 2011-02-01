@@ -27,6 +27,7 @@ namespace gpi
       , m_rank (std::numeric_limits<rank_t>::max())
       , m_num_nodes (0)
       , m_mem_size (0)
+      , m_dma (0)
     { }
 
     gpi_api_t::~gpi_api_t ()
@@ -37,7 +38,7 @@ namespace gpi
       }
       catch (std::exception const & ex)
       {
-        LOG(WARN, "could not stop real::gpi_api_t on rank " << rank());
+        LOG(WARN, "could not stop gpi_api_t on rank " << rank());
       }
     }
 
@@ -69,23 +70,41 @@ namespace gpi
              );
 
       m_startup_done = false;
-      alarm (timeout);
+
+      if (timeout) alarm (timeout);
       startGPI (m_ac, m_av, "", m_mem_size);
-      alarm (0);
+      if (timeout) alarm (0);
+
       m_startup_done = true;
       m_rank = getRankGPI();
+      m_dma  = getDmaMemPtrGPI();
     }
 
     void gpi_api_t::stop ()
     {
-      throw exception::gpi_error
-        (gpi::error::operation_not_implemented());
+      if (m_startup_done)
+      {
+        shutdownGPI();
+      }
     }
 
     void gpi_api_t::kill ()
     {
-      throw exception::gpi_error
-        (gpi::error::operation_not_implemented());
+      if (is_master())
+      {
+        if (0 != killProcsGPI())
+        {
+          throw exception::gpi_error
+            (gpi::error::kill_procs_failed());
+        }
+      }
+      else
+      {
+        throw exception::gpi_error
+          ( gpi::error::operation_not_permitted()
+          , "kill() is not allowed on a slave"
+          );
+      }
     }
 
     gpi::size_t gpi_api_t::number_of_queues () const
@@ -131,7 +150,7 @@ namespace gpi
 
     void * gpi_api_t::dma_ptr (void)
     {
-      return getDmaMemPtrGPI();
+      return m_dma;
     }
 
     void gpi_api_t::set_network_type (const gpi::network_type_t n)
@@ -168,6 +187,91 @@ namespace gpi
     {
       return (pingDaemonGPI(hostname.c_str()) == 0);
     }
+
+    void gpi_api_t::check (const gpi::rank_t node) const
+    {
+      if (! is_master())
+      {
+        throw exception::gpi_error
+          ( gpi::error::operation_not_permitted()
+          , "check(rank) is not allowed on a slave"
+          );
+      }
+
+      std::string host (hostname (node));
+
+      LOG(DEBUG, "checking GPI on host := " << host << " rank := " << node);
+
+      if (!ping (host))
+      {
+        LOG(ERROR, "failed to ping GPI daemon on host := " << host);
+        throw exception::gpi_error
+          ( gpi::error::ping_check_failed () );
+      }
+
+      int rc (0);
+      int errors (0);
+
+      rc = checkPortGPI (host.c_str(), port());
+      if (rc != 0)
+      {
+        LOG(WARN, "failed to check port " << port() << " on " << host << " with error " << rc);
+        ++errors;
+
+        if (findProcGPI (host.c_str()) == 0)
+        {
+          LOG(WARN, "another GPI binary is still running and blocking the port, trying to kill it now");
+          if (killProcsGPI() == 0)
+          {
+            LOG(INFO, "successfully killed old processes");
+            --errors;
+          }
+          else
+          {
+            LOG(ERROR, "could not kill old processes");
+          }
+        }
+        else
+        {
+          LOG(ERROR, "another program seems to block port " << port());
+        }
+      }
+
+      rc = checkSharedLibsGPI(host.c_str());
+      if (rc != 0)
+      {
+        LOG(ERROR, "shared library requirements could not be met on host " << host << " with error " << rc);
+        throw exception::gpi_error
+          ( gpi::error::libs_check_failed () );
+      }
+
+      rc = runIBTestGPI (host.c_str());
+      if (rc != 0)
+      {
+        LOG(ERROR, "InfiniBand test failed for host " << host << " rank " << node << " with error " << rc);
+        throw exception::gpi_error
+          ( gpi::error::ib_check_failed () );
+      }
+    }
+
+    void gpi_api_t::check (void) const
+    {
+      if (!is_master())
+      {
+        throw exception::gpi_error
+          ( gpi::error::operation_not_permitted()
+          , "check() is not allowed on a slave"
+          );
+      }
+
+      LOG(DEBUG, "running GPI check...");
+      for (rank_t nd (0); nd < number_of_nodes(); ++nd)
+      {
+        check (nd);
+      }
+      LOG(INFO, "GPI check successful.");
+    }
+
     bool gpi_api_t::is_master (void) const
     {
       return m_is_master;
@@ -387,6 +491,7 @@ namespace gpi
     {
       m_startup_done = false;
       // currently there is no other way than to exit :-(
+      this->kill ();
       exit (gpi::error::errc::startup_failed);
     }
   }

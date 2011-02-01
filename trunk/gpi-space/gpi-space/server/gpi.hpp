@@ -97,7 +97,10 @@ namespace gpi
       gpi::size_t number_of_nodes () const;
       std::string hostname (const gpi::rank_t) const;
       gpi::rank_t rank () const;
-      void * dma_ptr (void);
+      void *dma_ptr (void);
+
+      template <typename T>
+      T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
       void set_network_type (const gpi::network_type_t);
       void set_port (const gpi::port_t);
@@ -106,6 +109,10 @@ namespace gpi
 
       bool ping (const gpi::rank_t) const;
       bool ping (std::string const & hostname) const;
+
+      void check (const gpi::rank_t) const;
+      void check () const;
+
       bool is_master (void) const;
       bool is_slave (void) const;
 
@@ -157,6 +164,7 @@ namespace gpi
       mutable rank_t m_rank;
       mutable size_t m_num_nodes;
       mutable size_t m_mem_size;
+      void *m_dma;
       boost::shared_ptr<boost::thread> m_signal_handler;
     };
   }
