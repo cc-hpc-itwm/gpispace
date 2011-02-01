@@ -78,7 +78,7 @@ static void configure (const gpi_space::config & cfg)
 
 static void main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 {
-  configure(config);
+  configure(cfg);
 
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
