@@ -34,6 +34,19 @@ static int shutdown_handler (gpi_api_t * api, int signal)
   exit (0);
 }
 
+static int suspend_handler (gpi_api_t * api, int signal)
+{
+  LOG(INFO, "GPI process (rank " << api->rank() << ") suspended due to signal: " << signal);
+  ::raise (SIGSTOP);
+  return 0;
+}
+
+static int resume_handler (gpi_api_t * api, int signal)
+{
+  LOG(INFO, "GPI process (rank " << api->rank() << ") resumed due to signal: " << signal);
+  return 0;
+}
+
 static void distribute_config (const gpi_space::config & cfg, gpi_api_t & gpi_api)
 {
   LOG(DEBUG, "distributing config...");
@@ -291,6 +304,10 @@ int main (int ac, char *av[])
     (SIGINT, boost::bind (shutdown_handler, &gpi_api, _1));
   gpi::signal::handler().connect
     (SIGTERM, boost::bind (shutdown_handler, &gpi_api, _1));
+  gpi::signal::handler().connect
+    (SIGTSTP, boost::bind (suspend_handler, &gpi_api, _1));
+  gpi::signal::handler().connect
+    (SIGCONT, boost::bind (resume_handler, &gpi_api, _1));
 
   if (gpi_api.is_master())
   {

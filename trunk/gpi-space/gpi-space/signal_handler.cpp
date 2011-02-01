@@ -47,8 +47,8 @@ namespace gpi
         {
           sigset_t restrict;
           sigfillset (&restrict);
-          sigdelset (&restrict, SIGTSTP);
-          sigdelset (&restrict, SIGCONT);
+          //          sigdelset (&restrict, SIGTSTP);
+          //          sigdelset (&restrict, SIGCONT);
           pthread_sigmask (SIG_BLOCK, &restrict, 0);
 
           m_stopping = false;
@@ -162,8 +162,8 @@ namespace gpi
       sigset_t restrict;
 
       sigemptyset (&restrict);
-      //      sigaddset (&restrict, SIGTSTP);
-      //      sigaddset (&restrict, SIGCONT);
+      sigaddset (&restrict, SIGTSTP);
+      sigaddset (&restrict, SIGCONT);
       sigaddset (&restrict, SIGINT);
       sigaddset (&restrict, SIGTERM);
       sigaddset (&restrict, SIGSEGV);
@@ -197,7 +197,7 @@ namespace gpi
           DLOG(TRACE, "got signal: " << show (sig_info));
           this->raise (sig_info.si_signo);
         }
-        else if (errno != EAGAIN)
+        else if (errno != EAGAIN && errno != EINTR)
         {
           LOG( ERROR
              , "sigwait() returned an error [" << ec << "]: " << strerror_r ( errno
@@ -205,6 +205,10 @@ namespace gpi
                                                                             , sizeof(buf)
                                                                             )
              );
+        }
+        else
+        {
+          DLOG(TRACE, "sigwait() has been interrupted!");
         }
       }
 
