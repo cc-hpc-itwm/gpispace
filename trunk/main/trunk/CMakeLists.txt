@@ -18,6 +18,7 @@ OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
 OPTION(ENABLE_SDPA_GPI "Build the sdpa-gpi interface" YES)
 OPTION(ENABLE_GPI_SPACE "Build the gpi-space interface" YES)
 OPTION(ENABLE_STATIC_BINARIES "Build static linked binaries" YES)
+OPTION(ENABLE_FUSE "Build fuse module" YES)
 OPTION(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 set(FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 
@@ -119,6 +120,11 @@ message(STATUS "=== [ util ] ===")
 add_subdirectory(util)
 message(STATUS "=== [ selftest ] ===")
 add_subdirectory(selftest)
+
+if (ENABLE_FUSE)
+  message(STATUS "=== [ fuse ] ===")
+  add_subdirectory(fuse)
+endif (ENABLE_FUSE)
 
 ## dependency fixes
 if (WITH_FAKE_PC)
