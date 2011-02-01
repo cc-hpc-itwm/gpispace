@@ -56,6 +56,25 @@ if [ $? != 0 ]; then
     build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
 fi
 
+function print_settings ()
+{
+cat >&2 <<EOF
+#  Current settings:
+#  =================
+#
+#     revision: $build_rev
+#       prefix: $build_prefix
+#       source: $src
+#        build: `pwd`
+#
+#        debug: $build_debug
+#        tests: $build_tests
+#         apps: $build_apps
+#       static: $build_static
+#    strip-log: $strip_log
+EOF
+}
+
 function usage ()
 {
     cat >&2 <<EOF
@@ -70,20 +89,8 @@ $0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-r version] [-L level] [-p prefix]
    -L  : strip log level up to and including N
    -p  : install prefix
 
-Current settings:
-=================
-
- revision: $build_rev
-   prefix: $build_prefix
-   source: $src
-    build: `pwd`
-
-    debug: $build_debug
-    tests: $build_tests
-     apps: $build_apps
-   static: $build_static
-strip-log: $strip_log
 EOF
+    print_settings
 }
 
 count=0
@@ -203,19 +210,7 @@ fi
 cmake_flags="$cmake_flags $@"
 
 cmd="cmake \"$src\" $cmake_flags"
-echo "# configuring build tree"
-echo "# ======================"
-echo "#"
-echo "#   revision: $build_rev"
-echo "#     prefix: $build_prefix"
-echo "#     source: $src"
-echo "#      build: `pwd`"
-echo "#"
-echo "#      debug: $build_debug"
-echo "#      tests: $build_tests"
-echo "#       apps: $build_apps"
-echo "#     static: $build_static"
-echo "#  strip-log: $strip_log"
+print_settings
 echo "#"
 echo "# cmake \"$src\" $cmake_flags"
 read -t 10 -n 1 -p "press any key to continue (Ctrl+C to abort)..."
