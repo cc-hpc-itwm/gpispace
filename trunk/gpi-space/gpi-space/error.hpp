@@ -37,6 +37,14 @@ namespace gpi
           recv_passive_failed,
           wait_passive_failed,
 
+          open_dma_requests_failed,
+          open_passive_requests_failed,
+
+          global_lock_failed,
+          global_unlock_failed,
+
+          get_error_vector_failed,
+
           operation_not_permitted,
           operation_not_implemented,
           internal_error,
@@ -96,6 +104,14 @@ namespace gpi
     MK_CODE_T(send_passive_failed);
     MK_CODE_T(recv_passive_failed);
     MK_CODE_T(wait_passive_failed);
+
+    MK_CODE_T(open_dma_requests_failed);
+    MK_CODE_T(open_passive_requests_failed);
+
+    MK_CODE_T(global_lock_failed);
+    MK_CODE_T(global_unlock_failed);
+
+    MK_CODE_T(get_error_vector_failed);
 
     MK_CODE_T(operation_not_permitted);
     MK_CODE_T(operation_not_implemented);
