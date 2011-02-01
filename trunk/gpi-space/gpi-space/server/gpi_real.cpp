@@ -182,6 +182,24 @@ namespace gpi
       return m_rank;
     }
 
+    gpi::error_vector_t gpi_api_t::get_error_vector (const gpi::queue_desc_t q) const
+    {
+      assert (m_startup_done);
+      unsigned char *gpi_err_vec (getErrorVectorGPI(q));
+      if (! gpi_err_vec)
+      {
+        throw exception::gpi_error
+          (gpi::error::get_error_vector_failed());
+      }
+
+      gpi::error_vector_t v (number_of_nodes());
+      for (std::size_t i (0); i < number_of_nodes(); ++i)
+      {
+        v.set (i, (gpi_err_vec[i] == 1));
+      }
+      return v;
+    }
+
     void * gpi_api_t::dma_ptr (void)
     {
       return m_dma;

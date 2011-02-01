@@ -103,6 +103,7 @@ namespace gpi
 
       std::string hostname (const gpi::rank_t) const;
       gpi::rank_t rank () const;
+      gpi::error_vector_t get_error_vector(const queue_desc_t) const;
       void *dma_ptr (void);
 
       template <typename T>
