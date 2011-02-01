@@ -17,6 +17,7 @@ namespace gpi
           config_error,
           env_check_failed,
           startup_failed,
+          kill_procs_failed,
           set_port_failed,
           set_mtu_failed,
           set_network_type_failed,
@@ -31,6 +32,7 @@ namespace gpi
           recv_passive_failed,
           wait_passive_failed,
 
+          operation_not_permitted,
           operation_not_implemented,
           internal_error,
         };
@@ -69,6 +71,8 @@ namespace gpi
     MK_CODE_T(config_error);
     MK_CODE_T(env_check_failed);
     MK_CODE_T(startup_failed);
+    MK_CODE_T(kill_procs_failed);
+
     MK_CODE_T(set_port_failed);
     MK_CODE_T(set_mtu_failed);
     MK_CODE_T(set_network_type_failed);
@@ -83,6 +87,7 @@ namespace gpi
     MK_CODE_T(recv_passive_failed);
     MK_CODE_T(wait_passive_failed);
 
+    MK_CODE_T(operation_not_permitted);
     MK_CODE_T(operation_not_implemented);
     MK_CODE_T(internal_error);
 
