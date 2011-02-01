@@ -345,6 +345,28 @@ namespace gpi
       barrierGPI();
     }
 
+    void gpi_api_t::lock (void) const
+    {
+      assert (m_startup_done);
+      int rc (globalResourceLockGPI());
+      if (rc != 0)
+      {
+        throw exception::gpi_error
+          (gpi::error::global_lock_failed());
+      }
+    }
+
+    void gpi_api_t::unlock (void) const
+    {
+      assert (m_startup_done);
+      int rc (globalResourceUnlockGPI());
+      if (rc != 0)
+      {
+        throw exception::gpi_error
+          (gpi::error::global_unlock_failed());
+      }
+    }
+
     void gpi_api_t::read_dma ( const offset_t local_offset
                              , const offset_t remote_offset
                              , const size_t amount

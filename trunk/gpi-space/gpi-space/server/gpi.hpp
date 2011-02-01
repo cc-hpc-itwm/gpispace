@@ -124,6 +124,8 @@ namespace gpi
       bool is_slave (void) const;
 
       void barrier (void) const;
+      void lock (void) const;
+      void unlock (void) const;
 
       void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
