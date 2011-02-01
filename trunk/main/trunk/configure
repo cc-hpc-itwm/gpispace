@@ -41,7 +41,9 @@ function get_cmake_cache_entry ()
 }
 
 # initialize from CMakeCache.txt
+echo -n "initializing variables..." >&2
 if [ -r "CMakeCache.txt" ] ; then
+
     get_cmake_cache_entry CMAKE_HOME_DIRECTORY src
     get_cmake_cache_entry BUILD_TESTING build_tests
     get_cmake_cache_entry BUILD_STATIC_BINARIES build_static
@@ -51,6 +53,7 @@ if [ -r "CMakeCache.txt" ] ; then
     get_cmake_cache_entry CMAKE_INSTALL_PREFIX build_prefix
     get_cmake_cache_entry FHGLOG_STRIP_LEVEL strip_log
 fi
+echo "done." >&2
 
 build_rev=$( cd "$src" && git describe --tags 2>/dev/null )
 if [ $? != 0 ]; then
@@ -81,7 +84,7 @@ EOF
 function usage ()
 {
     cat >&2 <<EOF
-$0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-r version] [-L level] [-p prefix]
+$0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-r version] [-L level] [-p prefix] [-- options to cmake]
    -h  : print help
    -d  : debug build
    -aA : build apps (a:yes A:no)
@@ -149,7 +152,7 @@ while getopts ":hdtTsSaAgGfFL:r:p:" opt; do
 	    build_fuse=false
 	    ;;
 	L)
-	    count=$(( count + 1 ))
+	    count=$(( count + 2 ))
 	    strip_log="$OPTARG"
 	    ;;
 	r)
@@ -161,13 +164,17 @@ while getopts ":hdtTsSaAgGfFL:r:p:" opt; do
 	    build_prefix="$OPTARG"
 	    ;;
 	\?)
-	    echo "invalid option: -$OPTARG" >&2
+	    echo "E: invalid option: -$OPTARG" >&2
 	    echo "try: $0 -h" >&2
 	    exit 1
 	    ;;
     esac
 done
 shift $count
+
+if [ "$1" == "--" ] ; then
+    shift
+fi
 
 cmake_flags=
 if [ -n "$build_rev" ] ; then
