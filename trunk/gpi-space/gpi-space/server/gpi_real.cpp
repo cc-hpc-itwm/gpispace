@@ -111,6 +111,18 @@ namespace gpi
       }
     }
 
+    void gpi_api_t::shutdown ()
+    {
+      if (is_master ())
+      {
+        this->kill ();
+      }
+      else
+      {
+        stop ();
+      }
+    }
+
     gpi::size_t gpi_api_t::number_of_queues () const
     {
       return getNumberOfQueuesGPI();

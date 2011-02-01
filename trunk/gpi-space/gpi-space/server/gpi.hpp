@@ -87,6 +87,7 @@ namespace gpi
       void start (const gpi::timeout_t timeout);
       void stop ();
       void kill ();
+      void shutdown ();
 
       gpi::size_t number_of_counters () const;
       gpi::size_t number_of_queues () const;
