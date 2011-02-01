@@ -6,24 +6,12 @@ fi
 
 src=$( cd $( dirname "$0" ) && pwd )
 
-function usage ()
-{
-    echo "$0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-r version] [-p prefix]" >&2
-    echo "   -h  : print help" >&2
-    echo "   -d  : debug build" >&2
-    echo "   -aA : build apps (a:yes A:no)" >&2
-    echo "   -tT : build tests (t:yes T:no)" >&2
-    echo "   -sS : build static (s:yes S:no)" >&2
-    echo "   -gG : build gpi (g:yes G:no)" >&2
-    echo "   -r  : explicitly set revision" >&2
-    echo "   -p  : install prefix" >&2
-}
-
 build_debug=false
 build_tests=false
 build_static=false
 build_apps=true
 build_gpi=true
+strip_log=
 build_rev=
 build_prefix=
 
@@ -32,7 +20,7 @@ function get_cmake_cache_entry ()
     cache_entry="$1"
     variable="$2"
 
-    result=$( grep "$cache_entry" CMakeCache.txt 2>/dev/null | cut -d= -f 2 )
+    result=$( grep "$cache_entry": CMakeCache.txt 2>/dev/null | cut -d= -f 2 )
     if [ $? -eq 0 -a -n "$result" ] ; then
 	case "$result" in
 	    ON)
@@ -59,10 +47,47 @@ if [ -r "CMakeCache.txt" ] ; then
     get_cmake_cache_entry ENABLE_APPLICATION build_apps
     get_cmake_cache_entry ENABLE_GPI_SPACE build_gpi
     get_cmake_cache_entry CMAKE_INSTALL_PREFIX build_prefix
+    get_cmake_cache_entry FHGLOG_STRIP_LEVEL strip_log
 fi
 
+build_rev=$( cd "$src" && git describe --tags 2>/dev/null )
+if [ $? != 0 ]; then
+    echo "W: could not get version information from git, trying svn..."
+    build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
+fi
+
+function usage ()
+{
+    cat >&2 <<EOF
+$0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-r version] [-L level] [-p prefix]
+   -h  : print help
+   -d  : debug build
+   -aA : build apps (a:yes A:no)
+   -tT : build tests (t:yes T:no)
+   -sS : build static (s:yes S:no)
+   -gG : build gpi (g:yes G:no)
+   -r  : explicitly set revision
+   -L  : strip log level up to and including N
+   -p  : install prefix
+
+Current settings:
+=================
+
+ revision: $build_rev
+   prefix: $build_prefix
+   source: $src
+    build: `pwd`
+
+    debug: $build_debug
+    tests: $build_tests
+     apps: $build_apps
+   static: $build_static
+strip-log: $strip_log
+EOF
+}
+
 count=0
-while getopts ":hdtTsSaAgGr:p:" opt; do
+while getopts ":hdtTsSaAgGL:r:p:" opt; do
     case $opt in
 	h)
 	    usage
@@ -104,6 +129,10 @@ while getopts ":hdtTsSaAgGr:p:" opt; do
 	    count=$(( count + 1 ))
 	    build_gpi=false
 	    ;;
+	L)
+	    count=$(( count + 1 ))
+	    strip_log="$OPTARG"
+	    ;;
 	r)
 	    count=$(( count + 2 ))
 	    build_rev="$OPTARG"
@@ -121,27 +150,17 @@ while getopts ":hdtTsSaAgGr:p:" opt; do
 done
 shift $count
 
-if [ -z "$build_rev" ] ; then
-    build_rev=$( cd "$src" && git describe --tags 2>/dev/null )
-    if [ $? != 0 ]; then
-	echo "W: could not get version information from git, trying svn..."
-	build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
-	if [ $? != 0 ]; then
-	    if [ -z "$REV" ] ; then
-		echo "E: could not figure out which version identification to use, aborting"
-		exit 2
-	    else
-		echo "I: using revision information from environment \$REV: $REV"
-		build_rev="$REV"
-	    fi
-	fi
-    fi
-fi
-
 cmake_flags=
 if [ -n "$build_rev" ] ; then
     build_rev=$( echo $build_rev | sed -e 's/^v//' )
     cmake_flags="$cmake_flags -DPROJECT_REVISION=$build_rev"
+else
+    echo "E: no revision specified!" >&2
+    exit 2
+fi
+
+if [ -n "$strip_log" ] ; then
+    cmake_flags="$cmake_flags -DFHGLOG_STRIP_LEVEL=$strip_log"
 fi
 
 if [ "$build_debug" == "true" ] ; then
