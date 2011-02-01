@@ -45,6 +45,10 @@ namespace gpi
         boost::unique_lock<boost::mutex> lock;
         if (! m_started)
         {
+          sigset_t restrict;
+          sigfillset (&restrict);
+          pthread_sigmask (SIG_BLOCK, &restrict, 0);
+
           m_stopping = false;
 
           DLOG(TRACE, "starting...");
