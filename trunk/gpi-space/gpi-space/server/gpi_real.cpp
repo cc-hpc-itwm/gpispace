@@ -75,20 +75,18 @@ namespace gpi
       startGPI (m_ac, m_av, "", m_mem_size);
       if (timeout) alarm (0);
 
-      m_startup_done = true;
       m_rank = getRankGPI();
       m_dma  = getDmaMemPtrGPI();
+      m_num_nodes = generateHostlistGPI();
+      m_startup_done = true;
     }
 
     void gpi_api_t::stop ()
     {
       if (m_startup_done)
       {
-        if (is_master())
-        {
-          killProcsGPI();
-        }
         shutdownGPI();
+        m_startup_done = false;
       }
     }
 
