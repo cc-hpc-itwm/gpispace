@@ -303,7 +303,7 @@ int main (int ac, char *av[])
 
   gpi_api.barrier();
 
-  itn rc (main_loop(config, gpi_api.rank()));
+  int rc (main_loop(config, gpi_api.rank()));
 
   LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated: " << rc);
 
