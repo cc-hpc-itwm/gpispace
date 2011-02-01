@@ -6,7 +6,6 @@
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 
 namespace gpi
 {
@@ -165,7 +164,6 @@ namespace gpi
       mutable size_t m_num_nodes;
       mutable size_t m_mem_size;
       void *m_dma;
-      boost::shared_ptr<boost::thread> m_signal_handler;
     };
   }
 }
