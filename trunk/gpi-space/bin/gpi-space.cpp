@@ -70,8 +70,16 @@ static void receive_config (gpi_space::config & cfg, gpi_api_t & gpi_api)
   memcpy (&cfg, gpi_api.dma_ptr(), sizeof (cfg));
 }
 
+static void configure (const gpi_space::config & cfg)
+{
+  LOG(INFO, "configuring...");
+  gpi_space::logging::configure (cfg.logging);
+}
+
 static void main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 {
+  configure(config);
+
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
   LOG(INFO, "gpi-space on rank " << rank << " running");
@@ -175,12 +183,6 @@ static void init_config (gpi_space::config & cfg)
            , user_name.c_str()
            );
   cfg.gpi.timeout_in_sec = 0;
-}
-
-static void configure (const gpi_space::config & cfg)
-{
-  LOG(INFO, "configuring...");
-  gpi_space::logging::configure (cfg.logging);
 }
 
 int main (int ac, char *av[])
@@ -299,10 +301,6 @@ int main (int ac, char *av[])
   }
 
   gpi_api.barrier();
-
-  // common code starts here
-
-  configure(config);
 
   main_loop(config, gpi_api.rank());
 
