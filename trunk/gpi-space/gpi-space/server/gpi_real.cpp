@@ -467,7 +467,7 @@ namespace gpi
     {
       assert (m_startup_done);
       int rc
-        (wait_dma (queue));
+        (waitDmaGPI(queue));
       if (rc < 0)
       {
         throw exception::dma_error
