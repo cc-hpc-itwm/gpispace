@@ -47,6 +47,8 @@ namespace gpi
         {
           sigset_t restrict;
           sigfillset (&restrict);
+          sigdelset (&restrict, SIGTSTP);
+          sigdelset (&restrict, SIGCONT);
           pthread_sigmask (SIG_BLOCK, &restrict, 0);
 
           m_stopping = false;
@@ -82,10 +84,18 @@ namespace gpi
         {
           m_stopping = true;
           this->raise (0);
+          ::raise (SIGINT);
           DLOG(TRACE, "stopping...");
         }
       }
+
       join ();
+
+      {
+        boost::unique_lock<boost::recursive_mutex> lock (m_mutex);
+        m_started = false;
+        m_signal_delivered.notify_all();
+      }
     }
 
     void handler_t::wait ()
@@ -151,13 +161,9 @@ namespace gpi
       char buf[1024];
       sigset_t restrict;
 
-      //      sigfillset (&restrict);
       sigemptyset (&restrict);
-      sigdelset (&restrict, SIGTSTP);
-      sigdelset (&restrict, SIGCONT);
-
-      sigaddset (&restrict, SIGTSTP);
-      sigaddset (&restrict, SIGCONT);
+      //      sigaddset (&restrict, SIGTSTP);
+      //      sigaddset (&restrict, SIGCONT);
       sigaddset (&restrict, SIGINT);
       sigaddset (&restrict, SIGTERM);
       sigaddset (&restrict, SIGSEGV);
@@ -168,7 +174,6 @@ namespace gpi
       sigaddset (&restrict, SIGHUP);
 
       pthread_sigmask (SIG_BLOCK, &restrict, 0);
-      pthread_sigmask (SIG_UNBLOCK, 0, &restrict);
 
       while (!m_stopping)
       {
@@ -177,13 +182,13 @@ namespace gpi
         siginfo_t sig_info;
 
         struct timespec timeout;
-        timeout.tv_sec = 0;
+        timeout.tv_sec = 1;
         timeout.tv_nsec = 500 * 1000 * 1000;
 
         DLOG(TRACE, "handler waiting for signals");
 
         int ec = sigtimedwait (&restrict, &sig_info, &timeout);
-        //        int ec = sigwaitinfo (&restrict,&sig_info);
+        //int ec = sigwaitinfo (&restrict,&sig_info);
 
         if (m_stopping) break;
 
