@@ -17,6 +17,9 @@ namespace gpi
           config_error,
           env_check_failed,
           startup_failed,
+          set_port_failed,
+          set_mtu_failed,
+          set_network_type_failed,
           write_dma_failed,
           read_dma_failed,
           passive_send_failed,
@@ -28,24 +31,27 @@ namespace gpi
     class code_t
     {
     public:
-      explicit code_t (int val, std::string const & txt)
+      explicit code_t (int val, std::string const & txt, std::string const & detail)
         : m_val (val)
         , m_txt (txt)
+        , m_detail (detail)
       {}
 
       virtual ~code_t () {}
-      const char * name() const { return m_txt.c_str(); };
+      const std::string & name() const    { return m_txt; }
+      const std::string & detail () const { return m_detail; }
       int value () const { return m_val; }
     private:
       int m_val;
       std::string m_txt;
+      std::string m_detail;
     };
 
 #define MK_CODE_T(name)                         \
     struct name : public code_t                 \
     {                                           \
-      name ()                                   \
-        : code_t (errc::name, #name)            \
+      name (std::string const & detail="")      \
+        : code_t (errc::name, #name, detail)    \
       {}                                        \
     }
 
@@ -55,6 +61,9 @@ namespace gpi
     MK_CODE_T(config_error);
     MK_CODE_T(env_check_failed);
     MK_CODE_T(startup_failed);
+    MK_CODE_T(set_port_failed);
+    MK_CODE_T(set_mtu_failed);
+    MK_CODE_T(set_network_type_failed);
     MK_CODE_T(write_dma_failed);
     MK_CODE_T(read_dma_failed);
     MK_CODE_T(passive_send_failed);
