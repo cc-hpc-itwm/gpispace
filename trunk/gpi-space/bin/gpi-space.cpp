@@ -28,7 +28,7 @@ typedef gpi::server::gpi_api_t gpi_api_t;
 
 static int shutdown_handler (gpi_api_t * api, int signal)
 {
-  LOG(INFO, "GPI process terminating due to signal: " << signal);
+  LOG(INFO, "GPI process (rank " << api->rank() << ") terminating due to signal: " << signal);
   FHGLOG_FLUSH();
   api->shutdown ();
   exit (0);
@@ -306,6 +306,8 @@ int main (int ac, char *av[])
   int rc (main_loop(config, gpi_api.rank()));
 
   LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated: " << rc);
+
+  gpi_api.shutdown ();
 
   gpi::signal::handler().stop();
   return EXIT_SUCCESS;
