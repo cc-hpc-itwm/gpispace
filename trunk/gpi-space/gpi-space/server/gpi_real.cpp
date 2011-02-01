@@ -78,10 +78,14 @@ namespace gpi
 
     void gpi_api_t::stop ()
     {
+      throw exception::gpi_error
+        (gpi::error::operation_not_implemented());
     }
 
     void gpi_api_t::kill ()
     {
+      throw exception::gpi_error
+        (gpi::error::operation_not_implemented());
     }
 
     gpi::size_t gpi_api_t::number_of_queues () const
@@ -127,7 +131,7 @@ namespace gpi
 
     void * gpi_api_t::dma_ptr (void)
     {
-      return 0;
+      return getDmaMemPtrGPI();
     }
 
     void gpi_api_t::set_network_type (const gpi::network_type_t n)
@@ -185,7 +189,27 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      int rc
+        (readDmaGPI ( local_offset
+                    , remote_offset
+                    , amount
+                    , from_node
+                    , queue
+                    )
+        );
 
+      if (rc != 0)
+      {
+        throw exception::dma_error
+          ( gpi::error::read_dma_failed()
+          , local_offset
+          , remote_offset
+          , from_node
+          , rank()
+          , amount
+          , queue
+          );
+      }
     }
     void gpi_api_t::write_dma ( const offset_t local_offset
                               , const offset_t remote_offset
@@ -194,6 +218,27 @@ namespace gpi
                               , const queue_desc_t queue
                               )
     {
+      int rc
+        (writeDmaGPI ( local_offset
+                     , remote_offset
+                     , amount
+                     , to_node
+                     , queue
+                     )
+        );
+
+      if (rc != 0)
+      {
+        throw exception::dma_error
+          ( gpi::error::write_dma_failed()
+          , local_offset
+          , remote_offset
+          , rank()
+          , to_node
+          , amount
+          , queue
+          );
+      }
     }
 
     void gpi_api_t::send_dma ( const offset_t local_offset
@@ -202,36 +247,139 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      int rc
+        (sendDmaGPI ( local_offset
+                    , amount
+                    , to_node
+                    , queue
+                    )
+        );
+
+      if (rc != 0)
+      {
+        throw exception::dma_error
+          ( gpi::error::send_dma_failed()
+          , local_offset
+          , 0
+          , rank()
+          , to_node
+          , amount
+          , queue
+          );
+      }
     }
     void gpi_api_t::recv_dma ( const offset_t local_offset
-                             , const size_t size
+                             , const size_t amount
                              , const rank_t from_node
                              , const queue_desc_t queue
                              )
     {
+      int rc
+        (recvDmaGPI ( local_offset
+                    , amount
+                    , from_node
+                    , queue
+                    )
+        );
+
+      if (rc != 0)
+      {
+        throw exception::dma_error
+          ( gpi::error::recv_dma_failed()
+          , local_offset
+          , 0
+          , from_node
+          , rank()
+          , amount
+          , queue
+          );
+      }
     }
 
     size_t gpi_api_t::wait_dma (const queue_desc_t queue)
     {
-      return 0;
+      int rc
+        (wait_dma (queue));
+      if (rc < 0)
+      {
+        throw exception::dma_error
+          ( gpi::error::wait_dma_failed()
+          , 0
+          , 0
+          , rank ()
+          , 0
+          , 0
+          , queue
+          );
+      }
+      else
+      {
+        return size_t (rc);
+      }
     }
 
     void gpi_api_t::send_passive ( const offset_t local_offset
-                                 , const size_t size
-                                 , const rank_t to_rank
+                                 , const size_t amount
+                                 , const rank_t to_node
                                  )
     {
+      int rc
+        (sendDmaPassiveGPI ( local_offset
+                           , amount
+                           , to_node
+                           )
+        );
+      if (rc != 0)
+      {
+        throw exception::dma_error
+          ( gpi::error::send_passive_failed()
+          , local_offset
+          , 0
+          , rank()
+          , to_node
+          , amount
+          , 0
+          );
+      }
     }
 
     void gpi_api_t::recv_passive ( const offset_t local_offset
-                                 , const size_t size
-                                 , rank_t & from_rank
+                                 , const size_t amount
+                                 , rank_t & from_node
                                  )
     {
+      int tmp;
+      int rc
+        (recvDmaPassiveGPI ( local_offset
+                           , amount
+                           , &tmp
+                           )
+        );
+      from_node = tmp;
+
+      if (rc != 0)
+      {
+        throw exception::dma_error
+          ( gpi::error::recv_passive_failed()
+          , local_offset
+          , 0
+          , from_node
+          , rank ()
+          , amount
+          , 0
+          );
+      }
     }
 
-    void gpi_api_t::wait_passive ( void )
+    size_t gpi_api_t::wait_passive ( void )
     {
+      int rc(waitDmaPassiveGPI());
+      if (rc < 0)
+      {
+        throw exception::gpi_error
+          (gpi::error::wait_passive_failed());
+      }
+      return size_t (rc);
     }
 
     // private functions

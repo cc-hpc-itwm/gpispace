@@ -43,6 +43,35 @@ namespace gpi
         const std::string user_message;
         const std::string message;
       };
+
+      struct dma_error : public gpi_error
+      {
+        dma_error ( gpi::error::code_t const & ec
+                  , const offset_t loc_offset
+                  , const offset_t rem_offset
+                  , const rank_t from
+                  , const rank_t to
+                  , const size_t bytes
+                  , const queue_desc_t via_queue
+                  )
+          : gpi_error (ec)
+          , local_offset (loc_offset)
+          , remote_offset (rem_offset)
+          , from_node (from)
+          , to_node (to)
+          , amount (bytes)
+          , queue (via_queue)
+        {}
+
+        virtual ~dma_error () throw () {}
+
+        const offset_t local_offset;
+        const offset_t remote_offset;
+        const rank_t from_node;
+        const rank_t to_node;
+        const size_t amount;
+        const queue_desc_t queue;
+      };
     }
 
     class gpi_api_t : boost::noncopyable
@@ -109,14 +138,14 @@ namespace gpi
       size_t wait_dma (const queue_desc_t queue);
 
       void send_passive ( const offset_t local_offset
-                        , const size_t size
-                        , const rank_t to_rank
+                        , const size_t amount
+                        , const rank_t to_node
                         );
       void recv_passive ( const offset_t local_offset
-                        , const size_t size
-                        , rank_t & from_rank
+                        , const size_t amount
+                        , rank_t & from_node
                         );
-      void wait_passive ( void );
+      size_t wait_passive ( void );
 
     private:
       int startup_timedout_cb (int);
