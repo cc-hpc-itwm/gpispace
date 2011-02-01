@@ -4,14 +4,6 @@
  *
  */
 
-#include <fhglog/minimal.hpp>
-
-#include <gpi-space/config/config.hpp>
-#include <gpi-space/config/config_io.hpp>
-#include <gpi-space/config/parser.hpp>
-#include <gpi-space/signal_handler.hpp>
-#include <gpi-space/server/gpi.hpp>
-
 #include <stdio.h> // snprintf
 #include <unistd.h> // getuid, alarm
 #include <sys/types.h> // uid_t
@@ -22,19 +14,23 @@
 #include <iostream>
 #include <fstream>
 
+#include <fhglog/minimal.hpp>
+
+#include <boost/bind.hpp>
+
+#include <gpi-space/config/config.hpp>
+#include <gpi-space/config/config_io.hpp>
+#include <gpi-space/config/parser.hpp>
+#include <gpi-space/signal_handler.hpp>
+#include <gpi-space/server/gpi.hpp>
+
 typedef gpi::server::gpi_api_t gpi_api_t;
 
-static int master_shutdown_handler (int signal)
+static int shutdown_handler (gpi_api_t * api, int signal)
 {
-  LOG(INFO, "GPI master process terminating due to signal: " << signal);
-  // gpi::server::api().stop ();
-  exit (0);
-}
-
-static int slave_shutdown_handler (int signal)
-{
-  LOG(INFO, "GPI slave process terminating due to signal: " << signal);
-  // gpi::server::api().stop ();
+  LOG(INFO, "GPI process terminating due to signal: " << signal);
+  FHGLOG_FLUSH();
+  api->shutdown ();
   exit (0);
 }
 
@@ -76,7 +72,7 @@ static void configure (const gpi_space::config & cfg)
   gpi_space::logging::configure (cfg.logging);
 }
 
-static void main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
+static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 {
   configure(cfg);
 
@@ -154,8 +150,10 @@ static void main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
   }
   else
   {
-
+    gpi::signal::handler().join ();
   }
+
+  return EXIT_SUCCESS;
 }
 
 static void init_config (gpi_space::config & cfg)
@@ -187,6 +185,8 @@ static void init_config (gpi_space::config & cfg)
 
 int main (int ac, char *av[])
 {
+  gpi::signal::handler().start();
+
   {
     for (int i (0) ; i < ac; ++i)
     {
@@ -287,26 +287,26 @@ int main (int ac, char *av[])
   gpi_api.start (config.gpi.timeout_in_sec);
   LOG(INFO, "GPI started: version: " << gpi_api.version());
 
+  gpi::signal::handler().connect
+    (SIGINT, boost::bind (shutdown_handler, &gpi_api, _1));
+  gpi::signal::handler().connect
+    (SIGTERM, boost::bind (shutdown_handler, &gpi_api, _1));
+
   if (gpi_api.is_master())
   {
-    gpi::signal::handler().connect (SIGINT, master_shutdown_handler);
-    gpi::signal::handler().connect (SIGTERM, master_shutdown_handler);
     distribute_config (config, gpi_api);
   }
   else
   {
-    gpi::signal::handler().connect (SIGINT,  slave_shutdown_handler);
-    gpi::signal::handler().connect (SIGTERM, slave_shutdown_handler);
     receive_config (config, gpi_api);
   }
 
   gpi_api.barrier();
 
-  main_loop(config, gpi_api.rank());
+  itn rc (main_loop(config, gpi_api.rank()));
 
-  gpi_api.barrier ();
+  LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated: " << rc);
 
-  LOG(DEBUG, "gpi process (rank " << gpi_api.rank() << ") terminated");
-
+  gpi::signal::handler().stop();
   return EXIT_SUCCESS;
 }
