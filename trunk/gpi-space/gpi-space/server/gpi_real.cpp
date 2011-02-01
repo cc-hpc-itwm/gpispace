@@ -183,6 +183,7 @@ namespace gpi
 
     gpi::rank_t gpi_api_t::rank () const
     {
+      assert (m_startup_done);
       return m_rank;
     }
 
@@ -206,6 +207,7 @@ namespace gpi
 
     void * gpi_api_t::dma_ptr (void)
     {
+      assert (m_startup_done);
       return m_dma;
     }
 
@@ -339,6 +341,7 @@ namespace gpi
 
     void gpi_api_t::barrier (void) const
     {
+      assert (m_startup_done);
       barrierGPI();
     }
 
@@ -349,6 +352,7 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      assert (m_startup_done);
       int rc
         (readDmaGPI ( local_offset
                     , remote_offset
@@ -378,6 +382,7 @@ namespace gpi
                               , const queue_desc_t queue
                               )
     {
+      assert (m_startup_done);
       int rc
         (writeDmaGPI ( local_offset
                      , remote_offset
@@ -407,6 +412,7 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      assert (m_startup_done);
       int rc
         (sendDmaGPI ( local_offset
                     , amount
@@ -434,6 +440,7 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      assert (m_startup_done);
       int rc
         (recvDmaGPI ( local_offset
                     , amount
@@ -458,6 +465,7 @@ namespace gpi
 
     size_t gpi_api_t::wait_dma (const queue_desc_t queue)
     {
+      assert (m_startup_done);
       int rc
         (wait_dma (queue));
       if (rc < 0)
@@ -509,6 +517,7 @@ namespace gpi
                                  , rank_t & from_node
                                  )
     {
+      assert (m_startup_done);
       int tmp;
       int rc
         (recvDmaPassiveGPI ( local_offset
@@ -534,6 +543,7 @@ namespace gpi
 
     size_t gpi_api_t::wait_passive ( void )
     {
+      assert (m_startup_done);
       int rc(waitDmaPassiveGPI());
       if (rc < 0)
       {
