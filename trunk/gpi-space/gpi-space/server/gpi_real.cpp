@@ -84,6 +84,10 @@ namespace gpi
     {
       if (m_startup_done)
       {
+        if (is_master())
+        {
+          killProcsGPI();
+        }
         shutdownGPI();
       }
     }
