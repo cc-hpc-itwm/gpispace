@@ -141,9 +141,9 @@ namespace gpi
 
       connection_id_t m_next_connection_id;
       std::size_t m_signals_in_progress;
-      boost::mutex m_signal_queue_mutex;
+      boost::recursive_mutex m_signal_queue_mutex;
       boost::recursive_mutex m_signal_map_mutex;
-      boost::mutex m_mutex;
+      boost::recursive_mutex m_mutex;
       boost::condition_variable_any m_signal_arrived;
       boost::condition_variable_any m_signal_delivered;
       boost::condition_variable_any m_stopped;

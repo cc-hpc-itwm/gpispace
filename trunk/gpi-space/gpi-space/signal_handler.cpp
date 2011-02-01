@@ -42,7 +42,7 @@ namespace gpi
     void handler_t::start ()
     {
       {
-        boost::unique_lock<boost::mutex> lock;
+        boost::unique_lock<boost::recursive_mutex> lock;
         if (! m_started)
         {
           sigset_t restrict;
@@ -76,27 +76,21 @@ namespace gpi
 
     void handler_t::stop ()
     {
-      boost::unique_lock<boost::mutex> lock (m_mutex);
-
-      if (m_started)
       {
-        m_stopping = true;
-
-        DLOG(TRACE, "stopping...");
-
-        this->raise (0);
-
-        m_started = false;
-
-        DLOG(TRACE, "stopped.");
+        boost::unique_lock<boost::recursive_mutex> lock (m_mutex);
+        if (m_started)
+        {
+          m_stopping = true;
+          this->raise (0);
+          DLOG(TRACE, "stopping...");
+        }
       }
-
-      m_stopped.notify_all ();
+      join ();
     }
 
     void handler_t::wait ()
     {
-      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      boost::unique_lock<boost::recursive_mutex> lock (m_signal_queue_mutex);
       while (m_started && (!m_signal_queue.empty() || m_signals_in_progress))
       {
         m_signal_delivered.wait (lock);
@@ -105,18 +99,15 @@ namespace gpi
 
     void handler_t::join ()
     {
-      boost::unique_lock<boost::mutex> lock (m_mutex);
-      while (m_started)
-      {
-        m_stopped.wait (lock);
-        m_handler_thread->join ();
+      if (m_worker_thread && (boost::this_thread::get_id() != m_worker_thread->get_id()))
         m_worker_thread->join ();
-      }
+      if (m_handler_thread)
+        m_handler_thread->join ();
     }
 
     void handler_t::raise (const signal_t sig)
     {
-      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      boost::unique_lock<boost::recursive_mutex> lock (m_signal_queue_mutex);
       m_signal_queue.push_back (sig);
       m_signal_arrived.notify_one ();
     }
@@ -248,7 +239,7 @@ namespace gpi
 
     handler_t::signal_t handler_t::next_signal ()
     {
-      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      boost::unique_lock<boost::recursive_mutex> lock (m_signal_queue_mutex);
       while (m_signal_queue.empty())
       {
         m_signal_arrived.wait (lock);
@@ -261,7 +252,7 @@ namespace gpi
 
     void handler_t::signal_delivered (const signal_t &)
     {
-      boost::unique_lock<boost::mutex> lock (m_signal_queue_mutex);
+      boost::unique_lock<boost::recursive_mutex> lock (m_signal_queue_mutex);
       --m_signals_in_progress;
       m_signal_delivered.notify_all ();
     }
