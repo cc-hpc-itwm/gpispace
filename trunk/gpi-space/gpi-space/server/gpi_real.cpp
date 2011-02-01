@@ -34,7 +34,7 @@ namespace gpi
     {
       try
       {
-        stop ();
+        shutdown ();
       }
       catch (std::exception const & ex)
       {
@@ -58,6 +58,8 @@ namespace gpi
     // wrapped C function calls
     void gpi_api_t::start (const gpi::timeout_t timeout)
     {
+      assert (! m_startup_done);
+
       // 1. register alarm signal handler
       gpi::signal::handler_t::scoped_connection_t
         conn (gpi::signal::handler().connect
@@ -68,8 +70,6 @@ namespace gpi
                            )
              )
              );
-
-      m_startup_done = false;
 
       if (timeout) alarm (timeout);
       startGPI (m_ac, m_av, "", m_mem_size);
@@ -111,13 +111,17 @@ namespace gpi
 
     void gpi_api_t::shutdown ()
     {
-      if (is_master ())
+      if (m_startup_done)
       {
-        this->kill ();
-      }
-      else
-      {
-        stop ();
+        if (is_master ())
+        {
+          this->kill ();
+        }
+        else
+        {
+          stop ();
+        }
+        m_startup_done = false;
       }
     }
 
