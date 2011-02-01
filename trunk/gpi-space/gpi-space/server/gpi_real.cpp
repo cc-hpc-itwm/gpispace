@@ -11,6 +11,8 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <gpi-space/signal_handler.hpp>
+
 namespace gpi
 {
   namespace server
@@ -20,6 +22,7 @@ namespace gpi
     gpi_api_t::gpi_api_t ()
       : m_ac (0)
       , m_av (NULL)
+      , m_is_master (true)
       , m_startup_done (false)
       , m_rank (std::numeric_limits<rank_t>::max())
       , m_num_nodes (0)
@@ -42,6 +45,8 @@ namespace gpi
     {
       m_ac = ac;
       m_av = av;
+      m_is_master = isMasterProcGPI(m_ac, m_av);
+      m_num_nodes = generateHostlistGPI();
     }
 
     void gpi_api_t::set_memory_size (const gpi::size_t sz)
@@ -52,28 +57,23 @@ namespace gpi
     // wrapped C function calls
     void gpi_api_t::start (const gpi::timeout_t timeout)
     {
-      // fire up a thread that handles signals
-
-
       // 1. register alarm signal handler
-      /*
-        signal_handler_t handler
-        (boost::bind ( &gpi_api_t::handle_alarm
-        , this
-        , _1
-        )
-        );
-      */
+      gpi::signal::handler_t::scoped_connection_t
+        conn (gpi::signal::handler().connect
+             ( SIGALRM
+             , boost::bind ( &gpi_api_t::startup_timedout_cb
+                           , this
+                           , _1
+                           )
+             )
+             );
 
+      m_startup_done = false;
       alarm (timeout);
-
-      // 2. start alarm
-      // 3. start gpi
-      // 4a. if alarm before start_gpi returns
-      //        - restore old alarm handler
-      //        - throw
-      // 4b. else
-      //        - restore old alarm handler
+      startGPI (m_ac, m_av, "", m_mem_size);
+      alarm (0);
+      m_startup_done = true;
+      m_rank = getRankGPI();
     }
 
     void gpi_api_t::stop ()
@@ -84,44 +84,45 @@ namespace gpi
     {
     }
 
-    gpi::size_t gpi_api_t::number_of_counters () const
-    {
-      return 0;
-    }
-
     gpi::size_t gpi_api_t::number_of_queues () const
     {
-      return 0;
+      return getNumberOfQueuesGPI();
     }
 
     gpi::size_t gpi_api_t::queue_depth () const
     {
-      return 0;
+      return getQueueDepthGPI();
+    }
+
+    gpi::size_t gpi_api_t::number_of_counters () const
+    {
+      return getNumberOfCountersGPI();
     }
 
     gpi::version_t gpi_api_t::version () const
     {
-      return 0;
+      return getVersionGPI();
     }
 
     gpi::port_t gpi_api_t::port () const
     {
-      return 0;
+      return getPortGPI();
     }
 
     gpi::size_t gpi_api_t::number_of_nodes () const
     {
-      return 1;
+      return m_num_nodes;
     }
 
-    std::string gpi_api_t::hostname (const gpi::rank_t) const
+    std::string gpi_api_t::hostname (const gpi::rank_t r) const
     {
-      return "localhost";
+      // TODO: ap: cache the hostnames locally
+      return getHostnameGPI (r);
     }
 
     gpi::rank_t gpi_api_t::rank () const
     {
-      return 0;
+      return m_rank;
     }
 
     void * gpi_api_t::dma_ptr (void)
@@ -129,41 +130,52 @@ namespace gpi
       return 0;
     }
 
-    void gpi_api_t::set_network_type (const gpi::network_type_t)
+    void gpi_api_t::set_network_type (const gpi::network_type_t n)
     {
+      int rc (setNetworkGPI (GPI_NETWORK_TYPE(n)));
+      if (rc != 0)
+        throw exception::gpi_error(gpi::error::set_network_type_failed());
     }
 
-    void gpi_api_t::set_port (const gpi::port_t)
+    void gpi_api_t::set_port (const gpi::port_t p)
     {
+      int rc (setPortGPI (p));
+      if (rc != 0)
+        throw exception::gpi_error(gpi::error::set_port_failed());
     }
 
-    void gpi_api_t::set_mtu (const gpi::size_t)
+    void gpi_api_t::set_mtu (const gpi::size_t mtu)
     {
+      int rc (setMtuSizeGPI (mtu));
+      if (rc != 0)
+        throw exception::gpi_error(gpi::error::set_mtu_failed());
     }
 
-    void gpi_api_t::set_number_of_processes (const gpi::size_t)
+    void gpi_api_t::set_number_of_processes (const gpi::size_t n)
     {
+      setNpGPI (n);
     }
 
-    bool gpi_api_t::ping (const gpi::rank_t) const
+    bool gpi_api_t::ping (const gpi::rank_t rank) const
     {
-      return false;
+      return ping (hostname (rank));
     }
     bool gpi_api_t::ping (std::string const & hostname) const
     {
-      return false;
+      return (pingDaemonGPI(hostname.c_str()) == 0);
     }
     bool gpi_api_t::is_master (void) const
     {
-      return true;
+      return m_is_master;
     }
     bool gpi_api_t::is_slave (void) const
     {
-      return false;
+      return !is_master();
     }
 
     void gpi_api_t::barrier (void) const
     {
+      barrierGPI();
     }
 
     void gpi_api_t::read_dma ( const offset_t local_offset
@@ -173,6 +185,7 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+
     }
     void gpi_api_t::write_dma ( const offset_t local_offset
                               , const offset_t remote_offset
@@ -216,46 +229,17 @@ namespace gpi
                                  )
     {
     }
+
     void gpi_api_t::wait_passive ( void )
     {
     }
 
-    // ***** private functions
-    void gpi_api_t::signal_handler ()
+    // private functions
+    int gpi_api_t::startup_timedout_cb (int)
     {
-      // signal handler thread
-      char buf[1024];
-      sigset_t restrict;
-      sigfillset (&restrict);
-      int sig (0);
-
-      for (;;)
-      {
-        int ec = sigwait (&restrict, &sig);
-        if (ec == 0)
-        {
-          handle_signal (sig);
-        }
-        else
-        {
-          LOG( ERROR
-             , "sigwait() returned an error [" << ec << "]: " << strerror_r ( ec
-                                                                            , buf
-                                                                            , sizeof(buf)
-                                                                            )
-             );
-        }
-      }
-    }
-
-    void gpi_api_t::handle_signal (int sig)
-    {
-      switch (sig)
-      {
-      case SIGALRM:
-        m_startup_done = false;
-        break;
-      };
+      m_startup_done = false;
+      // currently there is no other way than to exit :-(
+      exit (gpi::error::errc::startup_failed);
     }
   }
 }

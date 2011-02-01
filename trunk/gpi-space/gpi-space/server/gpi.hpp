@@ -4,6 +4,7 @@
 #include <gpi-space/types.hpp>
 #include <gpi-space/error.hpp>
 
+#include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 
@@ -19,7 +20,7 @@ namespace gpi
         gpi_error (gpi::error::code_t const & ec)
           : std::runtime_error (ec.name())
           , value (ec.value())
-          , user_message ()
+          , user_message (ec.detail())
           , message ("gpi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name())
         {}
 
@@ -44,7 +45,7 @@ namespace gpi
       };
     }
 
-    class gpi_api_t
+    class gpi_api_t : boost::noncopyable
     {
     public:
       gpi_api_t ();
@@ -118,11 +119,11 @@ namespace gpi
       void wait_passive ( void );
 
     private:
-      void handle_signal (int);
-      void signal_handler (void); // thread entry
+      int startup_timedout_cb (int);
 
       int   m_ac;
       char **m_av;
+      bool m_is_master;
       bool  m_startup_done;
       mutable rank_t m_rank;
       mutable size_t m_num_nodes;
