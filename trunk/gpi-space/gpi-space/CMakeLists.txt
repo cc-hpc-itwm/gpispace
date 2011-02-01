@@ -1,7 +1,6 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
-  gpi-space.hpp
   types.hpp
   error.hpp
 
@@ -9,7 +8,6 @@ set (hdrs
   )
 
 set (srcs
-  gpi-space.cpp
   signal_handler.cpp
   )
 
