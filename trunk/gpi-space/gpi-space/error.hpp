@@ -20,10 +20,18 @@ namespace gpi
           set_port_failed,
           set_mtu_failed,
           set_network_type_failed,
+
+          send_dma_failed,
+          recv_dma_failed,
           write_dma_failed,
           read_dma_failed,
-          passive_send_failed,
-          passive_recv_failed,
+          wait_dma_failed,
+
+          send_passive_failed,
+          recv_passive_failed,
+          wait_passive_failed,
+
+          operation_not_implemented,
           internal_error,
         };
     }
@@ -64,10 +72,18 @@ namespace gpi
     MK_CODE_T(set_port_failed);
     MK_CODE_T(set_mtu_failed);
     MK_CODE_T(set_network_type_failed);
+
+    MK_CODE_T(send_dma_failed);
+    MK_CODE_T(recv_dma_failed);
     MK_CODE_T(write_dma_failed);
     MK_CODE_T(read_dma_failed);
-    MK_CODE_T(passive_send_failed);
-    MK_CODE_T(passive_recv_failed);
+    MK_CODE_T(wait_dma_failed);
+
+    MK_CODE_T(send_passive_failed);
+    MK_CODE_T(recv_passive_failed);
+    MK_CODE_T(wait_passive_failed);
+
+    MK_CODE_T(operation_not_implemented);
     MK_CODE_T(internal_error);
 
 #undef MK_CODE_T
