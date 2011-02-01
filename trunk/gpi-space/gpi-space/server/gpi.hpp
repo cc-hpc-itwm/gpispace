@@ -94,6 +94,13 @@ namespace gpi
       gpi::version_t version () const;
       gpi::port_t port () const;
       gpi::size_t number_of_nodes () const;
+
+      gpi::size_t open_dma_requests (const queue_desc_t) const;
+      bool max_dma_requests_reached (const queue_desc_t) const;
+
+      gpi::size_t open_passive_requests () const;
+      bool max_passive_requests_reached () const;
+
       std::string hostname (const gpi::rank_t) const;
       gpi::rank_t rank () const;
       void *dma_ptr (void);

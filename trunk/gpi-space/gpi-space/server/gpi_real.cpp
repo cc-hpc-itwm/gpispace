@@ -137,6 +137,40 @@ namespace gpi
       return m_num_nodes;
     }
 
+    gpi::size_t gpi_api_t::open_dma_requests (const queue_desc_t q) const
+    {
+      assert (m_startup_done);
+      int rc (openDMARequestsGPI (q));
+      if (rc < 0)
+      {
+        throw exception::gpi_error(gpi::error::open_dma_requests_failed());
+      }
+      return gpi::size_t (rc);
+    }
+
+    bool gpi_api_t::max_dma_requests_reached (const queue_desc_t q) const
+    {
+      assert (m_startup_done);
+      return (open_dma_requests(q) >= queue_depth());
+    }
+
+    gpi::size_t gpi_api_t::open_passive_requests () const
+    {
+      assert (m_startup_done);
+      int rc (openDMAPassiveRequestsGPI ());
+      if (rc < 0)
+      {
+        throw exception::gpi_error(gpi::error::open_passive_requests_failed());
+      }
+      return gpi::size_t (rc);
+    }
+
+    bool gpi_api_t::max_passive_requests_reached (void) const
+    {
+      assert (m_startup_done);
+      return (open_passive_requests() >= queue_depth());
+    }
+
     std::string gpi_api_t::hostname (const gpi::rank_t r) const
     {
       // TODO: ap: cache the hostnames locally
@@ -427,6 +461,7 @@ namespace gpi
                                  , const rank_t to_node
                                  )
     {
+      assert (m_startup_done);
       int rc
         (sendDmaPassiveGPI ( local_offset
                            , amount
