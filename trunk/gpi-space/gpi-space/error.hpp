@@ -15,7 +15,12 @@ namespace gpi
           unknown,
           timeout,
           config_error,
-          env_check_failed,
+
+          ping_check_failed,
+          port_check_failed,
+          libs_check_failed,
+          ib_check_failed,
+
           startup_failed,
           kill_procs_failed,
           set_port_failed,
@@ -69,7 +74,12 @@ namespace gpi
     MK_CODE_T(unknown);
     MK_CODE_T(timeout);
     MK_CODE_T(config_error);
-    MK_CODE_T(env_check_failed);
+
+    MK_CODE_T(ping_check_failed);
+    MK_CODE_T(port_check_failed);
+    MK_CODE_T(libs_check_failed);
+    MK_CODE_T(ib_check_failed);
+
     MK_CODE_T(startup_failed);
     MK_CODE_T(kill_procs_failed);
 
