@@ -7,8 +7,8 @@ set (srcs
 
 add_executable (gpi-space ${srcs})
 target_link_libraries (gpi-space
+  gpi-space-server
   gpi-space-static
-  ${GPI_LIBRARIES}
   ${MMGR_LIBRARY}
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
