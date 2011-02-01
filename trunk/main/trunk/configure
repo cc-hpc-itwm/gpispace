@@ -11,6 +11,7 @@ build_tests=false
 build_static=false
 build_apps=true
 build_gpi=true
+build_fuse=true
 strip_log=
 build_rev=
 build_prefix=
@@ -46,6 +47,7 @@ if [ -r "CMakeCache.txt" ] ; then
     get_cmake_cache_entry BUILD_STATIC_BINARIES build_static
     get_cmake_cache_entry ENABLE_APPLICATION build_apps
     get_cmake_cache_entry ENABLE_GPI_SPACE build_gpi
+    get_cmake_cache_entry ENABLE_FUSE build_fuse
     get_cmake_cache_entry CMAKE_INSTALL_PREFIX build_prefix
     get_cmake_cache_entry FHGLOG_STRIP_LEVEL strip_log
 fi
@@ -71,6 +73,7 @@ cat >&2 <<EOF
 #        tests: $build_tests
 #         apps: $build_apps
 #       static: $build_static
+#         fuse: $build_fuse
 #    strip-log: $strip_log
 EOF
 }
@@ -78,13 +81,14 @@ EOF
 function usage ()
 {
     cat >&2 <<EOF
-$0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-r version] [-L level] [-p prefix]
+$0 [-h] [-d] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-r version] [-L level] [-p prefix]
    -h  : print help
    -d  : debug build
    -aA : build apps (a:yes A:no)
    -tT : build tests (t:yes T:no)
    -sS : build static (s:yes S:no)
    -gG : build gpi (g:yes G:no)
+   -fF : build fuse module (f:yes F:no)
    -r  : explicitly set revision
    -L  : strip log level up to and including N
    -p  : install prefix
@@ -94,7 +98,7 @@ EOF
 }
 
 count=0
-while getopts ":hdtTsSaAgGL:r:p:" opt; do
+while getopts ":hdtTsSaAgGfFL:r:p:" opt; do
     case $opt in
 	h)
 	    usage
@@ -135,6 +139,14 @@ while getopts ":hdtTsSaAgGL:r:p:" opt; do
 	G)
 	    count=$(( count + 1 ))
 	    build_gpi=false
+	    ;;
+	f)
+	    count=$(( count + 1 ))
+	    build_fuse=true
+	    ;;
+	F)
+	    count=$(( count + 1 ))
+	    build_fuse=false
 	    ;;
 	L)
 	    count=$(( count + 1 ))
@@ -198,6 +210,12 @@ if [ "$build_gpi" == "true" ] ; then
     cmake_flags="$cmake_flags -DENABLE_GPI_SPACE=ON"
 else
     cmake_flags="$cmake_flags -DENABLE_GPI_SPACE=OFF"
+fi
+
+if [ "$build_fuse" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_FUSE=ON"
+else
+    cmake_flags="$cmake_flags -DENABLE_FUSE=OFF"
 fi
 
 if [ -z "$build_prefix" ] ; then
