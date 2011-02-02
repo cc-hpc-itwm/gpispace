@@ -49,6 +49,36 @@ namespace gpi
             gpi::pc::type::segment::list_t list;
           };
         };
+
+        union message_t
+        {
+          struct
+          {
+            union
+            {
+              attach_t req;
+              attach_reply_t rpl;
+            };
+          } attach;
+
+          struct
+          {
+            union
+            {
+              detach_t req;
+              detach_reply_t rpl;
+            };
+          } detach;
+
+          struct
+          {
+            union
+            {
+              list_t req;
+              list_reply_t rpl;
+            };
+          } list;
+        };
       }
     }
   }

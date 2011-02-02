@@ -50,6 +50,36 @@ namespace gpi
             gpi::pc::type::handle::list_t list;
           };
         };
+
+        union message_t
+        {
+          struct
+          {
+            union
+            {
+              memory::alloc_t       req;
+              memory::alloc_reply_t rpl;
+            };
+          } alloc;
+
+          struct
+          {
+            union
+            {
+              memory::free_t req;
+              memory::free_reply_t rpl;
+            };
+          } free;
+
+          struct
+          {
+            union
+            {
+              memory::list_t req;
+              memory::list_reply_t rpl;
+            };
+          } list;
+        };
       }
     }
   }
