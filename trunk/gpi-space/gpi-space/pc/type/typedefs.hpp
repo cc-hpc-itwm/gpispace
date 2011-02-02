@@ -12,6 +12,8 @@ namespace gpi
       typedef uint64_t size_t;
       typedef uint64_t offset_t;
       typedef uint64_t id_t;
+      typedef id_t segment_id_t;
+      typedef id_t handle_id_t;
       typedef uint32_t mode_t; // r(4) u(4) g(4) o(4)
       typedef uint64_t time_t;
     }

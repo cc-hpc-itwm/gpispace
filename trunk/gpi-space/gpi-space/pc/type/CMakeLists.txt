@@ -5,6 +5,7 @@ set (hdrs
   time_stamp.hpp
   generic_list.hpp
   segment_descriptor.hpp
+  handle_descriptor.hpp
   )
 
 set (srcs
