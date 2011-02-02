@@ -18,13 +18,13 @@ namespace gpi
           {
             error,
 
-            segment_attach,
-            segment_detach,
-            segment_list,
+            segment_attach, segment_attach_reply,
+            segment_detach, segment_detach_reply,
+            segment_list,   segment_list_reply,
 
-            memory_alloc,
-            memory_free,
-            memory_list,
+            memory_alloc, memory_alloc_reply,
+            memory_free,  memory_free_reply,
+            memory_list,  memory_list_reply,
           };
       }
 
