@@ -372,6 +372,11 @@ void GenericDaemon::shutdown_network()
 
 void GenericDaemon::stop()
 {
+	SDPA_LOG_INFO("Shutting down...");
+
+	SDPA_LOG_INFO("Stop the scheduler now!");
+	scheduler()->stop();
+
 	// here one should only generate a message of type interrupt
 	SDPA_LOG_DEBUG("Send self an InterruptEvent...");
 	InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
@@ -383,11 +388,6 @@ void GenericDaemon::stop()
 		while(!m_bStopped)
 			cond_can_stop_.wait(lock);
 	}
-
-	SDPA_LOG_INFO("Shutting down...");
-
-	SDPA_LOG_INFO("Stop the scheduler now!");
-	scheduler()->stop();
 
 	SDPA_LOG_INFO("Shutdown the network...");
 	shutdown_network();
