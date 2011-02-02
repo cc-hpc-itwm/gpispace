@@ -13,15 +13,36 @@ namespace gpi
     {
       namespace segment
       {
-        enum
+        enum segment_type
           {
             GLOBAL = 0,
-            LOCAL = 1,
+            LOCAL,
+            // the followin just a placeholder
+            // shared segment ids are just >= SHARED
+            SHARED,
           };
+
+        struct traits
+        {
+          static bool is_global (const gpi::pc::type::segment_id_t i)
+          {
+            return i == GLOBAL;
+          }
+          static bool is_local (const gpi::pc::type::segment_id_t i)
+          {
+            return i == LOCAL;
+          }
+          static bool is_shared (const gpi::pc::type::segment_id_t i)
+          {
+            return i >= SHARED;
+          }
+        };
 
         struct descriptor_t
         {
-          gpi::pc::type::id_t id; // either GLOBAL, LOCAL or identifier
+          typedef traits traits_type;
+          gpi::pc::type::segment_id_t id;
+          gpi::pc::type::ref_count_t nref;
           gpi::pc::type::mode_t perm;
           gpi::pc::type::time_stamp_t ts;
         };
