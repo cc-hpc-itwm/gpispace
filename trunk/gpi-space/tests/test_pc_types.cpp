@@ -145,12 +145,12 @@ BOOST_AUTO_TEST_CASE ( proto_segment_test )
     snprintf (req.path, sizeof(req.path), "%s", "/foo");
 
     proto::segment::attach_reply_t rpl;
-    rpl.segment = 0;
+    rpl.id = 0;
   }
 
   {
     proto::segment::detach_t req;
-    req.segment = 1;
+    req.id = 1;
 
     proto::segment::detach_reply_t rpl;
     rpl.error = 0;

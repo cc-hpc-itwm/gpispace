@@ -23,13 +23,13 @@ namespace gpi
           union
           {
             gpi::pc::type::error_t error;
-            gpi::pc::type::segment_id_t segment;
+            gpi::pc::type::segment_id_t id;
           };
         };
 
         struct detach_t
         {
-          gpi::pc::type::segment_id_t segment;
+          gpi::pc::type::segment_id_t id;
         };
 
         struct detach_reply_t
