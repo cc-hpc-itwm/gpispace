@@ -1,12 +1,10 @@
 # -*- mode: cmake; -*-
 
-add_subdirectory (type)
-add_subdirectory (proto)
-add_subdirectory (client)
-add_subdirectory (container)
-add_subdirectory (segment)
-
 set (hdrs
+  typedefs.hpp
+  time_stamp.hpp
+  generic_list.hpp
+  segment_descriptor.hpp
   )
 
 set (srcs
@@ -18,7 +16,7 @@ set (srcs
 #set_target_properties(gpi-space-daemon-shared PROPERTIES OUTPUT_NAME gpi-space-daemon)
 
 install(FILES ${hdrs}
-  DESTINATION include/gpi-space/pc
+  DESTINATION include/gpi-space/pc/proto
   COMPONENT headers)
 
 #install(TARGETS gpi-space-daemon-static

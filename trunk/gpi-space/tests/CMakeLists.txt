@@ -4,6 +4,7 @@ set(tc_srcs
   test_config.cpp
   test_signal_handler.cpp
   test_signal_handler_standalone.cpp
+  test_pc_types.cpp
 )
 
 foreach (tc_src ${tc_srcs})

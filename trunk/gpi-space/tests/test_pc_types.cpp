@@ -1,0 +1,77 @@
+#define BOOST_TEST_MODULE GpiSpacePCTypesTest
+#include <boost/test/unit_test.hpp>
+
+#include <fhglog/minimal.hpp>
+
+#include <gpi-space/pc/type/segment_descriptor.hpp>
+
+struct SetupLogging
+{
+  SetupLogging()
+  {
+    FHGLOG_SETUP();
+    BOOST_TEST_MESSAGE ("setup logging");
+  }
+
+  ~SetupLogging()
+  {}
+};
+
+BOOST_GLOBAL_FIXTURE( SetupLogging );
+
+struct F
+{
+  F()
+  {
+    BOOST_TEST_MESSAGE ("fixture setup");
+  }
+
+  ~F ()
+  {
+    BOOST_TEST_MESSAGE ("fixture teardown");
+  }
+};
+
+BOOST_FIXTURE_TEST_SUITE( suite, F )
+
+BOOST_AUTO_TEST_CASE ( segment_descriptor_test )
+{
+  using namespace gpi::pc::type;
+
+  BOOST_CHECK_EQUAL (sizeof(segment::list_t), sizeof(gpi::pc::type::size_t));
+
+  char buf1 [sizeof(segment::list_t) + 3 * sizeof (segment::descriptor_t) ];
+  char buf2 [sizeof(segment::list_t) + 3 * sizeof (segment::descriptor_t) ];
+  segment::list_t * list (0);
+
+  list = ((segment::list_t*)&buf1);
+  list->count = 3;
+  list->item[0].id = 42;
+  list->item[0].perm = 0777;
+  list->item[0].ts.created = 0;
+  list->item[0].ts.modified = 0;
+  list->item[0].ts.accessed = 0;
+
+  list->item[2].id = 1;
+  list->item[2].perm = 0777;
+  list->item[2].ts.created = 1;
+  list->item[2].ts.modified = 2;
+  list->item[2].ts.accessed = 3;
+
+  list->item[1].id = 0;
+  list->item[1].perm = 0777;
+  list->item[1].ts.created = 1;
+  list->item[1].ts.modified = 2;
+  list->item[1].ts.accessed = 3;
+
+  memcpy (buf2, buf1, sizeof (buf2));
+
+  list = ((segment::list_t*)&buf2);
+
+  BOOST_CHECK_EQUAL (list->count, 3U);
+  BOOST_CHECK_EQUAL (list->item[1].id, 0U);
+  BOOST_CHECK_EQUAL (list->item[1].ts.modified, 2U);
+  BOOST_CHECK_EQUAL (list->item[2].ts.accessed, 3U);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
