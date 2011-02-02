@@ -1,8 +1,8 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
-  alloc.hpp
-  free.hpp
+  memory.hpp
+  segment.hpp
   )
 
 set (srcs

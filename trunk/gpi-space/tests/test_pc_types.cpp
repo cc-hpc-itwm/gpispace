@@ -1,3 +1,5 @@
+#include <stdio.h> // snprintf
+
 #define BOOST_TEST_MODULE GpiSpacePCTypesTest
 #include <boost/test/unit_test.hpp>
 
@@ -6,8 +8,8 @@
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
-#include <gpi-space/pc/proto/alloc.hpp>
-#include <gpi-space/pc/proto/free.hpp>
+#include <gpi-space/pc/proto/memory.hpp>
+#include <gpi-space/pc/proto/segment.hpp>
 
 struct SetupLogging
 {
@@ -116,24 +118,50 @@ BOOST_AUTO_TEST_CASE ( handle_descriptor_test )
 
 BOOST_AUTO_TEST_CASE ( proto_alloc_test )
 {
-  using namespace gpi::pc::type;
-  using namespace gpi::pc::proto;
-  alloc::request_t req;
-  req.segment = segment::GLOBAL;
+  using namespace gpi::pc;
+  proto::memory::alloc_t req;
+  req.segment = gpi::pc::type::segment::GLOBAL;
   req.size = 1024;
   req.perm = 0700;
 
-  alloc::reply_t rpl;
+  proto::memory::alloc_reply_t rpl;
   rpl.handle = 0;
 }
 
 BOOST_AUTO_TEST_CASE ( proto_free_test )
 {
-  using namespace gpi::pc::type;
-  using namespace gpi::pc::proto;
+  using namespace gpi::pc;
 
-  free::request_t req;
+  proto::memory::free_t req;
   req.handle = 0;
+}
+
+BOOST_AUTO_TEST_CASE ( proto_segment_test )
+{
+  using namespace gpi::pc;
+
+  {
+    proto::segment::attach_t req;
+    snprintf (req.path, sizeof(req.path), "%s", "/foo");
+
+    proto::segment::attach_reply_t rpl;
+    rpl.segment = 0;
+  }
+
+  {
+    proto::segment::detach_t req;
+    req.segment = 1;
+
+    proto::segment::detach_reply_t rpl;
+    rpl.error = 0;
+  }
+
+  {
+    proto::segment::list_t req;
+    (void)req;
+    proto::segment::list_reply_t rpl;
+    rpl.list.count = 0;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
