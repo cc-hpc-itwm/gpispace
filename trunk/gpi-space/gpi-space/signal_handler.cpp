@@ -172,6 +172,7 @@ namespace gpi
       sigaddset (&restrict, SIGUSR1);
       sigaddset (&restrict, SIGUSR2);
       sigaddset (&restrict, SIGHUP);
+      sigaddset (&restrict, SIGCHLD);
 
       pthread_sigmask (SIG_BLOCK, &restrict, 0);
 
