@@ -6,6 +6,8 @@
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
+#include <gpi-space/pc/proto/alloc.hpp>
+
 struct SetupLogging
 {
   SetupLogging()
@@ -109,6 +111,20 @@ BOOST_AUTO_TEST_CASE ( handle_descriptor_test )
   list->item[0].ts.created = 0;
   list->item[0].ts.modified = 0;
   list->item[0].ts.accessed = 0;
+}
+
+BOOST_AUTO_TEST_CASE ( proto_alloc_test )
+{
+  using namespace gpi::pc::type;
+  using namespace gpi::pc::proto;
+  alloc::request_t req;
+  req.segment = segment::GLOBAL;
+  req.size = 1024;
+  req.perm = 0700;
+
+  alloc::reply_t rpl;
+
+  rpl.handle = 0;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
