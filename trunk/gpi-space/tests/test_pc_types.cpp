@@ -38,11 +38,18 @@ BOOST_AUTO_TEST_CASE ( segment_descriptor_test )
 {
   using namespace gpi::pc::type;
 
-  BOOST_CHECK_EQUAL (sizeof(segment::list_t), sizeof(gpi::pc::type::size_t));
+  BOOST_CHECK_EQUAL ( sizeof(segment::list_t)
+                    , sizeof(gpi::pc::type::size_t)
+                    );
 
-  char buf1 [sizeof(segment::list_t) + 3 * sizeof (segment::descriptor_t) ];
-  char buf2 [sizeof(segment::list_t) + 3 * sizeof (segment::descriptor_t) ];
   segment::list_t * list (0);
+
+  char buf1[ sizeof(segment::list_t)
+           + 3 * sizeof (segment::list_t::element_type)
+           ];
+  char buf2[ sizeof(segment::list_t)
+           + 3 * sizeof (segment::list_t::element_type)
+           ];
 
   list = ((segment::list_t*)&buf1);
   list->count = 3;
