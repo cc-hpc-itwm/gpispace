@@ -42,6 +42,7 @@ namespace gpi
         {
           typedef traits traits_type;
           gpi::pc::type::segment_id_t id;
+          gpi::pc::type::path_t path;
           gpi::pc::type::ref_count_t nref;
           gpi::pc::type::mode_t perm;
           gpi::pc::type::time_stamp_t ts;
