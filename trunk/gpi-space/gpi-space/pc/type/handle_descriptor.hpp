@@ -13,6 +13,14 @@ namespace gpi
     {
       namespace handle
       {
+        struct traits
+        {
+          static bool is_null (const gpi::pc::type::handle_id_t i)
+          {
+            return 0 == i;
+          }
+        };
+
         struct descriptor_t
         {
           gpi::pc::type::handle_id_t id;
