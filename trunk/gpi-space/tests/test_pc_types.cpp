@@ -4,6 +4,7 @@
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <gpi-space/pc/type/handle_descriptor.hpp>
 
 struct SetupLogging
 {
@@ -79,6 +80,35 @@ BOOST_AUTO_TEST_CASE ( segment_descriptor_test )
   BOOST_CHECK_EQUAL (list->item[1].id, 0U);
   BOOST_CHECK_EQUAL (list->item[1].ts.modified, 2U);
   BOOST_CHECK_EQUAL (list->item[2].ts.accessed, 3U);
+  BOOST_CHECK_EQUAL (segment::traits::is_local  (list->item[2].id), true);
+  BOOST_CHECK_EQUAL (segment::traits::is_global (list->item[1].id), true);
+  BOOST_CHECK_EQUAL (segment::traits::is_shared (list->item[0].id), true);
+}
+
+BOOST_AUTO_TEST_CASE ( handle_descriptor_test )
+{
+  using namespace gpi::pc::type;
+
+  BOOST_CHECK_EQUAL ( sizeof(handle::list_t)
+                    , sizeof(gpi::pc::type::size_t)
+                    );
+
+  handle::list_t * list (0);
+
+  char buf[ sizeof(handle::list_t)
+          + 3 * sizeof (handle::list_t::element_type)
+          ];
+
+  list = ((handle::list_t*)&buf);
+  list->count = 3;
+  list->item[0].id = 42;
+  list->item[0].segment = 0;
+  list->item[0].offset = 32;
+  list->item[0].size = 128;
+  list->item[0].perm = 0777;
+  list->item[0].ts.created = 0;
+  list->item[0].ts.modified = 0;
+  list->item[0].ts.accessed = 0;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
