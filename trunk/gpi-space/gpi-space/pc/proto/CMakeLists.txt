@@ -3,6 +3,8 @@
 set (hdrs
   memory.hpp
   segment.hpp
+  error.hpp
+  message.hpp
   )
 
 set (srcs
