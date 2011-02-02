@@ -1,5 +1,10 @@
 # -*- mode: cmake; -*-
 
+add_subdirectory(config)
+add_subdirectory(server)
+add_subdirectory(daemon)
+add_subdirectory(pc)
+
 set (hdrs
   types.hpp
   error.hpp
@@ -14,9 +19,6 @@ set (srcs
 if (NO_IMPLICIT_TEMPLATES)
   set (srcs ${srcs} template.cpp)
 endif (NO_IMPLICIT_TEMPLATES)
-
-add_subdirectory(config)
-add_subdirectory(server)
 
 ADD_LIBRARY(gpi-space-static ${hdrs} ${srcs})
 #ADD_LIBRARY(gpi-space-shared SHARED ${hdrs} ${srcs})
