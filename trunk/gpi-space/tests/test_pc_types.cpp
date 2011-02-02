@@ -10,6 +10,7 @@
 
 #include <gpi-space/pc/proto/memory.hpp>
 #include <gpi-space/pc/proto/segment.hpp>
+#include <gpi-space/pc/proto/message.hpp>
 
 struct SetupLogging
 {
@@ -161,6 +162,24 @@ BOOST_AUTO_TEST_CASE ( proto_segment_test )
     (void)req;
     proto::segment::list_reply_t rpl;
     rpl.list.count = 0;
+  }
+}
+
+BOOST_AUTO_TEST_CASE ( proto_message_test )
+{
+  using namespace gpi::pc;
+
+  {
+    proto::message_t msg;
+    msg.length = 1024;
+    msg.type = proto::message::memory_alloc;
+    msg.memory.alloc.req.size = 1024;
+
+    msg.type = proto::message::error;
+    msg.error.code = proto::error::success;
+
+    msg.type = proto::message::segment_detach;
+    msg.segment.detach.req.id = 42;
   }
 }
 
