@@ -1,4 +1,4 @@
-#include "gpi.hpp"
+#include "api.hpp"
 
 #include <csignal> // sigwait
 #include <cstring> // strerror
@@ -15,7 +15,7 @@
 
 namespace gpi
 {
-  namespace server
+  namespace api
   {
     typedef boost::function<void (int)> signal_handler_t;
 

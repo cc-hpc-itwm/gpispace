@@ -22,9 +22,9 @@
 #include <gpi-space/config/config_io.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/signal_handler.hpp>
-#include <gpi-space/server/gpi.hpp>
+#include <gpi-space/gpi/api.hpp>
 
-typedef gpi::server::gpi_api_t gpi_api_t;
+typedef gpi::api::gpi_api_t gpi_api_t;
 
 static int shutdown_handler (gpi_api_t * api, int signal)
 {

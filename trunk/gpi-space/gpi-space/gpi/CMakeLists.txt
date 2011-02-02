@@ -1,7 +1,7 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
-  gpi.hpp
+  api.hpp
   )
 
 set (srcs
@@ -9,23 +9,23 @@ set (srcs
 
 set (real_src
   ${srcs}
-  gpi_real.cpp
+  real_api.cpp
   )
 
 set (fake_src
   ${srcs}
-  gpi_fake.cpp
+  fake_api.cpp
   )
 
-add_library (gpi-space-server      ${real_src} ${hdrs})
+add_library (gpi-space-gpiapi      ${real_src} ${hdrs})
 #add_library (gpi-space-server.fake ${srcs} ${fake_src} ${hdrs})
-target_link_libraries (gpi-space-server ${GPI_LIBRARIES})
+target_link_libraries (gpi-space-gpiapi ${GPI_LIBRARIES})
 
 install(FILES ${hdrs}
-  DESTINATION include/gpi-space/config
+  DESTINATION include/gpi-space/gpi
   COMPONENT headers)
 
-install(TARGETS gpi-space-server
+install(TARGETS gpi-space-gpiapi
   ARCHIVE
   DESTINATION lib
   COMPONENT libraries)

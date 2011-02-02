@@ -1,5 +1,5 @@
-#ifndef GPI_SPACE_SERVER_HPP
-#define GPI_SPACE_SERVER_HPP 1
+#ifndef GPI_SPACE_GPI_API_HPP
+#define GPI_SPACE_GPI_API_HPP 1
 
 #include <gpi-space/types.hpp>
 #include <gpi-space/error.hpp>
@@ -9,7 +9,7 @@
 
 namespace gpi
 {
-  namespace server
+  namespace api
   {
     namespace exception
     {
