@@ -123,7 +123,6 @@ BOOST_AUTO_TEST_CASE ( proto_alloc_test )
   req.perm = 0700;
 
   alloc::reply_t rpl;
-
   rpl.handle = 0;
 }
 
