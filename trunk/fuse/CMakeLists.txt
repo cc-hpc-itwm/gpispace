@@ -29,7 +29,20 @@ endif (NOT FUSE_INCLUDE_DIR)
 include_directories (${FUSE_INCLUDE_DIR})
 
 add_executable(fuse.hello fuse.hello.c)
-target_link_libraries (fuse.hello ${FUSE_LIBRARIES})
-set_target_properties(fuse.hello PROPERTIES
-    COMPILE_FLAGS ${PC_FUSE_CFLAGS_OTHER}
-  )
+add_executable(fuse fuse.cpp)
+
+set(targets
+    fuse.hello
+    fuse
+   )
+
+foreach (target ${targets})
+  target_link_libraries (${target} ${FUSE_LIBRARIES})
+  set_target_properties(${target} PROPERTIES
+      COMPILE_FLAGS ${PC_FUSE_CFLAGS_OTHER}
+    )
+endforeach (target ${targets})
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(test)

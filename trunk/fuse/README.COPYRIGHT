@@ -1,0 +1,5 @@
+fuse is under GPL thus this part of the sources must be under GPL too!
+
+BE VERY CAREFUL WHEN INCLUDING FROM OUTSIDE /fuse!!
+
+WHEN IN DOUBT, REWRITE INSTEAD OF INCLUDE!!
