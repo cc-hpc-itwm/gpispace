@@ -261,21 +261,26 @@ int main (int ac, char *av[])
 
     gpi_space::parser::config_parser_t cfg_parser;
 
+    std::map <std::string, bool> files_seen;
     for ( path_list_t::const_iterator p (search_path.begin())
         ; p != search_path.end()
         ; ++p
         )
     {
       const std::string config_file (*p);
-      LOG(TRACE, "trying to read config from: " << config_file);
-      try
+      if (files_seen.find (config_file) == files_seen.end())
       {
-        gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(WARN, "could not read config file: " << config_file << ": " << ex.what());
-        continue;
+        LOG(TRACE, "trying to read config from: " << config_file);
+        try
+        {
+          gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
+          files_seen[config_file] = true;
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(WARN, "could not read config file: " << config_file << ": " << ex.what());
+          continue;
+        }
       }
     }
 
