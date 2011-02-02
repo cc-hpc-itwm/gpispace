@@ -7,6 +7,7 @@
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
 #include <gpi-space/pc/proto/alloc.hpp>
+#include <gpi-space/pc/proto/free.hpp>
 
 struct SetupLogging
 {
@@ -124,6 +125,15 @@ BOOST_AUTO_TEST_CASE ( proto_alloc_test )
 
   alloc::reply_t rpl;
   rpl.handle = 0;
+}
+
+BOOST_AUTO_TEST_CASE ( proto_free_test )
+{
+  using namespace gpi::pc::type;
+  using namespace gpi::pc::proto;
+
+  free::request_t req;
+  req.handle = 0;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
