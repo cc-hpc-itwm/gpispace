@@ -8,6 +8,8 @@
 #include <segment.hpp>
 #include <alloc.hpp>
 
+#include <ctime>
+
 namespace gpi_fuse
 {
   namespace comm
@@ -15,10 +17,25 @@ namespace gpi_fuse
     class comm
     {
     public:
-      void init () {}
-      void finalize () {}
+      void init ()
+      {
+        _time_start = time (NULL);
+      }
 
-#ifdef COMM_TEST
+      void finalize ()
+      {
+      }
+
+      const time_t & time_start () const { return _time_start; }
+
+#ifndef COMM_TEST
+      void list_segments (segment::id_list_t *) const
+      {}
+      void list_allocs ( const segment::id_t &
+                       , alloc::list_t *
+                       ) const
+      {}
+#else // ifndef COMM_TEST
       void list_segments (segment::id_list_t * list) const
       {
         list->clear();
@@ -27,46 +44,51 @@ namespace gpi_fuse
         list->push_back (1);
         list->push_back (3);
         list->push_back (9);
+        list->push_back (11);
       }
 
       void list_allocs ( const segment::id_t & id
-                       , alloc::id_list_t * list
+                       , alloc::list_t * list
                        ) const
       {
+        const time_t minute (60);
+        const time_t hour (60 * minute);
+        const time_t now (time (NULL));
+
         list->clear();
 
         switch (id)
           {
           case 0:
-            list->push_back (0);
-            list->push_back (1);
-            list->push_back (2);
+            list->push_back (alloc::descr_t (0, "vel", (1 << 30), now - 10 * minute, 0));
+            list->push_back (alloc::descr_t (1, "trace", (1 << 20), now - 20 * minute, 0));
+            list->push_back (alloc::descr_t (2, "vol", (1 << 30), now - 1 * hour, 0));
             break;
           case 1:
-            list->push_back (4);
-            list->push_back (7);
-            list->push_back (9);
+            list->push_back (alloc::descr_t (4, "tmp", (23 << 10), now - 5 * minute, 1));
+            list->push_back (alloc::descr_t (7, "scratch", (500 << 20), now - 5 * minute, 1));
+            list->push_back (alloc::descr_t (9, "conn1", (100 << 20), now - 12 * minute, 1));
+            list->push_back (alloc::descr_t (11, "conn2", (100 << 20), now - 13 * minute, 1));
+            list->push_back (alloc::descr_t (17, "out", (500 << 20), now - 4 * hour, 1));
             break;
           case 3:
-            list->push_back (301);
-            list->push_back (302);
+            list->push_back (alloc::descr_t (301, "in", (110 << 20), now  - 5 * hour, 3));
+            list->push_back (alloc::descr_t (302, "out", (110 << 20), now - 5 * hour, 3));
             break;
           case 9:
+            break;
+          case 11:
+            list->push_back (alloc::descr_t (1101, "a", 101, now - 1 * minute, 11));
+            list->push_back (alloc::descr_t (1102, "b", 102, now - 1 * minute, 11));
+            list->push_back (alloc::descr_t (1119, "b", 119, now - 1 * minute, 11));
             break;
           default:
             throw std::runtime_error ("segment unknown");
           }
       }
-#else
-      void list_segments (segment::id_list_t *) const
-      {
-      }
-      void list_allocs ( const segment::id_t &
-                       , alloc::id_list_t *
-                       ) const
-      {
-      }
-#endif
+#endif // ifndef COMM_TEST
+    private:
+      time_t _time_start;
     };
   } // namespace comm
 } // namespace gpu_fuse

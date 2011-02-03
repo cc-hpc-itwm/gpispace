@@ -19,6 +19,8 @@
 #include <comm.hpp>
 #include <splitted_path.hpp>
 
+#include <ctime>
+
 namespace gpi_fuse
 {
   namespace state
@@ -26,60 +28,195 @@ namespace gpi_fuse
     struct state
     {
     public:
+      typedef boost::unordered_map<segment::id_t, alloc::id_set_t> segments_t;
+      typedef boost::unordered_map<alloc::id_t,alloc::descr_t> allocs_t;
+
       state (const comm::comm & comm)
-        : _segment_map (0)
-        , _alloc_map (0)
+        : _segments (0)
+        , _allocs (0)
         , _comm (comm)
       {
         build_maps ();
       }
 
-      bool is_file (const std::string & path)
+      std::string get_segment_string (const alloc::id_t & id) const
       {
-        bool ret (false);
+        const allocs_t::const_iterator alloc (_allocs.find (id));
 
-        if (path != "/")
-          {
-            const splitted_path sp (split (util::strip_prefix ("/", path)));
+        return (alloc == _allocs.end())
+          ? "SEGMENT_FOR_UNKNOWN_ALLOCATION"
+          : segment::string (alloc->second.segment());
+      }
+      std::string get_name (const alloc::id_t & id) const
+      {
+        const allocs_t::const_iterator alloc (_allocs.find (id));
 
-            ret = sp.file;
-          }
+        return (alloc == _allocs.end())
+          ? "NAME_OF_UNKNOWN_ALLOCATION"
+          : alloc->second.name();
+      }
+      alloc::size_t get_size (const alloc::id_t & id) const
+      {
+        const allocs_t::const_iterator alloc (_allocs.find (id));
 
-        return ret;
+        return (alloc == _allocs.end())
+          ? 0
+          : alloc->second.size();
+      }
+      time_t get_ctime (const alloc::id_t & id) const
+      {
+        const allocs_t::const_iterator alloc (_allocs.find (id));
+
+        return (alloc == _allocs.end())
+          ? 0
+          : alloc->second.ctime();
       }
 
-      bool is_directory (const std::string & path)
+      std::size_t size_segment (const segment::id_t & segment) const
       {
-        bool ret (false);
+        const segments_t::const_iterator seg (_segments.find (segment));
 
-        if (path == "/")
+        return (seg == _segments.end()) ? 0 : seg->second.size();
+      }
+      std::size_t size_segment_shared () const
+      {
+        return _segments.size() - 2;
+      }
+
+      bool is_file (const splitted_path & sp) const
+      {
+        return sp.file;
+      }
+      bool is_directory (const splitted_path & sp) const
+      {
+        return !sp.file && (sp.segment || sp.handle);
+      }
+
+      void readdir ( const splitted_path & sp
+                   , void * buf
+                   , fuse_fill_dir_t filler
+                   ) const
+      {
+        if (!sp.segment)
           {
-            ret = true;
+            if (sp.handle)
+              {
+                fill (file::data(), buf, filler);
+                fill (file::type(), buf, filler);
+                fill (file::name(), buf, filler);
+              }
+            else
+              {
+                throw
+                  std::runtime_error ("STRANGE! FuseInvariants broken!?");
+              }
+          }
+        else if (sp.segment == segment::root())
+          {
+            fill (segment::global(), buf, filler);
+            fill (segment::local(), buf, filler);
+            fill (segment::shared(), buf, filler);
+            fill (segment::proc(), buf, filler);
+
+            for ( allocs_t::const_iterator alloc (_allocs.begin())
+                ; alloc != _allocs.end()
+                ; ++alloc
+                )
+              {
+                fill ( boost::lexical_cast<std::string>(alloc->first)
+                     , buf
+                     , filler
+                     );
+              }
+          }
+        else if (sp.segment == segment::proc())
+          {
+            fill (file::alloc(), buf, filler);
+            fill (file::free(), buf, filler);
+          }
+        else if (sp.segment == segment::global())
+          {
+            fill_from_segment (sp, 0, buf, filler);
+          }
+        else if (sp.segment == segment::local())
+          {
+            fill_from_segment (sp, 1, buf, filler);
+          }
+        else if (sp.segment == segment::shared())
+          {
+            for ( segments_t::const_iterator segment (_segments.begin())
+                ; segment != _segments.end()
+                ; ++segment
+                )
+              {
+                if (segment->first > 1)
+                  {
+                    fill
+                      ( boost::lexical_cast<std::string>(segment->first)
+                      , buf
+                      , filler
+                      );
+                  }
+              }
           }
         else
           {
-            const splitted_path sp (split (util::strip_prefix ("/", path)));
-
-            ret = !sp.file && (sp.segment || sp.handle);
+            fill_from_segment (sp, *sp.segment_id, buf, filler);
           }
-
-        return ret;
       }
 
-      void readdir ( const std::string & path
-                   , void * buf
-                   , fuse_fill_dir_t filler
-                   )
+      splitted_path split (const std::string & path) const
       {
-        _readdir (util::strip_prefix ("/", path), buf, filler);
+        if (util::starts_with (segment::root(), path))
+          {
+            return split (util::strip_prefix (segment::root(), path));
+          }
+        else
+          {
+            splitted_path sp;
+
+            if (path.empty())
+              {
+                sp.segment = segment::root();
+              }
+            if (util::starts_with (segment::proc(), path))
+              {
+                sp.segment = segment::proc();
+
+                split_proc (util::strip_prefix (segment::proc(), path), sp);
+              }
+            else if (util::starts_with (segment::global(), path))
+              {
+                sp.segment = segment::global();
+                sp.segment_id = 0;
+
+                split_handle (util::strip_prefix (segment::global(), path), sp, 0);
+              }
+            else if (util::starts_with (segment::local(), path))
+              {
+                sp.segment = segment::local();
+                sp.segment_id = 1;
+
+                split_handle (util::strip_prefix (segment::local(), path), sp, 1);
+              }
+            else if (util::starts_with (segment::shared(), path))
+              {
+                sp.segment = segment::shared();
+
+                split_shared ( util::strip_prefix (segment::shared(), path), sp);
+              }
+            else
+              {
+                split_handle_direct (path, sp);
+              }
+
+            return sp;
+          }
       }
 
     private:
-      typedef boost::unordered_map<segment::id_t, alloc::set_t> segment_map_t;
-      typedef boost::unordered_map<alloc::id_t,segment::id_t> alloc_map_t;
-
-      segment_map_t _segment_map;
-      alloc_map_t _alloc_map;
+      segments_t _segments;
+      allocs_t _allocs;
       comm::comm _comm;
 
       void build_maps ()
@@ -91,68 +228,26 @@ namespace gpi_fuse
             ; ++segment
             )
           {
-            _segment_map[*segment] = alloc::set_t ();
+            _segments[*segment] = alloc::id_set_t ();
 
-            alloc::id_list_t allocs; _comm.list_allocs (*segment, &allocs);
+            alloc::list_t allocs; _comm.list_allocs (*segment, &allocs);
 
-            for ( alloc::id_list_t::const_iterator alloc (allocs.begin())
+            for ( alloc::list_t::const_iterator alloc (allocs.begin())
                 ; alloc != allocs.end()
                 ; ++alloc
                 )
               {
-                _segment_map[*segment].insert (*alloc);
-                _alloc_map[*alloc] = *segment;
+                _segments[*segment].insert (alloc->id());
+                _allocs[alloc->id()] = *alloc;
               }
           }
       }
 
       // ******************************************************************* //
 
-#ifdef COMM_TEST
-    public:
-#endif
-      splitted_path split (const std::string & path)
-      {
-        splitted_path sp;
-
-        if (util::starts_with (segment::proc(), path))
-          {
-            sp.segment = segment::proc();
-
-            split_proc (util::strip_prefix (segment::proc(), path), sp);
-          }
-        else if (util::starts_with (segment::global(), path))
-          {
-            sp.segment = segment::global();
-
-            split_handle (util::strip_prefix (segment::global(), path), sp, 0);
-          }
-        else if (util::starts_with (segment::local(), path))
-          {
-            sp.segment = segment::local();
-
-            split_handle (util::strip_prefix (segment::local(), path), sp, 1);
-          }
-        else if (util::starts_with (segment::shared(), path))
-          {
-            sp.segment = segment::shared();
-
-            split_shared ( util::strip_prefix (segment::shared(), path), sp);
-          }
-        else
-          {
-            split_handle_direct (path, sp);
-          }
-
-        return sp;
-      }
-
-#ifdef COMM_TEST
-    private:
-#endif
       bool separator ( std::string::const_iterator & pos
                      , splitted_path & sp
-                     )
+                     ) const
       {
         bool ret (true);
 
@@ -167,10 +262,9 @@ namespace gpi_fuse
 
         return ret;
       }
-
       void split_proc ( const std::string & path
                       , splitted_path & sp
-                      )
+                      ) const
       {
         std::string::const_iterator pos (path.begin());
 
@@ -184,10 +278,9 @@ namespace gpi_fuse
               }
           }
       }
-
       void split_handle_direct ( const std::string & path
                                , splitted_path & sp
-                               )
+                               ) const
       {
         std::string::const_iterator pos (path.begin());
 
@@ -195,7 +288,7 @@ namespace gpi_fuse
           {
             sp.handle = id::parse (pos, path.end());
 
-            if (_alloc_map.find (*sp.handle) == _alloc_map.end())
+            if (_allocs.find (*sp.handle) == _allocs.end())
               {
                 sp.clear();
               }
@@ -210,11 +303,10 @@ namespace gpi_fuse
               }
           }
       }
-
       void split_handle ( const std::string & path
                         , splitted_path & sp
                         , const segment::id_t segment
-                        )
+                        ) const
       {
         std::string::const_iterator pos (path.begin());
 
@@ -222,8 +314,10 @@ namespace gpi_fuse
           {
             sp.handle = id::parse (pos, path.end());
 
-            if (  _segment_map[segment].find (*sp.handle)
-               == _segment_map[segment].end()
+            const segments_t::const_iterator seg (_segments.find(segment));
+
+            if (  seg == _segments.end()
+               || seg->second.find (*sp.handle) == seg->second.end()
                )
               {
                 sp.clear();
@@ -239,10 +333,9 @@ namespace gpi_fuse
               }
           }
       }
-
       void split_shared ( const std::string & path
                         , splitted_path & sp
-                        )
+                        ) const
       {
         std::string::const_iterator pos (path.begin());
 
@@ -250,7 +343,7 @@ namespace gpi_fuse
           {
             sp.segment_id = id::parse (pos, path.end());
 
-            if (_segment_map.find (*sp.segment_id) != _segment_map.end())
+            if (_segments.find (*sp.segment_id) != _segments.end())
               {
                 sp.segment = segment::shared()
                            + "/"
@@ -281,107 +374,34 @@ namespace gpi_fuse
       {
         filler (buf, path.c_str(), NULL, 0);
       }
-
       void fill_from_segment ( const splitted_path & sp
-                             , const segment::id_t & s
+                             , const segment::id_t & segment
                              , void * buf
                              , fuse_fill_dir_t filler
-                             )
+                             ) const
       {
         if (sp.handle)
           {
             fill (file::data(), buf, filler);
             fill (file::type(), buf, filler);
+            fill (file::name(), buf, filler);
           }
         else
           {
-            for ( alloc::set_t::const_iterator alloc (_segment_map[s].begin())
-                ; alloc != _segment_map[s].end()
-                ; ++alloc
-                )
-              {
-                fill ( boost::lexical_cast<std::string>(*alloc)
-                     , buf
-                     , filler
-                     );
-              }
-          }
-      }
+            const segments_t::const_iterator seg (_segments.find(segment));
 
-      void _readdir ( const std::string & path
-                    , void * buf
-                    , fuse_fill_dir_t filler
-                    )
-      {
-        if (path.empty())
-          {
-            fill (segment::global(), buf, filler);
-            fill (segment::local(), buf, filler);
-            fill (segment::shared(), buf, filler);
-            fill (segment::proc(), buf, filler);
-
-            for ( alloc_map_t::const_iterator alloc (_alloc_map.begin())
-                ; alloc != _alloc_map.end()
-                ; ++alloc
-                )
+            if (seg != _segments.end())
               {
-                fill ( boost::lexical_cast<std::string>(alloc->first)
-                     , buf
-                     , filler
-                     );
-              }
-          }
-        else
-          {
-            const splitted_path sp (split (path));
-
-            if (!sp.segment)
-              {
-                if (sp.handle)
-                  {
-                    fill (file::data(), buf, filler);
-                    fill (file::type(), buf, filler);
-                  }
-                else
-                  {
-                    throw
-                      std::runtime_error ("STRANGE! FuseInvariants broken!?");
-                  }
-              }
-            else if (sp.segment == segment::proc())
-              {
-                fill (file::alloc(), buf, filler);
-                fill (file::free(), buf, filler);
-              }
-            else if (sp.segment == segment::global())
-              {
-                fill_from_segment (sp, 0, buf, filler);
-              }
-            else if (sp.segment == segment::local())
-              {
-                fill_from_segment (sp, 1, buf, filler);
-              }
-            else if (sp.segment == segment::shared())
-              {
-                for ( segment_map_t::const_iterator segment
-                        (_segment_map.begin())
-                    ; segment != _segment_map.end()
-                    ; ++segment
+                for ( alloc::id_set_t::const_iterator id (seg->second.begin())
+                    ; id != seg->second.end()
+                    ; ++id
                     )
                   {
-                    if (segment->first > 1)
-                      {
-                        fill
-                          ( boost::lexical_cast<std::string>(segment->first)
-                          , buf
-                          , filler
-                          );
-                      }
+                    fill ( boost::lexical_cast<std::string>(*id)
+                         , buf
+                         , filler
+                         );
                   }
-              }
-            else
-              {
-                fill_from_segment (sp, *sp.segment_id, buf, filler);
               }
           }
       }

@@ -10,7 +10,7 @@ namespace gpi_fuse
   namespace util
   {
     template<typename IT>
-    static bool
+    static inline bool
     generic_starts_with ( IT pos_p, const IT end_p
                         , IT pos_x, const IT end_x
                         )
@@ -34,14 +34,14 @@ namespace gpi_fuse
       return false;
     }
 
-    static bool
+    static inline bool
     starts_with (const std::string & p, const std::string & x)
     {
       return generic_starts_with (p.begin(), p.end(), x.begin(), x.end());
     }
 
     template<typename IT, typename U>
-    static U
+    static inline U
     generic_strip_prefix ( IT pos_p, const IT end_p
                          , IT pos_x, const IT end_x
                          )
@@ -65,9 +65,9 @@ namespace gpi_fuse
       return U (pos_x, end_x);
     }
 
-    static std::string strip_prefix ( const std::string & p
-                                    , const std::string & x
-                                    )
+    static inline std::string strip_prefix ( const std::string & p
+                                           , const std::string & x
+                                           )
     {
       return generic_strip_prefix<std::string::const_iterator, std::string>
         (p.begin(), p.end(), x.begin(), x.end());

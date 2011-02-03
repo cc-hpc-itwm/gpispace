@@ -37,6 +37,7 @@ main (int argc, char **argv)
 
   test_list tests;
 
+  tests.push_back (test_t ("/", sp_t ("/")));
   tests.push_back (test_t ("/global", sp_t ("global")));
   tests.push_back (test_t ("/local", sp_t ("local")));
   tests.push_back (test_t ("/shared", sp_t ("shared")));
@@ -80,10 +81,12 @@ main (int argc, char **argv)
        ; ++t
        )
     {
-      gpi_fuse::state::splitted_path sp
-        (state.split (gpi_fuse::util::strip_prefix ("/", t->path)));
+      gpi_fuse::state::splitted_path sp (state.split (t->path));
 
-      std::cout << t->path << ": " << sp << std::endl;
+      std::cout << t->path << ":";
+      std::cout << (state.is_file(sp) ? " FILE:" : "");
+      std::cout << (state.is_directory(sp) ? " DIRECTORY:" : "");
+      std::cout << " " << sp << std::endl;
 
       if (!(sp == t->sp))
         {

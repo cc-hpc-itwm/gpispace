@@ -11,9 +11,9 @@ namespace gpi_fuse
   {
     typedef unsigned long id_t;
 
-    id_t parse ( std::string::const_iterator & pos
-               , const std::string::const_iterator & end
-               )
+    static inline id_t parse ( std::string::const_iterator & pos
+                             , const std::string::const_iterator & end
+                             )
     {
       id_t id (0);
 

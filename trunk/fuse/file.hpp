@@ -11,25 +11,31 @@ namespace gpi_fuse
 {
   namespace file
   {
-    static std::string data ()
+    static inline std::string data ()
     {
       static const std::string d ("data");
 
       return d;
     }
-    static std::string type ()
+    static inline std::string type ()
     {
       static const std::string t ("type");
 
       return t;
     }
-    static std::string alloc  ()
+    static inline std::string name ()
+    {
+      static const std::string n ("name");
+
+      return n;
+    }
+    static inline std::string alloc  ()
     {
       static const std::string a ("alloc");
 
       return a;
     }
-    static std::string free ()
+    static inline std::string free ()
     {
       static const std::string f ("free");
 
@@ -52,6 +58,11 @@ namespace gpi_fuse
           return _set.find (name) != _set.end();
         }
 
+        std::size_t num_valid () const
+        {
+          return _set.size();
+        }
+
       protected:
         valid_set_t _set;
       };
@@ -63,9 +74,9 @@ namespace gpi_fuse
         {
           _set.insert (data());
           _set.insert (type());
+          _set.insert (name());
         }
       };
-
       class valid_proc : public valid
       {
       public:
@@ -75,22 +86,39 @@ namespace gpi_fuse
           _set.insert (free());
         }
       };
+
+      static inline valid_handle get_valid_handle ()
+      {
+        static valid_handle v;
+
+        return v;
+      }
+      static inline valid_proc get_valid_proc ()
+      {
+        static valid_proc v;
+
+        return v;
+      }
     } // namespace detail
 
     // ********************************************************************* //
 
-    static bool is_valid_handle_file (const std::string & name)
+    static inline bool is_valid_handle_file (const std::string & name)
     {
-      static detail::valid_handle v;
-
-      return v.is_valid (name);
+      return detail::get_valid_handle().is_valid (name);
+    }
+    static inline bool is_valid_proc_file (const std::string & name)
+    {
+      return detail::get_valid_proc().is_valid (name);
     }
 
-    static bool is_valid_proc_file (const std::string & name)
+    static inline std::size_t num_valid_handle_file ()
     {
-      static detail::valid_proc v;
-
-      return v.is_valid (name);
+      return detail::get_valid_handle().num_valid();
+    }
+    static inline std::size_t num_valid_proc_file ()
+    {
+      return detail::get_valid_proc().num_valid();
     }
   }
 }
