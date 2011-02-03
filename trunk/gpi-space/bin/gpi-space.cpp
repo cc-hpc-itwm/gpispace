@@ -24,6 +24,9 @@
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/gpi/api.hpp>
 
+#include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/container/manager.hpp>
+
 typedef gpi::api::gpi_api_t gpi_api_t;
 
 static int shutdown_handler (gpi_api_t * api, int signal)
@@ -123,6 +126,9 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
   }
   else if (rank == 0)
   {
+    gpi::pc::container::manager_t mgr (cfg.node.socket_path);
+    mgr.start ();
+
     bool done (false);
 
     do
@@ -160,6 +166,8 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
         break;
       }
     }  while (! done);
+
+    mgr.stop ();
   }
   else
   {
@@ -172,27 +180,27 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 static void init_config (gpi_space::config & cfg)
 {
   // quick hack
-  std::string user_name;
-  {
-    std::stringstream sstr;
-    passwd * pw_entry (getpwuid(getuid()));
-    if (pw_entry)
-    {
-      sstr << pw_entry->pw_name;
-    }
-    else
-    {
-      LOG(WARN, "could not lookup username from uid " << getuid() << ": " << errno);
-      sstr << getuid();
-    }
-    user_name = sstr.str();
-  }
+  // std::string user_name;
+  // {
+  //   std::stringstream sstr;
+  //   passwd * pw_entry (getpwuid(getuid()));
+  //   if (pw_entry)
+  //   {
+  //     sstr << pw_entry->pw_name;
+  //   }
+  //   else
+  //   {
+  //     LOG(WARN, "could not lookup username from uid " << getuid() << ": " << errno);
+  //     sstr << getuid();
+  //   }
+  //   user_name = sstr.str();
+  // }
 
-  snprintf ( cfg.node.socket_path
-           , gpi_space::MAX_PATH_LEN
-           , "/var/tmp/GPI-Space-S-%s"
-           , user_name.c_str()
-           );
+  // snprintf ( cfg.node.socket_path
+  //          , gpi_space::MAX_PATH_LEN
+  //          , "/var/tmp/GPI-Space-S-%s"
+  //          , user_name.c_str()
+  //          );
   cfg.gpi.timeout_in_sec = 0;
 }
 
