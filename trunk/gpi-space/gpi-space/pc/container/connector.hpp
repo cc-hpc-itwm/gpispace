@@ -1,0 +1,75 @@
+#ifndef GPI_SPACE_PC_CONTAINER_CONNECTOR_HPP
+#define GPI_SPACE_PC_CONTAINER_CONNECTOR_HPP 1
+
+#include <string>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+#include <boost/noncopyable.hpp>
+
+#include <gpi-space/pc/type/typedefs.hpp>
+
+namespace gpi
+{
+  namespace pc
+  {
+    namespace container
+    {
+      template <typename Manager>
+      class process_t : boost::noncopyable
+      {
+      public:
+        typedef Manager manager_type;
+        explicit
+        process_t ( manager_type & mgr
+                  , const gpi::pc::type::id_t id
+                  , const int socket
+                  )
+          : m_mgr (mgr)
+          , m_id (id)
+          , m_socket (socket)
+        {}
+
+        void start ();
+        void stop ();
+      private:
+        void reader_thread ();
+
+        manager_type & m_mgr;
+        gpi::pc::type::id_t m_id;
+        int m_socket;
+        boost::thread m_reader;
+      };
+
+      template <typename Manager, typename Process>
+      class connector_t : boost::noncopyable
+      {
+      public:
+        typedef Manager manager_type;
+        typedef Process process_type;
+        typedef connector_t<manager_type, process_type> self;
+
+        explicit
+        connector_t (manager_type & mgr, std::string const & p)
+          : m_mgr (mgr)
+          , m_path (p)
+        {}
+
+        void start ();
+        void stop ();
+      private:
+        typedef boost::shared_ptr<boost::thread> thread_t;
+
+        void listener_thread ();
+
+        manager_type & m_mgr;
+        std::string m_path;
+        thread_t m_listener;
+      };
+    }
+  }
+}
+
+#include "connector.ipp"
+
+#endif

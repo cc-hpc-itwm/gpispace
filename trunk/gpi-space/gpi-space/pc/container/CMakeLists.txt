@@ -1,6 +1,10 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
+  connector.hpp
+  connector.ipp
+  manager.hpp
+  manager.ipp
   )
 
 set (srcs
