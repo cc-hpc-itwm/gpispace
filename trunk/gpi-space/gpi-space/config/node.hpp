@@ -24,7 +24,17 @@ namespace gpi_space
       template <typename Mapping>
       void load (Mapping const & m)
       {
-        snprintf(socket_path, gpi_space::MAX_PATH_LEN, "%s", m.get("node.socket_path", "/var/tmp").c_str());
+        std::string default_path ("/var/tmp");
+        {
+          std::stringstream sstr;
+          sstr << "/var/tmp/GPISpaceD-U" << getuid();
+          default_path = sstr.str();
+        }
+        snprintf( socket_path
+                , gpi_space::MAX_PATH_LEN
+                , "%s"
+                , m.get("node.socket_path", default_path.c_str()).c_str()
+                );
         daemonize = fhg::util::read_bool
           (m.get("node.daemonize", "false"));
         mode = boost::lexical_cast<mode_t>(m.get("node.mode", "0700"));
