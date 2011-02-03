@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-#define BOOST_TEST_MODULE TestAgents
+#define BOOST_TEST_MODULE TestOrchestratorEmptyWe
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
@@ -26,6 +26,7 @@
 #include <fhgcom/tcp_server.hpp>
 
 #include <boost/thread.hpp>
+
 #include "tests_config.hpp"
 
 #include "sdpa/memory.hpp"
@@ -39,7 +40,6 @@
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
-#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 #include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
@@ -47,10 +47,12 @@
 #include <boost/filesystem/path.hpp>
 #include <sys/wait.h>
 
+#include <tests/sdpa/DummyWorkflowEngine.hpp>
 #include <sdpa/daemon/EmptyWorkflowEngine.hpp>
+#include <we/mgmt/basic_layer.hpp>
 #include <we/mgmt/layer.hpp>
 
-const int NMAXTRIALS=3;
+const int NMAXTRIALS=5;
 
 namespace po = boost::program_options;
 
@@ -64,36 +66,85 @@ typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
+namespace sdpa { namespace tests { namespace worker {
+  class NreWorkerClient
+  {
+  public:
+    explicit
+    NreWorkerClient( const std::string &nre_worker_location
+                      // TODO: fixme, this is ugly
+                      , bool bLaunchNrePcd = false
+                      , const std::string & fvmPCBinary = ""
+                      , const std::vector<std::string>& fvmPCSearchPath = std::vector<std::string>()
+                      , const std::vector<std::string>& fvmPCPreLoad = std::vector<std::string>()
+                      )
+    : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
+
+    void set_ping_interval(unsigned long /*seconds*/){}
+    void set_ping_timeout(unsigned long /*seconds*/){}
+    void set_ping_trials(std::size_t /*max_tries*/){}
+
+    void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
+
+    unsigned int start() throw (std::exception) { LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
+    void stop() throw (std::exception) { LOG( INFO, "Stop the test NreWorkerClient ...");}
+
+    void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
+
+    sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
+	{
+    	LOG( INFO, "Execute the activity "<<in_activity);
+    	LOG( INFO, "Report activity finished ...");
+
+    	sdpa::nre::worker::execution_result_t exec_res(std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result"));
+    	return exec_res;
+	}
+
+  private:
+    std::string nre_worker_location_;
+    SDPA_DECLARE_LOGGER();
+  };
+}}}
+
 struct MyFixture
 {
 	MyFixture()
 			: m_nITER(1)
 			, m_sleep_interval(1000000)
+			, m_pool (0)
+	    	, m_kvsd (0)
+	    	, m_serv (0)
+	    	, m_thrd (0)
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
 
 		LOG(DEBUG, "Fixture's constructor called ...");
 
-		m_ptrPool = new fhg::com::io_service_pool(1);
-		m_ptrKvsd = new fhg::com::kvs::server::kvsd ("");
-		m_ptrServ = new fhg::com::tcp_server ( *m_ptrPool
-										  , *m_ptrKvsd
+		m_pool = new fhg::com::io_service_pool(1);
+		m_kvsd = new fhg::com::kvs::server::kvsd ("");
+		m_serv = new fhg::com::tcp_server ( *m_pool
+										  , *m_kvsd
 										  , kvs_host ()
 										  , kvs_port ()
 										  , true
 										  );
-		m_ptrThrd = new boost::thread( boost::bind( &fhg::com::io_service_pool::run, m_ptrPool ) );
+		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
+												, m_pool
+												)
+								   );
 
-		m_ptrServ->start();
+		m_serv->start();
 
-		LOG(INFO, "kvs daemon is listening on port " << m_ptrServ->port ());
+		LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
 
 		fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-												  , boost::lexical_cast<std::string>(m_ptrServ->port())
+												  , boost::lexical_cast<std::string>(m_serv->port())
 												  , boost::posix_time::seconds(10)
 												  , 3
 												  );
+
+		m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	}
 
 	~MyFixture()
@@ -102,13 +153,16 @@ struct MyFixture
 
 		//seda::StageRegistry::instance().clear();
 
-		m_ptrPool->stop();
-		m_ptrThrd->join();
+		sstrOrch.str("");
+		sstrAgg.str("");
+		sstrNRE.str("");
 
-		delete m_ptrThrd;
-		delete m_ptrServ;
-		delete m_ptrKvsd;
-		delete m_ptrPool;
+		m_pool->stop ();
+		m_thrd->join ();
+		delete m_thrd;
+		delete m_serv;
+		delete m_kvsd;
+		delete m_pool;
 	}
 
 	string read_workflow(string strFileName)
@@ -128,258 +182,47 @@ struct MyFixture
 		return os.str();
 	}
 
-	void startDaemons(const std::string& workerUrl);
-
-	unsigned int startNrePcd( string &nre_worker_location_, string nre_pcd_binary_, vector<string> nre_pcd_search_path_, vector<string> nre_pcd_pre_load_ )
-	{
-		unsigned int rc = 0;
-
-		// check here whether the nre-pcd is running or not
-		LOG(INFO, "Try to spawn nre-pcd with fork!");
-		pidPcd_ = fork();
-
-		if (pidPcd_ == 0)  // child
-		{
-			// Code only executed by child process
-			LOG(INFO, "After fork, I'm the child process ...");
-			try {
-				std::vector<std::string> cmdline;
-				cmdline.push_back ( nre_pcd_binary_ );
-
-				//LOG(INFO, std::string("nre_pcd_binary_ = ") + cmdline[0] );
-
-				cmdline.push_back("-l");
-				cmdline.push_back(nre_worker_location_.c_str());
-
-				for( vector<string>::const_iterator it (nre_pcd_search_path_.begin())
-				  ; it != nre_pcd_search_path_.end()
-				  ; ++it
-				  )
-				{
-					cmdline.push_back("--append-search-path");
-					cmdline.push_back(*it);
-				}
-
-				for( vector<string>::const_iterator it (nre_pcd_pre_load_.begin()); it != nre_pcd_pre_load_.end(); ++it )
-				{
-					cmdline.push_back("--load");
-					cmdline.push_back(*it);
-				}
-
-				char ** av = new char*[cmdline.size()+1];
-				av[cmdline.size()] = (char*)(NULL);
-
-				std::size_t idx (0);
-				for ( std::vector<std::string>::const_iterator it (cmdline.begin())
-				  ; it != cmdline.end()
-				  ; ++it, ++idx
-				  )
-				{
-					//LOG(INFO, std::string("cmdline[")<<idx<<"]=" << cmdline[idx] );
-
-					av[idx] = new char[it->size()+1];
-					memcpy(av[idx], it->c_str(), it->size());
-					av[idx][it->size()] = (char)0;
-				}
-
-				std::stringstream sstr_cmd;
-				for(size_t k=0; k<idx; k++)
-					sstr_cmd << av[idx];
-
-				LOG(DEBUG, std::string("Try to launch the nre-pcd with the following the command line:\n") + sstr_cmd.str() );
-
-				if ( execv( nre_pcd_binary_.c_str(), av) < 0 )
-				{
-					throw std::runtime_error( std::string("could not exec command line ") + sstr_cmd.str() );
-				}
-				// not reached
-			}
-			catch(const std::exception& ex)
-			{
-				LOG(ERROR, "Exception occurred when trying to spawn nre-pcd: "<<ex.what());
-				exit(1);
-			}
-		}
-		else if (pidPcd_ < 0)            // failed to fork
-		{
-			LOG(ERROR, "Failed to fork!");
-			throw std::runtime_error ("fork failed: " + std::string(strerror(errno)));
-		}
-		else  // parent
-		{
-			// Code only executed by parent process
-			sleep(2);
-		}
-
-		return rc;
-	}
-
-	void shutdownNrePcd()
-	{
-		int c;
-		int nStatus;
-		if (pidPcd_ <= 1)
-		{
-			LOG(ERROR, "cannot send TERM signal to child with pid: " << pidPcd_);
-			throw std::runtime_error ("pcd does not have a valid pid (<= 1)");
-		}
-
-		kill(pidPcd_, SIGTERM);
-
-		c = wait(&nStatus);
-		if( WIFEXITED(nStatus) )
-		{
-			if( WEXITSTATUS(nStatus) != 0 )
-			{
-				std::cerr<<"nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus)<<endl;
-				LOG(ERROR, "nre-pcd exited with the return code "<<(int)WEXITSTATUS(nStatus));
-			}
-			else
-				if( WIFSIGNALED(nStatus) )
-				{
-					std::cerr<<"nre-pcd exited due to a signal: " <<(int)WTERMSIG(nStatus)<<endl;
-					LOG(ERROR, "nre-pcd exited due to a signal: "<<(int)WTERMSIG(nStatus));
-				}
-		}
-	}
-
 	int m_nITER;
 	int m_sleep_interval ;
     std::string m_strWorkflow;
 
-	fhg::com::io_service_pool *m_ptrPool;
-	fhg::com::kvs::server::kvsd *m_ptrKvsd;
-	fhg::com::tcp_server *m_ptrServ;
-	boost::thread *m_ptrThrd;
+    fhg::com::io_service_pool *m_pool;
+	fhg::com::kvs::server::kvsd *m_kvsd;
+	fhg::com::tcp_server *m_serv;
+	boost::thread *m_thrd;
 
+	std::stringstream sstrOrch;
+	std::stringstream sstrAgg;
+	std::stringstream sstrNRE;
+
+	boost::thread m_threadClient;
 	pid_t pidPcd_;
 };
 
+BOOST_FIXTURE_TEST_SUITE( test_orchestrator_empty_we, MyFixture )
 
-void MyFixture::startDaemons(const std::string& workerUrl)
+BOOST_AUTO_TEST_CASE( testAllWithNoWe )
 {
-	string strGuiUrl = "";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-	//bool bLaunchNrePcd = false;
-
-	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
-	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
-
-	//LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
-
-	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
-
-	// use external scheduler and real GWES
-	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE",
-											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
-
-	try {
-		ptrNRE->start();
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
-
-		ptrOrch->shutdown();
-		ptrAgg->shutdown();
-		ptrNRE->shutdown();
-
-		return;
-	}
-
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-
-	for( int k=0; k<m_nITER; k++ )
-	{
-		sdpa::job_id_t job_id_user; int nTrials = 0;;
-retry:	try {
-			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrNRE->shutdown();
-				ptrAgg->shutdown();
-				ptrOrch->shutdown();
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-			else
-				goto retry;
-
-		}
-
-		LOG( DEBUG, "*****JOB #"<<k<<"******");
-
-		std::string job_status =  ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
-			job_status = ptrCli->queryJob(job_id_user);
-			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-			usleep(m_sleep_interval);
-		}
-
-		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-		ptrCli->retrieveResults(job_id_user);
-
-		LOG( DEBUG, "User: delete the job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
-	}
-
-	ptrOrch->shutdown();
-	ptrAgg->shutdown();
-	ptrNRE->shutdown();
-
-	ptrCli->shutdown_network();
-	ptrCli.reset();
-}
-
-BOOST_FIXTURE_TEST_SUITE( test_suite_agent_int, MyFixture )
-
-BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
-{
-	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByNRE *****"<<std::endl);
+	LOG( DEBUG, "***** testOrchAandAggNoWe *****"<<std::endl);
 	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
 
-	bool bLaunchNrePcd = true;
+	typedef void OrchWorkflowEngine;
+	typedef sdpa::tests::worker::NreWorkerClient WorkerClient;
+
+	bool bLaunchNrePcd = false;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	//LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
 	ptrOrch->start();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg,"orchestrator_0");
 	ptrAgg->start();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -390,8 +233,8 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<void, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
 				                             strGuiUrl,
@@ -425,7 +268,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	for( int k=0; k<m_nITER; k++ )
 	{
-		//sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
 		sdpa::job_id_t job_id_user; int nTrials = 0;;
 retry:	try {
 			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
@@ -470,62 +312,278 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
+	 ptrNRE_0->shutdown();
+	 ptrAgg->Aggregator::shutdown();
+	 ptrOrch->shutdown();
+
+	ptrCli->shutdown_network();
+    ptrCli.reset();
+
+	LOG( DEBUG, "The test case testOrchAandAggNoWe terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
+{
+	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+
+	bool bLaunchNrePcd = true;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	//LOG( DEBUG, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	// use external scheduler and real GWES
+	//LOG( DEBUG, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+				                             addrNRE,"aggregator_0",
+				                             workerUrl,
+				                             strGuiUrl,
+				                             bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
+
+	try {
+		ptrNRE_0->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
+
+		return;
+	}
+
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+
+	for( int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user; int nTrials = 0;;
+retry:	try {
+			nTrials++;
+			job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
+			else
+				goto retry;
+
+		}
+
+		LOG( DEBUG, "*****JOB #"<<k<<"******");
+
+		std::string job_status = ptrCli->queryJob(job_id_user);
+		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = ptrCli->queryJob(job_id_user);
+			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(5*m_sleep_interval);
+		}
+
+		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+		ptrCli->retrieveResults(job_id_user);
+
+		LOG( DEBUG, "User: delete the job "<<job_id_user);
+		ptrCli->deleteJob(job_id_user);
+	}
+
 	ptrNRE_0->shutdown();
-
-	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
 	ptrAgg->shutdown();
-
-	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
 	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
 
-	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpywnedByNRE terminated!");
+	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
+BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 {
-	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
-
-	string workerUrl = "127.0.0.1:12500";
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back( TESTS_EXAMPLE_STRESSTEST_MODULES_PATH );
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back( TESTS_FVM_PC_FAKE_MODULE );
-
-	try {
-		startNrePcd( workerUrl, TESTS_NRE_PCD_BIN_PATH, v_fake_PC_search_path, v_module_preload );
-	}
-	catch(const std::exception& ex)
-	{
-		LOG( DEBUG, "Could not start the process container daemon!");
-		throw;
-	}
-
-	startDaemons(workerUrl);
-	shutdownNrePcd();
-
-	LOG( DEBUG, "The test case testActivityRealWeAllCompAndNreWorkerSpawnedByTest terminated!");
-}
-
-BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
-{
-	LOG( DEBUG, "***** testActivityRealWeAllCompAndActExec *****"<<std::endl);
+	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
 	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:12500";
+	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
-	//bool bLaunchNrePcd = false;
+
+	bool bLaunchNrePcd = true;
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	//LOG( DEBUG, "Create the Orchestrator ...");
+	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
+	ptrOrch->start();
+
+	//LOG( DEBUG, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	ptrAgg->start();
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	// use external scheduler and real GWES
+	//LOG( DEBUG, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+				                             addrNRE,"aggregator_0",
+				                             workerUrl,
+				                             strGuiUrl,
+				                             bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
+
+	try {
+		ptrNRE_0->start();
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start NRE: " << ex.what());
+
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
+
+		return;
+	}
+
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+	 for( int k=0; k<m_nITER; k++ )
+	{
+		sdpa::job_id_t job_id_user;
+		int nTrials = 0;;
+retry:	try {
+			nTrials++;
+			job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrNRE_0->shutdown();
+				ptrAgg->shutdown();
+				ptrOrch->shutdown();
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
+			else
+				goto retry;
+
+		}
+
+		LOG( DEBUG, "*****JOB #"<<k<<"******");
+
+		std::string job_status = ptrCli->queryJob(job_id_user);
+		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			job_status = ptrCli->queryJob(job_id_user);
+			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+			usleep(5*m_sleep_interval);
+		}
+
+		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+		ptrCli->retrieveResults(job_id_user);
+
+		LOG( DEBUG, "User: delete the job "<<job_id_user);
+		ptrCli->deleteJob(job_id_user);
+	}
+
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	ptrCli->shutdown_network();
+    ptrCli.reset();
+
+	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
+{
+	LOG( DEBUG, "***** testOrchestratorRealWe *****"<<std::endl);
+	string strGuiUrl   = "";
+	string workerUrl = "127.0.0.1:5500";
+	string addrOrch = "127.0.0.1";
+	string addrAgg = "127.0.0.1";
+	string addrNRE = "127.0.0.1";
+
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+
+	bool bLaunchNrePcd = true;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
 	ptrOrch->start();
 
@@ -533,35 +591,24 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	ptrAgg->start();
 
-	// use external scheduler and dummy WE
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+				                             addrNRE,"aggregator_0",
+				                             workerUrl,
+				                             strGuiUrl,
+				                             bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
 
-	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
-	executor->loader().append_search_path (TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	try {
-		LOG( INFO, "Load the fake-fvm module ("<<TESTS_FVM_PC_FAKE_MODULE<<") ...");
-		boost::filesystem::path pathFakeFvmModule(TESTS_FVM_PC_FAKE_MODULE);
-		executor->loader().load("fvm", pathFakeFvmModule);
-	}
-	catch(const we::loader::ModuleLoadFailed& ex)
-	{
-		 LOG( ERROR, "Could not load the module "<<TESTS_FVM_PC_FAKE_MODULE<<"!!!");
-		 BOOST_ASSERT (false);
-	}
-
-	try {
-		executor->start();
-	}
-	catch (const std::exception &ex) {
-	  LOG( ERROR, "could not start executor: " << ex.what());
-	  BOOST_ASSERT (false);
-	}
-
-	LOG( DEBUG, "starting the NRE ...");
 	try {
 		ptrNRE_0->start();
 	}
@@ -569,9 +616,9 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		ptrOrch->shutdown();
-		ptrAgg->shutdown();
 		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -585,12 +632,14 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
+
 	for( int k=0; k<m_nITER; k++ )
 	{
-		//sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
-		sdpa::job_id_t job_id_user; int nTrials = 0;;
+		sdpa::job_id_t job_id_user;
+		int nTrials = 0;;
 retry:	try {
-			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
+			nTrials++;
+			job_id_user = ptrCli->submitJob(m_strWorkflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -612,7 +661,7 @@ retry:	try {
 
 		LOG( DEBUG, "*****JOB #"<<k<<"******");
 
-		std::string job_status =  ptrCli->queryJob(job_id_user);
+		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
 		while( job_status.find("Finished") == std::string::npos &&
@@ -622,7 +671,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(m_sleep_interval);
+			usleep(5*m_sleep_interval);
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -632,68 +681,61 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	// process container terminates ...
-	LOG( INFO, "terminating...");
-	if (! executor->stop())
-		LOG( WARN, "executor did not stop correctly...");
-
 	ptrNRE_0->shutdown();
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
-	ptrCli->shutdown_network();
-	ptrCli.reset();
 
-	LOG( DEBUG, "The test case testActivityRealWeAllCompAndActExec with fvm-pc terminated!");
+	ptrCli->shutdown_network();
+    ptrCli.reset();
+
+	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
+BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 {
-	LOG( DEBUG, "***** testActivityDummyWeAllCompAndNreWorker *****"<<std::endl);
-	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:12500";
+	LOG( DEBUG, "***** testOrchestratorEmptyWe2Aggs *****"<<std::endl);
+	string strGuiUrl = "";
+	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
-	//bool bLaunchNrePcd = false;
+
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+
+	bool bLaunchNrePcd = true;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
-	//LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch);
+	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
 	ptrOrch->start();
 
-	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	LOG( DEBUG, "Create the Aggregator 0 ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
 	ptrAgg->start();
 
-	// use external scheduler and dummy WE
-	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+	LOG( DEBUG, "Create the Aggregator 1 ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg_1 = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_1", addrAgg,"aggregator_0");
+	ptrAgg_1->start();
 
-	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
-	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
-    executor->loader().append_search_path (TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
 
-    try {
-		LOG( INFO, "Load the fake-fvm module ("<<TESTS_FVM_PC_FAKE_MODULE<<") ...");
-		boost::filesystem::path pathFakeFvmModule(TESTS_FVM_PC_FAKE_MODULE);
-		executor->loader().load("fvm", pathFakeFvmModule);
-	}
-	catch(const we::loader::ModuleLoadFailed& ex)
-	{
-		 LOG( ERROR, "Could not load the module "<<TESTS_FVM_PC_FAKE_MODULE<<"!!!");
-		 BOOST_ASSERT (false);
-	}
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
 
-	try {
-		executor->start();
-	}
-	catch (const std::exception &ex) {
-	  LOG( ERROR, "could not start executor: " << ex.what());
-	  BOOST_ASSERT (false);
-	}
+	// use external scheduler and real GWES
+	////LOG( DEBUG, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+				                             addrNRE,"aggregator_1",
+				                             workerUrl,
+				                             strGuiUrl,
+				                             bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
 
 	try {
 		ptrNRE_0->start();
@@ -702,9 +744,10 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 		LOG( FATAL, "Could not start NRE: " << ex.what());
 		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
 
-		ptrOrch->shutdown();
-		ptrAgg->shutdown();
 		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrAgg_1->shutdown();
+		ptrOrch->shutdown();
 
 		return;
 	}
@@ -718,21 +761,22 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
-	for( int k=0; k<m_nITER; k++ )
+	 for( int k=0; k<m_nITER; k++ )
 	{
-		//sdpa::job_id_t job_id_user = ptrCli->submitJob(m_strWorkflow);
 		sdpa::job_id_t job_id_user; int nTrials = 0;;
-retry:	try {
-			nTrials++; job_id_user = ptrCli->submitJob(m_strWorkflow);
+retry:  try {
+			nTrials++;
+			job_id_user = ptrCli->submitJob(m_strWorkflow);
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
 			if(nTrials > NMAXTRIALS)
 			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+				//LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 				ptrNRE_0->shutdown();
 				ptrAgg->shutdown();
+				ptrAgg_1->shutdown();
 				ptrOrch->shutdown();
 				ptrCli->shutdown_network();
 				ptrCli.reset();
@@ -745,7 +789,7 @@ retry:	try {
 
 		LOG( DEBUG, "*****JOB #"<<k<<"******");
 
-		std::string job_status =  ptrCli->queryJob(job_id_user);
+		std::string job_status = ptrCli->queryJob(job_id_user);
 		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
 		while( job_status.find("Finished") == std::string::npos &&
@@ -755,7 +799,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(m_sleep_interval);
+			usleep(5*m_sleep_interval);
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -767,16 +811,13 @@ retry:	try {
 
 	ptrNRE_0->shutdown();
 	ptrAgg->shutdown();
+	ptrAgg_1->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( INFO, "terminating...");
-	if (! executor->stop())
-		LOG( WARN, "executor did not stop correctly...");
-
 	ptrCli->shutdown_network();
-	ptrCli.reset();
+    ptrCli.reset();
 
-	LOG( DEBUG, "The test case testActivityDummyWeAllCompAndNreWorker terminated!");
+	LOG( DEBUG, "The test case testOrchestratorEmptyWe2Aggs terminated!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -141,12 +141,28 @@ target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
 									 ${Boost_LIBRARIES})
 add_test(test_serialize_agents_suite test_serialize_agents_suite)
 
-set( test_agents_srcs
+set( test_agents_and_act_exec_srcs
+  	test_AgentsAndActExec.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
+)
+
+add_executable(test_agents_and_act_exec_suite ${test_agents_and_act_exec_srcs})
+target_link_libraries(test_agents_and_act_exec_suite  seda sdpa-daemon
+									 sdpa-client
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 #uuid
+									 ${Boost_LIBRARIES})
+add_test(test_agents_and_act_exec_suite test_agents_and_act_exec_suite)
+
+set( test_agents_src
   	test_Agents.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 
-add_executable(test_agents_suite ${test_agents_srcs})
+add_executable(test_agents_suite ${test_agents_src})
 target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 sdpa-client
 									 sdpa-events
@@ -155,23 +171,7 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 dl
 									 #uuid
 									 ${Boost_LIBRARIES})
-add_test(test_agents_suite test_agents_suite)
-
-set( test_orch_empty_we_srcs
-  	test_OrchDifferentWEs.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
-)
-
-add_executable(test_orchestrator_empty_we ${test_orch_empty_we_srcs})
-target_link_libraries(test_orchestrator_empty_we  seda sdpa-daemon
-									 sdpa-client
-									 sdpa-events
-									 sdpa-util
-									 sdpa
-									 dl
-									 #uuid
-									 ${Boost_LIBRARIES})
-add_test( test_orchestrator_empty_we test_orchestrator_empty_we )
+add_test( test_agents_suite test_agents_suite )
 
 #test_StopRestartAgents
 set( test_stop_restart_agents_srcs test_StopRestartAgents.cpp )
@@ -218,7 +218,6 @@ add_test( test_JobSubmToWeFails test_JobSubmToWeFails )
 
 #test_ConcurrentClients
 set( test_ConcurrentClients_srcs test_ConcurrentClients.cpp )
-
 add_executable(test_concurrent_clients ${test_ConcurrentClients_srcs})
 target_link_libraries(test_concurrent_clients  seda sdpa-daemon
 									 sdpa-client
@@ -229,3 +228,15 @@ target_link_libraries(test_concurrent_clients  seda sdpa-daemon
 									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_concurrent_clients test_concurrent_clients )
+
+
+#test_MSM
+set( test_MSM_srcs test_MSM.cpp )
+add_executable(test_MSM ${test_MSM_srcs})
+target_link_libraries(test_MSM  seda 
+								sdpa-daemon
+								sdpa-events
+								sdpa-util
+								sdpa
+							    ${Boost_LIBRARIES})
+#add_test( test_MSM test_MSM )

@@ -1,4 +1,6 @@
 #define BOOST_TEST_MODULE TestAgentsSerialization
+
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
@@ -19,7 +21,6 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/nvp.hpp>
 #include "boost/serialization/map.hpp"
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 
 #include <boost/serialization/export.hpp>
@@ -28,7 +29,6 @@
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <tests/sdpa/DummyWorkflowEngine.hpp>
 

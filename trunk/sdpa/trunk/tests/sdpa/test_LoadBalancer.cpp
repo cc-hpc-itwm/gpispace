@@ -16,8 +16,9 @@
 * =====================================================================================
 */
 #define BOOST_TEST_MODULE TestLoadBalancer
-#include <boost/test/unit_test.hpp>
 
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <string>
 #include <list>
@@ -25,7 +26,6 @@
 #include <time.h>
 #include <sdpa/util/util.hpp>
 #include <fstream>
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sstream>
 #include <sdpa/JobId.hpp>

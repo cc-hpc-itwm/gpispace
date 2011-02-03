@@ -15,6 +15,7 @@
  *
  * =====================================================================================*/
 #define BOOST_TEST_MODULE TestSerializeJobPtrs
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
@@ -34,7 +35,6 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/nvp.hpp>
 #include "boost/serialization/map.hpp"
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 
 #include <boost/serialization/export.hpp>
