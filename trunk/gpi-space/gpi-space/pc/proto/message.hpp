@@ -22,9 +22,11 @@ namespace gpi
             segment_detach, segment_detach_reply,
             segment_list,   segment_list_reply,
 
-            memory_alloc, memory_alloc_reply,
-            memory_free,  memory_free_reply,
-            memory_list,  memory_list_reply,
+            memory_alloc,  memory_alloc_reply,
+            memory_free,   memory_free_reply,
+            memory_list,   memory_list_reply,
+            memory_memcpy, memory_memcpy_reply,
+            memory_wait,   memory_wait_reply,
           };
       }
 

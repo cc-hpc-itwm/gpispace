@@ -51,6 +51,39 @@ namespace gpi
           };
         };
 
+        struct memory_location_t
+        {
+          gpi::pc::type::handle_id_t handle;
+          gpi::pc::type::offset_t    offset;
+        };
+
+        struct memcpy_t
+        {
+          memory_location_t dst;
+          memory_location_t src;
+          gpi::pc::type::size_t size;
+          gpi::pc::type::queue_id_t queue;
+        };
+
+        struct memcpy_reply_t
+        {
+          union
+          {
+            gpi::pc::type::error_t error;
+            gpi::pc::type::queue_id_t queue;
+          };
+        };
+
+        struct wait_t
+        {
+          gpi::pc::type::queue_id_t queue;
+        };
+
+        struct wait_reply_t
+        {
+          gpi::pc::type::error_t error;
+        };
+
         union message_t
         {
           struct
@@ -79,6 +112,24 @@ namespace gpi
               memory::list_reply_t rpl;
             };
           } list;
+
+          struct
+          {
+            union
+            {
+              memory::memcpy_t req;
+              memory::memcpy_reply_t rpl;
+            };
+          } memcpy;
+
+          struct
+          {
+            union
+            {
+              memory::wait_t req;
+              memory::wait_reply_t rpl;
+            };
+          } wait;
         };
       }
     }
