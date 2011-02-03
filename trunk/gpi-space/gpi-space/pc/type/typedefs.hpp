@@ -17,6 +17,7 @@ namespace gpi
       typedef uint64_t time_t;
       typedef id_t segment_id_t;
       typedef id_t handle_id_t;
+      typedef id_t queue_id_t;
 
       typedef uint32_t error_t;
       typedef uint16_t mode_t; // r(8) u(3) g(3) o(3)???
