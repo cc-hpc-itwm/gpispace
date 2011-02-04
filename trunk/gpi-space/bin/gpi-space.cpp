@@ -333,12 +333,20 @@ int main (int ac, char *av[])
 
   gpi_api.barrier();
 
-  int rc (main_loop(config, gpi_api.rank()));
-
-  LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated: " << rc);
+  int rc (EXIT_SUCCESS);
+  try
+  {
+    rc = main_loop(config, gpi_api.rank());
+    LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated with exitcode: " << rc);
+  }
+  catch (std::exception const & ex)
+  {
+    rc = EXIT_FAILURE;
+    LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
+  }
 
   gpi_api.shutdown ();
 
   gpi::signal::handler().stop();
-  return EXIT_SUCCESS;
+  return rc;
 }
