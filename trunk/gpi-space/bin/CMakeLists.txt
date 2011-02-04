@@ -15,12 +15,18 @@ target_link_libraries (gpi-space
   ${CMAKE_THREAD_LIBS_INIT}
 )
 
+# search for libreadline
+find_package (LibReadline REQUIRED)
+include_directories (${LibReadline_INCLUDE_DIR})
+
 set (srcs
   gpish.cpp
   )
 
 add_executable (gpish ${srcs})
 target_link_libraries (gpish
+  gpi-space-static
+  ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
