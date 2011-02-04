@@ -1,8 +1,12 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
+  process.hpp
+  process.ipp
+
   connector.hpp
   connector.ipp
+
   manager.hpp
   manager.ipp
   )
