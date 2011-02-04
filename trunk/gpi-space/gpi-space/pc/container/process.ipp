@@ -123,7 +123,7 @@ namespace gpi
           }
         }
 
-        LOG(TRACE, "process container reader (" << m_id << ") terminated");
+        LOG(TRACE, "process container (" << m_id << ") terminated");
       }
     }
   }
