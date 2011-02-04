@@ -5,13 +5,10 @@
 
 #define COMM_TEST 1
 
-#include <comm.hpp>
 #include <state.hpp>
 #include <splitted_path.hpp>
 
 // ************************************************************************* //
-
-static gpi_fuse::comm::comm comm;
 
 typedef gpi_fuse::state::splitted_path sp_t;
 
@@ -31,9 +28,9 @@ typedef std::list<test_t> test_list;
 int
 main (int argc, char **argv)
 {
-  comm.init();
+  gpi_fuse::state::state state;
 
-  gpi_fuse::state::state state (comm);
+  state.init();
 
   test_list tests;
 
@@ -93,6 +90,8 @@ main (int argc, char **argv)
           exit (EXIT_FAILURE);
         }
     }
+
+  state.finalize();
 
   std::cout << "SUCCESS" << std::endl;
 

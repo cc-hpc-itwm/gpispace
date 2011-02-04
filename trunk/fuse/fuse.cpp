@@ -10,23 +10,27 @@
 #include <file.hpp>
 #include <segment.hpp>
 
+#include <log.h>
+
 #include <algorithm>
+#include <iterator>
 
 #include <cstring> // memset
 #include <errno.h> // ENOENT
 
 // ************************************************************************* //
 
-static gpi_fuse::comm::comm comm;
+static gpi_fuse::state::state state;
 
 // ************************************************************************* //
 
 extern "C" int
-gpi_getattr ( const char * path
-            , struct stat * stbuf
-            )
+gpifs_getattr ( const char * path
+              , struct stat * stbuf
+              )
 {
-  gpi_fuse::state::state state (comm);
+  LOG ("getattr " << path);
+
   gpi_fuse::state::splitted_path sp (state.split (path));
 
   int res (0);
@@ -43,7 +47,7 @@ gpi_getattr ( const char * path
 
       if (sp.handle)
         {
-          stbuf->st_size = gpi_fuse::file::num_valid_handle_file();
+          stbuf->st_size = gpi_fuse::file::num::handle();
 
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
             = state.get_ctime (*sp.handle);
@@ -60,40 +64,48 @@ gpi_getattr ( const char * path
             }
           else if (sp.segment == gpi_fuse::segment::proc())
             {
-              stbuf->st_size = gpi_fuse::file::num_valid_proc_file();
+              stbuf->st_size = gpi_fuse::file::num::proc();
             }
 
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
-            = comm.time_start();
+            = state.time_refresh();
         }
     }
   else if (state.is_file (sp))
     {
-      stbuf->st_mode = S_IFREG | 0600;
       stbuf->st_nlink = 1;
 
-      if (sp.file == gpi_fuse::file::type() && sp.handle)
+      if (gpi_fuse::file::is_valid::proc (*sp.file))
         {
-          stbuf->st_size = state.get_segment_string (*sp.handle).size();
-        }
-      else if (sp.file == gpi_fuse::file::name() && sp.handle)
-        {
-          stbuf->st_size = state.get_name (*sp.handle).size();
-        }
-      else if (sp.file == gpi_fuse::file::data() && sp.handle)
-        {
-          stbuf->st_size = state.get_size (*sp.handle);
-        }
+          stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
+            = state.time_refresh();
 
-      if (sp.handle)
+          stbuf->st_mode = S_IFREG | 0200;
+        }
+      else if (gpi_fuse::file::is_valid::handle (*sp.file))
         {
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
             = state.get_ctime (*sp.handle);
+
+          if (sp.file == gpi_fuse::file::type() && sp.handle)
+            {
+              stbuf->st_mode = S_IFREG | 0400;
+              stbuf->st_size = state.get_segment_string (*sp.handle).size();
+            }
+          else if (sp.file == gpi_fuse::file::name() && sp.handle)
+            {
+              stbuf->st_mode = S_IFREG | 0400;
+              stbuf->st_size = state.get_name (*sp.handle).size();
+            }
+          else if (sp.file == gpi_fuse::file::data() && sp.handle)
+            {
+              stbuf->st_mode = S_IFREG | 0600;
+              stbuf->st_size = state.get_size (*sp.handle);
+            }
         }
       else
         {
-          stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
-            = comm.time_start();
+          res = -ENOENT;
         }
     }
   else
@@ -107,20 +119,18 @@ gpi_getattr ( const char * path
 // ************************************************************************* //
 
 extern "C" int
-gpi_readdir ( const char * path
-            , void * buf
-            , fuse_fill_dir_t filler
-            , off_t offset
-            , struct fuse_file_info * fi
-            )
+gpifs_readdir ( const char * path
+              , void * buf
+              , fuse_fill_dir_t filler
+              , off_t
+              , struct fuse_file_info *
+              )
 {
-  gpi_fuse::state::state state (comm);
+  LOG ("readdir " << path);
+
   gpi_fuse::state::splitted_path sp (state.split (path));
 
   int res (0);
-
-  (void) offset;
-  (void) fi;
 
   if (!state.is_directory (sp))
     {
@@ -140,9 +150,10 @@ gpi_readdir ( const char * path
 // ************************************************************************* //
 
 extern "C" int
-gpi_open (const char * path, struct fuse_file_info * fi)
+gpifs_open (const char * path, struct fuse_file_info * fi)
 {
-  gpi_fuse::state::state state (comm);
+  LOG ("open " << path << ", flags " << (fi->flags & O_ACCMODE));
+
   gpi_fuse::state::splitted_path sp (state.split (path));
 
   int res (0);
@@ -150,6 +161,42 @@ gpi_open (const char * path, struct fuse_file_info * fi)
   if (state.is_file (sp))
     {
       fi->direct_io = 1;
+
+      if (gpi_fuse::file::is_valid::proc (*sp.file))
+        {
+          if ((fi->flags & O_ACCMODE) != O_WRONLY)
+            {
+              res = -EACCES;
+            }
+        }
+      else if (gpi_fuse::file::is_valid::handle (*sp.file))
+        {
+          if (sp.file == gpi_fuse::file::type())
+            {
+              if ((fi->flags & O_ACCMODE) != O_RDONLY)
+                {
+                  res = -EACCES;
+                }
+            }
+          else if (sp.file == gpi_fuse::file::name())
+            {
+              if ((fi->flags & O_ACCMODE) != O_RDONLY)
+                {
+                  res = -EACCES;
+                }
+            }
+          else if (sp.file == gpi_fuse::file::data())
+            {
+            }
+          else
+            {
+              res = -ENOENT;
+            }
+        }
+      else
+        {
+          res = -ENOENT;
+        }
     }
   else
     {
@@ -185,14 +232,15 @@ static size_t copy_string ( const std::string & str
 }
 
 extern "C" int
-gpi_read ( const char *path
-         , char *buf
-         , size_t size
-         , off_t offset
-         , struct fuse_file_info *fi
-         )
+gpifs_read ( const char *path
+           , char *buf
+           , size_t size
+           , off_t offset
+           , struct fuse_file_info *
+           )
 {
-  gpi_fuse::state::state state (comm);
+  LOG ("read " << path << ", size " << size << ", offset " << offset)
+
   gpi_fuse::state::splitted_path sp (state.split (path));
 
   if (state.is_file (sp))
@@ -238,25 +286,54 @@ gpi_read ( const char *path
 // ************************************************************************* //
 
 extern "C" int
-gpi_write ( const char * path
-          , const char * buf
-          , size_t size
-          , off_t offset
-          , struct fuse_file_info *
-          )
+gpifs_write ( const char * path
+            , const char * buf
+            , size_t size
+            , off_t offset
+            , struct fuse_file_info *
+            )
 {
-  gpi_fuse::state::state state (comm);
+  LOG ("write " << path << ", size " << size << ", offset " << offset);
+
   gpi_fuse::state::splitted_path sp (state.split (path));
 
-  if (state.is_file (sp))
+  if (state.is_directory (sp))
     {
-      // do the write here, send data from buf
-      // *sp.handle!
-      size = 0;
+      return -EACCES;
     }
-  else if (state.is_directory (sp))
+  else if (state.is_file (sp))
     {
-      size = 0;
+      if (gpi_fuse::file::is_valid::proc (*sp.file))
+        {
+          if (sp.file == gpi_fuse::file::alloc())
+            {
+              LOG ("ALLOC");
+            }
+          else if (sp.file == gpi_fuse::file::free())
+            {
+              gpi_fuse::alloc::id_t id (gpi_fuse::id::parse (buf, buf + size));
+
+              LOG ("FREE " << id);
+
+              state.free (id);
+            }
+        }
+      else if (gpi_fuse::file::is_valid::handle (*sp.file))
+        {
+          if (sp.file == gpi_fuse::file::data() && sp.handle)
+            {
+              LOG ("write " << size << " bytes "
+                  << " into " << path << ":" << offset
+                  );
+
+              // do the write here, send data from buf
+              // *sp.handle!
+            }
+          else
+            {
+              return -ENOENT;
+            }
+        }
     }
   else
     {
@@ -268,6 +345,48 @@ gpi_write ( const char * path
 
 // ************************************************************************* //
 
+extern "C" int gpifs_release (const char * path, struct fuse_file_info *)
+{
+  LOG ("release " << path);
+
+  gpi_fuse::state::splitted_path sp (state.split (path));
+
+  if (state.is_file (sp))
+    {
+      if (gpi_fuse::file::is_valid::proc (*sp.file))
+        {
+          if (sp.file == gpi_fuse::file::refresh())
+            {
+              LOG ("REFRESH");
+
+              state.refresh();
+            }
+        }
+    }
+
+  return 0;
+}
+
+// ************************************************************************* //
+
+extern "C" int gpifs_utimens (const char * path, const struct timespec *)
+{
+  LOG ("utimens " << path);
+
+  return 0;
+}
+
+// ************************************************************************* //
+
+extern "C" int gpifs_truncate (const char * path, off_t offset)
+{
+  LOG ("truncate " << path << " to " << offset);
+
+  return 0;
+}
+
+// ************************************************************************* //
+
 int
 main (int argc, char **argv)
 {
@@ -275,17 +394,20 @@ main (int argc, char **argv)
 
   memset (&oper, 0, sizeof (oper));
 
-  oper.getattr = gpi_getattr;
-  oper.readdir = gpi_readdir;
-  oper.open = gpi_open;
-  oper.read = gpi_read;
-  oper.write = gpi_write;
+  oper.getattr = gpifs_getattr;
+  oper.readdir = gpifs_readdir;
+  oper.open = gpifs_open;
+  oper.read = gpifs_read;
+  oper.write = gpifs_write;
+  oper.release = gpifs_release;
+  oper.utimens = gpifs_utimens;
+  oper.truncate = gpifs_truncate;
 
-  comm.init();
+  state.init();
 
   const int ret (fuse_main (argc, argv, &oper, NULL));
 
-  comm.finalize();
+  state.finalize();
 
   return ret;
 }

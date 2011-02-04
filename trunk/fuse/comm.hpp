@@ -8,7 +8,9 @@
 #include <segment.hpp>
 #include <alloc.hpp>
 
+#ifdef COMM_TEST
 #include <ctime>
+#endif
 
 namespace gpi_fuse
 {
@@ -19,14 +21,15 @@ namespace gpi_fuse
     public:
       void init ()
       {
-        _time_start = time (NULL);
       }
 
       void finalize ()
       {
       }
 
-      const time_t & time_start () const { return _time_start; }
+      void free (const alloc::id_t & id) const
+      {
+      }
 
 #ifndef COMM_TEST
       void list_segments (segment::id_list_t *) const
@@ -87,8 +90,6 @@ namespace gpi_fuse
           }
       }
 #endif // ifndef COMM_TEST
-    private:
-      time_t _time_start;
     };
   } // namespace comm
 } // namespace gpu_fuse

@@ -18,6 +18,7 @@
 #include <alloc.hpp>
 #include <comm.hpp>
 #include <splitted_path.hpp>
+#include <comm.hpp>
 
 #include <ctime>
 
@@ -31,13 +32,64 @@ namespace gpi_fuse
       typedef boost::unordered_map<segment::id_t, alloc::id_set_t> segments_t;
       typedef boost::unordered_map<alloc::id_t,alloc::descr_t> allocs_t;
 
-      state (const comm::comm & comm)
+      // ******************************************************************* //
+
+      state ()
         : _segments (0)
         , _allocs (0)
-        , _comm (comm)
+        , _comm ()
+        , _time_refresh (0)
+      {}
+
+      // ******************************************************************* //
+
+      void init ()
       {
-        build_maps ();
+        _comm.init ();
+
+        refresh();
       }
+      void finalize ()
+      {
+        _comm.finalize ();
+      }
+
+      // ******************************************************************* //
+
+      void refresh ()
+      {
+        _time_refresh = time (NULL);
+
+        build_maps();
+      }
+      const time_t & time_refresh () const
+      {
+        return _time_refresh;
+      }
+
+      // ******************************************************************* //
+
+      void free (const alloc::id_t & id)
+      {
+        _comm.free (id);
+
+        const allocs_t::const_iterator alloc (_allocs.find (id));
+
+        if (alloc != _allocs.end())
+          {
+            segments_t::iterator segment
+              (_segments.find (alloc->second.segment()));
+
+            if (segment != _segments.end())
+              {
+                segment->second.erase (id);
+              }
+
+            _allocs.erase (alloc);
+          }
+      }
+
+      // ******************************************************************* //
 
       std::string get_segment_string (const alloc::id_t & id) const
       {
@@ -72,6 +124,8 @@ namespace gpi_fuse
           : alloc->second.ctime();
       }
 
+      // ******************************************************************* //
+
       std::size_t size_segment (const segment::id_t & segment) const
       {
         const segments_t::const_iterator seg (_segments.find (segment));
@@ -83,6 +137,8 @@ namespace gpi_fuse
         return _segments.size() - 2;
       }
 
+      // ******************************************************************* //
+
       bool is_file (const splitted_path & sp) const
       {
         return sp.file;
@@ -91,6 +147,8 @@ namespace gpi_fuse
       {
         return !sp.file && (sp.segment || sp.handle);
       }
+
+      // ******************************************************************* //
 
       void readdir ( const splitted_path & sp
                    , void * buf
@@ -133,6 +191,7 @@ namespace gpi_fuse
           {
             fill (file::alloc(), buf, filler);
             fill (file::free(), buf, filler);
+            fill (file::refresh(), buf, filler);
           }
         else if (sp.segment == segment::global())
           {
@@ -164,6 +223,8 @@ namespace gpi_fuse
             fill_from_segment (sp, *sp.segment_id, buf, filler);
           }
       }
+
+      // ******************************************************************* //
 
       splitted_path split (const std::string & path) const
       {
@@ -214,10 +275,13 @@ namespace gpi_fuse
           }
       }
 
+      // ******************************************************************* //
+
     private:
       segments_t _segments;
       allocs_t _allocs;
       comm::comm _comm;
+      time_t _time_refresh;
 
       void build_maps ()
       {
@@ -272,7 +336,7 @@ namespace gpi_fuse
           {
             sp.file = std::string (pos, path.end());
 
-            if (!file::is_valid_proc_file (*sp.file))
+            if (!file::is_valid::proc (*sp.file))
               {
                 sp.clear();
               }
@@ -296,7 +360,7 @@ namespace gpi_fuse
               {
                 sp.file = std::string (pos, path.end());
 
-                if (!file::is_valid_handle_file (*sp.file))
+                if (!file::is_valid::handle (*sp.file))
                   {
                     sp.clear();
                   }
@@ -326,7 +390,7 @@ namespace gpi_fuse
               {
                 sp.file = std::string (pos, path.end());
 
-                if (!file::is_valid_handle_file (*sp.file))
+                if (!file::is_valid::handle (*sp.file))
                   {
                     sp.clear();
                   }
