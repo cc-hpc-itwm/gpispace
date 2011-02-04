@@ -53,6 +53,7 @@ namespace gpi
         connector_t (manager_type & mgr, std::string const & p)
           : m_mgr (mgr)
           , m_path (p)
+          , m_socket (-1)
         {}
 
         void start ();
@@ -65,6 +66,7 @@ namespace gpi
         manager_type & m_mgr;
         std::string m_path;
         thread_t m_listener;
+        int m_socket;
       };
     }
   }
