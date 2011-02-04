@@ -15,11 +15,22 @@ target_link_libraries (gpi-space
   ${CMAKE_THREAD_LIBS_INIT}
 )
 
+set (srcs
+  gpish.cpp
+  )
+
+add_executable (gpish ${srcs})
+target_link_libraries (gpish
+  ${FhgLog_LIBRARY}
+  ${Boost_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+
 set_target_properties(gpi-space
   PROPERTIES
   INSTALL_RPATH ""
   )
-install (TARGETS gpi-space
+install (TARGETS gpi-space gpish
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
