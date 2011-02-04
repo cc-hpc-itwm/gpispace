@@ -1,15 +1,17 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
+  api.hpp
   )
 
 set (srcs
+  api.cpp
   )
 
-#ADD_LIBRARY(gpi-space-daemon-static ${hdrs} ${srcs})
-#ADD_LIBRARY(gpi-space-daemon-shared SHARED ${hdrs} ${srcs})
-#set_target_properties(gpi-space-daemon-static PROPERTIES OUTPUT_NAME gpi-space-daemon)
-#set_target_properties(gpi-space-daemon-shared PROPERTIES OUTPUT_NAME gpi-space-daemon)
+add_library(gpi-space-pc-client-static ${hdrs} ${srcs})
+add_library(gpi-space-pc-client-shared SHARED ${hdrs} ${srcs})
+set_target_properties(gpi-space-pc-client-static PROPERTIES OUTPUT_NAME gpi-space-pc-client)
+set_target_properties(gpi-space-pc-client-shared PROPERTIES OUTPUT_NAME gpi-space-pc-client)
 
 install(FILES ${hdrs}
   DESTINATION include/gpi-space/pc/client
