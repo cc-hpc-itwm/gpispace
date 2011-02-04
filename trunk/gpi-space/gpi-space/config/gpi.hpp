@@ -66,6 +66,14 @@ namespace gpi_space
             throw std::runtime_error ("invalid value for gpi.memory_size: " + mem_size + ": " + ex.what());
           }
         }
+
+        mode = boost::lexical_cast<mode_t>(m.get("gpi.socket_mode", "0700"));
+        std::string default_path ("/var/tmp/");
+        snprintf( socket_path
+                , gpi_space::MAX_PATH_LEN
+                , "%s"
+                , m.get("gpi.socket_path", default_path.c_str()).c_str()
+                );
       }
 
       uint64_t       memory_size;
@@ -74,6 +82,8 @@ namespace gpi_space
       unsigned short port;
       unsigned int   processes;
       unsigned int   timeout_in_sec;
+      char socket_path[gpi_space::MAX_PATH_LEN];
+      mode_t mode;
     };
   }
 }

@@ -28,6 +28,8 @@ namespace gpi
         void stop ();
 
         bool is_connected () const;
+        void path (std::string const & p);
+        std::string const & path () const;
 
         // api to gpi
         int write (const void *buf, size_t sz);
