@@ -85,21 +85,11 @@ namespace gpi
       void process_t<M>::reader_thread_main(const int fd)
       {
         int err;
-        char buf [1024];
+        char buf [2048];
 
         LOG(TRACE, "process container (" << m_id << ") started");
         for (;;)
         {
-          const std::string msg ("hello\n");
-
-          err = write (fd, msg.c_str(), msg.size());
-          if (err < 0)
-          {
-            err = errno;
-            LOG(ERROR, "could not write to client socket: " << strerror(err));
-            break;
-          }
-
           memset (buf, 0, sizeof(buf));
           err = read (fd, buf, sizeof(buf) - 1);
           if (err < 0)
@@ -118,8 +108,15 @@ namespace gpi
           }
           else
           {
-            LOG(INFO, "got message (" << err << " bytes) : " << buf);
-            // m_mgr.handle_message ();
+            // just echo back for now
+            buf[err] = 0;
+            err = write (fd, buf, err);
+            if (err < 0)
+            {
+              err = errno;
+              LOG(ERROR, "could not write to client socket: " << strerror(err));
+              break;
+            }
           }
         }
 
