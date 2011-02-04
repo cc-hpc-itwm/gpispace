@@ -15,26 +15,32 @@ namespace gpi
       {
         enum segment_type
           {
-            GLOBAL = 0,
-            LOCAL,
-            // the followin just a placeholder
+            SEG_INVAL = 0,
+            SEG_GLOBAL,
+            SEG_LOCAL,
+            // the following is just a placeholder
             // shared segment ids are just >= SHARED
-            SHARED,
+            SEG_SHARED,
           };
 
         struct traits
         {
+          static bool is_valid (const gpi::pc::type::segment_id_t i)
+          {
+            return i != SEG_INVAL;
+          }
+
           static bool is_global (const gpi::pc::type::segment_id_t i)
           {
-            return i == GLOBAL;
+            return i == SEG_GLOBAL;
           }
           static bool is_local (const gpi::pc::type::segment_id_t i)
           {
-            return i == LOCAL;
+            return i == SEG_LOCAL;
           }
           static bool is_shared (const gpi::pc::type::segment_id_t i)
           {
-            return i >= SHARED;
+            return i >= SEG_SHARED;
           }
         };
 
