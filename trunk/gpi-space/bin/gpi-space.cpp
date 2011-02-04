@@ -131,7 +131,7 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
   {
     bool done (false);
 
-    do
+    while (std::cin.good() && !done)
     {
       std::cout << prompt;
 
@@ -165,7 +165,7 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
         std::cerr << "command not understood, please use \"h\"" << std::endl;
         break;
       }
-    }  while (! done);
+    };
   }
   else
   {
