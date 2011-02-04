@@ -15,9 +15,11 @@ namespace gpi
       {
       public:
         typedef Manager manager_type;
+        typedef process_t<manager_type> self;
+
         explicit
         process_t ( manager_type & mgr
-                  , const gpi::pc::type::id_t id
+                  , const gpi::pc::type::process_id_t id
                   , const int socket
                   )
           : m_mgr (mgr)
@@ -25,15 +27,25 @@ namespace gpi
           , m_socket (socket)
         {}
 
+        gpi::pc::type::process_id_t get_id () const;
         void start ();
         void stop ();
       private:
-        void reader_thread ();
+        typedef boost::shared_ptr<boost::thread> thread_t;
+        typedef boost::recursive_mutex mutex_type;
+        typedef boost::unique_lock<mutex_type> lock_type;
 
+        void reader_thread_main (const int fd);
+        void start_thread ();
+        void stop_thread ();
+
+        int close_socket (const int fd);
+
+        mutex_type m_mutex;
         manager_type & m_mgr;
-        gpi::pc::type::id_t m_id;
+        const gpi::pc::type::process_id_t m_id;
         int m_socket;
-        boost::thread m_reader;
+        thread_t m_reader;
       };
     }
   }

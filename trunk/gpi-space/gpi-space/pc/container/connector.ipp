@@ -3,6 +3,9 @@
 
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,130 +20,200 @@ namespace gpi
   {
     namespace container
     {
-      template <typename M, typename P>
-      void connector_t<M,P>::start ()
+      template <typename M>
+      connector_t<M>::~connector_t ()
       {
-        if (m_listener) return;
+        try
+        {
+          stop ();
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "error within ~connector_t: " << ex.what());
+        }
+      }
+
+      template <typename M>
+      void connector_t<M>::start ()
+      {
+        lock_type lock (m_mutex);
+
+        if (m_socket >= 0)
+          return;
+
+        m_stopping = false;
+        int err = safe_unlink (m_path);
+        if (err < 0)
+        {
+          LOG(ERROR, "could not unlink path " << m_path << ": " <<  strerror(-err));
+          throw std::runtime_error ("could not unlink socket path");
+        }
+
+        int fd (open_socket (m_path));
+        if (fd < 0)
+        {
+          LOG(ERROR, "could not open socket: " << strerror(-fd));
+          throw std::runtime_error ("could not open socket");
+        }
+        else
+        {
+          m_socket = fd;
+          LOG(INFO, "listening on " << m_path << " (fd " << fd << ")");
+          start_thread ();
+        }
+      }
+
+      template <typename M>
+      void connector_t<M>::stop ()
+      {
+        lock_type lock (m_mutex);
+        if (m_socket >= 0)
+        {
+          m_stopping = true;
+
+          safe_unlink (m_path);
+          close_socket (m_socket);
+          stop_thread ();
+          m_socket = -1;
+        }
+      }
+
+      template <typename M>
+      void connector_t<M>::start_thread ()
+      {
+        assert (m_socket >= 0);
 
         m_listener = thread_t
-          (new boost::thread(boost::bind( &self::listener_thread
+          (new boost::thread(boost::bind( &self::listener_thread_main
                                         , this
+                                        , m_socket
                                         )
                             )
           );
       }
 
-      template <typename M, typename P>
-      void connector_t<M,P>::stop ()
+      template <typename M>
+      void connector_t<M>::stop_thread ()
       {
-        if (! m_listener) return;
-        if (m_socket >= 0)
+        assert (m_listener);
+        if (boost::this_thread::get_id() != m_listener->get_id())
         {
-          shutdown (m_socket, SHUT_RDWR);
-          close (m_socket);
+          m_listener->join ();
+          m_listener.reset ();
         }
-        m_listener->interrupt ();
-        m_listener->join ();
-        m_listener.reset ();
       }
 
-      template <typename M, typename P>
-      void connector_t<M,P>::listener_thread()
+      template <typename M>
+      int connector_t<M>::close_socket (const int fd)
       {
-        int cfd, err;
-        struct sockaddr_un my_addr, peer_addr;
-        socklen_t peer_addr_size;
+        shutdown (fd, SHUT_RDWR);
+        return close (fd);
+      }
+
+      template <typename M>
+      int connector_t<M>::open_socket (std::string const & path)
+      {
+        int sfd, err;
+        struct sockaddr_un my_addr;
         const std::size_t backlog_size (16);
 
-        m_socket = socket (AF_UNIX, SOCK_STREAM, 0);
-        if (m_socket == -1)
+        sfd = socket (AF_UNIX, SOCK_STREAM, 0);
+        if (sfd == -1)
         {
-          LOG(ERROR, "could not open unix socket: " << strerror(errno));
-          return;
+          err = errno;
+          LOG(ERROR, "could not create unix socket: " << strerror(err));
+          return -err;
         }
-
-        setsockopt (m_socket, SOL_SOCKET, SO_PASSCRED, (void*)1, 1);
+        setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, (void*)1, 1);
 
         memset (&my_addr, 0, sizeof(my_addr));
         my_addr.sun_family = AF_UNIX;
-        strncpy (my_addr.sun_path, m_path.c_str(), sizeof(my_addr.sun_path) - 1);
+        strncpy ( my_addr.sun_path
+                , path.c_str()
+                , sizeof(my_addr.sun_path) - 1
+                );
 
-        // if (do_unlink_on_startup)
-        unlink (m_path.c_str());
-        if (bind( m_socket
+        if (bind( sfd
                 , (struct sockaddr *)&my_addr
                 , sizeof(struct sockaddr_un)
-                ) == -1)
+                ) == -1
+           )
         {
-          LOG(ERROR, "could not bind to socket at path " << m_path << ": " << strerror(errno));
-          close (m_socket);
-          return;
+          err = errno;
+          LOG(ERROR, "could not bind to socket at path " << path << ": " << strerror(err));
+          close (sfd);
+          return -err;
         }
 
-        if (listen(m_socket, backlog_size) == -1)
+        if (listen(sfd, backlog_size) == -1)
         {
-          LOG(ERROR, "could not listen on socket: " << strerror(errno));
-          close (m_socket);
-          unlink (m_path.c_str());
-          return;
+          err = errno;
+          LOG(ERROR, "could not listen on socket: " << strerror(err));
+          close (sfd);
+          unlink (path.c_str());
+          return -err;
         }
+
+        return sfd;
+      }
+
+      template <typename M>
+      int connector_t<M>::safe_unlink(std::string const & path)
+      {
+        struct stat st;
+        int err (0);
+
+        if (stat (path.c_str(), &st) == 0)
+        {
+          if (S_ISSOCK(st.st_mode))
+          {
+            unlink (path.c_str());
+            err = 0;
+          }
+          else
+          {
+            err = EINVAL;
+          }
+        }
+
+        return -err;
+      }
+
+      template <typename M>
+      void connector_t<M>::listener_thread_main(const int fd)
+      {
+        int cfd, err;
+        struct sockaddr_un peer_addr;
+        socklen_t peer_addr_size;
 
         for (;;)
         {
           peer_addr_size = sizeof(struct sockaddr_un);
-          cfd = accept(m_socket, (struct sockaddr*)&peer_addr, &peer_addr_size);
+          cfd = accept( fd
+                      , (struct sockaddr*)&peer_addr
+                      , &peer_addr_size
+                      );
           if (cfd == -1)
           {
-            LOG(ERROR, "could not accept: " << strerror(errno));
+            err = errno;
+            if (! m_stopping)
+            {
+              LOG(ERROR, "could not accept: " << strerror(err));
+              m_mgr.handle_connector_error (err);
+            }
             break;
           }
 
-          LOG(DEBUG, "new connection: " << cfd << " " << peer_addr.sun_path);
-
-          /*
-            TODO:
-              - create process handling this fd
-              - register process with the manager
-              - handle messages in the manager
-                   - manager forwards them to the corresponding place
-                   - either segment_manager or gpi
-                   - updates internal structures
-                   - send back reply
-          */
-
-          const std::string msg ("hello\n");
-          err = write (cfd, msg.c_str(), msg.size());
-          if (err < 0)
+          try
           {
-            LOG(ERROR, "could not write to client socket: " << strerror(errno));
-            close(cfd);
-            continue;
+            m_mgr.handle_new_connection (cfd);
           }
-
-          char buf [1024];
-          memset (buf, 0, sizeof(buf));
-          err = read (cfd, buf, sizeof(buf) - 1);
-          if (err < 0)
+          catch (std::exception const & ex)
           {
-            LOG(ERROR, "could not read from client socket: " << strerror(errno));
-            close (cfd);
-            continue;
+            LOG(ERROR, "could not handle new connection: " << ex.what());
+            close_socket (cfd);
           }
-          else
-          {
-            LOG(INFO, "got message (" << err << " bytes) : " << buf);
-            if (buf[0] == 'q')
-            {
-              close (cfd);
-              break;
-            }
-          }
-
-          close (cfd);
         }
-
-        close (m_socket);
-        unlink (m_path.c_str());
       }
     }
   }
