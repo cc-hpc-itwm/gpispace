@@ -96,6 +96,9 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
   LOG(INFO, "gpi-space on rank " << rank << " running");
 
+  gpi::pc::container::manager_t mgr (cfg.node.socket_path);
+  mgr.start ();
+
   // fire up message handling threads...
 
   //   - passive receive thread
@@ -126,9 +129,6 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
   }
   else if (rank == 0)
   {
-    gpi::pc::container::manager_t mgr (cfg.node.socket_path);
-    mgr.start ();
-
     bool done (false);
 
     do
@@ -166,13 +166,13 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
         break;
       }
     }  while (! done);
-
-    mgr.stop ();
   }
   else
   {
     gpi::signal::handler().join ();
   }
+
+  mgr.stop ();
 
   return EXIT_SUCCESS;
 }
