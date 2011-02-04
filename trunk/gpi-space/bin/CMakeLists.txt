@@ -25,6 +25,7 @@ set (srcs
 
 add_executable (gpish ${srcs})
 target_link_libraries (gpish
+  gpi-space-pc-client-static
   gpi-space-static
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
