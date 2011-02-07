@@ -8,7 +8,6 @@
 
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
 
 namespace gpi
 {
@@ -37,6 +36,7 @@ namespace gpi
 
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
+                                , const type::mode_t = 0777
                                 );
 
         void free (const type::handle_id_t);
