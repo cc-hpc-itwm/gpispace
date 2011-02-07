@@ -15,6 +15,7 @@ namespace gpi_space
         , port (10820)
         , processes (0)
         , timeout_in_sec (120)
+        , mode (0700)
       {}
 
       template <typename Mapping>
@@ -68,11 +69,19 @@ namespace gpi_space
         }
 
         mode = boost::lexical_cast<mode_t>(m.get("gpi.socket_mode", "0700"));
-        std::string default_path ("/var/tmp/");
+        std::string default_path ("/var/tmp/gpi-space");
         snprintf( socket_path
                 , gpi_space::MAX_PATH_LEN
                 , "%s"
                 , m.get("gpi.socket_path", default_path.c_str()).c_str()
+                );
+
+        std::string default_name ("control-");
+        default_name += boost::lexical_cast<std::string>(getpid());
+        snprintf( socket_name
+                , gpi_space::MAX_PATH_LEN
+                , "%s"
+                , m.get("gpi.socket_name", default_name.c_str()).c_str()
                 );
       }
 
@@ -83,6 +92,7 @@ namespace gpi_space
       unsigned int   processes;
       unsigned int   timeout_in_sec;
       char socket_path[gpi_space::MAX_PATH_LEN];
+      char socket_name[gpi_space::MAX_PATH_LEN];
       mode_t mode;
     };
   }

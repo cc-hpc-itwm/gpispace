@@ -16,6 +16,9 @@ namespace gpi_space
     os << "  port = " << gc.port << std::endl;
     os << "  network_type = " << gc.network_type << std::endl;
     os << "  processes = " << gc.processes << std::endl;
+    os << "  socket_path = " << gc.socket_path << std::endl;
+    os << "  socket_name = " << gc.socket_name << std::endl;
+    os << "  mode = " << std::oct << gc.mode << std::dec << std::endl;
     return os;
   }
 
@@ -28,8 +31,6 @@ namespace gpi_space
   {
     os << "[node]" << std::endl;
     os << "  daemonize = " << nc.daemonize << std::endl;
-    os << "  socket_path = " << nc.socket_path << std::endl;
-    os << "  mode = " << std::oct << nc.mode << std::dec << std::endl;
     return os;
   }
 
