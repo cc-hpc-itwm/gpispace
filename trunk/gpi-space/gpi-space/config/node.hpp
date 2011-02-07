@@ -16,10 +16,7 @@ namespace gpi_space
     {
       config ()
         : daemonize (false)
-        , mode (0700)
-      {
-        memset (socket_path, 0, gpi_space::MAX_PATH_LEN);
-      }
+      {}
 
       template <typename Mapping>
       void load (Mapping const & m)
