@@ -1,11 +1,4 @@
-#include <sys/un.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <signal.h>
-
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -14,25 +7,19 @@
 #include <fhglog/minimal.hpp>
 #include <boost/program_options.hpp>
 
-#include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/signal_handler.hpp>
+#include <gpi-space/pc/client/api.hpp>
 
 namespace po = boost::program_options;
-
-static bool connected (false);
 
 static bool read_user_input ( const std::string & prompt
                             , std::string &
                             );
 static std::string const & version ();
-static int open_socket (std::string const & path);
-static int close_socket (const int fd);
-static int handle_sigpipe (int);
 
 int main (int ac, char **av)
 {
   gpi::signal::handler().start();
-  gpi::signal::handler().connect (SIGPIPE, handle_sigpipe);
 
   FHGLOG_SETUP();
 
@@ -78,47 +65,30 @@ int main (int ac, char **av)
     return EXIT_FAILURE;
   }
 
-  int socket, err;
+  int err;
   std::string prompt;
   std::string line;
   char buf [2048];
 
-  // open socket
-  socket = open_socket (path);
+  gpi::pc::client::api_t capi (path);
 
-  if (socket < 0)
+  try
   {
-    std::cerr << "could not connect to gpi via "
-              << path
-              << ": "
-              << strerror(-socket)
-              << std::endl;
-    connected = false;
+    capi.start ();
   }
-  else
+  catch (std::exception const & ex)
   {
-    connected = true;
+    std::cerr << "could not connect to " << path << ": " << ex.what() << std::endl;
   }
 
-  if (connected)
+  for (;;)
   {
-    prompt = "gpish+> ";
-  }
-  else
-  {
-    prompt = "gpish-> ";
-  }
-
-  while (read_user_input (prompt, line))
-  {
-    if (connected)
-    {
+    if (capi.is_connected ())
       prompt = "gpish+> ";
-    }
     else
-    {
       prompt = "gpish-> ";
-    }
+    if (! read_user_input (prompt, line))
+      break;
 
     // parse line into command
     if (line == "help")
@@ -140,37 +110,33 @@ int main (int ac, char **av)
     }
     else if (line == "open")
     {
-      close_socket (socket);
-      socket = open_socket (path);
-
-      if (socket < 0)
+      if (! capi.is_connected ())
       {
-        std::cerr << "could not connect to gpi via "
-                  << path
-                  << ": "
-                  << strerror(-socket)
-                  << std::endl;
-        connected = false;
-      }
-      else
-      {
-        connected = true;
+        try
+        {
+          capi.start ();
+        }
+        catch (std::exception const & ex)
+        {
+          std::cerr << "could not open connection to "
+                    << path
+                    << ": "
+                    << ex.what()
+                    << std::endl;
+        }
       }
     }
     else if (line == "close")
     {
-      close_socket (socket);
-      connected = false;
+      capi.stop ();
     }
-    else if (connected)
+    else if (capi.is_connected())
     {
       // send request to gpi
-      err = write (socket, line.c_str(), line.size());
+      err = capi.write (line.c_str(), line.size());
       if (err < 0)
       {
         std::cerr << "could not send request to gpi: " << strerror(errno) << std::endl;
-        close_socket (socket);
-        connected = false;
       }
       else if (err == 0)
       {
@@ -180,12 +146,10 @@ int main (int ac, char **av)
       {
         memset (buf, 0, sizeof(buf));
         // wait for a reply
-        err = read (socket, buf, sizeof(buf));
+        err = capi.read (buf, sizeof(buf));
         if (err < 0)
         {
           std::cerr << "could not read reply from gpi: " << strerror(errno) << std::endl;
-          close_socket (socket);
-          connected = false;
         }
         else
         {
@@ -197,8 +161,7 @@ int main (int ac, char **av)
     }
   }
 
-  close_socket (socket);
-
+  capi.stop ();
   gpi::signal::handler().stop();
 }
 
@@ -225,43 +188,4 @@ static bool read_user_input ( const std::string & prompt
   }
   free (line);
   return true;
-}
-
-static int open_socket (std::string const & path)
-{
-  int sfd, err;
-  struct sockaddr_un addr;
-
-  sfd = socket (AF_UNIX, SOCK_STREAM, 0);
-  if (sfd < 0)
-  {
-    return -errno;
-  }
-
-  memset (&addr, 0, sizeof(addr));
-  addr.sun_family = AF_UNIX;
-  strncpy (addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
-
-  err = connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
-  if (err < 0)
-  {
-    err = -errno;
-    close_socket (sfd);
-    return err;
-  }
-
-  return sfd;
-}
-
-static int close_socket (const int fd)
-{
-  shutdown (fd, SHUT_RDWR);
-  return close (fd);
-}
-
-static int handle_sigpipe (int)
-{
-  connected = false;
-  std::cerr << "connection lost" << std::endl;
-  return 0;
 }
