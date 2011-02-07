@@ -102,11 +102,14 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
   namespace fs = boost::filesystem;
   fs::path socket_path (cfg.gpi.socket_path);
   {
+    fs::create_directories (socket_path);
+    chmod (socket_path.string().c_str(), 01777);
+
     socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
     fs::create_directories (socket_path);
-    chmod (socket_path.string().c_str(), 0700);
+    chmod (socket_path.string().c_str(), 00700);
 
-    socket_path /= ("control-" + boost::lexical_cast<std::string>(getpid()));
+    socket_path /= cfg.gpi.socket_name;
   }
 
   gpi::pc::container::manager_t mgr (socket_path.string());
