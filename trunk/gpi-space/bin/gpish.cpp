@@ -212,6 +212,7 @@ int main (int ac, char **av)
         try
         {
           gpi::pc::type::handle_id_t hdl(capi.alloc ( 0, 10 ));
+          std::cout << "handle = " << hdl;
         }
         catch (std::exception const & ex)
         {
