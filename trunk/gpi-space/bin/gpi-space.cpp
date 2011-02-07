@@ -17,6 +17,8 @@
 #include <fhglog/minimal.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
 #include <gpi-space/config/config.hpp>
 #include <gpi-space/config/config_io.hpp>
@@ -96,7 +98,18 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
   LOG(INFO, "gpi-space on rank " << rank << " running");
 
-  gpi::pc::container::manager_t mgr (cfg.node.socket_path);
+  // create socket path and generate a process specific socket
+  namespace fs = boost::filesystem;
+  fs::path socket_path (cfg.gpi.socket_path);
+  {
+    socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
+    fs::create_directories (socket_path);
+    chmod (socket_path.string().c_str(), 0700);
+
+    socket_path /= ("control-" + boost::lexical_cast<std::string>(getpid()));
+  }
+
+  gpi::pc::container::manager_t mgr (socket_path.string());
   mgr.start ();
 
   // fire up message handling threads...
@@ -179,28 +192,6 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
 static void init_config (gpi_space::config & cfg)
 {
-  // quick hack
-  // std::string user_name;
-  // {
-  //   std::stringstream sstr;
-  //   passwd * pw_entry (getpwuid(getuid()));
-  //   if (pw_entry)
-  //   {
-  //     sstr << pw_entry->pw_name;
-  //   }
-  //   else
-  //   {
-  //     LOG(WARN, "could not lookup username from uid " << getuid() << ": " << errno);
-  //     sstr << getuid();
-  //   }
-  //   user_name = sstr.str();
-  // }
-
-  // snprintf ( cfg.node.socket_path
-  //          , gpi_space::MAX_PATH_LEN
-  //          , "/var/tmp/GPI-Space-S-%s"
-  //          , user_name.c_str()
-  //          );
   cfg.gpi.timeout_in_sec = 0;
 }
 

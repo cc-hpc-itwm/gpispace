@@ -1,21 +1,43 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
 #include <string>
 
-#include <fhglog/minimal.hpp>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/trim.hpp>
+
+#include <fhglog/minimal.hpp>
 
 #include <gpi-space/signal_handler.hpp>
+#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 static bool read_user_input ( const std::string & prompt
                             , std::string &
                             );
 static std::string const & version ();
+
+typedef std::vector<boost::filesystem::path> path_list_t;
+static path_list_t collect_sockets (fs::path const & prefix);
+std::ostream & operator << (std::ostream &os, path_list_t const & pl)
+{
+  size_t count (0);
+  for ( path_list_t::const_iterator p (pl.begin())
+      ; p != pl.end()
+      ; ++p
+      )
+  {
+    os << "[" << count++ << "] " << *p << std::endl;
+  }
+  return os;
+}
 
 int main (int ac, char **av)
 {
@@ -25,11 +47,15 @@ int main (int ac, char **av)
 
   po::options_description desc("options");
 
-  std::string path;
+  fs::path socket_path;
+  fs::path config_file
+    (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
 
   desc.add_options ()
     ("help,h", "this message")
-    ("socket,s", po::value<std::string>(&path), "path to the gpi socket")
+    ("socket,s", po::value<fs::path>(&socket_path), "path to the gpi socket")
+    ("config,c", po::value<fs::path>(&config_file)->default_value(config_file), "path to the config file")
+    ("list,l", "list available sockets")
     ("version,V", "print version")
     ;
 
@@ -59,10 +85,36 @@ int main (int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  if (vm.count ("socket") == 0)
+  gpi_space::parser::config_parser_t cfg_parser;
+  if (fs::exists (config_file))
   {
-    std::cerr << "path to socket is required!" << std::endl;
-    return EXIT_FAILURE;
+    gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
+  }
+
+  if (vm.count ("list"))
+  {
+    std::cout
+      << collect_sockets(cfg_parser.get("gpi.socket_path", "/var/tmp"));
+    return EXIT_SUCCESS;
+  }
+
+  if (socket_path.empty())
+  {
+    path_list_t sockets (collect_sockets(cfg_parser.get("gpi.socket_path", "/var/tmp")));
+    if (sockets.empty())
+    {
+      std::cerr << "no sockets available!" << std::endl;
+    }
+    else if (sockets.size () > 1)
+    {
+      std::cerr << "There are multiple sockets available: " << std::endl;
+      std::cerr << std::endl;
+      std::cerr << sockets;
+    }
+    else
+    {
+      socket_path = *sockets.begin();
+    }
   }
 
   int err;
@@ -70,15 +122,19 @@ int main (int ac, char **av)
   std::string line;
   char buf [2048];
 
-  gpi::pc::client::api_t capi (path);
+  gpi::pc::client::api_t capi (socket_path.string());
 
-  try
+  if (fs::exists (socket_path))
   {
-    capi.start ();
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "could not connect to " << path << ": " << ex.what() << std::endl;
+    try
+    {
+      capi.start ();
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "could not connect to " << socket_path << ": " << ex.what() << std::endl;
+      // unlink (socket_path)???
+    }
   }
 
   for (;;)
@@ -108,8 +164,19 @@ int main (int ac, char **av)
     {
       break;
     }
-    else if (line == "open")
+    else if (line.find ("open") != std::string::npos)
     {
+      line = line.substr(4, line.size() - 4);
+      boost::algorithm::trim (line);
+      fs::path new_socket(line);
+      if ( fs::exists(new_socket)
+         && (new_socket.string() != capi.path())
+         )
+      {
+        capi.path (new_socket.string());
+        capi.stop ();
+      }
+
       if (! capi.is_connected ())
       {
         try
@@ -119,7 +186,7 @@ int main (int ac, char **av)
         catch (std::exception const & ex)
         {
           std::cerr << "could not open connection to "
-                    << path
+                    << capi.path ()
                     << ": "
                     << ex.what()
                     << std::endl;
@@ -137,6 +204,7 @@ int main (int ac, char **av)
       if (err < 0)
       {
         std::cerr << "could not send request to gpi: " << strerror(errno) << std::endl;
+        capi.stop ();
       }
       else if (err == 0)
       {
@@ -150,6 +218,7 @@ int main (int ac, char **av)
         if (err < 0)
         {
           std::cerr << "could not read reply from gpi: " << strerror(errno) << std::endl;
+          capi.stop ();
         }
         else
         {
@@ -189,3 +258,28 @@ static bool read_user_input ( const std::string & prompt
   free (line);
   return true;
 }
+
+static path_list_t collect_sockets (fs::path const & prefix)
+{
+  namespace fs = boost::filesystem;
+  fs::path socket_path (prefix);
+  socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
+
+  path_list_t paths;
+  if (!fs::exists (socket_path))
+    return paths;
+
+  fs::directory_iterator end_itr;
+  for ( fs::directory_iterator itr (socket_path)
+      ; itr != end_itr
+      ; ++itr
+      )
+  {
+    if (fs::is_other (itr->status()))
+    {
+      paths.push_back (itr->path());
+    }
+  }
+  return paths;
+}
+

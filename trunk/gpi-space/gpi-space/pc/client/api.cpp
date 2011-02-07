@@ -126,6 +126,15 @@ namespace gpi
         stop();
         return 0;
       }
+
+      void api_t::path (std::string const & p)
+      {
+        m_path = p;
+      }
+      std::string const & api_t::path () const
+      {
+        return m_path;
+      }
     }
   }
 }
