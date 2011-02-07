@@ -1,26 +1,16 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
+  segment.hpp
   )
 
 set (srcs
+  segment.cpp
   )
 
-#ADD_LIBRARY(gpi-space-daemon-static ${hdrs} ${srcs})
-#ADD_LIBRARY(gpi-space-daemon-shared SHARED ${hdrs} ${srcs})
-#set_target_properties(gpi-space-daemon-static PROPERTIES OUTPUT_NAME gpi-space-daemon)
-#set_target_properties(gpi-space-daemon-shared PROPERTIES OUTPUT_NAME gpi-space-daemon)
+ADD_LIBRARY(gpi-space-pc-segment ${hdrs} ${srcs})
+target_link_libraries (gpi-space-pc-segment rt)
 
 install(FILES ${hdrs}
   DESTINATION include/gpi-space/pc/segment
   COMPONENT headers)
-
-#install(TARGETS gpi-space-daemon-static
-#  ARCHIVE
-#  DESTINATION lib
-#  COMPONENT libraries)
-#
-#install(TARGETS gpi-space-daemon-shared
-#  LIBRARY
-#  DESTINATION lib
-#  COMPONENT libraries)

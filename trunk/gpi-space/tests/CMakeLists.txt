@@ -5,6 +5,7 @@ set(tc_srcs
   test_signal_handler.cpp
   test_signal_handler_standalone.cpp
   test_pc_types.cpp
+  test_segment.cpp
 )
 
 foreach (tc_src ${tc_srcs})
@@ -13,6 +14,7 @@ foreach (tc_src ${tc_srcs})
   message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
   add_executable(${tc_name} ${tc_src})
+  target_link_libraries(${tc_name} gpi-space-pc-segment)
   target_link_libraries(${tc_name} gpi-space-static)
   target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
   target_link_libraries(${tc_name} ${Boost_LIBRARIES})
