@@ -20,11 +20,7 @@ namespace gpi
 
         struct attach_reply_t
         {
-          union
-          {
-            gpi::pc::type::error_t error;
-            gpi::pc::type::segment_id_t id;
-          };
+          gpi::pc::type::segment_id_t id;
         };
 
         struct detach_t
@@ -43,41 +39,7 @@ namespace gpi
 
         struct list_reply_t
         {
-          union
-          {
-            gpi::pc::type::error_t error;
-            gpi::pc::type::segment::list_t list;
-          };
-        };
-
-        union message_t
-        {
-          struct
-          {
-            union
-            {
-              attach_t req;
-              attach_reply_t rpl;
-            };
-          } attach;
-
-          struct
-          {
-            union
-            {
-              detach_t req;
-              detach_reply_t rpl;
-            };
-          } detach;
-
-          struct
-          {
-            union
-            {
-              list_t req;
-              list_reply_t rpl;
-            };
-          } list;
+          gpi::pc::type::segment::list_t list;
         };
       }
     }

@@ -10,9 +10,10 @@
 
 #include <boost/bind.hpp>
 
-#include <gpi-space/signal_handler.hpp>
-
 #include <fhglog/minimal.hpp>
+
+#include <gpi-space/signal_handler.hpp>
+#include <gpi-space/pc/proto/message.hpp>
 
 static int close_socket (const int fd)
 {
@@ -134,6 +135,60 @@ namespace gpi
       std::string const & api_t::path () const
       {
         return m_path;
+      }
+
+      type::handle_id_t api_t::alloc ( const type::segment_id_t seg
+                                     , const type::size_t sz
+                                     , const type::mode_t perm
+                                     )
+      {
+        using namespace gpi::pc::proto;
+
+        char buf[sizeof(message_t) + 1024];
+
+        int err;
+        proto::message_t *msg;
+
+        msg = (message_t*)&buf;
+        msg->type = message::memory_alloc;
+        msg->length = sizeof (memory::alloc_t);
+        memory::alloc_t *alloc_msg =
+          (memory::alloc_t*)&msg->payload;
+        alloc_msg->segment = seg;
+        alloc_msg->size = sz;
+        alloc_msg->perm = perm;
+
+        err = this->write (buf, msg->length + sizeof(message_t));
+
+        memset (buf, 0, sizeof(buf));
+
+        err = this->read (buf, sizeof (message_t));
+        msg = (proto::message_t*)&buf;
+        LOG(INFO, "read " << err << " bytes");
+
+        // read remaining bytes, resize buffer
+        err = this->read (buf + sizeof(message_t), msg->length);
+        LOG(INFO, "read " << err << " bytes");
+
+        switch (msg->type)
+        {
+        case message::error:
+          {
+            error::error_t *err_msg = msg->as<error::error_t>();
+            LOG(ERROR, "allocation failed: " << err_msg->code);
+            throw std::runtime_error ("bad alloc");
+          }
+        case message::memory_alloc_reply:
+          {
+            memory::alloc_reply_t *alloc_reply
+              = msg->as<memory::alloc_reply_t>();
+            return alloc_reply->handle;
+          }
+        default:
+          {
+            throw std::runtime_error ("not implemented");
+          }
+        }
       }
     }
   }

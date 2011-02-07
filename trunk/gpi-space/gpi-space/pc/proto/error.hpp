@@ -14,6 +14,8 @@ namespace gpi
         enum errc
           {
             success = 0,
+            bad_request = 10,
+            out_of_memory = 30,
           };
 
         struct error_t

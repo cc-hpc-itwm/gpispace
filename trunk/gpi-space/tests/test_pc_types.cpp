@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE ( proto_alloc_test )
 {
   using namespace gpi::pc;
   proto::memory::alloc_t req;
-  req.segment = gpi::pc::type::segment::GLOBAL;
+  req.segment = gpi::pc::type::segment::SEG_GLOBAL;
   req.size = 1024;
   req.perm = 0700;
 
@@ -173,13 +173,10 @@ BOOST_AUTO_TEST_CASE ( proto_message_test )
     proto::message_t msg;
     msg.length = 1024;
     msg.type = proto::message::memory_alloc;
-    msg.memory.alloc.req.size = 1024;
 
     msg.type = proto::message::error;
-    msg.error.code = proto::error::success;
 
     msg.type = proto::message::segment_detach;
-    msg.segment.detach.req.id = 42;
   }
 }
 

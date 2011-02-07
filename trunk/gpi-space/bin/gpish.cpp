@@ -197,34 +197,56 @@ int main (int ac, char **av)
     {
       capi.stop ();
     }
+    else if (line == "segment")
+    {
+      // create name size -> void*
+
+      // register name -> segment_id
+
+      // detach name
+    }
     else if (capi.is_connected())
     {
-      // send request to gpi
-      err = capi.write (line.c_str(), line.size());
-      if (err < 0)
+      if (line == "alloc")
       {
-        std::cerr << "could not send request to gpi: " << strerror(errno) << std::endl;
-        capi.stop ();
-      }
-      else if (err == 0)
-      {
-        // connection is still alive
+        try
+        {
+          gpi::pc::type::handle_id_t hdl(capi.alloc ( 0, 10 ));
+        }
+        catch (std::exception const & ex)
+        {
+          std::cerr << "failed: " << ex.what () << std::endl;
+        }
       }
       else
       {
-        memset (buf, 0, sizeof(buf));
-        // wait for a reply
-        err = capi.read (buf, sizeof(buf));
+        // send request to gpi
+        err = capi.write (line.c_str(), line.size());
         if (err < 0)
         {
-          std::cerr << "could not read reply from gpi: " << strerror(errno) << std::endl;
+          std::cerr << "could not send request to gpi: " << strerror(errno) << std::endl;
           capi.stop ();
+        }
+        else if (err == 0)
+        {
+          // connection is still alive
         }
         else
         {
-          buf[err] = 0;
-          // handle reply message
-          std::cout << buf << std::endl;
+          memset (buf, 0, sizeof(buf));
+          // wait for a reply
+          err = capi.read (buf, sizeof(buf));
+          if (err < 0)
+          {
+            std::cerr << "could not read reply from gpi: " << strerror(errno) << std::endl;
+            capi.stop ();
+          }
+          else
+          {
+            buf[err] = 0;
+            // handle reply message
+            std::cout << buf << std::endl;
+          }
         }
       }
     }

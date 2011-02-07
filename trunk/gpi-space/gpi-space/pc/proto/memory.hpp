@@ -1,6 +1,8 @@
 #ifndef GPI_SPACE_PC_PROTO_MEMORY_HPP
 #define GPI_SPACE_PC_PROTO_MEMORY_HPP 1
 
+#include <ostream>
+
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
@@ -19,13 +21,16 @@ namespace gpi
           gpi::pc::type::mode_t perm;
         };
 
+        std::ostream & operator<<(std::ostream & os, const alloc_t & a)
+        {
+          os << "ALLOC of " << a.size << " byte(s) in segment "
+             << a.segment << " with permissions " << a.perm;
+          return os;
+        }
+
         struct alloc_reply_t
         {
-          union
-          {
-            gpi::pc::type::error_t error;
-            gpi::pc::type::handle_id_t handle;
-          };
+          gpi::pc::type::handle_id_t handle;
         };
 
         struct free_t
@@ -44,11 +49,7 @@ namespace gpi
 
         struct list_reply_t
         {
-          union
-          {
-            gpi::pc::type::error_t error;
-            gpi::pc::type::handle::list_t list;
-          };
+          gpi::pc::type::handle::list_t list;
         };
 
         struct memory_location_t
@@ -67,11 +68,7 @@ namespace gpi
 
         struct memcpy_reply_t
         {
-          union
-          {
-            gpi::pc::type::error_t error;
-            gpi::pc::type::queue_id_t queue;
-          };
+          gpi::pc::type::queue_id_t queue;
         };
 
         struct wait_t
@@ -82,54 +79,6 @@ namespace gpi
         struct wait_reply_t
         {
           gpi::pc::type::error_t error;
-        };
-
-        union message_t
-        {
-          struct
-          {
-            union
-            {
-              memory::alloc_t       req;
-              memory::alloc_reply_t rpl;
-            };
-          } alloc;
-
-          struct
-          {
-            union
-            {
-              memory::free_t req;
-              memory::free_reply_t rpl;
-            };
-          } free;
-
-          struct
-          {
-            union
-            {
-              memory::list_t req;
-              memory::list_reply_t rpl;
-            };
-          } list;
-
-          struct
-          {
-            union
-            {
-              memory::memcpy_t req;
-              memory::memcpy_reply_t rpl;
-            };
-          } memcpy;
-
-          struct
-          {
-            union
-            {
-              memory::wait_t req;
-              memory::wait_reply_t rpl;
-            };
-          } wait;
         };
       }
     }

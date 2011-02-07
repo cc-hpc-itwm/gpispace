@@ -12,8 +12,9 @@
 #include <string.h>
 
 #include <fhglog/minimal.hpp>
-
 #include <boost/bind.hpp>
+
+#include <gpi-space/pc/proto/message.hpp>
 
 namespace gpi
 {
@@ -84,8 +85,10 @@ namespace gpi
       template <typename M>
       void process_t<M>::reader_thread_main(const int fd)
       {
+        using namespace gpi::pc::proto;
+
         int err;
-        char buf [2048];
+        char buf [4096];
 
         LOG(TRACE, "process container (" << m_id << ") started");
         for (;;)
@@ -108,19 +111,69 @@ namespace gpi
           }
           else
           {
-            // just echo back for now
-            buf[err] = 0;
-            err = write (fd, buf, err);
-            if (err < 0)
+            message_t * msg = (message_t*)(&buf);
+            try
             {
-              err = errno;
-              LOG(ERROR, "could not write to client socket: " << strerror(err));
+              handle_message (fd, msg);
+            }
+            catch (std::exception const & ex)
+            {
+              LOG( ERROR, "could not handle incomming message: "
+                 << "pc = " << m_id << " "
+                 << "mc = " << msg->type << " "
+                 << "err = " << ex.what()
+                 );
               break;
             }
           }
         }
 
         LOG(TRACE, "process container (" << m_id << ") terminated");
+      }
+
+      template <typename M>
+      void process_t<M>::handle_message( const int fd
+                                       , const gpi::pc::proto::message_t *msg
+                                       )
+      {
+        using namespace gpi::pc::proto;
+
+        int err;
+        char buf [4096];
+        memset (buf, 0, sizeof(buf));
+
+        message_t * rpl = (message_t*)(&buf);
+
+        switch (msg->type)
+        {
+        case message::memory_alloc:
+          {
+            LOG(INFO, *msg->as<memory::alloc_t>());
+            rpl->type = message::error;
+            rpl->length = sizeof(error::error_t);
+            error::error_t *err_msg = rpl->as<error::error_t>();
+            err_msg->code = error::out_of_memory;
+            break;
+          }
+        default:
+          {
+            LOG(WARN, "bad request: " << msg->type);
+            rpl->type = message::error;
+            rpl->length = sizeof(error::error_t);
+            error::error_t *err_msg = rpl->as<error::error_t>();
+            err_msg->code = error::bad_request;
+            break;
+          }
+        }
+
+        err = write (fd, rpl, sizeof(message_t) + rpl->length);
+
+        if (err < 0)
+        {
+          err = errno;
+          LOG(ERROR, "could not write to client socket: " << strerror(err));
+          throw std::runtime_error ("could not write to client socket: " + std::string(strerror(err)));
+        }
       }
     }
   }

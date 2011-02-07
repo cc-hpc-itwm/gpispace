@@ -32,15 +32,15 @@ namespace gpi
 
       struct message_t
       {
-        gpi::pc::type::size_t length;
         message::type type;
+        gpi::pc::type::size_t length;
+        char payload[0];
 
-        union
-        {
-          error::message_t error;
-          memory::message_t memory;
-          segment::message_t segment;
-        };
+        template <typename T>
+        T* as() { return (T*)&payload; }
+
+        template <typename T>
+        const T* as() const { return (const T*)&payload; }
       };
     }
   }

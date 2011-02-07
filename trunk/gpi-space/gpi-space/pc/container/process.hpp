@@ -4,6 +4,8 @@
 #include <boost/thread.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 
+#include <gpi-space/pc/proto/message.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -38,6 +40,8 @@ namespace gpi
         void reader_thread_main (const int fd);
         void start_thread ();
         void stop_thread ();
+
+        void handle_message (const int fd, const gpi::pc::proto::message_t *);
 
         int close_socket (const int fd);
 
