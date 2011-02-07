@@ -121,7 +121,7 @@ namespace gpi
         if (m_ptr)
         {
           close (m_fd);
-          mmunmap (m_ptr, m_size);
+          munmap (m_ptr, m_size);
           if (! m_persistent)
           {
             shm_unlink (m_name.c_str());
