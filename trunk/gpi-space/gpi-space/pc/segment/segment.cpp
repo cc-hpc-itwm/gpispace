@@ -120,7 +120,7 @@ namespace gpi
       {
         if (m_ptr)
         {
-          close (m_fd);
+          ::close (m_fd);
           munmap (m_ptr, m_size);
           if (! m_persistent)
           {
