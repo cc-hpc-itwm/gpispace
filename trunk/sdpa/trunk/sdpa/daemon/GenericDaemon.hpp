@@ -35,16 +35,7 @@
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
-
 #include <sdpa/types.hpp>
-
-#ifdef USE_BOOST_SC
-#  include <boost/statechart/state_machine.hpp>
-#  include <boost/statechart/simple_state.hpp>
-#  include <boost/statechart/custom_reaction.hpp>
-#  include <boost/statechart/transition.hpp>
-#  include <boost/statechart/exception_translator.hpp>
-#endif
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
@@ -76,9 +67,9 @@ namespace sdpa { namespace daemon {
 	  virtual ~GenericDaemon();
 
 	  // API
-	  void start(); // no recovery
-	  void start( const bfs::path& backup_path ); // from cfg file!
-	  void start( std::istream& is );
+	  void start_agent(); // no recovery
+	  void start_agent( const bfs::path& backup_path ); // from cfg file!
+	  void start_agent( std::istream& is );
 
 	  void shutdown(); // no backup
 	  void shutdown( const bfs::path& backup_path );
@@ -281,6 +272,7 @@ namespace sdpa { namespace daemon {
 	  {
 		  return NULL;
 	  }
+
 
 	  JobManager::ptr_t ptr_job_man_;
 	  Scheduler::ptr_t 	ptr_scheduler_;
