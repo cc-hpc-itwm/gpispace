@@ -210,8 +210,9 @@ namespace sdpa {
 				{
 					//ar.register_type(static_cast<sdpa::daemon::Job*>(NULL));
 					ar.register_type(static_cast<sdpa::daemon::JobImpl*>(NULL));
+					ar.register_type(static_cast<JobFSM*>(NULL));
 
-					//ar & boost::serialization::base_object<sdpa::daemon::Job>(*this);
+					ar & boost::serialization::base_object<Job>(*this);
 					ar & boost::serialization::base_object<msm::back::state_machine<JobFSM_> >(*this);
 					ar & job_impl_;
 				}

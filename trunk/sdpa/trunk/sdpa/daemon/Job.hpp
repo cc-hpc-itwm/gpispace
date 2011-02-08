@@ -83,4 +83,6 @@ namespace sdpa { namespace daemon {
     };
 }}
 
+//BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
+
 #endif

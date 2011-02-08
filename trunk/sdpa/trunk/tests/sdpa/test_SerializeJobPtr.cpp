@@ -113,9 +113,13 @@ namespace sdpa {
 
 struct MyFixture
 {
-	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests. TestSerializeJobPtr"){}
+	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests. TestSerializeJobPtr")
+	{
+		FHGLOG_SETUP();
+	}
+
 	~MyFixture(){}
-	 SDPA_DECLARE_LOGGER();
+	SDPA_DECLARE_LOGGER();
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_SerializeJobPtr, MyFixture )
@@ -123,6 +127,7 @@ BOOST_FIXTURE_TEST_SUITE( test_SerializeJobPtr, MyFixture )
 BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::unit_test::Job )
 BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
 
+/*
 BOOST_AUTO_TEST_CASE(testSerializeJobPtr )
 {
 	std::cout<<"Testing the serialization of a normal job pointer ..."<<std::endl;
@@ -320,77 +325,6 @@ BOOST_AUTO_TEST_CASE( testSerializeMapSdpaJobSharedPtr )
 		std::cout<<"mapPtrIn["<<iter->first<<"] = "<<iter->second->print_info()<<std::endl;
 }
 
-
-BOOST_SERIALIZATION_SHARED_PTR(sdpa::daemon::JobManager)
-
-
-BOOST_AUTO_TEST_CASE( testSerializeJobManager )
-{
-	std::cout<<"serialize the JobManager (with boost::shared_ptr)"<<std::endl;
-	std::string filename = "testSerializeJobMan.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-
-	//sdpa::daemon::JobManager::ptr_t p1(new sdpa::daemon::JobManager());
-
-	sdpa::daemon::JobManager::ptr_t pJobMan1(new sdpa::daemon::JobManager());
-
-	JobId id1("1");
-	sdpa::daemon::Job::ptr_t  p1(new sdpa::daemon::JobImpl(id1, "decsription 1"));
-	pJobMan1->addJob(id1, p1);
-
-	JobId id2("2");
-	sdpa::daemon::Job::ptr_t  p2(new sdpa::daemon::JobImpl(id2, "decsription 2"));
-	pJobMan1->addJob(id2, p2);
-
-	JobId id3("3");
-	sdpa::daemon::Job::ptr_t  p3(new sdpa::daemon::JobImpl(id3, "decsription 3"));
-	pJobMan1->addJob(id3, p3);
-
-	JobId id4("4");
-	sdpa::daemon::Job::ptr_t  p4(new sdpa::daemon::JobImpl(id4, "decsription 4"));
-	pJobMan1->addJob(id4, p4);
-
-	JobId id5("5");
-	sdpa::daemon::Job::ptr_t  p5(new sdpa::daemon::JobImpl(id5, "decsription 5"));
-	pJobMan1->addJob(id5, p5);
-
-	std::cout<<pJobMan1->print()<<std::endl;
-
-	std::cout<<"Serialize the JobManager ..."<<std::endl;
-
-	try {
-		std::ofstream ofs(filename.c_str());
-		boost::archive::text_oarchive oa(ofs);
-		oa.register_type(static_cast<sdpa::daemon::JobManager*>(NULL));
-		oa.register_type(static_cast<sdpa::daemon::JobImpl *>(NULL));
-		oa << pJobMan1;
-	}
-	catch(std::exception& ex) {
-		std::cout<<"Exception occurred during serialization :"<<ex.what()<<std::endl;
-	}
-
-	std::cout<<"The JobManager was successfully serialized ..."<<std::endl;
-
-	// restore state to one equivalent to the original
-	// creating a new type Job object
-	std::cout<<"De-serialize the JobManager ...";
-	sdpa::daemon::JobManager::ptr_t pJobMan2;
-	try {
-		// open the archive
-		std::ifstream ifs(filename.c_str());
-		boost::archive::text_iarchive ia(ifs);
-		ia.register_type(static_cast<sdpa::daemon::JobManager*>(NULL));
-		ia.register_type(static_cast<sdpa::daemon::JobImpl *>(NULL));
-		// restore the schedule from the archive
-		ia>>pJobMan2;
-	} catch(std::exception& ) {
-		std::cout<<"Exception during de-serialization process occurred!"<<std::endl;
-		return;
-	}
-
-	std::cout<<std::endl<<pJobMan2->print();
-}
-
-
 BOOST_AUTO_TEST_CASE( testSerializeJobFSMShPtr )
 {
 	std::cout<<"Testing the serialization of a job state chart ..."<<std::endl;
@@ -419,6 +353,76 @@ BOOST_AUTO_TEST_CASE( testSerializeJobFSMShPtr )
 	}
 
 	std::cout<<"The restored values from the archive follow:\n\n"<<p2->print_info()<<endl;
+}
+*/
+
+BOOST_SERIALIZATION_SHARED_PTR(sdpa::daemon::JobManager)
+
+BOOST_AUTO_TEST_CASE( testSerializeJobManager )
+{
+	std::string filename = "JobManager.bak";
+
+	sdpa::daemon::JobManager::ptr_t pJobMan1(new sdpa::daemon::JobManager());
+
+	JobId id1("1");
+	sdpa::daemon::Job::ptr_t p1(new JobFSM(id1, "decsription 1"));
+	pJobMan1->addJob(id1, p1);
+
+	/*JobId id2("2");
+	sdpa::daemon::Job::ptr_t p2(new JobFSM(id2, "decsription 2"));
+	pJobMan1->addJob(id2, p2);
+
+	JobId id3("3");
+	sdpa::daemon::Job::ptr_t p3(new JobFSM(id3, "decsription 3"));
+	pJobMan1->addJob(id3, p3);
+
+	JobId id4("4");
+	sdpa::daemon::Job::ptr_t p4(new JobFSM(id4, "decsription 4"));
+	pJobMan1->addJob(id4, p4);
+
+	JobId id5("5");
+	sdpa::daemon::Job::ptr_t p5(new JobFSM(id5, "decsription 5"));
+	pJobMan1->addJob(id5, p5);*/
+
+	std::cout<<pJobMan1->print()<<std::endl;
+
+	LOG(INFO, "Serialize the JobManager ...");
+
+	try {
+		std::ofstream ofs(filename.c_str());
+		boost::archive::text_oarchive oa(ofs);
+		oa.register_type(static_cast<sdpa::daemon::JobManager*>(NULL));
+		oa.register_type(static_cast<JobFSM*>(NULL));
+		//oa.register_type(static_cast<sdpa::daemon::JobImpl*>(NULL));
+		//oa.register_type(static_cast<JobFSM*>(NULL));
+		oa << pJobMan1;
+	}
+	catch(std::exception& ex) {
+		LOG(ERROR, "Exception occurred during serialization :"<<ex.what());
+	}
+
+	LOG(INFO, "The JobManager was successfully serialized ...");
+
+	// restore state to one equivalent to the original
+	// creating a new type Job object
+	LOG(INFO, "De-serialize the JobManager ...");
+	sdpa::daemon::JobManager::ptr_t pJobMan2;
+	try {
+		// open the archive
+		std::ifstream ifs(filename.c_str());
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<sdpa::daemon::JobManager*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		//ia.register_type(static_cast<sdpa::daemon::JobImpl*>(NULL));
+		//ia.register_type(static_cast<JobFSM *>(NULL));
+		// restore the schedule from the archive
+		ia>>pJobMan2;
+	} catch(std::exception& ) {
+		LOG(ERROR, "Exception during de-serialization process occurred!");
+		return;
+	}
+
+	std::cout<<std::endl<<pJobMan2->print();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
