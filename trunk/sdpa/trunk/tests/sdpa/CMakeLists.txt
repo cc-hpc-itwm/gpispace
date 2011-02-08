@@ -228,15 +228,3 @@ target_link_libraries(test_concurrent_clients  seda sdpa-daemon
 									 #uuid
 									 ${Boost_LIBRARIES})
 add_test( test_concurrent_clients test_concurrent_clients )
-
-
-#test_MSM
-set( test_MSM_srcs test_MSM.cpp )
-add_executable(msm_test ${test_MSM_srcs})
-target_link_libraries(msm_test  seda 
-								sdpa-daemon
-								sdpa-events
-								sdpa-util
-								sdpa
-							    ${Boost_LIBRARIES})
-#add_test( test_MSM test_MSM )
