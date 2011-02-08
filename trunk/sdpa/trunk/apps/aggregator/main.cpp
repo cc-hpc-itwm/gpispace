@@ -54,7 +54,7 @@ int main (int argc, char **argv)
 
 	try {
 		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName); //, orchUrl );
-		ptrAgg->start(backup_file);
+		ptrAgg->start_agent(backup_file);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;

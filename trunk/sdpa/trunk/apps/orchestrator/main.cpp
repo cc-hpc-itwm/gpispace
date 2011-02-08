@@ -52,7 +52,7 @@ int main (int argc, char **argv)
 
 	try {
 		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl  );
-		ptrOrch->start(backup_file);
+		ptrOrch->start_agent(backup_file);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;

@@ -70,7 +70,7 @@ int main (int argc, char **argv)
 																	);
 
   try {
-	  ptrNRE->start(backup_file);
+	  ptrNRE->start_agent(backup_file);
 
     LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
