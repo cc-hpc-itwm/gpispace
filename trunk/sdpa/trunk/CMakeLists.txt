@@ -25,8 +25,9 @@ set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
 OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
-OPTION(USE_SMC_SC "Build the project using the state-machine compiler" YES)
+OPTION(USE_SMC_SC "Build the project using the state-machine compiler" NO)
 OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
+OPTION(USE_BOOST_MSM "Build the project using boost statecharts" YES)
 OPTION(USE_GWES "Use GWES" NO)
 
 if (NO_IMPLICIT_TEMPLATES)
@@ -102,8 +103,8 @@ if (USE_SMC_SC)
   else (SMC_FOUND)
     message(STATUS "WARNING: SMC could not be found!")
   endif (SMC_FOUND)
-  include (SMCMacros)
 endif (USE_SMC_SC)
+ include (SMCMacros)
 
 ## check for boost
 set(Boost_ADDITIONAL_VERSIONS "1.36" "1.36.0" "1.37" "1.37.0" "1.40" "1.40.0")

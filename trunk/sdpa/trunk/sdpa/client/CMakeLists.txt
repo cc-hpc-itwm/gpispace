@@ -15,11 +15,11 @@ set (hdrs
   types.hpp
   )
 
-if (USE_SMC_SC)
+#if (USE_SMC_SC)
   add_state_machine(CLIENT_FSM_CPP CLIENT_FSM_H ClientFsm)
   set(hdrs ${hdrs} ${CLIENT_FSM_H})
   set(srcs ${srcs} ${CLIENT_FSM_CPP})
-endif (USE_SMC_SC)
+#endif (USE_SMC_SC)
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})
 
