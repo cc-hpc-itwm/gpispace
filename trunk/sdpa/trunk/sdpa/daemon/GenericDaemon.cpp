@@ -15,12 +15,12 @@
  *
  * =====================================================================================
  */
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/events/CodecStrategy.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/ConfigOkEvent.hpp>
@@ -29,7 +29,6 @@
 #include <sdpa/events/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
@@ -140,7 +139,7 @@ GenericDaemon::~GenericDaemon()
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 }
 
-void GenericDaemon::start( const bfs::path& bkp_file )
+void GenericDaemon::start_agent( const bfs::path& bkp_file )
 {
 	// create configuration
 	//std::string file( name() + ".bkp");
@@ -156,12 +155,12 @@ void GenericDaemon::start( const bfs::path& bkp_file )
 		SDPA_LOG_WARN( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
 	}
 
-	start(ifs);
+	start_agent(ifs);
 
 	ifs.close();
 }
 
-void GenericDaemon::start( std::istream& is )
+void GenericDaemon::start_agent( std::istream& is )
 {
 	if(!ptr_scheduler_)
 	{
@@ -189,10 +188,10 @@ void GenericDaemon::start( std::istream& is )
 	else
 		SDPA_LOG_INFO( "The input stream is empty! No recovery operation carried out for the daemon "<<name());
 
-	start();
+	start_agent();
 }
 
-void GenericDaemon::start( )
+void GenericDaemon::start_agent( )
 {
 	if(!ptr_scheduler_)
 	{
@@ -205,6 +204,7 @@ void GenericDaemon::start( )
 	ptr_daemon_stage_.lock()->start();
 
 	//start-up the the daemon
+	SDPA_LOG_INFO("Trigger StartUpEvent...");
 	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
 	sendEventToSelf(pEvtStartUp);
 
