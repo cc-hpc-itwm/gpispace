@@ -36,9 +36,9 @@
 #include <boost/serialization/access.hpp>
 #include <boost/thread.hpp>
 
-using namespace sdpa;
-using namespace sdpa::daemon;
-using namespace sdpa::events;
+//using namespace sdpa;
+//using namespace sdpa::daemon;
+//using namespace sdpa::events;
 
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
@@ -54,25 +54,24 @@ namespace sdpa {
 			struct JobFSM_ : public msm::front::state_machine_def<JobFSM_>
 			{
 				// The list of FSM states
-				struct Pending : public msm::front::state<>{};
-				struct Running : public msm::front::state<>{};
-				struct Finished : public msm::front::state<>{};
-				struct Failed : public msm::front::state<>{};
+				struct Pending : 	public msm::front::state<>{};
+				struct Running : 	public msm::front::state<>{};
+				struct Finished : 	public msm::front::state<>{};
+				struct Failed : 	public msm::front::state<>{};
 				struct Cancelling : public msm::front::state<>{};
-				struct Cancelled : public msm::front::state<>{};
+				struct Cancelled : 	public msm::front::state<>{};
 
 				// the initial state of the JobFSM SM. Must be defined
 				typedef Pending initial_state;
 
-				virtual void action_run_job(const RunJobEvent&) { std::cout << "JobFSM_::action_run_job\n"; }
-				virtual void action_cancel_job(const CancelJobEvent&) { std::cout << "JobFSM_::action_cancel_job\n"; }
-				virtual void action_cancel_job_from_pending(const CancelJobEvent&){ std::cout << "JobFSM_::action_cancel_job_from_pending\n"; }
-				virtual void action_cancel_job_ack(const CancelJobAckEvent&){ std::cout << "JobFSM_::action_cancel_job_ack\n"; }
-				virtual void action_delete_job(const DeleteJobEvent&){ std::cout << "JobFSM_::action_delete_job\n"; }
-				//virtual void action_query_job_status(const QueryJobStatusEvent&){ std::cout << "JobFSM_::action_query_job_status\n"; }
-				virtual void action_job_failed(const JobFailedEvent&){ std::cout << "JobFSM_::action_job_failed\n"; }
-				virtual void action_job_finished(const JobFinishedEvent&){ std::cout << "JobFSM_::action_job_finished\n"; }
-				virtual void action_retrieve_job_results(const RetrieveJobResultsEvent&){ std::cout << "JobFSM_::action_retrieve_job_results\n"; }
+				virtual void action_run_job(const sdpa::events::RunJobEvent&) { std::cout << "JobFSM_::action_run_job\n"; }
+				virtual void action_cancel_job(const sdpa::events::CancelJobEvent&) { std::cout << "JobFSM_::action_cancel_job\n"; }
+				virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&){ std::cout << "JobFSM_::action_cancel_job_from_pending\n"; }
+				virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&){ std::cout << "JobFSM_::action_cancel_job_ack\n"; }
+				virtual void action_delete_job(const sdpa::events::DeleteJobEvent&){ std::cout << "JobFSM_::action_delete_job\n"; }
+				virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ std::cout << "JobFSM_::action_job_failed\n"; }
+				virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ std::cout << "JobFSM_::action_job_finished\n"; }
+				virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&){ std::cout << "JobFSM_::action_retrieve_job_results\n"; }
 
 				typedef JobFSM_ sm; // makes transition table cleaner
 
@@ -80,30 +79,30 @@ namespace sdpa {
 				//      Start       Event         		      Next        Action                Guard
 				//      +-----------+--------------------- -+-----------+---------------------+-----
 				_row<   Pending,    MSMDispatchEvent, 		Running >,
-				a_row<  Pending,    CancelJobEvent, 	 	Cancelled,  &sm::action_cancel_job_from_pending >,
+				a_row<  Pending,    sdpa::events::CancelJobEvent, 	 	Cancelled,  &sm::action_cancel_job_from_pending >,
 				//      +-----------+-----------------------+-----------+---------------------+-----
-				a_row<  Running,    JobFinishedEvent,	 	Finished, 	&sm::action_job_finished>,
-				a_row<  Running,    JobFailedEvent, 	 	Failed, 	&sm::action_job_failed >,
-				a_row<  Running,    CancelJobEvent,      	Cancelling, &sm::action_cancel_job >,
-				a_row<  Running,    CancelJobAckEvent, 	 	Cancelled,  &sm::action_cancel_job_ack >,
+				a_row<  Running,    sdpa::events::JobFinishedEvent,	 	Finished, 	&sm::action_job_finished>,
+				a_row<  Running,    sdpa::events::JobFailedEvent, 	 	Failed, 	&sm::action_job_failed >,
+				a_row<  Running,    sdpa::events::CancelJobEvent,      	Cancelling, &sm::action_cancel_job >,
+				a_row<  Running,    sdpa::events::CancelJobAckEvent, 	Cancelled,  &sm::action_cancel_job_ack >,
 				//      +-----------+-----------------------+-----------+---------------------+-----
-				a_irow< Finished,   DeleteJobEvent, 					&sm::action_delete_job >,
-				_irow<  Finished,   JobFinishedEvent >,
-				a_irow< Finished,   RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
+				a_irow< Finished,   sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
+				_irow<  Finished,   sdpa::events::JobFinishedEvent >,
+				a_irow< Finished,   sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
 				//      +-----------+------------------------+----------+---------------------+-----
-				a_irow< Failed, 	DeleteJobEvent, 		 		 	&sm::action_delete_job >,
-				_irow<  Failed, 	JobFailedEvent >,
-				a_irow< Failed, 	RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
+				a_irow< Failed, 	sdpa::events::DeleteJobEvent, 		 		 	&sm::action_delete_job >,
+				_irow<  Failed, 	sdpa::events::JobFailedEvent >,
+				a_irow< Failed, 	sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
 				//      +-----------+------------------------+----------+---------------------+-----
-				a_irow< Cancelling, RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
-				a_irow< Cancelling, DeleteJobEvent, 					&sm::action_delete_job >,
-				a_row<  Cancelling, CancelJobAckEvent, 		 Cancelled, &sm::action_cancel_job_ack>,
-				a_row<  Cancelling, JobFinishedEvent, 		 Cancelled, &sm::action_job_finished>,
-				a_row<  Cancelling, JobFailedEvent, 		 Cancelled, &sm::action_job_failed>,
+				a_irow< Cancelling, sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
+				a_irow< Cancelling, sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
+				a_row<  Cancelling, sdpa::events::CancelJobAckEvent, 	 Cancelled, &sm::action_cancel_job_ack>,
+				a_row<  Cancelling, sdpa::events::JobFinishedEvent, 	 Cancelled, &sm::action_job_finished>,
+				a_row<  Cancelling, sdpa::events::JobFailedEvent, 		 Cancelled, &sm::action_job_failed>,
 				//      +-----------+------------------------+----------+---------------------+-----
-				a_irow< Cancelled,  DeleteJobEvent, 		 			&sm::action_delete_job >,
-				_irow<  Cancelled,  CancelJobEvent >,
-				a_irow< Cancelled,  RetrieveJobResultsEvent,			&sm::action_retrieve_job_results >
+				a_irow< Cancelled,  sdpa::events::DeleteJobEvent, 		 			&sm::action_delete_job >,
+				_irow<  Cancelled,  sdpa::events::CancelJobEvent >,
+				a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,			&sm::action_retrieve_job_results >
 				>{};
 
 				template <class FSM, class Event>
@@ -113,7 +112,7 @@ namespace sdpa {
 				}
 
 				template <class FSM>
-				void no_transition(QueryJobStatusEvent const& e, FSM&, int state)
+				void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
 				{
 					LOG(DEBUG, "process event QueryJobStatusEvent");
 				}
@@ -146,7 +145,7 @@ namespace sdpa {
 				const job_id_t& parent() const { return job_impl_.parent(); }
 				const job_desc_t& description() const { return job_impl_.description(); }
 				const job_result_t& result() const { return job_impl_.result(); }
-				void set_icomm(IComm* pArgComm) { job_impl_.set_icomm(pArgComm); }
+				void set_icomm(sdpa::daemon::IComm* pArgComm) { job_impl_.set_icomm(pArgComm); }
 
 				bool is_marked_for_deletion() { return job_impl_.is_marked_for_deletion(); }
 				bool mark_for_deletion() { return job_impl_.mark_for_deletion(); }
@@ -175,7 +174,9 @@ namespace sdpa {
 					sdpa::status_t status = getStatus();
 					if(job_impl_.icomm())
 					{
-						JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
+						sdpa::events::JobStatusReplyEvent::Ptr
+						        pStatReply(new sdpa::events::JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
+
 						job_impl_.icomm()->sendEventToMaster(pStatReply);
 					}
 					else
@@ -187,58 +188,39 @@ namespace sdpa {
 
 				// actions
 				void action_run_job() { job_impl_.action_run_job(); }
-				void action_cancel_job(const CancelJobEvent& e) { job_impl_.action_cancel_job(e); }
-				void action_cancel_job_from_pending(const CancelJobEvent& e){ job_impl_.action_cancel_job_from_pending(e); }
-				void action_cancel_job_ack(const CancelJobAckEvent& e){ job_impl_.action_cancel_job_ack(e); }
-				void action_delete_job(const DeleteJobEvent& e){ job_impl_.action_delete_job(e); }
+				void action_cancel_job(const sdpa::events::CancelJobEvent& e) { job_impl_.action_cancel_job(e); }
+				void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& e){ job_impl_.action_cancel_job_from_pending(e); }
+				void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& e){ job_impl_.action_cancel_job_ack(e); }
+				void action_delete_job(const sdpa::events::DeleteJobEvent& e){ job_impl_.action_delete_job(e); }
 
-				/*void action_query_job_status(const QueryJobStatusEvent& e)
-				{
-					//SDPA_LOG_INFO("Enter action_query_job_status. Query the status of the job "<<id());
-					job_impl_.action_query_job_status(e);
-					//SDPA_LOG_INFO("Leave action_query_job_status");
-				}*/
-
-				void action_job_failed(const JobFailedEvent& e){ job_impl_.action_job_failed(e); }
-				void action_job_finished(const JobFinishedEvent& e){ job_impl_.action_job_finished(e); }
-				void action_retrieve_job_results(const RetrieveJobResultsEvent& e){ job_impl_.action_retrieve_job_results(e); }
+				void action_job_failed(const sdpa::events::JobFailedEvent& e){ job_impl_.action_job_failed(e); }
+				void action_job_finished(const sdpa::events::JobFinishedEvent& e){ job_impl_.action_job_finished(e); }
+				void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e){ job_impl_.action_retrieve_job_results(e); }
 
 				sdpa::status_t getStatus()
 				{
 					//SDPA_LOG_INFO("Look for the status of the job "<<id());
 					sdpa::status_t status(state_names[*current_state()]);
-					SDPA_LOG_INFO("The status of the job "<<id()<<" is "<<status);
+					//SDPA_LOG_INFO("The status of the job "<<id()<<" is "<<status);
 					return status;
 				}
 
-				template<class Archive>
-				void save(Archive & ar, const unsigned int) const
+				template <class Archive>
+				void serialize(Archive& ar, const unsigned int)
 				{
-					// invoke serialization of the base class
-					//ar << boost::serialization::base_object<JobImpl>(*this);
-					ar << job_impl_;
-				}
+					ar.register_type(static_cast<sdpa::daemon::Job*>(NULL));
+					ar.register_type(static_cast<sdpa::daemon::JobImpl*>(NULL));
 
-				template<class Archive>
-				void load(Archive & ar, const unsigned int)
-				{
-					lock_type lock(mtx_);
-					// invoke serialization of the base class
-					//ar >> boost::serialization::base_object<JobImpl>(*this);#
-					ar >> job_impl_;
-				}
-
-				template<class Archive>
-				void serialize( Archive & ar, const unsigned int file_version )
-				{
-					boost::serialization::split_member(ar, *this, file_version);
+					ar & boost::serialization::base_object<sdpa::daemon::Job>(*this);
+					ar & boost::serialization::base_object<msm::back::state_machine<JobFSM_> >(*this);
+					ar & job_impl_;
 				}
 
 				friend class boost::serialization::access;
 
 			private:
 				mutex_type mtx_;
-				JobImpl job_impl_;
+				sdpa::daemon::JobImpl job_impl_;
 				SDPA_DECLARE_LOGGER();
 			};
 		}
