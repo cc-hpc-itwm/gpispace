@@ -20,8 +20,16 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifdef USE_BOOST_SC
-#   include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
+#ifdef USE_BOOST_MSM
+#  include "sdpa/daemon/daemonFSM/BMSM/DaemonFSM.hpp"
+namespace dsm = sdpa::fsm::bmsm;
+#elif USE_BOOST_SC
+#  include <boost/statechart/state_machine.hpp>
+#  include <boost/statechart/simple_state.hpp>
+#  include <boost/statechart/custom_reaction.hpp>
+#  include <boost/statechart/transition.hpp>
+#  include <boost/statechart/exception_translator.hpp>
+#  include "sdpa/daemon/daemonFSM/BSC/DaemonFSM.hpp"
 namespace dsm = sdpa::fsm::bsc;
 #elif USE_SMC_SC
 #   include "sdpa/daemon/daemonFSM/SMC/DaemonFSM.hpp"
