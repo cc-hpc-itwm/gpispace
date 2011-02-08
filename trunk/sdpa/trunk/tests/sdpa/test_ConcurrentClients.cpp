@@ -340,11 +340,11 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	LOG( INFO, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 											 v_module_preload );
 
 	try {
-		ptrNRE->start();
+		ptrNRE->start_agent();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());

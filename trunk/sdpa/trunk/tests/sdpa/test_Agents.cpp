@@ -115,7 +115,7 @@ struct MyFixture
 	    	, m_kvsd (0)
 	    	, m_serv (0)
 	    	, m_thrd (0)
-	{ //initialize and start the finite state machine
+	{ //initialize and start_agent the finite state machine
 
 		FHGLOG_SETUP();
 
@@ -219,11 +219,11 @@ BOOST_AUTO_TEST_CASE( testAllWithNoWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -244,11 +244,11 @@ BOOST_AUTO_TEST_CASE( testAllWithNoWe )
 				                             v_module_preload );
 
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()");
 
 		ptrNRE_0->shutdown();
 		ptrAgg->shutdown();
@@ -341,11 +341,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -366,11 +366,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 				                             v_module_preload );
 
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()");
 
 		ptrNRE_0->shutdown();
 		ptrAgg->shutdown();
@@ -463,11 +463,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -488,10 +488,10 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 				                             v_module_preload );
 
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
+		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
 
 		ptrNRE_0->shutdown();
 		ptrAgg->shutdown();
@@ -585,11 +585,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -610,11 +610,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 				                             v_module_preload );
 
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()");
 
 		ptrNRE_0->shutdown();
 		ptrAgg->shutdown();
@@ -709,15 +709,15 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	LOG( DEBUG, "Create the Aggregator 0 ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	LOG( DEBUG, "Create the Aggregator 1 ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg_1 = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_1", addrAgg,"aggregator_0");
-	ptrAgg_1->start();
+	ptrAgg_1->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -738,11 +738,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 				                             v_module_preload );
 
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a RestartStrategy->restart()");
+		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()");
 
 		ptrNRE_0->shutdown();
 		ptrAgg->shutdown();

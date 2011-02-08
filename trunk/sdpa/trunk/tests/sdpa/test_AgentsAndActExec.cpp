@@ -269,11 +269,11 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
@@ -282,7 +282,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	try {
-		ptrNRE->start();
+		ptrNRE->start_agent();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
@@ -376,11 +376,11 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
 	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 				                             v_module_preload );
 
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
@@ -527,11 +527,11 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<RealWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	LOG( DEBUG, "starting the NRE ...");
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
@@ -662,11 +662,11 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch);
-	ptrOrch->start();
+	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
 	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
-	ptrAgg->start();
+	ptrAgg->start_agent();
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
@@ -697,7 +697,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	}
 
 	try {
-		ptrNRE_0->start();
+		ptrNRE_0->start_agent();
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start NRE: " << ex.what());
