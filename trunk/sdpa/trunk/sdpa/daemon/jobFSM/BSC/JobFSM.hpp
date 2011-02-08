@@ -95,10 +95,10 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 	virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
 	virtual void Dispatch();
 
-	virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent& evt)
+	/*virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent& evt)
 	{
 		return JobImpl::action_query_job_status(evt);
-	}
+	}*/
 
 	virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& evt)
 	{
@@ -172,7 +172,7 @@ struct Pending : sc::simple_state<Pending, JobFSM>
 {
 	typedef mpl::list< sc::custom_reaction<EvtBSCDispatch>,
 					   sc::custom_reaction< sdpa::events::CancelJobEvent>,
-					   sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, JobFSM, &JobFSM::action_query_job_status >,
+					   sc::in_state_reaction< sdpa::events::QueryJobStatusEvent/*, JobFSM, &JobFSM::action_query_job_status*/ >,
 					   sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Pending() { }
@@ -189,7 +189,7 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::JobFinishedEvent>,
                    sc::custom_reaction<sdpa::events::JobFailedEvent>,
                    sc::custom_reaction<sdpa::events::CancelJobEvent>,
                    sc::transition<sdpa::events::CancelJobAckEvent, Cancelled>,
-                   sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, JobFSM, &JobFSM::action_query_job_status >,
+                   sc::in_state_reaction< sdpa::events::QueryJobStatusEvent/*, JobFSM, &JobFSM::action_query_job_status*/ >,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Running() { }
@@ -217,7 +217,7 @@ struct Cancelling : sc::simple_state<Cancelling, Cancel>
 typedef mpl::list< sc::custom_reaction<sdpa::events::CancelJobAckEvent>,
 				   sc::custom_reaction<sdpa::events::JobFinishedEvent>,
                    sc::custom_reaction<sdpa::events::JobFailedEvent>,
-				   sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, JobFSM, &JobFSM::action_query_job_status >,
+				   sc::in_state_reaction< sdpa::events::QueryJobStatusEvent/*, JobFSM, &JobFSM::action_query_job_status*/ >,
                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Cancelling() { }
@@ -231,7 +231,7 @@ typedef mpl::list< sc::custom_reaction<sdpa::events::CancelJobAckEvent>,
 
 struct Cancelled : sc::simple_state<Cancelled, Cancel>
 {
-typedef mpl::list< 	sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, JobFSM, &JobFSM::action_query_job_status >,
+typedef mpl::list< 	sc::in_state_reaction< sdpa::events::QueryJobStatusEvent/*, JobFSM, &JobFSM::action_query_job_status*/ >,
 					sc::in_state_reaction<sdpa::events::CancelJobAckEvent, JobFSM, &JobFSM::action_cancel_job_ack >,
 					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
 					sc::in_state_reaction<sdpa::events::RetrieveJobResultsEvent, JobFSM, &JobFSM::action_retrieve_job_results >,
@@ -246,7 +246,7 @@ typedef mpl::list< 	sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, Jo
 
 struct Failed : sc::simple_state<Failed, JobFSM>
 {
-typedef mpl::list< 	sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, JobFSM, &JobFSM::action_query_job_status >,
+typedef mpl::list< 	sc::in_state_reaction< sdpa::events::QueryJobStatusEvent/*, JobFSM, &JobFSM::action_query_job_status*/ >,
 					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
 					sc::custom_reaction<sdpa::events::RetrieveJobResultsEvent>,
 					sc::custom_reaction< sc::exception_thrown > > reactions;
@@ -261,7 +261,7 @@ typedef mpl::list< 	sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, Jo
 
 struct Finished : sc::simple_state<Finished, JobFSM>
 {
-typedef mpl::list<  sc::in_state_reaction< sdpa::events::QueryJobStatusEvent, JobFSM, &JobFSM::action_query_job_status >,
+typedef mpl::list<  sc::in_state_reaction< sdpa::events::QueryJobStatusEvent/*, JobFSM, &JobFSM::action_query_job_status*/ >,
 					sc::custom_reaction<sdpa::events::DeleteJobEvent>,
 					sc::custom_reaction<sdpa::events::RetrieveJobResultsEvent>,
 					sc::custom_reaction< sc::exception_thrown > > reactions;
