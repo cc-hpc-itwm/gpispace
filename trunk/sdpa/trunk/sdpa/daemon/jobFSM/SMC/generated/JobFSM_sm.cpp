@@ -170,21 +170,7 @@ namespace sdpa
 
             void SDPA_Pending::QueryJobStatus(JobFSMContext& context, const sdpa::events::QueryJobStatusEvent* pEvent)
             {
-                JobFSM& ctxt = context.getOwner();
 
-                JobFSMState& EndStateName = context.getState();
-
-                context.clearState();
-                try
-                {
-                    ctxt.action_query_job_status(*pEvent);
-                    context.setState(EndStateName);
-                }
-                catch (...)
-                {
-                    context.setState(EndStateName);
-                    throw;
-                }
 
                 return;
             }
@@ -264,21 +250,7 @@ namespace sdpa
 
             void SDPA_Running::QueryJobStatus(JobFSMContext& context, const sdpa::events::QueryJobStatusEvent* pEvent)
             {
-                JobFSM& ctxt = context.getOwner();
 
-                JobFSMState& EndStateName = context.getState();
-
-                context.clearState();
-                try
-                {
-                    ctxt.action_query_job_status(*pEvent);
-                    context.setState(EndStateName);
-                }
-                catch (...)
-                {
-                    context.setState(EndStateName);
-                    throw;
-                }
 
                 return;
             }
@@ -348,21 +320,7 @@ namespace sdpa
 
             void SDPA_Cancelling::QueryJobStatus(JobFSMContext& context, const sdpa::events::QueryJobStatusEvent* pEvent)
             {
-                JobFSM& ctxt = context.getOwner();
 
-                JobFSMState& EndStateName = context.getState();
-
-                context.clearState();
-                try
-                {
-                    ctxt.action_query_job_status(*pEvent);
-                    context.setState(EndStateName);
-                }
-                catch (...)
-                {
-                    context.setState(EndStateName);
-                    throw;
-                }
 
                 return;
             }
@@ -397,21 +355,7 @@ namespace sdpa
 
             void SDPA_Finished::QueryJobStatus(JobFSMContext& context, const sdpa::events::QueryJobStatusEvent* pEvent)
             {
-                JobFSM& ctxt = context.getOwner();
 
-                JobFSMState& EndStateName = context.getState();
-
-                context.clearState();
-                try
-                {
-                    ctxt.action_query_job_status(*pEvent);
-                    context.setState(EndStateName);
-                }
-                catch (...)
-                {
-                    context.setState(EndStateName);
-                    throw;
-                }
 
                 return;
             }
@@ -467,21 +411,7 @@ namespace sdpa
 
             void SDPA_Failed::QueryJobStatus(JobFSMContext& context, const sdpa::events::QueryJobStatusEvent* pEvent)
             {
-                JobFSM& ctxt = context.getOwner();
 
-                JobFSMState& EndStateName = context.getState();
-
-                context.clearState();
-                try
-                {
-                    ctxt.action_query_job_status(*pEvent);
-                    context.setState(EndStateName);
-                }
-                catch (...)
-                {
-                    context.setState(EndStateName);
-                    throw;
-                }
 
                 return;
             }
@@ -544,21 +474,7 @@ namespace sdpa
 
             void SDPA_Cancelled::QueryJobStatus(JobFSMContext& context, const sdpa::events::QueryJobStatusEvent* pEvent)
             {
-                JobFSM& ctxt = context.getOwner();
 
-                JobFSMState& EndStateName = context.getState();
-
-                context.clearState();
-                try
-                {
-                    ctxt.action_query_job_status(*pEvent);
-                    context.setState(EndStateName);
-                }
-                catch (...)
-                {
-                    context.setState(EndStateName);
-                    throw;
-                }
 
                 return;
             }

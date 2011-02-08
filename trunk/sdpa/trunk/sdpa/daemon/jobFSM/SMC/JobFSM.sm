@@ -65,7 +65,7 @@ Pending
     QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-            action_query_job_status(*pEvent);
+            //action_query_job_status(*pEvent);
         }
 }
 
@@ -98,7 +98,7 @@ Running
     QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-            action_query_job_status(*pEvent);
+            //action_query_job_status(*pEvent);
         }
 }
 
@@ -126,7 +126,7 @@ Cancelling
 	QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(*pEvent);
+        	//action_query_job_status(*pEvent);
         }
 }
 
@@ -135,7 +135,7 @@ Finished
     QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(*pEvent);
+        	//action_query_job_status(*pEvent);
         }
 
 
@@ -163,7 +163,7 @@ Failed
     QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(*pEvent);
+        	//action_query_job_status(*pEvent);
         }
 
 	DeleteJob(pEvent: const sdpa::events::DeleteJobEvent*)
@@ -206,7 +206,7 @@ Cancelled
     QueryJobStatus(pEvent: const sdpa::events::QueryJobStatusEvent*)
         nil
         {
-        	action_query_job_status(*pEvent);
+        	//action_query_job_status(*pEvent);
         }
 
     RetrieveJobResults(pEvent: const sdpa::events::RetrieveJobResultsEvent*)
