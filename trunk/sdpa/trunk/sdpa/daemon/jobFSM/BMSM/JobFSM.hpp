@@ -208,10 +208,10 @@ namespace sdpa {
 				template <class Archive>
 				void serialize(Archive& ar, const unsigned int)
 				{
-					ar.register_type(static_cast<sdpa::daemon::Job*>(NULL));
+					//ar.register_type(static_cast<sdpa::daemon::Job*>(NULL));
 					ar.register_type(static_cast<sdpa::daemon::JobImpl*>(NULL));
 
-					ar & boost::serialization::base_object<sdpa::daemon::Job>(*this);
+					//ar & boost::serialization::base_object<sdpa::daemon::Job>(*this);
 					ar & boost::serialization::base_object<msm::back::state_machine<JobFSM_> >(*this);
 					ar & job_impl_;
 				}
