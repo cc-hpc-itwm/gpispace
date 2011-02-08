@@ -16,8 +16,8 @@
  * =====================================================================================
  */
 
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>

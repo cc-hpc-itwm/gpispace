@@ -41,7 +41,6 @@ namespace sdpa {
 				//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
 			}
 
-
 			virtual ~Aggregator();
 
 			void action_configure( const sdpa::events::StartUpEvent& );
@@ -80,6 +79,8 @@ namespace sdpa {
 
 			std::string url_;
 			std::string masterName_;
+
+			// declare here member of type DaemonFSM (when using msm)
 		};
 	}
 }

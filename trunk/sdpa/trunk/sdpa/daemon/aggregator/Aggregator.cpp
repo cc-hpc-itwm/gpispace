@@ -15,8 +15,8 @@
  *
  * =====================================================================================
  */
-#include <sdpa/daemon/aggregator/Aggregator.hpp>
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/aggregator/Aggregator.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>

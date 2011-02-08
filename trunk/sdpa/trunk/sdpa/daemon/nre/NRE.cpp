@@ -17,9 +17,8 @@
  */
 
 // Implementation
-//#include <sdpa/daemon/nre/NRE.hpp>
-#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
