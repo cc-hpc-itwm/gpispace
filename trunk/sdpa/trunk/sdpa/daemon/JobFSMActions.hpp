@@ -43,7 +43,7 @@ namespace sdpa {
 				virtual void action_cancel_job(const sdpa::events::CancelJobEvent&)=0;
 				virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&)=0;
 				virtual void action_delete_job(const sdpa::events::DeleteJobEvent&)=0;
-				virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&)=0;
+				//virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&)=0;
 				virtual void action_job_failed(const sdpa::events::JobFailedEvent&)=0;
 				virtual void action_job_finished(const sdpa::events::JobFinishedEvent&)=0;
 				virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&)=0;
