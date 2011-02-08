@@ -8,6 +8,8 @@
 
 #include <boost/unordered_set.hpp>
 
+#include <util.hpp>
+
 namespace gpifs
 {
   namespace file
@@ -16,46 +18,17 @@ namespace gpifs
     {
       namespace handle
       {
-        static inline std::string data ()
-        {
-          static const std::string d ("data");
-
-          return d;
-        }
-        static inline std::string type ()
-        {
-          static const std::string t ("type");
-
-          return t;
-        }
-        static inline std::string name ()
-        {
-          static const std::string n ("name");
-
-          return n;
-        }
+        CONST(data)
+        CONST(type)
+        CONST(name)
       } // namespace handle
 
       namespace proc
       {
-        static inline std::string alloc  ()
-        {
-          static const std::string a ("alloc");
-
-          return a;
-        }
-        static inline std::string free ()
-        {
-          static const std::string f ("free");
-
-          return f;
-        }
-        static inline std::string refresh ()
-        {
-          static const std::string f ("refresh");
-
-          return f;
-        }
+        CONST(alloc)
+        CONST(free)
+        CONST(refresh)
+        CONST(error)
       } // namespace proc
     } // namespace name
 
@@ -102,6 +75,7 @@ namespace gpifs
           _set.insert (name::proc::alloc());
           _set.insert (name::proc::free());
           _set.insert (name::proc::refresh());
+          _set.insert (name::proc::error());
         }
       };
 
@@ -125,8 +99,14 @@ namespace gpifs
 
     namespace num
     {
-      static inline std::size_t handle () { return detail::get_handle().num(); }
-      static inline std::size_t proc () { return detail::get_proc().num(); }
+      static inline std::size_t handle ()
+      {
+        return detail::get_handle().num();
+      }
+      static inline std::size_t proc ()
+      {
+        return detail::get_proc().num();
+      }
     } // namespace num
   }
 }

@@ -55,6 +55,9 @@ gpifs_getattr (const char * path, struct stat * stbuf)
         }
       else
         {
+          stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
+            = state.time_refresh();
+
           if (sp.segment_id)
             {
               stbuf->st_size = state.size_segment (*sp.segment_id);
@@ -66,10 +69,10 @@ gpifs_getattr (const char * path, struct stat * stbuf)
           else if (sp.segment == gpifs::segment::proc())
             {
               stbuf->st_size = gpifs::file::num::proc();
-            }
 
-          stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
-            = state.time_refresh();
+              stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
+                = std::max (state.time_refresh(), state.error_time());
+            }
         }
     }
   else if (state.is_file (sp))
@@ -78,10 +81,29 @@ gpifs_getattr (const char * path, struct stat * stbuf)
 
       if (gpifs::file::is_valid::proc (*sp.file))
         {
-          stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
-            = state.time_refresh();
+          if (sp.file == gpifs::file::name::proc::error())
+            {
+              stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
+                = state.error_time();
 
-          stbuf->st_mode = S_IFREG | 0200;
+              stbuf->st_mode = S_IFREG | 0400;
+
+              if (state.error_get())
+                {
+                  stbuf->st_size = (*(state.error_get())).size();
+                }
+              else
+                {
+                  res = -ENOENT;
+                }
+            }
+          else
+            {
+              stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
+                = state.time_refresh();
+
+              stbuf->st_mode = S_IFREG | 0200;
+            }
         }
       else if (gpifs::file::is_valid::handle (*sp.file))
         {
@@ -163,7 +185,14 @@ gpifs_open (const char * path, struct fuse_file_info * fi)
     {
       if (gpifs::file::is_valid::proc (*sp.file))
         {
-          if ((fi->flags & O_ACCMODE) != O_WRONLY)
+          if (sp.file == gpifs::file::name::proc::error())
+            {
+              if ((fi->flags & O_ACCMODE) != O_RDONLY)
+                {
+                  res = -EACCES;
+                }
+            }
+          else if ((fi->flags & O_ACCMODE) != O_WRONLY)
             {
               res = -EACCES;
             }
@@ -173,17 +202,13 @@ gpifs_open (const char * path, struct fuse_file_info * fi)
             {
               if (!state.slot_avail())
                 {
-                  LOG ("cannot open: no more filehandles available");
+                  state.error_set ("no more filehandles available");
 
                   res = -EAGAIN;
                 }
               else
                 {
-                  LOG ("aquire slot");
-
                   fi->fh = state.slot_pop();
-
-                  LOG ("got slot " << fi->fh);
                 }
             }
         }
@@ -252,26 +277,43 @@ gpifs_read ( const char *path
 
   if (state.is_file (sp))
     {
-      if (sp.file == gpifs::file::name::handle::type() && sp.handle)
+      if (gpifs::file::is_valid::handle (*sp.file))
         {
-          size = copy_string ( state.get_segment_string (*sp.handle)
-                             , buf
-                             , size
-                             , offset
-                             );
+          if (sp.file == gpifs::file::name::handle::type() && sp.handle)
+            {
+              size = copy_string ( state.get_segment_string (*sp.handle)
+                                 , buf
+                                 , size
+                                 , offset
+                                 );
+            }
+          else if (sp.file == gpifs::file::name::handle::name() && sp.handle)
+            {
+              size = copy_string ( state.get_name (*sp.handle)
+                                 , buf
+                                 , size
+                                 , offset
+                                 );
+            }
+          else if (sp.file == gpifs::file::name::handle::data() && sp.handle)
+            {
+              size = state.read (*sp.handle, buf, size, offset);
+            }
         }
-      else if (sp.file == gpifs::file::name::handle::name() && sp.handle)
+      else if (gpifs::file::is_valid::proc (*sp.file))
         {
-          size = copy_string ( state.get_name (*sp.handle)
-                             , buf
-                             , size
-                             , offset
-                             );
-        }
-      else if (sp.file == gpifs::file::name::handle::data() && sp.handle)
-        {
-          // do the read here, receive data in buf
-          size = 0;
+          if (sp.file == gpifs::file::name::proc::error() && state.error_get())
+            {
+              size = copy_string ( *(state.error_get())
+                                 , buf
+                                 , size
+                                 , offset
+                                 );
+            }
+          else
+            {
+              size = 0;
+            }
         }
       else
         {
@@ -323,12 +365,7 @@ gpifs_write ( const char * path
         {
           if (sp.file == gpifs::file::name::handle::data() && sp.handle)
             {
-              LOG ("write " << size << " bytes "
-                  << " into " << path << ":" << offset
-                  );
-
-              // do the write here, send data from buf
-              // *sp.handle!
+              size = state.write (*sp.handle, buf, size, offset);
             }
           else
             {
@@ -359,31 +396,26 @@ gpifs_release (const char * path, struct fuse_file_info * fi)
         {
           if (sp.file == gpifs::file::name::proc::refresh())
             {
-              LOG ("REFRESH");
-
               state.refresh();
             }
           else if (sp.file == gpifs::file::name::proc::alloc())
             {
               char * pos (state.slot_begin (fi->fh));
 
+              gpifs::util::parse::parser<char *> parser
+                (pos, state.slot_end (fi->fh));
+
               const boost::optional<gpifs::alloc::descr> descr
-                ( gpifs::alloc::parse ( pos
-                                      , state.slot_end (fi->fh)
-                                      )
-                );
-              const std::string rest (pos, state.slot_end (fi->fh));
+                (gpifs::alloc::parse (parser));
 
               if (descr)
                 {
-                  LOG ("ALLOC: descr " << (*descr).segment()
-                      << "/" << (*descr).size()
-                      << "/" << (*descr).name()
-                      << ", rest |" << rest << "|");
+                  state.alloc (*descr);
                 }
               else
                 {
-                  LOG ("ALLOC: could not parse descr"  << ", rest |" << rest << "|");
+                  state.error_set
+                    (parser.error_string ("alloc: could not parse descr"));
                 }
 
               state.slot_push (fi->fh);
@@ -392,22 +424,20 @@ gpifs_release (const char * path, struct fuse_file_info * fi)
             {
               char * pos (state.slot_begin (fi->fh));
 
+              gpifs::util::parse::parser<char *> parser
+                (pos, state.slot_end (fi->fh));
+
               const boost::optional<gpifs::alloc::id_t> id
-                ( gpifs::id::parse ( pos
-                                   , state.slot_end (fi->fh)
-                                   )
-                );
-              const std::string rest (pos, state.slot_end(fi->fh));
+                (gpifs::id::parse (parser));
 
               if (id)
                 {
                   state.free (*id);
-
-                  LOG ("FREE: id " << *id << ", rest |" << rest << "|");
                 }
               else
                 {
-                  LOG ("FREE: could not parse an id, rest |" << rest << "|");
+                  state.error_set
+                    (parser.error_string ("free: could not parse id"));
                 }
 
               state.slot_push (fi->fh);

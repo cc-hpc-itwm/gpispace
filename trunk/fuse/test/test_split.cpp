@@ -87,6 +87,8 @@ main (int argc, char **argv)
 
       if (!(sp == t->sp))
         {
+          std::cout << "FAILURE: expected was " << t->sp << std::endl;
+
           exit (EXIT_FAILURE);
         }
     }

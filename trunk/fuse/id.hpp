@@ -7,6 +7,8 @@
 
 #include <boost/optional.hpp>
 
+#include <util.hpp>
+
 namespace gpifs
 {
   namespace id
@@ -48,22 +50,30 @@ namespace gpifs
       };
 
       template<typename Base, typename IT>
-      static inline void generic_parse (IT & pos, const IT & end, id_t & id)
+      static inline void
+      generic_parse (util::parse::parser<IT> & parser, id_t & id)
       {
-        while (pos != end && Base::isdig (*pos))
+        while (!parser.end() && Base::isdig (*parser))
           {
             id *= Base::base();
-            id += Base::val (*pos);
-            ++pos;
+            id += Base::val (*parser);
+            ++parser;
           }
       }
     }
 
+    // ********************************************************************* //
+
     template<typename IT>
-    static inline boost::optional<id_t> parse (IT & pos, const IT & end)
+    static inline boost::optional<id_t>
+    parse (util::parse::parser<IT> & parser)
     {
-      if (pos == end || !isdigit (*pos))
+      util::parse::skip_space (parser);
+
+      if (parser.end() || !isdigit (*parser))
         {
+          parser.error_set ("expected digit");
+
           return boost::optional<id_t> (boost::none);
         }
       else
@@ -71,20 +81,20 @@ namespace gpifs
           id_t id (0);
           bool zero (false);
 
-          while (pos != end && *pos == '0')
+          while (!parser.end() && *parser == '0')
             {
-              ++pos; zero = true;
+              ++parser; zero = true;
             }
 
-          if (pos != end)
+          if (!parser.end())
             {
-              if (zero && tolower (*pos) == 'x')
+              if (zero && tolower (*parser) == 'x')
                 {
-                  ++pos; detail::generic_parse<detail::hex> (pos, end, id);
+                  ++parser; detail::generic_parse<detail::hex> (parser, id);
                 }
               else
                 {
-                  detail::generic_parse<detail::dec> (pos, end, id);
+                  detail::generic_parse<detail::dec> (parser, id);
                 }
             }
 

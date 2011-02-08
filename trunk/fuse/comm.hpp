@@ -12,6 +12,8 @@
 #include <ctime>
 #endif
 
+#include <log.hpp>
+
 namespace gpifs
 {
   namespace comm
@@ -19,29 +21,63 @@ namespace gpifs
     class comm
     {
     public:
-      void init ()
+      int init ()
       {
+        LOG ("comm: init");
+
+        int res (0);
+
+        return res;
+      }
+      int finalize ()
+      {
+        LOG ("comm: finalize");
+
+        int res (0);
+
+        return res;
       }
 
-      void finalize ()
+      int free (const alloc::id_t & id) const
       {
-      }
+        LOG ("comm: free " << id);
 
-      void free (const alloc::id_t & id) const
+        int res (0);
+
+        return res;
+      }
+      int alloc (const alloc::descr & descr) const
       {
+        LOG ("comm: alloc " << descr)
+
+        int res (0);
+
+        return res;
       }
 
 #ifndef COMM_TEST
-      void list_segments (segment::id_list_t *) const
+      int list_segments (segment::id_list_t * list) const
       {
+        int res (0);
+
+        list->clear();
+
+        return res;
       }
-      void list_allocs ( const segment::id_t &
-                       , alloc::list_t *
-                       ) const
-      {}
-#else // ifndef COMM_TEST
-      void list_segments (segment::id_list_t * list) const
+      int list_allocs (const segment::id_t & id, alloc::list_t * list) const
       {
+        int res (0);
+
+        list->clear();
+
+        return res;
+      }
+
+#else // ifndef COMM_TEST
+      int list_segments (segment::id_list_t * list) const
+      {
+        int res (0);
+
         list->clear();
 
         list->push_back (0);
@@ -49,12 +85,14 @@ namespace gpifs
         list->push_back (3);
         list->push_back (9);
         list->push_back (11);
+
+        return res;
       }
 
-      void list_allocs ( const segment::id_t & id
-                       , alloc::list_t * list
-                       ) const
+      int list_allocs (const segment::id_t & id, alloc::list_t * list) const
       {
+        int res (0);
+
         const time_t minute (60);
         const time_t hour (60 * minute);
         const time_t now (time (NULL));
@@ -89,6 +127,8 @@ namespace gpifs
           default:
             throw std::runtime_error ("segment unknown");
           }
+
+        return res;
       }
 #endif // ifndef COMM_TEST
     };

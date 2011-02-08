@@ -9,6 +9,7 @@
 
 #include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
+#include <boost/optional.hpp>
 
 #include <string>
 #include <stack>
@@ -71,11 +72,14 @@ namespace gpifs
       };
     } // namespace buffer
 
+    // ********************************************************************* //
+
     struct state : public boost::noncopyable
     {
     public:
       typedef boost::unordered_map<segment::id_t, alloc::id_set_t> segments_t;
       typedef boost::unordered_map<alloc::id_t,alloc::alloc> allocs_t;
+      typedef boost::optional<std::string> error_t;
 
       state ()
         : _segments (0)
@@ -83,6 +87,8 @@ namespace gpifs
         , _comm ()
         , _time_refresh (0)
         , _buffer ()
+        , _error ()
+        , _time_error (0)
       {}
 
       state ( const buffer::slot_t & num_slots
@@ -93,19 +99,50 @@ namespace gpifs
         , _comm ()
         , _time_refresh (0)
         , _buffer (num_slots, size_per_slot)
+        , _error ()
+        , _time_error (0)
       {}
 
       // ******************************************************************* //
 
-      void init ()
+      int init ()
       {
-        _comm.init ();
+        int res (0);
 
-        refresh();
+        error_clear();
+
+        res = _comm.init ();
+
+        if (res < 0)
+          {
+            error_set ("failed to initialize connection to gpi manager");
+          }
+        else
+          {
+            res = refresh();
+
+            if (res < 0)
+              {
+                error_set ("failed to get listings from gpi manager");
+              }
+          }
+
+        return res;
       }
-      void finalize ()
+      int finalize ()
       {
-        _comm.finalize ();
+        int res (0);
+
+        error_clear ();
+
+        res = _comm.finalize ();
+
+        if (res < 0)
+          {
+            error_set ("failed to finalize connection to gpi manager");
+          }
+
+        return res;
       }
 
       // ******************************************************************* //
@@ -158,12 +195,56 @@ namespace gpifs
 
       // ******************************************************************* //
 
-      void refresh ()
+      int refresh ()
       {
+        int res (0);
+
+        error_clear ();
+
+        segment::id_list_t segments;
+
+        res = _comm.list_segments (&segments);
+
+        if (res < 0)
+          {
+            error_set ("failed to get segment list from gpi manager");
+          }
+
+        for ( segment::id_list_t::const_iterator segment (segments.begin())
+            ; segment != segments.end() && res == 0
+            ; ++segment
+            )
+          {
+            _segments[*segment] = alloc::id_set_t ();
+
+            alloc::list_t allocs;
+
+            res = _comm.list_allocs (*segment, &allocs);
+
+            if (res < 0)
+              {
+                std::ostringstream err;
+
+                err << "failed to get alloc list for segment " << *segment;
+
+                error_set (err.str());
+              }
+
+            for ( alloc::list_t::const_iterator alloc (allocs.begin())
+                    ; alloc != allocs.end()
+                    ; ++alloc
+                )
+              {
+                _segments[*segment].insert (alloc->id());
+                _allocs[alloc->id()] = *alloc;
+              }
+          }
+
         _time_refresh = time (NULL);
 
-        build_maps();
+        return res;
       }
+
       const time_t & time_refresh () const
       {
         return _time_refresh;
@@ -171,24 +252,104 @@ namespace gpifs
 
       // ******************************************************************* //
 
-      void free (const alloc::id_t & id)
+      void error_set (const std::string & err)
       {
-        _comm.free (id);
+        _error = err;
 
-        const allocs_t::const_iterator alloc (_allocs.find (id));
+        _time_error = time (NULL);
+      }
+      void error_clear ()
+      {
+        _error = error_t (boost::none);
+      }
+      const error_t & error_get () const
+      {
+        return _error;
+      }
+      const time_t & error_time () const
+      {
+        return _time_error;
+      }
 
-        if (alloc != _allocs.end())
+      // ******************************************************************* //
+
+      std::size_t read ( const alloc::id_t & id
+                       , char * buf
+                       , size_t size
+                       , const off_t offset
+                       )
+      {
+        LOG ( "state: read from handle " << id << ":" << offset
+            << " " << size << " bytes"
+            );
+
+        return 0;
+      }
+      std::size_t write ( const alloc::id_t & id
+                        , const char * buf
+                        , size_t size
+                        , const off_t offset
+                        )
+      {
+        LOG ( "state: write to handle " << id << ":" << offset
+            << " " << size << " bytes"
+            );
+
+        return 0;
+      }
+
+      // ******************************************************************* //
+
+      int alloc (const alloc::descr & descr)
+      {
+        int res (_comm.alloc (descr));
+
+        if (res < 0)
           {
-            segments_t::iterator segment
-              (_segments.find (alloc->second.segment()));
+            std::ostringstream err;
 
-            if (segment != _segments.end())
-              {
-                segment->second.erase (id);
-              }
+            err << "failed to allocate " << descr;
 
-            _allocs.erase (alloc);
+            error_set (err.str());
           }
+        else
+          {
+            res = refresh();
+          }
+
+        return res;
+      }
+      int free (const alloc::id_t & id)
+      {
+        int res (_comm.free (id));
+
+        if (res < 0)
+          {
+            std::ostringstream err;
+
+            err << "failed to free the allocation with the id " << id;
+
+            error_set (err.str());
+          }
+        else
+          {
+            const allocs_t::const_iterator alloc (_allocs.find (id));
+
+            if (alloc != _allocs.end())
+              {
+                segments_t::iterator segment
+                  (_segments.find (alloc->second.segment()));
+
+                if (segment != _segments.end())
+                  {
+                    segment->second.erase (id);
+                  }
+
+                _allocs.erase (alloc);
+              }
+          }
+
+        return res;
       }
 
       // ******************************************************************* //
@@ -294,6 +455,11 @@ namespace gpifs
             fill (file::name::proc::alloc(), buf, filler);
             fill (file::name::proc::free(), buf, filler);
             fill (file::name::proc::refresh(), buf, filler);
+
+            if (_error)
+              {
+                fill (file::name::proc::error(), buf, filler);
+              }
           }
         else if (sp.segment == segment::global())
           {
@@ -353,20 +519,23 @@ namespace gpifs
                 sp.segment = segment::global();
                 sp.segment_id = 0;
 
-                split_handle (util::strip_prefix (segment::global(), path), sp, 0);
+                split_handle
+                  (util::strip_prefix (segment::global(), path), sp, 0);
               }
             else if (util::starts_with (segment::local(), path))
               {
                 sp.segment = segment::local();
                 sp.segment_id = 1;
 
-                split_handle (util::strip_prefix (segment::local(), path), sp, 1);
+                split_handle
+                  (util::strip_prefix (segment::local(), path), sp, 1);
               }
             else if (util::starts_with (segment::shared(), path))
               {
                 sp.segment = segment::shared();
 
-                split_shared ( util::strip_prefix (segment::shared(), path), sp);
+                split_shared
+                  (util::strip_prefix (segment::shared(), path), sp);
               }
             else
               {
@@ -385,30 +554,8 @@ namespace gpifs
       comm::comm _comm;
       time_t _time_refresh;
       buffer::state _buffer;
-
-      void build_maps ()
-      {
-        segment::id_list_t segments; _comm.list_segments (&segments);
-
-        for ( segment::id_list_t::const_iterator segment (segments.begin())
-            ; segment != segments.end()
-            ; ++segment
-            )
-          {
-            _segments[*segment] = alloc::id_set_t ();
-
-            alloc::list_t allocs; _comm.list_allocs (*segment, &allocs);
-
-            for ( alloc::list_t::const_iterator alloc (allocs.begin())
-                ; alloc != allocs.end()
-                ; ++alloc
-                )
-              {
-                _segments[*segment].insert (alloc->id());
-                _allocs[alloc->id()] = *alloc;
-              }
-          }
-      }
+      error_t _error;
+      time_t _time_error;
 
       // ******************************************************************* //
 
@@ -453,7 +600,9 @@ namespace gpifs
 
         if (pos != path.end())
           {
-            sp.handle = id::parse (pos, path.end());
+            util::parse::parser_string parse_state (pos, path.end());
+
+            sp.handle = id::parse (parse_state);
 
             if (!sp.handle || (_allocs.find (*sp.handle) == _allocs.end()))
               {
@@ -479,13 +628,16 @@ namespace gpifs
 
         if (pos != path.end() && separator (pos, sp))
           {
-            sp.handle = id::parse (pos, path.end());
+            util::parse::parser_string parse_state (pos, path.end());
 
-            const segments_t::const_iterator seg (_segments.find(segment));
+            sp.handle = id::parse (parse_state);
 
-            if (  !sp.handle
-               || (seg == _segments.end())
-               || (seg->second.find (*sp.handle) == seg->second.end())
+            const segments_t::const_iterator seg (_segments.find (segment));
+
+            if (  (seg == _segments.end())
+               || (  sp.handle
+                  && seg->second.find (*sp.handle) == seg->second.end()
+                  )
                )
               {
                 sp.clear();
@@ -509,7 +661,9 @@ namespace gpifs
 
         if (pos != path.end() && separator (pos, sp))
           {
-            sp.segment_id = id::parse (pos, path.end());
+            util::parse::parser_string parse_state (pos, path.end());
+
+            sp.segment_id = id::parse (parse_state);
 
             if (sp.segment_id)
               {

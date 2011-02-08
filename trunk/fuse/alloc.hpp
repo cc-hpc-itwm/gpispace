@@ -21,6 +21,8 @@ namespace gpifs
     typedef std::string name_t;
     typedef std::size_t size_t;
 
+    // ********************************************************************* //
+
     class descr
     {
     public:
@@ -43,6 +45,14 @@ namespace gpifs
       size_t _size;
       name_t _name;
     };
+
+    static inline std::ostream & operator << (std::ostream & s, const descr & d)
+    {
+      return
+        s << "{" << d.segment() << "/" << d.size() << "/" << d.name() << "}";
+    }
+
+    // ********************************************************************* //
 
     class alloc
     {
@@ -74,27 +84,28 @@ namespace gpifs
     typedef std::list<alloc> list_t;
     typedef boost::unordered_set<id_t> id_set_t;
 
+    // ********************************************************************* //
+
     template<typename IT>
-    static inline boost::optional<descr> parse (IT & pos, const IT & end)
+    static inline boost::optional<descr>
+    parse (util::parse::parser<IT> & parser)
     {
-      const boost::optional<segment::id_t> segment (segment::parse (pos, end));
+      const boost::optional<segment::id_t> segment (segment::parse (parser));
 
       if (segment)
         {
-          util::parse::skip_space (pos, end);
-
-          const boost::optional<size_t> size (id::parse (pos, end));
+          const boost::optional<size_t> size (id::parse (parser));
 
           if (size)
             {
-              util::parse::skip_space (pos, end);
+              util::parse::skip_space (parser);
 
               std::string name;
 
-              while (pos != end && !isspace (*pos))
+              while (!parser.end() && !isspace (*parser))
                 {
-                  name.push_back (*pos);
-                  ++pos;
+                  name.push_back (*parser);
+                  ++parser;
                 }
 
               return boost::optional<descr> (descr (*segment, *size, name));

@@ -15,9 +15,6 @@
 #include <boost/optional.hpp>
 #include <cctype>
 
-// remove
-#include <iostream>
-
 namespace gpifs
 {
   namespace segment
@@ -25,36 +22,15 @@ namespace gpifs
     typedef id::id_t id_t;
     typedef std::list<id_t> id_list_t;
 
-    static inline std::string root ()
-    {
-      static const std::string r ("/");
+    // ********************************************************************* //
 
-      return r;
-    }
-    static inline std::string global ()
-    {
-      static const std::string g ("global");
+    STRCONST(root,"/")
+    CONST(global)
+    CONST(local)
+    CONST(shared)
+    CONST(proc)
 
-      return g;
-    }
-    static inline std::string local ()
-    {
-      static const std::string l ("local");
-
-      return l;
-    }
-    static inline std::string shared ()
-    {
-      static const std::string l ("shared");
-
-      return l;
-    }
-    static inline std::string proc ()
-    {
-      static const std::string p ("proc");
-
-      return p;
-    }
+    // ********************************************************************* //
 
     static inline std::string string (const id_t id)
     {
@@ -75,59 +51,45 @@ namespace gpifs
       throw std::runtime_error ("segment::string: STRANGE!");
     }
 
+    // ********************************************************************* //
+
     template<typename IT>
-    static inline boost::optional<id_t> parse (IT & pos, const IT & end)
+    static inline boost::optional<id_t>
+    parse (util::parse::parser<IT> & parser)
     {
-      if (pos == end)
+      util::parse::skip_space (parser);
+
+      if (parser.end())
         {
+          parser.error_set ("expected 'global', 'local' or 'shared'");
+
           return boost::optional<id_t> (boost::none);
         }
       else
         {
-          switch (tolower (*pos))
+          switch (tolower (*parser))
             {
-            case 'g':
-              ++pos;
+            case 'g': ++parser;
+              return (util::parse::require ("lobal", parser))
+                ? boost::optional<id_t> (0)
+                : boost::optional<id_t> (boost::none)
+                ;
 
-              if (util::parse::require_rest ("lobal", pos, end))
-                {
-                  return boost::optional<id_t> (boost::none);
-                }
-              else
-                {
-                  return boost::optional<id_t> (0);
-                }
-              break;
+            case 'l': ++parser;
+              return (util::parse::require ("ocal", parser))
+                ? boost::optional<id_t> (1)
+                : boost::optional<id_t> (boost::none)
+                ;
 
-            case 'l':
-              ++pos;
-
-              if (util::parse::require_rest ("ocal", pos, end))
-                {
-                  return boost::optional<id_t> (boost::none);
-                }
-              else
-                {
-                  return boost::optional<id_t> (1);
-                }
-              break;
-
-            case 's':
-              ++pos;
-
-              if (util::parse::require_rest ("hared", pos, end))
-                {
-                  return boost::optional<id_t> (boost::none);
-                }
-              else
-                {
-                  util::parse::skip_space (pos, end);
-
-                  return id::parse (pos, end);
-                }
-              break;
+            case 's': ++parser;
+              return (util::parse::require ("hared", parser))
+                ? id::parse (parser)
+                : boost::optional<id_t> (boost::none)
+                ;
 
             default:
+              parser.error_set ("expected 'global', 'local' or 'shared'");
+
               return boost::optional<id_t> (boost::none);
             }
         }
