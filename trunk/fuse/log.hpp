@@ -5,12 +5,11 @@
 
 #include <iostream>
 
+#ifndef NDEBUG
 static std::ostream & logstream ()
 {
   return std::cout;
 }
-
-#ifndef NDEBUG
 #define LOG(x) { logstream() << x << std::endl; }
 #else
 #define LOG(x)

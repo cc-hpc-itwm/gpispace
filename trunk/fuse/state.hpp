@@ -8,8 +8,10 @@
 #include <fuse.h>
 
 #include <boost/unordered_map.hpp>
+#include <boost/utility.hpp>
 
 #include <string>
+#include <stack>
 
 #include <util.hpp>
 #include <file.hpp>
@@ -22,23 +24,75 @@
 
 #include <ctime>
 
-namespace gpi_fuse
+namespace gpifs
 {
   namespace state
   {
-    struct state
+    namespace buffer
+    {
+      typedef unsigned int slot_t;
+      typedef std::size_t size_t;
+
+      struct state : public boost::noncopyable
+      {
+        char * buf;
+        const slot_t num_slots;
+        const size_t size_per_slot;
+        std::stack<slot_t> slots;
+
+        state ()
+          : buf (NULL)
+          , num_slots (0)
+          , size_per_slot (0)
+          , slots ()
+        {}
+
+        state ( const slot_t & _num_slots
+              , const size_t & _size_per_slot
+              )
+          : buf (new char[_num_slots * _size_per_slot])
+          , num_slots (_num_slots)
+          , size_per_slot (_size_per_slot)
+          , slots ()
+        {
+          for (buffer::slot_t slot (0); slot < num_slots; ++slot)
+            {
+              slots.push (slot);
+            }
+        }
+
+        ~state ()
+        {
+          if (buf != NULL)
+            {
+              delete[] buf;
+            }
+        }
+      };
+    } // namespace buffer
+
+    struct state : public boost::noncopyable
     {
     public:
       typedef boost::unordered_map<segment::id_t, alloc::id_set_t> segments_t;
-      typedef boost::unordered_map<alloc::id_t,alloc::descr_t> allocs_t;
-
-      // ******************************************************************* //
+      typedef boost::unordered_map<alloc::id_t,alloc::alloc> allocs_t;
 
       state ()
         : _segments (0)
         , _allocs (0)
         , _comm ()
         , _time_refresh (0)
+        , _buffer ()
+      {}
+
+      state ( const buffer::slot_t & num_slots
+            , const buffer::size_t & size_per_slot
+            )
+        : _segments (0)
+        , _allocs (0)
+        , _comm ()
+        , _time_refresh (0)
+        , _buffer (num_slots, size_per_slot)
       {}
 
       // ******************************************************************* //
@@ -52,6 +106,54 @@ namespace gpi_fuse
       void finalize ()
       {
         _comm.finalize ();
+      }
+
+      // ******************************************************************* //
+
+      char * slot_begin (const buffer::slot_t & slot)
+      {
+        return _buffer.buf + slot * _buffer.size_per_slot;
+      }
+      char * slot_end (const buffer::slot_t & slot)
+      {
+        return _buffer.buf + (slot + 1) * _buffer.size_per_slot;
+      }
+      bool slot_avail () const
+      {
+        return !_buffer.slots.empty();
+      }
+      buffer::slot_t slot_pop ()
+      {
+        const buffer::slot_t slot (_buffer.slots.top());
+
+        _buffer.slots.pop();
+
+        std::fill (slot_begin (slot), slot_end (slot), 0);
+
+        return slot;
+      }
+      void slot_push (const buffer::slot_t & slot)
+      {
+        _buffer.slots.push (slot);
+      }
+      buffer::size_t slot_write ( const buffer::slot_t & slot
+                                , const char * buf
+                                , buffer::size_t size
+                                , const buffer::size_t & offset
+                                )
+      {
+        if (offset < _buffer.size_per_slot)
+          {
+            size = std::min (size, _buffer.size_per_slot - offset);
+
+            std::copy (buf, buf + size, slot_begin (slot) + offset);
+          }
+        else
+          {
+            size = 0;
+          }
+
+        return size;
       }
 
       // ******************************************************************* //
@@ -159,9 +261,9 @@ namespace gpi_fuse
           {
             if (sp.handle)
               {
-                fill (file::data(), buf, filler);
-                fill (file::type(), buf, filler);
-                fill (file::name(), buf, filler);
+                fill (file::name::handle::data(), buf, filler);
+                fill (file::name::handle::type(), buf, filler);
+                fill (file::name::handle::name(), buf, filler);
               }
             else
               {
@@ -189,9 +291,9 @@ namespace gpi_fuse
           }
         else if (sp.segment == segment::proc())
           {
-            fill (file::alloc(), buf, filler);
-            fill (file::free(), buf, filler);
-            fill (file::refresh(), buf, filler);
+            fill (file::name::proc::alloc(), buf, filler);
+            fill (file::name::proc::free(), buf, filler);
+            fill (file::name::proc::refresh(), buf, filler);
           }
         else if (sp.segment == segment::global())
           {
@@ -282,6 +384,7 @@ namespace gpi_fuse
       allocs_t _allocs;
       comm::comm _comm;
       time_t _time_refresh;
+      buffer::state _buffer;
 
       void build_maps ()
       {
@@ -352,7 +455,7 @@ namespace gpi_fuse
           {
             sp.handle = id::parse (pos, path.end());
 
-            if (_allocs.find (*sp.handle) == _allocs.end())
+            if (!sp.handle || (_allocs.find (*sp.handle) == _allocs.end()))
               {
                 sp.clear();
               }
@@ -380,8 +483,9 @@ namespace gpi_fuse
 
             const segments_t::const_iterator seg (_segments.find(segment));
 
-            if (  seg == _segments.end()
-               || seg->second.find (*sp.handle) == seg->second.end()
+            if (  !sp.handle
+               || (seg == _segments.end())
+               || (seg->second.find (*sp.handle) == seg->second.end())
                )
               {
                 sp.clear();
@@ -407,24 +511,30 @@ namespace gpi_fuse
           {
             sp.segment_id = id::parse (pos, path.end());
 
-            if (_segments.find (*sp.segment_id) != _segments.end())
+            if (sp.segment_id)
               {
-                sp.segment = segment::shared()
-                           + "/"
-                           + boost::lexical_cast<std::string> (*sp.segment_id)
-                           ;
-              }
-            else
-              {
-                sp.clear();
-              }
+                if (_segments.find (*sp.segment_id) != _segments.end())
+                  {
+                    sp.segment = segment::shared()
+                      + "/"
+                      + boost::lexical_cast<std::string> (*sp.segment_id)
+                      ;
+                  }
+                else
+                  {
+                    sp.clear();
+                  }
 
-            if (pos != path.end())
-              {
                 split_handle ( std::string (pos, path.end())
                              , sp
                              , *sp.segment_id
                              );
+              }
+            else
+              {
+                split_handle_direct ( std::string (pos, path.end())
+                                    , sp
+                                    );
               }
           }
       }
@@ -446,9 +556,9 @@ namespace gpi_fuse
       {
         if (sp.handle)
           {
-            fill (file::data(), buf, filler);
-            fill (file::type(), buf, filler);
-            fill (file::name(), buf, filler);
+            fill (file::name::handle::data(), buf, filler);
+            fill (file::name::handle::type(), buf, filler);
+            fill (file::name::handle::name(), buf, filler);
           }
         else
           {
@@ -471,6 +581,6 @@ namespace gpi_fuse
       }
     };
   } // namespace state
-} // namespace gpi_fuse
+} // namespace gpifs
 
 #endif

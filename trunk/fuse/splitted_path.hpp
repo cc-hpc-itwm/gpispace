@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-namespace gpi_fuse
+namespace gpifs
 {
   namespace state
   {
@@ -97,6 +97,6 @@ namespace gpi_fuse
           << " " << (sp.file ? *sp.file : "-");
     }
   } // namespace state
-} // namespace gpi_fuse
+} // namespace gpifs
 
 #endif

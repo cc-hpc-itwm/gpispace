@@ -12,7 +12,7 @@
 #include <ctime>
 #endif
 
-namespace gpi_fuse
+namespace gpifs
 {
   namespace comm
   {
@@ -33,7 +33,8 @@ namespace gpi_fuse
 
 #ifndef COMM_TEST
       void list_segments (segment::id_list_t *) const
-      {}
+      {
+      }
       void list_allocs ( const segment::id_t &
                        , alloc::list_t *
                        ) const
@@ -63,27 +64,27 @@ namespace gpi_fuse
         switch (id)
           {
           case 0:
-            list->push_back (alloc::descr_t (0, "vel", (1 << 30), now - 10 * minute, 0));
-            list->push_back (alloc::descr_t (1, "trace", (1 << 20), now - 20 * minute, 0));
-            list->push_back (alloc::descr_t (2, "vol", (1 << 30), now - 1 * hour, 0));
+            list->push_back (alloc::alloc (0, now - 10 * minute, 0, (1 << 30), "vel"));
+            list->push_back (alloc::alloc (1, now - 20 * minute, 0, (1 << 20), "trace"));
+            list->push_back (alloc::alloc (2, now - 1 * hour, 0, (1 << 30), "vol"));
             break;
           case 1:
-            list->push_back (alloc::descr_t (4, "tmp", (23 << 10), now - 5 * minute, 1));
-            list->push_back (alloc::descr_t (7, "scratch", (500 << 20), now - 5 * minute, 1));
-            list->push_back (alloc::descr_t (9, "conn1", (100 << 20), now - 12 * minute, 1));
-            list->push_back (alloc::descr_t (11, "conn2", (100 << 20), now - 13 * minute, 1));
-            list->push_back (alloc::descr_t (17, "out", (500 << 20), now - 4 * hour, 1));
+            list->push_back (alloc::alloc (4, now - 5 * minute, 1, (23 << 10), "tmp"));
+            list->push_back (alloc::alloc (7, now - 5 * minute, 1, (500 << 20), "scratch"));
+            list->push_back (alloc::alloc (9, now - 12 * minute, 1, (100 << 20), "conn1"));
+            list->push_back (alloc::alloc (11, now - 13 * minute, 1, (100 << 20), "conn2"));
+            list->push_back (alloc::alloc (17, now - 4 * hour, 1, (500 << 20), "out"));
             break;
           case 3:
-            list->push_back (alloc::descr_t (301, "in", (110 << 20), now  - 5 * hour, 3));
-            list->push_back (alloc::descr_t (302, "out", (110 << 20), now - 5 * hour, 3));
+            list->push_back (alloc::alloc (301, now  - 5 * hour, 3, (110 << 20), "in"));
+            list->push_back (alloc::alloc (302, now - 5 * hour, 3, (110 << 20), "out"));
             break;
           case 9:
             break;
           case 11:
-            list->push_back (alloc::descr_t (1101, "a", 101, now - 1 * minute, 11));
-            list->push_back (alloc::descr_t (1102, "b", 102, now - 1 * minute, 11));
-            list->push_back (alloc::descr_t (1119, "b", 119, now - 1 * minute, 11));
+            list->push_back (alloc::alloc (1101, now - 1 * minute, 11, (101), "a"));
+            list->push_back (alloc::alloc (1102, now - 1 * minute, 11, (102), "b"));
+            list->push_back (alloc::alloc (1119, now - 1 * minute, 11, (119), "b"));
             break;
           default:
             throw std::runtime_error ("segment unknown");

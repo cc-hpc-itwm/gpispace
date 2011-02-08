@@ -10,8 +10,15 @@
 #include <stdexcept>
 
 #include <id.hpp>
+#include <util.hpp>
 
-namespace gpi_fuse
+#include <boost/optional.hpp>
+#include <cctype>
+
+// remove
+#include <iostream>
+
+namespace gpifs
 {
   namespace segment
   {
@@ -49,7 +56,7 @@ namespace gpi_fuse
       return p;
     }
 
-    static inline std::string string (const id::id_t id)
+    static inline std::string string (const id_t id)
     {
       switch (id)
         {
@@ -67,7 +74,65 @@ namespace gpi_fuse
 
       throw std::runtime_error ("segment::string: STRANGE!");
     }
+
+    template<typename IT>
+    static inline boost::optional<id_t> parse (IT & pos, const IT & end)
+    {
+      if (pos == end)
+        {
+          return boost::optional<id_t> (boost::none);
+        }
+      else
+        {
+          switch (tolower (*pos))
+            {
+            case 'g':
+              ++pos;
+
+              if (util::parse::require_rest ("lobal", pos, end))
+                {
+                  return boost::optional<id_t> (boost::none);
+                }
+              else
+                {
+                  return boost::optional<id_t> (0);
+                }
+              break;
+
+            case 'l':
+              ++pos;
+
+              if (util::parse::require_rest ("ocal", pos, end))
+                {
+                  return boost::optional<id_t> (boost::none);
+                }
+              else
+                {
+                  return boost::optional<id_t> (1);
+                }
+              break;
+
+            case 's':
+              ++pos;
+
+              if (util::parse::require_rest ("hared", pos, end))
+                {
+                  return boost::optional<id_t> (boost::none);
+                }
+              else
+                {
+                  util::parse::skip_space (pos, end);
+
+                  return id::parse (pos, end);
+                }
+              break;
+
+            default:
+              return boost::optional<id_t> (boost::none);
+            }
+        }
+    }
   } // namespace segment
-} // namespace gpi_fuse
+} // namespace gpifs
 
 #endif

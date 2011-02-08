@@ -9,10 +9,11 @@
 
 #include <id.hpp>
 #include <segment.hpp>
+#include <util.hpp>
 
 #include <ctime>
 
-namespace gpi_fuse
+namespace gpifs
 {
   namespace alloc
   {
@@ -20,40 +21,89 @@ namespace gpi_fuse
     typedef std::string name_t;
     typedef std::size_t size_t;
 
-    class descr_t
+    class descr
     {
     public:
-      descr_t () : _id (), _name (), _size (), _ctime (), _segment () {}
-      descr_t ( const id_t & id
-              , const name_t & name
-              , const size_t & size
-              , const time_t & ctime
-              , const segment::id_t & segment
-              )
-        : _id (id)
-        , _name (name)
+      descr () : _segment (), _size (), _name () {}
+      descr ( const segment::id_t & segment
+            , const size_t & size
+            , const name_t & name
+            )
+        : _segment (segment)
         , _size (size)
+        , _name (name)
+      {}
+
+      const segment::id_t & segment () const { return _segment; }
+      const size_t & size () const { return _size; }
+      const name_t & name () const { return _name; }
+
+    private:
+      segment::id_t _segment;
+      size_t _size;
+      name_t _name;
+    };
+
+    class alloc
+    {
+    public:
+      alloc () : _id (), _ctime (), _descr () {}
+      alloc ( const id_t & id
+            , const time_t & ctime
+            , const segment::id_t & segment
+            , const size_t & size
+            , const name_t & name
+            )
+        : _id (id)
         , _ctime (ctime)
-        , _segment (segment)
+        , _descr (segment, size, name)
       {}
 
       const id_t & id () const { return _id; }
-      const name_t & name () const { return _name; }
-      const size_t & size () const { return _size; }
       const time_t & ctime () const { return _ctime; }
-      const segment::id_t & segment () const { return _segment; }
+      const segment::id_t & segment () const { return _descr.segment(); }
+      const size_t & size () const { return _descr.size(); }
+      const name_t & name () const { return _descr.name(); }
 
     private:
       id_t _id;
-      name_t _name;
-      size_t _size;
       time_t _ctime;
-      segment::id_t _segment;
+      descr _descr;
     };
 
-    typedef std::list<descr_t> list_t;
+    typedef std::list<alloc> list_t;
     typedef boost::unordered_set<id_t> id_set_t;
+
+    template<typename IT>
+    static inline boost::optional<descr> parse (IT & pos, const IT & end)
+    {
+      const boost::optional<segment::id_t> segment (segment::parse (pos, end));
+
+      if (segment)
+        {
+          util::parse::skip_space (pos, end);
+
+          const boost::optional<size_t> size (id::parse (pos, end));
+
+          if (size)
+            {
+              util::parse::skip_space (pos, end);
+
+              std::string name;
+
+              while (pos != end && !isspace (*pos))
+                {
+                  name.push_back (*pos);
+                  ++pos;
+                }
+
+              return boost::optional<descr> (descr (*segment, *size, name));
+            }
+        }
+
+      return boost::optional<descr> (boost::none);
+    }
   } // namespace alloc
-} // namespace gpi_fuse
+} // namespace gpifs
 
 #endif

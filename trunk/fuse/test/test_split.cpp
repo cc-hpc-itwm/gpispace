@@ -10,7 +10,7 @@
 
 // ************************************************************************* //
 
-typedef gpi_fuse::state::splitted_path sp_t;
+typedef gpifs::state::splitted_path sp_t;
 
 struct test_t
 {
@@ -28,7 +28,7 @@ typedef std::list<test_t> test_list;
 int
 main (int argc, char **argv)
 {
-  gpi_fuse::state::state state;
+  gpifs::state::state state;
 
   state.init();
 
@@ -78,7 +78,7 @@ main (int argc, char **argv)
        ; ++t
        )
     {
-      gpi_fuse::state::splitted_path sp (state.split (t->path));
+      gpifs::state::splitted_path sp (state.split (t->path));
 
       std::cout << t->path << ":";
       std::cout << (state.is_file(sp) ? " FILE:" : "");

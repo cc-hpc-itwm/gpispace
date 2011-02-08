@@ -8,47 +8,56 @@
 
 #include <boost/unordered_set.hpp>
 
-namespace gpi_fuse
+namespace gpifs
 {
   namespace file
   {
-    static inline std::string data ()
+    namespace name
     {
-      static const std::string d ("data");
+      namespace handle
+      {
+        static inline std::string data ()
+        {
+          static const std::string d ("data");
 
-      return d;
-    }
-    static inline std::string type ()
-    {
-      static const std::string t ("type");
+          return d;
+        }
+        static inline std::string type ()
+        {
+          static const std::string t ("type");
 
-      return t;
-    }
-    static inline std::string name ()
-    {
-      static const std::string n ("name");
+          return t;
+        }
+        static inline std::string name ()
+        {
+          static const std::string n ("name");
 
-      return n;
-    }
+          return n;
+        }
+      } // namespace handle
 
-    static inline std::string alloc  ()
-    {
-      static const std::string a ("alloc");
+      namespace proc
+      {
+        static inline std::string alloc  ()
+        {
+          static const std::string a ("alloc");
 
-      return a;
-    }
-    static inline std::string free ()
-    {
-      static const std::string f ("free");
+          return a;
+        }
+        static inline std::string free ()
+        {
+          static const std::string f ("free");
 
-      return f;
-    }
-    static inline std::string refresh ()
-    {
-      static const std::string f ("refresh");
+          return f;
+        }
+        static inline std::string refresh ()
+        {
+          static const std::string f ("refresh");
 
-      return f;
-    }
+          return f;
+        }
+      } // namespace proc
+    } // namespace name
 
     // ********************************************************************* //
 
@@ -80,9 +89,9 @@ namespace gpi_fuse
       public:
         handle () : valid ()
         {
-          _set.insert (data());
-          _set.insert (type());
-          _set.insert (name());
+          _set.insert (name::handle::data());
+          _set.insert (name::handle::type());
+          _set.insert (name::handle::name());
         }
       };
       class proc : public valid
@@ -90,9 +99,9 @@ namespace gpi_fuse
       public:
         proc () : valid ()
         {
-          _set.insert (alloc());
-          _set.insert (free());
-          _set.insert (refresh());
+          _set.insert (name::proc::alloc());
+          _set.insert (name::proc::free());
+          _set.insert (name::proc::refresh());
         }
       };
 

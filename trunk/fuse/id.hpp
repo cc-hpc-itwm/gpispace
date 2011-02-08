@@ -5,7 +5,9 @@
 
 #include <string>
 
-namespace gpi_fuse
+#include <boost/optional.hpp>
+
+namespace gpifs
 {
   namespace id
   {
@@ -58,12 +60,15 @@ namespace gpi_fuse
     }
 
     template<typename IT>
-    static inline id_t parse (IT & pos, const IT & end)
+    static inline boost::optional<id_t> parse (IT & pos, const IT & end)
     {
-      id_t id (0);
-
-      if (pos != end && isdigit (*pos))
+      if (pos == end || !isdigit (*pos))
         {
+          return boost::optional<id_t> (boost::none);
+        }
+      else
+        {
+          id_t id (0);
           bool zero (false);
 
           while (pos != end && *pos == '0')
@@ -73,7 +78,7 @@ namespace gpi_fuse
 
           if (pos != end)
             {
-              if (zero && (*pos == 'x' || *pos == 'X'))
+              if (zero && tolower (*pos) == 'x')
                 {
                   ++pos; detail::generic_parse<detail::hex> (pos, end, id);
                 }
@@ -82,11 +87,11 @@ namespace gpi_fuse
                   detail::generic_parse<detail::dec> (pos, end, id);
                 }
             }
-        }
 
-      return id;
+          return boost::optional<id_t> (id);
+        }
     }
   } // namespace id
-} // namespace gpi_fuse
+} // namespace gpifs
 
 #endif

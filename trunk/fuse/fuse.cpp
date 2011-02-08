@@ -10,28 +10,29 @@
 #include <file.hpp>
 #include <segment.hpp>
 
-#include <log.h>
+#include <log.hpp>
 
 #include <algorithm>
 #include <iterator>
 
 #include <cstring> // memset
-#include <errno.h> // ENOENT
+#include <errno.h>
 
 // ************************************************************************* //
 
-static gpi_fuse::state::state state;
+static const gpifs::state::buffer::slot_t num_slots (256);
+static const gpifs::state::buffer::size_t size_per_slot (256);
+
+static gpifs::state::state state (num_slots, size_per_slot);
 
 // ************************************************************************* //
 
 extern "C" int
-gpifs_getattr ( const char * path
-              , struct stat * stbuf
-              )
+gpifs_getattr (const char * path, struct stat * stbuf)
 {
   LOG ("getattr " << path);
 
-  gpi_fuse::state::splitted_path sp (state.split (path));
+  gpifs::state::splitted_path sp (state.split (path));
 
   int res (0);
 
@@ -47,7 +48,7 @@ gpifs_getattr ( const char * path
 
       if (sp.handle)
         {
-          stbuf->st_size = gpi_fuse::file::num::handle();
+          stbuf->st_size = gpifs::file::num::handle();
 
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
             = state.get_ctime (*sp.handle);
@@ -58,13 +59,13 @@ gpifs_getattr ( const char * path
             {
               stbuf->st_size = state.size_segment (*sp.segment_id);
             }
-          else if (sp.segment == gpi_fuse::segment::shared())
+          else if (sp.segment == gpifs::segment::shared())
             {
               stbuf->st_size = state.size_segment_shared ();
             }
-          else if (sp.segment == gpi_fuse::segment::proc())
+          else if (sp.segment == gpifs::segment::proc())
             {
-              stbuf->st_size = gpi_fuse::file::num::proc();
+              stbuf->st_size = gpifs::file::num::proc();
             }
 
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
@@ -75,29 +76,29 @@ gpifs_getattr ( const char * path
     {
       stbuf->st_nlink = 1;
 
-      if (gpi_fuse::file::is_valid::proc (*sp.file))
+      if (gpifs::file::is_valid::proc (*sp.file))
         {
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
             = state.time_refresh();
 
           stbuf->st_mode = S_IFREG | 0200;
         }
-      else if (gpi_fuse::file::is_valid::handle (*sp.file))
+      else if (gpifs::file::is_valid::handle (*sp.file))
         {
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
             = state.get_ctime (*sp.handle);
 
-          if (sp.file == gpi_fuse::file::type() && sp.handle)
+          if (sp.file == gpifs::file::name::handle::type() && sp.handle)
             {
               stbuf->st_mode = S_IFREG | 0400;
               stbuf->st_size = state.get_segment_string (*sp.handle).size();
             }
-          else if (sp.file == gpi_fuse::file::name() && sp.handle)
+          else if (sp.file == gpifs::file::name::handle::name() && sp.handle)
             {
               stbuf->st_mode = S_IFREG | 0400;
               stbuf->st_size = state.get_name (*sp.handle).size();
             }
-          else if (sp.file == gpi_fuse::file::data() && sp.handle)
+          else if (sp.file == gpifs::file::name::handle::data() && sp.handle)
             {
               stbuf->st_mode = S_IFREG | 0600;
               stbuf->st_size = state.get_size (*sp.handle);
@@ -128,7 +129,7 @@ gpifs_readdir ( const char * path
 {
   LOG ("readdir " << path);
 
-  gpi_fuse::state::splitted_path sp (state.split (path));
+  gpifs::state::splitted_path sp (state.split (path));
 
   int res (0);
 
@@ -154,43 +155,52 @@ gpifs_open (const char * path, struct fuse_file_info * fi)
 {
   LOG ("open " << path << ", flags " << (fi->flags & O_ACCMODE));
 
-  gpi_fuse::state::splitted_path sp (state.split (path));
+  gpifs::state::splitted_path sp (state.split (path));
 
   int res (0);
 
   if (state.is_file (sp))
     {
-      fi->direct_io = 1;
-
-      if (gpi_fuse::file::is_valid::proc (*sp.file))
+      if (gpifs::file::is_valid::proc (*sp.file))
         {
           if ((fi->flags & O_ACCMODE) != O_WRONLY)
             {
               res = -EACCES;
             }
+          else if (  (sp.file == gpifs::file::name::proc::alloc())
+                  || (sp.file == gpifs::file::name::proc::free())
+                  )
+            {
+              if (!state.slot_avail())
+                {
+                  LOG ("cannot open: no more filehandles available");
+
+                  res = -EAGAIN;
+                }
+              else
+                {
+                  LOG ("aquire slot");
+
+                  fi->fh = state.slot_pop();
+
+                  LOG ("got slot " << fi->fh);
+                }
+            }
         }
-      else if (gpi_fuse::file::is_valid::handle (*sp.file))
+      else if (gpifs::file::is_valid::handle (*sp.file))
         {
-          if (sp.file == gpi_fuse::file::type())
+          if (  (sp.file == gpifs::file::name::handle::type())
+             || (sp.file == gpifs::file::name::handle::name())
+             )
             {
               if ((fi->flags & O_ACCMODE) != O_RDONLY)
                 {
                   res = -EACCES;
                 }
             }
-          else if (sp.file == gpi_fuse::file::name())
+          else if (sp.file == gpifs::file::name::handle::data())
             {
-              if ((fi->flags & O_ACCMODE) != O_RDONLY)
-                {
-                  res = -EACCES;
-                }
-            }
-          else if (sp.file == gpi_fuse::file::data())
-            {
-            }
-          else
-            {
-              res = -ENOENT;
+              fi->direct_io = 1;
             }
         }
       else
@@ -218,10 +228,7 @@ static size_t copy_string ( const std::string & str
     {
       size = std::min (size, str.size() - offset);
 
-      std::copy ( str.begin() + offset
-                , str.begin() + offset + size
-                , buf
-                );
+      std::copy (str.begin(), str.begin() + size, buf + offset);
     }
   else
     {
@@ -241,11 +248,11 @@ gpifs_read ( const char *path
 {
   LOG ("read " << path << ", size " << size << ", offset " << offset)
 
-  gpi_fuse::state::splitted_path sp (state.split (path));
+  gpifs::state::splitted_path sp (state.split (path));
 
   if (state.is_file (sp))
     {
-      if (sp.file == gpi_fuse::file::type() && sp.handle)
+      if (sp.file == gpifs::file::name::handle::type() && sp.handle)
         {
           size = copy_string ( state.get_segment_string (*sp.handle)
                              , buf
@@ -253,7 +260,7 @@ gpifs_read ( const char *path
                              , offset
                              );
         }
-      else if (sp.file == gpi_fuse::file::name() && sp.handle)
+      else if (sp.file == gpifs::file::name::handle::name() && sp.handle)
         {
           size = copy_string ( state.get_name (*sp.handle)
                              , buf
@@ -261,7 +268,7 @@ gpifs_read ( const char *path
                              , offset
                              );
         }
-      else if (sp.file == gpi_fuse::file::data() && sp.handle)
+      else if (sp.file == gpifs::file::name::handle::data() && sp.handle)
         {
           // do the read here, receive data in buf
           size = 0;
@@ -290,12 +297,12 @@ gpifs_write ( const char * path
             , const char * buf
             , size_t size
             , off_t offset
-            , struct fuse_file_info *
+            , struct fuse_file_info * fi
             )
 {
   LOG ("write " << path << ", size " << size << ", offset " << offset);
 
-  gpi_fuse::state::splitted_path sp (state.split (path));
+  gpifs::state::splitted_path sp (state.split (path));
 
   if (state.is_directory (sp))
     {
@@ -303,24 +310,18 @@ gpifs_write ( const char * path
     }
   else if (state.is_file (sp))
     {
-      if (gpi_fuse::file::is_valid::proc (*sp.file))
+      if (gpifs::file::is_valid::proc (*sp.file))
         {
-          if (sp.file == gpi_fuse::file::alloc())
+          if (  (sp.file == gpifs::file::name::proc::alloc())
+             || (sp.file == gpifs::file::name::proc::free())
+             )
             {
-              LOG ("ALLOC");
-            }
-          else if (sp.file == gpi_fuse::file::free())
-            {
-              gpi_fuse::alloc::id_t id (gpi_fuse::id::parse (buf, buf + size));
-
-              LOG ("FREE " << id);
-
-              state.free (id);
+              state.slot_write (fi->fh, buf, size, offset);
             }
         }
-      else if (gpi_fuse::file::is_valid::handle (*sp.file))
+      else if (gpifs::file::is_valid::handle (*sp.file))
         {
-          if (sp.file == gpi_fuse::file::data() && sp.handle)
+          if (sp.file == gpifs::file::name::handle::data() && sp.handle)
             {
               LOG ("write " << size << " bytes "
                   << " into " << path << ":" << offset
@@ -345,21 +346,71 @@ gpifs_write ( const char * path
 
 // ************************************************************************* //
 
-extern "C" int gpifs_release (const char * path, struct fuse_file_info *)
+extern "C" int
+gpifs_release (const char * path, struct fuse_file_info * fi)
 {
   LOG ("release " << path);
 
-  gpi_fuse::state::splitted_path sp (state.split (path));
+  gpifs::state::splitted_path sp (state.split (path));
 
   if (state.is_file (sp))
     {
-      if (gpi_fuse::file::is_valid::proc (*sp.file))
+      if (gpifs::file::is_valid::proc (*sp.file))
         {
-          if (sp.file == gpi_fuse::file::refresh())
+          if (sp.file == gpifs::file::name::proc::refresh())
             {
               LOG ("REFRESH");
 
               state.refresh();
+            }
+          else if (sp.file == gpifs::file::name::proc::alloc())
+            {
+              char * pos (state.slot_begin (fi->fh));
+
+              const boost::optional<gpifs::alloc::descr> descr
+                ( gpifs::alloc::parse ( pos
+                                      , state.slot_end (fi->fh)
+                                      )
+                );
+              const std::string rest (pos, state.slot_end (fi->fh));
+
+              if (descr)
+                {
+                  LOG ("ALLOC: descr " << (*descr).segment()
+                      << "/" << (*descr).size()
+                      << "/" << (*descr).name()
+                      << ", rest |" << rest << "|");
+                }
+              else
+                {
+                  LOG ("ALLOC: could not parse descr"  << ", rest |" << rest << "|");
+                }
+
+              state.slot_push (fi->fh);
+            }
+          else if (sp.file == gpifs::file::name::proc::free())
+            {
+              char * pos (state.slot_begin (fi->fh));
+
+              const boost::optional<gpifs::alloc::id_t> id
+                ( gpifs::id::parse ( pos
+                                   , state.slot_end (fi->fh)
+                                   )
+                );
+              const std::string rest (pos, state.slot_end(fi->fh));
+
+              if (id)
+                {
+                  state.free (*id);
+
+                  LOG ("FREE: id " << *id << ", rest |" << rest << "|");
+                }
+              else
+                {
+                  LOG ("FREE: could not parse an id, rest |" << rest << "|");
+                }
+
+              state.slot_push (fi->fh);
             }
         }
     }
@@ -369,7 +420,8 @@ extern "C" int gpifs_release (const char * path, struct fuse_file_info *)
 
 // ************************************************************************* //
 
-extern "C" int gpifs_utimens (const char * path, const struct timespec *)
+extern "C" int
+gpifs_utimens (const char * path, const struct timespec *)
 {
   LOG ("utimens " << path);
 
@@ -378,7 +430,8 @@ extern "C" int gpifs_utimens (const char * path, const struct timespec *)
 
 // ************************************************************************* //
 
-extern "C" int gpifs_truncate (const char * path, off_t offset)
+extern "C" int
+gpifs_truncate (const char * path, off_t offset)
 {
   LOG ("truncate " << path << " to " << offset);
 
