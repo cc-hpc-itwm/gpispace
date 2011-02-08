@@ -39,10 +39,8 @@ namespace sdpa { namespace fsm { namespace smc {
 				    const sdpa::job_id_t &parent = sdpa::job_id_t::invalid_job_id())
 			: JobImpl(id, desc, pHandler, parent), m_fsmContext(*this)
 			{
-                          DLOG(TRACE, "Job state machine created: " << id);
+				DLOG(TRACE, "Job state machine created: " << id);
 			}
-
-
 
             virtual ~JobFSM() { DLOG(TRACE, "Job state machine destroyed: " << id()); }
 
