@@ -50,6 +50,7 @@ namespace sdpa { namespace daemon {
         virtual const sdpa::job_result_t& result() const { return result_; }
 
         virtual void set_icomm(IComm* pArgComm) { pComm = pArgComm; }
+        virtual IComm* icomm() { return pComm; }
 
         //virtual sdpa::worker_id_t& worker() { return worker_id_;}
 
@@ -67,7 +68,7 @@ namespace sdpa { namespace daemon {
 		virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&);
 		virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&);
 		virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
-		virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&);
+		//virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&);
 		virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
 		virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
 		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
