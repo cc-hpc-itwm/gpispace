@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  IWorkflowEngine.hpp
+ *       Filename:  IAgent.hpp
  *
  *    Description:  Redefines the interface to gwes
  *
