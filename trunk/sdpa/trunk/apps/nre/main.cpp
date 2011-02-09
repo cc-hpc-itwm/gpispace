@@ -13,7 +13,7 @@
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <seda/StageRegistry.hpp>
-#include <we/mgmt/layer.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;

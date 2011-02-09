@@ -12,7 +12,7 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
-#include <we/mgmt/layer.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;

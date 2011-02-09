@@ -12,7 +12,7 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <we/mgmt/layer.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 typedef void WorkflowEngineType;
 
