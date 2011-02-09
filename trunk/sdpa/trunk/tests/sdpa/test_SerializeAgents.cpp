@@ -30,7 +30,10 @@
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
-#include <tests/sdpa/DummyWorkflowEngine.hpp>
+
+#include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
@@ -131,7 +134,6 @@ struct MyFixture
 
 BOOST_AUTO_TEST_SUITE( test_SerializeAgents );
 
-/*
 BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 {
 	std::cout<<std::endl<<"----------------Begin  testDummyWorkflowEngineSerialization----------------"<<std::endl;
@@ -339,7 +341,7 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			const we::preference_t job_pref;
+			const preference_t job_pref;
 			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
@@ -450,7 +452,7 @@ BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			const we::preference_t job_pref;
+			const preference_t job_pref;
 			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
@@ -565,7 +567,7 @@ BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			const we::preference_t job_pref;
+			const preference_t job_pref;
 			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
@@ -668,7 +670,7 @@ BOOST_AUTO_TEST_CASE(testDaemonSerialization)
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			const we::preference_t job_pref;
+			const preference_t job_pref;
 			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{
@@ -715,7 +717,6 @@ BOOST_AUTO_TEST_CASE(testDaemonSerialization)
 		return;
 	}
 }
-*/
 
 BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
 {
@@ -745,7 +746,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
 			ossJobId<<"Job_"<<k*nWorkers + l + nSchedQSize;
 			sdpa::job_id_t jobId(ossJobId.str());
 
-			const we::preference_t job_pref;
+			const preference_t job_pref;
 			pScheduler->schedule_to(jobId, k, job_pref);
 			if(l>=1)
 			{

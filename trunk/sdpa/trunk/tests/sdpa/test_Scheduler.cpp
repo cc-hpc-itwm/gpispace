@@ -28,8 +28,10 @@
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
+#include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 using namespace std;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -196,7 +198,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 		// specify some preferences for this job
 		// job i prefers (i%NWORKERS + NWORKERS -1 )%NWORKERS, i%NWORKERS, (i%NWORKERS + 1)%NWORKERS,
 		// mandatory
-		we::preference_t job_pref(true);
+		preference_t job_pref(true);
 		job_pref.want( (i%NWORKERS + NWORKERS -1 )%NWORKERS );
 		job_pref.want( i%NWORKERS );
 		job_pref.want( (i%NWORKERS + 1)%NWORKERS );

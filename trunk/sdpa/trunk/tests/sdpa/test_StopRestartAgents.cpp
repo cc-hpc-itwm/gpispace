@@ -28,9 +28,7 @@
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
-
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
-#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
@@ -47,8 +45,9 @@
 #include <boost/filesystem/path.hpp>
 #include <sys/wait.h>
 
-#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
-#include <we/mgmt/layer.hpp>
+#include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 using namespace sdpa::tests;
 using namespace sdpa::daemon;

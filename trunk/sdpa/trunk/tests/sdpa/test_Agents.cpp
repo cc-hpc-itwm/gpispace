@@ -47,10 +47,9 @@
 #include <boost/filesystem/path.hpp>
 #include <sys/wait.h>
 
-#include <tests/sdpa/DummyWorkflowEngine.hpp>
-#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
-#include <we/mgmt/basic_layer.hpp>
-#include <we/mgmt/layer.hpp>
+#include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 const int NMAXTRIALS=5;
 
@@ -60,8 +59,6 @@ using namespace std;
 using namespace sdpa::tests;
 
 #define NO_GUI ""
-
-typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }

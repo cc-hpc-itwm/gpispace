@@ -39,7 +39,6 @@
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
-#include <tests/sdpa/DummyWorkflowEngine.hpp>
 
 #include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
@@ -47,8 +46,9 @@
 #include <boost/filesystem/path.hpp>
 #include <sys/wait.h>
 
-#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
-#include <we/mgmt/layer.hpp>
+#include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
 
 const int NMAXTRIALS=3;
 

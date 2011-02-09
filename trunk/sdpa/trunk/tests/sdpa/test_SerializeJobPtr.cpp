@@ -127,7 +127,6 @@ BOOST_FIXTURE_TEST_SUITE( test_SerializeJobPtr, MyFixture )
 BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::unit_test::Job )
 BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::Job )
 
-/*
 BOOST_AUTO_TEST_CASE(testSerializeJobPtr )
 {
 	std::cout<<"Testing the serialization of a normal job pointer ..."<<std::endl;
@@ -354,7 +353,6 @@ BOOST_AUTO_TEST_CASE( testSerializeJobFSMShPtr )
 
 	std::cout<<"The restored values from the archive follow:\n\n"<<p2->print_info()<<endl;
 }
-*/
 
 BOOST_SERIALIZATION_SHARED_PTR(sdpa::daemon::JobManager)
 
