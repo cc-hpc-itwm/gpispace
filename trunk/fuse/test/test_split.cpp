@@ -8,6 +8,8 @@
 #include <state.hpp>
 #include <splitted_path.hpp>
 
+#include <boost/optional.hpp>
+
 // ************************************************************************* //
 
 typedef gpifs::state::splitted_path sp_t;
@@ -15,7 +17,12 @@ typedef gpifs::state::splitted_path sp_t;
 struct test_t
 {
   const std::string path;
-  const sp_t sp;
+  const boost::optional<sp_t> sp;
+
+  test_t (const std::string & _path)
+    : path (_path)
+    , sp (boost::optional<sp_t> (boost::none))
+  {}
 
   test_t (const std::string & _path, const sp_t & _sp)
     : path (_path)
@@ -40,54 +47,82 @@ main (int argc, char **argv)
   tests.push_back (test_t ("/shared", sp_t ("shared")));
   tests.push_back (test_t ("/shared/3", sp_t ("shared/3")));
   tests.push_back (test_t ("/shared/9", sp_t ("shared/9")));
-  tests.push_back (test_t ("/shared/0", sp_t ("shared/0")));
-  tests.push_back (test_t ("/shared/1", sp_t ("shared/1")));
-  tests.push_back (test_t ("/shared/7", sp_t ()));
-  tests.push_back (test_t ("/global/0", sp_t ("global", 0)));
-  tests.push_back (test_t ("/global/4", sp_t()));
-  tests.push_back (test_t ("/local/0", sp_t()));
-  tests.push_back (test_t ("/local/4", sp_t ("local", 4)));
-  tests.push_back (test_t ("/shared/3/301", sp_t ("shared/3", 301)));
-  tests.push_back (test_t ("/shared/3/302", sp_t ("shared/3", 302)));
-  tests.push_back (test_t ("/shared/3/303", sp_t ()));
+  tests.push_back (test_t ("/shared/0"));
+  tests.push_back (test_t ("/shared/1"));
+  tests.push_back (test_t ("/shared/7"));
+  tests.push_back (test_t ("/global/0", sp_t ("global", 0, 0)));
+  tests.push_back (test_t ("/global/4"));
+  tests.push_back (test_t ("/local/0"));
+  tests.push_back (test_t ("/local/4", sp_t ("local", 1, 4)));
+  tests.push_back (test_t ("/shared/3/301", sp_t ("shared/3", 3, 301)));
+  tests.push_back (test_t ("/shared/3/302", sp_t ("shared/3", 3, 302)));
+  tests.push_back (test_t ("/shared/3/303"));
   tests.push_back (test_t ("/0", sp_t (0)));
   tests.push_back (test_t ("/1", sp_t (1)));
-  tests.push_back (test_t ("/5", sp_t ()));
+  tests.push_back (test_t ("/5"));
+  tests.push_back (test_t ("/proc/alloc", sp_t ("proc","alloc")));
+  tests.push_back (test_t ("/proc/data"));
 
-  tests.push_back (test_t ("/global/data", sp_t()));
-  tests.push_back (test_t ("/local/data", sp_t()));
-  tests.push_back (test_t ("/shared/data", sp_t()));
-  tests.push_back (test_t ("/shared/3/data", sp_t()));
-  tests.push_back (test_t ("/shared/9/data", sp_t()));
-  tests.push_back (test_t ("/shared/0/data", sp_t()));
-  tests.push_back (test_t ("/shared/1/data", sp_t()));
-  tests.push_back (test_t ("/shared/7/data", sp_t()));
-  tests.push_back (test_t ("/global/0/data", sp_t("global", 0, "data")));
-  tests.push_back (test_t ("/global/4/data", sp_t()));
-  tests.push_back (test_t ("/local/0/data", sp_t()));
-  tests.push_back (test_t ("/local/4/data", sp_t("local", 4, "data")));
-  tests.push_back (test_t ("/shared/3/301/data", sp_t("shared/3", 301, "data")));
-  tests.push_back (test_t ("/shared/3/302/data", sp_t("shared/3", 302, "data")));
-  tests.push_back (test_t ("/shared/3/303/data", sp_t()));
+  tests.push_back (test_t ("/global/data"));
+  tests.push_back (test_t ("/local/data"));
+  tests.push_back (test_t ("/shared/data"));
+  tests.push_back (test_t ("/shared/3/data"));
+  tests.push_back (test_t ("/shared/9/data"));
+  tests.push_back (test_t ("/shared/0/data"));
+  tests.push_back (test_t ("/shared/1/data"));
+  tests.push_back (test_t ("/shared/7/data"));
+  tests.push_back (test_t ("/global/0/data", sp_t("global", 0, 0, "data")));
+  tests.push_back (test_t ("/global/4/data"));
+  tests.push_back (test_t ("/local/0/data"));
+  tests.push_back (test_t ("/local/4/data", sp_t("local", 1, 4, "data")));
+  tests.push_back (test_t ("/shared/3/301/data", sp_t("shared/3", 3, 301, "data")));
+  tests.push_back (test_t ("/shared/3/302/data", sp_t("shared/3", 3, 302, "data")));
+  tests.push_back (test_t ("/shared/3/303/data"));
   tests.push_back (test_t ("/0/data", sp_t(0, "data")));
   tests.push_back (test_t ("/1/data", sp_t(1, "data")));
-  tests.push_back (test_t ("/5/data", sp_t()));
+  tests.push_back (test_t ("/5/data"));
+
+  tests.push_back (test_t ("/globb"));
+  tests.push_back (test_t ("/globall"));
+  tests.push_back (test_t ("/local/4/da"));
 
   for  ( test_list::const_iterator t (tests.begin())
        ; t != tests.end()
        ; ++t
        )
     {
-      gpifs::state::splitted_path sp (state.split (t->path));
+      std::cout << "*****" << std::endl;
+      std::cout << t->path << ": ";
 
-      std::cout << t->path << ":";
-      std::cout << (state.is_file(sp) ? " FILE:" : "");
-      std::cout << (state.is_directory(sp) ? " DIRECTORY:" : "");
-      std::cout << " " << sp << std::endl;
+      gpifs::state::maybe_splitted_path sp (state.split (t->path));
+
+      if (sp)
+        {
+          std::cout << (state.is_file (*sp) ? "FILE: " : "");
+          std::cout << (state.is_directory (*sp) ? "DIRECTORY: " : "");
+          std::cout << *sp;
+        }
+      else
+        {
+          std::cout << *(state.error_split_get());
+        }
+
+      std::cout << std::endl;
 
       if (!(sp == t->sp))
         {
-          std::cout << "FAILURE: expected was " << t->sp << std::endl;
+          std::cout << "FAILURE: expected was ";
+
+          if (t->sp)
+            {
+              std::cout << *(t->sp);
+            }
+          else
+            {
+              std::cout << "-";
+            }
+
+          std::cout << std::endl;
 
           exit (EXIT_FAILURE);
         }

@@ -10,6 +10,8 @@
 
 #include <util.hpp>
 
+#include <sstream>
+
 namespace gpifs
 {
   namespace file
@@ -34,10 +36,10 @@ namespace gpifs
 
     // ********************************************************************* //
 
+    typedef boost::unordered_set<std::string> valid_set_t;
+
     namespace detail
     {
-      typedef boost::unordered_set<std::string> valid_set_t;
-
       class valid
       {
       public:
@@ -51,6 +53,11 @@ namespace gpifs
         std::size_t num () const
         {
           return _set.size();
+        }
+
+        const valid_set_t & set () const
+        {
+          return _set;
         }
 
       protected:
@@ -79,8 +86,18 @@ namespace gpifs
         }
       };
 
-      static inline handle get_handle () { static handle h; return h; }
-      static inline proc get_proc () { static proc p; return p; }
+      static inline const handle & get_handle ()
+      {
+        static handle h;
+
+        return h;
+      }
+      static inline const proc & get_proc ()
+      {
+        static proc p;
+
+        return p;
+      }
     } // namespace detail
 
     // ********************************************************************* //
@@ -108,6 +125,39 @@ namespace gpifs
         return detail::get_proc().num();
       }
     } // namespace num
+
+    namespace set
+    {
+      static inline const valid_set_t & handle ()
+      {
+        return detail::get_handle().set();
+      }
+      static inline const valid_set_t & proc ()
+      {
+        return detail::get_proc().set();
+      }
+
+      static inline std::string string (const valid_set_t & s)
+      {
+        std::ostringstream err;
+
+        err << "{";
+
+        for (valid_set_t::const_iterator v (s.begin()); v != s.end(); ++v)
+          {
+            if (v != s.begin())
+              {
+                err << ", ";
+              }
+
+            err << "'" << *v << "'";
+          }
+
+        err << "}";
+
+        return err.str();
+      }
+    } // namespace set
   }
 }
 

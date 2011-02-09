@@ -25,36 +25,34 @@ namespace gpifs
       opt_id handle;
       opt_string file;
 
-      splitted_path ()
-        : segment ()
-        , segment_id ()
-        , handle ()
-        , file ()
-      {}
-      splitted_path (const std::string & s)
-        : segment (s)
-        , segment_id ()
-        , handle ()
-        , file ()
-      {}
       splitted_path ( const std::string & s
-                    , const alloc::id_t & h
-                    )
-        : segment (s)
-        , segment_id ()
-        , handle (h)
-        , file ()
-      {}
-      splitted_path ( const std::string & s
+                    , const segment::id_t & sid
                     , const alloc::id_t & h
                     , const std::string & f
                     )
         : segment (s)
-        , segment_id ()
+        , segment_id (sid)
         , handle (h)
         , file (f)
       {}
-      splitted_path (const alloc::id_t & h)
+      splitted_path ( const std::string & s
+                    )
+        : segment (s)
+        , segment_id ()
+        , handle ()
+        , file ()
+      {}
+      splitted_path ( const std::string & s
+                    , const segment::id_t & sid
+                    , const alloc::id_t & h
+                    )
+        : segment (s)
+        , segment_id (sid)
+        , handle (h)
+        , file ()
+      {}
+      splitted_path ( const alloc::id_t & h
+                    )
         : segment ()
         , segment_id ()
         , handle (h)
@@ -68,17 +66,22 @@ namespace gpifs
         , handle (h)
         , file (f)
       {}
-
-      void clear_segment () { segment = opt_string (boost::none); }
-      void clear_handle () { handle = opt_id (boost::none); }
-      void clear_file () { file = opt_string (boost::none); }
-
-      void clear ()
-      {
-        clear_segment();
-        clear_handle();
-        clear_file();
-      }
+      splitted_path ( const std::string & s
+                    , const segment::id_t & sid
+                    )
+        : segment (s)
+        , segment_id (sid)
+        , handle ()
+        , file ()
+      {}
+      splitted_path ( const std::string & s
+                    , const std::string & f
+                    )
+        : segment (s)
+        , segment_id ()
+        , handle ()
+        , file (f)
+      {}
 
       bool operator == (const splitted_path & other) const
       {
@@ -89,10 +92,14 @@ namespace gpifs
       }
     };
 
+    typedef boost::optional<splitted_path> maybe_splitted_path;
+
     std::ostream & operator << (std::ostream & s, const splitted_path sp)
     {
       return
         s << (sp.segment ? *sp.segment : "-")
+          << " "
+          << (sp.segment_id ? boost::lexical_cast<std::string>(*sp.segment_id) : "-")
           << " "
           << (sp.handle ? boost::lexical_cast<std::string>(*sp.handle) : "-")
           << " "

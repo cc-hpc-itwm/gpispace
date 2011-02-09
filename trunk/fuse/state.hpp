@@ -89,6 +89,7 @@ namespace gpifs
         , _buffer ()
         , _error ()
         , _time_error (0)
+        , _error_split ()
       {}
 
       state ( const buffer::slot_t & num_slots
@@ -101,6 +102,7 @@ namespace gpifs
         , _buffer (num_slots, size_per_slot)
         , _error ()
         , _time_error (0)
+        , _error_split ()
       {}
 
       // ******************************************************************* //
@@ -225,7 +227,9 @@ namespace gpifs
               {
                 std::ostringstream err;
 
-                err << "failed to get alloc list for segment " << *segment;
+                err << "failed to get alloc list for segment "
+                    << segment::string (*segment)
+                  ;
 
                 error_set (err.str());
               }
@@ -270,6 +274,11 @@ namespace gpifs
         return _time_error;
       }
 
+      const error_t & error_split_get () const
+      {
+        return _error_split;
+      }
+
       // ******************************************************************* //
 
       std::size_t read ( const alloc::id_t & id
@@ -294,7 +303,7 @@ namespace gpifs
             << " " << size << " bytes"
             );
 
-        return 0;
+        return size;
       }
 
       // ******************************************************************* //
@@ -421,9 +430,14 @@ namespace gpifs
           {
             if (sp.handle)
               {
-                fill (file::name::handle::data(), buf, filler);
-                fill (file::name::handle::type(), buf, filler);
-                fill (file::name::handle::name(), buf, filler);
+                for ( file::valid_set_t::const_iterator
+                        file (file::set::handle().begin())
+                    ; file != file::set::handle().end()
+                    ; ++file
+                    )
+                  {
+                    fill (*file, buf, filler);
+                  }
               }
             else
               {
@@ -493,56 +507,67 @@ namespace gpifs
 
       // ******************************************************************* //
 
-      splitted_path split (const std::string & path) const
+      maybe_splitted_path split (const std::string & path)
       {
-        if (util::starts_with (segment::root(), path))
+        _error_split = error_t (boost::none);
+
+        std::string::const_iterator begin (path.begin());
+
+        util::parse::parser<std::string::const_iterator>
+          parser (begin, path.end());
+
+        if (!util::parse::require ("/", parser))
           {
-            return split (util::strip_prefix (segment::root(), path));
+            return nothing (parser);
           }
         else
           {
-            splitted_path sp;
-
-            if (path.empty())
+            if (parser.end())
               {
-                sp.segment = segment::root();
-              }
-            if (util::starts_with (segment::proc(), path))
-              {
-                sp.segment = segment::proc();
-
-                split_proc (util::strip_prefix (segment::proc(), path), sp);
-              }
-            else if (util::starts_with (segment::global(), path))
-              {
-                sp.segment = segment::global();
-                sp.segment_id = 0;
-
-                split_handle
-                  (util::strip_prefix (segment::global(), path), sp, 0);
-              }
-            else if (util::starts_with (segment::local(), path))
-              {
-                sp.segment = segment::local();
-                sp.segment_id = 1;
-
-                split_handle
-                  (util::strip_prefix (segment::local(), path), sp, 1);
-              }
-            else if (util::starts_with (segment::shared(), path))
-              {
-                sp.segment = segment::shared();
-
-                split_shared
-                  (util::strip_prefix (segment::shared(), path), sp);
+                return maybe_splitted_path (splitted_path (segment::root()));
               }
             else
               {
-                split_handle_direct (path, sp);
-              }
+                switch (tolower (*parser))
+                  {
+                  case 'p': ++parser;
 
-            return sp;
+                    return util::parse::require ("roc", parser)
+                      ? split_proc (parser)
+                      : nothing (parser)
+                      ;
+
+                  case 'g': ++parser;
+
+                    return util::parse::require ("lobal", parser)
+                      ? split_handle (parser, 0)
+                      : nothing (parser)
+                      ;
+
+                  case 'l': ++parser;
+
+                    return util::parse::require ("ocal", parser)
+                      ? split_handle (parser, 1)
+                      : nothing (parser)
+                      ;
+
+                  case 's': ++parser;
+
+                    return util::parse::require ("hared", parser)
+                      ? split_shared (parser)
+                      : nothing (parser)
+                      ;
+
+                  default:
+                    return split_handle
+                      ( parser
+                      , boost::optional<segment::id_t> (boost::none)
+                      );
+                  }
+              }
           }
+
+        return boost::optional<splitted_path> (boost::none);
       }
 
       // ******************************************************************* //
@@ -555,139 +580,212 @@ namespace gpifs
       buffer::state _buffer;
       error_t _error;
       time_t _time_error;
+      error_t _error_split;
 
       // ******************************************************************* //
 
-      bool separator ( std::string::const_iterator & pos
-                     , splitted_path & sp
-                     ) const
+      template<typename IT>
+      maybe_splitted_path nothing (util::parse::parser<IT> parser)
       {
-        bool ret (true);
+        LOG (parser.error_string ("error splitting path"));
 
-        if (*pos != '/')
-          {
-            sp.clear();
+        _error_split = parser.error_string ("error splitting path");
 
-            ret = false;
-          }
-
-        ++pos;
-
-        return ret;
+        return maybe_splitted_path (boost::none);
       }
-      void split_proc ( const std::string & path
-                      , splitted_path & sp
-                      ) const
+      template<typename IT>
+      maybe_splitted_path split_handle
+      ( util::parse::parser<IT> & parser
+      , const boost::optional<segment::id_t> & segment
+      )
       {
-        std::string::const_iterator pos (path.begin());
+        const boost::optional<alloc::id_t> handle (id::parse (parser));
 
-        if (pos != path.end() && separator (pos, sp))
+        if (!handle)
           {
-            sp.file = std::string (pos, path.end());
-
-            if (!file::is_valid::proc (*sp.file))
-              {
-                sp.clear();
-              }
+            return nothing (parser);
           }
-      }
-      void split_handle_direct ( const std::string & path
-                               , splitted_path & sp
-                               ) const
-      {
-        std::string::const_iterator pos (path.begin());
-
-        if (pos != path.end())
+        else if (_allocs.find (*handle) == _allocs.end())
           {
-            util::parse::parser_string parse_state (pos, path.end());
+            std::ostringstream err;
 
-            sp.handle = id::parse (parse_state);
+            err << "allocation id " << *handle << " unknown";
 
-            if (!sp.handle || (_allocs.find (*sp.handle) == _allocs.end()))
-              {
-                sp.clear();
-              }
-            else if (pos != path.end() && separator (pos, sp))
-              {
-                sp.file = std::string (pos, path.end());
+            parser.error_set (err.str());
 
-                if (!file::is_valid::handle (*sp.file))
-                  {
-                    sp.clear();
-                  }
-              }
+            return nothing (parser);
           }
-      }
-      void split_handle ( const std::string & path
-                        , splitted_path & sp
-                        , const segment::id_t segment
-                        ) const
-      {
-        std::string::const_iterator pos (path.begin());
-
-        if (pos != path.end() && separator (pos, sp))
+        else if (segment && _segments.find (*segment) == _segments.end())
           {
-            util::parse::parser_string parse_state (pos, path.end());
+            parser.error_set ("STRANGE! segment unknown!?");
 
-            sp.handle = id::parse (parse_state);
-
-            const segments_t::const_iterator seg (_segments.find (segment));
-
-            if (  (seg == _segments.end())
-               || (  sp.handle
-                  && seg->second.find (*sp.handle) == seg->second.end()
-                  )
-               )
-              {
-                sp.clear();
-              }
-            else if (pos != path.end() && separator (pos, sp))
-              {
-                sp.file = std::string (pos, path.end());
-
-                if (!file::is_valid::handle (*sp.file))
-                  {
-                    sp.clear();
-                  }
-              }
+            return nothing (parser);
           }
-      }
-      void split_shared ( const std::string & path
-                        , splitted_path & sp
-                        ) const
-      {
-        std::string::const_iterator pos (path.begin());
-
-        if (pos != path.end() && separator (pos, sp))
+        else if (  segment
+                && (  _segments.find (*segment)->second.find (*handle)
+                   == _segments.find (*segment)->second.end()
+                   )
+                )
           {
-            util::parse::parser_string parse_state (pos, path.end());
+            std::ostringstream err;
 
-            sp.segment_id = id::parse (parse_state);
+            err << "allocation id " << *handle
+                << " not in segment " << segment::string (*segment)
+              ;
 
-            if (sp.segment_id)
+            parser.error_set (err.str());
+
+            return nothing (parser);
+          }
+        else if (parser.end())
+          {
+            return segment
+              ? maybe_splitted_path (splitted_path ( segment::string (*segment)
+                                                   , *segment
+                                                   , *handle
+                                                   )
+                                    )
+              : maybe_splitted_path (splitted_path (*handle))
+              ;
+          }
+        else if (!util::parse::require ("/", parser))
+          {
+            return nothing (parser);
+          }
+        else
+          {
+            const std::string file (parser.rest());
+
+            if (file::is_valid::handle (file))
               {
-                if (_segments.find (*sp.segment_id) != _segments.end())
-                  {
-                    sp.segment = segment::shared()
-                      + "/"
-                      + boost::lexical_cast<std::string> (*sp.segment_id)
-                      ;
-                  }
-                else
-                  {
-                    sp.clear();
-                  }
-
-                split_handle ( std::string (pos, path.end())
-                             , sp
-                             , *sp.segment_id
-                             );
+                return segment
+                  ? maybe_splitted_path
+                    ( splitted_path ( segment::string (*segment)
+                                    , *segment
+                                    , *handle
+                                    , file
+                                    )
+                    )
+                  : maybe_splitted_path (splitted_path (*handle, file))
+                  ;
               }
             else
               {
-                split_handle_direct ( std::string (pos, path.end())
-                                    , sp
-                                    );
+                parser.error_set ( "expected one of "
+                                 + file::set::string (file::set::handle())
+                                 );
+
+                return nothing (parser);
+              }
+          }
+
+        return nothing (parser);
+      }
+
+      template<typename IT>
+      maybe_splitted_path split_handle ( util::parse::parser<IT> & parser
+                                       , const segment::id_t & segment
+                                       )
+      {
+        const segments_t::const_iterator seg (_segments.find (segment));
+
+        if (seg == _segments.end())
+          {
+            std::ostringstream err;
+
+            err << "unknown segment " << segment::string (segment);
+
+            parser.error_set (err.str());
+
+            return nothing (parser);
+          }
+        else if (parser.end())
+          {
+            return maybe_splitted_path
+              (splitted_path ( segment::string (segment)
+                             , segment
+                             )
+              );
+          }
+        else if (!util::parse::require ("/", parser))
+          {
+            return nothing (parser);
+          }
+        else
+          {
+            return split_handle ( parser
+                                , boost::optional<segment::id_t> (segment)
+                                );
+          }
+      }
+      template<typename IT>
+      maybe_splitted_path split_shared (util::parse::parser<IT> & parser)
+      {
+        if (parser.end())
+          {
+            return maybe_splitted_path (splitted_path (segment::shared()));
+          }
+        else if (!util::parse::require ("/", parser))
+          {
+            return nothing (parser);
+          }
+        else
+          {
+            const boost::optional<segment::id_t> segment (id::parse (parser));
+
+            if (segment)
+              {
+                if (*segment < 2)
+                  {
+                    std::ostringstream err;
+
+                    err << "segment_id " << *segment
+                        << " is not an id of a shared segment";
+
+                    parser.error_set (err.str());
+
+                    return nothing (parser);
+                  }
+                else
+                  {
+                    return split_handle (parser, *segment);
+                  }
+              }
+            else
+              {
+                return nothing (parser);
+              }
+          }
+      }
+      template<typename IT>
+      maybe_splitted_path split_proc (util::parse::parser<IT> & parser)
+      {
+        if (parser.end())
+          {
+            return maybe_splitted_path (splitted_path (segment::proc()));
+          }
+        else if (!util::parse::require ("/", parser))
+          {
+            return nothing (parser);
+          }
+        else
+          {
+            const std::string file (parser.rest());
+
+            if (file::is_valid::proc (file))
+              {
+                return maybe_splitted_path (splitted_path ( segment::proc()
+                                                          , file
+                                                          )
+                                           );
+              }
+            else
+              {
+                parser.error_set ( "expected one of "
+                                 + file::set::string (file::set::proc())
+                                 );
+
+                return nothing (parser);
               }
           }
       }
@@ -709,9 +807,14 @@ namespace gpifs
       {
         if (sp.handle)
           {
-            fill (file::name::handle::data(), buf, filler);
-            fill (file::name::handle::type(), buf, filler);
-            fill (file::name::handle::name(), buf, filler);
+            for ( file::valid_set_t::const_iterator
+                    file (file::set::handle().begin())
+                ; file != file::set::handle().end()
+                ; ++file
+                )
+              {
+                fill (*file, buf, filler);
+              }
           }
         else
           {

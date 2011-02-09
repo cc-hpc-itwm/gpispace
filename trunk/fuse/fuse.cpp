@@ -32,7 +32,14 @@ gpifs_getattr (const char * path, struct stat * stbuf)
 {
   LOG ("getattr " << path);
 
-  const gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::maybe_splitted_path msp (state.split (path));
+
+  if (!msp)
+    {
+      return -ENOENT;
+    }
+
+  const gpifs::state::splitted_path & sp (*msp);
 
   int res (0);
 
@@ -151,7 +158,14 @@ gpifs_readdir ( const char * path
 {
   LOG ("readdir " << path);
 
-  const gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::maybe_splitted_path msp (state.split (path));
+
+  if (!msp)
+    {
+      return -ENOENT;
+    }
+
+  const gpifs::state::splitted_path & sp (*msp);
 
   int res (0);
 
@@ -177,7 +191,14 @@ gpifs_open (const char * path, struct fuse_file_info * fi)
 {
   LOG ("open " << path << ", flags " << (fi->flags & O_ACCMODE));
 
-  const gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::maybe_splitted_path msp (state.split (path));
+
+  if (!msp)
+    {
+      return -ENOENT;
+    }
+
+  const gpifs::state::splitted_path & sp (*msp);
 
   int res (0);
 
@@ -273,7 +294,14 @@ gpifs_read ( const char *path
 {
   LOG ("read " << path << ", size " << size << ", offset " << offset);
 
-  const gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::maybe_splitted_path msp (state.split (path));
+
+  if (!msp)
+    {
+      return -ENOENT;
+    }
+
+  const gpifs::state::splitted_path & sp (*msp);
 
   if (state.is_file (sp))
     {
@@ -344,7 +372,14 @@ gpifs_write ( const char * path
 {
   LOG ("write " << path << ", size " << size << ", offset " << offset);
 
-  const gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::maybe_splitted_path msp (state.split (path));
+
+  if (!msp)
+    {
+      return -ENOENT;
+    }
+
+  const gpifs::state::splitted_path & sp (*msp);
 
   if (state.is_directory (sp))
     {
@@ -392,7 +427,14 @@ gpifs_release (const char * path, struct fuse_file_info * fi)
 {
   LOG ("release " << path);
 
-  const gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::maybe_splitted_path msp (state.split (path));
+
+  if (!msp)
+    {
+      return -ENOENT;
+    }
+
+  const gpifs::state::splitted_path & sp (*msp);
 
   if (state.is_file (sp))
     {
@@ -462,14 +504,75 @@ gpifs_utimens (const char * path, const struct timespec *)
   return 0;
 }
 
-// ************************************************************************* //
-
 extern "C" int
 gpifs_truncate (const char * path, off_t offset)
 {
   LOG ("truncate " << path << " to " << offset);
 
   return 0;
+}
+
+extern "C" int gpifs_mknod (const char * path, mode_t, dev_t)
+{
+  LOG ("mknod " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_mkdir (const char * path, mode_t)
+{
+  LOG ("mkdir " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_unlink (const char * path)
+{
+  LOG("unlink " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_rmdir (const char * path)
+{
+  LOG("rmdir " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_symlink (const char * path, const char *)
+{
+  LOG("symlink " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_rename (const char * path, const char *)
+{
+  LOG("rename " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_link (const char * path, const char *)
+{
+  LOG("link " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_chmod (const char * path, mode_t)
+{
+  LOG("chmod " << path);
+
+  return -EACCES;
+}
+
+extern "C" int gpifs_chown (const char * path, uid_t, gid_t)
+{
+  LOG("chown " << path);
+
+  return -EACCES;
 }
 
 // ************************************************************************* //
@@ -489,6 +592,15 @@ main (int argc, char **argv)
   oper.release = gpifs_release;
   oper.utimens = gpifs_utimens;
   oper.truncate = gpifs_truncate;
+  oper.mknod = gpifs_mknod;
+  oper.mkdir = gpifs_mkdir;
+  oper.unlink = gpifs_unlink;
+  oper.rmdir = gpifs_rmdir;
+  oper.symlink = gpifs_symlink;
+  oper.rename = gpifs_rename;
+  oper.link = gpifs_link;
+  oper.chmod = gpifs_chmod;
+  oper.chown = gpifs_chown;
 
   state.init();
 

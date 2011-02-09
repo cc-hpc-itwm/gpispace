@@ -8,6 +8,7 @@
 #include <boost/optional.hpp>
 
 #include <util.hpp>
+#include <cctype>
 
 namespace gpifs
 {

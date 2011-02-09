@@ -7,7 +7,7 @@
 #include <iostream>
 static std::ostream & logstream ()
 {
-  return std::cout;
+  return std::cerr;
 }
 #define LOG(x) { logstream() << x << std::endl; }
 #else
