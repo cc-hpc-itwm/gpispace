@@ -32,7 +32,7 @@ gpifs_getattr (const char * path, struct stat * stbuf)
 {
   LOG ("getattr " << path);
 
-  gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::splitted_path sp (state.split (path));
 
   int res (0);
 
@@ -83,14 +83,14 @@ gpifs_getattr (const char * path, struct stat * stbuf)
         {
           if (sp.file == gpifs::file::name::proc::error())
             {
-              stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
-                = state.error_time();
-
-              stbuf->st_mode = S_IFREG | 0400;
-
               if (state.error_get())
                 {
                   stbuf->st_size = (*(state.error_get())).size();
+
+                  stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
+                    = state.error_time();
+
+                  stbuf->st_mode = S_IFREG | 0400;
                 }
               else
                 {
@@ -105,22 +105,22 @@ gpifs_getattr (const char * path, struct stat * stbuf)
               stbuf->st_mode = S_IFREG | 0200;
             }
         }
-      else if (gpifs::file::is_valid::handle (*sp.file))
+      else if (gpifs::file::is_valid::handle (*sp.file) && sp.handle)
         {
           stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
             = state.get_ctime (*sp.handle);
 
-          if (sp.file == gpifs::file::name::handle::type() && sp.handle)
+          if (sp.file == gpifs::file::name::handle::type())
             {
               stbuf->st_mode = S_IFREG | 0400;
               stbuf->st_size = state.get_segment_string (*sp.handle).size();
             }
-          else if (sp.file == gpifs::file::name::handle::name() && sp.handle)
+          else if (sp.file == gpifs::file::name::handle::name())
             {
               stbuf->st_mode = S_IFREG | 0400;
               stbuf->st_size = state.get_name (*sp.handle).size();
             }
-          else if (sp.file == gpifs::file::name::handle::data() && sp.handle)
+          else if (sp.file == gpifs::file::name::handle::data())
             {
               stbuf->st_mode = S_IFREG | 0600;
               stbuf->st_size = state.get_size (*sp.handle);
@@ -151,7 +151,7 @@ gpifs_readdir ( const char * path
 {
   LOG ("readdir " << path);
 
-  gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::splitted_path sp (state.split (path));
 
   int res (0);
 
@@ -177,7 +177,7 @@ gpifs_open (const char * path, struct fuse_file_info * fi)
 {
   LOG ("open " << path << ", flags " << (fi->flags & O_ACCMODE));
 
-  gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::splitted_path sp (state.split (path));
 
   int res (0);
 
@@ -271,15 +271,15 @@ gpifs_read ( const char *path
            , struct fuse_file_info *
            )
 {
-  LOG ("read " << path << ", size " << size << ", offset " << offset)
+  LOG ("read " << path << ", size " << size << ", offset " << offset);
 
-  gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::splitted_path sp (state.split (path));
 
   if (state.is_file (sp))
     {
-      if (gpifs::file::is_valid::handle (*sp.file))
+      if (gpifs::file::is_valid::handle (*sp.file) && sp.handle)
         {
-          if (sp.file == gpifs::file::name::handle::type() && sp.handle)
+          if (sp.file == gpifs::file::name::handle::type())
             {
               size = copy_string ( state.get_segment_string (*sp.handle)
                                  , buf
@@ -287,7 +287,7 @@ gpifs_read ( const char *path
                                  , offset
                                  );
             }
-          else if (sp.file == gpifs::file::name::handle::name() && sp.handle)
+          else if (sp.file == gpifs::file::name::handle::name())
             {
               size = copy_string ( state.get_name (*sp.handle)
                                  , buf
@@ -295,7 +295,7 @@ gpifs_read ( const char *path
                                  , offset
                                  );
             }
-          else if (sp.file == gpifs::file::name::handle::data() && sp.handle)
+          else if (sp.file == gpifs::file::name::handle::data())
             {
               size = state.read (*sp.handle, buf, size, offset);
             }
@@ -344,7 +344,7 @@ gpifs_write ( const char * path
 {
   LOG ("write " << path << ", size " << size << ", offset " << offset);
 
-  gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::splitted_path sp (state.split (path));
 
   if (state.is_directory (sp))
     {
@@ -360,6 +360,10 @@ gpifs_write ( const char * path
             {
               state.slot_write (fi->fh, buf, size, offset);
             }
+          else
+            {
+              return -EACCES;
+            }
         }
       else if (gpifs::file::is_valid::handle (*sp.file))
         {
@@ -369,7 +373,7 @@ gpifs_write ( const char * path
             }
           else
             {
-              return -ENOENT;
+              return -EACCES;
             }
         }
     }
@@ -388,7 +392,7 @@ gpifs_release (const char * path, struct fuse_file_info * fi)
 {
   LOG ("release " << path);
 
-  gpifs::state::splitted_path sp (state.split (path));
+  const gpifs::state::splitted_path sp (state.split (path));
 
   if (state.is_file (sp))
     {

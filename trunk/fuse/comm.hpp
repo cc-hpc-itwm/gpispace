@@ -58,6 +58,8 @@ namespace gpifs
 #ifndef COMM_TEST
       int list_segments (segment::id_list_t * list) const
       {
+        LOG ("comm: list_segments");
+
         int res (0);
 
         list->clear();
@@ -66,6 +68,8 @@ namespace gpifs
       }
       int list_allocs (const segment::id_t & id, alloc::list_t * list) const
       {
+        LOG ("comm: list_allocs for segment " << id);
+
         int res (0);
 
         list->clear();
@@ -76,6 +80,8 @@ namespace gpifs
 #else // ifndef COMM_TEST
       int list_segments (segment::id_list_t * list) const
       {
+        LOG ("comm: list_segments");
+
         int res (0);
 
         list->clear();
@@ -91,6 +97,8 @@ namespace gpifs
 
       int list_allocs (const segment::id_t & id, alloc::list_t * list) const
       {
+        LOG ("comm: list_allocs");
+
         int res (0);
 
         const time_t minute (60);

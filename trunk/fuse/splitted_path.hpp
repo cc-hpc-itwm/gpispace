@@ -93,8 +93,10 @@ namespace gpifs
     {
       return
         s << (sp.segment ? *sp.segment : "-")
-          << " " << (sp.handle ? boost::lexical_cast<std::string>(*sp.handle): "-")
-          << " " << (sp.file ? *sp.file : "-");
+          << " "
+          << (sp.handle ? boost::lexical_cast<std::string>(*sp.handle) : "-")
+          << " "
+          << (sp.file ? *sp.file : "-");
     }
   } // namespace state
 } // namespace gpifs

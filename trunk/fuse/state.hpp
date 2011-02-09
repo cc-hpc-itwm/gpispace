@@ -231,8 +231,8 @@ namespace gpifs
               }
 
             for ( alloc::list_t::const_iterator alloc (allocs.begin())
-                    ; alloc != allocs.end()
-                    ; ++alloc
+                ; alloc != allocs.end()
+                ; ++alloc
                 )
               {
                 _segments[*segment].insert (alloc->id());
@@ -244,7 +244,6 @@ namespace gpifs
 
         return res;
       }
-
       const time_t & time_refresh () const
       {
         return _time_refresh;
@@ -486,7 +485,7 @@ namespace gpifs
                   }
               }
           }
-        else
+        else if (sp.segment_id)
           {
             fill_from_segment (sp, *sp.segment_id, buf, filler);
           }
