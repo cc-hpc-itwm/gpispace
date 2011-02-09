@@ -19,7 +19,7 @@
 #define SDPA_AGGREGATOR_FACTORY_HPP 1
 
 #include <sdpa/daemon/aggregator/Aggregator.hpp>
-#include <sdpa/daemon/EmptyWorkflowEngine.hpp>
+
 
 #include <seda/Stage.hpp>
 #include <seda/StageRegistry.hpp>

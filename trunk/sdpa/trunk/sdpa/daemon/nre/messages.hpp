@@ -23,7 +23,7 @@
 #include <ostream>
 #include <string>
 #include <fhglog/fhglog.hpp>
-#include <sdpa/daemon/IWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/daemon/nre/ExecutionContext.hpp>
 #include <sdpa/memory.hpp>
 

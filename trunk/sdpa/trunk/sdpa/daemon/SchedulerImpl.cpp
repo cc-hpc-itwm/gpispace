@@ -274,7 +274,7 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
  * return true only if scheduling the job jobid on the worker with the rank 'rank' succeeded
  */
 // test if the specified rank is valid
-bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref  )
+bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const preference_t& job_pref  )
 {
 	// attention! rank might not be of one of the preferred nodes when the preferences are not mandatory!
 	SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to rank "<<rank);
@@ -304,10 +304,10 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 		pWorker->dispatch(jobId);
 		ptr_worker_man_->make_owner(jobId, worker_id);
 
-		const we::preference_t::rank_list_type& list_ranks = job_pref.ranks();
+		const preference_t::rank_list_type& list_ranks = job_pref.ranks();
 
 		int k=0;
-		for( we::preference_t::rank_list_type::const_iterator it = list_ranks.begin(); it != list_ranks.end(); it++ )
+		for( preference_t::rank_list_type::const_iterator it = list_ranks.begin(); it != list_ranks.end(); it++ )
 			if( ptr_worker_man_->worker(*it) != worker_id )
 			{
 				Worker::pref_deg_t pref_deg = k++;
@@ -357,7 +357,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 
 		try
 		{
-			const we::preference_t& job_pref = ptr_comm_handler_->getJobPreferences(jobId);
+			const preference_t& job_pref = ptr_comm_handler_->getJobPreferences(jobId);
 
 			// the preferences not specified
 			if( job_pref.empty() )
@@ -377,10 +377,10 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 			}
 			else // the job has preferences
 			{
-				we::preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
+				preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
 
-				const we::preference_t::rank_list_type& list_prefs=job_pref.ranks();
-				for( we::preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
+				const preference_t::rank_list_type& list_prefs=job_pref.ranks();
+				for( preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
 				{
 					// use try-catch for the case when the no worker with that rank exists
 					if( schedule_to(jobId, *it, job_pref) )
