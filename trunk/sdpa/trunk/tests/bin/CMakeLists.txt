@@ -18,9 +18,9 @@ foreach (tc_src ${tc_srcs})
   target_link_libraries(${tc_name} sdpa-com)
   target_link_libraries(${tc_name} sdpa-daemon)
   
-# if (USE_SMC_SC)
+if (USE_SMC_SC)
   	target_link_libraries(${tc_name} sdpa-jobFSM_SMC)
-# endif (USE_SMC_SC)
+endif (USE_SMC_SC)
   
   target_link_libraries(${tc_name} sdpa-events)
   target_link_libraries(${tc_name} sdpa-util)
