@@ -34,7 +34,7 @@
 
 #include <sdpa/daemon/nre/messages.hpp>
 #include <sdpa/daemon/nre/Codec.hpp>
-#include <sdpa/daemon/IWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 #include <sstream>
 #include <iostream>

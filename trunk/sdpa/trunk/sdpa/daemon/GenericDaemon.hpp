@@ -170,7 +170,7 @@ namespace sdpa { namespace daemon {
 	  std::string gen_id() { JobId jobId; return jobId.str(); }
 
 	  void jobFailed(const job_id_t&, const std::string& reason);
-	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
+	  const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
 
 	  virtual bool requestsAllowed(const sdpa::util::time_type&);
 

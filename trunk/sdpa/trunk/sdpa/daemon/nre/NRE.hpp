@@ -25,7 +25,6 @@
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 #include <sdpa/daemon/nre/NreWorkerClient.hpp>
-
 #include <boost/pointer_cast.hpp>
 
 #include <sys/wait.h>

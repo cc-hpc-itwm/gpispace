@@ -1008,7 +1008,7 @@ void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
 	jobManager()->deleteJob(jobId);
 }
 
-const we::preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences)
+const preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences)
 {
 	try {
 		return ptr_job_man_->getJobPreferences(jobId);

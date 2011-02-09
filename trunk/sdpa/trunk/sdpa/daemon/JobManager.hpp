@@ -31,13 +31,13 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/split_member.hpp>
 
-#include <we/we.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
 namespace sdpa { namespace daemon {
 
-    typedef boost::unordered_map<sdpa::job_id_t, we::preference_t> preference_map_t;
+    typedef boost::unordered_map<sdpa::job_id_t, preference_t> preference_map_t;
 
   class JobManager  {
   public:
@@ -61,8 +61,8 @@ namespace sdpa { namespace daemon {
 	  std::vector<sdpa::job_id_t> getJobIDList();
 	  void updateJobInfo(IComm*);
 
-	  void addJobPreferences( const sdpa::job_id_t&, const we::preference_t& ) throw (JobNotFoundException);
-	  const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
+	  void addJobPreferences( const sdpa::job_id_t&, const preference_t& ) throw (JobNotFoundException);
+	  const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
 
 	  std::string print() const;
 	  size_t number_of_jobs() const { return job_map_.size(); }

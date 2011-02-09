@@ -256,7 +256,7 @@ void NRE<U>::notifyActivityCreated( const id_type& id, const std::string& data )
 {
 	if(hasWorkflowEngine())
 	{
-		we::mgmt::activity_information_t info;
+		activity_information_t info;
         ptr_workflow_engine_->fill_in_info (id, info);
         const std::string act_name (info.name);
         notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
@@ -268,7 +268,7 @@ void NRE<U>::notifyActivityStarted( const id_type& id, const std::string& data )
 {
 	if(hasWorkflowEngine())
 	{
-		we::mgmt::activity_information_t info;
+		activity_information_t info;
         ptr_workflow_engine_->fill_in_info (id, info);
         const std::string act_name (info.name);
 		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
@@ -280,7 +280,7 @@ void NRE<U>::notifyActivityFinished( const id_type& id, const std::string& data 
 {
 	if(hasWorkflowEngine())
 	{
-        we::mgmt::activity_information_t info;
+        activity_information_t info;
         ptr_workflow_engine_->fill_in_info (id, info);
         const std::string act_name (info.name);
 		notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED));
@@ -292,7 +292,7 @@ void NRE<U>::notifyActivityFailed( const id_type& id, const std::string& data )
 {
 	if(hasWorkflowEngine())
 	{
-        we::mgmt::activity_information_t info;
+        activity_information_t info;
         ptr_workflow_engine_->fill_in_info (id, info);
         const std::string act_name (info.name);
 		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
@@ -304,7 +304,7 @@ void NRE<U>::notifyActivityCancelled( const id_type& id, const std::string& data
 {
 	if(hasWorkflowEngine())
 	{
-        we::mgmt::activity_information_t info;
+        activity_information_t info;
         ptr_workflow_engine_->fill_in_info (id, info);
         const std::string act_name (info.name);
         notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CANCELLED) );

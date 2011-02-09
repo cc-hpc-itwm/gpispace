@@ -23,7 +23,8 @@
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/serialization/access.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <we/we.hpp>
+
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 namespace sdpa {
 namespace daemon {

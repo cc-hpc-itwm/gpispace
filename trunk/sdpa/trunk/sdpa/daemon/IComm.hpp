@@ -21,7 +21,7 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/memory.hpp>
 
-#include <sdpa/daemon/IWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 #include <seda/Stage.hpp>
 #include <sdpa/util/Config.hpp>
@@ -53,7 +53,7 @@ const std::string USER("user");
 
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException) = 0;
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw (JobNotFoundException) = 0;
-	  virtual const we::preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences) = 0;
+	  virtual const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences) = 0;
 
 	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
