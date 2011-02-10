@@ -127,7 +127,7 @@ namespace sdpa {
 		 const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 		 id_type act_id = pJob->id().str();
 
-		 sdpa::nre::worker::execution_result_t result;
+		 execution_result_t result;
 		 encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
 
 		if( !ptr_comm_handler_ )
@@ -153,18 +153,18 @@ namespace sdpa {
 		{
 			std::string errmsg("could not execute activity: interrupted");
 			SDPA_LOG_ERROR(errmsg);
-			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, enc_act);
+			result = std::make_pair(ACTIVITY_FAILED, enc_act);
 		}
 		catch (const std::exception &ex)
 		{
 			std::string errmsg("could not execute activity: ");
 			errmsg += std::string(ex.what());
 			SDPA_LOG_ERROR(errmsg);
-			result = std::make_pair(sdpa::nre::worker::ACTIVITY_FAILED, enc_act);
+			result = std::make_pair(ACTIVITY_FAILED, enc_act);
 		}
 
 		// check the result state and invoke the NRE's callbacks
-		if( result.first == sdpa::nre::worker::ACTIVITY_FINISHED )
+		if( result.first == ACTIVITY_FINISHED )
 		{
             DLOG(TRACE, "activity finished: " << act_id);
 			// notify the gui
@@ -173,7 +173,7 @@ namespace sdpa {
 			//ptr_comm_handler_->workflowEngine()->finished(act_id, result.second);
 			ptr_comm_handler_->workerJobFinished("", jobId, result.second);
 		}
-		else if( result.first == sdpa::nre::worker::ACTIVITY_FAILED )
+		else if( result.first == ACTIVITY_FAILED )
 		{
 			 DLOG(TRACE, "activity failed: " << act_id);
 			// notify the gui
@@ -182,7 +182,7 @@ namespace sdpa {
 			//ptr_comm_handler_->workflowEngine()->failed(act_id, result.second);
 			ptr_comm_handler_->workerJobFailed("", jobId, result.second);
 		}
-		else if( result.first == sdpa::nre::worker::ACTIVITY_CANCELLED )
+		else if( result.first == ACTIVITY_CANCELLED )
 		{
 			 DLOG(TRACE, "activity cancelled: " << act_id);
 

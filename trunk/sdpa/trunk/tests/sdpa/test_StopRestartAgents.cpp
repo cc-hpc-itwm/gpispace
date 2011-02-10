@@ -84,20 +84,20 @@ namespace sdpa { namespace tests { namespace worker {
     void set_ping_timeout(unsigned long /*seconds*/){}
     void set_ping_trials(std::size_t /*max_tries*/){}
 
-    void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
+   // void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
 
     unsigned int start() throw (std::exception) { LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
     void stop() throw (std::exception) { LOG( INFO, "Stop the test NreWorkerClient ...");}
 
     void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
 
-    sdpa::nre::worker::execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
+    execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
 	{
     	LOG( INFO, "Executing activity ...");
     	sleep(1);
     	LOG( INFO, "Report activity finished ...");
 
-    	sdpa::nre::worker::execution_result_t exec_res(std::make_pair(sdpa::nre::worker::ACTIVITY_FINISHED, "empty result"));
+    	execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, "empty result"));
     	return exec_res;
 	}
 
