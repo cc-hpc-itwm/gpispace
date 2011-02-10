@@ -30,8 +30,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include <we/we.hpp>
-
 namespace sdpa { namespace nre { namespace worker {
   class Message
   {
@@ -189,15 +187,6 @@ namespace sdpa { namespace nre { namespace worker {
   private:
 	  std::string key_;
   };
-
-  enum ExecutionState
-  {
-	  ACTIVITY_FINISHED
-	, ACTIVITY_FAILED
-	, ACTIVITY_CANCELLED
-  };
-
-  typedef std::pair<ExecutionState, result_type> execution_result_t;
 
   class ExecuteReply : public Reply
   {

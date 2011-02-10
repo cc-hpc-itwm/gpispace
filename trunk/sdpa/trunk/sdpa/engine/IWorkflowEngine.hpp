@@ -39,6 +39,15 @@ typedef std::string result_type;
 typedef std::string reason_type;
 typedef std::string encoded_type;
 
+enum ExecutionState
+ {
+	  ACTIVITY_FINISHED
+	, ACTIVITY_FAILED
+	, ACTIVITY_CANCELLED
+ };
+
+ typedef std::pair<ExecutionState, result_type> execution_result_t;
+
 #ifdef USE_REAL_WE
 	typedef we::preference_t preference_t;
 	typedef we::mgmt::activity_information_t activity_information_t;
