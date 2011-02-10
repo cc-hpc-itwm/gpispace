@@ -19,8 +19,6 @@ namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
-typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
-
 int main (int argc, char **argv)
 {
   FHGLOG_SETUP();
