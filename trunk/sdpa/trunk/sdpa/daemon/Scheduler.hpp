@@ -51,7 +51,7 @@ namespace daemon {
 	 virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& ) = 0;
 
 	 virtual void schedule(const sdpa::job_id_t& jobId) = 0;
-	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const we::preference_t& job_pref ) = 0;
+	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const preference_t& job_pref ) = 0;
 	 virtual void schedule_remote(const sdpa::job_id_t &job) = 0;
 	 virtual void schedule_local(const sdpa::job_id_t &job) = 0;
 	 //virtual void re_schedule(Worker::JobQueue* pQueue ) = 0;
