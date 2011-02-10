@@ -46,7 +46,7 @@ enum ExecutionState
 	, ACTIVITY_CANCELLED
  };
 
- typedef std::pair<ExecutionState, result_type> execution_result_t;
+typedef std::pair<ExecutionState, result_type> execution_result_t;
 
 #ifdef USE_REAL_WE
 	typedef we::preference_t preference_t;
