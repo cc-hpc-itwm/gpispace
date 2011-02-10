@@ -28,7 +28,7 @@ OPTION(USE_STL_TR1 "Use tr1 from the STL not boost." NO)
 OPTION(USE_SMC_SC "Build the project using the state-machine compiler" NO)
 OPTION(USE_BOOST_SC "Build the project using boost statecharts" NO)
 OPTION(USE_BOOST_MSM "Build the project using boost statecharts" YES)
-OPTION(USE_GWES "Use GWES" NO)
+OPTION(USE_REAL_WE "Use real workflow engine" YES)
 
 if (NO_IMPLICIT_TEMPLATES)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-implicit-templates")
