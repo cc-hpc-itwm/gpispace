@@ -21,3 +21,6 @@ foreach (test ${simple_tests})
   add_test (${name} ${target})
 
 endforeach (test ${simple_tests})
+
+add_executable (seek seek.c)
+set_target_properties (seek PROPERTIES COMPILE_FLAGS -std=c99)
