@@ -199,54 +199,9 @@ namespace gpifs
 
       int refresh ()
       {
-        int res (0);
-
         error_clear ();
 
-        segment::id_list_t segments;
-
-        res = _comm.list_segments (&segments);
-
-        if (res < 0)
-          {
-            error_set ("failed to get segment list from gpi manager");
-          }
-
-        for ( segment::id_list_t::const_iterator segment (segments.begin())
-            ; segment != segments.end() && res == 0
-            ; ++segment
-            )
-          {
-            _segments[*segment] = alloc::id_set_t ();
-
-            alloc::list_t allocs;
-
-            res = _comm.list_allocs (*segment, &allocs);
-
-            if (res < 0)
-              {
-                std::ostringstream err;
-
-                err << "failed to get alloc list for segment "
-                    << segment::string (*segment)
-                  ;
-
-                error_set (err.str());
-              }
-
-            for ( alloc::list_t::const_iterator alloc (allocs.begin())
-                ; alloc != allocs.end()
-                ; ++alloc
-                )
-              {
-                _segments[*segment].insert (alloc->id());
-                _allocs[alloc->id()] = *alloc;
-              }
-          }
-
-        _time_refresh = time (NULL);
-
-        return res;
+        return refresh (boost::optional<segment::id_t> (boost::none));
       }
       const time_t & time_refresh () const
       {
@@ -322,7 +277,7 @@ namespace gpifs
           }
         else
           {
-            res = refresh();
+            res = refresh (boost::optional<segment::id_t> (descr.segment()));
           }
 
         return res;
@@ -581,6 +536,69 @@ namespace gpifs
       error_t _error;
       time_t _time_error;
       error_t _error_split;
+
+      // ******************************************************************* //
+
+      int refresh (const boost::optional<segment::id_t> & filter)
+      {
+        segment::id_list_t segments;
+
+        int res (_comm.list_segments (&segments));
+
+        if (res < 0)
+          {
+            error_set ("failed to get segment list from gpi manager");
+          }
+        else
+          {
+            for ( segment::id_list_t::const_iterator segment (segments.begin())
+                ; segment != segments.end() && res == 0
+                ; ++segment
+                )
+              {
+                if (!filter || *filter == *segment)
+                  {
+                    res = refresh_segment (*segment);
+                  }
+              }
+
+            _time_refresh = time (NULL);
+          }
+
+        return res;
+      }
+      int refresh_segment (const segment::id_t & segment)
+      {
+        _segments[segment] = alloc::id_set_t ();
+
+        alloc::list_t allocs;
+
+        const int res (_comm.list_allocs (segment, &allocs));
+
+        if (res < 0)
+          {
+            std::ostringstream err;
+
+            err << "failed to get alloc list for segment "
+                << segment::string (segment)
+              ;
+
+            error_set (err.str());
+          }
+        else
+          {
+            for ( alloc::list_t::const_iterator alloc (allocs.begin())
+                ; alloc != allocs.end()
+                ; ++alloc
+                )
+              {
+                _segments[segment].insert (alloc->id());
+                _allocs[alloc->id()] = *alloc;
+              }
+          }
+
+        return res;
+      }
 
       // ******************************************************************* //
 
