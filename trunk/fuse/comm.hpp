@@ -53,6 +53,31 @@ namespace gpifs
         return res;
       }
 
+      std::size_t read ( const alloc::id_t & id
+                       , char * buf
+                       , std::size_t size
+                       , const std::size_t offset
+                       ) const
+      {
+        LOG ( "comm: read from handle " << id << ":" << offset
+            << " " << size << " bytes"
+            );
+
+        return 0;
+      }
+      std::size_t write ( const alloc::id_t & id
+                        , const char * buf
+                        , std::size_t size
+                        , const std::size_t offset
+                        )
+      {
+        LOG ( "comm: write to handle " << id << ":" << offset
+            << " " << size << " bytes"
+            );
+
+        return size;
+      }
+
       int list_segments (segment::id_list_t * list) const
       {
         LOG ("comm: list_segments");

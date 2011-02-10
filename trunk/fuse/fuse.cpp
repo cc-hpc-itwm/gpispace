@@ -79,6 +79,11 @@ gpifs_getattr (const char * path, struct stat * stbuf)
             {
               stbuf->st_size = gpifs::file::num::proc();
 
+              if (!state.error_get())
+                {
+                  stbuf->st_size -= 1;
+                }
+
               stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
                 = std::max (state.time_refresh(), state.error_time());
             }

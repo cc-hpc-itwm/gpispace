@@ -109,9 +109,9 @@ namespace gpifs
 
       int init ()
       {
-        int res (0);
-
         error_clear();
+
+        int res (0);
 
         res = _comm.init ();
 
@@ -133,11 +133,9 @@ namespace gpifs
       }
       int finalize ()
       {
-        int res (0);
-
         error_clear ();
 
-        res = _comm.finalize ();
+        const int res (_comm.finalize ());
 
         if (res < 0)
           {
@@ -242,11 +240,7 @@ namespace gpifs
                        , const off_t offset
                        )
       {
-        LOG ( "state: read from handle " << id << ":" << offset
-            << " " << size << " bytes"
-            );
-
-        return 0;
+        return _comm.read (id, buf, size, offset);
       }
       std::size_t write ( const alloc::id_t & id
                         , const char * buf
@@ -254,17 +248,15 @@ namespace gpifs
                         , const off_t offset
                         )
       {
-        LOG ( "state: write to handle " << id << ":" << offset
-            << " " << size << " bytes"
-            );
-
-        return size;
+        return _comm.write (id, buf, size, offset);
       }
 
       // ******************************************************************* //
 
       int alloc (const alloc::descr & descr)
       {
+        error_clear();
+
         int res (_comm.alloc (descr));
 
         if (res < 0)
@@ -284,7 +276,9 @@ namespace gpifs
       }
       int free (const alloc::id_t & id)
       {
-        int res (_comm.free (id));
+        error_clear();
+
+        const int res (_comm.free (id));
 
         if (res < 0)
           {
@@ -602,8 +596,6 @@ namespace gpifs
       template<typename IT>
       maybe_splitted_path nothing (util::parse::parser<IT> parser)
       {
-        LOG (parser.error_string ("error splitting path"));
-
         _error_split = parser.error_string ("error splitting path");
 
         return maybe_splitted_path (boost::none);
