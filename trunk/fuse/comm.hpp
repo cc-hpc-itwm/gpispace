@@ -3,8 +3,6 @@
 #ifndef FUSE_COMM_HPP
 #define FUSE_COMM_HPP 1
 
-#include <stdexcept>
-
 #include <segment.hpp>
 #include <alloc.hpp>
 
@@ -55,7 +53,6 @@ namespace gpifs
         return res;
       }
 
-#ifndef COMM_TEST
       int list_segments (segment::id_list_t * list) const
       {
         LOG ("comm: list_segments");
@@ -63,49 +60,49 @@ namespace gpifs
         int res (0);
 
         list->clear();
+
+#ifdef COMM_TEST
+        list_segments_test (list);
+#else // ! ifdef COMM_TEST
+#endif // ifdef COMM_TEST
 
         return res;
       }
       int list_allocs (const segment::id_t & id, alloc::list_t * list) const
       {
-        LOG ("comm: list_allocs for segment " << id);
+        LOG ("comm: list_allocs for segment " << segment::string (id));
 
         int res (0);
 
         list->clear();
+
+#ifdef COMM_TEST
+        list_allocs_test (id, list);
+#else // ! ifdef COMM_TEST
+#endif // ifdef COMM_TEST
 
         return res;
       }
 
-#else // ifndef COMM_TEST
-      int list_segments (segment::id_list_t * list) const
+      // ******************************************************************* //
+
+#ifdef COMM_TEST
+      void list_segments_test (segment::id_list_t * list) const
       {
-        LOG ("comm: list_segments");
-
-        int res (0);
-
-        list->clear();
-
         list->push_back (0);
         list->push_back (1);
         list->push_back (3);
         list->push_back (9);
         list->push_back (11);
-
-        return res;
       }
 
-      int list_allocs (const segment::id_t & id, alloc::list_t * list) const
+      void list_allocs_test ( const segment::id_t & id
+                            , alloc::list_t * list
+                            ) const
       {
-        LOG ("comm: list_allocs");
-
-        int res (0);
-
         const time_t minute (60);
         const time_t hour (60 * minute);
         const time_t now (time (NULL));
-
-        list->clear();
 
         switch (id)
           {
@@ -133,12 +130,10 @@ namespace gpifs
             list->push_back (alloc::alloc (1119, now - 1 * minute, 11, (119), "b"));
             break;
           default:
-            throw std::runtime_error ("segment unknown");
+            break;
           }
-
-        return res;
       }
-#endif // ifndef COMM_TEST
+#endif // ifdef COMM_TEST
     };
   } // namespace comm
 } // namespace gpu_fuse
