@@ -4,7 +4,6 @@
 #define FUSE_FILE_HPP
 
 #include <string>
-#include <list>
 
 #include <boost/unordered_set.hpp>
 
@@ -139,23 +138,23 @@ namespace gpifs
 
       static inline std::string string (const valid_set_t & s)
       {
-        std::ostringstream err;
+        std::ostringstream str;
 
-        err << "{";
+        str << "{";
 
         for (valid_set_t::const_iterator v (s.begin()); v != s.end(); ++v)
           {
             if (v != s.begin())
               {
-                err << ", ";
+                str << ", ";
               }
 
-            err << "'" << *v << "'";
+            str << "'" << *v << "'";
           }
 
-        err << "}";
+        str << "}";
 
-        return err.str();
+        return str.str();
       }
     } // namespace set
   }
