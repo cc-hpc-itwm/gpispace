@@ -76,11 +76,11 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     	pIAgent_ = pIAgent;
     }
 
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
+ /*   we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
     we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_finished;
     we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_failed;
     we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_cancelled;
-    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_executing;
+    we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_executing; */
 
     /**
      * Notify the GWES that an activity has failed
@@ -194,7 +194,6 @@ class DummyWorkflowEngine : public IWorkflowEngine {
 		SDPA_LOG_DEBUG("Submit new workflow, wfid = "<<wfid);
 
 		//create several activities out of it
-
 		// assign new id
 		sdpa::JobId id;
 		//id_type act_id = id.str();
