@@ -4,6 +4,7 @@
 #define FUSE_ALLOC_HPP
 
 #include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
 
 #include <list>
 
@@ -108,11 +109,11 @@ namespace gpifs
                   ++parser;
                 }
 
-              return boost::optional<descr> (descr (*segment, *size, name));
+              return descr (*segment, *size, name);
             }
         }
 
-      return boost::optional<descr> (boost::none);
+      return boost::none;
     }
   } // namespace alloc
 } // namespace gpifs

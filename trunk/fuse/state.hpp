@@ -201,7 +201,7 @@ namespace gpifs
       {
         error_clear ();
 
-        return refresh (boost::optional<segment::id_t> (boost::none));
+        return refresh (boost::none);
       }
       const time_t & time_refresh () const
       {
@@ -277,7 +277,7 @@ namespace gpifs
           }
         else
           {
-            res = refresh (boost::optional<segment::id_t> (descr.segment()));
+            res = refresh (descr.segment());
           }
 
         return res;
@@ -514,15 +514,12 @@ namespace gpifs
                       ;
 
                   default:
-                    return split_handle
-                      ( parser
-                      , boost::optional<segment::id_t> (boost::none)
-                      );
+                    return split_handle (parser, boost::none);
                   }
               }
           }
 
-        return boost::optional<splitted_path> (boost::none);
+        return boost::none;
       }
 
       // ******************************************************************* //
@@ -699,7 +696,6 @@ namespace gpifs
 
         return nothing (parser);
       }
-
       template<typename IT>
       maybe_splitted_path split_handle ( util::parse::parser<IT> & parser
                                        , const segment::id_t & segment

@@ -63,34 +63,52 @@ namespace gpifs
         {
           parser.error_set ("expected 'global', 'local' or 'shared'");
 
-          return boost::optional<id_t> (boost::none);
+          return boost::none;
         }
       else
         {
           switch (tolower (*parser))
             {
-            case 'g': ++parser;
-              return (util::parse::require ("lobal", parser))
-                ? boost::optional<id_t> (0)
-                : boost::optional<id_t> (boost::none)
-                ;
+            case 'g':
+              ++parser;
 
-            case 'l': ++parser;
-              return (util::parse::require ("ocal", parser))
-                ? boost::optional<id_t> (1)
-                : boost::optional<id_t> (boost::none)
-                ;
+              if (util::parse::require ("lobal", parser))
+                {
+                  return id_t (0);
+                }
+              else
+                {
+                  return boost::none;
+                }
 
-            case 's': ++parser;
-              return (util::parse::require ("hared", parser))
-                ? id::parse (parser)
-                : boost::optional<id_t> (boost::none)
-                ;
+            case 'l':
+              ++parser;
+
+              if (util::parse::require ("ocal", parser))
+                {
+                  return id_t (1);
+                }
+              else
+                {
+                  return boost::none;
+                }
+
+            case 's':
+              ++parser;
+
+              if (util::parse::require ("hared", parser))
+                {
+                  return id::parse (parser);
+                }
+              else
+                {
+                  return boost::none;
+                }
 
             default:
               parser.error_set ("expected 'global', 'local' or 'shared'");
 
-              return boost::optional<id_t> (boost::none);
+              return boost::none;
             }
         }
     }

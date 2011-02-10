@@ -75,7 +75,7 @@ namespace gpifs
         {
           parser.error_set ("expected digit");
 
-          return boost::optional<id_t> (boost::none);
+          return boost::none;
         }
       else
         {
@@ -99,7 +99,7 @@ namespace gpifs
                 }
             }
 
-          return boost::optional<id_t> (id);
+          return id;
         }
     }
   } // namespace id
