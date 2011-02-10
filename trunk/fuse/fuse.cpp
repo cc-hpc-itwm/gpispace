@@ -15,6 +15,8 @@
 #include <algorithm>
 #include <iterator>
 
+#include <boost/optional.hpp>
+
 #include <cstring> // memset
 #include <errno.h>
 
