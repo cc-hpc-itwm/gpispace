@@ -49,11 +49,11 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 #FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.diff.su
 #TYPE_OUTPUT      = su
 
-FILE1_INPUT      = /u/herc/rahn/small1.dat
+FILE1_INPUT      = /u/g/gruenewa/SDPA/trunk/application/parsu/diff/small1.dat
 TYPE1_INPUT      = su
-FILE2_INPUT      = /u/herc/rahn/small2.dat
+FILE2_INPUT      = /u/g/gruenewa/SDPA/trunk/application/parsu/diff/small2.dat
 TYPE2_INPUT      = su
-FILE_OUTPUT      = /u/herc/rahn/small.diff
+FILE_OUTPUT      = /u/g/gruenewa/SDPA/trunk/application/parsu/diff/small.diff
 TYPE_OUTPUT      = su
 
 OP               = diff

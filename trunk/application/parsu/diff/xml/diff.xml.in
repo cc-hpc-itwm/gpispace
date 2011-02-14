@@ -393,7 +393,6 @@
         <out name="package" type="loaded_package"/>
         <module name="diff" function="diff (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="defs.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
@@ -415,23 +414,36 @@
             const unsigned nt
               ((package.package.size.trace/2 - sizeof(SegYHeader))/sizeof(float));
 
-//            seislib::TraceBunch b1 (buf         , package.package.num.trace, nt);
-//            seislib::TraceBunch b2 (buf + size/2, package.package.num.trace, nt);
+            seislib::TraceBunch b1 (buf         , package.package.num.trace, nt);
+            seislib::TraceBunch b2 (buf + size/2, package.package.num.trace, nt);
+            std::cout<<"Addr of TraceBunch b1:"<<(void *)buf<<std::endl;
+            std::cout<<"Addr of TraceBunch b2:"<<(void *)(buf + size/2)<<std::endl;
+            std::cout<<"Construction of trace bunches finished"<<std::endl<<std::endl;
 
 //            std::cout << "** B1 " << b1 << std::endl;
 //            std::cout << "** B2 " << b2 << std::endl;
+//
+//            for (int i (0); i < package.package.num.trace; ++i)
+//              {
+//                seislib::Trace t1 (buf +          i * size / package.package.num.trace, nt);
+//                seislib::Trace t2 (buf + size/2 + i * size / package.package.num.trace, nt);
+//
+//                t1 = t1 - t2;
+//              }
+//
+//            seislib::TraceBunch b1 (buf, package.package.num.trace, nt);
 
-            for (int i (0); i < package.package.num.trace; ++i)
-              {
-                seislib::Trace t1 (buf +          i * size / package.package.num.trace, nt);
-                seislib::Trace t2 (buf + size/2 + i * size / package.package.num.trace, nt);
+            std::cout<<"Making the subtraction..."<<std::endl<<std::endl;
 
-                t1 = t1 - t2;
-              }
-
-            seislib::TraceBunch b1 (buf, package.package.num.trace, nt);
+            //for( int i (0); i < package.package.num.trace; ++i)
+            //  b1[i] = b1[i] - b2[i];
+            b1 -= b2;
 
             std::cout << "** BDIFF " << b1 << std::endl;
+
+            b1 += b2; 
+
+            std::cout << "** BINV " << b1 << std::endl;
 
             // GOAL: b1 = b1 - b2;
 
