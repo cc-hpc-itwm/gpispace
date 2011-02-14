@@ -91,7 +91,7 @@ namespace fhg
               ((int)std::ceil ((float)timeout_.total_microseconds() / (float)(std::max(max_connection_attempts_, std::size_t(2)) - 1)))
               );
             LOG(TRACE, "reconnecting in " << reconnect_in);
-            usleep (reconnect_in.total_microseconds());
+            boost::this_thread::sleep(boost::posix_time::microseconds(reconnect_in.total_microseconds()));
           }
         }
       }
