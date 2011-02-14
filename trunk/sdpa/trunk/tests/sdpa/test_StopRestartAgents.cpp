@@ -63,8 +63,16 @@ const int NMAXTRIALS = 3;
 namespace po = boost::program_options;
 
 #define NO_GUI ""
-typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
-typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+//typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
+//typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
+
+typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
+
+#ifdef USE_REAL_WE
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+#else
+	typedef sdpa::tests::worker::BasicWorkerClient WorkerClient;
+#endif
 
 namespace sdpa { namespace tests { namespace worker {
   class NreWorkerClient
@@ -107,7 +115,6 @@ namespace sdpa { namespace tests { namespace worker {
   };
 }}}
 
-typedef sdpa::tests::worker::NreWorkerClient TestWorkerClient;
 
 struct MyFixture
 {
@@ -317,7 +324,6 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-/*
 BOOST_AUTO_TEST_CASE( testStopRestartOrch )
 {
 	LOG( INFO, "***** testStopRestartOrch *****"<<std::endl);
@@ -456,7 +462,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
 
-
 	bool bLaunchNrePcd = false;
 	//typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 
@@ -524,7 +529,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 
 	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
 }
-*/
 
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 {
@@ -602,7 +606,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 	LOG( INFO, "The test case testBackupRecoverOrch2 terminated!" );
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 {
 	LOG( INFO, "***** testBackupRecoverOrchDummyWfeWithClient *****"<<std::endl);
@@ -692,7 +695,11 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
 
+#ifdef USE_REAL_WE
 	bool bLaunchNrePcd = true;
+#else
+	bool bLaunchNrePcd = false;
+#endif
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -765,7 +772,12 @@ BOOST_AUTO_TEST_CASE( testStopRestartAggRealWeWithClient )
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
 
+#ifdef USE_REAL_WE
 	bool bLaunchNrePcd = true;
+#else
+	bool bLaunchNrePcd = false;
+#endif
+
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -836,8 +848,11 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 	string addrAgg 		= "127.0.0.1";
 	string addrNRE 		= "127.0.0.1";
 
+#ifdef USE_REAL_WE
 	bool bLaunchNrePcd = true;
-	//typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+#else
+	bool bLaunchNrePcd = false;
+#endif
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -908,6 +923,5 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 	LOG( INFO, "The test case testStopRestartNRE terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
-*/
 
 BOOST_AUTO_TEST_SUITE_END()

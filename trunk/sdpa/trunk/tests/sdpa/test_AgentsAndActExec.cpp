@@ -59,10 +59,18 @@ using namespace sdpa::tests;
 
 #define NO_GUI ""
 
-typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
-
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
+
+typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
+
+#ifdef USE_REAL_WE
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+	bool bLaunchNrePcd = true;
+#else
+	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
+	bool bLaunchNrePcd = false;
+#endif
 
 struct MyFixture
 {
@@ -262,7 +270,6 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
-	//bool bLaunchNrePcd = false;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -277,8 +284,8 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 
 	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE",
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE",
 											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	try {
@@ -369,8 +376,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
 
-	bool bLaunchNrePcd = true;
-
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
@@ -390,8 +395,8 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0",
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
 				                             strGuiUrl,
@@ -520,7 +525,6 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
-	//bool bLaunchNrePcd = false;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -535,8 +539,8 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
@@ -654,8 +658,6 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
-	//bool bLaunchNrePcd = false;
-
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -670,8 +672,8 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
-	sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, sdpa::nre::worker::NreWorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));

@@ -36,7 +36,6 @@ using namespace sdpa::daemon;
 
 const int NWORKERS = 10;
 
-
 struct MyFixture
 {
 	MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}

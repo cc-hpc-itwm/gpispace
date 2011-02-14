@@ -62,53 +62,17 @@ const int NMAXTRIALS = 10000;
 const int NMAXTHRDS = 10;
 
 namespace po = boost::program_options;
-
 #define NO_GUI ""
-typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
-typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 
-namespace sdpa { namespace tests { namespace worker {
-  class NreWorkerClient
-  {
-  public:
-    explicit
-    NreWorkerClient( const std::string &nre_worker_location
-                      // TODO: fixme, this is ugly
-                      , bool bLaunchNrePcd = false
-                      , const std::string & fvmPCBinary = ""
-                      , const std::vector<std::string>& fvmPCSearchPath = std::vector<std::string>()
-                      , const std::vector<std::string>& fvmPCPreLoad = std::vector<std::string>()
-                      )
-    : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
+typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
 
-    void set_ping_interval(unsigned long /*seconds*/){}
-    void set_ping_timeout(unsigned long /*seconds*/){}
-    void set_ping_trials(std::size_t /*max_tries*/){}
-
-    //void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
-
-    unsigned int start() throw (std::exception) { LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
-    void stop() throw (std::exception) { LOG( INFO, "Stop the test NreWorkerClient ...");}
-
-    void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
-
-    execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
-	{
-    	LOG( INFO, "Executing activity ...");
-    	sleep(1);
-    	LOG( INFO, "Report activity finished ...");
-
-    	execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, "empty result"));
-    	return exec_res;
-	}
-
-  private:
-    std::string nre_worker_location_;
-    SDPA_DECLARE_LOGGER();
-  };
-}}}
-
-typedef sdpa::tests::worker::NreWorkerClient TestWorkerClient;
+#ifdef USE_REAL_WE
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+	bool bLaunchNrePcd = true;
+#else
+	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
+	bool bLaunchNrePcd = false;
+#endif
 
 struct MyFixture
 {
@@ -335,8 +299,6 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
-
-	bool bLaunchNrePcd = true;
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);

@@ -57,6 +57,8 @@ using namespace seda;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("12100"); return s; }
 
+typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+
 struct MyFixture
 {
 	MyFixture()

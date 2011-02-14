@@ -146,16 +146,18 @@ set( test_agents_and_act_exec_srcs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 
-add_executable(test_agents_and_act_exec_suite ${test_agents_and_act_exec_srcs})
-target_link_libraries(test_agents_and_act_exec_suite  seda sdpa-daemon
-									 sdpa-client
-									 sdpa-events
-									 sdpa-util
-									 sdpa
-									 dl
-									 #uuid
-									 ${Boost_LIBRARIES})
-add_test(test_agents_and_act_exec_suite test_agents_and_act_exec_suite)
+if (USE_REAL_WE)
+	add_executable(test_agents_and_act_exec_suite ${test_agents_and_act_exec_srcs})
+	target_link_libraries(test_agents_and_act_exec_suite  seda sdpa-daemon
+										 sdpa-client
+										 sdpa-events
+										 sdpa-util
+										 sdpa
+										 dl
+										 #uuid
+										 ${Boost_LIBRARIES})
+	add_test(test_agents_and_act_exec_suite test_agents_and_act_exec_suite)
+endif (USE_REAL_WE)
 
 set( test_agents_src
   	test_Agents.cpp
