@@ -7,13 +7,12 @@ set (hdrs
   NREFactory.hpp
   NRE.hpp
   BasicWorkerClient.hpp
-  SchedulerNRE.hpp
-  Serialization.hpp
-  
 if (USE_REAL_WE)
   NreWorkerClient.hpp
 endif (USE_REAL_WE)
-  )
+  SchedulerNRE.hpp
+  Serialization.hpp
+)
   
 if (USE_REAL_WE)
   add_subdirectory(nre-worker)

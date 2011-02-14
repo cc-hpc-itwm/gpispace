@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-#include <unistd.h>
+//#include <unistd.h>
 
 #include <sdpa/sdpa-config.hpp>
 

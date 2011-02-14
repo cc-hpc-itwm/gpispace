@@ -41,9 +41,7 @@
 #include <boost/thread.hpp>
 
 #include "tests_config.hpp"
-
 #include <boost/filesystem/path.hpp>
-#include <sys/wait.h>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -63,8 +61,6 @@ const int NMAXTRIALS = 3;
 namespace po = boost::program_options;
 
 #define NO_GUI ""
-//typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
-//typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
 
 typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
 
@@ -74,54 +70,11 @@ typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
 	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
 #endif
 
-	/*
-namespace sdpa { namespace tests { namespace worker {
-  class NreWorkerClient
-  {
-  public:
-    explicit
-    NreWorkerClient( const std::string &nre_worker_location
-                      // TODO: fixme, this is ugly
-                      , bool bLaunchNrePcd = false
-                      , const std::string & fvmPCBinary = ""
-                      , const std::vector<std::string>& fvmPCSearchPath = std::vector<std::string>()
-                      , const std::vector<std::string>& fvmPCPreLoad = std::vector<std::string>()
-                      )
-    : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
-
-    void set_ping_interval(unsigned long ){}
-    void set_ping_timeout(unsigned long ){}
-    void set_ping_trials(std::size_t ){}
-
-   // void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
-
-    unsigned int start() throw (std::exception) { LOG( INFO, "Start the test NreWorkerClient ..."); return 0;}
-    void stop() throw (std::exception) { LOG( INFO, "Stop the test NreWorkerClient ...");}
-
-    void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
-
-    execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (sdpa::nre::worker::WalltimeExceeded, std::exception)
-	{
-    	LOG( INFO, "Executing activity ...");
-    	sleep(1);
-    	LOG( INFO, "Report activity finished ...");
-
-    	execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, "empty result"));
-    	return exec_res;
-	}
-
-  private:
-    std::string nre_worker_location_;
-    SDPA_DECLARE_LOGGER();
-  };
-}}}
-*/
-
 struct MyFixture
 {
 	MyFixture()
 			: m_nITER(1)
-			, m_sleep_interval(1000000)
+			, m_sleep_interval(1000) //microseconds
 			, m_pool (0)
 	    	, m_kvsd (0)
 	    	, m_serv (0)
@@ -161,8 +114,6 @@ struct MyFixture
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-
-		//seda::StageRegistry::instance().clear();
 
 		sstrOrch.str("");
 		sstrAgg.str("");
@@ -259,7 +210,8 @@ void MyFixture::run_client()
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-				usleep(5*m_sleep_interval);
+
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -272,7 +224,7 @@ void MyFixture::run_client()
 					return;
 				}
 
-				sleep(5);
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 			}
 		}
 
@@ -281,7 +233,7 @@ void MyFixture::run_client()
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				usleep(5*m_sleep_interval);
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -294,7 +246,7 @@ void MyFixture::run_client()
 				return;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 
 		nTrials = 0;
@@ -302,7 +254,7 @@ void MyFixture::run_client()
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -315,7 +267,7 @@ void MyFixture::run_client()
 				return;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 	}
 
@@ -372,7 +324,8 @@ BOOST_AUTO_TEST_CASE( testStopRestartOrch )
 
 	LOG( INFO, "Deliberately shutdown the orchestrator now!");
 	ptrOrch->shutdown(sstrOrch);
-	usleep(5*m_sleep_interval);
+	//usleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	LOG( INFO, "Start a new instance of the orchestrator now!");
 	ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -380,7 +333,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartOrch )
 
 	// give some time to the aggregator to re-register
 	while(!ptrAgg->is_registered())
-		sleep(1);
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 	ptrNRE->shutdown();
@@ -436,14 +389,14 @@ BOOST_AUTO_TEST_CASE( testStopRestartAgg )
 
 	LOG( INFO, "Deliberately shutdown the aggregator now!");
 	ptrAgg->shutdown(sstrOrch);
-	usleep(5*m_sleep_interval);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	LOG( INFO, "Start a new instance of the aggregator now!");
 	ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg, "orchestrator_0");
 	ptrAgg->start_agent(sstrOrch);
 
 	// give some time to the NRE to re-register
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
@@ -501,13 +454,13 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 
 	ptrOrch->shutdown(sstrOrch);
 
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -517,12 +470,10 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 	ptrRecOrch->start_agent(sstrOrch);
 
 	// give some time to the NRE to re-register
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
@@ -578,13 +529,13 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(sstrOrch);
 
 	//LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -593,12 +544,10 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 	ptrRecOrch->start_agent(sstrOrch);
 
 	// give some time to the NRE to re-register
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
@@ -654,7 +603,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 
 	LOG( DEBUG, "Shutdown the orchestrator");
@@ -663,7 +612,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 
 	LOG( DEBUG, "After shutdown the content of osstrOrch is: \n"<<sstrOrch.str() );
 
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -672,12 +621,10 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 	ptrRecOrch->start_agent(sstrOrch);
 
 	// give some time to the NRE to re-register
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
@@ -736,11 +683,11 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
 	}
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(sstrOrch);
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	// now try to recover the system
 	sdpa::daemon::Orchestrator::ptr_t ptrRecOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -749,12 +696,10 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
 	ptrRecOrch->start_agent(sstrOrch);
 
 	// give some time to the NRE to re-register
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
@@ -778,7 +723,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAggRealWeWithClient )
 #else
 	bool bLaunchNrePcd = false;
 #endif
-
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
@@ -814,23 +758,21 @@ BOOST_AUTO_TEST_CASE( testStopRestartAggRealWeWithClient )
 	}
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	LOG( INFO, "Deliberately shutdown the aggregator now!");
 	ptrAgg->shutdown(sstrAgg);
-	usleep(5*m_sleep_interval);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	LOG( INFO, "Start a new instance of the aggregator now!");
 	ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, "orchestrator_0");
 	ptrAgg->start_agent(sstrAgg);
 
 	// give some time to the NRE to re-register
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
-
-	sleep(1);
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();
@@ -890,14 +832,14 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 	}
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	LOG( INFO, "Deliberately shutdown the NRE now!");
 	ptrNRE->shutdown(sstrNRE);
 
 	LOG( DEBUG, "After shutdown the content of sstrNRE is: \n"<<sstrNRE.str() );
 
-	usleep(5*m_sleep_interval);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	LOG( INFO, "Start a new instance of the NRE now!");
 	ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create( "NRE_0",
@@ -912,7 +854,7 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 
 	ptrNRE->start_agent(sstrNRE);
 	// give some time to the NRE to re-register
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );

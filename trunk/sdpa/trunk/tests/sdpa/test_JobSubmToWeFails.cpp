@@ -44,7 +44,6 @@
 #include "tests_config.hpp"
 
 #include <boost/filesystem/path.hpp>
-#include <sys/wait.h>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -116,8 +115,6 @@ struct MyFixture
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-
-		//seda::StageRegistry::instance().clear();
 
 		sstrOrch.str("");
 		sstrAgg.str("");
@@ -197,7 +194,7 @@ void MyFixture::run_client()
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-				usleep(5*m_sleep_interval);
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -219,7 +216,7 @@ void MyFixture::run_client()
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				usleep(5*m_sleep_interval);
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -240,7 +237,7 @@ void MyFixture::run_client()
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -307,12 +304,11 @@ BOOST_AUTO_TEST_CASE( testJobSubmToWeFails )
 	}
 
 	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	sleep(5);
+	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 
 	m_threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
 
-	sleep(1);
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();

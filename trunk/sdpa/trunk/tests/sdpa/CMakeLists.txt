@@ -205,18 +205,16 @@ target_link_libraries(test_backup_recover  seda sdpa-daemon
 add_test( test_backup_recover test_backup_recover )
 
 #test_JobSubmToWeFails
-set( test_JobSubmToWeFails_srcs test_JobSubmToWeFails.cpp )
-
-add_executable(test_JobSubmToWeFails ${test_JobSubmToWeFails_srcs})
-target_link_libraries(test_JobSubmToWeFails  seda sdpa-daemon
-									 sdpa-client
-									 sdpa-events
-									 sdpa-util
-									 sdpa
-									 dl
-									 #uuid
-									 ${Boost_LIBRARIES})
-add_test( test_JobSubmToWeFails test_JobSubmToWeFails )
+#set( test_JobSubmToWeFails_srcs test_JobSubmToWeFails.cpp )
+#add_executable(test_JobSubmToWeFails ${test_JobSubmToWeFails_srcs})
+#target_link_libraries(test_JobSubmToWeFails  seda sdpa-daemon
+#									 sdpa-client
+#									 sdpa-events
+#									 sdpa-util
+#									 sdpa
+#									 dl
+#									 ${Boost_LIBRARIES})
+#add_test( test_JobSubmToWeFails test_JobSubmToWeFails )
 
 #test_ConcurrentClients
 set( test_ConcurrentClients_srcs test_ConcurrentClients.cpp )

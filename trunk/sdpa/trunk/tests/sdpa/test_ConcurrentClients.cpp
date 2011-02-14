@@ -41,9 +41,7 @@
 #include <boost/thread.hpp>
 
 #include "tests_config.hpp"
-
 #include <boost/filesystem/path.hpp>
-#include <sys/wait.h>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -59,7 +57,7 @@ static const std::string kvs_host () { static std::string s("localhost"); return
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
 const int NMAXTRIALS = 10000;
-const int NMAXTHRDS = 10;
+const int NMAXTHRDS = 2;
 
 namespace po = boost::program_options;
 #define NO_GUI ""
@@ -223,7 +221,7 @@ void MyFixture::run_client(int i)
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-				usleep(5*m_sleep_interval);
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -245,7 +243,7 @@ void MyFixture::run_client(int i)
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				usleep(5*m_sleep_interval);
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -266,7 +264,7 @@ void MyFixture::run_client(int i)
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -337,15 +335,14 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 
 	for(int i=0;i<NMAXTHRDS;i++)
 		arrThreadClient[i] = boost::thread(boost::bind(&MyFixture::run_client, this, i));
-	sleep(5);
+
+	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 
 	for(int i=0;i<NMAXTHRDS;i++)
 	{
 		arrThreadClient[i].join();
 		LOG( INFO, "The client thread "<<i<<" joined the main thread°!" );
 	}
-
-	sleep(1);
 
 	ptrNRE->shutdown();
 	ptrAgg->shutdown();

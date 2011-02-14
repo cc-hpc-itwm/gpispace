@@ -270,7 +270,7 @@ void GenericDaemon::shutdown()
 
 	//wait for a while -> allow the daemon to deliver the messages
 
-	sleep(5);*/
+	boost::this_thread::sleep(boost::posix_time::seconds(5));*/
 
 	if(!m_bStopped)
 		stop();
@@ -805,7 +805,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
 			const unsigned long reg_timeout( cfg()->get<unsigned long>("registration_timeout", 10 *1000*1000) );
 			SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-			usleep(reg_timeout);
+			boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
 			m_bRegistered = false;
 			requestRegistration();
@@ -834,7 +834,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
 					const unsigned long reg_timeout( cfg()->get<unsigned long>("registration_timeout", 10 *1000*1000) );
 					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-					usleep(reg_timeout);
+					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
 					m_bRegistered = false;
 					requestRegistration();

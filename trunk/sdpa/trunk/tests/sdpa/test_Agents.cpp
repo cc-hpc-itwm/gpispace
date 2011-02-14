@@ -41,11 +41,10 @@
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
 
-#include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
+//#include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 #include <sdpa/daemon/nre/messages.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <sys/wait.h>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
@@ -274,7 +273,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -302,8 +301,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
-
-
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
@@ -394,7 +391,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -515,7 +512,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -639,7 +636,7 @@ retry:  try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);

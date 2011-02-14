@@ -347,7 +347,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -465,7 +465,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -626,7 +626,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
@@ -758,7 +758,7 @@ retry:	try {
 			job_status = ptrCli->queryJob(job_id_user);
 			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
-			usleep(m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(m_sleep_interval));
 		}
 
 		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);

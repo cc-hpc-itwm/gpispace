@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-				usleep(5*m_sleep_interval);
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 					return -1;
 				}
 
-				sleep(5);
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 			}
 		}
 
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 		try {
 				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
 				ptrCli->retrieveResults(job_id_user);
-				usleep(5*m_sleep_interval);
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 				return -1;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 
 		nTrials = 0;
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
-			usleep(5*m_sleep_interval);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 				return -1;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 		}
 	}
 

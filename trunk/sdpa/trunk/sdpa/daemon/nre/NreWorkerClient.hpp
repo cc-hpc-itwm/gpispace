@@ -42,9 +42,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
-//#include <tests/sdpa/tests_config.hpp>
 #include <sdpa/daemon/nre/BasicWorkerClient.hpp>
 #include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 
@@ -212,7 +210,7 @@ namespace sdpa { namespace nre { namespace worker {
 			else  // parent
 			{
 				// Code only executed by parent process
-				sleep(2);
+				boost::this_thread::sleep(boost::posix_time::seconds(2));
 			}
        	}
         else

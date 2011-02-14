@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(testQueue)
 		test_queue.push(42);
 
 		if (cnt % 2 == 0)
-			sleep(1);
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
   }
 
   thrd.interrupt();

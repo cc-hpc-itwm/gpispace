@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-#include <unistd.h>
+//#include <unistd.h>
 #include <sys/stat.h> // for stat, to check if file exists
 
 #if defined(HAVE_CONFIG_H)
@@ -91,8 +91,8 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
     }
     else
     {
-      sleep(poll_interval);
-      std::cout << "." << std::flush;
+    	boost::this_thread::sleep(boost::posix_time::seconds(poll_interval));
+    	std::cout << "." << std::flush;
     }
   }
   boost::system_time poll_end = boost::get_system_time();

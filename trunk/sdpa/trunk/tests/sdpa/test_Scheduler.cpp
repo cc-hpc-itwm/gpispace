@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(testDelWorker)
 	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl);
 	ptr_scheduler_->start(ptrOrch.get());
 
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	LOG(INFO, "add a number of workers ...");
 	for( int k=0; k<NWORKERS; k++ )
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(testDelWorker)
 	ptr_scheduler_->stop();
 
 	seda::StageRegistry::instance().remove(ptrOrch->name());
-	sleep(1);
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 	LOG(INFO, "Worker deletion test finished!");
 }
 

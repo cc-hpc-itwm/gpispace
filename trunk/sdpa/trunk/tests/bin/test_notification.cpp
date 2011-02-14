@@ -83,7 +83,7 @@ int main(int ac, char **av)
 		break;
 	}
 
-    if ( (i % 10) == 0 ) sleep (1);
+    if ( (i % 10) == 0 ) boost::this_thread::sleep(boost::posix_time::seconds(1));
   }
 
   for (size_t i = 0; i < 200 ; ++i)
@@ -95,6 +95,6 @@ int main(int ac, char **av)
     int random_state = (int)(round(gui_service::event_t::STATE_MAX * drand48()));
     gui_service::event_t::state_t state = static_cast<gui_service::event_t::state_t>(random_state);
     daemon.activityStateUpdate(aid, "function placeholder", state);
-    if ( (i % 100) == 0 ) sleep (1);
+    if ( (i % 100) == 0 ) boost::this_thread::sleep(boost::posix_time::seconds(1));
   }
 }
