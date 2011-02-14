@@ -6,15 +6,18 @@ set (hdrs
   messages.hpp
   NREFactory.hpp
   NRE.hpp
-  NreWorkerClient.hpp
+  BasicWorkerClient.hpp
   SchedulerNRE.hpp
   Serialization.hpp
+  
+if (USE_REAL_WE)
+  NreWorkerClient.hpp
+endif (USE_REAL_WE)
   )
-
-set (hdrs
-  )
-
-add_subdirectory(nre-worker)
+  
+if (USE_REAL_WE)
+  add_subdirectory(nre-worker)
+endif (USE_REAL_WE)
 
 install(FILES ${hdrs}
   DESTINATION include/sdpa/daemon/nre

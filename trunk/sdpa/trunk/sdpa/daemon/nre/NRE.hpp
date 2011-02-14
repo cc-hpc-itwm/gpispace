@@ -69,17 +69,17 @@ namespace sdpa {
 		{
 			SDPA_LOG_DEBUG("NRE's constructor called ...");
 
-                        try
-                        {
-                          m_guiServ.open ();
-                          // attach gui observer
-                          SDPA_LOG_INFO("GUI observer at " << guiUrl << " attached...");
-                          attach_observer(&m_guiServ);
-                        }
-                        catch (std::exception const & ex)
-                        {
-                          SDPA_LOG_ERROR ("GUI observer at " << guiUrl << " could not be attached: " << ex.what());
-                        }
+			try
+			{
+			  m_guiServ.open ();
+			  // attach gui observer
+			  SDPA_LOG_INFO("GUI observer at " << guiUrl << " attached...");
+			  attach_observer(&m_guiServ);
+			}
+			catch (std::exception const & ex)
+			{
+			  SDPA_LOG_ERROR ("GUI observer at " << guiUrl << " could not be attached: " << ex.what());
+			}
 		}
 
 		virtual ~NRE()

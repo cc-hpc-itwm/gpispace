@@ -99,8 +99,11 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
 	if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
 	{
+
+#ifdef USE_REAL_WE
 		statistics::dump_maps();
 		statistics::reset_maps();
+#endif
 
 		try {
 			// forward it up
