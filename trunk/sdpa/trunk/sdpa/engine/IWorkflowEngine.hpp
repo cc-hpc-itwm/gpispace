@@ -31,6 +31,9 @@
 	#include <we/mgmt/bits/signal.hpp>
 	#include <we/we.hpp>
 	#include <we/mgmt/layer.hpp>
+#else
+	#include <boost/unordered_set.hpp>
+	#include <boost/unordered_map.hpp>
 #endif
 
 // Assume ids of type string
@@ -57,7 +60,14 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 
       struct preference_t
       {
-		preference_t(): mandatory_(false) {}
+		typedef int rank_type;
+		typedef rank_type value_type;
+		typedef rank_type argument_type;
+
+		typedef boost::unordered_set<value_type> exclude_set_type;
+		typedef std::vector<value_type> rank_list_type;
+
+		preference_t (const bool _mandatory = false) : mandatory_(_mandatory)  { }
 
         bool is_mandatory (void) const { return mandatory_; }
         bool is_wanted (const rank_type rank) const { return false;}
@@ -88,16 +98,62 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
           return ranks_.empty();
         }
 
+       preference_t & want (const rank_type rank)
+	   {
+		 ranks_.push_back (rank);
+		 return *this;
+	   }
       private:
         bool mandatory_;
         rank_list_type ranks_;
         exclude_set_type excluded_ranks_;
       };
 
+	  inline std::ostream & operator << (std::ostream & os, const preference_t & p)
+	  {
+		 os << "not implementd!";
+		 return os;
+	  }
 
+	  struct activity_information_t
+	  {
+		  enum status_t
+		  {
+			  UNDEFINED = -1
+			  , PENDING
+			  , RUNNING
+			  , FINISHED
+			  , FAILED
+			  , CANCELLED
+			  , SUSPENDED
+		  };
 
-	typedef void activity_information_t;
-    struct IWorkflowEngine{};
+		  std::string name;
+		  status_t status;
+		  int level;
+
+		  typedef boost::unordered_map<std::string, std::string> data_t;
+		  data_t data;
+	  };
+
+	  struct IWorkflowEngine
+	  {
+		  virtual void submit(const id_type & id, const encoded_type & ) = 0;
+		  virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
+
+		  virtual bool finished(const id_type & id, const result_type & result) = 0;
+		  virtual bool failed(const id_type & id, const result_type & result) = 0;
+		  virtual bool cancelled(const id_type & id) = 0;
+
+		  virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
+
+		  virtual ~IWorkflowEngine() {}
+
+		  friend class boost::serialization::access;
+		  template <class Archive>
+			void serialize(Archive&, const unsigned int ){}
+	  };
+
 #endif
 
 #endif //IWORKFLOWENGINE_HPP
