@@ -71,9 +71,10 @@ typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
 #ifdef USE_REAL_WE
 	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 #else
-	typedef sdpa::tests::worker::BasicWorkerClient WorkerClient;
+	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
 #endif
 
+	/*
 namespace sdpa { namespace tests { namespace worker {
   class NreWorkerClient
   {
@@ -88,9 +89,9 @@ namespace sdpa { namespace tests { namespace worker {
                       )
     : SDPA_INIT_LOGGER("TestNreWorkerClient") { }
 
-    void set_ping_interval(unsigned long /*seconds*/){}
-    void set_ping_timeout(unsigned long /*seconds*/){}
-    void set_ping_trials(std::size_t /*max_tries*/){}
+    void set_ping_interval(unsigned long ){}
+    void set_ping_timeout(unsigned long ){}
+    void set_ping_trials(std::size_t ){}
 
    // void set_location(const std::string &str_loc){ nre_worker_location_ = str_loc; }
 
@@ -114,7 +115,7 @@ namespace sdpa { namespace tests { namespace worker {
     SDPA_DECLARE_LOGGER();
   };
 }}}
-
+*/
 
 struct MyFixture
 {
