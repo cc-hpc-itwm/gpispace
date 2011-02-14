@@ -45,7 +45,7 @@
 #include <unistd.h>
 
 //#include <tests/sdpa/tests_config.hpp>
-
+#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
 #include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
@@ -61,16 +61,7 @@ namespace sdpa { namespace nre { namespace worker {
     virtual ~NrePcdIsDead() throw () {}
   };
 
-  class WalltimeExceeded : public std::runtime_error
-  {
-  public:
-    WalltimeExceeded()
-      : std::runtime_error("execution did not finish within the specified walltime")
-    {}
-    virtual ~WalltimeExceeded() throw () {}
-  };
-
-  class NreWorkerClient
+  class NreWorkerClient : public BasicWorkerClient
   {
   public:
     explicit
@@ -81,7 +72,8 @@ namespace sdpa { namespace nre { namespace worker {
                    , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
                    , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
                    )
-      : nre_worker_location_(nre_worker_location)
+      :  BasicWorkerClient(nre_worker_location, bLaunchNrePcd, fvmPCBinary, fvmPCSearchPath, fvmPCPreLoad )
+      , nre_worker_location_(nre_worker_location)
       , my_reply_port_(0)
       , service_thread_(NULL)
       , socket_(NULL)
