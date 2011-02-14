@@ -17,7 +17,7 @@ set(KDE_CTEST_AVOID_SPACES TRUE)
 set(KDE_CTEST_BUILD_SUFFIX "gcc")
 set(KDE_CTEST_VCS_PATH "trunk")
 set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/coverage")
-set(KDE_CTEST_PARALLEL_LEVEL 1)
+set(KDE_CTEST_PARALLEL_LEVEL 8)
 ##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)
 
 # for now hardcode the generator to "Unix Makefiles"
@@ -48,7 +48,7 @@ include("${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
 # if CMAKE_INSTALL_PREFIX and BUILD_experimental were defined on the command line, put them
 # in the initial cache, so cmake gets them
-set(BOOST_ROOT /opt/boost/1.44/)
+set(BOOST_ROOT /opt/boost/1.45/gcc)
 set(SMC_HOME /opt/smc/5.0.0/)
 set(ENABLE_SDPA_GPI No)
 set(ENABLE_GPI_SPACE Yes)

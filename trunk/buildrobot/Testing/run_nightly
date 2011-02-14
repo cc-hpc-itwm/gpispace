@@ -27,6 +27,7 @@ check_host() {
         echo "Is SLES"
         ;;
       openSUSE-release*)
+	have_intel=yes
         echo "Is SUSE"
       ;;
       centos-release*)

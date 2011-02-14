@@ -17,7 +17,7 @@ set(KDE_CTEST_BUILD_SUFFIX "intel")
 #set(KDE_CTEST_VCS_PATH "main/trunk")
 set(KDE_CTEST_VCS_PATH "trunk")
 set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/nightly")
-set(KDE_CTEST_PARALLEL_LEVEL 1)
+set(KDE_CTEST_PARALLEL_LEVEL 8)
 ##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)
 
 # for now hardcode the generator to "Unix Makefiles"
@@ -44,7 +44,7 @@ include("${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 # if CMAKE_INSTALL_PREFIX and BUILD_experimental were defined on the command line, put them
 # in the initial cache, so cmake gets them
 #set(QT_QMAKE_EXECUTABLE /p/hpc/psp/Qt/Qt-4.6.2-icc64-fileenginewatcher/bin/qmake )
-set(BOOST_ROOT /opt/boost/1.44/intel)
+set(BOOST_ROOT /opt/boost/1.45/intel)
 set(SMC_HOME /opt/smc/5.0.0/)
 set(ENABLE_SDPA_GPI No)
 set(ENABLE_GPI_SPACE No)
