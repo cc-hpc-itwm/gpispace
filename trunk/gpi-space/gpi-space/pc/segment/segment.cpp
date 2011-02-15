@@ -137,7 +137,7 @@ namespace gpi
         }
       }
 
-      void segment_t::cleanup ()
+      void segment_t::unlink ()
       {
         shm_unlink (name().c_str());
       }

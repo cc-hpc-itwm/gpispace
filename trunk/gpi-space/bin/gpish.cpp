@@ -209,8 +209,6 @@ int main (int ac, char **av)
 
       try
       {
-        seg->cleanup ();
-
         seg->create ();
 
         gpi::pc::type::segment_id_t id = capi.register_segment ( seg->name()

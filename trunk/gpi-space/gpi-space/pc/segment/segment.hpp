@@ -25,7 +25,7 @@ namespace gpi
         void create (bool persistent = false);
         void open ();
         void close ();
-        void cleanup ();
+        void unlink ();
 
         std::string const & name () const { return m_descriptor.name; }
         void assign_id (const type::segment_id_t);
