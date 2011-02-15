@@ -24,16 +24,10 @@
 #include <sdpa/daemon/Observable.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
-#include <sdpa/daemon/nre/NreWorkerClient.hpp>
+
 #include <boost/pointer_cast.hpp>
 
-#include <sys/wait.h>
-
-using namespace std;
-
-
 typedef sdpa::daemon::NotificationService gui_service;
-
 
 namespace sdpa {
 	namespace daemon {
@@ -41,7 +35,6 @@ namespace sdpa {
 	  class NRE : public dsm::DaemonFSM,  public sdpa::daemon::Observable {
 	  public:
 		typedef sdpa::shared_ptr<NRE<U> > ptr_t;
-		//typedef typename T::internal_id_type we_internal_id_t;
 
 		SDPA_DECLARE_LOGGER();
 

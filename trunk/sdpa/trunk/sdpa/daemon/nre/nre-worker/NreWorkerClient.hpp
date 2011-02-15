@@ -32,8 +32,9 @@
 
 #include <fhglog/fhglog.hpp>
 
-#include <sdpa/daemon/nre/messages.hpp>
-#include <sdpa/daemon/nre/Codec.hpp>
+#include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
+#include <sdpa/daemon/nre/nre-worker/messages.hpp>
+#include <sdpa/daemon/nre/nre-worker/Codec.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
 
 #include <sstream>
@@ -44,7 +45,7 @@
 #include <sys/wait.h>
 
 #include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-#include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
+
 
 namespace sdpa { namespace nre { namespace worker {
   using boost::asio::ip::udp;

@@ -24,8 +24,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#include <sdpa/daemon/nre/messages.hpp>
-#include <sdpa/daemon/nre/Serialization.hpp>
+#include <sdpa/daemon/nre/nre-worker/messages.hpp>
+#include <sdpa/daemon/nre/nre-worker/Serialization.hpp>
 
 namespace sdpa { namespace nre { namespace worker {
   class Codec

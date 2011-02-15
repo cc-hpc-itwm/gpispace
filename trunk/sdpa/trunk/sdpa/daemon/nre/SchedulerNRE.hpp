@@ -21,7 +21,6 @@
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
-#include <sdpa/daemon/nre/messages.hpp>
 
 using namespace sdpa::events;
 using namespace std;
@@ -93,7 +92,7 @@ namespace sdpa {
 	 	if( force || ptr_comm_handler_->requestsAllowed(diff_time) )
 	 	{
 	 		ptr_comm_handler_->requestJob();
-	 		//SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
+	 		// SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
 
 	 		update_request_time(current_time);
 	 		bReqPosted = true;
@@ -106,8 +105,8 @@ namespace sdpa {
 	 {
 	 	 if( ptr_comm_handler_->is_registered() )
 	 	 {
-	 		 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
-	 		 // post job request if number_of_jobs() < #registered workers +1
+	 		 // SDPA_LOG_DEBUG("Check if a new request is to be posted");
+	 		 // post job request if number_of_jobs() < #registered workers + 1
 	 		 post_request();
 	 	 }
 	 	 else // try to re-register
@@ -130,14 +129,14 @@ namespace sdpa {
 		 execution_result_t result;
 		 encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
 
-		if( !ptr_comm_handler_ )
-		{
-			SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-			result_type output_fail;
-			ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
-			ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
-			return;
-		}
+		 if( !ptr_comm_handler_ )
+		 {
+			 SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+			 result_type output_fail;
+			 ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
+			 ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
+			 return;
+		 }
 
 		try
 		{
@@ -198,7 +197,7 @@ namespace sdpa {
 
 	 void schedule_remote(const sdpa::job_id_t& /*jobId*/)
 	 {
-           throw std::runtime_error ("Schedule remote not implemented for the NREs!");
+		 throw std::runtime_error ("Schedule remote not implemented for the NREs!");
 	 }
 
 	 void run()

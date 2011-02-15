@@ -13,7 +13,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #include "ActivityExecutor.hpp"
-#include <sdpa/daemon/nre/messages.hpp>
+#include <sdpa/daemon/nre/nre-worker/messages.hpp>
 
 static bool verbose (false);
 

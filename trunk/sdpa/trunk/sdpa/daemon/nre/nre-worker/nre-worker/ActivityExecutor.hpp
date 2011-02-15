@@ -26,8 +26,8 @@
 #include <sdpa/memory.hpp>
 
 #include <fhglog/fhglog.hpp>
-#include <sdpa/daemon/nre/ExecutionContext.hpp>
-#include <sdpa/daemon/nre/Codec.hpp>
+#include <sdpa/daemon/nre/nre-worker/ExecutionContext.hpp>
+#include <sdpa/daemon/nre/nre-worker/Codec.hpp>
 
 
 #include <boost/bind.hpp>

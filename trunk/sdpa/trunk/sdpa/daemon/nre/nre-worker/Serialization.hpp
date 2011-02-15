@@ -25,7 +25,7 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
-#include <sdpa/daemon/nre/messages.hpp>
+#include <sdpa/daemon/nre/nre-worker/messages.hpp>
 
 namespace boost { namespace serialization {
   template <class Archive>

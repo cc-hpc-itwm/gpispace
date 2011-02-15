@@ -18,7 +18,7 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/util.hpp>
-#include <sdpa/daemon/nre/NreWorkerClient.hpp>
+#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
 
 
 #include <boost/program_options.hpp>
