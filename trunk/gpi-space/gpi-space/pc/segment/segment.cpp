@@ -63,8 +63,13 @@ namespace gpi
         if (err < 0)
         {
           err = errno;
-          LOG(ERROR, "shared memory segment: " << m_name << " could not be truncated: " << strerror(err));
-          throw std::runtime_error ("shared memory segment could not be truncated");
+          LOG( ERROR
+             , "shared memory segment: " << m_name
+             << " could not be truncated to size: " << m_size
+             << ": " << strerror(err)
+             );
+          throw std::runtime_error
+            ("shared memory segment could not be truncated");
         }
 
         m_ptr = mmap ( NULL
