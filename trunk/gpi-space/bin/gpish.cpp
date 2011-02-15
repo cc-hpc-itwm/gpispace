@@ -122,10 +122,8 @@ int main (int ac, char **av)
     }
   }
 
-  int err;
   std::string prompt;
   std::string line;
-  char buf [2048];
 
   segment_list_t segments;
   gpi::pc::client::api_t capi (socket_path.string());
