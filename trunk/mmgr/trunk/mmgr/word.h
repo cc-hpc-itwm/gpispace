@@ -2,6 +2,7 @@
 #ifndef WORD_H
 #define WORD_H
 
+#include <inttypes.h>
 #include <mmgr/null.h>
 
 #ifdef __cplusplus
@@ -9,7 +10,7 @@ extern "C"
 {
 #endif
 
-  typedef unsigned long Word_t, *PWord_t;
+  typedef uint64_t Word_t, *PWord_t;
 
   typedef Word_t Offset_t, *POffset_t;
   typedef Word_t Size_t, *PSize_t;
