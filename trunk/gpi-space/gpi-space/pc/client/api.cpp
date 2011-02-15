@@ -9,6 +9,8 @@
 #include <signal.h>
 
 #include <boost/bind.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include <fhglog/minimal.hpp>
 
@@ -58,12 +60,18 @@ namespace gpi
         , m_socket (-1)
         , m_connected (false)
       {
-        m_signal_connection =
+        m_sigpipe_connection =
           gpi::signal::handler().connect
           ( SIGPIPE, boost::bind( &api_t::connection_lost
                                 , this
                                 , _1
                                 )
+          );
+        m_sigint_connection =
+          gpi::signal::handler().connect
+          ( SIGINT, boost::bind( &api_t::stop
+                               , this
+                               )
           );
       }
 
@@ -137,58 +145,94 @@ namespace gpi
         return m_path;
       }
 
+      void
+      api_t::communicate( gpi::pc::proto::message_t const & rqst
+                        , gpi::pc::proto::message_t & rply
+                        )
+      {
+        using namespace gpi::pc::proto;
+        int err;
+
+        // serialize
+        std::string data;
+        {
+          std::stringstream sstr;
+          boost::archive::text_oarchive oa (sstr);
+          oa & rqst;
+          data = sstr.str();
+        }
+
+        // send
+        header_t header;
+        header.length = data.size();
+
+        err = this->write (&header, sizeof(header));
+        err = this->write (data.c_str(), data.size());
+
+        // receive
+        std::vector<char> buffer;
+        err = this->read  (&header, sizeof (header));
+
+        buffer.resize (header.length);
+        err = this->read (&buffer[0], header.length);
+
+        // deserialize
+        {
+          std::stringstream sstr (std::string(buffer.begin(), buffer.end()));
+          boost::archive::text_iarchive ia (sstr);
+          ia & rply;
+        }
+      }
+
       type::handle_id_t api_t::alloc ( const type::segment_id_t seg
                                      , const type::size_t sz
-                                     , const type::mode_t perm
+                                     , const std::string & name
+                                     , const type::mode_t flags
                                      )
       {
         using namespace gpi::pc::proto;
 
-        char buf[sizeof(message_t) + 1024];
+        memory::alloc_t alloc_msg;
+        alloc_msg.segment = seg;
+        alloc_msg.size = sz;
+        alloc_msg.name = name;
+        alloc_msg.flags = flags;
 
-        int err;
-        proto::message_t *msg;
+        message_t reply;
+        communicate (alloc_msg, reply);
 
-        msg = (message_t*)&buf;
-        msg->type = message::memory_alloc;
-        msg->length = sizeof (memory::alloc_t);
-        memory::alloc_t *alloc_msg =
-          (memory::alloc_t*)&msg->payload;
-        alloc_msg->segment = seg;
-        alloc_msg->size = sz;
-        alloc_msg->perm = perm;
-
-        err = this->write (buf, msg->length + sizeof(message_t));
-
-        memset (buf, 0, sizeof(buf));
-
-        err = this->read (buf, sizeof (message_t));
-        msg = (proto::message_t*)&buf;
-        LOG(INFO, "read " << err << " bytes");
-
-        // read remaining bytes, resize buffer
-        err = this->read (buf + sizeof(message_t), msg->length);
-        LOG(INFO, "read " << err << " bytes");
-
-        switch (msg->type)
+        try
         {
-        case message::error:
-          {
-            error::error_t *err_msg = msg->as<error::error_t>();
-            LOG(ERROR, "allocation failed: " << err_msg->code);
-            throw std::runtime_error ("bad alloc");
-          }
-        case message::memory_alloc_reply:
-          {
-            memory::alloc_reply_t *alloc_reply
-              = msg->as<memory::alloc_reply_t>();
-            return alloc_reply->handle;
-          }
-        default:
-          {
-            throw std::runtime_error ("not implemented");
-          }
+          memory::alloc_reply_t alloc_rpl (boost::get<memory::alloc_reply_t>(reply));
+          LOG(INFO, "allocation successful: " << alloc_rpl.handle);
+          return alloc_rpl.handle;
         }
+        catch (boost::bad_get const & ex)
+        {
+          LOG(ERROR, "request failed: " << boost::get<error::error_t>(reply).code);
+          throw std::runtime_error ("could not allocate");
+        }
+      }
+
+      type::segment_id_t api_t::attach_memory_segment ( std::string const & name
+                                                      , const gpi::pc::type::size_t size
+                                                      )
+      {
+        using namespace gpi::pc::proto;
+
+        segment::attach_t attach_msg;
+        message_t reply;
+        communicate(attach_msg, reply);
+        try
+        {
+          segment::attach_reply_t rply (boost::get<segment::attach_reply_t>(reply));
+          LOG(INFO, "segment attached: " << rply.id);
+        }
+        catch (boost::bad_get const & ex)
+        {
+        }
+
+        return 0;
       }
     }
   }

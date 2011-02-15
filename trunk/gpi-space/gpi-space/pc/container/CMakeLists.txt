@@ -3,6 +3,7 @@
 set (hdrs
   process.hpp
   process.ipp
+  message_visitor.hpp
 
   connector.hpp
   connector.ipp

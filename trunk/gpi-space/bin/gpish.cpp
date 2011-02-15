@@ -15,6 +15,7 @@
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
+#include <gpi-space/pc/type/segment_descriptor.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -211,7 +212,8 @@ int main (int ac, char **av)
       {
         try
         {
-          gpi::pc::type::handle_id_t hdl(capi.alloc ( 0, 10 ));
+          gpi::pc::type::handle_id_t hdl
+            (capi.alloc (gpi::pc::type::segment::SEG_LOCAL, 1024, "temporary"));
           std::cout << "handle = " << hdl;
         }
         catch (std::exception const & ex)

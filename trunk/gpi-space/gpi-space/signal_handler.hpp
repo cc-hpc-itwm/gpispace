@@ -18,7 +18,7 @@ namespace gpi
     public:
       typedef int signal_t;
       typedef uint64_t connection_id_t;
-      typedef boost::function<int (signal_t)> signal_handler_function_t;
+      typedef boost::function<void (signal_t)> signal_handler_function_t;
 
     private:
       struct registered_function_t
@@ -33,13 +33,13 @@ namespace gpi
           , is_one_shot (one_shot)
         {}
 
-        int operator () (int s)
+        void operator () (int s)
         {
           if (is_one_shot)
           {
             dispose = true;
           }
-          return fun(s);
+          fun(s);
         }
 
         connection_id_t id;

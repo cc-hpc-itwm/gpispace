@@ -8,6 +8,7 @@
 
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/proto/message.hpp>
 
 namespace gpi
 {
@@ -36,17 +37,24 @@ namespace gpi
 
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
+                                , const std::string & desc
                                 , const type::mode_t = 0777
                                 );
-
         void free (const type::handle_id_t);
+
+        type::segment_id_t attach_memory_segment ( std::string const & name
+                                                 , const type::size_t size
+                                                 );
+        void detach_memory_segment (const type::segment_id_t);
       private:
         int connection_lost (int);
+        void communicate (gpi::pc::proto::message_t const &, gpi::pc::proto::message_t &);
 
         std::string m_path;
         int m_socket;
         bool m_connected;
-        gpi::signal::handler_t::connection_t m_signal_connection;
+        gpi::signal::handler_t::connection_t m_sigpipe_connection;
+        gpi::signal::handler_t::connection_t m_sigint_connection;
       };
     }
   }

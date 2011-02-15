@@ -1,9 +1,15 @@
 #ifndef GPI_SPACE_PC_TYPE_SEGMENT_DESCRIPTOR_HPP
 #define GPI_SPACE_PC_TYPE_SEGMENT_DESCRIPTOR_HPP 1
 
+#include <vector>
+
+// serialization
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
+
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/time_stamp.hpp>
-#include <gpi-space/pc/type/generic_list.hpp>
 
 namespace gpi
 {
@@ -21,6 +27,13 @@ namespace gpi
             // the following is just a placeholder
             // shared segment ids are just >= SHARED
             SEG_SHARED,
+          };
+
+        enum flags_type
+          {
+            F_NONE       = 0x00,
+            F_PERSISTENT = 0x01,
+            F_EXCLUSIVE  = 0x02,
           };
 
         struct traits
@@ -48,13 +61,25 @@ namespace gpi
         {
           typedef traits traits_type;
           gpi::pc::type::segment_id_t id;
-          gpi::pc::type::path_t path;
+          gpi::pc::type::name_t name;
           gpi::pc::type::ref_count_t nref;
-          gpi::pc::type::mode_t perm;
+          gpi::pc::type::mode_t flags;
           gpi::pc::type::time_stamp_t ts;
+
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP( id );
+            ar & BOOST_SERIALIZATION_NVP( name );
+            ar & BOOST_SERIALIZATION_NVP( nref );
+            ar & BOOST_SERIALIZATION_NVP( flags );
+            ar & BOOST_SERIALIZATION_NVP( ts );
+          }
         };
 
-        typedef gpi::pc::type::generic_list_t<descriptor_t> list_t;
+        typedef std::vector<descriptor_t> list_t;
       }
     }
   }

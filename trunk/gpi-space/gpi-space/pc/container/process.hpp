@@ -41,9 +41,17 @@ namespace gpi
         void start_thread ();
         void stop_thread ();
 
-        void handle_message (const int fd, const gpi::pc::proto::message_t *);
+        int receive ( const int fd
+                     , gpi::pc::proto::message_t & msg
+                     , const size_t max_size = (1 << 20)
+                     );
+        int send (const int fd, gpi::pc::proto::message_t const & msg);
+
+        gpi::pc::proto::message_t handle_message (const gpi::pc::proto::message_t &);
 
         int close_socket (const int fd);
+        int checked_read (const int fd, void *buf, const size_t len);
+        void decode_buffer (const char *buf, const size_t len, gpi::pc::proto::message_t &);
 
         mutex_type m_mutex;
         manager_type & m_mgr;

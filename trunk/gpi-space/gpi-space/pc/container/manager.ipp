@@ -107,6 +107,13 @@ namespace gpi
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
       {
         lock_type lock (m_mutex);
+
+        if (m_processes.find (id) == m_processes.end())
+        {
+          LOG(WARN, "process id already detached!");
+          return;
+        }
+
         process_ptr_t proc (m_processes.at (id));
         m_processes.erase (id);
         proc->stop ();
