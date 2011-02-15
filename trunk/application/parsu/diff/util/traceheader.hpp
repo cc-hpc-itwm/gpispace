@@ -14,7 +14,7 @@ namespace seislib
     typedef MetaInfoBase<SegYHeader, float> super;
 
   public:
-    
+
     TraceHeader (): super (){}
     TraceHeader (const char * buf) : super (buf) {}
     TraceHeader (const TraceHeader & x) : super(x) {}
@@ -22,8 +22,8 @@ namespace seislib
     TraceHeader operator + (const TraceHeader &) const { return *this; }
     TraceHeader operator - (const TraceHeader &) const { return *this; }
     TraceHeader operator * (const TraceHeader &) const { return *this; }
-    TraceHeader operator * (const typename super::data_type &) const { return *this; }
-    
+    TraceHeader operator * (const super::data_type &) const { return *this; }
+
     friend std::ostream& operator<<( std::ostream & _os,const TraceHeader & _HeaderData)
     {
       const SegYHeader * pSegYData = _HeaderData.getMetaInfo();
@@ -37,10 +37,10 @@ namespace seislib
       _os<<"*** gy = "<<std::setw(10)<<pSegYData->gy<<"               ***"<<std::endl;
       _os<<"***                               ***"<<std::endl;
       _os<<"*************************************"<<std::endl;
-      
+
       return _os;
     }
-    
+
   };
 }
 

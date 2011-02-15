@@ -1,6 +1,5 @@
 <defun name="diff">
 
-  <in name="op" type="string" place="op"/>
   <in name="shmem_per_node" type="long" place="shmem_per_node"/>
   <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
   <in name="file1_input" type="string" place="file1_input"/>
@@ -72,8 +71,6 @@
       <field name="trace" type="long"/>
       <field name="slot" type="long"/>
     </struct>
-
-    <field name="op" type="string"/>
   </struct>
 
   <net>
@@ -100,9 +97,6 @@
     </place>
 
     <!-- necessary parameters -->
-    <place name="op" type="string">
-      <token><value>"@OP@"</value></token>
-    </place>
     <place name="file1_input" type="string">
       <token><value>"@FILE1_INPUT@"</value></token>
     </place>
@@ -134,7 +128,6 @@
         <in name="type_output" type="string"/>
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
-        <in name="op" type="string"/>
         <out name="write_info" type="write_info"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
@@ -144,7 +137,6 @@
                                , type2_input
                                , file_output
                                , type_output
-                               , op
                                , shmem_per_node
                                , gpi_mem_per_node
                                , write_info
@@ -240,7 +232,6 @@
             config.file.input2.type = type2_input;
             config.file.output.name = file_output;
             config.file.output.type = type_output;
-            config.op = op;
 
             write_info.next_trace = give_back_trace = 0;
             write_info.offset = 0;
@@ -264,7 +255,6 @@
       <connect-in port="type_output" place="type_output" />
       <connect-in port="shmem_per_node" place="shmem_per_node" />
       <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
-      <connect-in port="op" place="op"/>
       <connect-out port="write_info" place="write_info"/>
       <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
@@ -336,6 +326,7 @@
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
+          <cinclude href="process.hpp"/>
           <link href="@BUILD@/application/kdm/libdo_load.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
@@ -374,6 +365,20 @@
                     , package.package.num.trace
                     , buf + size / 2
                     );
+
+            const std::size_t size_cleaned
+              ( process::execute ( "segyclean"
+                                 , buf
+                                 , size
+                                 , buf
+                                 , size
+                                 )
+              );
+
+            if (size_cleaned != size)
+              {
+                throw std::runtime_error ("size after segyclean differs");
+              }
 
             comm::put (config, package);
           ]]></code>
@@ -416,38 +421,8 @@
 
             seislib::TraceBunch b1 (buf         , package.package.num.trace, nt);
             seislib::TraceBunch b2 (buf + size/2, package.package.num.trace, nt);
-            std::cout<<"Addr of TraceBunch b1:"<<(void *)buf<<std::endl;
-            std::cout<<"Addr of TraceBunch b2:"<<(void *)(buf + size/2)<<std::endl;
-            std::cout<<"Construction of trace bunches finished"<<std::endl<<std::endl;
 
-//            std::cout << "** B1 " << b1 << std::endl;
-//            std::cout << "** B2 " << b2 << std::endl;
-//
-//            for (int i (0); i < package.package.num.trace; ++i)
-//              {
-//                seislib::Trace t1 (buf +          i * size / package.package.num.trace, nt);
-//                seislib::Trace t2 (buf + size/2 + i * size / package.package.num.trace, nt);
-//
-//                t1 = t1 - t2;
-//              }
-//
-//            seislib::TraceBunch b1 (buf, package.package.num.trace, nt);
-
-            std::cout<<"Making the subtraction..."<<std::endl<<std::endl;
-
-            //for( int i (0); i < package.package.num.trace; ++i)
-            //  b1[i] = b1[i] - b2[i];
             b1 -= b2;
-
-            std::cout << "** BDIFF " << b1 << std::endl;
-
-            b1 += b2; 
-
-            std::cout << "** BINV " << b1 << std::endl;
-
-            // GOAL: b1 = b1 - b2;
-
-            // ULTIMATE GOAL: b1 -= b2; (SUGAR BABY!)
 
             // END NEW STYLE AREA
 

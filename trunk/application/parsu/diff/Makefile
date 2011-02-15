@@ -49,19 +49,20 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 #FILE_OUTPUT      = /fhgfs/HPC/rahn/sgy/c3_na_reg.diff.su
 #TYPE_OUTPUT      = su
 
-FILE1_INPUT      = /u/g/gruenewa/SDPA/trunk/application/parsu/diff/small1.dat
+DAT = /p/hpc/sdpa/mr/trunk/application/parsu/diff
+
+FILE1_INPUT      = $(DAT)/small1.dat
 TYPE1_INPUT      = su
-FILE2_INPUT      = /u/g/gruenewa/SDPA/trunk/application/parsu/diff/small2.dat
+FILE2_INPUT      = $(DAT)/small2.dat
 TYPE2_INPUT      = su
-FILE_OUTPUT      = /u/g/gruenewa/SDPA/trunk/application/parsu/diff/small.diff
+FILE_OUTPUT      = $(DAT)/small.diff
 TYPE_OUTPUT      = su
 
-OP               = diff
 SHMEM_PER_NODE   = 4240 * 4
 GPI_MEM_PER_NODE = 4240 * 10
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE1_INPUT)" "$(TYPE1_INPUT)" "$(FILE2_INPUT)" "$(TYPE2_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(OP)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(BUILD)" > $@
+	$(CAT) $< | $(MK_XML) "$(FILE1_INPUT)" "$(TYPE1_INPUT)" "$(FILE2_INPUT)" "$(TYPE2_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(BUILD)" > $@
 
 ###############################################################################
 

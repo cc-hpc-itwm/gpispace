@@ -6,15 +6,13 @@ FILE2_INPUT=${3:?}
 TYPE2_INPUT=${4:?}
 FILE_OUTPUT=${5:?}
 TYPE_OUTPUT=${6:?}
-OP=${7:?}
-SHMEM_PER_NODE=${8:?}
-GPI_MEM_PER_NODE=${9:?}
-BUILD=${10:?}
+SHMEM_PER_NODE=${7:?}
+GPI_MEM_PER_NODE=${8:?}
+BUILD=${9:?}
 
 /usr/bin/sed                                 \
   "s|@SHMEM_PER_NODE@|${SHMEM_PER_NODE}|     \
   ;s|@GPI_MEM_PER_NODE@|${GPI_MEM_PER_NODE}| \
-  ;s|@OP@|${OP}|                             \
   ;s|@FILE1_INPUT@|${FILE1_INPUT}|           \
   ;s|@FILE2_INPUT@|${FILE2_INPUT}|           \
   ;s|@FILE_OUTPUT@|${FILE_OUTPUT}|           \
