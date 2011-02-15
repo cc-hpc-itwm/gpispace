@@ -326,7 +326,7 @@
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
-          <cinclude href="process.hpp"/>
+          <cinclude href="tracebunch.hpp"/>
           <link href="@BUILD@/application/kdm/libdo_load.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
@@ -366,19 +366,18 @@
                     , buf + size / 2
                     );
 
-            const std::size_t size_cleaned
-              ( process::execute ( "segyclean"
-                                 , buf
-                                 , size
-                                 , buf
-                                 , size
-                                 )
-              );
+            // WORK HERE:
+	    // instead of calling segyclean, we call a clear routine
+            // on each traceheader
 
-            if (size_cleaned != size)
-              {
-                throw std::runtime_error ("size after segyclean differs");
-              }
+            const unsigned nt
+              ((package.package.size.trace/2 - sizeof(SegYHeader))/sizeof(float));
+
+            seislib::TraceBunch b (buf, 2*package.package.num.trace, nt);
+
+            // This is not implemented yet, for now, we call the clear
+            // as a side effect of -=
+	    // b.call (clear());
 
             comm::put (config, package);
           ]]></code>
@@ -400,10 +399,8 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
-          <cinclude href="process.hpp"/>
           <cinclude href="tracebunch.hpp"/>
           <cinclude href="SegYHeader.h"/>
-          <link href="@BUILD@/application/example/exec/libprocess.so"/>
           <code><![CDATA[
             LOG (INFO, "DIFF-START " << ::print::loaded_package (package));
 

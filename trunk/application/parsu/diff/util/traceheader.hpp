@@ -6,6 +6,8 @@
 #include <SegYHeader.h>
 #include <MetaInfo.h>
 
+#include <algorithm>
+
 namespace seislib
 {
   class TraceHeader : public MetaInfoBase<SegYHeader, float>
@@ -15,12 +17,22 @@ namespace seislib
 
   public:
 
-    TraceHeader (): super (){}
+    void clear () const
+    {
+      SegYHeader * H (const_cast<SegYHeader *> (getMetaInfo()));
+
+      if (H)
+	{
+	  std::fill (H->unass, H->unass + 30, 0);
+	}
+    }
+
+    TraceHeader (): super () {}
     TraceHeader (const char * buf) : super (buf) {}
     TraceHeader (const TraceHeader & x) : super(x) {}
 
     TraceHeader operator + (const TraceHeader &) const { return *this; }
-    TraceHeader operator - (const TraceHeader &) const { return *this; }
+    TraceHeader operator - (const TraceHeader &) const { clear(); return *this; }
     TraceHeader operator * (const TraceHeader &) const { return *this; }
     TraceHeader operator * (const super::data_type &) const { return *this; }
 
