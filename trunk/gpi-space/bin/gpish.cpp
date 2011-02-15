@@ -241,56 +241,37 @@ int main (int ac, char **av)
       }
       else if (line == "list")
       {
-        std::cout << "segments..." << std::endl;
-        gpi::pc::type::segment::list_t segments(capi.list_segments());
-        for ( gpi::pc::type::segment::list_t::const_iterator it (segments.begin())
-            ; it != segments.end()
-            ; ++it
-            )
+        try
         {
-          std::cout << *it << std::endl;
-        }
+          gpi::pc::type::segment::list_t segments(capi.list_segments());
 
-        std::cout << "allocations..." << std::endl;
-        gpi::pc::type::handle::list_t handles (capi.list_allocations(gpi::pc::type::segment::SEG_INVAL));
-        for ( gpi::pc::type::handle::list_t::const_iterator hdl (handles.begin())
-            ; hdl != handles.end()
-            ; ++hdl
-            )
+          std::cout << "segments..." << std::endl;
+          for ( gpi::pc::type::segment::list_t::const_iterator it (segments.begin())
+              ; it != segments.end()
+              ; ++it
+              )
+          {
+            std::cout << *it << std::endl;
+          }
+
+          gpi::pc::type::handle::list_t handles (capi.list_allocations(gpi::pc::type::segment::SEG_INVAL));
+          std::cout << "allocations..." << std::endl;
+          for ( gpi::pc::type::handle::list_t::const_iterator hdl (handles.begin())
+              ; hdl != handles.end()
+              ; ++hdl
+              )
+          {
+            std::cout << *hdl << std::endl;
+          }
+        }
+        catch (std::exception const & ex)
         {
-          std::cout << *hdl << std::endl;
+          std::cerr << "list failed: " << ex.what () << std::endl;
         }
       }
       else
       {
-        // send request to gpi
-        err = capi.write (line.c_str(), line.size());
-        if (err < 0)
-        {
-          std::cerr << "could not send request to gpi: " << strerror(errno) << std::endl;
-          capi.stop ();
-        }
-        else if (err == 0)
-        {
-          // connection is still alive
-        }
-        else
-        {
-          memset (buf, 0, sizeof(buf));
-          // wait for a reply
-          err = capi.read (buf, sizeof(buf));
-          if (err < 0)
-          {
-            std::cerr << "could not read reply from gpi: " << strerror(errno) << std::endl;
-            capi.stop ();
-          }
-          else
-          {
-            buf[err] = 0;
-            // handle reply message
-            std::cout << buf << std::endl;
-          }
-        }
+        std::cerr << "Invalid command!" << std::endl;
       }
     }
   }
