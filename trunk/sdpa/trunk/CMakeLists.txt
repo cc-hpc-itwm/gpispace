@@ -82,12 +82,14 @@ else(UUID_FOUND)
 endif(UUID_FOUND)
 
 # we library
-include(FindWE)
-if (WE_FOUND)
-  include_directories(${WE_INCLUDE_DIR})
-else(WE_FOUND)
-  message(FATAL_ERROR "WE could not be found but is required")
-endif(WE_FOUND)
+if (USE_REAL_WE)
+	include(FindWE)
+	if (WE_FOUND)
+	  include_directories(${WE_INCLUDE_DIR})
+	else(WE_FOUND)
+	  message(FATAL_ERROR "WE could not be found but is required")
+	endif(WE_FOUND)
+endif (USE_REAL_WE)
 
 ## find zlib
 find_package(ZLIB REQUIRED)
