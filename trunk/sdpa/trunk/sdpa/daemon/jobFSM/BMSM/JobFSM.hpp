@@ -43,12 +43,12 @@
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 
-char const* const state_names[] = { "SDPA::Pending"
-				  , "SDPA::Running"
-				  , "SDPA::Finished"
-				  , "SDPA::Failed"
-				  , "SDPA::Cancelling"
-				  , "SDPA::Cancelled"
+char const* const state_names[] = { 	"SDPA::Pending"
+				  	  	  	  	  	  , "SDPA::Running"
+				  	  	  	  	  	  , "SDPA::Finished"
+				  	  	  	  	  	  , "SDPA::Failed"
+				  	  	  	  	  	  , "SDPA::Cancelling"
+				  	  	  	  	  	  , "SDPA::Cancelled"
                                   };
 
 namespace sdpa {
