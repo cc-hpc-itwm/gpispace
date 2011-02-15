@@ -9,6 +9,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <fhglog/minimal.hpp>
 
@@ -26,6 +27,9 @@ static bool read_user_input ( const std::string & prompt
 static std::string const & version ();
 
 typedef std::vector<boost::filesystem::path> path_list_t;
+typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
+typedef std::vector<segment_ptr> segment_list_t;
+
 static path_list_t collect_sockets (fs::path const & prefix);
 std::ostream & operator << (std::ostream &os, path_list_t const & pl)
 {
@@ -123,6 +127,7 @@ int main (int ac, char **av)
   std::string line;
   char buf [2048];
 
+  segment_list_t segments;
   gpi::pc::client::api_t capi (socket_path.string());
 
   if (fs::exists (socket_path))
@@ -200,29 +205,21 @@ int main (int ac, char **av)
     }
     else if (line == "segment")
     {
-      gpi::pc::segment::segment_t seg ("foo", 1024);
+      segment_ptr seg (new gpi::pc::segment::segment_t("/gpish", 1024));
 
       try
       {
-        seg.cleanup ();
+        seg->cleanup ();
 
-        seg.create ();
+        seg->create ();
 
-        gpi::pc::type::segment_id_t id = capi.register_segment ( seg.name()
-                                                               , seg.size()
+        gpi::pc::type::segment_id_t id = capi.register_segment ( seg->name()
+                                                               , seg->size()
                                                                );
-        seg.assign_id (id);
+        seg->assign_id (id);
         std::cout << "segment id: " << id << std::endl;
 
-        gpi::pc::type::segment::list_t segments;
-        segments = capi.list_segments ();
-        for ( gpi::pc::type::segment::list_t::const_iterator it (segments.begin())
-            ; it != segments.end()
-            ; ++it
-            )
-        {
-          std::cout << it->id << " " << it->name << " " << it->nref << " " << std::hex << (int)it->flags << std::endl;
-        }
+        segments.push_back (seg);
       }
       catch (std::exception const & ex)
       {
@@ -242,6 +239,29 @@ int main (int ac, char **av)
         catch (std::exception const & ex)
         {
           std::cerr << "failed: " << ex.what () << std::endl;
+        }
+      }
+      else if (line == "list")
+      {
+        std::cout << "segments..." << std::endl;
+        gpi::pc::type::segment::list_t segments(capi.list_segments());
+        for ( gpi::pc::type::segment::list_t::const_iterator it (segments.begin())
+            ; it != segments.end()
+            ; ++it
+            )
+        {
+          std::cout << it->id << "\t" << it->name << "\t" << it->size << "\t" << it->nref << "\t" << std::hex << (int)it->flags << std::dec
+                    << std::endl;
+        }
+
+        std::cout << "allocations..." << std::endl;
+        gpi::pc::type::handle::list_t handles (capi.list_allocations(gpi::pc::type::segment::SEG_INVAL));
+        for ( gpi::pc::type::handle::list_t::const_iterator hdl (handles.begin())
+            ; hdl != handles.end()
+            ; ++hdl
+            )
+        {
+          std::cout << hdl->id << "\t" << hdl->name << "\t" << hdl->size << "\t" << hdl->segment << std::endl;
         }
       }
       else

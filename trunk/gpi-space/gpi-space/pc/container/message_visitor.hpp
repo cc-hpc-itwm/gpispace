@@ -41,6 +41,7 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
+              LOG(ERROR, "allocation of " << alloc.size << " bytes in segment " << alloc.segment << " failed: " << ex.what());
               gpi::pc::proto::error::error_t error;
               error.code = gpi::pc::proto::error::bad_request;
               error.detail = ex.what();

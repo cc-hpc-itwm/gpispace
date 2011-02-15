@@ -209,8 +209,9 @@ namespace gpi
         }
         catch (boost::bad_get const & ex)
         {
-          LOG(ERROR, "request failed: " << boost::get<error::error_t>(reply).code);
-          throw std::runtime_error ("could not allocate");
+          error::error_t error (boost::get<error::error_t>(reply));
+          LOG(ERROR, "request failed: " << error.code << ": " << error.detail);
+          throw std::runtime_error (error.detail);
         }
       }
 
@@ -274,6 +275,29 @@ namespace gpi
           LOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
           //          throw wrap (result);
           throw std::runtime_error ("segment listing failed: " + result.detail);
+        }
+      }
+
+
+      gpi::pc::type::handle::list_t
+      api_t::list_allocations (const gpi::pc::type::segment_id_t seg)
+      {
+        using namespace gpi::pc::proto;
+        memory::list_t rqst;
+        rqst.segment = seg;
+
+        message_t rply (communicate(rqst));
+        try
+        {
+          memory::list_reply_t handles (boost::get<memory::list_reply_t> (rply));
+          return handles.list;
+        }
+        catch (boost::bad_get const &)
+        {
+          error::error_t result (boost::get<error::error_t>(rply));
+          LOG(ERROR, "could not get handle list: " << result.code << ": " << result.detail);
+          //          throw wrap (result);
+          throw std::runtime_error ("handle listing failed: " + result.detail);
         }
       }
     }

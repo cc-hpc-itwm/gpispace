@@ -6,7 +6,7 @@
 
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/container/connector.hpp>
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <gpi-space/pc/segment/manager.hpp>
 
 namespace gpi
 {
@@ -27,6 +27,7 @@ namespace gpi
 
       public:
         typedef manager_t self;
+        typedef gpi::pc::segment::manager_t segment_manager_type;
         typedef gpi::pc::container::process_t<manager_t> process_type;
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
@@ -55,6 +56,8 @@ namespace gpi
                                                      , const gpi::pc::type::flags_t flags
                                                      );
 
+        gpi::pc::type::segment::list_t list_segments () const;
+
       private:
         typedef boost::shared_ptr<process_type> process_ptr_t;
         typedef boost::unordered_map<gpi::pc::type::id_t, process_ptr_t> process_map_t;
@@ -77,6 +80,8 @@ namespace gpi
         gpi::pc::type::process_id_t m_process_id;
         process_map_t m_processes;
         process_list_t m_detached_processes;
+
+        segment_manager_type m_segment_mgr;
       };
     }
   }

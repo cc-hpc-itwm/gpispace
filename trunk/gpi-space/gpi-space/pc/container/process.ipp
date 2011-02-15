@@ -335,8 +335,7 @@ namespace gpi
       gpi::pc::type::segment::list_t
       process_t<M>::list_segments()
       {
-        gpi::pc::type::segment::list_t segments;
-        return segments;
+        return m_mgr.list_segments ();
       }
 
       template <typename M>

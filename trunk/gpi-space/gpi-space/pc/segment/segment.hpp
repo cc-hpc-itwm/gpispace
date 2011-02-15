@@ -18,12 +18,11 @@ namespace gpi
         segment_t ( std::string const & name
                   , type::size_t sz
                   , type::segment_id_t id = type::segment::SEG_INVAL
-                  , bool persistent=false
                   );
 
         ~segment_t ();
 
-        void create ();
+        void create (bool persistent = false);
         void open ();
         void close ();
         void cleanup ();
@@ -45,7 +44,6 @@ namespace gpi
         gpi::pc::type::segment::descriptor_t m_descriptor;
         bool m_persistent;
         void *m_ptr;
-        int m_fd;
       };
     }
   }

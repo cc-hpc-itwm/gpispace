@@ -62,11 +62,21 @@ namespace gpi
         {
           typedef traits traits_type;
           gpi::pc::type::segment_id_t id;
+          gpi::pc::type::process_id_t creator;
           gpi::pc::type::name_t name;
           gpi::pc::type::size_t size;
           gpi::pc::type::ref_count_t nref;
           gpi::pc::type::flags_t flags;
           gpi::pc::type::time_stamp_t ts;
+
+          descriptor_t ()
+            : id (SEG_INVAL)
+            , creator (0)
+            , name ("")
+            , size (0)
+            , nref (0)
+            , flags (0)
+          {}
 
         private:
           friend class boost::serialization::access;
@@ -74,6 +84,7 @@ namespace gpi
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( id );
+            ar & BOOST_SERIALIZATION_NVP( creator );
             ar & BOOST_SERIALIZATION_NVP( name );
             ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP( nref );

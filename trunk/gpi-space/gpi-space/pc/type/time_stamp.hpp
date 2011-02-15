@@ -18,6 +18,12 @@ namespace gpi
         gpi::pc::type::time_t modified;
         gpi::pc::type::time_t accessed;
 
+        time_stamp_t ()
+          : created (0)
+          , modified (0)
+          , accessed (0)
+        {}
+
         private:
           friend class boost::serialization::access;
           template<typename Archive>

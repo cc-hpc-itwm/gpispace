@@ -30,11 +30,8 @@ namespace gpi
       segment_t::segment_t ( std::string const & nme
                            , type::size_t sz
                            , type::segment_id_t id
-                           , bool persistent
                            )
-        : m_persistent (persistent)
-        , m_ptr (0)
-        , m_fd (-1)
+        : m_ptr (0)
       {
         if (nme.empty())
           throw std::runtime_error ("invalid name argument to segment_t(): name must not be empty");
@@ -47,21 +44,20 @@ namespace gpi
         m_descriptor.id = id;
       }
 
-      void segment_t::create ()
+      void segment_t::create (bool persistent)
       {
         int err (0);
-        err = shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
-        if (err < 0)
+        int fd (-1);
+
+        fd = shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
+        if (fd < 0)
         {
           err = errno;
           LOG(ERROR, "shared memory segment: " << name() << " could not be created: " << strerror(err));
           throw std::runtime_error ("shared memory segment could not be created");
         }
-        else
-        {
-          m_fd = err;
-        }
-        err = ftruncate (m_fd, size());
+
+        err = ftruncate (fd, size());
         if (err < 0)
         {
           err = errno;
@@ -70,6 +66,7 @@ namespace gpi
              << " could not be truncated to size: " << size()
              << ": " << strerror(err)
              );
+          ::close (fd);
           throw std::runtime_error
             ("shared memory segment could not be truncated");
         }
@@ -78,48 +75,52 @@ namespace gpi
                      , size()
                      , PROT_READ | PROT_WRITE
                      , MAP_SHARED
-                     , m_fd
+                     , fd
                      , 0
                      );
         if (m_ptr == (void*)-1)
         {
           err = errno;
           LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << strerror(err));
+          ::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
 
+        ::close (fd);
         LOG(INFO, "shared memory segment " << name() << " created: " << m_ptr);
+
+        m_persistent = persistent;
       }
 
       void segment_t::open ()
       {
         int err (0);
-        err = shm_open (name().c_str(), O_RDWR, 0);
-        if (err < 0)
+        int fd (-1);
+
+        fd = shm_open (name().c_str(), O_RDWR, 0);
+        if (fd < 0)
         {
           err = errno;
           LOG(ERROR, "shared memory segment: " << name() << " could not be opened: " << strerror(err));
           throw std::runtime_error ("shared memory segment could not be opened");
-        }
-        else
-        {
-          m_fd = err;
         }
 
         m_ptr = mmap ( NULL
                      , size()
                      , PROT_READ | PROT_WRITE
                      , MAP_SHARED
-                     , m_fd
+                     , fd
                      , 0
                      );
         if (m_ptr == (void*)-1)
         {
           err = errno;
           LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << strerror(err));
+          ::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
 
+        ::close (fd);
         DLOG(INFO, "shared memory segment " << name() << " created: " << m_ptr);
       }
 
@@ -127,7 +128,6 @@ namespace gpi
       {
         if (m_ptr)
         {
-          ::close (m_fd);
           munmap (m_ptr, size());
           if (! m_persistent)
           {

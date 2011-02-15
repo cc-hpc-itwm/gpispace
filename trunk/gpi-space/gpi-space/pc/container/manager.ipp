@@ -206,24 +206,19 @@ namespace gpi
                                                               , const gpi::pc::type::flags_t flags
                                                               )
       {
-        lock_type lock (m_mutex);
+        gpi::pc::type::segment_id_t seg_id
+          ( m_segment_mgr.register_segment (pc_id, name, sz, flags) );
 
-        LOG(TRACE, "registering new shared memory segment: " << name << " with size " << sz << " via process " << pc_id);
+        // TODO: add segment id to segment-set of process
+        //          1. proc->segments.insert (seg_id)
+        //          2. mgr->reference (seg_id) // increase refcount
 
-        gpi::pc::segment::segment_t seg (name, sz);
+        return seg_id;
+      }
 
-        try
-        {
-          seg.open ();
-          seg.assign_id (42);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not register shared memory: " << ex.what());
-          throw;
-        }
-
-        return seg.id ();
+      gpi::pc::type::segment::list_t manager_t::list_segments () const
+      {
+        return m_segment_mgr.get_listing ();
       }
     }
   }

@@ -41,6 +41,7 @@ namespace gpi
                                 , const type::flags_t = 0777
                                 );
         void free (const type::handle_id_t);
+        gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg = gpi::pc::type::segment::SEG_INVAL);
 
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz
