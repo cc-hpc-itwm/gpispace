@@ -78,10 +78,7 @@ BOOST_AUTO_TEST_CASE ( proto_segment_test )
 
   {
     proto::segment::attach_t req;
-    req.name = "/foo";
-
-    proto::segment::attach_reply_t rpl;
-    rpl.id = 0;
+    req.id = 1;
   }
 
   {
