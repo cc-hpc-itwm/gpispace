@@ -1,10 +1,6 @@
 #ifndef SDPA_JOB_HPP
 #define SDPA_JOB_HPP 1
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
-#define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
-
 #include <string>
 #include <vector>
 #include <utility>
@@ -12,7 +8,24 @@
 #include <sdpa/types.hpp>
 #include <sdpa/util/Properties.hpp>
 
-#include <boost/statechart/event_base.hpp>
+#if defined(USE_BOOST_SC)
+    // ap: is this really necessary? are the defaults not large enough?
+    // those defines should go to some configuration header
+    // or passed as -D to the compiler
+#   define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+
+#   if defined(BOOST_MPL_LIMIT_VECTOR_SIZE)
+#     undef BOOST_MPL_LIMIT_VECTOR_SIZE
+#   endif
+#   define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
+
+#   if defined(BOOST_MPL_LIMIT_MAP_SIZE)
+#     undef BOOST_MPL_LIMIT_MAP_SIZE
+#   endif
+#   define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
+#   include <boost/statechart/event_base.hpp>
+#endif
+
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
