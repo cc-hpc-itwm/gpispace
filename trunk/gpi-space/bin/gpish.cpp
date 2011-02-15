@@ -248,8 +248,7 @@ int main (int ac, char **av)
             ; ++it
             )
         {
-          std::cout << it->id << "\t" << it->name << "\t" << it->size << "\t" << it->ts.created << "\t" << it->nref << "\t" << std::hex << (int)it->flags << std::dec
-                    << std::endl;
+          std::cout << *it << std::endl;
         }
 
         std::cout << "allocations..." << std::endl;
@@ -259,7 +258,7 @@ int main (int ac, char **av)
             ; ++hdl
             )
         {
-          std::cout << hdl->id << "\t" << hdl->name << "\t" << hdl->size << "\t" << hdl->segment << std::endl;
+          std::cout << *hdl << std::endl;
         }
       }
       else
