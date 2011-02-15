@@ -1,6 +1,7 @@
 #ifndef GPI_SPACE_PC_TYPE_TIMESTAMP_HPP
 #define GPI_SPACE_PC_TYPE_TIMESTAMP_HPP 1
 
+#include <time.h>
 #include <sys/time.h>
 
 // serialization
@@ -62,9 +63,7 @@ namespace gpi
 
         static gpi::pc::type::time_t now ()
         {
-          timeval tv;
-          gettimeofday (&tv, NULL);
-          return ((tv.tv_sec * 1000 * 1000) + tv.tv_usec);
+          return time(NULL);
         }
 
         private:
