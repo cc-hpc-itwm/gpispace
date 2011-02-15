@@ -11,6 +11,10 @@
 
 #define NCHILD (1 << TRIE_BITS)
 
+#define REM(x)  ((x) & (NCHILD - 1))
+#define QUOT(x) ((x) >> TRIE_BITS)
+#define DIV(x)  ((x) >>= TRIE_BITS)
+
 typedef int ItChild_t;
 
 #define FOR_CHILD(id) for (ItChild_t id = 0; id < NCHILD; ++id)
@@ -47,14 +51,14 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
 
   while (Key > 0)
     {
-      if (PTrie->child[Key % NCHILD] == NULL)
+      if (PTrie->child[REM(Key)] == NULL)
         {
-          PTrie->child[Key % NCHILD] = empty ();
+          PTrie->child[REM(Key)] = empty ();
         }
 
-      PTrie = PTrie->child[Key % NCHILD];
+      PTrie = PTrie->child[REM(Key)];
 
-      Key /= NCHILD;
+      DIV (Key);
     }
 
   if (Pwas_there != NULL)
@@ -104,9 +108,9 @@ trie_get (const PTrieMap_t PCTrie, Key_t Key)
 
   while (PTrie != NULL && Key > 0)
     {
-      PTrie = PTrie->child[Key % NCHILD];
+      PTrie = PTrie->child[REM(Key)];
 
-      Key /= NCHILD;
+      DIV (Key);
     }
 
   return (PTrie == NULL) ? NULL : PTrie->data;
@@ -122,7 +126,7 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
     {
       const PTrie_t PTrie = *(PTrie_t *) PPTrie;
 
-      trie_del (&(PTrie->child[Key % NCHILD]), Key / NCHILD, fUser);
+      trie_del (&(PTrie->child[REM(Key)]), QUOT(Key), fUser);
 
       FOR_CHILD (child) if (PTrie->child[child] != NULL)
         return;
