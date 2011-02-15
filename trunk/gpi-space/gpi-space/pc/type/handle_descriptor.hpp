@@ -60,6 +60,8 @@ namespace gpi
         std::ostream & operator<< (std::ostream & os, const descriptor_t & d)
         {
           std::ios_base::fmtflags saved_flags (os.flags());
+          char saved_fill = os.fill (' ');
+          std::size_t saved_width = os.width (0);
 
           // ID
           os.flags (std::ios::right | std::ios::dec);
@@ -74,10 +76,13 @@ namespace gpi
           os << " ";
 
           // FLAGS
-          os.flags (std::ios::right | std::ios::hex | std::ios::showbase);
+          os.flags (std::ios::right | std::ios::hex);
+          os.width (0);
+          os << "0x";
+          os.width (sizeof(gpi::pc::type::flags_t)*2);
           os.fill ('0');
-          os.width (4);
           os << d.flags;
+          os.fill (' ');
           os << " ";
 
           // OFFSET
@@ -112,6 +117,8 @@ namespace gpi
           os << "  ";
 
           os.flags (saved_flags);
+          os.fill (saved_fill);
+          os.width (saved_width);
 
           return os;
         }
