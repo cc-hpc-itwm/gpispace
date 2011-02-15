@@ -203,27 +203,6 @@ int main (int ac, char **av)
     {
       capi.stop ();
     }
-    else if (line == "segment")
-    {
-      segment_ptr seg (new gpi::pc::segment::segment_t("/gpish", 1024));
-
-      try
-      {
-        seg->create ();
-
-        gpi::pc::type::segment_id_t id = capi.register_segment ( seg->name()
-                                                               , seg->size()
-                                                               );
-        seg->assign_id (id);
-        std::cout << "segment id: " << id << std::endl;
-
-        segments.push_back (seg);
-      }
-      catch (std::exception const & ex)
-      {
-        std::cerr << "failed: " << ex.what() << std::endl;
-      }
-    }
     else if (capi.is_connected())
     {
       if (line == "alloc")
@@ -237,6 +216,27 @@ int main (int ac, char **av)
         catch (std::exception const & ex)
         {
           std::cerr << "failed: " << ex.what () << std::endl;
+        }
+      }
+      else if (line == "segment")
+      {
+        segment_ptr seg (new gpi::pc::segment::segment_t("gpish", (128 * (1 << 20))));
+
+        try
+        {
+          seg->create ();
+
+          gpi::pc::type::segment_id_t id = capi.register_segment ( seg->name()
+                                                                 , seg->size()
+                                                                 );
+          seg->assign_id (id);
+          std::cout << "segment id: " << id << std::endl;
+
+          segments.push_back (seg);
+        }
+        catch (std::exception const & ex)
+        {
+        std::cerr << "failed: " << ex.what() << std::endl;
         }
       }
       else if (line == "list")
