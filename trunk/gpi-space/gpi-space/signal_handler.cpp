@@ -162,6 +162,7 @@ namespace gpi
       sigset_t restrict;
 
       sigemptyset (&restrict);
+      sigaddset (&restrict, SIGALRM);
       sigaddset (&restrict, SIGTSTP);
       sigaddset (&restrict, SIGCONT);
       sigaddset (&restrict, SIGINT);
