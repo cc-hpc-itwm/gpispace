@@ -41,14 +41,20 @@
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
 
-//#include <sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.hpp>
-#include <sdpa/daemon/nre/messages.hpp>
+//#include <sdpa/daemon/nre/messages.hpp>
 
 #include <boost/filesystem/path.hpp>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
+
+#ifdef USE_REAL_WE
+	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
+#else
+	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
+#endif
+
 
 const int NMAXTRIALS=5;
 

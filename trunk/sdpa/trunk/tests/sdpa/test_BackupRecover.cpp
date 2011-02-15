@@ -35,6 +35,14 @@
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 
+#ifdef USE_REAL_WE
+	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+#else
+	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
+	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
+#endif
+
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/Strategy.hpp>
@@ -53,11 +61,9 @@ using namespace sdpa;
 using namespace std;
 using namespace seda;
 
-
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("12100"); return s; }
 
-typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 
 struct MyFixture
 {

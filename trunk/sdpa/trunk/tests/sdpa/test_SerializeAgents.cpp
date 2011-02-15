@@ -31,10 +31,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 
-#include <sdpa/engine/DummyWorkflowEngine.hpp>
-#include <sdpa/engine/EmptyWorkflowEngine.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
-
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/Strategy.hpp>
@@ -45,13 +41,27 @@
 #include <fhgcom/tcp_server.hpp>
 #include <boost/thread.hpp>
 
+#include <sdpa/engine/DummyWorkflowEngine.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
+#include <sdpa/engine/RealWorkflowEngine.hpp>
+
+#ifdef USE_REAL_WE
+	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
+#else
+	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
+#endif
+
+#ifdef USE_REAL_WE
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+#else
+	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
+#endif
+
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
 using namespace sdpa;
 using namespace std;
 using namespace seda;
-
-typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
 
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("12100"); return s; }

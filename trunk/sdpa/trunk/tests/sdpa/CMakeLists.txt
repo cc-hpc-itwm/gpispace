@@ -34,7 +34,6 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 set (test_srcs
   SchedulerTestImpl.cpp
   test_Config.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 )
 
@@ -127,7 +126,6 @@ add_test(test_serialize_jobptr_suite test_serialize_jobptr_suite)
 
 set( test_serialize_agents_srcs
   	test_SerializeAgents.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 
 add_executable(test_serialize_agents_suite ${test_serialize_agents_srcs})
@@ -161,7 +159,6 @@ endif (USE_REAL_WE)
 
 set( test_agents_src
   	test_Agents.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
 )
 
 add_executable(test_agents_suite ${test_agents_src})
