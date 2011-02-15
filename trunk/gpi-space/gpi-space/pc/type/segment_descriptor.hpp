@@ -2,6 +2,8 @@
 #define GPI_SPACE_PC_TYPE_SEGMENT_DESCRIPTOR_HPP 1
 
 #include <vector>
+#include <iostream>
+#include <iomanip>
 
 // serialization
 #include <boost/serialization/nvp.hpp>
@@ -94,6 +96,74 @@ namespace gpi
         };
 
         typedef std::vector<descriptor_t> list_t;
+
+        inline
+        std::ostream & operator << (std::ostream & os, const descriptor_t & d)
+        {
+          std::ios_base::fmtflags saved_flags (os.flags());
+
+          // ID
+          os.flags (std::ios::right | std::ios::dec);
+          os.width (5);
+          os << d.id;
+          os << " ";
+
+          // REFCOUNT
+          os.flags (std::ios::right | std::ios::dec);
+          os.width (4);
+          os << d.nref;
+          os << " ";
+
+          // FLAGS
+          os.flags (std::ios::right | std::ios::hex | std::ios::showbase);
+          os.fill ('0');
+          os.width (4);
+          os << d.flags;
+          os << " ";
+
+          // SIZE
+          os.flags (std::ios::right | std::ios::dec);
+          os.width (12);
+          os << d.size;
+          os << " ";
+
+          // CREATION TIME
+          //    "%Y-%m-%d %H:%M"
+          os.flags (std::ios::right | std::ios::dec);
+          os.width (17);
+
+          char buf[32];
+          {
+            struct tm tmp_tm;
+            localtime_r (&d.ts.created, &tmp_tm);
+            strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M", &tmp_tm);
+          }
+          os << buf;
+          os << " ";
+
+          // NAME
+          os.flags (std::ios::left);
+          os << d.name;
+          os << "  ";
+
+          os.flags (saved_flags);
+
+          return os;
+        }
+
+        inline
+        std::ostream & operator<< (std::ostream & os, const list_t & list)
+        {
+          for ( list_t::const_iterator it (list.begin())
+              ; it != list.end()
+              ; ++it
+              )
+          {
+            os << *it << std::endl;
+          }
+
+          return os;
+        }
       }
     }
   }
