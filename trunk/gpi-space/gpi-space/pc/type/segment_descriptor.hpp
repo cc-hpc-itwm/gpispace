@@ -63,6 +63,7 @@ namespace gpi
           typedef traits traits_type;
           gpi::pc::type::segment_id_t id;
           gpi::pc::type::name_t name;
+          gpi::pc::type::size_t size;
           gpi::pc::type::ref_count_t nref;
           gpi::pc::type::flags_t flags;
           gpi::pc::type::time_stamp_t ts;
@@ -74,6 +75,7 @@ namespace gpi
           {
             ar & BOOST_SERIALIZATION_NVP( id );
             ar & BOOST_SERIALIZATION_NVP( name );
+            ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP( nref );
             ar & BOOST_SERIALIZATION_NVP( flags );
             ar & BOOST_SERIALIZATION_NVP( ts );
