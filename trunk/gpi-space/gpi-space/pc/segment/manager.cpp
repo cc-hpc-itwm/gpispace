@@ -14,10 +14,29 @@ namespace gpi
 
       manager_t::~manager_t ()
       {
+        try
+        {
+          clear ();
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not clear segment manager: " << ex.what());
+        }
+      }
+
+      void
+      manager_t::clear ()
+      {
+        // preconditions:
         // make sure that there are no remaining
         // accesses to segments queued
 
         //     i.e. cancel/remove all items in the memory transfer component
+        lock_type lock (m_mutex);
+        while (! m_segments.empty())
+        {
+          unregister_segment (m_segments.begin()->first);
+        }
       }
 
       gpi::pc::type::segment_id_t
@@ -27,8 +46,6 @@ namespace gpi
                                   , const gpi::pc::type::flags_t flags
                                   )
       {
-        LOG(TRACE, "registering new shared memory segment: " << name << " with size " << sz << " via process " << creator);
-
         try
         {
           segment_ptr seg (new gpi::pc::segment::segment_t (name, sz));
@@ -47,10 +64,17 @@ namespace gpi
           ++m_segment_id;
 
           seg->descriptor().creator = creator;
+          seg->descriptor().flags = flags;
 
-          // TODO: update timestamps
+          // important: if F_EXCLUSIVE is set, F_NOUNLINK does not make any sense
+          if (seg->descriptor().flags & gpi::pc::type::segment::F_EXCLUSIVE)
+          {
+            seg->unlink();
+          }
 
           m_segments [seg->id()] = seg;
+
+          LOG(TRACE, "shared memory segment registered: " << name << " (" << seg->id() << ") " <<  sz << " bytes created by " << creator);
 
           return seg->id ();
         }
@@ -59,6 +83,26 @@ namespace gpi
           LOG(ERROR, "could not open shared memory segment: " << ex.what());
           throw;
         }
+      }
+
+      void manager_t::unregister_segment(const gpi::pc::type::segment_id_t seg_id)
+      {
+        lock_type lock (m_mutex);
+
+        segment_ptr seg (m_segments.at (seg_id));
+        if (seg->descriptor().nref)
+        {
+          throw std::runtime_error ("segment is still inuse, cannot unregister");
+        }
+
+        if ((seg->descriptor().flags & gpi::pc::type::segment::F_NOUNLINK) == 0)
+        {
+          seg->unlink();
+        }
+
+        m_segments.erase (seg_id);
+
+        LOG(TRACE, "shared memory segment unregistered: " << seg->name() << " (" << seg_id << ")");
       }
 
       gpi::pc::type::segment::list_t manager_t::get_listing () const
@@ -76,6 +120,36 @@ namespace gpi
         }
 
         return list;
+      }
+
+      gpi::pc::type::size_t manager_t::increment_refcount (const gpi::pc::type::segment_id_t seg_id)
+      {
+        lock_type lock (m_mutex);
+        segment_ptr seg (m_segments.at (seg_id));
+        return ++(seg->descriptor().nref);
+      }
+
+      gpi::pc::type::size_t manager_t::decrement_refcount (const gpi::pc::type::segment_id_t seg_id)
+      {
+        lock_type lock (m_mutex);
+        segment_ptr seg (m_segments.at (seg_id));
+
+        assert (seg->descriptor().nref > 0);
+        --(seg->descriptor().nref);
+
+        if (0 == seg->descriptor().nref)
+        {
+          if (0 == (seg->descriptor().flags & gpi::pc::type::segment::F_PERSISTENT))
+          {
+            unregister_segment (seg_id);
+          }
+          else if (seg->descriptor().flags & gpi::pc::type::segment::F_EXCLUSIVE)
+          {
+            unregister_segment (seg_id);
+          }
+        }
+
+        return seg->descriptor().nref;
       }
     }
   }

@@ -28,13 +28,18 @@ namespace gpi
                                                     , const gpi::pc::type::size_t size
                                                     , const gpi::pc::type::flags_t flags
                                                     );
-
+        void unregister_segment (const gpi::pc::type::segment_id_t);
         gpi::pc::type::segment::list_t get_listing () const;
+
+        gpi::pc::type::size_t increment_refcount (const gpi::pc::type::segment_id_t seg);
+        gpi::pc::type::size_t decrement_refcount (const gpi::pc::type::segment_id_t seg);
       private:
         typedef boost::shared_ptr<segment_t> segment_ptr;
         typedef boost::unordered_map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
+
+        void clear ();
 
         mutable mutex_type m_mutex;
         gpi::pc::type::segment_id_t m_segment_id;
