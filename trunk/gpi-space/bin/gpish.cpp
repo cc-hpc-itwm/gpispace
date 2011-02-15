@@ -250,7 +250,7 @@ int main (int ac, char **av)
             ; ++it
             )
         {
-          std::cout << it->id << "\t" << it->name << "\t" << it->size << "\t" << it->nref << "\t" << std::hex << (int)it->flags << std::dec
+          std::cout << it->id << "\t" << it->name << "\t" << it->size << "\t" << it->ts.created << "\t" << it->nref << "\t" << std::hex << (int)it->flags << std::dec
                     << std::endl;
         }
 
