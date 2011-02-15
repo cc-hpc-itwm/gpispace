@@ -48,7 +48,7 @@ namespace gpi
       void segment_t::create ()
       {
         int err (0);
-        err = shm_open (m_name.c_str(), O_RDWR | O_CREAT | O_EXCL, 0);
+        err = shm_open (m_name.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
         if (err < 0)
         {
           err = errno;
@@ -131,7 +131,13 @@ namespace gpi
           {
             shm_unlink (m_name.c_str());
           }
+          m_ptr = 0;
         }
+      }
+
+      void segment_t::cleanup ()
+      {
+        shm_unlink (m_name.c_str());
       }
 
       void *segment_t::ptr ()

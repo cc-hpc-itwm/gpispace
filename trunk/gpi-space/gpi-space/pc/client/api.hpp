@@ -38,17 +38,21 @@ namespace gpi
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
                                 , const std::string & desc
-                                , const type::mode_t = 0777
+                                , const type::flags_t = 0777
                                 );
         void free (const type::handle_id_t);
 
-        type::segment_id_t attach_memory_segment ( std::string const & name
-                                                 , const type::size_t size
-                                                 );
-        void detach_memory_segment (const type::segment_id_t);
+        gpi::pc::type::segment_id_t register_segment( std::string const & name
+                                                    , const gpi::pc::type::size_t sz
+                                                    , const gpi::pc::type::flags_t = gpi::pc::type::segment::F_AUTOATTACH
+                                                    );
+        void unregister_segment(const gpi::pc::type::segment_id_t);
+        void attach_segment(const gpi::pc::type::segment_id_t id);
+        void detach_segment(const gpi::pc::type::segment_id_t id);
+        gpi::pc::type::segment::list_t list_segments ();
       private:
         int connection_lost (int);
-        void communicate (gpi::pc::proto::message_t const &, gpi::pc::proto::message_t &);
+        gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
 
         std::string m_path;
         int m_socket;

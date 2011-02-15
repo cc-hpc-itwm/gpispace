@@ -6,6 +6,7 @@
 
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/container/connector.hpp>
+#include <gpi-space/pc/type/segment_descriptor.hpp>
 
 namespace gpi
 {
@@ -47,6 +48,12 @@ namespace gpi
                                   , int error
                                   );
         void handle_connector_error (int error);
+
+        gpi::pc::type::segment_id_t register_segment ( const gpi::pc::type::process_id_t proc_id
+                                                     , std::string const & name
+                                                     , const gpi::pc::type::size_t sz
+                                                     , const gpi::pc::type::flags_t flags
+                                                     );
 
       private:
         typedef boost::shared_ptr<process_type> process_ptr_t;

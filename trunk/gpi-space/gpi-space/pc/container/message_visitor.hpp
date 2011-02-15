@@ -20,20 +20,24 @@ namespace gpi
             : m_proc (proc)
           {}
 
+          /**********************************************/
+          /***     M E M O R Y   R E L A T E D        ***/
+          /**********************************************/
+
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::alloc_t & alloc)
           {
             try
             {
-              /*
               gpi::pc::type::handle_id_t handle
                 ( m_proc.alloc ( alloc.segment
                                , alloc.size
                                , alloc.flags
                                )
                 );
-              */
-              throw std::runtime_error ("not yet implemented");
+              gpi::pc::proto::memory::alloc_reply_t rpl;
+              rpl.handle = handle;
+              return rpl;
             }
             catch (std::exception const & ex)
             {
@@ -44,13 +48,198 @@ namespace gpi
             }
           }
 
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::memory::free_t & free)
+          {
+            try
+            {
+              m_proc.free (free.handle);
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::success;
+              error.detail = "success";
+              return error;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::memory::memcpy_t & cpy)
+          {
+            try
+            {
+              gpi::pc::proto::memory::memcpy_reply_t rpl;
+              rpl.queue = m_proc.memcpy ( cpy.dst
+                                        , cpy.src
+                                        , cpy.size
+                                        , cpy.queue
+                                        );
+              return rpl;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::memory::wait_t & w)
+          {
+            try
+            {
+              gpi::pc::proto::memory::wait_reply_t rpl;
+              rpl.count = m_proc.wait (w.queue);
+              return rpl;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::memory::list_t & list)
+          {
+            try
+            {
+              gpi::pc::proto::memory::list_reply_t rpl;
+              rpl.list = m_proc.list_allocations (list.segment);
+              return rpl;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          /**********************************************/
+          /***     S E G M E N T   R E L A T E D      ***/
+          /**********************************************/
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::register_t & register_segment)
+          {
+            try
+            {
+              gpi::pc::type::segment_id_t id =
+                m_proc.register_segment ( register_segment.name
+                                        , register_segment.size
+                                        , register_segment.flags
+                                        );
+              gpi::pc::proto::segment::register_reply_t rpl;
+              rpl.id = id;
+              return rpl;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment)
+          {
+            try
+            {
+              m_proc.unregister_segment(unregister_segment.id);
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::success;
+              error.detail = "success";
+              return error;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::attach_t & attach_segment)
+          {
+            try
+            {
+              m_proc.attach_segment (attach_segment.id);
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::success;
+              error.detail = "success";
+              return error;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::detach_t & detach_segment)
+          {
+            try
+            {
+              m_proc.detach_segment (detach_segment.id);
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::success;
+              error.detail = "success";
+              return error;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::list_t & list)
+          {
+            try
+            {
+              gpi::pc::proto::segment::list_reply_t rpl;
+              rpl.list = m_proc.list_segments ();
+              return rpl;
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
+          /*** Catch all other messages ***/
+
           template <typename T>
           gpi::pc::proto::message_t
           operator () (T const &)
           {
             gpi::pc::proto::error::error_t error;
             error.code = gpi::pc::proto::error::bad_request;
-            error.detail = "not understood input message";
+            error.detail = "invalid input message";
             return error;
           }
 

@@ -2,6 +2,8 @@
 
 #include "manager.hpp"
 
+#include <gpi-space/pc/segment/segment.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -96,6 +98,8 @@ namespace gpi
 
       void manager_t::attach_process (process_ptr_t proc)
       {
+        lock_type lock (m_mutex);
+
         m_processes[proc->get_id()] = proc;
         m_processes[proc->get_id()]->start ();
 
@@ -194,6 +198,32 @@ namespace gpi
                  );
           detach_process (proc_id);
         }
+      }
+
+      gpi::pc::type::segment_id_t manager_t::register_segment ( const gpi::pc::type::process_id_t pc_id
+                                                              , std::string const & name
+                                                              , const gpi::pc::type::size_t sz
+                                                              , const gpi::pc::type::flags_t flags
+                                                              )
+      {
+        lock_type lock (m_mutex);
+
+        LOG(TRACE, "registering new shared memory segment: " << name << " with size " << sz << " via process " << pc_id);
+
+        gpi::pc::segment::segment_t seg (name, sz);
+
+        try
+        {
+          seg.open ();
+          seg.assign_id (42);
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not register shared memory: " << ex.what());
+          throw;
+        }
+
+        return seg.id ();
       }
     }
   }

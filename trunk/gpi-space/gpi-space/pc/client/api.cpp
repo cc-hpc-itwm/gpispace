@@ -145,10 +145,8 @@ namespace gpi
         return m_path;
       }
 
-      void
-      api_t::communicate( gpi::pc::proto::message_t const & rqst
-                        , gpi::pc::proto::message_t & rply
-                        )
+      gpi::pc::proto::message_t
+      api_t::communicate(gpi::pc::proto::message_t const & rqst)
       {
         using namespace gpi::pc::proto;
         int err;
@@ -164,6 +162,7 @@ namespace gpi
 
         // send
         header_t header;
+        header.version = 0x01;
         header.length = data.size();
 
         err = this->write (&header, sizeof(header));
@@ -176,12 +175,14 @@ namespace gpi
         buffer.resize (header.length);
         err = this->read (&buffer[0], header.length);
 
+        message_t rply;
         // deserialize
         {
           std::stringstream sstr (std::string(buffer.begin(), buffer.end()));
           boost::archive::text_iarchive ia (sstr);
           ia & rply;
         }
+        return rply;
       }
 
       type::handle_id_t api_t::alloc ( const type::segment_id_t seg
@@ -198,8 +199,7 @@ namespace gpi
         alloc_msg.name = name;
         alloc_msg.flags = flags;
 
-        message_t reply;
-        communicate (alloc_msg, reply);
+        message_t reply (communicate (alloc_msg));
 
         try
         {
@@ -214,25 +214,67 @@ namespace gpi
         }
       }
 
-      type::segment_id_t api_t::attach_memory_segment ( std::string const & name
-                                                      , const gpi::pc::type::size_t size
-                                                      )
+      void api_t::free (const gpi::pc::type::handle_id_t hdl)
       {
         using namespace gpi::pc::proto;
+        memory::free_t rqst;
+        rqst.handle = hdl;
 
-        segment::attach_t attach_msg;
-        message_t reply;
-        communicate(attach_msg, reply);
+        message_t rpl (communicate (rqst));
+        error::error_t result (boost::get<error::error_t>(rpl));
+        if (result.code != error::success)
+        {
+          LOG(ERROR, "could not free handle: " << result.code << ": " << result.detail);
+          // throw or silently ignore?
+        }
+      }
+
+      gpi::pc::type::segment_id_t
+      api_t::register_segment( std::string const & name
+                             , const gpi::pc::type::size_t sz
+                             , const gpi::pc::type::flags_t flags
+                             )
+      {
+        using namespace gpi::pc::proto;
+        segment::register_t rqst;
+        rqst.name = name;
+        rqst.size = sz;
+        rqst.flags = flags;
+
+        message_t rply (communicate (rqst));
         try
         {
-          segment::attach_reply_t rply (boost::get<segment::attach_reply_t>(reply));
-          LOG(INFO, "segment attached: " << rply.id);
+          segment::register_reply_t reg (boost::get<segment::register_reply_t> (rply));
+          return reg.id;
         }
-        catch (boost::bad_get const & ex)
+        catch (boost::bad_get const &)
         {
+          error::error_t result (boost::get<error::error_t>(rply));
+          LOG(ERROR, "could not register segment: " << result.code << ": " << result.detail);
+          //          throw wrap (result);
+          throw std::runtime_error ("memory segment registration failed: " + result.detail);
         }
+      }
 
-        return 0;
+      gpi::pc::type::segment::list_t
+      api_t::list_segments ()
+      {
+        using namespace gpi::pc::proto;
+        segment::list_t rqst;
+
+        message_t rply (communicate(rqst));
+        try
+        {
+          segment::list_reply_t segments (boost::get<segment::list_reply_t> (rply));
+          return segments.list;
+        }
+        catch (boost::bad_get const &)
+        {
+          error::error_t result (boost::get<error::error_t>(rply));
+          LOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
+          //          throw wrap (result);
+          throw std::runtime_error ("segment listing failed: " + result.detail);
+        }
       }
     }
   }

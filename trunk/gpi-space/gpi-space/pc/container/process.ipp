@@ -106,6 +106,18 @@ namespace gpi
           return err;
         }
 
+        if (header.version != 0x01)
+        {
+          LOG( ERROR
+             , "invalid message received: version missmatch: "
+             << "expected version: 0x" << std::hex << 0x01
+             << " got 0x" << std::hex << (int)header.version
+             );
+          close_socket (fd);
+          m_mgr.handle_process_error (m_id, EINVAL);
+          return -EINVAL;
+        }
+
         if (header.length > max_size)
         {
           LOG(ERROR, "message is larger than maximum allowed size (" << header.length << "), closing connection");
@@ -257,6 +269,99 @@ namespace gpi
         typedef visitor::handle_message_t<self> message_handler_t;
         message_handler_t hdl (*this);
         return boost::apply_visitor (hdl, msg);
+      }
+
+      /********************************************************/
+      /***                                                  ***/
+      /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
+      /***                                                  ***/
+      /********************************************************/
+
+      template <typename M>
+      gpi::pc::type::handle_id_t process_t<M>::alloc ( const gpi::pc::type::segment_id_t seg
+                                                     , const gpi::pc::type::size_t sz
+                                                     , const gpi::pc::type::flags_t
+                                                     )
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      template <typename M>
+      void process_t<M>::free (const gpi::pc::type::handle_id_t)
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      template <typename M>
+      gpi::pc::type::segment_id_t
+      process_t<M>::register_segment ( std::string const & name
+                                     , const gpi::pc::type::size_t sz
+                                     , const gpi::pc::type::flags_t flags
+                                     )
+      {
+        // 1. try to register segment with manager
+        gpi::pc::type::segment_id_t s_id
+          (m_mgr.register_segment (m_id, name, sz, flags));
+
+        if (flags & gpi::pc::type::segment::F_AUTOATTACH)
+        {
+          // just establish "virtual" relationship
+        }
+        return s_id;
+      }
+
+      template <typename M>
+      void
+      process_t<M>::unregister_segment(const gpi::pc::type::segment_id_t seg)
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      template <typename M>
+      void
+      process_t<M>::attach_segment(const gpi::pc::type::segment_id_t seg)
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      template <typename M>
+      void
+      process_t<M>::detach_segment(const gpi::pc::type::segment_id_t seg)
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      template <typename M>
+      gpi::pc::type::segment::list_t
+      process_t<M>::list_segments()
+      {
+        gpi::pc::type::segment::list_t segments;
+        return segments;
+      }
+
+      template <typename M>
+      gpi::pc::type::handle::list_t
+      process_t<M>::list_allocations(const gpi::pc::type::segment_id_t seg)
+      {
+        gpi::pc::type::handle::list_t handles;
+        return handles;
+      }
+
+      template <typename M>
+      gpi::pc::type::queue_id_t
+      process_t<M>::memcpy ( gpi::pc::type::memory_location_t const & dst
+                           , gpi::pc::type::memory_location_t const & src
+                           , const gpi::pc::type::size_t amount
+                           , const gpi::pc::type::queue_id_t queue
+                           )
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      template <typename M>
+      gpi::pc::type::size_t process_t<M>::wait (const gpi::pc::type::queue_id_t)
+      {
+        return 0;
       }
     }
   }

@@ -6,6 +6,7 @@ set (hdrs
   generic_list.hpp
   segment_descriptor.hpp
   handle_descriptor.hpp
+  memory_location.hpp
   )
 
 set (srcs

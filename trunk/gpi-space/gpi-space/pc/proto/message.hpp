@@ -39,15 +39,23 @@ namespace gpi
 
       struct header_t
       {
-        gpi::pc::type::size_t length;
+        header_t ()
+          : length (0)
+          , version (0x01)
+          , type (0)
+          , flags (0)
+        {}
+
+        uint32_t     length;
+        uint8_t     version;
+        uint8_t        type;
+        uint16_t      flags;
       };
 
       typedef boost::variant< error::error_t
-
                             , memory::alloc_t
                             , memory::alloc_reply_t
                             , memory::free_t
-                            , memory::free_reply_t
                             , memory::list_t
                             , memory::list_reply_t
                             , memory::memcpy_t
@@ -55,10 +63,11 @@ namespace gpi
                             , memory::wait_t
                             , memory::wait_reply_t
 
+                            , segment::register_t
+                            , segment::register_reply_t
+                            , segment::unregister_t
                             , segment::attach_t
-                            , segment::attach_reply_t
                             , segment::detach_t
-                            , segment::detach_reply_t
                             , segment::list_t
                             , segment::list_reply_t
 

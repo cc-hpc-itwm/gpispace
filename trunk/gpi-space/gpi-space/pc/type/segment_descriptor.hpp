@@ -34,6 +34,7 @@ namespace gpi
             F_NONE       = 0x00,
             F_PERSISTENT = 0x01,
             F_EXCLUSIVE  = 0x02,
+            F_AUTOATTACH = 0x04,
           };
 
         struct traits
@@ -63,7 +64,7 @@ namespace gpi
           gpi::pc::type::segment_id_t id;
           gpi::pc::type::name_t name;
           gpi::pc::type::ref_count_t nref;
-          gpi::pc::type::mode_t flags;
+          gpi::pc::type::flags_t flags;
           gpi::pc::type::time_stamp_t ts;
 
         private:

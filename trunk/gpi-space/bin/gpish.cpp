@@ -15,7 +15,7 @@
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -200,11 +200,34 @@ int main (int ac, char **av)
     }
     else if (line == "segment")
     {
-      // create name size -> void*
+      gpi::pc::segment::segment_t seg ("foo", 1024);
 
-      // register name -> segment_id
+      try
+      {
+        seg.cleanup ();
 
-      // detach name
+        seg.create ();
+
+        gpi::pc::type::segment_id_t id = capi.register_segment ( seg.name()
+                                                               , seg.size()
+                                                               );
+        seg.assign_id (id);
+        std::cout << "segment id: " << id << std::endl;
+
+        gpi::pc::type::segment::list_t segments;
+        segments = capi.list_segments ();
+        for ( gpi::pc::type::segment::list_t::const_iterator it (segments.begin())
+            ; it != segments.end()
+            ; ++it
+            )
+        {
+          std::cout << it->id << " " << it->name << " " << it->nref << " " << std::hex << (int)it->flags << std::endl;
+        }
+      }
+      catch (std::exception const & ex)
+      {
+        std::cerr << "failed: " << ex.what() << std::endl;
+      }
     }
     else if (capi.is_connected())
     {

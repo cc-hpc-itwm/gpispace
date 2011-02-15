@@ -5,6 +5,7 @@
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
+#include <gpi-space/pc/type/memory_location.hpp>
 
 // serialization
 #include <boost/serialization/nvp.hpp>
@@ -24,7 +25,7 @@ namespace gpi
           gpi::pc::type::segment_id_t segment;
           gpi::pc::type::size_t size;
           gpi::pc::type::name_t name;
-          gpi::pc::type::mode_t flags;
+          gpi::pc::type::flags_t flags;
 
         private:
           friend class boost::serialization::access;
@@ -72,23 +73,16 @@ namespace gpi
           }
         };
 
-        struct free_reply_t
-        {
-        private:
-          friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
-          {
-          }
-        };
-
         struct list_t
         {
+          gpi::pc::type::segment_id_t segment;
+
         private:
           friend class boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
+            ar & BOOST_SERIALIZATION_NVP( segment );
           }
         };
 
@@ -105,25 +99,10 @@ namespace gpi
           }
         };
 
-        struct memory_location_t
-        {
-          gpi::pc::type::handle_id_t handle;
-          gpi::pc::type::offset_t    offset;
-
-        private:
-          friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
-          {
-            ar & BOOST_SERIALIZATION_NVP( handle );
-            ar & BOOST_SERIALIZATION_NVP( offset );
-          }
-        };
-
         struct memcpy_t
         {
-          memory_location_t dst;
-          memory_location_t src;
+          gpi::pc::type::memory_location_t dst;
+          gpi::pc::type::memory_location_t src;
           gpi::pc::type::size_t size;
           gpi::pc::type::queue_id_t queue;
 

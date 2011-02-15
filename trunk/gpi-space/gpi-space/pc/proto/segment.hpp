@@ -17,10 +17,11 @@ namespace gpi
     {
       namespace segment
       {
-        struct attach_t
+        struct register_t
         {
-          gpi::pc::type::name_t name;
-          gpi::pc::type::mode_t flags; // exclusive, persistent
+          gpi::pc::type::name_t  name;
+          gpi::pc::type::size_t  size;
+          gpi::pc::type::flags_t flags;
 
         private:
           friend class boost::serialization::access;
@@ -28,13 +29,40 @@ namespace gpi
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( name );
+            ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP( flags );
           }
         };
 
-        struct attach_reply_t
+        struct register_reply_t
         {
           gpi::pc::type::segment_id_t id;
+
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP( id );
+          }
+        };
+
+        struct unregister_t
+        {
+          gpi::pc::type::segment_id_t id;
+
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP( id );
+          }
+        };
+
+        struct attach_t
+        {
+          gpi::pc::type::segment_id_t id; // id of an existing segment
 
         private:
           friend class boost::serialization::access;
@@ -55,16 +83,6 @@ namespace gpi
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( id );
-          }
-        };
-
-        struct detach_reply_t
-        {
-        private:
-          friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
-          {
           }
         };
 

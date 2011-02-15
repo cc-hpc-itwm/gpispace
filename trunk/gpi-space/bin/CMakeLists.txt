@@ -8,6 +8,7 @@ set (srcs
 add_executable (gpi-space ${srcs})
 target_link_libraries (gpi-space
   gpi-space-gpiapi
+  gpi-space-pc-segment
   gpi-space-static
   ${MMGR_LIBRARY}
   ${FhgLog_LIBRARY}
@@ -26,6 +27,7 @@ set (srcs
 add_executable (gpish ${srcs})
 target_link_libraries (gpish
   gpi-space-pc-client-static
+  gpi-space-pc-segment
   gpi-space-static
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}

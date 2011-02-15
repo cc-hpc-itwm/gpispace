@@ -3,6 +3,7 @@
 
 #include <boost/thread.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/memory_location.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
 
@@ -32,6 +33,34 @@ namespace gpi
         gpi::pc::type::process_id_t get_id () const;
         void start ();
         void stop ();
+
+        // protocol implementation
+
+        gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t
+                                         , const gpi::pc::type::size_t
+                                         , const gpi::pc::type::flags_t
+                                         );
+        void free (const gpi::pc::type::handle_id_t);
+
+        gpi::pc::type::segment_id_t register_segment( std::string const & name
+                                                    , const gpi::pc::type::size_t sz
+                                                    , const gpi::pc::type::flags_t
+                                                    );
+        void unregister_segment(const gpi::pc::type::segment_id_t);
+        void attach_segment(const gpi::pc::type::segment_id_t id);
+        void detach_segment(const gpi::pc::type::segment_id_t id);
+        gpi::pc::type::segment::list_t list_segments ();
+
+        gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg);
+
+        gpi::pc::type::queue_id_t memcpy ( gpi::pc::type::memory_location_t const & dst
+                                         , gpi::pc::type::memory_location_t const & src
+                                         , const gpi::pc::type::size_t amount
+                                         , const gpi::pc::type::queue_id_t queue
+                                         );
+
+        gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t);
+
       private:
         typedef boost::shared_ptr<boost::thread> thread_t;
         typedef boost::recursive_mutex mutex_type;

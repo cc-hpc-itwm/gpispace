@@ -11,12 +11,6 @@ namespace gpi
   {
     namespace type
     {
-      struct path_traits
-      {
-        static const uint16_t max_name_len = 128;
-        static const uint16_t max_path_len = PATH_MAX;
-      };
-
       typedef uint64_t size_t;
       typedef uint64_t offset_t;
       typedef uint64_t id_t;
@@ -29,6 +23,7 @@ namespace gpi
 
       typedef uint32_t error_t;
       typedef uint16_t mode_t;
+      typedef uint16_t flags_t;
       typedef std::string path_t;
       typedef std::string name_t;
     }

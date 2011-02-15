@@ -26,9 +26,12 @@ namespace gpi
         void create ();
         void open ();
         void close ();
-        type::segment_id_t id ();
+        void cleanup ();
 
+        std::string const & name () const { return m_name; }
         void assign_id (const type::segment_id_t);
+        type::segment_id_t id () const { return m_id; }
+        type::size_t size () const { return m_size; }
 
         template<typename T>
         T* ptr () { return (T*)ptr(); }
