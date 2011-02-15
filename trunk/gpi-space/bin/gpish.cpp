@@ -139,7 +139,6 @@ int main (int ac, char **av)
     catch (std::exception const & ex)
     {
       std::cerr << "could not connect to " << socket_path << ": " << ex.what() << std::endl;
-      // unlink (socket_path)???
     }
   }
 
