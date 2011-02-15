@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 //#include <unistd.h>
+#include <csignal>
 
 #include <sdpa/sdpa-config.hpp>
 
@@ -14,6 +15,14 @@
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
+
+#ifdef USE_REAL_WE
+	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
+	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
+#else
+	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
+	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
+#endif
 
 namespace su = sdpa::util;
 namespace po = boost::program_options;
@@ -59,8 +68,8 @@ int main (int argc, char **argv)
     <<" having the master "<<aggName<<"("<<aggUrl<<")"<<std::endl
     <<" with the nre-worker running at "<<workerUrl<<std::endl;
 
-  sdpa::daemon::NRE<sdpa::nre::worker::NreWorkerClient>::ptr_t ptrNRE
-    = sdpa::daemon::NREFactory<RealWorkflowEngine, sdpa::nre::worker::NreWorkerClient >::create( nreName
+  sdpa::daemon::NRE<WorkerClient>::ptr_t ptrNRE
+    = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient >::create( nreName
 																	, nreUrl
 																	, aggName
 																	, workerUrl
