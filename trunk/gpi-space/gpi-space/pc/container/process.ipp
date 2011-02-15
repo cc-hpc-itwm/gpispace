@@ -308,21 +308,21 @@ namespace gpi
       void
       process_t<M>::unregister_segment(const gpi::pc::type::segment_id_t seg)
       {
-        throw std::runtime_error ("not yet implemented");
+        m_mgr.unregister_segment (m_id, seg);
       }
 
       template <typename M>
       void
       process_t<M>::attach_segment(const gpi::pc::type::segment_id_t seg)
       {
-        throw std::runtime_error ("not yet implemented");
+        m_mgr.attach_process_to_segment (m_id, seg);
       }
 
       template <typename M>
       void
       process_t<M>::detach_segment(const gpi::pc::type::segment_id_t seg)
       {
-        throw std::runtime_error ("not yet implemented");
+        m_mgr.detach_process_from_segment (m_id, seg);
       }
 
       template <typename M>
