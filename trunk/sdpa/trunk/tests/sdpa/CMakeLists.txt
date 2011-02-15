@@ -22,6 +22,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 
 add_subdirectory(workflows)
 
+if (USE_REAL_WE)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 	DEPENDS ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml
 	DEPENDS pnetc
@@ -30,6 +31,9 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
 	ARGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
     COMMENT "Invoke command: pnetc -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet" VERBATIM
 )
+else (USE_REAL_WE )
+	configure_file(${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
+endif (USE_REAL_WE)
 
 set (test_srcs
   SchedulerTestImpl.cpp
