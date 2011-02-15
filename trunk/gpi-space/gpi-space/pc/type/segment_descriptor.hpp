@@ -36,7 +36,7 @@ namespace gpi
             F_NONE       = 0x00,
             F_PERSISTENT = 0x01,
             F_EXCLUSIVE  = 0x02,
-            F_AUTOATTACH = 0x04,
+            F_NOUNLINK   = 0x04,
           };
 
         struct traits

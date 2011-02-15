@@ -299,14 +299,8 @@ namespace gpi
                                      , const gpi::pc::type::flags_t flags
                                      )
       {
-        // 1. try to register segment with manager
         gpi::pc::type::segment_id_t s_id
           (m_mgr.register_segment (m_id, name, sz, flags));
-
-        if (flags & gpi::pc::type::segment::F_AUTOATTACH)
-        {
-          // just establish "virtual" relationship
-        }
         return s_id;
       }
 

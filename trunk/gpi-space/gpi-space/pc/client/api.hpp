@@ -45,7 +45,7 @@ namespace gpi
 
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz
-                                                    , const gpi::pc::type::flags_t = gpi::pc::type::segment::F_AUTOATTACH
+                                                    , const gpi::pc::type::flags_t = 0
                                                     );
         void unregister_segment(const gpi::pc::type::segment_id_t);
         void attach_segment(const gpi::pc::type::segment_id_t id);
