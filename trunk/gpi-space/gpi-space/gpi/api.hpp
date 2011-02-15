@@ -2,7 +2,7 @@
 #define GPI_SPACE_GPI_API_HPP 1
 
 #include <gpi-space/types.hpp>
-#include <gpi-space/error.hpp>
+#include <gpi-space/exception.hpp>
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
@@ -13,37 +13,7 @@ namespace gpi
   {
     namespace exception
     {
-      struct gpi_error : public std::runtime_error
-      {
-        explicit
-        gpi_error (gpi::error::code_t const & ec)
-          : std::runtime_error (ec.name())
-          , value (ec.value())
-          , user_message (ec.detail())
-          , message ("gpi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name())
-        {}
-
-        explicit
-        gpi_error (gpi::error::code_t const & ec, std::string const & m)
-          : std::runtime_error (ec.name ())
-          , value (ec.value())
-          , user_message (m)
-          , message ("gpi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name() + ": " + user_message)
-        {}
-
-        virtual ~gpi_error () throw () {}
-
-        virtual const char * what () const throw ()
-        {
-          return message.c_str();
-        }
-
-        int value;
-        const std::string user_message;
-        const std::string message;
-      };
-
-      struct dma_error : public gpi_error
+      struct dma_error : public gpi::exception::gpi_error
       {
         dma_error ( gpi::error::code_t const & ec
                   , const offset_t loc_offset
@@ -53,7 +23,7 @@ namespace gpi
                   , const size_t bytes
                   , const queue_desc_t via_queue
                   )
-          : gpi_error (ec)
+          : gpi::exception::gpi_error (ec)
           , local_offset (loc_offset)
           , remote_offset (rem_offset)
           , from_node (from)

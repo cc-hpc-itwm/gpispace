@@ -1,6 +1,9 @@
 #ifndef GPI_SPACE_EXCEPTION_HPP
 #define GPI_SPACE_EXCEPTION_HPP 1
 
+#include <stdexcept>
+#include <boost/lexical_cast.hpp>
+
 #include <gpi-space/types.hpp>
 #include <gpi-space/error.hpp>
 

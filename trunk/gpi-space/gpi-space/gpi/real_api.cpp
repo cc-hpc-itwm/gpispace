@@ -11,6 +11,7 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <gpi-space/exception.hpp>
 #include <gpi-space/signal_handler.hpp>
 
 namespace gpi
@@ -96,13 +97,13 @@ namespace gpi
       {
         if (0 != killProcsGPI())
         {
-          throw exception::gpi_error
+          throw gpi::exception::gpi_error
             (gpi::error::kill_procs_failed());
         }
       }
       else
       {
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           ( gpi::error::operation_not_permitted()
           , "kill() is not allowed on a slave"
           );
@@ -161,7 +162,7 @@ namespace gpi
       int rc (openDMARequestsGPI (q));
       if (rc < 0)
       {
-        throw exception::gpi_error(gpi::error::open_dma_requests_failed());
+        throw gpi::exception::gpi_error(gpi::error::open_dma_requests_failed());
       }
       return gpi::size_t (rc);
     }
@@ -178,7 +179,7 @@ namespace gpi
       int rc (openDMAPassiveRequestsGPI ());
       if (rc < 0)
       {
-        throw exception::gpi_error(gpi::error::open_passive_requests_failed());
+        throw gpi::exception::gpi_error(gpi::error::open_passive_requests_failed());
       }
       return gpi::size_t (rc);
     }
@@ -207,7 +208,7 @@ namespace gpi
       unsigned char *gpi_err_vec (getErrorVectorGPI(q));
       if (! gpi_err_vec)
       {
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           (gpi::error::get_error_vector_failed());
       }
 
@@ -229,21 +230,21 @@ namespace gpi
     {
       int rc (setNetworkGPI (GPI_NETWORK_TYPE(n)));
       if (rc != 0)
-        throw exception::gpi_error(gpi::error::set_network_type_failed());
+        throw gpi::exception::gpi_error(gpi::error::set_network_type_failed());
     }
 
     void gpi_api_t::set_port (const gpi::port_t p)
     {
       int rc (setPortGPI (p));
       if (rc != 0)
-        throw exception::gpi_error(gpi::error::set_port_failed());
+        throw gpi::exception::gpi_error(gpi::error::set_port_failed());
     }
 
     void gpi_api_t::set_mtu (const gpi::size_t mtu)
     {
       int rc (setMtuSizeGPI (mtu));
       if (rc != 0)
-        throw exception::gpi_error(gpi::error::set_mtu_failed());
+        throw gpi::exception::gpi_error(gpi::error::set_mtu_failed());
     }
 
     void gpi_api_t::set_number_of_processes (const gpi::size_t n)
@@ -264,7 +265,7 @@ namespace gpi
     {
       if (! is_master())
       {
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           ( gpi::error::operation_not_permitted()
           , "check(rank) is not allowed on a slave"
           );
@@ -277,7 +278,7 @@ namespace gpi
       if (!ping (host))
       {
         LOG(ERROR, "failed to ping GPI daemon on host := " << host);
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           ( gpi::error::ping_check_failed () );
       }
 
@@ -313,7 +314,7 @@ namespace gpi
       if (rc != 0)
       {
         LOG(ERROR, "shared library requirements could not be met on host " << host << " with error " << rc);
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           ( gpi::error::libs_check_failed () );
       }
 
@@ -321,7 +322,7 @@ namespace gpi
       if (rc != 0)
       {
         LOG(ERROR, "InfiniBand test failed for host " << host << " rank " << node << " with error " << rc);
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           ( gpi::error::ib_check_failed () );
       }
     }
@@ -330,7 +331,7 @@ namespace gpi
     {
       if (!is_master())
       {
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           ( gpi::error::operation_not_permitted()
           , "check() is not allowed on a slave"
           );
@@ -365,7 +366,7 @@ namespace gpi
       int rc (globalResourceLockGPI());
       if (rc != 0)
       {
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           (gpi::error::global_lock_failed());
       }
     }
@@ -376,7 +377,7 @@ namespace gpi
       int rc (globalResourceUnlockGPI());
       if (rc != 0)
       {
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           (gpi::error::global_unlock_failed());
       }
     }
@@ -583,7 +584,7 @@ namespace gpi
       int rc(waitDmaPassiveGPI());
       if (rc < 0)
       {
-        throw exception::gpi_error
+        throw gpi::exception::gpi_error
           (gpi::error::wait_passive_failed());
       }
       return size_t (rc);
