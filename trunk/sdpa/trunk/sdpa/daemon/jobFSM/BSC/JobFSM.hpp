@@ -37,6 +37,14 @@ using namespace sdpa::daemon;
 
 //using namespace std;
 
+char const* const state_names[] = { 	"SDPA::Pending"
+				  	  	  	  	  	  , "SDPA::Running"
+				  	  	  	  	  	  , "SDPA::Finished"
+				  	  	  	  	  	  , "SDPA::Failed"
+				  	  	  	  	  	  , "SDPA::Cancelling"
+				  	  	  	  	  	  , "SDPA::Cancelled"
+                                  };
+
 namespace sdpa { namespace fsm { namespace bsc {
 
 
@@ -45,7 +53,7 @@ struct Pending;
 struct Running;
 struct Cancelling;
 struct Cancelled;
-struct Cancelled;
+struct Cancel;
 struct Failed;
 struct Finished;
 
@@ -79,7 +87,7 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 	void print_states()
 	{
 		for( state_iterator it = state_begin(); it != state_end(); it++ )
-			std::cout<<"State "<<typeid(*it).name()<<std::endl;
+			std::cout<<"State "<<getStatus()<<std::endl;
 	}
 
 	virtual void process_event( const boost::statechart::event_base & e) {
@@ -152,12 +160,23 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 		boost::serialization::split_member(ar, *this, file_version);
 	}
 
-	sdpa::status_t getStatus()
+	/*sdpa::status_t getStatus()
 	{
 		sdpa::status_t status("");
 		for( state_iterator it = state_begin(); it != state_end(); it++ )
 		{
 			status += std::string(typeid(*it).name());
+		}
+
+		return status;
+	}*/
+
+	sdpa::status_t getStatus()
+	{
+		sdpa::status_t status("");
+		for( state_iterator it = state_begin(); it != state_end(); it++ )
+		{
+			status += std::string("SDPA:") + pLeafState->custom_dynamic_type_ptr< char >();
 		}
 
 		return status;
@@ -275,5 +294,15 @@ typedef mpl::list<  sc::in_state_reaction< sdpa::events::QueryJobStatusEvent/*, 
 };
 
 }}}
+
+Pending::custom_static_type_ptr( "Pending" );
+Running::custom_static_type_ptr( "Running" );
+Cancelling::custom_static_type_ptr( "Cancelling" );
+Cancelled::custom_static_type_ptr( "Cancelled" );
+Cancel::custom_static_type_ptr( "Cancel" )
+Failed::custom_static_type_ptr( "Failed" );;
+Finished::custom_static_type_ptr( "Finished" );;
+
+
 
 #endif // JobFSM_H
