@@ -6,13 +6,13 @@ add_subdirectory (xml)
 set (PARSU_DIFF_DIR "${CMAKE_INSTALL_PREFIX}/${PARSU_DIFF}")
 set (PARSU_PNETC_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${PNETC_LIB_DIR}")
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/parsu_op2.in
-                ${CMAKE_CURRENT_BINARY_DIR}/parsu_op2
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/parsu_diff.in
+                ${CMAKE_CURRENT_BINARY_DIR}/parsu_diff
                 @ONLY
                )
 
 set (prgs
-   ${CMAKE_CURRENT_BINARY_DIR}/parsu_op2
+   ${CMAKE_CURRENT_BINARY_DIR}/parsu_diff
 )
 
 install(PROGRAMS ${prgs}
