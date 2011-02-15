@@ -8,7 +8,7 @@ add_subdirectory(pc)
 set (hdrs
   types.hpp
   error.hpp
-
+  exception.hpp
   signal_handler.hpp
   )
 
