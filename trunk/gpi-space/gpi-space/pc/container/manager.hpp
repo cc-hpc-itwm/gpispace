@@ -50,20 +50,41 @@ namespace gpi
                                   );
         void handle_connector_error (int error);
 
+        gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::process_id_t proc_id
+                                         , const gpi::pc::type::segment_id_t
+                                         , const gpi::pc::type::size_t
+                                         , const gpi::pc::type::flags_t
+                                         );
+        void free ( const gpi::pc::type::process_id_t
+                  , const gpi::pc::type::handle_id_t
+                  );
+        gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t) const;
+
         gpi::pc::type::segment_id_t register_segment ( const gpi::pc::type::process_id_t proc_id
                                                      , std::string const & name
                                                      , const gpi::pc::type::size_t sz
                                                      , const gpi::pc::type::flags_t flags
                                                      );
-
+        void unregister_segment ( const gpi::pc::type::process_id_t proc_id
+                                , const gpi::pc::type::segment_id_t
+                                );
+        void attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id
+                                       , const gpi::pc::type::segment_id_t id
+                                       );
+        void detach_process_from_segment ( const gpi::pc::type::process_id_t proc_id
+                                         , const gpi::pc::type::segment_id_t id
+                                         );
+        void detach_segments_from_process (const gpi::pc::type::process_id_t);
         gpi::pc::type::segment::list_t list_segments () const;
 
       private:
         typedef boost::shared_ptr<process_type> process_ptr_t;
-        typedef boost::unordered_map<gpi::pc::type::id_t, process_ptr_t> process_map_t;
+        typedef boost::unordered_map<gpi::pc::type::process_id_t, process_ptr_t> process_map_t;
         typedef std::list<process_ptr_t> process_list_t;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
+        typedef boost::unordered_set<gpi::pc::type::segment_id_t> segment_id_set_t;
+        typedef boost::unordered_map<gpi::pc::type::process_id_t, segment_id_set_t> process_segment_relation_t;
 
         void set_state (const state_t new_state);
         state_t get_state (void) const;
@@ -78,10 +99,14 @@ namespace gpi
         state_t m_state;
         connector_type m_connector;
         gpi::pc::type::process_id_t m_process_id;
+
         process_map_t m_processes;
         process_list_t m_detached_processes;
 
         segment_manager_type m_segment_mgr;
+
+        mutable mutex_type m_process_segment_relation_mutex;
+        process_segment_relation_t m_process_segment_relation;
       };
     }
   }

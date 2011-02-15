@@ -50,8 +50,7 @@ namespace gpi
           m_connector.stop ();
           while (! m_processes.empty())
           {
-            m_processes.begin()->second->stop();
-            m_processes.erase (m_processes.begin());
+            detach_process (m_processes.begin()->first);
           }
         }
 
@@ -122,17 +121,30 @@ namespace gpi
         m_processes.erase (id);
         proc->stop ();
 
-        // TODO
-        //   - decrease segment reference
-        //       - cancel queued memory transfers
-        //       - remove the segment
-        //          if (refcount == 0 && !segment.persistent)
-        //          ongoing transfers are finished
+        detach_segments_from_process (id);
 
         LOG( INFO
            , "process container " << id << " detached"
            );
         m_detached_processes.push_back (proc);
+      }
+
+      void manager_t::detach_segments_from_process (const gpi::pc::type::process_id_t proc_id)
+      {
+        lock_type lock (m_process_segment_relation_mutex);
+
+        // TODO (ap):
+        //       - cancel queued memory transfers
+        //       - remove the segment
+        //       - move it to the garbage area until transfers are complete
+        segment_id_set_t & ids (m_process_segment_relation[proc_id]);
+        while (! ids.empty())
+        {
+          detach_process_from_segment ( proc_id
+                                      , *ids.begin()
+                                      );
+        }
+        m_process_segment_relation.erase (proc_id);
       }
 
       void manager_t::garbage_collect ()
@@ -209,16 +221,50 @@ namespace gpi
         gpi::pc::type::segment_id_t seg_id
           ( m_segment_mgr.register_segment (pc_id, name, sz, flags) );
 
-        // TODO: add segment id to segment-set of process
-        //          1. proc->segments.insert (seg_id)
-        //          2. mgr->reference (seg_id) // increase refcount
+        attach_process_to_segment (pc_id, seg_id);
 
         return seg_id;
+      }
+
+      void manager_t::unregister_segment ( const gpi::pc::type::process_id_t proc_id
+                                         , const gpi::pc::type::segment_id_t seg_id
+                                         )
+      {
+        detach_process_from_segment (proc_id, seg_id);
+        m_segment_mgr.unregister_segment (seg_id);
       }
 
       gpi::pc::type::segment::list_t manager_t::list_segments () const
       {
         return m_segment_mgr.get_listing ();
+      }
+
+      void manager_t::attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id
+                                                , const gpi::pc::type::segment_id_t seg_id
+                                                )
+      {
+        lock_type lock (m_process_segment_relation_mutex);
+
+        // TODO:
+        //    check permissions whether attaching is allowed
+        //    if exclusive:
+        //       creator == proc_id
+        //
+        if (m_process_segment_relation[proc_id].insert (seg_id).second)
+        {
+          m_segment_mgr.increment_refcount (seg_id);
+        }
+      }
+
+      void manager_t::detach_process_from_segment ( const gpi::pc::type::process_id_t proc_id
+                                                  , const gpi::pc::type::segment_id_t seg_id
+                                                  )
+      {
+        lock_type lock (m_process_segment_relation_mutex);
+        if (m_process_segment_relation.at (proc_id).erase (seg_id))
+        {
+          m_segment_mgr.decrement_refcount (seg_id);
+        }
       }
     }
   }
