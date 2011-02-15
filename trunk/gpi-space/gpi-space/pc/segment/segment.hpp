@@ -22,7 +22,7 @@ namespace gpi
 
         ~segment_t ();
 
-        void create (bool persistent = false);
+        void create (const mode_t mode = 00600);
         void open ();
         void close ();
         void unlink ();
@@ -42,7 +42,6 @@ namespace gpi
 
       private:
         gpi::pc::type::segment::descriptor_t m_descriptor;
-        bool m_persistent;
         void *m_ptr;
       };
     }

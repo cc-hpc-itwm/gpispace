@@ -44,12 +44,12 @@ namespace gpi
         m_descriptor.id = id;
       }
 
-      void segment_t::create (bool persistent)
+      void segment_t::create (const mode_t mode)
       {
         int err (0);
         int fd (-1);
 
-        fd = shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
+        fd = shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, mode);
         if (fd < 0)
         {
           err = errno;
@@ -87,9 +87,8 @@ namespace gpi
         }
 
         ::close (fd);
-        LOG(INFO, "shared memory segment " << name() << " created: " << m_ptr);
 
-        m_persistent = persistent;
+        DLOG(DEBUG, "shared memory segment " << name() << " created: " << m_ptr);
       }
 
       void segment_t::open ()
@@ -121,7 +120,8 @@ namespace gpi
         }
 
         ::close (fd);
-        DLOG(INFO, "shared memory segment " << name() << " created: " << m_ptr);
+
+        DLOG(DEBUG, "shared memory segment " << name() << " opened: " << m_ptr);
       }
 
       void segment_t::close ()
@@ -129,10 +129,6 @@ namespace gpi
         if (m_ptr)
         {
           munmap (m_ptr, size());
-          if (! m_persistent)
-          {
-            shm_unlink (name().c_str());
-          }
           m_ptr = 0;
         }
       }
