@@ -21,10 +21,6 @@ static int handle_term (int)
 
 int main ()
 {
-  sigset_t restrict;
-  sigfillset (&restrict);
-  pthread_sigmask (SIG_BLOCK, &restrict, 0);
-
   FHGLOG_SETUP();
 
   gpi::signal::handler().start ();
