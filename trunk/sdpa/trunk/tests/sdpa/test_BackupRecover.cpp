@@ -103,17 +103,22 @@ struct MyFixture
 	~MyFixture()
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
-		//stop the finite state machine
+
+		sstrOrch.str("");
+		sstrAgg.str("");
+		sstrNRE.str("");
+
+		m_serv->stop ();
+		m_pool->stop ();
+		m_thrd->join ();
+
+		delete m_thrd;
+		delete m_serv;
+		delete m_kvsd;
+		delete m_pool;
 
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
-
-		m_ptrPool->stop ();
-		m_ptrThrd->join ();
-		delete m_ptrThrd;
-		delete m_ptrServ;
-		delete m_ptrKvsd;
-		delete m_ptrPool;
 	}
 
 	string read_workflow(string strFileName)

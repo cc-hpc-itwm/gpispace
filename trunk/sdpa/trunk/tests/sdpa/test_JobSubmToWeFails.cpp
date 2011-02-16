@@ -126,12 +126,17 @@ struct MyFixture
 		sstrAgg.str("");
 		sstrNRE.str("");
 
+		m_serv->stop ();
 		m_pool->stop ();
 		m_thrd->join ();
+
 		delete m_thrd;
 		delete m_serv;
 		delete m_kvsd;
 		delete m_pool;
+
+		seda::StageRegistry::instance().stopAll();
+		seda::StageRegistry::instance().clear();
 	}
 
 	void run_client();
