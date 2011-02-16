@@ -77,21 +77,21 @@ struct MyFixture
 
 		LOG(DEBUG, "Fixture's constructor called ...");
 
-		m_ptrPool = new fhg::com::io_service_pool(1);
-		m_ptrKvsd = new fhg::com::kvs::server::kvsd ("/tmp/notthere");
-		m_ptrServ = new fhg::com::tcp_server ( *m_ptrPool
-										  , *m_ptrKvsd
+		m_pool = new fhg::com::io_service_pool(1);
+		m_kvsd = new fhg::com::kvs::server::kvsd ("/tmp/notthere");
+		m_serv = new fhg::com::tcp_server ( *m_pool
+										  , *m_kvsd
 										  , kvs_host ()
 										  , kvs_port ()
 										  , true
 										  );
 
 		m_ptrThrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-												, m_ptrPool
+												, m_pool
 												)
 								   );
 
-		m_ptrServ->start();
+		m_serv->start();
 
 		fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
 												, kvs_port()
@@ -140,9 +140,9 @@ struct MyFixture
 	int m_sleep_interval ;
     std::string m_strWorkflow;
 
-	fhg::com::io_service_pool *m_ptrPool;
-	fhg::com::kvs::server::kvsd *m_ptrKvsd;
-	fhg::com::tcp_server *m_ptrServ;
+	fhg::com::io_service_pool *m_pool;
+	fhg::com::kvs::server::kvsd *m_kvsd;
+	fhg::com::tcp_server *m_serv;
 	boost::thread *m_ptrThrd;
 };
 
