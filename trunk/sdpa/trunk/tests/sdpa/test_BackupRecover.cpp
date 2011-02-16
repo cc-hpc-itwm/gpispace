@@ -85,7 +85,7 @@ struct MyFixture
 										  , true
 										  );
 
-		m_ptrThrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
+		m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
 												, m_pool
 												)
 								   );
@@ -142,7 +142,7 @@ struct MyFixture
 	fhg::com::io_service_pool *m_pool;
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
-	boost::thread *m_ptrThrd;
+	boost::thread *m_thrd;
 };
 
 BOOST_AUTO_TEST_SUITE( test_SerializeAgents );
