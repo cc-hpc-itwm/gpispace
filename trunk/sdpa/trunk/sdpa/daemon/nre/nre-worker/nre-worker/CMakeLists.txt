@@ -1,14 +1,3 @@
-set (hdrs
-#    messages.hpp
-#	Codec.hpp
-# 	ExecutionContext.hpp
-#  	Serialization.hpp
-#  	NreWorkerClient.hpp
-)
-  
-install(FILES ${hdrs}
-  DESTINATION include/sdpa/daemon/nre/nre-worker
-  COMPONENT headers)
 
 add_executable(nre-pcd nre-pcd.cpp ActivityExecutor.cpp)
 target_link_libraries(nre-pcd ${FhgLog_LIBRARY})
