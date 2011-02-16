@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestTimedoutWorkers
+#define BOOST_TEST_MODULE TestConcurrentClients
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
@@ -291,12 +291,12 @@ void MyFixture::run_client(int i)
     ptrCli.reset();
 }
 
-BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
+BOOST_FIXTURE_TEST_SUITE( test_ConcurrentClients, MyFixture );
 
 
 BOOST_AUTO_TEST_CASE( testConcurrentClients )
 {
-	LOG( INFO, "***** testJobSubmToWeFails *****"<<std::endl);
+	LOG( INFO, "***** testConcurrentClients *****"<<std::endl);
 
 	string strGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
 
-	LOG( INFO, "The test case testJobSubmToWeFails terminated!" );
+	LOG( INFO, "The test case testConcurrentClients terminated!" );
 }
 
 
