@@ -9,21 +9,7 @@
 #include <sdpa/util/Properties.hpp>
 
 #if defined(USE_BOOST_SC)
-    // ap: is this really necessary? are the defaults not large enough?
-    // those defines should go to some configuration header
-    // or passed as -D to the compiler
-#   define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-
-#   if defined(BOOST_MPL_LIMIT_VECTOR_SIZE)
-#     undef BOOST_MPL_LIMIT_VECTOR_SIZE
-#   endif
-#   define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
-
-#   if defined(BOOST_MPL_LIMIT_MAP_SIZE)
-#     undef BOOST_MPL_LIMIT_MAP_SIZE
-#   endif
-#   define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
-#   include <boost/statechart/event_base.hpp>
+	#include <boost/statechart/event_base.hpp>
 #endif
 
 #include <sdpa/events/SubmitJobAckEvent.hpp>
@@ -36,7 +22,6 @@
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
-//#include <gwdl/IWorkflow.h>
 #include <sdpa/types.hpp>
 
 #include <boost/serialization/access.hpp>
