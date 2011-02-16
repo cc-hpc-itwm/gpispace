@@ -73,7 +73,7 @@ namespace sdpa {
 				//      +------------+-----------------------+--------------+---------------------+-----
 				a_row<  Configuring, sdpa::events::ConfigOkEvent,			Up, 		&agentFSM::action_config_ok>,
 				a_row<  Configuring, sdpa::events::ConfigNokEvent, 	 	 	Down, 		&agentFSM::action_config_nok >,
-				_irow<  Down,    	 sdpa::events::ErrorEvent >,
+				_irow<  Configuring, sdpa::events::ErrorEvent >,
 				//      +------------+-----------------------+--------------+---------------------+-----
 				a_row<  Up,   		 sdpa::events::InterruptEvent, 		 	Down,		&agentFSM::action_interrupt >,
 				a_irow< Up,    		 sdpa::events::WorkerRegistrationEvent,			 	&agentFSM::action_register_worker>,
@@ -87,7 +87,7 @@ namespace sdpa {
 				template <class FSM, class Event>
 				void no_transition(Event const& e, FSM&, int state)
 				{
-					LOG(FATAL, "no transition from state "<< " on event " << typeid(e).name());
+					LOG(DEBUG, "no transition from state "<< " on event " << typeid(e).name());
 				}
 			};
 

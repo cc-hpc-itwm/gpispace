@@ -114,7 +114,7 @@ namespace sdpa {
 				template <class FSM, class Event>
 				void no_transition(Event const& e, FSM&, int state)
 				{
-					LOG(FATAL, "no transition from state "<< " on event " << typeid(e).name());
+					LOG(DEBUG, "no transition from state "<< " on event " << typeid(e).name());
 				}
 
 				template <class FSM>
