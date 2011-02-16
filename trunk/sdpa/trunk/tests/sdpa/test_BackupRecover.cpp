@@ -104,10 +104,6 @@ struct MyFixture
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 
-		sstrOrch.str("");
-		sstrAgg.str("");
-		sstrNRE.str("");
-
 		m_serv->stop ();
 		m_pool->stop ();
 		m_thrd->join ();
