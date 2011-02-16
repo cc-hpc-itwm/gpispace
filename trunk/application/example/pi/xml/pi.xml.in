@@ -1,0 +1,220 @@
+<defun name="approx_pi">
+
+  <in name="num_packet" type="long" place="num_packet"/>
+  <in name="points_per_packet" type="long" place="points_per_packet"/>
+  <in name="credit" type="long" place="credit"/>
+  <in name="seed" type="long" place="seed"/>
+
+  <out name="ratio" type="ratio" place="ratio"/>
+
+  <struct name="ratio">
+    <field name="in" type="long"/>
+    <field name="total" type="long"/>
+  </struct>
+
+  <struct name="state">
+    <field name="id" type="long"/>
+    <field name="max" type="long"/>
+  </struct>
+
+  <net>
+    <place name="num_packet" type="long">
+      <token>
+        <value>
+          @NUM_PACKET@
+        </value>
+      </token>
+    </place>
+    <place name="points_per_packet" type="long">
+      <token>
+        <value>
+          @POINTS_PER_PACKET@
+        </value>
+      </token>
+    </place>
+    <place name="credit" type="long">
+      <token>
+        <value>
+          @CREDIT@
+        </value>
+      </token>
+    </place>
+    <place name="seed" type="long">
+      <token>
+        <value>
+          @SEED@
+        </value>
+      </token>
+    </place>
+    <place name="ratio" type="ratio"/>
+    <place name="accum" type="ratio"/>
+
+    <transition name="init">
+      <defun>
+        <in name="num_packet" type="long"/>
+        <out name="wait" type="long"/>
+        <out name="state" type="state"/>
+        <out name="ratio" type="ratio"/>
+        <expression>
+          ${state.id} := 0L;
+          ${state.max} := ${num_packet};
+
+          ${wait} := ${num_packet};
+
+          ${ratio.in} := 0L;
+          ${ratio.total} := 0L;
+        </expression>
+      </defun>
+      <connect-in port="num_packet" place="num_packet"/>
+      <connect-out port="wait" place="wait"/>
+      <connect-out port="state" place="state"/>
+      <connect-out port="ratio" place="accum"/>
+    </transition>
+
+    <place name="state" type="state"/>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <expression>
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <in name="credit" type="long"/>
+        <out name="credit" type="long"/>
+        <in name="seed" type="long"/>
+        <out name="id" type="long"/>
+        <expression>
+          ${id} := ${state.id} + ${seed};
+          ${state.id} := ${state.id} + 1;
+          ${credit} := ${credit} - 1
+        </expression>
+      </defun>
+      <condition>
+        ${credit} :gt: 0L
+      </condition>
+      <condition>
+        ${state.id} :lt: ${state.max}
+      </condition>
+      <connect-in port="state" place="state"/>
+      <connect-out port="state" place="state"/>
+      <connect-in port="credit" place="credit"/>
+      <connect-out port="credit" place="credit"/>
+      <connect-read port="seed" place="seed"/>
+      <connect-out port="id" place="id"/>
+    </transition>
+
+    <place name="id" type="long"/>
+
+    <transition name="run">
+      <defun>
+        <in name="points" type="long"/>
+        <in name="seed" type="long"/>
+        <out name="ratio" type="ratio"/>
+        <module name="pi" function="ratio run (points, seed)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="boost/random/mersenne_twister.hpp"/>
+          <cinclude href="boost/random/uniform_real.hpp"/>
+          <cinclude href="boost/random/variate_generator.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "RUN"
+                << ", points " << points
+                << ", seed " << seed
+                );
+
+            boost::mt19937 gen (seed);
+            boost::uniform_real<double> dist (-1, 1);
+            boost::variate_generator< boost::mt19937 &
+                                    , boost::uniform_real<double>
+                                    > rand (gen, dist);
+
+            ::pnetc::type::ratio::ratio r;
+
+            r.in = 0;
+
+            for (r.total = 0; r.total < points; ++r.total)
+              {
+                const double x (rand());
+                const double y (rand());
+                const double l (sqrt (x * x + y * y));
+
+                if (l <= 1)
+                  {
+                    ++r.in;
+                  }
+              }
+
+            LOG (INFO, "RES = " << r.in << " of " << r.total
+                << " (seed " << seed << ")"
+                );
+
+            return r;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="points" place="points_per_packet"/>
+      <connect-in port="seed" place="id"/>
+      <connect-out port="ratio" place="done"/>
+    </transition>
+
+    <place name="done" type="ratio"/>
+
+    <transition name="finish_packet">
+      <defun>
+        <in name="done" type="ratio"/>
+        <in name="ratio" type="ratio"/>
+        <out name="ratio" type="ratio"/>
+        <in name="credit" type="long"/>
+        <out name="credit" type="long"/>
+        <in name="wait" type="long"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${credit} := ${credit} + 1;
+          ${wait} := ${wait} - 1;
+
+          ${ratio.in} := ${ratio.in} + ${done.in};
+          ${ratio.total} := ${ratio.total} + ${done.total};
+        </expression>
+      </defun>
+      <connect-in port="done" place="done"/>
+      <connect-in port="ratio" place="accum"/>
+      <connect-out port="ratio" place="accum"/>
+      <connect-in port="credit" place="credit"/>
+      <connect-out port="credit" place="credit"/>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <place name="wait" type="long"/>
+
+    <transition name="finalize">
+      <defun>
+        <in name="seed" type="long"/>
+        <in name="credit" type="long"/>
+        <in name="wait" type="long"/>
+        <in name="ratio" type="ratio"/>
+        <out name="ratio" type="ratio"/>
+        <expression>
+        </expression>
+      </defun>
+      <condition>
+        ${wait} == 0
+      </condition>
+      <connect-in port="seed" place="seed"/>
+      <connect-in port="credit" place="credit"/>
+      <connect-in port="wait" place="wait"/>
+      <connect-in port="ratio" place="accum"/>
+      <connect-out port="ratio" place="ratio"/>
+    </transition>
+  </net>
+
+</defun>

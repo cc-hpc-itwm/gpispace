@@ -1,0 +1,12 @@
+#!/bin/bash
+
+NUM_PACKET=${1:?}
+POINTS_PER_PACKET=${2:?}
+CREDIT=${3:?}
+SEED=${4:?}
+
+/usr/bin/sed                                    \
+  "s|@NUM_PACKET@|${NUM_PACKET}|g               \
+  ;s|@POINTS_PER_PACKET@|${POINTS_PER_PACKET}|g \
+  ;s|@CREDIT@|${CREDIT}|g                       \
+  ;s|@SEED@|${SEED}|g                           "
