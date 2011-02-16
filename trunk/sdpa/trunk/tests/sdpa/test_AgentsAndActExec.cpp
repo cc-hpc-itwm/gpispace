@@ -114,18 +114,14 @@ struct MyFixture
 	{
 		LOG(DEBUG, "Fixture's destructor called ...");
 
-		sstrOrch.str("");
-		sstrAgg.str("");
-		sstrNRE.str("");
+		m_ptrServ->stop ();
+		m_ptrPool->stop ();
+		m_ptrThrd->join ();
 
-		m_serv->stop ();
-		m_pool->stop ();
-		m_thrd->join ();
-
-		delete m_thrd;
-		delete m_serv;
-		delete m_kvsd;
-		delete m_pool;
+		delete m_ptrThrd;
+		delete m_ptrServ;
+		delete m_ptrKvsd;
+		delete m_ptrPool;
 
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
