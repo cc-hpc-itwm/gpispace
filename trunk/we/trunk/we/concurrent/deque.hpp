@@ -23,7 +23,16 @@ namespace concurrent
     boost::condition_variable cond_put;
     boost::condition_variable cond_get;
     boost::mutex mutex;
- 
+
+    bool empty (void) const
+    {
+      return q.empty();
+    }
+    size_type size (void) const
+    {
+      return q.size();
+    }
+
   public:
     // maybe blocking!
     void put (const T & x)
@@ -32,14 +41,14 @@ namespace concurrent
 
       while (q.size() >= max)
         cond_get.wait (lock);
-      
+
       q.push_back (x);
 
       cond_put.notify_one();
     }
 
     // maybe blocking!
-    T get (void) 
+    T get (void)
     {
       boost::unique_lock<boost::mutex> lock (mutex);
 
@@ -52,17 +61,6 @@ namespace concurrent
 
       return x;
     }
-
-    bool empty (void) const
-	{
-//      boost::unique_lock<boost::mutex> lock (mutex);
-	  return q.empty();
-	}
-    size_type size (void) const
-	{
-//      boost::unique_lock<boost::mutex> lock (mutex);
-	  return q.size();
-	}
   };
 }
 

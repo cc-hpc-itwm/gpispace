@@ -33,19 +33,22 @@ namespace petri_net
     boost::mt19937 engine;
 
   public:
-    shared_t (NET & _net) 
+    shared_t (NET & _net)
       : n (_net)
       , _extract(0)
       , _inject(0)
     {}
 
-    void wait_inject (void)
+    void wait_inject_or_done (void)
     {
       boost::unique_lock<boost::mutex> lock (mutex);
 
       const CNT i (_inject);
 
-      while (n.enabled_transitions().empty() && i == _inject)
+      while (  n.enabled_transitions().empty()
+            && i == _inject
+            && _extract != _inject // otherwise: done
+            )
         cond_inject.wait (lock);
     }
 
@@ -64,7 +67,7 @@ namespace petri_net
     {
       boost::lock_guard<boost::mutex> lock (mutex);
 
-      activity_t act = n.extract_activity_random (engine);
+      const activity_t act (n.extract_activity_random (engine));
 
       ++_extract;
 
@@ -98,7 +101,7 @@ namespace petri_net
       concurrent::deque<activity_t> activity;
       concurrent::deque<output_t> output;
 
-      param_t 
+      param_t
       ( NET & _net
       , const typename concurrent::deque<activity_t>::size_type & max_activity
       , const typename concurrent::deque<output_t>::size_type & max_output
@@ -132,7 +135,7 @@ namespace petri_net
           while (p->shared.has_enabled())
             p->activity.put (p->shared.extract());
 
-          p->shared.wait_inject();
+          p->shared.wait_inject_or_done ();
           // ^comment this to get a busy waiting extractor
         }
       while (!p->shared.done());
@@ -166,7 +169,7 @@ namespace petri_net
     , const unsigned int _num_injector = 1
     )
       : net (_net)
-      , param (_net, _max_activity, _max_output) 
+      , param (_net, _max_activity, _max_output)
       , num_injector (_num_injector)
     {
       pthread_attr_init(&attr);
