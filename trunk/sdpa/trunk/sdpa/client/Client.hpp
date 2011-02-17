@@ -20,9 +20,14 @@
 #include <sdpa/client/ClientActions.hpp>
 
 #include <sdpa/client/types.hpp>
-#include <sdpa/client/ClientFsm_sm.h>
 #include <sdpa/client/exceptions.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+
+#ifdef USE_SMC_SC
+	#include <sdpa/client/ClientFsm_sm.h>
+#else
+	#include <sdpa/client/generated/ClientFsm_sm.h>
+#endif
 
 namespace sdpa { namespace client {
   class Client : public ClientActions, public seda::Strategy {
