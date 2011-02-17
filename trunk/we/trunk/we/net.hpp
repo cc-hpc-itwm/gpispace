@@ -310,11 +310,11 @@ private:
 
   void recalculate_enabled_by_place (const pid_t & pid)
   {
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
-
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       recalculate_in_enabled (*t, pid, t());
+
+    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+      update_out_enabled (*t, pid, t());
   }
 
   void recalculate_out_enabled_by_place (const pid_t & pid)
@@ -976,11 +976,11 @@ public:
 
     if (successful)
       {
-        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-          update_out_enabled (*t, pid, t());
-
         for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
           update_in_enabled_put_token (*t, pid, t(), token);
+
+        for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+          update_out_enabled (*t, pid, t());
       }
 
     return successful;
@@ -1010,11 +1010,11 @@ public:
   {
     const std::size_t ret (token_place_rel.delete_one (token, pid));
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
-
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_one_token (*t, pid, token);
+
+    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+      update_out_enabled (*t, pid, t());
 
     return ret;
   }
@@ -1023,11 +1023,11 @@ public:
   {
     const std::size_t ret (token_place_rel.delete_all (token, pid));
 
-    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
-      update_out_enabled (*t, pid, t());
-
     for (adj_transition_const_it t (out_of_place (pid)); t.has_more(); ++t)
       update_in_enabled_del_all_token (*t, pid, token);
+
+    for (adj_transition_const_it t (in_to_place (pid)); t.has_more(); ++t)
+      update_out_enabled (*t, pid, t());
 
     return ret;
   }
