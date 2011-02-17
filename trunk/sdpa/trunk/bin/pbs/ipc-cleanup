@@ -68,7 +68,7 @@ function node_loop ()
 	count=$(( count + 1 ))
 	node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
 	log "clearing ipc on $node_name..."
-	ssh -x $node_name ipc-cleanup -l >/dev/null 2>&1 &
+	echo ipc-cleanup -l | ssh -x $node_name >/dev/null 2>&1 &
 	if [ $count -ge $bunch_size ] ; then
 	    wait
 	    count=0

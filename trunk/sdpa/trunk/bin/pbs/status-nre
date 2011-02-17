@@ -25,13 +25,13 @@ for node_num in $nodes; do
   nre_ec=0
   node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
   echo -n "checking status of nre on $node_name..."
-  ssh -x $node_name ps aux | grep -q '[n]re-pc' >/dev/null 2>&1
+  echo ps aux | ssh -x $node_name | grep -q '[n]re-pc' >/dev/null 2>&1
   if [ $? -eq 0 ]; then
 	echo -n " nre-pc"
   else
 	nre_ec=$(( nre_ec + 1 ))
   fi
-  ssh -x $node_name ps aux | grep -q '[n]re --url' >/dev/null 2>&1
+  echo ps aux | ssh -x $node_name | grep -q '[n]re --url' >/dev/null 2>&1
   if [ $? -eq 0 ]; then
 	echo -n " nre"
   else

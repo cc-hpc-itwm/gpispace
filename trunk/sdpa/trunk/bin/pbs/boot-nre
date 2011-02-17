@@ -13,7 +13,8 @@ if [ $? -ne 0 ]; then
     ps aux | grep -q "[f]vm_sdpa_standalone"
     if [ $? -ne 0 ] ; then
 	log "F: FVM is not running, please start either sdpa-gpi or fvm_sdpa_standalone!"
-	exit 2
+# WORK HERE!
+#	exit 2
     fi
 fi
 
@@ -42,7 +43,7 @@ for node_num in $nodes; do
 
     log "starting nre on $node_name (rank: $rank)..."
 
-    ssh -x $node_name start-nre -r $rank >/dev/null 2>&1 &
+    echo start-nre -r $rank | ssh -x $node_name >/dev/null 2>&1 &
     if [ $count -ge $bunch_size ] ; then
 	wait
 	count=0

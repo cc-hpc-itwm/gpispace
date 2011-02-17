@@ -249,7 +249,7 @@ function start_nre_on_node ()
 
     rm -f "$SDPA_LOG_DIR/nre.$node.log"
     rm -f "$SDPA_LOG_DIR/pc.$node.log"
-    ssh -x "$node" start-nre -r $rank >/dev/null 2>&1
+    echo start-nre -r $rank | ssh -x "$node" >/dev/null 2>&1
     if [ $? -ne 0 ] ; then
 	echo "nre did not startup on node $node: $output" >&2
 	return 1
@@ -262,7 +262,7 @@ function stop_nre_on_node ()
 {
     node=$1
     rank=$2
-    ssh -x $node stop-nre -r $rank >/dev/null 2>&1
+    echo stop-nre -r $rank | ssh -x $node >/dev/null 2>&1
 }
 
 function stop_nre ()
