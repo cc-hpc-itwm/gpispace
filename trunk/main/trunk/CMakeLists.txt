@@ -159,3 +159,18 @@ install (FILES ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa
   DESTINATION etc/modules/sdpa
   RENAME ${PROJECT_REVISION}
   COMPONENT configurations)
+
+# CPACK packaging
+INCLUDE(InstallRequiredSystemLibraries)
+#set(CPACK_GENERATOR "RPM;STGZ;TGZ;TBZ2")
+set(CPACK_GENERATOR "TGZ;TBZ2")
+
+#set(PROJECT_REVISION     CACHE STRING "Source code revision")
+#set(PROJECT_BUILD    "0" CACHE STRING "Build number")
+#set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture" CACHE STRING "Project description")
+#set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
+#set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM" CACHE STRING "Copyright")
+#set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
+#set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version")
+INCLUDE(CPack)
+
