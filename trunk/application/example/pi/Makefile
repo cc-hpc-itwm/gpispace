@@ -2,7 +2,7 @@
 MAIN = pi
 
 TRUNK = $(CURDIR)/../../../
-BUILD = $(TRUNK)/../build/gcc43
+BUILD = $(TRUNK)/../build/
 
 #include ../make.defs
 

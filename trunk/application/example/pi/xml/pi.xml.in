@@ -203,8 +203,31 @@
         <in name="wait" type="long"/>
         <in name="ratio" type="ratio"/>
         <out name="ratio" type="ratio"/>
-        <expression>
-        </expression>
+        <module name="pi" function="finalize (ratio)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "FINALIZE"
+                << ", ratio " << ratio.in << " % " << ratio.total
+                );
+            
+            long gcd (ratio.total);
+            long rem (ratio.in);
+
+            while (rem != 0)
+              {
+                const long r (gcd % rem);
+                gcd = rem;
+                rem = r;
+              }
+
+            ratio.in /= gcd;
+            ratio.total /= gcd;
+
+            LOG (INFO, "gcd " << gcd << " => "
+                << " ratio " << ratio.in << " % " << ratio.total
+                );
+          ]]></code>
+        </module>
       </defun>
       <condition>
         ${wait} == 0
