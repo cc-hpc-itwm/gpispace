@@ -95,12 +95,12 @@ main (int argc, char ** argv)
   po::options_description desc("options");
 
   desc.add_options()
-    ("help", "this message")
-    ( "input"
+    ( "help,h", "this message")
+    ( "input,i"
     , po::value<std::string>(&input)->default_value("-")
     , "input file name, - for stdin"
     )
-    ( "output"
+    ( "output,o"
     , po::value<std::string>(&output)->default_value("-")
     , "output file name, - for stdout"
     )
@@ -146,14 +146,30 @@ main (int argc, char ** argv)
     )
     ;
 
+  po::positional_options_description p;
+  p.add("input", -1);
+
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store( po::command_line_parser(argc, argv)
+           . options(desc).positional(p).run()
+           , vm
+           );
   po::notify(vm);
 
   if (vm.count("help"))
     {
       std::cout << desc << std::endl;
       return EXIT_SUCCESS;
+    }
+
+  if (input == "-")
+    {
+      input = "/dev/stdin";
+    }
+
+  if (output == "-")
+    {
+      output = "/dev/stdout";
     }
 
   boost::function<bool (const we::transition_t &)> not_starts
@@ -181,18 +197,19 @@ main (int argc, char ** argv)
 
   we::activity_t act;
 
-  if (input == "-")
-    {
-      we::util::text_codec::decode (std::cin, act);
-    }
-  else
-    {
-      std::ifstream stream (input.c_str());
+  we::util::text_codec::decode (std::cin, act);
 
-      we::util::text_codec::decode (stream, act);
-    }
+  {
+    std::ifstream stream (input.c_str());
 
-  detail::to_dot (std::cout, act, options);
+    we::util::text_codec::decode (stream, act);
+  }
+
+  {
+    std::ofstream stream (output.c_str());
+
+    detail::to_dot (stream, act, options);
+  }
 
   return EXIT_SUCCESS;
 }

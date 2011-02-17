@@ -373,6 +373,12 @@ namespace we { namespace mgmt { namespace type {
       return boost::apply_visitor (visitor_has_enabled,  transition().data());
     }
 
+    const input_t & pending_input() const
+    {
+      shared_lock_t lock (mutex_);
+      return pending_input_;
+    }
+
     const input_t & input() const
     {
       shared_lock_t lock(mutex_);
@@ -420,7 +426,7 @@ namespace we { namespace mgmt { namespace type {
       printer << input();
       os << "}";
       os << "{pending, ";
-      printer << pending_input_;
+      printer << pending_input();
       os << "}";
       os << ", ";
       os << "{output, ";

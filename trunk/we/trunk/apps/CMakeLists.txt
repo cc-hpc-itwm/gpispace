@@ -1,41 +1,42 @@
 # -*- mode: cmake; -*-
 
-add_executable(we-exec "we-exec.cpp")
-target_link_libraries(we-exec ${FhgLog_LIBRARY})
-target_link_libraries(we-exec ${Boost_LIBRARIES})
-target_link_libraries(we-exec pthread)
-target_link_libraries(we-exec dl)
-install (TARGETS we-exec
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
+set (simple_targets
+     we-exec
+     loader
+     pnetget
+     pnet2dot
+    )
 
-add_executable(loader loader.cpp)
-target_link_libraries(loader ${FhgLog_LIBRARY})
-target_link_libraries(loader ${Boost_LIBRARIES})
-target_link_libraries(loader pthread)
-target_link_libraries(loader dl)
-install (TARGETS loader
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
+foreach (target ${simple_targets})
 
-add_executable(pnet2dot pnet2dot.cpp)
-target_link_libraries(pnet2dot ${Boost_LIBRARIES})
-install (TARGETS pnet2dot
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
+  add_executable (${target} "${target}.cpp")
 
-if (ENABLE_STATIC_BINARIES)
-  add_executable(pnet2dot.static pnet2dot.cpp)
-  target_link_libraries(pnet2dot.static ${FhgLog_LIBRARY})
-  target_link_libraries(pnet2dot.static ${Boost_LIBRARIES})
-  target_link_libraries(pnet2dot.static pthread)
-  target_link_libraries(pnet2dot.static dl)
-  set_target_properties(pnet2dot.static PROPERTIES LINK_FLAGS "-static")
-  install (TARGETS pnet2dot.static
-    RUNTIME
-    DESTINATION bin
-    COMPONENT applications)
-endif (ENABLE_STATIC_BINARIES)
+  target_link_libraries(${target} ${FhgLog_LIBRARY})
+  target_link_libraries(${target} ${Boost_LIBRARIES})
+  target_link_libraries(${target} pthread)
+  target_link_libraries(${target} dl)
+
+  install (TARGETS ${target}
+           RUNTIME
+           DESTINATION bin
+           COMPONENT applications
+          )
+
+  if (ENABLE_STATIC_BINARIES)
+
+    add_executable(${target}.static "${target}.cpp")
+
+    target_link_libraries(${target}.static ${FhgLog_LIBRARY})
+    target_link_libraries(${target}.static ${Boost_LIBRARIES})
+    target_link_libraries(${target}.static pthread)
+    target_link_libraries(${target}.static dl)
+
+    set_target_properties(${target}.static PROPERTIES LINK_FLAGS "-static")
+
+    install (TARGETS ${target}.static
+             RUNTIME
+             DESTINATION bin
+             COMPONENT applications
+            )
+  endif (ENABLE_STATIC_BINARIES)
+endforeach (target ${simple_targets})
