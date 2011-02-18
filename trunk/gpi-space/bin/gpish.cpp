@@ -319,7 +319,16 @@ int cmd_close (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_ping (shell_t::argv_t const & av, shell_t & sh)
 {
-  return 1;
+  if (sh.state().capi.ping ())
+  {
+    std::cout << "pong" << std::endl;
+    return 0;
+  }
+  else
+  {
+    std::cout << "pang" << std::endl;
+    return 1;
+  }
 }
 
 int cmd_info (shell_t::argv_t const & av, shell_t & sh)
