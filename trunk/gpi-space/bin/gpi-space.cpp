@@ -95,6 +95,15 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 {
   configure(cfg);
 
+  gpi_api_t & gpi_api (gpi_api_t::get());
+
+  LOG( TRACE
+     ,  "rank=" << gpi_api.rank()
+     << " dma=" << gpi_api.dma_ptr()
+     << " #nodes=" << gpi_api.number_of_nodes()
+     << " mem_size=" << gpi_api.memory_size()
+     );
+
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
   LOG(INFO, "gpi-space on rank " << rank << " running");
