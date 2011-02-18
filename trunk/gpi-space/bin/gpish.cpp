@@ -88,6 +88,7 @@ static int cmd_segment_attach (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_segment_detach (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh);
 
+static int cmd_memory (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh);
@@ -230,6 +231,7 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("segment-detach", &cmd_segment_detach, "detach from a segment");
   sh.add_command("segment-list", &cmd_segment_list, "list available segments");
 
+  sh.add_command("memory", &cmd_memory, "memory related functions");
   sh.add_command("memory-alloc", &cmd_memory_alloc, "allocate memory");
   sh.add_command("memory-free", &cmd_memory_free, "deallocate memory");
   sh.add_command("memory-copy", &cmd_memory_copy, "copy memory");
@@ -607,6 +609,37 @@ int cmd_segment_detach (shell_t::argv_t const & av, shell_t & sh)
     }
   }
   return err;
+}
+
+int cmd_memory (shell_t::argv_t const & av, shell_t & sh)
+{
+  if (av.empty())
+  {
+    std::cout << "usage: memory [command]" << std::endl;
+    std::cout << "    alloc" << std::endl;
+    std::cout << "    free" << std::endl;
+    std::cout << "    copy" << std::endl;
+    std::cout << "    wait" << std::endl;
+    std::cout << "    list" << std::endl;
+    return 0;
+  }
+  else
+  {
+    shell_t::argv_t new_av (av);
+    int rc (0);
+
+    new_av[0] = "memory-" + av[0];
+    rc = sh.execute (new_av);
+    if (rc == -1)
+    {
+      std::cerr << "failed: command not found: " << av[0] << std::endl;
+      return 1;
+    }
+    else
+    {
+      return rc;
+    }
+  }
 }
 
 int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
