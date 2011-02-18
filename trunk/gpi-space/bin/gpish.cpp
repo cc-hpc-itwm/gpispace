@@ -24,6 +24,7 @@ namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
 static std::string const & version ();
+static std::string disclaimer ();
 
 typedef std::vector<boost::filesystem::path> path_list_t;
 
@@ -135,7 +136,7 @@ int main (int ac, char **av)
 
   if (vm.count ("version"))
   {
-    std::cerr << version () << std::endl;
+    std::cerr << disclaimer ();
     return EXIT_SUCCESS;
   }
 
@@ -241,10 +242,28 @@ void shutdown_shell ()
   shell_t::destroy ();
 }
 
+std::string disclaimer ()
+{
+  std::stringstream sstr;
+  sstr << "Fraunhofer GPI shell, version " << version () << std::endl;
+  sstr << "copyright: Alexander Petry <petry@itwm.fhg.de> (c) 2011" << std::endl;
+  return sstr.str();
+}
+
 int cmd_help (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.empty())
   {
+    std::cout << disclaimer () << std::endl;
+
+    std::cout << "This is a list of available commands, use 'help <command>' to get more information " << std::endl;
+    std::cout << "on a particular topic." << std::endl;
+    std::cout << std::endl;
+
+    std::ios_base::fmtflags saved_flags (std::cout.flags());
+    char saved_fill = std::cout.fill (' ');
+    std::size_t saved_width = std::cout.width (0);
+
     // print list of commands
     const shell_t::command_list_t & cmds (sh.commands());
     for ( shell_t::command_list_t::const_iterator cmd (cmds.begin())
@@ -252,9 +271,19 @@ int cmd_help (shell_t::argv_t const & av, shell_t & sh)
         ; ++cmd
         )
     {
-      // use sh.cout()/cerr()?
-      std::cout << "    " << cmd->name () << "\t" << cmd->short_doc () << std::endl;
+      std::cout << "  ";
+      std::cout.width (20);
+      std::cout.flags (std::ios::right);
+      std::cout << cmd->name();
+      std::cout << "   ";
+      std::cout.width (0);
+      std::cout << cmd->short_doc ();
+      std::cout << std::endl;
     }
+
+    std::cout.flags (saved_flags);
+    std::cout.fill (saved_fill);
+    std::cout.width (saved_width);
   }
   else
   {
@@ -590,13 +619,14 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
   return 1;
 }
 
-static std::string const & version ()
+std::string const & version ()
 {
-  static std::string ver("GPIsh 0.1");
+  // TODO: get this from config.h/version.h
+  static std::string ver("v0.1");
   return ver;
 }
 
-static path_list_t collect_sockets (fs::path const & prefix)
+path_list_t collect_sockets (fs::path const & prefix)
 {
   namespace fs = boost::filesystem;
   fs::path socket_path (prefix);
