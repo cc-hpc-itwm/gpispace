@@ -209,7 +209,15 @@ namespace gpi
       if (cmd)
       {
         argv_t cmd_args (argv.begin()+1, argv.end());
-        rc = (*cmd)(cmd_args, *this);
+        try
+        {
+          rc = (*cmd)(cmd_args, *this);
+        }
+        catch (std::exception const & ex)
+        {
+          std::cerr << "failed: " << ex.what() << std::endl;
+          rc = -1;
+        }
       }
       else
       {
