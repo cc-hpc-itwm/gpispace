@@ -88,11 +88,18 @@ namespace gpi
 
         struct list_t
         {
+          list_t (gpi::pc::type::segment_id_t seg_id = gpi::pc::type::segment::SEG_INVAL)
+            : id (seg_id)
+          {}
+
+          gpi::pc::type::segment_id_t id;
+
         private:
           friend class boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
+            ar & BOOST_SERIALIZATION_NVP( id );
           }
         };
 
