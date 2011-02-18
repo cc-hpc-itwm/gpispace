@@ -110,6 +110,7 @@ namespace gpi
       m_rank = getRankGPI();
       m_dma  = getDmaMemPtrGPI();
       m_num_nodes = generateHostlistGPI();
+      m_mem_size = getMemWorkerGPI();
       m_startup_done = true;
     }
 
@@ -185,6 +186,11 @@ namespace gpi
     gpi::size_t gpi_api_t::number_of_nodes () const
     {
       return m_num_nodes;
+    }
+
+    gpi::size_t gpi_api_t::memory_size () const
+    {
+      return m_mem_size;
     }
 
     gpi::size_t gpi_api_t::open_dma_requests (const queue_desc_t q) const

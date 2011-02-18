@@ -52,8 +52,6 @@ namespace gpi
       static gpi_api_t & get ();
       static void destroy ();
 
-      void set_memory_size (const gpi::size_t);
-
       // wrapped C function calls
       void start (const gpi::timeout_t timeout);
       void stop ();
@@ -66,6 +64,7 @@ namespace gpi
       gpi::version_t version () const;
       gpi::port_t port () const;
       gpi::size_t number_of_nodes () const;
+      gpi::size_t memory_size () const;
 
       gpi::size_t open_dma_requests (const queue_desc_t) const;
       bool max_dma_requests_reached (const queue_desc_t) const;
@@ -85,6 +84,7 @@ namespace gpi
       void set_port (const gpi::port_t);
       void set_mtu (const gpi::size_t);
       void set_number_of_processes (const gpi::size_t);
+      void set_memory_size (const gpi::size_t);
 
       bool ping (const gpi::rank_t) const;
       bool ping (std::string const & hostname) const;
