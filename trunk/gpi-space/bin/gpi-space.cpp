@@ -20,6 +20,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
+#include <gpi-space/version.hpp>
 #include <gpi-space/config/config.hpp>
 #include <gpi-space/config/config_io.hpp>
 #include <gpi-space/config/parser.hpp>
@@ -305,7 +306,8 @@ int main (int ac, char *av[])
 
   gpi_api.set_memory_size (config.gpi.memory_size);
   gpi_api.start (config.gpi.timeout_in_sec);
-  LOG(INFO, "GPI started: version: " << gpi_api.version());
+  LOG(INFO, "GPISpace version: " << gpi::version_string());
+  LOG(INFO, "GPIApi version: " << gpi_api.version());
 
   gpi::signal::handler().connect
     (SIGINT, boost::bind (shutdown_handler, &gpi_api, _1));
