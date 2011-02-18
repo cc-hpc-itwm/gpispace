@@ -232,7 +232,7 @@ namespace gpi
         catch (boost::bad_get const & ex)
         {
           proto::error::error_t error (boost::get<proto::error::error_t>(reply));
-          LOG(ERROR, "request failed: " << error.code << ": " << error.detail);
+          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
           throw std::runtime_error (error.detail);
         }
         catch (std::exception const & ex)
@@ -252,7 +252,7 @@ namespace gpi
         proto::error::error_t result (boost::get<proto::error::error_t>(rpl));
         if (result.code != proto::error::success)
         {
-          LOG(ERROR, "could not free handle: " << result.code << ": " << result.detail);
+          DLOG(WARN, "could not free handle: " << result.code << ": " << result.detail);
           throw std::runtime_error ("handle could not be free'd: " + result.detail);
         }
       }
@@ -295,7 +295,7 @@ namespace gpi
           catch (boost::bad_get const &)
           {
             proto::error::error_t result (boost::get<proto::error::error_t>(rply));
-            LOG(ERROR, "could not register segment: " << result.code << ": " << result.detail);
+            DLOG(ERROR, "could not register segment: " << result.code << ": " << result.detail);
             //          throw wrap (result);
             throw std::runtime_error ("memory segment registration failed: " + result.detail);
           }
@@ -327,7 +327,7 @@ namespace gpi
         {
           proto::error::error_t result
             (boost::get<proto::error::error_t>(rply));
-          LOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
+          DLOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
           //          throw wrap (result);
           throw std::runtime_error ("segment listing failed: " + result.detail);
         }
@@ -366,7 +366,7 @@ namespace gpi
 
         if (!desc)
         {
-          LOG(ERROR, "segment descriptor not found: " << id);
+          DLOG(ERROR, "segment descriptor not found: " << id);
           throw std::runtime_error ("no such segment");
         }
 
@@ -378,7 +378,7 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "could not open segment " << desc->name << ": " << ex.what());
+          DLOG(ERROR, "could not open segment " << desc->name << ": " << ex.what());
           throw;
         }
 
@@ -393,7 +393,7 @@ namespace gpi
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
           {
-            LOG(ERROR, "could not attach to segment: " << result.code << ": " << result.detail);
+            DLOG(ERROR, "could not attach to segment: " << result.code << ": " << result.detail);
             throw std::runtime_error ("could not attach to segment: " + result.detail);
           }
           else
