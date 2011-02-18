@@ -315,7 +315,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* 
 {
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
-		pJob->RetrieveJobResults(pEvt);
+		pJob->RetrieveJobResults(pEvt, this);
 	}
 	catch(const JobNotFoundException&)
 	{

@@ -19,6 +19,10 @@
 using namespace sdpa::events;
 using namespace sdpa::fsm::smc;
 
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/DeleteJobAckEvent.hpp>
+
+
 //transitions
 void JobFSM::Dispatch()
 {
@@ -38,23 +42,34 @@ void JobFSM::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
 	m_fsmContext.CancelJobAck(pEvt);
 }
 
-void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt)
+
+void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IComm*  ptr_comm)
 {
 	lock_type lock(mtx_);
 	m_fsmContext.DeleteJob(pEvt);
+
+	if(ptr_comm)
+	{
+		sdpa::daemon::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::daemon::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
+		//send ack to master
+		ptr_comm->sendEventToMaster(pDelJobReply);
+	}
+	else
+		SDPA_LOG_ERROR("Could not send delete reply. Invalid communication handler!");
+
 }
 
-void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt)
+void JobFSM::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IComm* ptr_comm)
 {
 	lock_type lock(mtx_);
 	m_fsmContext.QueryJobStatus(pEvt);
 
 	//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
 	JobStatusReplyEvent::status_t status = getStatus();
-	if(pComm)
+	if(ptr_comm)
 	{
 		JobStatusReplyEvent::Ptr pStatReply(new JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
-		pComm->sendEventToMaster(pStatReply);
+		ptr_comm->sendEventToMaster(pStatReply);
 	}
 	else
 		LOG(TRACE, "Could not send back job status reply. Invalid communication handler!");
@@ -72,10 +87,20 @@ void JobFSM :: JobFailed(const sdpa::events::JobFailedEvent* pEvt)
 	m_fsmContext.JobFailed(pEvt);
 }
 
-void  JobFSM ::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt)
+void  JobFSM ::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IComm* ptr_comm)
 {
 	lock_type lock(mtx_);
 	m_fsmContext.RetrieveJobResults(pEvt);
+
+	if(ptr_comm)
+	{
+		const JobResultsReplyEvent::Ptr pResReply( new JobResultsReplyEvent( e.to(), e.from(), id(), result() ));
+
+		// reply the results to master
+		ptr_comm->sendEventToMaster(pResReply);
+	}
+	else
+		SDPA_LOG_ERROR("Could not send results. Invalid communication handler!");
 }
 
 sdpa::status_t JobFSM ::getStatus()

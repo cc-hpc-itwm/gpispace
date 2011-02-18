@@ -480,7 +480,7 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 	try{
 		Job::ptr_t pJob = ptr_job_man_->findJob(e.job_id());
-		pJob->DeleteJob(&e);
+		pJob->DeleteJob(&e, this);
 
 		ptr_job_man_->deleteJob(e.job_id());
 	} catch(JobNotFoundException const &){
@@ -996,6 +996,17 @@ Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFo
 		return ptr_job_man_->findJob(job_id);
 	}
 	catch(const JobNotFoundException& ex)
+	{
+		throw ex;
+	}
+}
+
+void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId) throw(JobNotDeletedException)
+{
+	try {
+		jobManager()->deleteJob(jobId);
+	}
+	catch(const JobNotDeletedException& ex)
 	{
 		throw ex;
 	}

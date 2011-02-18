@@ -121,7 +121,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 
 		Job::ptr_t pJob = ptr_job_man_->findJob(jobId);
 		//SDPA_LOG_INFO("The job "<<jobId<<" has the status "<<pJob->getStatus());
-		pJob->QueryJobStatus(pEvt); // should send back a message with the status
+		pJob->QueryJobStatus(pEvt, this); // should send back a message with the status
 	}
 	catch(JobNotFoundException const& ex)
 	{
@@ -135,7 +135,7 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent*
 {
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
-		pJob->RetrieveJobResults(pEvt);
+		pJob->RetrieveJobResults(pEvt, this);
 	}
 	catch(JobNotFoundException const& ex)
 	{

@@ -99,7 +99,7 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 	virtual void DeleteJob(const sdpa::events::DeleteJobEvent*);
 	virtual void JobFailed(const sdpa::events::JobFailedEvent*);
 	virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
-	virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*);
+	virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IComm* );
 	virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*);
 	virtual void Dispatch();
 

@@ -48,7 +48,7 @@ namespace sdpa { namespace daemon {
 		, b_marked_for_del_(false)
 		, b_local_(false)
 		, walltime_(2592000) // walltime in seconds: one month by default
-		, pComm(const_cast<IComm*>(pHandler))
+		//, pComm(const_cast<IComm*>(pHandler))
     {}
 
     JobImpl::~JobImpl() {
@@ -126,8 +126,17 @@ namespace sdpa { namespace daemon {
 				pComm->sendEventToMaster( pCancelAckEvt );
 
 				// delete the job
-				if( GenericDaemon* pDaemon = dynamic_cast<GenericDaemon*>(pComm))
-					pDaemon->jobManager()->deleteJob(evt.job_id());
+				try {
+					pComm->deleteJob(evt.job_id());
+				}
+				catch( const JobNotDeletedException& ex )
+				{
+					SDPA_LOG_ERROR("Could not delete the job "<<evt.job_id()<<"! Invalid communication handler!");
+				}
+				catch( const std::exception& exc )
+				{
+					SDPA_LOG_ERROR("Unexpected exception occurred when trying to delete the job "<<evt.job_id()<<": "<<exc.what());
+				}
 			}
 		}
 	}
@@ -177,15 +186,7 @@ namespace sdpa { namespace daemon {
     {
     	LOG(TRACE, "delete job " << id());
     	b_marked_for_del_ = true;
-
-    	DeleteJobAckEvent::Ptr pDelJobReply(new DeleteJobAckEvent(e.to(), e.from(), id(), e.id()) );
-    	//send ack to master
-    	pComm->sendEventToMaster(pDelJobReply);
     }
-
-    /*void JobImpl::action_query_job_status(const sdpa::events::QueryJobStatusEvent& e)
-    {
-    }*/
 
     void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
     {
@@ -202,9 +203,5 @@ namespace sdpa { namespace daemon {
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
     	LOG(TRACE, "retrieving results of job " << id());
-    	const JobResultsReplyEvent::Ptr pResReply( new JobResultsReplyEvent( e.to(), e.from(), id(), result() ));
-
-    	// reply the results to master
-    	pComm->sendEventToMaster(pResReply);
     }
 }}

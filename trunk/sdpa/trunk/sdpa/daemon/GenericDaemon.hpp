@@ -148,6 +148,7 @@ namespace sdpa { namespace daemon {
 	  JobManager::ptr_t jobManager() const { return ptr_job_man_; }
 
 	  Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException);
+	  void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException);
 
 	  void setStage(const seda::Stage::Ptr& stage)
 	  {

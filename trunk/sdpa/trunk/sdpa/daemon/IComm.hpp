@@ -41,6 +41,8 @@ const std::string AGGREGATOR("aggregator") ;
 const std::string WE("WE");
 const std::string USER("user");
 
+  class JobNotDeletedException;
+
   class IComm{
   public:
     virtual ~IComm() {}
@@ -53,6 +55,8 @@ const std::string USER("user");
 
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException) = 0;
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw (JobNotFoundException) = 0;
+	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) = 0;
+
 	  virtual const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences) = 0;
 
 	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;

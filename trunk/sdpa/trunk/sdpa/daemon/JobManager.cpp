@@ -201,7 +201,7 @@ void JobManager::updateJobInfo(sdpa::daemon::IComm* p)
 
 		pJob->print_info();
 
-		// the job is in a terminal state do nothing
+		// if the job is in a terminal state do nothing
 		std::string job_status = pJob->getStatus();
 		if( job_status.find("Finished") != std::string::npos ||
 			job_status.find("Failed") != std::string::npos ||
