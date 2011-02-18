@@ -566,6 +566,7 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
     gpi::pc::type::segment::list_t segments
       (sh.state().capi.list_segments());
 
+    std::cout << gpi::pc::type::segment::segment_list_header () << std::endl;
     BOOST_FOREACH (const gpi::pc::type::segment::descriptor_t & desc, segments)
     {
       switch (mode)
