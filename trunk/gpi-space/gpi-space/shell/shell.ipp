@@ -216,7 +216,7 @@ namespace gpi
         catch (std::exception const & ex)
         {
           std::cerr << "failed: " << ex.what() << std::endl;
-          rc = -1;
+          rc = -2;
         }
       }
       else
