@@ -108,6 +108,21 @@ namespace gpi
           char saved_fill = os.fill (' ');
           std::size_t saved_width = os.width (0);
 
+          // visualize special flags
+          if (gpi::flag::is_set (d.flags, F_SPECIAL))
+          {
+            os << "*";
+          }
+          else if (gpi::flag::is_set (d.flags, F_ATTACHED))
+          {
+            os << "+";
+          }
+          else
+          {
+            os << " ";
+          }
+          os << " ";
+
           // ID
           os.flags (std::ios::right | std::ios::dec);
           os.width (5);
