@@ -224,7 +224,8 @@ namespace gpi
                 m_proc.list_segments (rpl.list);
               else
               {
-                LOG(ERROR, "list of particular segment not implemented");
+                LOG(WARN, "list of particular segment not implemented");
+                m_proc.list_segments (rpl.list);
               }
               return rpl;
             }
