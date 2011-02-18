@@ -31,6 +31,8 @@ namespace gpi
         {
           lock_type lock (m_mutex);
           m_connector.start ();
+
+          initialize_segment_manager ();
         }
         catch (std::exception const & ex)
         {
@@ -82,6 +84,21 @@ namespace gpi
           throw std::runtime_error ("invalid transition");
         else
           m_state = new_state;
+      }
+
+      void manager_t::initialize_segment_manager ()
+      {
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+        m_segment_mgr.add_special_segment ( "global"
+                                          , gpi::pc::type::segment::SEG_GLOBAL
+                                          , gpi_api.memory_size()
+                                          , gpi_api.dma_ptr()
+                                          );
+        m_segment_mgr.add_special_segment ( "local"
+                                          , gpi::pc::type::segment::SEG_LOCAL
+                                          , gpi_api.memory_size()
+                                          , gpi_api.dma_ptr()
+                                          );
       }
 
       gpi::pc::type::process_id_t manager_t::next_process_id ()

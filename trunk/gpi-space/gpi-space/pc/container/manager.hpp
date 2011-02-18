@@ -96,6 +96,7 @@ namespace gpi
         void detach_process (const gpi::pc::type::process_id_t);
         gpi::pc::type::process_id_t next_process_id ();
         void garbage_collect ();
+        void initialize_segment_manager ();
 
         mutex_type m_mutex;
         mutable mutex_type m_state_mutex;
