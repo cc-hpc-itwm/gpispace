@@ -236,42 +236,64 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              )
       {
-        using namespace gpi::pc::proto;
-        segment::register_t rqst;
-        rqst.name = name;
-        rqst.size = sz;
-        rqst.flags = flags;
+        segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
+        if (flags & gpi::pc::type::segment::F_NOCREATE)
+        {
+          seg->open();
+        }
+        else
+        {
+          if (flags & gpi::pc::type::segment::F_FORCE_UNLINK)
+          {
+            seg->unlink();
+          }
+          seg->create ();
+        }
 
-        message_t rply (communicate (rqst));
-        try
+        // communication part
         {
-          segment::register_reply_t reg (boost::get<segment::register_reply_t> (rply));
-          return reg.id;
+          using namespace gpi::pc;
+          proto::segment::register_t rqst;
+          rqst.name = name;
+          rqst.size = sz;
+          rqst.flags = flags;
+
+          proto::message_t rply (communicate (rqst));
+          try
+          {
+            proto::segment::register_reply_t reg (boost::get<proto::segment::register_reply_t> (rply));
+            seg->assign_id (reg.id);
+          }
+          catch (boost::bad_get const &)
+          {
+            proto::error::error_t result (boost::get<proto::error::error_t>(rply));
+            LOG(ERROR, "could not register segment: " << result.code << ": " << result.detail);
+            //          throw wrap (result);
+            throw std::runtime_error ("memory segment registration failed: " + result.detail);
+          }
         }
-        catch (boost::bad_get const &)
-        {
-          error::error_t result (boost::get<error::error_t>(rply));
-          LOG(ERROR, "could not register segment: " << result.code << ": " << result.detail);
-          //          throw wrap (result);
-          throw std::runtime_error ("memory segment registration failed: " + result.detail);
-        }
+
+        m_segments [seg->id()] = seg;
+        return seg->id();
       }
 
       gpi::pc::type::segment::list_t
       api_t::list_segments ()
       {
-        using namespace gpi::pc::proto;
-        segment::list_t rqst;
+        using namespace gpi::pc;
+        proto::segment::list_t rqst;
 
-        message_t rply (communicate(rqst));
+        proto::message_t rply (communicate(rqst));
         try
         {
-          segment::list_reply_t segments (boost::get<segment::list_reply_t> (rply));
+          proto::segment::list_reply_t segments
+            (boost::get<proto::segment::list_reply_t> (rply));
           return segments.list;
         }
         catch (boost::bad_get const &)
         {
-          error::error_t result (boost::get<error::error_t>(rply));
+          proto::error::error_t result
+            (boost::get<proto::error::error_t>(rply));
           LOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
           //          throw wrap (result);
           throw std::runtime_error ("segment listing failed: " + result.detail);
@@ -281,49 +303,117 @@ namespace gpi
       void
       api_t::attach_segment (const gpi::pc::type::segment_id_t id)
       {
-        using namespace gpi::pc::proto;
-        segment::attach_t rqst;
-        rqst.id = id;
-
-        message_t rply (communicate(rqst));
-        error::error_t result (boost::get<error::error_t>(rply));
-        if (result.code != error::success)
+        if (m_segments.find (id) != m_segments.end())
         {
-          LOG(ERROR, "could not attach to segment: " << result.code << ": " << result.detail);
-          // throw or silently ignore?
+          throw std::runtime_error ("already attached");
+        }
+
+        // get listing of segments
+        gpi::pc::type::segment::list_t descriptors
+          (list_segments ());
+
+        // find the correct descriptor
+        const gpi::pc::type::segment::descriptor_t * desc (NULL);
+        for ( gpi::pc::type::segment::list_t::const_iterator it (descriptors.begin())
+            ; it != descriptors.end()
+            ; ++it
+            )
+        {
+          if (it->id == id)
+          {
+            desc = &(*it);
+            break;
+          }
+        }
+
+        if (!desc)
+        {
+          LOG(ERROR, "segment descriptor not found: " << id);
+          throw std::runtime_error ("no such segment");
+        }
+
+        // open segment
+        segment_ptr seg (new gpi::pc::segment::segment_t(desc->name, desc->size, id));
+        try
+        {
+          seg->open();
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not open segment " << desc->name << ": " << ex.what());
+          throw;
+        }
+
+        // communicate
+        {
+          using namespace gpi::pc;
+          proto::segment::attach_t rqst;
+          rqst.id = id;
+
+          proto::message_t rply (communicate(rqst));
+          proto::error::error_t result
+            (boost::get<proto::error::error_t>(rply));
+          if (result.code != proto::error::success)
+          {
+            LOG(ERROR, "could not attach to segment: " << result.code << ": " << result.detail);
+            // throw or silently ignore?
+          }
+          else
+          {
+            m_segments [seg->id()] = seg;
+          }
         }
       }
 
       void
       api_t::detach_segment (const gpi::pc::type::segment_id_t id)
       {
-        using namespace gpi::pc::proto;
-        segment::detach_t rqst;
+        using namespace gpi::pc;
+        proto::segment::detach_t rqst;
         rqst.id = id;
 
-        message_t rply (communicate(rqst));
-        error::error_t result (boost::get<error::error_t>(rply));
-        if (result.code != error::success)
+        try
         {
-          LOG(ERROR, "could not detach from segment: " << result.code << ": " << result.detail);
-          // throw or silently ignore?
+          proto::message_t rply (communicate(rqst));
+          proto::error::error_t result
+            (boost::get<proto::error::error_t>(rply));
+          if (result.code != proto::error::success)
+          {
+            LOG(ERROR, "could not detach from segment: " << result.code << ": " << result.detail);
+            // throw or silently ignore?
+          }
         }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "detach failed: " << ex.what());
+        }
+
+        m_segments.erase (id);
       }
 
       void
       api_t::unregister_segment (const gpi::pc::type::segment_id_t id)
       {
-        using namespace gpi::pc::proto;
-        segment::unregister_t rqst;
+        using namespace gpi::pc;
+        proto::segment::unregister_t rqst;
         rqst.id = id;
 
-        message_t rply (communicate(rqst));
-        error::error_t result (boost::get<error::error_t>(rply));
-        if (result.code != error::success)
+        try
         {
-          LOG(ERROR, "could not unregister segment: " << result.code << ": " << result.detail);
-          // throw or silently ignore?
+          proto::message_t rply (communicate(rqst));
+          proto::error::error_t result
+            (boost::get<proto::error::error_t>(rply));
+          if (result.code != proto::error::success)
+          {
+            LOG(ERROR, "could not unregister segment: " << result.code << ": " << result.detail);
+          }
         }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "unregister failed: " << ex.what());
+        }
+
+        m_segments.erase (id);
       }
 
       gpi::pc::type::handle::list_t

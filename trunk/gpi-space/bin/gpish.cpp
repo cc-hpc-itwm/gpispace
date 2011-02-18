@@ -26,8 +26,6 @@ namespace fs = boost::filesystem;
 static std::string const & version ();
 
 typedef std::vector<boost::filesystem::path> path_list_t;
-typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
-typedef std::map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
 
 static path_list_t collect_sockets (fs::path const & prefix);
 std::ostream & operator << (std::ostream &os, path_list_t const & pl)
@@ -45,8 +43,11 @@ std::ostream & operator << (std::ostream &os, path_list_t const & pl)
 
 struct my_state_t
 {
-  my_state_t (fs::path const & path)
-    : capi (path.string())
+  my_state_t ( fs::path const & dir
+             , fs::path const & file
+             )
+    : socket_dir (dir)
+    , capi (file.string())
   {}
 
   // handler functions
@@ -56,15 +57,15 @@ struct my_state_t
     return 0;
   }
 
+  fs::path socket_dir;
   gpi::pc::client::api_t capi;
-  segment_map_t segments;
 };
 
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
 
 static my_state_t *state (NULL);
 
-static void initialize_state (fs::path const & socket_path);
+static void initialize_state (fs::path const & socket_dir, fs::path const & socket_path);
 static void initialize_shell (int ac, char *av[]);
 
 static void shutdown_state ();
@@ -77,6 +78,7 @@ static int cmd_open (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_close (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_ping (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_info (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_list (shell_t::argv_t const & av, shell_t & sh);
 
 static int cmd_segment (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh);
@@ -150,12 +152,14 @@ int main (int ac, char **av)
     return EXIT_SUCCESS;
   }
 
+  std::string socket_dir (cfg_parser.get("gpi.socket_path", "/var/tmp"));
+
   if (socket_path.empty())
   {
-    path_list_t sockets (collect_sockets(cfg_parser.get("gpi.socket_path", "/var/tmp")));
+    path_list_t sockets (collect_sockets(socket_dir));
     if (sockets.empty())
     {
-      std::cerr << "no sockets available!" << std::endl;
+      std::cerr << "no sockets available in " << socket_dir << std::endl;
     }
     else if (sockets.size () > 1)
     {
@@ -169,7 +173,7 @@ int main (int ac, char **av)
     }
   }
 
-  initialize_state (socket_path);
+  initialize_state (socket_dir, socket_path);
   initialize_shell (ac, av);
 
   shell_t::get().run();
@@ -180,13 +184,15 @@ int main (int ac, char **av)
   gpi::signal::handler().stop();
 }
 
-void initialize_state (fs::path const & socket_path)
+void initialize_state ( fs::path const & socket_dir
+                      , fs::path const & socket_file
+                      )
 {
   if (state) delete state;
   // set up state
-  state = new my_state_t (socket_path);
+  state = new my_state_t (socket_dir, socket_file);
 
-  if (fs::exists (socket_path))
+  if (fs::exists (socket_file))
   {
     try
     {
@@ -194,7 +200,7 @@ void initialize_state (fs::path const & socket_path)
     }
     catch (std::exception const & ex)
     {
-      std::cerr << "could not connect to " << socket_path << ": " << ex.what() << std::endl;
+      std::cerr << "could not connect to " << socket_file << ": " << ex.what() << std::endl;
     }
   }
 }
@@ -202,7 +208,6 @@ void initialize_state (fs::path const & socket_path)
 void shutdown_state ()
 {
   state->capi.stop();
-  state->segments.clear();
 }
 
 void initialize_shell (int ac, char *av[])
@@ -215,6 +220,7 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("close", &cmd_close, "close connection to gpi");
   sh.add_command("ping", &cmd_ping, "test connection status");
   sh.add_command("info", &cmd_info, "print information about gpi");
+  sh.add_command("list", &cmd_list, "list available sockets");
 
   sh.add_command("segment", &cmd_segment, "segment related functions");
   sh.add_command("segment-register", &cmd_segment_register, "register a new segment");
@@ -321,6 +327,27 @@ int cmd_info (shell_t::argv_t const & av, shell_t & sh)
   return 1;
 }
 
+int cmd_list (shell_t::argv_t const & av, shell_t & sh)
+{
+  if (av.size ())
+  {
+    for ( shell_t::argv_t::const_iterator dir (av.begin())
+        ; dir != av.end()
+        ; ++dir
+        )
+    {
+      std::cout << "sockets in " << *dir << ":" << std::endl;
+      std::cout << collect_sockets(sh.state().socket_dir);
+      std::cout << std::endl;
+    }
+  }
+  else
+  {
+    std::cout << collect_sockets(sh.state().socket_dir);
+  }
+  return 0;
+}
+
 int cmd_segment (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.empty())
@@ -351,8 +378,8 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
   if (av.size() < 2)
   {
     std::cerr << "usage: " << "register name size [flags]" << std::endl;
-    std::cerr << "    flags:  e - exclusive" << std::endl;
-    std::cerr << "            u - nounlink" << std::endl;
+    std::cerr << "    flags:  x - exclusive" << std::endl;
+    std::cerr << "            k - keep segment (i.e. no unlink)" << std::endl;
     std::cerr << "            p - persistent" << std::endl;
     std::cerr << "            o - do not create, open only" << std::endl;
     std::cerr << "            f - force unlink before create" << std::endl;
@@ -379,10 +406,10 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
       {
         switch (*f)
         {
-        case 'e':
+        case 'x':
           flags |= gpi::pc::type::segment::F_EXCLUSIVE;
           break;
-        case 'u':
+        case 'k':
           flags |= gpi::pc::type::segment::F_NOUNLINK;
           break;
         case 'p':
@@ -403,29 +430,9 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
 
     try
     {
-      segment_ptr seg (new gpi::pc::segment::segment_t(name, size));
-
-      if (flags & gpi::pc::type::segment::F_NOCREATE)
-      {
-        seg->open();
-      }
-      else
-      {
-        if (flags & gpi::pc::type::segment::F_FORCE_UNLINK)
-        {
-          seg->unlink();
-        }
-        seg->create ();
-      }
-
-      gpi::pc::type::segment_id_t id = sh.state().capi.register_segment ( seg->name()
-                                                                        , seg->size()
-                                                                        , flags
-                                                                        );
-      seg->assign_id (id);
-      sh.state().segments[id] = seg;
-
-      std::cout << "segment id: " << id << std::endl;
+      gpi::pc::type::segment_id_t id
+        (sh.state().capi.register_segment (name, size, flags));
+      std::cout << id << std::endl;
     }
     catch (std::exception const & ex)
     {
@@ -476,7 +483,6 @@ int cmd_segment_unregister (shell_t::argv_t const & av, shell_t & sh)
       try
       {
         gpi::pc::type::segment_id_t seg_id (boost::lexical_cast<gpi::pc::type::segment_id_t>(*segment));
-        sh.state().segments.erase (seg_id);
         sh.state().capi.unregister_segment (seg_id);
       }
       catch (std::exception const & ex)
@@ -542,7 +548,6 @@ int cmd_segment_detach (shell_t::argv_t const & av, shell_t & sh)
       {
         gpi::pc::type::segment_id_t seg_id (boost::lexical_cast<gpi::pc::type::segment_id_t>(*segment));
         sh.state().capi.detach_segment (seg_id);
-        sh.state().segments.erase (seg_id);
       }
       catch (std::exception const & ex)
       {

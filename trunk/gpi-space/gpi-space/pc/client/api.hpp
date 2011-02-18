@@ -5,10 +5,12 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/thread.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
 
 namespace gpi
 {
@@ -19,6 +21,10 @@ namespace gpi
       class api_t : public boost::noncopyable
       {
       public:
+        typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
+        typedef std::map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
+
+
         explicit
         api_t (std::string const & path);
 
@@ -32,9 +38,6 @@ namespace gpi
         std::string const & path () const;
 
         // api to gpi
-        int write (const void *buf, size_t sz);
-        int read (void *buf, size_t sz);
-
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
                                 , const std::string & desc
@@ -54,12 +57,15 @@ namespace gpi
       private:
         int connection_lost (int);
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
+        int write (const void * buf, size_t sz);
+        int read (void * buf, size_t sz);
 
         std::string m_path;
         int m_socket;
         bool m_connected;
         gpi::signal::handler_t::connection_t m_sigpipe_connection;
         gpi::signal::handler_t::connection_t m_sigint_connection;
+        segment_map_t m_segments;
       };
     }
   }
