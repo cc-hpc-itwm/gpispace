@@ -12,6 +12,7 @@
 #include <gpi-space/pc/proto/error.hpp>
 #include <gpi-space/pc/proto/memory.hpp>
 #include <gpi-space/pc/proto/segment.hpp>
+#include <gpi-space/pc/proto/control.hpp>
 
 namespace gpi
 {
