@@ -110,7 +110,6 @@ namespace gpi
       m_rank = getRankGPI();
       m_dma  = getDmaMemPtrGPI();
       m_num_nodes = generateHostlistGPI();
-      m_mem_size = getMemWorkerGPI();
       m_startup_done = true;
     }
 
