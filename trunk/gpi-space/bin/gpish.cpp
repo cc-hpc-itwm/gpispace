@@ -81,6 +81,8 @@ static int cmd_close (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_ping (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_info (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_list (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_status (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_gc (shell_t::argv_t const & av, shell_t & sh);
 
 static int cmd_segment (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh);
@@ -224,6 +226,8 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("ping", &cmd_ping, "test connection status");
   sh.add_command("info", &cmd_info, "print information about gpi");
   sh.add_command("list", &cmd_list, "list available sockets");
+  sh.add_command("status", &cmd_status, "print internal status information");
+  sh.add_command("gc", &cmd_gc, "garbage collect");
 
   sh.add_command("segment", &cmd_segment, "segment related functions");
   sh.add_command("segment-register", &cmd_segment_register, "register a new segment");
@@ -366,7 +370,41 @@ int cmd_ping (shell_t::argv_t const & av, shell_t & sh)
 int cmd_info (shell_t::argv_t const & av, shell_t & sh)
 {
   std::cout << sh.state().capi.collect_info () << std::endl;
-  return 1;
+  return 0;
+}
+
+int cmd_gc (shell_t::argv_t const & av, shell_t & sh)
+{
+  sh.state().capi.garbage_collect ();
+  return 0;
+}
+
+int cmd_status (shell_t::argv_t const & av, shell_t & sh)
+{
+  std::cout << "connected: " << std::boolalpha << sh.state().capi.ping () << std::endl;
+
+  {
+    // print internal view of segments
+    std::cout << "live segments:" << std::endl;
+
+    gpi::pc::client::api_t::segment_map_t const & m(sh.state().capi.segments());
+    BOOST_FOREACH (const gpi::pc::client::api_t::segment_map_t::value_type & seg, m)
+    {
+      std::cout << *seg.second << std::endl;
+    }
+  }
+
+  {
+    std::cout << "garbage segments:" << std::endl;
+
+    gpi::pc::client::api_t::segment_set_t const & s(sh.state().capi.garbage_segments());
+    BOOST_FOREACH (const gpi::pc::client::api_t::segment_set_t::value_type & seg, s)
+    {
+      std::cout << *seg << std::endl;
+    }
+  }
+
+  return 0;
 }
 
 int cmd_list (shell_t::argv_t const & av, shell_t & sh)
@@ -567,12 +605,6 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_segment_unregister (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (!sh.state().capi.is_connected ())
-  {
-    std::cerr << "not connected to gpi!" << std::endl;
-    return 1;
-  }
-
   int err (0);
   if (av.size())
   {
