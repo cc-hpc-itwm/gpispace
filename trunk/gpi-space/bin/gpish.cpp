@@ -14,6 +14,7 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <gpi-space/version.hpp>
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
@@ -24,7 +25,6 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-static std::string const & version ();
 static std::string disclaimer ();
 
 typedef std::vector<boost::filesystem::path> path_list_t;
@@ -252,7 +252,7 @@ void shutdown_shell ()
 std::string disclaimer ()
 {
   std::stringstream sstr;
-  sstr << "Fraunhofer GPI shell, version " << version () << std::endl;
+  sstr << "Fraunhofer GPI shell, version " << gpi::version_string () << std::endl;
   sstr << "copyright: Alexander Petry <petry@itwm.fhg.de> (c) 2011" << std::endl;
   return sstr.str();
 }
