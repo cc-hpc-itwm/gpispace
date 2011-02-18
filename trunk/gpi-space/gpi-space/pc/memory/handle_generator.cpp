@@ -1,5 +1,7 @@
 #include "handle_generator.hpp"
 
+#include <gpi-space/pc/type/segment_descriptor.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -8,81 +10,34 @@ namespace gpi
     {
       namespace detail
       {
-        struct cat_global {};
-        struct cat_local {};
-        struct cat_shared {};
-
-        template <typename T, size_t N>
-        struct is_bit_size_valid
+        gpi::pc::type::handle_t encode ( const gpi::pc::type::size_t node
+                                       , const gpi::pc::type::segment_id_t seg
+                                       , const gpi::pc::type::size_t counter
+                                       )
         {
-          static const bool value = ((N+2) < (sizeof(T) * 8));
-        };
+          gpi::pc::type::handle_t hdl;
 
-        template <typename T, size_t N, typename Cat>
-        struct compute_N
-        {
-        };
-
-        template <typename T, size_t N>
-        struct compute_N<T, N, cat_global>
-        {
-          static const int value = N;
-        };
-
-        template <typename T, size_t N>
-        struct compute_N<T, N, cat_local>
-        {
-          static const int value = 1;
-        };
-
-        template <typename T, size_t N>
-        struct compute_N<T, N, cat_shared>
-        {
-          static const int value = 1;
-        };
-
-        template <typename T, size_t N, size_t C = (sizeof(T)*8 - 2 - N)>
-        struct encode_helper_t
-        {
-          union enc_t
+          switch (seg)
           {
-            struct
-            {
-              T segment : 2;
-              T node    : N;
-              T count   : C;
-            } in;
-            T handle;
-          };
-        };
+          case 0:
+            hdl.local.type = gpi::pc::type::segment::SEG_INVAL;
+            break;
+          case 1:
+            hdl.global.type = gpi::pc::type::segment::SEG_GLOBAL;
+            hdl.global.ident = node;
+            hdl.global.cntr = counter;
+            break;
+          case 2:
+            hdl.local.type = gpi::pc::type::segment::SEG_LOCAL;
+            hdl.local.cntr = counter;
+            break;
+          default:
+            hdl.local.type = gpi::pc::type::segment::SEG_SHARED;
+            hdl.local.cntr = counter;
+            break;
+          }
 
-        template <typename T, size_t N, bool>
-        struct encoder_t
-        {
-        };
-
-        template <typename T, size_t N>
-        struct encoder_t<T, N, true>
-        {
-          typedef typename encode_helper_t<T, N>::enc_t enc_t;
-        };
-
-        template <typename T, size_t N>
-        T encode ( const gpi::pc::type::size_t node_id
-                 , const gpi::pc::type::segment_id_t seg_id
-                 , const gpi::pc::type::size_t count
-                 )
-        {
-          typedef typename encoder_t
-            < T
-            , N
-            , is_bit_size_valid<T, N>::value
-            >::enc_t enc_t;
-          enc_t encoder;
-          encoder.in.segment = 3;
-          encoder.in.node = node_id;
-          encoder.in.count = count;
-          return encoder.handle;
+          return hdl;
         }
       }
 
@@ -114,7 +69,7 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::handle_id_t handle_generator_t::increment ()
+      gpi::pc::type::size_t handle_generator_t::increment ()
       {
         lock_type lock (m_mutex);
         gpi::pc::type::size_t new_count (m_counter + 1);
@@ -126,11 +81,17 @@ namespace gpi
         return new_count;
       }
 
-      gpi::pc::type::handle_id_t handle_generator_t::next (const gpi::pc::type::segment_id_t seg_id)
+      gpi::pc::type::handle_t handle_generator_t::next (const gpi::pc::type::segment_id_t seg_id)
       {
-        gpi::pc::type::size_t counter (increment());
-        return detail::encode
-          <gpi::pc::type::handle_id_t, 14> (m_node_identifier, seg_id, counter);
+        if (! gpi::pc::type::segment::traits::is_valid(seg_id))
+        {
+          return gpi::pc::type::handle_t(0);
+        }
+        else
+        {
+          gpi::pc::type::size_t counter (increment());
+          return detail::encode (m_node_identifier, seg_id, counter);
+        }
       }
     }
   }

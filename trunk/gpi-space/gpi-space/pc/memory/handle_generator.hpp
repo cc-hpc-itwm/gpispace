@@ -5,7 +5,7 @@
 #include <boost/noncopyable.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <gpi-space/pc/type/handle.hpp>
 
 namespace gpi
 {
@@ -37,12 +37,12 @@ namespace gpi
 
           the remaining bits are assigned in an implementation specific way.
         */
-        gpi::pc::type::handle_id_t next (const gpi::pc::type::segment_id_t);
+        gpi::pc::type::handle_t next (const gpi::pc::type::segment_id_t);
       private:
         explicit
         handle_generator_t (const gpi::pc::type::size_t identifier);
 
-        gpi::pc::type::handle_id_t increment ();
+        gpi::pc::type::size_t increment ();
 
         static handle_generator_t * instance;
 
