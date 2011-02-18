@@ -51,7 +51,7 @@ namespace gpi
         desc.size = size;
         desc.name = name;
         desc.creator = 0;
-        desc.nref = 1;
+        desc.nref = 0;
 
         segment_ptr seg (new gpi::pc::segment::segment_t (desc, ptr));
 
