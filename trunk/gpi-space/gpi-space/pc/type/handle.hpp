@@ -2,6 +2,7 @@
 #define GPI_SPACE_PC_TYPE_HANDLE_HPP 1
 
 #include <iostream>
+#include <stdexcept>
 
 #include <gpi-space/pc/type/typedefs.hpp>
 
@@ -44,27 +45,27 @@ namespace gpi
         operator handle_id_t () { return handle; }
         bool operator== (const handle_id_t i) const {return handle == i;}
 
-        union __attribute__((packed))
+        union
         {
           struct __attribute__((packed))
           {
-            union __attribute__((packed))
+            union
             {
-              struct __attribute__((packed))
+              struct // == sizeof(handle_id_t)
               {
                 handle_id_t cntr  : global_count_bits;
                 handle_id_t ident : ident_bits;
-                handle_id_t _pad  : typec_bits;
+                int _pad  : typec_bits;
               } global;
-              struct __attribute__((packed))
+              struct // == sizeof(handle_id_t)
               {
                 handle_id_t cntr : local_count_bits;
-                handle_id_t _pad  : typec_bits;
+                int _pad  : typec_bits;
               } local;
-              struct __attribute__((packed))
+              struct // == sizeof(handle_id_t)
               {
                 handle_id_t _pad : (total_bits - typec_bits);
-                handle_id_t type : typec_bits;
+                int type : typec_bits;
               };
             };
           };

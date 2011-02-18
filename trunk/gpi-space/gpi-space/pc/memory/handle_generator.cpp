@@ -46,22 +46,26 @@ namespace gpi
         }
       }
 
-      handle_generator_t * handle_generator_t::instance = 0;
+      boost::shared_ptr<handle_generator_t> handle_generator_t::instance;
 
       handle_generator_t::handle_generator_t(const gpi::pc::type::size_t identifier)
         : m_node_identifier (identifier)
-        , m_counter (0)
-      {}
+      {
+        for (int i (1); i <= gpi::pc::type::segment::SEG_SHARED; ++i)
+        {
+          m_counter[i] = counter_ptr(new gpi::pc::type::counter_t());
+        }
+      }
 
       void handle_generator_t::create (const gpi::pc::type::size_t identifier)
       {
-        assert (instance == 0);
-        instance = new handle_generator_t (identifier);
+        assert (! instance);
+        instance.reset (new handle_generator_t (identifier));
       }
 
       handle_generator_t & handle_generator_t::get ()
       {
-        assert (instance != 0);
+        assert (instance);
         return *instance;
       }
 
@@ -69,21 +73,8 @@ namespace gpi
       {
         if (instance)
         {
-          delete instance;
-          instance = 0;
+          instance.reset ();
         }
-      }
-
-      gpi::pc::type::size_t handle_generator_t::increment ()
-      {
-        lock_type lock (m_mutex);
-        gpi::pc::type::size_t new_count (m_counter + 1);
-        if (! new_count) // TODO: branch hint unlikely
-        {
-          throw std::runtime_error ("cannot create new handle: would overflow");
-        }
-        m_counter = new_count;
-        return new_count;
       }
 
       gpi::pc::type::handle_t handle_generator_t::next (const gpi::pc::type::segment_id_t seg_id)
@@ -94,8 +85,9 @@ namespace gpi
         }
         else
         {
-          gpi::pc::type::size_t counter (increment());
-          return detail::encode (m_node_identifier, seg_id, counter);
+          gpi::pc::type::size_t count
+            (m_counter[seg_id & 0x3]->inc());
+          return detail::encode (m_node_identifier, seg_id, count);
         }
       }
     }

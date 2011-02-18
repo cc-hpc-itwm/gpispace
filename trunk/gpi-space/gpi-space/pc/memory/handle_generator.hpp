@@ -1,11 +1,13 @@
 #ifndef GPI_SPACE_PC_MEMORY_HANDLE_GENERATOR_HPP
 #define GPI_SPACE_PC_MEMORY_HANDLE_GENERATOR_HPP 1
 
-#include <boost/thread.hpp>
+#include <map>
+
 #include <boost/noncopyable.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
+#include <gpi-space/pc/type/counter.hpp>
 
 namespace gpi
 {
@@ -39,19 +41,14 @@ namespace gpi
         */
         gpi::pc::type::handle_t next (const gpi::pc::type::segment_id_t);
       private:
+        typedef boost::shared_ptr<gpi::pc::type::counter_t> counter_ptr;
+
         explicit
         handle_generator_t (const gpi::pc::type::size_t identifier);
 
-        gpi::pc::type::size_t increment ();
-
-        static handle_generator_t * instance;
-
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-
-        mutable mutex_type m_mutex;
+        static boost::shared_ptr<handle_generator_t> instance;
         gpi::pc::type::size_t m_node_identifier;
-        gpi::pc::type::size_t m_counter;
+        std::map<int, counter_ptr> m_counter;
       };
     }
   }

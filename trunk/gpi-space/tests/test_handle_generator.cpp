@@ -53,16 +53,36 @@ BOOST_AUTO_TEST_CASE ( test_generate )
 
   gpi::pc::type::handle_t local (handle_generator_t::get().next (2));
   BOOST_CHECK_EQUAL (local.type, gpi::pc::type::segment::SEG_LOCAL);
-  BOOST_CHECK_EQUAL (local.local.cntr, 2U);
+  BOOST_CHECK_EQUAL (local.local.cntr, 1U);
   std::cerr << " local=" << local << std::endl;
 
   gpi::pc::type::handle_t shared (handle_generator_t::get().next (3));
   BOOST_CHECK_EQUAL (shared.type, gpi::pc::type::segment::SEG_SHARED);
-  BOOST_CHECK_EQUAL (shared.local.cntr, 3U);
+  BOOST_CHECK_EQUAL (shared.local.cntr, 1U);
   std::cerr << "shared=" << shared << std::endl;
 
   gpi::pc::type::handle_id_t id = shared;
   BOOST_CHECK_EQUAL (shared, id);
+}
+
+BOOST_AUTO_TEST_CASE ( test_generate_interleaved )
+{
+  using namespace gpi::pc::memory;
+
+  for (size_t i (0); i < 100; ++i)
+  {
+    gpi::pc::type::handle_t s (handle_generator_t::get().next (3));
+    BOOST_CHECK_EQUAL (s.type, gpi::pc::type::segment::SEG_SHARED);
+    BOOST_CHECK_EQUAL (s.local.cntr, i+1);
+
+    gpi::pc::type::handle_t l (handle_generator_t::get().next (2));
+    BOOST_CHECK_EQUAL (l.type, gpi::pc::type::segment::SEG_LOCAL);
+    BOOST_CHECK_EQUAL (l.local.cntr, i+1);
+
+    gpi::pc::type::handle_t g (handle_generator_t::get().next (1));
+    BOOST_CHECK_EQUAL (g.type, gpi::pc::type::segment::SEG_GLOBAL);
+    BOOST_CHECK_EQUAL (g.global.cntr, i+1);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
