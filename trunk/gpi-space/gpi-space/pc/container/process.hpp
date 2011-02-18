@@ -60,7 +60,7 @@ namespace gpi
                                          );
 
         gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t);
-
+        void collect_info (gpi::pc::type::info::descriptor_t &);
       private:
         typedef boost::shared_ptr<boost::thread> thread_t;
         typedef boost::recursive_mutex mutex_type;

@@ -355,6 +355,12 @@ namespace gpi
       {
         return 0;
       }
+
+      template <typename M>
+      void process_t<M>::collect_info (gpi::pc::type::info::descriptor_t &d)
+      {
+        m_mgr.collect_info (d);
+      }
     }
   }
 }

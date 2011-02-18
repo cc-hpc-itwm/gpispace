@@ -238,6 +238,20 @@ namespace gpi
             }
           }
 
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::control::ping_t &)
+          {
+            return gpi::pc::proto::control::pong_t();
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::control::info_t &)
+          {
+            gpi::pc::proto::control::info_reply_t rpl;
+            m_proc.collect_info (rpl.info);
+            return rpl;
+          }
+
           /*** Catch all other messages ***/
 
           template <typename T>

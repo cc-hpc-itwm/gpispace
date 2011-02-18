@@ -76,7 +76,7 @@ namespace gpi
                                          );
         void detach_segments_from_process (const gpi::pc::type::process_id_t);
         void list_segments (gpi::pc::type::segment::list_t &) const;
-
+        void collect_info (gpi::pc::type::info::descriptor_t &) const;
       private:
         typedef boost::shared_ptr<process_type> process_ptr_t;
         typedef boost::unordered_map<gpi::pc::type::process_id_t, process_ptr_t> process_map_t;

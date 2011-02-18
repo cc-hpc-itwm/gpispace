@@ -266,6 +266,10 @@ namespace gpi
           m_segment_mgr.decrement_refcount (seg_id);
         }
       }
+
+      void manager_t::collect_info (gpi::pc::type::info::descriptor_t &) const
+      {
+      }
     }
   }
 }
