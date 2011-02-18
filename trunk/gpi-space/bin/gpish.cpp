@@ -402,8 +402,19 @@ int cmd_segment (shell_t::argv_t const & av, shell_t & sh)
   else
   {
     shell_t::argv_t new_av (av);
+    int rc (0);
+
     new_av[0] = "segment-" + av[0];
-    return sh.execute (new_av);
+    rc = sh.execute (new_av);
+    if (rc == -1)
+    {
+      std::cerr << "failed: command not found: " << av[0] << std::endl;
+      return 1;
+    }
+    else
+    {
+      return rc;
+    }
   }
 }
 
