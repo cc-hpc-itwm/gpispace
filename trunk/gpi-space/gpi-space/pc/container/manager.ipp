@@ -256,6 +256,17 @@ namespace gpi
                                     ) const
       {
         m_segment_mgr.get_listing (l);
+
+        for ( gpi::pc::type::segment::list_t::iterator s (l.begin())
+            ; s != l.end()
+            ; ++s
+            )
+        {
+          if (is_process_attached_to_segment (proc_id, s->id))
+          {
+            gpi::flag::set (s->flags, gpi::pc::type::segment::F_ATTACHED);
+          }
+        }
       }
 
       void manager_t::attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id
