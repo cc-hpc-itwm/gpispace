@@ -209,7 +209,7 @@ namespace gpi
       type::handle_id_t api_t::alloc ( const type::segment_id_t seg
                                      , const type::size_t sz
                                      , const std::string & name
-                                     , const type::mode_t flags
+                                     , const type::flags_t flags
                                      )
       {
         using namespace gpi::pc;
