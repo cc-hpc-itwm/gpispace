@@ -28,8 +28,8 @@ namespace gpi
                            , std::string const & prompt
                            , state_type & state
                            );
-
       static self & get ();
+      static void destroy ();
 
       void add_command ( std::string const & name
                        , command_callback_t callback

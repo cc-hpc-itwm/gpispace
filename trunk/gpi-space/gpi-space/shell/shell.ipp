@@ -70,6 +70,16 @@ namespace gpi
     }
 
     template <typename S>
+    void basic_shell_t<S>::destroy ()
+    {
+      if (instance)
+      {
+        delete instance;
+      }
+      instance = NULL;
+    }
+
+    template <typename S>
     void basic_shell_t<S>::initialize_readline ()
     {
       assert (instance != NULL);
