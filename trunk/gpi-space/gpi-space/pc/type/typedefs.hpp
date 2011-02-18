@@ -28,6 +28,27 @@ namespace gpi
       typedef std::string name_t;
     }
   }
+
+  namespace flag
+  {
+    inline
+    bool is_set (const pc::type::flags_t f, const pc::type::flags_t mask)
+    {
+      return (f & mask);
+    }
+
+    inline
+    void set (pc::type::flags_t & f, const pc::type::flags_t mask)
+    {
+      f |= mask;
+    }
+
+    inline
+    void clear (pc::type::flags_t & f, const pc::type::flags_t mask)
+    {
+      f &= ~mask;
+    }
+  }
 }
 
 #endif
