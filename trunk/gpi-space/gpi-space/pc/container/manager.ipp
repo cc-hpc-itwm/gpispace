@@ -2,6 +2,7 @@
 
 #include "manager.hpp"
 
+#include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
 namespace gpi
@@ -267,8 +268,14 @@ namespace gpi
         }
       }
 
-      void manager_t::collect_info (gpi::pc::type::info::descriptor_t &) const
+      void manager_t::collect_info (gpi::pc::type::info::descriptor_t &info) const
       {
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+
+        info.rank = gpi_api.rank();
+        info.nodes = gpi_api.number_of_nodes();
+        info.queues = gpi_api.number_of_queues();
+        info.queue_depth = gpi_api.queue_depth();
       }
     }
   }
