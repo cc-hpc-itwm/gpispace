@@ -693,7 +693,23 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh)
 {
-  return 1;
+  int err (0);
+  for ( shell_t::argv_t::const_iterator arg (av.begin())
+      ; arg != av.end()
+      ; ++arg
+      )
+  {
+    try
+    {
+      sh.state().capi.free (boost::lexical_cast<gpi::pc::type::handle_id_t>(*arg));
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "free (" << *arg << ") failed: " << ex.what() << std::endl;
+      ++err;
+    }
+  }
+  return err;
 }
 int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
 {
