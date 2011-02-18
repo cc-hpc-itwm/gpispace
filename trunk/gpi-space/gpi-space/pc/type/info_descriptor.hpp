@@ -22,6 +22,14 @@ namespace gpi
       {
         struct descriptor_t
         {
+          descriptor_t ()
+            : rank (0)
+            , nodes (0)
+            , counters (0)
+            , queues (0)
+            , queue_depth (0)
+          {}
+
           // gpi related information
           gpi::pc::type::size_t       rank;
           gpi::pc::type::size_t       nodes;
