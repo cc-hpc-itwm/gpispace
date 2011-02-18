@@ -1,0 +1,9 @@
+#include <gpi-space/version.hpp>
+
+namespace gpi
+{
+  const char * version_string ()
+  {
+    return "@PROJECT_REVISION@";
+  }
+}
