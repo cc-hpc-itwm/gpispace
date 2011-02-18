@@ -161,7 +161,11 @@ namespace gpi
       void segment_t::unlink ()
       {
         assert (! is_special ());
-        shm_unlink (name().c_str());
+        if (shm_unlink (name().c_str()) < 0)
+        {
+          int err = errno;
+          LOG(WARN, "could not unlink segment: " << name() << ": " << strerror(err));
+        }
       }
 
       void *segment_t::ptr ()
