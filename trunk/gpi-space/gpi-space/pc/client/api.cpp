@@ -166,14 +166,35 @@ namespace gpi
         header.length = data.size();
 
         err = this->write (&header, sizeof(header));
+        if (err <= 0)
+        {
+          stop ();
+          throw std::runtime_error ("could not send data");
+        }
+
         err = this->write (data.c_str(), data.size());
+        if (err <= 0)
+        {
+          stop ();
+          throw std::runtime_error ("could not send data");
+        }
 
         // receive
         std::vector<char> buffer;
         err = this->read  (&header, sizeof (header));
+        if (err <= 0)
+        {
+          stop ();
+          throw std::runtime_error ("could not receive data");
+        }
 
         buffer.resize (header.length);
         err = this->read (&buffer[0], header.length);
+        if (err <= 0)
+        {
+          stop ();
+          throw std::runtime_error ("could not receive data");
+        }
 
         message_t rply;
         // deserialize
@@ -213,6 +234,11 @@ namespace gpi
           proto::error::error_t error (boost::get<proto::error::error_t>(reply));
           LOG(ERROR, "request failed: " << error.code << ": " << error.detail);
           throw std::runtime_error (error.detail);
+        }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
         }
       }
 
@@ -273,6 +299,11 @@ namespace gpi
             //          throw wrap (result);
             throw std::runtime_error ("memory segment registration failed: " + result.detail);
           }
+          catch (std::exception const & ex)
+          {
+            stop ();
+            throw;
+          }
         }
 
         m_segments [seg->id()] = seg;
@@ -299,6 +330,11 @@ namespace gpi
           LOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
           //          throw wrap (result);
           throw std::runtime_error ("segment listing failed: " + result.detail);
+        }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
         }
       }
 
@@ -438,6 +474,11 @@ namespace gpi
           LOG(ERROR, "could not get handle list: " << result.code << ": " << result.detail);
           throw std::runtime_error ("handle listing failed: " + result.detail);
         }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
+        }
       }
 
       bool api_t::ping ()
@@ -453,6 +494,7 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
+          stop ();
           return false;
         }
       }
