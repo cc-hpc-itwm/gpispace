@@ -149,7 +149,6 @@ namespace gpi
       bool m_is_master;
       bool  m_startup_done;
       mutable rank_t m_rank;
-      mutable size_t m_num_nodes;
       mutable size_t m_mem_size;
       void *m_dma;
     };

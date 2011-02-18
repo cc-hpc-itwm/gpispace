@@ -57,7 +57,6 @@ namespace gpi
       , m_is_master (true)
       , m_startup_done (false)
       , m_rank (std::numeric_limits<rank_t>::max())
-      , m_num_nodes (0)
       , m_mem_size (0)
       , m_dma (0)
     { }
@@ -79,7 +78,6 @@ namespace gpi
       m_ac = ac;
       m_av = av;
       m_is_master = isMasterProcGPI(m_ac, m_av);
-      m_num_nodes = generateHostlistGPI();
     }
 
     void gpi_api_t::set_memory_size (const gpi::size_t sz)
@@ -109,7 +107,6 @@ namespace gpi
 
       m_rank = getRankGPI();
       m_dma  = getDmaMemPtrGPI();
-      m_num_nodes = generateHostlistGPI();
       m_startup_done = true;
     }
 
@@ -184,7 +181,7 @@ namespace gpi
 
     gpi::size_t gpi_api_t::number_of_nodes () const
     {
-      return m_num_nodes;
+      return getNodeCountGPI();
     }
 
     gpi::size_t gpi_api_t::memory_size () const
