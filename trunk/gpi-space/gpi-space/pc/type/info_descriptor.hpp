@@ -25,7 +25,6 @@ namespace gpi
           descriptor_t ()
             : rank (0)
             , nodes (0)
-            , counters (0)
             , queues (0)
             , queue_depth (0)
           {}
@@ -33,7 +32,6 @@ namespace gpi
           // gpi related information
           gpi::pc::type::size_t       rank;
           gpi::pc::type::size_t       nodes;
-          gpi::pc::type::size_t       counters;
           gpi::pc::type::size_t       queues;
           gpi::pc::type::size_t       queue_depth;
 
@@ -44,7 +42,6 @@ namespace gpi
           {
             ar & BOOST_SERIALIZATION_NVP( rank );
             ar & BOOST_SERIALIZATION_NVP( nodes );
-            ar & BOOST_SERIALIZATION_NVP( counters );
             ar & BOOST_SERIALIZATION_NVP( queues );
             ar & BOOST_SERIALIZATION_NVP( queue_depth );
           }
@@ -59,7 +56,6 @@ namespace gpi
 
           std::cout << "rank="  << d.rank << " ";
           std::cout << "nodes=" << d.nodes << " ";
-          std::cout << "counters=" << d.counters << " ";
           std::cout << "queues="   << d.queues << " ";
           std::cout << "depth="   << d.queue_depth;
 
