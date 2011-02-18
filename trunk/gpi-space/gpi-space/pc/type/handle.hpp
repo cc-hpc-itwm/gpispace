@@ -44,19 +44,30 @@ namespace gpi
         operator handle_id_t () { return handle; }
         bool operator== (const handle_id_t i) const {return handle == i;}
 
-        union
+        union __attribute__((packed))
         {
           struct __attribute__((packed))
           {
-            handle_id_t cntr  : global_count_bits;
-            handle_id_t ident : ident_bits;
-            handle_id_t type  : typec_bits;
-          } global;
-          struct __attribute__((packed))
-          {
-            handle_id_t cntr : local_count_bits;
-            handle_id_t type : typec_bits;
-          } local;
+            union __attribute__((packed))
+            {
+              struct __attribute__((packed))
+              {
+                handle_id_t cntr  : global_count_bits;
+                handle_id_t ident : ident_bits;
+                handle_id_t _pad  : typec_bits;
+              } global;
+              struct __attribute__((packed))
+              {
+                handle_id_t cntr : local_count_bits;
+                handle_id_t _pad  : typec_bits;
+              } local;
+              struct __attribute__((packed))
+              {
+                handle_id_t _pad : (total_bits - typec_bits);
+                handle_id_t type : typec_bits;
+              };
+            };
+          };
           handle_id_t handle;
         };
       };

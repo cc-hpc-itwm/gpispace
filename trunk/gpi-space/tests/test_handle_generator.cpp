@@ -46,18 +46,18 @@ BOOST_AUTO_TEST_CASE ( test_generate )
   std::cerr << " inval=" << inval << std::endl;
 
   gpi::pc::type::handle_t globl (handle_generator_t::get().next (1));
-  BOOST_CHECK_EQUAL (globl.global.type, gpi::pc::type::segment::SEG_GLOBAL);
+  BOOST_CHECK_EQUAL (globl.type, gpi::pc::type::segment::SEG_GLOBAL);
   BOOST_CHECK_EQUAL (globl.global.ident, 42U);
   BOOST_CHECK_EQUAL (globl.global.cntr, 1U);
   std::cerr << "global=" << globl << std::endl;
 
   gpi::pc::type::handle_t local (handle_generator_t::get().next (2));
-  BOOST_CHECK_EQUAL (local.local.type, gpi::pc::type::segment::SEG_LOCAL);
+  BOOST_CHECK_EQUAL (local.type, gpi::pc::type::segment::SEG_LOCAL);
   BOOST_CHECK_EQUAL (local.local.cntr, 2U);
   std::cerr << " local=" << local << std::endl;
 
   gpi::pc::type::handle_t shared (handle_generator_t::get().next (3));
-  BOOST_CHECK_EQUAL (shared.local.type, gpi::pc::type::segment::SEG_SHARED);
+  BOOST_CHECK_EQUAL (shared.type, gpi::pc::type::segment::SEG_SHARED);
   BOOST_CHECK_EQUAL (shared.local.cntr, 3U);
   std::cerr << "shared=" << shared << std::endl;
 
