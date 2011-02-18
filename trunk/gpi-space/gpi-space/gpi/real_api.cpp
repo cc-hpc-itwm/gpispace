@@ -107,6 +107,10 @@ namespace gpi
 
       m_rank = getRankGPI();
       m_dma  = getDmaMemPtrGPI();
+      if (! is_master())
+      {
+        m_mem_size = getMemWorkerGPI();
+      }
       m_startup_done = true;
     }
 
