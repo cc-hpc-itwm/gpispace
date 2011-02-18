@@ -39,6 +39,33 @@ namespace gpi
         }
       }
 
+      void manager_t::add_special_segment ( std::string const & name
+                                          , const gpi::pc::type::segment_id_t id
+                                          , const gpi::pc::type::size_t size
+                                          , void *ptr
+                                          )
+      {
+        gpi::pc::type::segment::descriptor_t desc;
+        gpi::flag::set (desc.flags, gpi::pc::type::segment::F_SPECIAL);
+        desc.id = id;
+        desc.size = size;
+        desc.name = name;
+        desc.creator = 0;
+        desc.nref = 1;
+
+        segment_ptr seg (new gpi::pc::segment::segment_t (desc, ptr));
+
+        lock_type lock (m_mutex);
+        assert (m_segments.find (id) == m_segments.end());
+        m_segments [seg->id()] = seg;
+
+        // move counter if required
+        if (m_segment_id <= id)
+          m_segment_id = id + 1;
+
+        LOG(INFO, "registered special segment " << name << " ("<<id<<") of size " << size);
+      }
+
       gpi::pc::type::segment_id_t
       manager_t::register_segment ( const gpi::pc::type::process_id_t creator
                                   , std::string const & name

@@ -33,6 +33,12 @@ namespace gpi
 
         gpi::pc::type::size_t increment_refcount (const gpi::pc::type::segment_id_t seg);
         gpi::pc::type::size_t decrement_refcount (const gpi::pc::type::segment_id_t seg);
+
+        void add_special_segment ( std::string const & name
+                                 , const gpi::pc::type::segment_id_t id
+                                 , const gpi::pc::type::size_t size
+                                 , void *ptr
+                                 );
       private:
         typedef boost::shared_ptr<segment_t> segment_ptr;
         typedef boost::unordered_map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
