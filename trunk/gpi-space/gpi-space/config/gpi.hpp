@@ -10,7 +10,8 @@ namespace gpi_space
     struct config
     {
       config ()
-        : network_type (0)
+        : memory_size (0)
+        , network_type (0)
         , mtu (2048)
         , port (10820)
         , processes (0)
