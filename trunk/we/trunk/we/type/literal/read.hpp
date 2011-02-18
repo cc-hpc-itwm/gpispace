@@ -31,36 +31,24 @@ namespace literal
 
   struct hex
   {
-    struct dec
+    static inline bool isdig (const char & c)
     {
-      static inline bool isdig (const char & c) { return isdigit (c); }
-      static inline long val (const char & c) { return c - '0'; }
-      static inline long base () { return 10; }
-    };
+      switch (c)
+      {
+      case 'a'...'f':
+      case 'A'...'F': return true;
+      default: return isdigit (c);
+      }
+    }
 
-    struct hex
+    static inline long val (const char & c)
     {
-      static inline bool isdig (const char & c)
+      switch (c)
       {
-        switch (c)
-          {
-          case 'a'...'f':
-          case 'A'...'F': return true;
-          default: return isdigit (c);
-          }
+      case 'a'...'f': return 10 + (c - 'a');
+      case 'A'...'F': return 10 + (c - 'A');
+      default: return c - '0';
       }
-
-      static inline long val (const char & c)
-      {
-        switch (c)
-          {
-          case 'a'...'f': return 10 + (c - 'a');
-          case 'A'...'F': return 10 + (c - 'A');
-          default: return c - '0';
-          }
-      }
-
-      static inline long base () { return 16; }
     }
 
     static const long base = 16;
