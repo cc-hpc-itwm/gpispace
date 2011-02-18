@@ -235,6 +235,22 @@ namespace gpi
         m_segment_mgr.unregister_segment (seg_id);
       }
 
+      bool manager_t::is_process_attached_to_segment ( const gpi::pc::type::process_id_t proc_id
+                                                     , const gpi::pc::type::segment_id_t seg_id
+                                                     ) const
+      {
+        lock_type lock (m_process_segment_relation_mutex);
+        try
+        {
+          const segment_id_set_t & segments (m_process_segment_relation.at(proc_id));
+          return segments.find (seg_id) != segments.end();
+        }
+        catch (std::exception const &ex)
+        {
+          return false;
+        }
+      }
+
       void manager_t::list_segments ( const gpi::pc::type::process_id_t proc_id
                                     , gpi::pc::type::segment::list_t &l
                                     ) const

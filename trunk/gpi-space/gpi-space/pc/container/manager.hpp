@@ -75,6 +75,9 @@ namespace gpi
                                          , const gpi::pc::type::segment_id_t id
                                          );
         void detach_segments_from_process (const gpi::pc::type::process_id_t);
+        bool is_process_attached_to_segment ( const gpi::pc::type::process_id_t
+                                            , const gpi::pc::type::segment_id_t
+                                            ) const;
         void list_segments (const gpi::pc::type::process_id_t, gpi::pc::type::segment::list_t &) const;
         void collect_info (gpi::pc::type::info::descriptor_t &) const;
       private:
