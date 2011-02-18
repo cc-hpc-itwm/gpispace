@@ -28,8 +28,8 @@ namespace gpi
       }
 
       segment_t::segment_t ( std::string const & nme
-                           , type::size_t sz
-                           , type::segment_id_t id
+                           , const type::size_t sz
+                           , const type::segment_id_t id
                            )
         : m_ptr (0)
       {
@@ -44,8 +44,27 @@ namespace gpi
         m_descriptor.id = id;
       }
 
+      segment_t::segment_t ( gpi::pc::type::segment::descriptor_t const & desc
+                           , void *ptr
+                           )
+        : m_descriptor (desc)
+        , m_ptr (ptr)
+      {
+        assert (! m_descriptor.name.empty());
+        gpi::flag::set (m_descriptor.flags, gpi::pc::type::segment::F_SPECIAL);
+      }
+
+      bool segment_t::is_special () const
+      {
+        return gpi::flag::is_set( m_descriptor.flags
+                                , gpi::pc::type::segment::F_SPECIAL
+                                );
+      }
+
       void segment_t::create (const mode_t mode)
       {
+        assert (! is_special ());
+
         int err (0);
         int fd (-1);
 
@@ -93,6 +112,8 @@ namespace gpi
 
       void segment_t::open ()
       {
+        assert (! is_special ());
+
         int err (0);
         int fd (-1);
 
@@ -126,6 +147,9 @@ namespace gpi
 
       void segment_t::close ()
       {
+        if (is_special())
+          return;
+
         if (m_ptr)
         {
           munmap (m_ptr, size());
@@ -135,6 +159,7 @@ namespace gpi
 
       void segment_t::unlink ()
       {
+        assert (! is_special ());
         shm_unlink (name().c_str());
       }
 

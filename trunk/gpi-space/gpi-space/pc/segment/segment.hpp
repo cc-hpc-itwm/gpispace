@@ -16,12 +16,18 @@ namespace gpi
       {
       public:
         segment_t ( std::string const & name
-                  , type::size_t sz
-                  , type::segment_id_t id = type::segment::SEG_INVAL
+                  , const type::size_t sz
+                  , const type::segment_id_t id = type::segment::SEG_INVAL
+                  );
+
+        // create a special segment
+        segment_t ( gpi::pc::type::segment::descriptor_t const & desc
+                  , void *ptr
                   );
 
         ~segment_t ();
 
+        bool is_special () const;
         void create (const mode_t mode = 00600);
         void open ();
         void close ();
