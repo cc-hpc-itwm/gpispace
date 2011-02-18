@@ -55,6 +55,7 @@ namespace gpi
         void detach_segment(const gpi::pc::type::segment_id_t id);
         gpi::pc::type::segment::list_t list_segments ();
 
+        gpi::pc::type::info::descriptor_t collect_info ();
         bool ping ();
       private:
         int connection_lost (int);

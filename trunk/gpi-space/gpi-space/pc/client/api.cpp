@@ -498,6 +498,23 @@ namespace gpi
           return false;
         }
       }
+
+      gpi::pc::type::info::descriptor_t api_t::collect_info ()
+      {
+        gpi::pc::proto::control::info_t msg;
+        try
+        {
+          gpi::pc::proto::message_t rply
+            (communicate (gpi::pc::proto::control::message_t (msg)));
+          gpi::pc::proto::control::message_t ctrl_msg
+            (boost::get<gpi::pc::proto::control::message_t>(rply));
+          return boost::get<gpi::pc::proto::control::info_reply_t>(ctrl_msg).info;
+        }
+        catch (std::exception const & ex)
+        {
+          throw;
+        }
+      }
     }
   }
 }
