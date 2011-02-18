@@ -21,6 +21,11 @@ namespace gpi
     {
       namespace handle
       {
+        enum flags_type
+          {
+            F_NONE  = 0x00,
+          };
+
         struct traits
         {
           static bool is_null (const gpi::pc::type::handle_id_t i)
@@ -36,7 +41,7 @@ namespace gpi
           gpi::pc::type::offset_t offset;
           gpi::pc::type::size_t size;
           gpi::pc::type::name_t name;
-          gpi::pc::type::mode_t flags;
+          gpi::pc::type::flags_t flags;
           gpi::pc::type::time_stamp_t ts;
 
         private:
