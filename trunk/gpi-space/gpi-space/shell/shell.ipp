@@ -29,7 +29,7 @@ namespace gpi
         line_read = line;
         free (line);
 
-        boost::algorithm::trim (line_read);
+        boost::algorithm::trim_left (line_read);
         if (line_read.size())
         {
           add_history (line_read.c_str());
@@ -146,6 +146,8 @@ namespace gpi
 
       if (detail::readline (m_prompt.c_str(), line))
       {
+        boost::algorithm::trim (line);
+
         if (line.empty())
           return rc;
 
