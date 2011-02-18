@@ -1,6 +1,8 @@
 #ifndef GPI_SPACE_PC_CLIENT_API_HPP
 #define GPI_SPACE_PC_CLIENT_API_HPP 1
 
+#include <map>
+#include <set>
 #include <string>
 
 #include <boost/noncopyable.hpp>
@@ -23,7 +25,7 @@ namespace gpi
       public:
         typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
         typedef std::map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
-
+        typedef std::set<segment_ptr> segment_set_t;
 
         explicit
         api_t (std::string const & path);
@@ -59,6 +61,9 @@ namespace gpi
         bool ping ();
 
         bool is_attached (const gpi::pc::type::segment_id_t id);
+        segment_map_t const &  segments () const;
+        segment_set_t const & garbage_segments () const;
+        void garbage_collect ();
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -75,6 +80,7 @@ namespace gpi
         gpi::signal::handler_t::connection_t m_sigpipe_connection;
         gpi::signal::handler_t::connection_t m_sigint_connection;
         segment_map_t m_segments;
+        segment_set_t m_garbage_segments;
       };
     }
   }

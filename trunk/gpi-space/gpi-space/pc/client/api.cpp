@@ -89,6 +89,8 @@ namespace gpi
 
       void api_t::start ()
       {
+        lock_type lock (m_mutex);
+
         if (m_connected)
         {
           stop ();
@@ -107,16 +109,26 @@ namespace gpi
 
       void api_t::stop ()
       {
+        lock_type lock (m_mutex);
+
         if (m_connected)
         {
           close_socket (m_socket);
           m_socket = -1;
           m_connected = false;
+
+          // move all segments to trash
+          while (! m_segments.empty())
+          {
+            m_garbage_segments.insert (m_segments.begin()->second);
+            m_segments.erase (m_segments.begin());
+          }
         }
       }
 
       bool api_t::is_connected () const
       {
+        lock_type lock (m_mutex);
         return m_connected;
       }
 
@@ -148,6 +160,8 @@ namespace gpi
       gpi::pc::proto::message_t
       api_t::communicate(gpi::pc::proto::message_t const & rqst)
       {
+        lock_type lock (m_mutex);
+
         using namespace gpi::pc::proto;
         int err;
 
@@ -317,6 +331,30 @@ namespace gpi
           }
         }
 
+        // critical part begins
+
+        lock_type lock (m_mutex);
+
+        // TODO:
+        //   what if we already have a segment with that id?
+        //      maybe because the connection went down
+        //      how and when is it safe to remove the segment?
+        //      client code might be using the data in some way
+
+        if (m_segments.find (seg->id()) != m_segments.end())
+        {
+          LOG(WARN, "There is already a segment attached with id " << seg->id());
+          LOG(WARN, "DANGER, this looks like an inconsistency!");
+          LOG(WARN, "    my segment: " << *m_segments.at(seg->id()));
+          LOG(WARN, "   new segment: " << *seg);
+          LOG(WARN, "moving my one into the trash");
+
+          m_garbage_segments.insert (m_segments.at(seg->id()));
+          m_segments.erase(seg->id());
+        }
+
+        assert (m_segments.find (seg->id()) == m_segments.end());
+
         m_segments [seg->id()] = seg;
         return seg->id();
       }
@@ -352,9 +390,12 @@ namespace gpi
       void
       api_t::attach_segment (const gpi::pc::type::segment_id_t id)
       {
-        if (m_segments.find (id) != m_segments.end())
         {
-          throw std::runtime_error ("already attached");
+          lock_type lock (m_mutex);
+          if (m_segments.find (id) != m_segments.end())
+          {
+            throw std::runtime_error ("already attached");
+          }
         }
 
         // get listing of segments
@@ -409,6 +450,7 @@ namespace gpi
           }
           else
           {
+            lock_type lock (m_mutex);
             m_segments [seg->id()] = seg;
           }
         }
@@ -437,6 +479,7 @@ namespace gpi
           LOG(ERROR, "detach failed: " << ex.what());
         }
 
+        lock_type lock (m_mutex);
         m_segments.erase (id);
       }
 
@@ -462,6 +505,8 @@ namespace gpi
           LOG(ERROR, "unregister failed: " << ex.what());
         }
 
+        // remove local
+        lock_type lock (m_mutex);
         m_segments.erase (id);
       }
 
@@ -514,6 +559,26 @@ namespace gpi
       {
         lock_type lock (m_mutex);
         return m_segments.find (seg_id) != m_segments.end();
+      }
+
+      api_t::segment_map_t const & api_t::segments () const
+      {
+        return m_segments;
+      }
+
+      api_t::segment_set_t const & api_t::garbage_segments () const
+      {
+        return m_garbage_segments;
+      }
+
+      void api_t::garbage_collect ()
+      {
+        lock_type lock (m_mutex);
+        while (! m_garbage_segments.empty())
+        {
+          LOG(INFO, "garbage collecting segment: " << **m_garbage_segments.begin());
+          m_garbage_segments.erase (m_garbage_segments.begin());
+        }
       }
 
       gpi::pc::type::info::descriptor_t api_t::collect_info ()
