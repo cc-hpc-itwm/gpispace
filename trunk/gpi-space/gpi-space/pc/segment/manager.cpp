@@ -89,6 +89,9 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
+        if (m_segments.find (seg_id) == m_segments.end())
+          return;
+
         segment_ptr seg (m_segments.at (seg_id));
         if (seg->descriptor().nref)
         {
