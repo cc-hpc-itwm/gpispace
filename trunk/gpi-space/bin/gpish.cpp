@@ -507,7 +507,55 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
 
   try
   {
-    std::cout << sh.state().capi.list_segments();
+    int mode = 3; // list only attached
+    if (! av.empty())
+    {
+      if (av[0] == "all")
+        mode = 0;
+      else if (av[0] == "special")
+        mode = 1;
+      else if (av[0] == "shared")
+        mode = 2;
+      else if (av[0] == "attached")
+        mode = 3;
+      else
+      {
+        std::cerr << "usage: list [all | special | shared | attached]" << std::endl;
+        return 1;
+      }
+    }
+
+    gpi::pc::type::segment::list_t segments
+      (sh.state().capi.list_segments());
+
+    BOOST_FOREACH (const gpi::pc::type::segment::descriptor_t & desc, segments)
+    {
+      switch (mode)
+      {
+      case 0:
+        std::cout << desc << std::endl;;
+        break;
+      case 1:
+        if (gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_SPECIAL))
+        {
+          std::cout << desc << std::endl;
+        }
+        break;
+      case 2:
+        if (! gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_SPECIAL))
+        {
+          std::cout << desc << std::endl;
+        }
+        break;
+      case 3:
+        if (gpi::flag::is_set (desc.flags, gpi::pc::type::segment::F_ATTACHED))
+        {
+          std::cout << desc << std::endl;
+        }
+        break;
+      }
+    }
+
     return 0;
   }
   catch (std::exception const & ex)
