@@ -71,6 +71,7 @@ namespace gpi
           gpi::pc::type::process_id_t creator;
           gpi::pc::type::name_t name;
           gpi::pc::type::size_t size;
+          gpi::pc::type::size_t avail;
           gpi::pc::type::ref_count_t nref;
           gpi::pc::type::flags_t flags;
           gpi::pc::type::time_stamp_t ts;
@@ -80,6 +81,7 @@ namespace gpi
             , creator (0)
             , name ("")
             , size (0)
+            , avail (size)
             , nref (0)
             , flags (0)
           {}
@@ -93,6 +95,7 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( creator );
             ar & BOOST_SERIALIZATION_NVP( name );
             ar & BOOST_SERIALIZATION_NVP( size );
+            ar & BOOST_SERIALIZATION_NVP( avail );
             ar & BOOST_SERIALIZATION_NVP( nref );
             ar & BOOST_SERIALIZATION_NVP( flags );
             ar & BOOST_SERIALIZATION_NVP( ts );

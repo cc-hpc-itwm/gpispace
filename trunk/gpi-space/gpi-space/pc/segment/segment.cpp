@@ -41,6 +41,7 @@ namespace gpi
         else
           m_descriptor.name = nme;
         m_descriptor.size = sz;
+        m_descriptor.avail = sz;
         m_descriptor.id = id;
       }
 
