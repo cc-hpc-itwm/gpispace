@@ -1,0 +1,10 @@
+set(CPACK_COMPONENTS_ALL
+  applications
+  modules
+  configurations
+  examples
+  libraries
+  headers
+  documentation
+  parsu
+  )

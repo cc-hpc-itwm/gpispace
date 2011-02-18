@@ -16,15 +16,7 @@ set(CPACK_PACKAGE_VERSION_PATCH "@V_PATCH@")
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "SDPA Install")
 
-set(CPACK_COMPONENTS_ALL
-  applications
-  modules
-  configuration
-  examples
-  libraries
-  headers
-  documentation
-  )
+include(packages.list.cmake)
 set(COMPONENTS_TO_INSTALL
   ${CPACK_COMPONENTS_ALL}
 )
