@@ -721,7 +721,22 @@ int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
 }
 int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
 {
-  return 1;
+  if (!sh.state().capi.is_connected ())
+  {
+    std::cerr << "not connected to gpi!" << std::endl;
+    return 1;
+  }
+
+  try
+  {
+    std::cout << sh.state().capi.list_allocations();
+    return 0;
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "failed: " << ex.what () << std::endl;
+    return 1;
+  }
 }
 
 std::string const & version ()
