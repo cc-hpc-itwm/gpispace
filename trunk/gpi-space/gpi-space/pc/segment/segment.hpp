@@ -50,6 +50,13 @@ namespace gpi
         gpi::pc::type::segment::descriptor_t m_descriptor;
         void *m_ptr;
       };
+
+      inline
+      std::ostream & operator << (std::ostream & os, const segment_t & s)
+      {
+        os << s.descriptor() << " @" << s.ptr();
+        return os;
+      }
     }
   }
 }
