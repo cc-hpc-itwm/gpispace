@@ -63,7 +63,7 @@ namespace gpi
         if (m_segment_id <= id)
           m_segment_id = id + 1;
 
-        LOG(INFO, "registered special segment " << name << " ("<<id<<") of size " << size);
+        LOG(TRACE, "special memory segment registered: " << seg->name() << " (" << seg->id() << ") size " << seg->size() << " @" << seg->ptr());
       }
 
       gpi::pc::type::segment_id_t
@@ -101,7 +101,7 @@ namespace gpi
 
           m_segments [seg->id()] = seg;
 
-          LOG(TRACE, "shared memory segment registered: " << name << " (" << seg->id() << ") " <<  sz << " bytes created by " << creator);
+          LOG(TRACE, "shared memory segment registered: " << seg->name() << " (" << seg->id() << ") size " << seg->size() << " @" << seg->ptr());
 
           return seg->id ();
         }
