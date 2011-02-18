@@ -132,7 +132,7 @@ namespace gpi
 
         m_segments.erase (seg_id);
 
-        LOG(TRACE, "shared memory segment unregistered: " << seg->name() << " (" << seg_id << ")");
+        LOG(TRACE, "memory segment unregistered: " << seg->name() << " (" << seg_id << ")");
       }
 
       void manager_t::get_listing (gpi::pc::type::segment::list_t & l) const
