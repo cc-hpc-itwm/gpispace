@@ -57,6 +57,11 @@ namespace gpi
           char saved_fill = os.fill (' ');
           std::size_t saved_width = os.width (0);
 
+          std::cout << "rank="  << d.rank << " ";
+          std::cout << "nodes=" << d.nodes << " ";
+          std::cout << "counters=" << d.counters << " ";
+          std::cout << "queues="   << d.queues << " ";
+          std::cout << "depth="   << d.queue_depth;
 
           os.flags (saved_flags);
           os.fill (saved_fill);
