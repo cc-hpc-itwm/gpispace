@@ -58,7 +58,7 @@ namespace fhg
     void peer_t::start()
     {
       {
-        boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+        lock_type lock(mutex_);
 
         if (! stopped_)
           return;
@@ -90,14 +90,14 @@ namespace fhg
       }
 
       {
-        boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+        lock_type lock(mutex_);
         stopped_ = false;
       }
     }
 
     void peer_t::stop()
     {
-      boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+      lock_type lock(mutex_);
 
       if (stopped_) return;
 
@@ -182,7 +182,7 @@ namespace fhg
       assert (m);
       assert (completion_handler);
 
-      boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+      lock_type lock(mutex_);
 
       // TODO: io_service_.post (...);
       const p2p::address_t addr (m->header.dst);
@@ -328,7 +328,7 @@ namespace fhg
       assert (completion_handler);
 
       {
-        boost::unique_lock<boost::recursive_mutex> lock(mutex_);
+        lock_type lock(mutex_);
         // TODO: implement async receive on connection!
         if (m_pending.empty())
         {
@@ -353,7 +353,7 @@ namespace fhg
 
     std::string peer_t::resolve_addr (p2p::address_t const &addr)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      lock_type lock (mutex_);
 
       reverse_lookup_cache_t::const_iterator it (reverse_lookup_cache_.find (addr));
       if (it == reverse_lookup_cache_.end())
@@ -457,7 +457,7 @@ namespace fhg
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      lock_type lock (mutex_);
 
       if (connections_.find (a) == connections_.end())
       {
@@ -545,7 +545,7 @@ namespace fhg
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      lock_type lock (mutex_);
 
       if (ec)
       {
@@ -590,7 +590,7 @@ namespace fhg
 
     void peer_t::handle_system_data (connection_t::ptr_t c, const message_t *m)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      lock_type lock (mutex_);
 
       DLOG(TRACE, "got system message");
       switch (m->header.type_of_msg)
@@ -610,6 +610,8 @@ namespace fhg
         }
         else
         {
+          backlog_.erase (c);
+
           c->remote_address (m->header.src);
           c->local_address (m->header.dst);
 
@@ -637,8 +639,6 @@ namespace fhg
           {
             cd.connection = c;
           }
-
-          backlog_.erase (c);
         }
         break;
       default:
@@ -655,7 +655,7 @@ namespace fhg
 
       DLOG(TRACE, "got user message from: " << m->header.src);
 
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      lock_type lock (mutex_);
       if (m_to_recv.empty())
       {
         // TODO: maybe add a flag to the message indicating whether it should be delivered
@@ -679,15 +679,15 @@ namespace fhg
     {
       assert ( c != NULL );
 
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      lock_type lock (mutex_);
 
       if (connections_.find (c->remote_address()) != connections_.end())
       {
         connection_data_t & cd = connections_[c->remote_address()];
 
         LOG_IF( WARN
-              , ec
-              , "error on connection to " << cd.name << " - closing it: " << ec
+              , ec && (ec.value() != boost::asio::error::eof)
+              , "error on connection to " << cd.name << " - closing it: cat=" << ec.category().name() << " val=" << ec.value() << " txt=" << ec.message()
               );
 
         while (! cd.o_queue.empty())
@@ -717,7 +717,7 @@ namespace fhg
       else if (ec != 0)
       {
         LOG_IF ( ERROR
-               , (c->remote_address () != p2p::address_t())
+               , (c->remote_address () != p2p::address_t() && (ec.value() != boost::asio::error::eof))
                , "error on a connection i don't know anything about, remote: " << c->remote_address() << " error: " << ec
                );
       }

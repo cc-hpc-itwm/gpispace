@@ -29,15 +29,16 @@ namespace fhg
       {
         stop();
         DLOG(TRACE, "connection destroyed");
-        if (in_message_)
-        {
-          delete in_message_;
-          in_message_ = 0;
-        }
       }
       catch (std::exception const & ex)
       {
         LOG(ERROR, "exception during connection destructor: " << ex.what());
+      }
+
+      if (in_message_)
+      {
+        delete in_message_;
+        in_message_ = 0;
       }
     }
 
@@ -60,12 +61,12 @@ namespace fhg
 
     void connection_t::stop ()
     {
+      boost::system::error_code ec;
       if (socket_.is_open())
       {
-        socket_.shutdown (boost::asio::ip::tcp::socket::shutdown_both);
+        socket_.shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
       }
-      socket_.close();
-      // callback_handler_->handle_error (this, 0);
+      socket_.close(ec);
     }
 
     void connection_t::start_read ()

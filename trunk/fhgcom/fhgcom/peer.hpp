@@ -127,7 +127,10 @@ namespace fhg
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
 
-      mutable boost::recursive_mutex mutex_;
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
+
+      mutable mutex_type mutex_;
 
       bool stopped_;
       std::string name_;

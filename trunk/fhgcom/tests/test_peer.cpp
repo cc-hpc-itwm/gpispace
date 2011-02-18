@@ -429,7 +429,7 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
 
     try
     {
-      peer_1.send(peer_2.name (), "hello world!");
+      peer_2.send(peer_1.name (), "hello world!");
     }
     catch (std::exception const & ex)
     {
