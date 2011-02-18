@@ -21,7 +21,7 @@ namespace gpifs
     typedef id::id_t id_t;
     typedef std::string name_t;
     typedef std::size_t size_t;
-
+    
     // ********************************************************************* //
 
     class descr

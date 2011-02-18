@@ -406,7 +406,7 @@ namespace gpifs
                 ; ++alloc
                 )
               {
-                fill ( boost::lexical_cast<std::string>(alloc->first)
+                fill ( ::gpifs::id::toHex (alloc->first)
                      , buf
                      , filler
                      );
@@ -425,11 +425,11 @@ namespace gpifs
           }
         else if (sp.segment == segment::global())
           {
-            fill_from_segment (sp, 0, buf, filler);
+            fill_from_segment (sp, segment::GLOBAL, buf, filler);
           }
         else if (sp.segment == segment::local())
           {
-            fill_from_segment (sp, 1, buf, filler);
+            fill_from_segment (sp, segment::LOCAL, buf, filler);
           }
         else if (sp.segment == segment::shared())
           {
@@ -438,7 +438,7 @@ namespace gpifs
                 ; ++segment
                 )
               {
-                if (segment->first > 1)
+                if (segment->first > segment::LOCAL)
                   {
                     fill
                       ( boost::lexical_cast<std::string>(segment->first)
@@ -489,14 +489,14 @@ namespace gpifs
                   case 'g': ++parser;
 
                     return util::parse::require ("lobal", parser)
-                      ? split_handle (parser, 0)
+                      ? split_handle (parser, segment::GLOBAL)
                       : nothing (parser)
                       ;
 
                   case 'l': ++parser;
 
                     return util::parse::require ("ocal", parser)
-                      ? split_handle (parser, 1)
+                      ? split_handle (parser, segment::LOCAL)
                       : nothing (parser)
                       ;
 
@@ -833,10 +833,7 @@ namespace gpifs
                     ; ++id
                     )
                   {
-                    fill ( boost::lexical_cast<std::string>(*id)
-                         , buf
-                         , filler
-                         );
+                    fill (::gpifs::id::toHex (*id), buf, filler);
                   }
               }
           }

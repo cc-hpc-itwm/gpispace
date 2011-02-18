@@ -114,9 +114,9 @@ namespace gpifs
 #ifdef COMM_TEST
       void list_segments_test (segment::id_list_t * list) const
       {
-        list->push_back (0);
-        list->push_back (1);
-        list->push_back (3);
+        list->push_back (segment::GLOBAL);
+        list->push_back (segment::LOCAL);
+        list->push_back (4);
         list->push_back (9);
         list->push_back (11);
       }
@@ -131,28 +131,28 @@ namespace gpifs
 
         switch (id)
           {
-          case 0:
-            list->push_back (alloc::alloc (0, now - 10 * minute, 0, (1 << 30), "vel"));
-            list->push_back (alloc::alloc (1, now - 20 * minute, 0, (1 << 20), "trace"));
-            list->push_back (alloc::alloc (2, now - 1 * hour, 0, (1 << 30), "vol"));
+          case segment::GLOBAL:
+            list->push_back (alloc::alloc (0x1006000000000001, now - 10 * minute, segment::GLOBAL, (1 << 30), "vel"));
+            list->push_back (alloc::alloc (0x10a0000000000001, now - 20 * minute, segment::GLOBAL, (1 << 20), "trace"));
+            list->push_back (alloc::alloc (0x1000000000000002, now - 1 * hour, segment::GLOBAL, (1 << 30), "vol"));
             break;
-          case 1:
-            list->push_back (alloc::alloc (4, now - 5 * minute, 1, (23 << 10), "tmp"));
-            list->push_back (alloc::alloc (7, now - 5 * minute, 1, (500 << 20), "scratch"));
-            list->push_back (alloc::alloc (9, now - 12 * minute, 1, (100 << 20), "conn1"));
-            list->push_back (alloc::alloc (11, now - 13 * minute, 1, (100 << 20), "conn2"));
-            list->push_back (alloc::alloc (17, now - 4 * hour, 1, (500 << 20), "out"));
+          case segment::LOCAL:
+            list->push_back (alloc::alloc (0x2000000000000004, now - 5 * minute, segment::LOCAL, (23 << 10), "tmp"));
+            list->push_back (alloc::alloc (0x2000000000000007, now - 5 * minute, segment::LOCAL, (500 << 20), "scratch"));
+            list->push_back (alloc::alloc (0x2000000000000009, now - 12 * minute, segment::LOCAL, (100 << 20), "conn1"));
+            list->push_back (alloc::alloc (0x200000000000000b, now - 13 * minute, segment::LOCAL, (100 << 20), "conn2"));
+            list->push_back (alloc::alloc (0x2000000000000011, now - 4 * hour, segment::LOCAL, (500 << 20), "out"));
             break;
-          case 3:
-            list->push_back (alloc::alloc (301, now  - 5 * hour, 3, (110 << 20), "in"));
-            list->push_back (alloc::alloc (302, now - 5 * hour, 3, (110 << 20), "out"));
+          case 4:
+            list->push_back (alloc::alloc (0x300000000000012d, now  - 5 * hour, 4, (110 << 20), "in"));
+            list->push_back (alloc::alloc (0x300000000000012e, now - 5 * hour, 4, (110 << 20), "out"));
             break;
           case 9:
             break;
           case 11:
-            list->push_back (alloc::alloc (1101, now - 1 * minute, 11, (101), "a"));
-            list->push_back (alloc::alloc (1102, now - 1 * minute, 11, (102), "b"));
-            list->push_back (alloc::alloc (1119, now - 1 * minute, 11, (119), "b"));
+            list->push_back (alloc::alloc (0x300000000000044d, now - 1 * minute, 11, (101), "a"));
+            list->push_back (alloc::alloc (0x300000000000044e, now - 1 * minute, 11, (102), "b"));
+            list->push_back (alloc::alloc (0x300000000000045f, now - 1 * minute, 11, (119), "b"));
             break;
           default:
             break;

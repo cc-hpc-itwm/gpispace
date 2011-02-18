@@ -7,14 +7,48 @@
 
 #include <boost/optional.hpp>
 
+#include <iostream>
+#include <iomanip>
+
+#include <string>
+#include <sstream>
+
 #include <util.hpp>
 #include <cctype>
+#include <inttypes.h>
 
 namespace gpifs
 {
   namespace id
   {
-    typedef unsigned long id_t;
+    typedef uint64_t id_t;
+
+    static inline void toHex (std::ostream & os, const id_t & id)
+    {
+      const std::ios_base::fmtflags saved_flags (os.flags());
+      const char saved_fill (os.fill (' '));
+      const std::size_t saved_width (os.width (0));
+
+      os << "0x" 
+	 << std::setw (sizeof (id) * 2)
+	 << std::setfill ('0')
+	 << std::hex
+	 << id
+	;
+      
+      os.flags (saved_flags);
+      os.fill (saved_fill);
+      os.width (saved_width);
+    }
+
+    static inline std::string toHex (const id_t & id)
+    {
+      std::ostringstream str;
+
+      toHex (str, id);
+
+      return str.str();
+    }
 
     namespace detail
     {
@@ -31,8 +65,8 @@ namespace gpifs
         {
           switch (c)
             {
-            case 'a'...'e':
-            case 'A'...'E': return true;
+            case 'a'...'f':
+            case 'A'...'F': return true;
             default: return isdigit (c);
             }
         }
@@ -41,8 +75,8 @@ namespace gpifs
         {
           switch (c)
             {
-            case 'a'...'e': return 10 + (c - 'a');
-            case 'A'...'E': return 10 + (c - 'A');
+            case 'a'...'f': return 10 + (c - 'a');
+            case 'A'...'F': return 10 + (c - 'A');
             default: return c - '0';
             }
         }

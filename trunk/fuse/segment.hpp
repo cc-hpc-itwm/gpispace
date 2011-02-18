@@ -23,6 +23,13 @@ namespace gpifs
     typedef std::list<id_t> id_list_t;
 
     // ********************************************************************* //
+    
+    enum { INVAL  = 0
+	 , GLOBAL = 1
+	 , LOCAL  = 2
+         };
+
+    // ********************************************************************* //
 
     STRCONST(root,"/")
     CONST(global)
@@ -36,8 +43,9 @@ namespace gpifs
     {
       switch (id)
         {
-        case 0: return global();
-        case 1: return local();
+	case INVAL: throw std::runtime_error ("segment::string: INVALID");
+        case GLOBAL: return global();
+        case LOCAL: return local();
         default:
           {
             std::ostringstream str;
@@ -74,7 +82,7 @@ namespace gpifs
 
               if (util::parse::require ("lobal", parser))
                 {
-                  return id_t (0);
+                  return id_t (GLOBAL);
                 }
               else
                 {
@@ -86,7 +94,7 @@ namespace gpifs
 
               if (util::parse::require ("ocal", parser))
                 {
-                  return id_t (1);
+                  return id_t (LOCAL);
                 }
               else
                 {

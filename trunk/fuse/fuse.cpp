@@ -52,7 +52,7 @@ gpifs_getattr (const char * path, struct stat * stbuf)
 
   if (state.is_directory (sp))
     {
-      stbuf->st_mode = S_IFDIR | 0700;
+      stbuf->st_mode = S_IFDIR | S_IRWXU;
       stbuf->st_nlink = 2;
 
       if (sp.handle)
@@ -104,7 +104,7 @@ gpifs_getattr (const char * path, struct stat * stbuf)
                   stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
                     = state.error_time();
 
-                  stbuf->st_mode = S_IFREG | 0400;
+                  stbuf->st_mode = S_IFREG | S_IRUSR;
                 }
               else
                 {
@@ -116,7 +116,7 @@ gpifs_getattr (const char * path, struct stat * stbuf)
               stbuf->st_ctime = stbuf->st_atime = stbuf->st_mtime
                 = state.time_refresh();
 
-              stbuf->st_mode = S_IFREG | 0200;
+              stbuf->st_mode = S_IFREG | S_IWUSR;
             }
         }
       else if (gpifs::file::is_valid::handle (*sp.file) && sp.handle)
@@ -126,17 +126,17 @@ gpifs_getattr (const char * path, struct stat * stbuf)
 
           if (sp.file == gpifs::file::name::handle::type())
             {
-              stbuf->st_mode = S_IFREG | 0400;
+              stbuf->st_mode = S_IFREG | S_IRUSR;
               stbuf->st_size = state.get_segment_string (*sp.handle).size();
             }
           else if (sp.file == gpifs::file::name::handle::name())
             {
-              stbuf->st_mode = S_IFREG | 0400;
+              stbuf->st_mode = S_IFREG | S_IRUSR;
               stbuf->st_size = state.get_name (*sp.handle).size();
             }
           else if (sp.file == gpifs::file::name::handle::data())
             {
-              stbuf->st_mode = S_IFREG | 0600;
+              stbuf->st_mode = S_IFREG | S_IRUSR | S_IWUSR;
               stbuf->st_size = state.get_size (*sp.handle);
             }
         }
