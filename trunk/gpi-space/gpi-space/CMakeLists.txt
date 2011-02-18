@@ -4,6 +4,7 @@ add_subdirectory(config)
 add_subdirectory(gpi)
 add_subdirectory(daemon)
 add_subdirectory(pc)
+add_subdirectory(shell)
 
 set (hdrs
   types.hpp
