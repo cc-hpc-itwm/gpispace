@@ -9,6 +9,7 @@ set (hdrs
   info_descriptor.hpp
   memory_location.hpp
   handle.hpp
+  counter.hpp
   )
 
 set (srcs
