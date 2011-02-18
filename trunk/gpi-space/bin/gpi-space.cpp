@@ -153,8 +153,9 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
     // wait for signals
   }
-  else if (rank == 0)
+  else if (isatty (0) && isatty (1)) // usually on the master node only
   {
+    // TODO: use the shell interface
     bool done (false);
 
     while (std::cin.good() && !done)
@@ -191,7 +192,7 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
         std::cerr << "command not understood, please use \"h\"" << std::endl;
         break;
       }
-    };
+    }
   }
   else
   {
