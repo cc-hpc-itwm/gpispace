@@ -24,16 +24,27 @@ namespace gpi
             break;
           case 1:
             hdl.global.type = gpi::pc::type::segment::SEG_GLOBAL;
+
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::ident_bits>(node);
             hdl.global.ident = node;
+
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::global_count_bits>(counter);
             hdl.global.cntr = counter;
+
             break;
           case 2:
             hdl.local.type = gpi::pc::type::segment::SEG_LOCAL;
+
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
             hdl.local.cntr = counter;
+
             break;
           default:
             hdl.local.type = gpi::pc::type::segment::SEG_SHARED;
+
+            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
             hdl.local.cntr = counter;
+
             break;
           }
 
