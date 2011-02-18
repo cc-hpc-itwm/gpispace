@@ -47,7 +47,7 @@ namespace gpi
       const command_t * find_command (std::string const & name) const;
 
       command_list_t const & commands () const { return m_commands; }
-      state_type & state () { return *m_state; }
+      state_type & state () { return m_state; }
 
       int run ();
       int run_once ();
