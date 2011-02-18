@@ -233,9 +233,9 @@ namespace gpi
         {
           std::size_t count (0);
 
-          LOG(TRACE, "delivering signal " << sig);
+          DLOG(TRACE, "delivering signal " << sig);
           count = deliver_signal (sig);
-          LOG(TRACE, "delivered signal " << count << " times");
+          DLOG(TRACE, "delivered signal " << count << " times");
 
           signal_delivered (sig);
         }
