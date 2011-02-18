@@ -329,7 +329,7 @@ namespace gpi
       void
       process_t<M>::list_segments(gpi::pc::type::segment::list_t & l)
       {
-        m_mgr.list_segments (l);
+        m_mgr.list_segments (m_id, l);
       }
 
       template <typename M>
