@@ -220,7 +220,12 @@ namespace gpi
             try
             {
               gpi::pc::proto::segment::list_reply_t rpl;
-              rpl.list = m_proc.list_segments ();
+              if (list.id == gpi::pc::type::segment::SEG_INVAL)
+                m_proc.list_segments (rpl.list);
+              else
+              {
+                LOG(ERROR, "list of particular segment not implemented");
+              }
               return rpl;
             }
             catch (std::exception const & ex)

@@ -326,10 +326,10 @@ namespace gpi
       }
 
       template <typename M>
-      gpi::pc::type::segment::list_t
-      process_t<M>::list_segments()
+      void
+      process_t<M>::list_segments(gpi::pc::type::segment::list_t & l)
       {
-        return m_mgr.list_segments ();
+        m_mgr.list_segments (l);
       }
 
       template <typename M>

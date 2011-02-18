@@ -29,7 +29,7 @@ namespace gpi
                                                     , const gpi::pc::type::flags_t flags
                                                     );
         void unregister_segment (const gpi::pc::type::segment_id_t);
-        gpi::pc::type::segment::list_t get_listing () const;
+        void get_listing (gpi::pc::type::segment::list_t &) const;
 
         gpi::pc::type::size_t increment_refcount (const gpi::pc::type::segment_id_t seg);
         gpi::pc::type::size_t decrement_refcount (const gpi::pc::type::segment_id_t seg);

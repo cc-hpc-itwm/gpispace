@@ -234,9 +234,9 @@ namespace gpi
         m_segment_mgr.unregister_segment (seg_id);
       }
 
-      gpi::pc::type::segment::list_t manager_t::list_segments () const
+      void manager_t::list_segments (gpi::pc::type::segment::list_t &l) const
       {
-        return m_segment_mgr.get_listing ();
+        m_segment_mgr.get_listing (l);
       }
 
       void manager_t::attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id

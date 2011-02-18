@@ -105,21 +105,17 @@ namespace gpi
         LOG(TRACE, "shared memory segment unregistered: " << seg->name() << " (" << seg_id << ")");
       }
 
-      gpi::pc::type::segment::list_t manager_t::get_listing () const
+      void manager_t::get_listing (gpi::pc::type::segment::list_t & l) const
       {
         lock_type lock (m_mutex);
-
-        gpi::pc::type::segment::list_t list;
 
         for ( segment_map_t::const_iterator seg (m_segments.begin())
             ; seg != m_segments.end()
             ; ++seg
             )
         {
-          list.push_back (seg->second->descriptor());
+          l.push_back (seg->second->descriptor());
         }
-
-        return list;
       }
 
       gpi::pc::type::size_t manager_t::increment_refcount (const gpi::pc::type::segment_id_t seg_id)

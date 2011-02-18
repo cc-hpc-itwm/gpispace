@@ -49,7 +49,7 @@ namespace gpi
         void unregister_segment(const gpi::pc::type::segment_id_t);
         void attach_segment(const gpi::pc::type::segment_id_t id);
         void detach_segment(const gpi::pc::type::segment_id_t id);
-        gpi::pc::type::segment::list_t list_segments ();
+        void list_segments (gpi::pc::type::segment::list_t &);
 
         gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg);
 
