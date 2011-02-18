@@ -57,12 +57,18 @@ namespace gpi
 
         gpi::pc::type::info::descriptor_t collect_info ();
         bool ping ();
+
+        bool is_attached (const gpi::pc::type::segment_id_t id);
       private:
+        typedef boost::recursive_mutex mutex_type;
+        typedef boost::unique_lock<mutex_type> lock_type;
+
         int connection_lost (int);
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
         int write (const void * buf, size_t sz);
         int read (void * buf, size_t sz);
 
+        mutable mutex_type m_mutex;
         std::string m_path;
         int m_socket;
         bool m_connected;

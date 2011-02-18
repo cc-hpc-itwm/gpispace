@@ -510,6 +510,12 @@ namespace gpi
         }
       }
 
+      bool api_t::is_attached (const gpi::pc::type::segment_id_t seg_id)
+      {
+        lock_type lock (m_mutex);
+        return m_segments.find (seg_id) != m_segments.end();
+      }
+
       gpi::pc::type::info::descriptor_t api_t::collect_info ()
       {
         gpi::pc::proto::control::info_t msg;
