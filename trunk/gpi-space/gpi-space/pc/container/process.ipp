@@ -336,7 +336,7 @@ namespace gpi
       void
       process_t<M>::list_allocations(gpi::pc::type::handle::list_t & l, const gpi::pc::type::segment_id_t seg)
       {
-        return;
+        //        m_mgr.list_allocations (m_id, l);
       }
 
       template <typename M>
