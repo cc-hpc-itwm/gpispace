@@ -67,21 +67,23 @@ namespace gpi
         struct descriptor_t
         {
           typedef traits traits_type;
-          gpi::pc::type::segment_id_t id;
-          gpi::pc::type::process_id_t creator;
-          gpi::pc::type::name_t name;
-          gpi::pc::type::size_t size;
-          gpi::pc::type::size_t avail;
-          gpi::pc::type::ref_count_t nref;
-          gpi::pc::type::flags_t flags;
-          gpi::pc::type::time_stamp_t ts;
+          gpi::pc::type::segment_id_t id;       // identification
+          gpi::pc::type::process_id_t creator;  // container id
+          gpi::pc::type::name_t name;           // user defined name
+          gpi::pc::type::size_t size;           // maximum size
+          gpi::pc::type::size_t avail;          // available size
+          gpi::pc::type::size_t allocs;         // number of allocations
+          gpi::pc::type::ref_count_t nref;      // number of containers attached
+          gpi::pc::type::flags_t flags;         // flags (see above)
+          gpi::pc::type::time_stamp_t ts;       // time stamps
 
           descriptor_t ()
             : id (SEG_INVAL)
             , creator (0)
             , name ("")
             , size (0)
-            , avail (size)
+            , avail (0)
+            , allocs (0)
             , nref (0)
             , flags (0)
           {}
@@ -103,6 +105,60 @@ namespace gpi
         };
 
         typedef std::vector<descriptor_t> list_t;
+
+        // just for ostream hacking
+        struct segment_list_header {};
+
+        inline
+        std::ostream & operator << (std::ostream & os, const segment_list_header &)
+        {
+          std::ios_base::fmtflags saved_flags (os.flags());
+          char saved_fill = os.fill (' ');
+          std::size_t saved_width = os.width (0);
+
+          os.flags (std::ios::adjustfield);
+
+          std::cout << "  "; // special flag indicator
+          // ID
+          os.width (5);
+          os << "ID";
+          os << " ";
+
+          // REFCOUNT
+          os.width (4);
+          os << "REF";
+          os << " ";
+
+          // ALLOCS
+          os.width (8);
+          os << "#ALLOC";
+          os << " ";
+
+          // FLAGS
+          os.width (sizeof(gpi::pc::type::flags_t)*2 + 2);
+          os << "FLAGS";
+          os << " ";
+
+          // SIZE
+          os.width (12);
+          os << "SIZE";
+          os << " ";
+
+          // CREATION TIME
+          os.width (17);
+          os << "TSTAMP";
+          os << " ";
+
+          // NAME
+          os << "NAME";
+          os << "  ";
+
+          os.flags (saved_flags);
+          os.fill (saved_fill);
+          os.width (saved_width);
+
+          return os;
+        }
 
         inline
         std::ostream & operator << (std::ostream & os, const descriptor_t & d)
@@ -136,6 +192,12 @@ namespace gpi
           os.flags (std::ios::right | std::ios::dec);
           os.width (4);
           os << d.nref;
+          os << " ";
+
+          // ALLOCS
+          os.flags (std::ios::right | std::ios::dec);
+          os.width (8);
+          os << d.allocs;
           os << " ";
 
           // FLAGS
@@ -183,6 +245,8 @@ namespace gpi
         inline
         std::ostream & operator<< (std::ostream & os, const list_t & list)
         {
+          os << segment_list_header() << std::endl;
+
           for ( list_t::const_iterator it (list.begin())
               ; it != list.end()
               ; ++it
