@@ -16,6 +16,7 @@ namespace gpi
   {
     namespace detail
     {
+      inline
       bool readline (const std::string & prompt, std::string & line_read)
       {
         char * line;
@@ -85,7 +86,7 @@ namespace gpi
       assert (instance != NULL);
       rl_readline_name = instance->m_program_name.c_str();
       // set completer
-      // rl_attempted_completion_function = &basic_shell_t<S>::rl_completion;
+      rl_attempted_completion_function = &self::shell_completion;
     }
 
     template <typename S>
@@ -225,6 +226,51 @@ namespace gpi
       }
 
       return rc;
+    }
+
+
+    /* interface to readline completion      */
+    /* does only work with a shell singleton */
+
+    template <typename S>
+    char * basic_shell_t<S>::command_generator (const char *text, int state)
+    {
+      static std::size_t command_index (0), text_length (0);
+
+      if (!state)
+      {
+        // initialize state variables
+        command_index = 0;
+        text_length = strlen (text);
+      }
+
+      // check commands for a match
+      const typename self::command_list_t & commands (self::get ().commands());
+      while (command_index < commands.size())
+      {
+        const char *cmd_name = commands[command_index].name().c_str();
+        ++command_index;
+        if (strncmp(cmd_name, text, text_length) == 0)
+        {
+          char *match = (char*)malloc(strlen(cmd_name) + 1);
+          strcpy (match, cmd_name);
+          return match;
+        }
+      }
+      return NULL;
+    }
+
+    template <typename S>
+    char **basic_shell_t<S>::shell_completion (const char * text, int start, int end)
+    {
+      char **matches (NULL);
+
+      if (start == 0)
+      {
+        matches = rl_completion_matches (text, &self::command_generator);
+      }
+
+      return matches;
     }
   }
 }

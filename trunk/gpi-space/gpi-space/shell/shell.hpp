@@ -59,6 +59,9 @@ namespace gpi
 
       static void initialize_readline ();
 
+      static char **shell_completion (const char *, int, int);
+      static char *command_generator (const char *, int);
+
       basic_shell_t ( std::string const & program_name
                     , std::string const & prompt
                     , state_type & state
