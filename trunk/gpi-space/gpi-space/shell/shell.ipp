@@ -1,0 +1,212 @@
+/* -*- mode: c++ -*- */
+
+#include "shell.hpp"
+
+// readline
+#include <unistd.h>
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#include <boost/algorithm/string.hpp>
+
+namespace gpi
+{
+  namespace shell
+  {
+    namespace detail
+    {
+      bool readline (const std::string & prompt, std::string & line_read)
+      {
+        char * line;
+        line = ::readline (prompt.c_str());
+        if (!line)
+        {
+          return false;
+        }
+
+        line_read = line;
+        free (line);
+
+        boost::algorithm::trim (line_read);
+        if (line_read.size())
+        {
+          add_history (line_read.c_str());
+        }
+
+        return true;
+      }
+
+      template <typename Vec>
+      void split (Vec & v, std::string const & s)
+      {
+        boost::algorithm::split (v, s, boost::algorithm::is_space(), boost::algorithm::token_compress_on);
+      }
+    }
+
+    template <typename S>
+    basic_shell_t<S>* basic_shell_t<S>::instance = NULL;
+
+    template <typename S>
+    basic_shell_t<S> & basic_shell_t<S>::create ( std::string const & program_name
+                                                , std::string const & prompt
+                                                , state_type & state
+                                                )
+    {
+      if (instance == NULL)
+      {
+        instance = new basic_shell_t<S> (program_name, prompt, state);
+
+        initialize_readline ();
+      }
+      return *instance;
+    }
+
+    template <typename S>
+    basic_shell_t<S> & basic_shell_t<S>::get ()
+    {
+      assert (instance != NULL);
+      return *instance;
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::initialize_readline ()
+    {
+      assert (instance != NULL);
+      rl_readline_name = instance->m_program_name.c_str();
+      // set completer
+      // rl_attempted_completion_function = &basic_shell_t<S>::rl_completion;
+    }
+
+    template <typename S>
+    basic_shell_t<S>::basic_shell_t ( std::string const & program_name
+                                    , std::string const & prompt
+                                    , state_type & state
+                                    )
+      : m_program_name (program_name)
+      , m_prompt (prompt)
+      , m_state (state)
+      , m_do_exit (false)
+    {}
+
+    template <typename S>
+    void basic_shell_t<S>::add_command ( std::string const & name
+                                       , typename basic_shell_t<S>::command_callback_t callback
+                                       , std::string const & short_doc
+                                       )
+    {
+      add_command (name, callback, short_doc, short_doc);
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::add_command ( std::string const & name
+                                       , typename basic_shell_t<S>::command_callback_t callback
+                                       , std::string const & short_doc
+                                       , std::string const & long_doc
+                                       )
+    {
+      m_commands.push_back (command_t(name, short_doc, long_doc, callback));
+    }
+
+    template <typename S>
+    const typename basic_shell_t<S>::command_t *
+    basic_shell_t<S>::find_command ( std::string const & name ) const
+    {
+      for ( typename command_list_t::const_iterator cmd (m_commands.begin())
+          ; cmd != m_commands.end()
+          ; ++cmd
+          )
+      {
+        if (cmd->name() == name)
+        {
+          return &(*cmd);
+        }
+      }
+      return (command_t*)(NULL);
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::run_once ()
+    {
+      std::string line;
+      int rc;
+
+      rc = 0;
+
+      if (detail::readline (m_prompt.c_str(), line))
+      {
+        if (line.empty())
+          return rc;
+
+        argv_t argv;
+        detail::split (argv, line);
+        rc = execute (argv);
+        if (-1 == rc)
+        {
+          rc = m_state.error (std::runtime_error ("command not found: " + argv[0]));
+          if (rc != 0)
+          {
+            stop ();
+          }
+        }
+      }
+      else
+      {
+        stop ();
+      }
+
+      return rc;
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::reset ()
+    {
+      m_do_exit = false;
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::stop ()
+    {
+      m_do_exit = true;
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::run ()
+    {
+      int rc (0);
+      while (!m_do_exit)
+      {
+        rc = run_once ();
+      }
+      return rc;
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::execute (std::string const & line)
+    {
+      argv_t av;
+      detail::split (av, line);
+      return execute (av);
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::execute (argv_t const & argv)
+    {
+      int rc(0);
+
+      // 2. call command
+      const command_t *cmd (find_command(argv[0]));
+      if (cmd)
+      {
+        argv_t cmd_args (argv.begin()+1, argv.end());
+        rc = (*cmd)(cmd_args, *this);
+      }
+      else
+      {
+        rc = -1;
+      }
+
+      return rc;
+    }
+  }
+}
