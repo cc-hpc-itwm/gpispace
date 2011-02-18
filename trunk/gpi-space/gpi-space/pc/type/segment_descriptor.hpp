@@ -39,6 +39,7 @@ namespace gpi
             F_NOUNLINK     = 0x04, // do not unlink segment after gpi termination
             F_NOCREATE     = 0x08, // do not create the segment (try to open it)
             F_FORCE_UNLINK = 0x10, // force recreation of the segment
+            F_SPECIAL      = 0x20, // special segment (used internally to identify local/global segments)
           };
 
         struct traits
