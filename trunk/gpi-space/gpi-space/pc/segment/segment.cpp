@@ -168,6 +168,11 @@ namespace gpi
         return m_ptr;
       }
 
+      const void *segment_t::ptr () const
+      {
+        return m_ptr;
+      }
+
       void segment_t::assign_id (const type::segment_id_t id)
       {
         m_descriptor.id = id;

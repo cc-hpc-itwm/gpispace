@@ -45,7 +45,7 @@ namespace gpi
         T* ptr () { return (T*)ptr(); }
 
         void *ptr ();
-
+        const void *ptr () const;
       private:
         gpi::pc::type::segment::descriptor_t m_descriptor;
         void *m_ptr;
