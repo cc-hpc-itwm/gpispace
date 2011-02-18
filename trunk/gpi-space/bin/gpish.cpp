@@ -362,6 +362,7 @@ int cmd_ping (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_info (shell_t::argv_t const & av, shell_t & sh)
 {
+  std::cout << sh.state().capi.collect_info () << std::endl;
   return 1;
 }
 
