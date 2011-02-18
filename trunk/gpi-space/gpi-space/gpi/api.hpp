@@ -46,10 +46,11 @@ namespace gpi
     class gpi_api_t : boost::noncopyable
     {
     public:
-      gpi_api_t ();
       ~gpi_api_t();
 
-      void init (int ac, char *av[]);
+      static gpi_api_t & create (int ac, char *av[]);
+      static gpi_api_t & get ();
+      static void destroy ();
 
       void set_memory_size (const gpi::size_t);
 
@@ -135,6 +136,12 @@ namespace gpi
       size_t wait_passive ( void );
 
     private:
+      gpi_api_t ();
+
+      void init (int ac, char *av[]);
+
+      static gpi_api_t * instance;
+
       int startup_timedout_cb (int);
 
       int   m_ac;

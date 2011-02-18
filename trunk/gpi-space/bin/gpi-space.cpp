@@ -211,8 +211,8 @@ int main (int ac, char *av[])
 
   gpi_space::config config;
 
-  gpi_api_t gpi_api;
-  gpi_api.init (ac, av);
+  // initialize gpi api
+  gpi_api_t & gpi_api (gpi_api_t::create (ac, av));
 
   if (gpi_api.is_master ())
   {

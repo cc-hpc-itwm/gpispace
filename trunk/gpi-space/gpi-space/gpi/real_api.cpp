@@ -20,6 +20,37 @@ namespace gpi
   {
     typedef boost::function<void (int)> signal_handler_t;
 
+    gpi_api_t * gpi_api_t::instance = 0;
+
+    gpi_api_t & gpi_api_t::create (int ac, char *av[])
+    {
+      if (instance == 0)
+      {
+        instance = new gpi_api_t;
+        instance->init (ac, av);
+        return *instance;
+      }
+      else
+      {
+        throw std::runtime_error ("already created!");
+      }
+    }
+
+    gpi_api_t & gpi_api_t::get ()
+    {
+      assert (instance);
+      return *instance;
+    }
+
+    void gpi_api_t::destroy ()
+    {
+      if (instance)
+      {
+        delete instance;
+        instance = 0;
+      }
+    }
+
     gpi_api_t::gpi_api_t ()
       : m_ac (0)
       , m_av (NULL)
