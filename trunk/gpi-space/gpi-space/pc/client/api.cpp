@@ -212,11 +212,17 @@ namespace gpi
 
         message_t rply;
         // deserialize
+        try
         {
           std::stringstream sstr (std::string(buffer.begin(), buffer.end()));
           boost::archive::text_iarchive ia (sstr);
           ia & rply;
         }
+        catch (std::exception const & ex)
+        {
+          throw std::runtime_error ("protocol missmatch: could not deserialize message");
+        }
+
         return rply;
       }
 
