@@ -37,7 +37,7 @@ namespace gpi
                 );
               gpi::pc::proto::memory::alloc_reply_t rpl;
               rpl.handle = handle;
-              return rpl;
+              return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
             {
@@ -80,7 +80,7 @@ namespace gpi
                                         , cpy.size
                                         , cpy.queue
                                         );
-              return rpl;
+              return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
             {
@@ -98,7 +98,7 @@ namespace gpi
             {
               gpi::pc::proto::memory::wait_reply_t rpl;
               rpl.count = m_proc.wait (w.queue);
-              return rpl;
+              return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
             {
@@ -116,7 +116,7 @@ namespace gpi
             {
               gpi::pc::proto::memory::list_reply_t rpl;
               m_proc.list_allocations (rpl.list, list.segment);
-              return rpl;
+              return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
             {
@@ -143,7 +143,7 @@ namespace gpi
                                         );
               gpi::pc::proto::segment::register_reply_t rpl;
               rpl.id = id;
-              return rpl;
+              return gpi::pc::proto::segment::message_t (rpl);
             }
             catch (std::exception const & ex)
             {
@@ -227,7 +227,7 @@ namespace gpi
                 LOG(WARN, "list of particular segment not implemented");
                 m_proc.list_segments (rpl.list);
               }
-              return rpl;
+              return gpi::pc::proto::segment::message_t (rpl);
             }
             catch (std::exception const & ex)
             {
@@ -238,10 +238,16 @@ namespace gpi
             }
           }
 
+
+          /**********************************************/
+          /***     C O N T R O L   R E L A T E D      ***/
+          /**********************************************/
+
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::control::ping_t &)
           {
-            return gpi::pc::proto::control::pong_t();
+            gpi::pc::proto::control::pong_t pong;
+            return gpi::pc::proto::control::message_t (pong);
           }
 
           gpi::pc::proto::message_t
@@ -249,7 +255,25 @@ namespace gpi
           {
             gpi::pc::proto::control::info_reply_t rpl;
             m_proc.collect_info (rpl.info);
-            return rpl;
+            return gpi::pc::proto::control::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::message_t & m)
+          {
+            return boost::apply_visitor (*this, m);
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::memory::message_t & m)
+          {
+            return boost::apply_visitor (*this, m);
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::control::message_t & m)
+          {
+            return boost::apply_visitor (*this, m);
           }
 
           /*** Catch all other messages ***/

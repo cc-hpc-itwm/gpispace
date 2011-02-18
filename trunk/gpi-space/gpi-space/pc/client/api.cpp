@@ -191,25 +191,26 @@ namespace gpi
                                      , const type::mode_t flags
                                      )
       {
-        using namespace gpi::pc::proto;
+        using namespace gpi::pc;
 
-        memory::alloc_t alloc_msg;
+        proto::memory::alloc_t alloc_msg;
         alloc_msg.segment = seg;
         alloc_msg.size = sz;
         alloc_msg.name = name;
         alloc_msg.flags = flags;
 
-        message_t reply (communicate (alloc_msg));
+        proto::message_t reply (communicate (proto::memory::message_t(alloc_msg)));
 
         try
         {
-          memory::alloc_reply_t alloc_rpl (boost::get<memory::alloc_reply_t>(reply));
+          proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
+          proto::memory::alloc_reply_t alloc_rpl (boost::get<proto::memory::alloc_reply_t>(mem_msg));
           LOG(INFO, "allocation successful: " << alloc_rpl.handle);
           return alloc_rpl.handle;
         }
         catch (boost::bad_get const & ex)
         {
-          error::error_t error (boost::get<error::error_t>(reply));
+          proto::error::error_t error (boost::get<proto::error::error_t>(reply));
           LOG(ERROR, "request failed: " << error.code << ": " << error.detail);
           throw std::runtime_error (error.detail);
         }
@@ -217,16 +218,16 @@ namespace gpi
 
       void api_t::free (const gpi::pc::type::handle_id_t hdl)
       {
-        using namespace gpi::pc::proto;
-        memory::free_t rqst;
+        using namespace gpi::pc;
+        proto::memory::free_t rqst;
         rqst.handle = hdl;
 
-        message_t rpl (communicate (rqst));
-        error::error_t result (boost::get<error::error_t>(rpl));
-        if (result.code != error::success)
+        proto::message_t rpl (communicate (proto::memory::message_t (rqst)));
+        proto::error::error_t result (boost::get<proto::error::error_t>(rpl));
+        if (result.code != proto::error::success)
         {
           LOG(ERROR, "could not free handle: " << result.code << ": " << result.detail);
-          // throw or silently ignore?
+          throw std::runtime_error ("handle could not be free'd: " + result.detail);
         }
       }
 
@@ -258,10 +259,11 @@ namespace gpi
           rqst.size = sz;
           rqst.flags = flags;
 
-          proto::message_t rply (communicate (rqst));
+          proto::message_t rply (communicate (proto::segment::message_t (rqst)));
           try
           {
-            proto::segment::register_reply_t reg (boost::get<proto::segment::register_reply_t> (rply));
+            proto::segment::message_t seg_msg (boost::get<proto::segment::message_t>(rply));
+            proto::segment::register_reply_t reg (boost::get<proto::segment::register_reply_t> (seg_msg));
             seg->assign_id (reg.id);
           }
           catch (boost::bad_get const &)
@@ -283,11 +285,11 @@ namespace gpi
         using namespace gpi::pc;
         proto::segment::list_t rqst;
 
-        proto::message_t rply (communicate(rqst));
+        proto::message_t rply (communicate(proto::segment::message_t (rqst)));
         try
         {
-          proto::segment::list_reply_t segments
-            (boost::get<proto::segment::list_reply_t> (rply));
+          proto::segment::message_t seg_msg (boost::get<proto::segment::message_t>(rply));
+          proto::segment::list_reply_t segments (boost::get<proto::segment::list_reply_t> (seg_msg));
           return segments.list;
         }
         catch (boost::bad_get const &)
@@ -350,13 +352,13 @@ namespace gpi
           proto::segment::attach_t rqst;
           rqst.id = id;
 
-          proto::message_t rply (communicate(rqst));
+          proto::message_t rply (communicate(proto::segment::message_t (rqst)));
           proto::error::error_t result
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
           {
             LOG(ERROR, "could not attach to segment: " << result.code << ": " << result.detail);
-            // throw or silently ignore?
+            throw std::runtime_error ("could not attach to segment: " + result.detail);
           }
           else
           {
@@ -374,7 +376,7 @@ namespace gpi
 
         try
         {
-          proto::message_t rply (communicate(rqst));
+          proto::message_t rply (communicate(proto::segment::message_t(rqst)));
           proto::error::error_t result
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
@@ -400,7 +402,7 @@ namespace gpi
 
         try
         {
-          proto::message_t rply (communicate(rqst));
+          proto::message_t rply (communicate(proto::segment::message_t(rqst)));
           proto::error::error_t result
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
@@ -419,22 +421,39 @@ namespace gpi
       gpi::pc::type::handle::list_t
       api_t::list_allocations (const gpi::pc::type::segment_id_t seg)
       {
-        using namespace gpi::pc::proto;
-        memory::list_t rqst;
+        using namespace gpi::pc;
+        proto::memory::list_t rqst;
         rqst.segment = seg;
 
-        message_t rply (communicate(rqst));
+        proto::message_t rply (communicate(proto::memory::message_t(rqst)));
         try
         {
-          memory::list_reply_t handles (boost::get<memory::list_reply_t> (rply));
+          proto::memory::message_t mem_msg (boost::get<proto::memory::message_t> (rply));
+          proto::memory::list_reply_t handles (boost::get<proto::memory::list_reply_t>(mem_msg));
           return handles.list;
         }
         catch (boost::bad_get const &)
         {
-          error::error_t result (boost::get<error::error_t>(rply));
+          proto::error::error_t result (boost::get<proto::error::error_t>(rply));
           LOG(ERROR, "could not get handle list: " << result.code << ": " << result.detail);
-          //          throw wrap (result);
           throw std::runtime_error ("handle listing failed: " + result.detail);
+        }
+      }
+
+      bool api_t::ping ()
+      {
+        if (!is_connected())
+          return false;
+
+        gpi::pc::proto::control::ping_t p;
+        try
+        {
+          communicate (gpi::pc::proto::control::message_t (p));
+          return true;
+        }
+        catch (std::exception const & ex)
+        {
+          return false;
         }
       }
     }

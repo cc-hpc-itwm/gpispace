@@ -1,6 +1,8 @@
 #ifndef GPI_SPACE_PC_PROTO_SEGMENT_HPP
 #define GPI_SPACE_PC_PROTO_SEGMENT_HPP 1
 
+#include <boost/variant.hpp>
+
 // serialization
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
@@ -114,6 +116,16 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( list );
           }
         };
+
+        typedef boost::variant<
+          segment::register_t
+          , segment::register_reply_t
+          , segment::unregister_t
+          , segment::attach_t
+          , segment::detach_t
+          , segment::list_t
+          , segment::list_reply_t
+          > message_t;
       }
     }
   }

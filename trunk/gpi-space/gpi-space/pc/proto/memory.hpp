@@ -3,6 +3,8 @@
 
 #include <ostream>
 
+#include <boost/variant.hpp>
+
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 #include <gpi-space/pc/type/memory_location.hpp>
@@ -156,6 +158,18 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( count );
           }
         };
+
+        typedef boost::variant<
+          memory::alloc_t
+          , memory::alloc_reply_t
+          , memory::free_t
+          , memory::list_t
+          , memory::list_reply_t
+          , memory::memcpy_t
+          , memory::memcpy_reply_t
+          , memory::wait_t
+          , memory::wait_reply_t
+          > message_t;
       }
     }
   }

@@ -4,6 +4,8 @@
 #include <boost/variant.hpp>
 
 // serialization
+#include <boost/mpl/vector.hpp>
+
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/variant.hpp>
@@ -54,25 +56,10 @@ namespace gpi
       };
 
       typedef boost::variant< error::error_t
-                            , memory::alloc_t
-                            , memory::alloc_reply_t
-                            , memory::free_t
-                            , memory::list_t
-                            , memory::list_reply_t
-                            , memory::memcpy_t
-                            , memory::memcpy_reply_t
-                            , memory::wait_t
-                            , memory::wait_reply_t
-
-                            , segment::register_t
-                            , segment::register_reply_t
-                            , segment::unregister_t
-                            , segment::attach_t
-                            , segment::detach_t
-                            , segment::list_t
-                            , segment::list_reply_t
-
-                            > message_t;
+        , gpi::pc::proto::control::message_t
+        , gpi::pc::proto::memory::message_t
+        , gpi::pc::proto::segment::message_t
+        > message_t;
     }
   }
 }
