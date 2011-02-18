@@ -264,17 +264,28 @@ namespace gpi
                              )
       {
         segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
-        if (flags & gpi::pc::type::segment::F_NOCREATE)
+        try
         {
-          seg->open();
-        }
-        else
-        {
-          if (flags & gpi::pc::type::segment::F_FORCE_UNLINK)
+          if (flags & gpi::pc::type::segment::F_NOCREATE)
           {
-            seg->unlink();
+            seg->open();
           }
-          seg->create ();
+          else
+          {
+            if (flags & gpi::pc::type::segment::F_FORCE_UNLINK)
+            {
+              seg->unlink();
+            }
+            seg->create ();
+          }
+        }
+        catch (std::exception const & ex)
+        {
+          if (! (flags & gpi::pc::type::segment::F_NOUNLINK))
+          {
+            seg->unlink ();
+          }
+          throw;
         }
 
         // communication part
