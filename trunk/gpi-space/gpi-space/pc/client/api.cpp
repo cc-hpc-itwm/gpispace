@@ -278,6 +278,53 @@ namespace gpi
         }
       }
 
+      void
+      api_t::attach_segment (const gpi::pc::type::segment_id_t id)
+      {
+        using namespace gpi::pc::proto;
+        segment::attach_t rqst;
+        rqst.id = id;
+
+        message_t rply (communicate(rqst));
+        error::error_t result (boost::get<error::error_t>(rply));
+        if (result.code != error::success)
+        {
+          LOG(ERROR, "could not attach to segment: " << result.code << ": " << result.detail);
+          // throw or silently ignore?
+        }
+      }
+
+      void
+      api_t::detach_segment (const gpi::pc::type::segment_id_t id)
+      {
+        using namespace gpi::pc::proto;
+        segment::detach_t rqst;
+        rqst.id = id;
+
+        message_t rply (communicate(rqst));
+        error::error_t result (boost::get<error::error_t>(rply));
+        if (result.code != error::success)
+        {
+          LOG(ERROR, "could not detach from segment: " << result.code << ": " << result.detail);
+          // throw or silently ignore?
+        }
+      }
+
+      void
+      api_t::unregister_segment (const gpi::pc::type::segment_id_t id)
+      {
+        using namespace gpi::pc::proto;
+        segment::unregister_t rqst;
+        rqst.id = id;
+
+        message_t rply (communicate(rqst));
+        error::error_t result (boost::get<error::error_t>(rply));
+        if (result.code != error::success)
+        {
+          LOG(ERROR, "could not unregister segment: " << result.code << ": " << result.detail);
+          // throw or silently ignore?
+        }
+      }
 
       gpi::pc::type::handle::list_t
       api_t::list_allocations (const gpi::pc::type::segment_id_t seg)
