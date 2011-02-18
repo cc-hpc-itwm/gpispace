@@ -40,6 +40,7 @@ namespace gpi
             F_NOCREATE     = 0x08, // do not create the segment (try to open it)
             F_FORCE_UNLINK = 0x10, // force recreation of the segment
             F_SPECIAL      = 0x20, // special segment (used internally to identify local/global segments)
+            F_ATTACHED     = 0x40, // special flag indicating if the process container is attached
           };
 
         struct traits
