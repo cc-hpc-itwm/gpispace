@@ -115,7 +115,7 @@ namespace gpi
             try
             {
               gpi::pc::proto::memory::list_reply_t rpl;
-              rpl.list = m_proc.list_allocations (list.segment);
+              m_proc.list_allocations (rpl.list, list.segment);
               return rpl;
             }
             catch (std::exception const & ex)

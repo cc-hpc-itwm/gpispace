@@ -333,11 +333,10 @@ namespace gpi
       }
 
       template <typename M>
-      gpi::pc::type::handle::list_t
-      process_t<M>::list_allocations(const gpi::pc::type::segment_id_t seg)
+      void
+      process_t<M>::list_allocations(gpi::pc::type::handle::list_t & l, const gpi::pc::type::segment_id_t seg)
       {
-        gpi::pc::type::handle::list_t handles;
-        return handles;
+        return;
       }
 
       template <typename M>

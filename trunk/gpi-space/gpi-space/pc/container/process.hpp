@@ -51,7 +51,7 @@ namespace gpi
         void detach_segment(const gpi::pc::type::segment_id_t id);
         void list_segments (gpi::pc::type::segment::list_t &);
 
-        gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg);
+        void list_allocations (gpi::pc::type::handle::list_t &, const gpi::pc::type::segment_id_t seg);
 
         gpi::pc::type::queue_id_t memcpy ( gpi::pc::type::memory_location_t const & dst
                                          , gpi::pc::type::memory_location_t const & src
