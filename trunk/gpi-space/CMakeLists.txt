@@ -39,7 +39,7 @@ int main ()
    std::cout << getVersionGPI() << std::endl;
    return 0;
 }"
-REAL_GPI_CHECK)
+  REAL_GPI_CHECK)
   if("${REAL_GPI_CHECK}" EQUAL 1)
     add_definitions(-DENABLE_REAL_GPI=1)
   else("${REAL_GPI_CHECK}" EQUAL 1)
@@ -103,7 +103,7 @@ find_package (FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
 find_package (FhgCom REQUIRED)
-include_directories(${FhgLog_INCLUDE_DIR})
+include_directories(${FhgCom_INCLUDE_DIR})
 
 find_package (UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
