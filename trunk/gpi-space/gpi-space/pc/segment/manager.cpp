@@ -46,7 +46,9 @@ namespace gpi
                                           )
       {
         gpi::pc::type::segment::descriptor_t desc;
-        gpi::flag::set (desc.flags, gpi::pc::type::segment::F_SPECIAL);
+        gpi::flag::set ( desc.flags
+                       , gpi::pc::type::segment::F_SPECIAL | gpi::pc::type::segment::F_NOUNLINK
+                       );
         desc.id = id;
         desc.size = size;
         desc.name = name;
@@ -125,7 +127,10 @@ namespace gpi
           throw std::runtime_error ("segment is still inuse, cannot unregister");
         }
 
-        if ((seg->descriptor().flags & gpi::pc::type::segment::F_NOUNLINK) == 0)
+        if (!gpi::flag::is_set ( seg->descriptor().flags
+                               , gpi::pc::type::segment::F_NOUNLINK | gpi::pc::type::segment::F_EXCLUSIVE
+                               )
+           )
         {
           seg->unlink();
         }
