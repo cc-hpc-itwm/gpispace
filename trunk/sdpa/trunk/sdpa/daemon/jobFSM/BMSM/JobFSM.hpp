@@ -115,7 +115,7 @@ namespace sdpa {
 				template <class FSM, class Event>
 				void no_transition(Event const& e, FSM&, int state)
 				{
-					LOG(DEBUG, "no transition from state "<< " on event " << typeid(e).name());
+                                        LOG(DEBUG, "no transition from state "<< state << " on event " << typeid(e).name());
 				}
 
 				template <class FSM>
@@ -156,18 +156,13 @@ namespace sdpa {
 
 				void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IComm*  ptr_comm)
 				{
-					lock_type lock(mtx_);
+                                        assert (ptr_comm);
+                                        lock_type lock(mtx_);
 					process_event(*pEvt);
 
-					if(ptr_comm)
-					{
-						sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
-						//send ack to master
-						ptr_comm->sendEventToMaster(pDelJobReply);
-					}
-					else
-						SDPA_LOG_ERROR("Could not send delete reply. Invalid communication handler!");
-
+                                        sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
+                                        //send ack to master
+                                        ptr_comm->sendEventToMaster(pDelJobReply);
 				}
 
 				void JobFailed(const sdpa::events::JobFailedEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
@@ -175,37 +170,28 @@ namespace sdpa {
 
 				void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IComm* pDaemon )
 				{
-					// attention, no action called!
+                                        assert (pDaemon);
+                                        // attention, no action called!
 					lock_type lock(mtx_);
 					process_event(*pEvt);
 
 					//LOG(TRACE, "The status of the job "<<id()<<" is " << getStatus()<<"!!!");
 					sdpa::status_t status = getStatus();
-					if(pDaemon)
-					{
-						sdpa::events::JobStatusReplyEvent::Ptr
-						        pStatReply(new sdpa::events::JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
+                                        sdpa::events::JobStatusReplyEvent::Ptr
+                                            pStatReply(new sdpa::events::JobStatusReplyEvent( pEvt->to(), pEvt->from(), id(), status));
 
-						pDaemon->sendEventToMaster(pStatReply);
-					}
-					else
-						SDPA_LOG_WARN("Could not send back job status reply. Invalid communication handler!");
-
+                                        pDaemon->sendEventToMaster(pStatReply);
 				}
 
 				void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IComm* ptr_comm)
 				{
-					lock_type lock(mtx_);
+                                        assert (ptr_comm);
+                                        lock_type lock(mtx_);
 					process_event(*pEvt);
-					if(ptr_comm)
-					{
-						const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
+                                        const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
 
-						// reply the results to master
-						ptr_comm->sendEventToMaster(pResReply);
-					}
-					else
-						SDPA_LOG_ERROR("Could not send results. Invalid communication handler!");
+                                        // reply the results to master
+                                        ptr_comm->sendEventToMaster(pResReply);
 				}
 
 				void Dispatch() { MSMDispatchEvent DispEvt;lock_type lock(mtx_); process_event(DispEvt);}
