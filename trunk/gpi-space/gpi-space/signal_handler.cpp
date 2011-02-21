@@ -32,6 +32,18 @@ namespace gpi
       , m_started (false)
     {}
 
+    handler_t::~handler_t ()
+    {
+      try
+      {
+        stop();
+      }
+      catch (std::exception const & ex)
+      {
+        LOG(ERROR, "error during signal handler dtor: " << ex.what());
+      }
+    }
+
     // API
     handler_t & handler_t::get ()
     {

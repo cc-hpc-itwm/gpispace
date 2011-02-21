@@ -111,6 +111,8 @@ namespace gpi
 
       static handler_t & get ();
 
+      ~handler_t ();
+
       void start();
       void stop();
       void wait ();
