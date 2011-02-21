@@ -11,6 +11,7 @@
 #include <boost/serialization/vector.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/type/time_stamp.hpp>
 
 namespace gpi
@@ -23,7 +24,12 @@ namespace gpi
       {
         enum flags_type
           {
-            F_NONE  = 0x00,
+            F_NONE       = 0x00,
+            F_PERSISTENT = 0x01,
+            F_EXCLUSIVE  = 0x02,
+
+
+            F_GLOBAL     = 0x20,
           };
 
         struct traits
@@ -43,6 +49,15 @@ namespace gpi
           gpi::pc::type::name_t name;
           gpi::pc::type::flags_t flags;
           gpi::pc::type::time_stamp_t ts;
+
+          descriptor_t ()
+            : id (0)
+            , segment (0)
+            , offset (0)
+            , size (0)
+            , name ("")
+            , flags (0)
+          {}
 
         private:
           friend class boost::serialization::access;
@@ -70,8 +85,7 @@ namespace gpi
 
           // ID
           os.flags (std::ios::right | std::ios::dec);
-          os.width (5);
-          os << d.id;
+          os << gpi::pc::type::handle_t (d.id);
           os << " ";
 
           // SEGMENT
