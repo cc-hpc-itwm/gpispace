@@ -115,6 +115,8 @@ namespace sdpa {
 
 				virtual ~DaemonFSM();
 
+				void start_fsm() { start(); }
+
 				virtual void action_configure(const sdpa::events::StartUpEvent& );
 				virtual void action_config_ok(const sdpa::events::ConfigOkEvent& );
 				virtual void action_config_nok(const sdpa::events::ConfigNokEvent& );
@@ -151,7 +153,7 @@ namespace sdpa {
 
 			private:
 				mutex_type mtx_;
-				SDPA_DECLARE_LOGGER();
+
 			};
 		}
 	}
