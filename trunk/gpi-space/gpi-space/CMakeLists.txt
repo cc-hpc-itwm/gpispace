@@ -26,9 +26,9 @@ if (NO_IMPLICIT_TEMPLATES)
 endif (NO_IMPLICIT_TEMPLATES)
 
 ADD_LIBRARY(gpi-space-static ${hdrs} ${srcs})
-#ADD_LIBRARY(gpi-space-shared SHARED ${hdrs} ${srcs})
+ADD_LIBRARY(gpi-space-shared SHARED ${hdrs} ${srcs})
 set_target_properties(gpi-space-static PROPERTIES OUTPUT_NAME gpi-space)
-#set_target_properties(gpi-space-shared PROPERTIES OUTPUT_NAME gpi-space)
+set_target_properties(gpi-space-shared PROPERTIES OUTPUT_NAME gpi-space)
 
 install(FILES ${hdrs}
   DESTINATION include/gpi-space
@@ -39,7 +39,7 @@ install(TARGETS gpi-space-static
   DESTINATION lib
   COMPONENT libraries)
 
-#install(TARGETS gpi-space-shared
-#  LIBRARY
-#  DESTINATION lib
-#  COMPONENT libraries)
+install(TARGETS gpi-space-shared
+  LIBRARY
+  DESTINATION lib
+  COMPONENT libraries)

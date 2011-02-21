@@ -17,12 +17,12 @@ install(FILES ${hdrs}
   DESTINATION include/gpi-space/pc/client
   COMPONENT headers)
 
-#install(TARGETS gpi-space-daemon-static
-#  ARCHIVE
-#  DESTINATION lib
-#  COMPONENT libraries)
-#
-#install(TARGETS gpi-space-daemon-shared
-#  LIBRARY
-#  DESTINATION lib
-#  COMPONENT libraries)
+install(TARGETS gpi-space-pc-client-static
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)
+
+install(TARGETS gpi-space-pc-client-shared
+  LIBRARY
+  DESTINATION lib
+  COMPONENT libraries)
