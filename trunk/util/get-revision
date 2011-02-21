@@ -1,0 +1,40 @@
+#!/bin/bash
+#  usage: get-revision <path-to-source>
+
+if [ $# -ne 1 ] ; then
+  echo "usage: `basename $0` <path-to-source>" >&2
+  exit 1
+fi
+
+src="$1"
+
+if [ ! -d "$src" ] ; then
+  echo "no such directory: $src" >&2
+  exit 1
+fi
+
+# first check if we can get the version from git
+cd "$src"
+tmp=$( git describe --always 2>&1 )
+if [ $? -eq 0 ] ; then
+  echo "$tmp"
+  exit 0
+fi
+
+# fallback to svn
+tmp=$( svn info 2>&1 | grep ^Rev )
+if [ $? -eq 0 ] ; then
+  tmp=$( echo "$tmp" | cut -d' ' -f 2 )
+  echo $tmp
+  exit 0
+fi
+
+# try to get the revision from a file
+tmp=$( cat .revision 2>&1 )
+if [ $? -eq 0 ] ; then
+  echo $tmp
+  exit 0
+fi
+
+echo "Sorry, I tried git, svn and the file \"$src/.revision\", but none of those worked, giving up." >&2
+exit 1
