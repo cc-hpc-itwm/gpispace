@@ -7,6 +7,8 @@ endif(POLICY CMP0011)
 project (gpi-space)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
+OPTION(ENABLE_REAL_GPI "Provide api for the *real* GPI" ON)
+
 set(PROJECT_DESCRIPTION "GPI-Space interface")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
@@ -18,14 +20,15 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-# TODO move into FindGPI.cmake
-set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
-set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
-#set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBVerbs_LIBRARY})
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
-
-include_directories (${GPI_INCLUDE_DIR})
+if(ENABLE_REAL_GPI)
+  # check if we can actually use the GPI version in ext
+  set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
+  set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
+  #set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBVerbs_LIBRARY})
+  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
+  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
+  include_directories (${GPI_INCLUDE_DIR})
+endif(ENABLE_REAL_GPI)
 
 include(CheckCompiler)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
@@ -81,11 +84,14 @@ include_directories(${IBVerbs_INCLUDE_DIR})
 find_package (FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
-find_package (MMGR REQUIRED)
-include_directories(${MMGR_INCLUDE_DIR})
+find_package (FhgCom REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
 
 find_package (UTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
+
+find_package (MMGR REQUIRED)
+include_directories(${MMGR_INCLUDE_DIR})
 
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
