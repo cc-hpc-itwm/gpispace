@@ -7,6 +7,7 @@ set(tc_srcs
   test_pc_types.cpp
   test_segment.cpp
   test_handle_generator.cpp
+  test_memory_manager.cpp
 )
 
 foreach (tc_src ${tc_srcs})
