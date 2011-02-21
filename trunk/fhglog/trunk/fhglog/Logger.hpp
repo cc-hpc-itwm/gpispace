@@ -44,6 +44,10 @@ namespace fhg { namespace log {
       static Logger::ptr_t get();
       static Logger::ptr_t get(const std::string &name, const std::string &base = "default");
 
+      explicit
+      Logger(const std::string &name);
+      Logger(const std::string &name, const Logger &inherit_from);
+
       ~Logger();
 
       const std::string &name() const;
@@ -71,12 +75,8 @@ namespace fhg { namespace log {
       bool hasAppender (void) const;
       void removeAppender(const std::string &appender_name);
       void removeAllAppenders();
+
     private:
-      explicit
-      Logger(const std::string &name);
-
-      Logger(const std::string &name, const Logger &inherit_from);
-
       std::string name_;
       LogLevel lvl_;
       Filter::ptr_t filter_;

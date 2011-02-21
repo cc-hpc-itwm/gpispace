@@ -7,41 +7,70 @@
 
 using namespace fhg::log;
 
+namespace state
+{
+  struct state_t
+  {
+    typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
+    typedef boost::recursive_mutex mutex_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
+
+    Logger::ptr_t getLogger(const std::string &a_name, const std::string & base)
+    {
+      lock_type lock(m_mutex);
+      logger_map_t::iterator logger(m_loggers.find(a_name));
+      if (logger == m_loggers.end())
+      {
+        Logger::ptr_t newLogger;
+        if (a_name != "default")
+        {
+          newLogger.reset (new Logger(a_name, *getLogger(base, "default")));
+        }
+        else
+        {
+          newLogger.reset (new Logger(a_name));
+        }
+        assert (newLogger);
+
+        logger = m_loggers.insert(std::make_pair(a_name, newLogger)).first;
+      }
+      return logger->second;
+    }
+
+    ~state_t ()
+    {
+      lock_type lock(m_mutex);
+      m_loggers.clear ();
+    }
+
+  private:
+    mutex_type   m_mutex;
+    logger_map_t m_loggers;
+  };
+
+  typedef fhg::log::shared_ptr<state_t> state_ptr;
+  static state_ptr static_state;
+
+  state_ptr get ()
+  {
+    if (! static_state)
+      static_state = state_ptr (new state_t);
+    return static_state;
+  }
+}
+
 /*
  * Logger implementation
  *
  */
 Logger::ptr_t Logger::get()
 {
-  return get("default");
+  return get("default", "default");
 }
 
 Logger::ptr_t Logger::get(const std::string &a_name, const std::string & base)
 {
-  typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
-  typedef boost::recursive_mutex mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_type;
-
-  static logger_map_t loggers_;
-  static mutex_type mtx_;
-
-  lock_type lock(mtx_);
-  logger_map_t::iterator logger(loggers_.find(a_name));
-  if (logger == loggers_.end())
-  {
-    if (a_name != "default")
-    {
-      Logger::ptr_t newLogger(new Logger(a_name, *get(base)));
-      logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
-    }
-    else
-    {
-      Logger::ptr_t newLogger(new Logger(a_name));
-      logger = loggers_.insert(std::make_pair(a_name, newLogger)).first;
-    }
-  }
-
-  return logger->second;
+  return state::get ()->getLogger (a_name, base);
 }
 
 Logger::Logger(const std::string &a_name)
