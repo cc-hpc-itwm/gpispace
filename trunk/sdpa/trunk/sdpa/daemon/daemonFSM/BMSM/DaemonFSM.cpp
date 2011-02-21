@@ -83,8 +83,7 @@ namespace sdpa {
 						seda::Stage* ptrToMasterStage,
 						seda::Stage* ptrToSlaveStage,
 						IWorkflowEngine*  pArgSdpa2Gwes )
-				:GenericDaemon( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes ),
-				 SDPA_INIT_LOGGER(name+" MSM")
+				:GenericDaemon( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes )
 			{
 				DLOG(TRACE, "Daemon state machine created");
 			}
@@ -93,15 +92,14 @@ namespace sdpa {
 						IWorkflowEngine*  pArgSdpa2Gwes,
 						const std::string& toMasterStageName,
 						const std::string& toSlaveStageName )
-				: GenericDaemon( name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes ),
-				  SDPA_INIT_LOGGER(name+" MSM")
+				: GenericDaemon( name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes )
 			{
 				DLOG(TRACE, "Daemon state machine created");
 			}
 
 			DaemonFSM::DaemonFSM( const std::string &name, IWorkflowEngine* pArgSdpa2Gwes )
-				:	GenericDaemon(name, pArgSdpa2Gwes),
-					SDPA_INIT_LOGGER(name+" MSM")				{
+				:	GenericDaemon(name, pArgSdpa2Gwes)
+			{
 				DLOG(TRACE, "Daemon state machine created");
 			}
 
@@ -178,7 +176,7 @@ namespace sdpa {
 
 				if( m_bConfigOk )
 				{
-					SDPA_LOG_INFO("Starting the scheduler...");
+					LOG(INFO, "Starting the scheduler...");
 					//sdpa::daemon::Scheduler::ptr_t ptrSched(this->create_scheduler());
 					//ptr_scheduler_ = ptrSched;
 					ptr_scheduler_->start(this);
