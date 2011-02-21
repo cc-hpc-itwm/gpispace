@@ -36,7 +36,7 @@ function(get_revision_info REV_INFO)
     set (${REV_INFO} ${_rev} PARENT_SCOPE)
   else(_res)
     execute_process(
-      COMMAND git describe
+      COMMAND git describe --always
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       OUTPUT_VARIABLE _out_git
       ERROR_VARIABLE _err_git
