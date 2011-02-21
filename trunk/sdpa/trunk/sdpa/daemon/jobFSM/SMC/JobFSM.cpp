@@ -50,7 +50,7 @@ void JobFSM::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::I
 
 	if(ptr_comm)
 	{
-		sdpa::daemon::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::daemon::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
+		sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
 		//send ack to master
 		ptr_comm->sendEventToMaster(pDelJobReply);
 	}
@@ -94,7 +94,7 @@ void  JobFSM ::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* p
 
 	if(ptr_comm)
 	{
-		const JobResultsReplyEvent::Ptr pResReply( new JobResultsReplyEvent( e.to(), e.from(), id(), result() ));
+		const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
 
 		// reply the results to master
 		ptr_comm->sendEventToMaster(pResReply);
