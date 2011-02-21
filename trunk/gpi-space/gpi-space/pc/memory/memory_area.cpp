@@ -92,7 +92,14 @@ namespace gpi
         {
         case ALLOC_SUCCESS:
           {
-            tmmgr_offset_size (&m_mmgr, desc.id, &desc.offset, NULL);
+            Offset_t offset;
+            dtmmgr_offset_size ( &m_mmgr
+                               , desc.id
+                               , arena
+                               , &offset
+                               , NULL
+                               );
+            desc.offset = offset;
             m_segment->descriptor().avail -= size;
             m_segment->descriptor().allocs += 1;
             m_segment->descriptor().ts.touch (gpi::pc::type::time_stamp_t::TOUCH_ACCESSED);
