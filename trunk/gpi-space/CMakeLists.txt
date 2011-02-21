@@ -21,13 +21,30 @@ include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(ENABLE_REAL_GPI)
-  # check if we can actually use the GPI version in ext
   set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
   set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
-  #set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBVerbs_LIBRARY})
-  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
   set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
-  include_directories (${GPI_INCLUDE_DIR})
+  set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libibverbs15.so)
+
+  # check if we can actually use the GPI version in ext
+  set(CMAKE_REQUIRED_INCLUDES ${GPI_INCLUDE_DIR})
+  set(CMAKE_REQUIRED_LIBRARIES ${GPI_LIBRARIES})
+  include(CheckCXXSourceRuns)
+  CHECK_CXX_SOURCE_RUNS(
+"
+#include <iostream>
+#include <GPI/GPI.h>
+int main ()
+{
+   std::cout << getVersionGPI() << std::endl;
+   return 0;
+}"
+REAL_GPI_CHECK)
+  if("${REAL_GPI_CHECK}" EQUAL 1)
+  else("${REAL_GPI_CHECK}" EQUAL 1)
+    message(WARNING "Support for real-GPI requested but not available on your platform!")
+    set(ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)
+  endif("${REAL_GPI_CHECK}" EQUAL 1)
 endif(ENABLE_REAL_GPI)
 
 include(CheckCompiler)

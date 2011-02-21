@@ -1,25 +1,23 @@
 # -*- mode: cmake; -*-
 
-set (hdrs
-  api.hpp
-  )
+if(ENABLE_REAL_GPI)
+  include_directories(${GPI_INCLUDE_DIR})
+endif(ENABLE_REAL_GPI)
+
+set (hdrs api.hpp)
 
 set (srcs
-  )
-
-set (real_src
-  ${srcs}
-  real_api.cpp
-  )
-
-set (fake_src
-  ${srcs}
   fake_api.cpp
-  )
+)
 
-add_library (gpi-space-gpiapi      ${real_src} ${hdrs})
-#add_library (gpi-space-server.fake ${srcs} ${fake_src} ${hdrs})
-target_link_libraries (gpi-space-gpiapi ${GPI_LIBRARIES})
+if(ENABLE_REAL_GPI)
+  set (srcs ${srcs} real_api.cpp)
+endif(ENABLE_REAL_GPI)
+
+add_library (gpi-space-gpiapi ${srcs} ${hdrs})
+if(ENABLE_REAL_GPI)
+  target_link_libraries (gpi-space-gpiapi ${GPI_LIBRARIES})
+endif(ENABLE_REAL_GPI)
 
 install(FILES ${hdrs}
   DESTINATION include/gpi-space/gpi
