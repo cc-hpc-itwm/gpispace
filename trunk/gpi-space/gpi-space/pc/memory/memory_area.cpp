@@ -26,18 +26,47 @@ namespace gpi
 
       area_t::~area_t ()
       {
+        try
+        {
+          clear ();
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not clear memory area " << m_segment->id() << ": " << ex.what());
+        }
+
         dtmmgr_finalize (&m_mmgr);
       }
 
-      void area_t::alloc ( const gpi::pc::type::size_t size
-                         , const std::string & name
-                         , const gpi::pc::type::flags_t flags
-                         )
+      void area_t::clear ()
+      {
+        lock_type lock (m_mutex);
+
+        while (! m_handles.empty())
+        {
+          gpi::pc::type::handle::descriptor_t d (m_handles.begin()->second);
+          try
+          {
+            this->free ( d.id );
+            LOG(DEBUG, "cleaned up possibly leaked handle: " << d);
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(WARN, "could not free handle: " << d);
+          }
+        }
+      }
+
+      gpi::pc::type::handle_id_t area_t::alloc ( const gpi::pc::type::size_t size
+                                               , const std::string & name
+                                               , const gpi::pc::type::flags_t flags
+                                               )
       {
         lock_type lock (m_mutex);
 
         gpi::pc::type::handle::descriptor_t desc;
         desc.id = handle_generator_t::get().next (m_segment->id());
+        desc.segment = m_segment->id();
         desc.size = size;
         desc.name = name;
         desc.flags = flags;
@@ -57,7 +86,7 @@ namespace gpi
 
         AllocReturn_t alloc_return (dtmmgr_alloc (&m_mmgr, desc.id, arena, size));
 
-        DLOG(TRACE, "ALLOC: handle = " << id << " arena = " << arena << " size = " << size << " return = " << alloc_return);
+        DLOG(TRACE, "ALLOC: handle = " << desc.id << " arena = " << arena << " size = " << size << " return = " << alloc_return);
 
         switch (alloc_return)
         {
@@ -91,6 +120,8 @@ namespace gpi
           throw std::runtime_error ("unexpected return code");
           break;
         }
+
+        return desc.id;
       }
 
       void area_t::free (const gpi::pc::type::handle_id_t hdl)
@@ -157,6 +188,36 @@ namespace gpi
       {
         lock_type lock (m_mutex);
         return m_segment->descriptor().avail;
+      }
+
+      bool area_t::get_descriptor ( const gpi::pc::type::handle_id_t hdl
+                                  , gpi::pc::type::handle::descriptor_t & d
+                                  ) const
+      {
+        lock_type lock (m_mutex);
+        handle_descriptor_map_t::const_iterator pos (m_handles.find (hdl));
+        if (pos != m_handles.end())
+        {
+          d = pos->second;
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+
+      void area_t::list_allocations (gpi::pc::type::handle::list_t & list) const
+      {
+        lock_type lock (m_mutex);
+
+        for ( handle_descriptor_map_t::const_iterator pos (m_handles.begin())
+            ; pos != m_handles.end()
+            ; ++pos
+            )
+        {
+          list.push_back (pos->second);
+        }
       }
     }
   }

@@ -25,29 +25,29 @@ namespace gpi
 
         explicit
         area_t (const segment_ptr & seg);
-        virtual ~area_t ();
+        ~area_t ();
 
-        void alloc ( const gpi::pc::type::size_t size
-                   , const std::string & name
-                   , const gpi::pc::type::flags_t flags = gpi::pc::type::handle::F_NONE
-                   );
+        void clear ();
+
+        gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::size_t size
+                                         , const std::string & name
+                                         , const gpi::pc::type::flags_t flags = gpi::pc::type::handle::F_NONE
+                                         );
         void free (const gpi::pc::type::handle_id_t hdl);
         gpi::pc::type::size_t total_mem_size () const;
         gpi::pc::type::size_t free_mem_size () const;
         gpi::pc::type::size_t used_mem_size () const;
-      protected:
+
+        bool get_descriptor ( const gpi::pc::type::handle_id_t
+                            , gpi::pc::type::handle::descriptor_t &
+                            ) const;
+        void list_allocations ( gpi::pc::type::handle::list_t & ) const;
+      private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::unordered_map< gpi::pc::type::handle_id_t
                                     , gpi::pc::type::handle::descriptor_t
                                     > handle_descriptor_map_t;
-
-        virtual void free_hook (const gpi::pc::type::handle_id_t) {}
-        virtual void alloc_hook ( const gpi::pc::type::handle_id_t
-                                , const::gpi::pc::type::size_t
-                                , const int arena
-                                ) {}
-
         mutable mutex_type m_mutex;
         segment_ptr m_segment;
         DTmmgr_t m_mmgr;
