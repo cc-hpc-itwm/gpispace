@@ -58,6 +58,8 @@ namespace sdpa {
 			// front-end: define the FSM structure
 			struct JobFSM_ : public msm::front::state_machine_def<JobFSM_>
 			{
+                                virtual JobFSM_() {}
+
 				// The list of FSM states
 				struct Pending : 	public msm::front::state<>{};
 				struct Running : 	public msm::front::state<>{};
