@@ -8,15 +8,10 @@ endif(POLICY CMP0011)
 project(sdpa-gui)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
-include (./version.cmake)
-
 set(PROJECT_DESCRIPTION "SDPA Monitor GUI")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
-set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
-set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
-set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 

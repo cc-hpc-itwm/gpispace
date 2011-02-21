@@ -8,17 +8,10 @@ endif(POLICY CMP0011)
 project(libwe)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
-set(V_MAJOR 0)
-set(V_MINOR 1)
-set(V_PATCH 0)
-
 set(PROJECT_DESCRIPTION "Workflow Engine Header only library")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
-set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
-set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
-set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
 set (WE_NUM_EXTRACTORS "1" CACHE STRING "number of extractors")
 set (WE_NUM_INJECTORS  "1" CACHE STRING "number of injectors")
@@ -80,16 +73,17 @@ endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 # add some files to the installation target
 INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
-  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
+  DESTINATION share/doc/${PROJECT_NAME}
   COMPONENT documentation
 )
-
-# CTest
-include(CTest)
 
 # Reflect the package structure
 add_subdirectory(we)
 add_subdirectory(apps)
+
+# CTest
+include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)
+

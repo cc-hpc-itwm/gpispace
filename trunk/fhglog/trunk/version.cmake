@@ -1,3 +1,3 @@
-set(V_MAJOR 1)
-set(V_MINOR 3)
-set(V_PATCH 3)
+set(FHGLOG_MAJOR 1)
+set(FHGLOG_MINOR 4)
+set(FHGLOG_PATCH 0)

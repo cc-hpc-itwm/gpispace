@@ -7,17 +7,10 @@ endif(POLICY CMP0011)
 
 project(libmmgr)
 
-set(V_MAJOR 0)
-set(V_MINOR 2)
-set(V_PATCH 0)
-
-set(PROJECT_DESCRIPTION "memory manager basic layer")
-set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
-set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
-set(PROJECT_CONTACT     "Mirko Rahn <mirko.rahn@itwm.fraunhofer.de>")
-set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
-set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
-set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
+#set(PROJECT_DESCRIPTION "memory manager basic layer")
+#set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
+#set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
+#set(PROJECT_CONTACT     "Mirko Rahn <mirko.rahn@itwm.fraunhofer.de>")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 # Where are the additional libraries installed? Note: provide includes
@@ -49,9 +42,3 @@ include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)
-
-# add some files to the installation target
-INSTALL(FILES README COPYING
-  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
-  COMPONENT documentation
-  )

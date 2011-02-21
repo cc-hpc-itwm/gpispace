@@ -8,10 +8,6 @@ endif(POLICY CMP0011)
 project(libfvm-pc)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
-set(V_MAJOR 0)
-set(V_MINOR 1)
-set(V_PATCH 0)
-
 option (WITH_FAKE_PC "Build with fake virtual machine interface library" ON)
 set (FVM_FVM_SIZE "3221225472" CACHE STRING "Default virtual machine size")
 set (FVM_SHM_SIZE "3221225472" CACHE STRING "Default shared memory segment size")

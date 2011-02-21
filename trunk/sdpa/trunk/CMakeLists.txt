@@ -7,20 +7,10 @@ endif(POLICY CMP0011)
 
 project(sdpa)
 
-if (V_MAJOR)
-else (V_MAJOR)
-  set(V_MAJOR 0)
-  set(V_MINOR 2)
-  set(V_PATCH 0)
-endif (V_MAJOR)
-
-set(PROJECT_REVISION CACHE STRING "Source code revision")
-set(PROJECT_BUILD "0"   CACHE STRING "Build number")
 set(PROJECT_DESCRIPTION "Seismic Data Processing Architecture" CACHE STRING "Project description")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM" CACHE STRING "Copyright")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" CACHE STRING "Contact information")
-set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}" CACHE STRING "Project version")
 
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(ENABLE_TYPE_CHECKING "Enable type checking in tokens" YES)
@@ -188,10 +178,6 @@ if (BUILD_TESTING)
 endif (BUILD_TESTING)
 
 # add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
-  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
-  COMPONENT documentation
-  )
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp
   DESTINATION include/sdpa
   COMPONENT headers)

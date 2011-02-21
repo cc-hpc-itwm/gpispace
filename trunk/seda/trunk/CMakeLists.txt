@@ -8,9 +8,12 @@ endif(POLICY CMP0011)
 project(seda)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
-set(V_MAJOR 1)
-set(V_MINOR 4)
-set(V_PATCH 0)
+if (V_MAJOR)
+else (V_MAJOR)
+  set(V_MAJOR 1)
+  set(V_MINOR 4)
+  set(V_PATCH 0)
+endif (V_MAJOR)
 
 ###################################################################################################
 # No user settings below
@@ -116,12 +119,6 @@ include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)
-
-# add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
-  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
-  COMPONENT documentation
-  )
 
 # install the config
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp

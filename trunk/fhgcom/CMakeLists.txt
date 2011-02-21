@@ -8,8 +8,6 @@ endif(POLICY CMP0011)
 project(libfhgcom)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
-include (./version.cmake)
-
 option(USE_STL_TR1
  "Use tr1 from stl"
  0)
@@ -26,9 +24,6 @@ set(PROJECT_DESCRIPTION "FHG Communication Framework")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2010 Fraunhofer ITWM")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
-set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
-set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
-set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
@@ -84,13 +79,7 @@ include_directories(${FhgLog_INCLUDE_DIR})
 include(FindUTIL REQUIRED)
 include_directories(${UTIL_INCLUDE_DIR})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhgcom/fhgcom-config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhgcom/fhgcom-config.hpp
-  DESTINATION include/fhgcom
-  COMPONENT headers)
-
-add_definitions(-DHAVE_CONFIG_H)
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})
@@ -107,12 +96,6 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
   string(TOUPPER ${CMAKE_BUILD_TYPE} tmp)
   message(STATUS "additional CXXFLAGS: ${CMAKE_CXX_FLAGS_${tmp}}")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-
-# add some files to the installation target
-INSTALL(FILES README COPYING
-  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
-  COMPONENT documentation
-)
 
 # Reflect the package structure
 add_subdirectory(fhgcom)

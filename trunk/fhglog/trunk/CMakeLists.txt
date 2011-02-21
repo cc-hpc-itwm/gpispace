@@ -25,9 +25,7 @@ set(PROJECT_DESCRIPTION "FHG Logging Framework")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
 set(PROJECT_COPYRIGHT   "Copyright 2009 Fraunhofer ITWM")
 set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>")
-set(PROJECT_VERSION     "${V_MAJOR}.${V_MINOR}.${V_PATCH}")
-set(PROJECT_README      "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/README")
-set(PROJECT_COPYING     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}/COPYING")
+set(FHGLOG_VERSION     "${FHGLOG_MAJOR}.${FHGLOG_MINOR}.${FHGLOG_PATCH}")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
@@ -107,12 +105,6 @@ if (DEBUG_FHGLOG)
 else (DEBUG_FHGLOG)
   add_definitions("-DNDEBUG_FHGLOG")
 endif (DEBUG_FHGLOG)
-
-# add some files to the installation target
-INSTALL(FILES INSTALL README COPYING ChangeLog NEWS
-  DESTINATION share/doc/${PROJECT_NAME}-${V_MAJOR}.${V_MINOR}
-  COMPONENT documentation
-)
 
 #install(EXPORT ${PROJECT_NAME}Exports
 #  DESTINATION lib/shared
