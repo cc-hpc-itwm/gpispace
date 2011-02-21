@@ -44,6 +44,9 @@ namespace sdpa { namespace fsm { namespace smc {
 
             virtual ~JobFSM() { DLOG(TRACE, "Job state machine destroyed: " << id()); }
 
+            void start_fsm() { // do nothing; }
+
+            }
 			//transitions
 			void CancelJob(const sdpa::events::CancelJobEvent*);
 			void CancelJobAck(const sdpa::events::CancelJobAckEvent*);

@@ -75,7 +75,6 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 			: JobImpl(id, desc, pHandler, parent),
 			  SDPA_INIT_LOGGER("sdpa.fsm.bsc.JobFSM")
 	{
-		initiate();
 		SDPA_LOG_DEBUG("State machine created");
 	}
 
@@ -83,6 +82,8 @@ struct JobFSM : public sdpa::daemon::JobImpl, public sc::state_machine<JobFSM, P
 		terminate();
 		SDPA_LOG_DEBUG("State machine destroyed");
 	}
+
+	void start_fsm() { initiate(); }
 
 	void print_states()
 	{

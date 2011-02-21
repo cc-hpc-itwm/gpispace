@@ -146,6 +146,8 @@ namespace sdpa {
 					SDPA_LOG_DEBUG("State machine destroyed");
 				}
 
+				void start_fsm() { start(); }
+
 				//transitions
 				void CancelJob(const sdpa::events::CancelJobEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
 				void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt) {lock_type lock(mtx_); process_event(*pEvt);}
