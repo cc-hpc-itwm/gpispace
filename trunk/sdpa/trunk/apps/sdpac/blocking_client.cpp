@@ -184,5 +184,7 @@ int main(int argc, char** argv)
 	}
 
 	ptrCli->shutdown_network();
-    //ptrCli.reset();
+
+	seda::StageRegistry::instance().stopAll();
+	seda::StageRegistry::instance().clear();
 }
