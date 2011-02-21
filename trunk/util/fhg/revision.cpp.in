@@ -1,0 +1,16 @@
+/*
+ * ==== special marker for the generator script, please don't remove ====
+ * REV=@PROJECT_REVISION@
+ * ==== special marker for the generator script, please don't remove ====
+ *
+ */
+
+#include <fhg/revision.hpp>
+
+namespace fhg
+{
+  const char * project_revision ()
+  {
+    return "@PROJECT_REVISION@";
+  }
+}

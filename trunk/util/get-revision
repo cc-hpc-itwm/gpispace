@@ -15,7 +15,7 @@ fi
 
 # first check if we can get the version from git
 cd "$src"
-tmp=$( git describe --always 2>&1 )
+tmp=$( git describe --candidates=20 --always 2>&1 )
 if [ $? -eq 0 ] ; then
   echo "$tmp"
   exit 0

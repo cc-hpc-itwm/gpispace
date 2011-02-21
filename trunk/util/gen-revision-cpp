@@ -1,0 +1,43 @@
+#!/bin/bash
+#  usage: gen-revision-cpp <path-to-cpp.in> <path-to-cpp.out>
+#    replaces @PROJECT_REVISION@ with the revision information
+
+if [ $# -lt 1 ] ; then
+  echo "usage: `basename $0` <path-to-cpp-in> [<path-to-cpp-out>]" >&2
+  echo "     if output path is omitted, stdout is used"
+  exit 1
+fi
+
+inp="$1"
+
+if [ ! -f "$inp" -a ! -r "$inp" ] ; then
+  echo "cannot access file: $inp" >&2
+  exit 1
+fi
+
+out="$2"
+if [ -z "$out" ] ; then
+  out="/dev/stdout"
+fi
+
+# get the revision
+mydir=$(dirname $( which $0 ) )
+
+# get the already set one
+old=
+if [ "$out" != "/dev/stdout" ] ; then
+  tmp=$( grep -o 'REV=.*$' "${out}" /dev/null 2>&1 )
+  if [ $? -eq 0 ] ; then
+    old=$( echo "$tmp" | cut -d= -f 2 )
+  fi
+fi
+
+rev=$( "$mydir/get-revision" `dirname $inp` 2>&1 )
+if [ $? -ne 0 ] ; then
+  rev="unknown"
+fi
+
+# generate only when old != rev
+if [ "$out" == "/dev/stdout" -o x"$old" != x"$rev" ] ; then
+  sed -e "s/@PROJECT_REVISION@/$rev/" $inp > $out
+fi
