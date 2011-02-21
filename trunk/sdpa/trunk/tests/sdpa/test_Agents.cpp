@@ -41,8 +41,6 @@
 #include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
 
-//#include <sdpa/daemon/nre/messages.hpp>
-
 #include <boost/filesystem/path.hpp>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
