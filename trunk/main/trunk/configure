@@ -85,6 +85,7 @@ cat >&2 <<EOF
 #       static: $build_static
 #         fuse: $build_fuse
 #          gui: $build_gui
+#     real-gpi: $build_gpi
 #    strip-log: $strip_log
 EOF
 }
@@ -229,7 +230,7 @@ else
 fi
 
 if [ "$build_gpi" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=ON"
+    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=ON -DENABLE_GPI_SPACE=ON"
 else
     cmake_flags="$cmake_flags -DENABLE_REAL_GPI=OFF"
 fi
