@@ -142,7 +142,7 @@ namespace fhg
         // were successful.
         if (!ec && socket_.is_open())
         {
-          LOG(DEBUG, "connected to " << socket_.remote_endpoint());
+          DLOG(DEBUG, "connected to " << socket_.remote_endpoint());
           return;
         }
       }
