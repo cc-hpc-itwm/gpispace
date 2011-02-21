@@ -58,7 +58,10 @@ namespace gpi
         void free ( const gpi::pc::type::process_id_t
                   , const gpi::pc::type::handle_id_t
                   );
-        gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t) const;
+        void list_allocations ( const gpi::pc::type::process_id_t proc_id
+                              , const gpi::pc::type::segment_id_t
+                              , gpi::pc::type::handle::list_t &
+                              ) const;
 
         gpi::pc::type::segment_id_t register_segment ( const gpi::pc::type::process_id_t proc_id
                                                      , std::string const & name

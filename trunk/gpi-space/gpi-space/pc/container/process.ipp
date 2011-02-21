@@ -334,9 +334,11 @@ namespace gpi
 
       template <typename M>
       void
-      process_t<M>::list_allocations(gpi::pc::type::handle::list_t & l, const gpi::pc::type::segment_id_t seg)
+      process_t<M>::list_allocations( const gpi::pc::type::segment_id_t seg
+                                    , gpi::pc::type::handle::list_t & l
+                                    ) const
       {
-        //        m_mgr.list_allocations (m_id, l);
+        m_mgr.list_allocations (m_id, seg, l);
       }
 
       template <typename M>

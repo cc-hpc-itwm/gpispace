@@ -314,7 +314,8 @@ namespace gpi
         }
       }
 
-      void manager_t::collect_info (gpi::pc::type::info::descriptor_t &info) const
+      void
+      manager_t::collect_info (gpi::pc::type::info::descriptor_t &info) const
       {
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
 
@@ -322,6 +323,15 @@ namespace gpi
         info.nodes = gpi_api.number_of_nodes();
         info.queues = gpi_api.number_of_queues();
         info.queue_depth = gpi_api.queue_depth();
+      }
+
+      void
+      manager_t::list_allocations ( const gpi::pc::type::process_id_t proc_id
+                                  , const gpi::pc::type::segment_id_t seg_id
+                                  , gpi::pc::type::handle::list_t & list
+                                  ) const
+      {
+        throw std::runtime_error ("not yet implemented");
       }
     }
   }
