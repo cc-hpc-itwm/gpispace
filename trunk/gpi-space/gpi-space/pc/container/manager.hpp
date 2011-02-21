@@ -4,6 +4,8 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <fhgcom/peer.hpp>
+
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/container/connector.hpp>
 #include <gpi-space/pc/segment/manager.hpp>
@@ -32,11 +34,7 @@ namespace gpi
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
         explicit
-        manager_t (std::string const & p)
-          : m_state (ST_STOPPED)
-          , m_connector (*this, p)
-          , m_process_id (0)
-        {}
+        manager_t (std::string const & p);
 
         ~manager_t ();
 
@@ -100,6 +98,11 @@ namespace gpi
         gpi::pc::type::process_id_t next_process_id ();
         void garbage_collect ();
         void initialize_segment_manager ();
+        void initialize_peer ();
+
+        /*                                                    */
+        /*           M E M B E R    V A R I A B L E S         */
+        /*                                                    */
 
         mutex_type m_mutex;
         mutable mutex_type m_state_mutex;
@@ -114,6 +117,9 @@ namespace gpi
 
         mutable mutex_type m_process_segment_relation_mutex;
         process_segment_relation_t m_process_segment_relation;
+
+        boost::shared_ptr<boost::thread> m_peer_thread;
+        boost::shared_ptr<fhg::com::peer_t> m_peer;
       };
     }
   }

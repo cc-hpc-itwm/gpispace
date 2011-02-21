@@ -2,6 +2,8 @@
 
 #include "manager.hpp"
 
+#include <boost/bind.hpp>
+
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
@@ -11,6 +13,12 @@ namespace gpi
   {
     namespace container
     {
+      manager_t::manager_t (std::string const & p)
+       : m_state (ST_STOPPED)
+       , m_connector (*this, p)
+       , m_process_id (0)
+      {}
+
       manager_t::~manager_t ()
       {
         try
@@ -31,8 +39,8 @@ namespace gpi
         {
           lock_type lock (m_mutex);
           m_connector.start ();
-
           initialize_segment_manager ();
+          initialize_peer ();
         }
         catch (std::exception const & ex)
         {
@@ -55,6 +63,8 @@ namespace gpi
           {
             detach_process (m_processes.begin()->first);
           }
+          m_peer->stop ();
+          m_peer_thread->join();
         }
 
         garbage_collect();
@@ -99,6 +109,25 @@ namespace gpi
                                           , gpi_api.memory_size()
                                           , gpi_api.dma_ptr()
                                           );
+      }
+
+      void manager_t::initialize_peer ()
+      {
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+        m_peer.reset
+          (new fhg::com::peer_t
+             ( "gpi-" + boost::lexical_cast<std::string>(gpi_api.rank())
+             , fhg::com::host_t(boost::asio::ip::host_name())
+             , fhg::com::port_t("0")
+             , "ph-cookie"
+             )
+          );
+        m_peer_thread.reset (new boost::thread(boost::bind( &fhg::com::peer_t::run
+                                                          , m_peer
+                                                          )
+                                              )
+                             );
+        m_peer->start ();
       }
 
       gpi::pc::type::process_id_t manager_t::next_process_id ()
