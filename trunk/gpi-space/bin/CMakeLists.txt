@@ -12,6 +12,7 @@ target_link_libraries (gpi-space
   gpi-space-pc-memory
   gpi-space-static
   ${MMGR_LIBRARY}
+  ${FhgCom_LIBRARY}
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}

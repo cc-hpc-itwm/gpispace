@@ -14,11 +14,12 @@
 #include <iostream>
 #include <fstream>
 
-#include <fhglog/minimal.hpp>
-
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+
+#include <fhglog/minimal.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
 
 #include <gpi-space/version.hpp>
 #include <gpi-space/config/config.hpp>
@@ -89,6 +90,7 @@ static void configure (const gpi_space::config & cfg)
 {
   LOG(INFO, "configuring...");
   gpi_space::logging::configure (cfg.logging);
+  gpi_space::node::configure (cfg.node);
 }
 
 static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
@@ -103,6 +105,10 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
      << " #nodes=" << gpi_api.number_of_nodes()
      << " mem_size=" << gpi_api.memory_size()
      );
+
+  fhg::com::kvs::put ( "gpi.node." + boost::lexical_cast<std::string>(gpi_api.rank()) + ".pid"
+                     , boost::lexical_cast<std::string>(getpid())
+                     );
 
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 

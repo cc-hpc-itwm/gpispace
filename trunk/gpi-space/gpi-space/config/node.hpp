@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <string.h> // memset
 #include <fhg/util/read_bool.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
 #include <gpi-space/config/config-data.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sys/types.h>
@@ -16,17 +17,43 @@ namespace gpi_space
     {
       config ()
         : daemonize (false)
-      {}
+      {
+        snprintf( kvs_url
+                , gpi_space::MAX_HOST_LEN
+                , "%s"
+                , "localhost:2439"
+                );
+      }
 
       template <typename Mapping>
       void load (Mapping const & m)
       {
         daemonize = fhg::util::read_bool
           (m.get("node.daemonize", "false"));
+        std::string default_url ("localhost:2439");
+        {
+          const char *kvs_url_env (getenv("KVS_URL"));
+          if (kvs_url_env)
+          {
+             default_url = getenv("KVS_URL");
+          }
+        }
+        snprintf ( kvs_url
+                 , gpi_space::MAX_HOST_LEN
+                 , "%s"
+                 , m.get("kvs.url", default_url).c_str()
+                 );
       }
 
       bool daemonize;
+      char kvs_url[gpi_space::MAX_HOST_LEN];
     };
+
+    void configure (config const & c)
+    {
+       setenv("KVS_URL", c.kvs_url, true);
+       fhg::com::kvs::global::get_kvs_info().init ();
+    }
   }
 }
 
