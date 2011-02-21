@@ -4,6 +4,7 @@
 #include <gpi-space/types.hpp>
 #include <gpi-space/exception.hpp>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -46,111 +47,101 @@ namespace gpi
     class gpi_api_t : boost::noncopyable
     {
     public:
-      ~gpi_api_t();
+      static const char * REAL_API;
+      static const char * FAKE_API;
 
-      static gpi_api_t & create (int ac, char *av[]);
+      static gpi_api_t & create (std::string const & impl);
       static gpi_api_t & get ();
       static void destroy ();
 
+      virtual ~gpi_api_t();
+
       // wrapped C function calls
-      void start (const gpi::timeout_t timeout);
-      void stop ();
-      void kill ();
-      void shutdown ();
+      virtual void init (int ac, char *av[]) = 0;
+      virtual void start (const gpi::timeout_t timeout) = 0;
+      virtual void stop () = 0;
+      virtual void kill () = 0;
+      virtual void shutdown () = 0;
 
-      gpi::size_t number_of_counters () const;
-      gpi::size_t number_of_queues () const;
-      gpi::size_t queue_depth () const;
-      gpi::version_t version () const;
-      gpi::port_t port () const;
-      gpi::size_t number_of_nodes () const;
-      gpi::size_t memory_size () const;
+      virtual gpi::size_t number_of_counters () const = 0;
+      virtual gpi::size_t number_of_queues () const = 0;
+      virtual gpi::size_t queue_depth () const = 0;
+      virtual gpi::version_t version () const = 0;
+      virtual gpi::port_t port () const = 0;
+      virtual gpi::size_t number_of_nodes () const = 0;
+      virtual gpi::size_t memory_size () const = 0;
 
-      gpi::size_t open_dma_requests (const queue_desc_t) const;
-      bool max_dma_requests_reached (const queue_desc_t) const;
+      virtual gpi::size_t open_dma_requests (const queue_desc_t) const = 0;
+      virtual bool max_dma_requests_reached (const queue_desc_t) const = 0;
 
-      gpi::size_t open_passive_requests () const;
-      bool max_passive_requests_reached () const;
+      virtual gpi::size_t open_passive_requests () const = 0;
+      virtual bool max_passive_requests_reached () const = 0;
 
-      std::string hostname (const gpi::rank_t) const;
-      gpi::rank_t rank () const;
-      gpi::error_vector_t get_error_vector(const queue_desc_t) const;
-      void *dma_ptr (void);
+      virtual std::string hostname (const gpi::rank_t) const = 0;
+      virtual gpi::rank_t rank () const = 0;
+      virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const = 0;
+      virtual void *dma_ptr (void) = 0;
 
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      void set_network_type (const gpi::network_type_t);
-      void set_port (const gpi::port_t);
-      void set_mtu (const gpi::size_t);
-      void set_number_of_processes (const gpi::size_t);
-      void set_memory_size (const gpi::size_t);
+      virtual void set_network_type (const gpi::network_type_t) = 0;
+      virtual void set_port (const gpi::port_t) = 0;
+      virtual void set_mtu (const gpi::size_t) = 0;
+      virtual void set_number_of_processes (const gpi::size_t) = 0;
+      virtual void set_memory_size (const gpi::size_t) = 0;
 
-      bool ping (const gpi::rank_t) const;
-      bool ping (std::string const & hostname) const;
+      virtual bool ping (const gpi::rank_t) const = 0;
+      virtual bool ping (std::string const & hostname) const = 0;
 
-      void check (const gpi::rank_t) const;
-      void check () const;
+      virtual void check (const gpi::rank_t) const = 0;
+      virtual void check () const = 0;
 
-      bool is_master (void) const;
-      bool is_slave (void) const;
+      virtual bool is_master (void) const = 0;
+      virtual bool is_slave (void) const = 0;
 
-      void barrier (void) const;
-      void lock (void) const;
-      void unlock (void) const;
+      virtual void barrier (void) const = 0;
+      virtual void lock (void) const = 0;
+      virtual void unlock (void) const = 0;
 
-      void read_dma ( const offset_t local_offset
+      virtual void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
                     , const size_t amount
                     , const rank_t from_node
                     , const queue_desc_t queue
-                    );
-      void write_dma ( const offset_t local_offset
+                    ) = 0;
+      virtual void write_dma ( const offset_t local_offset
                      , const offset_t remote_offset
                      , const size_t amount
                      , const rank_t to_node
                      , const queue_desc_t queue
-                     );
+                     ) = 0;
 
-      void send_dma ( const offset_t local_offset
+      virtual void send_dma ( const offset_t local_offset
                     , const size_t amount
                     , const rank_t to_node
                     , const queue_desc_t queue
-                    );
-      void recv_dma ( const offset_t local_offset
+                    ) = 0;
+      virtual void recv_dma ( const offset_t local_offset
                     , const size_t size
                     , const rank_t from_node
                     , const queue_desc_t queue
-                    );
+                    ) = 0;
 
-      size_t wait_dma (const queue_desc_t queue);
+      virtual size_t wait_dma (const queue_desc_t queue) = 0;
 
-      void send_passive ( const offset_t local_offset
+      virtual void send_passive ( const offset_t local_offset
                         , const size_t amount
                         , const rank_t to_node
-                        );
-      void recv_passive ( const offset_t local_offset
+                        ) = 0;
+      virtual void recv_passive ( const offset_t local_offset
                         , const size_t amount
                         , rank_t & from_node
-                        );
-      size_t wait_passive ( void );
+                        ) = 0;
+      virtual size_t wait_passive ( void ) = 0;
 
     private:
-      gpi_api_t ();
-
-      void init (int ac, char *av[]);
-
-      static gpi_api_t * instance;
-
-      int startup_timedout_cb (int);
-
-      int   m_ac;
-      char **m_av;
-      bool m_is_master;
-      bool  m_startup_done;
-      mutable rank_t m_rank;
-      mutable size_t m_mem_size;
-      void *m_dma;
+      static boost::shared_ptr<gpi_api_t> instance;
     };
   }
 }

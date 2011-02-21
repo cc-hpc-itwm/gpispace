@@ -1,4 +1,4 @@
-#include "api.hpp"
+#include "real_api.hpp"
 
 #include <csignal> // sigwait
 #include <cstring> // strerror
@@ -20,38 +20,7 @@ namespace gpi
   {
     typedef boost::function<void (int)> signal_handler_t;
 
-    gpi_api_t * gpi_api_t::instance = 0;
-
-    gpi_api_t & gpi_api_t::create (int ac, char *av[])
-    {
-      if (instance == 0)
-      {
-        instance = new gpi_api_t;
-        instance->init (ac, av);
-        return *instance;
-      }
-      else
-      {
-        throw std::runtime_error ("already created!");
-      }
-    }
-
-    gpi_api_t & gpi_api_t::get ()
-    {
-      assert (instance);
-      return *instance;
-    }
-
-    void gpi_api_t::destroy ()
-    {
-      if (instance)
-      {
-        delete instance;
-        instance = 0;
-      }
-    }
-
-    gpi_api_t::gpi_api_t ()
+    real_gpi_api_t::real_gpi_api_t ()
       : m_ac (0)
       , m_av (NULL)
       , m_is_master (true)
@@ -61,7 +30,7 @@ namespace gpi
       , m_dma (0)
     { }
 
-    gpi_api_t::~gpi_api_t ()
+    real_gpi_api_t::~real_gpi_api_t ()
     {
       try
       {
@@ -69,32 +38,34 @@ namespace gpi
       }
       catch (std::exception const & ex)
       {
-        LOG(WARN, "could not stop gpi_api_t on rank " << rank());
+        LOG(WARN, "could not stop real_gpi_api_t on rank " << rank());
       }
     }
 
-    void gpi_api_t::init (int ac, char *av[])
+    void real_gpi_api_t::init (int ac, char *av[])
     {
       m_ac = ac;
       m_av = av;
       m_is_master = isMasterProcGPI(m_ac, m_av);
     }
 
-    void gpi_api_t::set_memory_size (const gpi::size_t sz)
+    void real_gpi_api_t::set_memory_size (const gpi::size_t sz)
     {
       m_mem_size = sz;
     }
 
     // wrapped C function calls
-    void gpi_api_t::start (const gpi::timeout_t timeout)
+    void real_gpi_api_t::start (const gpi::timeout_t timeout)
     {
       assert (! m_startup_done);
+
+      int rc (0);
 
       // 1. register alarm signal handler
       gpi::signal::handler_t::scoped_connection_t
         conn (gpi::signal::handler().connect
              ( SIGALRM
-             , boost::bind ( &gpi_api_t::startup_timedout_cb
+             , boost::bind ( &real_gpi_api_t::startup_timedout_cb
                            , this
                            , _1
                            )
@@ -102,8 +73,16 @@ namespace gpi
              );
 
       if (timeout) alarm (timeout);
-      startGPI (m_ac, m_av, "", m_mem_size);
+      rc = startGPI (m_ac, m_av, "", m_mem_size);
       if (timeout) alarm (0);
+
+      if (rc != 0)
+      {
+        throw gpi::exception::gpi_error
+          ( gpi::error::startup_failed()
+          , "startGPI() failed"
+          );
+      }
 
       m_rank = getRankGPI();
       m_dma  = getDmaMemPtrGPI();
@@ -114,7 +93,7 @@ namespace gpi
       m_startup_done = true;
     }
 
-    void gpi_api_t::stop ()
+    void real_gpi_api_t::stop ()
     {
       if (m_startup_done)
       {
@@ -123,7 +102,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::kill ()
+    void real_gpi_api_t::kill ()
     {
       if (is_master())
       {
@@ -142,7 +121,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::shutdown ()
+    void real_gpi_api_t::shutdown ()
     {
       if (m_startup_done)
       {
@@ -158,42 +137,42 @@ namespace gpi
       }
     }
 
-    gpi::size_t gpi_api_t::number_of_queues () const
+    gpi::size_t real_gpi_api_t::number_of_queues () const
     {
       return getNumberOfQueuesGPI();
     }
 
-    gpi::size_t gpi_api_t::queue_depth () const
+    gpi::size_t real_gpi_api_t::queue_depth () const
     {
       return getQueueDepthGPI();
     }
 
-    gpi::size_t gpi_api_t::number_of_counters () const
+    gpi::size_t real_gpi_api_t::number_of_counters () const
     {
       return getNumberOfCountersGPI();
     }
 
-    gpi::version_t gpi_api_t::version () const
+    gpi::version_t real_gpi_api_t::version () const
     {
       return getVersionGPI();
     }
 
-    gpi::port_t gpi_api_t::port () const
+    gpi::port_t real_gpi_api_t::port () const
     {
       return getPortGPI();
     }
 
-    gpi::size_t gpi_api_t::number_of_nodes () const
+    gpi::size_t real_gpi_api_t::number_of_nodes () const
     {
       return getNodeCountGPI();
     }
 
-    gpi::size_t gpi_api_t::memory_size () const
+    gpi::size_t real_gpi_api_t::memory_size () const
     {
       return m_mem_size;
     }
 
-    gpi::size_t gpi_api_t::open_dma_requests (const queue_desc_t q) const
+    gpi::size_t real_gpi_api_t::open_dma_requests (const queue_desc_t q) const
     {
       assert (m_startup_done);
       int rc (openDMARequestsGPI (q));
@@ -204,13 +183,13 @@ namespace gpi
       return gpi::size_t (rc);
     }
 
-    bool gpi_api_t::max_dma_requests_reached (const queue_desc_t q) const
+    bool real_gpi_api_t::max_dma_requests_reached (const queue_desc_t q) const
     {
       assert (m_startup_done);
       return (open_dma_requests(q) >= queue_depth());
     }
 
-    gpi::size_t gpi_api_t::open_passive_requests () const
+    gpi::size_t real_gpi_api_t::open_passive_requests () const
     {
       assert (m_startup_done);
       int rc (openDMAPassiveRequestsGPI ());
@@ -221,25 +200,25 @@ namespace gpi
       return gpi::size_t (rc);
     }
 
-    bool gpi_api_t::max_passive_requests_reached (void) const
+    bool real_gpi_api_t::max_passive_requests_reached (void) const
     {
       assert (m_startup_done);
       return (open_passive_requests() >= queue_depth());
     }
 
-    std::string gpi_api_t::hostname (const gpi::rank_t r) const
+    std::string real_gpi_api_t::hostname (const gpi::rank_t r) const
     {
       // TODO: ap: cache the hostnames locally
       return getHostnameGPI (r);
     }
 
-    gpi::rank_t gpi_api_t::rank () const
+    gpi::rank_t real_gpi_api_t::rank () const
     {
       assert (m_startup_done);
       return m_rank;
     }
 
-    gpi::error_vector_t gpi_api_t::get_error_vector (const gpi::queue_desc_t q) const
+    gpi::error_vector_t real_gpi_api_t::get_error_vector (const gpi::queue_desc_t q) const
     {
       assert (m_startup_done);
       unsigned char *gpi_err_vec (getErrorVectorGPI(q));
@@ -257,48 +236,48 @@ namespace gpi
       return v;
     }
 
-    void * gpi_api_t::dma_ptr (void)
+    void * real_gpi_api_t::dma_ptr (void)
     {
       assert (m_startup_done);
       return m_dma;
     }
 
-    void gpi_api_t::set_network_type (const gpi::network_type_t n)
+    void real_gpi_api_t::set_network_type (const gpi::network_type_t n)
     {
       int rc (setNetworkGPI (GPI_NETWORK_TYPE(n)));
       if (rc != 0)
         throw gpi::exception::gpi_error(gpi::error::set_network_type_failed());
     }
 
-    void gpi_api_t::set_port (const gpi::port_t p)
+    void real_gpi_api_t::set_port (const gpi::port_t p)
     {
       int rc (setPortGPI (p));
       if (rc != 0)
         throw gpi::exception::gpi_error(gpi::error::set_port_failed());
     }
 
-    void gpi_api_t::set_mtu (const gpi::size_t mtu)
+    void real_gpi_api_t::set_mtu (const gpi::size_t mtu)
     {
       int rc (setMtuSizeGPI (mtu));
       if (rc != 0)
         throw gpi::exception::gpi_error(gpi::error::set_mtu_failed());
     }
 
-    void gpi_api_t::set_number_of_processes (const gpi::size_t n)
+    void real_gpi_api_t::set_number_of_processes (const gpi::size_t n)
     {
       setNpGPI (n);
     }
 
-    bool gpi_api_t::ping (const gpi::rank_t rank) const
+    bool real_gpi_api_t::ping (const gpi::rank_t rank) const
     {
       return ping (hostname (rank));
     }
-    bool gpi_api_t::ping (std::string const & hostname) const
+    bool real_gpi_api_t::ping (std::string const & hostname) const
     {
       return (pingDaemonGPI(hostname.c_str()) == 0);
     }
 
-    void gpi_api_t::check (const gpi::rank_t node) const
+    void real_gpi_api_t::check (const gpi::rank_t node) const
     {
       if (! is_master())
       {
@@ -364,7 +343,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::check (void) const
+    void real_gpi_api_t::check (void) const
     {
       if (!is_master())
       {
@@ -382,22 +361,22 @@ namespace gpi
       LOG(INFO, "GPI check successful.");
     }
 
-    bool gpi_api_t::is_master (void) const
+    bool real_gpi_api_t::is_master (void) const
     {
       return m_is_master;
     }
-    bool gpi_api_t::is_slave (void) const
+    bool real_gpi_api_t::is_slave (void) const
     {
       return !is_master();
     }
 
-    void gpi_api_t::barrier (void) const
+    void real_gpi_api_t::barrier (void) const
     {
       assert (m_startup_done);
       barrierGPI();
     }
 
-    void gpi_api_t::lock (void) const
+    void real_gpi_api_t::lock (void) const
     {
       assert (m_startup_done);
       int rc (globalResourceLockGPI());
@@ -408,7 +387,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::unlock (void) const
+    void real_gpi_api_t::unlock (void) const
     {
       assert (m_startup_done);
       int rc (globalResourceUnlockGPI());
@@ -419,7 +398,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::read_dma ( const offset_t local_offset
+    void real_gpi_api_t::read_dma ( const offset_t local_offset
                              , const offset_t remote_offset
                              , const size_t amount
                              , const rank_t from_node
@@ -449,7 +428,7 @@ namespace gpi
           );
       }
     }
-    void gpi_api_t::write_dma ( const offset_t local_offset
+    void real_gpi_api_t::write_dma ( const offset_t local_offset
                               , const offset_t remote_offset
                               , const size_t amount
                               , const rank_t to_node
@@ -480,7 +459,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::send_dma ( const offset_t local_offset
+    void real_gpi_api_t::send_dma ( const offset_t local_offset
                              , const size_t amount
                              , const rank_t to_node
                              , const queue_desc_t queue
@@ -508,7 +487,7 @@ namespace gpi
           );
       }
     }
-    void gpi_api_t::recv_dma ( const offset_t local_offset
+    void real_gpi_api_t::recv_dma ( const offset_t local_offset
                              , const size_t amount
                              , const rank_t from_node
                              , const queue_desc_t queue
@@ -537,7 +516,7 @@ namespace gpi
       }
     }
 
-    size_t gpi_api_t::wait_dma (const queue_desc_t queue)
+    size_t real_gpi_api_t::wait_dma (const queue_desc_t queue)
     {
       assert (m_startup_done);
       int rc
@@ -560,7 +539,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::send_passive ( const offset_t local_offset
+    void real_gpi_api_t::send_passive ( const offset_t local_offset
                                  , const size_t amount
                                  , const rank_t to_node
                                  )
@@ -586,7 +565,7 @@ namespace gpi
       }
     }
 
-    void gpi_api_t::recv_passive ( const offset_t local_offset
+    void real_gpi_api_t::recv_passive ( const offset_t local_offset
                                  , const size_t amount
                                  , rank_t & from_node
                                  )
@@ -615,7 +594,7 @@ namespace gpi
       }
     }
 
-    size_t gpi_api_t::wait_passive ( void )
+    size_t real_gpi_api_t::wait_passive ( void )
     {
       assert (m_startup_done);
       int rc(waitDmaPassiveGPI());
@@ -628,7 +607,7 @@ namespace gpi
     }
 
     // private functions
-    int gpi_api_t::startup_timedout_cb (int)
+    int real_gpi_api_t::startup_timedout_cb (int)
     {
       m_startup_done = false;
       // currently there is no other way than to exit :-(

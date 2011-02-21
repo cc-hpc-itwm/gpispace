@@ -41,6 +41,7 @@ int main ()
 }"
 REAL_GPI_CHECK)
   if("${REAL_GPI_CHECK}" EQUAL 1)
+    add_definitions(-DENABLE_REAL_GPI=1)
   else("${REAL_GPI_CHECK}" EQUAL 1)
     message(WARNING "Support for real-GPI requested but not available on your platform!")
     set(ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)

@@ -223,7 +223,8 @@ int main (int ac, char *av[])
   gpi_space::config config;
 
   // initialize gpi api
-  gpi_api_t & gpi_api (gpi_api_t::create (ac, av));
+  gpi_api_t & gpi_api (gpi_api_t::create (gpi_api_t::REAL_API));
+  gpi_api.init (ac, av);
 
   if (gpi_api.is_master ())
   {
@@ -315,7 +316,17 @@ int main (int ac, char *av[])
   }
 
   gpi_api.set_memory_size (config.gpi.memory_size);
-  gpi_api.start (config.gpi.timeout_in_sec);
+
+  try
+  {
+    gpi_api.start (config.gpi.timeout_in_sec);
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(ERROR, "GPI could not be started: " << ex.what());
+    return EXIT_FAILURE;
+  }
+
   LOG(INFO, "GPISpace version: " << gpi::version_string());
   LOG(INFO, "GPIApi version: " << gpi_api.version());
 
