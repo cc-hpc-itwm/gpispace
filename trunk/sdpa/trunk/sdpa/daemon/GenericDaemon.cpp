@@ -658,7 +658,9 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 	try {
 		// One should parse the workflow in order to be able to create a valid job
 		// if the event comes from Gwes parent_id is the owner_workflow_id
-		Job::ptr_t pJob( new JobFSM( job_id, e.description(), this, e.parent_id() ));
+		JobFSM* ptrFSM = new JobFSM( job_id, e.description(), this, e.parent_id() );
+		ptrFSM->start_fsm();
+		Job::ptr_t pJob( ptrFSM );
 
 		// the job job_id is in the Pending state now!
 		ptr_job_man_->addJob(job_id, pJob);
@@ -1290,3 +1292,7 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 	throw  std::exception() ;
 }
 
+void GenericDaemon::start_fsm()
+{
+	// to be overriden in DaemonFSM
+}

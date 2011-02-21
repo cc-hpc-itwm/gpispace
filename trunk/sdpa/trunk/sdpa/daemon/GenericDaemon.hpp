@@ -66,7 +66,11 @@ namespace sdpa { namespace daemon {
 	  GenericDaemon( const std::string name = "orchestrator_0", IWorkflowEngine* pArgSdpa2Gwes = NULL );
 	  virtual ~GenericDaemon();
 
+	  SDPA_DECLARE_LOGGER();
+
 	  // API
+
+	  virtual void start_fsm();
 	  void start_agent(); // no recovery
 	  void start_agent( const bfs::path& backup_path ); // from cfg file!
 	  void start_agent( std::istream& is );
@@ -261,8 +265,6 @@ namespace sdpa { namespace daemon {
 		 std::cerr << "activity executing: id := " << id << std::endl;
 		 l->print_statistics( std::cerr );
 	 }
-
-	  SDPA_DECLARE_LOGGER();
 
 	  // obsolete
 	  GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, IWorkflowEngine* );
