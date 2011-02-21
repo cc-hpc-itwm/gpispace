@@ -18,6 +18,7 @@
 #include <gpi-space/signal_handler.hpp>
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
+#include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
 #include <gpi-space/shell/shell.hpp>
@@ -761,14 +762,14 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
 
   gpi::pc::type::handle_id_t handle
     (sh.state().capi.alloc (seg_id, size, desc, flags));
-  if (gpi::pc::type::handle::traits::is_null (handle))
+  if (gpi::pc::type::handle::is_null (handle))
   {
     std::cout << "nil" << std::endl;
     return 1;
   }
   else
   {
-    std::cout << handle << std::endl;
+    std::cout << gpi::pc::type::handle_t(handle) << std::endl;
     return 0;
   }
 }

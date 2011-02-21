@@ -32,13 +32,10 @@ namespace gpi
             F_GLOBAL     = 0x20,
           };
 
-        struct traits
+        inline bool is_null (const gpi::pc::type::handle_id_t i)
         {
-          static bool is_null (const gpi::pc::type::handle_id_t i)
-          {
-            return 0 == i;
-          }
-        };
+          return 0 == i;
+        }
 
         struct descriptor_t
         {
