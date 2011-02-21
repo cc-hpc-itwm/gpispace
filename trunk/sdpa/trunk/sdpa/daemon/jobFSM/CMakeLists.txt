@@ -11,3 +11,10 @@ endif (USE_BOOST_SC)
 if (USE_BOOST_MSM)
  add_subdirectory(BMSM)
 endif (USE_BOOST_MSM)
+
+set (hdrs JobFSM.hpp)
+
+install(DIRECTORY . DESTINATION include/sdpa/daemon/jobFSM
+  COMPONENT headers
+  FILES_MATCHING PATTERN "*.hpp"
+)
