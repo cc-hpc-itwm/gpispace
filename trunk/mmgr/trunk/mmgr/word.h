@@ -10,13 +10,13 @@ extern "C"
 {
 #endif
 
-  typedef uint64_t Word_t, *PWord_t;
+  typedef unsigned long Word_t, *PWord_t;
+  typedef unsigned long Size_t, *PSize_t;
 
-  typedef Word_t Offset_t, *POffset_t;
-  typedef Word_t Size_t, *PSize_t;
+  typedef Size_t Offset_t, *POffset_t;
   typedef Word_t Key_t, *PKey_t;
   typedef Word_t Value_t, *PValue_t;
-  typedef Word_t Handle_t, *PHandle_t;
+  typedef Size_t Handle_t, *PHandle_t;
 
 #define FMT_Word_t "%lu"
 #define FMT_Offset_t "%lu"
