@@ -53,7 +53,7 @@ if [ -r "CMakeCache.txt" ] ; then
     get_cmake_cache_entry BUILD_STATIC_BINARIES build_static
 
     get_cmake_cache_entry ENABLE_APPLICATION build_apps
-    get_cmake_cache_entry ENABLE_GPI_SPACE build_gpi
+    get_cmake_cache_entry ENABLE_REAL_GPI build_gpi
     get_cmake_cache_entry ENABLE_FUSE build_fuse
     get_cmake_cache_entry ENABLE_MONITOR_GUI build_gui
 
@@ -229,9 +229,9 @@ else
 fi
 
 if [ "$build_gpi" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_GPI_SPACE=ON"
+    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=ON"
 else
-    cmake_flags="$cmake_flags -DENABLE_GPI_SPACE=OFF"
+    cmake_flags="$cmake_flags -DENABLE_REAL_GPI=OFF"
 fi
 
 if [ "$build_fuse" == "true" ] ; then
