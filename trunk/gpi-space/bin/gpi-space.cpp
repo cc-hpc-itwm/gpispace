@@ -98,6 +98,11 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
   gpi_api_t & gpi_api (gpi_api_t::get());
 
+  const std::string kvs_prefix
+      ( "gpi.node."
+      + boost::lexical_cast<std::string>(gpi_api.rank())
+      );
+
   LOG( TRACE
      ,  "rank=" << gpi_api.rank()
      << " dma=" << gpi_api.dma_ptr()
@@ -105,9 +110,10 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
      << " mem_size=" << gpi_api.memory_size()
      );
 
-  fhg::com::kvs::put ( "gpi.node." + boost::lexical_cast<std::string>(gpi_api.rank()) + ".pid"
-                     , boost::lexical_cast<std::string>(getpid())
-                     );
+  fhg::com::kvs::scoped_entry_t kvs_pid
+    ( kvs_prefix + ".pid"
+    , boost::lexical_cast<std::string>(getpid())
+    );
 
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
