@@ -85,9 +85,20 @@ namespace gpi
         }
         else
         {
-          gpi::pc::type::size_t count
-            (m_counter[seg_id & 0x3]->inc());
-          return detail::encode (m_node_identifier, seg_id, count);
+          if (! seg_id)
+          {
+            throw std::invalid_argument("no counter for invalid segment: 0");
+          }
+
+          gpi::pc::type::size_t counter_idx (seg_id);
+          if (seg_id >= gpi::pc::type::segment::SEG_SHARED)
+          {
+            counter_idx = gpi::pc::type::segment::SEG_SHARED;
+          }
+          return detail::encode ( m_node_identifier
+                                , seg_id
+                                , m_counter[counter_idx]->inc()
+                                );
         }
       }
     }

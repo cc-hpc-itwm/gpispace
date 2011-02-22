@@ -32,6 +32,7 @@ namespace gpi
               gpi::pc::type::handle_id_t handle
                 ( m_proc.alloc ( alloc.segment
                                , alloc.size
+                               , alloc.name
                                , alloc.flags
                                )
                 );

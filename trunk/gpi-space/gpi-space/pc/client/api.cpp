@@ -247,7 +247,7 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::alloc_reply_t alloc_rpl (boost::get<proto::memory::alloc_reply_t>(mem_msg));
-          LOG(INFO, "allocation successful: " << alloc_rpl.handle);
+          LOG(INFO, "allocation successful: " << gpi::pc::type::handle_t(alloc_rpl.handle));
           return alloc_rpl.handle;
         }
         catch (boost::bad_get const & ex)

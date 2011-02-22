@@ -281,10 +281,11 @@ namespace gpi
       gpi::pc::type::handle_id_t
       process_t<M>::alloc ( const gpi::pc::type::segment_id_t seg
                           , const gpi::pc::type::size_t size
+                          , const std::string & name
                           , const gpi::pc::type::flags_t flags
                           )
       {
-        return m_mgr.alloc (m_id, seg, size, flags);
+        return m_mgr.alloc (m_id, seg, size, name, flags);
       }
 
       template <typename M>

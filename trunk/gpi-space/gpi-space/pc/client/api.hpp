@@ -46,7 +46,8 @@ namespace gpi
                                 , const type::flags_t = gpi::pc::type::handle::F_NONE
                                 );
         void free (const type::handle_id_t);
-        gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg = gpi::pc::type::segment::SEG_INVAL);
+        gpi::pc::type::handle::list_t
+        list_allocations (const gpi::pc::type::segment_id_t seg = gpi::pc::type::segment::SEG_INVAL);
 
         gpi::pc::type::queue_id_t
         memcpy ( gpi::pc::type::memory_location_t const & dst

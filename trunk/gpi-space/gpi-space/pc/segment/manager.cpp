@@ -39,6 +39,13 @@ namespace gpi
         }
       }
 
+      manager_t::segment_ptr
+      manager_t::get_segment (const gpi::pc::type::segment_id_t seg_id)
+      {
+        lock_type lock (m_mutex);
+        return m_segments.at (seg_id);
+      }
+
       void manager_t::add_special_segment ( std::string const & name
                                           , const gpi::pc::type::segment_id_t id
                                           , const gpi::pc::type::size_t size
@@ -50,9 +57,11 @@ namespace gpi
                        , gpi::pc::type::segment::F_SPECIAL | gpi::pc::type::segment::F_NOUNLINK
                        );
         desc.id = id;
-        desc.size = size;
-        desc.name = name;
         desc.creator = 0;
+        desc.name = name;
+        desc.size = size;
+        desc.avail = size;
+        desc.allocs = 0;
         desc.nref = 0;
 
         segment_ptr seg (new gpi::pc::segment::segment_t (desc, ptr));
@@ -66,6 +75,8 @@ namespace gpi
           m_segment_id = id + 1;
 
         LOG(TRACE, "special memory segment registered: " << seg->name() << " (" << seg->id() << ") size " << seg->size() << " @" << seg->ptr());
+
+        segment_added (id);
       }
 
       gpi::pc::type::segment_id_t
@@ -105,6 +116,7 @@ namespace gpi
 
           LOG(TRACE, "shared memory segment registered: " << seg->name() << " (" << seg->id() << ") size " << seg->size() << " @" << seg->ptr());
 
+          segment_added (seg->id());
           return seg->id ();
         }
         catch (std::exception const & ex)
@@ -138,6 +150,8 @@ namespace gpi
         m_segments.erase (seg_id);
 
         LOG(TRACE, "memory segment unregistered: " << seg->name() << " (" << seg_id << ")");
+
+        segment_removed (seg_id);
       }
 
       void manager_t::get_listing (gpi::pc::type::segment::list_t & l) const

@@ -29,7 +29,8 @@ namespace gpi
 
         void clear ();
 
-        gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::size_t size
+        gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::process_id_t proc_id
+                                         , const gpi::pc::type::size_t size
                                          , const std::string & name
                                          , const gpi::pc::type::flags_t flags = gpi::pc::type::handle::F_NONE
                                          );

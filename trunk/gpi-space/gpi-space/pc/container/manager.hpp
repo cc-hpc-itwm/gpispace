@@ -9,6 +9,7 @@
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/container/connector.hpp>
 #include <gpi-space/pc/segment/manager.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
 
 namespace gpi
 {
@@ -30,6 +31,7 @@ namespace gpi
       public:
         typedef manager_t self;
         typedef gpi::pc::segment::manager_t segment_manager_type;
+        typedef gpi::pc::memory::manager_t memory_manager_type;
         typedef gpi::pc::container::process_t<manager_t> process_type;
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
@@ -51,6 +53,7 @@ namespace gpi
         gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::process_id_t proc_id
                                          , const gpi::pc::type::segment_id_t
                                          , const gpi::pc::type::size_t
+                                         , const std::string & name
                                          , const gpi::pc::type::flags_t
                                          );
         void free ( const gpi::pc::type::process_id_t
@@ -121,6 +124,7 @@ namespace gpi
         process_list_t m_detached_processes;
 
         segment_manager_type m_segment_mgr;
+        memory_manager_type m_memory_mgr;
 
         mutable mutex_type m_process_segment_relation_mutex;
         process_segment_relation_t m_process_segment_relation;

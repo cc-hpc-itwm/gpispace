@@ -88,6 +88,11 @@ namespace gpi
             , flags (0)
           {}
 
+          bool operator< (const descriptor_t & other) const
+          {
+            return id < other.id;
+          }
+
         private:
           friend class boost::serialization::access;
           template<typename Archive>
@@ -98,6 +103,7 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( name );
             ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP( avail );
+            ar & BOOST_SERIALIZATION_NVP( allocs );
             ar & BOOST_SERIALIZATION_NVP( nref );
             ar & BOOST_SERIALIZATION_NVP( flags );
             ar & BOOST_SERIALIZATION_NVP( ts );
@@ -107,10 +113,10 @@ namespace gpi
         typedef std::vector<descriptor_t> list_t;
 
         // just for ostream hacking
-        struct segment_list_header {};
+        struct ostream_header {};
 
         inline
-        std::ostream & operator << (std::ostream & os, const segment_list_header &)
+        std::ostream & operator << (std::ostream & os, const ostream_header &)
         {
           std::ios_base::fmtflags saved_flags (os.flags());
           char saved_fill = os.fill (' ');
@@ -137,6 +143,11 @@ namespace gpi
           // FLAGS
           os.width (sizeof(gpi::pc::type::flags_t)*2 + 2);
           os << "FLAGS";
+          os << " ";
+
+          // AVAIL
+          os.width (12);
+          os << "AVAIL";
           os << " ";
 
           // SIZE
@@ -210,6 +221,12 @@ namespace gpi
           os.fill (' ');
           os << " ";
 
+          // AVAIL
+          os.flags (std::ios::right | std::ios::dec);
+          os.width (12);
+          os << d.avail;
+          os << " ";
+
           // SIZE
           os.flags (std::ios::right | std::ios::dec);
           os.width (12);
@@ -245,8 +262,6 @@ namespace gpi
         inline
         std::ostream & operator<< (std::ostream & os, const list_t & list)
         {
-          os << segment_list_header() << std::endl;
-
           for ( list_t::const_iterator it (list.begin())
               ; it != list.end()
               ; ++it

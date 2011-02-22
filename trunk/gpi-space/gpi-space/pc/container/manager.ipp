@@ -17,7 +17,23 @@ namespace gpi
        : m_state (ST_STOPPED)
        , m_connector (*this, p)
        , m_process_id (0)
-      {}
+       , m_memory_mgr ( gpi::api::gpi_api_t::get().rank()
+                      , m_segment_mgr
+                      )
+      {
+        m_segment_mgr.segment_added.connect
+            (boost::bind ( &gpi::pc::memory::manager_t::add_area_for_segment
+                         , &m_memory_mgr
+                         , _1
+                         )
+            );
+        m_segment_mgr.segment_removed.connect
+            (boost::bind ( &gpi::pc::memory::manager_t::del_area_for_segment
+                         , &m_memory_mgr
+                         , _1
+                         )
+            );
+      }
 
       manager_t::~manager_t ()
       {
@@ -65,6 +81,8 @@ namespace gpi
           }
           m_peer->stop ();
           m_peer_thread->join();
+
+          m_segment_mgr.clear();
         }
 
         garbage_collect();
@@ -104,11 +122,18 @@ namespace gpi
                                           , gpi_api.memory_size()
                                           , gpi_api.dma_ptr()
                                           );
+
         m_segment_mgr.add_special_segment ( "local"
                                           , gpi::pc::type::segment::SEG_LOCAL
                                           , gpi_api.memory_size()
                                           , gpi_api.dma_ptr()
                                           );
+        /*
+        m_memory_mgr.add_area_for_segment
+            (m_segment_mgr[gpi::pc::type::segment::SEG_GLOBAL]);
+        m_memory_mgr.add_area_for_segment
+            (m_segment_mgr[gpi::pc::type::segment::SEG_LOCAL]);
+        */
       }
 
       void manager_t::initialize_peer ()
@@ -336,10 +361,15 @@ namespace gpi
                                                   , const gpi::pc::type::segment_id_t seg_id
                                                   )
       {
-        lock_type lock (m_process_segment_relation_mutex);
-        if (m_process_segment_relation.at (proc_id).erase (seg_id))
         {
-          m_segment_mgr.decrement_refcount (seg_id);
+          lock_type lock (m_process_segment_relation_mutex);
+          if (m_process_segment_relation.at (proc_id).erase (seg_id))
+          {
+            m_segment_mgr.decrement_refcount (seg_id);
+          }
+        }
+        {
+          m_memory_mgr.garbage_collect (proc_id);
         }
       }
 
@@ -356,20 +386,23 @@ namespace gpi
 
       gpi::pc::type::handle_id_t
       manager_t::alloc ( const gpi::pc::type::process_id_t proc_id
-                       , const gpi::pc::type::segment_id_t
-                       , const gpi::pc::type::size_t
-                       , const gpi::pc::type::flags_t
+                       , const gpi::pc::type::segment_id_t seg_id
+                       , const gpi::pc::type::size_t size
+                       , const std::string & name
+                       , const gpi::pc::type::flags_t flags
                        )
       {
-        throw std::runtime_error ("not yet implemented");
+//        check_permissions (permission::alloc_t (proc_id, seg_id));
+        return m_memory_mgr.alloc (proc_id, seg_id , size , name , flags);
       }
 
       void
-      manager_t::free ( const gpi::pc::type::process_id_t
-                      , const gpi::pc::type::handle_id_t
+      manager_t::free ( const gpi::pc::type::process_id_t proc_id
+                      , const gpi::pc::type::handle_id_t hdl
                       )
       {
-        throw std::runtime_error ("not yet implemented");
+//        check_permissions (permission::free_t (proc_id, hdl));
+        m_memory_mgr.free (hdl);
       }
 
       void
@@ -378,7 +411,11 @@ namespace gpi
                                   , gpi::pc::type::handle::list_t & list
                                   ) const
       {
-        throw std::runtime_error ("not yet implemented");
+//        check_permissions (permission::list_allocations_t (proc_id, seg_id));
+        if (seg_id == gpi::pc::type::segment::SEG_INVAL)
+          m_memory_mgr.list_allocations(list);
+        else
+          m_memory_mgr.list_allocations (seg_id, list);
       }
 
       gpi::pc::type::queue_id_t
@@ -390,6 +427,8 @@ namespace gpi
       {
         gpi::pc::type::validate (dst.handle);
         gpi::pc::type::validate (src.handle);
+//        check_permissions (permission::memcpy_t (proc_id, dst, src));
+//        check_boundaries  (dst, src, amount);
 
         LOG( TRACE
            , "initiating memcpy: " << dst << " <-- " << src

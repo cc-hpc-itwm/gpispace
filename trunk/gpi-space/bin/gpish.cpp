@@ -4,6 +4,7 @@
 #include <readline/history.h>
 
 #include <string>
+#include <algorithm>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -546,7 +547,7 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
 
   try
   {
-    int mode = 3; // list only attached
+    int mode = 0; // list all
     if (! av.empty())
     {
       if (av[0] == "all")
@@ -559,7 +560,7 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
         mode = 3;
       else
       {
-        std::cerr << "usage: list [all | special | shared | attached]" << std::endl;
+        std::cerr << "usage: list [all(*) | special | shared | attached]" << std::endl;
         return 1;
       }
     }
@@ -567,7 +568,9 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
     gpi::pc::type::segment::list_t segments
       (sh.state().capi.list_segments());
 
-    std::cout << gpi::pc::type::segment::segment_list_header () << std::endl;
+    std::sort (segments.begin(), segments.end());
+
+    std::cout << gpi::pc::type::segment::ostream_header () << std::endl;
     BOOST_FOREACH (const gpi::pc::type::segment::descriptor_t & desc, segments)
     {
       switch (mode)
@@ -737,7 +740,7 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
   gpi::pc::type::segment_id_t seg_id (0);
   gpi::pc::type::size_t size (0);
   std::string desc;
-  gpi::pc::type::flags_t flags;
+  gpi::pc::type::flags_t flags (gpi::pc::type::handle::F_GLOBAL);
 
   if (av[0] == "global")
     seg_id = gpi::pc::type::segment::SEG_GLOBAL;
@@ -756,9 +759,9 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
     desc = "na";
 
   if (av.size() > 3)
-    flags = gpi::pc::type::handle::F_NONE; // flags parsing not yet implemented (there are no flags)
-  else
-    flags = gpi::pc::type::handle::F_NONE;
+  {
+    std::cerr << "flags parsing not yet implemented" << std::endl;
+  }
 
   gpi::pc::type::handle_id_t handle
     (sh.state().capi.alloc (seg_id, size, desc, flags));
@@ -790,7 +793,7 @@ int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh)
   {
     try
     {
-      sh.state().capi.free (boost::lexical_cast<gpi::pc::type::handle_id_t>(*arg));
+      sh.state().capi.free (boost::lexical_cast<gpi::pc::type::handle_t>(*arg));
     }
     catch (std::exception const & ex)
     {
@@ -835,22 +838,44 @@ int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
 {
+  // TODO: add sort criteria (created, accessed, name, size, etc.)
+
   if (!sh.state().capi.is_connected ())
   {
     std::cerr << "not connected to gpi!" << std::endl;
     return 1;
   }
 
-  try
+  if (av.empty())
   {
-    std::cout << sh.state().capi.list_allocations();
-    return 0;
+    std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
+    gpi::pc::type::handle::list_t handles (sh.state().capi.list_allocations());
+    std::sort (handles.begin(), handles.end());
+    std::cout << handles;
   }
-  catch (std::exception const & ex)
+  else
   {
-    std::cerr << "failed: " << ex.what () << std::endl;
-    return 1;
+    std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
+    for ( shell_t::argv_t::const_iterator arg(av.begin())
+        ; arg != av.end()
+        ; ++arg
+        )
+    {
+      try
+      {
+        gpi::pc::type::handle::list_t handles
+          (sh.state().capi.list_allocations
+            (boost::lexical_cast<gpi::pc::type::segment_id_t>(*arg)));
+        std::sort (handles.begin(), handles.end());
+        std::cout << handles;
+      }
+      catch (std::exception const & ex)
+      {
+        std::cerr << "# failed: " << ex.what () << std::endl;
+      }
+    }
   }
+  return 0;
 }
 
 std::string const & version ()

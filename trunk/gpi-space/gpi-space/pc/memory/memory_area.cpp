@@ -19,8 +19,6 @@ namespace gpi
         : m_segment (segment)
         , m_mmgr (NULL)
       {
-        assert (m_segment->size() > 0);
-
         dtmmgr_init (&m_mmgr, m_segment->size(), 1);
       }
 
@@ -57,18 +55,27 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::handle_id_t area_t::alloc ( const gpi::pc::type::size_t size
+      gpi::pc::type::handle_id_t area_t::alloc ( const gpi::pc::type::process_id_t proc_id
+                                               , const gpi::pc::type::size_t size
                                                , const std::string & name
                                                , const gpi::pc::type::flags_t flags
                                                )
       {
         lock_type lock (m_mutex);
 
+        // avoid generation of handle if alloc would definitely fail
+        if (m_segment->descriptor().avail < size)
+        {
+          LOG(ERROR, "not enough memory: requested_size = " << size << " segment = " << m_segment->id() << " avail = " << m_segment->descriptor().avail);
+          throw std::runtime_error ("out of memory");
+        }
+
         gpi::pc::type::handle::descriptor_t desc;
         desc.id = handle_generator_t::get().next (m_segment->id());
         desc.segment = m_segment->id();
         desc.size = size;
         desc.name = name;
+        desc.creator = proc_id;
         desc.flags = flags;
 
         Arena_t arena;
@@ -92,8 +99,8 @@ namespace gpi
         {
         case ALLOC_SUCCESS:
           {
-            Offset_t offset;
-            dtmmgr_offset_size ( &m_mmgr
+            Offset_t offset (0);
+            dtmmgr_offset_size ( m_mmgr
                                , desc.id
                                , arena
                                , &offset
