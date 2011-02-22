@@ -83,6 +83,7 @@ static int cmd_close (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_ping (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_info (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_list (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_socket (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_status (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_gc (shell_t::argv_t const & av, shell_t & sh);
 
@@ -219,7 +220,12 @@ void shutdown_state ()
 
 void initialize_shell (int ac, char *av[])
 {
-  shell_t & sh (shell_t::create (av[0], "gpish> ", *state));
+  std::string prompt;
+  if (isatty (0) && isatty (1))
+  {
+	prompt = "gpish> ";
+  }
+  shell_t & sh (shell_t::create (av[0], prompt, *state));
 
   sh.add_command("help", &cmd_help, "print help about commands");
   sh.add_command("exit", &cmd_exit, "exit the shell loop");
@@ -227,7 +233,7 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("close", &cmd_close, "close connection to gpi");
   sh.add_command("ping", &cmd_ping, "test connection status");
   sh.add_command("info", &cmd_info, "print information about gpi");
-  sh.add_command("list", &cmd_list, "list available sockets");
+  sh.add_command("socket", &cmd_socket, "list available sockets");
   sh.add_command("status", &cmd_status, "print internal status information");
   sh.add_command("gc", &cmd_gc, "garbage collect");
 
@@ -244,6 +250,13 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("memory-copy", &cmd_memory_copy, "copy memory");
   sh.add_command("memory-wait", &cmd_memory_wait, "wait for a copy to finish");
   sh.add_command("memory-list", &cmd_memory_list, "list allocations");
+
+  // TODO alias definitions
+  sh.add_command("alloc", &cmd_memory_alloc, "allocate memory");
+  sh.add_command("free", &cmd_memory_free, "free memory");
+  sh.add_command("memcpy", &cmd_memory_copy, "copy memory");
+  sh.add_command("wait", &cmd_memory_wait, "wait for copy completion");
+  sh.add_command("list", &cmd_list, "list segments and allocations");
 }
 
 void shutdown_shell ()
@@ -409,7 +422,7 @@ int cmd_status (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_list (shell_t::argv_t const & av, shell_t & sh)
+int cmd_socket (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size ())
   {
@@ -533,6 +546,25 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
       return 3;
     }
   }
+
+  return 0;
+}
+
+int cmd_list (shell_t::argv_t const & av, shell_t & sh)
+{
+  std::cout << "# *************** #" << std::endl;
+  std::cout << "#    Segments     #" << std::endl;
+  std::cout << "# *************** #" << std::endl;
+  std::cout << std::endl;
+  cmd_segment_list (av, sh);
+  std::cout << std::endl;
+
+  std::cout << "# *************** #" << std::endl;
+  std::cout << "#   Allocations   #" << std::endl;
+  std::cout << "# *************** #" << std::endl;
+  std::cout << std::endl;
+  cmd_memory_list (av, sh);
+  std::cout << std::endl;
 
   return 0;
 }
