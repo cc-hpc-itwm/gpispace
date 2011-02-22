@@ -776,6 +776,12 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh)
 {
+  if (av.empty())
+  {
+    std::cerr << "usage: free handle [handle...]" << std::endl;
+    return -1;
+  }
+
   int err (0);
   for ( shell_t::argv_t::const_iterator arg (av.begin())
       ; arg != av.end()
@@ -794,14 +800,39 @@ int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh)
   }
   return err;
 }
+
 int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
 {
-  return 1;
+  // memcpy <handle>[+offset] handle[+offset] bytes [queue]
+  if (av.size() < 3)
+  {
+    std::cerr << "usage: copy dst[+offset] src[+offset] bytes [queue]" << std::endl;
+    std::cerr << "    dst, src : handles" << std::endl;
+    std::cerr << "       queue : queue to use (default=0)" << std::endl;
+    return 1;
+  }
+
+  gpi::pc::type::memory_location_t dst
+      (boost::lexical_cast<gpi::pc::type::memory_location_t>(av[0]));
+  gpi::pc::type::memory_location_t src
+      (boost::lexical_cast<gpi::pc::type::memory_location_t>(av[1]));
+  gpi::pc::type::size_t amt
+      (boost::lexical_cast<gpi::pc::type::size_t>(av[2]));
+
+  gpi::pc::type::queue_id_t queue (0);
+  if (av.size() > 3)
+  {
+    queue = boost::lexical_cast<gpi::pc::type::queue_id_t>(av[3]);
+  }
+
+  return sh.state().capi.memcpy (dst, src, amt, queue);
 }
+
 int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
 {
   return 1;
 }
+
 int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
 {
   if (!sh.state().capi.is_connected ())

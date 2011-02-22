@@ -48,6 +48,16 @@ namespace gpi
         void free (const type::handle_id_t);
         gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg = gpi::pc::type::segment::SEG_INVAL);
 
+        gpi::pc::type::queue_id_t
+        memcpy ( gpi::pc::type::memory_location_t const & dst
+               , gpi::pc::type::memory_location_t const & src
+               , const gpi::pc::type::size_t amount
+               , const gpi::pc::type::queue_id_t queue
+               );
+
+        gpi::pc::type::size_t
+        wait (const gpi::pc::type::queue_id_t);
+
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz
                                                     , const gpi::pc::type::flags_t = 0

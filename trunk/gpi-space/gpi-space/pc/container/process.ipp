@@ -278,18 +278,68 @@ namespace gpi
       /********************************************************/
 
       template <typename M>
-      gpi::pc::type::handle_id_t process_t<M>::alloc ( const gpi::pc::type::segment_id_t seg
-                                                     , const gpi::pc::type::size_t sz
-                                                     , const gpi::pc::type::flags_t
-                                                     )
+      gpi::pc::type::handle_id_t
+      process_t<M>::alloc ( const gpi::pc::type::segment_id_t seg
+                          , const gpi::pc::type::size_t size
+                          , const gpi::pc::type::flags_t flags
+                          )
       {
-        throw std::runtime_error ("not yet implemented");
+        return m_mgr.alloc (m_id, seg, size, flags);
       }
 
       template <typename M>
-      void process_t<M>::free (const gpi::pc::type::handle_id_t)
+      void process_t<M>::free (const gpi::pc::type::handle_id_t hdl)
       {
-        throw std::runtime_error ("not yet implemented");
+        return m_mgr.free (m_id, hdl);
+      }
+
+      template <typename M>
+      void
+      process_t<M>::list_allocations( const gpi::pc::type::segment_id_t seg
+                                    , gpi::pc::type::handle::list_t & l
+                                    ) const
+      {
+        m_mgr.list_allocations (m_id, seg, l);
+      }
+
+      template <typename M>
+      gpi::pc::type::queue_id_t
+      process_t<M>::memcpy ( gpi::pc::type::memory_location_t const & dst
+                           , gpi::pc::type::memory_location_t const & src
+                           , const gpi::pc::type::size_t amount
+                           , const gpi::pc::type::queue_id_t queue
+                           )
+      {
+        return m_mgr.memcpy (dst, src, amount, queue);
+      }
+
+      template <typename M>
+      gpi::pc::type::size_t process_t<M>::wait (const gpi::pc::type::queue_id_t)
+      {
+        // this is not that easy to implement
+        //    do we want to put the process container to sleep? - no
+        //    we basically want to delay the answer
+        //    the client should also be able to release the lock so that other threads can still interact with the pc
+        //
+        // TODO:
+        //   client:
+        //     attach a unique sequence number to the wait message
+        //     enqueue the request
+        //     send the message
+        //     unlock communication lock
+        //     wait for the request to "return"
+        //
+        //   server:
+        //     enqueue the "wait" request into some queue that is handled by a seperate thread (each queue one thread)
+        //     "reply" to the enqueued wait request via this process using the same sequence number waking up the client thread
+        //
+        //   implementation:
+        //     processes' message visitor has to be rewritten to be "asynchronous" in some way
+        //        -> idea: visitor's return value is a boost::optional
+        //                 if set: reply immediately
+        //                   else: somebody else will reply later
+        //           messages need unique sequence numbers or message-ids
+        return 0;
       }
 
       template <typename M>
@@ -330,32 +380,6 @@ namespace gpi
       process_t<M>::list_segments(gpi::pc::type::segment::list_t & l)
       {
         m_mgr.list_segments (m_id, l);
-      }
-
-      template <typename M>
-      void
-      process_t<M>::list_allocations( const gpi::pc::type::segment_id_t seg
-                                    , gpi::pc::type::handle::list_t & l
-                                    ) const
-      {
-        m_mgr.list_allocations (m_id, seg, l);
-      }
-
-      template <typename M>
-      gpi::pc::type::queue_id_t
-      process_t<M>::memcpy ( gpi::pc::type::memory_location_t const & dst
-                           , gpi::pc::type::memory_location_t const & src
-                           , const gpi::pc::type::size_t amount
-                           , const gpi::pc::type::queue_id_t queue
-                           )
-      {
-        throw std::runtime_error ("not yet implemented");
-      }
-
-      template <typename M>
-      gpi::pc::type::size_t process_t<M>::wait (const gpi::pc::type::queue_id_t)
-      {
-        return 0;
       }
 
       template <typename M>

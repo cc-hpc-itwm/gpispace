@@ -226,11 +226,12 @@ namespace gpi
         return rply;
       }
 
-      type::handle_id_t api_t::alloc ( const type::segment_id_t seg
-                                     , const type::size_t sz
-                                     , const std::string & name
-                                     , const type::flags_t flags
-                                     )
+      type::handle_id_t
+      api_t::alloc ( const type::segment_id_t seg
+                   , const type::size_t sz
+                   , const std::string & name
+                   , const type::flags_t flags
+                   )
       {
         using namespace gpi::pc;
 
@@ -274,6 +275,71 @@ namespace gpi
         {
           DLOG(WARN, "could not free handle: " << result.code << ": " << result.detail);
           throw std::runtime_error ("handle could not be free'd: " + result.detail);
+        }
+      }
+
+      gpi::pc::type::queue_id_t
+      api_t::memcpy ( gpi::pc::type::memory_location_t const & dst
+                    , gpi::pc::type::memory_location_t const & src
+                    , const gpi::pc::type::size_t amount
+                    , const gpi::pc::type::queue_id_t queue
+                    )
+      {
+        using namespace gpi::pc;
+        proto::memory::memcpy_t rqst;
+        rqst.dst = dst;
+        rqst.src = src;
+        rqst.size = amount;
+        rqst.queue = queue;
+
+        proto::message_t reply (communicate (proto::memory::message_t (rqst)));
+
+        try
+        {
+          proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
+          proto::memory::memcpy_reply_t memcpy_rpl (boost::get<proto::memory::memcpy_reply_t>(mem_msg));
+          LOG(INFO, "memcpy in progress using queue " << memcpy_rpl.queue);
+          return memcpy_rpl.queue;
+        }
+        catch (boost::bad_get const & ex)
+        {
+          proto::error::error_t error (boost::get<proto::error::error_t>(reply));
+          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
+          throw std::runtime_error (error.detail);
+        }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
+        }
+      }
+
+      gpi::pc::type::size_t
+      api_t::wait (const gpi::pc::type::queue_id_t queue)
+      {
+        using namespace gpi::pc;
+        proto::memory::wait_t rqst;
+        rqst.queue = queue;
+
+        proto::message_t reply(communicate (proto::memory::message_t (rqst)));
+
+        try
+        {
+          proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
+          proto::memory::wait_reply_t w_rpl (boost::get<proto::memory::wait_reply_t>(mem_msg));
+          LOG(INFO, "wait on queue " << queue << " returned " << w_rpl.count);
+          return w_rpl.count;
+        }
+        catch (boost::bad_get const & ex)
+        {
+          proto::error::error_t error (boost::get<proto::error::error_t>(reply));
+          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
+          throw std::runtime_error (error.detail);
+        }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
         }
       }
 

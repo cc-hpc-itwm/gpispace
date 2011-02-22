@@ -354,12 +354,47 @@ namespace gpi
         info.queue_depth = gpi_api.queue_depth();
       }
 
+      gpi::pc::type::handle_id_t
+      manager_t::alloc ( const gpi::pc::type::process_id_t proc_id
+                       , const gpi::pc::type::segment_id_t
+                       , const gpi::pc::type::size_t
+                       , const gpi::pc::type::flags_t
+                       )
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      void
+      manager_t::free ( const gpi::pc::type::process_id_t
+                      , const gpi::pc::type::handle_id_t
+                      )
+      {
+        throw std::runtime_error ("not yet implemented");
+      }
+
       void
       manager_t::list_allocations ( const gpi::pc::type::process_id_t proc_id
                                   , const gpi::pc::type::segment_id_t seg_id
                                   , gpi::pc::type::handle::list_t & list
                                   ) const
       {
+        throw std::runtime_error ("not yet implemented");
+      }
+
+      gpi::pc::type::queue_id_t
+      manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
+                        , gpi::pc::type::memory_location_t const & src
+                        , const gpi::pc::type::size_t amount
+                        , const gpi::pc::type::queue_id_t queue
+                        )
+      {
+        gpi::pc::type::validate (dst.handle);
+        gpi::pc::type::validate (src.handle);
+
+        LOG( TRACE
+           , "initiating memcpy: " << dst << " <-- " << src
+             << " " << amount << " bytes via queue " << queue
+           );
         throw std::runtime_error ("not yet implemented");
       }
     }

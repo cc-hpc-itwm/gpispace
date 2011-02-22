@@ -61,6 +61,13 @@ namespace gpi
                               , gpi::pc::type::handle::list_t &
                               ) const;
 
+        gpi::pc::type::queue_id_t
+        memcpy ( gpi::pc::type::memory_location_t const & dst
+               , gpi::pc::type::memory_location_t const & src
+               , const gpi::pc::type::size_t amount
+               , const gpi::pc::type::queue_id_t queue
+               );
+
         gpi::pc::type::segment_id_t register_segment ( const gpi::pc::type::process_id_t proc_id
                                                      , std::string const & name
                                                      , const gpi::pc::type::size_t sz
