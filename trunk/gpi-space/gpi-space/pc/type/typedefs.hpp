@@ -48,6 +48,12 @@ namespace gpi
     {
       f &= ~mask;
     }
+
+    inline
+    void unset (pc::type::flags_t & f, const pc::type::flags_t mask)
+    {
+      f &= ~mask;
+    }
   }
 }
 
