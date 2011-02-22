@@ -3,14 +3,14 @@ set (PARSU_SHRINK "share/sdpa/parsu/shrink")
 
 add_subdirectory (xml)
 
-set (PARSU_SHRINK_DIR "${CMAKE_INSTALL_PREFIX}/${PARSU_SHRINK}")
-set (PARSU_PNETC_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${PNETC_LIB_DIR}")
+set (PARSU_SHRINK_DIR "\${SDPA_HOME}/${PARSU_SHRINK}")
+set (PARSU_PNETC_LIB_DIR "\${SDPA_HOME}/${PNETC_LIB_DIR}")
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/parsu_shrink.in
                 ${CMAKE_CURRENT_BINARY_DIR}/parsu_shrink
                 @ONLY
                )
- 
+
 set (prgs
    ${CMAKE_CURRENT_BINARY_DIR}/parsu_shrink
 )
