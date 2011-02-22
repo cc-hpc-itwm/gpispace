@@ -1,16 +1,13 @@
 #!/bin/sh
 
-for p in nre nre-pcd ; do
-    pid=$( pidof "$p" )
-    if [ $? -ne 0 ] ; then
-	continue
-    fi
+user=$( id -un )
 
+for p in nre nre-pcd ; do
     alive=true
-    echo -n "Terminating $p ($pid)..."
+    echo -n "Terminating $p..."
     for (( i=0; i < 3; ++i )); do
 	echo -n "."
-	kill -TERM $pid >/dev/null 2>&1
+        killall -u "$user" -e -TERM "$p" >/dev/null 2&>1
 	if [ $? -ne 0 ] ; then
 	    alive=false
 	fi
@@ -21,7 +18,7 @@ for p in nre nre-pcd ; do
 	sleep 0.5
     done
     if [ "$alive" == "true" ] ; then
-	kill -KILL $pid >/dev/null 2>&1
+        killall -u "$user" -ew -KILL "$p" >/dev/null 2&>1
 	echo "killed."
     fi
 done
