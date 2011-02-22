@@ -56,7 +56,7 @@ static int resume_handler (gpi_api_t * api, int signal)
 
 static void distribute_config (const gpi_space::config & cfg, gpi_api_t & gpi_api)
 {
-  LOG(DEBUG, "distributing config...");
+  DLOG(TRACE, "distributing config...");
 
   memcpy (gpi_api.dma_ptr(), &cfg, sizeof (cfg));
 
@@ -75,7 +75,7 @@ static void distribute_config (const gpi_space::config & cfg, gpi_api_t & gpi_ap
   }
   success_count += gpi_api.wait_dma (queue);
 
-  LOG(INFO, "config successfully distributed to " << success_count << " nodes");
+  LOG(DEBUG, "config successfully distributed to " << success_count << " nodes");
 
   gpi_api.barrier ();
 }
@@ -88,7 +88,6 @@ static void receive_config (gpi_space::config & cfg, gpi_api_t & gpi_api)
 
 static void configure (const gpi_space::config & cfg)
 {
-  LOG(INFO, "configuring...");
   gpi_space::logging::configure (cfg.logging);
   gpi_space::node::configure (cfg.node);
 }
@@ -130,6 +129,8 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
   gpi::pc::container::manager_t mgr (socket_path.string());
   mgr.start ();
+
+  LOG(INFO, "started GPI interface at " << socket_path);
 
   // fire up message handling threads...
 

@@ -58,7 +58,7 @@ namespace gpi
         else
         {
           m_socket = fd;
-          LOG(INFO, "listening on " << m_path << " (fd " << fd << ")");
+          DLOG(DEBUG, "listening on " << m_path << " (fd " << fd << ")");
           start_thread ();
         }
       }
