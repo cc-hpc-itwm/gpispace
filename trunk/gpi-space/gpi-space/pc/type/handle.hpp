@@ -35,6 +35,7 @@ namespace gpi
         static const int typec_bits = 4;
         static const int global_count_bits = (total_bits - ident_bits - typec_bits);
         static const int local_count_bits = (total_bits - typec_bits);
+        static const int string_length = (2+total_bits/4); // 0x...
 
         handle_t ()
           : handle (0)
@@ -106,7 +107,7 @@ namespace gpi
 
         os << "0x";
         os.flags (std::ios::hex);
-        os.width (sizeof(handle_t)*2);
+        os.width (handle_t::string_length - 2);
         os.fill ('0');
         os << h.handle;
 
