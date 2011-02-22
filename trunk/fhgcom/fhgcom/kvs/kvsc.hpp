@@ -373,6 +373,29 @@ namespace fhg
           throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
         }
       }
+
+      struct scoped_entry_t
+      {
+      public:
+        template <typename Val>
+        scoped_entry_t ( std::string const & k
+                       , Val v
+                       )
+        : key(k)
+        {
+          put (key, v);
+        }
+
+        ~scoped_entry_t ()
+        {
+          del (key);
+        }
+
+      private:
+        scoped_entry_t (const scoped_entry_t &);
+        scoped_entry_t & operator=(const scoped_entry_t&);
+        const std::string key;
+      };
     }
   }
 }
