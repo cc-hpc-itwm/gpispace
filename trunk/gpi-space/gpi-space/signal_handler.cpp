@@ -7,6 +7,8 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 namespace gpi
 {
   namespace signal
@@ -47,8 +49,8 @@ namespace gpi
     // API
     handler_t & handler_t::get ()
     {
-      static handler_t handler;
-      return handler;
+      static boost::shared_ptr<handler_t> handler(new handler_t);
+      return *handler;
     }
 
     void handler_t::start ()
@@ -97,7 +99,6 @@ namespace gpi
           m_stopping = true;
           this->raise (0);
           ::raise (SIGINT);
-          DLOG(TRACE, "stopping...");
         }
       }
 
@@ -199,8 +200,6 @@ namespace gpi
         timeout.tv_sec = 1;
         timeout.tv_nsec = 500 * 1000 * 1000;
 
-        DLOG(TRACE, "handler waiting for signals");
-
         int ec = sigtimedwait (&restrict, &sig_info, &timeout);
         //int ec = sigwaitinfo (&restrict,&sig_info);
 
@@ -208,7 +207,6 @@ namespace gpi
 
         if (ec >= 0)
         {
-          DLOG(TRACE, "got signal: " << show (sig_info));
           this->raise (sig_info.si_signo);
         }
         else if (errno != EAGAIN && errno != EINTR)
@@ -220,13 +218,7 @@ namespace gpi
                                                                             )
              );
         }
-        else
-        {
-          DLOG(TRACE, "sigwait() has been interrupted!");
-        }
       }
-
-      DLOG(TRACE, "main handler terminating");
     }
 
     void handler_t::worker_thread_main ()
@@ -234,8 +226,6 @@ namespace gpi
       while (!m_stopping)
       {
         boost::this_thread::interruption_point ();
-
-        DLOG(TRACE, "worker waiting for signals");
 
         signal_t sig (next_signal());
 
@@ -245,7 +235,6 @@ namespace gpi
         {
           std::size_t count (0);
 
-          DLOG(TRACE, "delivering signal " << sig);
           count = deliver_signal (sig);
           DLOG(TRACE, "delivered signal " << count << " times");
 
@@ -256,8 +245,6 @@ namespace gpi
           LOG(WARN, "error during signal handling: " << ex.what());
         }
       }
-
-      DLOG(TRACE, "worker terminating");
     }
 
     handler_t::signal_t handler_t::next_signal ()
