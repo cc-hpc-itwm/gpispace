@@ -44,6 +44,7 @@ namespace gpi
           gpi::pc::type::offset_t offset;
           gpi::pc::type::size_t size;
           gpi::pc::type::name_t name;
+          gpi::pc::type::process_id_t creator;
           gpi::pc::type::flags_t flags;
           gpi::pc::type::time_stamp_t ts;
 
@@ -56,6 +57,11 @@ namespace gpi
             , flags (0)
           {}
 
+          bool operator< (const descriptor_t & other) const
+          {
+            return id < other.id;
+          }
+
         private:
           friend class boost::serialization::access;
           template<typename Archive>
@@ -66,12 +72,65 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( offset );
             ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP( name );
+            ar & BOOST_SERIALIZATION_NVP( creator );
             ar & BOOST_SERIALIZATION_NVP( flags );
             ar & BOOST_SERIALIZATION_NVP( ts );
           }
         };
 
         typedef std::vector<descriptor_t> list_t;
+
+        // just for ostream hacking
+        struct ostream_header {};
+
+        inline
+        std::ostream & operator << (std::ostream & os, const ostream_header &)
+        {
+          std::ios_base::fmtflags saved_flags (os.flags());
+          char saved_fill = os.fill (' ');
+          std::size_t saved_width = os.width (0);
+
+          os.flags (std::ios::adjustfield);
+
+          // ID
+          os.width (gpi::pc::type::handle_t::string_length);
+          os << "ID";
+          os << " ";
+
+          // SEGMENT
+          os.width (5);
+          os << "SEG";
+          os << " ";
+
+          // FLAGS
+          os.width (sizeof(gpi::pc::type::flags_t)*2 + 2);
+          os << "FLAGS";
+          os << " ";
+
+          // OFFSET
+          os.width (12);
+          os << "OFFSET";
+          os << " ";
+
+          os.width (12);
+          os << "SIZE";
+          os << " ";
+
+          // CREATION TIME
+          os.width (17);
+          os << "TSTAMP";
+          os << " ";
+
+          // NAME
+          os << "NAME";
+          os << "  ";
+
+          os.flags (saved_flags);
+          os.fill (saved_fill);
+          os.width (saved_width);
+
+          return os;
+        }
 
         inline
         std::ostream & operator<< (std::ostream & os, const descriptor_t & d)
@@ -103,7 +162,7 @@ namespace gpi
 
           // OFFSET
           os.flags (std::ios::right | std::ios::dec);
-          os.width (10);
+          os.width (12);
           os << d.offset;
           os << " ";
 
