@@ -4,6 +4,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <boost/lexical_cast.hpp>
+
 #include <gpi-space/pc/type/typedefs.hpp>
 
 // TODO: move this define to a better place
@@ -74,11 +76,33 @@ namespace gpi
       };
 
       inline
+      bool is_valid (const handle_t & hdl)
+      {
+        switch (hdl.type)
+        {
+          case 1:
+          case 2:
+          case 3:
+            return true;
+        }
+        return false;
+      }
+
+      inline
+      void validate (const handle_t & hdl)
+      {
+        if (! is_valid (hdl))
+        {
+          throw std::invalid_argument("invalid handle");
+        }
+      }
+
+      inline
       std::ostream & operator << (std::ostream & os, const handle_t h)
       {
-        std::ios_base::fmtflags saved_flags (os.flags());
-        char saved_fill = os.fill (' ');
-        std::size_t saved_width = os.width (0);
+        const std::ios_base::fmtflags saved_flags (os.flags());
+        const char saved_fill = os.fill (' ');
+        const std::size_t saved_width = os.width (0);
 
         os << "0x";
         os.flags (std::ios::hex);
@@ -91,6 +115,21 @@ namespace gpi
         os.width (saved_width);
 
         return os;
+      }
+
+      inline
+      std::istream & operator>> ( std::istream & is
+                                , handle_t & h
+                                )
+      {
+        const std::ios_base::fmtflags saved_flags (is.flags());
+        is.flags (std::ios::hex);
+        is >> h.handle;
+
+        validate (h);
+
+        is.flags (saved_flags);
+        return is;
       }
     }
   }
