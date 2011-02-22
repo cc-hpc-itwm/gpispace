@@ -10,9 +10,22 @@ namespace gpi
   {
     namespace type
     {
-      counter_t::counter_t()
-        : m_counter (0)
+      counter_t::counter_t(const gpi::pc::type::size_t start)
+        : m_counter (start)
       {}
+
+      gpi::pc::type::size_t counter_t::value () const
+      {
+        lock_type lock (m_mutex);
+        return m_counter;
+      }
+
+      void counter_t::move_to (const gpi::pc::type::size_t v)
+      {
+        lock_type lock (m_mutex);
+        if (m_counter < v)
+          m_counter = v;
+      }
 
       gpi::pc::type::size_t counter_t::inc ()
       {

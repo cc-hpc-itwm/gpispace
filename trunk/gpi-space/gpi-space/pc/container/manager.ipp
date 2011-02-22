@@ -16,24 +16,9 @@ namespace gpi
       manager_t::manager_t (std::string const & p)
        : m_state (ST_STOPPED)
        , m_connector (*this, p)
-       , m_process_id (0)
-       , m_memory_mgr ( gpi::api::gpi_api_t::get().rank()
-                      , m_segment_mgr
-                      )
-      {
-        m_segment_mgr.segment_added.connect
-            (boost::bind ( &gpi::pc::memory::manager_t::add_area_for_segment
-                         , &m_memory_mgr
-                         , _1
-                         )
-            );
-        m_segment_mgr.segment_removed.connect
-            (boost::bind ( &gpi::pc::memory::manager_t::del_area_for_segment
-                         , &m_memory_mgr
-                         , _1
-                         )
-            );
-      }
+       , m_process_counter (0)
+       , m_memory_mgr (gpi::api::gpi_api_t::get().rank())
+      {}
 
       manager_t::~manager_t ()
       {
@@ -54,13 +39,13 @@ namespace gpi
         try
         {
           lock_type lock (m_mutex);
-          m_connector.start ();
-          initialize_segment_manager ();
+          initialize_memory_manager ();
           initialize_peer ();
+          m_connector.start ();
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "manager could not be started: connector: " << ex.what());
+          LOG(ERROR, "manager could not be started: " << ex.what());
           set_state (ST_STOPPED);
           throw;
         }
@@ -82,7 +67,7 @@ namespace gpi
           m_peer->stop ();
           m_peer_thread->join();
 
-          m_segment_mgr.clear();
+          m_memory_mgr.clear();
         }
 
         garbage_collect();
@@ -114,26 +99,20 @@ namespace gpi
           m_state = new_state;
       }
 
-      void manager_t::initialize_segment_manager ()
+      void manager_t::initialize_memory_manager ()
       {
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        m_segment_mgr.add_special_segment ( "global"
-                                          , gpi::pc::type::segment::SEG_GLOBAL
-                                          , gpi_api.memory_size()
-                                          , gpi_api.dma_ptr()
-                                          );
+        m_memory_mgr.add_special_memory ( "global"
+                                        , gpi::pc::type::segment::SEG_GLOBAL
+                                        , gpi_api.memory_size()
+                                        , gpi_api.dma_ptr()
+                                        );
 
-        m_segment_mgr.add_special_segment ( "local"
-                                          , gpi::pc::type::segment::SEG_LOCAL
-                                          , gpi_api.memory_size()
-                                          , gpi_api.dma_ptr()
-                                          );
-        /*
-        m_memory_mgr.add_area_for_segment
-            (m_segment_mgr[gpi::pc::type::segment::SEG_GLOBAL]);
-        m_memory_mgr.add_area_for_segment
-            (m_segment_mgr[gpi::pc::type::segment::SEG_LOCAL]);
-        */
+        m_memory_mgr.add_special_memory ( "local"
+                                        , gpi::pc::type::segment::SEG_LOCAL
+                                        , gpi_api.memory_size()
+                                        , gpi_api.dma_ptr()
+                                        );
       }
 
       void manager_t::initialize_peer ()
@@ -153,18 +132,8 @@ namespace gpi
                                               )
                              );
         m_peer->start ();
-      }
 
-      gpi::pc::type::process_id_t manager_t::next_process_id ()
-      {
-        lock_type lock (m_mutex);
-        gpi::pc::type::process_id_t proc_id (++m_process_id);
-        if (0 == proc_id)
-        {
-          throw std::runtime_error
-            ("could not generate new process id: overflow");
-        }
-        return proc_id;
+//        setup_topology (); // try connecting to all other nodes
       }
 
       void manager_t::attach_process (process_ptr_t proc)
@@ -185,7 +154,7 @@ namespace gpi
 
         if (m_processes.find (id) == m_processes.end())
         {
-          LOG(WARN, "process id already detached!");
+          LOG(ERROR, "process id already detached!");
           return;
         }
 
@@ -193,7 +162,7 @@ namespace gpi
         m_processes.erase (id);
         proc->stop ();
 
-        detach_segments_from_process (id);
+        detach_memory_from_process (id);
 
         LOG( INFO
            , "process container " << id << " detached"
@@ -201,7 +170,8 @@ namespace gpi
         m_detached_processes.push_back (proc);
       }
 
-      void manager_t::detach_segments_from_process (const gpi::pc::type::process_id_t proc_id)
+      void
+      manager_t::detach_memory_from_process (const gpi::pc::type::process_id_t proc_id)
       {
         lock_type lock (m_process_segment_relation_mutex);
 
@@ -232,7 +202,7 @@ namespace gpi
       {
         garbage_collect();
 
-        gpi::pc::type::process_id_t proc_id (next_process_id());
+        gpi::pc::type::process_id_t proc_id (++m_process_counter);
 
         process_ptr_t proc (new process_type (*this, proc_id, fd));
         attach_process (proc);
@@ -291,7 +261,7 @@ namespace gpi
                                                               )
       {
         gpi::pc::type::segment_id_t seg_id
-          ( m_segment_mgr.register_segment (pc_id, name, sz, flags) );
+          ( m_memory_mgr.register_memory (pc_id, name, sz, flags));
 
         attach_process_to_segment (pc_id, seg_id);
 
@@ -303,7 +273,7 @@ namespace gpi
                                          )
       {
         detach_process_from_segment (proc_id, seg_id);
-        m_segment_mgr.unregister_segment (seg_id);
+        m_memory_mgr.unregister_memory (seg_id);
       }
 
       bool manager_t::is_process_attached_to_segment ( const gpi::pc::type::process_id_t proc_id
@@ -326,7 +296,7 @@ namespace gpi
                                     , gpi::pc::type::segment::list_t &l
                                     ) const
       {
-        m_segment_mgr.get_listing (l);
+        m_memory_mgr.list_memory (l);
 
         for ( gpi::pc::type::segment::list_t::iterator s (l.begin())
             ; s != l.end()
@@ -353,7 +323,15 @@ namespace gpi
         //
         if (m_process_segment_relation[proc_id].insert (seg_id).second)
         {
-          m_segment_mgr.increment_refcount (seg_id);
+          try
+          {
+            m_memory_mgr.increment_refcount (seg_id);
+          }
+          catch (...)
+          {
+            m_process_segment_relation[proc_id].erase(seg_id);
+            throw;
+          }
         }
       }
 
@@ -365,7 +343,7 @@ namespace gpi
           lock_type lock (m_process_segment_relation_mutex);
           if (m_process_segment_relation.at (proc_id).erase (seg_id))
           {
-            m_segment_mgr.decrement_refcount (seg_id);
+            m_memory_mgr.decrement_refcount (seg_id);
           }
         }
         {

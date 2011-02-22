@@ -2,12 +2,12 @@
 
 set (hdrs
   segment.hpp
-  manager.hpp
+  #  manager.hpp
   )
 
 set (srcs
   segment.cpp
-  manager.cpp
+  #  manager.cpp
   )
 
 ADD_LIBRARY(gpi-space-pc-segment ${hdrs} ${srcs})

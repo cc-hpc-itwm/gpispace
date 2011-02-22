@@ -6,9 +6,9 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/container/connector.hpp>
-#include <gpi-space/pc/segment/manager.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
 namespace gpi
@@ -30,7 +30,6 @@ namespace gpi
 
       public:
         typedef manager_t self;
-        typedef gpi::pc::segment::manager_t segment_manager_type;
         typedef gpi::pc::memory::manager_t memory_manager_type;
         typedef gpi::pc::container::process_t<manager_t> process_type;
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
@@ -85,7 +84,6 @@ namespace gpi
         void detach_process_from_segment ( const gpi::pc::type::process_id_t proc_id
                                          , const gpi::pc::type::segment_id_t id
                                          );
-        void detach_segments_from_process (const gpi::pc::type::process_id_t);
         bool is_process_attached_to_segment ( const gpi::pc::type::process_id_t
                                             , const gpi::pc::type::segment_id_t
                                             ) const;
@@ -105,9 +103,9 @@ namespace gpi
 
         void attach_process (process_ptr_t);
         void detach_process (const gpi::pc::type::process_id_t);
-        gpi::pc::type::process_id_t next_process_id ();
+        void detach_memory_from_process (const gpi::pc::type::process_id_t);
         void garbage_collect ();
-        void initialize_segment_manager ();
+        void initialize_memory_manager ();
         void initialize_peer ();
 
         /*                                                    */
@@ -118,12 +116,11 @@ namespace gpi
         mutable mutex_type m_state_mutex;
         state_t m_state;
         connector_type m_connector;
-        gpi::pc::type::process_id_t m_process_id;
+        gpi::pc::type::counter_t m_process_counter;
 
         process_map_t m_processes;
         process_list_t m_detached_processes;
 
-        segment_manager_type m_segment_mgr;
         memory_manager_type m_memory_mgr;
 
         mutable mutex_type m_process_segment_relation_mutex;

@@ -14,10 +14,14 @@ namespace gpi
     {
       struct counter_t : boost::noncopyable
       {
-        inline counter_t ();
+        explicit
+        inline counter_t (const gpi::pc::type::size_t = 0);
 
         inline gpi::pc::type::size_t operator++ () { return inc(); }
+        inline gpi::pc::type::size_t operator* () { return value(); }
         inline gpi::pc::type::size_t inc ();
+        inline gpi::pc::type::size_t value () const;
+        inline void move_to (const gpi::pc::type::size_t);
         inline void reset (gpi::pc::type::size_t = 0);
       private:
         typedef boost::recursive_mutex mutex_type;
