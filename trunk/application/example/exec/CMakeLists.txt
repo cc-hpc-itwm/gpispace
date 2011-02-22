@@ -69,13 +69,13 @@ install(FILES ${hrds}
 
 install(TARGETS process
   ARCHIVE
-  DESTINATION lib
-  COMPONENT libraries)
+  DESTINATION libexec
+  COMPONENT modules)
 
 install(TARGETS process.shared
   LIBRARY
   DESTINATION lib
-  COMPONENT libraries)
+  COMPONENT modules)
 
 include (CTest)
 if (BUILD_TESTING)
