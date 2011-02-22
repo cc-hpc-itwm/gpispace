@@ -58,7 +58,8 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (area.free_mem_size(), seg->size());
   BOOST_CHECK_EQUAL (area.used_mem_size(), 0U);
 
-  gpi::pc::type::handle_id_t hdl (area.alloc (64, "scratch"));
+  gpi::pc::type::handle_id_t hdl
+      (area.alloc(1, 64, "scratch"));
   BOOST_CHECK ( hdl != 0 );
   BOOST_CHECK_EQUAL (area.total_mem_size(), seg->size());
   BOOST_CHECK_EQUAL (area.free_mem_size(), seg->size() - 64);
@@ -69,7 +70,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (area.get_descriptor (hdl, desc), true);
   BOOST_CHECK_EQUAL (desc.id, hdl);
   BOOST_CHECK_EQUAL (desc.segment, seg->id());
-  BOOST_CHECK_EQUAL (desc.offset, 0u);
+  BOOST_CHECK_EQUAL (desc.offset, (seg->size() - 64));
   BOOST_CHECK_EQUAL (desc.size, 64u);
   BOOST_CHECK_EQUAL (desc.name, "scratch");
   BOOST_CHECK_EQUAL (desc.flags, 0);
