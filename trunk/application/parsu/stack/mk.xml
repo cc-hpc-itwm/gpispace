@@ -9,7 +9,7 @@ SHMEM_PER_NODE=${6:?}
 GPI_MEM_PER_NODE=${7:?}
 BUILD=${8:?}
 
-/usr/bin/sed                                 \
+`which sed`                                  \
   "s|@SHMEM_PER_NODE@|${SHMEM_PER_NODE}|     \
   ;s|@GPI_MEM_PER_NODE@|${GPI_MEM_PER_NODE}| \
   ;s|@KEY@|${KEY}|                           \
