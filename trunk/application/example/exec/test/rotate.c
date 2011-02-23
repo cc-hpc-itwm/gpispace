@@ -57,5 +57,7 @@ main (int argc, char ** argv)
       fclose (out[i]);
     }
 
+  fprintf (stderr, "23 bytes sent to stderr");
+
   return EXIT_SUCCESS;
 }

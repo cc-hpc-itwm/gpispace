@@ -46,13 +46,16 @@ main (int argc, char ** argv)
   files_output.push_back (file3);
   files_output.push_back (file4);
 
+  process::circular_buffer buf_stderr (1 << 10);
+
   process::execute_return_type ret
-    (process::execute ( command
-                      , process::const_buffer (in_stdin, 5)
-                      , process::buffer (out_stdout, 7)
-                      , files_input
-                      , files_output
-                      )
+    ( process::execute ( command
+                       , process::const_buffer (in_stdin, 5)
+                       , process::buffer (out_stdout, 7)
+                       , buf_stderr
+                       , files_input
+                       , files_output
+                       )
     );
 
   REQUIRE (ret.bytes_read_stdout == 7);
@@ -77,6 +80,11 @@ main (int argc, char ** argv)
   REQUIRE (out_file4[0] == '1');
   REQUIRE (out_file4[1] == '2');
   REQUIRE (out_file4[2] == '3');
+
+  REQUIRE (ret.bytes_read_stderr == 23);
+  REQUIRE (  std::string (buf_stderr.begin(), buf_stderr.end())
+          == "23 bytes sent to stderr"
+          );
 
   std::cout << "SUCCESS" << std::endl;
 

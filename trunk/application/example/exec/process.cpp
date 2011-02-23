@@ -45,15 +45,6 @@ namespace process
       put_error (sstr.str());
     }
 
-    inline void do_error (const std::string & msg)
-    {
-      std::ostringstream sstr;
-
-      sstr << msg << ": " << strerror (errno);
-
-      put_error (sstr.str());
-    }
-
     template<typename T>
     inline void do_error (const std::string & msg, T x)
     {
@@ -61,7 +52,22 @@ namespace process
 
       sstr << msg << ": " << x;
 
-      do_error (sstr.str());
+      do_error (sstr.str(), errno);
+    }
+
+    template<>
+    inline void do_error<int> (const std::string & msg, int err)
+    {
+      std::ostringstream sstr;
+
+      sstr << msg << ": " << strerror (err);
+
+      put_error (sstr.str());
+    }
+
+    inline void do_error (const std::string & msg)
+    {
+      do_error (msg, errno);
     }
 
     /* ********************************************************************* */
@@ -82,18 +88,20 @@ namespace process
 
     /* ********************************************************************* */
 
-    inline void prepare_parent_pipes (int in[2], int out[2])
+    inline void prepare_parent_pipes (int in[2], int out[2], int err[2])
     {
       do_close (in + RD);
       do_close (out + WR);
+      do_close (err + WR);
     }
 
     /* ********************************************************************* */
 
-    inline void prepare_child_pipes (int in[2], int out[2])
+    inline void prepare_child_pipes (int in[2], int out[2], int err[2])
     {
       do_close (in + WR);
       do_close (out + RD);
+      do_close (err + RD);
 
       if (in[RD] != STDIN_FILENO)
         {
@@ -114,6 +122,16 @@ namespace process
 
           do_close (out + WR);
         }
+
+      if (err[WR] != STDERR_FILENO)
+        {
+          if (dup2 (err[WR], STDERR_FILENO) != STDERR_FILENO)
+            {
+              do_error ("dup to stderr failed");
+            }
+
+          do_close (err + WR);
+        }
     }
   } // namespace detail
 
@@ -122,6 +140,60 @@ namespace process
   namespace thread
   {
     /* ********************************************************************* */
+
+    static void circular_reader ( int fd
+                                , circular_buffer & circ_buf
+                                , std::size_t & bytes_read
+                                , const std::size_t & block_size
+                                )
+    {
+      DLOG (TRACE, "start thread circular read");
+
+      char * buf (new char[block_size]);
+
+      bytes_read = 0;
+
+      while (fd != -1)
+        {
+          DLOG (TRACE, "try to circ read " << block_size << " bytes");
+
+          const int r (read (fd, buf, block_size));
+
+          if (r < 0)
+            {
+              detail::do_error ("circ read failed");
+            }
+          else if (r == 0)
+            {
+              DLOG (TRACE, "circ read pipe closed");
+
+              fd = -1;
+            }
+          else
+            {
+              bytes_read += r;
+
+              DLOG (TRACE, "circ read " << r << " bytes, sum " << bytes_read);
+
+              std::copy (buf, buf + r, std::back_inserter (circ_buf));
+
+              {
+                std::ostringstream str;
+
+                for (int i (0); i < r; ++i)
+                  {
+                    str << buf[i];
+                  }
+
+                DLOG (TRACE, "circ read: \"" << str.str() << "\"");
+              }
+            }
+        }
+
+      delete[] buf;
+
+      DLOG (TRACE, "done thread circular read");
+    }
 
     static void reader ( int fd
                        , void * output
@@ -138,13 +210,12 @@ namespace process
 
       while (fd != -1)
         {
-          DLOG (TRACE, "try to read " << block_size << " bytes");
+          const std::size_t to_read
+            (std::min (block_size, max_size - bytes_read));
 
-          const int r (read ( fd
-                            , buf
-                            , std::max (block_size, max_size - bytes_read)
-                            )
-                      );
+          DLOG (TRACE, "try to read " << to_read << " bytes");
+
+          const int r (read (fd, buf, to_read));
 
           if (r < 0)
             {
@@ -199,9 +270,11 @@ namespace process
 
       while (fd != -1 && bytes_left > 0)
         {
-          DLOG (TRACE, "try to write " << bytes_left << " bytes");
+          const std::size_t to_write (std::min (block_size, bytes_left));
 
-          const int w (write (fd, buf, std::min (block_size, bytes_left)));
+          DLOG (TRACE, "try to write " << to_write << " bytes");
+
+          const int w (write (fd, buf, to_write));
 
           if (w < 0)
             {
@@ -379,6 +452,7 @@ namespace process
   execute_return_type execute ( std::string const & command
                               , const_buffer const & buf_stdin
                               , buffer const & buf_stdout
+                              , circular_buffer & buf_stderr
                               , file_const_buffer_list const & files_input
                               , file_buffer_list const & files_output
                               )
@@ -387,9 +461,9 @@ namespace process
 
     pid_t pid;
 
-    int in[2], out[2];
+    int in[2], out[2], err[2];
 
-    if ((pipe (in) < 0) || (pipe (out) < 0))
+    if ((pipe (in) < 0) || (pipe (out) < 0) || (pipe (err) < 0))
       {
         detail::do_error ("pipe failed");
       }
@@ -435,45 +509,44 @@ namespace process
         param_map[file_output->param()] = filename;
       }
 
+    DLOG (TRACE, "prepare commandline");
+
+    std::vector<std::string> cmdline;
+    fhg::log::split (command, " ", std::back_inserter (cmdline));
+
+    char ** av = new char*[cmdline.size()+1];
+    av[cmdline.size()] = (char*)(NULL);
+
+    {
+      std::size_t idx (0);
+      for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+          ; it != cmdline.end()
+          ; ++it, ++idx
+          )
+        {
+          const detail::param_map::const_iterator repl (param_map.find (*it));
+
+          const std::string param ( (repl != param_map.end())
+                                  ? std::string (repl->second)
+                                  : *it
+                                  );
+
+          av[idx] = new char[param.size()+1];
+          memcpy(av[idx], param.c_str(), param.size());
+          av[idx][param.size()] = (char)0;
+        }
+    }
+
+    MLOG (INFO, "run command: " << fhg::util::show (av,av+cmdline.size()));
+
     if ((pid = fork()) < 0)
       {
         detail::do_error ("fork failed");
       }
     else if (pid == pid_t (0))
       {
-        // child
-        DLOG (TRACE, "prepare pipes");
-
-        detail::prepare_child_pipes (in, out);
-
-        DLOG (TRACE, "prepare commandline");
-
-        std::vector<std::string> cmdline;
-        fhg::log::split (command, " ", std::back_inserter (cmdline));
-
-        char ** av = new char*[cmdline.size()+1];
-        av[cmdline.size()] = (char*)(NULL);
-
-        std::size_t idx (0);
-        for ( std::vector<std::string>::const_iterator it (cmdline.begin())
-            ; it != cmdline.end()
-            ; ++it, ++idx
-            )
-          {
-            const detail::param_map::const_iterator repl
-              (param_map.find (*it));
-
-            const std::string param ((repl != param_map.end())
-                                    ? std::string (repl->second)
-                                    : *it
-                                    );
-
-            av[idx] = new char[param.size()+1];
-            memcpy(av[idx], param.c_str(), param.size());
-            av[idx][param.size()] = (char)0;
-          }
-
-        MLOG (INFO, "run command: " << fhg::util::show (av,av+cmdline.size()));
+        // child: should not produce any output on stdout/stderr
+        detail::prepare_child_pipes (in, out, err);
 
         if (execvp(av[0], av) < 0)
           {
@@ -487,7 +560,7 @@ namespace process
         // parent
         DLOG (TRACE, "prepare pipes");
 
-        detail::prepare_parent_pipes (in, out);
+        detail::prepare_parent_pipes (in, out, err);
 
         DLOG (TRACE, "start threads");
 
@@ -508,6 +581,14 @@ namespace process
           , PIPE_BUF
           );
 
+        boost::thread thread_buf_stderr
+          ( thread::circular_reader
+          , err[detail::RD]
+          , boost::ref (buf_stderr)
+          , boost::ref (ret.bytes_read_stderr)
+          , PIPE_BUF
+          );
+
         DLOG (TRACE, "await child");
 
         int status (0);
@@ -520,30 +601,45 @@ namespace process
 
             if (ec != 0)
               {
-                detail::do_error ("child exited with exitcode", ec);
+                detail::put_error ("child exited with exitcode", ec);
               }
           }
         else if (WIFSIGNALED (status))
           {
             const int ec (WTERMSIG(status));
 
-            detail::do_error ("child exited due to signal", ec);
+            detail::put_error ("child exited due to signal", ec);
           }
         else
           {
-            detail::do_error ("strange child status", status);
+            detail::put_error ("strange child status", status);
           }
 
         DLOG (TRACE, "join threads");
 
         thread_buf_stdin.join();
         thread_buf_stdout.join();
+        thread_buf_stderr.join();
 
         writers.join_all();
         readers.join_all();
 
         MLOG (INFO, "finished command: " << command);
       }
+
+    {
+      std::size_t idx (0);
+
+      for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+          ; it != cmdline.end()
+          ; ++it, ++idx
+          )
+        {
+          delete[] av[idx];
+        }
+
+      delete[] av;
+    }
 
     return ret;
   }

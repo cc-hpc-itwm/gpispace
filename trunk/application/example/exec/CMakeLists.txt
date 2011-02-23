@@ -74,7 +74,7 @@ install(TARGETS process
 
 install(TARGETS process.shared
   LIBRARY
-  DESTINATION lib
+  DESTINATION libexec
   COMPONENT modules)
 
 include (CTest)

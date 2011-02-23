@@ -6,6 +6,8 @@
 #include <list>
 #include <vector>
 
+#include <boost/circular_buffer.hpp>
+
 namespace process
 {
   namespace detail
@@ -55,6 +57,7 @@ namespace process
 
   typedef detail::buffer<const void *> const_buffer;
   typedef detail::buffer<void *> buffer;
+  typedef boost::circular_buffer<char> circular_buffer;
 
   typedef detail::file_buffer<const void *> file_const_buffer;
   typedef detail::file_buffer<void *> file_buffer;
@@ -69,39 +72,62 @@ namespace process
     typedef std::vector<size_type> size_list_type;
 
     size_type bytes_read_stdout;
+    size_type bytes_read_stderr;
     size_list_type bytes_read_files_output;
 
     execute_return_type ()
       : bytes_read_stdout (0)
+      , bytes_read_stderr (0)
       , bytes_read_files_output (0)
     {}
   };
 
   // ********************************************************************** //
 
-  extern execute_return_type execute
-  ( std::string const &              // command
-  , const_buffer const &             // buf_stdin
-  , buffer const &                   // buf_stdout
-  , file_const_buffer_list const &   // files input
-  , file_buffer_list const &         // files output
-  );
+  extern execute_return_type
+  execute ( std::string const &              // command
+          , const_buffer const &             // buf_stdin
+          , buffer const &                   // buf_stdout
+          , circular_buffer &                // buf_stderr
+          , file_const_buffer_list const &   // files input
+          , file_buffer_list const &         // files output
+          );
 
-  inline std::size_t execute ( std::string const & command
-                             , const void * input
-                             , const std::size_t & input_size
-                             , void * output
-                             , const std::size_t & max_output_size
-                             )
+  inline execute_return_type
+  execute ( std::string const & command
+          , const_buffer const &  buf_stdin
+          , buffer const & buf_stdout
+          , file_const_buffer_list const & files_input
+          , file_buffer_list const & files_output
+          )
   {
-    file_buffer_list files_output;
+    circular_buffer buf_stderr;
 
+    return execute ( command
+                   , buf_stdin
+                   , buf_stdout
+                   , buf_stderr
+                   , files_input
+                   , files_output
+                   );
+  }
+
+  inline std::size_t
+  execute ( std::string const & command
+          , const void * input
+          , const std::size_t & input_size
+          , void * output
+          , const std::size_t & max_output_size
+          )
+  {
     return execute ( command
                    , const_buffer (input, input_size)
                    , buffer (output, max_output_size)
                    , file_const_buffer_list ()
-                   , files_output
-                   ).bytes_read_stdout;
+                   , file_buffer_list ()
+                   )
+      .bytes_read_stdout
+      ;
   }
 }
 
