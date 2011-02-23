@@ -84,11 +84,11 @@ namespace gpi
                               )
            )
         {
-          arena = ARENA_GLOBAL;
+          arena = ARENA_UP;
         }
         else
         {
-          arena = ARENA_LOCAL;
+          arena = ARENA_DOWN;
         }
 
         AllocReturn_t alloc_return (dtmmgr_alloc (&m_mmgr, desc.id, arena, size));
@@ -156,11 +156,11 @@ namespace gpi
                                )
            )
         {
-          arena = ARENA_GLOBAL;
+          arena = ARENA_UP;
         }
         else
         {
-          arena = ARENA_LOCAL;
+          arena = ARENA_DOWN;
         }
 
         HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr

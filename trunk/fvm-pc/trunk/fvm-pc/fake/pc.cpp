@@ -120,7 +120,7 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
   static fvmAllocHandle_t num_allocs = 0;
 
   fvmAllocHandle_t ptr= (++num_allocs);
-  AllocReturn_t AllocReturn = dtmmgr_alloc( &dtmmgr, (Handle_t)ptr, (Arena_t)ARENA_GLOBAL, (Size_t)size);
+  AllocReturn_t AllocReturn = dtmmgr_alloc( &dtmmgr, (Handle_t)ptr, (Arena_t)ARENA_UP, (Size_t)size);
   switch (AllocReturn)
   {
 	case ALLOC_SUCCESS:
@@ -143,7 +143,7 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 
 int fvmGlobalFree(fvmAllocHandle_t ptr)
 {
-  switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_GLOBAL))
+  switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_UP))
   {
 	case RET_SUCCESS:
 	  return 0;
@@ -171,7 +171,7 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
   static fvmAllocHandle_t num_allocs = 0;
 
   fvmAllocHandle_t ptr= (++num_allocs);
-  AllocReturn_t AllocReturn = dtmmgr_alloc( &dtmmgr, (Handle_t)ptr, (Arena_t)ARENA_LOCAL, (Size_t)size);
+  AllocReturn_t AllocReturn = dtmmgr_alloc( &dtmmgr, (Handle_t)ptr, (Arena_t)ARENA_DOWN, (Size_t)size);
   switch (AllocReturn)
   {
 	case ALLOC_SUCCESS:
@@ -194,7 +194,7 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 
 int fvmLocalFree(fvmAllocHandle_t ptr)
 {
-  switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_LOCAL))
+  switch (HandleReturn_t ret = dtmmgr_free (&dtmmgr, ptr, ARENA_DOWN))
   {
 	case RET_SUCCESS:
 	  return 0;
@@ -269,7 +269,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 	case GETGLOBAL:
 	  {
 	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_GLOBAL, &BaseOffset, "GetGlobalData");
+	      check_bounds (handle, fvmOffset, size, ARENA_UP, &BaseOffset, "GetGlobalData");
 
 	    if (fvmCommHandleState == COMM_HANDLE_OK)
 	      {
@@ -282,7 +282,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 	case PUTGLOBAL:
 	  {
 	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_GLOBAL, &BaseOffset, "PutGlobalData");
+	      check_bounds (handle, fvmOffset, size, ARENA_UP, &BaseOffset, "PutGlobalData");
 
 	    if (fvmCommHandleState == COMM_HANDLE_OK)
 	      {
@@ -294,7 +294,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 	case GETLOCAL:
 	  {
 	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_LOCAL, &BaseOffset, "GetLocalData");
+	      check_bounds (handle, fvmOffset, size, ARENA_DOWN, &BaseOffset, "GetLocalData");
 
 	    if (fvmCommHandleState == COMM_HANDLE_OK)
 	      {
@@ -306,7 +306,7 @@ static fvmCommHandle_t fvmCommData(const fvmAllocHandle_t handle,
 	case PUTLOCAL:
 	  {
 	    fvmCommHandleState_t fvmCommHandleState =
-	      check_bounds (handle, fvmOffset, size, ARENA_LOCAL, &BaseOffset, "PutLocalData");
+	      check_bounds (handle, fvmOffset, size, ARENA_DOWN, &BaseOffset, "PutLocalData");
 
 	    if (fvmCommHandleState == COMM_HANDLE_OK)
 	      {

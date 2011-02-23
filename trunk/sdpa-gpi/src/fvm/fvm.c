@@ -358,8 +358,8 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 
   if( op == PUTGLOBAL || op == GETGLOBAL)
   {
-	arena = ARENA_GLOBAL;
-	HandleReturn_t dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_GLOBAL, &handleOffset, &handleSize);
+	arena = ARENA_UP;
+	HandleReturn_t dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_UP, &handleOffset, &handleSize);
 	switch (dtmmgr_ret)
 	{
 	  case RET_SUCCESS:
@@ -380,8 +380,8 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
   }
   else if (op == PUTLOCAL || op == GETLOCAL)
   {
-	arena = ARENA_LOCAL;
-	HandleReturn_t dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_LOCAL, &handleOffset, &handleSize);
+	arena = ARENA_DOWN;
+	HandleReturn_t dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_DOWN, &handleOffset, &handleSize);
 	switch (dtmmgr_ret)
 	{
 	  case RET_SUCCESS:
@@ -402,11 +402,11 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	HandleReturn_t dtmmgr_ret;
 	if (handles[freeHandle] == COMM_HANDLE_NOT_FINISHED)
 	{
-	  dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_GLOBAL, &handleOffset, &handleSize);
+	  dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_UP, &handleOffset, &handleSize);
 	  switch (dtmmgr_ret)
 	  {
 		case RET_SUCCESS:
-		  arena = ARENA_GLOBAL;
+		  arena = ARENA_UP;
 		  break;
 		case RET_FAILURE:
 		  handles[freeHandle] = COMM_HANDLE_ERROR;
@@ -420,11 +420,11 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	// does not seem to be a global handle, check if it is a local one
 	if (handles[freeHandle] != COMM_HANDLE_NOT_FINISHED)
 	{
-	  dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_LOCAL, &handleOffset, &handleSize);
+	  dtmmgr_ret = dtmmgr_offset_size(dtmmgr, handle, ARENA_DOWN, &handleOffset, &handleSize);
 	  switch (dtmmgr_ret)
 	  {
 		case RET_SUCCESS:
-		  arena = ARENA_LOCAL;
+		  arena = ARENA_DOWN;
 		  break;
 		case RET_FAILURE:
 		  handles[freeHandle] = COMM_HANDLE_ERROR;
@@ -445,13 +445,13 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	else
 	{
 #ifndef NDEBUGCOMM
-  pv4d_printf("FVM: Global Comm %s: guessed arena: %s\n",op2str(op), (arena==ARENA_LOCAL ? "local" : "global") );
+  pv4d_printf("FVM: Global Comm %s: guessed arena: %s\n",op2str(op), (arena==ARENA_DOWN ? "local" : "global") );
 #endif
 	}
   }
 
 #ifndef NDEBUGCOMM
-  if(arena != ARENA_LOCAL && arena != ARENA_GLOBAL)
+  if(arena != ARENA_DOWN && arena != ARENA_UP)
   {
 	handles[freeHandle] = COMM_HANDLE_ERROR_ARENA_UNKNOWN;
 	goto out;
@@ -463,7 +463,7 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 #endif
 
 
-  if(arena == ARENA_GLOBAL)
+  if(arena == ARENA_UP)
 	globalSize = handleSize * getNodeCountVM();
   else
 	globalSize = handleSize;
@@ -485,10 +485,10 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	if( op == PUTGLOBAL || op == GETGLOBAL)
 	{
 
-	  if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
+	  if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_DOWN, &scratchOffset, &scratchSize)) != RET_SUCCESS)
 	  {
 
-		if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_GLOBAL, &scratchOffset, &scratchSize)) != RET_SUCCESS)
+		if((dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_UP, &scratchOffset, &scratchSize)) != RET_SUCCESS)
 		{
 		  handles[freeHandle] = COMM_HANDLE_ERROR_INVALID_SCRATCH_HANDLE;
 		  goto out;
@@ -496,8 +496,8 @@ static fvmCommHandleState_t fvmGlobalCommInternal(const fvmAllocHandle_t handle,
 	  }
 	}
 
-	/*       if(arena == ARENA_GLOBAL) */
-	/* 	dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_LOCAL, &scratchOffset, &scratchSize); */
+	/*       if(arena == ARENA_UP) */
+	/* 	dtmmgr_offset_size(dtmmgr, scratchHandle, ARENA_DOWN, &scratchOffset, &scratchSize); */
 
 	if( op == GETLOCAL)
 	{

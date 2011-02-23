@@ -588,7 +588,7 @@ fvmAllocHandle_t fvmLocalMMAlloc(fvmSize_t size)
 
     handle = buildHandle();
 
-    if(fvmMMAllocInternal(size, handle, ARENA_LOCAL) != ALLOC_SUCCESS){
+    if(fvmMMAllocInternal(size, handle, ARENA_DOWN) != ALLOC_SUCCESS){
       fvm_printf("Allocator thread: failed to do local allocation\n");
       handle = 0;
     }
@@ -638,7 +638,7 @@ int fvmLocalMMFree(fvmAllocHandle_t handle)
   ++local_alloc_in_progress;
   pthread_mutex_unlock(&mutex_alloc_in_progress);
 
-  if(fvmMMFreeInternal(handle, ARENA_LOCAL) != RET_SUCCESS) {
+  if(fvmMMFreeInternal(handle, ARENA_DOWN) != RET_SUCCESS) {
     ret = 1;
   }
 
@@ -1042,7 +1042,7 @@ void *allocator_thread_f(void * args)
 
 
 		  /* finally can do the allocation */
-		  if(fvmMMAllocInternal(request.size,request.handle,ARENA_GLOBAL) != ALLOC_SUCCESS)
+		  if(fvmMMAllocInternal(request.size,request.handle,ARENA_UP) != ALLOC_SUCCESS)
 		    {
 		      fvm_printf("Allocator thread: failed to do allocation\n");
 		      request.handle = 0;
@@ -1097,7 +1097,7 @@ void *allocator_thread_f(void * args)
 		  deferCommunication();
 		  waitAllCommunication();
 
-		  if(fvmMMFreeInternal(request.handle, ARENA_GLOBAL) != RET_SUCCESS)
+		  if(fvmMMFreeInternal(request.handle, ARENA_UP) != RET_SUCCESS)
 		    {
 		      ack = 1;
 		    }
