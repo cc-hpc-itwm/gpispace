@@ -21,8 +21,8 @@ extern "C"
   extern MemSize_t dtmmgr_finalize (PDTmmgr_t);
 
   typedef enum
-  { ARENA_GLOBAL = 0,
-    ARENA_LOCAL
+  { ARENA_UP = 0,
+    ARENA_DOWN
   } Arena_t;
 
   extern AllocReturn_t dtmmgr_alloc (PDTmmgr_t, const Handle_t, const Arena_t,

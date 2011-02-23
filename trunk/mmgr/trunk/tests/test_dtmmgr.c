@@ -6,8 +6,8 @@
 
 #include <malloc.h>
 
-static const char *showArena[2] = { "ARENA_GLOBAL", "ARENA_LOCAL" };
-static const Arena_t Other[2] = { ARENA_LOCAL, ARENA_GLOBAL };
+static const char *showArena[2] = { "ARENA_UP", "ARENA_DOWN" };
+static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
 static void
 do_alloc (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
@@ -134,7 +134,7 @@ main ()
 
   dtmmgr_info (dtmmgr);
 
-  Arena_t Arena = ARENA_GLOBAL;
+  Arena_t Arena = ARENA_UP;
 
   for (Word_t i = 0; i < 10; ++i)
     {
@@ -145,18 +145,18 @@ main ()
 
   dtmmgr_info (dtmmgr);
 
-  do_free (dtmmgr, 2, ARENA_GLOBAL);
-  do_free (dtmmgr, 6, ARENA_GLOBAL);
-  do_free (dtmmgr, 3, ARENA_LOCAL);
-  do_free (dtmmgr, 7, ARENA_LOCAL);
-  do_free (dtmmgr, 8, ARENA_GLOBAL);
+  do_free (dtmmgr, 2, ARENA_UP);
+  do_free (dtmmgr, 6, ARENA_UP);
+  do_free (dtmmgr, 3, ARENA_DOWN);
+  do_free (dtmmgr, 7, ARENA_DOWN);
+  do_free (dtmmgr, 8, ARENA_UP);
 
   dtmmgr_status (dtmmgr);
 
   unsigned long callback_count = 0;
 
-  dtmmgr_defrag (&dtmmgr, ARENA_GLOBAL, &fMemmove, NULL, &callback_count);
-  dtmmgr_defrag (&dtmmgr, ARENA_LOCAL, &fMemmove, NULL, &callback_count);
+  dtmmgr_defrag (&dtmmgr, ARENA_UP, &fMemmove, NULL, &callback_count);
+  dtmmgr_defrag (&dtmmgr, ARENA_DOWN, &fMemmove, NULL, &callback_count);
 
   dtmmgr_status (dtmmgr);
 

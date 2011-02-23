@@ -5,10 +5,10 @@
 
 #include <mmgr/unused.h>
 
-#define FOR_ARENA(id) for (Arena_t id = ARENA_GLOBAL; id <= ARENA_LOCAL; ++id)
+#define FOR_ARENA(id) for (Arena_t id = ARENA_UP; id <= ARENA_DOWN; ++id)
 
-static const char *showArena[2] = { "ARENA_GLOBAL", "ARENA_LOCAL" };
-static const Arena_t Other[2] = { ARENA_LOCAL, ARENA_GLOBAL };
+static const char *showArena[2] = { "ARENA_UP", "ARENA_DOWN" };
+static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
 typedef struct
 {
@@ -37,7 +37,7 @@ dtmmgr_init (PDTmmgr_t PDTmmgr, const MemSize_t MemSize, const Align_t Align)
     }
 
   // get the real size after alignment
-  pdtmmgr->mem_size = tmmgr_memsize (pdtmmgr->arena[ARENA_GLOBAL]);
+  pdtmmgr->mem_size = tmmgr_memsize (pdtmmgr->arena[ARENA_UP]);
 }
 
 MemSize_t
@@ -115,7 +115,7 @@ dtmmgr_offset_size (const DTmmgr_t DTmmgr, const Handle_t Handle,
   if (HandleReturn == RET_SUCCESS)
     {
       // invert for the local arena
-      if (Arena == ARENA_LOCAL && POffset != NULL)
+      if (Arena == ARENA_DOWN && POffset != NULL)
         {
           assert (pdtmmgr->mem_size >= *POffset + Size);
 
@@ -148,8 +148,8 @@ dtmmgr_memfree (const DTmmgr_t DTmmgr)
 
   pdtmmgr_t pdtmmgr = DTmmgr;
 
-  MemSize_t FreeGlobal = tmmgr_memfree (pdtmmgr->arena[ARENA_GLOBAL]);
-  MemSize_t FreeLocal = tmmgr_memfree (pdtmmgr->arena[ARENA_LOCAL]);
+  MemSize_t FreeGlobal = tmmgr_memfree (pdtmmgr->arena[ARENA_UP]);
+  MemSize_t FreeLocal = tmmgr_memfree (pdtmmgr->arena[ARENA_DOWN]);
 
   return (FreeGlobal > FreeLocal) ? FreeGlobal : FreeLocal;
 }
@@ -249,15 +249,15 @@ dtmmgr_defrag (PDTmmgr_t PDTmmgr, const Arena_t Arena,
 
   pdtmmgr_t pdtmmgr = *(pdtmmgr_t *) PDTmmgr;
 
-  if (Arena == ARENA_GLOBAL)
+  if (Arena == ARENA_UP)
     {
-      tmmgr_defrag (pdtmmgr->arena + ARENA_GLOBAL, fMemmove, PMemSize, PDat);
+      tmmgr_defrag (pdtmmgr->arena + ARENA_UP, fMemmove, PMemSize, PDat);
     }
   else
     {
       memmoveswap_t memmoveswap = { fMemmove, pdtmmgr->mem_size, PDat };
 
-      tmmgr_defrag (pdtmmgr->arena + ARENA_LOCAL, fMemmoveSwapped, PMemSize,
+      tmmgr_defrag (pdtmmgr->arena + ARENA_DOWN, fMemmoveSwapped, PMemSize,
                     &memmoveswap);
     }
 
