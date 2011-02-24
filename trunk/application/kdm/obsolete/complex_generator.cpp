@@ -39,7 +39,7 @@ int main (int argc, char ** argv)
     act.add_input
       ( we::input_t::value_type
       ( we::token_t ( "config_file"
-                    , literal::STRING
+                    , literal::STRING()
                     , cfg_file
                     )
       , trans.input_port_by_name ("config_file")

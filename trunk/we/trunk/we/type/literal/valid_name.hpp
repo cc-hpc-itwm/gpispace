@@ -17,17 +17,17 @@ namespace literal
   public:
     name (void) : set()
     {
-      set.insert (CONTROL);
-      set.insert (BOOL);
-      set.insert (LONG);
-      set.insert (DOUBLE);
-      set.insert (CHAR);
-      set.insert (STRING);
-      set.insert (BITSET);
-      set.insert (STACK);
-      set.insert (MAP);
-      set.insert (SET);
-      set.insert (BYTEARRAY);
+      set.insert (CONTROL());
+      set.insert (BOOL());
+      set.insert (LONG());
+      set.insert (DOUBLE());
+      set.insert (CHAR());
+      set.insert (STRING());
+      set.insert (BITSET());
+      set.insert (STACK());
+      set.insert (MAP());
+      set.insert (SET());
+      set.insert (BYTEARRAY());
     }
 
     bool valid (const type_name_t & x) const

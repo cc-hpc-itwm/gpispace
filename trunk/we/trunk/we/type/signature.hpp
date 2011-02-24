@@ -229,7 +229,7 @@ namespace signature
       ar & BOOST_SERIALIZATION_NVP(nice_);
     }
   public:
-    type () : desc_(literal::CONTROL), nice_ (mk_nice()) {}
+    type () : desc_(literal::CONTROL()), nice_ (mk_nice()) {}
 
     template <typename T>
     type (const T & t) : desc_ (t), nice_ (mk_nice()) {}

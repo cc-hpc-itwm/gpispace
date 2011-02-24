@@ -9,17 +9,25 @@ namespace literal
 {
   typedef std::string type_name_t;
 
-  static const type_name_t CONTROL   ("control");
-  static const type_name_t BOOL      ("bool");
-  static const type_name_t LONG      ("long");
-  static const type_name_t DOUBLE    ("double");
-  static const type_name_t CHAR      ("char");
-  static const type_name_t STRING    ("string");
-  static const type_name_t BITSET    ("bitset");
-  static const type_name_t STACK     ("stack");
-  static const type_name_t MAP       ("map");
-  static const type_name_t SET       ("set");
-  static const type_name_t BYTEARRAY ("bytearray");
+#define CONST(name,string)                \
+  static const type_name_t name ()        \
+  {                                       \
+    static const type_name_t x (string);  \
+                                          \
+    return x;                             \
+  }                                       \
+
+  CONST (CONTROL, "control");
+  CONST (BOOL, "bool");
+  CONST (LONG, "long");
+  CONST (DOUBLE, "double");
+  CONST (CHAR, "char");
+  CONST (STRING, "string");
+  CONST (BITSET,"bitset");
+  CONST (STACK, "stack");
+  CONST (MAP, "map");
+  CONST (SET, "set");
+  CONST (BYTEARRAY, "bytearray");
 }
 
 #endif

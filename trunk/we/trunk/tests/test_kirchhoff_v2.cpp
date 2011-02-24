@@ -301,28 +301,28 @@ main (int argc, char ** argv)
   // global constants
 
   petri_net::pid_t pid_OFFSETS
-    (net.add_place (place::type ("OFFSETS", literal::LONG)));
+    (net.add_place (place::type ("OFFSETS", literal::LONG())));
   token::put (net, pid_OFFSETS, OFFSETS);
 
   petri_net::pid_t pid_PACKAGES_PER_OFFSET
-    (net.add_place (place::type ("PACKAGES_PER_OFFSET", literal::LONG)));
+    (net.add_place (place::type ("PACKAGES_PER_OFFSET", literal::LONG())));
   token::put (net, pid_PACKAGES_PER_OFFSET, PACKAGES_PER_OFFSET);
 
   petri_net::pid_t pid_BUNCHES_PER_PACKAGE
-    (net.add_place (place::type ("BUNCHES_PER_PACKAGE", literal::LONG)));
+    (net.add_place (place::type ("BUNCHES_PER_PACKAGE", literal::LONG())));
   token::put (net, pid_BUNCHES_PER_PACKAGE, BUNCHES_PER_PACKAGE);
 
 #if 0
   petri_net::pid_t pid_SUBVOLUMES_PER_OFFSET
-    (net.add_place (place::type ("SUBVOLUMES_PER_OFFSET", literal::LONG)));
+    (net.add_place (place::type ("SUBVOLUMES_PER_OFFSET", literal::LONG())));
   token::put (net, pid_SUBVOLUMES_PER_OFFSET, SUBVOLUMES_PER_OFFSET);
 
   petri_net::pid_t pid_STORES
-    (net.add_place (place::type ("STORES", literal::LONG)));
+    (net.add_place (place::type ("STORES", literal::LONG())));
   token::put (net, pid_STORES, STORES);
 
   petri_net::pid_t pid_BUFFER_IN_SUBVOLUMEN
-    (net.add_place (place::type ("BUFFER_IN_SUBVOLUMEN", literal::LONG)));
+    (net.add_place (place::type ("BUFFER_IN_SUBVOLUMEN", literal::LONG())));
   token::put (net, pid_BUFFER_IN_SUBVOLUMEN, BUFFER_IN_SUBVOLUMEN);
 #endif
 
@@ -331,8 +331,8 @@ main (int argc, char ** argv)
 
   signature::structured_t sig_state;
 
-  sig_state["num"] = literal::LONG;
-  sig_state["state"] = literal::LONG;
+  sig_state["num"] = literal::LONG();
+  sig_state["state"] = literal::LONG();
 
   petri_net::pid_t pid_off_state
     (net.add_place (place::type ("off_state", sig_state)));
@@ -343,7 +343,7 @@ main (int argc, char ** argv)
   net.set_capacity (pid_off_try, 1);
 
   petri_net::pid_t pid_off_to_work
-    (net.add_place (place::type ("off_to_work", literal::LONG)));
+    (net.add_place (place::type ("off_to_work", literal::LONG())));
 
   petri_net::tid_t tid_off_init
     ( mk_transition
@@ -399,12 +399,12 @@ main (int argc, char ** argv)
 
   signature::structured_t sig_package;
 
-  sig_package["offset"] = literal::LONG;
-  sig_package["package"] = literal::LONG;
+  sig_package["offset"] = literal::LONG();
+  sig_package["package"] = literal::LONG();
 
   signature::structured_t sig_offset_with_state;
 
-  sig_offset_with_state["offset"] = literal::LONG;
+  sig_offset_with_state["offset"] = literal::LONG();
   sig_offset_with_state["state"] = sig_state;
 
   petri_net::pid_t pid_pack_state
@@ -476,7 +476,7 @@ main (int argc, char ** argv)
   signature::structured_t sig_bunch;
 
   sig_bunch["package"] = sig_package;
-  sig_bunch["bunch"] = literal::LONG;
+  sig_bunch["bunch"] = literal::LONG();
 
   signature::structured_t sig_package_with_state;
 

@@ -256,7 +256,7 @@ static petri_net::tid_t mk_transition ( pnet_t & net
 static petri_net::pid_t
 mk_place ( pnet_t & net
          , const std::string & name
-         , const literal::type_name_t & sig = literal::CONTROL
+         , const literal::type_name_t & sig = literal::CONTROL()
          )
 {
   return net.add_place (place::type (name, sig));
@@ -304,53 +304,53 @@ namespace signature
 
   static void init (void)
   {
-    config["BUNCHES_PER_PACKAGE"] = literal::LONG;
-    config["NUMBER_OF_NODES"] = literal::LONG;
-    config["OFFSETS"] = literal::LONG;
-    config["PACKAGES_PER_OFFSET"] = literal::LONG;
-    config["STORES"] = literal::LONG;
-    config["SUBVOLUMES_PER_OFFSET"] = literal::LONG;
-    config["SUBVOLUME_MULTIPLICITY"] = literal::LONG;
+    config["BUNCHES_PER_PACKAGE"] = literal::LONG();
+    config["NUMBER_OF_NODES"] = literal::LONG();
+    config["OFFSETS"] = literal::LONG();
+    config["PACKAGES_PER_OFFSET"] = literal::LONG();
+    config["STORES"] = literal::LONG();
+    config["SUBVOLUMES_PER_OFFSET"] = literal::LONG();
+    config["SUBVOLUME_MULTIPLICITY"] = literal::LONG();
 
-    state["num"] = literal::LONG;
-    state["state"] = literal::LONG;
+    state["num"] = literal::LONG();
+    state["state"] = literal::LONG();
 
-    copy["id"] = literal::LONG;
-    copy["of"] = literal::LONG;
+    copy["id"] = literal::LONG();
+    copy["of"] = literal::LONG();
 
-    package["id"] = literal::LONG;
-    package["offset"] = literal::LONG;
+    package["id"] = literal::LONG();
+    package["offset"] = literal::LONG();
 
-    bunch["id"] = literal::LONG;
+    bunch["id"] = literal::LONG();
     bunch["package"] = package;
 
-    buffer["filled"] = literal::BOOL;
-    buffer["assigned"] = literal::BOOL;
-    buffer["processed"] = literal::BOOL;
+    buffer["filled"] = literal::BOOL();
+    buffer["assigned"] = literal::BOOL();
+    buffer["processed"] = literal::BOOL();
     buffer["bunch"] = bunch;
-    buffer["store"] = literal::LONG;
+    buffer["store"] = literal::LONG();
 
-    volume["id"] = literal::LONG;
+    volume["id"] = literal::LONG();
     volume["copy"] = copy;
-    volume["offset"] = literal::LONG;
+    volume["offset"] = literal::LONG();
     volume["buffer_0"] = buffer;
     volume["buffer_1"] = buffer;
 
-    volume_with_count["volume"] = literal::LONG;
-    volume_with_count["offset"] = literal::LONG;
-    volume_with_count["wait_bunch"] = literal::LONG;
-    volume_with_count["wait_copy"] = literal::LONG;
+    volume_with_count["volume"] = literal::LONG();
+    volume_with_count["offset"] = literal::LONG();
+    volume_with_count["wait_bunch"] = literal::LONG();
+    volume_with_count["wait_copy"] = literal::LONG();
 
-    offset_with_state["offset"] = literal::LONG;
+    offset_with_state["offset"] = literal::LONG();
     offset_with_state["state"] = state;
 
     package_with_state["package"] = package;
     package_with_state["state"] = state;
 
     loaded_bunch["bunch"] = bunch;
-    loaded_bunch["store"] = literal::LONG;
-    loaded_bunch["seen"] = literal::BITSET;
-    loaded_bunch["wait"] = literal::LONG;
+    loaded_bunch["store"] = literal::LONG();
+    loaded_bunch["seen"] = literal::BITSET();
+    loaded_bunch["wait"] = literal::LONG();
   }
 }
 
@@ -411,20 +411,20 @@ main (int argc, char ** argv)
   // *********************************************************************** //
   // place
 
-  pid_t pid_config_file (mk_place (net, "config_file", literal::STRING));
+  pid_t pid_config_file (mk_place (net, "config_file", literal::STRING()));
   pid_t pid_config (mk_place (net, "config", signature::config));
 
   pid_t pid_trigger_gen_store (mk_place (net, "trigger_gen_store"));
   pid_t pid_gen_store_state
     (mk_place (net, "gen_store_state", signature::state));
-  pid_t pid_empty_store (mk_place (net, "empty_store", literal::LONG));
+  pid_t pid_empty_store (mk_place (net, "empty_store", literal::LONG()));
 
   pid_t pid_trigger_gen_offset (mk_place (net, "trigger_gen_offset"));
   pid_t pid_gen_offset_state
     (mk_place (net, "gen_offset_state", signature::state));
-  pid_t pid_offset (mk_place (net, "offset", literal::LONG));
+  pid_t pid_offset (mk_place (net, "offset", literal::LONG()));
 
-  pid_t pid_wanted_offset (mk_place (net, "wanted_offset", literal::BITSET));
+  pid_t pid_wanted_offset (mk_place (net, "wanted_offset", literal::BITSET()));
 
   pid_t pid_trigger_gen_volume (mk_place (net, "trigger_gen_volume"));
 
@@ -435,7 +435,7 @@ main (int argc, char ** argv)
   pid_t pid_volume_state (mk_place (net, "volume_state", signature::volume));
   pid_t pid_volume (mk_place (net, "volume", signature::volume));
   pid_t pid_volume_count (mk_place (net, "volume_count", signature::volume_with_count));
-  pid_t pid_gen_volume_wait (mk_place (net, "gen_volume_wait", literal::LONG));
+  pid_t pid_gen_volume_wait (mk_place (net, "gen_volume_wait", literal::LONG()));
 
   pid_t pid_gen_package_state
     (mk_place (net, "gen_package_state", signature::offset_with_state));

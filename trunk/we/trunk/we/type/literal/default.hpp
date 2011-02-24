@@ -20,17 +20,17 @@ namespace literal
   {
     default_t dflt;
 
-    dflt[CONTROL] = control();
-    dflt[BOOL] = bool();
-    dflt[LONG] = long();
-    dflt[DOUBLE] = double();
-    dflt[CHAR] = char();
-    dflt[STRING] = std::string();
-    dflt[BITSET] = bitsetofint::type();
-    dflt[STACK] = literal::stack_type();
-    dflt[MAP] = literal::map_type();
-    dflt[SET] = literal::set_type();
-    dflt[BYTEARRAY] = bytearray::type();
+    dflt[CONTROL()] = control();
+    dflt[BOOL()] = bool();
+    dflt[LONG()] = long();
+    dflt[DOUBLE()] = double();
+    dflt[CHAR()] = char();
+    dflt[STRING()] = std::string();
+    dflt[BITSET()] = bitsetofint::type();
+    dflt[STACK()] = literal::stack_type();
+    dflt[MAP()] = literal::map_type();
+    dflt[SET()] = literal::set_type();
+    dflt[BYTEARRAY()] = bytearray::type();
 
     return dflt;
   }

@@ -46,7 +46,7 @@ namespace place
 
     explicit
     type ( const name_t & _name
-         , const literal::type_name_t & _type_name = literal::CONTROL
+         , const literal::type_name_t & _type_name = literal::CONTROL()
          )
       : name (_name)
       , signature (_type_name)

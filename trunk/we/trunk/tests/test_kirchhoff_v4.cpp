@@ -580,7 +580,7 @@ mk_edge (pnet_t & net, const petri_net::connection_t & c)
 static petri_net::pid_t
 mk_place ( pnet_t & net
          , const std::string & name
-         , const literal::type_name_t & sig = literal::CONTROL
+         , const literal::type_name_t & sig = literal::CONTROL()
          )
 {
   return net.add_place (place::type (name, sig));
@@ -619,36 +619,36 @@ namespace signature
 
   static void init (void)
   {
-    config["OFFSETS"] = literal::LONG;
-    config["BUNCHES_PER_OFFSET"] = literal::LONG;
-    config["STORES"] = literal::LONG;
-    config["SUBVOLUMES_PER_OFFSET"] = literal::LONG;
+    config["OFFSETS"] = literal::LONG();
+    config["BUNCHES_PER_OFFSET"] = literal::LONG();
+    config["STORES"] = literal::LONG();
+    config["SUBVOLUMES_PER_OFFSET"] = literal::LONG();
 
-    state["num"] = literal::LONG;
-    state["state"] = literal::LONG;
+    state["num"] = literal::LONG();
+    state["state"] = literal::LONG();
 
-    offset_with_state["offset"] = literal::LONG;
+    offset_with_state["offset"] = literal::LONG();
     offset_with_state["state"] = state;
 
-    bunch["id"] = literal::LONG;
-    bunch["offset"] = literal::LONG;
+    bunch["id"] = literal::LONG();
+    bunch["offset"] = literal::LONG();
 
     loaded_bunch["bunch"] = bunch;
-    loaded_bunch["store"] = literal::LONG;
-    loaded_bunch["seen"] = literal::BITSET;
-    loaded_bunch["wait"] = literal::LONG;
+    loaded_bunch["store"] = literal::LONG();
+    loaded_bunch["seen"] = literal::BITSET();
+    loaded_bunch["wait"] = literal::LONG();
 
-    buffer["filled"] = literal::BOOL;
-    buffer["assigned"] = literal::BOOL;
-    buffer["free"] = literal::BOOL;
+    buffer["filled"] = literal::BOOL();
+    buffer["assigned"] = literal::BOOL();
+    buffer["free"] = literal::BOOL();
     buffer["bunch"] = bunch;
-    buffer["store"] = literal::LONG;
+    buffer["store"] = literal::LONG();
 
-    volume["id"] = literal::LONG;
-    volume["offset"] = literal::LONG;
+    volume["id"] = literal::LONG();
+    volume["offset"] = literal::LONG();
 
     volume_with_buffer["volume"] = volume;
-    volume_with_buffer["wait"] = literal::LONG;
+    volume_with_buffer["wait"] = literal::LONG();
     volume_with_buffer["buffer0"] = buffer;
     volume_with_buffer["buffer1"] = buffer;
   }
@@ -775,17 +775,17 @@ main (int argc, char ** argv)
   // *********************************************************************** //
   // place
 
-  pid_t pid_config_file (mk_place (net, "config_file", literal::STRING));
+  pid_t pid_config_file (mk_place (net, "config_file", literal::STRING()));
   pid_t pid_config (mk_place (net, "config", signature::config));
   pid_t pid_trigger_gen_store (mk_place (net, "trigger_gen_store"));
   pid_t pid_trigger_loadTT (mk_place (net, "trigger_loadTT"));
   pid_t pid_gen_store_state (mk_place (net, "gen_store_state", signature::state));
-  pid_t pid_empty_store (mk_place (net, "empty_store", literal::LONG));
+  pid_t pid_empty_store (mk_place (net, "empty_store", literal::LONG()));
   pid_t pid_trigger_gen_offset (mk_place (net, "trigger_gen_offset"));
-  pid_t pid_wanted_offset (mk_place (net, "wanted_offset", literal::BITSET));
+  pid_t pid_wanted_offset (mk_place (net, "wanted_offset", literal::BITSET()));
   pid_t pid_gen_offset_state (mk_place (net, "gen_offset_state", signature::state));
-  pid_t pid_offset_bunch (mk_place (net, "offset_bunch", literal::LONG));
-  pid_t pid_offset_volume (mk_place (net, "offset_volume", literal::LONG));
+  pid_t pid_offset_bunch (mk_place (net, "offset_bunch", literal::LONG()));
+  pid_t pid_offset_volume (mk_place (net, "offset_volume", literal::LONG()));
   pid_t pid_gen_bunch_state (mk_place (net, "gen_bunch_state", signature::offset_with_state));
   pid_t pid_bunch (mk_place (net, "bunch", signature::bunch));
   pid_t pid_loaded_bunch (mk_place (net, "loaded_bunch", signature::loaded_bunch));
@@ -794,7 +794,7 @@ main (int argc, char ** argv)
   pid_t pid_volume_processed (mk_place (net, "volume_processed", signature::volume_with_buffer));
   pid_t pid_volume_to_be_written (mk_place (net, "volume_to_be_written", signature::volume));
   pid_t pid_volume_written (mk_place (net, "volume_written", signature::volume));
-  pid_t pid_volume_wait (mk_place (net, "volume_wait", literal::LONG));
+  pid_t pid_volume_wait (mk_place (net, "volume_wait", literal::LONG()));
   pid_t pid_buffer_empty (mk_place (net, "buffer_empty", signature::buffer));
   token::put (net, pid_buffer_empty, value::buffer::empty);
   pid_t pid_assign_xor_reuse_store (mk_place (net, "assign_xor_reuse_store"));

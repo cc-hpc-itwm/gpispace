@@ -10,18 +10,18 @@ namespace kdm
 
     static void init (void)
     {
-      config["OFFSETS"] = literal::LONG;
-      config["SUBVOLUMES_PER_OFFSET"] = literal::LONG;
-      config["BUNCHES_PER_OFFSET"] = literal::LONG;
-      config["PARALLEL_LOADTT"] = literal::LONG;
+      config["OFFSETS"] = literal::LONG();
+      config["SUBVOLUMES_PER_OFFSET"] = literal::LONG();
+      config["BUNCHES_PER_OFFSET"] = literal::LONG();
+      config["PARALLEL_LOADTT"] = literal::LONG();
 
-      config["handle_Job"] = literal::LONG;
-      config["scratch_Job"] = literal::LONG;
-      config["handle_TT"] = literal::LONG;
-      config["NThreads"] = literal::LONG;
+      config["handle_Job"] = literal::LONG();
+      config["scratch_Job"] = literal::LONG();
+      config["handle_TT"] = literal::LONG();
+      config["NThreads"] = literal::LONG();
 
-      state["state"] = literal::LONG;
-      state["num"] = literal::LONG;
+      state["state"] = literal::LONG();
+      state["num"] = literal::LONG();
     }
   }
 
@@ -64,7 +64,7 @@ namespace kdm
       sig_with_state["state"] = signature::state;
 
       sig_with_id[name] = sig;
-      sig_with_id["id"] = literal::LONG;
+      sig_with_id["id"] = literal::LONG();
 
       pid_t pid_trigger (subnet.add_place (place_type ("trigger", sig)));
       pid_t pid_state (subnet.add_place (place_type ("state", sig_with_state)));
@@ -187,9 +187,9 @@ namespace kdm
       pid_t pid_volume (net.add_place (place_type ("volume", sig_volume)));
       pid_t pid_config_in (net.add_place (place_type ("config_in", sig_config)));
       pid_t pid_config (net.add_place (place_type ("config", sig_config)));
-      pid_t pid_wait (net.add_place (place_type ("wait", literal::LONG)));
-      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL)));
-      pid_t pid_trigger_load (net.add_place (place_type ("trigger_load", literal::CONTROL)));
+      pid_t pid_wait (net.add_place (place_type ("wait", literal::LONG())));
+      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL())));
+      pid_t pid_trigger_load (net.add_place (place_type ("trigger_load", literal::CONTROL())));
 
       token::put (net, pid_trigger_load);
 
@@ -242,7 +242,7 @@ namespace kdm
 
       init_wait.add_ports ()
         ("config", sig_config, we::type::PORT_IN_OUT)
-        ("num", literal::LONG, we::type::PORT_OUT)
+        ("num", literal::LONG(), we::type::PORT_OUT)
         ;
 
       init_wait.add_connections()
@@ -296,7 +296,7 @@ namespace kdm
       load.add_ports ()
         ("config", sig_config, we::type::PORT_READ)
         ("bunch", sig_bunch, we::type::PORT_IN_OUT)
-        ("trigger", literal::CONTROL, we::type::PORT_IN)
+        ("trigger", literal::CONTROL(), we::type::PORT_IN)
         ;
       load.add_connections ()
         (pid_bunch, "bunch")
@@ -322,8 +322,8 @@ namespace kdm
       process.add_ports ()
         ("config", sig_config, we::type::PORT_READ)
         ("bunch", sig_bunch, we::type::PORT_IN)
-        ("wait", literal::LONG, we::type::PORT_IN_OUT)
-        ("trigger", literal::CONTROL, we::type::PORT_OUT)
+        ("wait", literal::LONG(), we::type::PORT_IN_OUT)
+        ("trigger", literal::CONTROL(), we::type::PORT_OUT)
         ;
 
       process.add_connections ()
@@ -352,9 +352,9 @@ namespace kdm
 
       write.add_ports ()
         ("config", sig_config, we::type::PORT_IN)
-        ("wait", literal::LONG, we::type::PORT_IN)
+        ("wait", literal::LONG(), we::type::PORT_IN)
         ("volume", sig_volume, we::type::PORT_IN)
-        ("done", literal::CONTROL, we::type::PORT_OUT)
+        ("done", literal::CONTROL(), we::type::PORT_OUT)
         ;
 
       write.add_connections ()
@@ -382,7 +382,7 @@ namespace kdm
       process_volume.add_ports ()
         ("volume", sig_volume, we::type::PORT_IN, pid_volume_in)
         ("config", sig_config, we::type::PORT_IN, pid_config_in)
-        ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)
+        ("done", literal::CONTROL(), we::type::PORT_OUT, pid_done)
         ;
 
       // ******************************************************************* //
@@ -391,7 +391,7 @@ namespace kdm
 
       pid_t pid_wrap_volume (wrap.add_place (place_type ("volume", sig_volume)));
       pid_t pid_wrap_config (wrap.add_place (place_type ("config", sig_config)));
-      pid_t pid_wrap_done (wrap.add_place (place_type ("done", literal::CONTROL)));
+      pid_t pid_wrap_done (wrap.add_place (place_type ("done", literal::CONTROL())));
 
       process_volume.add_connections ()
         (pid_wrap_volume, "volume")
@@ -414,7 +414,7 @@ namespace kdm
       process_volume_wrapped.add_ports ()
         ("volume", sig_volume, we::type::PORT_IN, pid_wrap_volume)
         ("config", sig_config, we::type::PORT_IN, pid_wrap_config)
-        ("done", literal::CONTROL, we::type::PORT_OUT, pid_wrap_done)
+        ("done", literal::CONTROL(), we::type::PORT_OUT, pid_wrap_done)
         ;
 
       return process_volume_wrapped;
@@ -430,15 +430,15 @@ namespace kdm
 
       // ******************************************************************* //
 
-      pid_t pid_config_file (net.add_place (place_type ("config_file", literal::STRING)));
-      pid_t pid_wait (net.add_place (place_type ("wait", literal::LONG)));
-      pid_t pid_trigger_generate_TT (net.add_place (place_type ("trigger_generate_TT", literal::CONTROL)));
-      pid_t pid_waitTT (net.add_place (place_type ("waitTT", literal::LONG)));
-      pid_t pid_TT (net.add_place (place_type ("TT", literal::LONG)));
-      pid_t pid_doneTT (net.add_place (place_type ("doneTT", literal::LONG)));
-      pid_t pid_trigger_generate_offsets (net.add_place (place_type ("trigger_generate_offsets", literal::CONTROL)));
-      pid_t pid_trigger_dec (net.add_place (place_type ("trigger_dec", literal::CONTROL)));
-      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL)));
+      pid_t pid_config_file (net.add_place (place_type ("config_file", literal::STRING())));
+      pid_t pid_wait (net.add_place (place_type ("wait", literal::LONG())));
+      pid_t pid_trigger_generate_TT (net.add_place (place_type ("trigger_generate_TT", literal::CONTROL())));
+      pid_t pid_waitTT (net.add_place (place_type ("waitTT", literal::LONG())));
+      pid_t pid_TT (net.add_place (place_type ("TT", literal::LONG())));
+      pid_t pid_doneTT (net.add_place (place_type ("doneTT", literal::LONG())));
+      pid_t pid_trigger_generate_offsets (net.add_place (place_type ("trigger_generate_offsets", literal::CONTROL())));
+      pid_t pid_trigger_dec (net.add_place (place_type ("trigger_dec", literal::CONTROL())));
+      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL())));
       pid_t pid_config (net.add_place (place_type ("config", signature::config)));
 
       // ******************************************************************* //
@@ -449,11 +449,11 @@ namespace kdm
         );
 
       initialize.add_ports ()
-        ("config_file", literal::STRING, we::type::PORT_IN)
+        ("config_file", literal::STRING(), we::type::PORT_IN)
         ("config", signature::config, we::type::PORT_OUT)
-        ("wait", literal::LONG, we::type::PORT_OUT)
-        ("parallel_loadTT", literal::LONG, we::type::PORT_OUT)
-        ("trigger", literal::CONTROL, we::type::PORT_OUT)
+        ("wait", literal::LONG(), we::type::PORT_OUT)
+        ("parallel_loadTT", literal::LONG(), we::type::PORT_OUT)
+        ("trigger", literal::CONTROL(), we::type::PORT_OUT)
         ;
       initialize.add_connections ()
         (pid_config_file, "config_file")
@@ -474,7 +474,7 @@ namespace kdm
 
       ::signature::structured_t control_with_TT;
 
-      transition_type generate_TT (mk_generate ( literal::CONTROL
+      transition_type generate_TT (mk_generate ( literal::CONTROL()
                                                , "PARALLEL_LOADTT"
                                                , "TT_control"
                                                , control_with_TT
@@ -507,7 +507,7 @@ namespace kdm
         );
       trans_untag_TT.add_ports ()
         ("control_with_TT", control_with_TT, we::type::PORT_IN)
-        ("TT", literal::LONG, we::type::PORT_OUT)
+        ("TT", literal::LONG(), we::type::PORT_OUT)
         ;
       trans_untag_TT.add_connections ()
         (pid_control_with_TT, "control_with_TT")
@@ -527,7 +527,7 @@ namespace kdm
 
       loadTT.add_ports ()
         ("config", signature::config, we::type::PORT_READ)
-        ("TT", literal::LONG, we::type::PORT_IN_OUT)
+        ("TT", literal::LONG(), we::type::PORT_IN_OUT)
         ;
       loadTT.add_connections ()
         (pid_TT, "TT")
@@ -546,8 +546,8 @@ namespace kdm
       transition_type decTT ("decTT", expr_type ("${wait} := ${wait} - 1"));
 
       decTT.add_ports ()
-        ("trigger", literal::LONG, we::type::PORT_IN)
-        ("wait", literal::LONG, we::type::PORT_IN_OUT)
+        ("trigger", literal::LONG(), we::type::PORT_IN)
+        ("wait", literal::LONG(), we::type::PORT_IN_OUT)
         ;
       decTT.add_connections ()
         (pid_doneTT, "trigger")
@@ -570,8 +570,8 @@ namespace kdm
         );
 
       finTT.add_ports ()
-        ("wait", literal::LONG, we::type::PORT_IN)
-        ("trigger", literal::CONTROL, we::type::PORT_OUT)
+        ("wait", literal::LONG(), we::type::PORT_IN)
+        ("trigger", literal::CONTROL(), we::type::PORT_OUT)
         ;
       finTT.add_connections ()
         (pid_waitTT, "wait")
@@ -587,7 +587,7 @@ namespace kdm
 
       ::signature::structured_t control_with_offset;
 
-      transition_type generate_offset (mk_generate ( literal::CONTROL
+      transition_type generate_offset (mk_generate ( literal::CONTROL()
                                                    , "OFFSETS"
                                                    , "OFF_control"
                                                    , control_with_offset
@@ -608,7 +608,7 @@ namespace kdm
       net.add_edge (e++, connection_t (PT, tid_generate_offset, pid_trigger_generate_offsets));
       net.add_edge (e++, connection_t (TP, tid_generate_offset, pid_control_with_offset));
 
-      pid_t pid_offset (net.add_place (place_type ("offset", literal::LONG)));
+      pid_t pid_offset (net.add_place (place_type ("offset", literal::LONG())));
 
       // ******************************************************************* //
 
@@ -618,7 +618,7 @@ namespace kdm
         );
       trans_untag_offset.add_ports ()
         ("control_with_offset", control_with_offset, we::type::PORT_IN)
-        ("offset", literal::LONG, we::type::PORT_OUT)
+        ("offset", literal::LONG(), we::type::PORT_OUT)
         ;
       trans_untag_offset.add_connections ()
         (pid_control_with_offset, "control_with_offset")
@@ -634,7 +634,7 @@ namespace kdm
       ::signature::structured_t sig_volume;
 
       transition_type generate_volume
-        ( mk_generate ( literal::LONG
+        ( mk_generate ( literal::LONG()
                       , "SUBVOLUMES_PER_OFFSET"
                       , "offset"
                       , sig_volume
@@ -659,8 +659,8 @@ namespace kdm
 
 #undef SERIALIZE_PROC
 #ifdef SERIALIZE_PROC
-      pid_t pid_serialize_proc (net.add_place (place_type ("serialize_proc", literal::CONTROL)));
-      pid_t pid_done_proc (net.add_place (place_type ("done_proc", literal::CONTROL)));
+      pid_t pid_serialize_proc (net.add_place (place_type ("serialize_proc", literal::CONTROL())));
+      pid_t pid_done_proc (net.add_place (place_type ("done_proc", literal::CONTROL())));
       pid_t pid_volume_to_process (net.add_place (place_type ("volume_to_process", sig_volume)));
 
       token::put (net, pid_serialize_proc);
@@ -673,7 +673,7 @@ namespace kdm
       start_process.add_ports ()
         ("in", sig_volume, we::type::PORT_IN)
         ("out", sig_volume, we::type::PORT_OUT)
-        ("trigger", literal::CONTROL, we::type::PORT_IN)
+        ("trigger", literal::CONTROL(), we::type::PORT_IN)
         ;
       start_process.add_connections ()
         (pid_volume, "in")
@@ -718,9 +718,9 @@ namespace kdm
         , expr_type ("${a} := ${i}; ${b} := ${i}")
         );
       done_proc.add_ports ()
-        ("i", literal::CONTROL, we::type::PORT_IN)
-        ("a", literal::CONTROL, we::type::PORT_OUT)
-        ("b", literal::CONTROL, we::type::PORT_OUT)
+        ("i", literal::CONTROL(), we::type::PORT_IN)
+        ("a", literal::CONTROL(), we::type::PORT_OUT)
+        ("b", literal::CONTROL(), we::type::PORT_OUT)
         ;
       done_proc.add_connections ()
         (pid_done_proc, "i")
@@ -742,8 +742,8 @@ namespace kdm
         );
 
       dec.add_ports ()
-        ("trigger", literal::CONTROL, we::type::PORT_IN)
-        ("wait", literal::LONG, we::type::PORT_IN_OUT)
+        ("trigger", literal::CONTROL(), we::type::PORT_IN)
+        ("wait", literal::LONG(), we::type::PORT_IN_OUT)
         ;
       dec.add_connections ()
         (pid_trigger_dec, "trigger")
@@ -766,9 +766,9 @@ namespace kdm
         );
 
       finalize.add_ports ()
-        ("wait", literal::LONG, we::type::PORT_IN)
+        ("wait", literal::LONG(), we::type::PORT_IN)
         ("config", signature::config, we::type::PORT_IN)
-        ("trigger", literal::CONTROL, we::type::PORT_OUT)
+        ("trigger", literal::CONTROL(), we::type::PORT_OUT)
         ;
       finalize.add_connections ()
         (pid_wait, "wait")
@@ -790,8 +790,8 @@ namespace kdm
         , transition_type::external
         );
       trans_net.add_ports ()
-        ("config_file", literal::STRING, we::type::PORT_IN, pid_config_file)
-        ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)
+        ("config_file", literal::STRING(), we::type::PORT_IN, pid_config_file)
+        ("done", literal::CONTROL(), we::type::PORT_OUT, pid_done)
         ;
 
       return trans_net;

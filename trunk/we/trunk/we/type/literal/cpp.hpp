@@ -24,29 +24,29 @@ namespace literal
     public:
       info (void) : trans (), inc ()
       {
-        trans[literal::CONTROL]   = "control";
-        trans[literal::BOOL]      = "bool";
-        trans[literal::LONG]      = "long";
-        trans[literal::DOUBLE]    = "double";
-        trans[literal::CHAR]      = "char";
-        trans[literal::STRING]    = "std::string";
-        trans[literal::BITSET]    = "bitsetofint::type";
-        trans[literal::STACK]     = "std::deque<long>";
-        trans[literal::MAP]       = "std::map<long, long>";
-        trans[literal::SET]       = "std::set<long>";
-        trans[literal::BYTEARRAY] = "bytearray::type";
+        trans[literal::CONTROL()]   = "control";
+        trans[literal::BOOL()]      = "bool";
+        trans[literal::LONG()]      = "long";
+        trans[literal::DOUBLE()]    = "double";
+        trans[literal::CHAR()]      = "char";
+        trans[literal::STRING()]    = "std::string";
+        trans[literal::BITSET()]    = "bitsetofint::type";
+        trans[literal::STACK()]     = "std::deque<long>";
+        trans[literal::MAP()]       = "std::map<long, long>";
+        trans[literal::SET()]       = "std::set<long>";
+        trans[literal::BYTEARRAY()] = "bytearray::type";
 
-        inc[literal::CONTROL]   = "we/type/control.hpp";
-        inc[literal::BOOL]      = "";
-        inc[literal::LONG]      = "";
-        inc[literal::DOUBLE]    = "";
-        inc[literal::CHAR]      = "";
-        inc[literal::STRING]    = "string";
-        inc[literal::BITSET]    = "we/type/bitsetofint.hpp";
-        inc[literal::STACK]     = "deque";
-        inc[literal::MAP]       = "map";
-        inc[literal::SET]       = "set";
-        inc[literal::BYTEARRAY] = "we/type/bytearray.hpp";
+        inc[literal::CONTROL()]   = "we/type/control.hpp";
+        inc[literal::BOOL()]      = "";
+        inc[literal::LONG()]      = "";
+        inc[literal::DOUBLE()]    = "";
+        inc[literal::CHAR()]      = "";
+        inc[literal::STRING()]    = "string";
+        inc[literal::BITSET()]    = "we/type/bitsetofint.hpp";
+        inc[literal::STACK()]     = "deque";
+        inc[literal::MAP()]       = "map";
+        inc[literal::SET()]       = "set";
+        inc[literal::BYTEARRAY()] = "we/type/bytearray.hpp";
       }
 
       const map_type::mapped_type & translate (const type_name_t & t) const

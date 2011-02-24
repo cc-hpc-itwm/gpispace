@@ -17,46 +17,46 @@ namespace kdm
 
     static void init (void)
     {
-      config["OFFSETS"] = literal::LONG;
-      config["BUNCHES_PER_OFFSET"] = literal::LONG;
-      config["STORES"] = literal::LONG;
-      config["SUBVOLUMES_PER_OFFSET"] = literal::LONG;
-      config["PARALLEL_LOADTT"] = literal::LONG;
+      config["OFFSETS"] = literal::LONG();
+      config["BUNCHES_PER_OFFSET"] = literal::LONG();
+      config["STORES"] = literal::LONG();
+      config["SUBVOLUMES_PER_OFFSET"] = literal::LONG();
+      config["PARALLEL_LOADTT"] = literal::LONG();
 
-      config["handle_TT"] = literal::LONG;
-      config["handle_Job"] = literal::LONG;
-      config["scratch_Job"] = literal::LONG;
-      config["handle_Store"] = literal::LONG;
-      config["scratch_Store"] = literal::LONG;
-      config["handle_Volume"] = literal::LONG;
-      config["scratch_Volume"] = literal::LONG;
-      config["NThreads"] = literal::LONG;
+      config["handle_TT"] = literal::LONG();
+      config["handle_Job"] = literal::LONG();
+      config["scratch_Job"] = literal::LONG();
+      config["handle_Store"] = literal::LONG();
+      config["scratch_Store"] = literal::LONG();
+      config["handle_Volume"] = literal::LONG();
+      config["scratch_Volume"] = literal::LONG();
+      config["NThreads"] = literal::LONG();
 
-      state["num"] = literal::LONG;
-      state["state"] = literal::LONG;
+      state["num"] = literal::LONG();
+      state["state"] = literal::LONG();
 
-      offset_with_state["offset"] = literal::LONG;
+      offset_with_state["offset"] = literal::LONG();
       offset_with_state["state"] = state;
 
-      bunch["id"] = literal::LONG;
-      bunch["offset"] = literal::LONG;
+      bunch["id"] = literal::LONG();
+      bunch["offset"] = literal::LONG();
 
       loaded_bunch["bunch"] = bunch;
-      loaded_bunch["store"] = literal::LONG;
-      loaded_bunch["seen"] = literal::BITSET;
-      loaded_bunch["wait"] = literal::LONG;
+      loaded_bunch["store"] = literal::LONG();
+      loaded_bunch["seen"] = literal::BITSET();
+      loaded_bunch["wait"] = literal::LONG();
 
       buffer["filled"] = literal::BOOL;
       buffer["assigned"] = literal::BOOL;
       buffer["free"] = literal::BOOL;
       buffer["bunch"] = bunch;
-      buffer["store"] = literal::LONG;
+      buffer["store"] = literal::LONG();
 
-      volume["id"] = literal::LONG;
-      volume["offset"] = literal::LONG;
+      volume["id"] = literal::LONG();
+      volume["offset"] = literal::LONG();
 
       volume_with_buffer["volume"] = volume;
-      volume_with_buffer["wait"] = literal::LONG;
+      volume_with_buffer["wait"] = literal::LONG();
       volume_with_buffer["buffer0"] = buffer;
       volume_with_buffer["buffer1"] = buffer;
     }
@@ -130,22 +130,22 @@ namespace kdm
 
       // ******************************************************************* //
 
-      pid_t pid_config_file (net.add_place (place_type ("config_file", literal::STRING)));
+      pid_t pid_config_file (net.add_place (place_type ("config_file", literal::STRING())));
       pid_t pid_config (net.add_place (place_type ("config", signature::config)));
-      pid_t pid_trigger_gen_store (net.add_place (place_type ("trigger_gen_store", literal::CONTROL)));
-      pid_t pid_trigger_generate_TT (net.add_place (place_type ("trigger_generate_TT", literal::CONTROL)));
-      pid_t pid_waitTT (net.add_place (place_type ("waitTT", literal::LONG)));
-      pid_t pid_trigger_decTT (net.add_place (place_type ("decTT", literal::CONTROL)));
-      pid_t pid_state_generate_TT (net.add_place (place_type ("state_generate_TT", literal::LONG)));
-      pid_t pid_TT (net.add_place (place_type ("TT", literal::LONG)));
-      pid_t pid_doneTT (net.add_place (place_type ("doneTT", literal::LONG)));
+      pid_t pid_trigger_gen_store (net.add_place (place_type ("trigger_gen_store", literal::CONTROL())));
+      pid_t pid_trigger_generate_TT (net.add_place (place_type ("trigger_generate_TT", literal::CONTROL())));
+      pid_t pid_waitTT (net.add_place (place_type ("waitTT", literal::LONG())));
+      pid_t pid_trigger_decTT (net.add_place (place_type ("decTT", literal::CONTROL())));
+      pid_t pid_state_generate_TT (net.add_place (place_type ("state_generate_TT", literal::LONG())));
+      pid_t pid_TT (net.add_place (place_type ("TT", literal::LONG())));
+      pid_t pid_doneTT (net.add_place (place_type ("doneTT", literal::LONG())));
       pid_t pid_gen_store_state (net.add_place (place_type ("gen_store_state", signature::state)));
-      pid_t pid_empty_store (net.add_place (place_type ("empty_store", literal::LONG)));
-      pid_t pid_trigger_gen_offset (net.add_place (place_type ("trigger_gen_offset", literal::CONTROL)));
-      pid_t pid_wanted_offset (net.add_place (place_type ("wanted_offset", literal::BITSET)));
+      pid_t pid_empty_store (net.add_place (place_type ("empty_store", literal::LONG())));
+      pid_t pid_trigger_gen_offset (net.add_place (place_type ("trigger_gen_offset", literal::CONTROL())));
+      pid_t pid_wanted_offset (net.add_place (place_type ("wanted_offset", literal::BITSET())));
       pid_t pid_gen_offset_state (net.add_place (place_type ("gen_offset_state", signature::state)));
-      pid_t pid_offset_bunch (net.add_place (place_type ("offset_bunch", literal::LONG)));
-      pid_t pid_offset_volume (net.add_place (place_type ("offset_volume", literal::LONG)));
+      pid_t pid_offset_bunch (net.add_place (place_type ("offset_bunch", literal::LONG())));
+      pid_t pid_offset_volume (net.add_place (place_type ("offset_volume", literal::LONG())));
       pid_t pid_gen_bunch_state (net.add_place (place_type ("gen_bunch_state", signature::offset_with_state)));
       pid_t pid_bunch (net.add_place (place_type ("bunch", signature::bunch)));
       pid_t pid_loaded_bunch (net.add_place (place_type ("loaded_bunch", signature::loaded_bunch)));
@@ -154,10 +154,10 @@ namespace kdm
       pid_t pid_volume_processed (net.add_place (place_type ("volume_processed", signature::volume_with_buffer)));
       pid_t pid_volume_to_be_written (net.add_place (place_type ("volume_to_be_written", signature::volume)));
       pid_t pid_volume_written (net.add_place (place_type ("volume_written", signature::volume)));
-      pid_t pid_volume_wait (net.add_place (place_type ("volume_wait", literal::LONG)));
+      pid_t pid_volume_wait (net.add_place (place_type ("volume_wait", literal::LONG())));
       pid_t pid_buffer_empty (net.add_place (place_type ("buffer_empty", signature::buffer)));
       pid_t pid_assign_xor_reuse_store (net.add_place (place_type ("assign_xor_reuse_store")));
-      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL)));
+      pid_t pid_done (net.add_place (place_type ("done", literal::CONTROL())));
 
       token::put (net, pid_buffer_empty, value::buffer::empty);
       token::put (net, pid_assign_xor_reuse_store);
@@ -171,12 +171,12 @@ namespace kdm
           , transition_type::external
           );
         initialize.add_ports ()
-          ("config_file", literal::STRING, we::type::PORT_IN)
+          ("config_file", literal::STRING(), we::type::PORT_IN)
           ("config", signature::config, we::type::PORT_OUT)
-          ("trigger", literal::CONTROL, we::type::PORT_OUT)
-          ("wanted", literal::BITSET, we::type::PORT_OUT)
-          ("wait", literal::LONG, we::type::PORT_OUT)
-          ("parallel_loadTT", literal::LONG, we::type::PORT_OUT)
+          ("trigger", literal::CONTROL(), we::type::PORT_OUT)
+          ("wanted", literal::BITSET(), we::type::PORT_OUT)
+          ("wait", literal::LONG(), we::type::PORT_OUT)
+          ("parallel_loadTT", literal::LONG(), we::type::PORT_OUT)
           ;
         initialize.add_connections ()
           (pid_config_file, "config_file")
@@ -201,8 +201,8 @@ namespace kdm
       {
         transition_type init_genTT ("init_genTT", expr_type ("${TT} := 0L"));
         init_genTT.add_ports ()
-          ("TT", literal::LONG, we::type::PORT_OUT)
-          ("trigger", literal::CONTROL, we::type::PORT_IN)
+          ("TT", literal::LONG(), we::type::PORT_OUT)
+          ("trigger", literal::CONTROL(), we::type::PORT_IN)
           ;
         init_genTT.add_connections()
           (pid_trigger_generate_TT, "trigger")
@@ -223,9 +223,9 @@ namespace kdm
           , cond_type ("${state} < ${max}")
           );
         stepTT.add_ports ()
-          ("TT", literal::LONG, we::type::PORT_OUT)
-          ("state", literal::LONG, we::type::PORT_IN_OUT)
-          ("max", literal::LONG, we::type::PORT_READ)
+          ("TT", literal::LONG(), we::type::PORT_OUT)
+          ("state", literal::LONG(), we::type::PORT_IN_OUT)
+          ("max", literal::LONG(), we::type::PORT_READ)
           ;
         stepTT.add_connections()
           (pid_state_generate_TT, "state")
@@ -251,9 +251,9 @@ namespace kdm
           );
 
         breakTT.add_ports ()
-          ("state", literal::LONG, we::type::PORT_IN)
-          ("max", literal::LONG, we::type::PORT_READ)
-          ("trigger", literal::CONTROL, we::type::PORT_OUT)
+          ("state", literal::LONG(), we::type::PORT_IN)
+          ("max", literal::LONG(), we::type::PORT_READ)
+          ("trigger", literal::CONTROL(), we::type::PORT_OUT)
           ;
         breakTT.add_connections ()
           (pid_waitTT, "max")
@@ -273,7 +273,7 @@ namespace kdm
       {
         transition_type loadTT ("loadTT", mod_type ("kdm_complex", "loadTT"));
         loadTT.add_ports ()
-          ("TT", literal::LONG, we::type::PORT_IN_OUT)
+          ("TT", literal::LONG(), we::type::PORT_IN_OUT)
           ("config", signature::config, we::type::PORT_READ)
           ;
         loadTT.add_connections ()
@@ -293,9 +293,9 @@ namespace kdm
       {
         transition_type decTT ("decTT", expr_type ("${wait} := ${wait} - 1"));
         decTT.add_ports ()
-          ("wait", literal::LONG, we::type::PORT_IN_OUT)
-          ("doneTT", literal::LONG, we::type::PORT_IN)
-          ("trigger", literal::CONTROL, we::type::PORT_READ)
+          ("wait", literal::LONG(), we::type::PORT_IN_OUT)
+          ("doneTT", literal::LONG(), we::type::PORT_IN)
+          ("trigger", literal::CONTROL(), we::type::PORT_READ)
           ;
         decTT.add_connections()
           ("wait", pid_waitTT)
@@ -320,8 +320,8 @@ namespace kdm
           , "${wait} == 0L"
           );
         finalize_generate_TT.add_ports()
-          ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
-          ("wait", literal::LONG, we::type::PORT_IN)
+          ("trigger", literal::CONTROL(), we::type::PORT_IN_OUT)
+          ("wait", literal::LONG(), we::type::PORT_IN)
           ;
         finalize_generate_TT.add_connections()
           (pid_waitTT, "wait")
@@ -347,7 +347,7 @@ namespace kdm
           );
         gen_store.add_ports ()
           ("config", signature::config, we::type::PORT_READ)
-          ("trigger", literal::LONG, we::type::PORT_IN)
+          ("trigger", literal::LONG(), we::type::PORT_IN)
           ("state", signature::state, we::type::PORT_OUT)
           ;
         gen_store.add_connections()
@@ -375,7 +375,7 @@ namespace kdm
           , cond_type ("${state.state} < ${state.num}")
           );
         gen_store_step.add_ports ()
-          ("empty_store", literal::LONG, we::type::PORT_OUT)
+          ("empty_store", literal::LONG(), we::type::PORT_OUT)
           ("state", signature::state, we::type::PORT_IN_OUT)
           ;
         gen_store_step.add_connections ()
@@ -399,7 +399,7 @@ namespace kdm
           , cond_type ("${state.state} >= ${state.num}")
           );
         gen_store_break.add_ports ()
-          ("trigger", literal::CONTROL, we::type::PORT_OUT)
+          ("trigger", literal::CONTROL(), we::type::PORT_OUT)
           ("state", signature::state, we::type::PORT_IN)
           ;
         gen_store_break.add_connections ()
@@ -425,7 +425,7 @@ namespace kdm
           );
         gen_offset.add_ports ()
           ("config", signature::config, we::type::PORT_READ)
-          ("trigger", literal::CONTROL, we::type::PORT_IN)
+          ("trigger", literal::CONTROL(), we::type::PORT_IN)
           ("state", signature::state, we::type::PORT_OUT)
           ;
         gen_offset.add_connections ()
@@ -457,9 +457,9 @@ namespace kdm
           );
         gen_offset_step.add_ports ()
           ("state", signature::state, we::type::PORT_IN_OUT)
-          ("offsetA", literal::LONG, we::type::PORT_OUT)
-          ("offsetB", literal::LONG, we::type::PORT_OUT)
-          ("wanted", literal::BITSET, we::type::PORT_READ)
+          ("offsetA", literal::LONG(), we::type::PORT_OUT)
+          ("offsetB", literal::LONG(), we::type::PORT_OUT)
+          ("wanted", literal::BITSET(), we::type::PORT_READ)
           ;
         gen_offset_step.add_connections ()
           ("state", pid_gen_offset_state)
@@ -511,7 +511,7 @@ namespace kdm
           );
         gen_bunch.add_ports ()
           ("state", signature::offset_with_state, we::type::PORT_OUT)
-          ("offset", literal::LONG, we::type::PORT_IN)
+          ("offset", literal::LONG(), we::type::PORT_IN)
           ("config", signature::config, we::type::PORT_READ)
           ;
         gen_bunch.add_connections ()
@@ -589,7 +589,7 @@ namespace kdm
         gen_volume.add_ports ()
           ("state", signature::offset_with_state, we::type::PORT_OUT)
           ("config", signature::config, we::type::PORT_READ)
-          ("offset", literal::LONG, we::type::PORT_IN)
+          ("offset", literal::LONG(), we::type::PORT_IN)
           ;
         gen_volume.add_connections ()
           ("state", pid_gen_volume_state)
@@ -669,7 +669,7 @@ namespace kdm
         load.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_OUT)
           ("bunch", signature::bunch, we::type::PORT_IN)
-          ("empty_store", literal::LONG, we::type::PORT_IN)
+          ("empty_store", literal::LONG(), we::type::PORT_IN)
           ("config", signature::config, we::type::PORT_READ)
           ;
         load.add_connections ()
@@ -697,7 +697,7 @@ namespace kdm
           );
         reuse_store.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN)
-          ("empty_store", literal::LONG, we::type::PORT_OUT)
+          ("empty_store", literal::LONG(), we::type::PORT_OUT)
           ;
         reuse_store.add_connections ()
           (pid_loaded_bunch, "loaded_bunch")
@@ -731,7 +731,7 @@ namespace kdm
         assign0.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN_OUT)
           ("volume", signature::volume_with_buffer, we::type::PORT_IN_OUT)
-          ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
+          ("trigger", literal::CONTROL(), we::type::PORT_IN_OUT)
           ;
         assign0.add_connections()
           ("loaded_bunch", pid_loaded_bunch)
@@ -773,7 +773,7 @@ namespace kdm
         assign1.add_ports ()
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN_OUT)
           ("volume", signature::volume_with_buffer, we::type::PORT_IN_OUT)
-          ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
+          ("trigger", literal::CONTROL(), we::type::PORT_IN_OUT)
           ;
         assign1.add_connections()
           ("loaded_bunch", pid_loaded_bunch)
@@ -836,7 +836,7 @@ namespace kdm
             )
           );
         reuse_store0.add_ports ()
-          ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
+          ("trigger", literal::CONTROL(), we::type::PORT_IN_OUT)
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN_OUT)
           ("volume", signature::volume_with_buffer, we::type::PORT_IN_OUT)
           ;
@@ -873,7 +873,7 @@ namespace kdm
          (${volume.buffer1.free})")
           );
         reuse_store1.add_ports ()
-          ("trigger", literal::CONTROL, we::type::PORT_IN_OUT)
+          ("trigger", literal::CONTROL(), we::type::PORT_IN_OUT)
           ("loaded_bunch", signature::loaded_bunch, we::type::PORT_IN_OUT)
           ("volume", signature::volume_with_buffer, we::type::PORT_IN_OUT)
           ;
@@ -906,7 +906,7 @@ namespace kdm
           , cond_type ("${volume_processed.wait} > 0L")
           );
         volume_step.add_ports ()
-          ("trigger", literal::CONTROL, we::type::PORT_READ)
+          ("trigger", literal::CONTROL(), we::type::PORT_READ)
           ("volume", signature::volume_with_buffer, we::type::PORT_OUT)
           ("volume_processed", signature::volume_with_buffer, we::type::PORT_IN)
           ;
@@ -932,7 +932,7 @@ namespace kdm
         volume_break.add_ports ()
           ("volume_processed", signature::volume_with_buffer, we::type::PORT_IN)
           ("volume", signature::volume, we::type::PORT_OUT)
-          ("trigger", literal::LONG, we::type::PORT_READ)
+          ("trigger", literal::LONG(), we::type::PORT_READ)
           ;
         volume_break.add_connections ()
           (pid_volume_processed, "volume_processed")
@@ -981,7 +981,7 @@ namespace kdm
           );
         volume_next_offset.add_ports()
           ("config", signature::config, we::type::PORT_READ)
-          ("wanted_offset", literal::BITSET, we::type::PORT_IN_OUT)
+          ("wanted_offset", literal::BITSET(), we::type::PORT_IN_OUT)
           ("volume_written", signature::volume, we::type::PORT_IN)
           ;
         volume_next_offset.add_connections()
@@ -1008,7 +1008,7 @@ namespace kdm
           , cond_type ("${volume_written.offset} + 1 >= ${config.OFFSETS}")
           );
         volume_done.add_ports ()
-          ("volume_wait", literal::LONG, we::type::PORT_IN_OUT)
+          ("volume_wait", literal::LONG(), we::type::PORT_IN_OUT)
           ("config", signature::config, we::type::PORT_READ)
           ("volume_written", signature::volume, we::type::PORT_IN)
           ;
@@ -1035,8 +1035,8 @@ namespace kdm
           , cond_type ("${volume_wait} == 0L")
           );
         finalize.add_ports ()
-          ("done", literal::CONTROL, we::type::PORT_OUT)
-          ("volume_wait", literal::LONG, we::type::PORT_IN)
+          ("done", literal::CONTROL(), we::type::PORT_OUT)
+          ("volume_wait", literal::LONG(), we::type::PORT_IN)
           ("config", signature::config, we::type::PORT_IN)
           ;
         finalize.add_connections ()
@@ -1059,8 +1059,8 @@ namespace kdm
                                 , transition_type::external
                                 );
       trans_net.add_ports ()
-        ("config_file", literal::STRING, we::type::PORT_IN, pid_config_file)
-        ("done", literal::CONTROL, we::type::PORT_OUT, pid_done)
+        ("config_file", literal::STRING(), we::type::PORT_IN, pid_config_file)
+        ("done", literal::CONTROL(), we::type::PORT_OUT, pid_done)
         ;
 
       return trans_net;

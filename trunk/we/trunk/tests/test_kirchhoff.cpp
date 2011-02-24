@@ -324,33 +324,33 @@ main (int argc, char ** argv)
 
   pnet_t net;
 
-  petri_net::pid_t pid_NUM_VID (net.add_place (place::type("NUM_VID",literal::LONG)));
-  petri_net::pid_t pid_NUM_BID_next (net.add_place (place::type("NUM_BID_next",literal::LONG)));
-  petri_net::pid_t pid_NUM_BID_done (net.add_place (place::type("NUM_BID_done",literal::LONG)));
-  petri_net::pid_t pid_NUM_STORE (net.add_place (place::type("NUM_STORE",literal::LONG)));
-  petri_net::pid_t pid_NUM_BUF (net.add_place (place::type("NUM_BUF",literal::LONG)));
+  petri_net::pid_t pid_NUM_VID (net.add_place (place::type("NUM_VID",literal::LONG())));
+  petri_net::pid_t pid_NUM_BID_next (net.add_place (place::type("NUM_BID_next",literal::LONG())));
+  petri_net::pid_t pid_NUM_BID_done (net.add_place (place::type("NUM_BID_done",literal::LONG())));
+  petri_net::pid_t pid_NUM_STORE (net.add_place (place::type("NUM_STORE",literal::LONG())));
+  petri_net::pid_t pid_NUM_BUF (net.add_place (place::type("NUM_BUF",literal::LONG())));
 
-  petri_net::pid_t pid_vid_in (net.add_place (place::type("vid_in",literal::LONG)));
-  petri_net::pid_t pid_bid_in (net.add_place (place::type("bid_in",literal::LONG)));
-  petri_net::pid_t pid_vid_out (net.add_place (place::type("vid_out",literal::LONG)));
-  petri_net::pid_t pid_bid_out (net.add_place (place::type("bid_out",literal::LONG)));
-  petri_net::pid_t pid_sid (net.add_place (place::type("sid",literal::LONG)));
-  petri_net::pid_t pid_bufid (net.add_place (place::type("bufid",literal::LONG)));
+  petri_net::pid_t pid_vid_in (net.add_place (place::type("vid_in",literal::LONG())));
+  petri_net::pid_t pid_bid_in (net.add_place (place::type("bid_in",literal::LONG())));
+  petri_net::pid_t pid_vid_out (net.add_place (place::type("vid_out",literal::LONG())));
+  petri_net::pid_t pid_bid_out (net.add_place (place::type("bid_out",literal::LONG())));
+  petri_net::pid_t pid_sid (net.add_place (place::type("sid",literal::LONG())));
+  petri_net::pid_t pid_bufid (net.add_place (place::type("bufid",literal::LONG())));
 
   signature::structured_t sig_store;
 
-  sig_store["bid"] = literal::LONG;
-  sig_store["seen"] = literal::BITSET;
-  sig_store["sid"] = literal::LONG;
-  sig_store["numvid"] = literal::LONG;
+  sig_store["bid"] = literal::LONG();
+  sig_store["seen"] = literal::BITSET();
+  sig_store["sid"] = literal::LONG();
+  sig_store["numvid"] = literal::LONG();
 
   petri_net::pid_t pid_store (net.add_place (place::type("store", sig_store)));
 
   signature::structured_t sig_vid_buffer_empty;
 
-  sig_vid_buffer_empty["vid"] = literal::LONG;
-  sig_vid_buffer_empty["bufid"] = literal::LONG;
-  sig_vid_buffer_empty["numbid"] = literal::LONG;
+  sig_vid_buffer_empty["vid"] = literal::LONG();
+  sig_vid_buffer_empty["bufid"] = literal::LONG();
+  sig_vid_buffer_empty["numbid"] = literal::LONG();
 
   petri_net::pid_t pid_vid_buf_empty
     (net.add_place (place::type("vid_buf_empty", sig_vid_buffer_empty)));
@@ -360,7 +360,7 @@ main (int argc, char ** argv)
   signature::structured_t sig_vid_buffer_filled;
 
   sig_vid_buffer_filled["vb"] = sig_vid_buffer_empty;
-  sig_vid_buffer_filled["bid"] = literal::LONG;
+  sig_vid_buffer_filled["bid"] = literal::LONG();
 
   petri_net::pid_t pid_vid_buf_filled
     (net.add_place (place::type("vid_buf_filled", sig_vid_buffer_filled)));
@@ -435,8 +435,8 @@ main (int argc, char ** argv)
 
   signature::structured_t sig_log;
 
-  sig_log["vid"] = literal::LONG;
-  sig_log["bid"] = literal::LONG;
+  sig_log["vid"] = literal::LONG();
+  sig_log["bid"] = literal::LONG();
 
   petri_net::pid_t pid_log (net.add_place (place::type("log", sig_log)));
 

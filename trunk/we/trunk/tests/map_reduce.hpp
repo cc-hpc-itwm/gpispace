@@ -38,8 +38,8 @@ namespace we
           );
 
         map_reduce.add_ports ()
-          ("in", literal::STRING, we::type::PORT_IN)
-          ("out", literal::STRING, we::type::PORT_OUT)
+          ("in", literal::STRING(), we::type::PORT_IN)
+          ("out", literal::STRING(), we::type::PORT_OUT)
           ;
 
         return map_reduce;
