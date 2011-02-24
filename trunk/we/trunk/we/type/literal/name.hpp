@@ -10,7 +10,7 @@ namespace literal
   typedef std::string type_name_t;
 
 #define CONST(name,string)                \
-  static const type_name_t name ()        \
+  static inline const type_name_t name () \
   {                                       \
     static const type_name_t x (string);  \
                                           \
