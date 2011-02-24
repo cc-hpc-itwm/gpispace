@@ -5,6 +5,25 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
+OPTION(WE_PRECOMPILE "precompile" YES)
+
+set (WE_PRECOMPILE_LIBRARIES CACHE INTERNAL "we_precompile" FORCE)
+
+function(add_we_precompile_lib libname srcs)
+  if (WE_PRECOMPILE)
+    ADD_LIBRARY(${libname} ${srcs})
+    set (WE_PRECOMPILE_LIBRARIES ${WE_PRECOMPILE_LIBRARIES}
+         ${libname}
+         CACHE INTERNAL "${libname}" FORCE
+        )
+  endif (WE_PRECOMPILE)
+endfunction(add_we_precompile_lib)
+
+if (WE_PRECOMPILE)
+  add_definitions (-DWE_PRECOMPILE)
+endif (WE_PRECOMPILE)
+
+
 project(libwe)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
