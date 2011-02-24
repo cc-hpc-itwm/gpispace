@@ -23,7 +23,12 @@ namespace fhg
     {
       bool res (true);
 
-      boost::filesystem::path stack (".");
+      boost::filesystem::path stack;
+
+      if (path.is_relative())
+        {
+          stack = boost::filesystem::path (".");
+        }
 
       for ( boost::filesystem::path::iterator pos (path.begin())
           ; res && pos != path.end()
