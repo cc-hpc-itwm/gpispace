@@ -8,6 +8,7 @@
 
 #include <we/type/control.hpp>
 #include <we/type/bitsetofint.hpp>
+#include <we/type/bytearray.hpp>
 #include <we/type/literal.hpp>
 #include <we/type/literal/name.hpp>
 
@@ -28,6 +29,7 @@ namespace literal
       type_name_t operator () (const literal::stack_type &) const { return STACK; }
       type_name_t operator () (const literal::map_type &) const { return MAP; }
       type_name_t operator () (const literal::set_type &) const { return SET; }
+      type_name_t operator () (const bytearray::type &) const { return BYTEARRAY; }
     };
   }
 

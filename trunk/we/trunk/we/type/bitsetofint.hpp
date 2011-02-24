@@ -45,8 +45,8 @@ namespace bitsetofint
     }
 
   public:
-    type (const container_type _container) : container (_container) {}
-    type (const std::size_t num_container = 0) : container (num_container) {}
+    explicit type (const container_type & c) : container (c) {}
+    explicit type (const std::size_t n = 0) : container (n) {}
 
     void ins (const element_type & x) throw (std::bad_alloc)
     {
@@ -79,7 +79,9 @@ namespace bitsetofint
         ; it != t.container.end()
         ; ++it
         )
-      s << ((it != t.container.begin()) ? "," : "") << *it;
+      {
+        s << " " << *it;
+      }
     return s << "}";
   }
 

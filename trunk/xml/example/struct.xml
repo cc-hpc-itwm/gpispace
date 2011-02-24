@@ -33,10 +33,13 @@
 <token><value>'c'</value></token>
 </place>
 <place name="place_bitset" type="bitset">
-<token><value>{12}</value></token>
+<token><value>{ 12}</value></token>
 </place>
 <place name="place_bool" type="bool">
 <token><value>true</value></token>
+</place>
+<place name="place_bytearray" type="bytearray">
+<token><value>y( -128 127)</value></token>
 </place>
 
 <struct name="bi">

@@ -5,6 +5,7 @@
 
 #include <we/type/control.hpp>
 #include <we/type/bitsetofint.hpp>
+#include <we/type/bytearray.hpp>
 
 #include <boost/variant.hpp>
 
@@ -34,6 +35,7 @@ namespace literal
                         , stack_type
                         , map_type
                         , set_type
+                        , bytearray::type
                         > type;
 }
 

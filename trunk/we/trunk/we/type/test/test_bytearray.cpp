@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE (ba_char)
       buf[i] = i + 'a';
     }
 
-  bytearray::type x (buf, 10);
+  const bytearray::type x (buf, 10);
 
   std::fill (buf, buf + 10, 0);
 
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE (ba_uint64_t)
 {
   uint64_t v (1UL << 63);
 
-  bytearray::type x (&v);
+  const bytearray::type x (&v);
 
   v = 0;
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 {
   uint64_t v (1UL << 63);
 
-  bytearray::type x (&v);
+  const bytearray::type x (&v);
 
   BOOST_REQUIRE (sizeof (uint64_t) == 8);
 
@@ -82,7 +82,7 @@ void check_char ()
         buf[i] = i;
       }
 
-    bytearray::type x (buf, 10);
+    const bytearray::type x (buf, 10);
 
     Oarch oa (oss, boost::archive::no_header);
 
@@ -133,7 +133,7 @@ void check_uint64_t ()
   {
     uint64_t v (1UL << 63);
 
-    bytearray::type x (&v);
+    const bytearray::type x (&v);
 
     Oarch oa (oss, boost::archive::no_header);
 

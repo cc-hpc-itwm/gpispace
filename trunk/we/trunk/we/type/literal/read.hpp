@@ -9,7 +9,6 @@
 
 #include <we/type/literal.hpp>
 
-
 namespace literal
 {
   static char read_quoted_char (fhg::util::parse::position & pos)
@@ -198,7 +197,7 @@ namespace literal
       }
   }
 
-  static bool read_stack_item (long & l, fhg::util::parse::position & pos)
+  static bool read_list_item (long & l, fhg::util::parse::position & pos)
   {
     if (pos.end() || !isspace (*pos))
       {
@@ -262,6 +261,24 @@ namespace literal
       {
       case 't': ++pos; require ("rue", pos); v = true; break;
       case 'f': ++pos; require ("alse", pos); v = false; break;
+      case 'y': ++pos;
+        {
+          require ("(", pos);
+
+          bytearray::type::container_type container;
+
+          long l;
+
+          while (read_list_item (l, pos))
+            {
+              container.push_back (l);
+            }
+
+          require (")", pos);
+
+          v = bytearray::type (container);
+        }
+        break;
       case '[': ++pos;
         if (pos.end())
           {
@@ -294,7 +311,7 @@ namespace literal
           literal::stack_type s;
           long l;
 
-          while (read_stack_item (l, pos))
+          while (read_list_item (l, pos))
             {
               s.push_front (l);
             }
@@ -352,7 +369,7 @@ namespace literal
                 literal::set_type s;
                 long l;
 
-                while (read_stack_item (l, pos))
+                while (read_list_item (l, pos))
                   {
                     s.insert (l);
                   }
@@ -363,24 +380,12 @@ namespace literal
             default:
               {
                 bitsetofint::type::container_type container;
-                bool read_item;
+                long l;
 
-                do
+                while (read_list_item (l, pos))
                   {
-                    read_item = false;
-
-                    skip_spaces (pos);
-
-                    if (!pos.end() && isdigit (*pos))
-                      {
-                        container.push_back (read_long (pos));
-
-                        skip_spaces (pos); skip_sep (',', pos);
-
-                        read_item = true;
-                      }
+                    container.push_back (l);
                   }
-                while (read_item);
 
                 require ("}", pos);
 

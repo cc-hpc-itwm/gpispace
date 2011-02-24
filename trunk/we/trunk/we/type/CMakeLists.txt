@@ -1,6 +1,7 @@
 # -*- mode: cmake; -*-
 set (hdrs
   bitsetofint.hpp
+  bytearray.hpp
   condition.hpp
   connection.hpp
   control.hpp

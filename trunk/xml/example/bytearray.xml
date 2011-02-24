@@ -1,0 +1,65 @@
+<defun name="test_bytearray">
+
+  <struct name="point">
+    <field name="x" type="double"/>
+    <field name="y" type="double"/>
+  </struct>
+
+  <in name="point" type="point" place="in"/>
+  <out name="point" type="point" place="out"/>
+
+  <net>
+
+    <place name="in" type="point">
+      <token>
+        <field name="x"><value>1.0</value></field>
+        <field name="y"><value>-2.0</value></field>
+      </token>
+    </place>
+    <place name="ba" type="bytearray"/>
+    <place name="out" type="point"/>
+
+    <transition name="produce">
+      <defun>
+        <in name="p" type="point"/>
+        <out name="ba" type="bytearray"/>
+        <module name="test_bytearray" function="ba produce(p)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            ::bytearray::type ba (&p);
+
+            std::cout << "input " << p << std::endl;
+            std::cout << "constructed bytearray: " << ba << std::endl;
+
+            return ba;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="p" place="in"/>
+      <connect-out port="ba" place="ba"/>
+    </transition>
+
+    <transition name="consume">
+      <defun>
+        <in name="ba" type="bytearray"/>
+        <out name="p" type="point"/>
+        <module name="test_bytearray" function="p consume(ba)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            ::pnetc::type::point::point p;
+
+            ba.copy (&p);
+
+            std::cout << "input " << ba << std::endl;
+            std::cout << "reconstructed: " << p << std::endl;
+
+            return p;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="ba" place="ba"/>
+      <connect-out port="p" place="out"/>
+    </transition>
+ </net>
+
+</defun>

@@ -27,6 +27,7 @@ namespace literal
       set.insert (STACK);
       set.insert (MAP);
       set.insert (SET);
+      set.insert (BYTEARRAY);
     }
 
     bool valid (const type_name_t & x) const

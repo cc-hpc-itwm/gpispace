@@ -10,6 +10,7 @@
 #include <we/type/literal.hpp>
 #include <we/type/literal/show.hpp>
 #include <we/type/bitsetofint.hpp>
+#include <we/type/bytearray.hpp>
 
 #include <math.h>
 
@@ -389,6 +390,36 @@ namespace literal
           case expr::token::add: { std::string s; s+= l; s += r; return s; }
           case expr::token::min: return std::min (l,r);
           case expr::token::max: return std::max (l,r);
+          default:
+            throw expr::exception::eval::type_error
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
+          }
+      }
+
+      literal::type operator () ( bitsetofint::type & l
+                                , bitsetofint::type & r
+                                ) const
+      {
+        switch (token)
+          {
+          case expr::token::eq: return l == r ? true : false;
+          default:
+            throw expr::exception::eval::type_error
+              ( fhg::util::show (token) +
+              "(" + fhg::util::show (l) + "," + fhg::util::show (r) + ")"
+              );
+          }
+      }
+
+      literal::type operator () ( bytearray::type & l
+                                , bytearray::type & r
+                                ) const
+      {
+        switch (token)
+          {
+          case expr::token::eq: return l == r ? true : false;
           default:
             throw expr::exception::eval::type_error
               ( fhg::util::show (token) +

@@ -8,6 +8,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/control.hpp>
 #include <we/type/bitsetofint.hpp>
+#include <we/type/bytearray.hpp>
 
 #include <we/type/literal/name.hpp>
 
@@ -29,6 +30,7 @@ namespace literal
     dflt[STACK] = literal::stack_type();
     dflt[MAP] = literal::map_type();
     dflt[SET] = literal::set_type();
+    dflt[BYTEARRAY] = bytearray::type();
 
     return dflt;
   }
