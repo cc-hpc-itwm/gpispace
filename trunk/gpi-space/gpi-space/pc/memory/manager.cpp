@@ -46,11 +46,11 @@ namespace gpi
       }
 
       gpi::pc::type::segment_id_t
-      manager_t::register_memory( const gpi::pc::type::process_id_t creator
-                     , const std::string & name
-                     , const gpi::pc::type::size_t size
-                     , const gpi::pc::type::flags_t flags
-                     )
+      manager_t::register_memory ( const gpi::pc::type::process_id_t creator
+                                 , const std::string & name
+                                 , const gpi::pc::type::size_t size
+                                 , const gpi::pc::type::flags_t flags
+                                 )
       {
         try
         {
