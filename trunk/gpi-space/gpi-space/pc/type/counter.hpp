@@ -17,8 +17,7 @@ namespace gpi
         explicit
         inline counter_t (const gpi::pc::type::size_t = 0);
 
-        inline gpi::pc::type::size_t operator++ () { return inc(); }
-        inline gpi::pc::type::size_t operator* () { return value(); }
+        operator gpi::pc::type::size_t () const { return value(); }
         inline gpi::pc::type::size_t inc ();
         inline gpi::pc::type::size_t value () const;
         inline void move_to (const gpi::pc::type::size_t);

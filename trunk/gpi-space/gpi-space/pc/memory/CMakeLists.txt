@@ -4,12 +4,16 @@ set (hdrs
   memory_area.hpp
   handle_generator.hpp
   manager.hpp
+  gpi_area.hpp
+  shm_area.hpp
   )
 
 set (srcs
   memory_area.cpp
   handle_generator.cpp
   manager.cpp
+  gpi_area.cpp
+  shm_area.cpp
   )
 
 ADD_LIBRARY(gpi-space-pc-memory ${hdrs} ${srcs})

@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -10,7 +11,6 @@
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/counter.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 
 namespace gpi
@@ -22,15 +22,28 @@ namespace gpi
       class manager_t : boost::noncopyable
       {
       public:
-        typedef boost::shared_ptr <gpi::pc::segment::segment_t>
-                memory_ptr;
+        typedef boost::shared_ptr<area_t> area_ptr;
 
         // signals
         typedef boost::signals2::signal
             <void (const gpi::pc::type::segment_id_t)>
                memory_signal_t;
+        typedef boost::signals2::signal
+            <void (const gpi::pc::type::handle_t)>
+               handle_signal_t;
+        typedef boost::signals2::signal
+            <void (const gpi::pc::type::segment_id_t,
+                   const gpi::pc::type::process_id_t
+                  )> process_signal_t;
+
         memory_signal_t memory_added;
         memory_signal_t memory_removed;
+
+        handle_signal_t handle_allocated;
+        handle_signal_t handle_freed;
+
+        process_signal_t process_attached;
+        process_signal_t process_detached;
 
         explicit
         manager_t (const gpi::pc::type::id_t ident);
@@ -47,33 +60,23 @@ namespace gpi
         void unregister_memory (const gpi::pc::type::segment_id_t);
         void list_memory (gpi::pc::type::segment::list_t &) const;
 
-        gpi::pc::type::size_t
-        increment_refcount (const gpi::pc::type::segment_id_t seg);
+        void attach_process ( const gpi::pc::type::process_id_t
+                            , const gpi::pc::type::segment_id_t
+                            );
+        void detach_process ( const gpi::pc::type::process_id_t
+                            , const gpi::pc::type::segment_id_t
+                            );
 
-        gpi::pc::type::size_t
-        decrement_refcount (const gpi::pc::type::segment_id_t seg);
-
-        void add_special_memory ( std::string const & name
-                                , const gpi::pc::type::segment_id_t id
-                                , const gpi::pc::type::size_t size
-                                , void *ptr
-                                );
-        memory_ptr get_memory (const gpi::pc::type::segment_id_t);
-        memory_ptr operator [] (const gpi::pc::type::segment_id_t seg_id)
-        {
-          return get_memory (seg_id);
-        }
-
-        gpi::pc::type::handle_id_t
+        gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::process_id_t proc_id
               , const gpi::pc::type::segment_id_t seg_id
               , const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
               );
-        void free (const gpi::pc::type::handle_id_t hdl);
+        void free (const gpi::pc::type::handle_t hdl);
         void garbage_collect () {}
-        void garbage_collect (const gpi::pc::type::process_id_t proc_id) {}
+        void garbage_collect (const gpi::pc::type::process_id_t);
         void list_allocations( const gpi::pc::type::segment_id_t seg
                              , gpi::pc::type::handle::list_t & l
                              ) const;
@@ -81,20 +84,28 @@ namespace gpi
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::shared_ptr<area_t> area_ptr;
-        typedef boost::unordered_map<gpi::pc::type::segment_id_t, memory_ptr> segment_map_t;
         typedef boost::unordered_map< gpi::pc::type::segment_id_t
                                     , area_ptr
                                     > area_map_t;
-        typedef boost::unordered_map< gpi::pc::type::handle_id_t
+        typedef boost::unordered_map< gpi::pc::type::handle_t
                                     , gpi::pc::type::segment_id_t
                                     > handle_to_segment_t;
+        typedef boost::unordered_set<area_ptr> garbage_areas_t;
+
+        void add_gpi_memory ();
+        area_ptr get_area (const gpi::pc::type::segment_id_t);
+        area_ptr get_area (const gpi::pc::type::segment_id_t) const;
+        area_ptr get_area_by_handle (const gpi::pc::type::handle_t);
+        void add_handle ( const gpi::pc::type::handle_t
+                        , const gpi::pc::type::segment_id_t
+                        );
+        void del_handle (const gpi::pc::type::handle_t);
 
         mutable mutex_type m_mutex;
         gpi::pc::type::id_t m_ident;
         gpi::pc::type::counter_t m_segment_counter;
-        segment_map_t m_segments;
         area_map_t m_areas;
+        garbage_areas_t m_garbage_areas;
         handle_to_segment_t m_handle_to_segment;
       };
     }

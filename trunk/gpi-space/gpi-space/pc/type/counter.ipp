@@ -23,8 +23,7 @@ namespace gpi
       void counter_t::move_to (const gpi::pc::type::size_t v)
       {
         lock_type lock (m_mutex);
-        if (m_counter < v)
-          m_counter = v;
+        if (m_counter < v) m_counter = v;
       }
 
       gpi::pc::type::size_t counter_t::inc ()

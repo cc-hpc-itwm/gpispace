@@ -30,12 +30,9 @@ namespace gpi
     {
       struct time_stamp_t
       {
-        enum touch_type
-          {
-            TOUCH_ALL,
-            TOUCH_ACCESSED,
-            TOUCH_MODIFIED,
-          };
+        static const int TOUCH_ACCESSED = 0x01;
+        static const int TOUCH_MODIFIED = 0x02;
+        static const int TOUCH_ALL = (TOUCH_ACCESSED | TOUCH_MODIFIED);
 
         gpi::pc::type::time_t created;
         gpi::pc::type::time_t accessed;
@@ -47,15 +44,26 @@ namespace gpi
           , modified (created)
         {}
 
-        void touch (const touch_type t = TOUCH_ALL)
+        void touch ()
         {
-          gpi::pc::type::time_t n (now());
+          touch (TOUCH_ACCESSED | TOUCH_MODIFIED);
+        }
 
-          if (t == TOUCH_ALL || t == TOUCH_ACCESSED)
+        void touch (const int what)
+        {
+          touch (what, 0);
+        }
+
+        void touch (const int what, const gpi::pc::type::time_t tstamp)
+        {
+          const gpi::pc::type::time_t n ( (tstamp != 0) ? tstamp : now());
+
+          if (what & TOUCH_ACCESSED)
           {
             accessed = n;
           }
-          if (t == TOUCH_ALL || t == TOUCH_MODIFIED)
+
+          if (what & TOUCH_MODIFIED)
           {
             modified = n;
           }

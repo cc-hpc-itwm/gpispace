@@ -88,6 +88,22 @@ namespace gpi
             , flags (0)
           {}
 
+          descriptor_t ( const gpi::pc::type::segment_id_t a_id
+                       , const gpi::pc::type::process_id_t a_proc
+                       , const gpi::pc::type::name_t a_name
+                       , const gpi::pc::type::size_t a_size
+                       , const gpi::pc::type::flags_t a_flags
+                       )
+              : id (a_id)
+              , creator (a_proc)
+              , name (a_name)
+              , size (a_size)
+              , avail (a_size)
+              , allocs (0)
+              , nref (0)
+              , flags (a_flags)
+          {}
+
           bool operator< (const descriptor_t & other) const
           {
             return id < other.id;

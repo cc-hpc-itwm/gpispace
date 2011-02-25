@@ -39,10 +39,11 @@ namespace gpi
 
         struct descriptor_t
         {
-          gpi::pc::type::handle_id_t id;
+          gpi::pc::type::handle_t id;
           gpi::pc::type::segment_id_t segment;
           gpi::pc::type::offset_t offset;
           gpi::pc::type::size_t size;
+          gpi::pc::type::size_t nref;
           gpi::pc::type::name_t name;
           gpi::pc::type::process_id_t creator;
           gpi::pc::type::flags_t flags;
@@ -53,6 +54,7 @@ namespace gpi
             , segment (0)
             , offset (0)
             , size (0)
+            , nref (0)
             , name ("")
             , flags (0)
           {}
@@ -67,10 +69,11 @@ namespace gpi
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( id );
+            ar & BOOST_SERIALIZATION_NVP( id.handle );
             ar & BOOST_SERIALIZATION_NVP( segment );
             ar & BOOST_SERIALIZATION_NVP( offset );
             ar & BOOST_SERIALIZATION_NVP( size );
+            ar & BOOST_SERIALIZATION_NVP( nref );
             ar & BOOST_SERIALIZATION_NVP( name );
             ar & BOOST_SERIALIZATION_NVP( creator );
             ar & BOOST_SERIALIZATION_NVP( flags );
@@ -95,6 +98,11 @@ namespace gpi
           // ID
           os.width (gpi::pc::type::handle_t::string_length);
           os << "ID";
+          os << " ";
+
+          // REFCOUNT
+          os.width (4);
+          os << "REF";
           os << " ";
 
           // SEGMENT
@@ -141,7 +149,13 @@ namespace gpi
 
           // ID
           os.flags (std::ios::right | std::ios::dec);
-          os << gpi::pc::type::handle_t (d.id);
+          os << d.id;
+          os << " ";
+
+          // REFCOUNT
+          os.flags (std::ios::right | std::ios::dec);
+          os.width (4);
+          os << d.nref;
           os << " ";
 
           // SEGMENT

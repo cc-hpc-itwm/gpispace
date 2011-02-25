@@ -20,11 +20,6 @@ namespace gpi
                   , const type::segment_id_t id = type::segment::SEG_INVAL
                   );
 
-        // create a special segment
-        segment_t ( gpi::pc::type::segment::descriptor_t const & desc
-                  , void *ptr
-                  );
-
         ~segment_t ();
 
         bool is_special () const;

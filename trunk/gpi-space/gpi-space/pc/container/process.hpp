@@ -4,6 +4,7 @@
 #include <boost/thread.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/memory_location.hpp>
+#include <gpi-space/pc/type/process_descriptor.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
 
@@ -88,6 +89,7 @@ namespace gpi
         mutex_type m_mutex;
         manager_type & m_mgr;
         const gpi::pc::type::process_id_t m_id;
+        gpi::pc::type::process::descriptor_t m_descriptor;
         int m_socket;
         thread_t m_reader;
       };

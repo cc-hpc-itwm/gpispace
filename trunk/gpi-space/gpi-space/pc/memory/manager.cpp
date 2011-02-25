@@ -2,7 +2,11 @@
 
 #include <fhglog/minimal.hpp>
 
+#include <gpi-space/gpi/api.hpp>
+
 #include "handle_generator.hpp"
+#include "shm_area.hpp"
+#include "gpi_area.hpp"
 
 namespace gpi
 {
@@ -15,6 +19,8 @@ namespace gpi
         , m_segment_counter ()
       {
         handle_generator_t::create (ident);
+
+        add_gpi_memory ();
       }
 
       manager_t::~manager_t ()
@@ -39,9 +45,9 @@ namespace gpi
 
         //     i.e. cancel/remove all items in the memory transfer component
         lock_type lock (m_mutex);
-        while (! m_segments.empty())
+        while (! m_areas.empty())
         {
-          unregister_memory (m_segments.begin()->first);
+          unregister_memory (m_areas.begin()->first);
         }
       }
 
@@ -52,201 +58,221 @@ namespace gpi
                                  , const gpi::pc::type::flags_t flags
                                  )
       {
-        try
+        gpi::pc::type::segment_id_t id (m_segment_counter.inc());
+
         {
-          memory_ptr seg (new gpi::pc::segment::segment_t (name, size));
-
-          seg->open ();
-
-          gpi::pc::type::segment_id_t id
-              (++m_segment_counter);
-
-          seg->assign_id (id);
-          seg->descriptor().creator = creator;
-          seg->descriptor().flags = flags;
-
-          // important: if F_EXCLUSIVE is set, F_NOUNLINK does not make any sense
-          if (seg->descriptor().flags & gpi::pc::type::segment::F_EXCLUSIVE)
-          {
-            seg->unlink();
-          }
-
           lock_type lock (m_mutex);
-          m_segments [id] = seg;
-          m_areas[id] = area_ptr(new area_t(seg));
-
-          LOG(TRACE, "shared memory segment registered: " << seg->name() << " (" << seg->id() << ") size " << seg->size() << " @" << seg->ptr());
-
-          memory_added (id);
-          return id;
+          area_ptr area (new shm_area_t ( id
+                                        , creator
+                                        , name
+                                        , size
+                                        , flags
+                                        )
+                         );
+          m_areas[id] = area;
+          LOG(TRACE, "memory segment registered: " << area->descriptor ());
         }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not register memory segment: " << ex.what());
-          throw;
-        }
+        memory_added (id);
+        return id;
       }
 
-      void manager_t::unregister_memory (const gpi::pc::type::segment_id_t seg_id)
+      void
+      manager_t::unregister_memory (const gpi::pc::type::segment_id_t mem_id)
       {
-        lock_type lock (m_mutex);
-
-        segment_map_t::iterator seg_it (m_segments.find(seg_id));
-        if (seg_it == m_segments.end())
         {
-          LOG(WARN, "tried to remove unknown memory segment: " << seg_id);
-          return;
+          lock_type lock (m_mutex);
+
+          area_map_t::iterator area_it (m_areas.find(mem_id));
+          if (area_it == m_areas.end())
+          {
+            throw std::runtime_error ("no such memory");
+          }
+
+          area_ptr area (area_it->second);
+
+          if (area->in_use ())
+          {
+            LOG(WARN, "memory area is still in use: " << area->descriptor());
+
+            // TODO: maybe move memory segment to garbage area
+
+            throw std::runtime_error
+                ("segment is still inuse, cannot unregister");
+          }
+
+          // WORK HERE:
+          //    let this do another thread
+          //    and just give him the area_ptr
+          area_it->second->garbage_collect ();
+          m_areas.erase (area_it);
+          LOG(TRACE, "memory removed: " << mem_id);
         }
 
-        memory_ptr seg (seg_it->second);
-
-        if (seg->descriptor().nref)
-        {
-          throw std::runtime_error ("segment is still inuse, cannot unregister");
-        }
-
-        if (!gpi::flag::is_set
-              ( seg->descriptor().flags
-              , gpi::pc::type::segment::F_NOUNLINK
-              | gpi::pc::type::segment::F_EXCLUSIVE
-              )
-           )
-        {
-          seg->unlink();
-        }
-
-        m_segments.erase (seg_it);
-        m_areas.erase(seg_id);
-
-        LOG(TRACE, "memory segment removed: " << seg_id);
-
-        memory_removed (seg_id);
-
-        // TODO: maybe move memory segment to garbage area
+        memory_removed (mem_id);
       }
 
       void manager_t::list_memory (gpi::pc::type::segment::list_t &l) const
       {
         lock_type lock (m_mutex);
 
-        for ( segment_map_t::const_iterator seg (m_segments.begin())
-            ; seg != m_segments.end()
-            ; ++seg
+        for ( area_map_t::const_iterator area (m_areas.begin())
+            ; area != m_areas.end()
+            ; ++area
             )
         {
-          l.push_back (seg->second->descriptor());
+          l.push_back (area->second->descriptor());
         }
-      }
-
-      gpi::pc::type::size_t
-      manager_t::increment_refcount (const gpi::pc::type::segment_id_t seg_id)
-      {
-        lock_type lock (m_mutex);
-        segment_map_t::iterator seg_it (m_segments.find(seg_id));
-        if (seg_it == m_segments.end())
-        {
-          throw std::runtime_error
-              ("cannot increment reference count of unknown memory");
-        }
-        return ++(seg_it->second->descriptor().nref);
-      }
-
-      gpi::pc::type::size_t
-      manager_t::decrement_refcount (const gpi::pc::type::segment_id_t seg_id)
-      {
-        lock_type lock (m_mutex);
-        segment_map_t::iterator seg_it (m_segments.find(seg_id));
-        if (seg_it == m_segments.end())
-        {
-          throw std::runtime_error
-              ("cannot decrement reference count of unknown memory");
-        }
-        memory_ptr seg (seg_it->second);
-        if (0 == seg->descriptor().nref)
-        {
-          throw std::runtime_error
-              ("cannot decrement reference count below 0");
-        }
-        gpi::pc::type::size_t ref_cnt
-            (--(seg->descriptor().nref));
-
-        if (0 == ref_cnt)
-        {
-          if (! gpi::flag::is_set ( seg->descriptor().flags
-                                  , gpi::pc::type::segment::F_PERSISTENT
-                                  )
-             )
-          {
-            unregister_memory (seg_id);
-          }
-          /*
-          else if (seg->descriptor().flags & gpi::pc::type::segment::F_EXCLUSIVE)
-          {
-            unregister_segment (seg_id);
-          }
-          */
-        }
-
-        return ref_cnt;
       }
 
       void
-      manager_t::add_special_memory ( std::string const & name
-                                    , const gpi::pc::type::segment_id_t id
-                                    , const gpi::pc::type::size_t size
-                                    , void *ptr
-                                    )
+      manager_t::attach_process ( const gpi::pc::type::process_id_t proc_id
+                                , const gpi::pc::type::segment_id_t mem_id
+                                )
       {
-        gpi::pc::type::segment::descriptor_t desc;
-        gpi::flag::set ( desc.flags
-                       , gpi::pc::type::segment::F_SPECIAL | gpi::pc::type::segment::F_NOUNLINK
-                       );
-        desc.id = id;
-        desc.creator = 0;
-        desc.name = name;
-        desc.size = size;
-        desc.avail = size;
-        desc.allocs = 0;
-        desc.nref = 0;
-
-        memory_ptr seg (new gpi::pc::segment::segment_t (desc, ptr));
-
         lock_type lock (m_mutex);
-        if (m_segments.find(id) != m_segments.end())
+        area_map_t::iterator area (m_areas.find(mem_id));
+        if (area == m_areas.end())
         {
-          throw std::runtime_error
-              ("cannot add special segment: id already in use!");
+          throw std::runtime_error ("no such memory area");
+        }
+        area->second->attach_process (proc_id);
+        process_attached(mem_id, proc_id);
+      }
+
+      void
+      manager_t::detach_process ( const gpi::pc::type::process_id_t proc_id
+                                , const gpi::pc::type::segment_id_t mem_id
+                                )
+      {
+        lock_type lock (m_mutex);
+        area_map_t::iterator area (m_areas.find(mem_id));
+        if (area == m_areas.end())
+        {
+          throw std::runtime_error ("no such memory area");
+        }
+        area->second->detach_process (proc_id);
+        process_detached(mem_id, proc_id);
+
+        if (area->second->is_eligible_for_deletion())
+        {
+          unregister_memory (mem_id);
+        }
+      }
+
+      void
+      manager_t::garbage_collect (const gpi::pc::type::process_id_t proc_id)
+      {
+        lock_type lock (m_mutex);
+        std::list<gpi::pc::type::segment_id_t> segments;
+        for ( area_map_t::iterator area (m_areas.begin())
+            ; area != m_areas.end()
+            ; ++area
+            )
+        {
+          segments.push_back (area->first);
         }
 
-        m_segments [id] = seg;
-        m_areas[id] = area_ptr(new area_t(seg));
+        while (! segments.empty())
+        {
+          detach_process (proc_id, segments.front());
+          segments.pop_front();
+        }
+      }
 
-        // move counter if required
-        m_segment_counter.move_to (id);
+      void
+      manager_t::add_gpi_memory ()
+      {
+        lock_type lock (m_mutex);
 
-        LOG(TRACE, "special memory segment registered: "
-            << name << " (" << id << ")"
-            << " size " << size
-            << " @" << ptr
+        gpi::pc::type::segment_id_t id (m_segment_counter.inc());
+
+        if (m_areas.find(id) != m_areas.end())
+        {
+          throw std::runtime_error
+              ("cannot add another gpi segment: id already in use!");
+        }
+
+        area_ptr area
+            (new gpi_area_t
+             ( id, 0, "GPI"
+             , gpi::api::gpi_api_t::get().memory_size ()
+             , gpi::pc::type::segment::F_PERSISTENT
+             | gpi::pc::type::segment::F_NOUNLINK
+             , gpi::api::gpi_api_t::get().dma_ptr ()
+             )
             );
+
+        m_areas[id] = area;
+
+        LOG(TRACE, "GPI memory registered:" << area->descriptor ());
 
         memory_added (id);
       }
 
-      manager_t::memory_ptr
-      manager_t::get_memory (const gpi::pc::type::segment_id_t seg_id)
+      manager_t::area_ptr
+      manager_t::get_area (const gpi::pc::type::segment_id_t mem_id)
       {
         lock_type lock (m_mutex);
-        segment_map_t::iterator seg_it (m_segments.find(seg_id));
-        if (seg_it == m_segments.end())
+        area_map_t::iterator area_it (m_areas.find (mem_id));
+        if (area_it == m_areas.end())
         {
-          throw std::runtime_error
-              ("no such memory segment");
+          throw std::runtime_error ("no such memory");
         }
-        return seg_it->second;
+        return area_it->second;
       }
 
-      gpi::pc::type::handle_id_t
+      manager_t::area_ptr
+      manager_t::get_area (const gpi::pc::type::segment_id_t mem_id) const
+      {
+        lock_type lock (m_mutex);
+        area_map_t::const_iterator area_it (m_areas.find (mem_id));
+        if (area_it == m_areas.end())
+        {
+          throw std::runtime_error ("no such memory");
+        }
+        return area_it->second;
+      }
+
+      manager_t::area_ptr
+      manager_t::get_area_by_handle (const gpi::pc::type::handle_t hdl)
+      {
+        lock_type lock (m_mutex);
+
+        handle_to_segment_t::const_iterator h2s (m_handle_to_segment.find(hdl));
+        if (h2s != m_handle_to_segment.end())
+        {
+          return get_area (h2s->second);
+        }
+        else
+        {
+          throw std::runtime_error ("no such handle");
+        }
+      }
+
+      void
+      manager_t::add_handle ( const gpi::pc::type::handle_t hdl
+                            , const gpi::pc::type::segment_id_t seg_id
+                            )
+      {
+        lock_type lock (m_mutex);
+        if (m_handle_to_segment.find (hdl) != m_handle_to_segment.end())
+        {
+          throw std::runtime_error ("handle does already exist");
+        }
+        m_handle_to_segment [hdl] = seg_id;
+      }
+
+      void
+      manager_t::del_handle (const gpi::pc::type::handle_t hdl)
+      {
+        if (m_handle_to_segment.find (hdl) == m_handle_to_segment.end())
+        {
+          throw std::runtime_error ("handle does not exist");
+        }
+        m_handle_to_segment.erase (hdl);
+      }
+
+      gpi::pc::type::handle_t
       manager_t::alloc ( const gpi::pc::type::process_id_t proc_id
                        , const gpi::pc::type::segment_id_t seg_id
                        , const gpi::pc::type::size_t size
@@ -254,83 +280,38 @@ namespace gpi
                        , const gpi::pc::type::flags_t flags
                        )
       {
-        lock_type lock (m_mutex);
+        area_ptr area (get_area (seg_id));
 
-        // F_GLOBAL flag:
-        //   on shared segment
-        //     allocation is accessible by others
-        //   on gpi segment
-        //     global allocation
-        // quick hack for globa/local allocations
-        gpi::pc::type::flags_t new_flags (flags);
-        if (seg_id == gpi::pc::type::segment::SEG_GLOBAL)
-        {
-          throw std::runtime_error
-            ("global allocations not yet implemented");
-        }
-        else if (seg_id == gpi::pc::type::segment::SEG_LOCAL)
-        {
-          // sanity check
-          gpi::flag::clear
-            (new_flags, gpi::pc::type::handle::F_GLOBAL);
-        }
-        area_map_t::iterator area_iter
-            (m_areas.find (seg_id));
-        if (area_iter == m_areas.end())
-        {
-          LOG(WARN, "alloc from process " << proc_id << " failed: no such area: " << seg_id);
-          throw std::runtime_error ("no such memory area");
-        }
+        assert (area);
 
-        gpi::pc::type::handle_id_t hdl
-            (area_iter->second->alloc (proc_id, size, name, new_flags));
-        m_handle_to_segment [hdl] = seg_id;
+        gpi::pc::type::handle_t hdl (area->alloc (proc_id, size, name, flags));
+
+        add_handle (hdl, seg_id);
+
+        handle_allocated (hdl);
+
         return hdl;
       }
 
       void
-      manager_t::free (const gpi::pc::type::handle_id_t hdl_id)
+      manager_t::free (const gpi::pc::type::handle_t hdl)
       {
-        lock_type lock (m_mutex);
+        area_ptr area (get_area_by_handle (hdl));
 
-        gpi::pc::type::handle_t hdl (hdl_id);
+        assert (area);
 
-        handle_to_segment_t::iterator hdl_to_seg (m_handle_to_segment.find(hdl));
-        if (hdl_to_seg == m_handle_to_segment.end())
-        {
-          LOG(WARN, "free of unknown handle: " << hdl);
-          throw std::runtime_error ("unknown handle");
-        }
+        area->free (hdl);
+        del_handle (hdl);
 
-        area_map_t::iterator seg_to_area (m_areas.find (hdl_to_seg->second));
-        if (seg_to_area == m_areas.end())
-        {
-          LOG( ERROR
-             , "*** INCONSISTENCY DETECTED ***:"
-               << " handle " << hdl
-               << " maps to unknown segment " << hdl_to_seg->second
-             );
-          m_handle_to_segment.erase (hdl);
-          throw std::runtime_error ("unknown area for handle");
-        }
-
-        seg_to_area->second->free (hdl);
+        handle_freed (hdl);
       }
 
       void
-      manager_t::list_allocations( const gpi::pc::type::segment_id_t seg
+      manager_t::list_allocations( const gpi::pc::type::segment_id_t id
                                  , gpi::pc::type::handle::list_t & l
                                  ) const
       {
-        lock_type lock (m_mutex);
-
-        area_map_t::const_iterator seg_to_area (m_areas.find (seg));
-        if (seg_to_area == m_areas.end())
-        {
-          LOG( WARN, "listing of unknown memory area " << seg << " requested");
-          throw std::runtime_error ("no such area");
-        }
-        seg_to_area->second->list_allocations (l);
+        get_area (id)->list_allocations (l);
       }
 
       void

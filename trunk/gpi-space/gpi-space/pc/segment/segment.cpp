@@ -45,16 +45,6 @@ namespace gpi
         m_descriptor.id = id;
       }
 
-      segment_t::segment_t ( gpi::pc::type::segment::descriptor_t const & desc
-                           , void *ptr
-                           )
-        : m_descriptor (desc)
-        , m_ptr (ptr)
-      {
-        assert (! m_descriptor.name.empty());
-        gpi::flag::set (m_descriptor.flags, gpi::pc::type::segment::F_SPECIAL);
-      }
-
       bool segment_t::is_special () const
       {
         return gpi::flag::is_set( m_descriptor.flags

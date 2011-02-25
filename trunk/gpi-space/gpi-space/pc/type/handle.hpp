@@ -45,8 +45,9 @@ namespace gpi
           : handle (h)
         {}
 
-        operator handle_id_t () { return handle; }
-        bool operator== (const handle_id_t i) const {return handle == i;}
+        operator handle_id_t () const { return handle; }
+        bool operator== (const handle_id_t o) const {return handle == o;}
+        bool operator<  (const handle_id_t o) const {return handle < o; }
 
         union
         {

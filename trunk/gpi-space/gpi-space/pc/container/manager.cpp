@@ -83,6 +83,14 @@ namespace gpi
         return m_state;
       }
 
+      void manager_t::require_state (const state_t s) const
+      {
+        if (get_state () != s)
+        {
+          throw std::runtime_error ("state error: manager is in wrong state");
+        }
+      }
+
       void manager_t::set_state (const state_t new_state)
       {
         static bool table [NUM_STATES][NUM_STATES] =
@@ -102,20 +110,7 @@ namespace gpi
       }
 
       void manager_t::initialize_memory_manager ()
-      {
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        m_memory_mgr.add_special_memory ( "global"
-                                        , gpi::pc::type::segment::SEG_GLOBAL
-                                        , gpi_api.memory_size()
-                                        , gpi_api.dma_ptr()
-                                        );
-
-        m_memory_mgr.add_special_memory ( "local"
-                                        , gpi::pc::type::segment::SEG_LOCAL
-                                        , gpi_api.memory_size()
-                                        , gpi_api.dma_ptr()
-                                        );
-      }
+      {}
 
       void manager_t::initialize_peer ()
       {
@@ -157,38 +152,20 @@ namespace gpi
         if (m_processes.find (id) == m_processes.end())
         {
           LOG(ERROR, "process id already detached!");
-          return;
+          throw std::runtime_error ("no such process");
         }
 
         process_ptr_t proc (m_processes.at (id));
+        m_detached_processes.push_back (proc);
         m_processes.erase (id);
         proc->stop ();
 
-        detach_memory_from_process (id);
+        m_memory_mgr.garbage_collect (id);
 
         LOG( INFO
            , "process container " << id << " detached"
            );
-        m_detached_processes.push_back (proc);
-      }
 
-      void
-      manager_t::detach_memory_from_process (const gpi::pc::type::process_id_t proc_id)
-      {
-        lock_type lock (m_process_segment_relation_mutex);
-
-        // TODO (ap):
-        //       - cancel queued memory transfers
-        //       - remove the segment
-        //       - move it to the garbage area until transfers are complete
-        segment_id_set_t & ids (m_process_segment_relation[proc_id]);
-        while (! ids.empty())
-        {
-          detach_process_from_segment ( proc_id
-                                      , *ids.begin()
-                                      );
-        }
-        m_process_segment_relation.erase (proc_id);
       }
 
       void manager_t::garbage_collect ()
@@ -204,7 +181,7 @@ namespace gpi
       {
         garbage_collect();
 
-        gpi::pc::type::process_id_t proc_id (++m_process_counter);
+        gpi::pc::type::process_id_t proc_id (m_process_counter.inc());
 
         process_ptr_t proc (new process_type (*this, proc_id, fd));
         attach_process (proc);
@@ -274,24 +251,8 @@ namespace gpi
                                          , const gpi::pc::type::segment_id_t seg_id
                                          )
       {
-        detach_process_from_segment (proc_id, seg_id);
+        m_memory_mgr.detach_process (proc_id, seg_id);
         m_memory_mgr.unregister_memory (seg_id);
-      }
-
-      bool manager_t::is_process_attached_to_segment ( const gpi::pc::type::process_id_t proc_id
-                                                     , const gpi::pc::type::segment_id_t seg_id
-                                                     ) const
-      {
-        lock_type lock (m_process_segment_relation_mutex);
-        try
-        {
-          const segment_id_set_t & segments (m_process_segment_relation.at(proc_id));
-          return segments.find (seg_id) != segments.end();
-        }
-        catch (std::exception const &ex)
-        {
-          return false;
-        }
       }
 
       void manager_t::list_segments ( const gpi::pc::type::process_id_t proc_id
@@ -299,58 +260,20 @@ namespace gpi
                                     ) const
       {
         m_memory_mgr.list_memory (l);
-
-        for ( gpi::pc::type::segment::list_t::iterator s (l.begin())
-            ; s != l.end()
-            ; ++s
-            )
-        {
-          if (is_process_attached_to_segment (proc_id, s->id))
-          {
-            gpi::flag::set (s->flags, gpi::pc::type::segment::F_ATTACHED);
-          }
-        }
       }
 
       void manager_t::attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id
                                                 , const gpi::pc::type::segment_id_t seg_id
                                                 )
       {
-        lock_type lock (m_process_segment_relation_mutex);
-
-        // TODO:
-        //    check permissions whether attaching is allowed
-        //    if exclusive:
-        //       creator == proc_id
-        //
-        if (m_process_segment_relation[proc_id].insert (seg_id).second)
-        {
-          try
-          {
-            m_memory_mgr.increment_refcount (seg_id);
-          }
-          catch (...)
-          {
-            m_process_segment_relation[proc_id].erase(seg_id);
-            throw;
-          }
-        }
+        m_memory_mgr.attach_process (proc_id, seg_id);
       }
 
       void manager_t::detach_process_from_segment ( const gpi::pc::type::process_id_t proc_id
                                                   , const gpi::pc::type::segment_id_t seg_id
                                                   )
       {
-        {
-          lock_type lock (m_process_segment_relation_mutex);
-          if (m_process_segment_relation.at (proc_id).erase (seg_id))
-          {
-            m_memory_mgr.decrement_refcount (seg_id);
-          }
-        }
-        {
-          m_memory_mgr.garbage_collect (proc_id);
-        }
+        m_memory_mgr.detach_process (proc_id, seg_id);
       }
 
       void
@@ -364,7 +287,7 @@ namespace gpi
         info.queue_depth = gpi_api.queue_depth();
       }
 
-      gpi::pc::type::handle_id_t
+      gpi::pc::type::handle_t
       manager_t::alloc ( const gpi::pc::type::process_id_t proc_id
                        , const gpi::pc::type::segment_id_t seg_id
                        , const gpi::pc::type::size_t size

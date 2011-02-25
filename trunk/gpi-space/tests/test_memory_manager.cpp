@@ -7,9 +7,8 @@
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/memory/memory_area.hpp>
-
-typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
+#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/memory/shm_area.hpp>
 
 struct SetupLogging
 {
@@ -44,36 +43,27 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 {
-  segment_ptr seg
-    (new gpi::pc::segment::segment_t("memory_area_alloc_free_segment"
-                                    , 1024
-                                    , gpi::pc::type::segment::SEG_GLOBAL
-                                    )
-    );
-  seg->create ();
-  seg->unlink ();
+  gpi::pc::segment::segment_t segm ("memory_area_alloc_free_test", 2048);
+  segm.create ();
+  gpi::pc::memory::shm_area_t area ( 2, 0, "memory_area_alloc_free_test"
+                                   , 2048, 0
+                                   );
+  BOOST_CHECK_EQUAL (2048U, area.descriptor().size);
+  BOOST_CHECK_EQUAL (2048U, area.descriptor().avail);
 
-  gpi::pc::memory::area_t area(seg);
-  BOOST_CHECK_EQUAL (area.total_mem_size(), seg->size());
-  BOOST_CHECK_EQUAL (area.free_mem_size(), seg->size());
-  BOOST_CHECK_EQUAL (area.used_mem_size(), 0U);
+  gpi::pc::type::handle_t hdl (area.alloc(1, 64, "scratch", 0));
+  BOOST_CHECK (hdl != 0);
+  BOOST_CHECK_EQUAL (2048u, area.descriptor().size);
+  BOOST_CHECK_EQUAL (2048u - 64, area.descriptor().avail);
 
-  gpi::pc::type::handle_id_t hdl
-      (area.alloc(1, 64, "scratch"));
-  BOOST_CHECK ( hdl != 0 );
-  BOOST_CHECK_EQUAL (area.total_mem_size(), seg->size());
-  BOOST_CHECK_EQUAL (area.free_mem_size(), seg->size() - 64);
-  BOOST_CHECK_EQUAL (area.used_mem_size(), 64U);
-
-  std::cout << "    handle = " << gpi::pc::type::handle_t(hdl) << std::endl;
-  gpi::pc::type::handle::descriptor_t desc;
-  BOOST_CHECK_EQUAL (area.get_descriptor (hdl, desc), true);
-  BOOST_CHECK_EQUAL (desc.id, hdl);
-  BOOST_CHECK_EQUAL (desc.segment, seg->id());
-  BOOST_CHECK_EQUAL (desc.offset, (seg->size() - 64));
+  std::cout << "    handle = " << hdl << std::endl;
+  gpi::pc::type::handle::descriptor_t desc (area.descriptor (hdl));
+  BOOST_CHECK_EQUAL (desc.id.handle, hdl.handle);
+  BOOST_CHECK_EQUAL (desc.segment, area.descriptor().id);
+  BOOST_CHECK_EQUAL (desc.offset, 0u);
   BOOST_CHECK_EQUAL (desc.size, 64u);
   BOOST_CHECK_EQUAL (desc.name, "scratch");
-  BOOST_CHECK_EQUAL (desc.flags, 0);
+  BOOST_CHECK_EQUAL (desc.flags, 0u);
 
   gpi::pc::type::handle::list_t list;
   area.list_allocations (list);
@@ -82,9 +72,8 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   std::cout << "descriptor = " << desc << std::endl;
 
   area.free (hdl);
-  BOOST_CHECK_EQUAL (area.total_mem_size(), seg->size());
-  BOOST_CHECK_EQUAL (area.free_mem_size(), seg->size());
-  BOOST_CHECK_EQUAL (area.used_mem_size(), 0U);
+  BOOST_CHECK_EQUAL (2048u, area.descriptor().size);
+  BOOST_CHECK_EQUAL (2048u, area.descriptor().avail);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

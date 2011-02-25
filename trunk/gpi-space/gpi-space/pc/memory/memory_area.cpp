@@ -11,32 +11,53 @@ namespace gpi
   {
     namespace memory
     {
+      static Arena_t translate_grow_direction (int dir)
+      {
+        switch (dir)
+        {
+        case area_t::GROW_UP:
+          return ARENA_UP;
+          break;
+        case area_t::GROW_DOWN:
+          return ARENA_DOWN;
+        default:
+          throw std::runtime_error ("invalid grow direction");
+        }
+      }
+
       /***************************************************/
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t (const segment_ptr &segment)
-        : m_segment (segment)
-        , m_mmgr (NULL)
+      area_t::area_t ( const gpi::pc::type::id_t id
+                     , const gpi::pc::type::process_id_t creator
+                     , const std::string & name
+                     , const gpi::pc::type::size_t size
+                     , const gpi::pc::type::flags_t flags
+                     )
+          : m_descriptor ( id
+                         , creator
+                         , name
+                         , size
+                         , flags
+                         )
+          , m_mmgr (NULL)
       {
-        dtmmgr_init (&m_mmgr, m_segment->size(), 1);
+        dtmmgr_init (&m_mmgr, size, 1);
       }
 
       area_t::~area_t ()
       {
-        try
-        {
-          clear ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not clear memory area " << m_segment->id() << ": " << ex.what());
-        }
-
+        LOG_IF ( WARN
+               , m_handles.size()
+               , "there are still handles left at destruction time."
+               << " area = " << m_descriptor.id
+               << " handles = " << m_handles.size()
+               );
         dtmmgr_finalize (&m_mmgr);
       }
 
-      void area_t::clear ()
+      void area_t::garbage_collect ()
       {
         lock_type lock (m_mutex);
 
@@ -55,45 +76,73 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::handle_id_t area_t::alloc ( const gpi::pc::type::process_id_t proc_id
-                                               , const gpi::pc::type::size_t size
-                                               , const std::string & name
-                                               , const gpi::pc::type::flags_t flags
-                                               )
+      bool area_t::in_use () const
+      {
+        lock_type lock (m_mutex);
+        return m_descriptor.nref > 0;
+      }
+
+      bool area_t::is_eligible_for_deletion () const
+      {
+        lock_type lock (m_mutex);
+        assert (m_descriptor.nref == m_attached_processes.size());
+        if (m_descriptor.nref)
+        {
+          return false;
+        }
+        else if (gpi::flag::is_set ( m_descriptor.flags
+                                   , gpi::pc::type::segment::F_PERSISTENT
+                                   ))
+        {
+          return false;
+        }
+        else
+        {
+          return true;
+        }
+      }
+
+      gpi::pc::type::handle_t
+      area_t::alloc ( const gpi::pc::type::process_id_t proc_id
+                    , const gpi::pc::type::size_t size
+                    , const std::string & name
+                    , const gpi::pc::type::flags_t flags
+                    )
       {
         lock_type lock (m_mutex);
 
         // avoid generation of handle if alloc would definitely fail
-        if (m_segment->descriptor().avail < size)
+        if (m_descriptor.avail < size)
         {
-          LOG(ERROR, "not enough memory: requested_size = " << size << " segment = " << m_segment->id() << " avail = " << m_segment->descriptor().avail);
+          LOG( ERROR
+             , "not enough memory:"
+             << " requested_size = " << size
+             << " segment = " << m_descriptor.id
+             << " avail = " << m_descriptor.avail
+             );
           throw std::runtime_error ("out of memory");
         }
 
-        gpi::pc::type::handle::descriptor_t desc;
-        desc.id = handle_generator_t::get().next (m_segment->id());
-        desc.segment = m_segment->id();
-        desc.size = size;
-        desc.name = name;
-        desc.creator = proc_id;
-        desc.flags = flags;
+        gpi::pc::type::handle::descriptor_t hdl;
+        hdl.segment = m_descriptor.id;
+        hdl.id = handle_generator_t::get().next (m_descriptor.id);
+        hdl.size = size;
+        hdl.name = name;
+        hdl.creator = proc_id;
+        hdl.flags = flags;
 
-        Arena_t arena;
-        if (gpi::flag::is_set ( flags
-                              , gpi::pc::type::handle::F_GLOBAL
-                              )
-           )
-        {
-          arena = ARENA_UP;
-        }
-        else
-        {
-          arena = ARENA_DOWN;
-        }
+        Arena_t arena = translate_grow_direction(grow_direction(flags));
 
-        AllocReturn_t alloc_return (dtmmgr_alloc (&m_mmgr, desc.id, arena, size));
+        AllocReturn_t alloc_return
+            (dtmmgr_alloc (&m_mmgr, hdl.id, arena, size));
 
-        DLOG(TRACE, "ALLOC: handle = " << desc.id << " arena = " << arena << " size = " << size << " return = " << alloc_return);
+        DLOG( TRACE
+            , "ALLOC:"
+            << " handle = " << hdl.id
+            << " arena = " << arena
+            << " size = " << size
+            << " return = " << alloc_return
+            );
 
         switch (alloc_return)
         {
@@ -101,68 +150,128 @@ namespace gpi
           {
             Offset_t offset (0);
             dtmmgr_offset_size ( m_mmgr
-                               , desc.id
+                               , hdl.id
                                , arena
                                , &offset
                                , NULL
                                );
-            desc.offset = offset;
-            m_segment->descriptor().avail -= size;
-            m_segment->descriptor().allocs += 1;
-            m_segment->descriptor().ts.touch (gpi::pc::type::time_stamp_t::TOUCH_ACCESSED);
-            m_handles [desc.id] = desc;
+            hdl.offset = offset;
+            update_descriptor_from_mmgr ();
+            m_handles [hdl.id] = hdl;
+            try
+            {
+              alloc_hook (hdl);
+            }
+            catch (std::exception const & ex)
+            {
+              LOG(ERROR, "alloc_hook failed: " << ex.what());
+              dtmmgr_free (&m_mmgr, hdl.id, arena);
+              throw;
+            }
+            return hdl.id;
           }
           break;
         case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
-          LOG(WARN, "not enough contiguous memory available: requested_size = " << size << " segment = " << m_segment->id() << " avail = " << m_segment->descriptor().avail);
-          throw std::runtime_error ("not enough contiguous memory available");
-          break;
-        case ALLOC_DUPLICATE_HANDLE:
-          LOG(ERROR, "duplicate: handle = " << desc.id << " segment = " << m_segment->id());
-          throw std::runtime_error ("duplicate handle");
+          LOG( WARN
+             , "not enough contiguous memory available:"
+             << " requested_size = " << size
+             << " segment = " << m_descriptor.id
+             << " avail = " << m_descriptor.avail
+             );
+          // TODO:
+          //    defrag (size);
+          //        release locks (? how)
+          //          block all accesses to this area
+          //              // memcpy/allocs should return EAGAIN
+          //          wait for transactions to finish
+          //          real_defrag
+          //        reacquire locks
+          throw std::runtime_error
+              ("not enough contiguous memory");
           break;
         case ALLOC_INSUFFICIENT_MEMORY:
-          LOG(ERROR, "not enough memory: requested_size = " << size << " segment = " << m_segment->id() << " avail = " << m_segment->descriptor().avail);
+          LOG( ERROR
+             , "not enough memory:"
+             << " requested_size=" << size
+             << " segment=" << m_descriptor.id
+             << " avail=" << m_descriptor.avail
+             );
           throw std::runtime_error ("out of memory");
           break;
+        case ALLOC_DUPLICATE_HANDLE:
+          LOG( ERROR
+             ,  "duplicate handle:"
+             << " handle = " << hdl.id
+             << " segment " << m_descriptor.id
+             );
+          throw std::runtime_error ("duplicate handle");
+          break;
         case ALLOC_FAILURE:
-          LOG(ERROR, "internal error during allocation: requested_size = " << size << " segment = " << m_segment->id());
+          LOG( ERROR
+             , "internal error during allocation:"
+             << " requested_size = " << size
+             << " handle = " << hdl.id
+             << " segment = " << m_descriptor.id
+             );
           throw std::runtime_error ("allocation failed");
           break;
         default:
-          LOG(FATAL, "unexpected error during allocation: requested_size = " << size << " segment = " << m_segment->id());
+          LOG( ERROR
+             ,  "unexpected error during allocation:"
+             << " requested_size = " << size
+             << " handle = " << hdl.id
+             << " segment = " << m_descriptor.id
+             << " error = " << alloc_return
+             );
           throw std::runtime_error ("unexpected return code");
           break;
         }
 
-        return desc.id;
+        return hdl.id;
       }
 
-      void area_t::free (const gpi::pc::type::handle_id_t hdl)
+      void area_t::defrag (const gpi::pc::type::size_t)
+      {
+        throw std::runtime_error ("defrag is not yet implemented");
+      }
+
+      void area_t::update_descriptor_from_mmgr()
+      {
+        m_descriptor.avail = dtmmgr_memfree (m_mmgr);
+        m_descriptor.allocs =
+            dtmmgr_numhandle (m_mmgr, ARENA_UP)
+          + dtmmgr_numhandle (m_mmgr, ARENA_DOWN);
+        // dtmmgr_numalloc -> total allocs
+        // dtmmgr_numfree -> total frees
+        m_descriptor.ts.touch();
+      }
+
+      void area_t::free (const gpi::pc::type::handle_t hdl)
       {
         lock_type lock (m_mutex);
+
         if (m_handles.find(hdl) == m_handles.end())
         {
-          LOG(WARN, "possible double free detected: " << gpi::pc::type::handle_t(hdl));
+          LOG( ERROR
+             , "no such handle: "
+             << " handle = " << hdl
+             << " segment = " << m_descriptor.id
+             );
           throw std::runtime_error ("no such handle");
         }
 
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
-        m_handles.erase (hdl);
-
-        Arena_t arena;
-        if ( gpi::flag::is_set ( desc.flags
-                               , gpi::pc::type::handle::F_GLOBAL
-                               )
-           )
+        if (desc.nref)
         {
-          arena = ARENA_UP;
-        }
-        else
-        {
-          arena = ARENA_DOWN;
+          LOG( WARN
+             , "handle still in use:"
+             << " handle = " << hdl
+             << " nref = " << desc.nref
+             );
+          throw std::runtime_error ("handle still in use");
         }
 
+        Arena_t arena (translate_grow_direction(grow_direction(desc.flags)));
         HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
                                                   , hdl
                                                   , arena
@@ -172,52 +281,54 @@ namespace gpi
         {
         case RET_SUCCESS:
           DLOG(TRACE, "handle free'd: " << desc);
-          m_segment->descriptor().avail += desc.size;
-          m_segment->descriptor().allocs -= 1;
-          m_segment->descriptor().ts.touch (gpi::pc::type::time_stamp_t::TOUCH_ACCESSED);
+          m_handles.erase (hdl);
+          update_descriptor_from_mmgr ();
+          try
+          {
+            free_hook (desc);
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "free_hook failed: " << ex.what());
+          }
           break;
         case RET_HANDLE_UNKNOWN:
-          LOG(ERROR, "inconsistency detected: mmgr did not know handle " << desc);
-          throw std::runtime_error ("no such handle");
+          LOG( ERROR
+             , "***** INCONSISTENCY DETECTED *****:"
+             << " mmgr did not know handle " << desc
+             );
+          throw std::runtime_error ("inconsistent state: no such handle");
           break;
         case RET_FAILURE:
-          LOG(ERROR, "unknown error during free: handle = " << desc);
+          LOG( ERROR
+             , "unknown error during free:"
+             << " handle = " << desc
+             );
           throw std::runtime_error ("no such handle");
           break;
         }
       }
 
-      gpi::pc::type::size_t area_t::used_mem_size () const
-      {
-        return total_mem_size() - free_mem_size();
-      }
-
-      gpi::pc::type::size_t area_t::total_mem_size () const
+      gpi::pc::type::segment::descriptor_t const &
+      area_t::descriptor () const
       {
         lock_type lock (m_mutex);
-        return m_segment->size();
+        return m_descriptor;
       }
 
-      gpi::pc::type::size_t area_t::free_mem_size () const
-      {
-        lock_type lock (m_mutex);
-        return m_segment->descriptor().avail;
-      }
-
-      bool area_t::get_descriptor ( const gpi::pc::type::handle_id_t hdl
-                                  , gpi::pc::type::handle::descriptor_t & d
-                                  ) const
+      gpi::pc::type::handle::descriptor_t const &
+      area_t::descriptor (const gpi::pc::type::handle_t hdl) const
       {
         lock_type lock (m_mutex);
         handle_descriptor_map_t::const_iterator pos (m_handles.find (hdl));
         if (pos != m_handles.end())
         {
-          d = pos->second;
-          return true;
+          return pos->second;
         }
         else
         {
-          return false;
+          LOG(ERROR, "cannot find descriptor for handle " << hdl);
+          throw std::runtime_error ("no such handle");
         }
       }
 
@@ -232,6 +343,30 @@ namespace gpi
         {
           list.push_back (pos->second);
         }
+      }
+
+      gpi::pc::type::size_t
+      area_t::attach_process (const gpi::pc::type::process_id_t id)
+      {
+        lock_type lock (m_mutex);
+        if (m_attached_processes.insert (id).second)
+        {
+          ++m_descriptor.nref;
+        }
+        return m_descriptor.nref;
+      }
+
+      gpi::pc::type::size_t
+      area_t::detach_process (const gpi::pc::type::process_id_t id)
+      {
+        lock_type lock (m_mutex);
+        process_ids_t::iterator p (m_attached_processes.find(id));
+        if (p != m_attached_processes.end())
+        {
+          --m_descriptor.nref;
+          m_attached_processes.erase (p);
+        }
+        return m_descriptor.nref;
       }
     }
   }
