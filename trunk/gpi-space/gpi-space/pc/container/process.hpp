@@ -97,6 +97,6 @@ namespace gpi
 
 #ifdef GPI_SPACE_HEADER_ONLY
 #  include "process.ipp"
-#endif GPI_SPACE_HEADER_ONLY
+#endif
 
 #endif
