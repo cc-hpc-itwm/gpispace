@@ -43,7 +43,9 @@ namespace sdpa {
 
 			// front-end: define the FSM structure
 			struct DaemonFSM_ : public msm::front::state_machine_def<DaemonFSM_>
-			{
+                        {
+        virtual ~DaemonFSM_ () {}
+
 				// The list of FSM states
 				struct Down : public msm::front::state<>{};
 				struct Configuring : public msm::front::state<>{};
