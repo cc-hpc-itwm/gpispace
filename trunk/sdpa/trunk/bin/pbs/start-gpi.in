@@ -5,24 +5,25 @@ source ~/.init-screen.env
 # set some default values
 gpi_cfg=""
 if [ -n "$SDPA_GPI_CFG" -a -r "$SDPA_GPI_CFG" ] ; then
-  gpi_cfg="$SDPA_GPI_CFG"
+    gpi_cfg="$SDPA_GPI_CFG"
 elif [ -r "$HOME/.sdpa/configs/gpi.rc" -a -e "$HOME/.sdpa/configs/usenewgpi" ] ; then
-  gpi_cfg="$HOME/.sdpa/configs/gpi.rc"
+    gpi_cfg="$HOME/.sdpa/configs/gpi.rc"
 elif [ -r "$HOME/.sdpa/configs/sdpa-gpi.cfg" ] ; then
-  gpi_cfg="$HOME/.sdpa/configs/sdpa-gpi.cfg"
+    gpi_cfg="$HOME/.sdpa/configs/sdpa-gpi.cfg"
 elif [ -r "$SDPA_HOME/etc/gpi/sdpa-gpi.cfg" ] ; then
-  gpi_cfg="$SDPA_HOME/etc/gpi/sdpa-gpi.cfg"
+    gpi_cfg="$SDPA_HOME/etc/gpi/sdpa-gpi.cfg"
 fi
 
 gpi_bin_path=""
 if [ -n "$GPI_PRIV_DIR" -a -w "$GPI_PRIV_DIR" ] ; then
-  gpi_bin_path="$GPI_PRIV_DIR"
+    gpi_bin_path="$GPI_PRIV_DIR"
 elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
-  gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
+    gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
 fi
 
 gpi_exe="sdpa-gpi"
 force=false
+debug=false
 
 function usage ()
 {
@@ -33,12 +34,16 @@ usage: $0 [options]
     -d gpid directory (=$gpi_bin_path): priviledged binary path for the gpid
     -c gpi-cfg (=$gpi_cfg): path to the gpi cfg
     -x gpi-exe (=$gpi_exe): gpi program to use
+    -g run within debugger
     -f: force (always copy binary)
 EOF
 }
 
-while getopts ":hfd:c:x:" opt; do
+while getopts ":hgfd:c:x:" opt; do
     case $opt in
+	g)
+	    debug=true
+	    ;;
 	f)
 	    force=true
 	    ;;
@@ -64,21 +69,21 @@ while getopts ":hfd:c:x:" opt; do
 done
 
 if [ -z "$gpi_bin_path" ] ; then
-  log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
-  exit 1
+    log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
+    exit 1
 fi
 
 gpi_exe_path="$( which ${gpi_exe} 2>/dev/null )"
 if [ ! -f "${gpi_exe_path}" -a ! -x "${gpi_exe_path}" ] ; then
-  log "Sorry, no ${gpi_exe} binary found in PATH"
-  exit 1
+    log "Sorry, no ${gpi_exe} binary found in PATH"
+    exit 1
 fi
 gpi_exe="$(basename ${gpi_exe_path})"
 
 need_copy=false
 if [ ! -x "${gpi_bin_path}/${gpi_exe}" ] ; then
-   log "${gpi_exe} does not seem to be installed in $gpi_bin_path"
-   need_copy=true
+    log "${gpi_exe} does not seem to be installed in $gpi_bin_path"
+    need_copy=true
 else
     ts_inst=$( stat -c %Y "${gpi_bin_path}/${gpi_exe}" )
     ts_cand=$( stat -c %Y "${gpi_exe_path}" )
@@ -123,16 +128,19 @@ if [ $do_copy == "true" ] ; then
 fi
 
 if [ -x "$gpi_bin_path/$gpi_exe" ] ; then
-
-    log "# Using config file in: $gpi_cfg"
+    cmdline=
+    if [ "$debug" = "true" ] ; then
+	cmdline="gdb --args $cmdline"
+    fi
+    cmdline="$cmdline ${gpi_bin_path}/${gpi_exe}"
 
     if [ -n "$gpi_cfg" ] ; then
-	log "starting $gpi_bin_path/$gpi_exe with config from $gpi_cfg"
-	exec "${gpi_bin_path}/${gpi_exe}" "$gpi_cfg"
-    else
-	log "starting $gpi_bin_path/$gpi_exe (using default config)"
-	exec "${gpi_bin_path}/${gpi_exe}"
+	log "# Using config file in: $gpi_cfg"
+	cmdline="$cmdline $gpi_cfg"
     fi
+
+    log "executing $cmdline"
+    exec ${cmdline}
 else
     log "cannot execute $gpi_bin_path/$gpi_bin, giving up."
     exit 2
