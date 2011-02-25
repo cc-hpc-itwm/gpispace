@@ -156,8 +156,6 @@ namespace gpi
                                , NULL
                                );
             hdl.offset = offset;
-            update_descriptor_from_mmgr ();
-            m_handles [hdl.id] = hdl;
             try
             {
               alloc_hook (hdl);
@@ -168,6 +166,8 @@ namespace gpi
               dtmmgr_free (&m_mmgr, hdl.id, arena);
               throw;
             }
+            update_descriptor_from_mmgr ();
+            m_handles [hdl.id] = hdl;
             return hdl.id;
           }
           break;
@@ -290,6 +290,7 @@ namespace gpi
           catch (std::exception const & ex)
           {
             LOG(ERROR, "free_hook failed: " << ex.what());
+            throw;
           }
           break;
         case RET_HANDLE_UNKNOWN:
