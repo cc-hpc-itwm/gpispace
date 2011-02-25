@@ -30,7 +30,7 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "error withing ~manager_t: " << ex.what());
+          LOG(ERROR, "error within dtor of container manager: " << ex.what());
         }
       }
 
