@@ -2,18 +2,19 @@
 
 set (hdrs
   process.hpp
-  process.ipp
   message_visitor.hpp
-
   connector.hpp
-  connector.ipp
-
   manager.hpp
   )
 
 set (srcs
   manager.cpp
   )
+
+if (GPI_SPACE_HEADER_ONLY)
+else (GPI_SPACE_HEADER_ONLY)
+  set (srcs ${srcs} templates.cpp)
+endif (GPI_SPACE_HEADER_ONLY)
 
 ADD_LIBRARY(gpi-space-pc-container ${hdrs} ${srcs})
 target_link_libraries (gpi-space-pc-container

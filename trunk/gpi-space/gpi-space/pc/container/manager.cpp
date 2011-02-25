@@ -4,6 +4,8 @@
 
 #include <boost/bind.hpp>
 
+#include <fhglog/minimal.hpp>
+
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 

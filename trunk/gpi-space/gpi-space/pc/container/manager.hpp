@@ -133,6 +133,4 @@ namespace gpi
   }
 }
 
-#include "manager.ipp"
-
 #endif
