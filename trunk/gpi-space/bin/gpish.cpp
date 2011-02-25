@@ -86,6 +86,10 @@ static int cmd_list (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_socket (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_status (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_gc (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_set (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_unset (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_save (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_load (shell_t::argv_t const & av, shell_t & sh);
 
 static int cmd_segment (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh);
@@ -236,6 +240,10 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("socket", &cmd_socket, "list available sockets");
   sh.add_command("status", &cmd_status, "print internal status information");
   sh.add_command("gc", &cmd_gc, "garbage collect");
+  sh.add_command("save", &cmd_save, "save an attached segment to a file");
+  sh.add_command("load", &cmd_load, "load a file into a segment");
+  sh.add_command("set", &cmd_set, "set or list shell environment");
+  sh.add_command("unset", &cmd_unset, "unset variables");
 
   sh.add_command("segment", &cmd_segment, "segment related functions");
   sh.add_command("segment-register", &cmd_segment_register, "register a new segment");
@@ -391,6 +399,96 @@ int cmd_info (shell_t::argv_t const & av, shell_t & sh)
 int cmd_gc (shell_t::argv_t const & av, shell_t & sh)
 {
   sh.state().capi.garbage_collect ();
+  return 0;
+}
+
+int cmd_unset (shell_t::argv_t const & av, shell_t & sh)
+{
+  if (av.empty())
+  {
+    std::cerr << "usage: unset var [var...]" << std::endl;
+    return 1;
+  }
+  else
+  {
+    BOOST_FOREACH (const shell_t::argv_t::value_type & arg, av)
+    {
+//      sh.state.env.unset (av);
+    }
+  }
+  return 0;
+}
+
+int cmd_set (shell_t::argv_t const & av, shell_t & sh)
+{
+  if (av.empty())
+  {
+    // print current state variables
+//    std::cout << sh.state.env << std::endl;
+  }
+  else if (1 == av.size())
+  {
+//    std::cout << sh.state.env.get(av[0]) << std::endl;
+  }
+  return 0;
+}
+
+int cmd_save (shell_t::argv_t const & av, shell_t & sh)
+{
+  if (av.size() < 2)
+  {
+    std::cerr << "usage: save <segment> <path>" << std::endl;
+//    std::cerr << "    if path is empty or -, save to stdout" << std::endl;
+    return 1;
+  }
+
+  bool force (false); // force = sh.state.env.get<bool>("save.force");
+
+  const gpi::pc::type::segment_id_t id
+      (boost::lexical_cast<gpi::pc::type::segment_id_t>(av[0]));
+
+  const fs::path path (av[1]);
+
+  if (fs::exists (path) && !force)
+  {
+    std::cerr << "the file " << path << " does already exist!" << std::endl;
+    return 1;
+  }
+
+  gpi::pc::client::api_t::segment_ptr seg
+      (sh.state().capi.segments().at(id));
+  std::cerr << *seg << std::endl;
+
+  std::ofstream ofs (path.string().c_str());
+  ofs.write (seg->ptr<char>(), seg->size());
+  ofs.close ();
+  return 0;
+}
+
+int cmd_load (shell_t::argv_t const & av, shell_t & sh)
+{
+  if (av.empty())
+  {
+    std::cerr << "usage: load <segment> <path>" << std::endl;
+  }
+
+  const gpi::pc::type::segment_id_t id
+      (boost::lexical_cast<gpi::pc::type::segment_id_t>(av[0]));
+  const fs::path path (av[1]);
+
+  if (!fs::exists (path))
+  {
+    std::cerr << "the file " << path << " does not exist!" << std::endl;
+    return 1;
+  }
+
+  gpi::pc::client::api_t::segment_ptr seg
+      (sh.state().capi.segments().at(id));
+
+  // TODO check filesize
+  std::ifstream ifs (path.string().c_str());
+  ifs.read(seg->ptr<char>(), seg->size());
+  ifs.close ();
   return 0;
 }
 
