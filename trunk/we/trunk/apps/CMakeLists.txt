@@ -27,7 +27,7 @@ foreach (target ${simple_targets})
 
     add_executable(${target}.static "${target}.cpp")
 
-    target_link_libraries(${target} ${WE_PRECOMPILE_LIBRARIES})
+    target_link_libraries(${target}.static ${WE_PRECOMPILE_LIBRARIES})
     target_link_libraries(${target}.static ${FhgLog_LIBRARY})
     target_link_libraries(${target}.static ${Boost_LIBRARIES})
     target_link_libraries(${target}.static pthread)
