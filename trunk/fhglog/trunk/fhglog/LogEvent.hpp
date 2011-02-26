@@ -19,6 +19,7 @@ namespace fhg { namespace log {
       typedef std::string function_type;
       typedef std::size_t line_type;
       typedef std::string message_type;
+      typedef std::string tag_type;
       typedef std::string module_type;
       typedef unsigned long long tstamp_type;
       typedef pid_t     pid_type;
@@ -58,6 +59,7 @@ namespace fhg { namespace log {
       inline const std::string &logged_via() const { return logged_via_; }
       inline const std::string &logged_on() const { return logged_on_; }
       inline const std::string &module() const { return module_; }
+      inline const std::string &tag() const { return tag_; }
 
       inline severity_type &severity() { return severity_; }
       inline file_type &file() { return file_; }
@@ -71,6 +73,7 @@ namespace fhg { namespace log {
       inline std::string &logged_via() { return logged_via_; }
       inline std::string &logged_on() { return logged_on_; }
       inline std::string &module() { return module_; }
+      inline std::string &tag() { return tag_; }
 
       inline void logged_via(const std::string &name) const
       {
@@ -102,6 +105,7 @@ namespace fhg { namespace log {
       ar & BOOST_SERIALIZATION_NVP( logged_via_ );
       ar & BOOST_SERIALIZATION_NVP( logged_on_ );
       ar & BOOST_SERIALIZATION_NVP( module_ );
+      ar & BOOST_SERIALIZATION_NVP( tag_ );
     }
 
     private:
@@ -117,6 +121,7 @@ namespace fhg { namespace log {
       std::string logged_via_;
       std::string logged_on_;
       std::string module_;
+      std::string tag_;
       std::ostringstream message_buffer_;
   };
 }}
