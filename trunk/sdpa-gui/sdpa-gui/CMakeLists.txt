@@ -3,6 +3,7 @@ include(${QT_USE_FILE})
 set(sdpa-gui_SRCS
   main.cpp
   monitorwindow.cpp
+  logeventwrapper.cpp
 )
 
 set(sdpa-gui_UIS
@@ -11,6 +12,7 @@ set(sdpa-gui_UIS
 
 set(sdpa-gui_HDRS
   monitorwindow.hpp
+  logeventwrapper.hpp
 )
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
