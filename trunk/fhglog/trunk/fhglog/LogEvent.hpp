@@ -25,8 +25,6 @@ namespace fhg { namespace log {
       typedef pid_t     pid_type;
       typedef pthread_t tid_type;
 
-      static std::string &severityToString(const severity_type &severity);
-
       LogEvent();
       LogEvent(const severity_type &severity
              , const file_type &path
