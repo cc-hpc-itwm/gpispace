@@ -8,7 +8,7 @@ class LogEventWrapper : public QEvent
 {
 public:
     explicit
-    LogEventWrapper(const fhg::log::LogEvent &);
+    LogEventWrapper(int typ, const fhg::log::LogEvent &);
     ~LogEventWrapper ();
 
     fhg::log::LogEvent log_event;

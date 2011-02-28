@@ -13,6 +13,7 @@ set(sdpa-gui_UIS
 set(sdpa-gui_HDRS
   monitorwindow.hpp
   logeventwrapper.hpp
+  windowappender.hpp
 )
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
