@@ -1,6 +1,7 @@
 // basic usage of adjacency.hpp, mirko.rahn@itwm.fraunhofer.de
 
 #include <we/container/adjacency.hpp>
+#include <we/container/adjacency.ipp>
 
 #include <limits>
 
