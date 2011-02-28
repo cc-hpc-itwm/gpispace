@@ -367,10 +367,6 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          if (! (flags & gpi::pc::type::segment::F_NOUNLINK))
-          {
-            seg->unlink ();
-          }
           throw;
         }
 
