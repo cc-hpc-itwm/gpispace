@@ -5,7 +5,7 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-project(sdpa-gui)
+project(sdpa-mon)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 set(PROJECT_DESCRIPTION "SDPA Monitor GUI")
