@@ -142,7 +142,7 @@
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_3">
           <property name="title">
-           <string>GroupBox</string>
+           <string>Event Log</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
            <item row="0" column="0">
@@ -181,7 +181,7 @@
               <bool>false</bool>
              </property>
              <property name="rowCount">
-              <number>1</number>
+              <number>0</number>
              </property>
              <property name="columnCount">
               <number>3</number>
@@ -192,13 +192,24 @@
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>false</bool>
              </attribute>
+             <attribute name="horizontalHeaderHighlightSections">
+              <bool>false</bool>
+             </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
               <bool>true</bool>
              </attribute>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>
-             <row/>
+             <attribute name="verticalHeaderHighlightSections">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderMinimumSectionSize">
+              <number>5</number>
+             </attribute>
+             <attribute name="verticalHeaderStretchLastSection">
+              <bool>false</bool>
+             </attribute>
              <column>
               <property name="text">
                <string>Source</string>
@@ -228,7 +239,10 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>
-              <widget class="QComboBox" name="comboBox">
+              <widget class="QComboBox" name="m_level_filter_selector">
+               <property name="toolTip">
+                <string>Filter events according to level</string>
+               </property>
                <property name="currentIndex">
                 <number>2</number>
                </property>
@@ -288,8 +302,34 @@
             <layout class="QVBoxLayout" name="verticalLayout_6">
              <item>
               <widget class="QPushButton" name="clear_log_button">
+               <property name="toolTip">
+                <string>Clear all events</string>
+               </property>
                <property name="text">
                 <string>Clear</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="follow_logging_cb">
+               <property name="toolTip">
+                <string>Automatically scroll the view</string>
+               </property>
+               <property name="text">
+                <string>follow</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="m_drop_filtered">
+               <property name="toolTip">
+                <string>Drop filtered events instead of keeping them</string>
+               </property>
+               <property name="text">
+                <string>drop filtered</string>
                </property>
               </widget>
              </item>
@@ -348,6 +388,14 @@
     <string>Save</string>
    </property>
   </action>
+  <action name="actionClear_Logs">
+   <property name="text">
+    <string>Clear Logs</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear logs</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
@@ -375,8 +423,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>658</x>
-     <y>472</y>
+     <x>163</x>
+     <y>104</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -387,18 +435,71 @@
   <connection>
    <sender>clear_log_button</sender>
    <signal>clicked()</signal>
-   <receiver>m_log_table</receiver>
-   <slot>clear()</slot>
+   <receiver>actionClear_Logs</receiver>
+   <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>658</x>
-     <y>502</y>
+     <x>693</x>
+     <y>538</y>
     </hint>
     <hint type="destinationlabel">
-     <x>309</x>
-     <y>308</y>
+     <x>490</x>
+     <y>611</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>follow_logging_cb</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MonitorWindow</receiver>
+   <slot>toggleFollowLogging(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>704</x>
+     <y>572</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>388</x>
+     <y>318</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClear_Logs</sender>
+   <signal>activated()</signal>
+   <receiver>MonitorWindow</receiver>
+   <slot>clearLogging()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>388</x>
+     <y>318</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_level_filter_selector</sender>
+   <signal>activated(int)</signal>
+   <receiver>MonitorWindow</receiver>
+   <slot>levelFilterChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>704</x>
+     <y>114</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>388</x>
+     <y>318</y>
     </hint>
    </hints>
   </connection>
  </connections>
+ <slots>
+  <slot>clearLogging()</slot>
+  <slot>toggleFollowLogging(bool)</slot>
+  <slot>levelFilterChanged(int)</slot>
+ </slots>
 </ui>
