@@ -17,7 +17,7 @@ namespace gpi
         gpi_area_t ( const gpi::pc::type::id_t id
                    , const gpi::pc::type::process_id_t creator
                    , const std::string & name
-                   , const gpi::pc::type::size_t size
+                   , const gpi::pc::type::size_t per_node_size
                    , const gpi::pc::type::flags_t flags
                    , void * dma_ptr
                    );
@@ -34,6 +34,7 @@ namespace gpi
         void  free_hook (const gpi::pc::type::handle::descriptor_t &);
       private:
         void * m_ptr;
+        gpi::pc::type::size_t m_total_memsize;
       };
     }
   }
