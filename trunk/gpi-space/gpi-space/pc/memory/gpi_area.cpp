@@ -1,6 +1,7 @@
 #include "gpi_area.hpp"
 
 #include <fhglog/minimal.hpp>
+#include <gpi-space/gpi/api.hpp>
 
 namespace gpi
 {
@@ -17,7 +18,10 @@ namespace gpi
                              )
           : area_t (id, creator, name, size, flags)
           , m_ptr (dma_ptr)
-      {}
+      {
+        // total memory size is required for boundary checks
+        m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
+      }
 
       gpi_area_t::~gpi_area_t ()
       { }
