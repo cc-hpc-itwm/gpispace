@@ -102,6 +102,19 @@ namespace gpi
         }
       }
 
+      void
+      area_t::check_bounds ( const gpi::pc::type::memory_location_t & loc
+                           , const gpi::pc::type::size_t size
+                           ) const
+      {
+        lock_type lock (m_mutex);
+        handle_descriptor_map_t::const_iterator
+            hdl_it (m_handles.find(loc.handle));
+        if (hdl_it == m_handles.end())
+          throw std::invalid_argument("check_bounds: no such handle");
+        check_bounds (hdl_it->second, loc.offset, loc.offset+size);
+      }
+
       gpi::pc::type::handle_t
       area_t::alloc ( const gpi::pc::type::process_id_t proc_id
                     , const gpi::pc::type::size_t size

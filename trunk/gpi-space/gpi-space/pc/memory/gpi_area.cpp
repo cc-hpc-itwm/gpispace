@@ -51,6 +51,35 @@ namespace gpi
       }
 
       void
+      gpi_area_t::check_bounds ( const gpi::pc::type::handle::descriptor_t &hdl
+                               , const gpi::pc::type::offset_t start
+                               , const gpi::pc::type::offset_t end
+                               ) const
+      {
+        if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        {
+          // handle size is actually #nodes*hdl.size
+          const gpi::pc::type::size_t global_size
+              ( gpi::api::gpi_api_t::get().number_of_nodes ()
+              * hdl.size
+              );
+          if (! (start < global_size && end < global_size))
+          {
+            throw std::invalid_argument
+                ("out-of-bounds: access to global handle outside boundaries");
+          }
+        }
+        else
+        {
+          if (! (start < hdl.size && end < hdl.size))
+          {
+            throw std::invalid_argument
+                ("out-of-bounds: access to local handle outside boundaries");
+          }
+        }
+      }
+
+      void
       gpi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))

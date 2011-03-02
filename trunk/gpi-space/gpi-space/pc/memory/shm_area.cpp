@@ -82,6 +82,19 @@ namespace gpi
        return area_type;
      }
 
+      void
+      shm_area_t::check_bounds ( const gpi::pc::type::handle::descriptor_t &hdl
+                               , const gpi::pc::type::offset_t start
+                               , const gpi::pc::type::offset_t end
+                               ) const
+      {
+        if (! (start < hdl.size && end < hdl.size))
+        {
+          throw std::invalid_argument
+              ("out-of-bounds: access to shm handle outside boundaries");
+        }
+      }
+
      bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t flgs)
      {
        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))

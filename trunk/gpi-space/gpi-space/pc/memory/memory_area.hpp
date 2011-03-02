@@ -12,6 +12,7 @@
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
+#include <gpi-space/pc/type/memory_location.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
@@ -76,6 +77,10 @@ namespace gpi
         bool is_eligible_for_deletion () const;
 
         bool is_process_attached (const gpi::pc::type::process_id_t) const;
+
+        void check_bounds ( const gpi::pc::type::memory_location_t & loc
+                          , const gpi::pc::type::size_t size
+                          ) const;
       protected:
         area_t ( const gpi::pc::type::id_t id
                , const gpi::pc::type::process_id_t creator
@@ -93,6 +98,11 @@ namespace gpi
 
         virtual
         int get_type_id () const = 0;
+
+        virtual void check_bounds ( const gpi::pc::type::handle::descriptor_t &
+                                  , const gpi::pc::type::offset_t start
+                                  , const gpi::pc::type::offset_t end
+                                  ) const = 0;
 
         /*
          hook functions that may be overriden

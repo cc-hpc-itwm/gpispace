@@ -27,6 +27,11 @@ namespace gpi
       protected:
         int get_type_id () const;
 
+        void check_bounds ( const gpi::pc::type::handle::descriptor_t &
+                          , const gpi::pc::type::offset_t start
+                          , const gpi::pc::type::offset_t end
+                          ) const;
+
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
         grow_direction_t grow_direction (const gpi::pc::type::flags_t) const;
 
