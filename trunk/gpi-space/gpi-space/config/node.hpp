@@ -51,8 +51,37 @@ namespace gpi_space
 
     void configure (config const & c)
     {
-       setenv("KVS_URL", c.kvs_url, true);
-       fhg::com::kvs::global::get_kvs_info().init ();
+      try
+      {
+        setenv("KVS_URL", c.kvs_url, true);
+
+        /* TODO: provide the following calls
+              global should be struct
+        fhg::com::kvs::global::create ();
+        fhg::com::kvs::global::init ();
+        fhg::com::kvs::global::get ();
+        fhg::com::kvs::global::destroy ();
+        */
+
+        fhg::com::kvs::global::get_kvs_info().init ();
+
+        // workaround until we have the above structure
+        // put/del some entry to check the connection
+        fhg::com::kvs::scoped_entry_t
+            ( "kvs.connection.check"
+            , boost::lexical_cast<std::string>(getpid())
+            );
+      }
+      catch (std::exception const & ex)
+      {
+        LOG( ERROR
+           , "Could not connect to KVS"
+           << " at: " << c.kvs_url
+           << " reason: " << ex.what()
+           );
+        throw std::runtime_error
+            (std::string("kvs connection failed: ") + ex.what());
+      }
     }
   }
 }
