@@ -863,7 +863,13 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
   if (av.size() < 2)
   {
     std::cout << "usage: alloc segment size [name [flags]]" << std::endl;
-    std::cout << "   segment : global local or id" << std::endl;
+    std::cout << "   segment : gpi or id" << std::endl;
+    std::cout << "   flags might depend on the segment type:" << std::endl;
+    std::cout << "                 t - temporary (removed after pc death)" << std::endl;
+    std::cout << "      gpi flags: g - global (allocate on each node)" << std::endl;
+    std::cout << "                 l - local (allocate only on this node)" << std::endl;
+    std::cout << "      shm flags: x - exclusive (disallow access from other pc)" << std::endl;
+    std::cout << std::endl;
     return 1;
   }
 
@@ -872,10 +878,10 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
   std::string desc;
   gpi::pc::type::flags_t flags (gpi::pc::type::handle::F_GLOBAL);
 
-  if (av[0] == "global")
-    seg_id = gpi::pc::type::segment::SEG_GLOBAL;
-  else if (av[0] == "local")
-    seg_id = gpi::pc::type::segment::SEG_LOCAL;
+  if (av[0] == "gpi")
+  {
+    seg_id = 1;
+  }
   else
   {
     seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t> (av[0]);
@@ -890,7 +896,29 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
 
   if (av.size() > 3)
   {
-    std::cerr << "flags parsing not yet implemented" << std::endl;
+    std::string flagstring(av[3]);
+    for ( std::string::const_iterator f (flagstring.begin())
+        ; f != flagstring.end()
+        ; ++f
+        )
+    {
+      switch (*f)
+      {
+      case 'l':
+      case 'x':
+        gpi::flag::unset (flags, gpi::pc::type::handle::F_GLOBAL);
+        break;
+      case 'g':
+        gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
+        break;
+      case 't':
+        gpi::flag::set (flags, gpi::pc::type::handle::F_TEMPORARY);
+        break;
+      default:
+          std::cerr << "invalid flag: '" << *f << "'" << std::endl;
+          return 2;
+        }
+    }
   }
 
   gpi::pc::type::handle_id_t handle

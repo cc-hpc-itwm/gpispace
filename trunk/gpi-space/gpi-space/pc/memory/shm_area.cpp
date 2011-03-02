@@ -20,7 +20,13 @@ namespace gpi
                              , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
                              )
-          : area_t (id, creator, path, size, flags)
+          : area_t ( gpi::pc::type::segment::SEG_SHM
+                   , id
+                   , creator
+                   , path
+                   , size
+                   , flags
+                   )
           , m_ptr (NULL)
       {
         m_ptr = shm_area_t::open ( path
@@ -75,11 +81,6 @@ namespace gpi
      shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
      {
         return area_t::GROW_UP;
-     }
-
-     int shm_area_t::get_type_id () const
-     {
-       return area_type;
      }
 
       void

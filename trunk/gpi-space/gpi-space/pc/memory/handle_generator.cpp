@@ -11,35 +11,32 @@ namespace gpi
       namespace detail
       {
         gpi::pc::type::handle_t encode ( const gpi::pc::type::size_t node
-                                       , const gpi::pc::type::segment_id_t seg
+                                       , const gpi::pc::type::segment::segment_type type
                                        , const gpi::pc::type::size_t counter
                                        )
         {
           gpi::pc::type::handle_t hdl;
 
-          if (gpi::pc::type::segment::SEG_INVAL == seg)
+          if (gpi::pc::type::segment::SEG_INVAL == type)
           {
             hdl = 0;
           }
-          else if (gpi::pc::type::segment::SEG_GLOBAL == seg)
+          else if (gpi::pc::type::segment::SEG_GPI == type)
           {
-            hdl.type = gpi::pc::type::segment::SEG_GLOBAL;
+            hdl.type = gpi::pc::type::segment::SEG_GPI;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::ident_bits>(node);
-            hdl.global.ident = node;
+            hdl.gpi.ident = node;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::global_count_bits>(counter);
-            hdl.global.cntr = counter;
+            hdl.gpi.cntr = counter;
           }
           else
           {
-            if (gpi::pc::type::segment::SEG_LOCAL == seg)
-              hdl.type = gpi::pc::type::segment::SEG_LOCAL;
-            else
-              hdl.type = gpi::pc::type::segment::SEG_SHARED;
+            hdl.type = type;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
-            hdl.local.cntr = counter;
+            hdl.shm.cntr = counter;
           }
 
           return hdl;
@@ -51,9 +48,9 @@ namespace gpi
       handle_generator_t::handle_generator_t(const gpi::pc::type::size_t identifier)
         : m_node_identifier (identifier)
       {
-        for (int i (1); i <= gpi::pc::type::segment::SEG_SHARED; ++i)
+        for (size_t i = 0; i < (1<< gpi::pc::type::handle_t::typec_bits); ++i)
         {
-          m_counter[i] = counter_ptr(new gpi::pc::type::counter_t());
+          m_counter.push_back(counter_ptr(new gpi::pc::type::counter_t()));
         }
       }
 
@@ -77,29 +74,19 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::handle_t handle_generator_t::next (const gpi::pc::type::segment_id_t seg_id)
+      gpi::pc::type::handle_t
+      handle_generator_t::next (const gpi::pc::type::segment::segment_type seg)
       {
-        if (! gpi::pc::type::segment::traits::is_valid(seg_id))
-        {
+        if (gpi::pc::type::segment::SEG_INVAL == seg)
           return gpi::pc::type::handle_t(0);
-        }
-        else
-        {
-          if (! seg_id)
-          {
-            throw std::invalid_argument("no counter for invalid segment: 0");
-          }
+        assert (seg > 0);
+        if (size_t(seg) >= m_counter.size())
+          throw std::invalid_argument ("invalid segment type");
 
-          gpi::pc::type::size_t counter_idx (seg_id);
-          if (seg_id >= gpi::pc::type::segment::SEG_SHARED)
-          {
-            counter_idx = gpi::pc::type::segment::SEG_SHARED;
-          }
-          return detail::encode ( m_node_identifier
-                                , seg_id
-                                , m_counter[counter_idx]->inc()
-                                );
-        }
+        return detail::encode ( m_node_identifier
+                              , seg
+                              , m_counter[seg]->inc()
+                              );
       }
     }
   }

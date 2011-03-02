@@ -42,6 +42,7 @@ namespace gpi
         gpi::pc::type::size_t size () const;
         std::string const & name () const;
         bool in_use () const;
+        int type () const;
 
         // WORK HERE:
         //    this function *must not* be called from the dtor
@@ -82,7 +83,8 @@ namespace gpi
                           , const gpi::pc::type::size_t size
                           ) const;
       protected:
-        area_t ( const gpi::pc::type::id_t id
+        area_t ( const gpi::pc::type::segment::segment_type type
+               , const gpi::pc::type::id_t id
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
                , const gpi::pc::type::size_t size
@@ -95,9 +97,6 @@ namespace gpi
 
         virtual
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const = 0;
-
-        virtual
-        int get_type_id () const = 0;
 
         virtual void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                                   , const gpi::pc::type::offset_t start

@@ -16,7 +16,13 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              , void * dma_ptr
                              )
-          : area_t (id, creator, name, size, flags)
+          : area_t ( gpi::pc::type::segment::SEG_GPI
+                   , id
+                   , creator
+                   , name
+                   , size
+                   , flags
+                   )
           , m_ptr (dma_ptr)
       {
         // total memory size is required for boundary checks

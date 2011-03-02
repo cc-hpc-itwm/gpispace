@@ -60,12 +60,12 @@ namespace gpi
                 handle_id_t cntr  : global_count_bits;
                 handle_id_t ident : ident_bits;
                 int _pad  : typec_bits;
-              } global;
+              } gpi;
               struct // == sizeof(handle_id_t)
               {
                 handle_id_t cntr : local_count_bits;
                 int _pad  : typec_bits;
-              } local;
+              } shm;
               struct // == sizeof(handle_id_t)
               {
                 handle_id_t _pad : (total_bits - typec_bits);
@@ -80,14 +80,7 @@ namespace gpi
       inline
       bool is_valid (const handle_t & hdl)
       {
-        switch (hdl.type)
-        {
-          case 1:
-          case 2:
-          case 3:
-            return true;
-        }
-        return false;
+        return hdl.type != 0;
       }
 
       inline

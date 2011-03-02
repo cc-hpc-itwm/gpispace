@@ -23,13 +23,12 @@ namespace gpi
       {
         enum segment_type
           {
+            // maximum of 4 bits available --> see handle_t
             SEG_INVAL = 0,
-            SEG_GLOBAL,
-            SEG_LOCAL,
-            // the following is just a placeholder
-            // shared segment ids are just >= SHARED
-            SEG_SHARED,
+            SEG_GPI = 1,
+            SEG_SHM = 2,
           };
+
 
         enum flags_type
           {
@@ -43,31 +42,10 @@ namespace gpi
             F_ATTACHED     = 0x40, // special flag indicating if the process container is attached
           };
 
-        struct traits
-        {
-          static bool is_valid (const gpi::pc::type::segment_id_t i)
-          {
-            return i != SEG_INVAL;
-          }
-
-          static bool is_global (const gpi::pc::type::segment_id_t i)
-          {
-            return i == SEG_GLOBAL;
-          }
-          static bool is_local (const gpi::pc::type::segment_id_t i)
-          {
-            return i == SEG_LOCAL;
-          }
-          static bool is_shared (const gpi::pc::type::segment_id_t i)
-          {
-            return i >= SEG_SHARED;
-          }
-        };
-
         struct descriptor_t
         {
-          typedef traits traits_type;
           gpi::pc::type::segment_id_t id;       // identification
+          segment_type type;                    // type id
           gpi::pc::type::process_id_t creator;  // container id
           gpi::pc::type::name_t name;           // user defined name
           gpi::pc::type::size_t size;           // maximum size
@@ -79,6 +57,7 @@ namespace gpi
 
           descriptor_t ()
             : id (SEG_INVAL)
+            , type (SEG_INVAL)
             , creator (0)
             , name ("")
             , size (0)
@@ -89,12 +68,14 @@ namespace gpi
           {}
 
           descriptor_t ( const gpi::pc::type::segment_id_t a_id
+                       , const segment_type a_type
                        , const gpi::pc::type::process_id_t a_proc
                        , const gpi::pc::type::name_t a_name
                        , const gpi::pc::type::size_t a_size
                        , const gpi::pc::type::flags_t a_flags
                        )
               : id (a_id)
+              , type (a_type)
               , creator (a_proc)
               , name (a_name)
               , size (a_size)
@@ -115,6 +96,7 @@ namespace gpi
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( id );
+            ar & BOOST_SERIALIZATION_NVP( type );
             ar & BOOST_SERIALIZATION_NVP( creator );
             ar & BOOST_SERIALIZATION_NVP( name );
             ar & BOOST_SERIALIZATION_NVP( size );

@@ -29,13 +29,15 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( const gpi::pc::type::id_t id
+      area_t::area_t ( const gpi::pc::type::segment::segment_type type
+                     , const gpi::pc::type::id_t id
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
                      )
           : m_descriptor ( id
+                         , type
                          , creator
                          , name
                          , size
@@ -80,6 +82,11 @@ namespace gpi
       {
         lock_type lock (m_mutex);
         return m_descriptor.nref > 0;
+      }
+
+      int area_t::type () const
+      {
+        return m_descriptor.type;
       }
 
       bool area_t::is_eligible_for_deletion () const
@@ -138,7 +145,8 @@ namespace gpi
 
         gpi::pc::type::handle::descriptor_t hdl;
         hdl.segment = m_descriptor.id;
-        hdl.id = handle_generator_t::get().next (m_descriptor.id);
+        hdl.id =
+            handle_generator_t::get().next(m_descriptor.type);
         hdl.size = size;
         hdl.name = name;
         hdl.creator = proc_id;

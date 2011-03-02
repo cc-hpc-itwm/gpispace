@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE ( proto_alloc_test )
 {
   using namespace gpi::pc;
   proto::memory::alloc_t req;
-  req.segment = gpi::pc::type::segment::SEG_GLOBAL;
+  req.segment = gpi::pc::type::segment::SEG_GPI;
   req.size = 1024;
   req.flags = 0700;
 
