@@ -5,6 +5,8 @@
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 namespace gpi
 {
@@ -102,15 +104,19 @@ namespace gpi
     private:
       friend class gpi_api_t;
 
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
+
       real_gpi_api_t ();
       int startup_timedout_cb (int);
 
+      mutable mutex_type m_mutex;
       int   m_ac;
       char **m_av;
       bool m_is_master;
       bool  m_startup_done;
-      mutable rank_t m_rank;
-      mutable size_t m_mem_size;
+      rank_t m_rank;
+      size_t m_mem_size;
       void *m_dma;
     };
   }

@@ -57,6 +57,7 @@ namespace gpi
     // wrapped C function calls
     void real_gpi_api_t::start (const gpi::timeout_t timeout)
     {
+      lock_type lock (m_mutex);
       assert (! m_startup_done);
 
       int rc (0);
@@ -95,6 +96,7 @@ namespace gpi
 
     void real_gpi_api_t::stop ()
     {
+      lock_type lock (m_mutex);
       if (m_startup_done)
       {
         shutdownGPI();
@@ -104,6 +106,7 @@ namespace gpi
 
     void real_gpi_api_t::kill ()
     {
+      lock_type lock (m_mutex);
       if (is_master())
       {
         if (0 != killProcsGPI())
@@ -123,6 +126,7 @@ namespace gpi
 
     void real_gpi_api_t::shutdown ()
     {
+      lock_type lock (m_mutex);
       if (m_startup_done)
       {
         if (is_master ())
@@ -164,6 +168,7 @@ namespace gpi
 
     gpi::size_t real_gpi_api_t::number_of_nodes () const
     {
+      lock_type lock (m_mutex);
       return getNodeCountGPI();
     }
 
@@ -174,6 +179,8 @@ namespace gpi
 
     gpi::size_t real_gpi_api_t::open_dma_requests (const queue_desc_t q) const
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc (openDMARequestsGPI (q));
       if (rc < 0)
@@ -185,12 +192,13 @@ namespace gpi
 
     bool real_gpi_api_t::max_dma_requests_reached (const queue_desc_t q) const
     {
-      assert (m_startup_done);
       return (open_dma_requests(q) >= queue_depth());
     }
 
     gpi::size_t real_gpi_api_t::open_passive_requests () const
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc (openDMAPassiveRequestsGPI ());
       if (rc < 0)
@@ -202,12 +210,12 @@ namespace gpi
 
     bool real_gpi_api_t::max_passive_requests_reached (void) const
     {
-      assert (m_startup_done);
       return (open_passive_requests() >= queue_depth());
     }
 
     std::string real_gpi_api_t::hostname (const gpi::rank_t r) const
     {
+      lock_type lock (m_mutex);
       // TODO: ap: cache the hostnames locally
       return getHostnameGPI (r);
     }
@@ -220,6 +228,8 @@ namespace gpi
 
     gpi::error_vector_t real_gpi_api_t::get_error_vector (const gpi::queue_desc_t q) const
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       unsigned char *gpi_err_vec (getErrorVectorGPI(q));
       if (! gpi_err_vec)
@@ -244,6 +254,7 @@ namespace gpi
 
     void real_gpi_api_t::set_network_type (const gpi::network_type_t n)
     {
+      lock_type lock (m_mutex);
       int rc (setNetworkGPI (GPI_NETWORK_TYPE(n)));
       if (rc != 0)
         throw gpi::exception::gpi_error(gpi::error::set_network_type_failed());
@@ -251,6 +262,7 @@ namespace gpi
 
     void real_gpi_api_t::set_port (const gpi::port_t p)
     {
+      lock_type lock (m_mutex);
       int rc (setPortGPI (p));
       if (rc != 0)
         throw gpi::exception::gpi_error(gpi::error::set_port_failed());
@@ -258,6 +270,7 @@ namespace gpi
 
     void real_gpi_api_t::set_mtu (const gpi::size_t mtu)
     {
+      lock_type lock (m_mutex);
       int rc (setMtuSizeGPI (mtu));
       if (rc != 0)
         throw gpi::exception::gpi_error(gpi::error::set_mtu_failed());
@@ -265,6 +278,7 @@ namespace gpi
 
     void real_gpi_api_t::set_number_of_processes (const gpi::size_t n)
     {
+      lock_type lock (m_mutex);
       setNpGPI (n);
     }
 
@@ -274,11 +288,13 @@ namespace gpi
     }
     bool real_gpi_api_t::ping (std::string const & hostname) const
     {
+      lock_type lock (m_mutex);
       return (pingDaemonGPI(hostname.c_str()) == 0);
     }
 
     void real_gpi_api_t::check (const gpi::rank_t node) const
     {
+      lock_type lock (m_mutex);
       if (! is_master())
       {
         throw gpi::exception::gpi_error
@@ -345,6 +361,7 @@ namespace gpi
 
     void real_gpi_api_t::check (void) const
     {
+      lock_type lock (m_mutex);
       if (!is_master())
       {
         throw gpi::exception::gpi_error
@@ -372,12 +389,16 @@ namespace gpi
 
     void real_gpi_api_t::barrier (void) const
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       barrierGPI();
     }
 
     void real_gpi_api_t::lock (void) const
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc (globalResourceLockGPI());
       if (rc != 0)
@@ -389,6 +410,8 @@ namespace gpi
 
     void real_gpi_api_t::unlock (void) const
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc (globalResourceUnlockGPI());
       if (rc != 0)
@@ -405,6 +428,8 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc
         (readDmaGPI ( local_offset
@@ -435,6 +460,8 @@ namespace gpi
                               , const queue_desc_t queue
                               )
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc
         (writeDmaGPI ( local_offset
@@ -465,6 +492,8 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc
         (sendDmaGPI ( local_offset
@@ -493,6 +522,8 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
+      lock_type lock (m_mutex);
+
       assert (m_startup_done);
       int rc
         (recvDmaGPI ( local_offset
@@ -540,9 +571,9 @@ namespace gpi
     }
 
     void real_gpi_api_t::send_passive ( const offset_t local_offset
-                                 , const size_t amount
-                                 , const rank_t to_node
-                                 )
+                                      , const size_t amount
+                                      , const rank_t to_node
+                                      )
     {
       assert (m_startup_done);
       int rc
