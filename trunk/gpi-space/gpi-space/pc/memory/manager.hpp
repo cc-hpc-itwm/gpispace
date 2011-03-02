@@ -81,6 +81,14 @@ namespace gpi
                              , gpi::pc::type::handle::list_t & l
                              ) const;
         void list_allocations(gpi::pc::type::handle::list_t & l) const;
+
+        gpi::pc::type::queue_id_t
+        memcpy ( const gpi::pc::type::process_id_t proc_id
+               , gpi::pc::type::memory_location_t const & dst
+               , gpi::pc::type::memory_location_t const & src
+               , const gpi::pc::type::size_t amount
+               , const gpi::pc::type::queue_id_t queue
+               );
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;

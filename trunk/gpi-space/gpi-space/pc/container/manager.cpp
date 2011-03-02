@@ -322,7 +322,8 @@ namespace gpi
       }
 
       gpi::pc::type::queue_id_t
-      manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
+      manager_t::memcpy ( const gpi::pc::type::process_id_t proc_id
+                        , gpi::pc::type::memory_location_t const & dst
                         , gpi::pc::type::memory_location_t const & src
                         , const gpi::pc::type::size_t amount
                         , const gpi::pc::type::queue_id_t queue
@@ -330,14 +331,7 @@ namespace gpi
       {
         gpi::pc::type::validate (dst.handle);
         gpi::pc::type::validate (src.handle);
-//        check_permissions (permission::memcpy_t (proc_id, dst, src));
-//        check_boundaries  (dst, src, amount);
-
-        LOG( TRACE
-           , "initiating memcpy: " << dst << " <-- " << src
-             << " " << amount << " bytes via queue " << queue
-           );
-        throw std::runtime_error ("not yet implemented");
+        return m_memory_mgr.memcpy (proc_id, dst, src, amount, queue);
       }
     }
   }

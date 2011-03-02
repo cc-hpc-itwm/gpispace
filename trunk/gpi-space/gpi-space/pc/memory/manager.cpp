@@ -327,6 +327,29 @@ namespace gpi
           s2a->second->list_allocations (l);
         }
       }
+
+      gpi::pc::type::queue_id_t
+      manager_t::memcpy ( const gpi::pc::type::process_id_t proc_id
+                        , gpi::pc::type::memory_location_t const & dst
+                        , gpi::pc::type::memory_location_t const & src
+                        , const gpi::pc::type::size_t amount
+                        , const gpi::pc::type::queue_id_t queue
+                        )
+      {
+        lock_type lock (m_mutex);
+
+//        check_permissions (permission::memcpy_t (proc_id, dst, src));
+//        check_boundaries  (dst, src, amount);
+        LOG( TRACE
+           , "process " << proc_id
+           << " requesting transfer"
+           << " of " << amount << " bytes"
+           << " from " << src
+           << " to " << dst
+           << " via queue " << queue
+           );
+        throw std::runtime_error ("not yet implemented");
+      }
     }
   }
 }

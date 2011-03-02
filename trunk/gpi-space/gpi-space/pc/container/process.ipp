@@ -311,7 +311,7 @@ namespace gpi
                            , const gpi::pc::type::queue_id_t queue
                            )
       {
-        return m_mgr.memcpy (dst, src, amount, queue);
+        return m_mgr.memcpy (m_id, dst, src, amount, queue);
       }
 
       template <typename M>
