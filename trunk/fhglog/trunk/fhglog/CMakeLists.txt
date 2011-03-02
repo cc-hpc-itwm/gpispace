@@ -30,6 +30,7 @@ set (hdrs
   ThreadedAppender.hpp
   types.hpp
   util.hpp
+  minimal.hpp
   )
 
 set (srcs

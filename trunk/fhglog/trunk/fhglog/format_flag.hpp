@@ -143,7 +143,7 @@ namespace fhg
                                       )
           {
             char buf[128]; memset (buf, 0, sizeof(buf));
-            time_t tm = (e.tstamp() / 1000 / 1000);
+            time_t tm = (e.tstamp()); // / 1000 / 1000);
             ctime_r (&tm, buf);
             std::string tmp (buf);
             boost::trim (tmp);

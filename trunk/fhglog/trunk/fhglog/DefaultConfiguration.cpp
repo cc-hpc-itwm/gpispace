@@ -103,7 +103,7 @@ namespace fhg
 
       if (fmt_string_.size())
       {
-#ifndef NDEBUG
+#ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "D: setting format to \"" << fmt_string_ << "\"" << std::endl;
 #endif
         if      (fmt_string_ == "full")    fmt = default_format::LONG();
@@ -126,7 +126,7 @@ namespace fhg
                                              )
                           )
           );
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
       }
@@ -140,7 +140,7 @@ namespace fhg
                                              )
                           )
           );
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
       }
@@ -154,7 +154,7 @@ namespace fhg
                                              )
                           )
           );
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
       }
@@ -182,7 +182,7 @@ namespace fhg
                                              )
                             )
             );
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
           std::clog << "D: logging to file: " << to_file_ << std::endl;
 #endif
         }
@@ -199,7 +199,7 @@ namespace fhg
         {
           // TODO: split to_remote_ into host and port
           compound_appender->addAppender(Appender::ptr_t(new remote::RemoteAppender("log-server", to_server_)));
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
           std::clog << "D: logging to server: " << to_server_ << std::endl;
 #endif
         }
@@ -210,7 +210,7 @@ namespace fhg
       }
 #endif
 
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
       std::clog << "D: loglevel set to " << level_ << std::endl;
 #endif
       getLogger().setLevel(level_);
@@ -275,14 +275,14 @@ namespace fhg
       }
       else if (key == "disabled")
       {
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "D: logging disabled due to environment FHGLOG_disabled" << std::endl;
 #endif
         disabled_ = true;
       }
       else
       {
-#ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "D: ignoring key: " << key << std::endl;
 #endif
       }

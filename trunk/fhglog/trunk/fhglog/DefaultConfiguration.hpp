@@ -19,7 +19,7 @@ namespace fhg { namespace log {
       {
 #if FHGLOG_DISABLE_LOGGING != 1
 
-#  ifndef NDEBUG_FHGLOG
+#ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "I: performing default logging configuration" << std::endl;
 #  endif
         default_configuration ();
@@ -31,7 +31,7 @@ namespace fhg { namespace log {
        * This configuration takes the following environment variables into account (case sensitive):
        *
        *  FHGLOG_level                     log everything with at least this level, defaults to TRACE
-       *  FHLGOG_color={auto,on,off}       colorized output
+       *  FHGLOG_color={auto,on,off}       colorized output
        *  FHGLOG_format=log-format         defaults to the default format in Formatter
        *  FHGLOG_to_console={stdout,stderr,stdlog} log to stdout, stderr, clog
        *  FHGLOG_to_file=path to logfile   log to specified file

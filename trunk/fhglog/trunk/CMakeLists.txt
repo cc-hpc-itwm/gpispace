@@ -17,7 +17,7 @@ option(USE_STL_TR1
 set(FHGLOG_EXIT_ON_ERROR Yes CACHE BOOL "Exit on error or not")
 set(FHGLOG_EXIT_ON_ERROR_CODE "42" CACHE STRING "The exit code with which fhglog will exit on FATAL messages")
 
-option(DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
+option(DEBUG_FHGLOG "Additional debug output from fhglog self" OFF)
 
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
@@ -101,9 +101,8 @@ else ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
 if (DEBUG_FHGLOG)
-  # nothing
+  add_definitions("-DFHGLOG_DEBUG_CONFIG")
 else (DEBUG_FHGLOG)
-  add_definitions("-DNDEBUG_FHGLOG")
 endif (DEBUG_FHGLOG)
 
 #install(EXPORT ${PROJECT_NAME}Exports
