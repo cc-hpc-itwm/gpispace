@@ -64,7 +64,8 @@ target_link_libraries(test_config_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_config_suite test_config_suite )
 
 add_executable(test_worker_suite test_Worker.cpp)
@@ -74,7 +75,8 @@ target_link_libraries(test_worker_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_worker_suite test_worker_suite )
 
 add_executable(test_jobid_suite test_JobId.cpp)
@@ -84,7 +86,8 @@ target_link_libraries(test_jobid_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_jobid_suite test_jobid_suite )
 
 add_executable(test_scheduler_suite test_Scheduler.cpp)
@@ -94,7 +97,8 @@ target_link_libraries(test_scheduler_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_scheduler_suite test_scheduler_suite )
 
 add_executable(test_lb_suite test_LoadBalancer.cpp)
@@ -104,7 +108,8 @@ target_link_libraries(test_lb_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_lb_suite test_lb_suite )
 
 add_executable(test_serialize_sharedptr_suite test_SerializeSharedPtr.cpp)
@@ -114,7 +119,8 @@ target_link_libraries(test_serialize_sharedptr_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_serialize_sharedptr_suite test_serialize_sharedptr_suite )
 
 
@@ -125,7 +131,8 @@ target_link_libraries(test_serialize_jobptr_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test(test_serialize_jobptr_suite test_serialize_jobptr_suite)
 
 set( test_serialize_agents_srcs
@@ -140,7 +147,8 @@ target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test(test_serialize_agents_suite test_serialize_agents_suite)
 
 set( test_agents_and_act_exec_srcs
@@ -157,7 +165,8 @@ if (USE_REAL_WE)
 										 sdpa
 										 dl
 										 #uuid
-										 ${Boost_LIBRARIES})
+										 ${Boost_LIBRARIES}
+                                                                                 ${WE_PRECOMPILE_LIBRARIES})
 	add_test(test_agents_and_act_exec_suite test_agents_and_act_exec_suite)
 endif (USE_REAL_WE)
 
@@ -173,7 +182,8 @@ target_link_libraries(test_agents_suite  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_agents_suite test_agents_suite )
 
 #test_StopRestartAgents
@@ -187,7 +197,8 @@ target_link_libraries(test_stop_restart_agents  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_stop_restart_agents test_stop_restart_agents )
 
 
@@ -202,7 +213,8 @@ target_link_libraries(test_backup_recover  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+                                                                         ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_backup_recover test_backup_recover )
 
 #test_JobSubmToWeFails
@@ -214,7 +226,8 @@ add_test( test_backup_recover test_backup_recover )
 #									 sdpa-util
 #									 sdpa
 #									 dl
-#									 ${Boost_LIBRARIES})
+#									 ${Boost_LIBRARIES}
+#                                                                        ${WE_PRECOMPILE_LIBRARIES})
 #add_test( test_JobSubmToWeFails test_JobSubmToWeFails )
 
 #test_ConcurrentClients
@@ -227,5 +240,6 @@ target_link_libraries(test_concurrent_clients  seda sdpa-daemon
 									 sdpa
 									 dl
 									 #uuid
-									 ${Boost_LIBRARIES})
+									 ${Boost_LIBRARIES}
+${WE_PRECOMPILE_LIBRARIES})
 add_test( test_concurrent_clients test_concurrent_clients )
