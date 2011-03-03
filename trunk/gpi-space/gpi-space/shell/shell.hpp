@@ -24,8 +24,11 @@ namespace gpi
       typedef basic_command_t<self> command_t;
       typedef std::vector <command_t> command_list_t;
 
+      ~basic_shell_t ();
+
       static self & create ( std::string const & program_name
                            , std::string const & prompt
+                           , std::string const & histfile
                            , state_type & state
                            );
       static self & get ();
@@ -57,18 +60,24 @@ namespace gpi
     private:
       static self* instance;
 
-      static void initialize_readline ();
+      void initialize_readline ();
+      void finalize_readline ();
 
       static char **shell_completion (const char *, int, int);
       static char *command_generator (const char *, int);
 
+      void write_history();
+      void read_history();
+
       basic_shell_t ( std::string const & program_name
                     , std::string const & prompt
+                    , std::string const & histfile
                     , state_type & state
                     );
 
       std::string m_program_name;
       std::string m_prompt;
+      std::string m_histfile;
       state_type &m_state;
       command_list_t m_commands;
       bool m_do_exit;

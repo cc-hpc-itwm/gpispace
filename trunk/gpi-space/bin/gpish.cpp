@@ -229,7 +229,10 @@ void initialize_shell (int ac, char *av[])
   {
 	prompt = "gpish> ";
   }
-  shell_t & sh (shell_t::create (av[0], prompt, *state));
+  fs::path histfile (getenv("HOME"));
+  histfile /= ".sdpa/configs/.history";
+
+  shell_t & sh (shell_t::create (av[0], prompt, histfile.string(), *state));
 
   sh.add_command("help", &cmd_help, "print help about commands");
   sh.add_command("exit", &cmd_exit, "exit the shell loop");

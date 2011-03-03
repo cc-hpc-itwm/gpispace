@@ -51,14 +51,13 @@ namespace gpi
     template <typename S>
     basic_shell_t<S> & basic_shell_t<S>::create ( std::string const & program_name
                                                 , std::string const & prompt
+                                                , std::string const & histfile
                                                 , state_type & state
                                                 )
     {
       if (instance == NULL)
       {
-        instance = new basic_shell_t<S> (program_name, prompt, state);
-
-        initialize_readline ();
+        instance = new basic_shell_t<S> (program_name, prompt, histfile, state);
       }
       return *instance;
     }
@@ -83,22 +82,57 @@ namespace gpi
     template <typename S>
     void basic_shell_t<S>::initialize_readline ()
     {
-      assert (instance != NULL);
-      rl_readline_name = instance->m_program_name.c_str();
+      rl_readline_name = m_program_name.c_str();
       // set completer
       rl_attempted_completion_function = &self::shell_completion;
+      using_history();
+      read_history();
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::finalize_readline ()
+    {
+      write_history();
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::read_history()
+    {
+      if (! m_histfile.empty())
+      {
+        ::read_history (m_histfile.c_str());
+      }
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::write_history()
+    {
+      if (! m_histfile.empty())
+      {
+        ::write_history (m_histfile.c_str());
+      }
+    }
+
+    template <typename S>
+    basic_shell_t<S>::~basic_shell_t ()
+    {
+      finalize_readline();
     }
 
     template <typename S>
     basic_shell_t<S>::basic_shell_t ( std::string const & program_name
                                     , std::string const & prompt
+                                    , std::string const & histfile
                                     , state_type & state
                                     )
       : m_program_name (program_name)
       , m_prompt (prompt)
+      , m_histfile (histfile)
       , m_state (state)
       , m_do_exit (false)
-    {}
+    {
+      initialize_readline ();
+    }
 
     template <typename S>
     void basic_shell_t<S>::add_command ( std::string const & name
@@ -229,7 +263,6 @@ namespace gpi
 
       return rc;
     }
-
 
     /* interface to readline completion      */
     /* does only work with a shell singleton */
