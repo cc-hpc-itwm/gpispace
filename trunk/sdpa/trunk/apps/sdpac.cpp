@@ -91,8 +91,8 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
     }
     else
     {
-    	boost::this_thread::sleep(boost::posix_time::seconds(poll_interval));
-    	std::cout << "." << std::flush;
+	boost::this_thread::sleep(boost::posix_time::seconds(poll_interval));
+	std::cout << "." << std::flush;
     }
   }
   boost::system_time poll_end = boost::get_system_time();
