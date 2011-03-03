@@ -104,10 +104,16 @@ namespace gpi
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;
         area_ptr get_area_by_handle (const gpi::pc::type::handle_t);
+        area_ptr get_area_by_handle (const gpi::pc::type::handle_t) const;
         void add_handle ( const gpi::pc::type::handle_t
                         , const gpi::pc::type::segment_id_t
                         );
         void del_handle (const gpi::pc::type::handle_t);
+
+        void check_boundaries ( gpi::pc::type::memory_location_t const & dst
+                              , gpi::pc::type::memory_location_t const & src
+                              , const gpi::pc::type::size_t amount
+                              ) const;
 
         mutable mutex_type m_mutex;
         gpi::pc::type::id_t m_ident;

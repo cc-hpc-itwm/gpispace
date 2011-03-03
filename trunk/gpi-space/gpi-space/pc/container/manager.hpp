@@ -6,7 +6,6 @@
 
 #include <fhgcom/peer.hpp>
 
-#include <gpi-space/pc/type/process_descriptor.hpp>
 #include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/container/connector.hpp>

@@ -31,7 +31,10 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "could not clear memory manager: " << ex.what());
+          CLOG( ERROR
+              , "gpi.memory"
+              , "could not clear memory manager: " << ex.what()
+              );
         }
         handle_generator_t::destroy ();
       }
@@ -70,7 +73,10 @@ namespace gpi
                                         )
                          );
           m_areas[id] = area;
-          LOG(TRACE, "memory segment registered: " << area->descriptor ());
+          CLOG( TRACE
+              , "gpi.memory"
+              , "memory segment registered: " << area->descriptor ()
+              );
         }
         memory_added (id);
         return id;
@@ -169,7 +175,8 @@ namespace gpi
             ; ++area
             )
         {
-          segments.push_back (area->first);
+          if (area->second->is_process_attached (proc_id))
+            segments.push_back (area->first);
         }
 
         while (! segments.empty())
@@ -212,13 +219,7 @@ namespace gpi
       manager_t::area_ptr
       manager_t::get_area (const gpi::pc::type::segment_id_t mem_id)
       {
-        lock_type lock (m_mutex);
-        area_map_t::iterator area_it (m_areas.find (mem_id));
-        if (area_it == m_areas.end())
-        {
-          throw std::runtime_error ("no such memory");
-        }
-        return area_it->second;
+        return static_cast<const manager_t*>(this)->get_area (mem_id);
       }
 
       manager_t::area_ptr
@@ -235,6 +236,12 @@ namespace gpi
 
       manager_t::area_ptr
       manager_t::get_area_by_handle (const gpi::pc::type::handle_t hdl)
+      {
+        return static_cast<const manager_t*>(this)->get_area_by_handle(hdl);
+      }
+
+      manager_t::area_ptr
+      manager_t::get_area_by_handle (const gpi::pc::type::handle_t hdl) const
       {
         lock_type lock (m_mutex);
 
@@ -290,6 +297,15 @@ namespace gpi
 
         handle_allocated (hdl);
 
+        CLOG( TRACE
+            , "gpi.memory"
+            , "memory allocated:"
+            << " process " << proc_id
+            << " segment " << seg_id
+            << " size " << size
+            << " handle " << hdl
+            );
+
         return hdl;
       }
 
@@ -304,6 +320,12 @@ namespace gpi
         del_handle (hdl);
 
         handle_freed (hdl);
+
+        CLOG( TRACE
+            , "gpi.memory"
+            , "memory deallocated:"
+            << " handle " << hdl
+            );
       }
 
       void
@@ -338,8 +360,6 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-//        check_permissions (permission::memcpy_t (proc_id, dst, src));
-//        check_boundaries  (dst, src, amount);
         LOG( TRACE
            , "process " << proc_id
            << " requesting transfer"
@@ -348,7 +368,20 @@ namespace gpi
            << " to " << dst
            << " via queue " << queue
            );
+
+//        check_permissions (permission::memcpy_t (proc_id, dst, src));
+        check_boundaries  (dst, src, amount);
         throw std::runtime_error ("not yet implemented");
+      }
+
+      void
+      manager_t::check_boundaries ( const gpi::pc::type::memory_location_t &dst
+                                  , const gpi::pc::type::memory_location_t &src
+                                  , const gpi::pc::type::size_t amount
+                                  ) const
+      {
+        get_area_by_handle (dst.handle)->check_bounds (dst, amount);
+        get_area_by_handle (src.handle)->check_bounds (src, amount);
       }
     }
   }

@@ -140,9 +140,10 @@ namespace gpi
         m_processes[proc->get_id()] = proc;
         m_processes[proc->get_id()]->start ();
 
-        LOG( INFO
-           , "process container " << proc->get_id() << " attached"
-           );
+        CLOG( INFO
+            , "gpi.container"
+            , "process container " << proc->get_id() << " attached"
+            );
       }
 
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
@@ -151,7 +152,10 @@ namespace gpi
 
         if (m_processes.find (id) == m_processes.end())
         {
-          LOG(ERROR, "process id already detached!");
+          CLOG( ERROR
+              , "gpi.container"
+              , "process id already detached!"
+              );
           throw std::runtime_error ("no such process");
         }
 
@@ -162,10 +166,10 @@ namespace gpi
 
         m_memory_mgr.garbage_collect (id);
 
-        LOG( INFO
-           , "process container " << id << " detached"
-           );
-
+        CLOG( INFO
+            , "gpi.container"
+            , "process container " << id << " detached"
+            );
       }
 
       void manager_t::garbage_collect ()

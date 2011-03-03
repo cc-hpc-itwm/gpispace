@@ -79,6 +79,13 @@ namespace gpi
         {
           if (! (start < hdl.size && end < hdl.size))
           {
+            CLOG( ERROR
+               , "gpi.memory"
+               , "out-of-bounds access:"
+               << " hdl=" << hdl
+               << " size=" << hdl.size
+               << " range=["<<start << ", " << end << "]"
+               );
             throw std::invalid_argument
                 ("out-of-bounds: access to local handle outside boundaries");
           }

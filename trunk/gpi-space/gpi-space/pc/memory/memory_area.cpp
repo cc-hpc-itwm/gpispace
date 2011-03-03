@@ -109,6 +109,13 @@ namespace gpi
         }
       }
 
+      bool
+      area_t::is_process_attached (const gpi::pc::type::process_id_t proc_id) const
+      {
+        lock_type lock (m_mutex);
+        return m_attached_processes.find (proc_id) != m_attached_processes.end();
+      }
+
       void
       area_t::check_bounds ( const gpi::pc::type::memory_location_t & loc
                            , const gpi::pc::type::size_t size
@@ -119,7 +126,7 @@ namespace gpi
             hdl_it (m_handles.find(loc.handle));
         if (hdl_it == m_handles.end())
           throw std::invalid_argument("check_bounds: no such handle");
-        check_bounds (hdl_it->second, loc.offset, loc.offset+size);
+        check_bounds (hdl_it->second, loc.offset, loc.offset+size-1);
       }
 
       gpi::pc::type::handle_t
