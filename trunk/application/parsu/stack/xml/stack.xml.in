@@ -393,6 +393,12 @@
     <place name="package" type="loaded_package"/>
     <place name="package_check_done" type="loaded_package" capacity="1"/>
 
+    <transition name="select_package">
+      <use name="select_package"/>
+      <connect-in port="x" place="package"/>
+      <connect-out port="x" place="package_check_done"/>
+    </transition>
+
     <transition name="package_done">
       <defun>
         <in name="package" type="loaded_package"/>
