@@ -95,7 +95,9 @@ int main (int ac, char *av[])
   }
   else if (vm.count ("get"))
   {
-    std::cout << m.get (key, val) << std::endl;
+    std::string s(m.get (key, val));
+    if (!s.empty())
+      std::cout << s << std::endl;
   }
   else if (vm.count ("del"))
   {
