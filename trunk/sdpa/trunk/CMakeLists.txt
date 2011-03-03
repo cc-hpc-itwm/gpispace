@@ -58,13 +58,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext/smc)
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
-include(FindUTIL)
-if (UTIL_FOUND)
-  include_directories(${UTIL_INCLUDE_DIR})
-else(UTIL_FOUND)
-  message(FATAL_ERROR "UTIL could not be found but is required")
-endif(UTIL_FOUND)
-
 # threads
 include(FindThreads)
 if(CMAKE_USE_PTHREADS_INIT)
@@ -72,32 +65,21 @@ if(CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(CMAKE_USE_PTHREADS_INIT)
 
+find_package(UTIL REQUIRED QUIET)
+include_directories(${UTIL_INCLUDE_DIR})
+
 # seda library
-include(FindSEDA)
-# check for seda
-if (SEDA_FOUND)
-  include_directories(${SEDA_INCLUDE_DIR})
-  link_directories(${SEDA_LIBRARY_DIR})
-else (SEDA_FOUND)
-  message(FATAL_ERROR "SEDA library is required!")
-endif(SEDA_FOUND)
+find_package(SEDA REQUIRED QUIET)
+include_directories(${SEDA_INCLUDE_DIR})
 
 # uuid library
-include(FindUUID)
-if (UUID_FOUND)
-  include_directories(${UUID_INCLUDE_DIR})
-else(UUID_FOUND)
-  message(FATAL_ERROR "UUID library could not be found but is required")
-endif(UUID_FOUND)
+find_package(UUID REQUIRED QUIET)
+include_directories(${UUID_INCLUDE_DIR})
 
 # we library
 if (USE_REAL_WE)
-	include(FindWE)
-	if (WE_FOUND)
-	  include_directories(${WE_INCLUDE_DIR})
-	else(WE_FOUND)
-	  message(FATAL_ERROR "WE could not be found but is required")
-	endif(WE_FOUND)
+  find_package(WE REQUIRED QUIET)
+  include_directories(${WE_INCLUDE_DIR})
 endif (USE_REAL_WE)
 
 ## find zlib
@@ -139,18 +121,18 @@ else (ENABLE_LOGGING)
 endif (ENABLE_LOGGING)
 
 # logging
-find_package(FhgLog REQUIRED)
+find_package(FhgLog REQUIRED QUIET)
 include_directories(${FhgLog_INCLUDE_DIR})
 set(SDPA_HAVE_FHGLOG 1)
 
-find_package(FhgCom REQUIRED)
+find_package(FhgCom REQUIRED QUIET)
 include_directories(${FhgCom_INCLUDE_DIR})
 
-find_package(MMGR REQUIRED)
+find_package(MMGR REQUIRED QUIET)
 include_directories(${MMGR_INCLUDE_DIR})
 
-find_package(FVM REQUIRED)
-message(STATUS "Found FVM: Inc:${FVM_INCLUDE_DIR} Lib:${FVM_LIBRARY}")
+find_package(FVM REQUIRED QUIET)
+include_directories(${FVM_INCLUDE_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.hpp.in   ${CMAKE_CURRENT_BINARY_DIR}/sdpa/version.hpp)
