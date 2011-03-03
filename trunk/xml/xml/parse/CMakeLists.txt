@@ -28,6 +28,7 @@ add_custom_command(OUTPUT ${headerlist_hpp}
 
 add_executable(pnetc parser.cpp ${headerlist_hpp})
 target_link_libraries(pnetc ${Boost_LIBRARIES})
+target_link_libraries(pnetc ${WE_PRECOMPILE_LIBRARIES})
 install (TARGETS pnetc
   RUNTIME
   DESTINATION bin
@@ -36,6 +37,7 @@ install (TARGETS pnetc
 if (ENABLE_STATIC_BINARIES)
   add_executable(pnetc.static parser.cpp ${headerlist_hpp})
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
+  target_link_libraries(pnetc.static ${WE_PRECOMPILE_LIBRARIES})
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 
   install (TARGETS pnetc.static
