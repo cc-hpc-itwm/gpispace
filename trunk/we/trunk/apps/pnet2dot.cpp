@@ -197,16 +197,24 @@ main (int argc, char ** argv)
 
   we::activity_t act;
 
-  we::util::text_codec::decode (std::cin, act);
-
   {
     std::ifstream stream (input.c_str());
+
+    if (!stream)
+      {
+        throw std::runtime_error ("failed to open " + input + " for reading");
+      }
 
     we::util::text_codec::decode (stream, act);
   }
 
   {
     std::ofstream stream (output.c_str());
+
+    if (!stream)
+      {
+        throw std::runtime_error ("failed to open " + output + " for writing");
+      }
 
     detail::to_dot (stream, act, options);
   }
