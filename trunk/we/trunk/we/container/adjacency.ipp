@@ -2,6 +2,9 @@
 
 #include "adjacency.hpp"
 
+#ifndef _WE_CONTAINER_ADJACENCY_IPP
+#define _WE_CONTAINER_ADJACENCY_IPP 1
+
 namespace adjacency
 {
   template<typename ROW, typename COL, typename ADJ>
@@ -122,3 +125,5 @@ namespace adjacency
     return boost::none;
   }
 } // namespace adjacency
+
+#endif

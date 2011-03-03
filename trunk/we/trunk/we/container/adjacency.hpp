@@ -81,7 +81,7 @@ namespace adjacency
 } // namespace adjacency
 
 #ifndef WE_PRECOMPILE
-#include "adjacency.ipp"
+#include <we/container/adjacency.impl.hpp>
 #endif
 
 #endif
