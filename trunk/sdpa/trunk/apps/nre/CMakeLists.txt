@@ -8,6 +8,7 @@ target_link_libraries(nre sdpa)
 target_link_libraries(nre seda)
 #target_link_libraries(nre seda-comm)
 target_link_libraries(nre ${Boost_LIBRARIES})
+target_link_libraries(nre ${WE_PRECOMPILE_LIBRARIES})
 
 install(TARGETS nre
   RUNTIME
