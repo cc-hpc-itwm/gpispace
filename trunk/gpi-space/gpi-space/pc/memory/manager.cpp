@@ -4,6 +4,7 @@
 
 #include <gpi-space/gpi/api.hpp>
 
+#include "memory_transfer_t.hpp"
 #include "handle_generator.hpp"
 #include "shm_area.hpp"
 #include "gpi_area.hpp"
@@ -351,7 +352,7 @@ namespace gpi
       }
 
       gpi::pc::type::queue_id_t
-      manager_t::memcpy ( const gpi::pc::type::process_id_t proc_id
+      manager_t::memcpy ( const gpi::pc::type::process_id_t pid
                         , gpi::pc::type::memory_location_t const & dst
                         , gpi::pc::type::memory_location_t const & src
                         , const gpi::pc::type::size_t amount
@@ -360,18 +361,27 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        LOG( TRACE
-           , "process " << proc_id
-           << " requesting transfer"
-           << " of " << amount << " bytes"
-           << " from " << src
-           << " to " << dst
-           << " via queue " << queue
-           );
+        memory_transfer_t t;
+        t.pid          = pid;
+        t.dst_area     = get_area_by_handle(dst.handle);
+        t.dst_location = dst;
+        t.src_area     = get_area_by_handle(src.handle);
+        t.src_location = src;
+        t.amount       = amount;
+        t.queue        = queue;
+
+        CLOG ( TRACE
+             , "gpi.memory"
+             , "process " << pid
+             << " requesting transfer "
+             << t
+             );
 
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
         check_boundaries  (dst, src, amount);
-        throw std::runtime_error ("not yet implemented");
+
+        //m_transfer_mgr.enqueue (queue, t);
+        return queue;
       }
 
       void
