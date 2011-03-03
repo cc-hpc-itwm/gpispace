@@ -359,8 +359,6 @@ namespace gpi
                         , const gpi::pc::type::queue_id_t queue
                         )
       {
-        lock_type lock (m_mutex);
-
         memory_transfer_t t;
         t.pid          = pid;
         t.dst_area     = get_area_by_handle(dst.handle);
