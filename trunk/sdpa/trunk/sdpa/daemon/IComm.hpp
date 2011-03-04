@@ -30,9 +30,6 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/JobId.hpp>
 
-#include <boost/filesystem/fstream.hpp>
-namespace bfs=boost::filesystem;
-
 namespace sdpa { namespace daemon {
 
 const std::string ORCHESTRATOR("orchestrator") ;

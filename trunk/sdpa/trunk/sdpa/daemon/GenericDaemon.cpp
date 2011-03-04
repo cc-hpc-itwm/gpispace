@@ -60,7 +60,8 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_bRequestsAllowed(false),
 	  m_bStopped(false),
 	  m_bStarted(false),
-	  m_bConfigOk(false)
+	  m_bConfigOk(false),
+	  m_threadBkpService(this)
 {
 	ptr_daemon_cfg_ = sdpa::util::Config::create();
 }
@@ -85,7 +86,8 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_bRequestsAllowed(false),
 	  m_bStopped(false),
 	  m_bStarted(false),
-	  m_bConfigOk(false)
+	  m_bConfigOk(false),
+	  m_threadBkpService(this)
 {
 	if(!toMasterStageName.empty())
 	{
@@ -121,7 +123,8 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	  m_bRequestsAllowed(false),
 	  m_bStopped(false),
 	  m_bStarted(false),
-	  m_bConfigOk(false)
+	  m_bConfigOk(false),
+	  m_threadBkpService(this)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
 	//     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -141,26 +144,66 @@ GenericDaemon::~GenericDaemon()
 
 void GenericDaemon::start_agent( const bfs::path& bkp_file )
 {
-	// create configuration
-	//std::string file( name() + ".bkp");
-	//bfs::path bkp_file(backup_path/file );
+	if(!ptr_scheduler_)
+	{
+		SDPA_LOG_INFO("Create the scheduler...");
+		sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler());
+		ptr_scheduler_ = ptrSched;
+	}
 
 	bfs::ifstream ifs(bkp_file);
-	if (ifs.fail())
+	if( !ifs.fail())
 	{
-		SDPA_LOG_WARN( "Can't find the backup file "<<bkp_file);
+		SDPA_LOG_INFO( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
+
+		recover(ifs);
+
+		ptr_job_man_->updateJobInfo(this);
+
+		//if( is_orchestrator() )
+		{
+			SDPA_LOG_WARN( "JobManager after recovering:" );
+			ptr_job_man_->print();
+
+			SDPA_LOG_INFO("Worker manager after recovering:");
+			scheduler()->print();
+		}
 	}
 	else
 	{
-		SDPA_LOG_WARN( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
+		SDPA_LOG_WARN( "Can't find the backup file "<<bkp_file);
 	}
 
-	start_agent(ifs);
+	// The stage uses 2 threads
+	ptr_daemon_stage_.lock()->start();
 
-	ifs.close();
+	//start-up the the daemon
+	SDPA_LOG_INFO("Trigger StartUpEvent...");
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
+	sendEventToSelf(pEvtStartUp);
+
+	lock_type lock(mtx_);
+	while(!m_bStarted)
+		cond_can_start_.wait(lock);
+
+	if( is_configured() )  // can register now
+	{
+		m_threadBkpService.start(bkp_file);
+
+		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
+		if( !is_orchestrator() )
+			requestRegistration();
+
+		SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
+		notifyWorkers(sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG);
+	}
+	else
+	{
+		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
+	}
 }
 
-void GenericDaemon::start_agent( std::istream& is )
+void GenericDaemon::start_agent( std::string& strBackup)
 {
 	if(!ptr_scheduler_)
 	{
@@ -169,10 +212,12 @@ void GenericDaemon::start_agent( std::istream& is )
 		ptr_scheduler_ = ptrSched;
 	}
 
-	if( is.peek() != EOF )
+	if( !strBackup.empty() )
 	{
 		SDPA_LOG_INFO( "The input stream is not empty! Attempting to recover the daemon "<<name());
-		recover(is);
+		LOG(INFO, "The recovery string is: "<<strBackup);
+		std::stringstream iostr(strBackup);
+		recover(iostr);
 
 		ptr_job_man_->updateJobInfo(this);
 
@@ -188,7 +233,33 @@ void GenericDaemon::start_agent( std::istream& is )
 	else
 		SDPA_LOG_INFO( "The input stream is empty! No recovery operation carried out for the daemon "<<name());
 
-	start_agent();
+	// The stage uses 2 threads
+	ptr_daemon_stage_.lock()->start();
+
+	//start-up the the daemon
+	SDPA_LOG_INFO("Trigger StartUpEvent...");
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
+	sendEventToSelf(pEvtStartUp);
+
+	lock_type lock(mtx_);
+	while(!m_bStarted)
+		cond_can_start_.wait(lock);
+
+	if( is_configured() )
+	{
+		m_threadBkpService.start();
+
+		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
+		if( !is_orchestrator() )
+			requestRegistration();
+
+		SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
+		notifyWorkers(sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG);
+	}
+	else
+	{
+		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
+	}
 }
 
 void GenericDaemon::start_agent( )
@@ -212,82 +283,36 @@ void GenericDaemon::start_agent( )
 	while(!m_bStarted)
 		cond_can_start_.wait(lock);
 
-	/*if( is_orchestrator() )
+	if( is_configured() )
 	{
-		SDPA_LOG_INFO("Worker manager after cond_can_start_.wait : \n");
-		scheduler()->print();
-	}*/
+		m_threadBkpService.start();
 
-	if(!m_bConfigOk)
-	{
-		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
-	}
-	else // can register now
-	{
 		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
 		if( !is_orchestrator() )
 			requestRegistration();
 
-		/*if( is_orchestrator() )
-		{
-			SDPA_LOG_INFO("Worker manager before notification: \n");
-			scheduler()->print();
-		}*/
-
 		SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
 		notifyWorkers(sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG);
 	}
-}
-
-void GenericDaemon::shutdown( const bfs::path& bkp_file )
-{
-	//std::string file( name() + ".bkp");
-	//bfs::path bkp_file(backup_path/file );
-
-	bfs::ofstream ofs(bkp_file);
-
-	shutdown(ofs);
-
-	ofs.close();
-}
-
-void GenericDaemon::shutdown( std::ostream& os )
-{
-	shutdown();
-
-	SDPA_LOG_INFO("Backup the daemon "<<name());
-	backup(os);
-}
-
-void GenericDaemon::shutdown()
-{
-	// I should first notify my master
-	/*if( !is_orchestrator() )
+	else
 	{
-		notifyMaster(sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN);
-		//notifyWorkers(sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN);
+		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
 	}
 
-	//wait for a while -> allow the daemon to deliver the messages
+}
 
-	boost::this_thread::sleep(boost::posix_time::seconds(5));*/
-
+void GenericDaemon::shutdown(std::string& strBackup )
+{
 	if(!m_bStopped)
 		stop();
 
-	SDPA_LOG_INFO("Remove the stages...");
-	// remove the network stage
-	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+	strBackup = m_threadBkpService.getLastBackup();
+}
 
-	// remove the daemon stage
-	seda::StageRegistry::instance().remove(name());
-
-	if ( hasWorkflowEngine() )
-	{
-		SDPA_LOG_DEBUG("Delete the workflow engine ...");
-		delete ptr_workflow_engine_;
-		ptr_workflow_engine_ = NULL;
-	}
+void GenericDaemon::shutdown( )
+{
+	if(!m_bStopped)
+		stop();
 }
 
 void GenericDaemon::notifyMaster(const sdpa::events::ErrorEvent::error_code_t& errcode )
@@ -376,6 +401,11 @@ void GenericDaemon::stop()
 
 	SDPA_LOG_INFO("Stop the scheduler now!");
 	scheduler()->stop();
+	SDPA_LOG_INFO("The scheduler was stopped!");
+
+	SDPA_LOG_INFO("Stop the backup service now!");
+	m_threadBkpService.stop();
+	SDPA_LOG_INFO("The backup service was stopped!");
 
 	// here one should only generate a message of type interrupt
 	SDPA_LOG_DEBUG("Send self an InterruptEvent...");
@@ -385,20 +415,34 @@ void GenericDaemon::stop()
 	// wait to be stopped
 	{
 		lock_type lock(mtx_);
-		while(!m_bStopped)
+		while(!is_stopped())
 			cond_can_stop_.wait(lock);
 	}
 
 	SDPA_LOG_INFO("Shutdown the network...");
 	shutdown_network();
 
-	// shutdown the daemon stage
+	// stop the daemon stage
 	SDPA_LOG_DEBUG("shutdown the daemon stage "<<name());
 	seda::StageRegistry::instance().lookup(name())->stop();
 
-	//  shutdown the peer and remove the information from kvs
+	//  stop the network stage
 	SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
 	seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
+
+	SDPA_LOG_INFO("Remove stages...");
+	// remove the network stage
+	seda::StageRegistry::instance().remove(m_to_master_stage_name_);
+
+	// remove the daemon stage
+	seda::StageRegistry::instance().remove(name());
+
+	if ( hasWorkflowEngine() )
+	{
+		SDPA_LOG_DEBUG("Delete the workflow engine ...");
+		delete ptr_workflow_engine_;
+		ptr_workflow_engine_ = NULL;
+	}
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -435,10 +479,13 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
 	ptr_daemon_cfg_->put("worker_timeout",        		   20 * 1000 * 1000); // 6s
 	ptr_daemon_cfg_->put("registration_timeout", 			1 * 1000 * 1000); // 1s
+	ptr_daemon_cfg_->put("backup_interval", 			    5 * 1000 * 1000); // 3s
 
 	// end reading confog file
 
 	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
+
+	m_threadBkpService.setBackupInterval( cfg()->get<sdpa::util::time_type>("backup_interval") );
 
 	try {
 		SDPA_LOG_ERROR("Try to configure the network now ... ");

@@ -30,6 +30,7 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/GenericDaemonActions.hpp>
+#include <sdpa/daemon/BackupService.hpp>
 
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
@@ -72,12 +73,12 @@ namespace sdpa { namespace daemon {
 
 	  virtual void start_fsm();
 	  void start_agent(); // no recovery
-	  void start_agent( const bfs::path& backup_path ); // from cfg file!
-	  void start_agent( std::istream& is );
+	  void start_agent( const bfs::path& ); // from cfg file!
+	  void start_agent( std::string& );
 
-	  void shutdown(); // no backup
+	  void shutdown(std::string&); // no backup
 	  void shutdown( const bfs::path& backup_path );
-	  void shutdown( std::ostream& os );
+	  void shutdown( );
 
 	  virtual void configure_network( const std::string& daemonUrl, const std::string& masterName = "" );
 	  virtual void shutdown_network();
@@ -85,6 +86,10 @@ namespace sdpa { namespace daemon {
 
 	  virtual void perform(const seda::IEvent::Ptr&);
 	  virtual void schedule(const sdpa::job_id_t& job);
+
+	  bool is_configured() { return m_bConfigOk; }
+	  bool is_stopped() { return m_bStopped; }
+	  bool is_started() { return m_bStarted; }
 
 	  // daemon actions
 	  virtual void action_configure( const sdpa::events::StartUpEvent& );
@@ -311,6 +316,7 @@ namespace sdpa { namespace daemon {
 	  bool m_bStopped;
 	  bool m_bStarted;
 	  bool m_bConfigOk;
+	  BackupService m_threadBkpService;
   };
 }}
 
