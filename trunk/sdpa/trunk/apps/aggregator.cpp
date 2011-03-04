@@ -13,7 +13,9 @@
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <boost/filesystem/path.hpp>
 
+namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
@@ -24,7 +26,8 @@ int main (int argc, char **argv)
 	string aggUrl;
 	string orchName;
 	string orchUrl;
-	string backup_file;
+
+	bfs::path backup_file;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -32,7 +35,7 @@ int main (int argc, char **argv)
 	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
 	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("localhost"), "Aggregator's url")
 	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-	   ("backup_file,f", po::value<std::string>(&backup_file)->default_value("./aggregator.bkp"), "Aggregator's backup file")
+	   ("backup_file,f", "Aggregator's backup file")
 	   ;
 
 	po::variables_map vm;
@@ -46,9 +49,20 @@ int main (int argc, char **argv)
 		return 0;
 	}
 
-	std::cout <<"Starting the aggregator with the name = '"<<aggName<<"' at location "<<aggUrl<<std::endl
-			  <<" having the master "<<orchName<<"("<<orchUrl<<")"<<std::endl;
-	fhg::log::Configurator::configure();
+	if (vm.count("backup_file"))
+	{
+		LOG(INFO, "Backup the aggregator into the file "<< vm["backup_file"].as<string>() );
+	}
+	else
+	{
+		backup_file = aggName + "bak";
+		LOG(INFO, "Backup file for the aggregator not explicitly specified. Backup it by default into "<< backup_file.string() );
+	}
+
+
+	LOG(INFO, "Starting the aggregator with the name = '"<<aggName<<"' at location "<<aggUrl<<", having the master "<<orchName<<"("<<orchUrl<<")");
+
+	FHGLOG_SETUP();
 
 	try {
 		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName); //, orchUrl );
@@ -88,7 +102,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		ptrAgg->shutdown(backup_file);
+		ptrAgg->shutdown();
 	} catch ( std::exception& ){
 			std::cout<<"Could not start the Aggregator!"<<std::endl;
 		}

@@ -13,9 +13,11 @@
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <boost/filesystem/path.hpp>
 
 typedef void WorkflowEngineType;
 
+namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
@@ -24,14 +26,14 @@ int main (int argc, char **argv)
 {
 	string orchName;
 	string orchUrl;
-	string backup_file;
+	bfs::path backup_file;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
 	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-	   ("backup_file,f", po::value<std::string>(&backup_file)->default_value("./orchestrator.bkp"), "Orchestrator's backup file")
+	   ("backup_file,f", po::value<bfs::path>(&backup_file), "Orchestrator's backup file")
 	   ;
 
 	po::variables_map vm;
@@ -45,10 +47,19 @@ int main (int argc, char **argv)
 		return 0;
 	}
 
-	std::cout <<"Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl<<std::endl;
+	if (vm.count("backup_file"))
+	{
+		LOG(INFO, "Backup the orchestrator into the file "<< vm["backup_file"].as<string>() );
+	}
+	else
+	{
+		backup_file = orchName + "bak";
+		LOG(INFO, "Backup file for the orchestrator not explicitly specified. Backup it by default into"<< backup_file.string() );
+	}
+
+	LOG(INFO, "Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl);
 
 	FHGLOG_SETUP();
-	//	fhg::log::Configurator::configure();
 
 	try {
 		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl  );
@@ -88,7 +99,7 @@ int main (int argc, char **argv)
 
 		LOG(INFO, "terminating...");
 
-		ptrOrch->shutdown(backup_file);
+		ptrOrch->shutdown();
 	} catch( std::exception& ) {
 			std::cout<<"Could not start the Orchestrator!"<<std::endl;
 		}

@@ -15,6 +15,8 @@
 #include <sdpa/daemon/nre/NRE.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <boost/filesystem/path.hpp>
+
 
 #ifdef USE_REAL_WE
 	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
@@ -25,6 +27,7 @@
 #endif
 
 namespace su = sdpa::util;
+namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 using namespace std;
 
@@ -38,7 +41,7 @@ int main (int argc, char **argv)
 	string aggUrl;
 	string workerUrl;
 	string guiUrl;
-	string backup_file;
+	bfs::path backup_file;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -49,7 +52,7 @@ int main (int argc, char **argv)
 	   //("agg_url,p",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
 	   ("worker_url,w",  po::value<std::string>(&workerUrl)->default_value("127.0.0.1:8000"), "Worker's url")
 	   ("gui_url,g",  po::value<std::string>(&guiUrl)->default_value("127.0.0.1:9000"), "GUI's url")
-	   ("backup_file,f", po::value<std::string>(&backup_file)->default_value("./nre.bkp"), "NRE's backup file")
+	   ("backup_file,f","NRE's backup file")
 	   ;
 
   po::variables_map vm;
@@ -64,9 +67,18 @@ int main (int argc, char **argv)
     return 0;
   }
 
-  std::cout <<"Starting the NRE with the name = '"<<nreName<<"' at location "<<nreUrl<<std::endl
-    <<" having the master "<<aggName<<"("<<aggUrl<<")"<<std::endl
-    <<" with the nre-worker running at "<<workerUrl<<std::endl;
+  if (vm.count("backup_file"))
+  {
+	  LOG(INFO, "Backup the NRE into the file "<< vm["backup_file"].as<string>() );
+  }
+  else
+  {
+	  backup_file = nreName + "bak";
+	  LOG(INFO, "Backup file for the NRE not explicitly specified. Backup it by default into "<<  backup_file.string() );
+  }
+
+  LOG(INFO,	"Starting the NRE with the name = '"<<nreName<<"' at location "<<nreUrl<<", having the master "<<aggName<<"("<<aggUrl<<")"
+		  	 <<", with the nre-worker running at "<<workerUrl);
 
   sdpa::daemon::NRE<WorkerClient>::ptr_t ptrNRE
     = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient >::create( nreName
@@ -116,7 +128,7 @@ int main (int argc, char **argv)
     LOG(ERROR, "Could not start the NRE: " << ex.what() );
   }
 
-  ptrNRE->shutdown(backup_file);
+  ptrNRE->shutdown();
 
   seda::StageRegistry::instance().stopAll();
   seda::StageRegistry::instance().clear();
