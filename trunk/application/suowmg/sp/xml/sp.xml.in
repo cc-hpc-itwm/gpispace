@@ -1,0 +1,755 @@
+<defun name="suowmg_sp">
+
+  <struct name="pos">
+    <field name="trace" type="long"/>
+    <field name="extendable" type="bool"/>
+  </struct>
+
+  <struct name="package">
+    <field name="left" type="pos"/>
+    <field name="right" type="pos"/>
+    <field name="size" type="long"/>
+  </struct>
+
+  <struct name="loaded_package">
+    <field name="package" type="package"/>
+    <field name="slot" type="long"/>
+  </struct>
+
+  <struct name="pair_of_packages">
+    <field name="x" type="loaded_package"/>
+    <field name="y" type="loaded_package"/>
+  </struct>
+
+  <struct name="write_info">
+    <field name="next_trace" type="long"/>
+    <field name="offset" type="long"/>
+  </struct>
+
+  <struct name="package_to_be_written">
+    <field name="loaded_package" type="loaded_package"/>
+    <field name="offset" type="long"/>
+  </struct>
+
+  <struct name="handle">
+    <field name="data" type="long"/>
+    <field name="scratch" type="long"/>
+  </struct>
+
+  <struct name="file">
+    <field name="name" type="string"/>
+    <field name="type" type="string"/>
+  </struct>
+
+  <struct name="config">
+    <struct name="file">
+      <field name="input" type="file"/>
+      <field name="output" type="file"/>
+    </struct>
+
+    <field name="handle" type="handle"/>
+
+    <struct name="size">
+      <field name="trace" type="long"/>
+      <field name="bunch" type="long"/>
+    </struct>
+
+    <struct name="per">
+      <struct name="bunch">
+        <field name="trace" type="long"/>
+      </struct>
+    </struct>
+
+    <struct name="num">
+      <field name="trace" type="long"/>
+      <field name="slot" type="long"/>
+    </struct>
+  </struct>
+
+  <in name="file_input" type="string" place="file_input"/>
+  <in name="type_input" type="string" place="type_input"/>
+  <in name="file_output" type="string" place="file_output"/>
+  <in name="type_output" type="string" place="type_output"/>
+
+  <in name="shmem_per_node" type="long" place="shmem_per_node"/>
+  <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
+
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <include-template href="triple.xml"/>
+    <specialize name="triple_config" use="triple">
+      <type-map replace="T" with="config"/>
+    </specialize>
+
+    <place name="shmem_per_node" type="long">
+      <token><value>@SHMEM_PER_NODE@</value></token>
+    </place>
+    <place name="gpi_mem_per_node" type="long">
+      <token><value>@GPI_MEM_PER_NODE@</value></token>
+    </place>
+
+    <place name="file_input" type="string">
+      <token><value>"@FILE_INPUT@"</value></token>
+    </place>
+    <place name="type_input" type="string">
+      <token><value>"@TYPE_INPUT@"</value></token>
+    </place>
+
+    <place name="file_output" type="string">
+      <token><value>"@FILE_OUTPUT@"</value></token>
+    </place>
+    <place name="type_output" type="string">
+      <token><value>"@TYPE_OUTPUT@"</value></token>
+    </place>
+
+    <place name="done" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <in name="file_input" type="string"/>
+        <in name="type_input" type="string"/>
+        <in name="file_output" type="string"/>
+        <in name="type_output" type="string"/>
+        <in name="shmem_per_node" type="long"/>
+        <in name="gpi_mem_per_node" type="long"/>
+        <out name="write_info" type="write_info"/>
+        <out name="give_back_trace" type="long"/>
+        <out name="config" type="config"/>
+        <module name="sp"
+                function="init ( file_input
+                               , type_input
+                               , file_output
+                               , type_output
+                               , shmem_per_node
+                               , gpi_mem_per_node
+                               , write_info
+                               , give_back_trace
+                               , config
+                               )">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="stdexcept"/>
+          <cinclude href="fstream"/>
+          <cinclude href="determine_size.hpp"/>
+          <link href="@BUILD@/application/kdm/libdetermine_size.so"/>
+          <code><![CDATA[
+            LOG (INFO, "INIT");
+
+            determine_size ( file_input
+                           , type_input
+                           , config.num.trace
+                           , config.size.trace
+                           );
+
+            LOG (INFO, "num.trace = " << config.num.trace);
+            LOG (INFO, "size.trace = " << config.size.trace);
+
+            const long mem_per_node (std::min ( shmem_per_node
+                                              , gpi_mem_per_node
+                                              )
+                                    );
+            const long trace_per_node (mem_per_node / config.size.trace);
+
+            config.per.bunch.trace = trace_per_node / 2;
+
+            LOG (INFO, "per.bunch.trace = " << config.per.bunch.trace);
+
+            if (config.per.bunch.trace < 1)
+              {
+                throw std::runtime_error ("not enough memory (shmem)");
+              }
+
+            config.size.bunch = config.per.bunch.trace * config.size.trace;
+            const long slot_per_node (gpi_mem_per_node / config.size.bunch);
+
+            if (slot_per_node < 2)
+              {
+                throw std::runtime_error ("not enough memory (gpi)");
+              }
+
+            config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
+
+            LOG (INFO, "num.slot = " << config.num.slot);
+
+            config.handle.data = static_cast<long>
+              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.bunch));
+            config.handle.scratch = static_cast<long>
+              (fvmGlobalAlloc (                 1  * config.size.bunch));
+
+            if (config.handle.data == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.data == 0");
+              }
+
+            if (config.handle.scratch == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.scratch == 0");
+              }
+
+            config.file.input.name = file_input;
+            config.file.input.type = type_input;
+            config.file.output.name = file_output;
+            config.file.output.type = type_output;
+
+            write_info.next_trace = give_back_trace = 0;
+            write_info.offset = 0;
+
+            {
+              std::ofstream out (config.file.output.name.c_str());
+
+              if (!out)
+                {
+                  throw std::runtime_error ("BUMMER! out not good");
+                }
+            }
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="file_input" place="file_input"/>
+      <connect-in port="type_input" place="type_input"/>
+      <connect-in port="file_output" place="file_output"/>
+      <connect-in port="type_output" place="type_output"/>
+      <connect-in port="shmem_per_node" place="shmem_per_node"/>
+      <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
+      <connect-out port="write_info" place="write_info"/>
+      <connect-out port="give_back_trace" place="give_back_trace"/>
+      <connect-out port="config" place="config_generated"/>
+    </transition>
+
+    <place name="config_generated" type="config"/>
+    <place name="write_info" type="write_info"/>
+    <place name="give_back_trace" type="long"/>
+
+    <transition name="scatter_config" inline="true">
+      <use name="triple_config"/>
+      <connect-in port="in" place="config_generated"/>
+      <connect-out port="one" place="config"/>
+      <connect-out port="two" place="config_generate_package"/>
+      <connect-out port="three" place="config_generate_slot"/>
+    </transition>
+
+    <place name="config" type="config"/>
+    <place name="config_generate_package" type="config"/>
+    <place name="config_generate_slot" type="config"/>
+
+    <transition name="extract_eat_slot">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <out name="N" type="long"/>
+        <expression>
+          ${N} := ${config.num.slot}
+        </expression>
+      </defun>
+      <connect-in port="trigger" place="done_packages"/>
+      <connect-in port="config" place="config"/>
+      <connect-out port="config" place="config_finalize"/>
+      <connect-out port="N" place="num_slot_eat"/>
+    </transition>
+
+    <place name="done_packages" type="control"/>
+    <place name="config_finalize" type="config"/>
+
+    <place name="num_slot_eat" type="long"/>
+
+    <transition name="generate_slot" inline="true">
+      <include-function href="generate/slot.xml"/>
+      <connect-in port="config" place="config_generate_slot"/>
+      <connect-out port="slot" place="empty_slot"/>
+    </transition>
+
+    <place name="empty_slot" type="long"/>
+
+    <place name="new_package" type="loaded_package"/>
+    <place name="num_packages" type="long"/>
+
+    <transition name="generate_package" inline="true">
+      <include-function href="generate/package.xml"/>
+      <place-map virtual="empty_slot" real="empty_slot"/>
+      <connect-in port="config" place="config_generate_package"/>
+      <connect-out port="package" place="new_package"/>
+      <connect-out port="num" place="num_packages"/>
+    </transition>
+
+    <transition name="load">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <in name="config" type="config"/>
+        <out name="package" type="loaded_package"/>
+        <module name="sp" function="load (package, config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="do_load.hpp"/>
+          <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
+          <cinclude href="process.hpp"/>
+          <link href="@BUILD@/application/kdm/libdo_load.so"/>
+          <link href="@BUILD@/application/example/exec/libprocess.so"/>
+          <code><![CDATA[
+            LOG (INFO, "LOAD " << ::print::loaded_package (package));
+
+            const long part (package.package.left.trace / config.per.bunch.trace);
+            const long size (package.package.size * config.size.trace);
+
+            LOG (INFO, "do_load: part " << part
+                    << ", part_size "  << config.size.bunch
+                    << ", size " << size
+                    << ", num " << package.package.size
+                );
+
+            void * buf (fvmGetShmemPtr());
+
+            do_load ( config.file.input.name
+                    , config.file.input.type
+                    , part
+                    , config.size.bunch
+                    , size
+                    , package.package.size
+                    , buf
+                    );
+
+            const std::size_t size_cleaned
+              ( process::execute ( "segyclean"
+                                 , buf
+                                 , size
+                                 , buf
+                                 , size
+                                 )
+              );
+
+            if (size_cleaned != size)
+              {
+                throw std::runtime_error ("size after segyclean differs");
+              }
+
+            comm::put (config, package);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="package" place="new_package"/>
+      <connect-out port="package" place="loaded_package"/>
+    </transition>
+
+    <place name="loaded_package" type="loaded_package"/>
+
+    <!-- BEGIN WORK -->
+
+    <transition name="split">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <in name="config" type="config"/>
+        <out name="p1" type="loaded_package"/>
+        <out name="p2" type="loaded_package"/>
+        <module name="sp" function="split (config, package, p1, p2)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="print.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "SPLIT " << ::print::loaded_package (package));
+
+            p1 = p2 = package;
+
+            p2.package.size = 0;
+
+            p1.package.left.extendable = p1.package.right.extendable = false;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="package" place="loaded_package"/>
+      <connect-read port="config" place="config"/>
+      <connect-out port="p1" place="p1"/>
+      <connect-out port="p2" place="p2"/>
+    </transition>
+
+    <place name="p1" type="loaded_package"/>
+    <place name="p2" type="loaded_package"/>
+
+    <place name="check_zero" type="loaded_package" capacity="1"/>
+
+    <defun name="select">
+      <in name="p" type="loaded_package"/>
+      <out name="p" type="loaded_package"/>
+      <expression/>
+    </defun>
+
+    <transition name="select1">
+      <use name="select"/>
+      <connect-in port="p" place="p1"/>
+      <connect-out port="p" place="check_zero"/>
+    </transition>
+
+    <transition name="select2">
+      <use name="select"/>
+      <connect-in port="p" place="p2"/>
+      <connect-out port="p" place="check_zero"/>
+    </transition>
+
+    <transition name="take_nonzero">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression></expression>
+      </defun>
+      <condition>
+        ${package.package.size} :gt: 0
+      </condition>
+      <connect-in port="package" place="check_zero"/>
+      <connect-out port="package" place="check_done"/>
+    </transition>
+
+    <transition name="clear_zero">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression>
+        </expression>
+      </defun>
+      <condition>
+        ${package.package.size} :eq: 0
+      </condition>
+      <connect-in port="package" place="check_zero"/>
+      <connect-out port="package" place="loaded_package_finished"/>
+    </transition>
+
+    <place name="check_done" type="loaded_package" capacity="1"/>
+
+    <transition name="package_done">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression></expression>
+        <condition>
+          ${package.package.left.extendable} :eq: false
+        </condition>
+        <condition>
+          ${package.package.right.extendable} :eq: false
+        </condition>
+      </defun>
+      <connect-in port="package" place="check_done"/>
+      <connect-out port="package" place="writeable_package"/>
+    </transition>
+
+    <transition name="package_not_done">
+      <defun>
+        <in name="package" type="loaded_package"/>
+        <out name="package" type="loaded_package"/>
+        <expression></expression>
+        <condition>
+          (${package.package.left.extendable} :eq: true)
+          ||
+          (${package.package.right.extendable} :eq: true)
+        </condition>
+      </defun>
+      <connect-in port="package" place="check_done"/>
+      <connect-out port="package" place="try_match"/>
+    </transition>
+
+    <place name="try_match" type="loaded_package" capacity="1"/>
+
+    <transition name="match" priority="1">
+      <defun>
+        <in name="x" type="loaded_package"/>
+        <in name="y" type="loaded_package"/>
+        <out name="p" type="pair_of_packages"/>
+        <expression>
+          ${p.x} := ${x}; ${p.y} := ${y}
+        </expression>
+        <condition>
+          (${x.package.left.trace} :eq: ${y.package.right.trace})
+          ||
+          (${y.package.left.trace} :eq: ${x.package.right.trace})
+        </condition>
+      </defun>
+      <connect-in port="x" place="try_match"/>
+      <connect-in port="y" place="match_store"/>
+      <connect-out port="p" place="pair_of_packages"/>
+    </transition>
+
+    <place name="pair_of_packages" type="pair_of_packages"/>
+
+    <transition name="no_match">
+      <defun>
+        <in name="x" type="loaded_package"/>
+        <out name="x" type="loaded_package"/>
+        <expression></expression>
+      </defun>
+      <connect-in port="x" place="try_match"/>
+      <connect-out port="x" place="match_store"/>
+    </transition>
+
+    <place name="match_store" type="loaded_package"/>
+
+    <transition name="join">
+      <defun>
+        <in name="pair" type="pair_of_packages"/>
+        <out name="pair" type="pair_of_packages"/>
+        <in name="config" type="config"/>
+        <module name="sp" function="join (config, pair)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="print.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "JOIN"
+                << ::print::loaded_package (pair.x)
+                << " and "
+                << ::print::loaded_package (pair.y)
+                );
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="pair" place="pair_of_packages"/>
+      <connect-read port="config" place="config"/>
+      <connect-out port="pair" place="joined"/>
+    </transition>
+
+    <place name="joined" type="pair_of_packages"/>
+
+    <transition name="unpair">
+      <defun>
+        <in name="p" type="pair_of_packages"/>
+        <out name="x" type="loaded_package"/>
+        <out name="y" type="loaded_package"/>
+        <expression>
+          ${x} := ${p.x};
+          ${y} := ${p.y};
+        </expression>
+      </defun>
+      <connect-in port="p" place="joined"/>
+      <connect-out port="x" place="p1"/>
+      <connect-out port="y" place="p2"/>
+    </transition>
+
+    <!-- END WORK -->
+
+    <place name="writeable_package" type="loaded_package"/>
+
+    <transition name="select_writeable">
+      <defun>
+        <in name="write_info" type="write_info"/>
+        <out name="write_info" type="write_info"/>
+        <in name="p" type="loaded_package"/>
+        <out name="w" type="package_to_be_written"/>
+        <expression>
+          ${w.loaded_package} := ${p};
+          ${w.offset} := ${write_info.offset};
+
+          ${write_info.next_trace} := ${p.package.right.trace};
+          ${write_info.offset} := ${write_info.offset} + ${p.package.size};
+        </expression>
+        <condition>
+          ${write_info.next_trace} :eq: ${p.package.left.trace}
+        </condition>
+      </defun>
+      <connect-in port="write_info" place="write_info"/>
+      <connect-out port="write_info" place="write_info"/>
+      <connect-in port="p" place="writeable_package"/>
+      <connect-out port="w" place="package_to_be_written"/>
+    </transition>
+
+    <place name="package_to_be_written" type="package_to_be_written"/>
+
+    <transition name="write">
+      <defun>
+        <in name="package_to_be_written" type="package_to_be_written"/>
+        <in name="config" type="config"/>
+        <out name="p" type="loaded_package"/>
+        <module name="sp" function="p write (package_to_be_written, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="do_write.hpp"/>
+          <cinclude href="print.hpp"/>
+          <cinclude href="comm.hpp"/>
+          <link href="@BUILD@/application/kdm/libdo_write.so"/>
+          <code><![CDATA[
+            const ::pnetc::type::loaded_package::loaded_package & p
+              (package_to_be_written.loaded_package);
+
+            LOG (INFO, "WRITE " << ::print::loaded_package (p)
+                                << " to " << config.file.output.name
+                                << ":" << package_to_be_written.offset
+                );
+
+            const long size (p.package.size * config.size.trace);
+
+            if (size > 0)
+              {
+                comm::get (config, p);
+
+                LOG (INFO, "do_write: part " << package_to_be_written.offset
+                        << ", part_size "  << config.size.trace
+                        << ", size " << size
+                        << ", num " << p.package.size
+                    );
+
+                do_write ( config.file.output.name
+                         , config.file.output.type
+                         , package_to_be_written.offset
+                         , config.size.trace
+                         , size
+                         , p.package.size
+                         , fvmGetShmemPtr()
+                         );
+              }
+
+            return p;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="package_to_be_written" place="package_to_be_written"/>
+      <connect-out port="p" place="package_written"/>
+    </transition>
+
+    <place name="package_written" type="loaded_package"/>
+
+    <transition name="back_loaded_package">
+      <defun>
+        <in name="loaded_package" type="loaded_package"/>
+        <in name="give_back_trace" type="long"/>
+        <out name="give_back_trace" type="long"/>
+        <out name="loaded_package" type="loaded_package"/>
+        <expression>
+          ${give_back_trace} := ${loaded_package.package.right.trace};
+        </expression>
+        <condition>
+          ${give_back_trace} :eq: ${loaded_package.package.left.trace}
+        </condition>
+      </defun>
+      <connect-in port="loaded_package" place="package_written"/>
+      <connect-out port="loaded_package" place="loaded_package_finished"/>
+      <connect-in port="give_back_trace" place="give_back_trace"/>
+      <connect-out port="give_back_trace" place="give_back_trace"/>
+    </transition>
+
+    <place name="loaded_package_finished" type="loaded_package"/>
+
+    <transition name="back_store">
+      <defun>
+        <in name="loaded_package" type="loaded_package"/>
+        <out name="package" type="package"/>
+        <out name="slot" type="long"/>
+        <expression>
+          ${package} := ${loaded_package.package};
+          ${slot} := ${loaded_package.slot};
+        </expression>
+      </defun>
+      <connect-in port="loaded_package" place="loaded_package_finished"/>
+      <connect-out port="package" place="package_finished"/>
+      <connect-out port="slot" place="empty_slot"/>
+    </transition>
+
+    <place name="package_finished" type="package"/>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_package" use="wait">
+      <type-map replace="T" with="package"/>
+    </specialize>
+
+    <transition name="wait_package">
+      <use name="wait_package"/>
+      <place-map virtual="wait" real="num_packages"/>
+      <connect-in port="trigger" place="package_finished"/>
+      <connect-out port="done" place="done_packages"/>
+    </transition>
+
+    <place name="done_finalize" type="control"/>
+    <place name="done_eat" type="control"/>
+
+    <transition name="finalize">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="trigger" type="control"/>
+        <module name="sp" function="finalize (trigger, config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "FINALIZE");
+
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.data));
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.scratch));
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config_finalize"/>
+      <connect-out port="trigger" place="done_finalize"/>
+    </transition>
+
+    <transition name="eat_slots">
+      <defun>
+        <in name="N" type="long" place="check_break"/>
+        <out name="done" type="control" place="done"/>
+        <net>
+          <place name="N" type="long"/>
+          <place name="done" type="control"/>
+          <place name="what" type="long" virtual="true"/>
+          <place name="check_break" type="long" capacity="1"/>
+          <transition name="step">
+            <defun>
+              <in name="wait" type="long"/>
+              <out name="wait" type="long"/>
+              <in name="x" type="long"/>
+              <expression>${wait} := ${wait} - 1</expression>
+            </defun>
+            <connect-in port="wait" place="N"/>
+            <connect-out port="wait" place="check_break"/>
+            <connect-in port="x" place="what"/>
+          </transition>
+          <transition name="break">
+            <defun>
+              <in name="wait" type="long"/>
+              <out name="done" type="control"/>
+              <expression>
+                ${done} := []
+              </expression>
+              <condition>
+                ${wait} :le: 0
+              </condition>
+            </defun>
+            <connect-in port="wait" place="check_break"/>
+            <connect-out port="done" place="done"/>
+          </transition>
+          <transition name="not_break">
+            <defun>
+              <in name="wait" type="long"/>
+              <out name="wait" type="long"/>
+              <expression>
+              </expression>
+              <condition>
+                ${wait} :gt: 0
+              </condition>
+            </defun>
+            <connect-in port="wait" place="check_break"/>
+            <connect-out port="wait" place="N"/>
+          </transition>
+        </net>
+      </defun>
+      <place-map virtual="what" real="empty_slot"/>
+      <connect-in port="N" place="num_slot_eat"/>
+      <connect-out port="done" place="done_eat"/>
+    </transition>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="done_eat" type="control"/>
+        <in name="done_finalize" type="control"/>
+        <in name="write_info" type="write_info"/>
+        <in name="give_back_trace" type="long"/>
+
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+
+      <connect-in port="done_eat" place="done_eat"/>
+      <connect-in port="done_finalize" place="done_finalize"/>
+      <connect-in port="write_info" place="write_info"/>
+      <connect-in port="give_back_trace" place="give_back_trace"/>
+
+      <connect-out port="done" place="done"/>
+    </transition>
+
+  </net>
+
+</defun>

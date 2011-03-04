@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FILE_INPUT=${1:?}
+TYPE_INPUT=${2:?}
+FILE_OUTPUT=${3:?}
+TYPE_OUTPUT=${4:?}
+SHMEM_PER_NODE=${5:?}
+GPI_MEM_PER_NODE=${6:?}
+BUILD=${7:?}
+
+`which sed`                                   \
+  "s|@SHMEM_PER_NODE@|${SHMEM_PER_NODE}|g     \
+  ;s|@GPI_MEM_PER_NODE@|${GPI_MEM_PER_NODE}|g \
+  ;s|@FILE_INPUT@|${FILE_INPUT}|g             \
+  ;s|@FILE_OUTPUT@|${FILE_OUTPUT}|g           \
+  ;s|@TYPE_INPUT@|${TYPE_INPUT}|g             \
+  ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|g           \
+  ;s|@BUILD@|${BUILD}|g                       "
