@@ -26,4 +26,7 @@ add_subdirectory (bits)
 add_subdirectory (literal)
 add_subdirectory (value)
 add_subdirectory (signature)
-add_subdirectory (test)
+
+if (BUILD_TESTING)
+  add_subdirectory (test)
+endif (BUILD_TESTING)
