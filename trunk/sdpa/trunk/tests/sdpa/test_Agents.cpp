@@ -539,6 +539,7 @@ retry:	try {
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe2Aggs *****"<<std::endl);
@@ -663,5 +664,6 @@ retry:  try {
 
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe2Aggs terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
