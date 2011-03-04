@@ -54,7 +54,6 @@ set (client_libs
 #
 add_executable(sdpac sdpac.cpp)
 target_link_libraries(sdpac ${client_libs})
-set_target_properties(sdpac PROPERTIES LINK_FLAGS "-static")
 install(TARGETS sdpac
   RUNTIME
   DESTINATION bin
