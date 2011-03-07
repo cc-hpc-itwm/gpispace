@@ -140,57 +140,59 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 		Worker::worker_id_t worker_id = pEvt->from();
 
 		try {
-                  id_type actId = pEvt->job_id();
+				id_type actId = pEvt->job_id();
 
-                  result_type output = pEvt->result();
+				result_type output = pEvt->result();
 
-                  // this  should only  be called  once, therefore
-                  // the state machine when we switch the job from
-                  // one state  to another, the  code belonging to
-                  // exactly    that    transition    should    be
-                  // executed. I.e. all this code should go to the
-                  // FSM callback routine.
-                  if( hasWorkflowEngine() )
-                  {
-                	  SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
-                	  ptr_workflow_engine_->finished(actId, output);
-                  }
+				// this  should only  be called  once, therefore
+				// the state machine when we switch the job from
+				// one state  to another, the  code belonging to
+				// exactly    that    transition    should    be
+				// executed. I.e. all this code should go to the
+				// FSM callback routine.
+				if( hasWorkflowEngine() )
+				{
+					SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" finished");
+					ptr_workflow_engine_->finished(actId, output);
+				}
 
-                  try {
-                	  SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker"<<worker_id);
-                	  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
-                  }
-                  catch(WorkerNotFoundException const &)
-                  {
-                    SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-                    throw;
-                  }
-                  catch(const JobNotDeletedException&)
-                  {
-                    SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
-                  }
+				try {
+					SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker "<<worker_id);
+					ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
+				}
+				catch(WorkerNotFoundException const &)
+				{
+					SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+					throw;
+				}
+				catch(const JobNotDeletedException&)
+				{
+					SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+				}
 
-                  if( hasWorkflowEngine() )
-                  {
-					  try {
+				if( hasWorkflowEngine() )
+				{
+					try {
 						//delete it also from job_map_
+						SDPA_LOG_DEBUG("Remove the job "<<pEvt->job_id()<<" from the JobManager");
 						ptr_job_man_->deleteJob(pEvt->job_id());
-					  }
-					  catch(JobNotDeletedException const &)
-					  {
+					}
+					catch(JobNotDeletedException const &)
+					{
 						SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
 						throw;
-					  }
-                  }
-                }
-                catch(std::exception const & ex) {
-                  SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-		}
-                catch(...)
-                {
-                  SDPA_LOG_FATAL("Unexpected exception occurred!");
-                  throw;
-                }
+					}
+				}
+			}
+			catch(std::exception const & ex)
+			{
+				SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+			}
+			catch(...)
+			{
+				SDPA_LOG_FATAL("Unexpected exception occurred!");
+				throw;
+			}
         }
 }
 
