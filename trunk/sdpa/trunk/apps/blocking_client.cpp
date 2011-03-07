@@ -9,6 +9,9 @@
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/Strategy.hpp>
+#include <boost/filesystem/path.hpp>
+
+namespace bfs = boost::filesystem;
 
 //using namespace sdpa::daemon;
 using namespace sdpa;
@@ -17,8 +20,7 @@ using namespace seda;
 namespace po = boost::program_options;
 
 const int NMAXTRIALS = 10;
-int m_nITER = 1;
-int m_sleep_interval(1000000) ;
+int mPollingInterval(3000000) ; //3 microseconds
 
 string read_workflow(string strFileName)
 {
@@ -32,7 +34,7 @@ string read_workflow(string strFileName)
 		while (f.get(c)) os<<c;
 		f.close();
 	}else
-		cout<<"Unable to open file " << strFileName << ", error: " <<strerror(errno);
+		LOG(FATAL, "Unable to open the workflow file " << strFileName << ", error: " <<strerror(errno));
 
 	return os.str();
 }
@@ -42,13 +44,13 @@ string read_workflow(string strFileName)
 int main(int argc, char** argv)
 {
 	string orch;
-	string file;
+	bfs::path workflowFileName;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message. To see logging messages, use FHGLOG_level=MIN and FHGLOG_color=off")
-	   ("orchestrator,o",  po::value<std::string>(&orch)->default_value(""), "The orchestrator's name")
-	   ("file,f", po::value<std::string>(&file)->default_value("stresstest.pnet"), "Workflow file")
+	   ("orchestrator,o",  po::value<std::string>(&orch)->default_value("orchestrator"), "The orchestrator's name")
+	   ("file,f", po::value<bfs::path>(&workflowFileName)->default_value("stresstest.pnet"), "Workflow file name")
 	   ;
 
 	po::variables_map vm;
@@ -62,18 +64,11 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	std::cout <<"Starting the user client ..."<<std::endl;
-
 	FHGLOG_SETUP();
 
-	std::string strWorkflow;
-	if(argc>1)
-		strWorkflow = read_workflow(file);
-	else
-	{
-		printf("please specify the file containing the workflow!");
-		return -1;
-	}
+	LOG(INFO, "Starting the user client ...");
+
+	std::string strWorkflow = read_workflow(workflowFileName.string());
 
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
@@ -85,106 +80,100 @@ int main(int argc, char** argv)
 
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
+	sdpa::job_id_t job_id_user;
 
+	int nTrials = 0;
+	try {
 
-	for( int k=0; k<m_nITER; k++ )
+		LOG( DEBUG, "Submitting the workflow "<<workflowFileName);
+		job_id_user = ptrCli->submitJob(strWorkflow);
+		LOG( DEBUG, "Got the job id "<<job_id_user);
+	}
+	catch(const sdpa::client::ClientException& cliExc)
 	{
-		int nTrials = 0;
-		sdpa::job_id_t job_id_user;
-
-		try {
-
-			LOG( DEBUG, "Submitting the following test workflow: \n"<<strWorkflow);
-			job_id_user = ptrCli->submitJob(strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
+		if(nTrials++ > NMAXTRIALS)
 		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return -1;
-			}
-		}
-
-		LOG( DEBUG, "*****JOB #"<<k<<"******");
-
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-		nTrials = 0;
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
-			try {
-				job_status = ptrCli->queryJob(job_id_user);
-				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-			}
-			catch(const sdpa::client::ClientException& cliExc)
-			{
-				LOG( DEBUG, "Exception: "<<cliExc.what());
-				if(nTrials++ > NMAXTRIALS)
-				{
-					LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-					ptrCli->shutdown_network();
-					ptrCli.reset();
-					return -1;
-				}
-
-				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-			}
-		}
-
-		nTrials = 0;
-
-		try {
-				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-				ptrCli->retrieveResults(job_id_user);
-				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return -1;
-			}
-
-			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-		}
-
-		nTrials = 0;
-
-		try {
-			LOG( DEBUG, "User: delete the job "<<job_id_user);
-			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return -1;
-			}
-
-			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+			ptrCli->shutdown_network();
+			ptrCli.reset();
+			return -1;
 		}
 	}
 
-	ptrCli->shutdown_network();
+	std::string job_status = ptrCli->queryJob(job_id_user);
+	//LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+	std::cout<<std::endl;
 
-	//seda::StageRegistry::instance().stopAll();
-	//seda::StageRegistry::instance().clear();
+	nTrials = 0;
+	while( job_status.find("Finished") 	== std::string::npos &&
+		   job_status.find("Failed") 	== std::string::npos &&
+		   job_status.find("Cancelled") == std::string::npos )
+	{
+		try {
+			job_status = ptrCli->queryJob(job_id_user);
+			//LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+			std::cout<<".";
+			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			//LOG( DEBUG, "Exception: "<<cliExc.what());
+			std::cout<<"-";
+			if(nTrials++ > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return -1;
+			}
+
+			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+		}
+	}
+
+	std::cout<<std::endl;
+	nTrials = 0;
+	try {
+			LOG( INFO, "Retrieve results of the job "<<job_id_user);
+			ptrCli->retrieveResults(job_id_user);
+			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+	}
+	catch(const sdpa::client::ClientException& cliExc)
+	{
+		if(nTrials++ > NMAXTRIALS)
+		{
+			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+			ptrCli->shutdown_network();
+			ptrCli.reset();
+			return -1;
+		}
+
+		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+	}
+
+	// reset trials counter
+	nTrials = 0;
+	try {
+		LOG( INFO, "Delete the user job "<<job_id_user);
+		ptrCli->deleteJob(job_id_user);
+		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+	}
+	catch(const sdpa::client::ClientException& cliExc)
+	{
+		if(nTrials++ > NMAXTRIALS)
+		{
+			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+			ptrCli->shutdown_network();
+			ptrCli.reset();
+			return -1;
+		}
+
+		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+	}
+
+	ptrCli->shutdown_network();
 }

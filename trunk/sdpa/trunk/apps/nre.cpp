@@ -73,7 +73,7 @@ int main (int argc, char **argv)
   }
   else
   {
-	  backup_file = nreName + "bak";
+	  backup_file = nreName + ".bak";
 	  LOG(INFO, "Backup file for the NRE not explicitly specified. Backup it by default into "<<  backup_file.string() );
   }
 

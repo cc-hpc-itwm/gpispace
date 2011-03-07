@@ -55,7 +55,7 @@ int main (int argc, char **argv)
 	}
 	else
 	{
-		backup_file = aggName + "bak";
+		backup_file = aggName + ".bak";
 		LOG(INFO, "Backup file for the aggregator not explicitly specified. Backup it by default into "<< backup_file.string() );
 	}
 

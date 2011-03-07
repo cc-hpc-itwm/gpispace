@@ -53,7 +53,7 @@ int main (int argc, char **argv)
 	}
 	else
 	{
-		backup_file = orchName + "bak";
+		backup_file = orchName + ".bak";
 		LOG(INFO, "Backup file for the orchestrator not explicitly specified. Backup it by default into"<< backup_file.string() );
 	}
 
