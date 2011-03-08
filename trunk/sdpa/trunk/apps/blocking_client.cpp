@@ -133,6 +133,8 @@ int main(int argc, char** argv)
 		}
 	}
 
+	LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
 	std::cout<<std::endl;
 	nTrials = 0;
 	try {

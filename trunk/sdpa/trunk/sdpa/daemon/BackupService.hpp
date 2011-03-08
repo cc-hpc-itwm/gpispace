@@ -40,6 +40,7 @@ namespace daemon
 			, m_bStopRequested(false)
 			, m_backupFile("")
 			, m_backup_interval(1000000)
+			, m_bStarted(false)
 		{	}
 
 		~BackupService(){ stop(); }
@@ -74,9 +75,12 @@ namespace daemon
 
 		void stop()
 		{
-			SDPA_LOG_INFO( "Stopping the backup service ... ");
-			m_bStopRequested = true;
-			m_thread.join();
+			if(m_bStarted)
+			{
+				SDPA_LOG_INFO( "Stopping the backup service ... ");
+				m_bStopRequested = true;
+				m_thread.join();
+			}
 		}
 
 		void backup2string()
@@ -88,6 +92,7 @@ namespace daemon
 			}
 
 			int k=0;
+			m_bStarted = true;
 			while(!m_bStopRequested)
 			{
 				try
@@ -122,6 +127,7 @@ namespace daemon
 			}
 
 			int k=0;
+			m_bStarted = true;
 			while(!m_bStopRequested)
 			{
 				try
@@ -161,6 +167,7 @@ namespace daemon
 		std::string m_strBackupDaemon;
 		mutable bfs::path m_backupFile;
 		sdpa::util::time_type m_backup_interval; // in microseconds
+		bool m_bStarted;
   };
 
 }}

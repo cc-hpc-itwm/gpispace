@@ -733,7 +733,7 @@ void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& 
 	std::list<std::string> workerList;
 	ptr_worker_man_->getWorkerList(workerList);
 
-	if(ptr_comm_handler_)
+	if( ptr_comm_handler_ )
 	{
 		if(workerList.empty())
 		{

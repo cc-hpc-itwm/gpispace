@@ -285,7 +285,8 @@ void GenericDaemon::start_agent( )
 
 	if( is_configured() )
 	{
-		m_threadBkpService.start();
+		// no backup, if a backup file was not specified!
+		// m_threadBkpService.start();
 
 		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
 		if( !is_orchestrator() )

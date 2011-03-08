@@ -20,6 +20,8 @@ namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
+enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
+
 int main (int argc, char **argv)
 {
 	string aggName;
@@ -27,7 +29,11 @@ int main (int argc, char **argv)
 	string orchName;
 	string orchUrl;
 
-	bfs::path backup_file;
+	bool bDoBackup = false;
+	std::string backup_file;
+	std::string backup_folder;
+
+	FHGLOG_SETUP();
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -35,38 +41,80 @@ int main (int argc, char **argv)
 	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
 	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("localhost"), "Aggregator's url")
 	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-	   ("backup_file,f", "Aggregator's backup file")
+	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Aggregator's backup folder")
+	   ("backup_file,f", po::value<std::string>(&backup_file), "Aggregator's backup file (stored into the backup folder)")
 	   ;
 
 	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
+	po::store( po::command_line_parser(argc, argv).options(desc).run(), vm );
 	po::notify(vm);
 
-	if (vm.count("help"))
+	if( vm.count("help") )
 	{
 		std::cerr << "usage: aggregator [options] ...." << std::endl;
 		std::cerr << desc << std::endl;
 		return 0;
 	}
 
-	if (vm.count("backup_file"))
+	int bkpOpt = NO_BKP;
+	if( vm.count("backup_file") )
+		bkpOpt *= FILE_DEF;
+
+	if( vm.count("backup_folder") )
+		bkpOpt *= FLD_DEF;
+
+	bfs::path bkp_path(backup_folder);
+	boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
+
+	switch(bkpOpt)
 	{
-		LOG(INFO, "Backup the aggregator into the file "<< vm["backup_file"].as<string>() );
-	}
-	else
-	{
-		backup_file = aggName + ".bak";
-		LOG(INFO, "Backup file for the aggregator not explicitly specified. Backup it by default into "<< backup_file.string() );
+	case FLD_DEF:
+			LOG( WARN, "Backup file not specified! No backup file will be created!");
+			bDoBackup = false;
+			break;
+
+	case FILE_DEF:
+			LOG( WARN, "Backup folder not specified! No backup file will be created!");
+			bDoBackup = false;
+			break;
+
+	case FLDANDFILE_DEF:
+			LOG(INFO, "The backup folder is set to "<<backup_folder );
+
+			// check if the folder exists
+			if( !bfs::is_directory(st) )             // true - is directory
+			{
+				LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
+				bDoBackup = false;
+			}
+			else
+			{
+				LOG(INFO, "Backup the aggregator into the file "<<backup_folder<<"/"<<backup_file );
+				bDoBackup = true;
+			}
+			break;
+
+	case NO_BKP:
+
+			LOG( WARN, "No backup folder and no backup file were specified! No backup for the aggregator will be available!");
+			bDoBackup = false;
+			break;
+
+	default:
+			LOG(ERROR, "Bad luck, This should not happen!");
+			bDoBackup = false;
 	}
 
 
 	LOG(INFO, "Starting the aggregator with the name = '"<<aggName<<"' at location "<<aggUrl<<", having the master "<<orchName<<"("<<orchUrl<<")");
 
-	FHGLOG_SETUP();
-
 	try {
 		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName); //, orchUrl );
-		ptrAgg->start_agent(backup_file);
+
+		if(bDoBackup)
+			ptrAgg->start_agent(bkp_path/backup_file);
+		else
+			ptrAgg->start_agent();
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
@@ -103,8 +151,8 @@ int main (int argc, char **argv)
 		LOG(INFO, "terminating...");
 
 		ptrAgg->shutdown();
-	} catch ( std::exception& ){
-			std::cout<<"Could not start the Aggregator!"<<std::endl;
-		}
+	} catch ( std::exception& ) {
+		std::cout<<"Could not start the Aggregator!"<<std::endl;
+	}
 
 }

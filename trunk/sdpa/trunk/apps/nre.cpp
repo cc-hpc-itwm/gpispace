@@ -31,6 +31,8 @@ namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 using namespace std;
 
+enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
+
 int main (int argc, char **argv)
 {
   FHGLOG_SETUP();
@@ -41,7 +43,10 @@ int main (int argc, char **argv)
 	string aggUrl;
 	string workerUrl;
 	string guiUrl;
-	bfs::path backup_file;
+
+	bool bDoBackup = false;
+	std::string backup_file;
+	std::string backup_folder;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -52,7 +57,8 @@ int main (int argc, char **argv)
 	   //("agg_url,p",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
 	   ("worker_url,w",  po::value<std::string>(&workerUrl)->default_value("127.0.0.1:8000"), "Worker's url")
 	   ("gui_url,g",  po::value<std::string>(&guiUrl)->default_value("127.0.0.1:9000"), "GUI's url")
-	   ("backup_file,f","NRE's backup file")
+	   ("backup_folder,d", po::value<std::string>(&backup_folder), "NRE's backup folder")
+	   ("backup_file,f", po::value<std::string>(&backup_file), "NRE's backup file")
 	   ;
 
   po::variables_map vm;
@@ -67,29 +73,74 @@ int main (int argc, char **argv)
     return 0;
   }
 
-  if (vm.count("backup_file"))
-  {
-	  LOG(INFO, "Backup the NRE into the file "<< vm["backup_file"].as<string>() );
-  }
-  else
-  {
-	  backup_file = nreName + ".bak";
-	  LOG(INFO, "Backup file for the NRE not explicitly specified. Backup it by default into "<<  backup_file.string() );
-  }
+  	int bkpOpt = NO_BKP;
+  	if( vm.count("backup_file") )
+  		bkpOpt *= FILE_DEF;
+
+  	if( vm.count("backup_folder") )
+  		bkpOpt *= FLD_DEF;
+
+  	bfs::path bkp_path(backup_folder);
+  	boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
+
+  	switch(bkpOpt)
+  	{
+  	case FLD_DEF:
+  			LOG( WARN, "Backup file not specified! No backup file will be created!");
+  			bDoBackup = false;
+  			break;
+
+  	case FILE_DEF:
+  			LOG( WARN, "Backup folder not specified! No backup file will be created!");
+  			bDoBackup = false;
+  			break;
+
+  	case FLDANDFILE_DEF:
+  			LOG(INFO, "The backup folder is set to "<<backup_folder );
+
+  			// check if the folder exists
+  			if( !bfs::is_directory(st) )             // true - is directory
+  			{
+  				LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
+  				bDoBackup = false;
+  			}
+  			else
+  			{
+  				LOG(INFO, "Backup the nre into the file "<<backup_folder<<"/"<<backup_file );
+  				bDoBackup = true;
+  			}
+  			break;
+
+  	case NO_BKP:
+
+  			LOG( WARN, "No backup folder and no backup file were specified! No backup for the nre will be available!");
+  			bDoBackup = false;
+  			break;
+
+  	default:
+  			LOG(ERROR, "Bad luck, This should not happen!");
+  			bDoBackup = false;
+  	}
+
 
   LOG(INFO,	"Starting the NRE with the name = '"<<nreName<<"' at location "<<nreUrl<<", having the master "<<aggName<<"("<<aggUrl<<")"
 		  	 <<", with the nre-worker running at "<<workerUrl);
 
-  sdpa::daemon::NRE<WorkerClient>::ptr_t ptrNRE
-    = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient >::create( nreName
-																	, nreUrl
-																	, aggName
-																	, workerUrl
-																	, guiUrl
-																	);
-
   try {
-	  ptrNRE->start_agent(backup_file);
+
+	  sdpa::daemon::NRE<WorkerClient>::ptr_t ptrNRE
+	     = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient >::create( nreName
+	 																	, nreUrl
+	 																	, aggName
+	 																	, workerUrl
+	 																	, guiUrl
+	 																	);
+
+
+	  if(bDoBackup)
+		  ptrNRE->start_agent(bkp_path/backup_file);
+	  else
+		  ptrNRE->start_agent();
 
     LOG(DEBUG, "waiting for signals...");
     sigset_t waitset;
@@ -124,14 +175,11 @@ int main (int argc, char **argv)
     }
 
     LOG(INFO, "terminating...");
+    ptrNRE->shutdown();
+
   } catch (std::exception const & ex) {
     LOG(ERROR, "Could not start the NRE: " << ex.what() );
   }
-
-  ptrNRE->shutdown();
-
-  seda::StageRegistry::instance().stopAll();
-  seda::StageRegistry::instance().clear();
 
   return 0;
 }

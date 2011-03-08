@@ -105,20 +105,21 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
 	preference_map_t::size_type rc = job_preferences_.erase(job_id);
 
 	if(rc)
-        {
-          DLOG(TRACE, "Erased the preferences of the job "<<job_id.str());
-        }
+	{
+		DLOG(TRACE, "Erased the preferences of the job "<<job_id.str());
+	}
 
 	job_map_t::size_type ret = job_map_.erase(job_id);
 	if( !ret )
-        {
+	{
 		throw JobNotDeletedException(job_id);
-        }
+	}
 	else
-        {
-          DLOG(TRACE, "Erased job "<<job_id.str()<<" from job map");
-        }
-        free_slot_.notify_one();
+    {
+		DLOG(TRACE, "Erased job "<<job_id.str()<<" from job map");
+    }
+
+	free_slot_.notify_one();
 }
 
 std::vector<sdpa::job_id_t> JobManager::getJobIDList()

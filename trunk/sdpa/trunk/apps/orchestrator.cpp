@@ -12,28 +12,34 @@
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
-#include <sdpa/engine/RealWorkflowEngine.hpp>
+//#include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
-
-typedef void WorkflowEngineType;
 
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 
+enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
+
 int main (int argc, char **argv)
 {
 	string orchName;
 	string orchUrl;
-	bfs::path backup_file;
+
+	bool bDoBackup = false;
+	std::string backup_file;
+	std::string backup_folder;
+
+	FHGLOG_SETUP();
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message")
 	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-	   ("backup_file,f", po::value<bfs::path>(&backup_file), "Orchestrator's backup file")
+	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Orchestrator's backup folder")
+	   ("backup_file,f", po::value<std::string>(&backup_file), "Orchestrator's backup file")
 	   ;
 
 	po::variables_map vm;
@@ -47,23 +53,66 @@ int main (int argc, char **argv)
 		return 0;
 	}
 
-	if (vm.count("backup_file"))
+	int bkpOpt = NO_BKP;
+	if( vm.count("backup_file") )
+		bkpOpt *= FILE_DEF;
+
+	if( vm.count("backup_folder") )
+		bkpOpt *= FLD_DEF;
+
+	bfs::path bkp_path(backup_folder);
+	boost::filesystem::file_status st = boost::filesystem::status(bkp_path);
+
+	switch(bkpOpt)
 	{
-		LOG(INFO, "Backup the orchestrator into the file "<< vm["backup_file"].as<string>() );
-	}
-	else
-	{
-		backup_file = orchName + ".bak";
-		LOG(INFO, "Backup file for the orchestrator not explicitly specified. Backup it by default into"<< backup_file.string() );
+	case FLD_DEF:
+			LOG( WARN, "Backup file not specified! No backup file will be created!");
+			bDoBackup = false;
+			break;
+
+	case FILE_DEF:
+			LOG( WARN, "Backup folder not specified! No backup file will be created!");
+			bDoBackup = false;
+			break;
+
+	case FLDANDFILE_DEF:
+			LOG(INFO, "The backup folder is set to "<<backup_folder );
+
+			// check if the folder exists
+			if( !bfs::is_directory(st) )             // true - is directory
+			{
+				LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
+				bDoBackup = false;
+			}
+			else
+			{
+				LOG(INFO, "Backup the orchestrator into the file "<<backup_folder<<"/"<<backup_file );
+				bDoBackup = true;
+			}
+			break;
+
+	case NO_BKP:
+
+			LOG( WARN, "No backup folder and no backup file were specified! No backup for the orchestrator will be available!");
+			bDoBackup = false;
+			break;
+
+	default:
+			LOG(ERROR, "Bad luck, This should not happen!");
+			bDoBackup = false;
 	}
 
 	LOG(INFO, "Starting the orchestrator with the name = '"<<orchName<<"' at location "<<orchUrl);
 
-	FHGLOG_SETUP();
-
 	try {
-		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<WorkflowEngineType>::create( orchName, orchUrl  );
-		ptrOrch->start_agent(backup_file);
+		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( orchName, orchUrl  );
+
+		if(bDoBackup)
+		{
+			ptrOrch->start_agent(bkp_path/backup_file);
+		}
+		else
+			ptrOrch->start_agent();
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
