@@ -24,10 +24,11 @@ namespace bytearray
   public:
     typedef std::vector<char> container_type;
 
-    type () : _v (), _s(0) {}
-    explicit type (const container_type & v) : _v (v), _s(0) {}
+    type () : _v () {}
+    explicit type (const container_type & v) : _v (v) {}
+    type (const type & other) : _v (other._v) {}
 
-    type (const char * const buf, const std::size_t size) : _v(), _s(size)
+    type (const char * const buf, const std::size_t size) : _v()
     {
       std::copy (buf, buf + size, std::back_inserter (_v));
     }
@@ -41,7 +42,7 @@ namespace bytearray
     }
 
     template<typename T>
-    explicit type (const T * const x) : _v (), _s(sizeof(*x))
+    explicit type (const T * const x) : _v ()
     {
       std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
     }
@@ -55,23 +56,31 @@ namespace bytearray
       return s;
     }
 
-    const std::size_t & size () const { return _s; }
+    std::size_t size () const { return _v.size(); }
     const container_type & container () const { return _v; }
 
     friend std::ostream & operator << (std::ostream &, const type &);
     friend std::size_t hash_value (const type &);
     friend bool operator == (const type &, const type &);
 
+    type & operator = (const type & other)
+    {
+      if (this != &other)
+        {
+          _v = other._v;
+        }
+
+      return *this;
+    }
+
   private:
     container_type _v;
-    std::size_t _s;
 
     friend class boost::serialization::access;
     template<typename Archive>
     void serialize (Archive & ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(_v);
-      ar & BOOST_SERIALIZATION_NVP(_s);
     }
   };
 
@@ -100,19 +109,14 @@ namespace bytearray
     return x._v == y._v;
   }
 
+
   template<typename T, typename Archive = boost::archive::binary_oarchive>
   class encoder
   {
   public:
-    explicit encoder (const T & x) : _encoded (encode (x)) {}
-
-    const type & operator * () const { return _encoded; }
     const type & bytearray () const { return _encoded; }
 
-  private:
-    const type _encoded;
-
-    type encode (const T & x)
+    explicit encoder (const T & x) : _encoded ()
     {
       std::ostringstream oss;
 
@@ -120,34 +124,31 @@ namespace bytearray
 
       oa << x;
 
-      return type (oss.str().c_str(), oss.str().size());
+      _encoded = type (oss.str().c_str(), oss.str().size());
     }
+
+  private:
+    type _encoded;
   };
 
   template<typename T, typename Archive = boost::archive::binary_iarchive>
   class decoder
   {
   public:
-    explicit decoder (const type & ba) : _x (decode (ba)) {}
-
-    const T & operator * () const { return _x; }
     const T & value () const { return _x; }
+    T & value () { return _x; }
 
-  private:
-    const T _x;
-
-    T decode (const type & ba)
+    explicit decoder (const type & ba) : _x ()
     {
-      std::istringstream iss(std::string (&ba.container()[0], ba.size()));
+      std::istringstream iss (std::string (&ba.container()[0], ba.size()));
 
       Archive ia (iss, boost::archive::no_header);
 
-      T x;
-
-      ia >> x;
-
-      return x;
+      ia >> _x;
     }
+
+  private:
+    T _x;
   };
 }
 

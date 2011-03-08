@@ -236,10 +236,10 @@ BOOST_AUTO_TEST_CASE (ba_list_of_something)
   std::ostringstream oss;
 
   {
-    boost::archive::text_oarchive oa (oss, boost::archive::no_header);
-
     const bytearray::encoder<vec_t> encoder (v);
     const bytearray::type & ba (encoder.bytearray());
+
+    boost::archive::text_oarchive oa (oss, boost::archive::no_header);
 
     oa << ba;
   }
@@ -253,7 +253,9 @@ BOOST_AUTO_TEST_CASE (ba_list_of_something)
 
     ia >> x;
 
-    const bytearray::decoder<vec_t> decoder (x);
+    bytearray::type y (x);
+
+    const bytearray::decoder<vec_t> decoder (y);
     const vec_t & w (decoder.value());
 
     BOOST_CHECK (v.size() == w.size());

@@ -8,7 +8,6 @@
 #include <we/type/literal/cpp.hpp>
 
 #include <fhg/util/show.hpp>
-#include <fhg/util/maybe.hpp>
 
 #include <fhg/util/cpp.hpp>
 
@@ -19,6 +18,7 @@ namespace cpp_util = fhg::util::cpp;
 
 #include <boost/filesystem.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
 
 namespace signature
 {
@@ -133,6 +133,57 @@ namespace signature
                 );
 
               level (l+1); s << "}" << std::endl;
+            }
+
+          return s;
+        }
+      };
+
+      class cpp_serialize : public cpp_generic
+      {
+      private:
+        signature::field_name_t fieldname;
+
+        signature::field_name_t
+        longer (const signature::field_name_t & sub) const
+        {
+          return fieldname.empty() ? sub : (fieldname + "." + sub);
+        }
+
+      public:
+        cpp_serialize (std::ostream & _s, const unsigned int _l = 1)
+          : cpp_generic (_s, _l), fieldname ()
+        {}
+
+        cpp_serialize ( const signature::field_name_t & _fieldname
+                      , std::ostream & _s
+                      , const unsigned int _l = 0
+                      )
+          : cpp_generic (_s, _l), fieldname (_fieldname)
+        {}
+
+        std::ostream & operator () (const literal::type_name_t & t) const
+        {
+          level (l+1);
+
+          s << "ar & BOOST_SERIALIZATION_NVP (" << fieldname << ");"
+            << std::endl
+            ;
+
+          return s;
+        }
+
+        std::ostream & operator () (const structured_t & map) const
+        {
+          for ( structured_t::const_iterator field (map.begin())
+              ; field != map.end()
+              ; ++field
+              )
+            {
+              boost::apply_visitor
+                ( cpp_serialize (longer (field->first), s, l)
+                , field->second
+                );
             }
 
           return s;
@@ -290,18 +341,22 @@ namespace signature
       class cpp_struct : public cpp_generic
       {
       private:
-        fhg::util::maybe<std::string> name;
+        const boost::optional<const std::string &> name;
+        const boost::optional<const type &> sig;
 
       public:
-        cpp_struct ( const std::string & _name
+        cpp_struct ( const type & _sig
+                   , const std::string & _name
                    , std::ostream & _s
                    , const unsigned int _l = 0
                    )
-          : cpp_generic (_s, _l), name (_name)
+          : cpp_generic (_s, _l), name (_name), sig (_sig)
         {}
 
-        cpp_struct (std::ostream & _s, const unsigned int _l = 0)
-          : cpp_generic (_s, _l), name ()
+        cpp_struct ( std::ostream & _s
+                   , const unsigned int _l = 0
+                   )
+          : cpp_generic (_s, _l), name (boost::none), sig (boost::none)
         {}
 
         std::ostream & operator () (const literal::type_name_t & t) const
@@ -322,7 +377,7 @@ namespace signature
         {
           s << "struct ";
 
-          if (name.isJust())
+          if (name)
             {
               s << *name << " ";
             }
@@ -341,6 +396,20 @@ namespace signature
               s << " " << fhg::util::show (field->first) << ";" << std::endl;
             }
 
+          if (sig)
+            {
+              level (l+1); s << "friend class boost::serialization::access;" << std::endl;
+              level (l+1); s << "template<typename Archive>" << std::endl;
+              level (l+1); s << "void serialize (Archive & ar, const unsigned int)" << std::endl;
+              level (l+1); s << "{" << std::endl;
+
+              boost::apply_visitor ( visitor::cpp_serialize (s, l+1)
+                                   , (*sig).desc()
+                                   );
+
+              level (l+1); s << "} // serialize " << (name ? *name : "UNKNOWN") << std::endl;
+            }
+
           level(l); s << "}";
 
           return s;
@@ -354,7 +423,7 @@ namespace signature
                            , const unsigned int & l = 1
                            )
     {
-      boost::apply_visitor (visitor::cpp_struct (n, os, l), s.desc());
+      boost::apply_visitor (visitor::cpp_struct (s, n, os, l), s.desc());
 
       os << "; // struct " << n << std::endl;
       os << std::endl;
@@ -530,6 +599,9 @@ namespace signature
       cpp_util::include (os, "we/type/value.hpp");
       cpp_util::include (os, "we/type/value/cpp/get.hpp");
       cpp_util::include (os, "string");
+
+      // for serialization
+      cpp_util::include (os, "boost/serialization/nvp.hpp");
 
       // for operator <<
       cpp_util::include (os, "we/type/literal.hpp");

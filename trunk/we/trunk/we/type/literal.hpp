@@ -12,6 +12,7 @@
 #include <boost/serialization/deque.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/string.hpp>
 
 #include <string>
 #include <vector>
