@@ -812,6 +812,9 @@ namespace xml
         stream << "CXXINCLUDEPATHS += . $(BOOST_ROOT)/include"     << std::endl;
         stream << "CXXFLAGS += -O3 -fPIC"                          << std::endl;
         stream                                                     << std::endl;
+        stream << "CXXLIBPATHS += $(BOOST_ROOT)/lib"               << std::endl;
+        stream << "CXXLIBS += boost_serialization"                 << std::endl;
+        stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
         stream << "  CP = cp"                                      << std::endl;
         stream << "endif"                                          << std::endl;
@@ -878,7 +881,10 @@ namespace xml
 
             stream << std::endl;
 
-            stream << "\t$(CXX) $(CXXFLAGS) -shared $^ -o $@"      << std::endl;
+            stream << "\t$(CXX) $(CXXFLAGS)"
+                   << " $(addprefix -L,$(CXXLIBPATHS))"
+                   << " $(addprefix -l,$(CXXLIBS))"
+                   << " -shared $^ -o $@"                          << std::endl;
             stream                                                 << std::endl;
           }
 
