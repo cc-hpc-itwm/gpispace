@@ -69,6 +69,9 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/vector.hpp>
+
 template<typename Iarch, typename Oarch>
 void check_char ()
 {
@@ -168,4 +171,96 @@ BOOST_AUTO_TEST_CASE (ba_serialize_uint64_t_binary)
   check_uint64_t< boost::archive::binary_iarchive
                 , boost::archive::binary_oarchive
                 > ();
+}
+
+/* ************************************************************************* */
+
+struct p
+{
+  double _x;
+  long _y;
+
+  p () : _x(), _y() {}
+  p (const double & x, const long & y) : _x (x), _y (y) {}
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP (_x);
+    ar & BOOST_SERIALIZATION_NVP (_y);
+  }
+
+  bool operator == (const p & other)
+  {
+    return _x == other._x && _y == other._y;
+  }
+};
+
+struct q
+{
+  p _p;
+  std::string _s;
+
+  q () : _p(), _s() {}
+  q (const p & p, const std::string & s) : _p(p), _s(s) {}
+
+  friend class boost::serialization::access;
+  template<typename Archive>
+  void serialize (Archive & ar, const unsigned int)
+  {
+    ar & BOOST_SERIALIZATION_NVP (_p);
+    ar & BOOST_SERIALIZATION_NVP (_s);
+  }
+
+  bool operator == (const q & other)
+  {
+    return _p == other._p && _s == other._s;
+  }
+};
+
+BOOST_AUTO_TEST_CASE (ba_list_of_something)
+{
+  typedef std::vector<q> vec_t;
+
+  vec_t v;
+
+  q q1 (p (3.1, 1), "one");
+  q q2 (p (2.7, 2), "two");
+  q q3 (p (9.0, 3), "three");
+
+  v.push_back (q1);
+  v.push_back (q2);
+  v.push_back (q3);
+
+  std::ostringstream oss;
+
+  {
+    boost::archive::text_oarchive oa (oss, boost::archive::no_header);
+
+    const bytearray::encoder<vec_t> encoder (v);
+    const bytearray::type & ba (encoder.bytearray());
+
+    oa << ba;
+  }
+
+  {
+    std::istringstream iss (oss.str());
+
+    boost::archive::text_iarchive ia (iss, boost::archive::no_header);
+
+    bytearray::type x;
+
+    ia >> x;
+
+    const bytearray::decoder<vec_t> decoder (x);
+    const vec_t & w (decoder.value());
+
+    BOOST_CHECK (v.size() == w.size());
+
+    for (std::size_t i (0); i < v.size(); ++i)
+      {
+        BOOST_CHECK (v[i] == w[i]);
+      }
+  }
 }
