@@ -128,19 +128,22 @@ namespace daemon
 
 			int k=0;
 			m_bStarted = true;
+			bfs::path tmpBakFile = m_backupFile.string()+".tmp";
 			while(!m_bStopRequested)
 			{
 				try
 				{
 					SDPA_LOG_DEBUG( "Backup the daemon "<<daemon()->name());
 
-					std::ofstream ofs(m_backupFile.string().c_str());
+					std::ofstream ofs(tmpBakFile.string().c_str());
 					daemon()->backup(ofs);
 					ofs.close();
 
+					boost::filesystem::rename(tmpBakFile, m_backupFile);
+
 					boost::this_thread::sleep(boost::posix_time::microseconds(m_backup_interval));
 				}
-				catch(const std::exception& ex)
+				catch( const std::exception& ex )
 				{
 					SDPA_LOG_ERROR( "Exception occurred when trying to backup the daemon "<<daemon()->name());
 				}
@@ -148,9 +151,11 @@ namespace daemon
 
 			SDPA_LOG_DEBUG( "While loop finished. Backup the daemon "<<daemon()->name() );
 
-			std::ofstream ofs(m_backupFile.string().c_str());
+			std::ofstream ofs(tmpBakFile.string().c_str());
 			daemon()->backup(ofs);
 			ofs.close();
+
+			boost::filesystem::rename(tmpBakFile, m_backupFile);
 		}
 
 		sdpa::daemon::IComm* daemon() { return m_ptrDaemon_; }
