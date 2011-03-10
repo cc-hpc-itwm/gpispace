@@ -868,10 +868,13 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
     std::cout << "usage: alloc segment size [name [flags]]" << std::endl;
     std::cout << "   segment : gpi or id" << std::endl;
     std::cout << "   flags might depend on the segment type:" << std::endl;
-    std::cout << "                 t - temporary (removed after pc death)" << std::endl;
+    std::cout << "                 p - persistent (not removed after pc death)" << std::endl;
     std::cout << "      gpi flags: g - global (allocate on each node)" << std::endl;
     std::cout << "                 l - local (allocate only on this node)" << std::endl;
     std::cout << "      shm flags: x - exclusive (disallow access from other pc)" << std::endl;
+    std::cout << std::endl;
+    std::cout << "      global allocs are always persistent" << std::endl;
+    std::cout << "      allocs in a non-persistent segment are always temporary" << std::endl;
     std::cout << std::endl;
     return 1;
   }
@@ -890,7 +893,7 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
     seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t> (av[0]);
   }
 
-  size = boost::lexical_cast<gpi::pc::type::size_t>(av[1]);
+  size = boost::lexical_cast<size_t>(av[1]);
 
   if (av.size() > 2)
     desc = av[2];
@@ -914,8 +917,8 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
       case 'g':
         gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
         break;
-      case 't':
-        gpi::flag::set (flags, gpi::pc::type::handle::F_TEMPORARY);
+      case 'p':
+        gpi::flag::set (flags, gpi::pc::type::handle::F_PERSISTENT);
         break;
       default:
           std::cerr << "invalid flag: '" << *f << "'" << std::endl;
