@@ -44,13 +44,13 @@ string read_workflow(string strFileName)
 int main(int argc, char** argv)
 {
 	string orch;
-	bfs::path workflowFileName;
+	std::string strFileName;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message. To see logging messages, use FHGLOG_level=MIN and FHGLOG_color=off")
 	   ("orchestrator,o",  po::value<std::string>(&orch)->default_value("orchestrator"), "The orchestrator's name")
-	   ("file,f", po::value<bfs::path>(&workflowFileName)->default_value("stresstest.pnet"), "Workflow file name")
+	   ("file,f", po::value<std::string>(&strFileName)->default_value("stresstest.pnet"), "Workflow file name")
 	   ;
 
 	po::variables_map vm;
@@ -68,8 +68,16 @@ int main(int argc, char** argv)
 
 	LOG(INFO, "Starting the user client ...");
 
-	std::string strWorkflow = read_workflow(workflowFileName.string());
+	bfs::path pathWorkflowFile(strFileName);
 
+	boost::filesystem::file_status st = boost::filesystem::status(pathWorkflowFile);
+
+	if(!bfs::exists(st))
+	{
+		LOG(FATAL, "The file containing the workflow, "<<strFileName<<", does not exist! Aborting now!");
+	}
+
+	std::string strWorkflow = read_workflow(strFileName);
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -85,7 +93,7 @@ int main(int argc, char** argv)
 	int nTrials = 0;
 	try {
 
-		LOG( DEBUG, "Submitting the workflow "<<workflowFileName);
+		LOG( DEBUG, "Submitting the workflow "<<strWorkflow);
 		job_id_user = ptrCli->submitJob(strWorkflow);
 		LOG( DEBUG, "Got the job id "<<job_id_user);
 	}

@@ -66,8 +66,19 @@ int main (int argc, char **argv)
 	switch(bkpOpt)
 	{
 	case FLD_DEF:
-			LOG( WARN, "Backup file not specified! No backup file will be created!");
-			bDoBackup = false;
+			backup_file = orchName + ".bak";
+			LOG( WARN, "Backup file not specified! Backup the orchestrator by default into "<<backup_file);
+			// check if the folder exists
+			if( !bfs::is_directory(st) )             // true - is directory
+			{
+				LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
+				bDoBackup = false;
+			}
+			else
+			{
+				LOG(INFO, "Backup the aggregator into the file "<<backup_folder<<"/"<<backup_file );
+				bDoBackup = true;
+			}
 			break;
 
 	case FILE_DEF:
