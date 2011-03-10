@@ -1,9 +1,7 @@
 # -*- mode: cmake; -*-
 set (tc_srcs
   test_codec.cpp
-  test_comm.cpp
   test_notification.cpp
-  test_retransmit.cpp
 
   test_network_strategy.cpp
   )
