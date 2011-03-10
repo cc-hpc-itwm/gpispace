@@ -177,6 +177,16 @@ namespace gpi
          throw std::runtime_error ("unlink: " + err);
        }
      }
+
+     bool
+     shm_area_t::is_range_local ( const gpi::pc::type::handle::descriptor_t &hdl
+                                , const gpi::pc::type::offset_t a
+                                , const gpi::pc::type::offset_t b
+                                ) const
+     {
+       return ((hdl.offset + a) < size())
+           && ((hdl.offset + b) < size());
+     }
     }
   }
 }

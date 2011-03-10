@@ -380,6 +380,17 @@ namespace gpi
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
         check_boundaries  (dst, src, amount);
 
+        CLOG( TRACE
+            , "gpi.memory"
+            , "src->is_local()="
+            << t.src_area->is_local
+            (gpi::pc::type::memory_region_t(t.src_location, t.amount))
+            << " dst->is_local()="
+            << t.dst_area->is_local
+            (gpi::pc::type::memory_region_t(t.dst_location, t.amount))
+            );
+
+        // TODO: increase refcount in handles, set access/modification times
         //m_transfer_mgr.enqueue (queue, t);
         return queue;
       }

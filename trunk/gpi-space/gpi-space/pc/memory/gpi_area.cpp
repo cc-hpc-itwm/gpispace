@@ -1,5 +1,7 @@
 #include "gpi_area.hpp"
 
+#include <utility>
+
 #include <fhglog/minimal.hpp>
 #include <gpi-space/gpi/api.hpp>
 
@@ -27,6 +29,19 @@ namespace gpi
       {
         // total memory size is required for boundary checks
         m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
+        m_min_local_offset = gpi::api::gpi_api_t::get().rank() * size;
+        m_max_local_offset = m_min_local_offset + size - 1;
+
+        CLOG( TRACE
+            , "gpi.memory"
+            , "GPI memory created:"
+            <<" per-node: " << size
+            <<" total: " << m_total_memsize
+            <<" range:"
+            <<" ["
+            << m_min_local_offset << "," << m_max_local_offset
+            << "]"
+            );
       }
 
       gpi_area_t::~gpi_area_t ()
@@ -71,6 +86,14 @@ namespace gpi
               );
           if (! (start < global_size && end < global_size))
           {
+            CLOG( ERROR
+               , "gpi.memory"
+               , "out-of-bounds access:"
+               << " hdl=" << hdl
+               << " size=" << hdl.size
+               << " globalsize=" << global_size
+               << " range=["<<start << ", " << end << "]"
+               );
             throw std::invalid_argument
                 ("out-of-bounds: access to global handle outside boundaries");
           }
@@ -113,6 +136,56 @@ namespace gpi
           // gpi_space_com_api::global_free (desc.hdl);
           //     make sure to release locks!
           LOG(ERROR, "global GPI deallocations are not yet fully implemented");
+        }
+      }
+
+      gpi::pc::type::offset_t
+      gpi_area_t::handle_to_global_offset ( const gpi::pc::type::offset_t hdl_offset
+                                          , const gpi::pc::type::size_t per_node_size
+                                          ) const
+      {
+        gpi::pc::type::offset_t global_offset (0);
+        gpi::pc::type::offset_t tmp (hdl_offset);
+        while (tmp >= per_node_size)
+        {
+          tmp -= per_node_size;
+          global_offset += this->size();
+        }
+        return global_offset + tmp;
+      }
+
+      typedef std::pair<gpi::pc::type::id_t, gpi::pc::type::id_t> rank_range_t;
+      static
+      rank_range_t
+      handle_subscript_to_nodes ( const gpi::pc::type::handle::descriptor_t &hdl
+                                , const gpi::pc::type::offset_t begin
+                                , const gpi::pc::type::offset_t end
+                                )
+      {
+        const gpi::pc::type::id_t
+            slice_start_rank (begin / hdl.size);
+        const gpi::pc::type::id_t
+            slice_end_rank ( (end-1) / hdl.size);
+        return rank_range_t (slice_start_rank, slice_end_rank);
+      }
+
+      bool
+      gpi_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
+                                , const gpi::pc::type::offset_t begin
+                                , const gpi::pc::type::offset_t end
+                                ) const
+      {
+        if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
+        {
+          rank_range_t ranks (handle_subscript_to_nodes (hdl, begin, end));
+          const gpi::pc::type::id_t my_rank (gpi::api::gpi_api_t::get().rank());
+          return (ranks.first  == my_rank)
+              && (ranks.second == my_rank);
+        }
+        else
+        {
+          return ((hdl.offset + begin) < size())
+              && ((hdl.offset + end) < size());
         }
       }
     }

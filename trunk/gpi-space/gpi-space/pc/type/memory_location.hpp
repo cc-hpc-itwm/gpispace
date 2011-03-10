@@ -27,6 +27,11 @@ namespace gpi
           , offset (0)
         {}
 
+        memory_location_t (const handle_t hdl, const offset_t off)
+          : handle (hdl)
+          , offset (off)
+        {}
+
       private:
         friend class boost::serialization::access;
         template<typename Archive>
@@ -46,6 +51,11 @@ namespace gpi
         memory_region_t ()
           : location ()
           , size (0)
+        {}
+
+        memory_region_t (const memory_location_t loc, const size_t sz)
+          : location (loc)
+          , size (sz)
         {}
       private:
         friend class boost::serialization::access;

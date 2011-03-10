@@ -38,8 +38,20 @@ namespace gpi
         void alloc_hook (const gpi::pc::type::handle::descriptor_t &);
         void  free_hook (const gpi::pc::type::handle::descriptor_t &);
       private:
+        bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
+                            , const gpi::pc::type::offset_t begin
+                            , const gpi::pc::type::size_t   range_size
+                            ) const;
+
+        gpi::pc::type::offset_t
+        handle_to_global_offset ( const gpi::pc::type::offset_t
+                                , const gpi::pc::type::size_t per_node_size
+                                ) const;
+
         void * m_ptr;
         gpi::pc::type::size_t m_total_memsize;
+        gpi::pc::type::offset_t m_min_local_offset;
+        gpi::pc::type::offset_t m_max_local_offset;
       };
     }
   }

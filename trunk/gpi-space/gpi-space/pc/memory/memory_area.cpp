@@ -115,9 +115,29 @@ namespace gpi
         return m_descriptor.nref > 0;
       }
 
+      gpi::pc::type::size_t area_t::size () const
+      {
+        return m_descriptor.size;
+      }
+
       int area_t::type () const
       {
         return m_descriptor.type;
+      }
+
+      bool area_t::is_local (const gpi::pc::type::memory_region_t region) const
+      {
+        lock_type lock (m_mutex);
+        handle_descriptor_map_t::const_iterator hdl_it
+            (m_handles.find(region.location.handle));
+        if (hdl_it == m_handles.end())
+          throw std::runtime_error ("is_local(): no such handle");
+
+        const gpi::pc::type::offset_t start
+            (region.location.offset);
+        const gpi::pc::type::offset_t end
+            (start + region.size);
+        return is_range_local (hdl_it->second, start, end);
       }
 
       bool area_t::is_eligible_for_deletion () const

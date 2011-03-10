@@ -76,6 +76,7 @@ namespace gpi
         gpi::pc::type::size_t
         detach_process (const gpi::pc::type::process_id_t);
 
+        bool is_local (const gpi::pc::type::memory_region_t region) const;
         bool is_eligible_for_deletion () const;
 
         bool is_process_attached (const gpi::pc::type::process_id_t) const;
@@ -104,6 +105,10 @@ namespace gpi
                                   , const gpi::pc::type::offset_t end
                                   ) const = 0;
 
+        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
+                                    , const gpi::pc::type::offset_t a
+                                    , const gpi::pc::type::offset_t b
+                                    ) const = 0;
         /*
          hook functions that may be overriden
          */
