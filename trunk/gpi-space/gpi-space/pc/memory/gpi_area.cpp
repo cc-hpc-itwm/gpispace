@@ -100,8 +100,7 @@ namespace gpi
           // TODO (ap):
           // gpi_space_com_api::global_alloc (desc.hdl, desc.size);
           //     make sure to release locks!
-          LOG(ERROR, "global GPI allocations are not yet implemented");
-          throw std::runtime_error ("global allocations are not implemented");
+          LOG(ERROR, "global GPI allocations are not yet fully implemented");
         }
       }
 
@@ -113,8 +112,7 @@ namespace gpi
           // TODO (ap):
           // gpi_space_com_api::global_free (desc.hdl);
           //     make sure to release locks!
-          LOG(ERROR, "global GPI deallocations are not yet implemented");
-          throw std::runtime_error ("global deallocations are not implemented");
+          LOG(ERROR, "global GPI deallocations are not yet fully implemented");
         }
       }
     }
