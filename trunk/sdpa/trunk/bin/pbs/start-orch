@@ -4,8 +4,9 @@ test -r ~/.init-screen.env && source ~/.init-screen.env
 debug=false
 bind_addr="`hostname`"
 name="orchestrator"
+bkp_dir="${SDPA_BKP_DIR}"
 
-while getopts ":hgn:l:" opt; do
+while getopts ":hgn:l:d:" opt; do
   case $opt in
 	g)
 	  debug=true
@@ -16,11 +17,15 @@ while getopts ":hgn:l:" opt; do
         n)
           name=$OPTARG
         ;;
+	b)
+	  bkp_dir=$OPTARG
+	;;
 	h)
-	  echo "usage: $0 [-h] [-g] [-l interface] [-n name]" >&2
+	  echo "usage: $0 [-h] [-g] [-l interface] [-n name] [-b backup-dir]" >&2
 	  echo "    -h : print this help" >&2
 	  echo "    -l : address to listen on (default: $bind_addr)" >&2
 	  echo "    -n : name (default: $name)" >&2
+          echo "    -b : path to the backup directory (${bkp_dir})" >&2
 	  echo "    -g : run within gdb" >&2
 	  exit 0
 	;;
@@ -32,11 +37,14 @@ done
 
 log "Running $name at $bind_addr"
 
+argv="-u $bind_addr -n ${name}"
+if [ -n "${bkp_dir}" ] ; then
+  argv="$argv -d $bkp_dir -f ${name}.bak"
+fi
+
 if $debug ; then
   log "running within gdb..."
-  FHGLOG_to_console="stderr" gdb -ex run --args orchestrator -u "$bind_addr" -n "${name}"
+  FHGLOG_to_console="stderr" gdb -ex run --args orchestrator $argv
 else
-  FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec orchestrator \
-     -u "$bind_addr" \
-     -n "${name}"
+  FHGLOG_to_file="$SDPA_LOG_DIR/orch.`hostname -s`.log" exec orchestrator $argv
 fi
