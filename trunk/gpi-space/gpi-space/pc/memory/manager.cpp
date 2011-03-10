@@ -176,6 +176,8 @@ namespace gpi
             ; ++area
             )
         {
+          area->second->garbage_collect (proc_id);
+
           if (area->second->is_process_attached (proc_id))
             segments.push_back (area->first);
         }

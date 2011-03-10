@@ -48,6 +48,7 @@ namespace gpi
         //    this function *must not* be called from the dtor
         //    otherwise we endup calling pure virtual functions
         void garbage_collect ();
+        void garbage_collect (const gpi::pc::type::process_id_t pid);
 
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::process_id_t proc_id
