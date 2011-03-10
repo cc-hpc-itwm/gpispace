@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
 
@@ -75,6 +76,14 @@ namespace gpi
           };
           handle_id_t handle;
         };
+
+      private:
+        friend class boost::serialization::access;
+        template<typename Archive>
+        void serialize (Archive & ar, const unsigned int /*version*/)
+        {
+          ar & BOOST_SERIALIZATION_NVP( handle );
+        }
       };
 
       inline
