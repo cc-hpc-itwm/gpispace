@@ -7,6 +7,8 @@ set (hdrs
   gpi_area.hpp
   shm_area.hpp
   memory_transfer_t.hpp
+  task.hpp
+  task_queue.hpp
   )
 
 set (srcs
@@ -16,6 +18,8 @@ set (srcs
   gpi_area.cpp
   shm_area.cpp
   memory_transfer_t.cpp
+  task.cpp
+  task_queue.cpp
   )
 
 ADD_LIBRARY(gpi-space-pc-memory ${hdrs} ${srcs})

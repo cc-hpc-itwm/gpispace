@@ -8,6 +8,7 @@ set(tc_srcs
   test_segment.cpp
   test_handle_generator.cpp
   test_memory_manager.cpp
+  test_task.cpp
 )
 
 foreach (tc_src ${tc_srcs})
