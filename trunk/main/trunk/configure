@@ -50,8 +50,8 @@ if [ -r "CMakeCache.txt" ] ; then
     get_cmake_cache_entry CMAKE_HOME_DIRECTORY src
     get_cmake_cache_entry CMAKE_BUILD_TYPE build_type
     get_cmake_cache_entry BUILD_TESTING build_tests
-    get_cmake_cache_entry BUILD_STATIC_BINARIES build_static
 
+    get_cmake_cache_entry ENABLE_STATIC_BINARIES build_static
     get_cmake_cache_entry ENABLE_APPLICATION build_apps
     get_cmake_cache_entry ENABLE_REAL_GPI build_gpi
     get_cmake_cache_entry ENABLE_FUSE build_fuse
