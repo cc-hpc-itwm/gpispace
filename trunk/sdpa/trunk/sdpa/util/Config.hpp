@@ -2,15 +2,18 @@
 #define SDPA_CLIENT_CONFIG_HPP 1
 
 #include <sdpa/memory.hpp>
-#include <sdpa/util/Properties.hpp>
 #include <boost/filesystem.hpp>
 
 #include <boost/program_options.hpp>
 #include <algorithm> // std::transform
 #include <cctype> // std::tolower
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <sdpa/logging.hpp>
+
 namespace sdpa { namespace util {
-  class Config : public ::sdpa::util::Properties {
+  class Config : public boost::property_tree::ptree {
     public:
       typedef sdpa::shared_ptr<Config> ptr_t;
 
@@ -18,14 +21,36 @@ namespace sdpa { namespace util {
 
       virtual ~Config() {}
 
-      bool is_set(const std::string &key) const { return has_key(key); }
+      bool is_set(const std::string &key) const
+      {
+    	  boost::property_tree::ptree::const_assoc_iterator it(find(key));
+    	  return ( it != not_found() );
+      }
 
-      Config& load_defaults();
+      void read(std::string inFile )
+      {
+    	  read_ini(inFile, *dynamic_cast<boost::property_tree::ptree*>(this));
+      }
+
+      void write(std::ostream& os) const
+      {
+    	  write_ini(os, *this);
+      }
+
+      void print()
+      {
+    	  std::ostringstream sstr;
+    	  write(sstr);
+    	  LOG(INFO, "The daemon was configured with the following parameters: \n\n" << sstr.str());
+      }
+
+      /*Config& load_defaults();*
       Config& parse_env() { return *this; }
-      Config& parse_file(const boost::filesystem::path & /* cfgfile */) { return *this; }
-      Config& parse(const std::string & /* cmdline */) { return *this; }
-      Config& parse(int /* argc */, char ** /* argv */) { return *this; }
-    private:
+      Config& parse_file(const boost::filesystem::path & ) { return *this; }
+      Config& parse(const std::string & ) { return *this; }
+      Config& parse(int , char **) { return *this; }
+      */
+    //private:
       Config();
   };
 
