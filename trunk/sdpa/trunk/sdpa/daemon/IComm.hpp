@@ -66,7 +66,7 @@ const std::string USER("user");
 	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;
-	  virtual sdpa::util::Config* cfg() const = 0;
+	  virtual sdpa::util::Config& cfg() = 0;
 
 	  virtual unsigned int& rank() = 0;
 	  virtual const sdpa::worker_id_t& agent_uuid() = 0;
