@@ -17,10 +17,12 @@ Config::Config() {
 
 }
 
+/*
 Config &Config::load_defaults()
 {
   return DefaultConfiguration()(*this);
 }
+*/
 
 NewConfig::NewConfig(const std::string &component_name, const std::string &env_prefix)
   : component_name_(component_name)
