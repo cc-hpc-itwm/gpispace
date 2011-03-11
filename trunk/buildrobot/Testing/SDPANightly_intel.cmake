@@ -48,10 +48,12 @@ set(BOOST_ROOT /opt/boost/1.45/intel)
 set(SMC_HOME /opt/smc/5.0.0/)
 set(ENABLE_SDPA_GPI No)
 set(ENABLE_GPI_SPACE No)
+set(WE_PRECOMPILE OFF)
 set(CMAKE_BUILD_TYPE Release)
 
 kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
 	BOOST_ROOT SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE
+	WE_PRECOMPILE
 	CMAKE_BUILD_TYPE)
 
 # configure, build, test, submit
