@@ -505,7 +505,13 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
 			return;
 		}
 
-		cfg().read(evt.cfgFile());
+		try {
+			cfg().read(evt.cfgFile());
+		}
+		catch (const sdpa::util::InvalidConfiguration& ex )
+		{
+			SDPA_LOG_ERROR("Error when parsing the ini file. "<<ex.what());
+		}
 	}
 	else
 		SDPA_LOG_WARN("No configuration file was specified. Using the default configuration.");

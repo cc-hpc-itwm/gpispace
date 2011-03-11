@@ -11,8 +11,18 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <sdpa/logging.hpp>
+#include <sdpa/SDPAException.hpp>
 
 namespace sdpa { namespace util {
+
+ class InvalidConfiguration  : public sdpa::SDPAException
+ {
+		public:
+		 InvalidConfiguration(const std::string& reason): sdpa::SDPAException(reason) {}
+
+		virtual ~InvalidConfiguration() throw() {}
+ };
+
   class Config : public boost::property_tree::ptree {
     public:
       typedef sdpa::shared_ptr<Config> ptr_t;
@@ -27,9 +37,15 @@ namespace sdpa { namespace util {
     	  return ( it != not_found() );
       }
 
-      void read(std::string inFile )
+      void read(std::string inFile ) throw (InvalidConfiguration)
       {
-    	  read_ini(inFile, *dynamic_cast<boost::property_tree::ptree*>(this));
+    	  try {
+    		  read_ini(inFile, *dynamic_cast<boost::property_tree::ptree*>(this));
+    	  }
+    	  catch ( const boost::property_tree::ini_parser_error& ex )
+    	  {
+    		  throw InvalidConfiguration(std::string("Invalid configuration: ") + ex.what());
+    	  }
       }
 
       void write(std::ostream& os) const
