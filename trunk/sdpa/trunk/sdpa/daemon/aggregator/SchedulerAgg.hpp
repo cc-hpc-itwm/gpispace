@@ -79,7 +79,7 @@ namespace sdpa {
 	 	 else // try to re-register
 			 {
 	 		 	 SDPA_LOG_INFO("Try to re-register ...");
-	 		 	 const unsigned long reg_timeout( ptr_comm_handler_->cfg()->get<unsigned long>("registration_timeout", 1 *1000*1000) );
+	 		 	 const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 1 *1000*1000) );
 	 		 	 SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
 	 		 	 boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 

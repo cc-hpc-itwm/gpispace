@@ -63,7 +63,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 	  m_bConfigOk(false),
 	  m_threadBkpService(this)
 {
-	ptr_daemon_cfg_ = sdpa::util::Config::create();
+	//daemon_cfg_ = new sdpa::util::Config;
 }
 
 GenericDaemon::GenericDaemon(	const std::string &name,
@@ -101,7 +101,7 @@ GenericDaemon::GenericDaemon(	const std::string &name,
 		ptr_to_slave_stage_ = pshToSlaveStage;
 	}
 
-	ptr_daemon_cfg_ = sdpa::util::Config::create();
+	//daemon_cfg_ = new sdpa::util::Config;
 }
 
 // current constructor
@@ -134,7 +134,7 @@ GenericDaemon::GenericDaemon( const std::string name, IWorkflowEngine*  pArgSdpa
 	//             kvs::put ("sdpa.daemon.<name>.pid", getpid())
 	//                - remove them in destructor
 
-	ptr_daemon_cfg_ = sdpa::util::Config::create();
+	//daemon_cfg_ = new sdpa::util::Config;
 }
 
 GenericDaemon::~GenericDaemon()
@@ -142,7 +142,7 @@ GenericDaemon::~GenericDaemon()
 	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 }
 
-void GenericDaemon::start_agent( const bfs::path& bkp_file )
+void GenericDaemon::start_agent( const bfs::path& bkp_file, const std::string& cfgFile )
 {
 	if(!ptr_scheduler_)
 	{
@@ -179,7 +179,7 @@ void GenericDaemon::start_agent( const bfs::path& bkp_file )
 
 	//start-up the the daemon
 	SDPA_LOG_INFO("Trigger StartUpEvent...");
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
 	sendEventToSelf(pEvtStartUp);
 
 	lock_type lock(mtx_);
@@ -203,7 +203,7 @@ void GenericDaemon::start_agent( const bfs::path& bkp_file )
 	}
 }
 
-void GenericDaemon::start_agent( std::string& strBackup)
+void GenericDaemon::start_agent( std::string& strBackup, const std::string& cfgFile )
 {
 	if(!ptr_scheduler_)
 	{
@@ -238,7 +238,7 @@ void GenericDaemon::start_agent( std::string& strBackup)
 
 	//start-up the the daemon
 	SDPA_LOG_INFO("Trigger StartUpEvent...");
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
 	sendEventToSelf(pEvtStartUp);
 
 	lock_type lock(mtx_);
@@ -262,7 +262,7 @@ void GenericDaemon::start_agent( std::string& strBackup)
 	}
 }
 
-void GenericDaemon::start_agent( )
+void GenericDaemon::start_agent( const std::string& cfgFile )
 {
 	if(!ptr_scheduler_)
 	{
@@ -276,7 +276,7 @@ void GenericDaemon::start_agent( )
 
 	//start-up the the daemon
 	SDPA_LOG_INFO("Trigger StartUpEvent...");
-	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name()));
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
 	sendEventToSelf(pEvtStartUp);
 
 	lock_type lock(mtx_);
@@ -460,8 +460,19 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 	}
 }
 
+void GenericDaemon::setDefaultConfiguration()
+{
+	cfg().put("polling interval",    			1 * 1000 * 1000);
+	cfg().put("upper bound polling interval", 	5 * 1000 * 1000 );
+	cfg().put("life-sign interval",  			2 * 1000 * 1000);
+	cfg().put("worker_timeout",        		   20 * 1000 * 1000); // 6s
+	cfg().put("registration_timeout", 			1 * 1000 * 1000); // 1s
+	cfg().put("backup_interval", 			    5 * 1000 * 1000); // 3s*/
+}
+
+
 //actions
-void GenericDaemon::action_configure(const StartUpEvent&)
+void GenericDaemon::action_configure(const StartUpEvent& evt)
 {
 	SDPA_LOG_INFO("Configuring myself (generic)...");
 
@@ -475,18 +486,32 @@ void GenericDaemon::action_configure(const StartUpEvent&)
 	// Read these values from a configuration file !!!!!!!!
 	// if this does not exist, use default values
 
-	ptr_daemon_cfg_->put("polling interval",    			1 * 1000 * 1000);
-	ptr_daemon_cfg_->put("upper bound polling interval", 	5 * 1000 * 1000 );
-	ptr_daemon_cfg_->put("life-sign interval",  			2 * 1000 * 1000);
-	ptr_daemon_cfg_->put("worker_timeout",        		   20 * 1000 * 1000); // 6s
-	ptr_daemon_cfg_->put("registration_timeout", 			1 * 1000 * 1000); // 1s
-	ptr_daemon_cfg_->put("backup_interval", 			    5 * 1000 * 1000); // 3s
+	// set default configuration
+	// id StartUpEvent contains a configuration file, read the config file and
+	// overwrite the default vaules
 
-	// end reading confog file
+	setDefaultConfiguration();
 
-	m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
+	if(!evt.cfgFile().empty())
+	{
+		SDPA_LOG_ERROR("Read the configuration file daemon_config.txt ... ");
 
-	m_threadBkpService.setBackupInterval( cfg()->get<sdpa::util::time_type>("backup_interval") );
+		bfs::path cfgPath(evt.cfgFile());
+
+		if(!bfs::exists(cfgPath))
+		{
+			SDPA_LOG_ERROR("Could not find the configuration file "<<evt.cfgFile()<<"!");
+			m_bConfigOk = false;
+			return;
+		}
+
+		cfg().read(evt.cfgFile());
+	}
+	else
+		SDPA_LOG_WARN("No configuration file was specified. Using the default configuration.");
+
+	m_ullPollingInterval =cfg().get<sdpa::util::time_type>("polling interval");
+	m_threadBkpService.setBackupInterval(cfg().get<sdpa::util::time_type>("backup_interval") );
 
 	try {
 		SDPA_LOG_ERROR("Try to configure the network now ... ");
@@ -783,9 +808,9 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 	// check if the worker evtRegWorker.from() has already registered!
 	try {
 
-		if(cfg()->is_set("worker_timeout"))
+		if(cfg().is_set("worker_timeout"))
 		{
-			const unsigned long long worker_timeout (cfg()->get<unsigned long long>("worker_timeout", 30 * 1000 * 1000));
+			const unsigned long long worker_timeout (cfg().get<unsigned long long>("worker_timeout", 30 * 1000 * 1000));
 			ptr_scheduler_->deleteNonResponsiveWorkers(worker_timeout);
 		}
 
@@ -853,7 +878,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 			SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
 			// mark the agen as not-registered
 
-			const unsigned long reg_timeout( cfg()->get<unsigned long>("registration_timeout", 10 *1000*1000) );
+			const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
 			SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
 			boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
@@ -882,7 +907,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 				{
 					SDPA_LOG_WARN("Master " << master() << " is down");
 
-					const unsigned long reg_timeout( cfg()->get<unsigned long>("registration_timeout", 10 *1000*1000) );
+					const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
 					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
 					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
@@ -1105,7 +1130,7 @@ void GenericDaemon::incExtJobsCnt()
 
 	// reset the polling interval
 	if( m_nExternalJobs == 1 )
-		m_ullPollingInterval = cfg()->get<sdpa::util::time_type>("polling interval");
+		m_ullPollingInterval =cfg().get<sdpa::util::time_type>("polling interval");
 }
 
 void GenericDaemon::decExtJobsCnt()
@@ -1256,11 +1281,11 @@ bool GenericDaemon::requestsAllowed( const sdpa::util::time_type& difftime )
 	if(!m_bRequestsAllowed)
 		return false;
 
-	if( extJobsCnt() == 0 && m_ullPollingInterval < ptr_daemon_cfg_->get<unsigned int>("upper bound polling interval") )
+	if( extJobsCnt() == 0 && m_ullPollingInterval < cfg().get<unsigned int>("upper bound polling interval") )
 		m_ullPollingInterval  = m_ullPollingInterval + 100000;
 
 	return (difftime>m_ullPollingInterval) &&
-		   (m_nExternalJobs<cfg()->get<unsigned int>("nmax_ext_job_req"));
+		   (m_nExternalJobs<cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
 void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)

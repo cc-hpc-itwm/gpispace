@@ -442,10 +442,10 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
 	// ptr_worker_man_->balanceWorkers();
 	// fix this later -> use a monitoring thread
 	//if(bDelNonRespWorkers)
-	if(ptr_comm_handler_->cfg()->is_set("worker_timeout"))
+	if(ptr_comm_handler_->cfg().is_set("worker_timeout"))
 	{
 		//SDPA_LOG_WARN("Delete timed-out/non-responsive workers!");
-		deleteNonResponsiveWorkers (ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("worker_timeout"));
+		deleteNonResponsiveWorkers (ptr_comm_handler_->cfg().get<sdpa::util::time_type>("worker_timeout"));
 	}
 
 	if( !numberOfWorkers() )
@@ -540,7 +540,7 @@ bool SchedulerImpl::post_request(bool force)
 
 	if(force || ( !ptr_comm_handler_->is_orchestrator()  &&  ptr_comm_handler_->is_registered() ) )
 	{
-		if( difftime > ptr_comm_handler_->cfg()->get<sdpa::util::time_type>("polling interval") )
+		if( difftime > ptr_comm_handler_->cfg().get<sdpa::util::time_type>("polling interval") )
 		{
 			// post a new request to the master
 			// the slave posts a job request

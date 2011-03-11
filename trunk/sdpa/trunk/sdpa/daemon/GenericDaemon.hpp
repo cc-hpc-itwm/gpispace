@@ -72,9 +72,10 @@ namespace sdpa { namespace daemon {
 	  // API
 
 	  virtual void start_fsm();
-	  void start_agent(); // no recovery
-	  void start_agent( const bfs::path& ); // from cfg file!
-	  void start_agent( std::string& );
+
+	  void start_agent( const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
+	  void start_agent( std::string& strBackup, const std::string& cfgFile = ""  );
+	  void start_agent( const std::string& cfgFile = "" ); // no recovery
 
 	  void shutdown(std::string&); // no backup
 	  void shutdown( const bfs::path& backup_path );
@@ -90,6 +91,8 @@ namespace sdpa { namespace daemon {
 	  bool is_configured() { return m_bConfigOk; }
 	  bool is_stopped() { return m_bStopped; }
 	  bool is_started() { return m_bStarted; }
+
+	  void setDefaultConfiguration();
 
 	  // daemon actions
 	  virtual void action_configure( const sdpa::events::StartUpEvent& );
@@ -171,7 +174,8 @@ namespace sdpa { namespace daemon {
 
 	  virtual bool is_registered() const { return m_bRegistered;}
 
-	  sdpa::util::Config* cfg() const { return ptr_daemon_cfg_.get();}
+	  sdpa::util::Config& cfg() { return daemon_cfg_;}
+
 	  const unsigned int& rank() const { return m_nRank; }
 	  unsigned int& rank() { return m_nRank; }
 	  const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
@@ -293,7 +297,8 @@ namespace sdpa { namespace daemon {
 	  //seda::Stage* ptr_daemon_stage_;
 	  std::string master_;
 
-	  sdpa::util::Config::ptr_t ptr_daemon_cfg_;
+	  sdpa::util::Config daemon_cfg_;
+
 	  bool m_bRegistered;
 	  unsigned int m_nRank;
 	  sdpa::worker_id_t m_strAgentUID;

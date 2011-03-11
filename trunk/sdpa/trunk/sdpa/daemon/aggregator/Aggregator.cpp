@@ -39,7 +39,7 @@ void Aggregator::action_configure(const StartUpEvent &se)
 	GenericDaemon::action_configure (se);
 
 	// should be overriden by the orchestrator, aggregator and NRE
-	ptr_daemon_cfg_->put("nmax_ext_job_req", 10U);
+	cfg().put("nmax_ext_job_req", 10U);
 	SDPA_LOG_INFO("Configuring myeself (aggregator)...");
 }
 
@@ -49,11 +49,8 @@ void Aggregator::action_config_ok(const ConfigOkEvent& e)
 
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuration (aggregator) was ok");
-	{
-	  std::ostringstream sstr;
-	  ptr_daemon_cfg_->writeTo (sstr);
-	  SDPA_LOG_INFO("config: " << sstr.str());
-	}
+
+	cfg().print();
 
 	/*SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank()));

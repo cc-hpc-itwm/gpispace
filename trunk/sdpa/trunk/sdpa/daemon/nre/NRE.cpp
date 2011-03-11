@@ -34,8 +34,8 @@ void NRE<U>::action_configure(const StartUpEvent &se)
 	// should set/update this dynamically, as a function of number of workers and their
 	// processing capacities
 
-	ptr_daemon_cfg_->put("nmax_ext_job_req", 2U);
-	ptr_daemon_cfg_->put("polling interval", 50 * 1000); //0.1s
+	cfg().put("nmax_ext_job_req", 2U);
+	cfg().put("polling interval", 50 * 1000); //0.1s
 }
 
 template <typename U>
@@ -46,9 +46,7 @@ void NRE<U>::action_config_ok(const ConfigOkEvent& e)
 	// should be overriden by the orchestrator, aggregator and NRE
 	SDPA_LOG_INFO("Configuration (nre) was ok");
 
-	std::ostringstream sstr;
-	ptr_daemon_cfg_->writeTo (sstr);
-	SDPA_LOG_INFO("config: " << sstr.str());
+	cfg().print();
 }
 
 template <typename U>

@@ -51,11 +51,8 @@ void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 	GenericDaemon::action_config_ok (e);
 
 	SDPA_LOG_INFO("Configuration (orchestrator) was ok");
-	{
-	  std::ostringstream sstr;
-	  ptr_daemon_cfg_->writeTo (sstr);
-	  SDPA_LOG_INFO("config: " << sstr.str());
-	}
+
+	cfg().print();
 }
 
 void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
