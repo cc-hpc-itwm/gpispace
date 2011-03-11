@@ -24,6 +24,7 @@ set(KDE_CTEST_PARALLEL_LEVEL 8)
 #set(CTEST_CMAKE_GENERATOR "Unix Makefiles" )
 #set(CTEST_USE_LAUNCHERS 1)
 #set (CTEST_START_WITH_EMPTY_BINARY_DIRECTORY TRUE)
+set(CTEST_TEST_TIMEOUT 1800)
 
 # generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
 get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
