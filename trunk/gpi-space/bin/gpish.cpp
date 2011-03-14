@@ -5,6 +5,8 @@
 
 #include <string>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -440,34 +442,81 @@ int cmd_set (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
+static bool is_handle(std::string const &s)
+{
+  try
+  {
+    boost::lexical_cast<gpi::pc::type::handle_t>(s);
+    return true;
+  } catch (std::exception const &)
+  {
+    return false;
+  }
+}
+
 int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size() != 3)
+  if (av.size() < 3)
   {
-    std::cerr << "usage: save <segment> <path>" << std::endl;
-//    std::cerr << "    if path is empty or -, save to stdout" << std::endl;
+    std::cerr << "usage: save <segment|handle> <path> [force]" << std::endl;
     return 1;
   }
 
-  bool force (false); // force = sh.state.env.get<bool>("save.force");
-
-  const gpi::pc::type::segment_id_t id
-      (boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]));
-
+  // force = sh.state.env.get<bool>("save.force");
+  bool force (av.size() > 3 && av[3] == "force");
   const fs::path path (av[2]);
-
   if (fs::exists (path) && !force)
   {
     std::cerr << "the file " << path << " does already exist!" << std::endl;
     return 1;
   }
 
-  gpi::pc::client::api_t::segment_ptr seg
-      (sh.state().capi.segments().at(id));
-  std::cerr << *seg << std::endl;
+  gpi::pc::client::api_t::segment_ptr seg;
+  gpi::pc::type::segment_id_t seg_id(0);
+  std::size_t offset(0);
+  std::size_t amount(0);
+  if (is_handle(av[1]))
+  {
+    gpi::pc::type::handle_t hdl
+      (boost::lexical_cast<gpi::pc::type::handle_t>(av[1]));
+    // translate handle to segment
+    gpi::pc::type::handle::list_t handles
+      (sh.state().capi.list_allocations());
+    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
+    {
+      if (d.id == hdl)
+      {
+        seg_id = d.segment;
+        try { seg = sh.state().capi.segments().at(seg_id); } catch (...){}
+        offset = d.offset;
+        amount = d.size;
+        break;
+      }
+    }
+    if (! seg)
+    {
+      std::cerr << "cannot access segment directly: " << seg_id << std::endl;
+      return 2;
+    }
+  }
+  else
+  {
+    try
+    {
+      seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]);
+      seg = sh.state().capi.segments().at(seg_id);
+      offset = 0;
+      amount = seg->size();
+    }
+    catch (...)
+    {
+      std::cerr << "invalid segment id or not attached to: " << av[1] << std::endl;
+      return 2;
+    }
+  }
 
   std::ofstream ofs (path.string().c_str());
-  ofs.write (seg->ptr<char>(), seg->size());
+  ofs.write (seg->ptr<char>() + offset, amount);
   ofs.close ();
   return 0;
 }
@@ -479,23 +528,79 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     std::cerr << "usage: load <segment> <path>" << std::endl;
   }
 
-  const gpi::pc::type::segment_id_t id
-      (boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]));
   const fs::path path (av[2]);
-
-  if (!fs::exists (path))
+  if (! fs::exists (path))
   {
-    std::cerr << "the file " << path << " does not exist!" << std::endl;
+    std::cerr << "no such file or directory: " << path << std::endl;
     return 1;
   }
 
-  gpi::pc::client::api_t::segment_ptr seg
-      (sh.state().capi.segments().at(id));
+  gpi::pc::client::api_t::segment_ptr seg;
+  gpi::pc::type::segment_id_t seg_id(0);
+  std::size_t offset(0);
+  std::size_t amount(0);
+  if (is_handle(av[1]))
+  {
+    gpi::pc::type::handle_t hdl
+      (boost::lexical_cast<gpi::pc::type::handle_t>(av[1]));
+    // translate handle to segment
+    gpi::pc::type::handle::list_t handles
+      (sh.state().capi.list_allocations());
+    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
+    {
+      if (d.id == hdl)
+      {
+        seg_id = d.segment;
+        try { seg = sh.state().capi.segments().at(seg_id); } catch (...){}
+        offset = d.offset;
+        amount = d.size;
+        break;
+      }
+    }
+    if (! seg)
+    {
+      std::cerr << "cannot access segment directly: " << seg_id << std::endl;
+      return 2;
+    }
+  }
+  else
+  {
+    try
+    {
+      seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]);
+      seg = sh.state().capi.segments().at(seg_id);
+      offset = 0;
+      amount = seg->size();
+    }
+    catch (...)
+    {
+      std::cerr << "invalid segment id or not attached to: " << av[1] << std::endl;
+      return 2;
+    }
+  }
 
   // TODO check filesize
-  std::ifstream ifs (path.string().c_str());
-  ifs.read(seg->ptr<char>(), seg->size());
-  ifs.close ();
+  std::ifstream ifs;
+  ifs.open(path.string().c_str(), std::ios::binary);
+  if (!ifs)
+  {
+    std::cerr << "could not open file for reading: " << path << std::endl;
+    return 3;
+  }
+
+  ifs.seekg(0, std::ios::end);
+  std::size_t filesize (ifs.tellg());
+  ifs.seekg(0, std::ios::beg);
+
+  if (filesize > amount)
+  {
+    std::cerr << "warning: the file is larger than the destination: "
+              << filesize << " > " << amount
+              << std::endl;
+  }
+
+  memset (seg->ptr<char>() + offset, 0, amount);
+  ifs.read(seg->ptr<char>() + offset, amount);
   return 0;
 }
 
@@ -1001,7 +1106,7 @@ int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size() > 2)
+  if (av.size() > 1)
   {
     std::size_t total (0);
     for (std::size_t i (1); i < av.size(); ++i)
