@@ -347,6 +347,26 @@ namespace literal
           }
       }
 
+      literal::type operator () ( literal::stack_type & r
+                                , literal::stack_type & l
+                                ) const
+      {
+        switch (token)
+          {
+          case expr::token::_stack_join:
+            while (!r.empty())
+              {
+                l.push_back (r.front()); r.pop_front();
+              }
+            return l;
+          default:
+            throw expr::exception::eval::type_error
+              ( fhg::util::show (token) +
+              "(" + literal::show (l) + "," + literal::show (r) + ")"
+              );
+          }
+      }
+
       literal::type operator () (bitsetofint::type & set, long & l) const
       {
         switch (token)

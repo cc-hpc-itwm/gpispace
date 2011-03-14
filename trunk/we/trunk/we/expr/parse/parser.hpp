@@ -190,6 +190,7 @@ namespace expr
           case token::_stack_push: binary (op_stack.top(), k); break;
           case token::_stack_pop:
           case token::_stack_size: unary (op_stack.top(), k); break;
+          case token::_stack_join: binary (op_stack.top(), k); break;
           case token::_map_assign: ternary (op_stack.top(), k); break;
           case token::_map_unassign:
           case token::_map_is_assigned:

@@ -358,12 +358,17 @@ namespace expr
                     require ("ack_");
                     if (is_eof())
                       throw exception::parse::expected
-                        ("'empty', 'top', 'push', 'pop' or 'size'", pos());
+                        ( "'empty', 'top', 'push', 'pop', 'size' or 'join'"
+                        , pos()
+                        );
                     else
                       switch (*pos)
                         {
                         case 'e': ++pos; require ("mpty");
                           unary (_stack_empty, "stack_empty");
+                          break;
+                        case 'j': ++pos; require ("oin");
+                          token = _stack_join;
                           break;
                         case 's': ++pos; require ("ize");
                           unary (_stack_size, "stack_size");
@@ -392,7 +397,9 @@ namespace expr
                           break;
                         default:
                           throw exception::parse::expected
-                            ("'empty', 'top', 'push', 'pop' or 'size'", pos());
+                            ( "'empty', 'top', 'push', 'pop', 'size' or 'join'"
+                            , pos()
+                            );
                         }
 
                     break;

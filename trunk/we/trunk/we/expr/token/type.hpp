@@ -32,6 +32,7 @@ namespace expr
     , _tolong, _todouble
     , _bitset_insert, _bitset_delete, _bitset_is_element
     , _stack_empty, _stack_top, _stack_push, _stack_pop, _stack_size
+    , _stack_join
     , _map_assign, _map_unassign, _map_is_assigned, _map_get_assignment
     , _set_insert, _set_erase, _set_is_element
     , _set_pop, _set_top, _set_empty, _set_size
@@ -93,6 +94,7 @@ namespace expr
         case _stack_push: return s << "stack_push";
         case _stack_pop: return s << "stack_pop";
         case _stack_size: return s << "stack_size";
+        case _stack_join: return s << "stack_join";
         case _map_assign: return s << "map_assign";
         case _map_unassign: return s << "map_unassign";
         case _map_is_assigned: return s << "map_is_assigned";

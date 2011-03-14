@@ -33,6 +33,7 @@ namespace expr
         case _stack_push:
         case _stack_pop:
         case _stack_size:
+        case _stack_join:
         case _map_assign:
         case _map_unassign:
         case _map_is_assigned:
