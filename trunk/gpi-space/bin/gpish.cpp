@@ -565,7 +565,7 @@ int cmd_segment (shell_t::argv_t const & av, shell_t & sh)
     shell_t::argv_t new_av (av.begin()+1, av.end());
     int rc (0);
 
-    new_av[0] = "segment-" + av[0];
+    new_av[0] = "segment-" + av[1];
     rc = sh.execute (new_av);
     if (rc == -1)
     {
