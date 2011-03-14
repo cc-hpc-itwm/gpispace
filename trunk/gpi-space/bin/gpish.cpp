@@ -1050,7 +1050,7 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     return 1;
   }
 
-  if (av.empty())
+  if (av.size() < 2)
   {
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
     gpi::pc::type::handle::list_t handles (sh.state().capi.list_allocations());
@@ -1060,7 +1060,7 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
   else
   {
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
-    for ( shell_t::argv_t::const_iterator arg(av.begin())
+    for ( shell_t::argv_t::const_iterator arg(av.begin() + 1)
         ; arg != av.end()
         ; ++arg
         )
