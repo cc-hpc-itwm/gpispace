@@ -450,11 +450,13 @@ namespace expr
               ++pos;
               if (is_eof())
                 throw exception::parse::expected
-                  ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:'", pos());
+                  ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:', 'and:' or 'or:'", pos());
               else
                 switch (*pos)
                   {
                   case '=': ++pos; token = define; break;
+                  case 'a': ++pos; require ("nd:"); token = _and; break;
+                  case 'o': ++pos; require ("r:"); token = _or; break;
                   case 'e': ++pos; require ("q:"); token = eq; break;
                   case 'n': ++pos; require ("e:"); token = ne; break;
                   case 'l':
@@ -487,7 +489,7 @@ namespace expr
                     break;
                   default:
                     throw exception::parse::expected
-                      ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:'", pos());
+                      ("'=', 'eq:', 'ne:', 'lt:', 'le:', 'gt:', 'ge:', 'and:' or 'or:'", pos());
                   }
               break;
             case '+': ++pos; token = add; break;
