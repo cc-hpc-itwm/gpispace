@@ -314,6 +314,18 @@ namespace gpi
         }
       }
 
+      std::vector<gpi::pc::type::size_t>
+      api_t::wait ()
+      {
+        std::vector<gpi::pc::type::size_t> res;
+        gpi::pc::type::info::descriptor_t info(collect_info ());
+        for (gpi::pc::type::size_t q(0); q < info.queues; ++q)
+        {
+          res.push_back(wait(q));
+        }
+        return res;
+      }
+
       gpi::pc::type::size_t
       api_t::wait (const gpi::pc::type::queue_id_t queue)
       {

@@ -59,6 +59,9 @@ namespace gpi
         gpi::pc::type::size_t
         wait (const gpi::pc::type::queue_id_t);
 
+        std::vector<gpi::pc::type::size_t>
+        wait ();
+
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz
                                                     , const gpi::pc::type::flags_t = 0
