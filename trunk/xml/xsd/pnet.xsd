@@ -215,13 +215,13 @@
         <xsd:element name="include-function" type="transition_include_type"/>
         <xsd:element name="use" type="use_type"/>
       </xsd:choice>
-      <xsd:element minOccurs="0" maxOccurs="unbounded" name="place-map" type="place_map_type"/>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
+        <xsd:element name="place-map" type="place_map_type"/>
+        <xsd:element name="condition" type="xsd:string"/>
       </xsd:choice>
-      <xsd:element minOccurs="0" maxOccurs="unbounded" name="condition" type="xsd:string"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
     <xsd:attribute name="priority" type="xsd:nonNegativeInteger" use="optional"/>
