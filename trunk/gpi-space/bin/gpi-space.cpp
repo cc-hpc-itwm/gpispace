@@ -76,13 +76,10 @@ static void distribute_config (const gpi_space::config & cfg, gpi_api_t & gpi_ap
   success_count += gpi_api.wait_dma (queue);
 
   LOG(DEBUG, "config successfully distributed to " << success_count << " nodes");
-
-  gpi_api.barrier ();
 }
 
 static void receive_config (gpi_space::config & cfg, gpi_api_t & gpi_api)
 {
-  gpi_api.barrier ();
   memcpy (&cfg, gpi_api.dma_ptr(), sizeof (cfg));
 }
 
@@ -222,9 +219,41 @@ static void init_config (gpi_space::config & cfg)
   cfg.gpi.timeout_in_sec = 0;
 }
 
+namespace
+{
+  static std::string get_home_dir()
+  {
+    struct passwd *pw(getpwuid(getuid()));
+    if (pw && pw->pw_dir)
+    {
+      return pw->pw_dir;
+    }
+    return "/";
+  }
+
+  static std::string const & home_dir()
+  {
+    static std::string home(get_home_dir());
+    return home;
+  }
+
+  static std::string expand_user(std::string const &arg)
+  {
+    std::string s(arg);
+    std::string::size_type pos(s.find('~'));
+    if (pos != std::string::npos)
+    {
+      s.replace(pos, 1, home_dir().c_str());
+    }
+    return s;
+  }
+}
+
 int main (int ac, char *av[])
 {
   gpi::signal::handler().start();
+
+  FHGLOG_SETUP (ac, av);
 
   {
     for (int i (0) ; i < ac; ++i)
@@ -233,61 +262,14 @@ int main (int ac, char *av[])
     }
   }
 
-  gpi_space::config config;
+  // read config from file
+  typedef std::vector<std::string> path_list_t;
+  path_list_t search_path;
+  search_path.push_back ("/etc/gpi.rc");
+  search_path.push_back (expand_user("~/.sdpa/configs/gpi.rc"));
 
-  // initialize gpi api
-  gpi_api_t & gpi_api (gpi_api_t::create (gpi_api_t::REAL_API));
-  gpi_api.init (ac, av);
-
-  if (gpi_api.is_master ())
+  gpi_space::parser::config_parser_t cfg_parser;
   {
-    FHGLOG_SETUP (ac, av);
-
-    // read config from file
-    typedef std::vector<std::string> path_list_t;
-    path_list_t search_path;
-    search_path.push_back ("/etc/gpi.rc");
-
-    // user config
-    {
-      long pwent_size (sysconf(_SC_GETPW_R_SIZE_MAX));
-      if (pwent_size > 0)
-      {
-        char *buf = new char[pwent_size];
-        struct passwd pwent;
-        struct passwd *result (0);
-        int ec (0);
-        if ((ec = getpwuid_r(getuid(), &pwent, buf, pwent_size, &result)) == 0)
-        {
-          if (result)
-          {
-            std::string home_dir (pwent.pw_dir);
-            search_path.push_back (home_dir + "/.sdpa/configs/gpi.rc");
-          }
-          else
-          {
-            LOG(WARN, "could not retrieve passwd entry for uid: " << getuid());
-          }
-        }
-        else
-        {
-          LOG(ERROR, "an error occured while retrieving passwd entry for uid: " << getuid() << " = " << ec);
-        }
-        delete [] buf;
-      }
-      else
-      {
-        LOG(WARN, "could not get _SC_GETPW_R_SIZE_MAX from sysconf");
-      }
-    }
-
-    if (ac > 1)
-    {
-      search_path.push_back (av[1]);
-    }
-
-    gpi_space::parser::config_parser_t cfg_parser;
-
     std::map <std::string, bool> files_seen;
     for ( path_list_t::const_iterator p (search_path.begin())
         ; p != search_path.end()
@@ -310,18 +292,31 @@ int main (int ac, char *av[])
         }
       }
     }
-
-    try
-    {
-      init_config (config);
-      config.load (cfg_parser);
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not configure: " << ex.what());
-      return EXIT_FAILURE;
-    }
   }
+
+  gpi_space::config config;
+  try
+  {
+    init_config (config);
+    config.load (cfg_parser);
+    gpi_space::logging::configure (config.logging);
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(ERROR, "could not configure: " << ex.what());
+    return EXIT_FAILURE;
+  }
+
+  // initialize gpi api
+  gpi_api_t & gpi_api (gpi_api_t::create (cfg_parser.get("gpi.api", gpi_api_t::REAL_API)));
+  gpi_api.init (ac, av);
+
+  if (gpi_api.is_master())
+  {
+    LOG(INFO, "GPISpace version: " << gpi::version_string());
+    LOG(INFO, "GPIApi version: " << gpi_api.version());
+  }
+
 
   if (gpi_api.is_master ())
   {
@@ -340,9 +335,6 @@ int main (int ac, char *av[])
     return EXIT_FAILURE;
   }
 
-  LOG(INFO, "GPISpace version: " << gpi::version_string());
-  LOG(INFO, "GPIApi version: " << gpi_api.version());
-
   gpi::signal::handler().connect
     (SIGINT, boost::bind (shutdown_handler, &gpi_api, _1));
   gpi::signal::handler().connect
@@ -352,16 +344,24 @@ int main (int ac, char *av[])
   gpi::signal::handler().connect
     (SIGCONT, boost::bind (resume_handler, &gpi_api, _1));
 
+  // unfortunately this is still required due to KVS!!!  if we have another way,
+  // we don't have to distribute the config via this mechanism
+  //
+  // idea:
+  //
+  //    *one* file somewhere in $HOME that contains the url to the kvs
+  //    connect to the kvs
+  //    get everything else from there
   if (gpi_api.is_master())
   {
-    distribute_config (config, gpi_api);
+    distribute_config(config, gpi_api);
+    gpi_api.barrier();
   }
   else
   {
+    gpi_api.barrier();
     receive_config (config, gpi_api);
   }
-
-  gpi_api.barrier();
 
   int rc (EXIT_SUCCESS);
   try
