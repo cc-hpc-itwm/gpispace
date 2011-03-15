@@ -62,6 +62,12 @@ namespace gpi
        }
      }
 
+     void*
+     shm_area_t::ptr ()
+     {
+       return m_ptr;
+     }
+
      bool
      shm_area_t::is_allowed_to_attach
         (const gpi::pc::type::process_id_t proc) const

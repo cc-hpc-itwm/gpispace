@@ -23,7 +23,6 @@ namespace gpi
                    );
 
         ~gpi_area_t ();
-
       protected:
         int get_type_id () const;
 
@@ -47,6 +46,8 @@ namespace gpi
         handle_to_global_offset ( const gpi::pc::type::offset_t
                                 , const gpi::pc::type::size_t per_node_size
                                 ) const;
+
+        void *ptr ();
 
         void * m_ptr;
         gpi::pc::type::size_t m_total_memsize;

@@ -132,11 +132,13 @@ namespace gpi
             (m_handles.find(region.location.handle));
         if (hdl_it == m_handles.end())
           throw std::runtime_error ("is_local(): no such handle");
+        if (0 == region.size)
+          throw std::runtime_error ("is_local(): empty region");
 
         const gpi::pc::type::offset_t start
-            (region.location.offset);
+          (region.location.offset);
         const gpi::pc::type::offset_t end
-            (start + region.size);
+          (start + (region.size - 1));
         return is_range_local (hdl_it->second, start, end);
       }
 
@@ -447,6 +449,20 @@ namespace gpi
           m_attached_processes.erase (p);
         }
         return m_descriptor.nref;
+      }
+
+      void *
+      area_t::pointer_to (gpi::pc::type::memory_location_t const &loc)
+      {
+        lock_type lock (m_mutex);
+
+        handle_descriptor_map_t::const_iterator hdl_it
+            (m_handles.find(loc.handle));
+        if (hdl_it == m_handles.end())
+          throw std::runtime_error ("pointer_to(): no such handle");
+
+        return reinterpret_cast<char*>(ptr())
+             + (hdl_it->second.offset + loc.offset);
       }
     }
   }

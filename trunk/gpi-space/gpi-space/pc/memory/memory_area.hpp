@@ -84,6 +84,8 @@ namespace gpi
         void check_bounds ( const gpi::pc::type::memory_location_t & loc
                           , const gpi::pc::type::size_t size
                           ) const;
+
+        void *pointer_to (const gpi::pc::type::memory_location_t & loc);
       protected:
         area_t ( const gpi::pc::type::segment::segment_type type
                , const gpi::pc::type::id_t id
@@ -109,6 +111,7 @@ namespace gpi
                                     , const gpi::pc::type::offset_t a
                                     , const gpi::pc::type::offset_t b
                                     ) const = 0;
+        virtual void *ptr() = 0;
         /*
          hook functions that may be overriden
          */

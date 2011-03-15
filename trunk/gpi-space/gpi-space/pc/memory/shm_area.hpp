@@ -43,6 +43,8 @@ namespace gpi
         void alloc_hook (const gpi::pc::type::handle::descriptor_t &){}
         void  free_hook (const gpi::pc::type::handle::descriptor_t &){}
       private:
+        void *ptr ();
+
         bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t a
                             , const gpi::pc::type::offset_t b
