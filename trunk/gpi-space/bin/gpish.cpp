@@ -518,6 +518,7 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
   std::ofstream ofs (path.string().c_str());
   ofs.write (seg->ptr<char>() + offset, amount);
   ofs.close ();
+  std::cout << "wrote " << amount << " bytes" << std::endl;
   return 0;
 }
 
@@ -525,7 +526,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() != 3)
   {
-    std::cerr << "usage: load <segment> <path>" << std::endl;
+    std::cerr << "usage: load <segment|handle> <path>" << std::endl;
+    return 1;
   }
 
   const fs::path path (av[2]);
@@ -601,6 +603,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   memset (seg->ptr<char>() + offset, 0, amount);
   ifs.read(seg->ptr<char>() + offset, amount);
+  std::cout << "read " << filesize << " bytes" << std::endl;
   return 0;
 }
 
