@@ -445,13 +445,12 @@ namespace we { namespace type {
 
               if (opts.show_capacity)
                 {
-                  try
+                  const boost::optional<petri_net::capacity_t>
+                    mcap (net.get_capacity (*p));
+
+                  if (mcap)
                     {
-                      capacity << endl << "capacity: " << net.get_capacity (*p);
-                    }
-                  catch (const petri_net::exception::capacity_unbounded &)
-                    {
-                      // do nothing, there is no capacity given
+                      capacity << endl << "capacity: " << *mcap;
                     }
                 }
 

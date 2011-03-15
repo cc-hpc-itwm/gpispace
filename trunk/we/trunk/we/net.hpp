@@ -18,10 +18,10 @@
 #include <we/util/cross.hpp>
 
 #include <fhg/util/show.hpp>
-#include <fhg/util/maybe.hpp>
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
 
 #include <boost/function.hpp>
 
@@ -596,25 +596,14 @@ public:
     recalculate_out_enabled_by_place (pid);
   }
 
-  capacity_t get_capacity (const pid_t & pid) const
+  boost::optional<capacity_t> get_capacity (const pid_t & pid) const
   {
-    capacity_map_t::const_iterator pos (capacity_map.find (pid));
-
-    if (pos == capacity_map.end())
-      {
-        throw exception::capacity_unbounded ("place " + fhg::util::show (pid));
-      }
-
-    return pos->second;
-  }
-
-  fhg::util::maybe<capacity_t> get_maybe_capacity (const pid_t & pid) const
-  {
-    capacity_map_t::const_iterator pos (capacity_map.find (pid));
+    const capacity_map_t::const_iterator pos (capacity_map.find (pid));
 
     return (pos == capacity_map.end())
-      ? fhg::util::Nothing<capacity_t>()
-      : fhg::util::Just<capacity_t>(pos->second);
+      ? boost::none
+      : boost::optional<capacity_t> (pos->second)
+      ;
   }
 
   void set_transition_function (const tid_t & tid, const trans_t & f)

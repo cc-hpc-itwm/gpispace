@@ -871,17 +871,37 @@ namespace xml
 
                 if (boost::apply_visitor (function_is_net(), fun.f))
                   {
-                    try
-                      {
-                        const petri_net::capacity_t
-                          capacity (we_net.get_capacity (pid));
+                    const boost::optional<petri_net::capacity_t>
+                      mcap (we_net.get_capacity (pid));
 
-                        throw error::capacity_on_net_output<Trans, Fun>
-                          (trans, fun, connect->place, capacity);
-                      }
-                    catch (const petri_net::exception::capacity_unbounded &)
+                    if (mcap)
                       {
-                        /* do nothing, that is what we want */
+                        bool okay (false);
+
+                        port_type port_out;
+
+                        if (fun.get_port_out (connect->port, port_out))
+                          {
+                            if (port_out.place.isJust())
+                              {
+                                const Net & net (boost::get<Net> (fun.f));
+
+                                place_type place;
+
+                                if (  net.get_place (*port_out.place, place)
+                                   && place.capacity.isJust()
+                                   )
+                                  {
+                                    okay = (*mcap == *place.capacity);
+                                  }
+                              }
+                          }
+
+                        if (!okay)
+                          {
+                            throw error::capacity_on_net_output<Trans, Fun>
+                              (trans, fun, connect->place, *mcap);
+                          }
                       }
                   }
 

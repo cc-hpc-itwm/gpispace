@@ -126,19 +126,19 @@ namespace we { namespace type {
         // capacities
         typedef petri_net::capacity_t capacity_t;
 
-        fhg::util::maybe<capacity_t> cap_A (net.get_maybe_capacity (pid_A));
-        fhg::util::maybe<capacity_t> cap_B (net.get_maybe_capacity (pid_B));
+        boost::optional<capacity_t> cap_A (net.get_capacity (pid_A));
+        boost::optional<capacity_t> cap_B (net.get_capacity (pid_B));
 
-        if (cap_A.isJust())
+        if (cap_A)
           {
-            if (cap_B.isJust())
+            if (cap_B)
               {
                 net.set_capacity (pid_A, std::min (*cap_A, *cap_B));
               }
           }
         else
           {
-            if (cap_B.isJust())
+            if (cap_B)
               {
                 net.set_capacity (pid_A, *cap_B);
               }
