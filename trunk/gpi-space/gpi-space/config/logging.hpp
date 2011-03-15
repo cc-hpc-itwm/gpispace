@@ -100,11 +100,12 @@ namespace gpi_space
       template <typename Mapping>
       void load (Mapping const &cfg)
       {
-        // env before cfg file
-        std::string server
-          (fhg::util::getenv("FHGLOG_to_server", cfg.get ("logging.server", "localhost")));
-        std::string level
-          (fhg::util::getenv("FHGLOG_level",     cfg.get ("logging.level", "INFO")));
+        const std::string fallback_server
+          (fhg::util::getenv("FHGLOG_to_server", "localhost"));
+        const std::string fallback_level
+          (fhg::util::getenv("FHGLOG_level", "INFO"));
+        std::string server(cfg.get ("log.server.url", fallback_server));
+        std::string level (cfg.get ("log.server.level", fallback_level));
 
         sink[0].type = TC_REMOTE;
         snprintf (sink[0].server.host, gpi_space::MAX_HOST_LEN, "%s", server.c_str());
