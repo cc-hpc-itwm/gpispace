@@ -134,6 +134,7 @@ namespace gpi
         ~transfer_manager_t();
 
         void transfer (memory_transfer_t const &);
+        std::size_t wait_on_queue (const std::size_t queue);
       private:
         typedef boost::shared_ptr<transfer_queue_t> queue_ptr;
         typedef std::vector<queue_ptr> transfer_queues_t;

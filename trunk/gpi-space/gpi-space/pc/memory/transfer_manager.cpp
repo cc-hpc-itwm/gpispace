@@ -17,7 +17,7 @@ namespace gpi
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
           m_queues.push_back
-            (boost::make_shared<transfer_queue_t>(&m_worker_queue));
+            (boost::make_shared<transfer_queue_t>(i, &m_worker_queue));
         }
         m_worker_pool.add
           ( boost::bind(&transfer_manager_t::worker, this)
@@ -31,7 +31,7 @@ namespace gpi
       void
       transfer_manager_t::transfer (memory_transfer_t const &t)
       {
-        if (t.queue > m_queues.size())
+        if (t.queue >= m_queues.size())
         {
           CLOG( ERROR
               , "gpi.memory"
@@ -40,6 +40,20 @@ namespace gpi
           throw std::invalid_argument ("no such queue");
         }
         m_queues[t.queue]->enqueue (t);
+      }
+
+      std::size_t
+      transfer_manager_t::wait_on_queue (const std::size_t queue)
+      {
+        if (queue >= m_queues.size())
+        {
+          CLOG( ERROR
+              , "gpi.memory"
+              , "cannot wait on queue: no such queue: " << queue
+              );
+          throw std::invalid_argument ("no such queue");
+        }
+        return m_queues[queue]->wait ();
       }
 
       void

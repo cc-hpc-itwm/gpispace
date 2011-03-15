@@ -67,7 +67,9 @@ namespace gpi
       task_t::wait ()
       {
         lock_type lock (m_mutex);
-        while (task_state::pending == m_state)
+        while (  task_state::pending   == m_state
+              || task_state::executing == m_state
+              )
         {
           m_state_changed.wait (lock);
         }
@@ -101,6 +103,12 @@ namespace gpi
       task_t::get_error_message () const
       {
         return boost::diagnostic_information(get_error());
+      }
+
+      std::size_t
+      task_t::time_estimation () const
+      {
+        return m_eta;
       }
     }
   }

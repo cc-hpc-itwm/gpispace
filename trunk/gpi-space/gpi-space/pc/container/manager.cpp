@@ -337,6 +337,14 @@ namespace gpi
         gpi::pc::type::validate (src.handle);
         return m_memory_mgr.memcpy (proc_id, dst, src, amount, queue);
       }
+
+      gpi::pc::type::size_t
+      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+                               , const gpi::pc::type::queue_id_t queue
+                               )
+      {
+        return m_memory_mgr.wait_on_queue (proc_id, queue);
+      }
     }
   }
 }

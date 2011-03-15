@@ -386,6 +386,15 @@ namespace gpi
         return queue;
       }
 
+      gpi::pc::type::size_t
+      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+                               , const gpi::pc::type::queue_id_t queue
+                               )
+      {
+        LOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
+        return m_transfer_mgr.wait_on_queue (queue);
+      }
+
       void
       manager_t::check_boundaries ( const gpi::pc::type::memory_location_t &dst
                                   , const gpi::pc::type::memory_location_t &src

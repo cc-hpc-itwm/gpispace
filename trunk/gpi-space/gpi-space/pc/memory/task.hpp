@@ -25,10 +25,11 @@ namespace gpi
         typedef boost::function<void (void)> function_type;
 
         template <typename F>
-        task_t (std::string const nme, F fun)
+        task_t (std::string const nme, F fun, const std::size_t eta = 0)
           : m_state (task_state::pending)
           , m_name (nme)
           , m_func (fun)
+          , m_eta (eta)
         {}
 
         ~task_t ();
@@ -44,6 +45,7 @@ namespace gpi
         state get_state () const;
         bool has_failed () const;
         bool has_finished () const;
+        std::size_t time_estimation () const;
       private:
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -57,6 +59,7 @@ namespace gpi
         const std::string m_name;
         function_type m_func;
         boost::exception_ptr m_error;
+        std::size_t m_eta;
       };
     }
   }

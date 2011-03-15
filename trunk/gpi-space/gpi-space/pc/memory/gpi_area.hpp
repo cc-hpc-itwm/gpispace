@@ -23,6 +23,17 @@ namespace gpi
                    );
 
         ~gpi_area_t ();
+
+        void read_dma ( const gpi::pc::type::memory_location_t & dst
+                      , const gpi::pc::type::memory_location_t & src
+                      , const gpi::pc::type::size_t size
+                      , const gpi::pc::type::queue_id_t queue
+                      );
+        void write_dma ( const gpi::pc::type::memory_location_t & dst
+                       , const gpi::pc::type::memory_location_t & src
+                       , const gpi::pc::type::size_t size
+                       , const gpi::pc::type::queue_id_t queue
+                       );
       protected:
         int get_type_id () const;
 

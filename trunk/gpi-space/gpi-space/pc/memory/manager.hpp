@@ -90,6 +90,11 @@ namespace gpi
                , const gpi::pc::type::size_t amount
                , const gpi::pc::type::queue_id_t queue
                );
+
+        gpi::pc::type::size_t
+        wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+                      , const gpi::pc::type::queue_id_t queue
+                      );
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;

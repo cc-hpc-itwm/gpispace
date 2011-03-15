@@ -60,6 +60,77 @@ namespace gpi
         }
       }
 
+      struct dma_transfer_t
+      {
+        dma_transfer_t () {}
+        dma_transfer_t ( const gpi::pc::type::offset_t rem_off
+                       , const gpi::pc::type::size_t   rnk
+                       , const gpi::pc::type::offset_t loc_off
+                       , const gpi::pc::type::size_t   amt
+                       )
+          : remote_offset(rem_off)
+          , rank (rnk)
+          , local_offset(loc_off)
+          , amount(amt)
+        {}
+
+        gpi::pc::type::offset_t remote_offset;
+        gpi::pc::type::size_t   rank;
+        gpi::pc::type::offset_t local_offset;
+        gpi::pc::type::size_t   amount;
+      };
+
+      void
+      gpi_area_t::write_dma ( const gpi::pc::type::memory_location_t & dst
+                            , const gpi::pc::type::memory_location_t & src
+                            , const gpi::pc::type::size_t size
+                            , const gpi::pc::type::queue_id_t queue
+                            )
+      {
+      }
+
+      void
+      gpi_area_t::read_dma ( const gpi::pc::type::memory_location_t & src
+                           , const gpi::pc::type::memory_location_t & dst
+                           , const gpi::pc::type::size_t size
+                           , const gpi::pc::type::queue_id_t queue
+                           )
+      {
+        using namespace gpi::pc::type;
+
+        handle::descriptor_t src_hdl_desc (descriptor(src.handle));
+        handle::descriptor_t dst_hdl_desc (descriptor(dst.handle));
+
+        typedef std::list<dma_transfer_t> dma_list_t;
+        dma_list_t to_read;
+
+        offset_t local_offset (dst_hdl_desc.offset + dst.offset);
+
+        if ((src.offset + size) <= src_hdl_desc.size)
+        {
+        }
+
+        // calculate src nodes
+        //       (rank, offset, amount)
+
+
+        gpi::api::gpi_api_t & api (gpi::api::gpi_api_t::get());
+
+        if (api.max_dma_requests_reached (queue))
+        {
+          api.wait_dma(queue);
+        }
+
+        /*
+        api.read_dma ( const offset_t local_offset
+                     , const offset_t remote_offset
+                     , const size_t amount
+                     , const rank_t from_node
+                     , t.queue
+                     );
+        */
+      }
+
       void *
       gpi_area_t::ptr ()
       {

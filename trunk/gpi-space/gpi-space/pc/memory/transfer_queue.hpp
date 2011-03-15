@@ -19,11 +19,16 @@ namespace gpi
       class transfer_queue_t
       {
       public:
+        typedef boost::shared_ptr<task_t> task_ptr;
+        typedef std::set<task_ptr> task_set_t;
+        typedef std::list<task_ptr> task_list_t;
+
         explicit
-        transfer_queue_t (task_queue_t *async);
+        transfer_queue_t (const std::size_t id, task_queue_t *async);
         ~transfer_queue_t ();
 
         void enqueue (memory_transfer_t const &);
+        void enqueue (task_list_t const &);
 
         // request to pause the queue
         //   no new requests will be accepted
@@ -55,22 +60,25 @@ namespace gpi
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable condition_type;
         typedef boost::shared_ptr<boost::thread> thread_ptr;
-        typedef boost::shared_ptr<task_t> task_ptr;
 
         void worker ();
         void wait_until_unpaused () const;
+        task_list_t split (memory_transfer_t const &mt);
 
         static void do_memcpy (memory_transfer_t mt);
+        static void do_read_dma (memory_transfer_t mt);
+        static void do_write_dma (memory_transfer_t mt);
+        static void do_wait_on_queue (std::size_t queue);
 
         mutable mutex_type m_mutex;
         mutable condition_type m_resume_condition;
+        std::size_t m_id;
         bool m_paused;
         task_queue_t & m_blocking_tasks;
         task_queue_t m_task_queue;
         thread_ptr m_thread;
 
-        std::set<task_ptr> m_dispatched;
-        std::set<task_ptr> m_finished;
+        task_set_t m_dispatched;
         // dispatched list -> contains dispatched tasks
         // finished list   -> contains finished tasks
       };

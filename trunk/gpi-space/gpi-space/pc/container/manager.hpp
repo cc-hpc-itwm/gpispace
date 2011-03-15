@@ -92,6 +92,11 @@ namespace gpi
                            , gpi::pc::type::segment::list_t &
                            ) const;
         void collect_info (gpi::pc::type::info::descriptor_t &) const;
+
+        gpi::pc::type::size_t
+        wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+                      , const gpi::pc::type::queue_id_t queue
+                      );
       private:
         typedef boost::shared_ptr<process_type> process_ptr_t;
         typedef boost::unordered_map< gpi::pc::type::process_id_t

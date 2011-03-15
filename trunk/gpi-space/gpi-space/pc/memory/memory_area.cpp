@@ -127,18 +127,26 @@ namespace gpi
 
       bool area_t::is_local (const gpi::pc::type::memory_region_t region) const
       {
+        return is_local (region.location, region.size);
+      }
+
+      bool
+      area_t::is_local ( const gpi::pc::type::memory_location_t location
+                       , const gpi::pc::type::size_t amount
+                       ) const
+      {
         lock_type lock (m_mutex);
         handle_descriptor_map_t::const_iterator hdl_it
-            (m_handles.find(region.location.handle));
+            (m_handles.find(location.handle));
         if (hdl_it == m_handles.end())
           throw std::runtime_error ("is_local(): no such handle");
-        if (0 == region.size)
+        if (0 == amount)
           throw std::runtime_error ("is_local(): empty region");
 
         const gpi::pc::type::offset_t start
-          (region.location.offset);
+          (location.offset);
         const gpi::pc::type::offset_t end
-          (start + (region.size - 1));
+          (start + (amount - 1));
         return is_range_local (hdl_it->second, start, end);
       }
 

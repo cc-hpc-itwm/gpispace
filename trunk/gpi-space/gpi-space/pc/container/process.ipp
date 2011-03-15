@@ -315,7 +315,7 @@ namespace gpi
       }
 
       template <typename M>
-      gpi::pc::type::size_t process_t<M>::wait (const gpi::pc::type::queue_id_t)
+      gpi::pc::type::size_t process_t<M>::wait (const gpi::pc::type::queue_id_t queue)
       {
         // this is not that easy to implement
         //    do we want to put the process container to sleep? - no
@@ -340,7 +340,7 @@ namespace gpi
         //                 if set: reply immediately
         //                   else: somebody else will reply later
         //           messages need unique sequence numbers or message-ids
-        return 0;
+        return m_mgr.wait_on_queue (m_id, queue);
       }
 
       template <typename M>
