@@ -129,7 +129,7 @@ namespace gpi
       public:
         explicit
         transfer_manager_t ( const std::size_t number_of_queues
-                           , const std::size_t memcpy_pool_size = 1
+                           , const std::size_t memcpy_pool_size = 2
                            );
         ~transfer_manager_t();
 

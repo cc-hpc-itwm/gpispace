@@ -65,11 +65,6 @@ namespace gpi
         void wait_until_unpaused () const;
         task_list_t split (memory_transfer_t const &mt);
 
-        static void do_memcpy (memory_transfer_t mt);
-        static void do_read_dma (memory_transfer_t mt);
-        static void do_write_dma (memory_transfer_t mt);
-        static void do_wait_on_queue (std::size_t queue);
-
         mutable mutex_type m_mutex;
         mutable condition_type m_resume_condition;
         std::size_t m_id;

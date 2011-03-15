@@ -77,6 +77,110 @@ namespace gpi
         }
       }
 
+      static void do_memcpy ( memory_transfer_t t
+                            , const std::size_t chunk
+                            , const std::size_t shift
+                            )
+      {
+        LOG( TRACE
+           , "memcpy:"
+           << " process " << t.pid
+           << " copies " << chunk << " bytes"
+           << " via " << t.queue
+           << " from " << t.src_location
+           << " to " << t.dst_location
+           << " shifted by " << shift
+           );
+
+        std::memcpy( (char*)(t.dst_area->pointer_to(t.dst_location)) + shift
+                   , (char*)(t.src_area->pointer_to(t.src_location)) + shift
+                   , chunk
+                   );
+      }
+
+      static
+      void do_read_dma (memory_transfer_t t)
+      {
+        LOG(TRACE, "gpi::readDMA: " << t);
+
+        // HACK
+        if (t.src_area->type() == gpi_area_t::area_type)
+        {
+          gpi_area_t *area(static_cast<gpi_area_t*>(t.src_area.get()));
+          //          area->read_dma (t.src_location, t.dst_location, t.amount, t.queue);
+        }
+        else
+        {
+          CLOG( ERROR
+              , "gpi.memory"
+              , "RDMA is not yet implemented for area type " << t.src_area->type()
+              );
+          throw std::runtime_error
+            ("RDMA is not yet supported for this memory type!");
+        }
+      }
+
+      static
+      void do_write_dma (memory_transfer_t t)
+      {
+        LOG(TRACE, "gpi::writeDMA: " << t);
+
+        // HACK
+        if (t.src_area->type() == gpi_area_t::area_type)
+        {
+          gpi_area_t *area(static_cast<gpi_area_t*>(t.src_area.get()));
+          //          area->write_dma (t.dst_location, t.src_location, t.amount, t.queue);
+        }
+        else
+        {
+          CLOG( ERROR
+              , "gpi.memory"
+              , "RDMA is not yet implemented for area type " << t.src_area->type()
+              );
+          throw std::runtime_error
+            ("RDMA is not yet supported for this memory type!");
+        }
+      }
+
+      static
+      void do_wait_on_queue (const std::size_t q)
+      {
+        DLOG(TRACE, "gpi::wait_dma(" << q << ")");
+        std::size_t s(gpi::api::gpi_api_t::get().wait_dma(q));
+        DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
+      }
+
+
+      static
+      void fill_memcpy_list( const memory_transfer_t &t
+                           , std::size_t chunk_size
+                           , transfer_queue_t::task_list_t & task_list
+                           )
+      {
+        LOG(TRACE, "transfering data locally (memcpy)");
+
+        if (0 == chunk_size) chunk_size = t.amount;
+
+        std::size_t remaining(t.amount);
+        std::size_t shift (0);
+
+        while (remaining)
+        {
+          std::size_t sz (std::min(remaining, chunk_size));
+          task_list.push_back
+            (boost::make_shared<task_t>
+            ( "memcpy", boost::bind( &do_memcpy
+                                   , t
+                                   , sz
+                                   , shift
+                                   )
+            , sz
+            ));
+          remaining -= sz;
+          shift += sz;
+        }
+      }
+
       transfer_queue_t::task_list_t
       transfer_queue_t::split(const memory_transfer_t &t)
       {
@@ -97,32 +201,33 @@ namespace gpi
 
         if (src_is_local && dst_is_local)
         {
-          LOG(TRACE, "transfering data locally (memcpy)");
-          task_list.push_back
-            (boost::make_shared<task_t>
-            ( "memcpy", boost::bind( &transfer_queue_t::do_memcpy
-                                   , t
-                                   )
-            , t.amount
-            ));
+          const static std::size_t chunk_size ((1<<30));
+          fill_memcpy_list(t, chunk_size, task_list);
         }
         else if (t.dst_area->type() == t.src_area->type())
         {
           if (src_is_local)
           {
+            /*
+            t.src_area->write( t.dst_location
+                             , t.src_location
+                             , t.amount
+                             , t.queue
+                             , task_list
+                             );
+            */
             task_list.push_back
               (boost::make_shared<task_t>
-              ("writeDMA", boost::bind( &transfer_queue_t::do_write_dma
+              ("writeDMA", boost::bind( &do_write_dma
                                       , t
                                       )
-              )
-              );
+              ));
           }
           else if (dst_is_local)
           {
             task_list.push_back
               (boost::make_shared<task_t>
-              ("readDMA", boost::bind( &transfer_queue_t::do_read_dma
+              ("readDMA", boost::bind( &do_read_dma
                                       , t
                                       )
               )
@@ -144,69 +249,6 @@ namespace gpi
             );
         }
         return task_list;
-      }
-
-      void
-      transfer_queue_t::do_memcpy (memory_transfer_t t)
-      {
-        LOG(TRACE, "memcpy: " << t);
-
-        std::memcpy( t.dst_area->pointer_to(t.dst_location)
-                   , t.src_area->pointer_to(t.src_location)
-                   , t.amount
-                   );
-      }
-
-      void
-      transfer_queue_t::do_read_dma (memory_transfer_t t)
-      {
-        LOG(TRACE, "gpi::readDMA: " << t);
-
-        // HACK
-        if (t.src_area->type() == gpi_area_t::area_type)
-        {
-          gpi_area_t *area(static_cast<gpi_area_t*>(t.src_area.get()));
-          area->read_dma (t.src_location, t.dst_location, t.amount, t.queue);
-        }
-        else
-        {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "RDMA is not yet implemented for area type " << t.src_area->type()
-              );
-          throw std::runtime_error
-            ("RDMA is not yet supported for this memory type!");
-        }
-      }
-
-      void
-      transfer_queue_t::do_write_dma (memory_transfer_t t)
-      {
-        LOG(TRACE, "gpi::writeDMA: " << t);
-
-        // HACK
-        if (t.src_area->type() == gpi_area_t::area_type)
-        {
-          gpi_area_t *area(static_cast<gpi_area_t*>(t.src_area.get()));
-          area->write_dma (t.dst_location, t.src_location, t.amount, t.queue);
-        }
-        else
-        {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "RDMA is not yet implemented for area type " << t.src_area->type()
-              );
-          throw std::runtime_error
-            ("RDMA is not yet supported for this memory type!");
-        }
-      }
-
-      void
-      transfer_queue_t::do_wait_on_queue (const std::size_t q)
-      {
-        DLOG(TRACE, "gpi::wait_dma(" << q << ")");
-        std::size_t s(gpi::api::gpi_api_t::get().wait_dma(q));
-        DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
       }
 
       void
@@ -244,7 +286,7 @@ namespace gpi
       transfer_queue_t::wait ()
       {
         task_ptr wtask (boost::make_shared<task_t>
-                       ("wait_on_queue", boost::bind( &transfer_queue_t::do_wait_on_queue
+                       ("wait_on_queue", boost::bind( &do_wait_on_queue
                                                     , m_id
                                                     )
                        )
