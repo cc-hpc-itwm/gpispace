@@ -40,8 +40,10 @@ namespace gpi
 
         std::string const & get_name () const;
         boost::exception_ptr get_error () const;
+        std::string get_error_message () const;
         state get_state () const;
         bool has_failed () const;
+        bool has_finished () const;
       private:
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;

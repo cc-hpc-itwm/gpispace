@@ -90,6 +90,18 @@ namespace gpi
       {
         return task_state::failed == get_state();
       }
+
+      bool
+      task_t::has_finished () const
+      {
+        return task_state::finished == get_state();
+      }
+
+      std::string
+      task_t::get_error_message () const
+      {
+        return boost::diagnostic_information(get_error());
+      }
     }
   }
 }
