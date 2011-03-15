@@ -22,37 +22,32 @@ namespace gpi
   {
     namespace proto
     {
-      namespace message
-      {
-        enum type
-          {
-            error,
-
-            segment_attach, segment_attach_reply,
-            segment_detach, segment_detach_reply,
-            segment_list,   segment_list_reply,
-
-            memory_alloc,  memory_alloc_reply,
-            memory_free,   memory_free_reply,
-            memory_list,   memory_list_reply,
-            memory_memcpy, memory_memcpy_reply,
-            memory_wait,   memory_wait_reply,
-          };
-      }
-
       struct header_t
       {
         header_t ()
           : length (0)
-          , version (0x01)
-          , type (0)
+          , version (0x02)
           , flags (0)
+          , seq (0)
+          , ack (0)
+          , checksum (0)
+        {}
+
+        header_t (const header_t &o)
+          : length(o.length)
+          , version(o.version)
+          , flags(o.flags)
+          , seq(o.seq)
+          , ack(o.ack)
+          , checksum(o.checksum)
         {}
 
         uint32_t     length;
         uint8_t     version;
-        uint8_t        type;
-        uint16_t      flags;
+        uint8_t       flags;
+        uint16_t        seq;
+        uint16_t        ack;
+        uint32_t   checksum;
       };
 
       typedef boost::variant< error::error_t
@@ -60,6 +55,27 @@ namespace gpi
         , gpi::pc::proto::memory::message_t
         , gpi::pc::proto::segment::message_t
         > message_t;
+
+      struct complete_message_t
+      {
+        header_t header;
+        message_t  payload;
+
+        complete_message_t & operator=(const complete_message_t &o)
+        {
+          if (this != &o)
+          {
+            header = o.header;
+            payload = o.payload;
+          }
+          return *this;
+        }
+
+        complete_message_t (const complete_message_t &o)
+          : header(o.header)
+          , payload(o.payload)
+        {}
+      };
     }
   }
 }
