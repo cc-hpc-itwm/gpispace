@@ -1,0 +1,3 @@
+DESTDIR     = $(SDPA_LIBEXEC)
+LIB_DESTDIR = $(HOME)/.sdpa/modules
+BUILD       = /tmp/mr
