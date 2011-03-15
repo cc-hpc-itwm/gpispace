@@ -57,7 +57,6 @@ namespace gpi
     // wrapped C function calls
     void real_gpi_api_t::start (const gpi::timeout_t timeout)
     {
-      lock_type lock (m_mutex);
       assert (! m_startup_done);
 
       int rc (0);
@@ -68,6 +67,7 @@ namespace gpi
              ( SIGALRM
              , boost::bind ( &real_gpi_api_t::startup_timedout_cb
                            , this
+                           , timeout
                            , _1
                            )
              )
@@ -106,7 +106,6 @@ namespace gpi
 
     void real_gpi_api_t::kill ()
     {
-      lock_type lock (m_mutex);
       if (is_master())
       {
         if (0 != killProcsGPI())
@@ -638,11 +637,21 @@ namespace gpi
     }
 
     // private functions
-    int real_gpi_api_t::startup_timedout_cb (int)
+    int real_gpi_api_t::startup_timedout_cb (const gpi::timeout_t timeout, int)
     {
       m_startup_done = false;
       // currently there is no other way than to exit :-(
-      this->kill ();
+      LOG( ERROR
+         , "Sorry, the GPI startup did not complete within " <<  timeout
+         << " seconds. There is nothing I can do for you."
+         );
+      try
+      {
+        this->kill ();
+      }
+      catch (std::exception const &)
+      {
+      }
       exit (gpi::error::errc::startup_failed);
     }
   }
