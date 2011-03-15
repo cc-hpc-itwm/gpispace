@@ -7,6 +7,7 @@ set (hdrs
   gpi_area.hpp
   shm_area.hpp
   memory_transfer_t.hpp
+  thread_pool.hpp
   task.hpp
   task_queue.hpp
   )
@@ -18,6 +19,7 @@ set (srcs
   gpi_area.cpp
   shm_area.cpp
   memory_transfer_t.cpp
+  thread_pool.cpp
   task.cpp
   task_queue.cpp
   )
