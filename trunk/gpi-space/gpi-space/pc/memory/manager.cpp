@@ -18,6 +18,7 @@ namespace gpi
       manager_t::manager_t (const gpi::pc::type::id_t ident)
         : m_ident (ident)
         , m_segment_counter ()
+        , m_transfer_mgr(8)
       {
         handle_generator_t::create (ident);
 
@@ -378,20 +379,10 @@ namespace gpi
              );
 
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
-        check_boundaries  (dst, src, amount);
-
-        CLOG( TRACE
-            , "gpi.memory"
-            , "src->is_local()="
-            << t.src_area->is_local
-            (gpi::pc::type::memory_region_t(t.src_location, t.amount))
-            << " dst->is_local()="
-            << t.dst_area->is_local
-            (gpi::pc::type::memory_region_t(t.dst_location, t.amount))
-            );
+        check_boundaries(dst, src, amount);
 
         // TODO: increase refcount in handles, set access/modification times
-        //m_transfer_mgr.enqueue (queue, t);
+        m_transfer_mgr.transfer(t);
         return queue;
       }
 

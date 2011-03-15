@@ -12,6 +12,7 @@
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
+#include <gpi-space/pc/memory/transfer_manager.hpp>
 
 namespace gpi
 {
@@ -121,6 +122,7 @@ namespace gpi
         area_map_t m_areas;
         garbage_areas_t m_garbage_areas;
         handle_to_segment_t m_handle_to_segment;
+        transfer_manager_t m_transfer_mgr;
       };
     }
   }
