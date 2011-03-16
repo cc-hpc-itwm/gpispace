@@ -201,7 +201,9 @@ namespace gpi
 
         if (src_is_local && dst_is_local)
         {
-          const static std::size_t chunk_size ((1<<30));
+          // deactivated automatic splitting the client can always do the splits
+          // on its own
+          const static std::size_t chunk_size (0);
           fill_memcpy_list(t, chunk_size, task_list);
         }
         else if (t.dst_area->type() == t.src_area->type())
