@@ -54,6 +54,7 @@ namespace gpi
         static bool unlink_after_close (const gpi::pc::type::flags_t);
 
         void *m_ptr;
+        std::string m_path;
       };
     }
   }
