@@ -95,14 +95,17 @@ namespace gpi
         lock_type lock (m_mutex);
 
         detach_process (pid, mem_id);
-        try
+        if (m_areas.find(mem_id) != m_areas.end())
         {
-          unregister_memory(mem_id);
-        }
-        catch (...)
-        {
-          attach_process(pid, mem_id); // unroll
-          throw;
+          try
+          {
+            unregister_memory(mem_id);
+          }
+          catch (...)
+          {
+            attach_process(pid, mem_id); // unroll
+            throw;
+          }
         }
       }
 
