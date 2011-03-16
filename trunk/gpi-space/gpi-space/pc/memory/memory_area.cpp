@@ -470,7 +470,7 @@ namespace gpi
           throw std::runtime_error ("pointer_to(): no such handle");
 
         return reinterpret_cast<char*>(ptr())
-             + (hdl_it->second.offset + loc.offset);
+          + (hdl_it->second.offset + (loc.offset % hdl_it->second.size));
       }
     }
   }

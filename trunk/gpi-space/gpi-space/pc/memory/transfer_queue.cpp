@@ -99,68 +99,144 @@ namespace gpi
       }
 
       static
+      void do_wait_on_queue (const std::size_t q)
+      {
+        LOG(TRACE, "gpi::wait_dma(" << q << ")");
+        std::size_t s(gpi::api::gpi_api_t::get().wait_dma(q));
+        LOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
+      }
+
+
+      static
+      void do_read_dma_gpi ( const gpi::pc::type::offset_t local_offset
+                           , const gpi::pc::type::offset_t remote_offset
+                           , const gpi::pc::type::size_t amount
+                           , const gpi::pc::type::rank_t from_node
+                           , const gpi::pc::type::queue_id_t queue
+                           )
+      {
+        LOG( TRACE, "read_dma:"
+           << " loc-offset = " << local_offset
+           << " rem-offset = " << remote_offset
+           << " #bytes = " << amount
+           << " from = " << from_node
+           << " via = " << queue
+           );
+
+        gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
+
+        if (api.rank() == from_node)
+        {
+          LOG(INFO, "readDMA from local node to local node");
+        }
+
+        if (api.max_dma_requests_reached(queue))
+        {
+          do_wait_on_queue(queue);
+        }
+
+        api.read_dma (local_offset, remote_offset, amount, from_node, queue);
+      }
+
+      template <typename DMAFun>
+      static
+      void do_rdma( gpi::pc::type::size_t local_offset
+                  , const gpi::pc::type::size_t remote_base
+                  , gpi::pc::type::size_t offset
+                  , const gpi::pc::type::size_t per_node_size
+                  , gpi::pc::type::size_t amount
+                  , const gpi::pc::type::queue_id_t queue
+                  , DMAFun rdma
+                  )
+      {
+        while (amount)
+        {
+          const std::size_t rank(offset / per_node_size);
+          const std::size_t size(std::min(per_node_size, amount));
+          const std::size_t remote_offset(remote_base + (offset % per_node_size));
+
+          rdma(local_offset, remote_offset, size, rank, queue);
+
+          local_offset += size;
+          offset += size;
+          amount -= size;
+        }
+      }
+
+
+      static
       void do_read_dma (memory_transfer_t t)
       {
-        LOG(TRACE, "gpi::readDMA: " << t);
+        const gpi::pc::type::handle::descriptor_t src_hdl
+          (t.src_area->descriptor(t.src_location.handle));
+        const gpi::pc::type::handle::descriptor_t dst_hdl
+          (t.dst_area->descriptor(t.dst_location.handle));
 
-        // HACK
-        if (t.src_area->type() == gpi_area_t::area_type)
+        do_rdma( dst_hdl.offset + t.dst_location.offset
+               , src_hdl.offset , t.src_location.offset
+               , src_hdl.size
+               , t.amount
+               , t.queue
+               , &do_read_dma_gpi
+               );
+      }
+
+      static
+      void do_write_dma_gpi ( const gpi::pc::type::offset_t local_offset
+                            , const gpi::pc::type::offset_t remote_offset
+                            , const gpi::pc::type::size_t amount
+                            , const gpi::pc::type::rank_t to_node
+                            , const gpi::pc::type::queue_id_t queue
+                            )
+      {
+        LOG( TRACE, "write_dma:"
+           << " loc-offset = " << local_offset
+           << " rem-offset = " << remote_offset
+           << " #bytes = " << amount
+           << " to = " << to_node
+           << " via = " << queue
+           );
+
+        gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
+
+        if (api.rank() == to_node)
         {
-          gpi_area_t *area(static_cast<gpi_area_t*>(t.src_area.get()));
-          //          area->read_dma (t.src_location, t.dst_location, t.amount, t.queue);
+          LOG(INFO, "writeDMA to local node from local node");
         }
-        else
+
+        if (api.max_dma_requests_reached(queue))
         {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "RDMA is not yet implemented for area type " << t.src_area->type()
-              );
-          throw std::runtime_error
-            ("RDMA is not yet supported for this memory type!");
+          do_wait_on_queue(queue);
         }
+
+        api.write_dma (local_offset, remote_offset, amount, to_node, queue);
       }
 
       static
       void do_write_dma (memory_transfer_t t)
       {
-        LOG(TRACE, "gpi::writeDMA: " << t);
+        const gpi::pc::type::handle::descriptor_t src_hdl
+          (t.src_area->descriptor(t.src_location.handle));
+        const gpi::pc::type::handle::descriptor_t dst_hdl
+          (t.dst_area->descriptor(t.dst_location.handle));
 
-        // HACK
-        if (t.src_area->type() == gpi_area_t::area_type)
-        {
-          gpi_area_t *area(static_cast<gpi_area_t*>(t.src_area.get()));
-          //          area->write_dma (t.dst_location, t.src_location, t.amount, t.queue);
-        }
-        else
-        {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "RDMA is not yet implemented for area type " << t.src_area->type()
-              );
-          throw std::runtime_error
-            ("RDMA is not yet supported for this memory type!");
-        }
+        do_rdma( src_hdl.offset + t.src_location.offset
+               , dst_hdl.offset , t.dst_location.offset
+               , dst_hdl.size
+               , t.amount
+               , t.queue
+               , &do_write_dma_gpi
+               );
       }
-
-      static
-      void do_wait_on_queue (const std::size_t q)
-      {
-        DLOG(TRACE, "gpi::wait_dma(" << q << ")");
-        std::size_t s(gpi::api::gpi_api_t::get().wait_dma(q));
-        DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
-      }
-
 
       static
       void fill_memcpy_list( const memory_transfer_t &t
-                           , std::size_t chunk_size
                            , transfer_queue_t::task_list_t & task_list
                            )
       {
         LOG(TRACE, "transfering data locally (memcpy)");
 
-        if (0 == chunk_size) chunk_size = t.amount;
-
+        const std::size_t chunk_size = t.amount;
         std::size_t remaining(t.amount);
         std::size_t shift (0);
 
@@ -179,6 +255,30 @@ namespace gpi
           remaining -= sz;
           shift += sz;
         }
+      }
+
+      static
+      void fill_read_dma_list( const memory_transfer_t &t
+                             , transfer_queue_t::task_list_t & task_list
+                             )
+      {
+        task_list.push_back
+          (boost::make_shared<task_t>
+            ("readDMA", boost::bind( &do_read_dma
+                                   , t
+                                   )));
+      }
+
+      static
+      void fill_write_dma_list( const memory_transfer_t &t
+                              , transfer_queue_t::task_list_t & task_list
+                              )
+      {
+        task_list.push_back
+          (boost::make_shared<task_t>
+            ("writeDMA", boost::bind( &do_write_dma
+                                    , t
+                                    )));
       }
 
       transfer_queue_t::task_list_t
@@ -201,45 +301,23 @@ namespace gpi
 
         if (src_is_local && dst_is_local)
         {
-          // deactivated automatic splitting the client can always do the splits
-          // on its own
-          const static std::size_t chunk_size (0);
-          fill_memcpy_list(t, chunk_size, task_list);
+          fill_memcpy_list(t, task_list);
         }
         else if (t.dst_area->type() == t.src_area->type())
         {
           if (src_is_local)
           {
-            /*
-            t.src_area->write( t.dst_location
-                             , t.src_location
-                             , t.amount
-                             , t.queue
-                             , task_list
-                             );
-            */
-            task_list.push_back
-              (boost::make_shared<task_t>
-              ("writeDMA", boost::bind( &do_write_dma
-                                      , t
-                                      )
-              ));
+            fill_write_dma_list(t, task_list);
           }
           else if (dst_is_local)
           {
-            task_list.push_back
-              (boost::make_shared<task_t>
-              ("readDMA", boost::bind( &do_read_dma
-                                      , t
-                                      )
-              )
-              );
+            fill_read_dma_list(t, task_list);
           }
           else
           {
             throw std::runtime_error
               ( "illegal memory transfer requested:"
-              " source and destination cannot both be remote"
+              " source and destination cannot both be remote!"
               );
           }
         }
@@ -305,8 +383,19 @@ namespace gpi
         std::size_t res(wait_on_tasks.size());
         while (! wait_on_tasks.empty())
         {
-          (*wait_on_tasks.begin())->wait();
+          task_ptr task(*wait_on_tasks.begin());
           wait_on_tasks.erase(wait_on_tasks.begin());
+          task->wait();
+
+          // TODO: WORK HERE:  this failure should be propagated  to the correct
+          // process container
+          if (task->has_failed())
+          {
+            LOG( ERROR
+               , "transfer " << task->get_name()
+               << " failed: " << task->get_error_message()
+               );
+          }
         }
         return res;
       }

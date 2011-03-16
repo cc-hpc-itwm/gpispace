@@ -471,6 +471,15 @@ namespace gpi
                      )
         );
 
+      LOG( TRACE
+         , "real_api: writeDMA:"
+         << " remote: " << remote_offset
+         << " local: " << local_offset
+         << " amount: " << amount
+         << " to-node: " << to_node
+         << " queue: " << queue
+         );
+
       if (rc != 0)
       {
         throw exception::dma_error
