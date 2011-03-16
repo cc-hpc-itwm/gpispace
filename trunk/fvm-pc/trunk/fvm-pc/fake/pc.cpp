@@ -408,9 +408,22 @@ static void selftest (void *, const we::loader::input_t &, we::loader::output_t 
   we::loader::put (out, "result", 0L);
 }
 
+static inline long getenvlong (const char * name, const long dflt)
+{
+  const char * read (getenv (name));
+
+  return read ? atol (read) : dflt;
+}
+
 WE_MOD_INITIALIZE_START (fvm);
 {
-  fvm_pc_config_t cfg (getenv("FVM_PC_MSQ"), getenv("FVM_PC_SHM"), 50*1024*1024, 100*1024*1024);
+
+
+  fvm_pc_config_t cfg ( getenv("FVM_PC_MSQ")
+                      , getenv("FVM_PC_SHM")
+                      , getenvlong ("FVM_PC_SHMSZ", 50*1024*1024)
+                      , getenvlong ("FVM_PC_FVMSZ", 100*1024*1024)
+                      );
   fvmConnect (cfg);
   WE_REGISTER_FUN (selftest);
 }
