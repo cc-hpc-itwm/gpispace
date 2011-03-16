@@ -1,0 +1,10 @@
+## check for boost
+set(Boost_FIND_QUIETLY true)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.45 REQUIRED COMPONENTS thread system filesystem serialization program_options test_exec_monitor iostreams)
+if (Boost_MAJOR_VERSION LESS 1)
+    message(FATAL_ERROR "At least Boost 1.45 is required. Found ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
+endif(Boost_MAJOR_VERSION LESS 1)
+if (Boost_MINOR_VERSION LESS 45)
+    message(FATAL_ERROR "At least Boost 1.45 is required. Found ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
+endif (Boost_MINOR_VERSION LESS 45)
