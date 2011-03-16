@@ -81,15 +81,35 @@ namespace gpi
               );
         }
         memory_added (id);
+
+        attach_process (creator, id);
+
         return id;
+      }
+
+      void
+      manager_t::unregister_memory ( const gpi::pc::type::process_id_t pid
+                                   , const gpi::pc::type::segment_id_t mem_id
+                                   )
+      {
+        lock_type lock (m_mutex);
+
+        detach_process (pid, mem_id);
+        try
+        {
+          unregister_memory(mem_id);
+        }
+        catch (...)
+        {
+          attach_process(pid, mem_id); // unroll
+          throw;
+        }
       }
 
       void
       manager_t::unregister_memory (const gpi::pc::type::segment_id_t mem_id)
       {
         {
-          lock_type lock (m_mutex);
-
           area_map_t::iterator area_it (m_areas.find(mem_id));
           if (area_it == m_areas.end())
           {

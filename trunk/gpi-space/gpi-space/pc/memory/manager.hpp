@@ -58,7 +58,9 @@ namespace gpi
                        , const gpi::pc::type::size_t size
                        , const gpi::pc::type::flags_t flags
                        );
-        void unregister_memory (const gpi::pc::type::segment_id_t);
+        void unregister_memory ( const gpi::pc::type::process_id_t pid
+                               , const gpi::pc::type::segment_id_t
+                               );
         void list_memory (gpi::pc::type::segment::list_t &) const;
 
         void attach_process ( const gpi::pc::type::process_id_t
@@ -115,6 +117,7 @@ namespace gpi
                         , const gpi::pc::type::segment_id_t
                         );
         void del_handle (const gpi::pc::type::handle_t);
+        void unregister_memory (const gpi::pc::type::segment_id_t);
 
         void check_boundaries ( gpi::pc::type::memory_location_t const & dst
                               , gpi::pc::type::memory_location_t const & src

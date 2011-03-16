@@ -244,10 +244,7 @@ namespace gpi
                                                               )
       {
         gpi::pc::type::segment_id_t seg_id
-          ( m_memory_mgr.register_memory (pc_id, name, sz, flags));
-
-        attach_process_to_segment (pc_id, seg_id);
-
+          (m_memory_mgr.register_memory (pc_id, name, sz, flags));
         return seg_id;
       }
 
@@ -255,8 +252,7 @@ namespace gpi
                                          , const gpi::pc::type::segment_id_t seg_id
                                          )
       {
-        m_memory_mgr.detach_process (proc_id, seg_id);
-        m_memory_mgr.unregister_memory (seg_id);
+        m_memory_mgr.unregister_memory (proc_id, seg_id);
       }
 
       void manager_t::list_segments ( const gpi::pc::type::process_id_t proc_id
