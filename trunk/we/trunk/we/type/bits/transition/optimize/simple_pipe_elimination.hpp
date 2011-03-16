@@ -173,12 +173,7 @@ namespace we { namespace type {
                 pred_out.insert (*t);
               }
 
-            if (net.get_capacity (pid_A))
-              {
-                return fhg::util::Nothing<pid_pair_vec_type>();
-              }
-
-            if (net.get_capacity (pid_B))
+            if (net.get_capacity (pid_A) != net.get_capacity (pid_B))
               {
                 return fhg::util::Nothing<pid_pair_vec_type>();
               }
