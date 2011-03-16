@@ -1074,7 +1074,7 @@ namespace xml
             {
               os << amper << port.name << " ("
                  << "::we::loader::get< " << literal::cpp::translate (port.type) << " >"
-                 << "(input, \"" << port.name << "\")"
+                 << "(_pnetc_input, \"" << port.name << "\")"
                  << ")"
                 ;
             }
@@ -1084,7 +1084,7 @@ namespace xml
                  << cpp_util::access::make ("", "pnetc", "type", port.type, "from_value")
                  << "("
                  << "::we::loader::get< " << cpp_util::access::value_type() << " >"
-                 << "(input, \"" << port.name << "\")"
+                 << "(_pnetc_input, \"" << port.name << "\")"
                  << ")"
                  << ")"
                 ;
@@ -1206,7 +1206,7 @@ namespace xml
 
           os << "      "
              << "static void " << mod.function
-             << " (void *, const ::we::loader::input_t & input, ::we::loader::output_t & output)"
+             << " (void *, const ::we::loader::input_t & _pnetc_input, ::we::loader::output_t & _pnetc_output)"
              << std::endl
              << "      "
              << "{" << std::endl;
@@ -1250,7 +1250,7 @@ namespace xml
             {
               first_put = false;
 
-              os << "::we::loader::put (output"
+              os << "::we::loader::put (_pnetc_output"
                  << ", \"" << (*port_return).name << "\""
                  << ", "
                 ;
@@ -1330,7 +1330,7 @@ namespace xml
                 }
 
               os << "      "
-                 << "  ::we::loader::put (output"
+                 << "  ::we::loader::put (_pnetc_output"
                  << ", \"" << port->name << "\""
                  << ", " << mk_value (*port)
                  << ")"
@@ -1352,7 +1352,7 @@ namespace xml
                 }
 
               os << "      "
-                 << "  ::we::loader::put (output"
+                 << "  ::we::loader::put (_pnetc_output"
                  << ", \"" << port->name << "\""
                  << ", " << mk_value (*port)
                  << ")"
