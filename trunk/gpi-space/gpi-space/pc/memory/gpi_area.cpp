@@ -60,6 +60,12 @@ namespace gpi
         }
       }
 
+      void *
+      gpi_area_t::ptr ()
+      {
+        return m_ptr;
+      }
+
       bool
       gpi_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
       {
@@ -165,7 +171,7 @@ namespace gpi
         const gpi::pc::type::id_t
             slice_start_rank (begin / hdl.size);
         const gpi::pc::type::id_t
-            slice_end_rank ( (end-1) / hdl.size);
+            slice_end_rank ( (end) / hdl.size);
         return rank_range_t (slice_start_rank, slice_end_rank);
       }
 
@@ -175,6 +181,7 @@ namespace gpi
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
+        LOG(TRACE, "checking range: " << "hdl=" << hdl << " begin=" << begin << " end=" << end);
         if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
         {
           rank_range_t ranks (handle_subscript_to_nodes (hdl, begin, end));
@@ -185,7 +192,7 @@ namespace gpi
         else
         {
           return ((hdl.offset + begin) < size())
-              && ((hdl.offset + end) < size());
+              && ((hdl.offset + end)   < size());
         }
       }
     }

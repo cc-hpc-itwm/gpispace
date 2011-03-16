@@ -241,14 +241,19 @@ namespace gpi
     {
       int rc(0);
 
+      if (argv.empty())
+      {
+        std::cerr << "empty command!" << std::endl;
+        return -1;
+      }
+
       // 2. call command
       const command_t *cmd (find_command(argv[0]));
       if (cmd)
       {
-        argv_t cmd_args (argv.begin()+1, argv.end());
         try
         {
-          rc = (*cmd)(cmd_args, *this);
+          rc = (*cmd)(argv, *this);
         }
         catch (std::exception const & ex)
         {

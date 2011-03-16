@@ -12,6 +12,7 @@
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
+#include <gpi-space/pc/memory/transfer_manager.hpp>
 
 namespace gpi
 {
@@ -57,7 +58,9 @@ namespace gpi
                        , const gpi::pc::type::size_t size
                        , const gpi::pc::type::flags_t flags
                        );
-        void unregister_memory (const gpi::pc::type::segment_id_t);
+        void unregister_memory ( const gpi::pc::type::process_id_t pid
+                               , const gpi::pc::type::segment_id_t
+                               );
         void list_memory (gpi::pc::type::segment::list_t &) const;
 
         void attach_process ( const gpi::pc::type::process_id_t
@@ -89,6 +92,11 @@ namespace gpi
                , const gpi::pc::type::size_t amount
                , const gpi::pc::type::queue_id_t queue
                );
+
+        gpi::pc::type::size_t
+        wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+                      , const gpi::pc::type::queue_id_t queue
+                      );
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -109,6 +117,7 @@ namespace gpi
                         , const gpi::pc::type::segment_id_t
                         );
         void del_handle (const gpi::pc::type::handle_t);
+        void unregister_memory (const gpi::pc::type::segment_id_t);
 
         void check_boundaries ( gpi::pc::type::memory_location_t const & dst
                               , gpi::pc::type::memory_location_t const & src
@@ -121,6 +130,7 @@ namespace gpi
         area_map_t m_areas;
         garbage_areas_t m_garbage_areas;
         handle_to_segment_t m_handle_to_segment;
+        transfer_manager_t m_transfer_mgr;
       };
     }
   }

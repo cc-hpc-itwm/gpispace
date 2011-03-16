@@ -108,7 +108,7 @@ namespace gpi
       typedef boost::unique_lock<mutex_type> lock_type;
 
       real_gpi_api_t ();
-      int startup_timedout_cb (int);
+      int startup_timedout_cb (const gpi::timeout_t timeout, int);
 
       mutable mutex_type m_mutex;
       int   m_ac;

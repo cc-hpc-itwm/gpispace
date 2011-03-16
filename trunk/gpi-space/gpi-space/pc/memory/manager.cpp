@@ -18,6 +18,7 @@ namespace gpi
       manager_t::manager_t (const gpi::pc::type::id_t ident)
         : m_ident (ident)
         , m_segment_counter ()
+        , m_transfer_mgr(8)
       {
         handle_generator_t::create (ident);
 
@@ -80,15 +81,38 @@ namespace gpi
               );
         }
         memory_added (id);
+
+        attach_process (creator, id);
+
         return id;
+      }
+
+      void
+      manager_t::unregister_memory ( const gpi::pc::type::process_id_t pid
+                                   , const gpi::pc::type::segment_id_t mem_id
+                                   )
+      {
+        lock_type lock (m_mutex);
+
+        detach_process (pid, mem_id);
+        if (m_areas.find(mem_id) != m_areas.end())
+        {
+          try
+          {
+            unregister_memory(mem_id);
+          }
+          catch (...)
+          {
+            attach_process(pid, mem_id); // unroll
+            throw;
+          }
+        }
       }
 
       void
       manager_t::unregister_memory (const gpi::pc::type::segment_id_t mem_id)
       {
         {
-          lock_type lock (m_mutex);
-
           area_map_t::iterator area_it (m_areas.find(mem_id));
           if (area_it == m_areas.end())
           {
@@ -378,21 +402,20 @@ namespace gpi
              );
 
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
-        check_boundaries  (dst, src, amount);
-
-        CLOG( TRACE
-            , "gpi.memory"
-            , "src->is_local()="
-            << t.src_area->is_local
-            (gpi::pc::type::memory_region_t(t.src_location, t.amount))
-            << " dst->is_local()="
-            << t.dst_area->is_local
-            (gpi::pc::type::memory_region_t(t.dst_location, t.amount))
-            );
+        check_boundaries(dst, src, amount);
 
         // TODO: increase refcount in handles, set access/modification times
-        //m_transfer_mgr.enqueue (queue, t);
+        m_transfer_mgr.transfer(t);
         return queue;
+      }
+
+      gpi::pc::type::size_t
+      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+                               , const gpi::pc::type::queue_id_t queue
+                               )
+      {
+        LOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
+        return m_transfer_mgr.wait_on_queue (queue);
       }
 
       void

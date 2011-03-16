@@ -48,6 +48,8 @@ namespace gpi
                                 , const gpi::pc::type::size_t per_node_size
                                 ) const;
 
+        void *ptr ();
+
         void * m_ptr;
         gpi::pc::type::size_t m_total_memsize;
         gpi::pc::type::offset_t m_min_local_offset;

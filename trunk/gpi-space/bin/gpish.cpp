@@ -5,6 +5,8 @@
 
 #include <string>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -285,7 +287,7 @@ std::string disclaimer ()
 
 int cmd_help (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.empty())
+  if (av.size() < 2)
   {
     std::cout << disclaimer () << std::endl;
 
@@ -320,14 +322,14 @@ int cmd_help (shell_t::argv_t const & av, shell_t & sh)
   }
   else
   {
-    const shell_t::command_t *cmd (sh.find_command (av[0]));
+    const shell_t::command_t *cmd (sh.find_command (av[1]));
     if (cmd)
     {
       std::cout << cmd->name() << "    " << cmd->long_doc() << std::endl;
     }
     else
     {
-      std::cout << "no such command: " << av[0] << std::endl;
+      std::cout << "no such command: " << av[1] << std::endl;
       return 1;
     }
   }
@@ -342,9 +344,9 @@ int cmd_exit (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_open (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size())
+  if (av.size() > 1)
   {
-    fs::path new_socket (av[0]);
+    fs::path new_socket (av[1]);
     if ( fs::exists(new_socket)
        && (new_socket.string() != sh.state().capi.path())
        )
@@ -407,16 +409,16 @@ int cmd_gc (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_unset (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.empty())
+  if (av.size() < 2)
   {
     std::cerr << "usage: unset var [var...]" << std::endl;
     return 1;
   }
   else
   {
-    BOOST_FOREACH (const shell_t::argv_t::value_type & arg, av)
+    for (std::size_t i = 1; i < av.size(); ++i)
     {
-//      sh.state.env.unset (av);
+      //sh.state.env.unset (av[i]);
     }
   }
   return 0;
@@ -424,74 +426,184 @@ int cmd_unset (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_set (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.empty())
+  if (av.size() < 2)
   {
     // print current state variables
 //    std::cout << sh.state.env << std::endl;
   }
-  else if (1 == av.size())
+  else if (2 == av.size())
   {
-//    std::cout << sh.state.env.get(av[0]) << std::endl;
+//    std::cout << sh.state.env.get(av[1]) << std::endl;
+  }
+  else if (3 == av.size())
+  {
+    //sh.state.env.set(av[1], av[2])
   }
   return 0;
 }
 
+static bool is_handle(std::string const &s)
+{
+  try
+  {
+    boost::lexical_cast<gpi::pc::type::handle_t>(s);
+    return true;
+  } catch (std::exception const &)
+  {
+    return false;
+  }
+}
+
 int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size() < 2)
+  if (av.size() < 3)
   {
-    std::cerr << "usage: save <segment> <path>" << std::endl;
-//    std::cerr << "    if path is empty or -, save to stdout" << std::endl;
+    std::cerr << "usage: save <segment|handle> <path> [force]" << std::endl;
     return 1;
   }
 
-  bool force (false); // force = sh.state.env.get<bool>("save.force");
-
-  const gpi::pc::type::segment_id_t id
-      (boost::lexical_cast<gpi::pc::type::segment_id_t>(av[0]));
-
-  const fs::path path (av[1]);
-
+  // force = sh.state.env.get<bool>("save.force");
+  bool force (av.size() > 3 && av[3] == "force");
+  const fs::path path (av[2]);
   if (fs::exists (path) && !force)
   {
     std::cerr << "the file " << path << " does already exist!" << std::endl;
     return 1;
   }
 
-  gpi::pc::client::api_t::segment_ptr seg
-      (sh.state().capi.segments().at(id));
-  std::cerr << *seg << std::endl;
+  gpi::pc::client::api_t::segment_ptr seg;
+  gpi::pc::type::segment_id_t seg_id(0);
+  std::size_t offset(0);
+  std::size_t amount(0);
+  if (is_handle(av[1]))
+  {
+    gpi::pc::type::handle_t hdl
+      (boost::lexical_cast<gpi::pc::type::handle_t>(av[1]));
+    // translate handle to segment
+    gpi::pc::type::handle::list_t handles
+      (sh.state().capi.list_allocations());
+    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
+    {
+      if (d.id == hdl)
+      {
+        seg_id = d.segment;
+        try { seg = sh.state().capi.segments().at(seg_id); } catch (...){}
+        offset = d.offset;
+        amount = d.size;
+        break;
+      }
+    }
+    if (! seg)
+    {
+      std::cerr << "cannot access segment directly: " << seg_id << std::endl;
+      return 2;
+    }
+  }
+  else
+  {
+    try
+    {
+      seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]);
+      seg = sh.state().capi.segments().at(seg_id);
+      offset = 0;
+      amount = seg->size();
+    }
+    catch (...)
+    {
+      std::cerr << "invalid segment id or not attached to: " << av[1] << std::endl;
+      return 2;
+    }
+  }
 
   std::ofstream ofs (path.string().c_str());
-  ofs.write (seg->ptr<char>(), seg->size());
+  ofs.write (seg->ptr<char>() + offset, amount);
   ofs.close ();
+  std::cout << "wrote " << amount << " bytes" << std::endl;
   return 0;
 }
 
 int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.empty())
+  if (av.size() != 3)
   {
-    std::cerr << "usage: load <segment> <path>" << std::endl;
-  }
-
-  const gpi::pc::type::segment_id_t id
-      (boost::lexical_cast<gpi::pc::type::segment_id_t>(av[0]));
-  const fs::path path (av[1]);
-
-  if (!fs::exists (path))
-  {
-    std::cerr << "the file " << path << " does not exist!" << std::endl;
+    std::cerr << "usage: load <segment|handle> <path>" << std::endl;
     return 1;
   }
 
-  gpi::pc::client::api_t::segment_ptr seg
-      (sh.state().capi.segments().at(id));
+  const fs::path path (av[2]);
+  if (! fs::exists (path))
+  {
+    std::cerr << "no such file or directory: " << path << std::endl;
+    return 1;
+  }
+
+  gpi::pc::client::api_t::segment_ptr seg;
+  gpi::pc::type::segment_id_t seg_id(0);
+  std::size_t offset(0);
+  std::size_t amount(0);
+  if (is_handle(av[1]))
+  {
+    gpi::pc::type::handle_t hdl
+      (boost::lexical_cast<gpi::pc::type::handle_t>(av[1]));
+    // translate handle to segment
+    gpi::pc::type::handle::list_t handles
+      (sh.state().capi.list_allocations());
+    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
+    {
+      if (d.id == hdl)
+      {
+        seg_id = d.segment;
+        try { seg = sh.state().capi.segments().at(seg_id); } catch (...){}
+        offset = d.offset;
+        amount = d.size;
+        break;
+      }
+    }
+    if (! seg)
+    {
+      std::cerr << "cannot access segment directly: " << seg_id << std::endl;
+      return 2;
+    }
+  }
+  else
+  {
+    try
+    {
+      seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t>(av[1]);
+      seg = sh.state().capi.segments().at(seg_id);
+      offset = 0;
+      amount = seg->size();
+    }
+    catch (...)
+    {
+      std::cerr << "invalid segment id or not attached to: " << av[1] << std::endl;
+      return 2;
+    }
+  }
 
   // TODO check filesize
-  std::ifstream ifs (path.string().c_str());
-  ifs.read(seg->ptr<char>(), seg->size());
-  ifs.close ();
+  std::ifstream ifs;
+  ifs.open(path.string().c_str(), std::ios::binary);
+  if (!ifs)
+  {
+    std::cerr << "could not open file for reading: " << path << std::endl;
+    return 3;
+  }
+
+  ifs.seekg(0, std::ios::end);
+  std::size_t filesize (ifs.tellg());
+  ifs.seekg(0, std::ios::beg);
+
+  if (filesize > amount)
+  {
+    std::cerr << "warning: the file is larger than the destination: "
+              << filesize << " > " << amount
+              << std::endl;
+  }
+
+  memset (seg->ptr<char>() + offset, 0, amount);
+  ifs.read(seg->ptr<char>() + offset, amount);
+  std::cout << "read " << filesize << " bytes" << std::endl;
   return 0;
 }
 
@@ -525,9 +637,9 @@ int cmd_status (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_socket (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size ())
+  if (av.size () > 1)
   {
-    for ( shell_t::argv_t::const_iterator dir (av.begin())
+    for ( shell_t::argv_t::const_iterator dir (av.begin()+1)
         ; dir != av.end()
         ; ++dir
         )
@@ -546,7 +658,7 @@ int cmd_socket (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_segment (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.empty())
+  if (av.size() < 2)
   {
     std::cout << "usage: segment [command]" << std::endl;
     std::cout << "    register" << std::endl;
@@ -558,14 +670,14 @@ int cmd_segment (shell_t::argv_t const & av, shell_t & sh)
   }
   else
   {
-    shell_t::argv_t new_av (av);
+    shell_t::argv_t new_av (av.begin()+1, av.end());
     int rc (0);
 
-    new_av[0] = "segment-" + av[0];
+    new_av[0] = "segment-" + av[1];
     rc = sh.execute (new_av);
     if (rc == -1)
     {
-      std::cerr << "failed: command not found: " << av[0] << std::endl;
+      std::cerr << "failed: command not found: " << av[1] << std::endl;
       return 1;
     }
     else
@@ -582,7 +694,7 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
   gpi::pc::type::size_t size (0);
   gpi::pc::type::flags_t flags (0);
 
-  if (av.size() < 2)
+  if (av.size() < 3)
   {
     std::cerr << "usage: " << "register name size [flags]" << std::endl;
     std::cerr << "    flags:  x - exclusive" << std::endl;
@@ -600,12 +712,12 @@ int cmd_segment_register (shell_t::argv_t const & av, shell_t & sh)
       return 1;
     }
 
-    name = av[0];
-    size = boost::lexical_cast<gpi::pc::type::size_t>(av[1]);
+    name = av[1];
+    size = boost::lexical_cast<gpi::pc::type::size_t>(av[2]);
 
-    if (av.size() > 2)
+    if (av.size() > 3)
     {
-      std::string flagstring (av[2]);
+      std::string flagstring (av[3]);
       for ( std::string::const_iterator f (flagstring.begin())
           ; f != flagstring.end()
           ; ++f
@@ -681,15 +793,15 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
   try
   {
     int mode = 0; // list all
-    if (! av.empty())
+    if (av.size() > 1)
     {
-      if (av[0] == "all")
+      if (av[1] == "all")
         mode = 0;
-      else if (av[0] == "special")
+      else if (av[1] == "special")
         mode = 1;
-      else if (av[0] == "shared")
+      else if (av[1] == "shared")
         mode = 2;
-      else if (av[0] == "attached")
+      else if (av[1] == "attached")
         mode = 3;
       else
       {
@@ -744,9 +856,9 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
 int cmd_segment_unregister (shell_t::argv_t const & av, shell_t & sh)
 {
   int err (0);
-  if (av.size())
+  if (av.size() > 1)
   {
-    for ( shell_t::argv_t::const_iterator segment(av.begin())
+    for ( shell_t::argv_t::const_iterator segment(av.begin()+1)
         ; segment != av.end()
         ; ++segment
         )
@@ -776,9 +888,9 @@ int cmd_segment_attach (shell_t::argv_t const & av, shell_t & sh)
   }
 
   int err (0);
-  if (av.size())
+  if (av.size() > 1)
   {
-    for ( shell_t::argv_t::const_iterator segment(av.begin())
+    for ( shell_t::argv_t::const_iterator segment(av.begin()+1)
         ; segment != av.end()
         ; ++segment
         )
@@ -808,9 +920,9 @@ int cmd_segment_detach (shell_t::argv_t const & av, shell_t & sh)
   }
 
   int err (0);
-  if (av.size())
+  if (av.size() > 1)
   {
-    for ( shell_t::argv_t::const_iterator segment(av.begin())
+    for ( shell_t::argv_t::const_iterator segment(av.begin()+1)
         ; segment != av.end()
         ; ++segment
         )
@@ -832,7 +944,7 @@ int cmd_segment_detach (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.empty())
+  if (av.size() < 2)
   {
     std::cout << "usage: memory [command]" << std::endl;
     std::cout << "    alloc" << std::endl;
@@ -844,14 +956,14 @@ int cmd_memory (shell_t::argv_t const & av, shell_t & sh)
   }
   else
   {
-    shell_t::argv_t new_av (av);
+    shell_t::argv_t new_av (av.begin()+1, av.end());
     int rc (0);
 
-    new_av[0] = "memory-" + av[0];
+    new_av[0] = "memory-" + av[1];
     rc = sh.execute (new_av);
     if (rc == -1)
     {
-      std::cerr << "failed: command not found: " << av[0] << std::endl;
+      std::cerr << "failed: command not found: " << av[1] << std::endl;
       return 1;
     }
     else
@@ -863,7 +975,7 @@ int cmd_memory (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.size() < 2)
+  if (av.size() < 3)
   {
     std::cout << "usage: alloc segment size [name [flags]]" << std::endl;
     std::cout << "   segment : gpi or id" << std::endl;
@@ -884,25 +996,25 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
   std::string desc;
   gpi::pc::type::flags_t flags (gpi::pc::type::handle::F_GLOBAL);
 
-  if (av[0] == "gpi")
+  if (av[1] == "gpi")
   {
     seg_id = 1;
   }
   else
   {
-    seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t> (av[0]);
+    seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t> (av[1]);
   }
 
-  size = boost::lexical_cast<size_t>(av[1]);
+  size = boost::lexical_cast<size_t>(av[2]);
 
-  if (av.size() > 2)
-    desc = av[2];
+  if (av.size() > 3)
+    desc = av[3];
   else
     desc = "na";
 
-  if (av.size() > 3)
+  if (av.size() > 4)
   {
-    std::string flagstring(av[3]);
+    std::string flagstring(av[4]);
     for ( std::string::const_iterator f (flagstring.begin())
         ; f != flagstring.end()
         ; ++f
@@ -943,14 +1055,14 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh)
 {
-  if (av.empty())
+  if (av.size() < 2)
   {
     std::cerr << "usage: free handle [handle...]" << std::endl;
     return -1;
   }
 
   int err (0);
-  for ( shell_t::argv_t::const_iterator arg (av.begin())
+  for ( shell_t::argv_t::const_iterator arg (av.begin()+1)
       ; arg != av.end()
       ; ++arg
       )
@@ -971,7 +1083,7 @@ int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh)
 int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
 {
   // memcpy <handle>[+offset] handle[+offset] bytes [queue]
-  if (av.size() < 3)
+  if (av.size() < 4)
   {
     std::cerr << "usage: copy dst[+offset] src[+offset] bytes [queue]" << std::endl;
     std::cerr << "    dst, src : handles" << std::endl;
@@ -980,16 +1092,16 @@ int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
   }
 
   gpi::pc::type::memory_location_t dst
-      (boost::lexical_cast<gpi::pc::type::memory_location_t>(av[0]));
-  gpi::pc::type::memory_location_t src
       (boost::lexical_cast<gpi::pc::type::memory_location_t>(av[1]));
+  gpi::pc::type::memory_location_t src
+      (boost::lexical_cast<gpi::pc::type::memory_location_t>(av[2]));
   gpi::pc::type::size_t amt
-      (boost::lexical_cast<gpi::pc::type::size_t>(av[2]));
+      (boost::lexical_cast<gpi::pc::type::size_t>(av[3]));
 
   gpi::pc::type::queue_id_t queue (0);
-  if (av.size() > 3)
+  if (av.size() > 4)
   {
-    queue = boost::lexical_cast<gpi::pc::type::queue_id_t>(av[3]);
+    queue = boost::lexical_cast<gpi::pc::type::queue_id_t>(av[4]);
   }
 
   return sh.state().capi.memcpy (dst, src, amt, queue);
@@ -997,7 +1109,43 @@ int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
 
 int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
 {
-  return 1;
+  if (av.size() > 1)
+  {
+    std::size_t total (0);
+    for (std::size_t i (1); i < av.size(); ++i)
+    {
+      gpi::pc::type::queue_id_t q(0);
+
+      try
+      {
+        q = boost::lexical_cast<gpi::pc::type::queue_id_t>(av[i]);
+      }
+      catch (std::exception const &ex)
+      {
+        std::cerr << "invalid queue: " << av[i] << " expected non-negative integer!" << std::endl;
+        continue;
+      }
+
+      gpi::pc::type::size_t done(sh.state().capi.wait(q));
+      std::cout << q << " => " << done << std::endl;
+      total += done;
+    }
+    std::cout << "total => " << total << std::endl;
+  }
+  else
+  {
+    std::size_t total (0);
+    std::vector<gpi::pc::type::size_t> res
+      (sh.state().capi.wait ());
+    for (std::size_t i(0); i < res.size(); ++i)
+    {
+      std::cout << i << " => " << res[i] << std::endl;
+      total += res[i];
+    }
+    std::cout << "total => " << total << std::endl;
+  }
+
+  return 0;
 }
 
 int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
@@ -1010,7 +1158,7 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     return 1;
   }
 
-  if (av.empty())
+  if (av.size() < 2)
   {
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
     gpi::pc::type::handle::list_t handles (sh.state().capi.list_allocations());
@@ -1020,7 +1168,7 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
   else
   {
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
-    for ( shell_t::argv_t::const_iterator arg(av.begin())
+    for ( shell_t::argv_t::const_iterator arg(av.begin() + 1)
         ; arg != av.end()
         ; ++arg
         )

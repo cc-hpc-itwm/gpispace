@@ -20,6 +20,7 @@ namespace gpi
       typedef id_t handle_id_t;
       typedef id_t queue_id_t;
       typedef id_t process_id_t;
+      typedef id_t rank_t;
 
       typedef uint32_t error_t;
       typedef uint16_t mode_t;

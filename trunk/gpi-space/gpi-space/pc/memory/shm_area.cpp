@@ -16,26 +16,35 @@ namespace gpi
     {
       shm_area_t::shm_area_t ( const gpi::pc::type::id_t id
                              , const gpi::pc::type::process_id_t creator
-                             , const std::string & path
+                             , const std::string & name
                              , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
                              )
           : area_t ( gpi::pc::type::segment::SEG_SHM
                    , id
                    , creator
-                   , path
+                   , name
                    , size
                    , flags
                    )
           , m_ptr (NULL)
       {
-        m_ptr = shm_area_t::open ( path
+        if (name.empty())
+        {
+          throw std::runtime_error ("invalid shm name: must not be empty");
+        }
+
+        if (name[0] == '/')
+          m_path = name;
+        else
+          m_path = "/" + name;
+        m_ptr = shm_area_t::open ( m_path
                                  , size
                                  , O_RDWR // TODO: pass via flags
                                  );
         if (unlink_after_open (flags))
         {
-          shm_area_t::unlink (path);
+          shm_area_t::unlink (m_path);
         }
       }
 
@@ -47,7 +56,7 @@ namespace gpi
          m_ptr = 0;
          if (unlink_after_close (descriptor().flags))
          {
-           shm_area_t::unlink (descriptor().name);
+           shm_area_t::unlink (m_path);
          }
        }
        catch (std::exception const & ex)
@@ -56,10 +65,16 @@ namespace gpi
             , "error in ~shm_area_t:"
             << " id = " << descriptor().id
             << " ptr = " << m_ptr
-            << " path = " << descriptor().name
+            << " path = " << m_path
             << " error = " << ex.what()
             );
        }
+     }
+
+     void*
+     shm_area_t::ptr ()
+     {
+       return m_ptr;
      }
 
      bool
