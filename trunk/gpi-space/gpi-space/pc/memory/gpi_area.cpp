@@ -60,35 +60,6 @@ namespace gpi
         }
       }
 
-      struct dma_transfer_t
-      {
-        dma_transfer_t () {}
-        dma_transfer_t ( const gpi::pc::type::offset_t rem_off
-                       , const gpi::pc::type::size_t   rnk
-                       , const gpi::pc::type::offset_t loc_off
-                       , const gpi::pc::type::size_t   amt
-                       )
-          : remote_offset(rem_off)
-          , rank (rnk)
-          , local_offset(loc_off)
-          , amount(amt)
-        {}
-
-        gpi::pc::type::offset_t remote_offset;
-        gpi::pc::type::size_t   rank;
-        gpi::pc::type::offset_t local_offset;
-        gpi::pc::type::size_t   amount;
-      };
-
-        /*
-        api.read_dma ( const offset_t local_offset
-                     , const offset_t remote_offset
-                     , const size_t amount
-                     , const rank_t from_node
-                     , t.queue
-                     );
-        */
-
       void *
       gpi_area_t::ptr ()
       {
@@ -200,7 +171,7 @@ namespace gpi
         const gpi::pc::type::id_t
             slice_start_rank (begin / hdl.size);
         const gpi::pc::type::id_t
-            slice_end_rank ( (end-1) / hdl.size);
+            slice_end_rank ( (end) / hdl.size);
         return rank_range_t (slice_start_rank, slice_end_rank);
       }
 
