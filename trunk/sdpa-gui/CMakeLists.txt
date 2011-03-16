@@ -27,11 +27,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-## check for boost
-set(Boost_ADDITIONAL_VERSIONS "1.37.0" "1.37" "1.36.0" "1.36")
-set(Boost_FIND_QUIETLY true)
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.36 REQUIRED COMPONENTS thread system serialization program_options)
+include(SDPAFindBoost)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ## check for fhglog
