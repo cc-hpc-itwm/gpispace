@@ -12,7 +12,7 @@ build_static=false
 
 build_apps=true
 build_gpi=true
-build_fuse=true
+build_fuse=false
 build_gui=true
 
 strip_log=
