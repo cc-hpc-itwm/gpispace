@@ -3,11 +3,12 @@ MAIN = sp
 
 TRUNK = $(CURDIR)/../../../
 #BUILD = /var/tmp/mr/
-BUILD = $(TRUNK)/../build/herc/release/
+BUILD = $(TRUNK)/../build/herc/release
 LIB_DESTDIR = $(HOME)/.sdpa/modules
 
 PATH_MAIN  = $(TRUNK)/application/suowmg/sp
 UTIL = $(PATH_MAIN)/util
+SEISLIB = $(PATH_MAIN)/seislib
 
 TEE      = /usr/bin/tee
 DOT      = /usr/bin/dot -Tps -Grankdir=LR
@@ -19,16 +20,24 @@ CP       = /bin/cp
 ###############################################################################
 
 XML_MAIN    = xml/$(MAIN).xml
-XML_MAIN_IN = $(XML_MAIN).in
 MK_XML      = $(PATH_MAIN)/mk.xml
+
+XML_GEN += $(XML_MAIN)
+XML_GEN += xml/load.xml
+XML_GEN += xml/run.xml
+XML_GEN += xml/write.xml
 
 ###############################################################################
 
 DEP += xml/generate/package.xml
-DEP += xml/generate/slot.xml
+DEP += xml/generate/interval.xml
+DEP += xml/interval/merge.xml
+DEP += xml/interval/back.xml
+DEP += xml/join.xml
 DEP += $(UTIL)/print.hpp
 DEP += $(UTIL)/comm.hpp
 DEP += Makefile
+DEP += $(XML_GEN)
 
 NET = $(MAIN).pnet
 GEN = gen
@@ -41,33 +50,85 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-#FILE_INPUT       = /p/herc/itwm/hpc/mr/suowmg/data/spike6all.su
-#TYPE_INPUT       = su
-#FILE_OUTPUT      = /p/herc/itwm/hpc/mr/suowmg/data/out.su
-#TYPE_OUTPUT      = su
-#FILE_INPUT       = /p/herc/itwm/hpc/mr/sdpa/trunk/application/suowmg/sp/test.su
-#TYPE_INPUT       = su
-#FILE_OUTPUT      = /p/herc/itwm/hpc/mr/sdpa/trunk/application/suowmg/sp/out.su
-#TYPE_OUTPUT      = su
-FILE_INPUT       = /fhgfs/HPC/rahn/su/test2.su
+FILE_INPUT       = /p/herc/itwm/hpc/mr/suowmg/data/spike6.tmax=5.0.many.su
 TYPE_INPUT       = su
-FILE_OUTPUT      = /fhgfs/HPC/rahn/su/test2.out.su
+FILE_OUTPUT      = /p/herc/itwm/hpc/mr/suowmg/data/out.su
 TYPE_OUTPUT      = su
-SHMEM_PER_NODE   = 1 * 2^30
-GPI_MEM_PER_NODE = 5 * 2^30
+SHMEM_PER_NODE   = 10 * 1824 +     167236640
+GPI_MEM_PER_NODE = 30 * 1824 + 2 * 167236640
 
-$(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" "$(TYPE_INPUT)" "$(FILE_OUTPUT)" "$(TYPE_OUTPUT)" "$(SHMEM_PER_NODE)" "$(GPI_MEM_PER_NODE)" "$(BUILD)" > $@
+NX = 1751
+NY = 2001
+NZ = 751
+DX = 20.0
+DY = 20.0
+DZ = 20.0
+VPFILE = /p/herc/itwm/hpc/mr/suowmg/model/model.bin
+EFILE = none
+DFILE = none
+ZMAX = 4000.0
+LX = 8000.0
+LY = 8000.0
+F1 = 4.0
+F2 = 5.0
+F3 = 8.0
+F4 = 12.0
+PAD = 0.0
+LATSAMPLESPERWAVE = 3.5
+VERTSAMPLESPERWAVE = 3.5
+MEDIUM = ISO
+PROPAGATOR = FFD3
+
+%.xml: %.xml.in $(filter-out %.xml,$(DEP))
+	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" \
+                              "$(TYPE_INPUT)" \
+                              "$(FILE_OUTPUT)" \
+                              "$(TYPE_OUTPUT)" \
+                              "$(SHMEM_PER_NODE)" \
+                              "$(GPI_MEM_PER_NODE)" \
+                              "$(BUILD)" \
+                              "$(NX)" \
+                              "$(NY)" \
+                              "$(NZ)" \
+                              "$(DX)" \
+                              "$(DY)" \
+                              "$(DZ)" \
+                              "$(VPFILE)" \
+                              "$(EFILE)" \
+                              "$(DFILE)" \
+                              "$(ZMAX)" \
+                              "$(LX)" \
+                              "$(LY)" \
+                              "$(F1)" \
+                              "$(F2)" \
+                              "$(F3)" \
+                              "$(F4)" \
+                              "$(PAD)" \
+                              "$(LATSAMPLESPERWAVE)" \
+                              "$(VERTSAMPLESPERWAVE)" \
+                              "$(MEDIUM)" \
+                              "$(PROPAGATOR)" \
+                              > $@
 
 ###############################################################################
 
-NOINLINE_NOT_ENDS_WITH += generate
+NOINLINE_NOT_ENDS_WITH += gen
 
 NOINLINE_NOT_STARTS_WITH += dup
 NOINLINE_NOT_STARTS_WITH += scatter
-NOINLINE_NOT_STARTS_WITH += generate
+NOINLINE_NOT_STARTS_WITH += generate_interval
+NOINLINE_NOT_STARTS_WITH += generate_package
+NOINLINE_NOT_STARTS_WITH += generate_output_slot
 NOINLINE_NOT_STARTS_WITH += wait
 NOINLINE_NOT_STARTS_WITH += eat
+NOINLINE_NOT_STARTS_WITH += merge_interval
+NOINLINE_NOT_STARTS_WITH += join_shot
+NOINLINE_NOT_STARTS_WITH += load_package
+NOINLINE_NOT_STARTS_WITH += finish_output
+NOINLINE_NOT_STARTS_WITH += run
+NOINLINE_NOT_STARTS_WITH += load
+NOINLINE_NOT_STARTS_WITH += give_back_interval
+NOINLINE_NOT_STARTS_WITH += write
 
 NET_NOINLINE = $(MAIN).noinline.pnet
 PS_NOINLINE = $(MAIN).noinline.ps
@@ -95,11 +156,16 @@ CXXINCLUDEPATHS += $(BUILD)/fhglog
 CXXINCLUDEPATHS += $(TRUNK)/application/kdm/src
 
 CXXINCLUDEPATHS += $(UTIL)
+CXXINCLUDEPATHS += $(SEISLIB)
 
 ###############################################################################
 
 PNETC    = $(BUILD)/xml/xml/parse/pnetc
-WE_EXEC  = LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH} $(BUILD)/we/apps/we-exec --w 1
+WE_EXEC  = LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH}
+WE_EXEC += FHGLOG_level=MIN
+WE_EXEC += FVM_PC_SHMSZ=`echo "$(SHMEM_PER_NODE)" | bc`
+WE_EXEC += FVM_PC_FVMSZ=`echo "$(GPI_MEM_PER_NODE)" | bc`
+WE_EXEC += $(BUILD)/we/apps/we-exec --w 12
 PNET2DOT = $(BUILD)/we/apps/pnet2dot
 
 ###############################################################################
@@ -179,4 +245,4 @@ clean:
 	$(RM) $(PS)
 	$(RM) $(PS_NOINLINE)
 	$(RM) $(OUT)
-	$(RM) $(XML_MAIN)
+	$(RM) $(XML_GEN)

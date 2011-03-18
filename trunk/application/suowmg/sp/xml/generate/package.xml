@@ -1,15 +1,13 @@
 <defun>
 
   <in name="config" type="config" place="config"/>
-  <out name="package" type="loaded_package" place="package"/>
-  <out name="num" type="long" place="num"/>
+  <out name="package" type="assigned_package" place="package"/>
 
   <net>
 
     <place name="config" type="config"/>
 
-    <place name="package" type="loaded_package"/>
-    <place name="num" type="long"/>
+    <place name="package" type="assigned_package"/>
 
     <struct name="state">
       <field name="max" type="long"/>
@@ -17,24 +15,21 @@
       <field name="inc" type="long"/>
     </struct>
 
-    <place name="check_break" type="state" capacity="1"/>
+    <place name="check_break" type="state"/>
     <place name="state" type="state"/>
 
     <transition name="init">
       <defun>
         <in name="config" type="config"/>
         <out name="state" type="state"/>
-        <out name="num" type="long"/>
         <expression>
           ${state.max} := ${config.num.trace};
           ${state.inc} := ${config.per.bunch.trace};
           ${state.id} := 0L;
-          ${num} := 2 * (1 + (${state.max} - 1) div ${state.inc})
         </expression>
       </defun>
       <connect-in port="config" place="config"/>
       <connect-out port="state" place="check_break"/>
-      <connect-out port="num" place="num"/>
     </transition>
 
     <transition name="break">
@@ -62,14 +57,14 @@
       <connect-out port="state" place="state"/>
     </transition>
 
-    <place name="empty_slot" type="long" virtual="true"/>
+    <place name="empty_interval" type="interval" virtual="true"/>
 
     <transition name="step">
       <defun>
         <in name="state" type="state"/>
-        <in name="slot" type="long"/>
+        <in name="interval" type="interval"/>
         <out name="state" type="state"/>
-        <out name="loaded_package" type="loaded_package"/>
+        <out name="assigned_package" type="assigned_package"/>
         <expression>
           ${package.left.trace} := ${state.id};
           ${package.left.extendable} := (${package.left.trace} :gt: 0L);
@@ -79,16 +74,17 @@
           ${package.right.trace} := min (${state.max}, ${state.id});
           ${package.right.extendable} := (${package.right.trace} :lt: ${state.max});
 
-          ${package.size} := ${package.right.trace} - ${package.left.trace};
-
-          ${loaded_package.package} := ${package};
-          ${loaded_package.slot} := ${slot};
+          ${assigned_package.package} := ${package};
+          ${assigned_package.intervals.offset}
+            := stack_push (@@, ${interval.offset});
+          ${assigned_package.intervals.size}
+            := stack_push (@@, ${interval.size});
         </expression>
       </defun>
       <connect-in port="state" place="state"/>
-      <connect-in port="slot" place="empty_slot"/>
+      <connect-in port="interval" place="empty_interval"/>
       <connect-out port="state" place="check_break"/>
-      <connect-out port="loaded_package" place="package"/>
+      <connect-out port="assigned_package" place="package"/>
     </transition>
 
   </net>

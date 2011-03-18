@@ -1,0 +1,67 @@
+<defun>
+
+  <in name="output" type="output" place="output_finished"/>
+
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <place name="done" type="control"/>
+    <place name="output_finished" type="output"/>
+    <place name="num_trace" type="long" virtual="true"/>
+    <place name="give_back_trace" type="long" virtual="true"/>
+
+    <transition name="finalize_output">
+      <defun>
+        <in name="output" type="output"/>
+        <in name="give_back_trace" type="long"/>
+        <out name="give_back_trace" type="long"/>
+        <expression>
+          ${give_back_trace} := ${output.trace.right};
+        </expression>
+        <condition>
+          ${give_back_trace} :eq: ${output.trace.left}
+        </condition>
+      </defun>
+      <connect-in port="output" place="output_finished"/>
+      <connect-in port="give_back_trace" place="give_back_trace"/>
+      <connect-out port="give_back_trace" place="check_done"/>
+    </transition>
+
+    <place name="check_done" type="long"/>
+
+    <transition name="not_done">
+      <defun>
+        <in name="num_trace" type="long"/>
+        <in name="give_back_trace" type="long"/>
+        <out name="give_back_trace" type="long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${give_back_trace} :lt: ${num_trace}
+      </condition>
+      <connect-read port="num_trace" place="num_trace"/>
+      <connect-in port="give_back_trace" place="check_done"/>
+      <connect-out port="give_back_trace" place="give_back_trace"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <in name="num_trace" type="long"/>
+        <in name="give_back_trace" type="long"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <condition>
+        ${give_back_trace} :ge: ${num_trace}
+      </condition>
+      <connect-read port="num_trace" place="num_trace"/>
+      <connect-in port="give_back_trace" place="check_done"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+  </net>
+
+</defun>

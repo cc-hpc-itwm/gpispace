@@ -2,7 +2,7 @@
 #define _COMM_HPP 1
 
 #include <pnetc/type/config.hpp>
-#include <pnetc/type/loaded_package.hpp>
+#include <pnetc/type/assigned_package.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -10,69 +10,154 @@
 
 #include <fvm-pc/pc.hpp>
 
-#include <print.hpp>
+#include "print.hpp"
+#include "util.hpp"
 
 namespace comm
 {
   inline void put
-  ( const ::pnetc::type::config::config config
-  , const ::pnetc::type::loaded_package::loaded_package package
-  , const long shmem_offset = 0
+  ( const ::pnetc::type::config::config & config
+  , const ::pnetc::type::output::output & output
+  , long shmem_offset = 0
   )
   {
-    LOG (INFO, "comm::put " << ::print::loaded_package (package)
-        << " offset " << package.slot * config.size.bunch
-        << " to shmem_offset " << shmem_offset
-        << " (" << package.package.size * config.size.trace << " bytes)"
+    LOG ( TRACE
+        , "comm::put " << ::print::output (output)
+        << " from shmem_offset " << shmem_offset
+        << " (" << config.size.output_per_shot << " bytes)"
         );
 
     try
       {
-    waitComm ( fvmPutGlobalData
-               ( static_cast<fvmAllocHandle_t> (config.handle.data)
-               , package.slot * config.size.bunch
-               , package.package.size * config.size.trace
-               , shmem_offset
-               , static_cast<fvmAllocHandle_t> (config.handle.scratch)
-               )
-             );
+        waitComm ( fvmPutGlobalData
+                   ( static_cast<fvmAllocHandle_t> (config.handle.output.data)
+                   , output.slot * config.size.output_per_shot
+                   , config.size.output_per_shot
+                   , shmem_offset
+                   , static_cast<fvmAllocHandle_t> (config.handle.output.scratch)
+                   )
+                 );
       }
-    catch (...)
+    catch (const std::exception & e)
       {
-        LOG (INFO, "*** PUT FAILED");
+        LOG (ERROR, "PUT FAILED: " << e.what());
 
         throw;
       }
   }
 
   inline void get
-  ( const ::pnetc::type::config::config config
-  , const ::pnetc::type::loaded_package::loaded_package package
-  , const long shmem_offset = 0
+  ( const ::pnetc::type::config::config & config
+  , const ::pnetc::type::output::output & output
+  , long shmem_offset = 0
   )
   {
-    LOG (INFO, "comm::get " << ::print::loaded_package (package)
-        << " offset " << package.slot * config.size.bunch
-        << " from shmem_offset " << shmem_offset
-        << " (" << package.package.size * config.size.trace << " bytes)"
+    LOG ( TRACE
+        , "comm::get " << ::print::output (output)
+        << " to shmem_offset " << shmem_offset
+        << " (" << config.size.output_per_shot << " bytes)"
         );
 
     try
       {
-    waitComm ( fvmGetGlobalData
-               ( static_cast<fvmAllocHandle_t> (config.handle.data)
-               , package.slot * config.size.bunch
-               , package.package.size * config.size.trace
-               , shmem_offset
-               , static_cast<fvmAllocHandle_t> (config.handle.scratch)
-               )
-             );
+        waitComm ( fvmGetGlobalData
+                   ( static_cast<fvmAllocHandle_t> (config.handle.output.data)
+                   , output.slot * config.size.output_per_shot
+                   , config.size.output_per_shot
+                   , shmem_offset
+                   , static_cast<fvmAllocHandle_t> (config.handle.output.scratch)
+                   )
+                 );
       }
-    catch (...)
+    catch (const std::exception & e)
       {
-        LOG (INFO, "*** GET FAILED");
+        LOG (ERROR, "GET FAILED: " << e.what());
 
         throw;
+      }
+  }
+
+  inline void put
+  ( const ::pnetc::type::config::config & config
+  , const ::pnetc::type::assigned_package::assigned_package & package
+  , long shmem_offset = 0
+  )
+  {
+    LOG ( TRACE
+        , "comm::put " << ::print::assigned_package (package)
+        << " from shmem_offset " << shmem_offset
+        << " (" << ::util::size (package) * config.size.trace << " bytes)"
+        );
+
+    for (::util::interval_iterator i (package); i.has_more(); ++i)
+      {
+        try
+          {
+            LOG ( TRACE
+                , "comm::put to " << ::print::interval (*i)
+                << " from shmem_offset " << shmem_offset
+                << " (" << (*i).size << " bytes)"
+                );
+
+            waitComm ( fvmPutGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.input.data)
+                       , (*i).offset
+                       , (*i).size
+                       , shmem_offset
+                       , static_cast<fvmAllocHandle_t> (config.handle.input.scratch)
+                       )
+                     );
+
+            shmem_offset += (*i).size;
+          }
+        catch (const std::exception & e)
+          {
+            LOG (ERROR, "PUT FAILED: " << e.what());
+
+            throw;
+          }
+      }
+  }
+
+  inline void get
+  ( const ::pnetc::type::config::config & config
+  , const ::pnetc::type::assigned_package::assigned_package & package
+  , long shmem_offset = 0
+  )
+  {
+    LOG ( TRACE
+        , "comm::get " << ::print::assigned_package (package)
+        << " to shmem_offset " << shmem_offset
+        << " (" << ::util::size (package) * config.size.trace << " bytes)"
+        );
+
+    for (::util::interval_iterator i (package); i.has_more(); ++i)
+      {
+        try
+          {
+            LOG ( TRACE
+                , "comm::get from " << ::print::interval (*i)
+                << " to shmem_offset " << shmem_offset
+                << " (" << (*i).size << " bytes)"
+                );
+
+            waitComm ( fvmGetGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.input.data)
+                       , (*i).offset
+                       , (*i).size
+                       , shmem_offset
+                       , static_cast<fvmAllocHandle_t> (config.handle.input.scratch)
+                       )
+                     );
+
+            shmem_offset += (*i).size;
+          }
+        catch (const std::exception & e)
+          {
+            LOG (ERROR, "PUT FAILED: " << e.what());
+
+            throw;
+          }
       }
   }
 }

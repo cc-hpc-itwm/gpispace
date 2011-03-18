@@ -1,0 +1,67 @@
+<defun>
+
+  <in name="shot_done" type="loaded_package" place="pre_shot_done"/>
+
+  <out name="empty_interval" type="interval" place="empty_interval"/>
+
+  <net>
+
+    <template name="select">
+      <in name="x" type="T"/>
+      <out name="x" type="T"/>
+      <expression/>
+    </template>
+
+    <specialize name="select_loaded_package" use="select">
+      <type-map replace="T" with="loaded_package"/>
+    </specialize>
+
+    <place name="pre_shot_done" type="loaded_package"/>
+    <place name="shot_done" type="loaded_package" capacity="1"/>
+
+    <transition name="select_shot_done">
+      <use name="select_loaded_package"/>
+      <connect-in port="x" place="pre_shot_done"/>
+      <connect-out port="x" place="shot_done"/>
+    </transition>
+
+    <transition name="give_back_store">
+      <defun>
+        <in name="shot" type="loaded_package"/>
+        <out name="shot" type="loaded_package"/>
+        <out name="interval" type="interval"/>
+        <expression>
+          ${interval.offset}
+            := stack_top (${shot.assigned_package.intervals.offset});
+          ${interval.size}
+            := stack_top (${shot.assigned_package.intervals.size});
+
+          ${shot.assigned_package.intervals.offset}
+            := stack_pop (${shot.assigned_package.intervals.offset});
+          ${shot.assigned_package.intervals.size}
+            := stack_pop (${shot.assigned_package.intervals.size});
+        </expression>
+      </defun>
+      <condition>
+        !stack_empty (${shot.assigned_package.intervals.offset})
+      </condition>
+      <connect-in port="shot" place="shot_done"/>
+      <connect-out port="shot" place="pre_shot_done"/>
+      <connect-out port="interval" place="empty_interval"/>
+    </transition>
+
+    <transition name="package_finished">
+      <defun>
+        <in name="shot" type="loaded_package"/>
+        <expression/>
+      </defun>
+      <condition>
+        stack_empty (${shot.assigned_package.intervals.offset})
+      </condition>
+      <connect-in port="shot" place="shot_done"/>
+    </transition>
+
+    <place name="empty_interval" type="interval"/>
+  </net>
+
+</defun>
