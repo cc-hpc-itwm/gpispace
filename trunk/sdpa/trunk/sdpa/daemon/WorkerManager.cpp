@@ -116,35 +116,49 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 		iter_last_worker_ = worker_map_.begin();
 }
 
-void WorkerManager::detectTimedoutWorkers( sdpa::util::time_type const& timeout, std::vector<Worker::worker_id_t> * timedout_workers )
+void WorkerManager::detectTimedoutWorkers
+  ( sdpa::util::time_type const & timeout
+  , std::vector<Worker::worker_id_t> * timedout_workers
+  )
 {
-	lock_type lock(mtx_);
+  lock_type lock(mtx_);
 
-	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-	{
-		if( sdpa::util::time_diff( iter->second->tstamp (), sdpa::util::now()) > timeout )
-		{
-			LOG(WARN, "Mark the timed-out workers (no incoming message for " << (timeout / 1000000) << "s!");
-			iter->second->set_timedout();
-				if (timedout_workers) timedout_workers->push_back (iter->first);
-		}
-	}
+  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+    {
+      if( sdpa::util::time_diff( iter->second->tstamp (), sdpa::util::now()) > timeout )
+        {
+          LOG(WARN, "Mark the timed-out workers (no incoming message for " << (timeout / 1000000) << "s!");
+
+          iter->second->set_timedout();
+
+          if (timedout_workers)
+            {
+              timedout_workers->push_back (iter->first);
+            }
+        }
+    }
 }
 
 void WorkerManager::deleteNonResponsiveWorkers (sdpa::util::time_type const & timeout)
 {
-	detectTimedoutWorkers( timeout );
+  std::vector<Worker::worker_id_t> timedout_workers;
 
-	lock_type lock(mtx_);
-	worker_map_t::iterator it( worker_map_.begin() );
-	while( it != worker_map_.end() )
-		if( it->second->timedout() )
-		{
-			LOG(WARN, "The worker "<<it->second->name()<<" is timed-out. Remove it!");
-			worker_map_.erase(it++);
-		}
-		else
-			++it;
+  detectTimedoutWorkers (timeout, &timedout_workers);
+
+  if (!timedout_workers.empty())
+    {
+      lock_type lock (mtx_);
+
+      do
+        {
+          const Worker::worker_id_t & wid (timedout_workers.back());
+
+          worker_map_.erase(wid);
+
+          timedout_workers.pop_back();
+        }
+      while (!timedout_workers.empty());
+    }
 }
 
 // you should here delete_worker as well, for the

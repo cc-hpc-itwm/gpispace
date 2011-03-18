@@ -166,13 +166,22 @@ void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & ti
   // mark timedout workers and reschedule  their work...
   std::vector<Worker::worker_id_t> nonResponsive;
   ptr_worker_man_->detectTimedoutWorkers (timeout, &nonResponsive);
-  std::for_each ( nonResponsive.begin()
-                , nonResponsive.end()
-                , boost::bind ( &SchedulerImpl::delWorker
-                              , this
-                              , _1
-                              )
-                );
+
+  if (!nonResponsive.empty())
+    {
+      LOG ( ERROR
+          ,  "AVOID TO DELETE "
+          << nonResponsive.size()
+          << " NONRESPONSIVE WORKERS! WORK HERE!"
+          );
+    }
+//   std::for_each ( nonResponsive.begin()
+//                 , nonResponsive.end()
+//                 , boost::bind ( &SchedulerImpl::delWorker
+//                               , this
+//                               , _1
+//                               )
+//                 );
 }
 
 /*
