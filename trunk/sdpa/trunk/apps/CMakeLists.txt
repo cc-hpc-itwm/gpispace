@@ -39,14 +39,34 @@ install(TARGETS nre
   DESTINATION bin
   COMPONENT applications)
 
-set (client_libs
-  sdpa-client
-  sdpa-events
-  sdpa-util
-  sdpa-com
-  sdpa
-  seda
-  ${Boost_LIBRARIES}
+set ( client_libs
+      sdpa-client
+      sdpa-events
+      sdpa-util
+      sdpa-com
+      sdpa
+      seda
+      ${Boost_LIBRARIES} 
+)
+
+#
+# Nre_mc
+#
+add_executable(nre_mc nre_mc.cpp)
+target_link_libraries(nre_mc ${daemon_libs})
+install(TARGETS nre_mc
+  RUNTIME
+  DESTINATION bin
+  COMPONENT applications)
+
+set ( client_libs
+      sdpa-client
+      sdpa-events
+      sdpa-util
+      sdpa-com
+      sdpa
+      seda
+      ${Boost_LIBRARIES} 
 )
 
 #
