@@ -1,5 +1,5 @@
 ## check for boost
-set(Boost_FIND_QUIETLY true)
+set(Boost_FIND_QUIETLY FALSE)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.45 REQUIRED COMPONENTS thread system filesystem serialization program_options test_exec_monitor iostreams)
 if (Boost_MAJOR_VERSION LESS 1)
