@@ -11,9 +11,7 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
-namespace Ui {
-    class MonitorWindow;
-}
+#include "portfolioeval.hpp"
 
 class MonitorWindow : public QMainWindow
 {
@@ -27,10 +25,17 @@ public:
     ~MonitorWindow();
     void append_log (const fhg::log::LogEvent &);
     void append_exe (const fhg::log::LogEvent &);
+
+// portfolio evaluation
+public:
+
 public slots:
-    void clearLogging ();
+    void clearLogging();
     void toggleFollowLogging(bool checked);
     void levelFilterChanged (int lvl);
+    // portfolio related slots
+    void ClearTable() { m_portfolio_.ClearTable(); }
+    void SubmitPortfolio() { m_portfolio_.SubmitPortfolio(); }
 
 private:
     bool event (QEvent *event);
@@ -45,6 +50,9 @@ private:
     bool m_follow_logging;
     bool m_follow_execution;
     std::vector<fhg::log::LogEvent> m_log_events;
+
+    Portfolio m_portfolio_;
+
 };
 
 #endif // MONITORWINDOW_HPP

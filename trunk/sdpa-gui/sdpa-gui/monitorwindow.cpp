@@ -7,20 +7,24 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <list>
+#include "portfolioeval.hpp"
+
+using namespace std;
+
 MonitorWindow::MonitorWindow( unsigned short exe_port
                             , unsigned short log_port
                             , QWidget *parent
                             ) :
     QMainWindow(parent),
     ui(new Ui::MonitorWindow),
+    m_portfolio_(ui),
     m_follow_logging (true)
 {
     ui->setupUi(this);
     ui->m_log_table->horizontalHeader ()->setVisible (true);
-    ui->m_log_table->
-        horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
-    ui->m_log_table->
-        setSelectionMode(QAbstractItemView::NoSelection);
+    ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
+    ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
 
     m_exe_server = logserver_t
         (new fhg::log::remote::LogServer
@@ -34,6 +38,9 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         (new boost::thread
          (boost::bind
           (&boost::asio::io_service::run, &m_io_service)));
+
+
+    m_portfolio_.InitTable();
 }
 
 MonitorWindow::~MonitorWindow()
@@ -75,6 +82,7 @@ MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
   //    add item to current row
   // else
   //    add new row
+
 }
 
 void

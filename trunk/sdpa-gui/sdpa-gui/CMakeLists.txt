@@ -4,6 +4,7 @@ set(sdpa-gui_SRCS
   main.cpp
   monitorwindow.cpp
   logeventwrapper.cpp
+  portfolioeval.cpp
 )
 
 set(sdpa-gui_UIS
@@ -14,6 +15,8 @@ set(sdpa-gui_HDRS
   monitorwindow.hpp
   logeventwrapper.hpp
   windowappender.hpp
+  parameters.hpp
+  portfolioeval.hpp
 )
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
@@ -29,7 +32,17 @@ target_link_libraries (sdpa-gui
 	${TIFF_LIBRARIES}
 	${JPEG_LIBRARIES}
 	${MNG_LIBRARIES}
+	sdpa-client
+	sdpa
+	sdpa-events
+	sdpa-util
+	sdpa-com
 )
+
+install(FILES ${sdpa-gui_HDRS}
+  DESTINATION include/sdpa-gui/sdpa-gui
+  COMPONENT headers
+  )
 
 install(TARGETS sdpa-gui
   RUNTIME
