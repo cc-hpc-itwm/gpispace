@@ -22,6 +22,8 @@
 
 namespace sdpa { namespace nre { namespace worker {
 
+#ifndef TIMEXCEEDEDEXCPT_
+#define TIMEXCEEDEDEXCPT_
 	 struct WalltimeExceeded : public std::runtime_error
 	 {
 		   WalltimeExceeded()
@@ -29,6 +31,7 @@ namespace sdpa { namespace nre { namespace worker {
 		   {}
 		   virtual ~WalltimeExceeded() throw () {}
 	 };
+#endif
 
 	struct BasicWorkerClient
 	{
