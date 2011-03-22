@@ -23,6 +23,7 @@ set(KDE_CTEST_PARALLEL_LEVEL 8)
 # for now hardcode the generator to "Unix Makefiles"
 #set(CTEST_CMAKE_GENERATOR "Unix Makefiles" )
 #set(CTEST_USE_LAUNCHERS 1)
+execute_process(COMMAND uname -n OUTPUT_VARIABLE CMAKE_HOST_NAME)
 
 # generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
 get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
@@ -58,38 +59,67 @@ kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
 	CMAKE_BUILD_TYPE)
 
 # configure, build, test, submit
-ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}" )
+ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}"  RETURN_VALUE resultConfigure)
+message("====> Configure: ${resultConfigure}")
 
-include("${CTEST_BINARY_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
+if ( NOT ${resultConfigure} )
+  include("${CTEST_BINARY_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
-ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" )
+  ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE res)
+  message("====> BUILD: ${res}")
 
-# Now that everything has been built, we have to copy the backend
-# int /prog/GPI/, otherwise the daemon will not start it.
-# Also we have to change the RPATH, so that PreStackProBackend will find
-# the Qt 4.4 in /home/toolsLinux/, since /p/hpc/psp/ is not available
-# on the backend nodes, as e.g. hp01/02:
-#if(EXISTS "${CTEST_BINARY_DIRECTORY}/BackEnd/PreStackProBackend"  AND  EXISTS /prog/GPI/bin/pspro/ )
-#  execute_process(COMMAND cp BackEnd/PreStackProBackend /prog/GPI/bin/pspro 
-#                  WORKING_DIRECTORY "${CTEST_BINARY_DIRECTORY}" )
-#
-##   execute_process(COMMAND ${CMAKE_COMMAND} -DFILE=/prog/GPI/bin/pspro/PreStackProBackend -DRPATH=/home/toolsLinux/qt/qt4.4.1_dyn_64bit/lib/ -P /home/pspro/bin/chrpath.cmake 
-##                   COMMAND touch /prog/GPI/bin/pspro/PreStackProBackend)
-#
-#
-#
-#   # remove the Testing/ and NorthSea-Testing/ directories completely and create it again, so we start with a 
-#   # completely fresh one:
-#   execute_process(COMMAND /usr/bin/rsync -vaz --delete /p/hpc/psp/nightly-test-support/Testing-data/trunk/  /data_parallel/hp/Testing/ )
-##   execute_process(COMMAND ssh vrdemo@hp01 rm -rf /data_parallel/hp/Testing )
-##   execute_process(COMMAND ssh vrdemo@hp01 mkdir -p /data_parallel/hp/Testing/ )
-##   execute_process(COMMAND scp -r /p/hpc/psp/vr3-nightly-test-support/Testing-data/trunk/Projects/ vrdemo@hp01:/data_parallel/hp/Testing/ )
-##   execute_process(COMMAND scp -r /p/hpc/psp/vr3-nightly-test-support/Testing-data/trunk/Data/ vrdemo@hp01:/data_parallel/hp/Testing/ )
-#
-#endif(EXISTS "${CTEST_BINARY_DIRECTORY}/BackEnd/PreStackProBackend"  AND  EXISTS /prog/GPI/bin/pspro/ )
-#
-# now run all tests:
-ctest_test(BUILD "${CTEST_BINARY_DIRECTORY}" )
+ # Now that everything has been built, we have to copy the backend
+ # int /prog/GPI/, otherwise the daemon will not start it.
+ # Also we have to change the RPATH, so that PreStackProBackend will find
+ # the Qt 4.4 in /home/toolsLinux/, since /p/hpc/psp/ is not available
+ # on the backend nodes, as e.g. hp01/02:
+ #if(EXISTS "${CTEST_BINARY_DIRECTORY}/BackEnd/PreStackProBackend"  AND  EXISTS /prog/GPI/bin/pspro/ )
+ #  execute_process(COMMAND cp BackEnd/PreStackProBackend /prog/GPI/bin/pspro 
+ #                  WORKING_DIRECTORY "${CTEST_BINARY_DIRECTORY}" )
+ #
+ ##   execute_process(COMMAND ${CMAKE_COMMAND} -DFILE=/prog/GPI/bin/pspro/PreStackProBackend -DRPATH=/home/toolsLinux/qt/qt4.4.1_dyn_64bit/lib/ -P /home/pspro/bin/chrpath.cmake 
+ ##                   COMMAND touch /prog/GPI/bin/pspro/PreStackProBackend)
+ #
+ #
+ #
+ #   # remove the Testing/ and NorthSea-Testing/ directories completely and create it again, so we start with a 
+ #   # completely fresh one:
+ #   execute_process(COMMAND /usr/bin/rsync -vaz --delete /p/hpc/psp/nightly-test-support/Testing-data/trunk/  /data_parallel/hp/Testing/ )
+ ##   execute_process(COMMAND ssh vrdemo@hp01 rm -rf /data_parallel/hp/Testing )
+ ##   execute_process(COMMAND ssh vrdemo@hp01 mkdir -p /data_parallel/hp/Testing/ )
+ ##   execute_process(COMMAND scp -r /p/hpc/psp/vr3-nightly-test-support/Testing-data/trunk/Projects/ vrdemo@hp01:/data_parallel/hp/Testing/ )
+ ##   execute_process(COMMAND scp -r /p/hpc/psp/vr3-nightly-test-support/Testing-data/trunk/Data/ vrdemo@hp01:/data_parallel/hp/Testing/ )
+ #
+ #endif(EXISTS "${CTEST_BINARY_DIRECTORY}/BackEnd/PreStackProBackend"  AND  EXISTS /prog/GPI/bin/pspro/ )
+ #
+ # now run all tests:
+ ctest_test(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE resultTest)
+ message("====> ctest_test: res='${resultTest}'")
+
+ if( NOT ${resultTest} )
+   # can package software
+   execute_process(COMMAND make package
+         WORKING_DIRECTORY "${CTEST_BINARY_DIRECTORY}"
+         RESULT_VARIABLE resultPackage
+         )
+   message("====> ctest_package: res='${resultPackage}'")
+ 
+   set(UPLOAD_DIR "packages/${CMAKE_HOST_NAME}")
+   set(UPLOAD_HOST p800hpc03)
+ 
+   # upload package
+   execute_process(COMMAND ssh ${UPLOAD_HOST} mkdir -p ${UPLOAD_DIR}
+         )
+   execute_process(COMMAND scp -p *bz2 ${UPLOAD_HOST}:${UPLOAD_DIR}
+         WORKING_DIRECTORY "${CTEST_BINARY_DIRECTORY}"
+         RESULT_VARIABLE resultUpload
+         )
+   message("====> ctest_package: res='${resultUpload}'")
+ 
+ endif( NOT ${resultTest} )
+else ( NOT ${resultConfigure} )
+  message("Configure failed. skip other tasks.")
+endif ( NOT ${resultConfigure} )
 
 # submit the build and test results to cdash:
 ctest_submit()

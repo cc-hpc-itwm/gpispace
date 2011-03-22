@@ -18,7 +18,7 @@ set(KDE_CTEST_AVOID_SPACES TRUE)
 set(KDE_CTEST_BUILD_SUFFIX "gcc")
 #set(KDE_CTEST_VCS_PATH "main/trunk")
 set(KDE_CTEST_VCS_PATH "trunk")
-set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/continuous")
+set(KDE_CTEST_DASHBOARD_DIR "/tmp/SDPA/continious")
 set(KDE_CTEST_PARALLEL_LEVEL 8)
 ##set(CTEST_BINARY_DIRECTORY ${KDE_CTEST_DASHBOARD_DIR}/main/trunk)
 
@@ -55,13 +55,14 @@ set(SDPA_TOPSRCDIR "${CTEST_SOURCE_DIRECTORY}")
 
 set(firstLoop TRUE)
 
-while (${CTEST_ELAPSED_TIME} LESS 43200)
+while (${CTEST_ELAPSED_TIME} LESS 36000)
   message("Running next loop...")
   set (START_TIME ${CTEST_ELAPSED_TIME})
 
   ctest_start(Continuous)
   ctest_update(SOURCE "${SDPA_TOPSRCDIR}" RETURN_VALUE updatedFiles)
   set(CTEST_SOURCE_DIRECTORY "${SDPA_TOPSRCDIR}/main/trunk")
+  message("====> Update: ${updatedFiles}")
    
   if ("${updatedFiles}" GREATER 0  OR  firstLoop)
 
@@ -70,15 +71,22 @@ while (${CTEST_ELAPSED_TIME} LESS 43200)
     include("${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
     # configure, build, test, submit
-    ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}" )
+    ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE resultConfigure)
+    message("====> Configure: ${resultConfigure}")
 
-    include("${CTEST_BINARY_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
+    if ( NOT ${resultConfigure} )
+      include("${CTEST_BINARY_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
-    ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" )
+      ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE res)
+      message("====> BUILD: ${res}")
 
 
-    # now run all tests:
-    ctest_test(BUILD "${CTEST_BINARY_DIRECTORY}" )
+      # now run all tests:
+      ctest_test(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE res)
+      message("====> Test: ${res}")
+    else ( NOT ${resultConfigure} )
+      message("Configure failed. skip other tasks.")
+    endif ( NOT ${resultConfigure} )
 
     # submit the build and test results to cdash:
     ctest_submit()
