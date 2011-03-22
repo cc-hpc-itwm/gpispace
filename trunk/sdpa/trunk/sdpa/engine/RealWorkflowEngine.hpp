@@ -19,11 +19,12 @@
 #define REAL_WORKFLOW_ENGINE_HPP 1
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/engine/EmptyWorkflowEngine.hpp>
 
 #ifdef USE_REAL_WE
 	typedef we::mgmt::layer<id_type, we::activity_t> RealWorkflowEngine;
 #else
-	typedef void RealWorkflowEngine;
+	typedef EmptyWorkflowEngine RealWorkflowEngine;
 #endif
 
 #endif //REAL_WORKFLOW_ENGINE_HPP
