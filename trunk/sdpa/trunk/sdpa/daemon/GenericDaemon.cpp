@@ -520,7 +520,7 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
 	m_threadBkpService.setBackupInterval(cfg().get<sdpa::util::time_type>("backup_interval") );
 
 	try {
-		SDPA_LOG_ERROR("Try to configure the network now ... ");
+		SDPA_LOG_INFO("Try to configure the network now ... ");
 		configure_network( url(), masterName() );
 		m_bConfigOk = true;
 	}
