@@ -27,6 +27,7 @@ target_link_libraries(sdpa ${FhgLog_LIBRARY})
 install(FILES ${hdrs}
   DESTINATION include/sdpa
   COMPONENT headers)
+  
 install(TARGETS sdpa
   ARCHIVE
   DESTINATION lib

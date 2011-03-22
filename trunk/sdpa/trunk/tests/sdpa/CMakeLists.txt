@@ -243,3 +243,17 @@ target_link_libraries(test_concurrent_clients  seda sdpa-daemon
 									 ${Boost_LIBRARIES}
 ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_concurrent_clients test_concurrent_clients )
+
+#test_backend
+set( test_Backend_srcs test_Backend.cpp )
+add_executable(test_backend ${test_Backend_srcs})
+target_link_libraries(test_backend  seda sdpa-daemon
+									 sdpa-client
+									 sdpa-events
+									 sdpa-util
+									 sdpa
+									 dl
+									 #uuid
+									 ${Boost_LIBRARIES}
+${WE_PRECOMPILE_LIBRARIES})
+add_test( test_backend test_backend )
