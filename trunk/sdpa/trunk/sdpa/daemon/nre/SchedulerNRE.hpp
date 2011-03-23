@@ -167,7 +167,8 @@ namespace sdpa {
             DLOG(TRACE, "activity finished: " << act_id);
 			// notify the gui
 			// and then, the workflow engine
-			ptr_comm_handler_->notifyActivityFinished(act_id, enc_act);
+			//ptr_comm_handler_->notifyActivityFinished(act_id, enc_act);
+            ptr_comm_handler_->notifyActivityFinished(act_id, result.second);
 			ptr_comm_handler_->workerJobFinished("", jobId, result.second);
 		}
 		else if( result.first == ACTIVITY_FAILED )
