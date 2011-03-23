@@ -62,6 +62,7 @@ void Portfolio::InitTable()
 	for( int k=0;k<5;k++ )
 		arr_row_params.push_back(row_parameters_t(k));
 
+	InitPortfolio(comm_params, arr_row_params);
 
 	arr_simulation_results_t arr_sim_res;
 	arr_sim_res.push_back(simulation_result_t(0, 8454.54, 54.654, 0.4234, 0.0996, 0.3244));
@@ -69,8 +70,6 @@ void Portfolio::InitTable()
 	arr_sim_res.push_back(simulation_result_t(2, 42343.432, 543.456, 0.4324, 0.5465, 0.4234));
 	arr_sim_res.push_back(simulation_result_t(3, 8432.432, 654.543, 0.4234, 0.545, 0.4324));
 	arr_sim_res.push_back(simulation_result_t(4, 423.43, 345.546, 0.43, 0.43, 0.342));
-
-	InitPortfolio(comm_params, arr_row_params);
 	ShowResults(arr_sim_res);
 
 	// save the number of rows
@@ -233,14 +232,35 @@ void Portfolio::RetrieveResults( portfolio_result_t& result_data  )
 {
 }
 
+/*
+void decode_params(const std::string& strMsg, portfolio_data_t& portfolio_data )
+{
+	std::stringstream sstr(strMsg);
+	boost::archive::text_iarchive ar(sstr);
+	ar >> portfolio_data;
+}
+*/
+
+std::string encode(const portfolio_data_t& portfolio_data )
+{
+	 std::ostringstream sstr;
+	 boost::archive::text_oarchive ar(sstr);
+	 ar << portfolio_data ;
+
+	 return sstr.str();
+}
+
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 {
 	std::string strJobData;
 	PrintToString(job_data, strJobData);
+
 	qDebug()<<"The workflow to be submitted is: ";
 	qDebug()<<QString(strJobData.c_str());
 
 	// effectively build the flow here !!!!
+
+	//strJobData = encode(job_data);
 
 	return strJobData;
 }
@@ -379,14 +399,13 @@ void Portfolio::SubmitPortfolio()
 
 	// TO BE REMOVED !!!!!!!!!!!!!!!!
 	/***************************************************************************************/
-	arr_simulation_results_t arr_sim_res;
+	/*arr_simulation_results_t arr_sim_res;
 	arr_sim_res.push_back(simulation_result_t(0, 8454.54, 54.654, 0.4234, 0.0996, 0.3244));
 	arr_sim_res.push_back(simulation_result_t(1, 45.43, 76.654, 0.4234, 0.688, 0.2314));
 	arr_sim_res.push_back(simulation_result_t(2, 42343.432, 543.456, 0.4324, 0.5465, 0.4234));
 	arr_sim_res.push_back(simulation_result_t(3, 8432.432, 654.543, 0.4234, 0.545, 0.4324));
 	arr_sim_res.push_back(simulation_result_t(4, 423.43, 345.546, 0.43, 0.43, 0.342));
-
-	ShowResults(arr_sim_res);
+	ShowResults(arr_sim_res);*/
 
 }
 
@@ -425,7 +444,7 @@ void Portfolio::PrintToString(portfolio_data_t& d, std::string& strJobData)
 
 	for( int row_idx = 0; row_idx<1/*d.arr_row_params.size()*/; row_idx++ )
 	{
-		//sstr<<"Row: "<<row_idx<<std::endl;
+		sstr<<"row = "<<row_idx<<std::endl;
 		sstr<<"T = "<<d.arr_row_params[row_idx].Maturity()<<std::endl;
 		sstr<<"K ="<<d.arr_row_params[row_idx].Strike()<<std::endl;
 		sstr<<"FixingsProJahr = "<<d.arr_row_params[row_idx].Fixings()<<std::endl;

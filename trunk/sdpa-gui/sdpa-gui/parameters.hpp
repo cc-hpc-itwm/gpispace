@@ -5,15 +5,21 @@
  *  Author: dr. tiberiu rotaru
  */
 
-#ifndef PARAMSL_HPP_
-#define PARAMSL_HPP_
+#ifndef PORTFOLIO_PARAMS_HPP_
+#define PORTFOLIO_PARAMS_HPP_
 
 #include <map>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/access.hpp>
+
 enum column_t { MATURITY, STRIKE, FIXINGS, PV, STDDEV, DELTA, GAMMA, VEGA };
 
-#include <QtGlobal>
-#include <QTime>
+//#include <QtGlobal>
+//#include <QTime>
 
 static int randInt(int low, int high)
 {
@@ -99,6 +105,18 @@ public:
 
 	long NumberDividends() { return m_nAnzahlderDividende; }
 	void setNumberDividends(const long& l) { m_nAnzahlderDividende = l; }
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar & m_dS;
+		ar & m_dr;
+		ar & m_dd;
+		ar & m_nn;
+		ar & m_dSigma;
+		ar & m_nFirstFixing;
+		ar & m_nAnzahlderDividende;
+	}
 
 private:
 	// Spot Price;
@@ -188,6 +206,15 @@ public:
 	double& Fixings() { return m_dFixingsProJahr; }
 	void setfFixings(const double& d) { m_dFixingsProJahr = d; }
 
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar & m_rowId;
+		ar & m_dT;
+		ar & m_dK;
+		ar & m_dFixingsProJahr;
+	}
+
 private:
 	int m_rowId;
 
@@ -206,9 +233,9 @@ public:
 	simulation_result_t(  int rowId,
 						  double dSum1,
 	  	  	  	  	  	  double dSum2,
-	  	  	  	  	  	  double dDelta,
-	  	  	  	  	  	  double dGamma,
-	  	  	  	  	  	  double dVega )
+	  	  	  	  	  	  double dDelta = 0.0,
+	  	  	  	  	  	  double dGamma = 0.0,
+	  	  	  	  	  	  double dVega = 0.0 )
 	{
 		m_rowId  = rowId;
 		m_dSum1  = dSum1;
@@ -277,6 +304,17 @@ public:
     double Vega() { return m_dVega; }
     void setVega(const double& d) { m_dVega = d; }
 
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int)
+    {
+    	ar & m_rowId;
+    	ar & m_dSum1;
+    	ar & m_dSum2;
+    	ar & m_dDelta;
+    	ar & m_dGamma;
+    	ar & m_dVega;
+    }
+
 private:
       int m_rowId;
 
@@ -301,11 +339,23 @@ struct portfolio_data_t
 {
 	common_parameters_t  common_params;
 	arr_row_parameters_t arr_row_params;
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar & common_params;
+		ar & arr_row_params;
+	}
 };
 
 struct portfolio_result_t
 {
 	arr_simulation_results_t arr_sim_results;
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar & arr_sim_results;
+	}
 };
 
-#endif /* PORTFOLIOEVAL_HPP_ */
+#endif /* PORTFOLIO_PARAMS_HPP_ */

@@ -4,11 +4,13 @@
 #include "windowappender.hpp"
 #include <QHeaderView>
 #include <QApplication>
+#include <QDebug>
 
 #include <boost/lexical_cast.hpp>
 
 #include <list>
 #include "portfolioeval.hpp"
+
 
 using namespace std;
 
@@ -30,10 +32,12 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         (new fhg::log::remote::LogServer
          ( fhg::log::Appender::ptr_t(new WindowAppender(this, 1001))
          , m_io_service, exe_port));
+
     m_log_server = logserver_t
         (new fhg::log::remote::LogServer
          ( fhg::log::Appender::ptr_t(new WindowAppender(this, 1002))
          , m_io_service, log_port));
+
     m_io_thread = thread_t
         (new boost::thread
          (boost::bind
@@ -85,9 +89,63 @@ MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 
 }
 
-void
-MonitorWindow::append_log (fhg::log::LogEvent const &evt)
+void MonitorWindow::decode (const std::string& strMsg, sdpa::daemon::NotificationEvent& evtNotification)
 {
+	std::stringstream sstr(strMsg);
+	boost::archive::text_iarchive ar(sstr);
+	ar >> evtNotification;
+}
+
+void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
+{
+	sdpa::daemon::NotificationEvent evtNotification;
+	try
+	{
+		decode(evt.message(), evtNotification);
+	}
+	catch (const std::exception &ex)
+	{
+	  std::cerr << "ignoring invalid event!" << std::endl;
+	  return;
+	}
+
+	QString qstrActId(evtNotification.activity_id().c_str());
+	QString qstrActName(evtNotification.activity_name().c_str());
+	QString qstrResult(evtNotification.activity_result().c_str());
+
+	const sdpa::daemon::NotificationEvent::state_t state = evtNotification.activity_state();
+
+	if( state == sdpa::daemon::NotificationEvent::STATE_FINISHED )
+	{
+		qDebug()<<"*************************************";
+		qDebug()<<"Received new logging event: name = "<<qstrActName<<", id = "<<qstrActId<<QString(", state = %1").arg(state);
+		qDebug()<<"The result is: "<<qstrResult;
+		qDebug()<<"**************************************";
+	}
+
+	std::stringstream sstr(evtNotification.activity_result());
+
+	char line[512];
+	memset(line, '\0', 512);
+	sstr.getline(line, 512, '\n');
+	int rowId = QString(line).toInt();
+
+	memset(line, '\0', 512);
+	sstr.getline(line, 512, '\n');
+	double dPv = QString(line).toDouble();
+
+	memset(line, '\0', 512);
+	sstr.getline(line, 512, '\n');
+	double dStdDev = QString(line).toDouble();
+
+	simulation_result_t sim_res(rowId, dPv, dStdDev);
+	m_portfolio_.ShowResults(sim_res);
+}
+
+void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
+{
+	UpdatePortfolioView(evt);
+
   if ( evt.severity() < ui->m_level_filter_selector->currentIndex ()
      && ui->m_drop_filtered->isChecked()
      )
