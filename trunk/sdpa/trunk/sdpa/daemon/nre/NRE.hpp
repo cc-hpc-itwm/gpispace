@@ -145,7 +145,6 @@ namespace sdpa {
 	    virtual void recover( std::istream& );
 
 		friend class boost::serialization::access;
-		//friend class sdpa::tests::WorkerSerializationTest;
 
 	  protected:
 
