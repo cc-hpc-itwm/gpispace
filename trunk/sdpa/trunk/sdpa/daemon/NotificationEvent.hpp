@@ -46,6 +46,7 @@ namespace sdpa { namespace daemon {
     NotificationEvent(const std::string &activity_id
                     , const std::string &activity_name
                     , const state_t &activity_state
+                    , const std::string &activity_result = ""
 
                     , const std::string &workflow_id = ""
                     , const std::string &workflow_name = ""
@@ -53,6 +54,7 @@ namespace sdpa { namespace daemon {
       : a_id_(activity_id)
       , a_name_(activity_name)
       , a_state_(activity_state)
+      , a_result_(activity_result)
 
       , w_id_(workflow_id)
       , w_name_(workflow_name)
@@ -72,10 +74,13 @@ namespace sdpa { namespace daemon {
     std::string &activity_name()             { return a_name_; }
     const state_t &activity_state() const      { return a_state_; }
     state_t &activity_state()                  { return a_state_; }
+    const std::string &activity_result() const { return a_result_; }
+    std::string &activity_result()             { return a_result_; }
   private:
     std::string a_id_;
     std::string a_name_;
     state_t     a_state_;
+    std::string a_result_;
 
     std::string w_id_;
     std::string w_name_;
@@ -94,6 +99,7 @@ namespace boost { namespace serialization {
     ar & e.activity_id();
     ar & e.activity_name();
     ar & e.activity_state();
+    ar & e.activity_result();
   }
 }}
 
