@@ -507,6 +507,35 @@ namespace xml
           : generic (nice (file))
         {}
       };
+
+      // ******************************************************************* //
+
+      class duplicate_external_function : public generic
+      {
+      private:
+        std::string nice ( const std::string & name
+                         , const std::string & mod
+                         , const boost::filesystem::path & file
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "the external function " << name
+            << " in module " << mod
+            << " has multiple occurrences"
+            << " in " << file
+            ;
+
+          return s.str();
+        }
+      public:
+        duplicate_external_function ( const std::string & name
+                                    , const std::string & mod
+                                    , const boost::filesystem::path & file
+                                    )
+          : generic (nice (name, mod, file))
+        {}
+      };
     }
   }
 }

@@ -76,6 +76,7 @@ namespace xml
         bool _Windependent_transition;
         bool _Wconflicting_port_types;
         bool _Woverwrite_file;
+        bool _Wduplicate_external_function;
 
         std::string _dump_xml_file;
         bool _no_inline;
@@ -107,6 +108,7 @@ namespace xml
         std::string _OWindependent_transition;
         std::string _OWconflicting_port_types;
         std::string _OWoverwrite_file;
+        std::string _OWduplicate_external_function;
 
         std::string _Odump_xml_file;
         std::string _Ono_inline;
@@ -194,6 +196,7 @@ namespace xml
           , _Windependent_transition (true)
           , _Wconflicting_port_types (true)
           , _Woverwrite_file (true)
+          , _Wduplicate_external_function (true)
 
           , _dump_xml_file ("")
           , _no_inline (false)
@@ -224,6 +227,7 @@ namespace xml
           , _OWindependent_transition ("Windependent-transition")
           , _OWconflicting_port_types ("Wconflicting-port-types")
           , _OWoverwrite_file ("Woverwrite-file")
+          , _OWduplicate_external_function ("Wduplicate-external-function")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
@@ -352,6 +356,7 @@ namespace xml
           GET_PROP (Windependent_transition)
           GET_PROP (Wconflicting_port_types)
           GET_PROP (Woverwrite_file)
+          GET_PROP (Wduplicate_external_function)
 
           GET_PROP (no_inline)
           GET_PROP (synthesize_virtual_places)
@@ -445,6 +450,7 @@ namespace xml
         ACCESS(Windependent_transition)
         ACCESS(Wconflicting_port_types)
         ACCESS(Woverwrite_file)
+        ACCESS(Wduplicate_external_function)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -477,6 +483,7 @@ namespace xml
         WARN(independent_transition)
         WARN(conflicting_port_types)
         WARN(overwrite_file)
+        WARN(duplicate_external_function)
 
 #undef WARN
 
@@ -632,6 +639,10 @@ namespace xml
             ( _OWoverwrite_file.c_str()
             , BOOLVAL(Woverwrite_file)
             , "warn when a file is overwritten"
+            )
+            ( _OWduplicate_external_function.c_str()
+            , BOOLVAL(Wduplicate_external_function)
+            , "warn when an external function has multiple occurrences"
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)

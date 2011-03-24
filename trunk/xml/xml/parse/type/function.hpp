@@ -723,9 +723,22 @@ namespace xml
           , code (_code)
           , links (_links)
         {}
+
+        bool operator == (const fun_info_type & other) const
+        {
+          return name == other.name;
+        }
+
+        friend std::size_t hash_value (const fun_info_type &);
       };
 
-      typedef std::vector<fun_info_type> fun_info_list_type;
+      inline std::size_t hash_value (const fun_info_type & fi)
+      {
+        boost::hash<std::string> hasher;
+        return hasher (fi.name);
+      }
+
+      typedef boost::unordered_set<fun_info_type> fun_info_list_type;
 
       typedef boost::unordered_map<std::string,fun_info_list_type> fun_info_map;
 
@@ -1528,11 +1541,24 @@ namespace xml
                           , port_return
                           );
 
-              m[mod.name].push_back (fun_info_type ( mod.function
-                                                   , stream.str()
-                                                   , mod.links
-                                                   )
-                                    );
+              const fun_info_type fun_info ( mod.function
+                                           , stream.str()
+                                           , mod.links
+                                           );
+
+              if (m[mod.name].find (fun_info) == m[mod.name].end())
+                {
+                  m[mod.name].insert (fun_info);
+                }
+              else
+                {
+                  state.warn ( warning::duplicate_external_function
+                               ( mod.function
+                               , mod.name
+                               , state.file_in_progress()
+                               )
+                             );
+                }
             }
 
             {
