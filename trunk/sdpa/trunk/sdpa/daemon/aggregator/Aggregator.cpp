@@ -454,3 +454,87 @@ void Aggregator::recover( std::istream& ifs )
 		cout <<"Exception occurred: " << e.what() << endl;
 	}
 }
+
+// notifiications
+bool Aggregator::finished(const id_type & id, const result_type & result)
+{
+	GenericDaemon::finished(id, result);
+
+	if(hasWorkflowEngine())
+	{
+        activity_information_t info;
+        ptr_workflow_engine_->fill_in_info (id, info);
+        const std::string act_name (info.name);
+
+#ifdef USE_REAL_WE
+		ApplicationGuiEvent evtAppGui(0,0, result);
+#else
+		ApplicationGuiEvent evtAppGui(0,0, info.data["out"]);
+#endif
+		m_appGuiService.update(evtAppGui);
+	}
+}
+
+/*
+struct activity_information_t
+{
+	enum status_t
+	{
+		UNDEFINED = -1
+		, PENDING
+		, RUNNING
+		, FINISHED
+		, FAILED
+		, CANCELLED
+		, SUSPENDED
+	};
+
+	std::string name;
+	status_t status;
+	int level;
+
+	typedef boost::unordered_map<std::string, std::string> data_t;
+	data_t data;
+};
+
+bool fill_in_info ( const external_id_type & id
+                       , activity_information_t & info
+                       ) const
+     {
+       DLOG(TRACE, "fill_in_info (" << id << ")");
+
+       try
+       {
+         internal_id_type int_id (map_to_internal (id));
+         {
+           lock_t lock(mutex_);
+           const descriptor_type & desc (lookup (int_id));
+           {
+             info.name = desc.name();
+             info.level = desc.activity().transition().is_internal();
+             if (desc.activity().is_suspended())
+             {
+               info.status = activity_information_t::SUSPENDED;
+             }
+             else if (desc.activity().is_cancelled())
+             {
+               info.status = activity_information_t::CANCELLED;
+             }
+             else if (desc.activity().is_failed())
+             {
+               info.status = activity_information_t::FAILED;
+             }
+             else if (desc.activity().is_finished())
+             {
+               info.status = activity_information_t::FINISHED;
+             }
+             else
+             {
+               info.status = activity_information_t::UNDEFINED;
+               info.data["in"] = desc.show_input();
+               info.data["out"] = desc.show_output();
+             }
+           }
+         }
+       }
+*/

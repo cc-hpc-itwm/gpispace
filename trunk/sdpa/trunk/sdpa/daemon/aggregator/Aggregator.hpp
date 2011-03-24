@@ -22,6 +22,8 @@
 #include <sdpa/daemon/aggregator/SchedulerAgg.hpp>
 #include <boost/serialization/base_object.hpp>
 
+#include <sdpa/daemon/NotificationService.hpp>
+
 namespace sdpa {
 	namespace daemon {
 		class Aggregator : public dsm::DaemonFSM {
@@ -31,14 +33,24 @@ namespace sdpa {
 
 			Aggregator( const std::string& name = "",
 						const std::string& url = "",
-						const std::string& masterName = "")
+						const std::string& masterName = "",
+						const std::string& appGuiUrl = "")
 			: DaemonFSM( name, NULL ),
 			  SDPA_INIT_LOGGER(name),
 			  url_(url),
-			  masterName_(masterName)
+			  masterName_(masterName),
+			  m_appGuiService("SDPA", appGuiUrl)
 			{
 				SDPA_LOG_DEBUG("Aggregator's constructor called ...");
 				//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
+
+				// application gui service
+				if(!appGuiUrl.empty())
+				{
+					m_appGuiService.open ();
+					// attach gui observer
+					SDPA_LOG_INFO("Application GUI service at " << appGuiUrl << " attached...");
+				}
 			}
 
 			virtual ~Aggregator();
@@ -70,6 +82,9 @@ namespace sdpa {
 			friend class boost::serialization::access;
 			//friend class sdpa::tests::WorkerSerializationTest;
 
+			// callback handler for WE
+			bool finished(const id_type & id, const result_type & result);
+
 			private:
 			Scheduler* create_scheduler()
 			{
@@ -80,7 +95,7 @@ namespace sdpa {
 			std::string url_;
 			std::string masterName_;
 
-			// declare here member of type DaemonFSM (when using msm)
+			ApplicationGuiService m_appGuiService;
 		};
 	}
 }
