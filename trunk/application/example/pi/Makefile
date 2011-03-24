@@ -2,7 +2,7 @@
 MAIN = pi
 
 TRUNK = $(CURDIR)/../../../
-BUILD = $(TRUNK)/../build/
+BUILD = $(TRUNK)/../build/herc/release
 
 #include ../make.defs
 
@@ -36,19 +36,29 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-NUM_PACKET = 100
-POINTS_PER_PACKET = 4 * 10^6
-CREDIT = 8
+NUM_PACKET = 200
+POINTS_PER_PACKET = 4 * 10^8
+CREDIT_GENERATE = 64
+CREDIT_RUN = 32
+CREDIT_GET_KEY = 1
 SEED = 271828
 
 $(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(NUM_PACKET)" "$(POINTS_PER_PACKET)" "$(CREDIT)" "$(SEED)" > $@
+	$(CAT) $< | $(MK_XML) "$(NUM_PACKET)" \
+                              "$(POINTS_PER_PACKET)" \
+                              "$(CREDIT_GENERATE)" \
+                              "$(CREDIT_RUN)" \
+                              "$(CREDIT_GET_KEY)" \
+                              "$(SEED)" \
+                              > $@
 
 ###############################################################################
 
 #NOINLINE_NOT_ENDS_WITH += generate
 
-#NOINLINE_NOT_STARTS_WITH += dup
+#NOINLINE_NOT_STARTS_WITH += run
+#NOINLINE_NOT_STARTS_WITH += get_key
+#NOINLINE_NOT_STARTS_WITH += generate
 
 NET_NOINLINE = $(MAIN).noinline.pnet
 PS_NOINLINE = $(MAIN).noinline.ps
@@ -81,7 +91,9 @@ CXXINCLUDEPATHS += $(BUILD)/fhglog
 ###############################################################################
 
 PNETC    = $(BUILD)/xml/xml/parse/pnetc
-WE_EXEC  = LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH} $(BUILD)/we/apps/we-exec --w $(CREDIT)
+WE_EXEC += LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH}
+WE_EXEC += $(BUILD)/we/apps/we-exec
+WE_EXEC +=  --w 16
 PNET2DOT = $(BUILD)/we/apps/pnet2dot
 
 ###############################################################################

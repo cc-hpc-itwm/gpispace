@@ -1,12 +1,16 @@
 #!/bin/bash
 
-NUM_PACKET=${1:?}
-POINTS_PER_PACKET=${2:?}
-CREDIT=${3:?}
-SEED=${4:?}
+NUM_PACKET=${1:?}; shift;
+POINTS_PER_PACKET=${1:?}; shift;
+CREDIT_GENERATE=${1:?}; shift
+CREDIT_RUN=${1:?}; shift
+CREDIT_GET_KEY=${1:?}; shift
+SEED=${1:?}
 
 /usr/bin/sed                                    \
   "s|@NUM_PACKET@|${NUM_PACKET}|g               \
   ;s|@POINTS_PER_PACKET@|${POINTS_PER_PACKET}|g \
-  ;s|@CREDIT@|${CREDIT}|g                       \
+  ;s|@CREDIT_GENERATE@|${CREDIT_GENERATE}|g     \
+  ;s|@CREDIT_RUN@|${CREDIT_RUN}|g               \
+  ;s|@CREDIT_GET_KEY@|${CREDIT_GET_KEY}|g       \
   ;s|@SEED@|${SEED}|g                           "
