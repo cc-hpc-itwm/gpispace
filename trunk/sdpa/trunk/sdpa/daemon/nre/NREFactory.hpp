@@ -32,9 +32,9 @@ namespace daemon {
 			static typename NRE<U>::ptr_t create(   const std::string& name
 												   , const std::string& url
 												   , const std::string& masterName
-												   //, const std::string& masterUrl
 												   , const std::string& workerUrl
-												   , const std::string guiUrl = "127.0.0.1:9000"
+												   , const std::string& appGuiUrl = "127.0.0.1:9000"
+												   , const std::string& logGuiUrl = "127.0.0.1:9001"
 												   , bool bLaunchNrePcd = false
 												   , const std::string & fvmPCBinary = ""
 												   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
@@ -48,9 +48,9 @@ namespace daemon {
 				typename NRE<U>::ptr_t pNRE( new NRE<U>( name
 													   , url
 													   , masterName
-													   //, masterUrl
 													   , workerUrl
-													   , guiUrl
+													   , appGuiUrl
+													   , logGuiUrl
 													   , bLaunchNrePcd
 													   , fvmPCBinary
 													   , fvmPCSearchPath
@@ -71,9 +71,9 @@ namespace daemon {
 			static typename NRE<U>::ptr_t create(  const std::string& name
 												   , const std::string& url
 												   , const std::string& masterName
-												   //, const std::string& masterUrl
 												   , const std::string& workerUrl
-												   , const std::string guiUrl = "127.0.0.1:9000"
+												   , const std::string& appGuiUrl = "127.0.0.1:9000"
+												   , const std::string& logGuiUrl = "127.0.0.1:9001"
 												   , bool bLaunchNrePcd = false
 												   , const std::string & fvmPCBinary = ""
 												   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
@@ -84,9 +84,9 @@ namespace daemon {
 				typename NRE<U>::ptr_t pNRE( new NRE<U>(   name
 														   , url
 														   , masterName
-														   //, masterUrl
 														   , workerUrl
-														   , guiUrl
+														   , appGuiUrl
+														   , logGuiUrl
 														   , bLaunchNrePcd
 														   , fvmPCBinary
 														   , fvmPCSearchPath
