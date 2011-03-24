@@ -53,14 +53,6 @@
             fwrite (buf, config.size.output_per_shot, 1, outp);
 
             fclose (outp);
-
-            std::ostringstream os;
-
-            os << config.file.output.name << "." << output.shot_num;
-
-            std::ofstream outs (os.str().c_str(), std::ofstream::binary);
-
-            outs.write (buf, config.size.output_per_shot);
           ]]></code>
         </module>
       </defun>
