@@ -1,7 +1,7 @@
 #ifndef PORTFOLIO_HPP
 #define PORTFOLIO_HPP
 
-#include "parameters.hpp"
+#include <apps/portfolio_params.hpp>
 #include <string>
 
 namespace Ui {
@@ -14,7 +14,7 @@ public:
 	virtual ~Portfolio();
 	void InitTable();
 	void InitPortfolio( common_parameters_t&, arr_row_parameters_t& );
-	void ShowResults( simulation_result_t& );
+	void ShowResult( simulation_result_t& );
 	void ShowResults( arr_simulation_results_t& );
 	void PrepareInputData( portfolio_data_t& );
 	void RetrieveResults( portfolio_result_t& );

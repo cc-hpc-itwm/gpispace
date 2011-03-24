@@ -1,6 +1,5 @@
 #include "monitorwindow.hpp"
 #include "portfolioeval.hpp"
-#include "parameters.hpp"
 #include "ui_monitorwindow.h"
 #include <QDebug>
 
@@ -121,18 +120,20 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 
 	for(int row_idx =0; row_idx <v_row_params.size(); row_idx++)
 	{
-		m_pUi->m_calcSpreadSheet->horizontalHeader()->resizeSection( row_idx, 71 );
-
 		QTableWidgetItem *pWItem(new QTableWidgetItem( QString("Option %1").arg(row_idx) ));
 		m_pUi->m_calcSpreadSheet->setVerticalHeaderItem( row_idx, pWItem );
 
 		row_parameters_t& curr_row_params = v_row_params[row_idx];
 		for( int col_idx = MATURITY; col_idx<=FIXINGS; col_idx++)
 		{
+			m_pUi->m_calcSpreadSheet->horizontalHeader()->resizeSection( row_idx, 71 );
 			QTableWidgetItem *pItem(new QTableWidgetItem( QString("%1").arg(curr_row_params(col_idx), 10, ' ')) );
 			pItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 			m_pUi->m_calcSpreadSheet->setItem(row_idx, col_idx, pItem);
 		}
+
+		for( int col_idx = PV; col_idx<=VEGA; col_idx++)
+			m_pUi->m_calcSpreadSheet->horizontalHeader()->resizeSection( row_idx, 100 );
 	}
 
 	//QLineEdit
@@ -149,14 +150,14 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 }
 
 
-void Portfolio::ShowResults( simulation_result_t& sim_res )
+void Portfolio::ShowResult( simulation_result_t& sim_res )
 {
 	int row_idx = sim_res.rowId();
 
-	m_pUi->m_calcSpreadSheet->horizontalHeader()->resizeSection( row_idx, 100 );
+	/*m_pUi->m_calcSpreadSheet->horizontalHeader()->resizeSection( row_idx, 100 );
 
 	QTableWidgetItem *pWItem(new QTableWidgetItem( QString("Option %1").arg(row_idx) ));
-	m_pUi->m_calcSpreadSheet->setVerticalHeaderItem( row_idx, pWItem );
+	m_pUi->m_calcSpreadSheet->setVerticalHeaderItem( row_idx, pWItem );*/
 
 	//update fields PV, STDDEV, DELTA, GAMMA, VEGA
 	for( int col_idx = PV; col_idx<=VEGA; col_idx++)
@@ -182,7 +183,7 @@ void Portfolio::ShowResults( simulation_result_t& sim_res )
 void Portfolio::ShowResults( arr_simulation_results_t& arr_sim_res )
 {
 	for(arr_simulation_results_t::iterator it = arr_sim_res.begin(); it != arr_sim_res.end(); it++ )
-		ShowResults(*it);
+		ShowResult(*it);
 }
 
 // save the content of the worksheer into a job_data object
@@ -232,15 +233,6 @@ void Portfolio::RetrieveResults( portfolio_result_t& result_data  )
 {
 }
 
-/*
-void decode_params(const std::string& strMsg, portfolio_data_t& portfolio_data )
-{
-	std::stringstream sstr(strMsg);
-	boost::archive::text_iarchive ar(sstr);
-	ar >> portfolio_data;
-}
-*/
-
 std::string encode(const portfolio_data_t& portfolio_data )
 {
 	 std::ostringstream sstr;
@@ -253,14 +245,14 @@ std::string encode(const portfolio_data_t& portfolio_data )
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 {
 	std::string strJobData;
-	PrintToString(job_data, strJobData);
+	job_data.PrintToString(strJobData);
 
 	qDebug()<<"The workflow to be submitted is: ";
 	qDebug()<<QString(strJobData.c_str());
 
 	// effectively build the flow here !!!!
 
-	//strJobData = encode(job_data);
+	strJobData = encode(job_data);
 
 	return strJobData;
 }

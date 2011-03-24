@@ -15,7 +15,7 @@ set(sdpa-gui_HDRS
   monitorwindow.hpp
   logeventwrapper.hpp
   windowappender.hpp
-  parameters.hpp
+#  parameters.hpp
   portfolioeval.hpp
 )
 

@@ -7,9 +7,7 @@
 #include <QDebug>
 
 #include <boost/lexical_cast.hpp>
-
 #include <list>
-#include "portfolioeval.hpp"
 
 
 using namespace std;
@@ -139,7 +137,7 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 	double dStdDev = QString(line).toDouble();
 
 	simulation_result_t sim_res(rowId, dPv, dStdDev);
-	m_portfolio_.ShowResults(sim_res);
+	m_portfolio_.ShowResult(sim_res);
 }
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
