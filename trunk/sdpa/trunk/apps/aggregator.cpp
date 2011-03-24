@@ -28,6 +28,7 @@ int main (int argc, char **argv)
 	string aggUrl;
 	string orchName;
 	string orchUrl;
+	string appGuiUrl;
 
 	bool bDoBackup = false;
 	std::string backup_file;
@@ -43,6 +44,7 @@ int main (int argc, char **argv)
 	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Aggregator's backup folder")
 	   ("backup_file,f", po::value<std::string>(&backup_file), "Aggregator's backup file (stored into the backup folder)")
+	   ("app_gui_url,a",  po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
 	   ;
 
 	po::variables_map vm;
@@ -121,7 +123,7 @@ int main (int argc, char **argv)
 	LOG(INFO, "Starting the aggregator with the name = '"<<aggName<<"' at location "<<aggUrl<<", having the master "<<orchName<<"("<<orchUrl<<")");
 
 	try {
-		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName); //, orchUrl );
+		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName, appGuiUrl ); //, orchUrl );
 
 		if(bDoBackup)
 			ptrAgg->start_agent(bkp_path/backup_file);
