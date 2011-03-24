@@ -1,0 +1,6 @@
+#!/bin/bash
+
+BUILD=${1:?}; shift
+
+`which sed`                                   \
+  "s|@BUILD@|${BUILD}|g                       "

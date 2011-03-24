@@ -1,0 +1,226 @@
+<defun>
+  <struct name="state">
+    <field name="its" type="long"/>
+    <field name="param" type="param"/>
+  </struct>
+
+  <struct name="wait">
+    <field name="id" type="long"/>
+    <field name="wait" type="long"/>
+    <field name="runs" type="long"/>
+  </struct>
+
+  <in name="param" type="param" place="param"/>
+  <out name="sums" type="sums" place="sums"/>
+
+  <net>
+    <place name="param" type="param"/>
+    <place name="sums" type="sums"/>
+
+    <defun name="asian">
+      <in name="param" type="param"/>
+      <out name="sums" type="sums"/>
+      <module name="asian" function="sums run (param)">
+        <cinclude href="sstream"/>
+        <cinclude href="process.hpp"/>
+        <link href="@BUILD@/application/example/exec/libprocess.so"/>
+        <code><![CDATA[
+          std::ostringstream str;
+
+          str << "S = " << param.S << std::endl;
+          str << "K = " << param.K << std::endl;
+          str << "T = " << param.T << std::endl;
+          str << "sigma = " << param.sigma << std::endl;
+          str << "r = " << param.r << std::endl;
+          str << "d = " << param.d << std::endl;
+          str << "FirstFixing = " << param.FirstFixing << std::endl;
+          str << "FixingsProJahr = " << param.FixingsProJahr << std::endl;
+          str << "AnzahlderDividende = " << param.AnzahlderDividende << std::endl;
+          str << "n = " << param.iterations_per_run << std::endl;
+
+          const std::size_t s (str.str().size());
+
+          char result[1024];
+
+          const std::size_t written
+            ( process::execute ( param.bin
+                               , str.str().c_str()
+                               , s
+                               , result
+                               , 1024
+                               )
+            );
+
+          ::pnetc::type::sums::sums sums;
+
+          std::istringstream is (std::string (result, written));
+          std::string dummy;
+
+          is >> dummy;
+          is >> dummy;
+          is >> sums.sum1;
+          is >> dummy;
+          is >> dummy;
+          is >> sums.sum2;
+
+          sums.param = param;
+
+          return sums;
+        ]]></code>
+      </module>
+    </defun>
+
+    <transition name="init">
+      <defun>
+        <in name="param" type="param"/>
+        <out name="state" type="state"/>
+        <out name="wait" type="wait"/>
+        <out name="accu" type="sums"/>
+        <expression>
+          ${state.param} := ${param};
+          ${state.its} := 0;
+          ${wait.id} := ${param.rowID};
+          ${wait.runs} := (${param.iterations_per_run} + ${param.n} - 1)
+                       div ${param.iterations_per_run};
+          ${wait.wait} := ${wait.runs};
+          ${accu.sum1} := 0.0;
+          ${accu.sum2} := 0.0;
+          ${accu.param} := ${param};
+        </expression>
+      </defun>
+      <connect-in port="param" place="param"/>
+      <connect-out port="state" place="state_check"/>
+      <connect-out port="wait" place="wait_check"/>
+      <connect-out port="accu" place="accu"/>
+    </transition>
+
+    <place name="state_check" type="state" capacity="1"/>
+    <place name="state" type="state"/>
+    <place name="wait_check" type="wait" capacity="1"/>
+    <place name="wait" type="wait"/>
+    <place name="accu" type="sums"/>
+
+    <transition name="break_wait">
+      <defun>
+        <in name="wait" type="wait"/>
+        <out name="wait" type="wait"/>
+        <expression/>
+        <condition>
+          ${wait.wait} :le: 0
+        </condition>
+      </defun>
+      <connect-in port="wait" place="wait_check"/>
+      <connect-out port="wait" place="done"/>
+    </transition>
+
+    <place name="done" type="wait"/>
+
+    <transition name="not_break_wait">
+      <defun>
+        <in name="wait" type="wait"/>
+        <out name="wait" type="wait"/>
+        <expression/>
+        <condition>
+          ${wait.wait} :gt: 0
+        </condition>
+      </defun>
+      <connect-in port="wait" place="wait_check"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <transition name="break_gen">
+      <defun>
+        <in name="state" type="state"/>
+        <expression/>
+        <condition>
+          ${state.its} :ge: ${state.param.n}
+        </condition>
+      </defun>
+      <connect-in port="state" place="state_check"/>
+    </transition>
+
+    <transition name="not_break_gen">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <expression/>
+        <condition>
+          ${state.its} :lt: ${state.param.n}
+        </condition>
+      </defun>
+      <connect-in port="state" place="state_check"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="generate">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="param" type="param"/>
+        <expression>
+          ${param} := ${state.param};
+          ${state.its} := ${state.its} + ${state.param.iterations_per_run}
+        </expression>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="state" place="state_check"/>
+      <connect-out port="param" place="param_to_run"/>
+    </transition>
+
+    <place name="param_to_run" type="param"/>
+
+    <transition name="run">
+      <use name="asian"/>
+      <connect-in port="param" place="param_to_run"/>
+      <connect-out port="sums" place="sums_part"/>
+    </transition>
+
+    <place name="sums_part" type="sums"/>
+
+    <transition name="accum">
+      <defun>
+        <in name="wait" type="wait"/>
+        <out name="wait" type="wait"/>
+        <in name="sums" type="sums"/>
+        <in name="accu" type="sums"/>
+        <out name="accu" type="sums"/>
+        <expression>
+          ${wait.wait} := ${wait.wait} - 1;
+          ${accu.sum1} := ${accu.sum1} + ${sums.sum1};
+          ${accu.sum2} := ${accu.sum2} + ${sums.sum2};
+        </expression>
+        <condition>
+          ${wait.id} :eq: ${sums.param.rowID}
+        </condition>
+        <condition>
+          ${wait.id} :eq: ${accu.param.rowID}
+        </condition>
+      </defun>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="wait" place="wait_check"/>
+      <connect-in port="accu" place="accu"/>
+      <connect-out port="accu" place="accu"/>
+      <connect-in port="sums" place="sums_part"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <in name="done" type="wait"/>
+        <in name="accu" type="sums"/>
+        <out name="sums" type="sums"/>
+        <expression>
+          ${sums} := ${accu};
+          ${sums.sum1} := ${sums.sum1} / double(${done.runs});
+          ${sums.sum2} := ${sums.sum2} / double(${done.runs});
+        </expression>
+        <condition>
+          ${done.id} :eq: ${accu.param.rowID}
+        </condition>
+      </defun>
+      <connect-in port="done" place="done"/>
+      <connect-in port="accu" place="accu"/>
+      <connect-out port="sums" place="sums"/>
+    </transition>
+
+  </net>
+</defun>
