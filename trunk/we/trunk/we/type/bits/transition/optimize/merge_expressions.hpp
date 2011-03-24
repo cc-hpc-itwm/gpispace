@@ -113,6 +113,17 @@ namespace we { namespace type {
               }
           }
 
+        // collect outgoing pids
+        pid_set_type pid_out;
+
+        for ( adj_place_const_it p (net.out_of_transition (tid))
+            ; p.has_more()
+            ; ++p
+            )
+          {
+            pid_out.insert (*p);
+          }
+
         // collect predecessors, separate read connections
         set_of_pair_type preds;
         set_of_tid_pid_type preds_read;
@@ -139,6 +150,17 @@ namespace we { namespace type {
                         )
                       {
                         preds_read.insert (tid_pid_type (*t, *p));
+
+                        for ( adj_place_const_it tp (net.out_of_transition (*t))
+                            ; tp.has_more()
+                            ; ++tp
+                            )
+                          {
+                            if (pid_out.find (*tp) != pid_out.end())
+                              {
+                                return fhg::util::Nothing<trans_info>();
+                              }
+                          }
                      }
                   }
               }
@@ -157,6 +179,17 @@ namespace we { namespace type {
                        )
                       {
                         return fhg::util::Nothing<trans_info>();
+                      }
+
+                    for ( adj_place_const_it tp (net.out_of_transition (*t))
+                        ; tp.has_more()
+                        ; ++tp
+                        )
+                      {
+                        if (pid_out.find (*tp) != pid_out.end())
+                          {
+                            return fhg::util::Nothing<trans_info>();
+                          }
                       }
 
                     preds.insert (pair_type (trans, tid_pred));
