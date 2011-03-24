@@ -137,10 +137,25 @@ namespace literal
                               )
   {
     double d (ipart);
+    int zeros (0);
+
+    while (!pos.end() && *pos == '0')
+      {
+        ++zeros;
+        ++pos;
+      }
+
     double frac (read_ulong (pos));
 
     while (frac > 1)
-      frac /= 10;
+      {
+        frac /= 10;
+      }
+
+    while (zeros --> 0)
+      {
+        frac /= 10;
+      }
 
     d = (d < 0) ? (d - frac) : (d + frac);
 
