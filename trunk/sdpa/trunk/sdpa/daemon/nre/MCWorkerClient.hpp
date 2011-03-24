@@ -24,9 +24,17 @@
 #include <stdio.h>
 
 #include <unistd.h>
+#include <apps/portfolio_params.hpp>
 
 int READ = 0;
 int WRITE = 1;
+
+void decode_params(const std::string& strMsg, portfolio_data_t& portfolio_data )
+{
+	std::stringstream sstr(strMsg);
+	boost::archive::text_iarchive ar(sstr);
+	ar >> portfolio_data;
+}
 
 namespace sdpa { namespace nre { namespace worker {
 
@@ -65,11 +73,13 @@ namespace sdpa { namespace nre { namespace worker {
 			LOG( INFO, "Execute the activity "<<in_activity);
 
 			// decode the in_activity -> config file
+			portfolio_data_t portfolio_data;
+			decode_params(in_activity, portfolio_data );
 
 			// call the asian backend
-			std::string strCfg = in_activity;
+			std::string strCfg;
+			strCfg = portfolio_data[0];
 
-			/*************************************************************/
 			const char* ASIAN_INPUT = strCfg.c_str();
 
 			int p2c[2];
@@ -146,8 +156,6 @@ namespace sdpa { namespace nre { namespace worker {
 
 			}
 
-
-			/*************************************************************/
 
 			// encode the result into result_t
 
