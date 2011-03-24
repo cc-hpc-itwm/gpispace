@@ -278,6 +278,9 @@ void NRE<U>::notifyActivityFinished( const id_type& id, const std::string& resul
         ptr_workflow_engine_->fill_in_info (id, info);
         const std::string act_name (info.name);
 		notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED, result));
+
+		// ApplicationGuiEvent evtAppGui(0,0, result);
+		// m_appGuiService.update(evtAppGui);
 	}
 }
 

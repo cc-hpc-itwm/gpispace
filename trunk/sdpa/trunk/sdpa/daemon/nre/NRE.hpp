@@ -20,14 +20,10 @@
 #define SDPA_NRE_HPP 1
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
-
 #include <sdpa/daemon/Observable.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
-
 #include <boost/pointer_cast.hpp>
-
-typedef sdpa::daemon::NotificationService gui_service;
 
 namespace sdpa {
 	namespace daemon {
@@ -38,23 +34,26 @@ namespace sdpa {
 
 		SDPA_DECLARE_LOGGER();
 
-		NRE( const std::string& name = ""
-                   , const std::string& url = ""
-                   , const std::string& masterName = ""
-                   //, const std::string& masterUrl = ""
-                   , const std::string& workerUrl = ""
-                   , const std::string& guiUrl = ""
-                   // TODO: fixme, this is ugly
-                   , bool bLaunchNrePcd = false
-                   , const std::string & fvmPCBinary = ""
-                   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
-                   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>() )
-					: dsm::DaemonFSM( name, NULL )
+		NRE(   const std::string& name = ""
+			   , const std::string& url = ""
+			   , const std::string& masterName = ""
+			   //, const std::string& masterUrl = ""
+			   , const std::string& workerUrl = ""
+			   , const std::string& appGuiUrl = ""
+			   , const std::string& logGuiUrl = ""
+			   // TODO: fixme, this is ugly
+			   , bool bLaunchNrePcd = false
+			   , const std::string & fvmPCBinary = ""
+			   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+			   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>() )
+
+				: dsm::DaemonFSM( name, NULL )
                 , SDPA_INIT_LOGGER(name)
                 , url_(url)
                 , masterName_(masterName)
                 , workerUrl_(workerUrl)
-                , m_guiServ("SDPA", guiUrl)
+				, m_appGuiService("SDPA", appGuiUrl)
+                , m_logGuiService("SDPA", logGuiUrl)
                 , bLaunchNrePcd_(bLaunchNrePcd)
                 , nre_pcd_binary_(fvmPCBinary)
                 , nre_pcd_search_path_(fvmPCSearchPath)
@@ -64,14 +63,26 @@ namespace sdpa {
 
 			try
 			{
-			  m_guiServ.open ();
-			  // attach gui observer
-			  SDPA_LOG_INFO("GUI observer at " << guiUrl << " attached...");
-			  attach_observer(&m_guiServ);
+				if(!logGuiUrl.empty())
+				{
+					// logging gui service
+					m_logGuiService.open ();
+					// attach gui observer
+					SDPA_LOG_INFO("Logging GUI observer at " << logGuiUrl << " attached...");
+					attach_observer(&m_logGuiService);
+				}
+
+				if(!appGuiUrl.empty())
+				{
+					// application gui service
+					m_appGuiService.open ();
+					// attach gui observer
+					SDPA_LOG_INFO("Application GUI service at " << appGuiUrl << " attached...");
+				}
 			}
 			catch (std::exception const & ex)
 			{
-			  SDPA_LOG_ERROR ("GUI observer at " << guiUrl << " could not be attached: " << ex.what());
+			  SDPA_LOG_ERROR ("GUI observer at " << logGuiUrl << " could not be attached: " << ex.what());
 			}
 		}
 
@@ -80,34 +91,7 @@ namespace sdpa {
 			SDPA_LOG_DEBUG("NRE's destructor called ...");
 
 			//daemon_stage_ = NULL;
-			detach_observer( &m_guiServ );
-		}
-
-		static ptr_t create( const std::string& name
-						   , const std::string& url
-						   , const std::string& masterName
-						   //, const std::string& masterUrl
-						   , const std::string& workerUrl
-						   , const std::string guiUrl = "127.0.0.1:9000"
-						   // TODO: fixme, this is ugly
-						   , bool bLaunchNrePcd = false
-						   , const std::string & fvmPCBinary = ""
-						   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
-						   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
-						   )
-		{
-			 return ptr_t(new NRE<U>(  name
-									   , url
-									   , masterName
-									   //, masterUrl
-									   , workerUrl
-									   , guiUrl
-									   , bLaunchNrePcd
-									   , fvmPCBinary
-									   , fvmPCSearchPath
-									   , fvmPCPreLoad
-									   )
-                                     );
+			detach_observer( &m_logGuiService );
 		}
 
 		void action_configure( const sdpa::events::StartUpEvent& );
@@ -138,7 +122,7 @@ namespace sdpa {
 			ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
 			//ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
 			ar & workerUrl_;
-			//ar & m_guiServ;
+			//ar & m_logGuiService;
 		}
 
 		virtual void backup( std::ostream& );
@@ -164,7 +148,8 @@ namespace sdpa {
 		std::string masterName_;
 		//std::string masterUrl_;
 		std::string workerUrl_;
-		gui_service m_guiServ;
+		ApplicationGuiService m_appGuiService;
+		NotificationService m_logGuiService;
 		bool bLaunchNrePcd_;
         std::string nre_pcd_binary_;
         std::vector<std::string> nre_pcd_search_path_;
