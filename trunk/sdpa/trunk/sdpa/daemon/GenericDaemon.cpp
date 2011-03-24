@@ -1031,6 +1031,8 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
 	sendEventToSelf(pEvtJobFinished);
 	decExtJobsCnt();
 
+	// notify the GUI that the activity finished
+
 	return true;
 }
 

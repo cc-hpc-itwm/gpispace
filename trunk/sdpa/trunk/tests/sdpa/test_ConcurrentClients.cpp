@@ -301,7 +301,8 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 {
 	LOG( INFO, "***** testConcurrentClients *****"<<std::endl);
 
-	string strGuiUrl   = "";
+	string strAppGuiUrl   	= "";
+	string strLogGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -326,7 +327,8 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0",
 											 workerUrl,
-											 strGuiUrl,
+											 strAppGuiUrl,
+											 strLogGuiUrl,
 											 bLaunchNrePcd,
 											 TESTS_NRE_PCD_BIN_PATH,
 											 v_fake_PC_search_path,

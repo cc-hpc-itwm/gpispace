@@ -182,11 +182,12 @@ BOOST_FIXTURE_TEST_SUITE( test_orchestrator_empty_we, MyFixture )
 BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 {
 	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
-	string strGuiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
+	string strAppGuiUrl   	= "";
+	string strLogGuiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgg 		= "127.0.0.1";
+	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
@@ -213,7 +214,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
-				                             strGuiUrl,
+				                             strAppGuiUrl,
+				                             strLogGuiUrl,
 				                             m_bLaunchNrePcd,
 				                             TESTS_NRE_PCD_BIN_PATH,
 				                             v_fake_PC_search_path,
@@ -303,7 +305,8 @@ retry:	try {
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
-	string strGuiUrl   = "";
+	string strAppGuiUrl   	= "";
+	string strLogGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -332,7 +335,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
-				                             strGuiUrl,
+				                             strAppGuiUrl,
+				                             strLogGuiUrl,
 				                             m_bLaunchNrePcd,
 				                             TESTS_NRE_PCD_BIN_PATH,
 				                             v_fake_PC_search_path,
@@ -421,7 +425,8 @@ retry:	try {
 BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 {
 	LOG( DEBUG, "***** testOrchestratorRealWe *****"<<std::endl);
-	string strGuiUrl   = "";
+	string strAppGuiUrl   	= "";
+	string strLogGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -451,7 +456,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorRealWe )
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
-				                             strGuiUrl,
+				                             strAppGuiUrl,
+				                             strLogGuiUrl,
 				                             m_bLaunchNrePcd,
 				                             TESTS_NRE_PCD_BIN_PATH,
 				                             v_fake_PC_search_path,
@@ -543,7 +549,8 @@ retry:	try {
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe2Aggs *****"<<std::endl);
-	string strGuiUrl = "";
+	string strAppGuiUrl   	= "";
+	string strLogGuiUrl = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -576,7 +583,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe2Aggs )
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_1",
 				                             workerUrl,
-				                             strGuiUrl,
+				                             strAppGuiUrl,
+				                             strLogGuiUrl,
 				                             m_bLaunchNrePcd,
 				                             TESTS_NRE_PCD_BIN_PATH,
 				                             v_fake_PC_search_path,

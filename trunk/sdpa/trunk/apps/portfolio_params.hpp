@@ -19,23 +19,6 @@
 
 enum column_t { MATURITY, STRIKE, FIXINGS, PV, STDDEV, DELTA, GAMMA, VEGA };
 
-//#include <QtGlobal>
-//#include <QTime>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-
-static int randInt(int low, int high)
-{
-	/* initialize random seed: */
-	srand ( time(NULL) );
-
-	// Random number between low and high
-	return rand() % ((high + 1) - low) + low;
-}
-
 class common_parameters_t
 {
 public:
@@ -148,12 +131,8 @@ private:
 class row_parameters_t
 {
 public:
-	row_parameters_t(int rowId = 0)
+	row_parameters_t()
 	{
-		m_rowId = 0;
-		m_dT = randInt(1,365)/365.0;
-		m_dK = randInt(80, 120);
-		m_dFixingsProJahr = 50;
 	}
 
 	row_parameters_t( 	int rowId,
