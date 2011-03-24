@@ -25,6 +25,7 @@
 #include <sdpa/daemon/Observer.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
+#include <sdpa/daemon/ApplicationGuiEvent.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -134,6 +135,7 @@ namespace sdpa { namespace daemon {
   };
 
   typedef BasicNotificationService<NotificationEvent> NotificationService;
+  typedef BasicNotificationService<ApplicationGuiEvent> ApplicationGuiService;
 }}
 
 #endif
