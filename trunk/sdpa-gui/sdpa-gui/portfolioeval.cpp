@@ -12,6 +12,14 @@ double simulation_result_t::gTotalVega 	= 0.0;
 
 #include <vector>
 #include <sstream>
+#include <QtGlobal>
+#include <QTime>
+
+int Portfolio::RandInt(int low, int high)
+{
+	// Random number between low and high
+	return qrand() % ((high + 1) - low) + low;
+}
 
 Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi )
 {
@@ -59,7 +67,13 @@ void Portfolio::InitTable()
 	arr_row_parameters_t arr_row_params;
 
 	for( int k=0;k<5;k++ )
-		arr_row_params.push_back(row_parameters_t(k));
+	{
+		double dT = RandInt(1,365)/365.0;
+		double dK = RandInt(80, 120);
+		double dF = 50;
+
+		arr_row_params.push_back(row_parameters_t(k, dT, dK, dF ));
+	}
 
 	InitPortfolio(comm_params, arr_row_params);
 
@@ -233,15 +247,6 @@ void Portfolio::RetrieveResults( portfolio_result_t& result_data  )
 {
 }
 
-std::string encode(const portfolio_data_t& portfolio_data )
-{
-	 std::ostringstream sstr;
-	 boost::archive::text_oarchive ar(sstr);
-	 ar << portfolio_data ;
-
-	 return sstr.str();
-}
-
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 {
 	std::string strJobData;
@@ -252,7 +257,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 
 	// effectively build the flow here !!!!
 
-	strJobData = encode(job_data);
+	strJobData = job_data.encode();
 
 	return strJobData;
 }

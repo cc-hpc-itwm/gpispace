@@ -23,6 +23,7 @@ public:
 
 	void ClearTable();
 	void SubmitPortfolio();
+	int  RandInt(int low, int high);
 
 private:
 	Ui::MonitorWindow *m_pUi;

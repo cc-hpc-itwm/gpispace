@@ -8,9 +8,13 @@
 
 #include <boost/lexical_cast.hpp>
 #include <list>
+#include <sstream>
 
+#include <boost/foreach.hpp>
+#include <boost/tokenizer.hpp>
 
 using namespace std;
+using namespace boost;
 
 MonitorWindow::MonitorWindow( unsigned short exe_port
                             , unsigned short log_port
@@ -40,7 +44,6 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         (new boost::thread
          (boost::bind
           (&boost::asio::io_service::run, &m_io_service)));
-
 
     m_portfolio_.InitTable();
 }
@@ -75,19 +78,7 @@ static QColor severityToColor (const fhg::log::LogLevel lvl)
   }
 }
 
-void
-MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
-{
-  // map source to column
-  //    maybe create new column
-  // parallel -> if !exist (finished in current row)
-  //    add item to current row
-  // else
-  //    add new row
-
-}
-
-void MonitorWindow::decode (const std::string& strMsg, sdpa::daemon::NotificationEvent& evtNotification)
+void MonitorWindow::decode (const std::string& strMsg, sdpa::daemon::ApplicationGuiEvent& evtNotification)
 {
 	std::stringstream sstr(strMsg);
 	boost::archive::text_iarchive ar(sstr);
@@ -96,7 +87,7 @@ void MonitorWindow::decode (const std::string& strMsg, sdpa::daemon::Notificatio
 
 void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 {
-	sdpa::daemon::NotificationEvent evtNotification;
+	sdpa::daemon::ApplicationGuiEvent evtNotification;
 	try
 	{
 		decode(evt.message(), evtNotification);
@@ -107,42 +98,83 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 	  return;
 	}
 
-	QString qstrActId(evtNotification.activity_id().c_str());
-	QString qstrActName(evtNotification.activity_name().c_str());
-	QString qstrResult(evtNotification.activity_result().c_str());
+	QString qstrRow = QString("%1").arg(evtNotification.row());
+	QString qstrCol = QString("%1").arg(evtNotification.col());
 
-	const sdpa::daemon::NotificationEvent::state_t state = evtNotification.activity_state();
+	// evtNotification.result() it's a simple string, not encoded!
+	std::string result(evtNotification.result());
 
-	if( state == sdpa::daemon::NotificationEvent::STATE_FINISHED )
+	QString qstrResult(result.c_str());
+
+	qDebug()<<"*************************************";
+	qDebug()<<"Received new logging event: row = "<<qstrRow<<", col = "<<qstrCol;
+	qDebug()<<"The result is: "<<qstrResult;
+	qDebug()<<"**************************************";
+
+	double pv = 0.0, stddev = 0.0, Delta = 0.0, Gamma = 0.0, Vega = 0.0;
+	int rowId = 0;
+
+	char_separator<char> sep("[,]");
+	tokenizer<char_separator<char> > tokens(result, sep);
+	BOOST_FOREACH(string t, tokens)
 	{
-		qDebug()<<"*************************************";
-		qDebug()<<"Received new logging event: name = "<<qstrActName<<", id = "<<qstrActId<<QString(", state = %1").arg(state);
-		qDebug()<<"The result is: "<<qstrResult;
-		qDebug()<<"**************************************";
+	   QString qstr(t.c_str());
+	   //qDebug()<<"token: "<<qstr;
+
+	   if(t.find("Delta") != std::string::npos )
+	   {
+		   QStringList list = qstr.split(":=");
+		   qDebug()<<QString(list[0])<< " -> "<<list[1];
+		   Delta = list[1].toDouble();
+	   }
+
+	   if(t.find("Gamma") != std::string::npos )
+	   {
+		   QStringList list = qstr.split(":=");
+		   qDebug()<<QString(list[0])<< " -> "<<list[1];
+		   Gamma = list[1].toDouble();
+	   }
+
+	   if(t.find("Vega") != std::string::npos)
+	   {
+		   QStringList list = qstr.split(":=");
+		   qDebug()<<QString(list[0])<< " -> "<<list[1];
+		   Vega = list[1].toDouble();
+	   }
+
+	   if(t.find("pv") != std::string::npos )
+	   {
+		   QStringList list = qstr.split(":=");
+		   qDebug()<<QString(list[0])<< " -> "<<list[1];
+		   pv = list[1].toDouble();
+	   }
+
+	   if(t.find("stddev") != std::string::npos )
+	   {
+		   QStringList list = qstr.split(":=");
+		   qDebug()<<QString(list[0])<< " -> "<<list[1];
+		   stddev = list[1].toDouble();
+	   }
+
+	   if(t.find("rowID") != std::string::npos )
+	   {
+		   QStringList list = qstr.split(":=");
+		   qDebug()<<QString(list[0])<< " -> "<<list[1];
+		   rowId = list[1].toInt();
+	   }
 	}
 
-	std::stringstream sstr(evtNotification.activity_result());
-
-	char line[512];
-	memset(line, '\0', 512);
-	sstr.getline(line, 512, '\n');
-	int rowId = QString(line).toInt();
-
-	memset(line, '\0', 512);
-	sstr.getline(line, 512, '\n');
-	double dPv = QString(line).toDouble();
-
-	memset(line, '\0', 512);
-	sstr.getline(line, 512, '\n');
-	double dStdDev = QString(line).toDouble();
-
-	simulation_result_t sim_res(rowId, dPv, dStdDev);
+	simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
 	m_portfolio_.ShowResult(sim_res);
+}
+
+void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
+{
+	UpdatePortfolioView(evt);
 }
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
 {
-	UpdatePortfolioView(evt);
 
   if ( evt.severity() < ui->m_level_filter_selector->currentIndex ()
      && ui->m_drop_filtered->isChecked()
