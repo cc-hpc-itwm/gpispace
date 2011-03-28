@@ -394,6 +394,7 @@ function submit ()
 	echo "$jobid -> $s" >&2
 	if echo "$s" | grep -q -i 'finish' ; then
 	    echo "Done." >&2
+            sdpac results "$jobid" -i "results.$jobid"
 	fi
 	sdpac delete "${jobid}"
 	if [ $? -eq 0 ] ; then
