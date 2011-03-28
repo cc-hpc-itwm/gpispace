@@ -274,7 +274,9 @@ struct MyFixture
 
 void MyFixture::startDaemons(const std::string& workerUrl)
 {
-	string strGuiUrl = "";
+	string strAppGuiUrl   	= "";
+	string strLogGuiUrl   	= "";
+
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
 	string addrNRE = "127.0.0.1";
@@ -294,7 +296,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE",
-											 addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+											 addrNRE,"aggregator_0", workerUrl, strLogGuiUrl );
 
 	try {
 		ptrNRE->start_agent();
@@ -378,7 +380,7 @@ BOOST_FIXTURE_TEST_SUITE( test_suite_agent_int, MyFixture )
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 {
 	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByNRE *****"<<std::endl);
-	string strGuiUrl   = "";
+	string strLogGuiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -407,7 +409,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
-				                             strGuiUrl,
+				                             strLogGuiUrl,
 				                             bLaunchNrePcd,
 				                             TESTS_NRE_PCD_BIN_PATH,
 				                             v_fake_PC_search_path,
@@ -528,7 +530,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 {
 	LOG( DEBUG, "***** testActivityRealWeAllCompAndActExec *****"<<std::endl);
-	string strGuiUrl   = "";
+	string strLogGuiUrl   = "";
 	string workerUrl = "127.0.0.1:12500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -548,7 +550,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strLogGuiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
@@ -661,7 +663,8 @@ retry:	try {
 BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 {
 	LOG( DEBUG, "***** testActivityDummyWeAllCompAndNreWorker *****"<<std::endl);
-	string strGuiUrl   = "";
+	string strAppGuiUrl   = "";
+	string strLogGuiUrl   = "";
 	string workerUrl = "127.0.0.1:12500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
@@ -671,7 +674,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_0", addrOrch, strAppGuiUrl);
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
@@ -681,7 +684,7 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl, strGuiUrl );
+		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE,"aggregator_0", workerUrl,  strAppGuiUrl, strLogGuiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
