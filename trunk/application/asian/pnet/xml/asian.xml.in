@@ -132,84 +132,6 @@
       <connect-out port="div" place="delta"/>
     </transition>
 
-    <defun name="asian">
-      <in name="param" type="param"/>
-      <out name="sums" type="sums"/>
-      <module name="asian" function="sums run (param)">
-        <cinclude href="sstream"/>
-        <cinclude href="process.hpp"/>
-        <link href="@BUILD@/application/example/exec/libprocess.so"/>
-        <code><![CDATA[
-          std::ostringstream str;
-
-          str << "S = " << param.S << std::endl;
-          str << "K = " << param.K << std::endl;
-          str << "T = " << param.T << std::endl;
-          str << "sigma = " << param.sigma << std::endl;
-          str << "r = " << param.r << std::endl;
-          str << "d = " << param.d << std::endl;
-          str << "FirstFixing = " << param.FirstFixing << std::endl;
-          str << "FixingsProJahr = " << param.FixingsProJahr << std::endl;
-          str << "AnzahlderDividende = " << param.AnzahlderDividende << std::endl;
-          str << "n = " << param.n << std::endl;
-
-          const std::size_t s (str.str().size());
-
-          char result[1024];
-
-          const std::size_t written
-            ( process::execute ( param.bin
-                               , str.str().c_str()
-                               , s
-                               , result
-                               , 1024
-                               )
-            );
-
-          ::pnetc::type::sums::sums sums;
-
-          std::istringstream is (std::string (result, written));
-          std::string dummy;
-
-          is >> dummy;
-          is >> dummy;
-          is >> sums.sum1;
-          is >> dummy;
-          is >> dummy;
-          is >> sums.sum2;
-
-          sums.param = param;
-
-          return sums;
-        ]]></code>
-      </module>
-    </defun>
-
-    <transition name="asian_id">
-      <use name="asian"/>
-      <connect-in port="param" place="id"/>
-      <connect-out port="sums" place="sums_id"/>
-    </transition>
-
-    <transition name="asian_eps1">
-      <use name="asian"/>
-      <connect-in port="param" place="eps1"/>
-      <connect-out port="sums" place="sums_eps1"/>
-    </transition>
-
-    <transition name="asian_eps2">
-      <use name="asian"/>
-      <connect-in port="param" place="eps2"/>
-      <connect-out port="sums" place="sums_eps2"/>
-    </transition>
-
-    <transition name="asian_delta">
-      <use name="asian"/>
-      <connect-in port="param" place="delta"/>
-      <connect-out port="sums" place="sums_delta"/>
-    </transition>
-<!--
-
     <transition name="asian_id" inline="true">
       <include-function href="run.xml"/>
       <connect-in port="param" place="id"/>
@@ -233,7 +155,6 @@
       <connect-in port="param" place="delta"/>
       <connect-out port="sums" place="sums_delta"/>
     </transition>
--->
 
     <place name="sums_id" type="sums"/>
     <place name="sums_eps1" type="sums"/>
@@ -254,18 +175,18 @@
           ${epsilon} := ${sums_id.param.epsilon};
           ${delta} := ${sums_id.param.delta};
 
-          ${pv_id} := e ** (-${r}) * ${T} * ${sums_id.sum1} / ${n};
-          ${pv_eps1} := e ** (-${r}) * ${T} * ${sums_eps1.sum1} / ${n};
-          ${pv_eps2} := e ** (-${r}) * ${T} * ${sums_eps2.sum1} / ${n};
-          ${pv_delta} := e ** (-${r}) * ${T} * ${sums_delta.sum1} / ${n};
+          ${fak} := e ** (-${r} * ${T});
 
-          ${stddev_id} := (${sums_id.sum2} - ${sums_id.sum1} * ${sums_id.sum1} / ${n}) / ${n};
-          ${stddev_eps1} := (${sums_eps1.sum2} - ${sums_eps1.sum1} * ${sums_eps1.sum1} / ${n}) / ${n};
-          ${stddev_eps2} := (${sums_eps2.sum2} - ${sums_eps2.sum1} * ${sums_eps2.sum1} / ${n}) / ${n};
-          ${stddev_delta} := (${sums_delta.sum2} - ${sums_delta.sum1} * ${sums_delta.sum1} / ${n}) / ${n};
+          ${pv_id} := ${fak} * ${sums_id.sum1} / ${n};
+          ${pv_eps1} := ${fak} * ${sums_eps1.sum1} / ${n};
+          ${pv_eps2} := ${fak} * ${sums_eps2.sum1} / ${n};
+          ${pv_delta} := ${fak} * ${sums_delta.sum1} / ${n};
+
+          ${variance} := (${sums_id.sum2} - ${sums_id.sum1} * ${sums_id.sum1} / ${n})
+                      / ${n} / ${n};
 
           ${result.pv} := ${pv_id};
-          ${result.stddev} := ${stddev_id};
+          ${result.stddev} := ${fak} * sqrt (${variance});
           ${result.Delta} := (${pv_eps1} - ${pv_id}) / ${epsilon};
           ${result.Gamma} := (${pv_eps2} - 2.0 * ${pv_eps1} + ${pv_id}) / (${epsilon} * ${epsilon});
           ${result.Vega} := (${pv_delta} - ${pv_id}) / ${delta};

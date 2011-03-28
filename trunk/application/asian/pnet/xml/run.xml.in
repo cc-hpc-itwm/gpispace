@@ -7,7 +7,6 @@
   <struct name="wait">
     <field name="id" type="long"/>
     <field name="wait" type="long"/>
-    <field name="runs" type="long"/>
   </struct>
 
   <in name="param" type="param" place="param"/>
@@ -80,9 +79,8 @@
           ${state.param} := ${param};
           ${state.its} := 0;
           ${wait.id} := ${param.rowID};
-          ${wait.runs} := (${param.iterations_per_run} + ${param.n} - 1)
+          ${wait.wait} := (${param.iterations_per_run} + ${param.n} - 1)
                        div ${param.iterations_per_run};
-          ${wait.wait} := ${wait.runs};
           ${accu.sum1} := 0.0;
           ${accu.sum2} := 0.0;
           ${accu.param} := ${param};
@@ -207,19 +205,15 @@
       <defun>
         <in name="done" type="wait"/>
         <in name="accu" type="sums"/>
-        <out name="sums" type="sums"/>
-        <expression>
-          ${sums} := ${accu};
-          ${sums.sum1} := ${sums.sum1} / double(${done.runs});
-          ${sums.sum2} := ${sums.sum2} / double(${done.runs});
-        </expression>
+        <out name="accu" type="sums"/>
+        <expression/>
         <condition>
           ${done.id} :eq: ${accu.param.rowID}
         </condition>
       </defun>
       <connect-in port="done" place="done"/>
       <connect-in port="accu" place="accu"/>
-      <connect-out port="sums" place="sums"/>
+      <connect-out port="accu" place="sums"/>
     </transition>
 
   </net>
