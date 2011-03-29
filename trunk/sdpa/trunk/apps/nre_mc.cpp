@@ -145,7 +145,6 @@ int main (int argc, char **argv)
 																											, logGuiUrl
 																											);
 
-
 	  if(bDoBackup)
 		  ptrNRE->start_agent(bkp_path/backup_file);
 	  else

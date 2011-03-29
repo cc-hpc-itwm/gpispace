@@ -42,8 +42,7 @@ int main (int argc, char **argv)
 	string aggName;
 	string aggUrl;
 	string workerUrl;
-	string logGuiUrl;
-	string appGuiUrl;
+	string guiUrl;
 
 	bool bDoBackup = false;
 	std::string backup_file;
@@ -57,8 +56,7 @@ int main (int argc, char **argv)
 	   ("agg_name,m",  po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
 	   //("agg_url,p",  po::value<std::string>(&aggUrl)->default_value("127.0.0.1:5001"), "Aggregator's url")
 	   ("worker_url,w",  po::value<std::string>(&workerUrl)->default_value("127.0.0.1:8000"), "Worker's url")
-	   ("app_gui_url,a",  po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
-	   ("log_gui_url,g",  po::value<std::string>(&logGuiUrl)->default_value("127.0.0.1:9001"), "logging GUI's url")
+	   ("gui_url,g",  po::value<std::string>(&guiUrl)->default_value("127.0.0.1:9000"), "GUI's url")
 	   ("backup_folder,d", po::value<std::string>(&backup_folder), "NRE's backup folder")
 	   ("backup_file,f", po::value<std::string>(&backup_file), "NRE's backup file")
 	   ;
@@ -146,8 +144,7 @@ int main (int argc, char **argv)
 																				, nreUrl
 																				, aggName
 																				, workerUrl
-																				, appGuiUrl
-																				, logGuiUrl
+																				, guiUrl
 																				);
 
 
