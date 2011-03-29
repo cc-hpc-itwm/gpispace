@@ -33,8 +33,7 @@ namespace daemon {
 												   , const std::string& url
 												   , const std::string& masterName
 												   , const std::string& workerUrl
-												   , const std::string& appGuiUrl = "127.0.0.1:9000"
-												   , const std::string& logGuiUrl = "127.0.0.1:9001"
+												   , const std::string& guiUrl = "127.0.0.1:9000"
 												   , bool bLaunchNrePcd = false
 												   , const std::string & fvmPCBinary = ""
 												   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
@@ -49,8 +48,7 @@ namespace daemon {
 													   , url
 													   , masterName
 													   , workerUrl
-													   , appGuiUrl
-													   , logGuiUrl
+													   , guiUrl
 													   , bLaunchNrePcd
 													   , fvmPCBinary
 													   , fvmPCSearchPath
@@ -72,8 +70,7 @@ namespace daemon {
 												   , const std::string& url
 												   , const std::string& masterName
 												   , const std::string& workerUrl
-												   , const std::string& appGuiUrl = "127.0.0.1:9000"
-												   , const std::string& logGuiUrl = "127.0.0.1:9001"
+												   , const std::string& guiUrl = "127.0.0.1:9000"
 												   , bool bLaunchNrePcd = false
 												   , const std::string & fvmPCBinary = ""
 												   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
@@ -85,8 +82,7 @@ namespace daemon {
 														   , url
 														   , masterName
 														   , workerUrl
-														   , appGuiUrl
-														   , logGuiUrl
+														   , guiUrl
 														   , bLaunchNrePcd
 														   , fvmPCBinary
 														   , fvmPCSearchPath

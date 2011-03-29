@@ -24,17 +24,9 @@
 #include <stdio.h>
 
 #include <unistd.h>
-#include <apps/portfolio_params.hpp>
 
 int READ = 0;
 int WRITE = 1;
-
-void decode_params(const std::string& strMsg, portfolio_data_t& portfolio_data )
-{
-	std::stringstream sstr(strMsg);
-	boost::archive::text_iarchive ar(sstr);
-	ar >> portfolio_data;
-}
 
 namespace sdpa { namespace nre { namespace worker {
 
@@ -68,17 +60,33 @@ namespace sdpa { namespace nre { namespace worker {
 		virtual void stop() { LOG( INFO, "Stop the test NreWorkerClient ...");}
 		//virtual void cancel() throw (std::exception){ throw std::runtime_error("not implemented"); }
 
+		std::string decode( const std::string& strInput )
+		{
+			std::string strOutput;
+			std::stringstream sstr(strInput);
+			boost::archive::text_iarchive ar(sstr);
+			ar >> strOutput;
+			return strOutput;
+		}
+
+		std::string encode( const std::string& strInput )
+		{
+			std::stringstream sstr;
+			boost::archive::text_oarchive ar(sstr);
+			ar << strInput;
+			return sstr.str();
+		}
+
 		virtual execution_result_t execute(const encoded_type& in_activity, unsigned long walltime = 0) throw (WalltimeExceeded, std::exception)
 		{
 			LOG( INFO, "Execute the activity "<<in_activity);
 
 			// decode the in_activity -> config file
-			portfolio_data_t portfolio_data;
-			decode_params(in_activity, portfolio_data );
+			//portfolio_data_t portfolio_data;
 
 			// call the asian backend
-			std::string strCfg;
-			strCfg = portfolio_data[0];
+			//portfolio_data.decode(in_activity);
+			std::string strCfg = decode(in_activity);
 
 			const char* ASIAN_INPUT = strCfg.c_str();
 
@@ -157,9 +165,14 @@ namespace sdpa { namespace nre { namespace worker {
 			}
 
 
-			// encode the result into result_t
+			sdpa::job_result_t result( encode(line) );
 
-			sdpa::job_result_t result(line);
+			/*
+			 * std::ostringstream sstr;
+			boost::archive::text_oarchive ar(sstr);
+			ar << line ;
+			sdpa::job_result_t result(sstr.str());
+			*/
 
 			execution_result_t exec_res(std::make_pair(ACTIVITY_FINISHED, result));
 

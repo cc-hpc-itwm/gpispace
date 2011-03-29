@@ -39,8 +39,7 @@ namespace sdpa {
 			   , const std::string& masterName = ""
 			   //, const std::string& masterUrl = ""
 			   , const std::string& workerUrl = ""
-			   , const std::string& appGuiUrl = ""
-			   , const std::string& logGuiUrl = ""
+			   , const std::string& guiUrl = ""
 			   // TODO: fixme, this is ugly
 			   , bool bLaunchNrePcd = false
 			   , const std::string & fvmPCBinary = ""
@@ -52,8 +51,7 @@ namespace sdpa {
                 , url_(url)
                 , masterName_(masterName)
                 , workerUrl_(workerUrl)
-				, m_appGuiService("SDPA", appGuiUrl)
-                , m_logGuiService("SDPA", logGuiUrl)
+                , m_guiService("SDPA", guiUrl)
                 , bLaunchNrePcd_(bLaunchNrePcd)
                 , nre_pcd_binary_(fvmPCBinary)
                 , nre_pcd_search_path_(fvmPCSearchPath)
@@ -63,26 +61,18 @@ namespace sdpa {
 
 			try
 			{
-				if(!logGuiUrl.empty())
+				if(!guiUrl.empty())
 				{
 					// logging gui service
-					m_logGuiService.open ();
+					m_guiService.open ();
 					// attach gui observer
-					SDPA_LOG_INFO("Logging GUI observer at " << logGuiUrl << " attached...");
-					attach_observer(&m_logGuiService);
-				}
-
-				if(!appGuiUrl.empty())
-				{
-					// application gui service
-					m_appGuiService.open ();
-					// attach gui observer
-					SDPA_LOG_INFO("Application GUI service at " << appGuiUrl << " attached...");
+					SDPA_LOG_INFO("Logging GUI observer at " << guiUrl << " attached...");
+					attach_observer(&m_guiService);
 				}
 			}
 			catch (std::exception const & ex)
 			{
-			  SDPA_LOG_ERROR ("GUI observer at " << logGuiUrl << " could not be attached: " << ex.what());
+			  SDPA_LOG_ERROR ("GUI observer at " << guiUrl << " could not be attached: " << ex.what());
 			}
 		}
 
@@ -91,7 +81,7 @@ namespace sdpa {
 			SDPA_LOG_DEBUG("NRE's destructor called ...");
 
 			//daemon_stage_ = NULL;
-			detach_observer( &m_logGuiService );
+			detach_observer( &m_guiService );
 		}
 
 		void action_configure( const sdpa::events::StartUpEvent& );
@@ -122,7 +112,7 @@ namespace sdpa {
 			ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
 			//ar & masterUrl_; //boost::serialization::make_nvp("url_", masterUrl_);
 			ar & workerUrl_;
-			//ar & m_logGuiService;
+			//ar & m_guiService;
 		}
 
 		virtual void backup( std::ostream& );
@@ -148,8 +138,7 @@ namespace sdpa {
 		std::string masterName_;
 		//std::string masterUrl_;
 		std::string workerUrl_;
-		ApplicationGuiService m_appGuiService;
-		NotificationService m_logGuiService;
+		NotificationService m_guiService;
 		bool bLaunchNrePcd_;
         std::string nre_pcd_binary_;
         std::vector<std::string> nre_pcd_search_path_;
