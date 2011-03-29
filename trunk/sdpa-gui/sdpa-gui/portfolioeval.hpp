@@ -20,10 +20,12 @@ public:
 	void RetrieveResults( portfolio_result_t& );
 	void PrintToString(portfolio_data_t&, std::string& );
 	std::string BuildWorkflow(portfolio_data_t&);
+	std::string BuildTestWorkflow(portfolio_data_t& job_data);
 
 	void ClearTable();
 	void SubmitPortfolio();
 	int  RandInt(int low, int high);
+	int  Resize(int k);
 
 private:
 	Ui::MonitorWindow *m_pUi;

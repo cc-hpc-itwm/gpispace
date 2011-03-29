@@ -37,12 +37,12 @@ public slots:
     // portfolio related slots
     void ClearTable() { m_portfolio_.ClearTable(); }
     void SubmitPortfolio() { m_portfolio_.SubmitPortfolio(); }
+    void resizePortfolio(int k) { m_portfolio_.Resize(k); }
 
 private:
     bool event (QEvent *event);
 
     void UpdatePortfolioView(fhg::log::LogEvent const& );
-    void decode (const std::string&, sdpa::daemon::ApplicationGuiEvent& );
 
     Ui::MonitorWindow *ui;
     typedef boost::shared_ptr<boost::thread> thread_t;

@@ -12,6 +12,15 @@
 
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
+//#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <we/mgmt/basic_layer.hpp>
+#include <we/util/codec.hpp>
+#include <we/we.hpp>
+#include <we/loader/putget.hpp>
+
+#include <boost/unordered_map.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace boost;
@@ -78,94 +87,74 @@ static QColor severityToColor (const fhg::log::LogLevel lvl)
   }
 }
 
-void MonitorWindow::decode (const std::string& strMsg, sdpa::daemon::ApplicationGuiEvent& evtNotification)
+template <typename T>
+void decode (const std::string& strMsg, T& t)
 {
 	std::stringstream sstr(strMsg);
 	boost::archive::text_iarchive ar(sstr);
-	ar >> evtNotification;
+	ar >> t;
 }
 
 void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 {
-	sdpa::daemon::ApplicationGuiEvent evtNotification;
+	sdpa::daemon::NotificationEvent evtNotification;
 	try
 	{
 		decode(evt.message(), evtNotification);
 	}
 	catch (const std::exception &ex)
 	{
-	  std::cerr << "ignoring invalid event!" << std::endl;
+	  //qDebug() << "ignoring invalid event!";
 	  return;
 	}
 
-	QString qstrRow = QString("%1").arg(evtNotification.row());
-	QString qstrCol = QString("%1").arg(evtNotification.col());
-
-	// evtNotification.result() it's a simple string, not encoded!
-	std::string result(evtNotification.result());
-
-	QString qstrResult(result.c_str());
-
-	qDebug()<<"*************************************";
-	qDebug()<<"Received new logging event: row = "<<qstrRow<<", col = "<<qstrCol;
-	qDebug()<<"The result is: "<<qstrResult;
-	qDebug()<<"**************************************";
-
-	double pv = 0.0, stddev = 0.0, Delta = 0.0, Gamma = 0.0, Vega = 0.0;
-	int rowId = 0;
-
-	char_separator<char> sep("[,]");
-	tokenizer<char_separator<char> > tokens(result, sep);
-	BOOST_FOREACH(string t, tokens)
+	if (evtNotification.activity_state() != sdpa::daemon::NotificationEvent::STATE_FINISHED)
 	{
-	   QString qstr(t.c_str());
-	   //qDebug()<<"token: "<<qstr;
-
-	   if(t.find("Delta") != std::string::npos )
-	   {
-		   QStringList list = qstr.split(":=");
-		   qDebug()<<QString(list[0])<< " -> "<<list[1];
-		   Delta = list[1].toDouble();
-	   }
-
-	   if(t.find("Gamma") != std::string::npos )
-	   {
-		   QStringList list = qstr.split(":=");
-		   qDebug()<<QString(list[0])<< " -> "<<list[1];
-		   Gamma = list[1].toDouble();
-	   }
-
-	   if(t.find("Vega") != std::string::npos)
-	   {
-		   QStringList list = qstr.split(":=");
-		   qDebug()<<QString(list[0])<< " -> "<<list[1];
-		   Vega = list[1].toDouble();
-	   }
-
-	   if(t.find("pv") != std::string::npos )
-	   {
-		   QStringList list = qstr.split(":=");
-		   qDebug()<<QString(list[0])<< " -> "<<list[1];
-		   pv = list[1].toDouble();
-	   }
-
-	   if(t.find("stddev") != std::string::npos )
-	   {
-		   QStringList list = qstr.split(":=");
-		   qDebug()<<QString(list[0])<< " -> "<<list[1];
-		   stddev = list[1].toDouble();
-	   }
-
-	   if(t.find("rowID") != std::string::npos )
-	   {
-		   QStringList list = qstr.split(":=");
-		   qDebug()<<QString(list[0])<< " -> "<<list[1];
-		   rowId = list[1].toInt();
-	   }
+		return;
 	}
 
-	simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
-	m_portfolio_.ShowResult(sim_res);
+	we::activity_t act;
+
+	try
+	{
+		we::util::text_codec::decode(evtNotification.activity_result(), act);
+	}
+	catch (std::exception const &ex)
+	{
+		//qDebug() << "could not parse activity: " << ex.what();
+		return;
+	}
+
+	we::activity_t::output_t output (act.output());
+
+	//qDebug() << evtNotification.activity_name ().c_str() << " produced " << output.size() << " token(s):";
+
+	for ( we::activity_t::output_t::const_iterator it(output.begin())
+        ; it != output.end()
+        ; ++it
+        )
+	{
+		using namespace we::loader;
+		we::token_t token (it->first);
+
+		//qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
+
+		if (evtNotification.activity_name () == "done")
+		{
+			long rowId (get<long>(token.value, "rowID"));
+			double pv (get<double>(token.value, "pv"));
+			double stddev(get<double>(token.value, "stddev"));
+			double Delta(get<double>(token.value, "Delta"));
+			double Gamma(get<double>(token.value, "Gamma"));
+			double Vega(get<double>(token.value, "Vega"));
+
+			simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
+			m_portfolio_.ShowResult(sim_res);
+
+			int val = ui->m_progressBar->value()+1;
+			ui->m_progressBar->setValue(val);
+		}
+	}
 }
 
 void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)

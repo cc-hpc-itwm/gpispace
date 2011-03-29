@@ -15,15 +15,17 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <QtGlobal>
 #include <QTime>
 
+#include <we/we.hpp>
+//#include <sdpa/engine/IWorkflowEngine.hpp>
+
 int Portfolio::RandInt(int low, int high)
 {
 	// Random number between low and high
 	return qrand() % ((high + 1) - low) + low;
 }
 
-Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi )
+Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi ) : m_pUi(arg_m_pUi), m_nRows(5)
 {
-	m_pUi= arg_m_pUi;
 }
 
 Portfolio::~Portfolio()
@@ -62,11 +64,14 @@ void Portfolio::InitTable()
 	int FirstFixing = 1;
 	long AnzahlderDividende = 3;
 
+	m_nRows = 10;
+	m_pUi->m_calcSpreadSheet->setRowCount ( m_nRows );
+
 	common_parameters_t comm_params(S, r, d, n, sigma, FirstFixing, AnzahlderDividende );
 
 	arr_row_parameters_t arr_row_params;
 
-	for( int k=0;k<5;k++ )
+	for( int k=0; k<m_nRows; k++ )
 	{
 		double dT = RandInt(1,365)/365.0;
 		double dK = RandInt(80, 120);
@@ -77,18 +82,9 @@ void Portfolio::InitTable()
 
 	InitPortfolio(comm_params, arr_row_params);
 
-	arr_simulation_results_t arr_sim_res;
-	arr_sim_res.push_back(simulation_result_t(0, 8454.54, 54.654, 0.4234, 0.0996, 0.3244));
-	arr_sim_res.push_back(simulation_result_t(1, 45.43, 76.654, 0.4234, 0.688, 0.2314));
-	arr_sim_res.push_back(simulation_result_t(2, 42343.432, 543.456, 0.4324, 0.5465, 0.4234));
-	arr_sim_res.push_back(simulation_result_t(3, 8432.432, 654.543, 0.4234, 0.545, 0.4324));
-	arr_sim_res.push_back(simulation_result_t(4, 423.43, 345.546, 0.43, 0.43, 0.342));
-	ShowResults(arr_sim_res);
-
-	// save the number of rows
-	m_nRows = arr_row_params.size();
-
-	m_pUi->m_calcSpreadSheet->setRowCount ( m_nRows );
+	int nBackendTasks = m_nRows;
+	m_pUi->m_progressBar->setRange(0, nBackendTasks-1);
+	m_pUi->m_progressBar->reset();
 }
 
 void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_parameters_t& v_row_params )
@@ -163,6 +159,12 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 	m_pUi->m_editTotalVega->setText("0");
 }
 
+int Portfolio::Resize(int k)
+{
+	ClearTable();
+	m_nRows = k;
+	InitTable();
+}
 
 void Portfolio::ShowResult( simulation_result_t& sim_res )
 {
@@ -247,15 +249,74 @@ void Portfolio::RetrieveResults( portfolio_result_t& result_data  )
 {
 }
 
+static we::token_t make_token( portfolio_data_t& job_data, const int row )
+{
+  signature::structured_t sig;
+  sig["bin"]=literal::STRING();
+  sig["S"]=literal::DOUBLE();
+  sig["sigma"]=literal::DOUBLE();
+  sig["r"]= literal::DOUBLE();
+  sig["d"]= literal::DOUBLE();
+  sig["FirstFixing"] = literal::LONG();
+  sig["AnzahlderDividende"]=  literal::LONG();
+  sig["n"] = literal::LONG();
+
+  sig["epsilon"]= literal::DOUBLE(); // TODO
+  sig["delta"]=  literal::DOUBLE(); // TODO
+  sig["iterations_per_run"]=  literal::LONG(); // TODO: figure out what this number actually means
+
+  sig["rowID"] =  literal::LONG();
+  sig["T"]=literal::DOUBLE();
+  sig["K"]=literal::DOUBLE();
+  sig["FixingsProJahr"]=literal::DOUBLE();
+
+  value::structured_t param;
+  param["bin"]= std::string("/amd/nfs/root/gpfs/p/hpc/sdpa/rotaru/sdpa_trunk/main/trunk/build_release/bin/Asian"); // TODO: update / make user chooseable
+  param["S"]= job_data.common_params.SpotPrice();
+  param["sigma"]= job_data.common_params.Volatility();
+  param["r"]=job_data.common_params.InterestRate();
+  param["d"]=job_data.common_params.DividendYield();
+  param["FirstFixing"] = (long)job_data.common_params.FirstFixing();
+  param["AnzahlderDividende"]= (long)job_data.common_params.NumberDividends();
+  param["n"] = (long)job_data.common_params.Iterations();
+
+  param["epsilon"]= 0.01; // TODO
+  param["delta"]= 0.01; // TODO
+  param["iterations_per_run"]= job_data.common_params.Iterations() / job_data.common_params.nLBUs(); // TODO: figure out what this number actually means
+
+  param["rowID"] = literal::type((long)row);
+  param["T"]= job_data.arr_row_params[row].Maturity();
+  param["K"]= job_data.arr_row_params[row].Strike();
+  param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
+
+  return we::token_t ( "param", sig, value::type(param) );
+}
+
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
+{
+	// effectively build the flow here !!!!
+
+	// 1. load xml file (job description/workflow) -> we::activity
+	we::activity_t act;
+	std::ifstream ifs("asian.pnet"); // TODO: make this configurable: file open dialog
+	we::util::text_codec::decode (ifs, act);
+	for (std::size_t row (0); row < job_data.size(); ++row)
+		act.add_input( we::input_t::value_type( make_token(job_data, row), act.transition().input_port_by_name ("param")));
+
+	std::ostringstream sstr;
+	sstr << act;
+	qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
+
+	return we::util::text_codec::encode(act);
+}
+
+std::string Portfolio::BuildTestWorkflow(portfolio_data_t& job_data)
 {
 	std::string strJobData;
 	job_data.PrintToString(strJobData);
 
 	qDebug()<<"The workflow to be submitted is: ";
 	qDebug()<<QString(strJobData.c_str());
-
-	// effectively build the flow here !!!!
 
 	strJobData = job_data.encode();
 
@@ -270,19 +331,12 @@ void Portfolio::SubmitPortfolio()
 	portfolio_data_t job_data;
 	PrepareInputData( job_data  );
 
-	//const std::string job_id(api->submitJob(strJobData));
-
-	// inject tokens within the workflow
-
 	// call here the client API
 	// disable submit button
 
 	// enable submit button when the job result is delivered (token)
 
 	qDebug()<<"Starting the user client ...";
-
-	ClearTable();
-
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -295,12 +349,14 @@ void Portfolio::SubmitPortfolio()
 	ptrCli->configure_network( config );
 	sdpa::job_id_t job_id_user;
 
+	//std::string strWorkflow = BuildTestWorkflow(job_data);
 	std::string strWorkflow = BuildWorkflow(job_data);
 
 	int nTrials = 0;
 	try {
 
 		qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
+		ClearTable();
 		job_id_user = ptrCli->submitJob(strWorkflow);
 		qDebug()<<"Got the job id "<<job_id_user.str().c_str();
 	}
@@ -316,7 +372,7 @@ void Portfolio::SubmitPortfolio()
 		}
 	}
 
-	std::string job_status = ptrCli->queryJob(job_id_user);
+	/*std::string job_status = ptrCli->queryJob(job_id_user);
 	//qDebug()<<"The status of the job "<<job_id_user<<" is "<<job_status);
 	std::cout<<std::endl;
 
@@ -393,16 +449,7 @@ void Portfolio::SubmitPortfolio()
 	}
 
 	ptrCli->shutdown_network();
-
-	// TO BE REMOVED !!!!!!!!!!!!!!!!
-	/***************************************************************************************/
-	/*arr_simulation_results_t arr_sim_res;
-	arr_sim_res.push_back(simulation_result_t(0, 8454.54, 54.654, 0.4234, 0.0996, 0.3244));
-	arr_sim_res.push_back(simulation_result_t(1, 45.43, 76.654, 0.4234, 0.688, 0.2314));
-	arr_sim_res.push_back(simulation_result_t(2, 42343.432, 543.456, 0.4324, 0.5465, 0.4234));
-	arr_sim_res.push_back(simulation_result_t(3, 8432.432, 654.543, 0.4234, 0.545, 0.4324));
-	arr_sim_res.push_back(simulation_result_t(4, 423.43, 345.546, 0.43, 0.43, 0.342));
-	ShowResults(arr_sim_res);*/
+	*/
 
 }
 
@@ -425,6 +472,8 @@ void Portfolio::ClearTable( )
 	m_pUi->m_editTotalDelta->setText("0");
 	m_pUi->m_editTotalGamma->setText("0");
 	m_pUi->m_editTotalVega->setText("0");
+
+	m_pUi->m_progressBar->reset();
 }
 
 
