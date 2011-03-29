@@ -54,7 +54,7 @@
         <field name="FirstFixing"><value>1</value></field>
         <field name="FixingsProJahr"><value>50.0</value></field>
         <field name="AnzahlderDividende"><value>3</value></field>
-        <field name="n"><value>100000</value></field>
+        <field name="n"><value>200000</value></field>
 
         <field name="rowID"><value>0</value></field>
         <field name="bin"><value>"@BUILD@/application/asian/Asian"</value></field>
@@ -62,7 +62,7 @@
         <field name="epsilon"><value>0.01</value></field>
         <field name="delta"><value>0.01</value></field>
 
-        <field name="iterations_per_run"><value>100000 div 2</value></field>
+        <field name="iterations_per_run"><value>50000</value></field>
       </token>
     </place>
 
@@ -206,10 +206,26 @@
       <connect-in port="sums_eps1" place="sums_eps1"/>
       <connect-in port="sums_eps2" place="sums_eps2"/>
       <connect-in port="sums_delta" place="sums_delta"/>
-      <connect-out port="result" place="result"/>
+      <connect-out port="result" place="pre_result"/>
     </transition>
 
+    <place name="pre_result" type="result"/>
     <place name="result" type="result"/>
+
+    <transition name="done">
+      <defun>
+        <in name="result" type="result"/>
+        <out name="result" type="result"/>
+        <module name="asian" function="done (result)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG(INFO, "done row with result " << result);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="result" place="pre_result"/>
+      <connect-out port="result" place="result"/>
+    </transition>
   </net>
 
 </defun>
