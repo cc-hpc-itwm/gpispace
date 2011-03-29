@@ -10,6 +10,7 @@
 
 #include <map>
 #include <sstream>
+#include <vector>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -218,9 +219,9 @@ private:
 class simulation_result_t
 {
 public:
-	simulation_result_t(  int rowId,
-						  double dSum1,
-	  	  	  	  	  	  double dSum2,
+	simulation_result_t(  int rowId = 0,
+						  double dSum1 = 0.0,
+	  	  	  	  	  	  double dSum2 = 0.0,
 	  	  	  	  	  	  double dDelta = 0.0,
 	  	  	  	  	  	  double dGamma = 0.0,
 	  	  	  	  	  	  double dVega = 0.0 )
@@ -335,18 +336,39 @@ struct portfolio_data_t
 		ar & arr_row_params;
 	}
 
-	void PrintToString( std::string& strJobData )
+	size_t size() { return arr_row_params.size(); }
+
+	std::string cfg( int row_idx, int i )
 	{
+		if(i<0 || i>3)
+			throw;
+
 		std::stringstream sstr;
-		sstr<<"S = "<<common_params.SpotPrice()<<std::endl;
+
+		if(i==0 || i==3)
+			sstr<<"S = "<<common_params.SpotPrice()<<std::endl;
+		else
+			if(i==1)
+				sstr<<"S = "<<1.001*common_params.SpotPrice()<<std::endl;
+			else
+				if(i==2)
+					sstr<<"S = "<<1.002*common_params.SpotPrice()<<std::endl;
+
 		sstr<<"r = "<<common_params.InterestRate()<<std::endl;
 		sstr<<"d = "<<common_params.DividendYield()<<std::endl;
 		sstr<<"n = "<<common_params.Iterations()<<std::endl;
-		sstr<<"sigma = "<<common_params.Volatility()<<std::endl;
+
+		if(i==0 || i==1 || i==2 )
+			sstr<<"sigma = "<<common_params.Volatility()<<std::endl;
+		else
+			if(i==3)
+				sstr<<"sigma = "<<1.001*common_params.Volatility()<<std::endl;
+
 		sstr<<"FirstFixing = "<<common_params.FirstFixing()<<std::endl;
+
 		sstr<<"AnzahlderDividende = "<<common_params.NumberDividends()<<std::endl;
 
-		for( int row_idx = 0; row_idx<arr_row_params.size(); row_idx++ )
+		//for( int row_idx = 0; row_idx<arr_row_params.size(); row_idx++ )
 		{
 			sstr<<"row = "<<row_idx<<std::endl;
 			sstr<<"T = "<<arr_row_params[row_idx].Maturity()<<std::endl;
@@ -354,10 +376,32 @@ struct portfolio_data_t
 			sstr<<"FixingsProJahr = "<<arr_row_params[row_idx].Fixings()<<std::endl;
 		}
 
-		strJobData = sstr.str();
+		return sstr.str();
 	}
 
-	std::string operator[]( int row_idx )
+	void PrintToString( std::string& strJobData )
+	{
+			std::stringstream sstr;
+			sstr<<"S = "<<common_params.SpotPrice()<<std::endl;
+			sstr<<"r = "<<common_params.InterestRate()<<std::endl;
+			sstr<<"d = "<<common_params.DividendYield()<<std::endl;
+			sstr<<"n = "<<common_params.Iterations()<<std::endl;
+			sstr<<"sigma = "<<common_params.Volatility()<<std::endl;
+			sstr<<"FirstFixing = "<<common_params.FirstFixing()<<std::endl;
+			sstr<<"AnzahlderDividende = "<<common_params.NumberDividends()<<std::endl;
+
+			for( int row_idx = 0; row_idx<arr_row_params.size(); row_idx++ )
+			{
+				sstr<<"row = "<<row_idx<<std::endl;
+				sstr<<"T = "<<arr_row_params[row_idx].Maturity()<<std::endl;
+				sstr<<"K ="<<arr_row_params[row_idx].Strike()<<std::endl;
+				sstr<<"FixingsProJahr = "<<arr_row_params[row_idx].Fixings()<<std::endl;
+			}
+
+			strJobData = sstr.str();
+	}
+
+	/*std::string operator[]( int row_idx )
 	{
 		if( row_idx < 0 || row_idx >= arr_row_params.size() )
 			throw ;
@@ -377,6 +421,34 @@ struct portfolio_data_t
 		sstr<<"FixingsProJahr = "<<arr_row_params[row_idx].Fixings()<<std::endl;
 
 		return sstr.str();
+	}*/
+
+	std::vector<std::string> operator[]( int row_idx )
+	{
+		if( row_idx < 0 || row_idx >= arr_row_params.size() )
+			throw ;
+
+		std::vector<std::string> arrCfgs;
+		for(int k=0; k<4;k++)
+			arrCfgs.push_back( cfg(row_idx, k) );
+
+		return arrCfgs;
+	}
+
+	std::string encode()
+	{
+		std::ostringstream sstr;
+		boost::archive::text_oarchive ar(sstr);
+		ar << *this ;
+
+		return sstr.str();
+	}
+
+	void decode(const std::string& strMsg )
+	{
+		std::stringstream sstr(strMsg);
+		boost::archive::text_iarchive ar(sstr);
+		ar >> *this;
 	}
 };
 
@@ -387,6 +459,22 @@ struct portfolio_result_t
 	void serialize(Archive& ar, const unsigned int)
 	{
 		ar & arr_sim_results;
+	}
+
+	std::string encode()
+	{
+		 std::ostringstream sstr;
+		 boost::archive::text_oarchive ar(sstr);
+		 ar << *this ;
+
+		 return sstr.str();
+	}
+
+	void decode(const std::string& strMsg )
+	{
+		std::stringstream sstr(strMsg);
+		boost::archive::text_iarchive ar(sstr);
+		ar >> *this;
 	}
 };
 
