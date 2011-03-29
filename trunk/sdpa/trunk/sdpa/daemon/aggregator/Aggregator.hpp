@@ -34,22 +34,22 @@ namespace sdpa {
 			Aggregator( const std::string& name = "",
 						const std::string& url = "",
 						const std::string& masterName = "",
-						const std::string& appGuiUrl = "")
+						const std::string& guiUrl = "")
 			: DaemonFSM( name, NULL ),
 			  SDPA_INIT_LOGGER(name),
 			  url_(url),
 			  masterName_(masterName),
-			  m_appGuiService("SDPA", appGuiUrl)
+			  m_guiService("SDPA", guiUrl)
 			{
 				SDPA_LOG_DEBUG("Aggregator's constructor called ...");
 				//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
 
 				// application gui service
-				if(!appGuiUrl.empty())
+				if(!guiUrl.empty())
 				{
-					m_appGuiService.open ();
+					m_guiService.open ();
 					// attach gui observer
-					SDPA_LOG_INFO("Application GUI service at " << appGuiUrl << " attached...");
+					SDPA_LOG_INFO("Application GUI service at " << guiUrl << " attached...");
 				}
 			}
 
@@ -82,8 +82,7 @@ namespace sdpa {
 			friend class boost::serialization::access;
 			//friend class sdpa::tests::WorkerSerializationTest;
 
-			// callback handler for WE
-			bool finished(const id_type & id, const result_type & result);
+			void notifyAppGui(const result_type & result);
 
 			private:
 			Scheduler* create_scheduler()
@@ -95,7 +94,7 @@ namespace sdpa {
 			std::string url_;
 			std::string masterName_;
 
-			ApplicationGuiService m_appGuiService;
+			ApplicationGuiService m_guiService;
 		};
 	}
 }

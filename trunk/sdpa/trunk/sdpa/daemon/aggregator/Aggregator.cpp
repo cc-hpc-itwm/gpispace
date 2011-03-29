@@ -455,24 +455,11 @@ void Aggregator::recover( std::istream& ifs )
 	}
 }
 
-// notifiications
-bool Aggregator::finished(const id_type & id, const result_type & result)
+void Aggregator::notifyAppGui(const result_type & result)
 {
-	GenericDaemon::finished(id, result);
-
-	if(hasWorkflowEngine())
-	{
-        activity_information_t info;
-        ptr_workflow_engine_->fill_in_info (id, info);
-        const std::string act_name (info.name);
-
-#ifdef USE_REAL_WE
-		ApplicationGuiEvent evtAppGui(0,0, result);
-#else
-		ApplicationGuiEvent evtAppGui(0,0, info.data["out"]);
-#endif
-		m_appGuiService.update(evtAppGui);
-	}
+	ApplicationGuiEvent evtAppGui(0, 0, result);
+	m_guiService.update(evtAppGui);
+	SDPA_LOG_INFO("Sent notification to the application gui! (result ="<<result<<")");
 }
 
 /*
