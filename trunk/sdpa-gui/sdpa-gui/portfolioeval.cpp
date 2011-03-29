@@ -64,7 +64,7 @@ void Portfolio::InitTable()
 	int FirstFixing = 1;
 	long AnzahlderDividende = 3;
 
-	m_nRows = 10;
+	m_nRows = m_pUi->m_spinBox->value();
 	m_pUi->m_calcSpreadSheet->setRowCount ( m_nRows );
 
 	common_parameters_t comm_params(S, r, d, n, sigma, FirstFixing, AnzahlderDividende );
@@ -82,8 +82,7 @@ void Portfolio::InitTable()
 
 	InitPortfolio(comm_params, arr_row_params);
 
-	int nBackendTasks = m_nRows;
-	m_pUi->m_progressBar->setRange(0, nBackendTasks-1);
+	m_pUi->m_progressBar->setRange(0, m_nRows);
 	m_pUi->m_progressBar->reset();
 }
 
@@ -475,7 +474,6 @@ void Portfolio::ClearTable( )
 
 	m_pUi->m_progressBar->reset();
 }
-
 
 void Portfolio::PrintToString(portfolio_data_t& d, std::string& strJobData)
 {

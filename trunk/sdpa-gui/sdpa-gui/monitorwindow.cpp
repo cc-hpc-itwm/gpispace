@@ -104,7 +104,7 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 	}
 	catch (const std::exception &ex)
 	{
-	  //qDebug() << "ignoring invalid event!";
+	  qDebug() << "ignoring invalid event!";
 	  return;
 	}
 
@@ -121,13 +121,13 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 	}
 	catch (std::exception const &ex)
 	{
-		//qDebug() << "could not parse activity: " << ex.what();
+		qDebug() << "could not parse activity: " << ex.what();
 		return;
 	}
 
 	we::activity_t::output_t output (act.output());
 
-	//qDebug() << evtNotification.activity_name ().c_str() << " produced " << output.size() << " token(s):";
+	qDebug() << evtNotification.activity_name ().c_str() << " produced " << output.size() << " token(s):";
 
 	for ( we::activity_t::output_t::const_iterator it(output.begin())
         ; it != output.end()
@@ -137,7 +137,7 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 		using namespace we::loader;
 		we::token_t token (it->first);
 
-		//qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
+		qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
 
 		if (evtNotification.activity_name () == "done")
 		{
