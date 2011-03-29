@@ -171,7 +171,9 @@
         <expression>
           ${r} := ${sums_id.param.r};
           ${T} := ${sums_id.param.T};
-          ${n} := double(${sums_id.param.n});
+          ${runs} := (${sums_id.param.n} + ${sums_id.param.iterations_per_run} - 1L)
+                  div ${sums_id.param.iterations_per_run};
+          ${n} := double(${runs} * ${sums_id.param.iterations_per_run});
           ${epsilon} := ${sums_id.param.epsilon};
           ${delta} := ${sums_id.param.delta};
 
