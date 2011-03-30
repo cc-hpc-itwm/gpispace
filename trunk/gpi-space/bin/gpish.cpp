@@ -31,6 +31,7 @@ namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
 static std::string disclaimer ();
+static bool interactive(false);
 
 typedef std::vector<boost::filesystem::path> path_list_t;
 
@@ -121,6 +122,9 @@ int main (int ac, char **av)
 
   FHGLOG_SETUP(ac, av);
 
+  if (isatty(0))
+    interactive = true;
+
   po::options_description desc("options");
 
   fs::path socket_path;
@@ -200,7 +204,8 @@ int main (int ac, char **av)
 
   shell_t::get().run();
 
-  std::cerr << "logout" << std::endl;
+  if (interactive)
+    std::cerr << "logout" << std::endl;
 
   shutdown_shell ();
   shutdown_state ();
@@ -237,10 +242,8 @@ void shutdown_state ()
 void initialize_shell (int ac, char *av[])
 {
   std::string prompt;
-  if (isatty (0) && isatty (1))
-  {
-	prompt = "gpish> ";
-  }
+  if (interactive)
+    prompt = "gpish> ";
   fs::path histfile (getenv("HOME"));
   histfile /= ".sdpa/configs/.history";
 
