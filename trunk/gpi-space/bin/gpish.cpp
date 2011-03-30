@@ -977,7 +977,7 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() < 3)
   {
-    std::cout << "usage: alloc segment size [name [flags]]" << std::endl;
+    std::cout << "usage: alloc size segment [name [flags]]" << std::endl;
     std::cout << "   segment : gpi or id" << std::endl;
     std::cout << "   flags might depend on the segment type:" << std::endl;
     std::cout << "                 p - persistent (not removed after pc death)" << std::endl;
@@ -996,16 +996,16 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
   std::string desc;
   gpi::pc::type::flags_t flags (gpi::pc::type::handle::F_GLOBAL);
 
-  if (av[1] == "gpi")
+  size = boost::lexical_cast<size_t>(av[1]);
+
+  if (av[2] == "gpi")
   {
     seg_id = 1;
   }
   else
   {
-    seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t> (av[1]);
+    seg_id = boost::lexical_cast<gpi::pc::type::segment_id_t> (av[2]);
   }
-
-  size = boost::lexical_cast<size_t>(av[2]);
 
   if (av.size() > 3)
     desc = av[3];
