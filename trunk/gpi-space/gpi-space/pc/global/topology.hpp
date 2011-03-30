@@ -29,14 +29,28 @@ namespace gpi
       class topology_t : boost::noncopyable
       {
       public:
+        typedef fhg::com::port_t port_t;
+        typedef fhg::com::host_t host_t;
+
+        static port_t const & any_port ();
+        static host_t const & any_addr ();
+
         explicit
-        topology_t (const gpi::rank_t rank);
+        topology_t ();
 
-        void add_neighbour(const gpi::rank_t rank);
-        void del_neighbour(const gpi::rank_t rank);
+        ~topology_t ();
 
-        void initialize();
-        void shutdown();
+        void add_neighbor(const gpi::rank_t rank);
+        void del_neighbor(const gpi::rank_t rank);
+
+        void start( const gpi::rank_t rank
+                  , const fhg::com::host_t & host
+                  , const fhg::com::port_t & port
+                  , std::string const & cookie
+                  );
+        void stop ();
+
+        void establish ();
 
         /**
          * Cast a single message to a given rank.
@@ -53,15 +67,34 @@ namespace gpi
         //    free-requested(handle_t)
         //       -> return: No, Yes (just for sanity)
       private:
+        struct neighbor_t
+        {
+          neighbor_t ()
+            : rank((gpi::rank_t)-1)
+            , last_signal(0)
+          {}
+
+          neighbor_t (const gpi::rank_t r)
+            : rank (r)
+            , last_signal (0)
+          {}
+
+          gpi::rank_t rank;
+          std::string name;
+          time_t      last_signal;
+        };
+
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::shared_ptr<boost::thread> thread_ptr;
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
+        typedef std::map<gpi::rank_t, neighbor_t> neighbor_map_t;
 
         mutable mutex_type m_mutex;
+        gpi::rank_t m_rank;
         thread_ptr m_peer_thread;
         peer_ptr   m_peer;
-        gpi::rank_t m_rank;
+        neighbor_map_t m_neighbors;
       };
     }
   }

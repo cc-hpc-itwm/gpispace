@@ -20,6 +20,7 @@ ADD_LIBRARY(gpi-space-pc-container ${hdrs} ${srcs})
 target_link_libraries (gpi-space-pc-container
   gpi-space-pc-segment
   gpi-space-pc-memory
+  gpi-space-pc-global
   )
 
 install(TARGETS gpi-space-pc-container

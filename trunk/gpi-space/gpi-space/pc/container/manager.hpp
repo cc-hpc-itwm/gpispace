@@ -4,12 +4,11 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <fhgcom/peer.hpp>
-
 #include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/container/connector.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
+#include <gpi-space/pc/global/topology.hpp>
 
 namespace gpi
 {
@@ -115,7 +114,8 @@ namespace gpi
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
         void garbage_collect ();
         void initialize_memory_manager ();
-        void initialize_peer ();
+        void initialize_topology ();
+        void shutdown_topology ();
 
         /*                                                    */
         /*           M E M B E R    V A R I A B L E S         */
@@ -131,9 +131,7 @@ namespace gpi
         process_list_t m_detached_processes;
 
         memory_manager_type m_memory_mgr;
-
-        boost::shared_ptr<boost::thread> m_peer_thread;
-        boost::shared_ptr<fhg::com::peer_t> m_peer;
+        global::topology_t m_topology;
       };
     }
   }

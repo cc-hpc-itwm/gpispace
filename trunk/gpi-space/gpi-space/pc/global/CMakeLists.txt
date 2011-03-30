@@ -10,7 +10,7 @@ set (srcs
 
 ADD_LIBRARY(gpi-space-pc-global ${hdrs} ${srcs})
 target_link_libraries(gpi-space-pc-global
-  ${FHGCOM_LIBRARY}
+  ${FhgCom_LIBRARY}
 )
 
 install(TARGETS gpi-space-pc-global

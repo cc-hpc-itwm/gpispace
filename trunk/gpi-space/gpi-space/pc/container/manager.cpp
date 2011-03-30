@@ -42,7 +42,7 @@ namespace gpi
         {
           lock_type lock (m_mutex);
           initialize_memory_manager ();
-          initialize_peer ();
+          initialize_topology ();
           m_connector.start ();
         }
         catch (std::exception const & ex)
@@ -66,10 +66,9 @@ namespace gpi
           {
             detach_process (m_processes.begin()->first);
           }
-          m_peer->stop ();
-          m_peer_thread->join();
 
           m_memory_mgr.clear();
+          shutdown_topology ();
         }
 
         garbage_collect();
@@ -112,25 +111,27 @@ namespace gpi
       void manager_t::initialize_memory_manager ()
       {}
 
-      void manager_t::initialize_peer ()
+      void manager_t::initialize_topology ()
       {
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        m_peer.reset
-          (new fhg::com::peer_t
-             ( "gpi-" + boost::lexical_cast<std::string>(gpi_api.rank())
-             , fhg::com::host_t(boost::asio::ip::host_name())
-             , fhg::com::port_t("0")
-             , "ph-cookie"
-             )
-          );
-        m_peer_thread.reset (new boost::thread(boost::bind( &fhg::com::peer_t::run
-                                                          , m_peer
-                                                          )
-                                              )
-                             );
-        m_peer->start ();
+        m_topology.start( gpi_api.rank()
+                        , global::topology_t::any_addr()
+                        , global::topology_t::any_port() // topology_t::port_t("10821")
+                        , "dummy-cookie"
+                        );
+        if (gpi_api.is_master())
+        {
+          for (std::size_t n(1); n < gpi_api.number_of_nodes(); ++n)
+          {
+            m_topology.add_neighbor(n);
+          }
+        }
+        m_topology.establish();
+      }
 
-//        setup_topology (); // try connecting to all other nodes
+      void manager_t::shutdown_topology ()
+      {
+        m_topology.stop ();
       }
 
       void manager_t::attach_process (process_ptr_t proc)
