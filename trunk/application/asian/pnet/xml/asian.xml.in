@@ -44,6 +44,7 @@
   <net>
 
     <place name="param" type="param">
+	  <!--
       <token>
         <field name="S"><value>7000.0</value></field>
         <field name="K"><value>85.0</value></field>
@@ -64,6 +65,7 @@
 
         <field name="iterations_per_run"><value>50000</value></field>
       </token>
+	  -->
     </place>
 
     <place name="param_eps1" type="param"/>
