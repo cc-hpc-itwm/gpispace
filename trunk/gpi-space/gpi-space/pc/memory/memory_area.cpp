@@ -511,6 +511,60 @@ namespace gpi
         }
       }
 
+      void area_t::remote_free (const gpi::pc::type::handle_t hdl)
+      {
+        lock_type lock (m_mutex);
+
+        if (m_handles.find(hdl) == m_handles.end())
+        {
+          LOG( ERROR
+             , "no such handle: "
+             << " handle = " << hdl
+             << " segment = " << m_descriptor.id
+             );
+          throw std::runtime_error ("no such handle");
+        }
+
+        const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
+        if (desc.nref)
+        {
+          LOG( WARN
+             , "handle still in use:"
+             << " handle = " << hdl
+             << " nref = " << desc.nref
+             );
+        }
+
+        Arena_t arena (translate_grow_direction(grow_direction(desc.flags)));
+        HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
+                                                  , hdl
+                                                  , arena
+                                                  )
+                                     );
+        switch (handle_return)
+        {
+        case RET_SUCCESS:
+          DLOG(TRACE, "handle free'd: " << desc);
+          m_handles.erase (hdl);
+          update_descriptor_from_mmgr ();
+          break;
+        case RET_HANDLE_UNKNOWN:
+          LOG( ERROR
+             , "***** INCONSISTENCY DETECTED *****:"
+             << " mmgr did not know handle " << desc
+             );
+          throw std::runtime_error ("inconsistent state: no such handle");
+          break;
+        case RET_FAILURE:
+          LOG( ERROR
+             , "unknown error during free:"
+             << " handle = " << desc
+             );
+          throw std::runtime_error ("no such handle");
+          break;
+        }
+      }
+
       gpi::pc::type::segment::descriptor_t const &
       area_t::descriptor () const
       {

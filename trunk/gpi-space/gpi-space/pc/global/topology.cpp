@@ -88,6 +88,17 @@ namespace gpi
         };
       }
 
+      namespace reduce
+      {
+        topology_t::rank_result_t
+        max_result ( const topology_t::rank_result_t a
+                   , const topology_t::rank_result_t b
+                   )
+        {
+          return (a.value > b.value ? a : b);
+        }
+      }
+
       fhg::com::port_t const &
       topology_t::any_port ()
       {
@@ -198,51 +209,90 @@ namespace gpi
         return 0;
       }
 
+      topology_t::result_list_t
+      topology_t::request (std::string const & req)
+      {
+        lock_type request_lock (m_request_mutex); // one request
+
+        lock_type result_list_lock (m_result_mutex);
+        m_current_results.clear ();
+
+        broadcast (req);
+
+        boost::system_time const timeout
+          (boost::get_system_time()+boost::posix_time::seconds(30));
+        while (m_current_results.size () != m_neighbors.size())
+        {
+          if (!m_request_finished.timed_wait (result_list_lock, timeout))
+          {
+            if (m_current_results.size() == m_neighbors.size())
+            {
+              break;
+            }
+            else
+            {
+              throw std::runtime_error ("request " + req + " timedout after 30 seconds!");
+            }
+          }
+        }
+
+        return m_current_results;
+      }
+
+      topology_t::rank_result_t
+      topology_t::all_reduce ( std::string const & req
+                             , fold_t fold_fun
+                             , rank_result_t result
+                             )
+      {
+        result_list_t results (request(req));
+        while (results.size())
+        {
+          result = fold_fun(results.front(), result);
+          results.pop_front();
+        }
+        return result;
+      }
+
       int topology_t::alloc ( const gpi::pc::type::handle_t hdl
                             , const gpi::pc::type::offset_t offset
                             , const gpi::pc::type::size_t size
                             , const std::string & name
                             )
       {
+        // lock, so that no other process can make a global alloc
+        lock_type alloc_lock(m_global_alloc_mutex);
+
+        // acquire cluster wide access to the gpi resource
         boost::unique_lock<gpi::api::gpi_api_t>
           gpi_lock(gpi::api::gpi_api_t::get());
 
-        broadcast (detail::command_t("ALLOC") << hdl << offset << size << name);
-
-        // collect results
-
-        // in:  handle, size
-        // out: success | -errno
-        //
-        // broadcast (GLOBAL_ALLOC(handle, root=this, size))
-        //   on_message(GLOBAL_ALLOC)
-        //     forward message to children
-        //     myres = alloc(handle, size)
-        //     reply reduce (myres)
-        // reduce(success)
-        //
-        // if success -> return success (== 0)
-        // if failed ->
-        //   broadcast(ABORT, root=this, handle)
-        //     on_message(ABORT, handle)
-        //       forward message to children
-        //       reply reduce(free(handle))
-        //   reduce ()
-        //   return -ENOMEM
-
-        // if defrag ->
-        //   broadcast(DEFRAG, root=this, size)
-        //     on_message(DEFRAG, size)
-        //       forward message to children
-        //       disallow allocs
-        //       stop new communications
-        //       wait for comms to finish
-        //       defrag()
-        //     res = reduce (myres, fold(children))
-        //     reply res
-        //   res = reduce()
-
-        return 0;
+        try
+        {
+          rank_result_t res (all_reduce(  detail::command_t("ALLOC")
+                                       << hdl
+                                       << offset
+                                       << size
+                                       << name
+                                       , reduce::max_result
+                                       , rank_result_t(m_rank, 0) // my result
+                                       )
+                            );
+          if (res.value != 0)
+          {
+            LOG(ERROR,"allocation on node " << res.rank << " failed: " << res.value);
+            throw std::runtime_error("global allocation failed on at least one node");
+          }
+          else
+          {
+            return 0;
+          }
+        }
+        catch (std::exception const & ex)
+        {
+          free (hdl);
+          throw;
+        }
       }
 
       void topology_t::stop ()
@@ -263,8 +313,6 @@ namespace gpi
 
       void topology_t::establish ()
       {
-        lock_type lock(m_mutex);
-
         LOG(TRACE, "establishing topology...");
 
         BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
@@ -330,10 +378,7 @@ namespace gpi
 
       static void message_sent (boost::system::error_code const &ec)
       {
-        if (ec)
-        {
-          LOG(WARN, "message could not be sent!");
-        }
+        DLOG_IF(WARN, ec, "message could not be sent: " << ec);
       }
 
       void topology_t::cast( const neighbor_t & neighbor
@@ -416,9 +461,9 @@ namespace gpi
 
         if (rank != m_rank && msg == "CONNECT")
         {
-          LOG(TRACE, "adding neighbor " << rank);
-          add_neighbor(rank);
-          cast (rank, "+OK");
+          //          LOG(TRACE, "adding neighbor " << rank);
+          //          add_neighbor(rank);
+          cast (rank, detail::command_t("+OK"));
         }
         else
         {
@@ -452,15 +497,7 @@ namespace gpi
                                                     , name
                                                     )
               );
-
-            if (res)
-            {
-              cast (rank, detail::command_t("+ERR") << res);
-            }
-            else
-            {
-              cast (rank, detail::command_t("+OK"));
-            }
+            cast (rank, detail::command_t("+RES") << res);
           }
           else if (av[0] == "FREE")
           {
@@ -468,14 +505,32 @@ namespace gpi
             handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
             try
             {
-              global::memory_manager().free(hdl);
+              global::memory_manager().remote_free(hdl);
               cast (rank, detail::command_t("+OK"));
             }
             catch (std::exception const & ex)
             {
-              LOG(ERROR, "could not free handle: " << ex.what());
+              LOG(WARN, "could not free handle: " << ex.what());
               cast (rank, detail::command_t("+ERR") << 1);
             }
+          }
+          else if (av[0] == "+RES")
+          {
+            lock_type lck(m_result_mutex);
+            m_current_results.push_back
+              (rank_result_t( rank
+                            , boost::lexical_cast<int>(av[1])
+                            )
+              );
+            m_request_finished.notify_one();
+          }
+          else if (av[0] == "+OK")
+          {
+            LOG(TRACE, "command succeeded");
+          }
+          else if (av[0] == "+ERR")
+          {
+            LOG(WARN, "error on node " << rank << av[1]);
           }
           else
           {

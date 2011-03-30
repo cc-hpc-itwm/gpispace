@@ -89,7 +89,10 @@ namespace gpi
               , const std::string & name
               , const gpi::pc::type::flags_t flags
               );
+
+        void remote_free(const gpi::pc::type::handle_t hdl);
         void free (const gpi::pc::type::handle_t hdl);
+
         void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);
         void list_allocations( const gpi::pc::type::segment_id_t seg

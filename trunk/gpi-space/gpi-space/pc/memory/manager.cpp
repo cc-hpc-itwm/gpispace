@@ -369,6 +369,25 @@ namespace gpi
       }
 
       void
+      manager_t::remote_free (const gpi::pc::type::handle_t hdl)
+      {
+        area_ptr area (get_area_by_handle (hdl));
+
+        assert (area);
+
+        area->remote_free (hdl);
+        del_handle (hdl);
+
+        handle_freed (hdl);
+
+        CLOG( TRACE
+            , "gpi.memory"
+            , "remote memory deallocated:"
+            << " handle " << hdl
+            );
+      }
+
+      void
       manager_t::free (const gpi::pc::type::handle_t hdl)
       {
         area_ptr area (get_area_by_handle (hdl));
