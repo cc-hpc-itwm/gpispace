@@ -344,9 +344,10 @@ namespace we { namespace mgmt {
               else
               {
                 info.status = activity_information_t::UNDEFINED;
-                info.data["in"] = desc.show_input();
-                info.data["out"] = desc.show_output();
               }
+
+              info.data["in"]  = we::util::text_codec::encode(desc.activity().input());
+              info.data["out"] = we::util::text_codec::encode(desc.activity().output());
             }
           }
         }
