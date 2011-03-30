@@ -24,10 +24,10 @@ namespace gpi
       {
         enum flags_type
           {
-            F_NONE       = 0x00,
-            F_PERSISTENT = 0x01,
-            F_EXCLUSIVE  = 0x02,
-            F_GLOBAL     = 0x20,
+            F_NONE       = 0,
+            F_PERSISTENT = 1 << 0,
+            F_EXCLUSIVE  = 1 << 1,
+            F_GLOBAL     = 1 << 2,
           };
 
         inline bool is_null (const gpi::pc::type::handle_id_t i)
