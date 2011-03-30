@@ -113,10 +113,6 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
      << " mem_size=" << gpi_api.memory_size()
      );
 
-  static const std::string prompt ("Please type \"q\" followed by return to quit: ");
-
-  LOG(INFO, "gpi-space on rank " << rank << " running");
-
   // create socket path and generate a process specific socket
   namespace fs = boost::filesystem;
   fs::path socket_path (cfg.gpi.socket_path);
@@ -133,31 +129,10 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
   global_container_mgr = new gpi::pc::container::manager_t(socket_path.string());
   gpi::pc::container::manager_t & mgr = *global_container_mgr;
+
   mgr.start ();
 
-  LOG(INFO, "started GPI interface at " << socket_path);
-
-  // fire up message handling threads...
-
-  //   - passive receive thread
-  //       - hand message over to central daemon (N handler threads)
-  //       - handle it
-  //   - socket thread(s)
-  //       - attach process container interface
-  //       - attach control interface
-  //       - both  use  the  same  backend  but  use  different  protocols  to
-  //         communicate with the "client"
-  //
-  // passive -> +-------+
-  // control -> | queue | -> central worker pool
-  // process -> +-------+
-  //
-  //    work item:
-  //        - type
-  //        - input data
-  //        - output data
-  //        - callback function - void (work::ptr)
-  //
+  LOG(INFO, "started GPI interface on rank " << rank << " at " << socket_path);
 
   if (cfg.node.daemonize)
   {
@@ -167,6 +142,9 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
   }
   else if (isatty (0) && isatty (1)) // usually on the master node only
   {
+    static const std::string prompt
+      ("Please type \"q\" followed by return to quit: ");
+
     // TODO: use the shell interface
     bool done (false);
 
@@ -318,7 +296,6 @@ int main (int ac, char *av[])
     LOG(INFO, "GPISpace version: " << gpi::version_string());
     LOG(INFO, "GPIApi version: " << gpi_api.version());
   }
-
 
   if (gpi_api.is_master ())
   {
