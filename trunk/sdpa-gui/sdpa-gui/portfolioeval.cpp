@@ -3,8 +3,6 @@
 #include "ui_monitorwindow.h"
 #include <QDebug>
 
-#include <sdpa/client/ClientApi.hpp>
-
 double simulation_result_t::gTotalPV 	= 0.0;
 double simulation_result_t::gTotalDelta = 0.0;
 double simulation_result_t::gTotalGamma = 0.0;
@@ -26,10 +24,12 @@ int Portfolio::RandInt(int low, int high)
 
 Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi ) : m_pUi(arg_m_pUi), m_nRows(5)
 {
+	StartClient();
 }
 
 Portfolio::~Portfolio()
 {
+	m_ptrCli->shutdown_network();
 }
 
 void Portfolio::InitTable()
@@ -322,6 +322,21 @@ std::string Portfolio::BuildTestWorkflow(portfolio_data_t& job_data)
 	return strJobData;
 }
 
+void Portfolio::StartClient()
+{
+	qDebug()<<"Starting the user client ...";
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	std::ostringstream oss;
+	oss<<"--orchestrator=orchestrator";
+	cav.push_back(oss.str());
+	config.parse_command_line(cav);
+
+	m_ptrCli = sdpa::client::ClientApi::create( config );
+	m_ptrCli->configure_network( config );
+}
+
 void Portfolio::SubmitPortfolio()
 {
 	const int NMAXTRIALS = 10;
@@ -335,17 +350,6 @@ void Portfolio::SubmitPortfolio()
 
 	// enable submit button when the job result is delivered (token)
 
-	qDebug()<<"Starting the user client ...";
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	std::ostringstream oss;
-	oss<<"--orchestrator=orchestrator";
-	cav.push_back(oss.str());
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
 	sdpa::job_id_t job_id_user;
 
 	//std::string strWorkflow = BuildTestWorkflow(job_data);
@@ -356,7 +360,7 @@ void Portfolio::SubmitPortfolio()
 
 		qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
 		ClearTable();
-		job_id_user = ptrCli->submitJob(strWorkflow);
+		job_id_user = m_ptrCli->submitJob(strWorkflow);
 		qDebug()<<"Got the job id "<<job_id_user.str().c_str();
 	}
 	catch(const sdpa::client::ClientException& cliExc)
@@ -365,13 +369,13 @@ void Portfolio::SubmitPortfolio()
 		{
 			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
 
-			ptrCli->shutdown_network();
-			ptrCli.reset();
+			m_ptrCli->shutdown_network();
+			m_ptrCli.reset();
 			return;
 		}
 	}
 
-	/*std::string job_status = ptrCli->queryJob(job_id_user);
+	/*std::string job_status = m_ptrCli->queryJob(job_id_user);
 	//qDebug()<<"The status of the job "<<job_id_user<<" is "<<job_status);
 	std::cout<<std::endl;
 
@@ -381,7 +385,7 @@ void Portfolio::SubmitPortfolio()
 		   job_status.find("Cancelled") == std::string::npos )
 	{
 		try {
-			job_status = ptrCli->queryJob(job_id_user);
+			job_status = m_ptrCli->queryJob(job_id_user);
 			//qDebug()<<"The status of the job "<<job_id_user<<" is "<<job_status);
 			std::cout<<".";
 			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
@@ -394,8 +398,8 @@ void Portfolio::SubmitPortfolio()
 			{
 				qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
 
-				ptrCli->shutdown_network();
-				ptrCli.reset();
+				m_ptrCli->shutdown_network();
+				m_ptrCli.reset();
 				return;
 			}
 
@@ -409,7 +413,7 @@ void Portfolio::SubmitPortfolio()
 	nTrials = 0;
 	try {
 			qDebug()<<"Retrieve results of the job "<<job_id_user.str().c_str();
-			ptrCli->retrieveResults(job_id_user);
+			m_ptrCli->retrieveResults(job_id_user);
 			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
@@ -418,8 +422,8 @@ void Portfolio::SubmitPortfolio()
 		{
 			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
 
-			ptrCli->shutdown_network();
-			ptrCli.reset();
+			m_ptrCli->shutdown_network();
+			m_ptrCli.reset();
 			return;
 		}
 
@@ -430,7 +434,7 @@ void Portfolio::SubmitPortfolio()
 	nTrials = 0;
 	try {
 		qDebug()<<"Delete the user job "<<job_id_user.str().c_str();
-		ptrCli->deleteJob(job_id_user);
+		m_ptrCli->deleteJob(job_id_user);
 		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
@@ -439,15 +443,15 @@ void Portfolio::SubmitPortfolio()
 		{
 			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
 
-			ptrCli->shutdown_network();
-			ptrCli.reset();
+			m_ptrCli->shutdown_network();
+			m_ptrCli.reset();
 			return;
 		}
 
 		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 
-	ptrCli->shutdown_network();
+	m_ptrCli->shutdown_network();
 	*/
 
 }

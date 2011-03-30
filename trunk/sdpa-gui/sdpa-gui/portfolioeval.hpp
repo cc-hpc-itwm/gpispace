@@ -1,6 +1,7 @@
 #ifndef PORTFOLIO_HPP
 #define PORTFOLIO_HPP
 
+#include <sdpa/client/ClientApi.hpp>
 #include <apps/portfolio_params.hpp>
 #include <string>
 
@@ -26,10 +27,12 @@ public:
 	void SubmitPortfolio();
 	int  RandInt(int low, int high);
 	int  Resize(int k);
+	void StartClient();
 
 private:
 	Ui::MonitorWindow *m_pUi;
 	int m_nRows;
+	sdpa::client::ClientApi::ptr_t m_ptrCli;
 };
 
 #endif
