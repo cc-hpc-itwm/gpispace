@@ -33,24 +33,30 @@
 
 typedef gpi::api::gpi_api_t gpi_api_t;
 
-static int shutdown_handler (gpi_api_t * api, int signal)
+gpi::pc::container::manager_t *global_container_mgr(NULL);
+
+static int shutdown_handler(int signal)
 {
-  LOG(INFO, "GPI process (rank " << api->rank() << ") terminating due to signal: " << signal);
+  if (global_container_mgr)
+  {
+    global_container_mgr->stop();
+  }
+
+  LOG(INFO, "GPISpace terminating due to signal: " << signal);
   FHGLOG_FLUSH();
-  api->shutdown ();
-  exit (0);
+  exit (-signal);
 }
 
-static int suspend_handler (gpi_api_t * api, int signal)
+static int suspend_handler (int signal)
 {
-  LOG(INFO, "GPI process (rank " << api->rank() << ") suspended due to signal: " << signal);
+  LOG(INFO, "GPISpace process (" << gpi_api_t::get().rank() << ") suspended");
   ::raise (SIGSTOP);
   return 0;
 }
 
-static int resume_handler (gpi_api_t * api, int signal)
+static int resume_handler (int signal)
 {
-  LOG(INFO, "GPI process (rank " << api->rank() << ") resumed due to signal: " << signal);
+  LOG(INFO, "GPISpace process (" << gpi_api_t::get().rank() << ") resumed");
   return 0;
 }
 
@@ -130,7 +136,8 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
     socket_path /= cfg.gpi.socket_name;
   }
 
-  gpi::pc::container::manager_t mgr (socket_path.string());
+  global_container_mgr = new gpi::pc::container::manager_t(socket_path.string());
+  gpi::pc::container::manager_t & mgr = *global_container_mgr;
   mgr.start ();
 
   LOG(INFO, "started GPI interface at " << socket_path);
@@ -335,14 +342,10 @@ int main (int ac, char *av[])
     return EXIT_FAILURE;
   }
 
-  gpi::signal::handler().connect
-    (SIGINT, boost::bind (shutdown_handler, &gpi_api, _1));
-  gpi::signal::handler().connect
-    (SIGTERM, boost::bind (shutdown_handler, &gpi_api, _1));
-  gpi::signal::handler().connect
-    (SIGTSTP, boost::bind (suspend_handler, &gpi_api, _1));
-  gpi::signal::handler().connect
-    (SIGCONT, boost::bind (resume_handler, &gpi_api, _1));
+  gpi::signal::handler().connect(SIGINT,  &shutdown_handler);
+  gpi::signal::handler().connect(SIGTERM, &shutdown_handler);
+  gpi::signal::handler().connect(SIGTSTP, &suspend_handler);
+  gpi::signal::handler().connect(SIGCONT, &resume_handler);
 
   // unfortunately this is still required due to KVS!!!  if we have another way,
   // we don't have to distribute the config via this mechanism
@@ -374,8 +377,6 @@ int main (int ac, char *av[])
     rc = EXIT_FAILURE;
     LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
   }
-
-  gpi_api.shutdown ();
 
   gpi::signal::handler().stop();
   return rc;
