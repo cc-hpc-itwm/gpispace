@@ -180,17 +180,15 @@ public:
 
 	double& operator()(const int& i)
 	{
-		try {
-			switch(i)
-			{
-				case MATURITY: return Maturity();
-				case STRIKE:   return Strike();
-				case FIXINGS:  return Fixings();
-			}
-		}
-		catch( std::exception& ex) {
-			throw ex;
-		}
+          switch(i)
+            {
+            case MATURITY: return Maturity();
+            case STRIKE:   return Strike();
+            case FIXINGS:  return Fixings();
+            default:
+              throw std::runtime_error
+                ("STRANGE: switch incomplete in row_parameters_t::operator()");
+            }
 	}
 
 	int rowId() { return m_rowId; }
