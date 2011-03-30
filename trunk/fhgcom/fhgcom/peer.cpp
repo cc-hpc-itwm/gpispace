@@ -284,6 +284,7 @@ namespace fhg
 
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
+
       async_send (m, boost::bind (&async_op_t::notify, &send_finished, _1));
 
       boost::system::error_code ec;
@@ -655,24 +656,29 @@ namespace fhg
 
       DLOG(TRACE, "got user message from: " << m->header.src);
 
-      lock_type lock (mutex_);
-      if (m_to_recv.empty())
-      {
-        // TODO: maybe add a flag to the message indicating whether it should be delivered
-        // at all costs or not
-        // if (m->header.flags & IMPORTANT)
-        m_pending.push_back (m);
-      }
-      else
-      {
-        to_recv_t to_recv = m_to_recv.front();
-        m_to_recv.pop_front();
-        *to_recv.message = *m;
-        delete m;
+      to_recv_t to_recv;
 
-        using namespace boost::system;
-        to_recv.handler(errc::make_error_code (errc::success));
+      {
+        lock_type lock (mutex_);
+        if (m_to_recv.empty())
+        {
+          // TODO: maybe add a flag to the message indicating whether it should be delivered
+          // at all costs or not
+          // if (m->header.flags & IMPORTANT)
+          m_pending.push_back (m);
+          return;
+        }
+        else
+        {
+          to_recv = m_to_recv.front();
+          m_to_recv.pop_front();
+          *to_recv.message = *m;
+          delete m;
+        }
       }
+
+      using namespace boost::system;
+      to_recv.handler(errc::make_error_code (errc::success));
     }
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
