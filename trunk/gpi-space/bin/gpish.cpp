@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -70,6 +71,13 @@ struct my_state_t
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
 
 static my_state_t *state (NULL);
+
+static int interrupt_shell (int)
+{
+  std::cerr << "stopping gpi api!" << std::endl;
+  shell_t::get().state().capi.stop();
+  return 0;
+}
 
 static void initialize_state (fs::path const & socket_dir, fs::path const & socket_path);
 static void initialize_shell (int ac, char *av[]);
@@ -192,6 +200,8 @@ int main (int ac, char **av)
 
   shell_t::get().run();
 
+  std::cerr << "logout" << std::endl;
+
   shutdown_shell ();
   shutdown_state ();
 
@@ -270,6 +280,9 @@ void initialize_shell (int ac, char *av[])
   sh.add_command("memcpy", &cmd_memory_copy, "copy memory");
   sh.add_command("wait", &cmd_memory_wait, "wait for copy completion");
   sh.add_command("list", &cmd_list, "list segments and allocations");
+
+
+  gpi::signal::handler().connect(SIGINT, &interrupt_shell);
 }
 
 void shutdown_shell ()
