@@ -113,11 +113,6 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
      << " mem_size=" << gpi_api.memory_size()
      );
 
-  fhg::com::kvs::scoped_entry_t kvs_pid
-    ( kvs_prefix + ".pid"
-    , boost::lexical_cast<std::string>(getpid())
-    );
-
   static const std::string prompt ("Please type \"q\" followed by return to quit: ");
 
   LOG(INFO, "gpi-space on rank " << rank << " running");
