@@ -17,6 +17,8 @@
 #include <fhgcom/peer.hpp>
 
 #include <gpi-space/types.hpp>
+#include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/handle.hpp>
 
 namespace gpi
 {
@@ -24,7 +26,11 @@ namespace gpi
   {
     namespace global
     {
-      typedef std::size_t tag_t;
+      struct message_t
+      {
+        struct header_t;
+        struct body_t;
+      };
 
       class topology_t : boost::noncopyable
       {
@@ -52,12 +58,10 @@ namespace gpi
 
         void establish ();
 
-        /**
-         * Cast a single message to a given rank.
-         *
-         * @param to the rank to cast the message to
-         */
-        tag_t cast (gpi::rank_t to, ...);
+        // initiate a global alloc
+        int global_alloc ( const gpi::pc::type::handle_t hdl
+                         , const gpi::pc::type::size_t
+                         );
 
         // signals
         //    alloc-requested(handle_t, offset, size)
@@ -86,7 +90,7 @@ namespace gpi
           time_t      last_signal;
         };
 
-        typedef boost::mutex mutex_type;
+        typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::shared_ptr<boost::thread> thread_ptr;
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
@@ -99,6 +103,14 @@ namespace gpi
         void handle_error ( const gpi::rank_t rank
                           , boost::system::error_code const &
                           );
+
+        /**
+         * Cast a single message to a given rank.
+         *
+         * @param to the rank to cast the message to
+         */
+        void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
+        void cast (neighbor_t const &, const char *data, const std::size_t len);
 
         mutable mutex_type m_mutex;
         bool m_shutting_down;

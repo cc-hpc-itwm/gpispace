@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <fhglog/minimal.hpp>
 
@@ -80,8 +81,6 @@ namespace gpi
         neighbor_t new_neighbor(rank);
         new_neighbor.name = detail::rank_to_name (rank);
         m_neighbors[rank] = new_neighbor;
-
-        m_peer->send (new_neighbor.name, "ADD_NEIGHBOR");
       }
 
       void topology_t::del_neighbor(const gpi::rank_t rank)
@@ -146,6 +145,44 @@ namespace gpi
                            );
       }
 
+      int topology_t::global_alloc ( const gpi::pc::type::handle_t hdl
+                                   , const gpi::pc::type::size_t
+                                   )
+      {
+        // in:  handle, size
+        // out: success | -errno
+        //
+        // broadcast (GLOBAL_ALLOC(handle, root=this, size))
+        //   on_message(GLOBAL_ALLOC)
+        //     forward message to children
+        //     myres = alloc(handle, size)
+        //     reply reduce (myres)
+        // reduce(success)
+        //
+        // if success -> return success (== 0)
+        // if failed ->
+        //   broadcast(ABORT, root=this, handle)
+        //     on_message(ABORT, handle)
+        //       forward message to children
+        //       reply reduce(free(handle))
+        //   reduce ()
+        //   return -ENOMEM
+
+        // if defrag ->
+        //   broadcast(DEFRAG, root=this, size)
+        //     on_message(DEFRAG, size)
+        //       forward message to children
+        //       disallow allocs
+        //       stop new communications
+        //       wait for comms to finish
+        //       defrag()
+        //     res = reduce (myres, fold(children))
+        //     reply res
+        //   res = reduce()
+
+        return -EAGAIN;
+      }
+
       void topology_t::stop ()
       {
         lock_type lock(m_mutex);
@@ -164,7 +201,44 @@ namespace gpi
 
       void topology_t::establish ()
       {
-        // TODO: connect to all neighbors
+        lock_type lock(m_mutex);
+
+        LOG(INFO, "establishing topology...");
+
+        const std::string data("HELLO\0");
+        BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
+        {
+          cast(n.second, data.c_str(), data.size());
+        }
+      }
+
+      void topology_t::cast( const gpi::rank_t rnk
+                           , const char * data
+                           , const std::size_t len
+                           )
+      {
+        lock_type lock(m_mutex);
+        neighbor_map_t::const_iterator it(m_neighbors.find(rnk));
+        if (it == m_neighbors.end())
+        {
+          LOG( ERROR
+             , "cannot send to rank " << rnk << ":"
+             << " message routing not yet implemented"
+             );
+          throw std::runtime_error("cannot send to this rank, not a direct neighbor and routing is not yet implemented!");
+        }
+        else
+        {
+          cast (it->second, data, len);
+        }
+      }
+
+      void topology_t::cast( const neighbor_t & neighbor
+                           , const char * data
+                           , const std::size_t len
+                           )
+      {
+        m_peer->send (neighbor.name, std::string(data, len));
       }
 
       void topology_t::message_received(boost::system::error_code const &ec)
@@ -174,6 +248,7 @@ namespace gpi
           const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
           const std::string name(m_peer->resolve(addr, "*unknown*"));
 
+          // TODO parse and handle
           handle_message (detail::name_to_rank(name), m_incoming_msg);
 
           m_peer->async_recv ( &m_incoming_msg
