@@ -112,6 +112,8 @@ namespace gpi
         void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
         void cast (neighbor_t const &, const char *data, const std::size_t len);
 
+        void broadcast(const char *data, const std::size_t len);
+
         mutable mutex_type m_mutex;
         bool m_shutting_down;
         gpi::rank_t m_rank;

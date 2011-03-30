@@ -1,5 +1,6 @@
 #include "topology.hpp"
 
+#include <unistd.h>
 #include <stdio.h>
 
 #include <boost/foreach.hpp>
@@ -205,10 +206,35 @@ namespace gpi
 
         LOG(INFO, "establishing topology...");
 
-        const std::string data("HELLO\0");
+        const std::string data("HELLO");
         BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
         {
-          cast(n.second, data.c_str(), data.size());
+          useconds_t snooze(500 * 1000);
+          int i = 5;
+          while (i --> 0)
+          {
+            try
+            {
+              cast(n.second, data.c_str(), data.size() + 1);
+              break;
+            }
+            catch (std::exception const & ex)
+            {
+              if (0 == i)
+              {
+                throw;
+              }
+              else
+              {
+                LOG( WARN
+                   , "could not establish connection to rank " << n.first
+                   << ": " << ex.what()
+                   );
+                usleep (snooze);
+                snooze = std::min(10 * 1000 * 1000u, snooze*2);
+              }
+            }
+          }
         }
       }
 
@@ -240,6 +266,21 @@ namespace gpi
       {
         m_peer->send (neighbor.name, std::string(data, len));
       }
+
+      void topology_t::broadcast ( const char *data
+                                 , const std::size_t len
+                                 )
+      {
+        BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
+        {
+          cast(n.second, data, len);
+        }
+      }
+
+      /*
+        1. map ((id, Request)) -> [(Node, Result)]
+        2. fold ([(Node, Result)], (MyRank, MyResult)) -> Result
+       */
 
       void topology_t::message_received(boost::system::error_code const &ec)
       {
@@ -285,7 +326,21 @@ namespace gpi
                                       , fhg::com::message_t const &msg
                                       )
       {
-        LOG(INFO, "got data from gpi-" << rank << ": " << msg.buf());
+        LOG(TRACE, "got data from gpi-" << rank << ": " << msg.buf());
+
+        std::string s(msg.buf());
+        if (rank != m_rank && s == "HELLO")
+        {
+          add_neighbor(rank);
+        }
+        else if (s != "OK")
+        {
+          cast (rank, "OK", 3);
+        }
+        else
+        {
+          LOG(ERROR, "got invalid message: " << s);
+        }
       }
 
       void topology_t::handle_error ( const gpi::rank_t rank
