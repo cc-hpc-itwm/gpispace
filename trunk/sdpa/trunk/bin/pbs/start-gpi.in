@@ -130,7 +130,7 @@ fi
 if [ -x "$gpi_bin_path/$gpi_exe" ] ; then
     cmdline=
     if [ "$debug" = "true" ] ; then
-	cmdline="gdb --args $cmdline"
+	cmdline="gdb -ex run --args $cmdline"
     fi
     cmdline="$cmdline ${gpi_bin_path}/${gpi_exe}"
 
