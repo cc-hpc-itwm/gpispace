@@ -14,7 +14,6 @@ endif (USE_BOOST_MSM)
 
 set (hdrs JobFSM.hpp)
 
-install(DIRECTORY . DESTINATION include/sdpa/daemon/jobFSM
-  COMPONENT headers
-  FILES_MATCHING PATTERN "*.hpp"
-)
+install(FILES ${hdrs}
+  DESTINATION include/sdpa/daemon/jobFSM
+  COMPONENT headers)
