@@ -462,7 +462,7 @@ namespace gpi
 
         if (rank != m_rank && msg == "CONNECT")
         {
-          add_neighbor(rank);
+          add_child(rank); // actually set_parent(rank)?
           cast (rank, detail::command_t("+OK"));
         }
         else
@@ -535,7 +535,7 @@ namespace gpi
           else if (av[0] == "SHUTDOWN")
           {
             LOG(INFO, "shutting down");
-            m_neighbors.clear();
+            m_children.clear();
             m_shutting_down = true;
             gpi::signal::handler().raise(15);
           }
@@ -552,7 +552,7 @@ namespace gpi
       {
         LOG(WARN, "error on connection to child node " << rank);
         LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
-        del_neighbor (rank);
+        del_child (rank);
         gpi::signal::handler().raise(15);
       }
     }
