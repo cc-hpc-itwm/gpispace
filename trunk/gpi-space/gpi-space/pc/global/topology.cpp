@@ -1,8 +1,11 @@
 #include "topology.hpp"
 
-#include <boost/lexical_cast.hpp>
+#include <stdio.h>
 
+#include <boost/lexical_cast.hpp>
 #include <fhglog/minimal.hpp>
+
+#include <gpi-space/signal_handler.hpp>
 
 namespace gpi
 {
@@ -21,6 +24,19 @@ namespace gpi
 
           return "gpi-" + boost::lexical_cast<std::string>(rnk);
         }
+
+        static gpi::rank_t name_to_rank(const std::string &name)
+        {
+          unsigned int rnk (-1);
+          if (sscanf(name.c_str(), "gpi-%u", &rnk) < 1)
+          {
+            throw std::invalid_argument("invalid name: " + name);
+          }
+          else
+          {
+            return rnk;
+          }
+        }
       }
 
       fhg::com::port_t const &
@@ -38,7 +54,8 @@ namespace gpi
       }
 
       topology_t::topology_t()
-        : m_rank ((gpi::rank_t)-1)
+        : m_shutting_down (false)
+        , m_rank ((gpi::rank_t)-1)
       {
       }
 
@@ -89,6 +106,7 @@ namespace gpi
           LOG(WARN, "topology still running, please stop it first!");
           return;
         }
+        m_shutting_down = false;
         m_rank = rank;
 
         m_peer.reset
@@ -120,6 +138,12 @@ namespace gpi
         }
 
         // start the message handler
+        m_peer->async_recv ( &m_incoming_msg
+                           , boost::bind( &topology_t::message_received
+                                        , this
+                                        , _1
+                                        )
+                           );
       }
 
       void topology_t::stop ()
@@ -131,6 +155,7 @@ namespace gpi
         }
 
         // TODO: disconnect from all neighbors, shutdown the peer
+        m_shutting_down = true;
         m_peer->stop();
         m_peer_thread->join();
         m_peer.reset();
@@ -140,6 +165,61 @@ namespace gpi
       void topology_t::establish ()
       {
         // TODO: connect to all neighbors
+      }
+
+      void topology_t::message_received(boost::system::error_code const &ec)
+      {
+        if (! ec)
+        {
+          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
+          const std::string name(m_peer->resolve(addr, "*unknown*"));
+
+          handle_message (detail::name_to_rank(name), m_incoming_msg);
+
+          m_peer->async_recv ( &m_incoming_msg
+                             , boost::bind( &topology_t::message_received
+                                          , this
+                                          , _1
+                                          )
+                             );
+        }
+        else if (! m_shutting_down)
+        {
+          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
+          if (addr != m_peer->address())
+          {
+            const std::string name(m_peer->resolve(addr, "*unknown*"));
+
+            handle_error (detail::name_to_rank(name), ec);
+
+            m_peer->async_recv ( &m_incoming_msg
+                               , boost::bind( &topology_t::message_received
+                                            , this
+                                            , _1
+                                            )
+                               );
+          }
+        }
+        else
+        {
+          LOG(TRACE, "topology on " << m_rank << " is shutting down");
+        }
+      }
+
+      void topology_t::handle_message ( const gpi::rank_t rank
+                                      , fhg::com::message_t const &msg
+                                      )
+      {
+        LOG(INFO, "got data from gpi-" << rank << ": " << msg.buf());
+      }
+
+      void topology_t::handle_error ( const gpi::rank_t rank
+                                    , boost::system::error_code const &ec
+                                    )
+      {
+        LOG(WARN, "error on connection to gpi node " << rank);
+        LOG(ERROR, "node-failover is not available yet, I have to commit seppuku...");
+        gpi::signal::handler().raise(15);
       }
     }
   }

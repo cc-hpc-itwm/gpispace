@@ -66,6 +66,8 @@ namespace gpi
         //       -> return: nil
         //    free-requested(handle_t)
         //       -> return: No, Yes (just for sanity)
+        //    shutdown-requested()
+        //       -> return: nil
       private:
         struct neighbor_t
         {
@@ -90,11 +92,21 @@ namespace gpi
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
         typedef std::map<gpi::rank_t, neighbor_t> neighbor_map_t;
 
+        void message_received (boost::system::error_code const &);
+        void handle_message ( const gpi::rank_t rank
+                            , const fhg::com::message_t &
+                            );
+        void handle_error ( const gpi::rank_t rank
+                          , boost::system::error_code const &
+                          );
+
         mutable mutex_type m_mutex;
+        bool m_shutting_down;
         gpi::rank_t m_rank;
         thread_ptr m_peer_thread;
         peer_ptr   m_peer;
         neighbor_map_t m_neighbors;
+        fhg::com::message_t m_incoming_msg;
       };
     }
   }
