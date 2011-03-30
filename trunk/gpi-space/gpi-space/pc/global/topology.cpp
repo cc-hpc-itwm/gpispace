@@ -303,7 +303,8 @@ namespace gpi
           return;
         }
 
-        // TODO: disconnect from all children, shutdown the peer
+        broadcast(detail::command_t("SHUTDOWN"));
+
         m_shutting_down = true;
         m_peer->stop();
         m_peer_thread->join();
@@ -461,8 +462,7 @@ namespace gpi
 
         if (rank != m_rank && msg == "CONNECT")
         {
-          //          LOG(TRACE, "adding child " << rank);
-          //          add_child(rank);
+          add_neighbor(rank);
           cast (rank, detail::command_t("+OK"));
         }
         else
@@ -530,7 +530,14 @@ namespace gpi
           }
           else if (av[0] == "+ERR")
           {
-            LOG(WARN, "error on node " << rank << av[1]);
+            LOG(WARN, "error on node " << rank << ": " << av[1]);
+          }
+          else if (av[0] == "SHUTDOWN")
+          {
+            LOG(INFO, "shutting down");
+            m_neighbors.clear();
+            m_shutting_down = true;
+            gpi::signal::handler().raise(15);
           }
           else
           {
@@ -545,6 +552,7 @@ namespace gpi
       {
         LOG(WARN, "error on connection to child node " << rank);
         LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
+        del_neighbor (rank);
         gpi::signal::handler().raise(15);
       }
     }
