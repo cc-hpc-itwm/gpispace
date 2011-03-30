@@ -46,8 +46,12 @@ namespace gpi
         process_signal_t process_attached;
         process_signal_t process_detached;
 
-        explicit
-        manager_t (const gpi::pc::type::id_t ident);
+		static manager_t & get()
+		{
+		  static manager_t m;
+		  return m;
+        }
+
         ~manager_t ();
 
         void clear ();
@@ -69,6 +73,14 @@ namespace gpi
         void detach_process ( const gpi::pc::type::process_id_t
                             , const gpi::pc::type::segment_id_t
                             );
+
+        int
+        remote_alloc ( const gpi::pc::type::segment_id_t
+                     , const gpi::pc::type::handle_t
+                     , const gpi::pc::type::offset_t
+                     , const gpi::pc::type::size_t
+                     , const std::string & name
+                     );
 
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::process_id_t proc_id
@@ -108,6 +120,8 @@ namespace gpi
                                     > handle_to_segment_t;
         typedef boost::unordered_set<area_ptr> garbage_areas_t;
 
+        manager_t ();
+
         void add_gpi_memory ();
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;
@@ -133,6 +147,21 @@ namespace gpi
         transfer_manager_t m_transfer_mgr;
       };
     }
+  }
+}
+
+namespace gpi
+{
+  namespace pc
+  {
+  namespace global
+  {
+	inline
+    gpi::pc::memory::manager_t & memory_manager()
+    {
+	  return gpi::pc::memory::manager_t::get();
+    }
+  }
   }
 }
 

@@ -5,9 +5,14 @@
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+
 #include <fhglog/minimal.hpp>
 
 #include <gpi-space/signal_handler.hpp>
+
+#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
 
 namespace gpi
 {
@@ -39,6 +44,48 @@ namespace gpi
             return rnk;
           }
         }
+
+        struct command_t
+        {
+          typedef std::vector<std::string> string_vec;
+
+          explicit
+          command_t(const char *name)
+          {
+            parts.push_back(name);
+          }
+
+          command_t & operator<< (std::string const &s)
+          {
+            parts.push_back("\"" + s + "\"");
+            return *this;
+          }
+
+          template <typename T>
+          command_t & operator<< (T const &t)
+          {
+            parts.push_back (boost::lexical_cast<std::string>(t));
+            return *this;
+          }
+
+          operator std::string () const
+          {
+            std::ostringstream osstr;
+            for ( std::vector<std::string>::const_iterator it(parts.begin())
+                ; it != parts.end()
+                ; ++it
+                )
+            {
+              if (it != parts.begin())
+                osstr << " ";
+              osstr << *it;
+            }
+
+            return osstr.str();
+          }
+        private:
+          std::vector<std::string> parts;
+        };
       }
 
       fhg::com::port_t const &
@@ -75,12 +122,11 @@ namespace gpi
 
       void topology_t::add_neighbor(const gpi::rank_t rank)
       {
-        lock_type lock(m_mutex);
-
-        assert (m_peer);
-
         neighbor_t new_neighbor(rank);
         new_neighbor.name = detail::rank_to_name (rank);
+
+        lock_type lock(m_mutex);
+        assert (m_peer);
         m_neighbors[rank] = new_neighbor;
       }
 
@@ -146,10 +192,25 @@ namespace gpi
                            );
       }
 
-      int topology_t::global_alloc ( const gpi::pc::type::handle_t hdl
-                                   , const gpi::pc::type::size_t
-                                   )
+      int topology_t::free (const gpi::pc::type::handle_t hdl)
       {
+        broadcast (detail::command_t("FREE") << hdl);
+        return 0;
+      }
+
+      int topology_t::alloc ( const gpi::pc::type::handle_t hdl
+                            , const gpi::pc::type::offset_t offset
+                            , const gpi::pc::type::size_t size
+                            , const std::string & name
+                            )
+      {
+        boost::unique_lock<gpi::api::gpi_api_t>
+          gpi_lock(gpi::api::gpi_api_t::get());
+
+        broadcast (detail::command_t("ALLOC") << hdl << offset << size << name);
+
+        // collect results
+
         // in:  handle, size
         // out: success | -errno
         //
@@ -181,7 +242,7 @@ namespace gpi
         //     reply res
         //   res = reduce()
 
-        return -EAGAIN;
+        return 0;
       }
 
       void topology_t::stop ()
@@ -204,9 +265,8 @@ namespace gpi
       {
         lock_type lock(m_mutex);
 
-        LOG(INFO, "establishing topology...");
+        LOG(TRACE, "establishing topology...");
 
-        const std::string data("HELLO");
         BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
         {
           useconds_t snooze(500 * 1000);
@@ -215,7 +275,7 @@ namespace gpi
           {
             try
             {
-              cast(n.second, data.c_str(), data.size() + 1);
+              m_peer->send (n.second.name, detail::command_t("CONNECT"));
               break;
             }
             catch (std::exception const & ex)
@@ -236,11 +296,12 @@ namespace gpi
             }
           }
         }
+
+        LOG(INFO, "topology established");
       }
 
       void topology_t::cast( const gpi::rank_t rnk
-                           , const char * data
-                           , const std::size_t len
+                           , const std::string & data
                            )
       {
         lock_type lock(m_mutex);
@@ -255,26 +316,46 @@ namespace gpi
         }
         else
         {
-          cast (it->second, data, len);
+          cast (it->second, data);
         }
       }
 
-      void topology_t::cast( const neighbor_t & neighbor
+      void topology_t::cast( const gpi::rank_t rnk
                            , const char * data
                            , const std::size_t len
                            )
       {
-        m_peer->send (neighbor.name, std::string(data, len));
+        cast(rnk, std::string(data, len));
+      }
+
+      static void message_sent (boost::system::error_code const &ec)
+      {
+        if (ec)
+        {
+          LOG(WARN, "message could not be sent!");
+        }
+      }
+
+      void topology_t::cast( const neighbor_t & neighbor
+                           , const std::string & data
+                           )
+      {
+        m_peer->async_send(neighbor.name, data, &message_sent);
+      }
+
+      void topology_t::broadcast (const std::string &data)
+      {
+        BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
+        {
+          cast(n.second, data);
+        }
       }
 
       void topology_t::broadcast ( const char *data
                                  , const std::size_t len
                                  )
       {
-        BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
-        {
-          cast(n.second, data, len);
-        }
+        return broadcast(std::string(data, len));
       }
 
       /*
@@ -289,8 +370,11 @@ namespace gpi
           const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
           const std::string name(m_peer->resolve(addr, "*unknown*"));
 
-          // TODO parse and handle
-          handle_message (detail::name_to_rank(name), m_incoming_msg);
+          handle_message( detail::name_to_rank(name)
+                        , std::string( m_incoming_msg.buf()
+                                     , m_incoming_msg.header.length
+                                     )
+                        );
 
           m_peer->async_recv ( &m_incoming_msg
                              , boost::bind( &topology_t::message_received
@@ -323,23 +407,80 @@ namespace gpi
       }
 
       void topology_t::handle_message ( const gpi::rank_t rank
-                                      , fhg::com::message_t const &msg
+                                      , std::string const &msg
                                       )
       {
-        LOG(TRACE, "got data from gpi-" << rank << ": " << msg.buf());
+        LOG(TRACE, "got message from gpi-" << rank << ": " << msg);
 
-        std::string s(msg.buf());
-        if (rank != m_rank && s == "HELLO")
+        // TODO: push message to message handler
+
+        if (rank != m_rank && msg == "CONNECT")
         {
+          LOG(TRACE, "adding neighbor " << rank);
           add_neighbor(rank);
-        }
-        else if (s != "OK")
-        {
-          cast (rank, "OK", 3);
+          cast (rank, "+OK");
         }
         else
         {
-          LOG(ERROR, "got invalid message: " << s);
+          // split message
+          std::vector<std::string> av;
+          boost::algorithm::split ( av, msg
+                                  , boost::algorithm::is_space()
+                                  , boost::algorithm::token_compress_on
+                                  );
+          if (av.empty())
+          {
+            LOG(ERROR, "ignoring empty command");
+          }
+          else if (av[0] == "ALLOC")
+          {
+            using namespace gpi::pc::type;
+            handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
+            offset_t offset (boost::lexical_cast<offset_t>(av[2]));
+            size_t   size (boost::lexical_cast<size_t>(av[3]));
+            std::string name
+			  (boost::algorithm::trim_copy_if( av[4]
+			                                 , boost::is_any_of("\"")
+											 )
+			  ); // TODO unquote
+
+            int res
+              (global::memory_manager().remote_alloc( 1
+                                                    , hdl
+                                                    , offset
+                                                    , size
+                                                    , name
+                                                    )
+              );
+
+            if (res)
+            {
+              cast (rank, detail::command_t("+ERR") << res);
+            }
+            else
+            {
+              cast (rank, detail::command_t("+OK"));
+            }
+          }
+          else if (av[0] == "FREE")
+          {
+            using namespace gpi::pc::type;
+            handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
+            try
+            {
+              global::memory_manager().free(hdl);
+              cast (rank, detail::command_t("+OK"));
+            }
+            catch (std::exception const & ex)
+            {
+              LOG(ERROR, "could not free handle: " << ex.what());
+              cast (rank, detail::command_t("+ERR") << 1);
+            }
+          }
+          else
+          {
+            LOG(WARN, "result collection not implemented");
+          }
         }
       }
 
@@ -347,8 +488,8 @@ namespace gpi
                                     , boost::system::error_code const &ec
                                     )
       {
-        LOG(WARN, "error on connection to gpi node " << rank);
-        LOG(ERROR, "node-failover is not available yet, I have to commit seppuku...");
+        LOG(WARN, "error on connection to neighbor node " << rank);
+        LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
         gpi::signal::handler().raise(15);
       }
     }

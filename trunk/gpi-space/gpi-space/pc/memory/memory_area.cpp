@@ -190,6 +190,118 @@ namespace gpi
         check_bounds (hdl_it->second, loc.offset, loc.offset+size-1);
       }
 
+      int
+      area_t::remote_alloc ( const gpi::pc::type::handle_t hdl_id
+                           , const gpi::pc::type::offset_t offset
+                           , const gpi::pc::type::size_t size
+                           , const std::string & name
+                           )
+      {
+        gpi::pc::type::handle::descriptor_t hdl;
+        hdl.segment = m_descriptor.id;
+        hdl.id = hdl_id;
+        hdl.size = size;
+        hdl.name = name;
+        hdl.offset = offset;
+        hdl.creator = (gpi::pc::type::process_id_t)(-1);
+        hdl.flags = type::handle::F_GLOBAL | type::handle::F_PERSISTENT;
+
+        Arena_t arena = translate_grow_direction(grow_direction(hdl.flags));
+
+        AllocReturn_t alloc_return
+            (dtmmgr_alloc (&m_mmgr, hdl_id, arena, size));
+
+        DLOG( TRACE
+            , "ALLOC:"
+            << " handle = " << hdl.id
+            << " arena = " << arena
+            << " size = " << size
+            << " return = " << alloc_return
+            );
+
+        switch (alloc_return)
+        {
+        case ALLOC_SUCCESS:
+          {
+            Offset_t actual_offset (0);
+            dtmmgr_offset_size ( m_mmgr
+                               , hdl.id
+                               , arena
+                               , &actual_offset
+                               , NULL
+                               );
+            if (actual_offset != offset)
+            {
+              LOG(ERROR, "remote_alloc failed: expected-offset = " << offset << " actual-offset = " << actual_offset);
+              dtmmgr_free (&m_mmgr, hdl.id, arena);
+              throw std::runtime_error("offset mismatch");
+            }
+            else
+            {
+              update_descriptor_from_mmgr ();
+              m_handles [hdl.id] = hdl;
+            }
+          }
+          break;
+        case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
+          LOG( WARN
+             , "not enough contiguous memory available:"
+             << " requested_size = " << size
+             << " segment = " << m_descriptor.id
+             << " avail = " << m_descriptor.avail
+             );
+          // TODO:
+          //    defrag (size);
+          //        release locks (? how)
+          //          block all accesses to this area
+          //              // memcpy/allocs should return EAGAIN
+          //          wait for transactions to finish
+          //          real_defrag
+          //        reacquire locks
+          throw std::runtime_error
+              ("not enough contiguous memory, defrag not yet implemented");
+          break;
+        case ALLOC_INSUFFICIENT_MEMORY:
+          LOG( ERROR
+             , "not enough memory:"
+             << " requested_size=" << size
+             << " segment=" << m_descriptor.id
+             << " avail=" << m_descriptor.avail
+             );
+          throw std::runtime_error ("out of memory");
+          break;
+        case ALLOC_DUPLICATE_HANDLE:
+          LOG( ERROR
+             ,  "duplicate handle:"
+             << " handle = " << hdl.id
+             << " segment " << m_descriptor.id
+             );
+          throw std::runtime_error ("duplicate handle");
+          break;
+        case ALLOC_FAILURE:
+          LOG( ERROR
+             , "internal error during allocation:"
+             << " requested_size = " << size
+             << " handle = " << hdl.id
+             << " segment = " << m_descriptor.id
+             );
+          throw std::runtime_error ("allocation failed");
+          break;
+        default:
+          LOG( ERROR
+             ,  "unexpected error during allocation:"
+             << " requested_size = " << size
+             << " handle = " << hdl.id
+             << " segment = " << m_descriptor.id
+             << " error = " << alloc_return
+             );
+          throw std::runtime_error ("unexpected return code");
+          break;
+        }
+
+        return 0;
+      }
+
       gpi::pc::type::handle_t
       area_t::alloc ( const gpi::pc::type::process_id_t proc_id
                     , const gpi::pc::type::size_t size

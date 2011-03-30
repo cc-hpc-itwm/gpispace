@@ -4,6 +4,7 @@
 
 #include <fhglog/minimal.hpp>
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/global/topology.hpp>
 
 namespace gpi
 {
@@ -126,10 +127,7 @@ namespace gpi
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
         {
-          // TODO (ap):
-          // gpi_space_com_api::global_alloc (desc.hdl, desc.size);
-          //     make sure to release locks!
-          LOG(ERROR, "global GPI allocations are not yet fully implemented");
+          gpi::pc::global::topology().alloc(hdl.id, hdl.offset, hdl.size, hdl.name);
         }
       }
 
@@ -138,10 +136,7 @@ namespace gpi
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
         {
-          // TODO (ap):
-          // gpi_space_com_api::global_free (desc.hdl);
-          //     make sure to release locks!
-          LOG(ERROR, "global GPI deallocations are not yet fully implemented");
+          gpi::pc::global::topology().free(hdl.id);
         }
       }
 

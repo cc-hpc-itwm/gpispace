@@ -29,7 +29,6 @@ namespace gpi
 
       public:
         typedef manager_t self;
-        typedef gpi::pc::memory::manager_t memory_manager_type;
         typedef gpi::pc::container::process_t<manager_t> process_type;
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
@@ -129,9 +128,6 @@ namespace gpi
 
         process_map_t m_processes;
         process_list_t m_detached_processes;
-
-        memory_manager_type m_memory_mgr;
-        global::topology_t m_topology;
       };
     }
   }

@@ -57,6 +57,16 @@ namespace gpi
               , const gpi::pc::type::flags_t flags
               );
 
+        int
+        remote_alloc ( const gpi::pc::type::handle_t hdl
+                     , const gpi::pc::type::offset_t offset
+                     , const gpi::pc::type::size_t size
+                     , const std::string & name
+                     );
+
+        void
+        remote_free (const gpi::pc::type::handle_t hdl);
+
         void
         free (const gpi::pc::type::handle_t hdl);
 

@@ -41,8 +41,7 @@ namespace gpi
         static port_t const & any_port ();
         static host_t const & any_addr ();
 
-        explicit
-        topology_t ();
+        friend topology_t & topology();
 
         ~topology_t ();
 
@@ -59,9 +58,19 @@ namespace gpi
         void establish ();
 
         // initiate a global alloc
-        int global_alloc ( const gpi::pc::type::handle_t hdl
-                         , const gpi::pc::type::size_t
-                         );
+        int alloc ( const gpi::pc::type::handle_t
+                  , const gpi::pc::type::offset_t
+                  , const gpi::pc::type::size_t
+                  , const std::string & name
+                  );
+
+        int free (const gpi::pc::type::handle_t);
+
+        void cast (const gpi::rank_t rnk, const std::string & data);
+        void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
+
+        void broadcast(const std::string & data);
+        void broadcast(const char *data, const std::size_t len);
 
         // signals
         //    alloc-requested(handle_t, offset, size)
@@ -90,6 +99,9 @@ namespace gpi
           time_t      last_signal;
         };
 
+        explicit
+        topology_t ();
+
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::shared_ptr<boost::thread> thread_ptr;
@@ -98,7 +110,7 @@ namespace gpi
 
         void message_received (boost::system::error_code const &);
         void handle_message ( const gpi::rank_t rank
-                            , const fhg::com::message_t &
+                            , const std::string &
                             );
         void handle_error ( const gpi::rank_t rank
                           , boost::system::error_code const &
@@ -109,10 +121,7 @@ namespace gpi
          *
          * @param to the rank to cast the message to
          */
-        void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
-        void cast (neighbor_t const &, const char *data, const std::size_t len);
-
-        void broadcast(const char *data, const std::size_t len);
+        void cast (neighbor_t const &, const std::string &data);
 
         mutable mutex_type m_mutex;
         bool m_shutting_down;
@@ -122,6 +131,13 @@ namespace gpi
         neighbor_map_t m_neighbors;
         fhg::com::message_t m_incoming_msg;
       };
+
+      inline
+      topology_t & topology()
+      {
+        static topology_t t;
+        return t;
+      }
     }
   }
 }

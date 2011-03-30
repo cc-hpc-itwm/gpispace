@@ -19,7 +19,6 @@ namespace gpi
        : m_state (ST_STOPPED)
        , m_connector (*this, p)
        , m_process_counter (0)
-       , m_memory_mgr (gpi::api::gpi_api_t::get().rank())
       {}
 
       manager_t::~manager_t ()
@@ -67,7 +66,7 @@ namespace gpi
             detach_process (m_processes.begin()->first);
           }
 
-          m_memory_mgr.clear();
+          global::memory_manager().clear();
           shutdown_topology ();
         }
 
@@ -114,24 +113,24 @@ namespace gpi
       void manager_t::initialize_topology ()
       {
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        m_topology.start( gpi_api.rank()
-                        , global::topology_t::any_addr()
-                        , global::topology_t::any_port() // topology_t::port_t("10821")
-                        , "dummy-cookie"
-                        );
+        global::topology().start( gpi_api.rank()
+                                , global::topology_t::any_addr()
+                                , global::topology_t::any_port() // topology_t::port_t("10821")
+                                , "dummy-cookie"
+                                );
         if (gpi_api.is_master())
         {
           for (std::size_t n(1); n < gpi_api.number_of_nodes(); ++n)
           {
-            m_topology.add_neighbor(n);
+            global::topology().add_neighbor(n);
           }
         }
-        m_topology.establish();
+        global::topology().establish();
       }
 
       void manager_t::shutdown_topology ()
       {
-        m_topology.stop ();
+        global::topology().stop();
       }
 
       void manager_t::attach_process (process_ptr_t proc)
@@ -165,7 +164,7 @@ namespace gpi
         m_processes.erase (id);
         proc->stop ();
 
-        m_memory_mgr.garbage_collect (id);
+        global::memory_manager().garbage_collect (id);
 
         CLOG( INFO
             , "gpi.container"
@@ -245,7 +244,7 @@ namespace gpi
                                                               )
       {
         gpi::pc::type::segment_id_t seg_id
-          (m_memory_mgr.register_memory (pc_id, name, sz, flags));
+          (global::memory_manager().register_memory (pc_id, name, sz, flags));
         return seg_id;
       }
 
@@ -253,28 +252,28 @@ namespace gpi
                                          , const gpi::pc::type::segment_id_t seg_id
                                          )
       {
-        m_memory_mgr.unregister_memory (proc_id, seg_id);
+        global::memory_manager().unregister_memory (proc_id, seg_id);
       }
 
       void manager_t::list_segments ( const gpi::pc::type::process_id_t proc_id
                                     , gpi::pc::type::segment::list_t &l
                                     ) const
       {
-        m_memory_mgr.list_memory (l);
+        global::memory_manager().list_memory (l);
       }
 
       void manager_t::attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id
                                                 , const gpi::pc::type::segment_id_t seg_id
                                                 )
       {
-        m_memory_mgr.attach_process (proc_id, seg_id);
+        global::memory_manager().attach_process (proc_id, seg_id);
       }
 
       void manager_t::detach_process_from_segment ( const gpi::pc::type::process_id_t proc_id
                                                   , const gpi::pc::type::segment_id_t seg_id
                                                   )
       {
-        m_memory_mgr.detach_process (proc_id, seg_id);
+        global::memory_manager().detach_process (proc_id, seg_id);
       }
 
       void
@@ -297,7 +296,7 @@ namespace gpi
                        )
       {
 //        check_permissions (permission::alloc_t (proc_id, seg_id));
-        return m_memory_mgr.alloc (proc_id, seg_id , size , name , flags);
+        return global::memory_manager().alloc (proc_id, seg_id , size , name , flags);
       }
 
       void
@@ -306,7 +305,7 @@ namespace gpi
                       )
       {
 //        check_permissions (permission::free_t (proc_id, hdl));
-        m_memory_mgr.free (hdl);
+        global::memory_manager().free (hdl);
       }
 
       void
@@ -317,9 +316,9 @@ namespace gpi
       {
 //        check_permissions (permission::list_allocations_t (proc_id, seg_id));
         if (seg_id == gpi::pc::type::segment::SEG_INVAL)
-          m_memory_mgr.list_allocations(list);
+          global::memory_manager().list_allocations(list);
         else
-          m_memory_mgr.list_allocations (seg_id, list);
+          global::memory_manager().list_allocations (seg_id, list);
       }
 
       gpi::pc::type::queue_id_t
@@ -332,7 +331,7 @@ namespace gpi
       {
         gpi::pc::type::validate (dst.handle);
         gpi::pc::type::validate (src.handle);
-        return m_memory_mgr.memcpy (proc_id, dst, src, amount, queue);
+        return global::memory_manager().memcpy (proc_id, dst, src, amount, queue);
       }
 
       gpi::pc::type::size_t
@@ -340,7 +339,7 @@ namespace gpi
                                , const gpi::pc::type::queue_id_t queue
                                )
       {
-        return m_memory_mgr.wait_on_queue (proc_id, queue);
+        return global::memory_manager().wait_on_queue (proc_id, queue);
       }
     }
   }

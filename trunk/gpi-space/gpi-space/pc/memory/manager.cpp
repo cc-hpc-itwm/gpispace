@@ -15,12 +15,12 @@ namespace gpi
   {
     namespace memory
     {
-      manager_t::manager_t (const gpi::pc::type::id_t ident)
-        : m_ident (ident)
+      manager_t::manager_t ()
+        : m_ident (gpi::api::gpi_api_t::get().rank())
         , m_segment_counter ()
-        , m_transfer_mgr(8)
+        , m_transfer_mgr(gpi::api::gpi_api_t::get().number_of_queues())
       {
-        handle_generator_t::create (ident);
+        handle_generator_t::create (m_ident);
 
         add_gpi_memory ();
       }
@@ -304,6 +304,38 @@ namespace gpi
           throw std::runtime_error ("handle does not exist");
         }
         m_handle_to_segment.erase (hdl);
+      }
+
+      int
+      manager_t::remote_alloc ( const gpi::pc::type::segment_id_t seg_id
+                              , const gpi::pc::type::handle_t hdl
+                              , const gpi::pc::type::offset_t offset
+                              , const gpi::pc::type::size_t size
+                              , const std::string & name
+                              )
+      {
+        try
+        {
+          area_ptr area (get_area (seg_id));
+          area->remote_alloc (hdl, offset, size, name);
+          add_handle (hdl, seg_id);
+          handle_allocated (hdl);
+
+          CLOG( TRACE
+              , "gpi.memory"
+              , "remote memory allocated:"
+              << " segment " << seg_id
+              << " size " << size
+              << " handle " << hdl
+              );
+        }
+        catch (std::exception const & ex)
+        {
+          // TODO: check error
+          LOG(ERROR, "remote allocation failed: " << ex.what());
+          return 2;
+        }
+        return 0;
       }
 
       gpi::pc::type::handle_t
