@@ -32,12 +32,12 @@ install(TARGETS aggregator
  #
 # Aggregator
 #
-add_executable(aggregator_mc aggregator_mc.cpp)
-target_link_libraries(aggregator_mc ${daemon_libs})
-install(TARGETS aggregator_mc
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
+#add_executable(aggregator_mc aggregator_mc.cpp)
+#target_link_libraries(aggregator_mc ${daemon_libs})
+#install(TARGETS aggregator_mc
+#  RUNTIME
+#  DESTINATION bin
+#  COMPONENT applications)
 
 #
 # Nre
@@ -48,16 +48,6 @@ install(TARGETS nre
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
-
-set ( client_libs
-      sdpa-client
-      sdpa-events
-      sdpa-util
-      sdpa-com
-      sdpa
-      seda
-      ${Boost_LIBRARIES} 
-)
 
 #
 # Nre_mc

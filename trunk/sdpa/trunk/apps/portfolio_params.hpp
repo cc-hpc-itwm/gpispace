@@ -32,6 +32,7 @@ public:
 		m_dSigma = 0.0;
 		m_nFirstFixing = 0;
 		m_nAnzahlderDividende = 0;
+		m_nLBUs = 2; // by default
 	}
 
 	common_parameters_t( 	double dS,
@@ -40,7 +41,8 @@ public:
 							long int nn,
 							double dSigma,
 							int nFirstFixing,
-							long nAnzahlderDividende )
+							long nAnzahlderDividende,
+							int nLBUs = 2)
 	{
 		m_dS = dS;
 		m_dr = dr;
@@ -49,6 +51,7 @@ public:
 		m_dSigma = dSigma;
 		m_nFirstFixing = nFirstFixing;
 		m_nAnzahlderDividende = nAnzahlderDividende;
+		m_nLBUs = nLBUs;
 	}
 
 	common_parameters_t(const common_parameters_t& other)
@@ -60,6 +63,7 @@ public:
 		m_dSigma = other.m_dSigma;
 		m_nFirstFixing = other.m_nFirstFixing;
 		m_nAnzahlderDividende = other.m_nAnzahlderDividende;
+		m_nLBUs = other.m_nLBUs;
 	}
 
 	common_parameters_t& operator=(const common_parameters_t& other)
@@ -73,6 +77,7 @@ public:
 			m_dSigma = other.m_dSigma;
 			m_nFirstFixing = other.m_nFirstFixing;
 			m_nAnzahlderDividende = other.m_nAnzahlderDividende;
+			m_nLBUs = other.m_nLBUs;
 		}
 
 		return *this;
@@ -98,6 +103,9 @@ public:
 
 	long NumberDividends() { return m_nAnzahlderDividende; }
 	void setNumberDividends(const long& l) { m_nAnzahlderDividende = l; }
+
+	int nLBUs() { return m_nLBUs; }
+	void setNLBUs(int k) { m_nLBUs = k; }
 
 	template <class Archive>
 	void serialize(Archive& ar, const unsigned int)
@@ -126,6 +134,8 @@ private:
 	int m_nFirstFixing;
 	// Number of dividends
 	long m_nAnzahlderDividende;
+
+	int m_nLBUs;
 };
 
 // specific input parameters, for each row in the worksheet
