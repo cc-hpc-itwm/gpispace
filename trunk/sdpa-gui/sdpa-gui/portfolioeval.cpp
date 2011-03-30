@@ -16,6 +16,9 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <we/we.hpp>
 //#include <sdpa/engine/IWorkflowEngine.hpp>
 
+const int NMAXTRIALS = 10;
+int mPollingInterval(30000) ; //30 microseconds
+
 int Portfolio::RandInt(int low, int high)
 {
 	// Random number between low and high
@@ -34,26 +37,6 @@ Portfolio::~Portfolio()
 
 void Portfolio::InitTable()
 {
-	// create sample data here
-	// portfolio evaluation tab
-	// common parameters
-	/*
-		S = 7000.000000
-		r = 0.050000
-		d = 0.000000
-		FirstFixing = 1
-		FixingsProJahr = 50
-		AnzahlderDividende = 3
-		n = 10000
-	*/
-
-
-	/* row parameters
-		K = 89
-		T = 0.515068
-		sigma = 0.200000
-	 */
-
 	// Replace these with some random generated data
 	//S, r, d, n, Sigma, FirstFixing, nAnzahlderDividende
 	double S = 7000;
@@ -101,10 +84,6 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 	//QLineEdit
 	QString qstrOrch = "Orchestrator";
 	m_pUi->m_editOrchestrator->setText(qstrOrch);
-
-	//QLineEdit
-	//QString qstrSplitFact = "5";
-	//m_pUi->m_editSplitFactor->setText(qstrSplitFact);
 
 	// common parameters
 	//QLineEdit
@@ -168,11 +147,6 @@ int Portfolio::Resize(int k)
 void Portfolio::ShowResult( simulation_result_t& sim_res )
 {
 	int row_idx = sim_res.rowId();
-
-	/*m_pUi->m_calcSpreadSheet->horizontalHeader()->resizeSection( row_idx, 100 );
-
-	QTableWidgetItem *pWItem(new QTableWidgetItem( QString("Option %1").arg(row_idx) ));
-	m_pUi->m_calcSpreadSheet->setVerticalHeaderItem( row_idx, pWItem );*/
 
 	//update fields PV, STDDEV, DELTA, GAMMA, VEGA
 	for( int col_idx = PV; col_idx<=VEGA; col_idx++)
@@ -337,56 +311,21 @@ void Portfolio::StartClient()
 	m_ptrCli->configure_network( config );
 }
 
-void Portfolio::SubmitPortfolio()
+
+void Portfolio::Poll()
 {
-	const int NMAXTRIALS = 10;
-	int mPollingInterval(30000) ; //30 microseconds
-
-	portfolio_data_t job_data;
-	PrepareInputData( job_data  );
-
-	// call here the client API
-	// disable submit button
-
-	// enable submit button when the job result is delivered (token)
-
-	sdpa::job_id_t job_id_user;
-
-	//std::string strWorkflow = BuildTestWorkflow(job_data);
-	std::string strWorkflow = BuildWorkflow(job_data);
-
-	int nTrials = 0;
-	try {
-
-		qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
-		ClearTable();
-		job_id_user = m_ptrCli->submitJob(strWorkflow);
-		qDebug()<<"Got the job id "<<job_id_user.str().c_str();
-	}
-	catch(const sdpa::client::ClientException& cliExc)
-	{
-		if(nTrials++ > NMAXTRIALS)
-		{
-			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
-
-			m_ptrCli->shutdown_network();
-			m_ptrCli.reset();
-			return;
-		}
-	}
-
-	/*std::string job_status = m_ptrCli->queryJob(job_id_user);
-	//qDebug()<<"The status of the job "<<job_id_user<<" is "<<job_status);
+	std::string job_status = m_ptrCli->queryJob(m_currentJobId);
+	//qDebug()<<"The status of the job "<<m_currentJobId<<" is "<<job_status);
 	std::cout<<std::endl;
 
-	nTrials = 0;
+	int nTrials = 0;
 	while( job_status.find("Finished") 	== std::string::npos &&
 		   job_status.find("Failed") 	== std::string::npos &&
 		   job_status.find("Cancelled") == std::string::npos )
 	{
 		try {
-			job_status = m_ptrCli->queryJob(job_id_user);
-			//qDebug()<<"The status of the job "<<job_id_user<<" is "<<job_status);
+			job_status = m_ptrCli->queryJob(m_currentJobId);
+			//qDebug()<<"The status of the job "<<m_currentJobId<<" is "<<job_status);
 			std::cout<<".";
 			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 		}
@@ -400,6 +339,7 @@ void Portfolio::SubmitPortfolio()
 
 				m_ptrCli->shutdown_network();
 				m_ptrCli.reset();
+				EnableControls();
 				return;
 			}
 
@@ -407,13 +347,13 @@ void Portfolio::SubmitPortfolio()
 		}
 	}
 
-	qDebug()<<"The status of the job "<<job_id_user.str().c_str()<<" is "<<job_status.c_str();
+	qDebug()<<"The status of the job "<<m_currentJobId.str().c_str()<<" is "<<job_status.c_str();
 
 	std::cout<<std::endl;
 	nTrials = 0;
 	try {
-			qDebug()<<"Retrieve results of the job "<<job_id_user.str().c_str();
-			m_ptrCli->retrieveResults(job_id_user);
+			qDebug()<<"Retrieve results of the job "<<m_currentJobId.str().c_str();
+			m_ptrCli->retrieveResults(m_currentJobId);
 			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
@@ -424,6 +364,7 @@ void Portfolio::SubmitPortfolio()
 
 			m_ptrCli->shutdown_network();
 			m_ptrCli.reset();
+			EnableControls();
 			return;
 		}
 
@@ -433,9 +374,67 @@ void Portfolio::SubmitPortfolio()
 	// reset trials counter
 	nTrials = 0;
 	try {
-		qDebug()<<"Delete the user job "<<job_id_user.str().c_str();
-		m_ptrCli->deleteJob(job_id_user);
+		qDebug()<<"Delete the user job "<<m_currentJobId.str().c_str();
+		m_ptrCli->deleteJob(m_currentJobId);
 		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+		EnableControls();
+	}
+	catch(const sdpa::client::ClientException& cliExc)
+	{
+		if(nTrials++ > NMAXTRIALS)
+		{
+			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
+
+			m_ptrCli->shutdown_network();
+			m_ptrCli.reset();
+			EnableControls();
+			return;
+		}
+
+		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+	}
+}
+
+void Portfolio::WaitForCurrJobCompletion()
+{
+	boost::thread threadPoll = boost::thread(boost::bind(&Portfolio::Poll, this));
+}
+
+void Portfolio::DisableControls()
+{
+	m_pUi->m_submitButton->setEnabled(false);
+	m_pUi->m_clearButton->setEnabled(false);
+	m_pUi->m_spinBox->setEnabled(false);
+}
+
+void Portfolio::EnableControls()
+{
+	m_pUi->m_submitButton->setEnabled(true);
+	m_pUi->m_clearButton->setEnabled(true);
+	m_pUi->m_spinBox->setEnabled(true);
+}
+
+void Portfolio::SubmitPortfolio()
+{
+	portfolio_data_t job_data;
+	PrepareInputData( job_data  );
+
+	// call here the client API
+	// disable submit button
+
+	// enable submit button when the job result is delivered (token)
+
+	//std::string strWorkflow = BuildTestWorkflow(job_data);
+	std::string strWorkflow = BuildWorkflow(job_data);
+
+	int nTrials = 0;
+	try {
+
+		qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
+		ClearTable();
+		m_currentJobId = m_ptrCli->submitJob(strWorkflow);
+		qDebug()<<"Got the job id "<<m_currentJobId.str().c_str();
+		DisableControls();
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
@@ -447,13 +446,9 @@ void Portfolio::SubmitPortfolio()
 			m_ptrCli.reset();
 			return;
 		}
-
-		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 
-	m_ptrCli->shutdown_network();
-	*/
-
+	WaitForCurrJobCompletion();
 }
 
 void Portfolio::ClearTable( )

@@ -386,14 +386,14 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="clearButton">
+           <widget class="QPushButton" name="m_clearButton">
             <property name="text">
              <string>Clear</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="submitButton">
+           <widget class="QPushButton" name="m_submitButton">
             <property name="text">
              <string>Submit Job</string>
             </property>
@@ -929,7 +929,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>clearButton</sender>
+   <sender>m_clearButton</sender>
    <signal>clicked()</signal>
    <receiver>MonitorWindow</receiver>
    <slot>ClearTable()</slot>
@@ -945,7 +945,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>submitButton</sender>
+   <sender>m_submitButton</sender>
    <signal>clicked()</signal>
    <receiver>MonitorWindow</receiver>
    <slot>SubmitPortfolio()</slot>

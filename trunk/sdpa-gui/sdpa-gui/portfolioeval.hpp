@@ -28,11 +28,16 @@ public:
 	int  RandInt(int low, int high);
 	int  Resize(int k);
 	void StartClient();
+	void WaitForCurrJobCompletion();
+	void Poll();
+	void EnableControls();
+	void DisableControls();
 
 private:
 	Ui::MonitorWindow *m_pUi;
 	int m_nRows;
 	sdpa::client::ClientApi::ptr_t m_ptrCli;
+	sdpa::job_id_t m_currentJobId;
 };
 
 #endif
