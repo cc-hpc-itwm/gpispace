@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <string.h> // memset
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/getenv.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <gpi-space/config/config-data.hpp>
 #include <boost/lexical_cast.hpp>
@@ -30,14 +31,7 @@ namespace gpi_space
       {
         daemonize = fhg::util::read_bool
           (m.get("node.daemonize", "false"));
-        std::string default_url ("localhost:2439");
-        {
-          const char *kvs_url_env (getenv("KVS_URL"));
-          if (kvs_url_env)
-          {
-             default_url = getenv("KVS_URL");
-          }
-        }
+        std::string default_url(fhg::util::getenv("KVS_URL", "localhost:2439"));
         snprintf ( kvs_url
                  , gpi_space::MAX_HOST_LEN
                  , "%s"
@@ -54,16 +48,7 @@ namespace gpi_space
       try
       {
         setenv("KVS_URL", c.kvs_url, true);
-
-        /* TODO: provide the following calls
-              global should be struct
-        fhg::com::kvs::global::create ();
-        fhg::com::kvs::global::init ();
-        fhg::com::kvs::global::get ();
-        fhg::com::kvs::global::destroy ();
-        */
-
-        fhg::com::kvs::global::get_kvs_info().init ();
+        fhg::com::kvs::global::get_kvs_info().init();
 
         // workaround until we have the above structure
         // put/del some entry to check the connection
