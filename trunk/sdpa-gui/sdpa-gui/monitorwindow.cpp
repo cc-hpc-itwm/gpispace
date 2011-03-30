@@ -16,6 +16,8 @@
 
 #include <boost/serialization/access.hpp>
 
+#include <we/loader/putget.hpp>
+
 using namespace std;
 using namespace boost;
 

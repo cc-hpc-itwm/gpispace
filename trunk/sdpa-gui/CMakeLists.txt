@@ -34,6 +34,14 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
+## check for we
+find_package(WE REQUIRED)
+include_directories(${WE_INCLUDE_DIR})
+
+## check for util
+find_package(UTIL REQUIRED)
+include_directories(${UTIL_INCLUDE_DIR})
+
 # seda library
 find_package(SEDA REQUIRED)
 include_directories(${SEDA_INCLUDE_DIR})
@@ -51,7 +59,7 @@ if (SMC_FOUND)
 else (SMC_FOUND)
     message(STATUS "WARNING: SMC could not be found!")
 endif (SMC_FOUND)
- 
+
 ## check for qt
 find_package(Qt4 4.4.3 COMPONENTS QtCore QtGui QtXml REQUIRED)
 find_package(TIFF REQUIRED)

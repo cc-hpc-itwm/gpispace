@@ -141,6 +141,7 @@ int Portfolio::Resize(int k)
 	ClearTable();
 	m_nRows = k;
 	InitTable();
+        return -1;
 }
 
 void Portfolio::ShowResult( simulation_result_t& sim_res )
