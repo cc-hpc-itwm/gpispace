@@ -62,8 +62,8 @@ namespace gpi
 
         ~topology_t ();
 
-        void add_neighbor(const gpi::rank_t rank);
-        void del_neighbor(const gpi::rank_t rank);
+        void add_child(const gpi::rank_t rank);
+        void del_child(const gpi::rank_t rank);
 
         void start( const gpi::rank_t rank
                   , const fhg::com::host_t & host
@@ -105,14 +105,14 @@ namespace gpi
         //    shutdown-requested()
         //       -> return: nil
       private:
-        struct neighbor_t
+        struct child_t
         {
-          neighbor_t ()
+          child_t ()
             : rank((gpi::rank_t)-1)
             , last_signal(0)
           {}
 
-          neighbor_t (const gpi::rank_t r)
+          child_t (const gpi::rank_t r)
             : rank (r)
             , last_signal (0)
           {}
@@ -130,7 +130,7 @@ namespace gpi
         typedef boost::condition_variable_any condition_type;
         typedef boost::shared_ptr<boost::thread> thread_ptr;
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
-        typedef std::map<gpi::rank_t, neighbor_t> neighbor_map_t;
+        typedef std::map<gpi::rank_t, child_t> child_map_t;
         typedef std::list<rank_result_t> result_list_t;
 
         void message_received (boost::system::error_code const &);
@@ -146,7 +146,7 @@ namespace gpi
          *
          * @param to the rank to cast the message to
          */
-        void cast (neighbor_t const &, const std::string &data);
+        void cast (child_t const &, const std::string &data);
 
         result_list_t request (const std::string &data);
 
@@ -160,7 +160,7 @@ namespace gpi
         gpi::rank_t m_rank;
         thread_ptr m_peer_thread;
         peer_ptr   m_peer;
-        neighbor_map_t m_neighbors;
+        child_map_t m_children;
         fhg::com::message_t m_incoming_msg;
 
         result_list_t m_current_results;

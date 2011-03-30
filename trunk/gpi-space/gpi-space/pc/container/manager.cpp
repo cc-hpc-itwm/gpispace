@@ -121,7 +121,7 @@ namespace gpi
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
         {
           if (gpi_api.rank() != n)
-            global::topology().add_neighbor(n);
+            global::topology().add_child(n);
         }
         global::topology().establish();
       }

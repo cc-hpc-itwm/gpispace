@@ -131,24 +131,24 @@ namespace gpi
         }
       }
 
-      void topology_t::add_neighbor(const gpi::rank_t rank)
+      void topology_t::add_child(const gpi::rank_t rank)
       {
-        neighbor_t new_neighbor(rank);
-        new_neighbor.name = detail::rank_to_name (rank);
+        child_t new_child(rank);
+        new_child.name = detail::rank_to_name (rank);
 
         lock_type lock(m_mutex);
         assert (m_peer);
-        m_neighbors[rank] = new_neighbor;
+        m_children[rank] = new_child;
       }
 
-      void topology_t::del_neighbor(const gpi::rank_t rank)
+      void topology_t::del_child(const gpi::rank_t rank)
       {
         lock_type lock(m_mutex);
 
         // if connected:
-        //    send disconnect to neighbor
+        //    send disconnect to child
         //    remove connection
-        m_neighbors.erase (rank);
+        m_children.erase (rank);
       }
 
       void topology_t::start( const gpi::rank_t rank
@@ -221,11 +221,11 @@ namespace gpi
 
         boost::system_time const timeout
           (boost::get_system_time()+boost::posix_time::seconds(30));
-        while (m_current_results.size () != m_neighbors.size())
+        while (m_current_results.size () != m_children.size())
         {
           if (!m_request_finished.timed_wait (result_list_lock, timeout))
           {
-            if (m_current_results.size() == m_neighbors.size())
+            if (m_current_results.size() == m_children.size())
             {
               break;
             }
@@ -303,7 +303,7 @@ namespace gpi
           return;
         }
 
-        // TODO: disconnect from all neighbors, shutdown the peer
+        // TODO: disconnect from all children, shutdown the peer
         m_shutting_down = true;
         m_peer->stop();
         m_peer_thread->join();
@@ -315,7 +315,7 @@ namespace gpi
       {
         LOG(TRACE, "establishing topology...");
 
-        BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
+        BOOST_FOREACH(child_map_t::value_type const & n, m_children)
         {
           useconds_t snooze(500 * 1000);
           int i = 5;
@@ -353,14 +353,14 @@ namespace gpi
                            )
       {
         lock_type lock(m_mutex);
-        neighbor_map_t::const_iterator it(m_neighbors.find(rnk));
-        if (it == m_neighbors.end())
+        child_map_t::const_iterator it(m_children.find(rnk));
+        if (it == m_children.end())
         {
           LOG( ERROR
              , "cannot send to rank " << rnk << ":"
              << " message routing not yet implemented"
              );
-          throw std::runtime_error("cannot send to this rank, not a direct neighbor and routing is not yet implemented!");
+          throw std::runtime_error("cannot send to this rank, not a direct child and routing is not yet implemented!");
         }
         else
         {
@@ -381,16 +381,16 @@ namespace gpi
         DLOG_IF(WARN, ec, "message could not be sent: " << ec);
       }
 
-      void topology_t::cast( const neighbor_t & neighbor
+      void topology_t::cast( const child_t & child
                            , const std::string & data
                            )
       {
-        m_peer->async_send(neighbor.name, data, &message_sent);
+        m_peer->async_send(child.name, data, &message_sent);
       }
 
       void topology_t::broadcast (const std::string &data)
       {
-        BOOST_FOREACH(neighbor_map_t::value_type const & n, m_neighbors)
+        BOOST_FOREACH(child_map_t::value_type const & n, m_children)
         {
           cast(n.second, data);
         }
@@ -461,8 +461,8 @@ namespace gpi
 
         if (rank != m_rank && msg == "CONNECT")
         {
-          //          LOG(TRACE, "adding neighbor " << rank);
-          //          add_neighbor(rank);
+          //          LOG(TRACE, "adding child " << rank);
+          //          add_child(rank);
           cast (rank, detail::command_t("+OK"));
         }
         else
@@ -543,7 +543,7 @@ namespace gpi
                                     , boost::system::error_code const &ec
                                     )
       {
-        LOG(WARN, "error on connection to neighbor node " << rank);
+        LOG(WARN, "error on connection to child node " << rank);
         LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
         gpi::signal::handler().raise(15);
       }
