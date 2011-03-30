@@ -12,15 +12,9 @@
 
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
-//#include <sdpa/engine/IWorkflowEngine.hpp>
-#include <we/mgmt/basic_layer.hpp>
-#include <we/util/codec.hpp>
-#include <we/we.hpp>
-#include <we/loader/putget.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
-#include <boost/unordered_map.hpp>
 #include <boost/serialization/access.hpp>
-#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace boost;
@@ -113,6 +107,24 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 		return;
 	}
 
+#ifndef USE_REAL_WE
+	// assume that you received a map
+	// decode the result and get a map
+	activity_information_t::data_t map_result;
+
+	long rowId 	  = QString(map_result["rowID"].c_str()).toInt();
+	double pv 	  = QString(map_result["pv"].c_str()).toDouble();
+	double stddev = QString(map_result["stddev"].c_str()).toDouble();
+	double Delta  = QString(map_result["Delta"].c_str()).toDouble();
+	double Gamma  = QString(map_result["Gamma"].c_str()).toDouble();
+	double Vega   = QString(map_result["Vega"].c_str()).toDouble();
+
+	simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
+	m_portfolio_.ShowResult(sim_res);
+	int val = ui->m_progressBar->value()+1;
+	ui->m_progressBar->setValue(val);
+
+#else
 	we::activity_t act;
 
 	try
@@ -150,11 +162,12 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 
 			simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
 			m_portfolio_.ShowResult(sim_res);
-
 			int val = ui->m_progressBar->value()+1;
 			ui->m_progressBar->setValue(val);
 		}
 	}
+#endif
+
 }
 
 void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
@@ -238,32 +251,23 @@ MonitorWindow::event (QEvent *e)
   }
 }
 
-void
-MonitorWindow::clearLogging ()
+void MonitorWindow::clearLogging ()
 {
-  m_log_events.clear ();
-  ui->m_log_table->clearContents ();
-  ui->m_log_table->setRowCount (0);
+	m_log_events.clear ();
+	ui->m_log_table->clearContents ();
+	ui->m_log_table->setRowCount (0);
 }
 
-void
-MonitorWindow::toggleFollowLogging (bool follow)
+void MonitorWindow::toggleFollowLogging (bool follow)
 {
-  m_follow_logging = follow;
+	m_follow_logging = follow;
 }
 
-void
-MonitorWindow::levelFilterChanged (int lvl)
+void MonitorWindow::levelFilterChanged (int lvl)
 {
-  for (int i = 0; i < m_log_events.size (); ++i)
-  {
-    if (m_log_events[i].severity() < ui->m_level_filter_selector->currentIndex())
-    {
-      ui->m_log_table->setRowHidden (i, true);
-    }
-    else
-    {
-      ui->m_log_table->setRowHidden (i, false);
-    }
-  }
+	for (int i = 0; i < m_log_events.size (); ++i)
+		if (m_log_events[i].severity() < ui->m_level_filter_selector->currentIndex())
+			ui->m_log_table->setRowHidden (i, true);
+		else
+			ui->m_log_table->setRowHidden (i, false);
 }

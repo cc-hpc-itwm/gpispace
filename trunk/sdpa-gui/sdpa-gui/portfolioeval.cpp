@@ -13,8 +13,7 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <QtGlobal>
 #include <QTime>
 
-#include <we/we.hpp>
-//#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 const int NMAXTRIALS = 10;
 int mPollingInterval(30000) ; //30 microseconds
@@ -218,83 +217,82 @@ void Portfolio::PrepareInputData( portfolio_data_t& job_data  )
 	}
 }
 
-void Portfolio::RetrieveResults( portfolio_result_t& result_data  )
-{
-}
+#ifdef USE_REAL_WE
+	static we::token_t make_token( portfolio_data_t& job_data, const int row )
+	{
+	  signature::structured_t sig;
+	  sig["bin"]=literal::STRING();
+	  sig["S"]=literal::DOUBLE();
+	  sig["sigma"]=literal::DOUBLE();
+	  sig["r"]= literal::DOUBLE();
+	  sig["d"]= literal::DOUBLE();
+	  sig["FirstFixing"] = literal::LONG();
+	  sig["AnzahlderDividende"]=  literal::LONG();
+	  sig["n"] = literal::LONG();
 
-static we::token_t make_token( portfolio_data_t& job_data, const int row )
-{
-  signature::structured_t sig;
-  sig["bin"]=literal::STRING();
-  sig["S"]=literal::DOUBLE();
-  sig["sigma"]=literal::DOUBLE();
-  sig["r"]= literal::DOUBLE();
-  sig["d"]= literal::DOUBLE();
-  sig["FirstFixing"] = literal::LONG();
-  sig["AnzahlderDividende"]=  literal::LONG();
-  sig["n"] = literal::LONG();
+	  sig["epsilon"]= literal::DOUBLE(); // TODO
+	  sig["delta"]=  literal::DOUBLE(); // TODO
+	  sig["iterations_per_run"]=  literal::LONG(); // TODO: figure out what this number actually means
 
-  sig["epsilon"]= literal::DOUBLE(); // TODO
-  sig["delta"]=  literal::DOUBLE(); // TODO
-  sig["iterations_per_run"]=  literal::LONG(); // TODO: figure out what this number actually means
+	  sig["rowID"] =  literal::LONG();
+	  sig["T"]=literal::DOUBLE();
+	  sig["K"]=literal::DOUBLE();
+	  sig["FixingsProJahr"]=literal::DOUBLE();
 
-  sig["rowID"] =  literal::LONG();
-  sig["T"]=literal::DOUBLE();
-  sig["K"]=literal::DOUBLE();
-  sig["FixingsProJahr"]=literal::DOUBLE();
+	  value::structured_t param;
+	  param["bin"]= std::string("/amd/nfs/root/gpfs/p/hpc/sdpa/rotaru/sdpa_trunk/main/trunk/build_release/bin/Asian"); // TODO: update / make user chooseable
+	  param["S"]= job_data.common_params.SpotPrice();
+	  param["sigma"]= job_data.common_params.Volatility();
+	  param["r"]=job_data.common_params.InterestRate();
+	  param["d"]=job_data.common_params.DividendYield();
+	  param["FirstFixing"] = (long)job_data.common_params.FirstFixing();
+	  param["AnzahlderDividende"]= (long)job_data.common_params.NumberDividends();
+	  param["n"] = (long)job_data.common_params.Iterations();
 
-  value::structured_t param;
-  param["bin"]= std::string("/amd/nfs/root/gpfs/p/hpc/sdpa/rotaru/sdpa_trunk/main/trunk/build_release/bin/Asian"); // TODO: update / make user chooseable
-  param["S"]= job_data.common_params.SpotPrice();
-  param["sigma"]= job_data.common_params.Volatility();
-  param["r"]=job_data.common_params.InterestRate();
-  param["d"]=job_data.common_params.DividendYield();
-  param["FirstFixing"] = (long)job_data.common_params.FirstFixing();
-  param["AnzahlderDividende"]= (long)job_data.common_params.NumberDividends();
-  param["n"] = (long)job_data.common_params.Iterations();
+	  param["epsilon"]= 0.01; // TODO
+	  param["delta"]= 0.01; // TODO
+	  param["iterations_per_run"]= job_data.common_params.Iterations() / job_data.common_params.nLBUs(); // TODO: figure out what this number actually means
 
-  param["epsilon"]= 0.01; // TODO
-  param["delta"]= 0.01; // TODO
-  param["iterations_per_run"]= job_data.common_params.Iterations() / job_data.common_params.nLBUs(); // TODO: figure out what this number actually means
+	  param["rowID"] = literal::type((long)row);
+	  param["T"]= job_data.arr_row_params[row].Maturity();
+	  param["K"]= job_data.arr_row_params[row].Strike();
+	  param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
 
-  param["rowID"] = literal::type((long)row);
-  param["T"]= job_data.arr_row_params[row].Maturity();
-  param["K"]= job_data.arr_row_params[row].Strike();
-  param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
+	  return we::token_t ( "param", sig, value::type(param) );
+	}
 
-  return we::token_t ( "param", sig, value::type(param) );
-}
+	std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
+	{
+		// effectively build the flow here !!!!
 
-std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
-{
-	// effectively build the flow here !!!!
+		// 1. load xml file (job description/workflow) -> we::activity
+		we::activity_t act;
+		std::ifstream ifs("asian.pnet"); // TODO: make this configurable: file open dialog
+		we::util::text_codec::decode (ifs, act);
+		for (std::size_t row (0); row < job_data.size(); ++row)
+			act.add_input( we::input_t::value_type( make_token(job_data, row), act.transition().input_port_by_name ("param")));
 
-	// 1. load xml file (job description/workflow) -> we::activity
-	we::activity_t act;
-	std::ifstream ifs("asian.pnet"); // TODO: make this configurable: file open dialog
-	we::util::text_codec::decode (ifs, act);
-	for (std::size_t row (0); row < job_data.size(); ++row)
-		act.add_input( we::input_t::value_type( make_token(job_data, row), act.transition().input_port_by_name ("param")));
+		std::ostringstream sstr;
+		sstr << act;
+		qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
 
-	std::ostringstream sstr;
-	sstr << act;
-	qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
+		return we::util::text_codec::encode(act);
+	}
 
-	return we::util::text_codec::encode(act);
-}
+#else
+	std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
+	{
+		std::string strJobData;
+		job_data.PrintToString(strJobData);
 
-std::string Portfolio::BuildTestWorkflow(portfolio_data_t& job_data)
-{
-	std::string strJobData;
-	job_data.PrintToString(strJobData);
+		qDebug()<<"The workflow to be submitted is: ";
+		qDebug()<<QString(strJobData.c_str());
 
-	qDebug()<<"The workflow to be submitted is: ";
-	qDebug()<<QString(strJobData.c_str());
+		strJobData = job_data.encode();
 
-	strJobData = job_data.encode();
-
-	return strJobData;
-}
+		return strJobData;
+	}
+#endif
 
 void Portfolio::StartClient()
 {

@@ -18,7 +18,6 @@ public:
 	void ShowResult( simulation_result_t& );
 	void ShowResults( arr_simulation_results_t& );
 	void PrepareInputData( portfolio_data_t& );
-	void RetrieveResults( portfolio_result_t& );
 	void PrintToString(portfolio_data_t&, std::string& );
 	std::string BuildWorkflow(portfolio_data_t&);
 	std::string BuildTestWorkflow(portfolio_data_t& job_data);

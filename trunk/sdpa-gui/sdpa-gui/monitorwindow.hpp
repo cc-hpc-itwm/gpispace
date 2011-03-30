@@ -12,7 +12,6 @@
 
 #include "portfolioeval.hpp"
 #include <sdpa/daemon/NotificationEvent.hpp>
-#include <sdpa/daemon/ApplicationGuiEvent.hpp>
 
 class MonitorWindow : public QMainWindow
 {
