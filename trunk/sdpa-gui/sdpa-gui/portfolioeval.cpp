@@ -82,7 +82,7 @@ void Portfolio::InitTable()
 
 	InitPortfolio(comm_params, arr_row_params);
 
-	m_pUi->m_progressBar->setRange(0, m_nRows);
+	m_pUi->m_progressBar->setRange(0, m_nRows-1);
 	m_pUi->m_progressBar->reset();
 }
 
