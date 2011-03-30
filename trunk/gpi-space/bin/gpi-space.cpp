@@ -140,12 +140,12 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
     // wait for signals
   }
+/* // TODO: use the shell interface
   else if (isatty (0) && isatty (1)) // usually on the master node only
   {
     static const std::string prompt
       ("Please type \"q\" followed by return to quit: ");
 
-    // TODO: use the shell interface
     bool done (false);
 
     while (std::cin.good() && !done)
@@ -184,6 +184,7 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
       }
     }
   }
+*/
   else
   {
     gpi::signal::handler().join ();
