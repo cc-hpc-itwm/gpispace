@@ -101,6 +101,7 @@ namespace gpi
       virtual bool is_slave (void) const = 0;
 
       virtual void barrier (void) const = 0;
+      virtual bool try_lock (void) const = 0;
       virtual void lock (void) const = 0;
       virtual void unlock (void) const = 0;
 

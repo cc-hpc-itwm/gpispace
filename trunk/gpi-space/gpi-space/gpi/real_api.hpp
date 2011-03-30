@@ -62,6 +62,7 @@ namespace gpi
       bool is_slave (void) const;
 
       void barrier (void) const;
+      bool try_lock (void) const;
       void lock (void) const;
       void unlock (void) const;
 

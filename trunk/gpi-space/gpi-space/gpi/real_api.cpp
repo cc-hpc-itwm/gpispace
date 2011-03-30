@@ -394,6 +394,14 @@ namespace gpi
       barrierGPI();
     }
 
+    bool real_gpi_api_t::try_lock (void) const
+    {
+      lock_type lock (m_mutex);
+      assert (m_startup_done);
+
+      return 0 == globalResourceLockGPI();
+    }
+
     void real_gpi_api_t::lock (void) const
     {
       lock_type lock (m_mutex);
