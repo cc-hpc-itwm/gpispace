@@ -457,8 +457,8 @@ void Aggregator::recover( std::istream& ifs )
 
 void Aggregator::notifyAppGui(const result_type & result)
 {
-	ApplicationGuiEvent evtAppGui(0, 0, result);
-	m_guiService.update(evtAppGui);
+	NotificationEvent evtGui("", "", NotificationEvent::STATE_FINISHED, result);
+	m_guiService.update(evtGui);
 	SDPA_LOG_INFO("Sent notification to the application gui! (result ="<<result<<")");
 }
 

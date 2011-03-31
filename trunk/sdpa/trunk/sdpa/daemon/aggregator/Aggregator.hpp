@@ -94,7 +94,7 @@ namespace sdpa {
 			std::string url_;
 			std::string masterName_;
 
-			ApplicationGuiService m_guiService;
+			NotificationService m_guiService;
 		};
 	}
 }
