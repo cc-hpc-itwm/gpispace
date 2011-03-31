@@ -25,12 +25,16 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 
+#include <sdpa/sdpa-config.hpp>
+
 #ifdef USE_REAL_WE
 	#include <we/mgmt/basic_layer.hpp>
 	#include <we/mgmt/bits/traits.hpp>
 	#include <we/mgmt/bits/signal.hpp>
 	#include <we/we.hpp>
 	#include <we/mgmt/layer.hpp>
+	#include <we/util/codec.hpp>
+	#include <we/loader/putget.hpp>
 #else
 	#include <boost/unordered_set.hpp>
 	#include <boost/unordered_map.hpp>
