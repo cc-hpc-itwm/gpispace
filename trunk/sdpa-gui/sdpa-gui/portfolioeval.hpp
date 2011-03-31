@@ -26,7 +26,7 @@ public:
 	void SubmitPortfolio();
 	int  RandInt(int low, int high);
 	int  Resize(int k);
-	void StartClient();
+	void StartClient() throw (sdpa::client::ClientException);
 	void WaitForCurrJobCompletion();
 	void Poll();
 	void EnableControls();
@@ -37,6 +37,7 @@ private:
 	int m_nRows;
 	sdpa::client::ClientApi::ptr_t m_ptrCli;
 	sdpa::job_id_t m_currentJobId;
+	bool m_bClientStarted;
 };
 
 #endif

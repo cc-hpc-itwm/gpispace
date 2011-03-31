@@ -13,7 +13,11 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <QtGlobal>
 #include <QTime>
 
+#include <QMessageBox>
+#include <QDir>
+
 #include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/version.hpp>
 
 const int NMAXTRIALS = 10;
 int mPollingInterval(30000) ; //30 microseconds
@@ -24,14 +28,14 @@ int Portfolio::RandInt(int low, int high)
 	return qrand() % ((high + 1) - low) + low;
 }
 
-Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi ) : m_pUi(arg_m_pUi), m_nRows(5)
+Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi ) : m_pUi(arg_m_pUi), m_nRows(5), m_bClientStarted(false)
 {
-	StartClient();
 }
 
 Portfolio::~Portfolio()
 {
-	m_ptrCli->shutdown_network();
+	if(m_bClientStarted)
+		m_ptrCli->shutdown_network();
 }
 
 void Portfolio::InitTable()
@@ -124,16 +128,24 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 	}
 
 	//QLineEdit
+	m_pUi->m_editTotalValue->setEnabled(false);
 	m_pUi->m_editTotalValue->setText("0");
 
 	//QLineEdit
+	m_pUi->m_editTotalDelta->setEnabled(false);
 	m_pUi->m_editTotalDelta->setText("0");
 
 	//QLineEdit
+	m_pUi->m_editTotalGamma->setEnabled(false);
 	m_pUi->m_editTotalGamma->setText("0");
 
 	//QLineEdit
+	m_pUi->m_editTotalVega->setEnabled(false);
 	m_pUi->m_editTotalVega->setText("0");
+
+	QString qstrCurrPath = QDir::currentPath();
+	m_pUi->m_editBackendPath->setText(SDPA_PREFIX);
+	m_pUi->m_editWorkflowPath->setText(qstrCurrPath);
 }
 
 int Portfolio::Resize(int k)
@@ -218,84 +230,102 @@ void Portfolio::PrepareInputData( portfolio_data_t& job_data  )
 	}
 }
 
-#ifdef USE_REAL_WE
-	static we::token_t make_token( portfolio_data_t& job_data, const int row )
+static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job_data, const int row )
+{
+  signature::structured_t sig;
+  sig["bin"]=literal::STRING();
+  sig["S"]=literal::DOUBLE();
+  sig["sigma"]=literal::DOUBLE();
+  sig["r"]= literal::DOUBLE();
+  sig["d"]= literal::DOUBLE();
+  sig["FirstFixing"] = literal::LONG();
+  sig["AnzahlderDividende"]=  literal::LONG();
+  sig["n"] = literal::LONG();
+
+  sig["epsilon"]= literal::DOUBLE(); // TODO
+  sig["delta"]=  literal::DOUBLE(); // TODO
+  sig["iterations_per_run"]=  literal::LONG(); // TODO: figure out what this number actually means
+
+  sig["rowID"] =  literal::LONG();
+  sig["T"]=literal::DOUBLE();
+  sig["K"]=literal::DOUBLE();
+  sig["FixingsProJahr"]=literal::DOUBLE();
+
+  value::structured_t param;
+
+  param["bin"]= qstrBackend.toStdString(); // TODO: update / make user chooseable
+  param["S"]= job_data.common_params.SpotPrice();
+  param["sigma"]= job_data.common_params.Volatility();
+  param["r"]=job_data.common_params.InterestRate();
+  param["d"]=job_data.common_params.DividendYield();
+  param["FirstFixing"] = (long)job_data.common_params.FirstFixing();
+  param["AnzahlderDividende"]= (long)job_data.common_params.NumberDividends();
+  param["n"] = (long)job_data.common_params.Iterations();
+
+  param["epsilon"]= 0.01; // TODO
+  param["delta"]= 0.01; // TODO
+  param["iterations_per_run"]= job_data.common_params.Iterations() / job_data.common_params.nLBUs(); // TODO: figure out what this number actually means
+
+  param["rowID"] = literal::type((long)row);
+  param["T"]= job_data.arr_row_params[row].Maturity();
+  param["K"]= job_data.arr_row_params[row].Strike();
+  param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
+
+  return we::token_t ( "param", sig, value::type(param) );
+}
+
+std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
+{
+	QString qstrBackendPath = m_pUi->m_editBackendPath->text();
+	QString qstrBackend = qstrBackendPath + QString("/Asian");
+
+	qDebug()<<"Use the backend: "<<qstrBackend;
+
+	QString qstrWfpath(m_pUi->m_editWorkflowPath->text());
+	QDir qdirWfPath(qstrWfpath);
+
+	if( !qdirWfPath.exists("asian.pnet") )
 	{
-	  signature::structured_t sig;
-	  sig["bin"]=literal::STRING();
-	  sig["S"]=literal::DOUBLE();
-	  sig["sigma"]=literal::DOUBLE();
-	  sig["r"]= literal::DOUBLE();
-	  sig["d"]= literal::DOUBLE();
-	  sig["FirstFixing"] = literal::LONG();
-	  sig["AnzahlderDividende"]=  literal::LONG();
-	  sig["n"] = literal::LONG();
-
-	  sig["epsilon"]= literal::DOUBLE(); // TODO
-	  sig["delta"]=  literal::DOUBLE(); // TODO
-	  sig["iterations_per_run"]=  literal::LONG(); // TODO: figure out what this number actually means
-
-	  sig["rowID"] =  literal::LONG();
-	  sig["T"]=literal::DOUBLE();
-	  sig["K"]=literal::DOUBLE();
-	  sig["FixingsProJahr"]=literal::DOUBLE();
-
-	  value::structured_t param;
-	  param["bin"]= std::string("/amd/nfs/root/gpfs/p/hpc/sdpa/rotaru/sdpa_trunk/main/trunk/build_release/bin/Asian"); // TODO: update / make user chooseable
-	  param["S"]= job_data.common_params.SpotPrice();
-	  param["sigma"]= job_data.common_params.Volatility();
-	  param["r"]=job_data.common_params.InterestRate();
-	  param["d"]=job_data.common_params.DividendYield();
-	  param["FirstFixing"] = (long)job_data.common_params.FirstFixing();
-	  param["AnzahlderDividende"]= (long)job_data.common_params.NumberDividends();
-	  param["n"] = (long)job_data.common_params.Iterations();
-
-	  param["epsilon"]= 0.01; // TODO
-	  param["delta"]= 0.01; // TODO
-	  param["iterations_per_run"]= job_data.common_params.Iterations() / job_data.common_params.nLBUs(); // TODO: figure out what this number actually means
-
-	  param["rowID"] = literal::type((long)row);
-	  param["T"]= job_data.arr_row_params[row].Maturity();
-	  param["K"]= job_data.arr_row_params[row].Strike();
-	  param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
-
-	  return we::token_t ( "param", sig, value::type(param) );
+		QMessageBox::critical( m_pUi->SDPAGUI,
+											QString("Error!"),
+											QString("The folder ") + qstrWfpath  + QString(" contains no file named asian.pnet!")
+										);
+		EnableControls();
+		return "";
 	}
 
-	std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
+	QString qstrWfFile = qstrWfpath + QString("/asian.pnet");
+
+	qDebug()<<"Submit the workflow contained in the file "<<qstrWfFile;
+
+	std::ifstream ifs(qstrWfFile.toStdString().c_str()); // TODO: make this configurable: file open dialog
+
+	if(!ifs.good())
 	{
-		// effectively build the flow here !!!!
-
-		// 1. load xml file (job description/workflow) -> we::activity
-		we::activity_t act;
-		std::ifstream ifs("asian.pnet"); // TODO: make this configurable: file open dialog
-		we::util::text_codec::decode (ifs, act);
-		for (std::size_t row (0); row < job_data.size(); ++row)
-			act.add_input( we::input_t::value_type( make_token(job_data, row), act.transition().input_port_by_name ("param")));
-
-		std::ostringstream sstr;
-		sstr << act;
-		qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
-
-		return we::util::text_codec::encode(act);
+		QMessageBox::critical( m_pUi->SDPAGUI,
+								QString("Error!"),
+								QString("Could not open the file  ") + qstrWfFile  + QString(". Giving up now!")
+							);
+		EnableControls();
+		return "";
 	}
 
-#else
-	std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
-	{
-		std::string strJobData;
-		job_data.PrintToString(strJobData);
 
-		qDebug()<<"The workflow to be submitted is: ";
-		qDebug()<<QString(strJobData.c_str());
+	we::activity_t act;
 
-		strJobData = job_data.encode();
+	we::util::text_codec::decode (ifs, act);
+	for (std::size_t row (0); row < job_data.size(); ++row)
+		act.add_input( we::input_t::value_type( make_token(qstrBackend, job_data, row), act.transition().input_port_by_name ("param")));
 
-		return strJobData;
-	}
-#endif
+	ifs.close();
+	std::ostringstream sstr;
+	sstr << act;
+	qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
 
-void Portfolio::StartClient()
+	return we::util::text_codec::encode(act);
+}
+
+void Portfolio::StartClient() throw (sdpa::client::ClientException)
 {
 	qDebug()<<"Starting the user client ...";
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
@@ -306,8 +336,14 @@ void Portfolio::StartClient()
 	cav.push_back(oss.str());
 	config.parse_command_line(cav);
 
-	m_ptrCli = sdpa::client::ClientApi::create( config );
-	m_ptrCli->configure_network( config );
+	try {
+		m_ptrCli = sdpa::client::ClientApi::create( config );
+		m_ptrCli->configure_network( config );
+	}
+	catch(const sdpa::client::ClientException& ex)
+	{
+		throw ex;
+	}
 }
 
 
@@ -336,7 +372,7 @@ void Portfolio::Poll()
 			{
 				qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
 
-				m_ptrCli->shutdown_network();
+				//m_ptrCli->shutdown_network();
 				m_ptrCli.reset();
 				EnableControls();
 				return;
@@ -361,7 +397,7 @@ void Portfolio::Poll()
 		{
 			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
 
-			m_ptrCli->shutdown_network();
+			//m_ptrCli->shutdown_network();
 			m_ptrCli.reset();
 			EnableControls();
 			return;
@@ -384,7 +420,7 @@ void Portfolio::Poll()
 		{
 			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
 
-			m_ptrCli->shutdown_network();
+			//m_ptrCli->shutdown_network();
 			m_ptrCli.reset();
 			EnableControls();
 			return;
@@ -415,36 +451,56 @@ void Portfolio::EnableControls()
 
 void Portfolio::SubmitPortfolio()
 {
+	if(!m_bClientStarted)
+	{
+		try{
+			StartClient();
+			m_bClientStarted = true;
+		}
+		catch(const sdpa::client::ClientException& ex)
+		{
+			m_bClientStarted = false;
+			qDebug()<<"The client could not be started. The following exception occured: "<<ex.what();
+
+			QMessageBox::critical( m_pUi->SDPAGUI,
+									QString("Portfolio evaluation"),
+									QString("The client could not be started!")
+								);
+			return;
+		}
+	}
+
 	portfolio_data_t job_data;
 	PrepareInputData( job_data  );
 
 	// call here the client API
 	// disable submit button
-
-	// enable submit button when the job result is delivered (token)
-
-	//std::string strWorkflow = BuildTestWorkflow(job_data);
 	std::string strWorkflow = BuildWorkflow(job_data);
+
+	if(strWorkflow.empty())
+		return;
 
 	int nTrials = 0;
 	try {
 
 		qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
 		ClearTable();
+		DisableControls();
 		m_currentJobId = m_ptrCli->submitJob(strWorkflow);
 		qDebug()<<"Got the job id "<<m_currentJobId.str().c_str();
-		DisableControls();
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-		if(nTrials++ > NMAXTRIALS)
-		{
-			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
+		qDebug()<<"Exception occurred: "<<QString(cliExc.what());
 
-			m_ptrCli->shutdown_network();
-			m_ptrCli.reset();
-			return;
-		}
+		//m_ptrCli.reset();
+		QMessageBox::critical( m_pUi->SDPAGUI,
+										QString("Exception!"),
+										QString(cliExc.what())
+									);
+		EnableControls();
+		return;
+
 	}
 
 	WaitForCurrJobCompletion();
@@ -453,7 +509,6 @@ void Portfolio::SubmitPortfolio()
 void Portfolio::ClearTable( )
 {
 	for(int row_idx=0; row_idx<m_nRows; row_idx++ )
-		//update fields PV, STDDEV, DELTA, GAMMA, VEGA
 		for( int col_idx = PV; col_idx<=VEGA; col_idx++)
 		{
 			QTableWidgetItem *pItem(new QTableWidgetItem( QString("")) );
