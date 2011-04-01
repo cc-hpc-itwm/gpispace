@@ -341,7 +341,7 @@ WE_MOD_INITIALIZE_START (fvm);
     {
       if (trials)
       {
-        usleep(50000);
+        usleep(1 * 1000 * 1000);
         LOG(WARN, "connection to gpi-space failed, retrying");
       }
       else
