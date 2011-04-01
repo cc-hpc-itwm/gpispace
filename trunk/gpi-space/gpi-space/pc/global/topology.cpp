@@ -532,7 +532,7 @@ namespace gpi
           {
             LOG(WARN, "error on node " << rank << ": " << av[1]);
           }
-          else if (av[0] == "SHUTDOWN")
+          else if (av[0] == "SHUTDOWN" && !m_shutting_down)
           {
             LOG(INFO, "shutting down");
             m_children.clear();
