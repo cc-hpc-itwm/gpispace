@@ -8,6 +8,7 @@ project (gpi-space)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 OPTION(ENABLE_REAL_GPI "Provide api for the *real* GPI" ON)
+OPTION(ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the old fvm-pc" ON)
 
 set(PROJECT_DESCRIPTION "GPI-Space interface")
 set(PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
@@ -102,6 +103,10 @@ include_directories(${MMGR_INCLUDE_DIR})
 
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
+
+if (ENABLE_COMPATIBILITY_API)
+  add_subdirectory(compat)
+endif (ENABLE_COMPATIBILITY_API)
 
 include(CTest)
 if (BUILD_TESTING)
