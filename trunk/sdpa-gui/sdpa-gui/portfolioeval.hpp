@@ -13,6 +13,7 @@ class Portfolio {
 public:
 	Portfolio( Ui::MonitorWindow* );
 	virtual ~Portfolio();
+        void Init();
 	void InitTable();
 	void InitPortfolio( common_parameters_t&, arr_row_parameters_t& );
 	void ShowResult( simulation_result_t& );

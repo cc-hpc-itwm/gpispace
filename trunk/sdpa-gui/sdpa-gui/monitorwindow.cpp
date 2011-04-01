@@ -37,6 +37,8 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
 
+    m_portfolio_->Init();
+
     m_exe_server = logserver_t
         (new fhg::log::remote::LogServer
          ( fhg::log::Appender::ptr_t(new WindowAppender(this, 1001))

@@ -47,20 +47,17 @@ Portfolio::~Portfolio()
         }
 }
 
+void Portfolio::Init()
+{
+  QString strBackendDir(SDPA_PREFIX);
+  m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
+
+  QString qstrCurrPath = QDir::currentPath();
+  m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
+}
+
 void Portfolio::InitTable()
 {
-  if (m_pUi->m_editBackendFile->text() != "")
-  {
-    QString strBackendDir(SDPA_PREFIX);
-    m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
-  }
-
-  if (m_pUi->m_editWorkflowFile->text() != "")
-  {
-    QString qstrCurrPath = QDir::currentPath();
-    m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
-  }
-
 	// Replace these with some random generated data
 	//S, r, d, n, Sigma, FirstFixing, nAnzahlderDividende
 	double S = 7000;
