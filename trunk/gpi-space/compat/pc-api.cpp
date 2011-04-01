@@ -331,15 +331,10 @@ WE_MOD_INITIALIZE_START (fvm);
   int trials(10);
   while (trials --> 0)
   {
-    // TODO:
-    // collect sockets
-    //    if multiple sockets: throw
-    // else
-    //    set the path
     namespace fs = boost::filesystem;
-    fs::path socket_path ("/var/tmp/gpi-space");
+    fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp/gpi-space"));
     socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
-    socket_path /= "control";
+    socket_path /= cfg_parser.get("gpi.socket_name", "control");
 
     gpi_api().path (socket_path.string());
 
