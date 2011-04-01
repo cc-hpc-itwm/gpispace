@@ -76,6 +76,7 @@ namespace gpi
 
         bool is_attached (const gpi::pc::type::segment_id_t id);
         segment_map_t const &  segments () const;
+        segment_map_t &  segments ();
         segment_set_t const & garbage_segments () const;
         void garbage_collect ();
       private:
