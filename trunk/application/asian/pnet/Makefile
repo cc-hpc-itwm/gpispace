@@ -2,8 +2,8 @@
 MAIN = asian
 
 TRUNK = $(CURDIR)/../../../
-BUILD = /var/tmp/mr/
-#BUILD = $(TRUNK)/../build/herc/release
+#BUILD = /var/tmp/mr/
+BUILD = $(TRUNK)/../build/herc/release
 LIB_DESTDIR = $(HOME)/.sdpa/modules
 
 PATH_MAIN  = $(TRUNK)/application/asian/pnet
@@ -28,7 +28,7 @@ XML_GEN += xml/run.xml
 ###############################################################################
 
 DEP += Makefile
-DEP += xml/run.xml
+DEP += xml/collect.xml
 DEP += $(XML_GEN)
 
 NET = $(MAIN).pnet
@@ -53,6 +53,7 @@ NOINLINE_NOT_STARTS_WITH += asian_id
 NOINLINE_NOT_STARTS_WITH += asian_eps1
 NOINLINE_NOT_STARTS_WITH += asian_eps2
 NOINLINE_NOT_STARTS_WITH += asian_delta
+NOINLINE_NOT_STARTS_WITH += collect
 
 NET_NOINLINE = $(MAIN).noinline.pnet
 PS_NOINLINE = $(MAIN).noinline.ps
