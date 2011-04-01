@@ -20,6 +20,8 @@ static gpi::pc::client::api_t & gpi_api ()
 static gpi::pc::type::info::descriptor_t gpi_info;
 static void *shm_ptr = 0;
 static fvmSize_t shm_size = 0;
+static gpi::pc::type::segment_id_t shm_id = 0;
+static gpi::pc::type::handle_t     shm_hdl = 0;
 
 int fvmConnect()
 {
@@ -30,6 +32,8 @@ int fvmLeave()
 {
   shm_ptr = 0;
   shm_size = 0;
+  shm_id = 0;
+  shm_hdl = 0;
   gpi_api().stop();
   return 0;
 }
@@ -64,22 +68,183 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
   return 0;
 }
 
+typedef std::map< gpi::pc::type::handle_t
+                , gpi::pc::type::handle::descriptor_t
+                > handle_cache_t;
+static handle_cache_t handle_cache;
+
+static
+gpi::pc::type::handle::descriptor_t
+get_handle_info (gpi::pc::type::handle_t h)
+{
+  // LOCK
+
+  handle_cache_t::iterator info (handle_cache.find(h));
+  if (info == handle_cache.end())
+  {
+    gpi::pc::type::handle::list_t handles (gpi_api().list_allocations (1));
+    for ( gpi::pc::type::handle::list_t::const_iterator it(handles.begin())
+        ; it != handles.end()
+        ; ++it
+        )
+    {
+      if (it->id == h)
+      {
+        while (handle_cache.size() >= 1024)
+        {
+          handle_cache.erase(handle_cache.end());
+        }
+
+        info = handle_cache.insert (std::make_pair(h, *it)).first;
+        break;
+      }
+    }
+  }
+
+  if (info == handle_cache.end())
+  {
+    LOG(ERROR, "cannot get handle information for handle " << h << ": no such handle");
+    throw std::runtime_error("scratch handle is invalid!");
+  }
+
+  return info->second;
+}
+
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratchHandle)
+				 const fvmAllocHandle_t scratch)
 {
-  return 0;
+  gpi::pc::type::handle::descriptor_t
+    hdl_info (get_handle_info(scratch));
+  if (hdl_info.segment != 1)
+  {
+    throw std::runtime_error ("STRANGE!!! scratch handle is not a gpi allocation");
+  }
+
+  gpi::pc::type::size_t base (0);
+  if (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
+  {
+    base = hdl_info.size * gpi_info.rank;
+  }
+
+  gpi::pc::type::size_t chunk_size (hdl_info.size);
+  gpi::pc::type::size_t remaining (size);
+
+  gpi::pc::type::size_t src_offset(fvmOffset);
+  gpi::pc::type::size_t dst_offset(shmemOffset);
+
+  bool in_progress (false);
+  const gpi::pc::type::queue_id_t queue (0);
+
+  while (remaining > 0)
+  {
+    gpi::pc::type::size_t transfer_size (std::min(remaining, chunk_size));
+
+    if (in_progress)
+      gpi_api().wait(queue);
+
+    LOG(INFO, "transfer from gpi to scratch");
+
+    // 1. transfer memory to scratch
+    gpi_api().wait
+      (gpi_api().memcpy( gpi::pc::type::memory_location_t(scratch, base)
+                       , gpi::pc::type::memory_location_t(handle, src_offset)
+                       , transfer_size
+                       , queue
+                       )
+      );
+
+    LOG(INFO, "transfer from scratch to shm");
+
+    // 2. transfer from scratch to shm
+    gpi_api().memcpy( gpi::pc::type::memory_location_t(shm_hdl, dst_offset)
+                    , gpi::pc::type::memory_location_t(scratch, base)
+                    , transfer_size
+                    , queue
+                    );
+
+    in_progress = true;
+    remaining -= transfer_size;
+    src_offset += transfer_size;
+    dst_offset += transfer_size;
+  }
+
+  /*
+  if (in_progress)
+    gpi_api().wait(queue);
+  */
+
+  return queue;
 }
 
 fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratchHandle)
+				 const fvmAllocHandle_t scratch)
 {
-  return 0;
+  gpi::pc::type::handle::descriptor_t
+    hdl_info (get_handle_info(scratch));
+  if (hdl_info.segment != 1)
+  {
+    throw std::runtime_error ("STRANGE!!! scratch handle is not a gpi allocation");
+  }
+
+  gpi::pc::type::size_t base (0);
+  if (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
+  {
+    base = hdl_info.size * gpi_info.rank;
+  }
+
+  gpi::pc::type::size_t chunk_size (hdl_info.size);
+  gpi::pc::type::size_t remaining (size);
+
+  gpi::pc::type::size_t src_offset(shmemOffset);
+  gpi::pc::type::size_t dst_offset(fvmOffset);
+
+
+  bool in_progress (false);
+  const gpi::pc::type::queue_id_t queue (0);
+
+  while (remaining > 0)
+  {
+    gpi::pc::type::size_t transfer_size (std::min(remaining, chunk_size));
+
+    if (in_progress) gpi_api().wait(queue);
+
+    LOG(INFO, "transfer from shm to scratch");
+
+    // 1. transfer memory from shm to scratch
+    gpi_api().wait
+      (gpi_api().memcpy( gpi::pc::type::memory_location_t(scratch, base)
+                       , gpi::pc::type::memory_location_t(shm_hdl, src_offset)
+                       , transfer_size
+                       , queue
+                       )
+      );
+
+    LOG(INFO, "transfer from scratch to gpi");
+
+    // 2. transfer memory from scratch to global
+    gpi_api().memcpy( gpi::pc::type::memory_location_t(handle, dst_offset)
+                    , gpi::pc::type::memory_location_t(scratch, base)
+                    , transfer_size
+                    , queue
+                    );
+
+    in_progress = true;
+    remaining  -= transfer_size;
+    src_offset += transfer_size;
+    dst_offset += transfer_size;
+  }
+
+  /*
+  if (in_progress) gpi_api().wait(queue);
+  */
+
+  return queue;
 }
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
@@ -87,7 +252,11 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  return 0;
+  return gpi_api().memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
+                         , gpi::pc::type::memory_location_t(shm_hdl, shmemOffset)
+                         , size
+                         , 0
+                         );
 }
 
 
@@ -96,7 +265,11 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  return 0;
+  return gpi_api().memcpy( gpi::pc::type::memory_location_t(shm_hdl, shmemOffset)
+                         , gpi::pc::type::memory_location_t(handle, fvmOffset)
+                         , size
+                         , 0
+                         );
 }
 
 // wait on communication between fvm and pc
@@ -132,16 +305,15 @@ WE_MOD_INITIALIZE_START (fvm);
   // parse config files
   //     gpi.rc -> path to socket
   //     pc.rc  -> memory size?
-  fvmSize_t shmem_size ( 500 * (1 << 20) );
+  shm_size = (500 * (1 << 20));
   if (getenv("FVM_PC_SHMSZ"))
   {
     shm_size = boost::lexical_cast<fvmSize_t>(getenv("FVM_PC_SHMSZ"));
   }
 
-  try
+  int trials(10);
+  while (trials --> 0)
   {
-    // TODO: loop and wait
-
     // TODO:
     // collect sockets
     //    if multiple sockets: throw
@@ -150,32 +322,51 @@ WE_MOD_INITIALIZE_START (fvm);
     namespace fs = boost::filesystem;
     fs::path socket_path ("/var/tmp/gpi-space");
     socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
+    socket_path /= "control";
 
-    gpi_api().path ("/var/tmp/gpi-space/GPISpace-5201/control");
+    gpi_api().path (socket_path.string());
 
     CLOG( INFO
         , LOG_COMPONENT
         , "initializing fvm-pc-compat:"
-        << " shm size " << shmem_size
+        << " shm size " << shm_size
         << " socket " << gpi_api().path()
         );
 
-    gpi_api().start ();
-    gpi_info = gpi_api().collect_info();
+    try
+    {
+      gpi_api().start ();
+    }
+    catch (std::exception const & ex)
+    {
+      if (trials)
+      {
+        usleep(50000);
+        LOG(WARN, "connection to gpi-space failed, retrying");
+      }
+      else
+      {
+        LOG(ERROR, "could not connect to gpi-space: " << ex.what());
+        throw;
+      }
+    }
+  }
 
-    // register segment
-    gpi_api().register_segment ( "fvm-pc-compat"
-                               , shmem_size
-                               , gpi::pc::type::segment::F_EXCLUSIVE
-                               | gpi::pc::type::segment::F_FORCE_UNLINK
-                               );
-    shm_ptr = (gpi_api().segments().begin()->second)->ptr();
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(ERROR, "could not connect to gpi-space: " << ex.what());
-    throw;
-  }
+  gpi_info = gpi_api().collect_info();
+
+  // register segment
+
+  shm_id = gpi_api().register_segment ( "fvm-pc-compat"
+                                      , shm_size
+                                      , gpi::pc::type::segment::F_EXCLUSIVE
+                                      | gpi::pc::type::segment::F_FORCE_UNLINK
+                                      );
+  shm_hdl = gpi_api().alloc ( shm_id
+                            , shm_size
+                            , "fvm-pc-compat"
+                            , gpi::pc::type::handle::F_EXCLUSIVE
+                            );
+  shm_ptr = gpi_api().segments()[shm_id]->ptr();
 
   CLOG( INFO
       , LOG_COMPONENT
