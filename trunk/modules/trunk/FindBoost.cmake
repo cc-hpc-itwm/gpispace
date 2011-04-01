@@ -20,7 +20,7 @@
 # its "date_time" for "libboost_date_time...". Anything else will result in
 # errors
 #
-# You can provide a minimum version number that should be used. If you provide this 
+# You can provide a minimum version number that should be used. If you provide this
 # version number and specify the REQUIRED attribute, this module will fail if it
 # can't find the specified or a later version. If you specify a version number this is
 # automatically put into the considered list of version numbers and thus doesn't need
@@ -65,8 +65,8 @@
 #  Boost_MAJOR_VERSION                  major version number of boost
 #  Boost_MINOR_VERSION                  minor version number of boost
 #  Boost_SUBMINOR_VERSION               subminor version number of boost
-#  Boost_LIB_DIAGNOSTIC_DEFINITIONS     Only set on windows. Can be used with add_definitions 
-#                                       to print diagnostic information about the automatic 
+#  Boost_LIB_DIAGNOSTIC_DEFINITIONS     Only set on windows. Can be used with add_definitions
+#                                       to print diagnostic information about the automatic
 #                                       linking done on windows.
 
 # For each component you list the following variables are set.
@@ -145,7 +145,7 @@ MACRO (_Boost_ADJUST_LIB_VARS basename)
       SET(Boost_${basename}_LIBRARY         ${Boost_${basename}_LIBRARY_DEBUG})
       SET(Boost_${basename}_LIBRARIES       ${Boost_${basename}_LIBRARY_DEBUG})
     ENDIF (Boost_${basename}_LIBRARY_DEBUG AND NOT Boost_${basename}_LIBRARY_RELEASE)
-    
+
     IF (Boost_${basename}_LIBRARY)
       SET(Boost_${basename}_LIBRARY ${Boost_${basename}_LIBRARY} CACHE FILEPATH "The Boost ${basename} library")
       GET_FILENAME_COMPONENT(Boost_LIBRARY_DIRS "${Boost_${basename}_LIBRARY}" PATH)
@@ -200,10 +200,10 @@ ELSE (_boost_IN_CACHE)
     # library "whatever" by defining BOOST_WHATEVER_DYN_LINK to force Boost library "whatever" to
     # be linked dynamically.  Alternatively you can force all Boost libraries to dynamic link by
     # defining BOOST_ALL_DYN_LINK.
-  
+
     # This feature can be disabled for Boost library "whatever" by defining BOOST_WHATEVER_NO_LIB,
     # or for all of Boost by defining BOOST_ALL_NO_LIB.
-  
+
     # If you want to observe which libraries are being linked against then defining
     # BOOST_LIB_DIAGNOSTIC will cause the auto-linking code to emit a #pragma message each time
     # a library is selected for linking.
@@ -301,7 +301,7 @@ ELSE (_boost_IN_CACHE)
           NAMES         boost/config.hpp
           PATH_SUFFIXES ${_boost_PATH_SUFFIX}
       )
- 
+
     ENDIF( NOT Boost_INCLUDE_DIR )
   ENDFOREACH(_boost_VER)
   IF(Boost_INCLUDE_DIR)
@@ -311,18 +311,18 @@ ELSE (_boost_IN_CACHE)
     SET(BOOST_VERSION 0)
     SET(BOOST_LIB_VERSION "")
     FILE(READ "${Boost_INCLUDE_DIR}/boost/version.hpp" _boost_VERSION_HPP_CONTENTS)
-  
+
     STRING(REGEX REPLACE ".*#define BOOST_VERSION ([0-9]+).*" "\\1" Boost_VERSION "${_boost_VERSION_HPP_CONTENTS}")
     STRING(REGEX REPLACE ".*#define BOOST_LIB_VERSION \"([0-9_]+)\".*" "\\1" Boost_LIB_VERSION "${_boost_VERSION_HPP_CONTENTS}")
-  
+
     SET(Boost_LIB_VERSION ${Boost_LIB_VERSION} CACHE STRING "The library version string for boost libraries")
     SET(Boost_VERSION ${Boost_VERSION} CACHE STRING "The version number for boost libraries")
-    
+
     IF(NOT "${Boost_VERSION}" STREQUAL "0")
       MATH(EXPR Boost_MAJOR_VERSION "${Boost_VERSION} / 100000")
       MATH(EXPR Boost_MINOR_VERSION "${Boost_VERSION} / 100 % 1000")
       MATH(EXPR Boost_SUBMINOR_VERSION "${Boost_VERSION} % 100")
-  
+
     ENDIF(NOT "${Boost_VERSION}" STREQUAL "0")
   ENDIF(Boost_INCLUDE_DIR)
 
@@ -439,6 +439,7 @@ ELSE (_boost_IN_CACHE)
                ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_boost_ABI_TAG}
       )
     ENDIF( NOT ${Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG} )
+
     _Boost_ADJUST_LIB_VARS(${UPPERCOMPONENT})
     IF( Boost_USE_STATIC_LIBS )
       SET(CMAKE_FIND_LIBRARY_SUFFIXES ${_boost_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -484,16 +485,16 @@ ELSE (_boost_IN_CACHE)
       # Note that the user may not have installed any libraries
       # so it is quite possible the Boost_LIBRARY_PATH may not exist.
       SET(_boost_LIB_DIR ${Boost_INCLUDE_DIR})
-    
+
       IF("${_boost_LIB_DIR}" MATCHES "boost-[0-9]+")
         GET_FILENAME_COMPONENT(_boost_LIB_DIR ${_boost_LIB_DIR} PATH)
       ENDIF ("${_boost_LIB_DIR}" MATCHES "boost-[0-9]+")
-    
+
       IF("${_boost_LIB_DIR}" MATCHES "/include$")
         # Strip off the trailing "/include" in the path.
         GET_FILENAME_COMPONENT(_boost_LIB_DIR ${_boost_LIB_DIR} PATH)
       ENDIF("${_boost_LIB_DIR}" MATCHES "/include$")
-    
+
       IF(EXISTS "${_boost_LIB_DIR}/lib")
         SET (_boost_LIB_DIR ${_boost_LIB_DIR}/lib)
       ELSE(EXISTS "${_boost_LIB_DIR}/lib")
@@ -503,7 +504,7 @@ ELSE (_boost_IN_CACHE)
           SET(_boost_LIB_DIR "")
         ENDIF(EXISTS "${_boost_LIB_DIR}/stage/lib")
       ENDIF(EXISTS "${_boost_LIB_DIR}/lib")
-    
+
       IF(_boost_LIB_DIR AND EXISTS "${_boost_LIB_DIR}")
         SET(Boost_LIBRARY_DIRS ${_boost_LIB_DIR})
       ENDIF(_boost_LIB_DIR AND EXISTS "${_boost_LIB_DIR}")
@@ -518,13 +519,19 @@ ELSE (_boost_IN_CACHE)
     set(BOOST_FOUND true)
       IF (NOT Boost_FIND_QUIETLY)
         MESSAGE(STATUS "Found The Following Boost Libraries:")
-        FOREACH ( COMPONENT  ${Boost_FIND_COMPONENTS} )
-          STRING( TOUPPER ${COMPONENT} UPPERCOMPONENT )
-          IF ( Boost_${UPPERCOMPONENT}_FOUND )
+      ENDIF(NOT Boost_FIND_QUIETLY)
+
+      FOREACH ( COMPONENT  ${Boost_FIND_COMPONENTS} )
+        STRING( TOUPPER ${COMPONENT} UPPERCOMPONENT )
+        IF ( Boost_${UPPERCOMPONENT}_FOUND )
+	  IF (NOT Boost_FIND_QUIETLY)
             MESSAGE (STATUS "  ${COMPONENT}")
-			SET(Boost_LIBRARIES ${Boost_LIBRARIES} ${Boost_${UPPERCOMPONENT}_LIBRARY})
-          ENDIF ( Boost_${UPPERCOMPONENT}_FOUND )
-        ENDFOREACH(COMPONENT)
+	  ENDIF(NOT Boost_FIND_QUIETLY)
+	  SET(Boost_LIBRARIES ${Boost_LIBRARIES} ${Boost_${UPPERCOMPONENT}_LIBRARY})
+        ENDIF ( Boost_${UPPERCOMPONENT}_FOUND )
+      ENDFOREACH(COMPONENT)
+
+      IF (NOT Boost_FIND_QUIETLY)
 	MESSAGE(STATUS "Boost Version: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
       ENDIF(NOT Boost_FIND_QUIETLY)
   ELSE (Boost_FOUND)
