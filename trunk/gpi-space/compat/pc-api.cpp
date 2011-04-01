@@ -9,6 +9,7 @@
 #warning "the pc module should not require the loader"
 #include <we/loader/macros.hpp>
 
+#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
 static gpi::pc::client::api_t & gpi_api ()
@@ -302,14 +303,30 @@ int fvmGetNodeCount()
 
 WE_MOD_INITIALIZE_START (fvm);
 {
+  namespace fs = boost::filesystem;
+
+  gpi_space::parser::config_parser_t cfg_parser;
+  fs::path config_file
+    (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
+
+  try
+  {
+    gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(ERROR, "could not parse config file " << config_file << ": " << ex.what());
+    throw;
+  }
+
   // parse config files
   //     gpi.rc -> path to socket
   //     pc.rc  -> memory size?
-  shm_size = (500 * (1 << 20));
-  if (getenv("FVM_PC_SHMSZ"))
-  {
-    shm_size = boost::lexical_cast<fvmSize_t>(getenv("FVM_PC_SHMSZ"));
-  }
+  shm_size =
+    boost::lexical_cast<fvmSize_t>(cfg_parser.get( "api.compat.shm_size"
+                                                 , "536870912"
+                                                 )
+                                  );
 
   int trials(10);
   while (trials --> 0)
@@ -336,6 +353,7 @@ WE_MOD_INITIALIZE_START (fvm);
     try
     {
       gpi_api().start ();
+      break;
     }
     catch (std::exception const & ex)
     {
