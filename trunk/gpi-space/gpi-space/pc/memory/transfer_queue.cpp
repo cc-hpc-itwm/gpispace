@@ -172,7 +172,7 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t dst_hdl
           (t.dst_area->descriptor(t.dst_location.handle));
 
-        do_rdma( dst_hdl.offset + t.dst_location.offset
+        do_rdma( dst_hdl.offset + (t.dst_location.offset % dst_hdl.size)
                , src_hdl.offset , t.src_location.offset
                , src_hdl.size
                , t.amount
@@ -220,7 +220,7 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t dst_hdl
           (t.dst_area->descriptor(t.dst_location.handle));
 
-        do_rdma( src_hdl.offset + t.src_location.offset
+        do_rdma( src_hdl.offset + (t.src_location.offset % src_hdl.size)
                , dst_hdl.offset , t.dst_location.offset
                , dst_hdl.size
                , t.amount
