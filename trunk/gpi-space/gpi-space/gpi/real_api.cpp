@@ -404,27 +404,41 @@ namespace gpi
 
     void real_gpi_api_t::lock (void) const
     {
-      lock_type lock (m_mutex);
-
-      assert (m_startup_done);
-      int rc (globalResourceLockGPI());
-      if (rc != 0)
       {
-        throw gpi::exception::gpi_error
-          (gpi::error::global_lock_failed());
+        lock_type lock (m_mutex);
+        if (! m_startup_done)
+        {
+          throw gpi::exception::gpi_error
+            (gpi::error::operation_not_permitted("lock: gpi not started"));
+        }
       }
+
+      bool got_lock (false);
+      do
+      {
+        got_lock = (globalResourceLockGPI() != -1);
+        if (got_lock)
+          break;
+        usleep (m_rank * (rand() % 100000));
+      } while (!got_lock);
     }
 
     void real_gpi_api_t::unlock (void) const
     {
-      lock_type lock (m_mutex);
+      {
+        lock_type lock (m_mutex);
+        if (! m_startup_done)
+        {
+          throw gpi::exception::gpi_error
+            (gpi::error::operation_not_permitted("unlock: gpi not started"));
+        }
+      }
 
-      assert (m_startup_done);
       int rc (globalResourceUnlockGPI());
       if (rc != 0)
       {
         throw gpi::exception::gpi_error
-          (gpi::error::global_unlock_failed());
+          (gpi::error::global_unlock_failed("not owner"));
       }
     }
 

@@ -456,7 +456,7 @@ namespace gpi
                                       , std::string const &msg
                                       )
       {
-        LOG(TRACE, "got message from gpi-" << rank << ": " << msg);
+        DLOG(TRACE, "got message from gpi-" << rank << ": " << msg);
 
         // TODO: push message to message handler
 
@@ -526,7 +526,7 @@ namespace gpi
           }
           else if (av[0] == "+OK")
           {
-            LOG(TRACE, "command succeeded");
+            DLOG(TRACE, "command succeeded");
           }
           else if (av[0] == "+ERR")
           {
