@@ -148,10 +148,11 @@ void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
 
 			simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
 			m_portfolio_.ShowResult(sim_res);
-			int val = ui->m_progressBar->value()+1;
-			ui->m_progressBar->setValue(val);
 		}
 	}
+
+	int val = ui->m_progressBar->value()+1;
+	ui->m_progressBar->setValue(val);
 
 }
 

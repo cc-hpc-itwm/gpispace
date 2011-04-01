@@ -20,7 +20,7 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <sdpa/version.hpp>
 
 const int NMAXTRIALS = 10;
-int mPollingInterval(30000) ; //30 microseconds
+int mPollingInterval(1000000) ; //1 second
 
 int Portfolio::RandInt(int low, int high)
 {
@@ -59,7 +59,7 @@ void Portfolio::InitTable()
 
 	for( int k=0; k<m_nRows; k++ )
 	{
-		double dT = RandInt(1,365)/365.0;
+		double dT = RandInt(100,365)/365.0;
 		double dK = RandInt(80, 120);
 		double dF = 50;
 
@@ -68,7 +68,7 @@ void Portfolio::InitTable()
 
 	InitPortfolio(comm_params, arr_row_params);
 
-	m_pUi->m_progressBar->setRange(0, m_nRows-1);
+	m_pUi->m_progressBar->setRange(0, 4 * m_nRows * comm_params.nLBUs() + m_nRows -1 );
 	m_pUi->m_progressBar->reset();
 }
 
@@ -143,9 +143,11 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 	m_pUi->m_editTotalVega->setEnabled(false);
 	m_pUi->m_editTotalVega->setText("0");
 
+	QString strBackendDir(SDPA_PREFIX);
+	m_pUi->m_editBackendFile->setText(strBackendDir + "/Asian");
+
 	QString qstrCurrPath = QDir::currentPath();
-	m_pUi->m_editBackendPath->setText(SDPA_PREFIX);
-	m_pUi->m_editWorkflowPath->setText(qstrCurrPath);
+	m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
 }
 
 int Portfolio::Resize(int k)
@@ -276,35 +278,31 @@ static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job
 
 std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 {
-	QString qstrBackendPath = m_pUi->m_editBackendPath->text();
-	QString qstrBackend = qstrBackendPath + QString("/Asian");
 
-	qDebug()<<"Use the backend: "<<qstrBackend;
+	QString qstrBackend = m_pUi->m_editBackendFile->text();
+	qDebug()<<"Use the backend: "<<m_pUi->m_editBackendFile->text();
 
-	QString qstrWfpath(m_pUi->m_editWorkflowPath->text());
-	QDir qdirWfPath(qstrWfpath);
 
-	if( !qdirWfPath.exists("asian.pnet") )
+	QFile wfFile(qstrBackend);
+	if( !wfFile.exists() )
 	{
-		QMessageBox::critical( m_pUi->SDPAGUI,
-											QString("Error!"),
-											QString("The folder ") + qstrWfpath  + QString(" contains no file named asian.pnet!")
-										);
+		QMessageBox::critical( 	m_pUi->SDPAGUI,
+								QString("Error!"),
+								QString("There is no file named ") + qstrBackend
+							 );
 		EnableControls();
 		return "";
 	}
 
-	QString qstrWfFile = qstrWfpath + QString("/asian.pnet");
+	qDebug()<<"Submit the workflow contained in the file "<<m_pUi->m_editWorkflowFile->text();
 
-	qDebug()<<"Submit the workflow contained in the file "<<qstrWfFile;
-
-	std::ifstream ifs(qstrWfFile.toStdString().c_str()); // TODO: make this configurable: file open dialog
+	std::ifstream ifs(m_pUi->m_editWorkflowFile->text().toStdString().c_str()); // TODO: make this configurable: file open dialog
 
 	if(!ifs.good())
 	{
 		QMessageBox::critical( m_pUi->SDPAGUI,
 								QString("Error!"),
-								QString("Could not open the file  ") + qstrWfFile  + QString(". Giving up now!")
+								QString("Could not open the workflow file  ") + m_pUi->m_editWorkflowFile->text()  + QString(". Giving up now!")
 							);
 		EnableControls();
 		return "";
@@ -340,12 +338,11 @@ void Portfolio::StartClient() throw (sdpa::client::ClientException)
 		m_ptrCli = sdpa::client::ClientApi::create( config );
 		m_ptrCli->configure_network( config );
 	}
-	catch(const sdpa::client::ClientException& ex)
+	catch(const std::exception& ex)
 	{
 		throw ex;
 	}
 }
-
 
 void Portfolio::Poll()
 {
@@ -361,13 +358,11 @@ void Portfolio::Poll()
 		try {
 			job_status = m_ptrCli->queryJob(m_currentJobId);
 			//qDebug()<<"The status of the job "<<m_currentJobId<<" is "<<job_status);
-			std::cout<<".";
 			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 		}
-		catch(const sdpa::client::ClientException& cliExc)
+		catch(const std::exception& cliExc)
 		{
-			//qDebug()<<"Exception: "<<cliExc.what());
-			std::cout<<"-";
+			qDebug()<<"Exception occured: "<<cliExc.what();
 			if(nTrials++ > NMAXTRIALS)
 			{
 				qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
@@ -391,7 +386,7 @@ void Portfolio::Poll()
 			m_ptrCli->retrieveResults(m_currentJobId);
 			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
-	catch(const sdpa::client::ClientException& cliExc)
+	catch(const std::exception& cliExc)
 	{
 		if(nTrials++ > NMAXTRIALS)
 		{
@@ -414,7 +409,7 @@ void Portfolio::Poll()
 		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 		EnableControls();
 	}
-	catch(const sdpa::client::ClientException& cliExc)
+	catch(const std::exception& cliExc)
 	{
 		if(nTrials++ > NMAXTRIALS)
 		{
@@ -457,15 +452,14 @@ void Portfolio::SubmitPortfolio()
 			StartClient();
 			m_bClientStarted = true;
 		}
-		catch(const sdpa::client::ClientException& ex)
+		catch(const std::exception& ex)
 		{
 			m_bClientStarted = false;
 			qDebug()<<"The client could not be started. The following exception occured: "<<ex.what();
 
 			QMessageBox::critical( m_pUi->SDPAGUI,
 									QString("Portfolio evaluation"),
-									QString("The client could not be started!")
-								);
+									QString("The client could not be started!") );
 			return;
 		}
 	}
@@ -489,7 +483,7 @@ void Portfolio::SubmitPortfolio()
 		m_currentJobId = m_ptrCli->submitJob(strWorkflow);
 		qDebug()<<"Got the job id "<<m_currentJobId.str().c_str();
 	}
-	catch(const sdpa::client::ClientException& cliExc)
+	catch(const std::exception& cliExc)
 	{
 		qDebug()<<"Exception occurred: "<<QString(cliExc.what());
 
