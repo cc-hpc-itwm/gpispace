@@ -413,14 +413,8 @@ namespace gpi
         }
       }
 
-      bool got_lock (false);
-      do
-      {
-        got_lock = (globalResourceLockGPI() != -1);
-        if (got_lock)
-          break;
+      while (globalResourceLockGPI() != 0)
         usleep (m_rank * (rand() % 100000));
-      } while (!got_lock);
     }
 
     void real_gpi_api_t::unlock (void) const
