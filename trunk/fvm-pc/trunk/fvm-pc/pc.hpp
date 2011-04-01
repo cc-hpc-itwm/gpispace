@@ -1,6 +1,13 @@
 #ifndef _PC_H_
 #define _PC_H_
 
+#ifdef __GNUC__
+//#  define DEPRECATE_API(msg) __attribute__((deprecated(msg)))
+#  define DEPRECATE_API(msg) __attribute__((deprecated))
+#else
+#  define DEPRECATE_API(msg)
+#endif
+
 #include <fvm/fvmAllocatorTypes.h>
 #include <fvm/fvm_common.h>
 #include <cstring>
@@ -24,51 +31,48 @@ typedef struct fvmPcConfig {
   char shmemfile[max_len];
 } fvm_pc_config_t;
 
-int fvmConnect(fvm_pc_config_t);
-int fvmLeave();
+int fvmConnect(fvm_pc_config_t) DEPRECATE_API("please switch to the gpi-space pc api");
+int fvmLeave() DEPRECATE_API("please switch to the gpi-space pc api");
 
-int fvmGetRank();
-int fvmGetNodeCount();
+int fvmGetRank() DEPRECATE_API("please switch to the gpi-space pc api");
+int fvmGetNodeCount() DEPRECATE_API("please switch to the gpi-space pc api");
 
-fvmSize_t fvmGetShmemSize();
+fvmSize_t fvmGetShmemSize() DEPRECATE_API("please switch to the gpi-space pc api");
 
-fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size);
-int fvmGlobalFree(fvmAllocHandle_t ptr);
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size) DEPRECATE_API("please switch to the gpi-space pc api");
+int fvmGlobalFree(fvmAllocHandle_t ptr) DEPRECATE_API("please switch to the gpi-space pc api");
 
-fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size);
-int fvmLocalFree(fvmAllocHandle_t ptr);
+fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size) DEPRECATE_API("please switch to the gpi-space pc api");
+int fvmLocalFree(fvmAllocHandle_t ptr) DEPRECATE_API("please switch to the gpi-space pc api");
 
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratchHandle);
+				 const fvmAllocHandle_t scratchHandle) DEPRECATE_API("please switch to the gpi-space pc api");
 
 
 fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratchHandle);
+				 const fvmAllocHandle_t scratchHandle) DEPRECATE_API("please switch to the gpi-space pc api");
 
 fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
-				 const fvmShmemOffset_t shmemOffset);
+				 const fvmShmemOffset_t shmemOffset) DEPRECATE_API("please switch to the gpi-space pc api");
 
 fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
-				const fvmShmemOffset_t shmemOffset);
-				 
-		 
+				const fvmShmemOffset_t shmemOffset) DEPRECATE_API("please switch to the gpi-space pc api");
 
-fvmCommHandleState_t waitComm(fvmCommHandle_t handle);
 
-void *fvmGetShmemPtr();
 
-//for now is here for the LEAVE but should go away
-//int doRequest(fvmRequest_t op_request);
+fvmCommHandleState_t waitComm(fvmCommHandle_t handle) DEPRECATE_API("please switch to the gpi-space pc api");
+
+void *fvmGetShmemPtr() DEPRECATE_API("please switch to the gpi-space pc api");
 
 #endif
 
