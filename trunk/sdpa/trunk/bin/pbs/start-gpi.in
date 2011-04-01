@@ -21,7 +21,7 @@ elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
     gpi_bin_path=$( cat "$HOME/.sdpa/configs/gpi.dir" )
 fi
 
-gpi_exe="sdpa-gpi"
+gpi_exe="gpi-space"
 force=false
 debug=false
 
