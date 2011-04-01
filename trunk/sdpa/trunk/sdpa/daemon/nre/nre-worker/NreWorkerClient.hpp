@@ -315,24 +315,41 @@ namespace sdpa { namespace nre { namespace worker {
 
 	    LOG(DEBUG, "Send a synchronous ping ... ");
 
-	    try {
-	    	ping (); // send a synchronous ping
-	    	LOG(DEBUG, "An instance of the NRE-PCD daemon is already running!");
-	    }
-	    catch (const NrePcdIsDead& ex)
-	    {
-	    	 LOG(DEBUG, "The NRE-PCD process didn't reply to ping requests. It is probably dead or not yet started!");
-	    	 try {
-	    		 LOG(DEBUG, "Try to start automatically the NRE-PCD ...");
-	    		 startNrePcd();
-	    	 }
-		 catch(std::exception const &) {
-	    		 LOG(ERROR, "Couldn't start the NRE-PCD process!");
-			 throw;
-	    	 }
-	    }
-
-		//if not working re-start the nre-pcd here!!!!
+            std::size_t trials (10);
+            while (trials --> 0)
+            {
+              try
+              {
+                ping();
+              }
+              catch (std::exception const & ex)
+              {
+                if (trials)
+                {
+                  LOG(WARN, "no process container found, retrying...");
+                  usleep (1 * 1000 * 1000);
+                }
+                else
+                {
+                  if (nre_pcd_do_exec_)
+                  {
+                    try
+                    {
+                      startNrePcd();
+                    }
+                    catch (std::exception const & ex)
+                    {
+                      LOG(ERROR, "no process container found and starting one failed: " << ex.what());
+                      throw;
+                    }
+                  }
+                  else
+                  {
+                    throw;
+                  }
+                }
+              }
+            }
 
 		started_ = true;
 		not_responded_to_ping_ = 0;
