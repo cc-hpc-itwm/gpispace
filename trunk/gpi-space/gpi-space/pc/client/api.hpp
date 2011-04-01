@@ -28,7 +28,7 @@ namespace gpi
         typedef std::set<segment_ptr> segment_set_t;
 
         explicit
-        api_t (std::string const & path);
+        api_t (std::string const & path = "");
 
         ~api_t ();
 
