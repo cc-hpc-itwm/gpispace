@@ -35,11 +35,32 @@ Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi ) : m_pUi(arg_m_pUi), m_nRows
 Portfolio::~Portfolio()
 {
 	if(m_bClientStarted)
-		m_ptrCli->shutdown_network();
+        {
+          try
+          {
+            m_ptrCli->shutdown_network();
+          }
+          catch (std::exception const & ex)
+          {
+            qDebug() << "could not shutdown client: " << ex.what();
+          }
+        }
 }
 
 void Portfolio::InitTable()
 {
+  if (m_pUi->m_editBackendFile->text() != "")
+  {
+    QString strBackendDir(SDPA_PREFIX);
+    m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
+  }
+
+  if (m_pUi->m_editWorkflowFile->text() != "")
+  {
+    QString qstrCurrPath = QDir::currentPath();
+    m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
+  }
+
 	// Replace these with some random generated data
 	//S, r, d, n, Sigma, FirstFixing, nAnzahlderDividende
 	double S = 7000;
@@ -67,13 +88,13 @@ void Portfolio::InitTable()
 	}
 
 	InitPortfolio(comm_params, arr_row_params);
-
-	m_pUi->m_progressBar->setRange(0, 4 * m_nRows * comm_params.nLBUs() + m_nRows -1 );
-	m_pUi->m_progressBar->reset();
 }
 
 void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_parameters_t& v_row_params )
 {
+  m_pUi->m_progressBar->setRange(0, 4 * v_row_params.size() * common_params.nLBUs() + v_row_params.size() - 1);
+  m_pUi->m_progressBar->reset();
+
 	//QComboBox
 	//m_pUi->m_comboMethod.
 
@@ -142,12 +163,6 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 	//QLineEdit
 	m_pUi->m_editTotalVega->setEnabled(false);
 	m_pUi->m_editTotalVega->setText("0");
-
-	QString strBackendDir(SDPA_PREFIX);
-	m_pUi->m_editBackendFile->setText(strBackendDir + "/Asian");
-
-	QString qstrCurrPath = QDir::currentPath();
-	m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
 }
 
 int Portfolio::Resize(int k)

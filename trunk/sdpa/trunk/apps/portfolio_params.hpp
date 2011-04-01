@@ -192,7 +192,7 @@ public:
 	}
 
 	int rowId() { return m_rowId; }
-	int setRowId(int rowId) { m_rowId = rowId; }
+        void setRowId(int rowId) { m_rowId = rowId; }
 
 	double& Maturity() { return m_dT;}
 	void setMaturity(const double& d) { m_dT = d;}
@@ -284,7 +284,7 @@ public:
 	}
 
 	int rowId() { return m_rowId; }
-	int setRowId(int rowId) { m_rowId = rowId; }
+	void setRowId(int rowId) { m_rowId = rowId; }
 
 	double Value() { return m_dSum1;}
     void setValue(const double& d) { m_dSum1 = d; }
@@ -398,7 +398,7 @@ struct portfolio_data_t
 			sstr<<"FirstFixing = "<<common_params.FirstFixing()<<std::endl;
 			sstr<<"AnzahlderDividende = "<<common_params.NumberDividends()<<std::endl;
 
-			for( int row_idx = 0; row_idx<arr_row_params.size(); row_idx++ )
+			for(size_t row_idx = 0; row_idx<arr_row_params.size(); row_idx++ )
 			{
 				sstr<<"row = "<<row_idx<<std::endl;
 				sstr<<"T = "<<arr_row_params[row_idx].Maturity()<<std::endl;
@@ -431,7 +431,7 @@ struct portfolio_data_t
 		return sstr.str();
 	}*/
 
-	std::vector<std::string> operator[]( int row_idx )
+	std::vector<std::string> operator[]( size_t row_idx )
 	{
 		if( row_idx < 0 || row_idx >= arr_row_params.size() )
 			throw ;
