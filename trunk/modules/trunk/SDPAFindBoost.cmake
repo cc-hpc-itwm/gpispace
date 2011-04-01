@@ -1,7 +1,9 @@
 ## check for boost
-set(Boost_FIND_QUIETLY FALSE)
+set(Boost_FIND_QUIETLY NO)
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.45 REQUIRED COMPONENTS thread system filesystem serialization program_options test_exec_monitor iostreams)
+#set(Boost_USE_STATIC_LIBS OFF)
+set (COMPONENTS thread system filesystem serialization program_options iostreams test_exec_monitor)
+find_package(Boost 1.45 REQUIRED COMPONENTS ${COMPONENTS})
 if (Boost_MAJOR_VERSION LESS 1)
   message(FATAL_ERROR "At least Boost 1.45 is required. Found ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
 else (Boost_MAJOR_VERSION LESS 1)
