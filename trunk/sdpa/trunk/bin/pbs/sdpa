@@ -131,7 +131,7 @@ function stop_proc ()
 	for (( i=0; i<3; ++i )); do
 	    if is_proc_alive "$name" "$pid" ; then
 		echo -n "."
-		kill -TERM "$pid"
+		kill -TERM "$pid" >/dev/null 2>&1
 		sleep 1
 	    else
 		:> "$pid_file"
@@ -142,7 +142,7 @@ function stop_proc ()
     fi
 
     if is_proc_alive "$name" "$pid" ; then
-	kill -KILL "$pid"
+	kill -KILL "$pid" >/dev/null 2>&1
 	echo "killed" >&2
     else
 	killall "$name" >/dev/null 2>&1
@@ -277,7 +277,7 @@ function start_gpi ()
 	echo "E: could not start GPI, giving up!" >&2
 	return 1
     else
-        sleep 5
+	sleep 5
 	return 0
     fi
 }
@@ -303,7 +303,7 @@ function start ()
     else
 	cleanup
 	echo "starting everything..." >&2
-        start_kvs
+	start_kvs
 	start_gpi
 	start_orch
 	start_agg
@@ -394,7 +394,7 @@ function submit ()
 	echo "$jobid -> $s" >&2
 	if echo "$s" | grep -q -i 'finish' ; then
 	    echo "Done." >&2
-            sdpac results "$jobid" -i "results.$jobid"
+	    sdpac results "$jobid" -i "results.$jobid"
 	fi
 	sdpac delete "${jobid}"
 	if [ $? -eq 0 ] ; then
