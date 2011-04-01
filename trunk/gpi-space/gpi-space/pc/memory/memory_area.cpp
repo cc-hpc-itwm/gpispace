@@ -238,6 +238,7 @@ namespace gpi
             }
             else
             {
+              memset(((char*)ptr())+offset, 0, size);
               update_descriptor_from_mmgr ();
               m_handles [hdl.id] = hdl;
             }
@@ -367,6 +368,8 @@ namespace gpi
               dtmmgr_free (&m_mmgr, hdl.id, arena);
               throw;
             }
+
+            memset(((char*)ptr())+offset, 0, size);
             update_descriptor_from_mmgr ();
             m_handles [hdl.id] = hdl;
             return hdl.id;
