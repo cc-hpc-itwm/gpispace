@@ -8,7 +8,7 @@ if(NOT WIN32)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   include (CheckCXXSourceCompiles)
 
-  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -W -Wall -Wextra -Wnon-virtual-dtor -Wno-system-headers")
+  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -fpic -W -Wall -Wextra -Wnon-virtual-dtor -Wno-system-headers")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-include-dirs -Wno-pragmas -Wredundant-decls")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
