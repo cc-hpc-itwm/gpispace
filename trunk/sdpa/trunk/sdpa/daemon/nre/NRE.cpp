@@ -248,53 +248,73 @@ bool  NRE<U>::cancel(const id_type& activityId, const reason_type& /* reason */)
 template <typename U>
 void NRE<U>::notifyActivityCreated( const id_type& id, const std::string& data )
 {
-	if(hasWorkflowEngine())
-	{
-		activity_information_t info;
-        ptr_workflow_engine_->fill_in_info (id, info);
-        const std::string act_name (info.name);
-        notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_CREATED) );
-	}
+  if(hasWorkflowEngine())
+  {
+    activity_information_t info;
+    ptr_workflow_engine_->fill_in_info (id, info);
+    const std::string act_name (info.name);
+    notifyObservers( NotificationEvent( id
+                                      , act_name
+                                      , NotificationEvent::STATE_CREATED
+                                      , data
+                                      )
+                   );
+  }
 }
 
 template <typename U>
 void NRE<U>::notifyActivityStarted( const id_type& id, const std::string& data )
 {
-	if(hasWorkflowEngine())
-	{
-		activity_information_t info;
-        ptr_workflow_engine_->fill_in_info (id, info);
-        const std::string act_name (info.name);
-		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_STARTED));
-	}
+  if(hasWorkflowEngine())
+  {
+    activity_information_t info;
+    ptr_workflow_engine_->fill_in_info (id, info);
+    const std::string act_name (info.name);
+    notifyObservers( NotificationEvent( id
+                                      , act_name
+                                      , NotificationEvent::STATE_STARTED
+                                      , data
+                                      )
+                   );
+  }
 }
 
 template <typename U>
 void NRE<U>::notifyActivityFinished( const id_type& id, const std::string& result )
 {
-	if(hasWorkflowEngine())
-	{
-        activity_information_t info;
-        ptr_workflow_engine_->fill_in_info (id, info);
-        const std::string act_name (info.name);
-		notifyObservers(NotificationEvent(id, act_name, NotificationEvent::STATE_FINISHED, result));
-/*
-		ApplicationGuiEvent evtAppGui(0, 0, info);
+  if(hasWorkflowEngine())
+  {
+    activity_information_t info;
+    ptr_workflow_engine_->fill_in_info (id, info);
+    const std::string act_name (info.name);
+    notifyObservers(NotificationEvent( id
+                                     , act_name
+                                     , NotificationEvent::STATE_FINISHED
+                                     , result
+                                     )
+                   );
+  }
+    /*
+      ApplicationGuiEvent evtAppGui(0, 0, info);
 		m_appGuiService.update(evtAppGui);
 */
-	}
 }
 
 template <typename U>
 void NRE<U>::notifyActivityFailed( const id_type& id, const std::string& data )
 {
-	if(hasWorkflowEngine())
-	{
-        activity_information_t info;
-        ptr_workflow_engine_->fill_in_info (id, info);
-        const std::string act_name (info.name);
-		notifyObservers( NotificationEvent( id, act_name, NotificationEvent::STATE_FAILED) );
-	}
+  if(hasWorkflowEngine())
+  {
+    activity_information_t info;
+    ptr_workflow_engine_->fill_in_info (id, info);
+    const std::string act_name (info.name);
+    notifyObservers( NotificationEvent( id
+                                      , act_name
+                                      , NotificationEvent::STATE_FAILED
+                                      , data
+                                      )
+                   );
+  }
 }
 
 template <typename U>
