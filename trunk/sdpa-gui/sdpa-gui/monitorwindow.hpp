@@ -40,6 +40,9 @@ public slots:
     void SubmitPortfolio() { m_portfolio_.SubmitPortfolio(); }
     void resizePortfolio(int k) { m_portfolio_.Resize(k); }
 
+  // execution view
+  void clearActivityLog();
+
 private:
     bool event (QEvent *event);
 
@@ -47,7 +50,8 @@ private:
                           , we::activity_t const & act
                           );
 
-  void UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
+  void UpdateExecutionView( std::string const & host
+                          , sdpa::daemon::NotificationEvent const & evt
                           , we::activity_t const & act
                           );
 
@@ -64,6 +68,9 @@ private:
 
     Portfolio m_portfolio_;
 
+  std::map<std::string, size_t> m_node_to_row;
+  std::map<std::string, std::pair<size_t, size_t> > m_activity_to_cell;
+  size_t m_current_col;
 };
 
 #endif // MONITORWINDOW_HPP

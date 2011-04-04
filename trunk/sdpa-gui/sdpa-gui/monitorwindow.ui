@@ -466,10 +466,13 @@
               <enum>Qt::ScrollBarAlwaysOn</enum>
              </property>
              <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
+              <set>QAbstractItemView::SelectedClicked</set>
              </property>
              <property name="alternatingRowColors">
               <bool>false</bool>
+             </property>
+             <property name="horizontalScrollMode">
+              <enum>QAbstractItemView::ScrollPerPixel</enum>
              </property>
              <property name="showGrid">
               <bool>false</bool>
@@ -680,19 +683,34 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
-            <widget class="QGraphicsView" name="graphicsView">
-             <property name="cursor" stdset="0">
-              <cursorShape>ArrowCursor</cursorShape>
+            <widget class="QTableWidget" name="m_execution_log">
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
              </property>
-             <property name="verticalScrollBarPolicy">
-              <enum>Qt::ScrollBarAsNeeded</enum>
+             <property name="tabKeyNavigation">
+              <bool>false</bool>
              </property>
-             <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOn</enum>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::NoSelection</enum>
              </property>
-             <property name="cacheMode">
-              <set>QGraphicsView::CacheNone</set>
+             <property name="horizontalScrollMode">
+              <enum>QAbstractItemView::ScrollPerItem</enum>
              </property>
+             <property name="showGrid">
+              <bool>false</bool>
+             </property>
+             <property name="gridStyle">
+              <enum>Qt::NoPen</enum>
+             </property>
+             <property name="wordWrap">
+              <bool>false</bool>
+             </property>
+             <attribute name="horizontalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="horizontalHeaderHighlightSections">
+              <bool>false</bool>
+             </attribute>
             </widget>
            </item>
           </layout>
@@ -749,6 +767,19 @@
            </widget>
           </item>
           <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>315</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QGroupBox" name="groupBox_2">
             <property name="title">
              <string>Control</string>
@@ -758,26 +789,6 @@
               <widget class="QPushButton" name="pushButton">
                <property name="text">
                 <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>315</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="exit_button">
-               <property name="text">
-                <string>Exit</string>
                </property>
               </widget>
              </item>
@@ -798,7 +809,7 @@
      <x>0</x>
      <y>0</y>
      <width>927</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -854,30 +865,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>exit_button</sender>
-   <signal>clicked()</signal>
-   <receiver>actionExit</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>745</x>
-     <y>588</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>clear_log_button</sender>
    <signal>clicked()</signal>
    <receiver>actionClear_Logs</receiver>
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>745</x>
-     <y>534</y>
+     <x>894</x>
+     <y>584</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -892,8 +887,8 @@
    <slot>toggleFollowLogging(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>745</x>
-     <y>561</y>
+     <x>894</x>
+     <y>611</y>
     </hint>
     <hint type="destinationlabel">
      <x>388</x>
@@ -924,8 +919,8 @@
    <slot>levelFilterChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>745</x>
-     <y>220</y>
+     <x>894</x>
+     <y>218</y>
     </hint>
     <hint type="destinationlabel">
      <x>388</x>
@@ -940,12 +935,12 @@
    <slot>setCurrentIndex(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>745</x>
-     <y>192</y>
+     <x>894</x>
+     <y>190</y>
     </hint>
     <hint type="destinationlabel">
-     <x>745</x>
-     <y>220</y>
+     <x>894</x>
+     <y>218</y>
     </hint>
    </hints>
   </connection>
@@ -956,12 +951,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>745</x>
-     <y>220</y>
+     <x>894</x>
+     <y>218</y>
     </hint>
     <hint type="destinationlabel">
-     <x>745</x>
-     <y>192</y>
+     <x>894</x>
+     <y>190</y>
     </hint>
    </hints>
   </connection>
@@ -972,8 +967,8 @@
    <slot>ClearTable()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>647</x>
-     <y>588</y>
+     <x>820</x>
+     <y>649</y>
     </hint>
     <hint type="destinationlabel">
      <x>633</x>
@@ -988,8 +983,8 @@
    <slot>SubmitPortfolio()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>756</x>
-     <y>593</y>
+     <x>905</x>
+     <y>649</y>
     </hint>
     <hint type="destinationlabel">
      <x>557</x>
@@ -1004,12 +999,28 @@
    <slot>resizePortfolio(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>124</x>
-     <y>589</y>
+     <x>161</x>
+     <y>647</y>
     </hint>
     <hint type="destinationlabel">
      <x>187</x>
      <y>617</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MonitorWindow</receiver>
+   <slot>clearActivityLog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>826</x>
+     <y>623</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>799</x>
+     <y>667</y>
     </hint>
    </hints>
   </connection>
@@ -1021,5 +1032,6 @@
   <slot>ClearTable()</slot>
   <slot>SubmitPortfolio()</slot>
   <slot>resizePortfolio(int)</slot>
+  <slot>clearActivityLog()</slot>
  </slots>
 </ui>

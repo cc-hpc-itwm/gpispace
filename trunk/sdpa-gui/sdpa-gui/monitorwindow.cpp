@@ -25,11 +25,12 @@ using namespace boost;
 MonitorWindow::MonitorWindow( unsigned short exe_port
                             , unsigned short log_port
                             , QWidget *parent
-                            ) :
-    QMainWindow(parent),
-    ui(new Ui::MonitorWindow),
-    m_portfolio_(ui),
-    m_follow_logging (true)
+                            )
+  : QMainWindow(parent)
+  , ui(new Ui::MonitorWindow)
+  , m_follow_logging (true)
+  , m_portfolio_(ui)
+  , m_current_col(0)
 {
     ui->setupUi(this);
     ui->m_log_table->horizontalHeader ()->setVisible (true);
@@ -92,12 +93,6 @@ void decode (const std::string& strMsg, T& t)
 	std::stringstream sstr(strMsg);
 	boost::archive::text_iarchive ar(sstr);
 	ar >> t;
-}
-
-void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
-                                       , we::activity_t const & act
-                                       )
-{
 }
 
 void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
@@ -166,7 +161,136 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
   }
 
   UpdatePortfolioView(notification, act);
-  UpdateExecutionView(notification, act);
+  UpdateExecutionView(evt.logged_on(), notification, act);
+}
+
+void MonitorWindow::UpdateExecutionView( std::string const & host
+                                       , sdpa::daemon::NotificationEvent const & evt
+                                       , we::activity_t const & act
+                                       )
+{
+  size_t row (ui->m_execution_log->rowCount());
+  if (m_node_to_row.find(host) != m_node_to_row.end())
+  {
+    row = m_node_to_row[host];
+  }
+  else
+  {
+    ui->m_execution_log->setRowCount (row+1);
+    ui->m_execution_log->setVerticalHeaderItem( row
+                                              , new QTableWidgetItem(host.c_str())
+                                              );
+    m_node_to_row[host] = row;
+  }
+
+  size_t col (m_current_col);
+  if (m_activity_to_cell.find (evt.activity_id()) != m_activity_to_cell.end())
+  {
+    std::pair<size_t, size_t> cell (m_activity_to_cell[evt.activity_id()]);
+    if (cell.first != row)
+    {
+      qDebug() << "activity to cell mismatch: first event from different node?";
+      return;
+    }
+    else
+    {
+      col = cell.second;
+    }
+  }
+  else
+  {
+    m_activity_to_cell[evt.activity_id()] = std::make_pair(row, col);
+  }
+
+  if (col == ui->m_execution_log->columnCount())
+    ui->m_execution_log->setColumnCount (col+1);
+
+  QTableWidgetItem *i(new QTableWidgetItem (evt.activity_name().c_str()));
+  ui->m_execution_log->setItem(row, col, i);
+
+  {
+    std::ostringstream sstr;
+    sstr << "Input: ";
+    sstr << std::endl;
+    for ( we::activity_t::output_t::const_iterator it(act.input().begin())
+        ; it != act.input().end()
+        ; ++it
+        )
+    {
+      sstr
+        << "   "
+        << act.transition().get_port(it->second).name()
+        << " = "
+        << it->first
+        << std::endl;
+    }
+
+    if (act.output().size())
+    {
+      sstr << std::endl;
+      sstr << "Output: ";
+      for ( we::activity_t::output_t::const_iterator it(act.output().begin())
+          ; it != act.output().end()
+          ; ++it
+          )
+      {
+      sstr
+        << "   "
+        << act.transition().get_port(it->second).name()
+        << " = "
+        << it->first
+        << std::endl;
+      }
+    }
+    i->setToolTip(sstr.str().c_str());
+  }
+
+  switch (evt.activity_state())
+  {
+  case sdpa::daemon::NotificationEvent::STATE_CREATED:
+    i->setBackground(QBrush(QColor(128,128,128)));
+    break;
+  case sdpa::daemon::NotificationEvent::STATE_STARTED:
+    i->setBackground(QBrush(QColor(255,255,0)));
+    break;
+  case sdpa::daemon::NotificationEvent::STATE_FINISHED:
+    i->setBackground(QBrush(QColor(0,200,0)));
+    if ((col+1) == ui->m_execution_log->columnCount())
+    {
+      m_current_col = ui->m_execution_log->columnCount();
+    }
+    break;
+  case sdpa::daemon::NotificationEvent::STATE_FAILED:
+    i->setBackground(QBrush(QColor(255,0,0)));
+    if ((col+1) == ui->m_execution_log->columnCount())
+    {
+      m_current_col = ui->m_execution_log->columnCount();
+    }
+    break;
+  case sdpa::daemon::NotificationEvent::STATE_CANCELLED:
+    i->setBackground(QBrush(QColor(165,42,42)));
+    if ((col+1) == ui->m_execution_log->columnCount())
+    {
+      m_current_col = ui->m_execution_log->columnCount();
+    }
+    break;
+  default:
+    return;
+  }
+
+  if (true)
+    ui->m_execution_log->scrollToItem (i);
+}
+
+void MonitorWindow::clearActivityLog()
+{
+  ui->m_execution_log->setRowCount (0);
+  ui->m_execution_log->setColumnCount (0);
+  ui->m_execution_log->clear ();
+
+  m_node_to_row.clear ();
+  m_activity_to_cell.clear ();
+  m_current_col = 0;
 }
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
@@ -259,9 +383,9 @@ void MonitorWindow::toggleFollowLogging (bool follow)
 
 void MonitorWindow::levelFilterChanged (int lvl)
 {
-	for (int i = 0; i < m_log_events.size (); ++i)
-		if (m_log_events[i].severity() < ui->m_level_filter_selector->currentIndex())
-			ui->m_log_table->setRowHidden (i, true);
-		else
-			ui->m_log_table->setRowHidden (i, false);
+  for (size_t i = 0; i < m_log_events.size (); ++i)
+    if (m_log_events[i].severity() < ui->m_level_filter_selector->currentIndex())
+      ui->m_log_table->setRowHidden (i, true);
+    else
+      ui->m_log_table->setRowHidden (i, false);
 }
