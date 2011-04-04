@@ -358,83 +358,44 @@ void Portfolio::StartClient()
 
 void Portfolio::Poll()
 {
-	std::string job_status = m_ptrCli->queryJob(m_currentJobId);
-	//qDebug()<<"The status of the job "<<m_currentJobId<<" is "<<job_status);
-	std::cout<<std::endl;
+  std::string job_status ("UNKNONW");
 
-	int nTrials = 0;
-	while( job_status.find("Finished") 	== std::string::npos &&
-		   job_status.find("Failed") 	== std::string::npos &&
-		   job_status.find("Cancelled") == std::string::npos )
-	{
-		try {
-			job_status = m_ptrCli->queryJob(m_currentJobId);
-			//qDebug()<<"The status of the job "<<m_currentJobId<<" is "<<job_status);
-			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-		}
-		catch(const std::exception& cliExc)
-		{
-			qDebug()<<"Exception occured: "<<cliExc.what();
-			if(nTrials++ > NMAXTRIALS)
-			{
-				qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
+  int nTrials = 0;
+  while( job_status.find("Finished") 	== std::string::npos &&
+       job_status.find("Failed") 	== std::string::npos &&
+       job_status.find("Cancelled") == std::string::npos )
+  {
+    try {
+      job_status = m_ptrCli->queryJob(m_currentJobId);
+      nTrials = 0;
+      boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+    }
+    catch(const std::exception& cliExc)
+    {
+      qDebug()<<"Exception occured: "<<cliExc.what();
+      if(nTrials++ > NMAXTRIALS)
+      {
+        qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
+        EnableControls();
+        return;
+      }
 
-				//m_ptrCli->shutdown_network();
-				m_ptrCli.reset();
-				EnableControls();
-				return;
-			}
+      boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+    }
+  }
 
-			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-		}
-	}
+  qDebug()<<"The status of the job "<<m_currentJobId.str().c_str()<<" is "<<job_status.c_str();
 
-	qDebug()<<"The status of the job "<<m_currentJobId.str().c_str()<<" is "<<job_status.c_str();
+  try {
+    qDebug()<<"Retrieve results of the job "<<m_currentJobId.str().c_str();
+    m_ptrCli->retrieveResults(m_currentJobId);
+    m_ptrCli->deleteJob(m_currentJobId);
+  }
+  catch(const std::exception& cliExc)
+  {
+  }
 
-	std::cout<<std::endl;
-	nTrials = 0;
-	try {
-			qDebug()<<"Retrieve results of the job "<<m_currentJobId.str().c_str();
-			m_ptrCli->retrieveResults(m_currentJobId);
-			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-	}
-	catch(const std::exception& cliExc)
-	{
-		if(nTrials++ > NMAXTRIALS)
-		{
-			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
-
-			//m_ptrCli->shutdown_network();
-			m_ptrCli.reset();
-			EnableControls();
-			return;
-		}
-
-		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-	}
-
-	// reset trials counter
-	nTrials = 0;
-	try {
-		qDebug()<<"Delete the user job "<<m_currentJobId.str().c_str();
-		m_ptrCli->deleteJob(m_currentJobId);
-		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-		EnableControls();
-	}
-	catch(const std::exception& cliExc)
-	{
-		if(nTrials++ > NMAXTRIALS)
-		{
-			qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
-
-			//m_ptrCli->shutdown_network();
-			m_ptrCli.reset();
-			EnableControls();
-			return;
-		}
-
-		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-	}
+  EnableControls();
 }
 
 void Portfolio::WaitForCurrJobCompletion()
