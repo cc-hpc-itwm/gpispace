@@ -55,7 +55,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , name_(a_name)
   , output_stage_(output_stage)
   , fsm_(*this)
-  , timeout_(500U)
+  , timeout_(5000U)
   , my_location_("127.0.0.1:0")
 { }
 

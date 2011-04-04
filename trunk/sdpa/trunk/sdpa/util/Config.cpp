@@ -53,7 +53,7 @@ NewConfig::NewConfig(const std::string &component_name, const std::string &env_p
      "standard logging level")
      ;
   network_opts_.add_options()
-    ("network.timeout", po::value<unsigned int>()->default_value(1000),
+    ("network.timeout", po::value<unsigned int>()->default_value(5000),
      "maximum time to wait for a reply (in milliseconds)")
     ("network.location", po::value< std::vector<std::string> >()->composing(),
      "location information for a specific location (name:location)")
