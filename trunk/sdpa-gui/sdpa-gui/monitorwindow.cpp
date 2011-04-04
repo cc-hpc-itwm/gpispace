@@ -210,6 +210,7 @@ void MonitorWindow::UpdateExecutionView( std::string const & host
 
   {
     std::ostringstream sstr;
+    sstr << evt.activity_name() << std::endl;
     sstr << "Input: ";
     sstr << std::endl;
     for ( we::activity_t::output_t::const_iterator it(act.input().begin())
@@ -229,6 +230,7 @@ void MonitorWindow::UpdateExecutionView( std::string const & host
     {
       sstr << std::endl;
       sstr << "Output: ";
+      sstr << std::endl;
       for ( we::activity_t::output_t::const_iterator it(act.output().begin())
           ; it != act.output().end()
           ; ++it
