@@ -27,7 +27,7 @@ public:
 	void SubmitPortfolio();
 	int  RandInt(int low, int high);
 	int  Resize(int k);
-	void StartClient() throw (sdpa::client::ClientException);
+  void StartClient();
 	void WaitForCurrJobCompletion();
 	void Poll();
 	void EnableControls();

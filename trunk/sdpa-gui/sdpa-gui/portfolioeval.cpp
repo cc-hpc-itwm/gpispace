@@ -335,7 +335,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 	return we::util::text_codec::encode(act);
 }
 
-void Portfolio::StartClient() throw (sdpa::client::ClientException)
+void Portfolio::StartClient()
 {
 	qDebug()<<"Starting the user client ...";
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
