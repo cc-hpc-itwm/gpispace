@@ -28,6 +28,7 @@ public:
 	int  RandInt(int low, int high);
 	int  Resize(int k);
   void StartClient();
+  void StopClient();
 	void WaitForCurrJobCompletion();
 	void Poll();
 	void EnableControls();

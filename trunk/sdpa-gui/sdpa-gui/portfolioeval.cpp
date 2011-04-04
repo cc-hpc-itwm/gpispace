@@ -34,17 +34,6 @@ Portfolio::Portfolio( Ui::MonitorWindow* arg_m_pUi ) : m_pUi(arg_m_pUi), m_nRows
 
 Portfolio::~Portfolio()
 {
-	if(m_bClientStarted)
-        {
-          try
-          {
-            m_ptrCli->shutdown_network();
-          }
-          catch (std::exception const & ex)
-          {
-            qDebug() << "could not shutdown client: " << ex.what();
-          }
-        }
 }
 
 void Portfolio::Init()
@@ -335,25 +324,53 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 	return we::util::text_codec::encode(act);
 }
 
+void Portfolio::StopClient()
+{
+  try
+  {
+    if (! m_bClientStarted)
+    {
+      return;
+    }
+
+    m_ptrCli->shutdown_network();
+    m_ptrCli.reset();
+    m_bClientStarted = false;
+  }
+  catch (std::exception const & ex)
+  {
+    qDebug () << "Could not stop client: " << ex.what();
+    m_bClientStarted = false;
+  }
+}
+
 void Portfolio::StartClient()
 {
-	qDebug()<<"Starting the user client ...";
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+  if (m_bClientStarted)
+    return;
 
-	std::vector<std::string> cav;
-	std::ostringstream oss;
-	oss<<"--orchestrator=orchestrator";
-	cav.push_back(oss.str());
-	config.parse_command_line(cav);
+  qDebug()<<"Starting the user client ...";
+  sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
-	try {
-		m_ptrCli = sdpa::client::ClientApi::create( config );
-		m_ptrCli->configure_network( config );
-	}
-	catch(const std::exception& ex)
-	{
-		throw ex;
-	}
+  std::vector<std::string> cav;
+  std::ostringstream oss;
+  oss<<"--orchestrator=orchestrator";
+  cav.push_back(oss.str());
+  config.parse_command_line(cav);
+
+  try {
+    m_ptrCli = sdpa::client::ClientApi::create
+      ( config
+      , "sdpa-gui:"+boost::lexical_cast<std::string>(getpid())
+      );
+    m_ptrCli->configure_network( config );
+
+    m_bClientStarted = true;
+  }
+  catch(const std::exception& ex)
+  {
+    throw;
+  }
 }
 
 void Portfolio::Poll()
@@ -419,23 +436,27 @@ void Portfolio::EnableControls()
 
 void Portfolio::SubmitPortfolio()
 {
-	if(!m_bClientStarted)
-	{
-		try{
-			StartClient();
-			m_bClientStarted = true;
-		}
-		catch(const std::exception& ex)
-		{
-			m_bClientStarted = false;
-			qDebug()<<"The client could not be started. The following exception occured: "<<ex.what();
+  if (m_bClientStarted)
+  {
+    StopClient();
+  }
 
-			QMessageBox::critical( m_pUi->SDPAGUI,
-									QString("Portfolio evaluation"),
-									QString("The client could not be started!") );
-			return;
-		}
-	}
+  if(!m_bClientStarted)
+  {
+    try{
+      StartClient();
+    }
+    catch(const std::exception& ex)
+    {
+      m_bClientStarted = false;
+      qDebug()<<"The client could not be started. The following exception occured: "<<ex.what();
+
+      QMessageBox::critical( m_pUi->SDPAGUI,
+                           QString("Portfolio evaluation"),
+                           QString("The client could not be started!") );
+      return;
+    }
+  }
 
 	portfolio_data_t job_data;
 	PrepareInputData( job_data  );
@@ -449,7 +470,6 @@ void Portfolio::SubmitPortfolio()
 
 	int nTrials = 0;
 	try {
-
 		qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
 		ClearTable();
 		DisableControls();
