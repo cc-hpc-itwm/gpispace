@@ -56,6 +56,11 @@ namespace gpi
                , const gpi::pc::type::queue_id_t queue
                );
 
+        gpi::pc::type::handle_t
+        memset (const gpi::pc::type::handle_t h, int value, size_t count);
+
+        void * ptr(const gpi::pc::type::handle_t h);
+
         gpi::pc::type::size_t
         wait (const gpi::pc::type::queue_id_t);
 

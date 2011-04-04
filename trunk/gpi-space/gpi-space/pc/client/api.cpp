@@ -278,6 +278,18 @@ namespace gpi
         }
       }
 
+      gpi::pc::type::handle_t
+      api_t::memset (const gpi::pc::type::handle_t h, int value, size_t count)
+      {
+        throw std::runtime_error("memset: not yet implemented");
+      }
+
+      void *
+      api_t::ptr(const gpi::pc::type::handle_t h)
+      {
+        throw std::runtime_error("ptr(): hdl->void*: not yet implemented");
+      }
+
       gpi::pc::type::queue_id_t
       api_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                     , gpi::pc::type::memory_location_t const & src
