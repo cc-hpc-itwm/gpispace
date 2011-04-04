@@ -13,6 +13,8 @@
 #include "portfolioeval.hpp"
 #include <sdpa/daemon/NotificationEvent.hpp>
 
+#include <we/we.hpp>
+
 class MonitorWindow : public QMainWindow
 {
     Q_OBJECT
@@ -41,7 +43,13 @@ public slots:
 private:
     bool event (QEvent *event);
 
-    void UpdatePortfolioView(fhg::log::LogEvent const& );
+  void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
+                          , we::activity_t const & act
+                          );
+
+  void UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
+                          , we::activity_t const & act
+                          );
 
     Ui::MonitorWindow *ui;
     typedef boost::shared_ptr<boost::thread> thread_t;

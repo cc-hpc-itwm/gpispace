@@ -16,7 +16,6 @@
 #include <boost/serialization/access.hpp>
 
 #include <we/we.hpp>
-#include <we/mgmt/layer.hpp>
 #include <we/util/codec.hpp>
 #include <we/loader/putget.hpp>
 
@@ -95,72 +94,79 @@ void decode (const std::string& strMsg, T& t)
 	ar >> t;
 }
 
-void MonitorWindow::UpdatePortfolioView(fhg::log::LogEvent const &evt)
+void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
+                                       , we::activity_t const & act
+                                       )
 {
-	sdpa::daemon::NotificationEvent evtNotification;
-	try
-	{
-		decode(evt.message(), evtNotification);
-	}
-	catch (const std::exception &ex)
-	{
-	  qDebug() << "ignoring invalid event!";
-	  return;
-	}
+}
 
-	if (evtNotification.activity_state() != sdpa::daemon::NotificationEvent::STATE_FINISHED)
-	{
-		return;
-	}
+void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
+                                       , we::activity_t const & act
+                                       )
+{
+  if (evt.activity_state() != sdpa::daemon::NotificationEvent::STATE_FINISHED)
+  {
+    return;
+  }
 
-	we::activity_t act;
+  we::activity_t::output_t output (act.output());
 
-	try
-	{
-		we::util::text_codec::decode(evtNotification.activity_result(), act);
-	}
-	catch (std::exception const &ex)
-	{
-		qDebug() << "could not parse activity: " << ex.what();
-		return;
-	}
+  qDebug() << evt.activity_name().c_str() << " produced " << output.size() << " token(s):";
 
-	we::activity_t::output_t output (act.output());
+  for ( we::activity_t::output_t::const_iterator it(output.begin())
+      ; it != output.end()
+      ; ++it
+      )
+  {
+    using namespace we::loader;
+    we::token_t token (it->first);
 
-	qDebug() << evtNotification.activity_name ().c_str() << " produced " << output.size() << " token(s):";
+    qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
 
-	for ( we::activity_t::output_t::const_iterator it(output.begin())
-        ; it != output.end()
-        ; ++it
-        )
-	{
-		using namespace we::loader;
-		we::token_t token (it->first);
+    if (evt.activity_name () == "done")
+    {
+      long rowId (get<long>(token.value, "rowID"));
+      double pv (get<double>(token.value, "pv"));
+      double stddev(get<double>(token.value, "stddev"));
+      double Delta(get<double>(token.value, "Delta"));
+      double Gamma(get<double>(token.value, "Gamma"));
+      double Vega(get<double>(token.value, "Vega"));
 
-		qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
+      simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
+      m_portfolio_.ShowResult(sim_res);
+    }
+  }
 
-		if (evtNotification.activity_name () == "done")
-		{
-			long rowId (get<long>(token.value, "rowID"));
-			double pv (get<double>(token.value, "pv"));
-			double stddev(get<double>(token.value, "stddev"));
-			double Delta(get<double>(token.value, "Delta"));
-			double Gamma(get<double>(token.value, "Gamma"));
-			double Vega(get<double>(token.value, "Vega"));
-
-			simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
-			m_portfolio_.ShowResult(sim_res);
-		}
-	}
-
-	int val = ui->m_progressBar->value()+1;
-	ui->m_progressBar->setValue(val);
-
+  int val = ui->m_progressBar->value()+1;
+  ui->m_progressBar->setValue(val);
 }
 
 void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 {
-	UpdatePortfolioView(evt);
+  sdpa::daemon::NotificationEvent notification;
+  try
+  {
+    decode(evt.message(), notification);
+  }
+  catch (const std::exception &ex)
+  {
+    qDebug() << "ignoring invalid event!";
+    return;
+  }
+
+  we::activity_t act;
+  try
+  {
+    we::util::text_codec::decode(notification.activity_result(), act);
+  }
+  catch (std::exception const &ex)
+  {
+    qDebug() << "could not parse activity: " << ex.what();
+    return;
+  }
+
+  UpdatePortfolioView(notification, act);
+  UpdateExecutionView(notification, act);
 }
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
