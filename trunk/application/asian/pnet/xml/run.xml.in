@@ -5,7 +5,6 @@
   </struct>
 
   <struct name="wait">
-    <field name="id" type="long"/>
     <field name="wait" type="long"/>
   </struct>
 
@@ -78,7 +77,6 @@
         <expression>
           ${state.param} := ${param};
           ${state.its} := 0;
-          ${wait.id} := ${param.rowID};
           ${wait.wait} := (${param.iterations_per_run} + ${param.n} - 1)
                        div ${param.iterations_per_run};
           ${accu.sum1} := 0.0;
@@ -87,68 +85,14 @@
         </expression>
       </defun>
       <connect-in port="param" place="param"/>
-      <connect-out port="state" place="state_check"/>
-      <connect-out port="wait" place="wait_check"/>
+      <connect-out port="state" place="state"/>
+      <connect-out port="wait" place="wait"/>
       <connect-out port="accu" place="accu"/>
     </transition>
 
-    <place name="state_check" type="state" capacity="1"/>
     <place name="state" type="state"/>
-    <place name="wait_check" type="wait" capacity="1"/>
     <place name="wait" type="wait"/>
     <place name="accu" type="sums"/>
-
-    <transition name="break_wait">
-      <defun>
-        <in name="wait" type="wait"/>
-        <out name="wait" type="wait"/>
-        <expression/>
-        <condition>
-          ${wait.wait} :le: 0
-        </condition>
-      </defun>
-      <connect-in port="wait" place="wait_check"/>
-      <connect-out port="wait" place="done"/>
-    </transition>
-
-    <place name="done" type="wait"/>
-
-    <transition name="not_break_wait">
-      <defun>
-        <in name="wait" type="wait"/>
-        <out name="wait" type="wait"/>
-        <expression/>
-        <condition>
-          ${wait.wait} :gt: 0
-        </condition>
-      </defun>
-      <connect-in port="wait" place="wait_check"/>
-      <connect-out port="wait" place="wait"/>
-    </transition>
-
-    <transition name="break_gen">
-      <defun>
-        <in name="state" type="state"/>
-        <expression/>
-        <condition>
-          ${state.its} :ge: ${state.param.n}
-        </condition>
-      </defun>
-      <connect-in port="state" place="state_check"/>
-    </transition>
-
-    <transition name="not_break_gen">
-      <defun>
-        <in name="state" type="state"/>
-        <out name="state" type="state"/>
-        <expression/>
-        <condition>
-          ${state.its} :lt: ${state.param.n}
-        </condition>
-      </defun>
-      <connect-in port="state" place="state_check"/>
-      <connect-out port="state" place="state"/>
-    </transition>
 
     <transition name="generate">
       <defun>
@@ -160,8 +104,11 @@
           ${state.its} := ${state.its} + ${state.param.iterations_per_run}
         </expression>
       </defun>
+      <condition>
+        ${state.its} :lt: ${state.param.n}
+      </condition>
       <connect-in port="state" place="state"/>
-      <connect-out port="state" place="state_check"/>
+      <connect-out port="state" place="state"/>
       <connect-out port="param" place="param_to_run"/>
     </transition>
 
@@ -177,8 +124,8 @@
 
     <transition name="accum">
       <defun>
-        <in name="wait" type="wait"/>
         <out name="wait" type="wait"/>
+        <in name="wait" type="wait"/>
         <in name="sums" type="sums"/>
         <in name="accu" type="sums"/>
         <out name="accu" type="sums"/>
@@ -187,31 +134,30 @@
           ${accu.sum1} := ${accu.sum1} + ${sums.sum1};
           ${accu.sum2} := ${accu.sum2} + ${sums.sum2};
         </expression>
-        <condition>
-          ${wait.id} :eq: ${sums.param.rowID}
-        </condition>
-        <condition>
-          ${wait.id} :eq: ${accu.param.rowID}
-        </condition>
       </defun>
-      <connect-in port="wait" place="wait"/>
-      <connect-out port="wait" place="wait_check"/>
+      <condition>
+        ${wait.wait} :gt: 0
+      </condition>
+      <connect-out port="wait" place="wait"/>
       <connect-in port="accu" place="accu"/>
       <connect-out port="accu" place="accu"/>
       <connect-in port="sums" place="sums_part"/>
+      <connect-in port="wait" place="wait"/>
     </transition>
 
     <transition name="done">
       <defun>
-        <in name="done" type="wait"/>
+        <in name="state" type="state"/>
         <in name="accu" type="sums"/>
+        <in name="wait" type="wait"/>
         <out name="accu" type="sums"/>
         <expression/>
-        <condition>
-          ${done.id} :eq: ${accu.param.rowID}
-        </condition>
       </defun>
-      <connect-in port="done" place="done"/>
+      <condition>
+        ${wait.wait} :le: 0
+      </condition>
+      <connect-in port="state" place="state"/>
+      <connect-in port="wait" place="wait"/>
       <connect-in port="accu" place="accu"/>
       <connect-out port="accu" place="sums"/>
     </transition>

@@ -1,0 +1,51 @@
+<defun name="wrapper">
+
+  <struct name="param">
+    <field name="S" type="double"/>
+    <field name="K" type="double"/>
+    <field name="T" type="double"/>
+    <field name="sigma" type="double"/>
+    <field name="r" type="double"/>
+    <field name="d" type="double"/>
+
+    <field name="FirstFixing" type="long"/>
+    <field name="FixingsProJahr" type="double"/>
+    <field name="AnzahlderDividende" type="long"/>
+    <field name="n" type="long"/>
+
+    <field name="rowID" type="long"/>
+    <field name="bin" type="string"/>
+
+    <field name="epsilon" type="double"/>
+    <field name="delta" type="double"/>
+
+    <field name="iterations_per_run" type="long"/>
+  </struct>
+
+  <struct name="result">
+    <field name="pv" type="double"/>
+    <field name="stddev" type="double"/>
+    <field name="Delta" type="double"/>
+    <field name="Gamma" type="double"/>
+    <field name="Vega" type="double"/>
+    <field name="rowID" type="long"/>
+  </struct>
+
+  <in name="param" type="param" place="param"/>
+
+  <out name="result" type="result" place="result"/>
+
+  <net>
+
+    <place name="param" type="param"/>
+    <place name="result" type="result"/>
+
+    <transition name="call_asian" inline="false">
+      <include-function href="asian.xml"/>
+      <connect-in port="param" place="param"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+  </net>
+
+</defun>

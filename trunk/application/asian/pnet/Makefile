@@ -19,15 +19,16 @@ CP       = /bin/cp
 
 ###############################################################################
 
-XML_MAIN    = xml/$(MAIN).xml
+XML_MAIN    = xml/wrapper.xml
 MK_XML      = $(PATH_MAIN)/mk.xml
 
-XML_GEN += $(XML_MAIN)
 XML_GEN += xml/run.xml
+XML_GEN += xml/asian.xml
 
 ###############################################################################
 
 DEP += Makefile
+DEP += xml/wrapper.xml
 DEP += xml/collect.xml
 DEP += $(XML_GEN)
 
