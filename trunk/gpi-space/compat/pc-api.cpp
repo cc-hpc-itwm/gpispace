@@ -12,6 +12,11 @@
 #include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
+#include <boost/thread/mutex.hpp>
+
+typedef boost::mutex mutex_type;
+typedef boost::unique_lock<mutex_type> lock_type;
+
 static gpi::pc::client::api_t & gpi_api ()
 {
   static gpi::pc::client::api_t a;
@@ -45,6 +50,7 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
                          , size
                          , "fvm-pc-compat-global-no-name"
                          , gpi::pc::type::handle::F_GLOBAL
+                         | gpi::pc::type::handle::F_PERSISTENT
                          );
 }
 
@@ -69,16 +75,17 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
   return 0;
 }
 
-typedef std::map< gpi::pc::type::handle_t
-                , gpi::pc::type::handle::descriptor_t
-                > handle_cache_t;
-static handle_cache_t handle_cache;
-
 static
 gpi::pc::type::handle::descriptor_t
 get_handle_info (gpi::pc::type::handle_t h)
 {
-  // LOCK
+  typedef boost::unordered_map< gpi::pc::type::handle_t
+                              , gpi::pc::type::handle::descriptor_t
+                              > handle_cache_t;
+  static handle_cache_t handle_cache;
+  static mutex_type mutex;
+
+  lock_type lock(mutex);
 
   handle_cache_t::iterator info (handle_cache.find(h));
   if (info == handle_cache.end())
@@ -93,10 +100,10 @@ get_handle_info (gpi::pc::type::handle_t h)
       {
         while (handle_cache.size() >= 1024)
         {
-          handle_cache.erase(handle_cache.end());
+          handle_cache.erase(handle_cache.begin());
         }
 
-        info = handle_cache.insert (std::make_pair(h, *it)).first;
+        info = handle_cache.insert(std::make_pair(h, *it)).first;
         break;
       }
     }
