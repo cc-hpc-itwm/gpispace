@@ -120,12 +120,12 @@ while read k v; do
     esac
 done < "$gpi_cfg"
 
-log "killing process-container..."
-killall nre-pcd >/dev/null 2>&1
-sleep 1
-log "killing old nre..."
-killall nre >/dev/null 2>&1
-sleep 1
+#log "killing process-container..."
+#killall nre-pcd >/dev/null 2>&1
+#sleep 1
+#log "killing old nre..."
+#killall nre >/dev/null 2>&1
+#sleep 1
 
 log "Running $name with rank $rank at $bind_addr with parent $parent"
 LD_LIBRARY_PATH=${PC_LIBRARY_PATH}:${LD_LIBRARY_PATH} \
