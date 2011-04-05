@@ -247,7 +247,7 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::alloc_reply_t alloc_rpl (boost::get<proto::memory::alloc_reply_t>(mem_msg));
-          LOG(INFO, "allocation successful: " << gpi::pc::type::handle_t(alloc_rpl.handle));
+          DLOG(INFO, "allocation successful: " << gpi::pc::type::handle_t(alloc_rpl.handle));
           return alloc_rpl.handle;
         }
         catch (boost::bad_get const & ex)
@@ -310,7 +310,7 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::memcpy_reply_t memcpy_rpl (boost::get<proto::memory::memcpy_reply_t>(mem_msg));
-          LOG(INFO, "memcpy in progress using queue " << memcpy_rpl.queue);
+          DLOG(INFO, "memcpy in progress using queue " << memcpy_rpl.queue);
           return memcpy_rpl.queue;
         }
         catch (boost::bad_get const & ex)
@@ -351,7 +351,7 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::wait_reply_t w_rpl (boost::get<proto::memory::wait_reply_t>(mem_msg));
-          LOG(INFO, "wait on queue " << queue << " returned " << w_rpl.count);
+          DLOG(INFO, "wait on queue " << queue << " returned " << w_rpl.count);
           return w_rpl.count;
         }
         catch (boost::bad_get const & ex)
@@ -673,7 +673,7 @@ namespace gpi
         lock_type lock (m_mutex);
         while (! m_garbage_segments.empty())
         {
-          LOG(INFO, "garbage collecting segment: " << **m_garbage_segments.begin());
+          DLOG(INFO, "garbage collecting segment: " << **m_garbage_segments.begin());
           m_garbage_segments.erase (m_garbage_segments.begin());
         }
       }

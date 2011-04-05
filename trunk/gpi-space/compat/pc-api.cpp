@@ -153,7 +153,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
     if (in_progress)
       gpi_api().wait(queue);
 
-    LOG(INFO, "transfer from gpi to scratch");
+    DLOG(INFO, "transfer from gpi to scratch");
 
     // 1. transfer memory to scratch
     gpi_api().wait
@@ -164,7 +164,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
                        )
       );
 
-    LOG(INFO, "transfer from scratch to shm");
+    DLOG(INFO, "transfer from scratch to shm");
 
     // 2. transfer from scratch to shm
     gpi_api().memcpy( gpi::pc::type::memory_location_t(shm_hdl, dst_offset)
@@ -222,7 +222,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
     if (in_progress) gpi_api().wait(queue);
 
-    LOG(INFO, "transfer from shm to scratch");
+    DLOG(INFO, "transfer from shm to scratch");
 
     // 1. transfer memory from shm to scratch
     gpi_api().wait
@@ -233,7 +233,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
                        )
       );
 
-    LOG(INFO, "transfer from scratch to gpi");
+    DLOG(INFO, "transfer from scratch to gpi");
 
     // 2. transfer memory from scratch to global
     gpi_api().memcpy( gpi::pc::type::memory_location_t(handle, dst_offset)
