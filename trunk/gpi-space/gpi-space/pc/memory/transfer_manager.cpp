@@ -72,7 +72,7 @@ namespace gpi
           }
           else if (task->has_finished())
           {
-            LOG(TRACE, "transfer done: " << task->get_name());
+            DLOG(TRACE, "transfer done: " << task->get_name());
           }
         }
       }

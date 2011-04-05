@@ -321,8 +321,7 @@ namespace gpi
           add_handle (hdl, seg_id);
           handle_allocated (hdl);
 
-          CLOG( TRACE
-              , "gpi.memory"
+          DLOG( TRACE
               , "remote memory allocated:"
               << " segment " << seg_id
               << " size " << size
@@ -356,8 +355,7 @@ namespace gpi
 
         handle_allocated (hdl);
 
-        CLOG( TRACE
-            , "gpi.memory"
+        DLOG( TRACE
             , "memory allocated:"
             << " process " << proc_id
             << " segment " << seg_id
@@ -380,8 +378,7 @@ namespace gpi
 
         handle_freed (hdl);
 
-        CLOG( TRACE
-            , "gpi.memory"
+        DLOG( TRACE
             , "remote memory deallocated:"
             << " handle " << hdl
             );
@@ -399,8 +396,7 @@ namespace gpi
 
         handle_freed (hdl);
 
-        CLOG( TRACE
-            , "gpi.memory"
+        DLOG( TRACE
             , "memory deallocated:"
             << " handle " << hdl
             );
@@ -445,8 +441,7 @@ namespace gpi
         t.amount       = amount;
         t.queue        = queue;
 
-        CLOG ( TRACE
-             , "gpi.memory"
+        DLOG ( TRACE
              , "process " << pid
              << " requesting transfer "
              << t
@@ -465,7 +460,7 @@ namespace gpi
                                , const gpi::pc::type::queue_id_t queue
                                )
       {
-        LOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
+        DLOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
         return m_transfer_mgr.wait_on_queue (queue);
       }
 

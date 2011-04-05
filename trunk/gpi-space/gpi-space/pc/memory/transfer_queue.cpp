@@ -82,15 +82,15 @@ namespace gpi
                             , const std::size_t shift
                             )
       {
-        LOG( TRACE
-           , "memcpy:"
-           << " process " << t.pid
-           << " copies " << chunk << " bytes"
-           << " via " << t.queue
-           << " from " << t.src_location
-           << " to " << t.dst_location
-           << " shifted by " << shift
-           );
+        DLOG( TRACE
+            , "memcpy:"
+            << " process " << t.pid
+            << " copies " << chunk << " bytes"
+            << " via " << t.queue
+            << " from " << t.src_location
+            << " to " << t.dst_location
+            << " shifted by " << shift
+            );
 
         std::memcpy( (char*)(t.dst_area->pointer_to(t.dst_location)) + shift
                    , (char*)(t.src_area->pointer_to(t.src_location)) + shift
@@ -101,9 +101,9 @@ namespace gpi
       static
       void do_wait_on_queue (const std::size_t q)
       {
-        LOG(TRACE, "gpi::wait_dma(" << q << ")");
+        DLOG(TRACE, "gpi::wait_dma(" << q << ")");
         std::size_t s(gpi::api::gpi_api_t::get().wait_dma(q));
-        LOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
+        DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
       }
 
 
@@ -115,20 +115,20 @@ namespace gpi
                            , const gpi::pc::type::queue_id_t queue
                            )
       {
-        LOG( TRACE, "read_dma:"
-           << " loc-offset = " << local_offset
-           << " rem-offset = " << remote_offset
-           << " #bytes = " << amount
-           << " from = " << from_node
-           << " via = " << queue
-           );
+        DLOG( TRACE, "read_dma:"
+            << " loc-offset = " << local_offset
+            << " rem-offset = " << remote_offset
+            << " #bytes = " << amount
+            << " from = " << from_node
+            << " via = " << queue
+            );
 
         gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
-        if (api.rank() == from_node)
-        {
-          LOG(INFO, "readDMA from local node to local node");
-        }
+//         if (api.rank() == from_node)
+//         {
+//           DLOG(INFO, "readDMA from local node to local node");
+//         }
 
         if (api.max_dma_requests_reached(queue))
         {
@@ -189,20 +189,20 @@ namespace gpi
                             , const gpi::pc::type::queue_id_t queue
                             )
       {
-        LOG( TRACE, "write_dma:"
-           << " loc-offset = " << local_offset
-           << " rem-offset = " << remote_offset
-           << " #bytes = " << amount
-           << " to = " << to_node
-           << " via = " << queue
-           );
+        DLOG( TRACE, "write_dma:"
+            << " loc-offset = " << local_offset
+            << " rem-offset = " << remote_offset
+            << " #bytes = " << amount
+            << " to = " << to_node
+            << " via = " << queue
+            );
 
         gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
-        if (api.rank() == to_node)
-        {
-          LOG(INFO, "writeDMA to local node from local node");
-        }
+//         if (api.rank() == to_node)
+//         {
+//           LOG(INFO, "writeDMA to local node from local node");
+//         }
 
         if (api.max_dma_requests_reached(queue))
         {
@@ -234,7 +234,7 @@ namespace gpi
                            , transfer_queue_t::task_list_t & task_list
                            )
       {
-        LOG(TRACE, "transfering data locally (memcpy)");
+        DLOG(TRACE, "transfering data locally (memcpy)");
 
         const std::size_t chunk_size = t.amount;
         std::size_t remaining(t.amount);

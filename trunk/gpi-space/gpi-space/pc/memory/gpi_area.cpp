@@ -176,7 +176,7 @@ namespace gpi
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
-        LOG(TRACE, "checking range: " << "hdl=" << hdl << " begin=" << begin << " end=" << end);
+        DLOG(TRACE, "checking range: " << "hdl=" << hdl << " begin=" << begin << " end=" << end);
         if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
         {
           rank_range_t ranks (handle_subscript_to_nodes (hdl, begin, end));
