@@ -92,7 +92,7 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 	m_pUi->m_editCurrency->setText(qstrCurr);
 
 	//QLineEdit
-	QString qstrOrch = "Orchestrator";
+	QString qstrOrch = "orchestrator";
 	m_pUi->m_editOrchestrator->setText(qstrOrch);
 
 	// common parameters
@@ -346,17 +346,19 @@ void Portfolio::StopClient()
 
 void Portfolio::StartClient()
 {
-  if (m_bClientStarted)
-    return;
+	if (m_bClientStarted)
+		return;
 
-  qDebug()<<"Starting the user client ...";
-  sdpa::client::config_t config = sdpa::client::ClientApi::config();
+	qDebug()<<"Starting the user client ...";
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
-  std::vector<std::string> cav;
-  std::ostringstream oss;
-  oss<<"--orchestrator=orchestrator";
-  cav.push_back(oss.str());
-  config.parse_command_line(cav);
+	std::vector<std::string> cav;
+	std::ostringstream oss;
+
+	QString qstrOrch = m_pUi->m_editOrchestrator->text();
+	oss<<"--orchestrator="<<qstrOrch.toStdString();
+	cav.push_back(oss.str());
+	config.parse_command_line(cav);
 
   try {
     m_ptrCli = sdpa::client::ClientApi::create
