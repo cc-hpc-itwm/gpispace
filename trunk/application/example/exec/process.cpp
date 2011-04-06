@@ -132,6 +132,11 @@ namespace process
 
           do_close (err + WR);
         }
+
+      for (int i (3); i < 1024; ++i)
+        {
+          close (i);
+        }
     }
   } // namespace detail
 
