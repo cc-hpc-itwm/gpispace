@@ -19,51 +19,10 @@
       <in name="param" type="param"/>
       <out name="sums" type="sums"/>
       <module name="asian" function="sums run (param)">
-        <cinclude href="sstream"/>
-        <cinclude href="process.hpp"/>
+        <cinclude href="run_impl.hpp"/>
         <link href="@BUILD@/application/example/exec/libprocess.so"/>
         <code><![CDATA[
-          std::ostringstream str;
-
-          str << "S = " << param.S << std::endl;
-          str << "K = " << param.K << std::endl;
-          str << "T = " << param.T << std::endl;
-          str << "sigma = " << param.sigma << std::endl;
-          str << "r = " << param.r << std::endl;
-          str << "d = " << param.d << std::endl;
-          str << "FirstFixing = " << param.FirstFixing << std::endl;
-          str << "FixingsProJahr = " << param.FixingsProJahr << std::endl;
-          str << "AnzahlderDividende = " << param.AnzahlderDividende << std::endl;
-          str << "n = " << param.iterations_per_run << std::endl;
-
-          const std::size_t s (str.str().size());
-
-          char result[1024];
-
-          const std::size_t written
-            ( process::execute ( param.bin
-                               , str.str().c_str()
-                               , s
-                               , result
-                               , 1024
-                               )
-            );
-
-          ::pnetc::type::sums::sums sums;
-
-          std::istringstream is (std::string (result, written));
-          std::string dummy;
-
-          is >> dummy;
-          is >> dummy;
-          is >> sums.sum1;
-          is >> dummy;
-          is >> dummy;
-          is >> sums.sum2;
-
-          sums.param = param;
-
-          return sums;
+          return ::asian::run (param);
         ]]></code>
       </module>
     </defun>

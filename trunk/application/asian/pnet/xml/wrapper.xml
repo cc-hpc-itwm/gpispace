@@ -20,6 +20,7 @@
     <field name="delta" type="double"/>
 
     <field name="iterations_per_run" type="long"/>
+    <field name="nThreads" type="long"/>
   </struct>
 
   <struct name="result">

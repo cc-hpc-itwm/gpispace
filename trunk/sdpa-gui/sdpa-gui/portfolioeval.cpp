@@ -233,7 +233,7 @@ void Portfolio::PrepareInputData( portfolio_data_t& job_data  )
 	}
 }
 
-static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job_data, const int row )
+static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job_data, const int row, const long nThreads )
 {
   signature::structured_t sig;
   sig["bin"]=literal::STRING();
@@ -253,6 +253,7 @@ static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job
   sig["T"]=literal::DOUBLE();
   sig["K"]=literal::DOUBLE();
   sig["FixingsProJahr"]=literal::DOUBLE();
+  sig["nThreads"] = literal::LONG();
 
   value::structured_t param;
 
@@ -273,6 +274,7 @@ static we::token_t make_token( const QString& qstrBackend, portfolio_data_t& job
   param["T"]= job_data.arr_row_params[row].Maturity();
   param["K"]= job_data.arr_row_params[row].Strike();
   param["FixingsProJahr"]=job_data.arr_row_params[row].Fixings();
+  param["nThreads"]=nThreads;
 
   return we::token_t ( "param", sig, value::type(param) );
 }
@@ -314,7 +316,16 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 
 	we::util::text_codec::decode (ifs, act);
 	for (std::size_t row (0); row < job_data.size(); ++row)
-		act.add_input( we::input_t::value_type( make_token(qstrBackend, job_data, row), act.transition().input_port_by_name ("param")));
+		act.add_input( we::input_t::value_type
+                               ( make_token
+                                 ( qstrBackend
+                                 , job_data
+                                 , row
+                                 , m_pUi->m_nThreads->value()
+                                 )
+                               , act.transition().input_port_by_name ("param")
+                               )
+                             );
 
 	ifs.close();
 	std::ostringstream sstr;

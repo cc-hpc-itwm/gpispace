@@ -30,6 +30,7 @@ XML_GEN += xml/asian.xml
 DEP += Makefile
 DEP += xml/wrapper.xml
 DEP += xml/collect.xml
+DEP += run_impl.hpp
 DEP += $(XML_GEN)
 
 NET = $(MAIN).pnet
@@ -77,6 +78,7 @@ LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
 CXXINCLUDEPATHS += $(TRUNK)/fhglog/trunk
 CXXINCLUDEPATHS += $(TRUNK)/application/example/exec
 CXXINCLUDEPATHS += $(BUILD)/fhglog
+CXXINCLUDEPATHS += $(PATH_MAIN)
 
 # determine_size, do_load, do_write
 # CXXINCLUDEPATHS += $(TRUNK)/application/kdm/src
