@@ -303,11 +303,13 @@ function start ()
     else
 	cleanup
 	echo "starting everything..." >&2
-	start_kvs
-	start_gpi
-	start_orch
-	start_agg
-	start_nre
+	for c in start_kvs start_gpi start_orch	start_agg start_nre ; do
+	    $c
+	    if [ $? -ne 0 ] ; then
+		echo 'stopping...' >&2
+		stop
+	    fi
+	done
     fi
 }
 
