@@ -13,8 +13,8 @@ set(PROJECT_CONTACT     "Alexander Petry <alexander.petry@itwm.fraunhofer.de>" C
 OPTION(ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION(DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION(ENABLE_APPLICATION "Build with application" YES)
-OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" YES)
-OPTION(ENABLE_SDPA_GUI "Build the monitor gui" NO)
+OPTION(ENABLE_MONITOR_GUI "Build the monitor gui" NO)
+OPTION(ENABLE_SDPA_GUI "Build the monitor gui" YES)
 OPTION(ENABLE_SDPA_GPI "Build the sdpa-gpi interface" YES)
 OPTION(ENABLE_GPI_SPACE "Build the gpi-space interface" OFF)
 OPTION(ENABLE_STATIC_BINARIES "Build static linked binaries" YES)
@@ -137,7 +137,7 @@ endif (WITH_FAKE_PC)
 
 ## optional components
 if (ENABLE_MONITOR_GUI)
-  message(STATUS "=== [ monitor ] ===")
+  message(STATUS "=== [ monitor ] (deprecated) ===")
   add_subdirectory(monitor)
 endif (ENABLE_MONITOR_GUI)
 
