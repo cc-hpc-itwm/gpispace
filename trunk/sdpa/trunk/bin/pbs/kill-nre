@@ -26,8 +26,8 @@ for node_num in $nodes; do
 
   node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
   log "killing nre on $node_name..."
-  echo killall -w nre-pcd | ssh -x $node_name >/dev/null 2>&1 &
-  echo killall -w nre | ssh -x $node_name >/dev/null 2>&1 &
+  echo killall -w nre-pcd | ssh -T -x $node_name >/dev/null 2>&1 &
+  echo killall -w nre | ssh -T -x $node_name >/dev/null 2>&1 &
   if [ $count -ge $bunch_size ] ; then
       wait
       count=0

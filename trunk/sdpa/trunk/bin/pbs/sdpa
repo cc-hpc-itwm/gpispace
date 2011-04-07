@@ -121,8 +121,8 @@ function start_proc ()
 
 function stop_proc ()
 {
-    name="$1"
-    binary="$2"
+    name="$1" ; shift
+    binary="$1" ; shift
 
     pid_file="$state_dir/$name.pid"
     pid=$( cat "$pid_file" 2>/dev/null )
@@ -145,7 +145,7 @@ function stop_proc ()
 	kill -KILL "$pid" >/dev/null 2>&1
 	echo "killed" >&2
     else
-	killall "$name" >/dev/null 2>&1
+	pkill "$name" >/dev/null 2>&1
 	return 0
     fi
 }
@@ -156,6 +156,7 @@ function start_kvs ()
 	echo "E: could not start kvs, giving up!" >&2
 	return 1
     else
+	sleep 1
 	return 0
     fi
 }
@@ -238,6 +239,7 @@ function node_loop ()
 
 function start_nre ()
 {
+    sleep 1
     echo "  * nres" >&2
     node_loop start_nre_on_node
 }
@@ -249,7 +251,7 @@ function start_nre_on_node ()
 
     rm -f "$SDPA_LOG_DIR/nre.$node.log"
     rm -f "$SDPA_LOG_DIR/pc.$node.log"
-    echo start-nre -r $rank | ssh -x "$node" >/dev/null 2>&1
+    echo start-nre -r $rank | ssh -T -x "$node" >/dev/null 2>&1
     if [ $? -ne 0 ] ; then
 	echo "nre did not startup on node $node: $output" >&2
 	return 1
@@ -262,7 +264,7 @@ function stop_nre_on_node ()
 {
     node=$1
     rank=$2
-    echo stop-nre -r $rank | ssh -x $node >/dev/null 2>&1
+    echo stop-nre -r $rank | ssh -T -x $node >/dev/null 2>&1
 }
 
 function stop_nre ()
@@ -292,7 +294,6 @@ function stop_gpi ()
 	return 1
     fi
 }
-
 
 function start ()
 {
@@ -354,7 +355,7 @@ function submit ()
     #       abort/ask
     #    else
     #       submit
-    net="$1"
+    net="$1" ; shift
     if [ ! -r "$net" ] ; then
 	echo "E: submit: cannot read file: $net" >&2
 	return 42
@@ -396,7 +397,7 @@ function submit ()
 	echo "$jobid -> $s" >&2
 	if echo "$s" | grep -q -i 'finish' ; then
 	    echo "Done." >&2
-	    sdpac results "$jobid" -i "results.$jobid"
+	    sdpac results "$jobid"
 	fi
 	sdpac delete "${jobid}"
 	if [ $? -eq 0 ] ; then
@@ -432,12 +433,8 @@ case "$1" in
 	fi
 	;;
     submit)
-	if [ -z "$2" ] ; then
-	    echo "E: submit requires a parameter" >&2
-	    exit 1
-	else
-	    submit "$2"
-	fi
+	shift
+	submit $@
 	;;
     help)
 	help
