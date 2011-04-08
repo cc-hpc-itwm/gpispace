@@ -91,7 +91,7 @@ int main (int argc, char **argv)
     ("mod-path,L", po::value<std::string>(&mod_path)->default_value("/scratch/KDM/"), "where can modules be located")
     ("worker", po::value<std::size_t>(&num_worker)->default_value(8), "number of workers")
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
-    ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity")
+    ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity: port=<value>")
     ;
 
   po::variables_map vm;
