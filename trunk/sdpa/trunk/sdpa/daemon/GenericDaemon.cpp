@@ -906,10 +906,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 			}
 			catch (WorkerNotFoundException const& /*ignored*/)
 			{
-				SDPA_LOG_ERROR("The worker "<<worker_id << " was not found!");
-
 				// that's not true -> to be reviewed !
-				if( !is_orchestrator() && error.from() == master() )
+				if( error.from() == master() )
 				{
 					SDPA_LOG_WARN("Master " << master() << " is down");
 
@@ -917,8 +915,11 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
 					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
-					m_bRegistered = false;
-					requestRegistration();
+					if( !is_orchestrator() )
+					{
+						m_bRegistered = false;
+						requestRegistration();
+					}
 				}
 			}
 			catch (std::exception const& ex)
