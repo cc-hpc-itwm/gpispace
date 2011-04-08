@@ -215,9 +215,9 @@ function node_loop ()
 
     local body="$1" ; shift
     local nodes="$1" ; shift
+    local node_max=$( uniq $SDPA_NODEFILE | wc -l )
 
     if [ -z "$nodes" ] ; then
-	local node_max=$( uniq $SDPA_NODEFILE | wc -l )
 	nodes=$( echo $( seq 1 $node_max ) )
     fi
 
@@ -228,6 +228,11 @@ function node_loop ()
     local node_num
     local p
     for node_num in $nodes; do
+	if test $node_num -lt 0 -o $node_num -gt $node_max ; then
+	    echo "E: invalid rank: $node_num" >&2
+	    rc=$(( rc + 1 ))
+	    continue
+	fi
 	count=$(( count + 1 ))
 	local node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
 
@@ -354,10 +359,10 @@ function start ()
 
     local p
     for p in $parts ; do
-	status $p >/dev/null 2>&1
+	status $@ >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
 	    echo "W: $p still running!" >&2
-	    continue
+#	    continue
 	fi
 
 	start_$p $@
