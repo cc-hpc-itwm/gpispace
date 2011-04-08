@@ -132,9 +132,12 @@ struct MyFixture
 		delete m_kvsd;
 		delete m_pool;
 
-		//boost::this_thread::sleep(boost::posix_time::seconds(5));
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
+
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
 
 	void run_client();
@@ -291,7 +294,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverAllToFile )
 {
 	LOG( INFO, "***** testBackupRecoverAllToFile *****"<<std::endl);
 
-	//string strAppGuiUrl  = "";	= "";
 	string guiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
@@ -397,10 +399,9 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<void, TestWorkerClient>::create("NRE_0",
+		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, TestWorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0",
 											 workerUrl,
-											 /*strAppGuiUrl,*/
 											 guiUrl,
 											 bLaunchNrePcd,
 											 TESTS_NRE_PCD_BIN_PATH,
@@ -450,7 +451,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 {
 	LOG( INFO, "***** testBackupRecoverOrchEmptyWfeWithClient *****"<<std::endl);
 
-	//string strAppGuiUrl  = "";	= "";
 	string guiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
@@ -479,7 +479,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient )
 		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, TestWorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0",
 											 workerUrl,
-											 /*strAppGuiUrl,*/
 											 guiUrl,
 											 bLaunchNrePcd,
 											 TESTS_NRE_PCD_BIN_PATH,
@@ -529,7 +528,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 {
 	LOG( INFO, "***** testBackupRecoverOrchDummyWfeWithClient *****"<<std::endl);
 
-	//string strAppGuiUrl  = "";	= "";
 	string guiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
@@ -558,7 +556,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 		ptrNRE = sdpa::daemon::NREFactory<DummyWorkflowEngine, TestWorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0",
 											 workerUrl,
-											 /*strAppGuiUrl,*/
 											 guiUrl,
 											 bLaunchNrePcd,
 											 TESTS_NRE_PCD_BIN_PATH,
@@ -621,7 +618,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
 	bool bLaunchNrePcd = false;
 #endif
 
-
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
 	ptrOrch->start_agent(strBackupOrch);
@@ -641,7 +637,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0",
 											 workerUrl,
-											 /*strAppGuiUrl,*/
 											 guiUrl,
 											 bLaunchNrePcd,
 											 TESTS_NRE_PCD_BIN_PATH,
@@ -721,7 +716,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartAggRealWeWithClient )
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE,"aggregator_0",
 				                             workerUrl,
-				                             /*strAppGuiUrl,*/
 				                             guiUrl,
 				                             bLaunchNrePcd,
 				                             TESTS_NRE_PCD_BIN_PATH,
@@ -797,7 +791,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 																					 addrNRE,
 																					 "aggregator_0",
 																					 workerUrl,
-																					 /*strAppGuiUrl,*/
 																					 guiUrl,
 																					 bLaunchNrePcd,
 																					 TESTS_NRE_PCD_BIN_PATH,
@@ -827,7 +820,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 																				 addrNRE,
 																				 "aggregator_0",
 																				 workerUrl,
-																				 /*strAppGuiUrl,*/
 																				 guiUrl,
 																				 bLaunchNrePcd,
 																				 TESTS_NRE_PCD_BIN_PATH,
@@ -848,6 +840,5 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 	LOG( INFO, "The test case testStopRestartNRE terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()
