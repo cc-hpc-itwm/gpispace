@@ -94,11 +94,7 @@ namespace we
       void operator () ( const std::string &function
                        , const input_t &input
                        , output_t &output
-                       ) throw ( FunctionNotFound
-                               , BadFunctionArgument
-                               , FunctionException
-                               , std::exception
-                               )
+                       )
       {
         return call (function, input, output);
       }
@@ -106,11 +102,7 @@ namespace we
       void call( const std::string &function
                , const input_t &input
                , output_t &output
-               ) throw ( FunctionNotFound
-                             , BadFunctionArgument
-                             , FunctionException
-                             , std::exception
-                             )
+               )
       {
         call_table_t::const_iterator fun = call_table_.find(function);
         if (fun == call_table_.end())
