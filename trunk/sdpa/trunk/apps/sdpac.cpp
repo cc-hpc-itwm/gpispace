@@ -356,7 +356,6 @@ int main (int argc, char **argv) {
 			}
 			else
 			{
-				std::cout<<"The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]<<std::endl;
 				fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
 			}
 		}
