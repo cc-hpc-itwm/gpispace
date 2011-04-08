@@ -47,6 +47,8 @@ namespace sdpa { namespace client {
       cfg.specific_opts().add_options()
         ("orchestrator", po::value<std::string>()->default_value("orchestrator"),
          "name of the orchestrator")
+        ("kvs_url,k", po::value<std::string>(),
+        "the address of the kvs daemon")
         ("location", po::value<std::string>()->default_value("0.0.0.0:0"),
          "location of the client")
         ("name", po::value<std::string>()->default_value("sdpac"),
