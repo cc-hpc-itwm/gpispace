@@ -16,6 +16,7 @@
 #include <seda/StageRegistry.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
 
 
 #ifdef USE_REAL_WE
@@ -43,6 +44,7 @@ int main (int argc, char **argv)
 	string aggUrl;
 	string workerUrl;
 	string guiUrl;
+	string kvsUrl;
 
 	bool bDoBackup = false;
 	std::string backup_file;
@@ -59,19 +61,46 @@ int main (int argc, char **argv)
 	   ("gui_url,g",  po::value<std::string>(&guiUrl)->default_value("127.0.0.1:9000"), "GUI's url")
 	   ("backup_folder,d", po::value<std::string>(&backup_folder), "NRE's backup folder")
 	   ("backup_file,f", po::value<std::string>(&backup_file), "NRE's backup file")
+	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
 	   ;
 
-  po::variables_map vm;
-  //po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
-  po::notify(vm);
+	po::variables_map vm;
+	//po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
+	po::notify(vm);
 
-  if (vm.count("help"))
-  {
-    std::cerr << "usage: nre [options] ...." << std::endl;
-    std::cerr << desc << std::endl;
-    return 0;
-  }
+	if (vm.count("help"))
+	{
+	std::cerr << "usage: nre [options] ...." << std::endl;
+	std::cerr << desc << std::endl;
+	return 0;
+	}
+
+	if( !vm.count("kvs_url") )
+	{
+		LOG(ERROR, "The url of the kvs daemon was not specified!");
+		return -1;
+	}
+	else
+	{
+
+		boost::char_separator<char> sep(":");
+		boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+
+		vector< string > vec;
+		vec.assign(tok.begin(),tok.end());
+
+		if( vec.size() != 2 )
+		{
+			LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
+			return -1;
+		}
+		else
+		{
+			LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+			fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
+		}
+	}
 
   	int bkpOpt = NO_BKP;
   	if( vm.count("backup_file") )

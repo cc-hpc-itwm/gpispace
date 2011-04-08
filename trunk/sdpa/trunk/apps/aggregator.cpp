@@ -14,6 +14,7 @@
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
 
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
@@ -29,6 +30,7 @@ int main (int argc, char **argv)
 	string orchName;
 	string orchUrl;
 	string appGuiUrl;
+	string kvsUrl;
 
 	bool bDoBackup = false;
 	std::string backup_file;
@@ -45,6 +47,7 @@ int main (int argc, char **argv)
 	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Aggregator's backup folder")
 	   ("backup_file,f", po::value<std::string>(&backup_file), "Aggregator's backup file (stored into the backup folder)")
 	   ("app_gui_url,a",  po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
+	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
 	   ;
 
 	po::variables_map vm;
@@ -56,6 +59,32 @@ int main (int argc, char **argv)
 		std::cerr << "usage: aggregator [options] ...." << std::endl;
 		std::cerr << desc << std::endl;
 		return 0;
+	}
+
+	if( !vm.count("kvs_url") )
+	{
+		LOG(ERROR, "The url of the kvs daemon was not specified!");
+		return -1;
+	}
+	else
+	{
+
+		boost::char_separator<char> sep(":");
+		boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+
+		vector< string > vec;
+		vec.assign(tok.begin(),tok.end());
+
+		if( vec.size() != 2 )
+		{
+			LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
+			return -1;
+		}
+		else
+		{
+			LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+			fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
+		}
 	}
 
 	int bkpOpt = NO_BKP;
