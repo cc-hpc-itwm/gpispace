@@ -10,6 +10,8 @@
 #include <seda/StageRegistry.hpp>
 #include <seda/Strategy.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/tokenizer.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
 
 namespace bfs = boost::filesystem;
 
@@ -51,6 +53,7 @@ int main(int argc, char** argv)
 	   ("help", "Display this message. To see logging messages, use FHGLOG_level=MIN and FHGLOG_color=off")
 	   ("orchestrator,o",  po::value<std::string>(&orch)->default_value("orchestrator"), "The orchestrator's name")
 	   ("file,f", po::value<std::string>(&strFileName)->default_value("stresstest.pnet"), "Workflow file name")
+	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
 	   ;
 
 	po::variables_map vm;
@@ -65,6 +68,32 @@ int main(int argc, char** argv)
 	}
 
 	FHGLOG_SETUP();
+
+	if( !vm.count("kvs_url") )
+	{
+		LOG(ERROR, "The url of the kvs daemon was not specified!");
+		return -1;
+	}
+	else
+	{
+
+		boost::char_separator<char> sep(":");
+		boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+
+		vector< string > vec;
+		vec.assign(tok.begin(),tok.end());
+
+		if( vec.size() != 2 )
+		{
+			LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
+			return -1;
+		}
+		else
+		{
+			LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+			fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
+		}
+	}
 
 	LOG(INFO, "Starting the user client ...");
 

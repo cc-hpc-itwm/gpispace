@@ -20,6 +20,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/tokenizer.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
+
 
 namespace fs = boost::filesystem;
 
@@ -124,6 +127,7 @@ int main (int argc, char **argv) {
     ("poll-interval,t", su::po::value<int>()->default_value(1), "sets the poll interval")
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
+    ("kvs_url,k", su::po::value<std::string>(), "The kvs daemon's url")
     ("command", su::po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
@@ -314,12 +318,63 @@ int main (int argc, char **argv) {
       return 0;
     }
 
+    if( cfg.is_set("kvs_url") )
+	{
+		boost::char_separator<char> sep(":");
+		boost::tokenizer<boost::char_separator<char> > tok(cfg.get<std::string>("kvs_url"), sep);
+
+		std::vector< std::string > vec;
+		vec.assign(tok.begin(),tok.end());
+
+		if( vec.empty() || vec.size() > 2 )
+		{
+			std::cerr<<"Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!"<<std::endl;
+			return -1;
+		}
+		else
+		{
+			std::cout<<"The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]<<std::endl;
+			fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
+		}
+	}
+    else // check the environment variable
+    {
+    	char* szKvsEnv = std::getenv("KVS_URL");
+		if( szKvsEnv )
+		{
+			std::string strKvsEnv(szKvsEnv);
+			boost::char_separator<char> sep(":");
+			boost::tokenizer<boost::char_separator<char> > tok(strKvsEnv, sep);
+
+			std::vector< std::string > vec;
+			vec.assign(tok.begin(),tok.end());
+
+			if( vec.size() != 2 )
+			{
+				std::cerr<<"Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!"<<std::endl;
+				return -1;
+			}
+			else
+			{
+				std::cout<<"The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]<<std::endl;
+				fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
+			}
+		}
+		else
+		{
+			std::cerr<<"Invalid kvs url.  Please, specify it in the form <hostname (IP)>:<port> \n"
+					   "using the command line or by setting the environment bariable KVS_URL!"<<std::endl;
+			return 1;
+		}
+    }
+
     if (! cfg.is_set("command"))
     {
-      std::cerr << "E: a command is required!" << std::endl;
-      std::cerr << "E: type --help to get a list of available options!" << std::endl;
-      return 1;
+    	std::cerr << "E: a command is required!" << std::endl;
+    	std::cerr << "E: type --help to get a list of available options!" << std::endl;
+    	return 1;
     }
+
     const std::string &command(cfg.get("command"));
 
     std::vector<std::string> args;
