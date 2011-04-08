@@ -228,8 +228,8 @@ function node_loop ()
     local node_num
     local p
     for node_num in $nodes; do
-	if test $node_num -lt 0 -o $node_num -gt $node_max ; then
-	    echo "E: invalid rank: $node_num" >&2
+	if test $node_num -lt 1 -o $node_num -gt $node_max ; then
+	    echo "E: invalid node number: $node_num" >&2
 	    rc=$(( rc + 1 ))
 	    continue
 	fi
@@ -358,20 +358,19 @@ function start ()
     fi
 
     local p
+    local rc=0
     for p in $parts ; do
 	status $@ >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
 	    echo "W: $p still running!" >&2
-#	    continue
 	fi
 
-	start_$p $@
-	if [ $? -ne 0 ] ; then
+	if ! start_$p $@ ; then
 	    echo "Start of $p failed!" >&2
 	    rc=$(( rc + 1 ))
 	fi
     done
-
+    return $rc
 }
 
 function stop ()
@@ -384,9 +383,13 @@ function stop ()
     fi
 
     local p
+    local rc=0
     for p in $parts ; do
-	stop_$p $@
+	if ! stop_$p $@ ; then
+	    rc=$(( rc + 1 ))
+	fi
     done
+    return $rc
 }
 
 function program_status ()
