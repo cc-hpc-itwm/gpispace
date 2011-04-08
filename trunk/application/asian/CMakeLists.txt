@@ -1,4 +1,6 @@
 # -*- mode: cmake; -*-
+cmake_minimum_required(VERSION 2.6)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 SET(SRCS asianopt.cpp basics.cpp interface.cpp prob.cpp random.cpp ) #asianAPI.cpp)
