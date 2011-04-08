@@ -368,7 +368,7 @@
            <item row="0" column="1">
             <widget class="QLineEdit" name="m_editBackendFile">
              <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -382,7 +382,7 @@
            <item row="0" column="3">
             <widget class="QLineEdit" name="m_editWorkflowFile">
              <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -437,6 +437,20 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_21">
+              <property name="text">
+               <string>KVS address</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="m_editKvsUrl">
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
             </item>
             <item>
              <spacer name="horizontalSpacer">

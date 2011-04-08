@@ -18,6 +18,8 @@ double simulation_result_t::gTotalVega 	= 0.0;
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/version.hpp>
+#include <boost/tokenizer.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
 
 const int NMAXTRIALS = 10;
 int mPollingInterval(1000000) ; //1 second
@@ -38,11 +40,32 @@ Portfolio::~Portfolio()
 
 void Portfolio::Init()
 {
-  QString strBackendDir(SDPA_PREFIX);
-  m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
+	QString strBackendDir(SDPA_PREFIX);
+	m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
 
-  QString qstrCurrPath = QDir::currentPath();
-  m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
+	QString qstrCurrPath = QDir::currentPath();
+	m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
+
+	char* szKvsEnv = std::getenv("KVS_URL");
+	if(szKvsEnv)
+	{
+		std::string strKvsUrl(szKvsEnv);
+
+		boost::char_separator<char> sep(":");
+		boost::tokenizer<boost::char_separator<char> > tok(strKvsUrl, sep);
+
+		std::vector< std::string > vec;
+		vec.assign(tok.begin(),tok.end());
+
+		if( vec.size() == 2 )
+			m_pUi->m_editKvsUrl->setText(szKvsEnv);
+		else
+			m_pUi->m_editKvsUrl->setText("localhost:2439");
+	}
+	else
+	{
+		m_pUi->m_editKvsUrl->setText("localhost:2439");
+	}
 }
 
 void Portfolio::InitTable()
@@ -360,29 +383,76 @@ void Portfolio::StartClient()
 	if (m_bClientStarted)
 		return;
 
-	qDebug()<<"Starting the user client ...";
+
+	std::string strKvsUrl = m_pUi->m_editKvsUrl->text().toStdString();
+
+	boost::char_separator<char> sep(":");
+	boost::tokenizer<boost::char_separator<char> > tok(strKvsUrl, sep);
+
+	std::vector< std::string > vec;
+	vec.assign(tok.begin(),tok.end());
+
+	if( vec.size() != 2 )
+	{
+		QMessageBox::critical( 	m_pUi->SDPAGUI,
+								QString("Error!"),
+								QString("Invalid kvs url. Please specify it in the form <hostname (IP)>:<port>!")
+							);
+		return;
+	}
+	else
+	{
+	    //check first if the fhgkvsd can be reached
+		qDebug()<<"The kvs daemon is assumed to run at "<<vec[0].c_str()<<":"<<vec[1].c_str();
+		fhg::com::kvs::global::get_kvs_info().init( vec[0],
+													vec[1],
+													boost::posix_time::seconds(10),
+													3);
+		try
+		{
+			fhg::com::kvs::put("test_val", 42);
+			fhg::com::kvs::del("test_val");
+		}
+		catch(...)
+		{
+			QMessageBox::critical( 	m_pUi->SDPAGUI,
+									QString("Error!"),
+									QString("Invalid url. The kvs daemon could not be contacted!")
+			 					 );
+
+			m_bClientStarted = false;
+			return;
+		}
+	}
+
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
+	qDebug()<<"Starting the user client with the following parameters:";
 	std::vector<std::string> cav;
 	std::ostringstream oss;
 
 	QString qstrOrch = m_pUi->m_editOrchestrator->text();
 	oss<<"--orchestrator="<<qstrOrch.toStdString();
 	cav.push_back(oss.str());
+	qDebug()<<oss.str().c_str();
+
 	config.parse_command_line(cav);
 
   try {
-    m_ptrCli = sdpa::client::ClientApi::create
-      ( config
-      , "sdpa-gui:"+boost::lexical_cast<std::string>(getpid())
-      );
+    m_ptrCli = sdpa::client::ClientApi::create( config, "sdpa-gui:"+boost::lexical_cast<std::string>(getpid()));
     m_ptrCli->configure_network( config );
 
     m_bClientStarted = true;
   }
   catch(const std::exception& ex)
   {
-    throw;
+	  qDebug()<<"Exception occurred: "<<ex.what();
+	  QMessageBox::critical( m_pUi->SDPAGUI,
+						   	 QString("Portfolio evaluation"),
+						   	 QString("The client could not be started! Exception occurred: "+ QString(ex.what())) );
+
+	  m_bClientStarted = false;
+	  //throw ex;
   }
 }
 
@@ -449,61 +519,64 @@ void Portfolio::EnableControls()
 
 void Portfolio::SubmitPortfolio()
 {
-  if (m_bClientStarted)
-  {
-    StopClient();
-  }
-
-  if(!m_bClientStarted)
-  {
-    try{
-      StartClient();
-    }
-    catch(const std::exception& ex)
-    {
-      m_bClientStarted = false;
-      qDebug()<<"The client could not be started. The following exception occured: "<<ex.what();
-
-      QMessageBox::critical( m_pUi->SDPAGUI,
-                           QString("Portfolio evaluation"),
-                           QString("The client could not be started!") );
-      return;
-    }
-  }
-
-	portfolio_data_t job_data;
-	PrepareInputData( job_data  );
-
-	// call here the client API
-	// disable submit button
-	std::string strWorkflow = BuildWorkflow(job_data);
-
-	if(strWorkflow.empty())
-		return;
-
-	int nTrials = 0;
-	try {
-		qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
-		ClearTable();
-		DisableControls();
-		m_currentJobId = m_ptrCli->submitJob(strWorkflow);
-		qDebug()<<"Got the job id "<<m_currentJobId.str().c_str();
-	}
-	catch(const std::exception& cliExc)
+	if (m_bClientStarted)
 	{
-		qDebug()<<"Exception occurred: "<<QString(cliExc.what());
-
-		//m_ptrCli.reset();
-		QMessageBox::critical( m_pUi->SDPAGUI,
-										QString("Exception!"),
-										QString(cliExc.what())
-									);
-		EnableControls();
-		return;
-
+		StopClient();
 	}
 
-	WaitForCurrJobCompletion();
+	if(!m_bClientStarted)
+	{
+		try{
+			StartClient();
+		}
+		catch(const std::exception& ex)
+		{
+			m_bClientStarted = false;
+			qDebug()<<"The client could not be started. The following exception occurred: "<<ex.what();
+
+			QMessageBox::critical( m_pUi->SDPAGUI,
+							   QString("Portfolio evaluation"),
+							   QString("The client could not be started! Exception occurred: "+ QString(ex.what())) );
+			return;
+		}
+	}
+
+	if( m_bClientStarted )
+	{
+		portfolio_data_t job_data;
+		PrepareInputData( job_data  );
+
+		// call here the client API
+		// disable submit button
+		std::string strWorkflow = BuildWorkflow(job_data);
+
+		if(strWorkflow.empty())
+			return;
+
+		int nTrials = 0;
+		try {
+			qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
+			ClearTable();
+			DisableControls();
+			m_currentJobId = m_ptrCli->submitJob(strWorkflow);
+			qDebug()<<"Got the job id "<<m_currentJobId.str().c_str();
+		}
+		catch(const std::exception& cliExc)
+		{
+			qDebug()<<"Exception occurred: "<<QString(cliExc.what());
+
+			//m_ptrCli.reset();
+			QMessageBox::critical( m_pUi->SDPAGUI,
+											QString("Exception!"),
+											QString(cliExc.what())
+										);
+			EnableControls();
+			return;
+
+		}
+
+		WaitForCurrJobCompletion();
+	}
 }
 
 void Portfolio::ClearTable( )

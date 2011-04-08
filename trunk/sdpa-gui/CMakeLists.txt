@@ -50,6 +50,10 @@ include_directories(${SEDA_INCLUDE_DIR})
 find_package(SDPA REQUIRED)
 include_directories(${SDPA_INCLUDE_DIR})
 
+find_package(FhgCom REQUIRED QUIET)
+include_directories(${FhgCom_INCLUDE_DIR})
+
+
 # state machine compiler (only when required)
 include(FindSMC)
 if (SMC_FOUND)
