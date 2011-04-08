@@ -17,7 +17,7 @@ function(add_we_precompile_lib libname dest impl_hpp srcs)
          CACHE INTERNAL "${libname}" FORCE
         )
 
-    file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}.empty "// empty file")
+    file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}.empty "/* empty file */\n")
     configure_file (${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}.empty
                     ${CMAKE_CURRENT_BINARY_DIR}/${impl_hpp}
                     COPYONLY
