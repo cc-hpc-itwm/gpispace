@@ -149,5 +149,13 @@ int main(int ac, char **av)
     }
   }
 
-  return executor->run();
+  try
+  {
+    return executor->run();
+  }
+  catch (std::exception const & ex)
+  {
+    LOG(ERROR, "executor::run() failed: " << ex.what());
+    return 1;
+  }
 }
