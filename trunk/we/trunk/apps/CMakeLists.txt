@@ -4,6 +4,7 @@ set (simple_targets
      we-exec
      loader
      pnetget
+     pnetput
      pnet2dot
     )
 
