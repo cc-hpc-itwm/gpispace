@@ -37,7 +37,7 @@ done
 
 log "Running $name at $bind_addr"
 
-argv="-u $bind_addr -n ${name}"
+argv="-u $bind_addr -n ${name} -k ${KVS_URL}"
 if [ -n "${bkp_dir}" ] ; then
   argv="$argv -d $bkp_dir -f ${name}.bak"
 fi
