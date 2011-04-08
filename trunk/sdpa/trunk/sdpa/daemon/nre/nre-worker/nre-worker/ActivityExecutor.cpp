@@ -116,13 +116,13 @@ namespace sdpa { namespace nre { namespace worker {
       if (stopped)
       {
         LOG(TRACE, "thread stopped");
+        delete (*thrd); (*thrd) = NULL;
       }
       else
       {
         LOG(WARN, "possible memory corruption created, could not terminate blocked thread cleanly: " << (*thrd)->get_id());
         all_stopped = false;
       }
-      delete (*thrd); (*thrd) = NULL;
     }
     execution_threads_.clear();
 
@@ -348,8 +348,8 @@ cont:
      	}
      	catch (const std::exception &ex)
      	{
-     		std::cerr << "could not start executor: " << ex.what() << std::endl;
-     		return 4;
+          LOG(ERROR, "could not start executor: " << ex.what());
+          return 4;
      	}
 
      	LOG(DEBUG, "waiting for signals...");
