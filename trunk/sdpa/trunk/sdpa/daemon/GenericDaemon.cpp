@@ -1300,7 +1300,7 @@ void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const 
 {
 	if( hasWorkflowEngine() )
 	{
-		DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
+          DLOG(TRACE, "external job failed: " << jobId);
 		workflowEngine()->failed( jobId.str(), reason );
 		jobManager()->deleteJob(jobId);
 	}
@@ -1316,7 +1316,7 @@ void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, cons
 {
 	if( hasWorkflowEngine() )
 	{
-		SDPA_LOG_INFO("informing workflow engine that " << jobId << " has finished");
+          DLOG(TRACE, "external job finished: " << jobId);
 		workflowEngine()->finished( jobId.str(), result );
 		jobManager()->deleteJob(jobId);
 	}
@@ -1332,7 +1332,7 @@ void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, con
 {
 	if( hasWorkflowEngine() )
 	{
-		DLOG(TRACE, "informing workflow engine that " << jobId << " has been cancelled");
+		DLOG(TRACE, "external job cancelled: " << jobId);
 		workflowEngine()->cancelled( jobId.str() );
 		jobManager()->deleteJob(jobId);
 	}
@@ -1347,7 +1347,7 @@ void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, con
 void GenericDaemon::requestRegistration()
 {
 	// try to re-register
-	SDPA_LOG_INFO("Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
+  DLOG(TRACE, "Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
 	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master(), rank(), agent_uuid()));
 	sendEventToMaster(pEvtWorkerReg);
 }
@@ -1370,7 +1370,7 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 	}
 
 	SDPA_LOG_ERROR("The agent "<<name()<<" has no scheduler!");
-	throw  std::exception() ;
+	throw std::runtime_error(name() + " does not hava scheduler!");
 }
 
 void GenericDaemon::start_fsm()

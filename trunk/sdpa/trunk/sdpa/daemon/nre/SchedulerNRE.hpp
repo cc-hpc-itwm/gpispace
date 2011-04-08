@@ -75,10 +75,10 @@ namespace sdpa {
 
 	void stop()
 	{
-		LOG(DEBUG, "Stopping nre scheduler...");
+		LOG(TRACE, "Stopping nre scheduler...");
 		SchedulerImpl::stop();
 
-		LOG(DEBUG, "Stopping nre worker...");
+		LOG(TRACE, "Stopping nre worker...");
 		m_worker_.stop();
 	}
 
@@ -122,7 +122,7 @@ namespace sdpa {
 
 	 virtual void execute(const sdpa::job_id_t& jobId) throw (std::exception)
 	 {
-		 SDPA_LOG_INFO("Execute activity: "<< jobId);
+           MLOG(TRACE, "executing activity: "<< jobId);
 		 const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 		 id_type act_id = pJob->id().str();
 
@@ -131,7 +131,7 @@ namespace sdpa {
 
 		 if( !ptr_comm_handler_ )
 		 {
-			 SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+                   LOG(ERROR, "nre scheduler does not have a comm-handler!");
 			 result_type output_fail;
 			 ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
 			 ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
@@ -140,10 +140,7 @@ namespace sdpa {
 
 		try
 		{
-			SDPA_LOG_INFO("Inform the NRE that the activity started!");
 			ptr_comm_handler_->notifyActivityStarted(act_id, enc_act);
-			SDPA_LOG_INFO("walltime=" << pJob->walltime());
-
 			pJob->Dispatch();
 			result = m_worker_.execute(enc_act, pJob->walltime());
 		}

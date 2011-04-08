@@ -542,7 +542,7 @@ namespace process
         }
     }
 
-    MLOG (INFO, "run command: " << fhg::util::show (av,av+cmdline.size()));
+    DMLOG (TRACE, "run command: " << fhg::util::show (av,av+cmdline.size()));
 
     if ((pid = fork()) < 0)
       {
@@ -629,7 +629,7 @@ namespace process
         writers.join_all();
         readers.join_all();
 
-        MLOG (INFO, "finished command: " << command);
+        DMLOG (TRACE, "finished command: " << command);
       }
 
     {

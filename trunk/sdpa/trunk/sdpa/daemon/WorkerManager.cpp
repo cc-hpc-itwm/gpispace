@@ -378,7 +378,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 				/*SDPA_LOG_DEBUG("Popped the job "<<jobId<<"The content of the common queue is now: ");
 				common_queue_.print();*/
 
-				SDPA_LOG_INFO("Put the job into the submitted queue of the worker "<<worker_id);
+				MLOG(TRACE, "Putting job " << jobId << " into the submitted queue of the worker "<<worker_id);
 				ptrWorker->submitted().push(jobId);
 				ptrWorker->update();
 				return jobId;
@@ -398,10 +398,10 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 					return jobId;
 				}
-				catch( const NoJobScheduledException& ex1 )
+				catch( const NoJobScheduledException& )
 				{
 					//SDPA_LOG_INFO("There is really no job to assign/steal for the worker "<<worker_id<<"  ...");
-					throw ex1;
+					throw;
 				}
 			}
 		}
