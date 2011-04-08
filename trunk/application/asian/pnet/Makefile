@@ -1,10 +1,6 @@
+include make.defs
 
 MAIN = asian
-
-TRUNK = $(CURDIR)/../../../
-#BUILD = /var/tmp/mr/
-BUILD = $(TRUNK)/../build/herc/release
-LIB_DESTDIR = $(HOME)/.sdpa/modules
 
 PATH_MAIN  = $(TRUNK)/application/asian/pnet
 #UTIL = $(PATH_MAIN)/util
