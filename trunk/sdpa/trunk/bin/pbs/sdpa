@@ -560,8 +560,11 @@ case "$1" in
 	;;
     restart)
 	shift
-	stop $@
-	start $@
+	if stop $@ ; then
+	    start $@
+	else
+	    echo "E: stop failed, not starting!" >&2
+	fi
 	;;
     status)
 	shift
