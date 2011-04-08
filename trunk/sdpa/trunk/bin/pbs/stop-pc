@@ -1,8 +1,8 @@
 #!/bin/sh
 
 user=$( id -un )
-local p
-for p in nre ; do
+
+for p in nre-pcd ; do
     alive=true
     echo -n "Terminating $p..."
     for (( i=0; i < 3; ++i )); do

@@ -420,7 +420,7 @@ export KVS_STORE="$HOME/.sdpa/data/kvs.dat"
 function log ()
 {
   echo "\$@" >&2
-  test -x "`which fhglogc 2>/dev/null`" && fhglogc -U \$SDPA_MASTER -t "\$0" -p 2 -m "\$@"
+  test -x "`which fhglogc 2>/dev/null`" && fhglogc -t "\$0" -p 2 -m "\$@"
 }
 
 test -r "$HOME/.init-screen.cfg" && source "$HOME/.init-screen.cfg"

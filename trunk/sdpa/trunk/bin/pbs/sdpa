@@ -9,7 +9,7 @@ state_dir="$HOME/.sdpa/state"
 function setup ()
 {
     if [ ! -d "$state_dir" ] ; then
-	msg=$( mkdir -p "$state_dir" 2>&1 )
+	local msg=$( mkdir -p "$state_dir" 2>&1 )
 	if [ $? -ne 0 ] ; then
 	    echo "E: failed to create state-dir: $state_dir: $msg" >&2
 	    return 1
@@ -64,9 +64,8 @@ function start_log ()
 
 function is_proc_alive ()
 {
-    name="$1"
-    pid="$2"
-    shift 2
+    local name="$1" ; shift
+    local pid="$1" ; shift
 
     if [ -z "$name" ] ; then
 	echo "E: usage: is_proc_alive <binary> <pid>" >&2
@@ -92,14 +91,13 @@ function is_proc_alive ()
 
 function start_proc ()
 {
-    name="$1"
-    binary="$2"
-    shift 2
+    local name="$1" ; shift
+    local binary="$1" ; shift
 
     # check for old one
-    pid_file="$state_dir/$name.pid"
-    log_file="$SDPA_LOG_DIR/$name.log"
-    pid=$( cat "$pid_file" 2>/dev/null )
+    local pid_file="$state_dir/$name.pid"
+    local log_file="$SDPA_LOG_DIR/$name.log"
+    local pid=$( cat "$pid_file" 2>/dev/null )
     if is_proc_alive "$name" "$pid" ; then
 	echo "  * $name ($pid)" >&2
     else
@@ -121,11 +119,11 @@ function start_proc ()
 
 function stop_proc ()
 {
-    name="$1" ; shift
-    binary="$1" ; shift
+    local name="$1" ; shift
+    local binary="$1" ; shift
 
-    pid_file="$state_dir/$name.pid"
-    pid=$( cat "$pid_file" 2>/dev/null )
+    local pid_file="$state_dir/$name.pid"
+    local pid=$( cat "$pid_file" 2>/dev/null )
     if [ -n "$pid" ] ; then
 	echo -n "    sending SIGTERM to $name ($pid)..." >&2
 	for (( i=0; i<3; ++i )); do
@@ -215,43 +213,80 @@ function node_loop ()
 	return 1
     fi
 
-    body="$1"
+    local body="$1" ; shift
+    local nodes="$1" ; shift
 
-    node_max=$( uniq $SDPA_NODEFILE | wc -l )
-    nodes=$( echo $( seq 1 $node_max ) )
-    bunch_size=16
-    count=0
-    pids=""
+    if [ -z "$nodes" ] ; then
+	local node_max=$( uniq $SDPA_NODEFILE | wc -l )
+	nodes=$( echo $( seq 1 $node_max ) )
+    fi
+
+    local rc=0
+    local bunch_size=16
+    local count=0
+    local procs=
+    local node_num
+    local p
     for node_num in $nodes; do
 	count=$(( count + 1 ))
-	node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
+	local node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
 
-	echo "    * executing $@ on $node_name" >&2
-	rank=$(( $node_num - 1 ))
-	$body $node_name $rank &
+	echo "    * executing $body $@ on $node_name" >&2
+	local rank=$(( $node_num - 1 ))
+	$body $node_name $rank $@ &
+	procs="$procs $!"
 	if [ $count -ge $bunch_size ] ; then
-	    wait
+	    for p in $procs ; do
+		wait $p
+		rc=$(( rc + $? ))
+	    done
+	    procs=
 	    count=0
 	fi
     done
-    wait
+    for p in $procs ; do
+	wait $p
+	rc=$(( rc + $? ))
+    done
+    return $rc
+}
+
+function start_pc ()
+{
+    sleep 1
+    echo "  * process container" >&2
+    node_loop start_pc_on_node $@
+}
+
+function start_pc_on_node ()
+{
+    local node=$1 ; shift
+    local rank=$1 ; shift
+
+    rm -f "$SDPA_LOG_DIR/pc.$node.log"
+    echo start-pc -D -r $rank $@ | ssh -T -x "$node" >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+	echo "pc did not startup on node $node: $output" >&2
+	return 1
+    else
+	return 0
+    fi
 }
 
 function start_nre ()
 {
     sleep 1
     echo "  * nres" >&2
-    node_loop start_nre_on_node
+    node_loop start_nre_on_node $@
 }
 
 function start_nre_on_node ()
 {
-    node=$1
-    rank=$2
+    local node=$1 ; shift
+    local rank=$1 ; shift
 
     rm -f "$SDPA_LOG_DIR/nre.$node.log"
-    rm -f "$SDPA_LOG_DIR/pc.$node.log"
-    echo start-nre -r $rank | ssh -T -x "$node" >/dev/null 2>&1
+    echo start-nre -D $@ | ssh -T -x "$node" >/dev/null 2>&1
     if [ $? -ne 0 ] ; then
 	echo "nre did not startup on node $node: $output" >&2
 	return 1
@@ -260,22 +295,35 @@ function start_nre_on_node ()
     fi
 }
 
+function stop_pc_on_node ()
+{
+    local node=$1 ; shift
+    local rank=$1 ; shift
+    echo stop-pc -r $rank | ssh -T -x $node >/dev/null 2>&1
+}
+
+function stop_pc ()
+{
+    echo "  * process container" >&2
+    node_loop stop_pc_on_node $@
+}
+
 function stop_nre_on_node ()
 {
-    node=$1
-    rank=$2
+    local node=$1 ; shift
+    local rank=$1 ; shift
     echo stop-nre -r $rank | ssh -T -x $node >/dev/null 2>&1
 }
 
 function stop_nre ()
 {
     echo "  * nres" >&2
-    node_loop stop_nre_on_node
+    node_loop stop_nre_on_node $@
 }
 
 function start_gpi ()
 {
-    if ! start_proc "sdpa-gpi" "start-gpi" "-f" ; then
+    if ! start_proc "gpi-space" "start-gpi" "-f" ; then
 	echo "E: could not start GPI, giving up!" >&2
 	return 1
     else
@@ -287,65 +335,149 @@ function start_gpi ()
 function stop_gpi ()
 {
     echo "  * gpi"
-    if stop_proc "sdpa-gpi" "start-gpi" ; then
-	ipc-cleanup >/dev/null 2>&1
-    else
+    if ! stop_proc "gpi-space" "gpi-space" ; then
 	echo "E: could not stop gpi" >&2
 	return 1
+    else
+	return 0
     fi
 }
 
 function start ()
 {
-    status >/dev/null 2>&1
-    if [ $? -eq 0 ] ; then
-	echo "E: still running!" >&2
-	return 1
+    local parts=$1
+    if [ -z "$parts" ] ; then
+	parts="kvs gpi orch agg pc nre"
     else
-	cleanup
-	echo "starting everything..." >&2
-	for c in start_kvs start_gpi start_orch	start_agg start_nre ; do
-	    $c
-	    if [ $? -ne 0 ] ; then
-		echo 'stopping...' >&2
-		stop
-	    fi
-	done
+	shift
     fi
+
+    local p
+    for p in $parts ; do
+	status $p >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+	    echo "W: $p still running!" >&2
+	    continue
+	fi
+
+	start_$p $@
+	if [ $? -ne 0 ] ; then
+	    echo "Start of $p failed!" >&2
+	    rc=$(( rc + 1 ))
+	fi
+    done
+
 }
 
 function stop ()
 {
-    # shut everything down
-    echo "stopping everything..." >&2
-    stop_nre
-    stop_agg
-    stop_orch
-    stop_gpi
-    stop_kvs
+    local parts=$1
+    if [ -z "$parts" ] ; then
+	parts="nre pc agg orch gpi kvs"
+    else
+	shift
+    fi
+
+    local p
+    for p in $parts ; do
+	stop_$p $@
+    done
+}
+
+function program_status ()
+{
+    local p=$1 ; shift
+    local rc=0
+    local pid_file="$state_dir/$p.pid"
+    local pid=$( cat "$pid_file" 2>/dev/null)
+    if [ -z "$pid" ] ; then
+	pid=$(pidof "$p")
+    fi
+
+    if is_proc_alive "$p" "$pid" ; then
+	return 0
+    else
+	return 1
+    fi
+}
+
+function status_orch ()
+{
+    program_status "orchestrator"
+}
+
+function status_agg ()
+{
+    program_status "aggregator"
+}
+
+function status_nre_on_node ()
+{
+    local node=$1; shift
+    local rank=$1; shift
+    local pid=$( echo pidof nre | ssh -T -x $node 2>/dev/null )
+    if [ -z "$pid" ] ; then
+	return 1
+    else
+	return 0
+    fi
+}
+
+function status_pc_on_node ()
+{
+    local node=$1; shift
+    local rank=$1; shift
+    local pid=$( echo pidof nre-pcd | ssh -T -x $node 2>/dev/null )
+    if [ -z "$pid" ] ; then
+	return 1
+    else
+	return 0
+    fi
+}
+
+function status_nre ()
+{
+    node_loop status_nre_on_node $@ >/dev/null 2>&1
+}
+
+function status_pc ()
+{
+    node_loop status_pc_on_node $@ >/dev/null 2>&1
+}
+
+function status_kvs ()
+{
+    program_status "fhgkvsd"
+}
+
+function status_gpi ()
+{
+    program_status "gpi-space"
 }
 
 function status ()
 {
-    # check system status
-    echo "system status:" >&2
-    dead_counter=0
-    for name in fhgkvsd orchestrator aggregator sdpa-gpi ; do
-	pid_file="$state_dir/$name.pid"
-	pid=$( cat "$pid_file" 2>/dev/null)
-	echo -n "  $name " >&2
-	if [ -z "$pid" ] ; then
-	    pid=$( pidof "$name" )
-	fi
+    local parts=$1
+    if [ -z "$parts" ] ; then
+      parts="kvs orch agg gpi nre pc"
+    else
+      shift
+    fi
 
-	if is_proc_alive "$name" "$pid" ; then
-	    echo "alive with pid $pid" >&2
+    # check system status
+    local rc=0
+    local p
+    for p in $parts ; do
+	echo -n "  $p is " >&2
+	status_$p $@
+	if [ $? -ne 0 ] ; then
+	    echo "dead" >&2
+	    rc=$(( rc + 1 ))
 	else
-	    echo "dead"
-	    dead_counter=$(( dead_counter + 1 ))
+	    echo "alive" >&2
 	fi
     done
-    return $dead_counter
+    return $rc
 }
 
 function submit ()
@@ -362,8 +494,7 @@ function submit ()
     fi
 
     echo -n "checking system status..." >&2
-    status >/dev/null 2>&1
-    if [ $? -ne 0 ] ; then
+    if ! status kvs >/dev/null 2>&1 || ! status orch >/dev/null 2>&1 ; then
 	echo "dead" >&2
 	read -t 15 -n 1 -p "Do you want me to start it? [Y/n] " do_start
 	case "$do_start" in
@@ -412,17 +543,21 @@ fi
 
 case "$1" in
     start)
-	start
+	shift
+	start $@
 	;;
     stop)
-	stop
+	shift
+	stop $@
 	;;
     restart)
-	stop
-	start
+	shift
+	stop $@
+	start $@
 	;;
     status)
-	status
+	shift
+	status $@
 	;;
     cleanup)
 	if status >/dev/null 2>&1 ; then

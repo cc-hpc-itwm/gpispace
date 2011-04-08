@@ -1,0 +1,89 @@
+#!/bin/bash
+test -r ~/.init-screen.env && source ~/.init-screen.env
+
+debug=false
+rank=0
+listen="127.0.0.1:8000"
+args=
+daemonize=false
+logfile="$SDPA_LOG_DIR/pc.`hostname -s`.log"
+
+for p in `find "$HOME/.sdpa/plugins/autoload/" -name "*.so" 2>/dev/null` ; do
+    mod=$(readlink -n -e "$p")
+    if [ -z "$mod" ] ; then
+	log "not loading $p -> symlink does not resolve" >&2
+    else
+	args="$args --load $mod"
+    fi
+done
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $0 [options]
+
+    -h: print this help
+    -r rank (=$rank): set the rank of this pc
+    -m module: load an additional module
+    -l ip:port (=$listen): listen on this address
+    -a path: append path to search path
+    -p path: prepend path to search path
+    -D daemonize
+    -L logfile (=$logfile)
+EOF
+}
+
+while getopts ":hr:c:m:l:DL:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	r)
+	    rank=$OPTARG
+	    ;;
+	m)
+	    args="$args --load $OPTARG"
+	    ;;
+	l)
+	    listen="$OPTARG"
+	    ;;
+	a)
+	    args="$args -a $OPTARG"
+	    ;;
+	p)
+	    args="$args -p $OPTARG"
+	    ;;
+	D)
+	    daemonize=true
+	    ;;
+	L)
+	    logfile="$OPTARG"
+	    ;;
+	\?)
+	    echo "invalid option: -$OPTARG" >&2
+	    echo "try: $0 -h" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+bin="$(which nre-pcd)"
+if [ ! -x "$bin" ] ; then
+  log "# nre-pcd binary could not be found in the path!"
+  exit 1
+fi
+
+args="$args --rank=$rank"
+args="$args --location=$listen"
+cmd="$bin $args"
+
+log "Running $cmd on node $hostname..."
+
+export LD_LIBRARY_PATH=${PC_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+export FHGLOG_to_file="$logfile"
+if [ "$daemonize" == "true" ] ; then
+    $cmd </dev/null >/dev/null 2>&1 &
+else
+    $cmd
+fi

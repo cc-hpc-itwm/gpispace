@@ -3,12 +3,13 @@ test -r ~/.init-screen.env && source ~/.init-screen.env
 
 # set some default values
 gui="$SDPA_GUI"
-if [ -z "$gui_url" ]
+if [ -z "$gui" ]
 then
   gui="$( hostname -s ):9001"
 fi
 
 debug=false
+daemonize=false
 listen="`hostname`"
 name="nre-`hostname -s`"
 parent="aggregator"
