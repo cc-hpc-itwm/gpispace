@@ -85,7 +85,7 @@ main (int argc, char ** argv)
           ("could not open file " + input + " for reading");
       }
 
-    we::util::text_codec::decode (std::cin, act);
+    we::util::text_codec::decode (stream, act);
   }
 
   {
