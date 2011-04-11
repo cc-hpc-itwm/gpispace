@@ -26,7 +26,7 @@ namespace fhg
       while (begin != end)
         {
           s << sep << local_open << *begin << local_close;
-            
+
           ++begin;
         }
 
