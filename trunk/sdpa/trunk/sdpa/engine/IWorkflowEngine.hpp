@@ -36,6 +36,7 @@
 	#include <we/util/codec.hpp>
 	#include <we/loader/putget.hpp>
 #else
+	#include <vector>
 	#include <boost/unordered_set.hpp>
 	#include <boost/unordered_map.hpp>
 #endif
@@ -79,33 +80,33 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 
         rank_list_type & ranks(void)
         {
-          return ranks_;
+        	return ranks_;
         }
 
         rank_list_type const & ranks(void) const
         {
-          return ranks_;
+        	return ranks_;
         }
 
         exclude_set_type & exclusion (void)
         {
-          return excluded_ranks_;
+        	return excluded_ranks_;
         }
 
         exclude_set_type const & exclusion (void) const
         {
-          return excluded_ranks_;
+        	return excluded_ranks_;
         }
 
         bool empty (void) const
         {
-          return ranks_.empty();
+        	return ranks_.empty();
         }
 
        preference_t & want (const rank_type rank)
 	   {
-		 ranks_.push_back (rank);
-		 return *this;
+    	   ranks_.push_back (rank);
+    	   return *this;
 	   }
       private:
         bool mandatory_;
