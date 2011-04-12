@@ -128,7 +128,7 @@ namespace we { namespace mgmt {
        *	  post-conditions: the net is registered is with id "id"
        *
        */
-      void submit(const external_id_type & id, const encoded_type & bytes) throw (std::exception)
+      void submit(const external_id_type & id, const encoded_type & bytes)
       {
         DLOG(TRACE, "submit (" << id << ", ...)");
 
@@ -153,7 +153,7 @@ namespace we { namespace mgmt {
        *		  - the internal state of the network switches to CANCELLING
        *		  - all children of the network will be terminated
        * */
-      bool cancel(const external_id_type & id, const reason_type & reason) throw ()
+      bool cancel(const external_id_type & id, const reason_type & reason)
       {
         DLOG(TRACE, "cancel (" << id << ", " << reason << ")");
 
@@ -363,7 +363,7 @@ namespace we { namespace mgmt {
 
       // END: EXTERNAL API
 
-      status_type status(const external_id_type & id) throw (std::exception)
+      status_type status(const external_id_type & id)
       {
         return fhg::util::show (lookup (map_to_internal(id)));
       }
