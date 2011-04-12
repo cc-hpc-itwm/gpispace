@@ -420,6 +420,8 @@ namespace fhg
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
     {
+      lock_type lock (mutex_);
+
       if (! ec)
       {
         DLOG(TRACE, "connection to " << a << " established: " << ec);
@@ -449,7 +451,8 @@ namespace fhg
       {
         LOG(WARN, "connection to " << a << " could not be established: " << ec);
 
-        handle_error (connections_.at (a).connection, ec);
+        if (connections_.find (a) != connections_.end())
+          handle_error (connections_.at (a).connection, ec);
         // TODO: remove connection data
         //     call handler for all o_queue elements
         //     call handler for all i_queue elements
@@ -501,6 +504,8 @@ namespace fhg
 
     void peer_t::start_sender (const p2p::address_t a)
     {
+      lock_type lock (mutex_);
+
       try
       {
         connection_data_t & cd = connections_.at(a);
