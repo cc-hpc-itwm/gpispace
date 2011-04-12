@@ -71,14 +71,14 @@ namespace sdpa {
 				// the initial state of the JobFSM SM. Must be defined
 				typedef Pending initial_state;
 
-				virtual void action_run_job(const sdpa::events::RunJobEvent&) { std::cout << "JobFSM_::action_run_job\n"; }
-				virtual void action_cancel_job(const sdpa::events::CancelJobEvent&) { std::cout << "JobFSM_::action_cancel_job\n"; }
-				virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&){ std::cout << "JobFSM_::action_cancel_job_from_pending\n"; }
-				virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&){ std::cout << "JobFSM_::action_cancel_job_ack\n"; }
-				virtual void action_delete_job(const sdpa::events::DeleteJobEvent&){ std::cout << "JobFSM_::action_delete_job\n"; }
-				virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ std::cout << "JobFSM_::action_job_failed\n"; }
-				virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ std::cout << "JobFSM_::action_job_finished\n"; }
-				virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&){ std::cout << "JobFSM_::action_retrieve_job_results\n"; }
+                          virtual void action_run_job(const sdpa::events::RunJobEvent&) { DLOG(TRACE, "JobFSM_::action_run_job"); }
+                          virtual void action_cancel_job(const sdpa::events::CancelJobEvent&) { DLOG(TRACE, "JobFSM_::action_cancel_job"); }
+                          virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&){ DLOG(TRACE, "JobFSM_::action_cancel_job_from_pending"); }
+                          virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&){ DLOG(TRACE, "JobFSM_::action_cancel_job_ack"); }
+                          virtual void action_delete_job(const sdpa::events::DeleteJobEvent&){ DLOG(TRACE, "JobFSM_::action_delete_job"); }
+                          virtual void action_job_failed(const sdpa::events::JobFailedEvent&){ DLOG(TRACE, "JobFSM_::action_job_failed"); }
+                          virtual void action_job_finished(const sdpa::events::JobFinishedEvent&){ DLOG(TRACE, "JobFSM_::action_job_finished"); }
+                          virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&){ DLOG(TRACE, "JobFSM_::action_retrieve_job_results\n"); }
 
 				typedef JobFSM_ sm; // makes transition table cleaner
 
