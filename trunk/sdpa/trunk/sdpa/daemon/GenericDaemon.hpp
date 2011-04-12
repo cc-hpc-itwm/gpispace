@@ -147,10 +147,10 @@ namespace sdpa { namespace daemon {
 
 	  virtual void activityCancelled(const id_type& id, const std::string& data);
 
-	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const;
 
-	  const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) throw(WorkerNotFoundException);
-	  virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid  = "") throw (WorkerAlreadyExistException);
+	  const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) const;
+	  virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid  = "");
 
 	  std::string master()const { return master_;}
 	  void setMaster( std::string masterName ){ master_=masterName;}
@@ -159,8 +159,8 @@ namespace sdpa { namespace daemon {
 
 	  JobManager::ptr_t jobManager() const { return ptr_job_man_; }
 
-	  Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException);
-	  void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException);
+	  Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
+	  void deleteJob(const sdpa::job_id_t& );
 
 	  void setStage(const seda::Stage::Ptr& stage)
 	  {
@@ -184,7 +184,7 @@ namespace sdpa { namespace daemon {
 	  std::string gen_id() { JobId jobId; return jobId.str(); }
 
 	  void jobFailed(const job_id_t&, const std::string& reason);
-	  const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
+	  const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const;
 
 	  virtual bool requestsAllowed(const sdpa::util::time_type&);
 

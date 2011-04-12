@@ -50,11 +50,11 @@ const std::string USER("user");
 	  virtual void requestRegistration() = 0;
 	  virtual void requestJob() = 0;
 
-	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException) = 0;
-	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) throw (JobNotFoundException) = 0;
-	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) = 0;
+	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const = 0;
+	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const = 0;
+	  virtual void deleteJob(const sdpa::job_id_t& ) = 0;
 
-	  virtual const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences) = 0;
+	  virtual const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const = 0;
 
 	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;

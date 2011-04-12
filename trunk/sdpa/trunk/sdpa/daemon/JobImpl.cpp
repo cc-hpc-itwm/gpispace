@@ -150,36 +150,40 @@ namespace sdpa { namespace daemon {
 		 * and send him a CancelJob
 		 * put the job into Cancelling state
 		 * until you receive a CancelJobAck from the worker*/
-    	if( evt.from() ==  evt.to() )
-		{
-    		try
-    		{
-				sdpa::worker_id_t worker_id = pComm->findWorker(id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
-				SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
-				pComm->sendEventToSlave(pCancelEvt);
-			}
-    		catch(const NoWorkerFoundException& )
-    		{
-				SDPA_LOG_WARN("The job was not assigned to any worker!");
-			} catch(...)
-			{
-				SDPA_LOG_ERROR("Unexpected exception occurred!");
-			}
-		}
-		else // /the upper level sent a Cancel message -> inform Gwes
-		{
-			id_type workflowId = evt.job_id();
-			reason_type reason("No reason");
-			pComm->cancelWorkflow(workflowId, reason);
-		}
+
+      if(evt.from() == sdpa::daemon::WE || !pComm->hasWorkflowEngine())
+      {
+        LOG(WARN, "BOOP");
+        try
+        {
+          sdpa::worker_id_t worker_id = pComm->findWorker(id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
+
+          SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+          CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
+          pComm->sendEventToSlave(pCancelEvt);
+        }
+        catch(const NoWorkerFoundException& )
+        {
+          SDPA_LOG_WARN("The job was not assigned to any worker!");
+        }
+        catch(...)
+        {
+          SDPA_LOG_ERROR("Unexpected exception occurred!");
+        }
+      }
+      else // /the upper level sent a Cancel message -> inform Gwes
+      {
+        LOG(WARN, "BEEP");
+        id_type workflowId = evt.job_id();
+        reason_type reason("No reason");
+        pComm->cancelWorkflow(workflowId, reason);
+      }
     }
 
-    void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& /* evt */)
+    void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& evt)
     {
-    	LOG(TRACE, "acknowledged cancelling job " << id());
-    	// TODO: Notify WFE that the job e.job_id() was canceled (send a CancelJobAckEvent event to the stage WFE)
+      LOG(TRACE, "acknowledged cancelling job " << evt.id());
     }
 
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)

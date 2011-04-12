@@ -230,10 +230,17 @@ namespace sdpa {
 
 				sdpa::status_t getStatus()
 				{
-					//SDPA_LOG_INFO("Look for the status of the job "<<id());
-					sdpa::status_t status(state_names[*current_state()]);
-					//SDPA_LOG_INFO("The status of the job "<<id()<<" is "<<status);
-					return status;
+                                  LOG(DEBUG, "current state of job " << id() << " is " << *current_state());
+
+                                  if (*current_state() < 0 || *current_state() > sizeof(state_names))
+                                  {
+                                    LOG(ERROR, "state id out of range!");
+                                    return "unknown";
+                                  }
+                                  else
+                                  {
+                                    return state_names[*current_state()];
+                                  }
 				}
 
 				template <class Archive>

@@ -1074,7 +1074,7 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 }
 
 
-Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
+Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
 	try {
 		return ptr_job_man_->findJob(job_id);
@@ -1085,7 +1085,7 @@ Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFo
 	}
 }
 
-void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId) throw(JobNotDeletedException)
+void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 {
 	try {
 		jobManager()->deleteJob(jobId);
@@ -1103,7 +1103,7 @@ void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
 	jobManager()->deleteJob(jobId);
 }
 
-const preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences)
+const preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& jobId) const
 {
 	try {
 		return ptr_job_man_->getJobPreferences(jobId);
@@ -1124,7 +1124,14 @@ void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& des
 
 void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string& reason)
 {
-	ptr_workflow_engine_->cancel(workflowId, reason);
+  if (hasWorkflowEngine())
+  {
+    LOG(WARN, "would cancel " << workflowId << " on workflow engine");
+  }
+  else
+  {
+    LOG(WARN, "would cancel " << workflowId << " on myself");
+  }
 }
 
 void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
@@ -1252,7 +1259,7 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 	}
 }
 
-Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
 {
 	try {
 		return  ptr_scheduler_->findWorker(worker_id);
@@ -1262,7 +1269,7 @@ Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worke
 	}
 }
 
-const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
 	try {
 		return  ptr_scheduler_->findWorker(job_id);
@@ -1272,7 +1279,7 @@ const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_i
 	}
 }
 
-void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid )
 {
 	try {
 		ptr_scheduler_->addWorker(workerId, rank, agent_uuid);
