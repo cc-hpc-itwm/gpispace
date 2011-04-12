@@ -501,20 +501,27 @@ namespace fhg
 
     void peer_t::start_sender (const p2p::address_t a)
     {
-      connection_data_t & cd = connections_.at(a);
-      if (cd.send_in_progress || cd.o_queue.empty())
-        return;
+      try
+      {
+        connection_data_t & cd = connections_.at(a);
+        if (cd.send_in_progress || cd.o_queue.empty())
+          return;
 
-      assert (! cd.o_queue.empty());
+        assert (! cd.o_queue.empty());
 
-      cd.send_in_progress = true;
-      cd.connection->async_send ( &cd.o_queue.front().message
-                                , boost::bind ( &self::handle_send
-                                              , this
-                                              , a
-                                              , _1
-                                              )
-                                );
+        cd.send_in_progress = true;
+        cd.connection->async_send ( &cd.o_queue.front().message
+                                  , boost::bind ( &self::handle_send
+                                                , this
+                                                , a
+                                                , _1
+                                                )
+                                  );
+      }
+      catch (std::exception const & ex)
+      {
+        LOG(WARN, "could not start sender to " << a << ": connection data disappeared");
+      }
     }
 
     void peer_t::update_my_location ()
