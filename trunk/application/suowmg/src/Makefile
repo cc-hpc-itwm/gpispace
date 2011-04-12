@@ -14,7 +14,8 @@ SUBS= 	./suowmg.o	\
 	./propagators.o	\
 	./mods.o	\
 	./tools.o	\
-	./rtc.o
+	./rtc.o		\
+	./pfafft.o
 
 all: suowmg
 
@@ -36,7 +37,7 @@ clean:
 
 # Explicit dependencies
 suowmg.o: owmg.h tools.h mods.h
-owmg.o: owmg.h tools.h propagators.h rtc.h
+owmg.o: owmg.h tools.h propagators.h pfafft.h rtc.h
 tools.o: tools.h
 propagators.o: propagators.h tools.h
 rtc.o: rtc.h
