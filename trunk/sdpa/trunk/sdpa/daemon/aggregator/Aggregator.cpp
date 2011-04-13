@@ -387,36 +387,24 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 		return;
 	}
 
-	// the acknowledgment comes from a slave
-	if( hasWorkflowEngine() )
+	// the acknowledgment comes from WE or for a slave and there is no WE
+	if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
 	{
-		if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
+		// just send an acknowledgment to the master
+		// send an acknowledgment to the component that requested the cancellation
+		if(!is_orchestrator())
 		{
-			// just send an acknowledgment to the master
-			// send an acknowledgment to the component that requested the cancellation
-			if(!is_orchestrator())
-			{
-				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+			CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+			// only if the job was already submitted
+			sendEventToMaster(pCancelAckEvt);
 
-				// only if the job was already submitted
-				sendEventToMaster(pCancelAckEvt);
+			try
+			{
+				ptr_job_man_->deleteJob(pEvt->job_id());
 			}
-
-			// if I'm not the orchestrator, delete the job
-			// the orchestrator will delete the user jobs only on the user's demand
-			if(!master().empty())
+			catch(const JobNotDeletedException&)
 			{
-				try
-				{
-					ptr_job_man_->deleteJob(pEvt->job_id());
-				}
-				catch(const JobNotDeletedException&)
-				{
-					LOG( WARN
-							, "the JobManager could not delete the job: "
-							<< pEvt->job_id()
-					);
-				}
+				LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
 			}
 		}
 	}

@@ -299,40 +299,8 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 		return;
 	}
 
-	// the acknowledgment comes from a slave
-	if( hasWorkflowEngine() )
-	{
-		if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
-		{
-			// just send an acknowledgment to the master
-			// send an acknowledgment to the component that requested the cancellation
-			if(!master().empty())
-			{
-				CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
-
-				// only if the job was already submitted
-				sendEventToMaster(pCancelAckEvt);
-			}
-
-			// if I'm not the orchestrator, delete the job
-			// the orchestrator will delete the user jobs only on the user's demand
-			if(!!is_orchestrator())
-			{
-				try
-				{
-					ptr_job_man_->deleteJob(pEvt->job_id());
-				}
-				catch(const JobNotDeletedException&)
-				{
-					LOG( WARN
-							, "the JobManager could not delete the job: "
-							<< pEvt->job_id()
-					);
-				}
-			}
-		}
-	}
-	else // acknowledgment comes from a worker -> inform WE that the activity was canceled
+	// the acknowledgment comes from WE or for a slave and there is no WE
+	if( pEvt->from() != sdpa::daemon::WE && hasWorkflowEngine() )
 	{
 		LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
 
