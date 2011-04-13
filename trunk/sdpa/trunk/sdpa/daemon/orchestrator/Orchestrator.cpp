@@ -299,7 +299,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 		return;
 	}
 
-	// the acknowledgment comes from WE or for a slave and there is no WE
+	// the acknowledgment does not come from WE and there is a WE
 	if( pEvt->from() != sdpa::daemon::WE && hasWorkflowEngine() )
 	{
 		LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
