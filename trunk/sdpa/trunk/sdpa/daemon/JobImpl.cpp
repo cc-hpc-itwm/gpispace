@@ -95,7 +95,7 @@ namespace sdpa { namespace daemon {
 	{
           LOG(TRACE, "Process 'action_cancel_job_from_pending'");
 
-		// the message comes from WE, should identify the worker to which the activity was assigned
+		/*// the message comes from WE, should identify the worker to which the activity was assigned
 		// and send him a CancelJob
 		// put the job into Cancelling state
 		// until you receive a CancelJobAck from the worker
@@ -138,47 +138,48 @@ namespace sdpa { namespace daemon {
 					SDPA_LOG_ERROR("Unexpected exception occurred when trying to delete the job "<<evt.job_id()<<": "<<exc.what());
 				}
 			}
-		}
+		}*/
 	}
 
 	// transition from Cancelling to Cancelled
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& evt)
     {
-      LOG(TRACE, "cancelling job " << id());
+    	LOG(TRACE, "cancelling job " << id());
 
     	/*else // the message comes from WE, should identify the worker to which the activity was assigned
 		 * and send him a CancelJob
 		 * put the job into Cancelling state
 		 * until you receive a CancelJobAck from the worker*/
+    	/*
 
+    	if(evt.from() == sdpa::daemon::WE || !pComm->hasWorkflowEngine())
+		{
+    		LOG(WARN, "BOOP");
+			try
+			{
+			    sdpa::worker_id_t worker_id = pComm->findWorker(id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
 
-      if(evt.from() == sdpa::daemon::WE || !pComm->hasWorkflowEngine())
-      {
-        LOG(WARN, "BOOP");
-        try
-        {
-          sdpa::worker_id_t worker_id = pComm->findWorker(id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
-
-          SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-          CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
-          pComm->sendEventToSlave(pCancelEvt);
-        }
-        catch(const NoWorkerFoundException& )
-        {
-          SDPA_LOG_WARN("The job was not assigned to any worker!");
-        }
-        catch(...)
-        {
-          SDPA_LOG_ERROR("Unexpected exception occurred!");
-        }
-      }
-      else // /the upper level sent a Cancel message -> inform Gwes
-      {
-        LOG(WARN, "BEEP");
-        id_type workflowId = evt.job_id();
-        reason_type reason("No reason");
-        pComm->cancelWorkflow(workflowId, reason);
-      }
+				SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+				CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( pComm->name(), worker_id, evt.job_id()));
+				pComm->sendEventToSlave(pCancelEvt);
+			}
+			catch(const NoWorkerFoundException& )
+			{
+				SDPA_LOG_WARN("The job was not assigned to any worker!");
+			}
+			catch(...)
+			{
+				SDPA_LOG_ERROR("Unexpected exception occurred!");
+			}
+		}
+		else // /the upper level sent a Cancel message -> inform Gwes
+		{
+			LOG(WARN, "BEEP");
+			id_type workflowId = evt.job_id();
+			reason_type reason("No reason");
+			pComm->cancelWorkflow(workflowId, reason);
+		}
+		*/
     }
 
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& evt)

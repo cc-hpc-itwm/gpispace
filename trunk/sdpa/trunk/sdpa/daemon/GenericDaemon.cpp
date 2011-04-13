@@ -681,25 +681,25 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 	}
 	catch(const QueueFull&)
 	{
-		SDPA_LOG_FATAL("Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
+		SDPA_LOG_ERROR("Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
 	}
 	catch(const seda::StageNotFound&)
 	{
-		SDPA_LOG_FATAL("Could not lookup stage: " << ptr_to_slave_stage_->name());
+		SDPA_LOG_ERROR("Could not lookup stage: " << ptr_to_slave_stage_->name());
 	}
 	catch(const std::exception &ex)
 	{
-		SDPA_LOG_FATAL("Error during request-job handling: " << ex.what());
+		SDPA_LOG_ERROR("Error during request-job handling: " << ex.what());
 	}
 	catch(...)
 	{
-		SDPA_LOG_FATAL("Unknown error during request-job handling!");
+		SDPA_LOG_ERROR("Unknown error during request-job handling!");
 	}
 }
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
-	DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+	LOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
 	/*
 	* job-id (ignored by the orchestrator, see below)
     * contains workflow description and initial tokens

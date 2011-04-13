@@ -65,3 +65,11 @@ install(TARGETS bsdpac
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
+  
+ 
+add_executable(suca submit_and_cancel.cpp)
+target_link_libraries(suca ${client_libs})
+install(TARGETS suca RUNTIME 
+                     DESTINATION bin
+                     COMPONENT applications )
+  
