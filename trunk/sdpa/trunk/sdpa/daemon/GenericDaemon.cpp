@@ -1007,7 +1007,7 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
 	// call job.CancelJob(event);
 
 	job_id_t job_id(activityId);
-	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent(name(), name(), job_id));
+	CancelJobEvent::Ptr pEvtCancelJob(new CancelJobEvent( sdpa::daemon::WE, name(), job_id));
 	sendEventToSelf(pEvtCancelJob);
 	return true;
 }
