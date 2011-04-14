@@ -136,8 +136,8 @@ struct MyFixture
 		delete m_kvsd;
 		delete m_pool;
 
-		seda::StageRegistry::instance().stopAll();
-		seda::StageRegistry::instance().clear();
+		//seda::StageRegistry::instance().stopAll();
+		//seda::StageRegistry::instance().clear();
 	}
 
 	void run_client(int i);

@@ -290,6 +290,7 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
+/*
 BOOST_AUTO_TEST_CASE( testBackupRecoverAllToFile )
 {
 	LOG( INFO, "***** testBackupRecoverAllToFile *****"<<std::endl);
@@ -325,7 +326,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverAllToFile )
 		ptrNRE = sdpa::daemon::NREFactory<void, TestWorkerClient>::create("NRE_0",
 											 addrNRE,"aggregator_0",
 											 workerUrl,
-											 /*strAppGuiUrl,*/
 											 guiUrl,
 											 bLaunchNrePcd,
 											 TESTS_NRE_PCD_BIN_PATH,
@@ -368,6 +368,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverAllToFile )
 
 	LOG( INFO, "The test case testBackupRecoverAllToFile terminated!" );
 }
+*/
 
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrchNoWfeWithClient )
 {
