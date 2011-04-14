@@ -387,7 +387,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 		return;
 	}
 
-	// the acknowledgment comes from WE or for a slave and there is no WE
+	// the acknowledgment comes from WE or from a slave and there is no WE
 	if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
 	{
 		// just send an acknowledgment to the master
