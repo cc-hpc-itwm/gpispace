@@ -28,6 +28,9 @@
 #include <sstream> // stringstream
 #include <utility> // std::pair
 #include <unistd.h> // char **environ
+#ifdef __APPLE__
+#include <crt_externs.h> // _NSGetEnviron
+#endif
 
 namespace fhg { namespace log {
   typedef std::pair<std::string, std::string> env_value_t;
@@ -130,7 +133,11 @@ namespace fhg { namespace log {
   inline environment_t get_environment_variables()
   {
       environment_t env;
+#ifdef __APPLE__
+      char ** env_p = *_NSGetEnviron();
+#else
       char ** env_p = environ;
+#endif
       while (env_p != NULL && (*env_p != NULL))
       {
         env.push_back(split_string(*env_p, "="));

@@ -33,7 +33,11 @@ void *thread(void *arg)
   using namespace fhg::log;
   t_param *p = static_cast<t_param*>(arg);
   LOG(DEBUG, "t" << p->id << " started");
+#ifdef __APPLE__
+  pthread_yield_np(); // apple only allows you to force yielding.
+#else
   pthread_yield();
+#endif
   for (std::size_t i(0); i < p->loop_count; ++i)
   {
     logger_t log(getLogger(std::string("t") + p->id));
