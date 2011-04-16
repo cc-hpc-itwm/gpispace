@@ -25,7 +25,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 	PATH_SUFFIXES lib
   )
   find_library (FhgLog_LIBRARY_SHARED
-	NAMES libfhglog.so
+	NAMES libfhglog.so libfhglog.dylib
 	HINTS ${FHGLOG_HOME} ENV FHGLOG_HOME
 	PATH_SUFFIXES lib
   )
