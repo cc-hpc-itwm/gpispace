@@ -1,5 +1,12 @@
 
+#ifndef __APPLE__
+// malloc.h is deprecated on OSX.
 #include <malloc.h>
+#else
+// malloc_stats() is missing on OSX / FreeBSD / Solaris / ...
+void malloc_stats() { }
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 

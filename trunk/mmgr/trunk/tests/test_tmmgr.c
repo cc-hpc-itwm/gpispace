@@ -4,7 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef __APPLE__
+// malloc.h is deprecated on OSX.
 #include <malloc.h>
+#else
+// malloc_stats() is missing on OSX / FreeBSD / Solaris / ...
+void malloc_stats() { }
+#endif
 
 static void
 do_alloc (PTmmgr_t PTmmgr, Handle_t Handle, Size_t Size)
