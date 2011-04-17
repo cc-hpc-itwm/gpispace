@@ -8,7 +8,10 @@
 
 #include <cstdlib>
 
+#ifndef __APPLE__
+// malloc.h is deprecated on OSX.
 #include <malloc.h>
+#endif
 
 int main (int, char **)
 {

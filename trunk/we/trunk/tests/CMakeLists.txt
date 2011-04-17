@@ -59,6 +59,7 @@ set(tc_srcs
 # answer module
 add_library(answer SHARED answer.cpp)
 add_library(question SHARED question.cpp)
+target_link_libraries(question answer)
 
 function(construct_tests )
   foreach (tc_src ${ARGN})

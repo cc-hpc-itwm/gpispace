@@ -3,6 +3,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/lexical_cast.hpp>
 
+#ifndef __APPLE__
 #include <malloc.h>
 
 static void log_malloc_info ()
@@ -21,6 +22,9 @@ static void log_malloc_info ()
   p(keepcost);
 #undef p
 }
+#else
+static void log_malloc_info() { }
+#endif
 
 int main (int ac, char *av[])
 {
