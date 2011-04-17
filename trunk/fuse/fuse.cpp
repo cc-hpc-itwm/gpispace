@@ -279,7 +279,7 @@ static size_t copy_string ( const std::string & str
 {
   if (offset < static_cast<off_t> (str.size()))
     {
-      size = std::min (size, str.size() - offset);
+      size = std::min (size, static_cast<size_t>(str.size() - offset));
 
       std::copy (str.begin(), str.begin() + size, buf + offset);
     }

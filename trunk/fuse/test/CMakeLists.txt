@@ -15,7 +15,7 @@ foreach (test ${simple_tests})
 
   target_link_libraries (${target} ${FUSE_LIBRARIES})
   set_target_properties(${target} PROPERTIES
-      COMPILE_FLAGS ${PC_FUSE_CFLAGS_OTHER}
+      COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
     )
 
   add_test (${name} ${target})

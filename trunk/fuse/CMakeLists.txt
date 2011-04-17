@@ -37,9 +37,13 @@ set(targets
    )
 
 foreach (target ${targets})
+  if(APPLE)
+    STRING(REGEX REPLACE ";" " " PC_FUSE_CFLAGS_OTHER "${PC_FUSE_CFLAGS_OTHER}")
+    message(status "replace")
+  endif(APPLE)
   target_link_libraries (${target} ${FUSE_LIBRARIES})
   set_target_properties(${target} PROPERTIES
-      COMPILE_FLAGS ${PC_FUSE_CFLAGS_OTHER}
+      COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
     )
 endforeach (target ${targets})
 
