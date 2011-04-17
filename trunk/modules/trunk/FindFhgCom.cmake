@@ -11,7 +11,7 @@ endif (NOT FhgCom_FIND_QUIETLY)
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   find_path (FhgCom_INCLUDE_DIR
-	NAMES "fhgcom/fhgcom.hpp"
+	NAMES "fhgcom/header.hpp"
 	HINTS ${FHGCOM_HOME} ENV FHGCOM_HOME
 	PATH_SUFFIXES include
   )
@@ -22,7 +22,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 	PATH_SUFFIXES lib
   )
   find_library (FhgCom_LIBRARY_SHARED
-	NAMES libfhgcom.so
+	NAMES libfhgcom.so libfhgcom.dylib
 	HINTS ${FHGLOG_HOME} ENV FHGLOG_HOME
 	PATH_SUFFIXES lib
   )
