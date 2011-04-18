@@ -1135,7 +1135,7 @@ void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string&
 {
   if (hasWorkflowEngine())
   {
-    LOG(WARN, "would cancel " << workflowId << " on workflow engine");
+    ptr_workflow_engine_->cancel(workflowId, reason);
   }
   else
   {
