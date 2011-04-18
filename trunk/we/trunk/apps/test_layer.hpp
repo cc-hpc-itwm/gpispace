@@ -91,8 +91,15 @@ namespace test {
 
       void handle_externally (we::activity_t & act, const mod_t &mod)
       {
-        module::call (daemon.loader(), act, mod );
-        daemon.layer().finished (id, we::util::text_codec::encode(act));
+        try
+        {
+          module::call (daemon.loader(), act, mod );
+          daemon.layer().finished (id, we::util::text_codec::encode(act));
+        }
+        catch (std::exception const & ex)
+        {
+          daemon.layer().failed (id, we::util::text_codec::encode(act));
+        }
       }
 
       void handle_externally (we::activity_t &, const expr_t &)
@@ -218,20 +225,36 @@ namespace test {
       jobs_[next_worker_] .put(job);
       next_worker_ = (next_worker_ + 1) % worker_.size();
     }
+
     bool cancel(const id_type & id, const std::string & desc)
     {
       std::cout << "cancel[" << id << "] = " << desc << std::endl;
 
-      return true;
+      try
+      {
+        id_type mapped_id (get_mapping (id));
+        del_mapping (id);
+
+        // inform layer
+        mgmt_layer_.cancelled (mapped_id);
+        return true;
+      }
+      catch (std::exception const &ex)
+      {
+        std::cerr << "error in layer: " << ex.what() << std::endl;
+        return false;
+      }
     }
+
     bool finished(const id_type & id, const std::string & desc)
     {
       try
       {
         id_type mapped_id (get_mapping (id));
+        del_mapping (id);
+
         // inform layer
         mgmt_layer_.finished (mapped_id, desc);
-        del_mapping (id);
       }
       catch (std::out_of_range const &)
       {
@@ -241,14 +264,16 @@ namespace test {
       }
       return true;
     }
+
     bool failed(const id_type & id, const std::string & desc)
     {
       try
       {
         id_type mapped_id (get_mapping (id));
-        // inform layer
-        mgmt_layer_.failed ( mapped_id, "ACTIVITY_FAILED" );
         del_mapping (id);
+
+        // inform layer
+        mgmt_layer_.failed (mapped_id, desc);
       }
       catch (std::out_of_range const &)
       {
@@ -264,9 +289,10 @@ namespace test {
       try
       {
         id_type mapped_id (get_mapping (id));
-        // inform layer
-        mgmt_layer_.cancelled ( mapped_id );
         del_mapping (id);
+
+        // inform layer
+        mgmt_layer_.cancelled (mapped_id);
       }
       catch (std::out_of_range const &)
       {
