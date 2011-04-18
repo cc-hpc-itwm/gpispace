@@ -239,6 +239,7 @@ namespace fhg
 
         to_send_t to_send;
         to_send.message = *m;
+        to_send.message.header.length = to_send.message.data.size();
         to_send.message.header.src = my_addr_;
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
@@ -266,6 +267,7 @@ namespace fhg
         connection_data_t & cd = connections_.at (addr);
         to_send_t to_send;
         to_send.message = *m;
+        to_send.message.header.length = to_send.message.data.size();
         to_send.message.header.src = my_addr_;
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
