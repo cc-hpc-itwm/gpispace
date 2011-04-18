@@ -6,8 +6,8 @@ using namespace fhg::com;
 void session::close ()
 {
   stopped_ = true;
-  socket_.close ();
   manager_.del_session (shared_from_this());
+  socket_.close ();
 }
 
 // TODO: make data a pointer to allocated  memory, so that we don't have to copy
