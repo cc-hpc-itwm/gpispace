@@ -1,0 +1,64 @@
+<defun name="failing">
+  <in name="p" type="double" place="probability_to_fail" />
+  <in name="N" type="long"   place="number_of_iterations" />
+  <out name="done" type="control" place="done" />
+
+  <net>
+    <place name="probability_to_fail" type="double" />
+    <place name="number_of_iterations" type="long" />
+    <place name="done" type="control" />
+
+    <struct name="config">
+      <field name="N" type="long" />
+      <field name="p" type="double" />
+    </struct>
+
+    <place name="config" type="config" />
+
+    <transition name="build_config">
+      <defun>
+	<in name="N" type="long" />
+	<in name="p" type="double" />
+	<out name="config" type="config"/>
+
+	<expression>
+	  ${config.N} := ${N};
+	  ${config.p} := ${p};
+	</expression>
+      </defun>
+
+      <connect-in  port="N" place="number_of_iterations"/>
+      <connect-in  port="p" place="probability_to_fail"/>
+      <connect-out port="config" place="config"/>
+    </transition>
+
+    <transition name="maybe_fail">
+      <defun>
+	<in name="config" type="config" />
+	<out name="void" type="control"	/>
+
+	<module name="fail" function="void maybefail (config)">
+	  <cinclude href="stdlib.h"/>
+	  <code><![CDATA[
+	  int seed (42);
+	  // int seed (time());
+	  for (size_t i = 0 ; i < config.N ; ++i)
+	  {
+	    double r (rand_r(&seed));
+	    r /= RAND_MAX;
+
+	    if (config.p >= r)
+	    {
+	       throw std::runtime_error
+	         ("app_fail::maybe_fail failed due to the butterfly effect");
+	    }
+	  }
+	  ]]</code>
+	</module>
+      </defun>
+
+      <connect-in port="config" place="config"/>
+      <connect-out port="void" place="done"/>
+    </transition>
+  </net>
+</defun>
