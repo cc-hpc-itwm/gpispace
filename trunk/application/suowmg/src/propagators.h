@@ -61,6 +61,7 @@ typedef struct {
 
 // Work array allocation
 memIsoFFD3 *alloc_iso_ffd3(int nx, int ny);
+void free_iso_ffd3 (memIsoFFD3 *);
 
 // High level propagator interfaces
 void iso_ps_ud(fftwf_complex *rec, fftwf_complex *src, int nx, int ny, float *kx2, float *ky2, float k0,

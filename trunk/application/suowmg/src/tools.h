@@ -15,6 +15,7 @@
 
 float minval(float *vec, int n);
 float maxval(float *vec, int n);
+void minmaxval (const float * const vec, const int n, float * min, float * max);
 
 int *allocint1(int n1);
 void freeint1(int *a);

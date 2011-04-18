@@ -29,6 +29,18 @@ float maxval(float *vec, int n) {
   return max;
 }
 
+void minmaxval (const float * const vec, const int n, float * min, float * max)
+{
+	*min = *max = vec[0];
+
+	for (int i = 1; i < n; ++i)
+	{
+		*min = (vec[i] < *min) ? vec[i] : *min;
+		*max = (vec[i] > *max) ? vec[i] : *max;
+	}
+
+	return;
+}
 
 // TODO: Add checks for errors and return NULL
 
@@ -79,7 +91,6 @@ void freefloat2(float **a) {
   free(a);
 }
 
-
 /*
  *   3D float
  */
@@ -89,12 +100,15 @@ float ***allocfloat3(int n1, int n2, int n3) {
   a       = (float ***)malloc(n1      *sizeof(float **));
   a[0]    = (float  **)malloc(n1*n2   *sizeof(float  *));
   a[0][0] = (float   *)malloc(n1*n2*n3*sizeof(float   ));
+
   for(i1=0; i1<n1; i1++) {
     a[i1] = a[0] +n2*i1;
+
     for(i2=0; i2<n2; i2++) {
-      a[i1][i2] = a[0][0] +n3*(i2+n2*i1);
+      a[i1][i2] = a[0][0] +n3*(i2 + n2*i1);
     }
   }
+
   return a;
 }
 
@@ -104,7 +118,6 @@ void freefloat3(float ***a) {
   free(a[0]);
   free(a);
 }
-
 
 /*
  *   1D float complex

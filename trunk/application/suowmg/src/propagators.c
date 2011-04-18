@@ -34,6 +34,35 @@ memIsoFFD3 *alloc_iso_ffd3(int nx, int ny) {
   return mem;
 }
 
+void free_iso_ffd3(memIsoFFD3 * mem) {
+
+  freefloat1(mem->a1);
+  freefloat1(mem->a2);
+  freefloat1(mem->b1);
+  freefloatcomplex1(mem->zav);
+  freefloatcomplex1(mem->zbv);
+  freefloatcomplex1(mem->zcv);
+  freefloatcomplex1(mem->zdv);
+  freefloatcomplex1(mem->zbnx1v);
+  freefloatcomplex1(mem->zbnxnv);
+  freefloatcomplex1(mem->zdnx1v);
+  freefloatcomplex1(mem->zdnxnv);
+  freefloatcomplex1(mem->zcc);
+  freefloat1(mem->c1);
+  freefloat1(mem->c2a);
+  freefloat1(mem->c2b);
+  freefloat1(mem->c2);
+  freefloat1(mem->ssv);
+  freefloat1(mem->c1i);
+  freefloat1(mem->c2r);
+  freefloat1(mem->c2i);
+  freefloat1(mem->rnza);
+  freefloat1(mem->rnzc);
+  freefloatcomplex1(mem->zev);
+  freefloatcomplex1(mem->zfv);
+  freefloatcomplex1(mem->zfv2);
+  free(mem);
+}
 
 void iso_ps_ud(fftwf_complex *rec, fftwf_complex *src, int nx, int ny, float *kx2, float *ky2, float k0,
 	       float dz, fftwf_plan r1, fftwf_plan s1, fftwf_plan r2, fftwf_plan s2) {

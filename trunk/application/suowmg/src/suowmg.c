@@ -221,23 +221,81 @@ int main(int argc, char **argv)
 
       /* Propagate */
       fprintf(stderr, "Problem size: nx=%i, ny=%i, nz=%i, nxf=%i, nyf=%i, nwH=%i\n", data->nx, data->ny, data->nz, data->nxf, data->nyf, data->nwH);
-      owmg_propagate(data);
+
+      const int nThread = 24;
+
+      pthread_attr_t attr;
+      pthread_attr_init (&attr);
+      pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_JOINABLE);
+
+      thread_arg_t arg[nThread];
+	  pthread_t thread[nThread];
+
+      barrier_t * b = new_barrier (nThread);
+      float * vMin_iz = allocfloat1(data->nz);
+      pthread_mutex_t * mutex_update = malloc (data->nz * sizeof (pthread_mutex_t));
+
+      if (mutex_update == 0)
+      {
+    	  fprintf(stderr, "cannot allocate mutex-array\n");
+    	  exit(EXIT_FAILURE);
+      }
+
+      for (int j = 0; j < data->nz; ++j)
+			{
+				pthread_mutex_init (mutex_update + j, NULL);
+			}
+
+
+      for (int tid = 1; tid < nThread; ++tid)
+        {
+          arg[tid].data = data;
+          arg[tid].vMin_iz = vMin_iz;
+          arg[tid].tid = tid;
+          arg[tid].nThread = nThread;
+          arg[tid].barrier = b;
+          arg[tid].mutex_update = mutex_update;
+
+          pthread_create (thread + tid, &attr, owmg_propagate, arg + tid);
+      }
+
+      arg[0].data = data;
+      arg[0].vMin_iz = vMin_iz;
+      arg[0].tid = 0;
+      arg[0].nThread = nThread;
+      arg[0].barrier = b;
+      arg[0].mutex_update = mutex_update;
+
+      owmg_propagate(arg + 0);
+
+	  for (int tid = 1; tid < nThread; ++tid)
+	  {
+		pthread_join (thread[tid], NULL);
+	  }
+
+      for (int j = 0; j < data->nz; ++j)
+			{
+				pthread_mutex_destroy (mutex_update + j);
+			}
+
+      free (mutex_update);
+      free_barrier (b);
+      freefloat1 (vMin_iz);
       
-
       /* Output result */
-      for (int i = 0; i < data->nx*data->ny; i++) {
-	trout.ns=(unsigned short)data->nz;
-	trout.dt=(unsigned short)NINT(1000*data->dz);
+	  memset( (void *) trout.data, 0, nt * FSIZE);
+	  trout.ns=(unsigned short)data->nz;
+	  trout.dt=(unsigned short)NINT(1000*data->dz);
 
-	memset( (void *) trout.data, 0, nt * FSIZE);
-	for (int iz=0; iz<trout.ns; iz++) {
-	  trout.data[iz]=data->imageCubeUD[iz][0][i];
-	  //trout.data[iz]=data->imageCubeUD[iz][0][i]/data->imageCubeDD[iz][0][i];
-	}
-	
-	// fill tracl/tracr headers and put trace out
-	trout.tracl = trout.tracr = i + 1;
-	puttr(&trout);
+	  for (int i = 0; i < data->nx*data->ny; i++) {
+    	  for (int iz=0; iz<trout.ns; iz++) {
+    		  trout.data[iz]=data->imageCubeUD[iz][0][i];
+    		  //trout.data[iz]=data->imageCubeUD[iz][0][i]/data->imageCubeDD[iz][0][i];
+    	  }
+
+    	  // fill tracl/tracr headers and put trace out
+    	  trout.tracl = trout.tracr = i + 1;
+    	  puttr(&trout);
       }
 
       // Regularize first trace in next shot

@@ -2,6 +2,8 @@
 
 unsigned long long t1, t2, tModInit=0, tModRun=0;
 
+static pthread_mutex_t mutex_fftw = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex_avgList = PTHREAD_MUTEX_INITIALIZER;
 
 owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, float dx, float dy, float dz, 
 		    int iw1, int iw4, int nwH, float dw, float latSamplesPerWave, float vertSamplesPerWave)
@@ -78,7 +80,6 @@ owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, floa
 
   if (data->medium==ISO) {
     if (data->propagator==FFD3) {
-      data->mem = alloc_iso_ffd3(data->nxf, data->nyf);
     }
   } else if (data->medium==VTI) {
     if (data->propagator==FFD3) {
@@ -94,446 +95,507 @@ owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, floa
  
 }
 
-
-void owmg_propagate(owmgData *data)
+void * owmg_propagate(void * arg)
 {
-  int ix, iy, iz, iw, iwH, izMin;
-  int propagatorA, nzA, nxA, nyA, nxf, nyf, nxfA, nyfA;
-  int nxA_prev, nyA_prev;
-  float w, f, dzA, dxA, dyA, vMin, vMax, vP, vB, k0;
-  float *kx2A, *ky2A, *vMin_iz;
-  float **vP2D, **taperXY, **taperXYA;
-  float *srcPrev, *recPrev;
-  fftwf_complex *src2D, *rec2D;
-  fftwf_plan r1=NULL, s1=NULL, r2=NULL, s2=NULL;
-  unsigned long long res, tStart, tEnd, t1, t2, t11, t12;
-  unsigned long long tInit, tPlan, tInterpDown, tModel, tCoeff, tProp, tTaper, tCopy, tInterpUp, tImage1, tImage2;
-  unsigned long long tPS, tSSF, tFFD3;
-  timeFFD3 *time;
-  tInit = tPlan = tInterpDown = tModel = tCoeff = tProp = tTaper = tCopy = tInterpUp = tImage1 = tImage2 = 0;
-  tPS = tSSF = tFFD3 = 0;
+	owmgData * data = ((thread_arg_t *)arg)->data;
+	float * vMin_iz = ((thread_arg_t *)arg)->vMin_iz;
+	const int tid = ((thread_arg_t *)arg)->tid;
+	const int nThread = ((thread_arg_t *)arg)->nThread;
+	barrier_t * b = ((thread_arg_t *)arg)->barrier;
+	pthread_mutex_t * mutex_update = ((thread_arg_t *)arg)->mutex_update;
 
-  if (data->propagator == FFD3) {
-    time = (timeFFD3 *)malloc(sizeof(timeFFD3));
-    time->tConj1   = 0;
-    time->tXM1     = 0;
-    time->tXBound1 = 0;
-    time->tXTri1   = 0;
-    time->tXM2     = 0;
-    time->tXBound2 = 0;
-    time->tXTri2   = 0;
-    time->tYM1     = 0;
-    time->tYBound1 = 0;
-    time->tYTri1   = 0;
-    time->tYM2     = 0;
-    time->tYBound2 = 0;
-    time->tYTri2   = 0;
-    time->tConj2   = 0;
-  }
-  get_rtc_res_(&res);
-  get_rtc_(&t1);
-  get_rtc_(&tStart);
+	int ix, iy, iz, iw, iwH, izMin;
+	int propagatorA, nzA, nxA, nyA, nxf, nyf, nxfA, nyfA;
+	int nxA_prev, nyA_prev;
+	float w, f, dzA, dxA, dyA, vMin, vMax, vP, vB, k0;
+	float *kx2A, *ky2A;
+	float **vP2D, **taperXY, **taperXYA;
+	float *srcPrev, *recPrev;
+	fftwf_complex *src2D, *rec2D;
+	fftwf_plan r1=NULL, s1=NULL, r2=NULL, s2=NULL;
+	unsigned long long res, tStart, tEnd, t1, t2, t11, t12;
+	unsigned long long tInit, tPlan, tInterpDown, tModel, tCoeff, tProp, tTaper, tCopy, tInterpUp, tImage1, tImage2;
+	unsigned long long tPS, tSSF, tFFD3;
+	timeFFD3 *time;
+	tInit = tPlan = tInterpDown = tModel = tCoeff = tProp = tTaper = tCopy = tInterpUp = tImage1 = tImage2 = 0;
+	tPS = tSSF = tFFD3 = 0;
 
-  // Copy of data->nxf/nyf, they are used so frequent
-  nxf=data->nxf;
-  nyf=data->nyf;
-
-  // Allocate FFTW work storage
-  src2D   = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * nxf * nyf);
-  rec2D   = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * nxf * nyf);
-
-  // Allocate srcPrev and recPrev
-  srcPrev = allocfloat1(2*nyf*nxf);
-  recPrev = allocfloat1(2*nyf*nxf);
-
-  // Allocate model storage
-  vP2D    = allocfloat2(nyf, nxf);
-
-  // Allocate spatial taper
-  {
-    taperXY  = allocfloat2(nyf, nxf);
-    taperXYA = allocfloat2(nyf, nxf);
-
-    float alpha = 0.1;
-    int labsorb = 20;
-    getTaperXY(taperXY, nxf, nyf, data->nx, data->ny, alpha, labsorb);
-  }
-
-  // Allocate vectors of wavenumbers (nxf/nyf is the largest possible value)
-  kx2A=allocfloat1(nxf);
-  ky2A=allocfloat1(nyf);
-
-  // Allocate vMin vector and populate it
-  vMin_iz = allocfloat1(data->nz);
-  for ( iz=0; iz<data->nz; iz++ ) {
-    vMin_iz[iz] = minval(data->vPCube[iz][0], nxf*nyf);;
-  }
-
-  // Zero image cubes
-  for ( ix=0; ix<data->nx*data->ny*data->nz; ix++) {
-    data->imageCubeUD[0][0][ix]=0.0f;
-  }
-  for ( ix=0; ix<data->nx*data->ny*data->nz; ix++) {
-    data->imageCubeDD[0][0][ix]=0.0f;
-  }
-
-  // Convert from velocity to slowness
-  for ( ix=0; ix<data->nxf*data->nyf*data->nz; ix++) {
-    data->vPCube[0][0][ix] = 1.0f/data->vPCube[0][0][ix];
-  }
-
-  get_rtc_(&t2); tInit += t2-t1;
-    
-
-
-  izMin=0;
-
-  // Frequency loop
-  for ( iw=data->iw1; iw<=data->iw4; iw++) {
-
-    // Reset for new frequency
-    w=iw*data->dw;
-    f=w/(2.0f*(float)PI);
-    fprintf(stderr, "f=%f\n", f);
-    iwH=iw-data->iw1;
-    iz=izMin;
-    nxA_prev=0;
-    nyA_prev=0;
-    
-
-    // Depth loop
-    while ( iz<data->nz ) {
-
-      if ( (iz>20) && TRUE) {
-	nzA=1;
-	vMin=vMin_iz[iz];
-	while (TRUE) {
-	  if (nzA == data->nz-iz) {
-	    // Maximum depth reached
-	    break;
-	  }
-	  if (fminf(vMin, vMin_iz[iz+nzA])/(data->vertSamplesPerWave*f) < (nzA+1)*data->dz) {
-	    // Sampling criteria violated
-	    break;
-	  }
-	  // Safe to update vMin and nzA
-	  vMin=fminf(vMin, vMin_iz[iz+nzA]);
-	  nzA++;
+	if (data->propagator == FFD3) {
+		time = (timeFFD3 *)malloc(sizeof(timeFFD3));
+		time->tConj1   = 0;
+		time->tXM1     = 0;
+		time->tXBound1 = 0;
+		time->tXTri1   = 0;
+		time->tXM2     = 0;
+		time->tXBound2 = 0;
+		time->tXTri2   = 0;
+		time->tYM1     = 0;
+		time->tYBound1 = 0;
+		time->tYTri1   = 0;
+		time->tYM2     = 0;
+		time->tYBound2 = 0;
+		time->tYTri2   = 0;
+		time->tConj2   = 0;
 	}
-	dzA = data->dz*nzA;
-	dxA = dyA = vMin/(data->latSamplesPerWave*f);
-	
-	// Adujst nxA and nyA
-	nxA = ceilf(((data->nx-1)*data->dx)/dxA)+1;
-	nyA = ceilf(((data->ny-1)*data->dy)/dyA)+1;
-	nxfA = npfao(nxA,2*nxA);
-	nyfA = npfao(nyA,2*nyA);
-	nxA  = nxfA;
-	nyA  = nyfA;
-	dxA  = ((data->nx-1)*data->dx)/(nxA-1);
-	dyA  = ((data->ny-1)*data->dy)/(nyA-1);
-	if ( dxA<data->dx || nxA > data->nx) {
-	  dxA = data->dx;
-	  nxA = data->nx;
-	  nxA = data->nx;
-	  nxfA = nxf;
-	}
-	if ( dyA<data->dy || nyA > data->ny) {
-	  dyA = data->dy;
-	  nyA = data->ny;
-	  nyA = data->ny;
-	  nyfA = nyf;
-	}
-      } else {
-	dxA = data->dx;
-	nxA = data->nx;
-	nxfA = nxf;
-	dyA = data->dy;
-	nyA = data->ny;
-	nyfA = nyf;
-	nzA=1;
-	dzA=data->dz;
-      }
-
-
-      if (nxfA>nxf) fprintf(stderr, "ERROR: nxfA larger than nxf, nxfA=%i, nxf=%i\n", nxfA, nxf);
-      if (nyfA>nyf) fprintf(stderr, "ERROR: nyfA larger than nyf, nyfA=%i, nyf=%i\n", nyfA, nyf);
-
-      if ( (nxA != nxA_prev) || (nyA != nyA_prev) ) {
-         // Create new FFTW plans - crucial to do this before copy/interpolation
-         get_rtc_(&t1);
-         if (s1!=NULL) {
-            fftwf_destroy_plan(s1);
-            fftwf_destroy_plan(r1);
-            fftwf_destroy_plan(s2);
-            fftwf_destroy_plan(r2);
-         }
-         s1 = fftwf_plan_dft_2d(nyfA,nxfA,src2D,src2D,-1,FFTW_MEASURE);
-         r1 = fftwf_plan_dft_2d(nyfA,nxfA,rec2D,rec2D,-1,FFTW_MEASURE);
-         s2 = fftwf_plan_dft_2d(nyfA,nxfA,src2D,src2D, 1,FFTW_MEASURE);
-         r2 = fftwf_plan_dft_2d(nyfA,nxfA,rec2D,rec2D, 1,FFTW_MEASURE);
-         getWavenumbers(nxfA, dxA, kx2A);
-         getWavenumbers(nyfA, dyA, ky2A);
-         get_rtc_(&t2); tPlan += t2-t1;
-
-
-         // Interpolate/copy source and receiver slices from src/rec to src2D/rec2D
-         get_rtc_(&t1);
-         if ( (nxfA==nxf) && (nyfA==nyf)) {
-            memcpy(src2D,       data->src[iwH][0], nxf*nyf*sizeof(float complex));
-            memcpy(rec2D,       data->rec[iwH][0], nxf*nyf*sizeof(float complex));
-            memcpy(taperXYA[0], taperXY[0],        nxf*nyf*sizeof(float)        );
-         } else {
-            owmg_interp_down(nxA, nyA, nxfA, nyfA, nxf, nyf,
-                  dxA, dyA, data->dx, data->dy,
-                  src2D, data->src[iwH][0],
-                  rec2D, data->rec[iwH][0],
-                  taperXYA[0], taperXY[0]);
-         }
-         get_rtc_(&t2); tInterpDown += t2-t1;
-      }
-
-      // Copy velocity slice - replace with average mediums
-      get_rtc_(&t1);
-      if ( (nxfA==nxf) && (nyfA==nyf) ) {
-         // Copy first nzA
-         memcpy(vP2D[0], data->vPCube[iz][0], nxf*nyf*sizeof(float));
-         if ( nzA > 1 ) {
-            // Add all other nzA
-            for ( int i=1; i<nzA; i++ ) {
-               for ( ix=0; ix<nxf*nyf; ix++ ) {
-                  vP2D[0][ix] += data->vPCube[iz+i][0][ix];
-               }
-            }
-            // Normalize
-            float r = 1.0f/(float)nzA;
-            for ( ix=0; ix<nxf*nyf; ix++ ) {
-               vP2D[0][ix] *= r;
-            }
-         }
-      } else {
-         owmg_average(nxfA, nyfA, nzA, nxf, nyf, dxA, dyA, data->dx, data->dy,
-               data->avgList, vP2D, &data->vPCube[iz]);
-      }
-      get_rtc_(&t2); tModel += t2-t1;
-
-      // Minimum and maximum velocity of effective slice
-      vMin=1.0f/maxval(vP2D[0], nxfA*nyfA);
-      vMax=1.0f/minval(vP2D[0], nxfA*nyfA);
-
-      // Perturbation (relative vmin)
-      vP = (vMax-vMin)/vMin;
-
-      // Choose PS propagator with tiny lateral perturbations
-      propagatorA = (vP < 0.01) ? PS : data->propagator;
-
-
-      get_rtc_(&t1);
-      if (data->medium==ISO) {
-	if (propagatorA==FFD3) {
-	  vB=0.99f*vMin;
-	  memIsoFFD3 *mem = (memIsoFFD3 *)data->mem;
-	  iso_ffd3_co( vP2D[0], vB, nxfA, nyfA, mem->a1, mem->b1, mem->a2 );
-	} else if (propagatorA==FFD2) {
-
-	} else if (propagatorA==SSF) {
-	  vB=vMin;
-	} else if (propagatorA==PS) {
-	  vB=vMin;
-	}
-
-      } else if (data->medium==VTI) {
-	if (propagatorA==FFD3) {
-
-	} else if (propagatorA==FFD2) {
-
-	} else if (propagatorA==SSF) {
-
-	} else if (propagatorA==PS) {
-	}
-
-      } else if (data->medium==TTI) {
-	if (propagatorA==FFD3) {
-
-	} else if (propagatorA==FFD2) {
-
-	} else if (propagatorA==SSF) {
-
-	} else if (propagatorA==PS) {
-	}
-      
-      }
-      
-      k0=w/vB;
-      get_rtc_(&t2); tCoeff += t2-t1;
-
-
-
-      get_rtc_(&t1);
-      // *****************************
-      // ***    Isotropic model    ***
-      // *****************************
-      if (data->medium==ISO) {
-	switch (propagatorA) {
-	case FFD3:
-	  get_rtc_(&t11);//T
-	  iso_ps_ud(rec2D, src2D, nxfA, nyfA, kx2A, ky2A, k0, dzA, r1, s1, r2, s2);
-	  get_rtc_(&t12); tPS += t12-t11; get_rtc_(&t11);//T
-	  ssf_ud(rec2D, src2D, nxfA, nyfA, vP2D[0], vB, dzA, w );
-	  get_rtc_(&t12); tSSF += t12-t11;  get_rtc_(&t11);//T
-	  iso_ffd3_ud( (float complex *)src2D, (float complex *)rec2D, vP2D[0], (memIsoFFD3 *)data->mem,
-		       w, vB, dzA, dxA, dyA, nxfA, nyfA, time );
-	  get_rtc_(&t12); tFFD3 += t12-t11;//T
-	  break;
-	case PS:
-	  get_rtc_(&t11);
-	  iso_ps_ud(rec2D, src2D, nxfA, nyfA, kx2A, ky2A, k0, dzA, r1, s1, r2, s2);
-	  get_rtc_(&t12); tPS += t12-t11;
-	  break;
-	case SSF:
-	  get_rtc_(&t11);
-	  iso_ps_ud(rec2D, src2D, nxfA, nyfA, kx2A, ky2A, k0, dzA, r1, s1, r2, s2);
-	  get_rtc_(&t12); tPS += t12-t11; get_rtc_(&t11);
-	  ssf_ud(rec2D, src2D, nxfA, nyfA, vP2D[0], vB, dzA, w );
-	  get_rtc_(&t12); tSSF += t12-t11;
-	  break;
-	case FFD2:
-	  break;
-	}
-      }
-      get_rtc_(&t2); tProp += t2-t1;
-
-      // Taper result
-      get_rtc_(&t1);
-      for (ix=0; ix<nxfA*nyfA; ix++) {
-	rec2D[ix] *= taperXYA[0][ix];
-	src2D[ix] *= taperXYA[0][ix];
-      }
-      get_rtc_(&t2); tTaper += t2-t1;
-
-      // Take copy of previous wavefield if needed
-      get_rtc_(&t1);
-      if (nzA>1) {
-	memcpy(srcPrev, data->src[iwH][0], nxf*nyf*sizeof(float complex));
-	memcpy(recPrev, data->rec[iwH][0], nxf*nyf*sizeof(float complex));
-      }
-      get_rtc_(&t2); tCopy += t2-t1;
-
-      // Copy/interpolate from rec2D/src2D to rec/src
-      get_rtc_(&t1);
-      if ( (nxfA==nxf) && (nyfA==nyf)) {
-         memcpy(data->src[iwH][0], src2D, nxf*nyf*sizeof(float complex));
-         memcpy(data->rec[iwH][0], rec2D, nxf*nyf*sizeof(float complex));
-      } else {
-         owmg_interp_up(data->nx, data->ny, nxfA, nyfA, nxf, nyf,
-               dxA, dyA, data->dx, data->dy,
-               src2D, data->src[iwH][0],
-               rec2D, data->rec[iwH][0]);
-      }
-      get_rtc_(&t2); tInterpUp += t2-t1;
-
-
-      // Imaging condition and interpolation
-      {
-	// Image at last slice location (nzA)
+	get_rtc_res_(&res);
 	get_rtc_(&t1);
-	float *rec1Df = (float *)data->rec[iwH][0];
-	float *src1Df = (float *)data->src[iwH][0];
-	for ( iy=0; iy<data->ny; iy++ ) {
-	  for ( ix=0; ix<data->nx; ix++ ) {
-	    data->imageCubeUD[iz+nzA-1][iy][ix] += rec1Df[2*(iy*nxf+ix)]*src1Df[2*(iy*nxf+ix)]
-	      + rec1Df[2*(iy*nxf+ix)+1]*src1Df[2*(iy*nxf+ix)+1];
-	    data->imageCubeDD[iz+nzA-1][iy][ix] += src1Df[2*(iy*nxf+ix)]*src1Df[2*(iy*nxf+ix)]
-	      + src1Df[2*(iy*nxf+ix)+1]*src1Df[2*(iy*nxf+ix)+1];
-	  }
+	get_rtc_(&tStart);
+
+	// Copy of data->nxf/nyf, they are used so frequent
+	nxf=data->nxf;
+	nyf=data->nyf;
+
+	// Allocate FFTW work storage
+	src2D   = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * nxf * nyf);
+	rec2D   = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex) * nxf * nyf);
+
+	// Allocate srcPrev and recPrev
+	srcPrev = allocfloat1(2*nyf*nxf);
+	recPrev = allocfloat1(2*nyf*nxf);
+
+	// Allocate model storage
+	vP2D    = allocfloat2(nyf, nxf);
+
+	// Allocate spatial taper
+	{
+		taperXY  = allocfloat2(nyf, nxf);
+		taperXYA = allocfloat2(nyf, nxf);
+
+		float alpha = 0.1;
+		int labsorb = 20;
+		getTaperXY(taperXY, nxf, nyf, data->nx, data->ny, alpha, labsorb);
 	}
-	get_rtc_(&t2); tImage1 += t2-t1;
 
-	// Interpolate between
-	get_rtc_(&t1);
-	if (nzA>1) {
-	  for ( int i=1; i<nzA; i++ ) {
-	    float k1 = (float)i/(float)nzA;
-	    float k2 = 1.0f - k1;
-	    //fprintf(stderr, "Weights: k1=%f, k2=%f\n", k1, k2);
-	    for ( iy=0; iy<data->ny; iy++ ) {
-	      for ( ix=0; ix<data->nx; ix++ ) {
-		data->imageCubeUD[iz+i-1][iy][ix] += 
-		  (k2*recPrev[2*(iy*nxf+ix)] + k1*rec1Df[2*(iy*nxf+ix)])*(k2*srcPrev[2*(iy*nxf+ix)] + k1*src1Df[2*(iy*nxf+ix)])
-		  + (k2*recPrev[2*(iy*nxf+ix)+1] + k1*rec1Df[2*(iy*nxf+ix)+1])*(k2*srcPrev[2*(iy*nxf+ix)+1] +k1*src1Df[2*(iy*nxf+ix)+1]);
-		data->imageCubeDD[iz+i-1][iy][ix] += 
-		  (k2*srcPrev[2*(iy*nxf+ix)] + k1*src1Df[2*(iy*nxf+ix)])*(k2*srcPrev[2*(iy*nxf+ix)] + k1*src1Df[2*(iy*nxf+ix)])
-		  + (k2*srcPrev[2*(iy*nxf+ix)+1] + k1*src1Df[2*(iy*nxf+ix)+1])*(k2*srcPrev[2*(iy*nxf+ix)+1] +k1*src1Df[2*(iy*nxf+ix)+1]);
-	      }
-	    }
-	  }
+	// Allocate vectors of wavenumbers (nxf/nyf is the largest possible value)
+	kx2A=allocfloat1(nxf);
+	ky2A=allocfloat1(nyf);
+	get_rtc_(&t2); tInit += t2-t1;
+
+	memIsoFFD3 * mem = alloc_iso_ffd3(data->nxf, data->nyf);
+
+	// distributed init
+	{
+		const int first = ( tid      * data->nz + nThread - 1) / nThread;
+		const int last  = ((tid + 1) * data->nz + nThread - 1) / nThread;
+
+		// Convert from velocity to slowness and calculate vMin
+		for (int iz=first; iz<last; ++iz)
+		{
+			vMin_iz[iz] = data->vPCube[iz][0][0];
+
+			for (int ixy=0; ixy < data->nxf*data->nyf; ++ixy)
+			{
+				const float val = data->vPCube[iz][0][ixy];
+
+				if (val < vMin_iz[iz])
+				{
+					vMin_iz[iz] = val;
+				}
+
+				data->vPCube[iz][0][ixy] = 1.0f / val;
+			}
+		}
+
+		// Zero image cubes
+		for (int ix=data->nx*data->ny*first; ix<data->nx*data->ny*last; ix++) {
+			data->imageCubeUD[0][0][ix]=0.0;
+		}
+		for (int ix=data->nx*data->ny*first; ix<data->nx*data->ny*last; ix++) {
+			data->imageCubeDD[0][0][ix]=0.0;
+		}
 	}
-	get_rtc_(&t2); tImage2 += t2-t1;
-      }
 
-      
+	wait_barrier (b);
 
-      iz += nzA;
-      nxA_prev = nxA;
-      nyA_prev = nyA;
-    }
+	izMin=0;
 
-  } // end frequency loop over nz
+	// Frequency loop
+	for ( iw=data->iw1 + tid; iw<=data->iw4; iw += nThread) {
 
-  get_rtc_(&tEnd);
-
-  fprintf(stderr, "Init time          : %f\n", (double)tInit/res);
-  fprintf(stderr, "Plan time          : %f\n", (double)tPlan/res);
-  fprintf(stderr, "Interp down time   : %f\n", (double)tInterpDown/res);
-  fprintf(stderr, "Model average time : %f\n", (double)tModel/res);
-  fprintf(stderr, "    init time          : %f\n", (double)tModInit/res);
-  fprintf(stderr, "    run time           : %f\n", (double)tModRun/res);
-  fprintf(stderr, "Coefficient time   : %f\n", (double)tCoeff/res);
-  fprintf(stderr, "Propagation time   : %f\n", (double)tProp/res);
-  fprintf(stderr, "    PS   time          : %f\n", (double)tPS/res);
-  fprintf(stderr, "    SSF  time          : %f\n", (double)tSSF/res);
-  fprintf(stderr, "    FFD3 time          : %f\n", (double)tFFD3/res);
-  if (data->propagator == FFD3) {
-    fprintf(stderr, "        FFD3 conj 1       : %f\n", (double)time->tConj1/res);
-    fprintf(stderr, "        FFD3 X M1         : %f\n", (double)time->tXM1/res);
-    fprintf(stderr, "        FFD3 X boundary 1 : %f\n", (double)time->tXBound1/res);
-    fprintf(stderr, "        FFD3 X Tri 1      : %f\n", (double)time->tXTri1/res);
-    fprintf(stderr, "        FFD3 X M2         : %f\n", (double)time->tXM2/res);
-    fprintf(stderr, "        FFD3 X boundary 2 : %f\n", (double)time->tXBound2/res);
-    fprintf(stderr, "        FFD3 X Tri 2      : %f\n", (double)time->tXTri2/res);
-    fprintf(stderr, "        FFD3 Y M1         : %f\n", (double)time->tYM1/res);
-    fprintf(stderr, "        FFD3 Y boundary 1 : %f\n", (double)time->tYBound1/res);
-    fprintf(stderr, "        FFD3 Y Tri 1      : %f\n", (double)time->tYTri1/res);
-    fprintf(stderr, "        FFD3 Y M2         : %f\n", (double)time->tYM2/res);
-    fprintf(stderr, "        FFD3 Y boundary 2 : %f\n", (double)time->tYBound2/res);
-    fprintf(stderr, "        FFD3 Y Tri 2      : %f\n", (double)time->tYTri2/res);
-    fprintf(stderr, "        FFD3 conj 2       : %f\n", (double)time->tConj2/res);
-    free(time);
-  }
-  fprintf(stderr, "Taper time         : %f\n", (double)tTaper/res);
-  fprintf(stderr, "Copy time          : %f\n", (double)tCopy/res);
-  fprintf(stderr, "Interp up time     : %f\n", (double)tInterpUp/res);
-  fprintf(stderr, "Image time (ca)    : %f\n", (double)(tImage1+tImage2)/res);
-  fprintf(stderr, "    Image 1 time       : %f\n", (double)tImage1/res);
-  fprintf(stderr, "    Image 2 time       : %f\n", (double)tImage2/res);
-  fprintf(stderr, "Total time         : %f\n", (double)(tEnd-tStart)/res);
-
-  fftwf_destroy_plan(r1);
-  fftwf_destroy_plan(s1);
-  fftwf_destroy_plan(r2);
-  fftwf_destroy_plan(s2);
-  fftwf_free(rec2D);
-  fftwf_free(src2D);
-  freefloat2(vP2D);
-  freefloat2(taperXY);
-  freefloat2(taperXYA);
-  freefloat1(srcPrev);
-  freefloat1(recPrev);
-  freefloat1(kx2A);
-  freefloat1(ky2A);
+		// Reset for new frequency
+		w=iw*data->dw;
+		f=w/(2.0f*(float)PI);
+		fprintf(stderr, "[%3i] f=%f\n", tid, f);
+		iwH=iw-data->iw1;
+		iz=izMin;
+		nxA_prev=0;
+		nyA_prev=0;
 
 
-}
+		// Depth loop
+		while ( iz<data->nz ) {
+
+			if ( (iz>20) && TRUE) {
+				nzA=1;
+				vMin=vMin_iz[iz];
+				while (TRUE) {
+					if (nzA == data->nz-iz) {
+						// Maximum depth reached
+						break;
+					}
+					if (fminf(vMin, vMin_iz[iz+nzA])/(data->vertSamplesPerWave*f) < (nzA+1)*data->dz) {
+						// Sampling criteria violated
+						break;
+					}
+					// Safe to update vMin and nzA
+					vMin=fminf(vMin, vMin_iz[iz+nzA]);
+					nzA++;
+				}
+				dzA = data->dz*nzA;
+				dxA = dyA = vMin/(data->latSamplesPerWave*f);
+
+				// Adujst nxA and nyA
+				nxA = ceilf(((data->nx-1)*data->dx)/dxA)+1;
+				nyA = ceilf(((data->ny-1)*data->dy)/dyA)+1;
+				nxfA = npfao(nxA,2*nxA);
+				nyfA = npfao(nyA,2*nyA);
+				nxA  = nxfA;
+				nyA  = nyfA;
+				dxA  = ((data->nx-1)*data->dx)/(nxA-1);
+				dyA  = ((data->ny-1)*data->dy)/(nyA-1);
+				if ( dxA<data->dx || nxA > data->nx) {
+					dxA = data->dx;
+					nxA = data->nx;
+					nxA = data->nx;
+					nxfA = nxf;
+				}
+				if ( dyA<data->dy || nyA > data->ny) {
+					dyA = data->dy;
+					nyA = data->ny;
+					nyA = data->ny;
+					nyfA = nyf;
+				}
+			} else {
+				dxA = data->dx;
+				nxA = data->nx;
+				nxfA = nxf;
+				dyA = data->dy;
+				nyA = data->ny;
+				nyfA = nyf;
+				nzA=1;
+				dzA=data->dz;
+			}
+
+
+			if (nxfA>nxf) fprintf(stderr, "ERROR: nxfA larger than nxf, nxfA=%i, nxf=%i\n", nxfA, nxf);
+			if (nyfA>nyf) fprintf(stderr, "ERROR: nyfA larger than nyf, nyfA=%i, nyf=%i\n", nyfA, nyf);
+
+			if ( (nxA != nxA_prev) || (nyA != nyA_prev) ) {
+				// Create new FFTW plans - crucial to do this before copy/interpolation
+				get_rtc_(&t1);
+				pthread_mutex_lock (&mutex_fftw);
+				if (s1!=NULL) {
+					fftwf_destroy_plan(s1);
+					fftwf_destroy_plan(r1);
+					fftwf_destroy_plan(s2);
+					fftwf_destroy_plan(r2);
+				}
+				s1 = fftwf_plan_dft_2d(nyfA,nxfA,src2D,src2D,-1,FFTW_MEASURE);
+				r1 = fftwf_plan_dft_2d(nyfA,nxfA,rec2D,rec2D,-1,FFTW_MEASURE);
+				s2 = fftwf_plan_dft_2d(nyfA,nxfA,src2D,src2D, 1,FFTW_MEASURE);
+				r2 = fftwf_plan_dft_2d(nyfA,nxfA,rec2D,rec2D, 1,FFTW_MEASURE);
+				pthread_mutex_unlock (&mutex_fftw);
+				getWavenumbers(nxfA, dxA, kx2A);
+				getWavenumbers(nyfA, dyA, ky2A);
+				get_rtc_(&t2); tPlan += t2-t1;
+
+
+				// Interpolate/copy source and receiver slices from src/rec to src2D/rec2D
+				get_rtc_(&t1);
+				if ( (nxfA==nxf) && (nyfA==nyf)) {
+					memcpy(src2D,       data->src[iwH][0], nxf*nyf*sizeof(float complex));
+					memcpy(rec2D,       data->rec[iwH][0], nxf*nyf*sizeof(float complex));
+					memcpy(taperXYA[0], taperXY[0],        nxf*nyf*sizeof(float)        );
+				} else {
+					owmg_interp_down(nxA, nyA, nxfA, nyfA, nxf, nyf,
+							dxA, dyA, data->dx, data->dy,
+							src2D, data->src[iwH][0],
+							rec2D, data->rec[iwH][0],
+							taperXYA[0], taperXY[0]);
+				}
+				get_rtc_(&t2); tInterpDown += t2-t1;
+			}
+
+			// Copy velocity slice - replace with average mediums
+			get_rtc_(&t1);
+			if ( (nxfA==nxf) && (nyfA==nyf) ) {
+				// Copy first nzA
+				memcpy(vP2D[0], data->vPCube[iz][0], nxf*nyf*sizeof(float));
+
+				// Add all other nzA
+				for ( int i=1; i<nzA; i++ ) {
+					for ( ix=0; ix<nxf*nyf; ix++ ) {
+						vP2D[0][ix] += data->vPCube[iz+i][0][ix];
+					}
+				}
+			} else {
+				const int idx = (nyfA-1)*nxf+nxfA-1;
+
+				averageStruct * iAvg;
+
+				pthread_mutex_lock (&mutex_avgList);
+				iAvg = data->avgList[idx];
+				pthread_mutex_unlock (&mutex_avgList);
+
+				if (iAvg == 0)
+				{
+					iAvg = malloc(sizeof(averageStruct));
+
+					owmg_average(nxfA, nyfA, nzA, nxf, nyf, dxA, dyA, data->dx, data->dy, iAvg);
+
+					pthread_mutex_lock (&mutex_avgList);
+					if (data->avgList[idx] == 0)
+					{
+						data->avgList[idx] = iAvg;
+					}
+					pthread_mutex_unlock (&mutex_avgList);
+				}
+
+				get_rtc_(&t1);
+				for (int i_ix=0; i_ix<nxfA*nyfA; i_ix++ ) {
+					vP2D[0][i_ix]=0.0f;
+				}
+
+				for (int i=0; i<nzA; i++ ) {
+					for (ix=0; ix<iAvg->i; ix++ ) {
+						vP2D[0][iAvg->iA[ix]] += iAvg->w[ix] * data->vPCube[iz+i][0][iAvg->iOrg[ix]];
+					}
+				}
+				get_rtc_(&t2); tModRun += t2-t1;
+			}
+			// Normalize
+			float r = 1.0f/(float)nzA;
+			for ( ix=0; ix<nxf*nyf; ix++ ) {
+				vP2D[0][ix] *= r;
+			}
+			get_rtc_(&t2); tModel += t2-t1;
+
+			// Minimum and maximum velocity of effective slice
+			float min = 0.0f, max = 0.0f;
+			minmaxval (vP2D[0], nxfA * nyfA, &min, &max);
+
+			vMin = 1.0f/max;
+			vMax = 1.0f/min;
+
+			// Perturbation (relative vmin)
+			vP = (vMax-vMin)/vMin;
+
+			// Choose PS propagator with tiny lateral perturbations
+			propagatorA = (vP < 0.01) ? PS : data->propagator;
+
+
+			get_rtc_(&t1);
+			if (data->medium==ISO) {
+				if (propagatorA==FFD3) {
+					vB=0.99f*vMin;
+					iso_ffd3_co( vP2D[0], vB, nxfA, nyfA, mem->a1, mem->b1, mem->a2 );
+				} else if (propagatorA==FFD2) {
+
+				} else if (propagatorA==SSF) {
+					vB=vMin;
+				} else if (propagatorA==PS) {
+					vB=vMin;
+				}
+
+			} else if (data->medium==VTI) {
+				if (propagatorA==FFD3) {
+
+				} else if (propagatorA==FFD2) {
+
+				} else if (propagatorA==SSF) {
+
+				} else if (propagatorA==PS) {
+				}
+
+			} else if (data->medium==TTI) {
+				if (propagatorA==FFD3) {
+
+				} else if (propagatorA==FFD2) {
+
+				} else if (propagatorA==SSF) {
+
+				} else if (propagatorA==PS) {
+				}
+
+			}
+
+			k0=w/vB;
+			get_rtc_(&t2); tCoeff += t2-t1;
+
+
+
+			get_rtc_(&t1);
+			// *****************************
+			// ***    Isotropic model    ***
+			// *****************************
+			if (data->medium==ISO) {
+				switch (propagatorA) {
+				case FFD3:
+					get_rtc_(&t11);//T
+					iso_ps_ud(rec2D, src2D, nxfA, nyfA, kx2A, ky2A, k0, dzA, r1, s1, r2, s2);
+					get_rtc_(&t12); tPS += t12-t11; get_rtc_(&t11);//T
+					ssf_ud(rec2D, src2D, nxfA, nyfA, vP2D[0], vB, dzA, w );
+					get_rtc_(&t12); tSSF += t12-t11;  get_rtc_(&t11);//T
+					iso_ffd3_ud( (float complex *)src2D, (float complex *)rec2D, vP2D[0], mem,
+							w, vB, dzA, dxA, dyA, nxfA, nyfA, time );
+					get_rtc_(&t12); tFFD3 += t12-t11;//T
+					break;
+				case PS:
+					get_rtc_(&t11);
+					iso_ps_ud(rec2D, src2D, nxfA, nyfA, kx2A, ky2A, k0, dzA, r1, s1, r2, s2);
+					get_rtc_(&t12); tPS += t12-t11;
+					break;
+				case SSF:
+					get_rtc_(&t11);
+					iso_ps_ud(rec2D, src2D, nxfA, nyfA, kx2A, ky2A, k0, dzA, r1, s1, r2, s2);
+					get_rtc_(&t12); tPS += t12-t11; get_rtc_(&t11);
+					ssf_ud(rec2D, src2D, nxfA, nyfA, vP2D[0], vB, dzA, w );
+					get_rtc_(&t12); tSSF += t12-t11;
+					break;
+				case FFD2:
+					break;
+				}
+			}
+			get_rtc_(&t2); tProp += t2-t1;
+
+			// Taper result
+			get_rtc_(&t1);
+			for (ix=0; ix<nxfA*nyfA; ix++) {
+				rec2D[ix] *= taperXYA[0][ix];
+				src2D[ix] *= taperXYA[0][ix];
+			}
+			get_rtc_(&t2); tTaper += t2-t1;
+
+			// Take copy of previous wavefield if needed
+			get_rtc_(&t1);
+			if (nzA>1) {
+				memcpy(srcPrev, data->src[iwH][0], nxf*nyf*sizeof(float complex));
+				memcpy(recPrev, data->rec[iwH][0], nxf*nyf*sizeof(float complex));
+			}
+			get_rtc_(&t2); tCopy += t2-t1;
+
+			// Copy/interpolate from rec2D/src2D to rec/src
+			get_rtc_(&t1);
+			if ( (nxfA==nxf) && (nyfA==nyf)) {
+				memcpy(data->src[iwH][0], src2D, nxf*nyf*sizeof(float complex));
+				memcpy(data->rec[iwH][0], rec2D, nxf*nyf*sizeof(float complex));
+			} else {
+				owmg_interp_up(data->nx, data->ny, nxfA, nyfA, nxf, nyf,
+						dxA, dyA, data->dx, data->dy,
+						src2D, data->src[iwH][0],
+						rec2D, data->rec[iwH][0]);
+			}
+			get_rtc_(&t2); tInterpUp += t2-t1;
+
+
+			float *rec1Df = (float *)data->rec[iwH][0];
+			float *src1Df = (float *)data->src[iwH][0];
+
+			float * arrUD = data->imageCubeUD[0][0];
+			float * arrDD = data->imageCubeDD[0][0];
+
+			{
+				const int id = iz + nzA - 1;
+				int pos = data->ny * data->nx * id;
+			    pthread_mutex_lock (mutex_update + id);
+				for ( iy=0; iy<data->ny; ++iy) {
+					for ( ix=0; ix<data->nx; ix++, ++pos) {
+						const int a = 2 * (iy * nxf + ix);
+						arrUD[pos] += rec1Df[a]*src1Df[a] + rec1Df[a+1]*src1Df[a+1];
+						arrDD[pos] += src1Df[a]*src1Df[a] + src1Df[a+1]*src1Df[a+1];
+					}
+				}
+				pthread_mutex_unlock (mutex_update + id);
+
+				if (nzA>1) {
+					for ( int i=1; i<nzA; i++ ) {
+						const int id = iz + i - 1;
+						int pos = data->ny * data->nx * id;
+						float k1 = (float)i/(float)nzA;
+						float k2 = 1.0f - k1;
+						//fprintf(stderr, "Weights: k1=%f, k2=%f\n", k1, k2);
+						pthread_mutex_lock (mutex_update + id);
+						for ( iy=0; iy<data->ny; iy++ ) {
+							for ( ix=0; ix<data->nx; ix++, ++pos ) {
+								const int a = 2 * (iy * nxf + ix);
+								arrUD[pos] += (k2*recPrev[a  ] + k1*rec1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
+								           +  (k2*recPrev[a+1] + k1*rec1Df[a+1])*(k2*srcPrev[a+1] + k1*src1Df[a+1]);
+								arrDD[pos] += (k2*srcPrev[a  ] + k1*src1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
+							               +  (k2*srcPrev[a+1] + k1*src1Df[a+1])*(k2*srcPrev[a+1] + k1*src1Df[a+1]);
+							}
+						}
+						pthread_mutex_unlock (mutex_update + id);
+					}
+				}
+			}
+//			pthread_mutex_unlock (&mutex_update_all);
+
+			iz += nzA;
+			nxA_prev = nxA;
+			nyA_prev = nyA;
+		} // end depth loop
+
+	} // end frequency loop over nz
+
+	get_rtc_(&tEnd);
+
+#if 0
+	fprintf(stderr, "Init time          : %f\n", (double)tInit/res);
+	fprintf(stderr, "Plan time          : %f\n", (double)tPlan/res);
+	fprintf(stderr, "Interp down time   : %f\n", (double)tInterpDown/res);
+	fprintf(stderr, "Model average time : %f\n", (double)tModel/res);
+	fprintf(stderr, "    init time          : %f\n", (double)tModInit/res);
+	fprintf(stderr, "    run time           : %f\n", (double)tModRun/res);
+	fprintf(stderr, "Coefficient time   : %f\n", (double)tCoeff/res);
+	fprintf(stderr, "Propagation time   : %f\n", (double)tProp/res);
+	fprintf(stderr, "    PS   time          : %f\n", (double)tPS/res);
+	fprintf(stderr, "    SSF  time          : %f\n", (double)tSSF/res);
+	fprintf(stderr, "    FFD3 time          : %f\n", (double)tFFD3/res);
+	if (data->propagator == FFD3) {
+		fprintf(stderr, "        FFD3 conj 1       : %f\n", (double)time->tConj1/res);
+		fprintf(stderr, "        FFD3 X M1         : %f\n", (double)time->tXM1/res);
+		fprintf(stderr, "        FFD3 X boundary 1 : %f\n", (double)time->tXBound1/res);
+		fprintf(stderr, "        FFD3 X Tri 1      : %f\n", (double)time->tXTri1/res);
+		fprintf(stderr, "        FFD3 X M2         : %f\n", (double)time->tXM2/res);
+		fprintf(stderr, "        FFD3 X boundary 2 : %f\n", (double)time->tXBound2/res);
+		fprintf(stderr, "        FFD3 X Tri 2      : %f\n", (double)time->tXTri2/res);
+		fprintf(stderr, "        FFD3 Y M1         : %f\n", (double)time->tYM1/res);
+		fprintf(stderr, "        FFD3 Y boundary 1 : %f\n", (double)time->tYBound1/res);
+		fprintf(stderr, "        FFD3 Y Tri 1      : %f\n", (double)time->tYTri1/res);
+		fprintf(stderr, "        FFD3 Y M2         : %f\n", (double)time->tYM2/res);
+		fprintf(stderr, "        FFD3 Y boundary 2 : %f\n", (double)time->tYBound2/res);
+		fprintf(stderr, "        FFD3 Y Tri 2      : %f\n", (double)time->tYTri2/res);
+		fprintf(stderr, "        FFD3 conj 2       : %f\n", (double)time->tConj2/res);
+		free(time);
+	}
+	fprintf(stderr, "Taper time         : %f\n", (double)tTaper/res);
+	fprintf(stderr, "Copy time          : %f\n", (double)tCopy/res);
+	fprintf(stderr, "Interp up time     : %f\n", (double)tInterpUp/res);
+	fprintf(stderr, "Image time (ca)    : %f\n", (double)(tImage1+tImage2)/res);
+	fprintf(stderr, "    Image 1 time       : %f\n", (double)tImage1/res);
+	fprintf(stderr, "    Image 2 time       : %f\n", (double)tImage2/res);
+	fprintf(stderr, "Total time         : %f\n", (double)(tEnd-tStart)/res);
+#endif
+
+	pthread_mutex_lock (&mutex_fftw);
+	fftwf_destroy_plan(r1);
+	fftwf_destroy_plan(s1);
+	fftwf_destroy_plan(r2);
+	fftwf_destroy_plan(s2);
+	pthread_mutex_unlock (&mutex_fftw);
+	fftwf_free(rec2D);
+	fftwf_free(src2D);
+	freefloat2(vP2D);
+	freefloat2(taperXY);
+	freefloat2(taperXYA);
+	freefloat1(srcPrev);
+	freefloat1(recPrev);
+	freefloat1(kx2A);
+	freefloat1(ky2A);
+	free_iso_ffd3(mem);
+
+	return NULL;
+		}
 
 
 void owmg_finalize(owmgData *data)
@@ -555,7 +617,6 @@ void owmg_finalize(owmgData *data)
 
   if (data->medium==ISO) {
     if (data->propagator==FFD3) {
-      //free_iso_ffd3(data->mem); //Add TODO
     }
   } else if (data->medium==VTI) {
     if (data->propagator==FFD3) {
@@ -699,31 +760,25 @@ void owmg_interp_up(int nx, int ny, int nxfA, int nyfA, int nxf, int nyf,
 
 void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
 		  float dxA, float dyA, float dx, float dy,		  
-		  averageStruct **avgList, float **vP2D, float ***vPCube) {
+		  averageStruct *iAvg) {
 
   int ix, iy, ixA, iyA, iz, i, maxi;
   float **sumr;
-  averageStruct *iAvg;
   float rx, ry;
   unsigned long long t1, t2;
 
   get_rtc_(&t1);
   maxi = nxf*nyf + 2*nxf*nyfA + 2*nyf*nxfA;
 
-  if ( avgList[(nyfA-1)*nxf+nxfA-1] == NULL ) {
-
-    avgList[(nyfA-1)*nxf+nxfA-1] = iAvg = (averageStruct *)malloc(sizeof(averageStruct));
     iAvg->iA   = allocint1(maxi);
     iAvg->iOrg = allocint1(maxi);
     iAvg->w    = allocfloat1(maxi);
 
     sumr = allocfloat2(nyfA, nxfA);
 
-
     for ( ix=0; ix<nxfA*nyfA; ix++ ) {
       sumr[0][ix]=0.0f;
     }
-
 
     i=0;
     for ( iy=0; iy<nyf; iy++ ) {
@@ -818,23 +873,6 @@ void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
       fprintf(stderr, "i out of bounds, i=%i, max i=%i\n", i, maxi);
     }
     iAvg->i=i;
-  } else {
-    iAvg = avgList[(nyfA-1)*nxf+nxfA-1];
-  }
-  get_rtc_(&t2); tModInit += t2-t1;
-  
 
-  get_rtc_(&t1);
-  for ( ix=0; ix<nxfA*nyfA; ix++ ) {
-    vP2D[0][ix]=0.0f;
-  }
-  float w = 1.0f/(float)nzA;
-  for ( iz=0; iz<nzA; iz++ ) {
-    for ( ix=0; ix<iAvg->i; ix++ ) {
-      vP2D[0][iAvg->iA[ix]] += w*iAvg->w[ix]*vPCube[iz][0][iAvg->iOrg[ix]];
-    }
-  }
-  get_rtc_(&t2); tModRun += t2-t1;
-
-  
+    get_rtc_(&t2); tModInit += t2-t1;
 }
