@@ -11,7 +11,7 @@
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
-static fhg::com::io_service_pool pool (4);
+static fhg::com::io_service_pool pool (1);
 static fhg::com::kvs::server::kvsd *g_kvsd (0);
 
 void save_state (int s)
