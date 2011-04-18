@@ -88,7 +88,8 @@ namespace we { namespace mgmt {
       typedef std::vector<boost::thread *> thread_list_t;
 
       typedef detail::descriptor<activity_type, internal_id_type, external_id_type> descriptor_type;
-      typedef typename boost::unordered_map<internal_id_type, descriptor_type> activities_t;
+      typedef boost::shared_ptr<descriptor_type> descriptor_ptr;
+      typedef typename boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
 
       // manager thread
       typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
@@ -133,9 +134,10 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "submit (" << id << ", ...)");
 
         activity_type act = policy::codec::decode(bytes);
-        descriptor_type desc (generate_internal_id(), act);
-        desc.came_from_external_as (id);
-        desc.inject_input ();
+        descriptor_ptr desc
+          (new descriptor_type (generate_internal_id(), act));
+        desc->came_from_external_as (id);
+        desc->inject_input ();
 
         submit (desc);
       }
@@ -190,11 +192,11 @@ namespace we { namespace mgmt {
           internal_id_type int_id (map_to_internal (id));
           {
             lock_t lock(mutex_);
-            descriptor_type & desc (lookup (int_id));
+            descriptor_ptr desc (lookup (int_id));
             {
               activity_type act (policy::codec::decode (result));
-              desc.output (act.output());
-              DLOG(TRACE, "finished (" << desc.name() << ")-" << id << ": " << desc.show_output());
+              desc->output (act.output());
+              DLOG(TRACE, "finished (" << desc->name() << ")-" << id << ": " << desc->show_output());
             }
           }
 
@@ -204,7 +206,7 @@ namespace we { namespace mgmt {
         {
           LOG(ERROR, "trying to notify finished for unknown activity " << id);
         }
-          return true;
+        return true;
       }
 
       /**
@@ -321,23 +323,23 @@ namespace we { namespace mgmt {
           internal_id_type int_id (map_to_internal (id));
           {
             lock_t lock(mutex_);
-            const descriptor_type & desc (lookup (int_id));
+            descriptor_ptr desc (lookup (int_id));
             {
-              info.name = desc.name();
-              info.level = desc.activity().transition().is_internal();
-              if (desc.activity().is_suspended())
+              info.name = desc->name();
+              info.level = desc->activity().transition().is_internal();
+              if (desc->activity().is_suspended())
               {
                 info.status = activity_information_t::SUSPENDED;
               }
-              else if (desc.activity().is_cancelled())
+              else if (desc->activity().is_cancelled())
               {
                 info.status = activity_information_t::CANCELLED;
               }
-              else if (desc.activity().is_failed())
+              else if (desc->activity().is_failed())
               {
                 info.status = activity_information_t::FAILED;
               }
-              else if (desc.activity().is_finished())
+              else if (desc->activity().is_finished())
               {
                 info.status = activity_information_t::FINISHED;
               }
@@ -346,8 +348,10 @@ namespace we { namespace mgmt {
                 info.status = activity_information_t::UNDEFINED;
               }
 
-              info.data["in"]  = we::util::text_codec::encode(desc.activity().input());
-              info.data["out"] = we::util::text_codec::encode(desc.activity().output());
+              info.data["in"]  = we::util::text_codec::encode
+                (desc->activity().input());
+              info.data["out"] = we::util::text_codec::encode
+                (desc->activity().output());
             }
           }
         }
@@ -365,7 +369,7 @@ namespace we { namespace mgmt {
 
       status_type status(const external_id_type & id)
       {
-        return fhg::util::show (lookup (map_to_internal(id)));
+        return fhg::util::show (*lookup (map_to_internal(id)));
       }
 
       void print_statistics (std::ostream & s) const
@@ -411,13 +415,13 @@ namespace we { namespace mgmt {
       boost::function<bool (external_id_type const &, result_type const &)>  ext_failed;
       boost::function<bool (external_id_type const &)>                       ext_cancelled;
 
-      void submit (const descriptor_type & desc)
+      void submit (const descriptor_ptr & desc)
       {
-        policy::validator::validate (desc.activity());
+        policy::validator::validate (desc->activity());
         insert_activity(desc);
 
-        sig_submitted (this, desc.id());
-        post_execute_notification (desc.id());
+        sig_submitted (this, desc->id());
+        post_execute_notification (desc->id());
       }
 
       void add_map_to_internal ( const external_id_type & external_id
@@ -757,15 +761,15 @@ namespace we { namespace mgmt {
       inline
       void execute_externally (const internal_id_type & int_id)
       {
-        descriptor_type & desc (lookup (int_id));
+        descriptor_ptr desc (lookup (int_id));
 
         // create external id
         external_id_type ext_id ( generate_external_id() );
-        desc.sent_to_external_as (ext_id);
+        desc->sent_to_external_as (ext_id);
         add_map_to_internal (ext_id, int_id);
 
         // copy the activity and let it be handled internally on the next level
-        activity_t ext_act (desc.activity());
+        activity_t ext_act (desc->activity());
         ext_act.transition().set_internal(true);
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
@@ -787,17 +791,17 @@ namespace we { namespace mgmt {
 
           try
           {
-            descriptor_type & desc = lookup(active_id);
+            descriptor_ptr desc (lookup(active_id));
             DLOG(TRACE, "extractor-" << rank << " puts attention to activity " << active_id);
 
             // TODO: check status flags
-            if (! desc.is_alive ())
+            if (! desc->is_alive ())
             {
-              LOG(DEBUG, "activity (" << desc.name() << ")-" << active_id << " is on hold");
+              LOG(DEBUG, "activity (" << desc->name() << ")-" << active_id << " is on hold");
               continue;
             }
 
-            sig_executing (this, desc.id());
+            sig_executing (this, desc->id());
 
             try
             {
@@ -817,9 +821,9 @@ namespace we { namespace mgmt {
               LOG( ERROR
                  , "extractor-" << rank
                  << ": something went wrong during execution of: "
-                 << desc.name() << ": " << ex.what()
+                 << desc->name() << ": " << ex.what()
                  );
-              post_failed_notification (desc.id());
+              post_failed_notification (desc->id());
             }
           }
           catch (const exception::activity_not_found<internal_id_type> & ex)
@@ -832,52 +836,52 @@ namespace we { namespace mgmt {
 
       template <typename ExecPolicy>
       inline
-      void do_execute (descriptor_type & desc, ExecPolicy exec_policy, size_t rank)
+      void do_execute (descriptor_ptr desc, ExecPolicy exec_policy, size_t rank)
       {
-        switch (desc.execute (exec_policy))
+        switch (desc->execute (exec_policy))
         {
         case policy::exec_policy::EXTRACT:
           {
-            DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc.name());
+            DLOG(TRACE, "extractor-" << rank << " extracting from net: " << desc->name());
 
-            while (desc.enabled())
+            while (desc->enabled())
             {
-              descriptor_type child (desc.extract (generate_internal_id()));
-              child.inject_input ();
+              descriptor_ptr child (new descriptor_type(desc->extract(generate_internal_id())));
+              child->inject_input ();
 
-              DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc.name() << ")-" << desc.id()
-                  << ": (" << child.name() << ")-" << child.id() << " with input " << child.show_input());
+              DLOG(INFO, "extractor-" << rank << ": extracted from (" << desc->name() << ")-" << desc->id()
+                  << ": (" << child->name() << ")-" << child->id() << " with input " << child->show_input());
 
-              switch (child.execute (exec_policy))
+              switch (child->execute (exec_policy))
               {
               case policy::exec_policy::EXTRACT:
                 insert_activity(child);
-                post_execute_notification (child.id());
+                post_execute_notification (child->id());
                 break;
               case policy::exec_policy::INJECT:
-                child.finished();
-                DLOG(INFO, "extractor-" << rank << ": finished (" << child.name() << ")-" << child.id() << ": " << child.show_output());
-                desc.inject (child);
+                child->finished();
+                DLOG(INFO, "extractor-" << rank << ": finished (" << child->name() << ")-" << child->id() << ": " << child->show_output());
+                desc->inject (*child);
                 break;
               case policy::exec_policy::EXTERNAL:
                 insert_activity (child);
-                execute_externally (child.id());
+                execute_externally (child->id());
                 break;
               default:
-                LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child.name() << ")-" << child.id());
-                throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
+                LOG(FATAL, "extractor[" << rank << "] got strange classification for activity (" << child->name() << ")-" << child->id());
+                throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (*child));
               }
 
-              DLOG(TRACE, "extractor-" << rank << " done with child: " << child.id());
+              DLOG(TRACE, "extractor-" << rank << " done with child: " << child->id());
             }
 
-            DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc.child_count() << ")");
+            DLOG(TRACE, "extractor-" << rank << " done extracting (#children = " << desc->child_count() << ")");
 
 
-            if (desc.is_done ())
+            if (desc->is_done ())
             {
-              DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc.name() << ")-" << desc.id() << " is done");
-              active_nets_[rank].erase (desc.id());
+              DLOG(DEBUG, "extractor-" << rank << ": activity (" << desc->name() << ")-" << desc->id() << " is done");
+              active_nets_[rank].erase (desc->id());
               do_inject (desc);
             }
           }
@@ -886,11 +890,11 @@ namespace we { namespace mgmt {
           do_inject (desc);
           break;
         case policy::exec_policy::EXTERNAL:
-          DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc.id());
-          execute_externally (desc.id());
+          DLOG(TRACE, "extractor-" << rank << ": executing externally: " << desc->id());
+          execute_externally (desc->id());
           break;
         default:
-          LOG(FATAL, "extractor-" << rank << ": got strange classification for activity (" << desc.name() << ")-" << desc.id());
+          LOG(FATAL, "extractor-" << rank << ": got strange classification for activity (" << desc->name() << ")-" << desc->id());
           throw std::runtime_error ("extractor got strange classification for activity");
         }
       }
@@ -931,38 +935,38 @@ namespace we { namespace mgmt {
         DLOG(INFO, "injector-" << rank << " thread stopped...");
       }
 
-      void do_inject ( descriptor_type & desc )
+      void do_inject (descriptor_ptr desc)
       {
-        desc.finished();
-        DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << ": " << desc.show_output());
+        desc->finished();
+        DLOG(INFO, "finished (" << desc->name() << ")-" << desc->id() << ": " << desc->show_output());
 
-        if (desc.has_parent())
+        if (desc->has_parent())
         {
-          DLOG(INFO, "injecting (" << desc.name() << ")-" << desc.id()
-              << " into (" << lookup(desc.parent()).name() << ")-" << desc.parent()
-              << ": " << desc.show_output());
-          lookup (desc.parent()).inject
-            ( desc
+          DLOG(INFO, "injecting (" << desc->name() << ")-" << desc->id()
+              << " into (" << lookup(desc->parent())->name() << ")-" << desc->parent()
+              << ": " << desc->show_output());
+          lookup (desc->parent())->inject
+            ( *desc
             , boost::bind ( &this_type::post_activity_notification
                           , this
                           , _1
                           )
             );
         }
-        else if (desc.came_from_external())
+        else if (desc->came_from_external())
         {
-          DLOG(INFO, "finished (" << desc.name() << ")-" << desc.id() << " external-id := " << desc.from_external_id());
-          ext_finished (desc.from_external_id(), policy::codec::encode (desc.activity()));
+          DLOG(INFO, "finished (" << desc->name() << ")-" << desc->id() << " external-id := " << desc->from_external_id());
+          ext_finished (desc->from_external_id(), policy::codec::encode (desc->activity()));
         }
         else
         {
-          throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (desc));
+          throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (*desc));
         }
 
         if (sig_finished.connected())
           sig_finished ( this
-                       , desc.id()
-                       , policy::codec::encode(desc.activity())
+                       , desc->id()
+                       , policy::codec::encode(desc->activity())
                        );
         remove_activity (desc);
       }
@@ -1002,24 +1006,24 @@ namespace we { namespace mgmt {
         const internal_id_type internal_id (cmd.dat);
         try
         {
-          descriptor_type & desc (lookup(internal_id));
-          desc.failed();
+          descriptor_ptr desc (lookup(internal_id));
+          desc->failed();
 
-          DLOG(WARN, "failed (" << desc.name() << ")-" << desc.id());
-          sig_failed (this, internal_id, policy::codec::encode(desc.activity()));
+          DLOG(WARN, "failed (" << desc->name() << ")-" << desc->id());
+          sig_failed (this, internal_id, policy::codec::encode(desc->activity()));
 
-          if (desc.has_parent ())
+          if (desc->has_parent ())
           {
             // FIXME: handle failure in a meaningful way:
             //     - check failure reason
             //         - EAGAIN reschedule (had not been submitted yet)
             //         - ECRASH activity crashed (idempotence criteria)
-            lookup (desc.parent()).child_failed (desc, "TODO: child_failed reason");
-            post_cancel_activity_notification (desc.parent());
+            lookup (desc->parent())->child_failed(*desc, "TODO: child_failed reason");
+            post_cancel_activity_notification (desc->parent());
           }
-          else if (desc.came_from_external ())
+          else if (desc->came_from_external ())
           {
-            ext_failed ( desc.from_external_id()
+            ext_failed ( desc->from_external_id()
                        , "TODO: activity failed reason"
                        );
           }
@@ -1039,32 +1043,32 @@ namespace we { namespace mgmt {
       void activity_cancelled(const cmd_t & cmd)
       {
         const internal_id_type internal_id (cmd.dat);
-        descriptor_type & desc (lookup(internal_id));
-        desc.cancelled();
+        descriptor_ptr desc (lookup(internal_id));
+        desc->cancelled();
 
-        DLOG(INFO, "cancelled (" << desc.name() << ")-" << desc.id());
-        if (desc.has_parent ())
+        DLOG(INFO, "cancelled (" << desc->name() << ")-" << desc->id());
+        if (desc->has_parent ())
         {
-          descriptor_type & parent (lookup (desc.parent()));
-          parent.child_cancelled (desc, "TODO: child cancelled reason");
+          descriptor_ptr parent (lookup (desc->parent()));
+          parent->child_cancelled(*desc, "TODO: child cancelled reason");
 
-          if (! parent.has_children ())
+          if (! parent->has_children ())
           {
-            post_cancelled_notification (parent.id());
+            post_cancelled_notification (parent->id());
           }
         }
-        else if (desc.came_from_external ())
+        else if (desc->came_from_external ())
         {
-          ext_cancelled (desc.from_external_id());
+          ext_cancelled (desc->from_external_id());
         }
         else
         {
-          throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (desc));
+          throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (*desc));
         }
 
         sig_cancelled ( this
                       , internal_id
-                      , policy::codec::encode(desc.activity())
+                      , policy::codec::encode(desc->activity())
                       );
 
         remove_activity (desc);
@@ -1073,65 +1077,65 @@ namespace we { namespace mgmt {
       void cancel_activity(const cmd_t & cmd)
       {
         const internal_id_type internal_id (cmd.dat);
-        descriptor_type & desc (lookup(internal_id));
+        descriptor_ptr desc (lookup(internal_id));
 
-        if (desc.has_children())
+        if (desc->has_children())
         {
-          desc.cancel
+          desc->cancel
             ( boost::bind ( &this_type::post_cancel_activity_notification
                           , this
                           , _1
                           )
             );
         }
-        else if (desc.sent_to_external())
+        else if (desc->sent_to_external())
         {
-          ext_cancel ( desc.to_external_id(), "NO REASON GIVEN" );
+          ext_cancel ( desc->to_external_id(), "NO REASON GIVEN" );
         }
         else
         {
-          post_cancelled_notification (desc.id());
+          post_cancelled_notification (desc->id());
         }
       }
 
       void suspend_activity(const cmd_t & cmd)
       {
-        lookup(cmd.dat).suspend();
+        lookup(cmd.dat)->suspend();
         sig_suspended (this, cmd.dat);
       }
 
-      inline void insert_activity(const descriptor_type & desc)
+      inline void insert_activity(const descriptor_ptr & desc)
       {
         lock_t lock (mutex_);
-        DLOG(TRACE, "inserting activity " << desc.id());
+        DLOG(TRACE, "inserting activity " << desc->id());
 
-        activities_.insert(std::make_pair(desc.id(), desc));
-        if (desc.came_from_external())
+        activities_.insert(std::make_pair(desc->id(), desc));
+        if (desc->came_from_external())
         {
-          add_map_to_internal (desc.from_external_id(), desc.id());
+          add_map_to_internal (desc->from_external_id(), desc->id());
         }
       }
 
-      inline void remove_activity(const descriptor_type & desc)
+      inline void remove_activity(const descriptor_ptr & desc)
       {
         lock_t lock (mutex_);
-        DLOG(TRACE, "removing activity " << desc.id());
+        DLOG(TRACE, "removing activity " << desc->id());
 
-        if (desc.has_children())
+        if (desc->has_children())
           throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
-        if (desc.sent_to_external())
+        if (desc->sent_to_external())
         {
-          del_map_to_internal (desc.to_external_id(), desc.id());
+          del_map_to_internal (desc->to_external_id(), desc->id());
         }
-        if (desc.came_from_external())
+        if (desc->came_from_external())
         {
-          del_map_to_internal (desc.from_external_id(), desc.id());
+          del_map_to_internal (desc->from_external_id(), desc->id());
         }
 
-        activities_.erase (desc.id());
+        activities_.erase (desc->id());
       }
 
-      inline descriptor_type & lookup(const internal_id_type & id)
+      inline descriptor_ptr lookup(const internal_id_type & id)
       {
         lock_t (mutex_);
         typename activities_t::iterator a = activities_.find(id);
@@ -1139,7 +1143,7 @@ namespace we { namespace mgmt {
         return a->second;
       }
 
-      inline const descriptor_type & lookup(const internal_id_type & id) const
+      inline const descriptor_ptr & lookup(const internal_id_type & id) const
       {
         lock_t (mutex_);
         typename activities_t::const_iterator a = activities_.find(id);
@@ -1149,8 +1153,12 @@ namespace we { namespace mgmt {
 
       friend class boost::serialization::access;
       template<class Archive>
-      void serialize (Archive &, const unsigned int)
+      void serialize (Archive & ar, const unsigned int)
       {
+        /*
+        ar & BOOST_SERIALIZATION_MAKE_NVP(activities_);
+        ar & BOOST_SERIALIZATION_MAKE_NVP(ext_to_int_);
+        */
       }
     };
   }
