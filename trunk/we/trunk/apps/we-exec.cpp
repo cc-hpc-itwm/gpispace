@@ -33,67 +33,81 @@ static std::vector<id_type> jobs;
 static std::set<layer_id_type> layer_jobs;
 static boost::recursive_mutex mutex;
 typedef boost::unique_lock<boost::recursive_mutex> lock_t;
+static bool verbose (false);
 
 // observe workflow engine
 static
-void observe_submitted (const layer_t *, layer_id_type const & id)
+void observe_submitted (const layer_t *l, layer_id_type const & id)
 {
-  lock_t lock(mutex);
+  {
+    lock_t lock(mutex);
 
-  std::cerr << "submitted: " << id << std::endl;
-  layer_jobs.insert (id);
+    std::cerr << "submitted: " << id << std::endl;
+    layer_jobs.insert (id);
+  }
+
+  if (verbose)
+    l->print_statistics(std::cerr);
 }
 
 static
-void observe_finished (const layer_t *, layer_id_type const & id, std::string const &s)
+void observe_finished (const layer_t *l, layer_id_type const & id, std::string const &s)
 {
-  lock_t lock(mutex);
-
-  if (layer_jobs.find (id) != layer_jobs.end())
   {
-    layer_jobs.erase (id);
-    we::activity_t act (layer_t::policy::codec::decode (s));
-    std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
+    lock_t lock(mutex);
+
+    if (layer_jobs.find (id) != layer_jobs.end())
+    {
+      layer_jobs.erase (id);
+      we::activity_t act (layer_t::policy::codec::decode (s));
+      std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
+    }
   }
+
+  if (verbose)
+    l->print_statistics(std::cerr);
 }
 static
 void observe_failed (const layer_t *l, layer_id_type const & id, std::string const &s)
 {
-  lock_t lock(mutex);
+  {
+    lock_t lock(mutex);
 
-  if (layer_jobs.find (id) != layer_jobs.end())
-  {
-    layer_jobs.erase (id);
-    we::activity_t act (layer_t::policy::codec::decode (s));
-    std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
+    if (layer_jobs.find (id) != layer_jobs.end())
+    {
+      layer_jobs.erase (id);
+      we::activity_t act (layer_t::policy::codec::decode (s));
+      std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
+    }
   }
-  else
-  {
+
+  if (verbose)
     l->print_statistics(std::cerr);
-  }
 }
 static
 void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string const &s)
 {
-  lock_t lock(mutex);
+  {
+    lock_t lock(mutex);
 
-  if (layer_jobs.find (id) != layer_jobs.end())
-  {
-    layer_jobs.erase (id);
-    we::activity_t act (layer_t::policy::codec::decode (s));
-    std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
+    if (layer_jobs.find (id) != layer_jobs.end())
+    {
+      layer_jobs.erase (id);
+      we::activity_t act (layer_t::policy::codec::decode (s));
+      std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
+    }
   }
-  else
-  {
+
+  if (verbose)
     l->print_statistics(std::cerr);
-  }
 }
 
 static
 void observe_executing (const layer_t *l, layer_id_type const & id)
 {
   std::cerr << "activity executing: id := " << id << std::endl;
-  l->print_statistics(std::cerr);
+  if (verbose)
+    l->print_statistics(std::cerr);
 }
 
 int main (int argc, char **argv)
@@ -122,9 +136,15 @@ int main (int argc, char **argv)
     ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity: port=<value>")
     ;
 
+  po::positional_options_description p;
+  p.add("input", -1);
+
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
+  po::store( po::command_line_parser(argc, argv)
+           . options(desc).positional(p).run()
+           , vm
+           );
+  po::notify (vm);
 
   if (vm.count("help"))
     {
@@ -160,6 +180,7 @@ int main (int argc, char **argv)
 
   if (vm.count ("verbose"))
   {
+    verbose = true;
     mgmt_layer.sig_executing.connect ( &observe_executing );
   }
 
