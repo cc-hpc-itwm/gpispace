@@ -241,7 +241,6 @@ namespace test {
       }
       catch (std::exception const &ex)
       {
-        std::cerr << "error in layer: " << ex.what() << std::endl;
         return false;
       }
     }
