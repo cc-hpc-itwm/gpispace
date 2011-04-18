@@ -40,7 +40,7 @@
 	<module name="fail" function="void maybefail (config)">
 	  <cinclude href="stdlib.h"/>
 	  <code><![CDATA[
-	  int seed (42);
+	  unsigned int seed (42);
 	  // int seed (time());
 	  for (size_t i = 0 ; i < config.N ; ++i)
 	  {
@@ -53,7 +53,8 @@
 	         ("app_fail::maybe_fail failed due to the butterfly effect");
 	    }
 	  }
-	  ]]</code>
+	  return control();
+	  ]]></code>
 	</module>
       </defun>
 
