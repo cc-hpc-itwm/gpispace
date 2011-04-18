@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <pnetc/op/asian/run.hpp>
 #include <sstream>
 #include <process.hpp>
@@ -10,41 +12,49 @@ namespace asian
                   , const int tid
                   )
   {
-    std::ostringstream str;
+    try
+    {
+      std::ostringstream str;
 
-    str << "S = " << sums.param.S << std::endl;
-    str << "K = " << sums.param.K << std::endl;
-    str << "T = " << sums.param.T << std::endl;
-    str << "sigma = " << sums.param.sigma << std::endl;
-    str << "r = " << sums.param.r << std::endl;
-    str << "d = " << sums.param.d << std::endl;
-    str << "FirstFixing = " << sums.param.FirstFixing << std::endl;
-    str << "FixingsProJahr = " << sums.param.FixingsProJahr << std::endl;
-    str << "AnzahlderDividende = " << sums.param.AnzahlderDividende << std::endl;
-    str << "n = " << sums.param.iterations_per_run << std::endl;
+      str << "S = " << sums.param.S << std::endl;
+      str << "K = " << sums.param.K << std::endl;
+      str << "T = " << sums.param.T << std::endl;
+      str << "sigma = " << sums.param.sigma << std::endl;
+      str << "r = " << sums.param.r << std::endl;
+      str << "d = " << sums.param.d << std::endl;
+      str << "FirstFixing = " << sums.param.FirstFixing << std::endl;
+      str << "FixingsProJahr = " << sums.param.FixingsProJahr << std::endl;
+      str << "AnzahlderDividende = " << sums.param.AnzahlderDividende << std::endl;
+      str << "n = " << sums.param.iterations_per_run << std::endl;
 
-    const std::size_t s (str.str().size());
+      const std::size_t s (str.str().size());
 
-    char result[1024];
+      char result[1024];
 
-    const std::size_t written
-      ( process::execute ( sums.param.bin
-                         , str.str().c_str()
-                         , s
-                         , result
-                         , 1024
-                         )
-      );
+      const std::size_t written
+        ( process::execute ( sums.param.bin
+                           , str.str().c_str()
+                           , s
+                           , result
+                           , 1024
+                           )
+        );
 
-    std::istringstream is (std::string (result, written));
-    std::string dummy;
+      std::istringstream is (std::string (result, written));
+      std::string dummy;
 
-    is >> dummy;
-    is >> dummy;
-    is >> sums.sum1;
-    is >> dummy;
-    is >> dummy;
-    is >> sums.sum2;
+      is >> dummy;
+      is >> dummy;
+      is >> sums.sum1;
+      is >> dummy;
+      is >> dummy;
+      is >> sums.sum2;
+    }
+    catch (std::exception const & ex)
+    {
+      sums.sum1 = std::numeric_limits<double>::quiet_NaN();
+      sums.sum2 = std::numeric_limits<double>::quiet_NaN();
+    }
   }
 
   ::pnetc::type::sums::sums run ( const ::pnetc::type::param::param & param
@@ -82,6 +92,13 @@ namespace asian
 
     for (int tid (1); tid < nThread; ++tid)
       {
+        if (  std::numeric_limits<double>::quiet_NaN() == sums[tid].sum1
+           || std::numeric_limits<double>::quiet_NaN() == sums[tid].sum2
+           )
+        {
+          throw std::runtime_error ("execution failed: got NaN");
+        }
+
         sums[0].sum1 += sums[tid].sum1;
         sums[0].sum2 += sums[tid].sum2;
       }
