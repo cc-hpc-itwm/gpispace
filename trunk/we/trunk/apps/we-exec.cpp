@@ -57,16 +57,36 @@ void observe_finished (const layer_t *, layer_id_type const & id, std::string co
   }
 }
 static
-void observe_failed (const layer_t *l, layer_id_type const & id, std::string const &)
+void observe_failed (const layer_t *l, layer_id_type const & id, std::string const &s)
 {
-  std::cerr << "activity failed: id := " << id << std::endl;
-  l->print_statistics(std::cerr);
+  lock_t lock(mutex);
+
+  if (layer_jobs.find (id) != layer_jobs.end())
+  {
+    layer_jobs.erase (id);
+    we::activity_t act (layer_t::policy::codec::decode (s));
+    std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
+  }
+  else
+  {
+    l->print_statistics(std::cerr);
+  }
 }
 static
-void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string const &)
+void observe_cancelled (const layer_t *l, layer_id_type const & id, std::string const &s)
 {
-  std::cerr << "activity cancelled: id := " << id << std::endl;
-  l->print_statistics(std::cerr);
+  lock_t lock(mutex);
+
+  if (layer_jobs.find (id) != layer_jobs.end())
+  {
+    layer_jobs.erase (id);
+    we::activity_t act (layer_t::policy::codec::decode (s));
+    std::cerr << "job cancelled: " << act.transition().name() << "-" << id << std::endl;
+  }
+  else
+  {
+    l->print_statistics(std::cerr);
+  }
 }
 
 static
