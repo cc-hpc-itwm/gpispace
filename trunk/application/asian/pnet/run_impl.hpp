@@ -92,9 +92,7 @@ namespace asian
 
     for (int tid (1); tid < nThread; ++tid)
       {
-        if (  std::numeric_limits<double>::quiet_NaN() == sums[tid].sum1
-           || std::numeric_limits<double>::quiet_NaN() == sums[tid].sum2
-           )
+        if (isnan(sums[tid].sum1) || isnan(sums[tid].sum2))
         {
           throw std::runtime_error ("execution failed: got NaN");
         }
