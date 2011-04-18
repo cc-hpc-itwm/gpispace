@@ -2,31 +2,28 @@
 #define WINDOWAPPENDER_HPP
 
 #include <fhglog/Appender.hpp>
-
-#include <QApplication>
-
-class MonitorWindow;
+#include <boost/function.hpp>
 
 class WindowAppender : public fhg::log::Appender
 {
 public:
-  explicit
-  WindowAppender (MonitorWindow *win, int typ)
-    : fhg::log::Appender ("gui")
-    , m_win (win)
-    , m_typ (typ)
+  typedef boost::function<void (fhg::log::LogEvent const &)> event_handler_t;
+
+  template <typename F>
+  WindowAppender (F handler)
+    : fhg::log::Appender ("event-handler")
+    , m_handler (handler)
  {}
 
   void append (fhg::log::LogEvent const &evt)
   {
-    QApplication::postEvent (m_win, new LogEventWrapper(m_typ, evt));
+    m_handler(evt);
   }
 
   void flush()
   {}
 private:
-  MonitorWindow *m_win;
-  int m_typ;
+  event_handler_t m_handler;
 };
 
 #endif // WINDOWAPPENDER_HPP

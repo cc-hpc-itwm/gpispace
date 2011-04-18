@@ -12,8 +12,8 @@
 
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
-//#include <sdpa/engine/IWorkflowEngine.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/bind.hpp>
 
 #include <we/we.hpp>
 #include <we/util/codec.hpp>
@@ -21,6 +21,9 @@
 
 using namespace std;
 using namespace boost;
+
+static const int EXTERNAL_EVENT_EXECUTION = 1001;
+static const int EXTERNAL_EVENT_LOGGING = 1002;
 
 MonitorWindow::MonitorWindow( unsigned short exe_port
                             , unsigned short log_port
@@ -41,13 +44,35 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
     m_exe_server = logserver_t
         (new fhg::log::remote::LogServer
-         ( fhg::log::Appender::ptr_t(new WindowAppender(this, 1001))
-         , m_io_service, exe_port));
+            (fhg::log::Appender::ptr_t
+                (new WindowAppender
+                    (boost::bind
+                        ( &MonitorWindow::handle_external_event
+                        , this
+                        , EXTERNAL_EVENT_EXECUTION
+                        , _1
+                        )
+                    )
+                )
+            , m_io_service, exe_port
+            )
+        );
 
     m_log_server = logserver_t
         (new fhg::log::remote::LogServer
-         ( fhg::log::Appender::ptr_t(new WindowAppender(this, 1002))
-         , m_io_service, log_port));
+            (fhg::log::Appender::ptr_t
+                (new WindowAppender
+                    (boost::bind
+                        ( &MonitorWindow::handle_external_event
+                        , this
+                        , EXTERNAL_EVENT_LOGGING
+                        , _1
+                        )
+                    )
+                )
+            , m_io_service, log_port
+            )
+        );
 
     m_io_thread = thread_t
         (new boost::thread
@@ -346,6 +371,14 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
     ui->m_log_table->setRowHidden (row, true);
   else
     ui->m_log_table->setRowHidden (row, false);
+}
+
+void
+MonitorWindow::handle_external_event ( int type
+                                     , const fhg::log::LogEvent & evt
+                                     )
+{
+  QApplication::postEvent (this, new LogEventWrapper(type, evt));
 }
 
 bool

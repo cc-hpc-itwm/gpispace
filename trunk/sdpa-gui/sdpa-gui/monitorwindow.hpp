@@ -44,6 +44,8 @@ public slots:
   void clearActivityLog();
 
 private:
+  void handle_external_event (int type, const fhg::log::LogEvent &);
+
     bool event (QEvent *event);
 
   void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
