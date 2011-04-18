@@ -66,32 +66,21 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
     {
       std::stringstream sstr(msg);
       boost::archive::text_iarchive ia(sstr);
-
       ia & evt;
-    }
-    catch (const std::exception &ex)
-    {
-      LOG(ERROR, "could not parse message: " << ex.what());
-      DLOG(DEBUG, "message was: " << msg);
-      goto out;
-    }
 
-    {
-      // FIXME: think about a better way to introduce some kind of "trace"
-      // the following is only meaningful for a flat hierarchy of logservers
-      std::ostringstream ostr;
-      ostr << evt.logged_via() << "@" << sender_endpoint_;
-      evt.logged_via(ostr.str());
-    }
+      {
+        // FIXME: think about a better way to introduce some kind of "trace"
+        // the following is only meaningful for a flat hierarchy of logservers
+        std::ostringstream ostr;
+        ostr << evt.logged_via() << "@" << sender_endpoint_;
+        evt.logged_via(ostr.str());
+      }
 
-    try
-    {
       appender_->append(evt);
     }
     catch (std::exception const & ex)
     {
       LOG(ERROR, "could not append log event: " << ex.what());
-      goto out;
     }
   }
   else
@@ -99,7 +88,6 @@ void LogServer::handle_receive_from(const boost::system::error_code &error
     LOG(ERROR, "error during receive: " << error);
   }
 
-out:
   socket_.async_receive_from( boost::asio::buffer(data_, max_length)
                             , sender_endpoint_
                             , boost::bind( &LogServer::handle_receive_from
