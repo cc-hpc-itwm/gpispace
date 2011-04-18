@@ -400,7 +400,7 @@ namespace we { namespace mgmt {
             ; ++id
             )
         {
-          s << activities_.at(*id);
+          s << *activities_.at(*id);
           s << std::endl;
         }
 
@@ -496,9 +496,9 @@ namespace we { namespace mgmt {
       layer()
         : sig_submitted("sig_submitted")
         , sig_finished("sig_finished")
-        , sig_failed("sig_finished")
-        , sig_cancelled("sig_finished")
-        , sig_executing("sig_finished")
+        , sig_failed("sig_failed")
+        , sig_cancelled("sig_cancelled")
+        , sig_executing("sig_executing")
         , sig_suspended("sig_suspended")
         , sig_resumed("sig_resumed")
         , internal_id_gen_(&internal_id_traits::generate)
@@ -510,9 +510,9 @@ namespace we { namespace mgmt {
       layer(E * exec_layer, G gen)
         : sig_submitted("sig_submitted")
         , sig_finished("sig_finished")
-        , sig_failed("sig_finished")
-        , sig_cancelled("sig_finished")
-        , sig_executing("sig_finished")
+        , sig_failed("sig_failed")
+        , sig_cancelled("sig_cancelled")
+        , sig_executing("sig_executing")
         , sig_suspended("sig_suspended")
         , sig_resumed("sig_resumed")
         , external_id_gen_(gen)
