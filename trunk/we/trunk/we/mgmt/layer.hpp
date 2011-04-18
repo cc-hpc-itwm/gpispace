@@ -1125,7 +1125,7 @@ namespace we { namespace mgmt {
           }
           else if (desc->sent_to_external())
           {
-            ext_cancel (desc->to_external_id(), "WFE needs to cancel");
+            ext_cancel (desc->to_external_id(), "WFE policy cancel-on-failure in place");
           }
           else
           {
