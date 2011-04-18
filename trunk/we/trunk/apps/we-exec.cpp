@@ -4,6 +4,9 @@
 
 #include <stdint.h>
 #include <fhglog/fhglog.hpp>
+#include <fhg/util/split.hpp>
+#include <fhg/util/getenv.hpp>
+
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/type/literal.hpp>
@@ -12,6 +15,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
+#include <boost/foreach.hpp>
 #include "test_layer.hpp"
 
 using namespace we::mgmt;
@@ -88,7 +92,11 @@ int main (int argc, char **argv)
     ("help,h", "this message")
     ("verbose,v", "be verbose")
     ("net", po::value<std::string>(&path_to_act)->default_value("-"), "path to encoded activity or - for stdin")
-    ("mod-path,L", po::value<std::string>(&mod_path)->default_value("/scratch/KDM/"), "where can modules be located")
+    ( "mod-path,L"
+    , po::value<std::string>(&mod_path)->default_value
+        (fhg::util::getenv("PC_LIBRARY_PATH", "."))
+    , "where can modules be located"
+    )
     ("worker", po::value<std::size_t>(&num_worker)->default_value(8), "number of workers")
     ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
     ("input,i", po::value<std::vector<std::string> >(&input_spec), "input token to the activity: port=<value>")
@@ -115,7 +123,14 @@ int main (int argc, char **argv)
     daemon.loader().load (*m);
   }
 
-  daemon.loader().append_search_path (mod_path);
+  {
+    std::vector<std::string> search_path;
+    fhg::log::split (mod_path, ":", std::back_inserter (search_path));
+    BOOST_FOREACH (std::string const &p, search_path)
+    {
+      daemon.loader().append_search_path (p);
+    }
+  }
   daemon_type::layer_type & mgmt_layer = daemon.layer();
 
   mgmt_layer.sig_submitted.connect ( &observe_submitted );
