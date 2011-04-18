@@ -371,14 +371,18 @@
             const long size
               (package.package.num.trace * package.package.size.trace);
 
-            const std::size_t size_winded
+            const std::size_t size_shrunken
               (process::execute (cmd, buf, size, buf, size));
 
-            package.package.size.trace = size_winded / package.package.num.trace;
+            LOG (INFO, "size_shrunken = " << size_shrunken);
+
+            package.package.size.trace = size_shrunken
+                                       / package.package.num.trace
+                                       ;
 
             comm::put (config, package);
 
-            LOG (INFO, "WINDED " << ::print::loaded_package (package));
+            LOG (INFO, "SHRUNKEN " << ::print::loaded_package (package));
           ]]></code>
         </module>
       </defun>
