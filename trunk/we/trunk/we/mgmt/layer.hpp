@@ -230,6 +230,17 @@ namespace we { namespace mgmt {
 
         try
         {
+          // TODO:
+          //    lookup activity
+          //    mark as failed
+          //    store result + reason
+
+          //    let the "parent" fail as well
+          //        -> mark the parent's *outcome* as "failed"
+          //        -> store the reasons, i.e. a list of childfailures
+          //        -> cancel all children
+          //        -> wait until all children are done
+          //        -> inform parent and so on
           post_failed_notification (map_to_internal(id));
           return true;
         }
@@ -1049,6 +1060,7 @@ namespace we { namespace mgmt {
           }
           else if (desc->came_from_external ())
           {
+            //            if (desc->has_failed()) ; else cancelled()
             ext_failed ( desc->from_external_id()
                        , "TODO: activity failed reason"
                        );
@@ -1087,7 +1099,9 @@ namespace we { namespace mgmt {
           }
           else if (desc->came_from_external ())
           {
-            ext_cancelled (desc->from_external_id());
+            ext_failed ( desc->from_external_id()
+                       , "TODO: activity failed reason"
+                       );
           }
           else
           {
