@@ -14,7 +14,6 @@
 
 #include <fhglog/minimal.hpp>
 
-#include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 
 static int close_socket (const int fd)
@@ -59,21 +58,7 @@ namespace gpi
         : m_path (path)
         , m_socket (-1)
         , m_connected (false)
-      {
-        m_sigpipe_connection =
-          gpi::signal::handler().connect
-          ( SIGPIPE, boost::bind( &api_t::connection_lost
-                                , this
-                                , _1
-                                )
-          );
-        m_sigint_connection =
-          gpi::signal::handler().connect
-          ( SIGINT, boost::bind( &api_t::stop
-                               , this
-                               )
-          );
-      }
+      {}
 
       api_t::~api_t ()
       {

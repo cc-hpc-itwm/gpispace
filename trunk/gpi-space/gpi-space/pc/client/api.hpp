@@ -9,7 +9,6 @@
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
@@ -97,8 +96,6 @@ namespace gpi
         std::string m_path;
         int m_socket;
         bool m_connected;
-        gpi::signal::handler_t::connection_t m_sigpipe_connection;
-        gpi::signal::handler_t::connection_t m_sigint_connection;
         segment_map_t m_segments;
         segment_set_t m_garbage_segments;
       };
