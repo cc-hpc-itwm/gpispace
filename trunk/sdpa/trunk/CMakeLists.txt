@@ -72,10 +72,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(SEDA REQUIRED QUIET)
 include_directories(${SEDA_INCLUDE_DIR})
 
-# uuid library
-find_package(UUID REQUIRED QUIET)
-include_directories(${UUID_INCLUDE_DIR})
-
 # we library
 if (USE_REAL_WE)
   find_package(WE REQUIRED QUIET)

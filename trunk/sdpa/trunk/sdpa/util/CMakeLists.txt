@@ -10,7 +10,6 @@ set (srcs
   )
 
 ADD_LIBRARY(sdpa-util ${srcs})
-target_link_libraries(sdpa-util ${UUID_LIBRARY})
 
 install(FILES ${hdrs}
   DESTINATION include/sdpa/util
