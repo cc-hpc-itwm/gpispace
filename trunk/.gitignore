@@ -6,3 +6,4 @@ TAGS
 .ede.project
 make.defs
 CMakeLists.txt.user*
+gen/
