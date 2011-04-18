@@ -448,16 +448,25 @@ void GenericDaemon::stop()
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-	DLOG(TRACE, "perform (" << typeid(*pEvent.get()).name() << ")");
-	//SDPA_LOG_INFO("Agent "<<name() << " received event "<<pEvent->str());
-	if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
-	{
-		pSdpaEvt->handleBy(this);
-	}
-	else
-	{
-		SDPA_LOG_WARN("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
-	}
+  if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
+  {
+    try
+    {
+      pSdpaEvt->handleBy(this);
+    }
+    catch (std::exception const & ex)
+    {
+      LOG( ERROR
+         , "could not handle event "
+         << "\""  << pEvent->str() << "\""
+         << " : " << ex.what()
+         );
+    }
+  }
+  else
+  {
+    SDPA_LOG_WARN("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
+  }
 }
 
 void GenericDaemon::setDefaultConfiguration()
