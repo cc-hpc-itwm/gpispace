@@ -6,8 +6,8 @@ using namespace fhg::com;
 void session::close ()
 {
   stopped_ = true;
-  manager_.del_session (shared_from_this());
   socket_.close ();
+  manager_.del_session (shared_from_this());
 }
 
 // TODO: make data a pointer to allocated  memory, so that we don't have to copy
@@ -146,7 +146,19 @@ void session::handle_write (const boost::system::error_code & e)
   {
     DLOG(TRACE, "write completed");
 
-    to_send_.pop_front();
+    if (to_send_.empty())
+    {
+      LOG( ERROR
+         , "*** INCONSISTENCY ****"
+         << std::endl
+         << "in session::handle_write - outgoing list should not be empty!"
+         );
+    }
+    else
+    {
+      to_send_.pop_front();
+    }
+
     if (! to_send_.empty())
     {
       boost::asio::async_write( socket_
