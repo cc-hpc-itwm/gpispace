@@ -167,7 +167,6 @@ namespace we { namespace mgmt {
         }
         catch (std::exception const &)
         {
-          LOG(ERROR, "trying to cancel unknown activity " << id);
           return false;
         }
         return true;
@@ -204,7 +203,7 @@ namespace we { namespace mgmt {
         }
         catch (const std::exception &)
         {
-          LOG(ERROR, "trying to notify finished for unknown activity " << id);
+          return false;
         }
         return true;
       }
@@ -236,7 +235,6 @@ namespace we { namespace mgmt {
         }
         catch (const std::exception &)
         {
-          LOG(ERROR, "tried to notify failed for unknown activity " << id);
           return false;
         }
       }
@@ -287,7 +285,15 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "suspend (" << id << ")");
 
-        post_suspend_activity_notification (map_to_internal(id));
+        try
+        {
+          post_suspend_activity_notification (map_to_internal(id));
+        }
+        catch (std::exception const & ex)
+        {
+          return false;
+        }
+
         return true;
       }
 
@@ -308,7 +314,14 @@ namespace we { namespace mgmt {
       {
         DLOG(TRACE, "resume (" << id << ")");
 
-        post_suspend_activity_notification (map_to_internal(id));
+        try
+        {
+          post_resume_activity_notification (map_to_internal(id));
+        }
+        catch (std::exception const & ex)
+        {
+          return false;
+        }
         return true;
       }
 
@@ -634,8 +647,7 @@ namespace we { namespace mgmt {
           }
           catch (std::exception const& ex)
           {
-            LOG(ERROR, "error during manager command handling: " << ex.what());
-            //            throw;
+            LOG(WARN, "error during manager command handling: " << ex.what());
           }
         }
         DLOG(TRACE, "manager thread stopped...");
@@ -785,7 +797,9 @@ namespace we { namespace mgmt {
           internal_id_type active_id = active_nets_[rank].get();
           if (! is_valid (active_id))
           {
-            LOG(WARN, "extracting from invalid id " << active_id);
+            DLOG( WARN
+                , "extractor[" << rank << "] woken up by old activity id " << active_id
+                );
             continue;
           }
 
@@ -793,6 +807,16 @@ namespace we { namespace mgmt {
           {
             descriptor_ptr desc (lookup(active_id));
             DLOG(TRACE, "extractor-" << rank << " puts attention to activity " << active_id);
+
+            if (desc->activity().is_cancelling())
+            {
+              if (!desc->has_children())
+              {
+                post_cancelled_notification (active_id);
+              }
+
+              continue;
+            }
 
             // TODO: check status flags
             if (! desc->is_alive ())
@@ -915,13 +939,15 @@ namespace we { namespace mgmt {
 
           if ( ! is_valid (act_id))
           {
-            LOG(WARN, "injecting for invalid id " << act_id);
+            DLOG( WARN
+                , "injector[" << rank << "] woken up by old activity id " << active_id
+                );
             continue;
           }
 
           try
           {
-            do_inject ( lookup(act_id) );
+            do_inject (lookup(act_id));
           }
           catch (std::exception const & ex)
           {
@@ -1036,65 +1062,79 @@ namespace we { namespace mgmt {
         }
         catch (const exception::activity_not_found<internal_id_type> &)
         {
-          LOG(ERROR, "got finished notification for old activity: " << internal_id);
+          LOG(WARN, "got finished notification for old activity: " << internal_id);
         }
       }
 
       void activity_cancelled(const cmd_t & cmd)
       {
         const internal_id_type internal_id (cmd.dat);
-        descriptor_ptr desc (lookup(internal_id));
-        desc->cancelled();
-
-        DLOG(INFO, "cancelled (" << desc->name() << ")-" << desc->id());
-        if (desc->has_parent ())
+        try
         {
-          descriptor_ptr parent (lookup (desc->parent()));
-          parent->child_cancelled(*desc, "TODO: child cancelled reason");
+          descriptor_ptr desc (lookup(internal_id));
+          desc->cancelled();
 
-          if (! parent->has_children ())
+          DLOG(INFO, "cancelled (" << desc->name() << ")-" << desc->id());
+          if (desc->has_parent ())
           {
-            post_cancelled_notification (parent->id());
+            descriptor_ptr parent (lookup (desc->parent()));
+            parent->child_cancelled(*desc, "TODO: child cancelled reason");
+
+            if (! parent->has_children ())
+            {
+              post_cancelled_notification (parent->id());
+            }
           }
-        }
-        else if (desc->came_from_external ())
-        {
-          ext_cancelled (desc->from_external_id());
-        }
-        else
-        {
-          throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (*desc));
-        }
+          else if (desc->came_from_external ())
+          {
+            ext_cancelled (desc->from_external_id());
+          }
+          else
+          {
+            throw std::runtime_error ("activity cancelled, but I don't know what to do with it: " + fhg::util::show (*desc));
+          }
 
-        sig_cancelled ( this
-                      , internal_id
-                      , policy::codec::encode(desc->activity())
-                      );
+          sig_cancelled ( this
+                        , internal_id
+                        , policy::codec::encode(desc->activity())
+                        );
 
-        remove_activity (desc);
+          remove_activity (desc);
+        }
+        catch (const exception::activity_not_found<internal_id_type> &)
+        {
+          LOG(WARN, "got cancelled notification for old activity: " << internal_id);
+        }
       }
 
       void cancel_activity(const cmd_t & cmd)
       {
         const internal_id_type internal_id (cmd.dat);
-        descriptor_ptr desc (lookup(internal_id));
+        try
+        {
+          descriptor_ptr desc (lookup(internal_id));
 
-        if (desc->has_children())
-        {
-          desc->cancel
-            ( boost::bind ( &this_type::post_cancel_activity_notification
-                          , this
-                          , _1
-                          )
-            );
+          if (desc->has_children())
+          {
+            desc->cancel
+              ( boost::bind ( &this_type::post_cancel_activity_notification
+                            , this
+                            , _1
+                            )
+              );
+          }
+          else if (desc->sent_to_external())
+          {
+            ext_cancel (desc->to_external_id(), "WFE needs to cancel");
+          }
+          else
+          {
+            post_cancelled_notification (desc->id());
+          }
         }
-        else if (desc->sent_to_external())
+        catch (const exception::activity_not_found<internal_id_type> &)
         {
-          ext_cancel ( desc->to_external_id(), "NO REASON GIVEN" );
-        }
-        else
-        {
-          post_cancelled_notification (desc->id());
+          LOG(WARN, "got cancel request for old activity: " << internal_id);
         }
       }
 
