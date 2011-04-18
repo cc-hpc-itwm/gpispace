@@ -29,7 +29,6 @@ LogEvent::LogEvent(const severity_type &a_severity
   , pid_(getpid())
   , tid_(static_cast<tid_type>(pthread_self()))
   , module_(get_module_name_from_path(a_path))
-  , tag_()
 {
 }
 
@@ -43,7 +42,6 @@ LogEvent::LogEvent()
   , tstamp_()
   , pid_()
   , tid_()
-  , tag_()
 {
 }
 
@@ -60,7 +58,6 @@ LogEvent::LogEvent(const LogEvent &e)
   , logged_via_(e.logged_via())
   , logged_on_(e.logged_on())
   , module_(e.module())
-  , tag_(e.tag())
 {
 }
 
@@ -83,7 +80,6 @@ LogEvent &LogEvent::operator=(const LogEvent &e)
     logged_via_ = e.logged_via();
     logged_on_ = e.logged_on();
     module_ = e.module();
-    tag_ = e.tag();
   }
   return *this;
 }
@@ -103,7 +99,6 @@ bool LogEvent::operator==(const LogEvent &e) const
     && (tid() == e.tid())
     && (logged_via() == e.logged_via())
     && (module() == e.module())
-    && (tag() == e.tag())
     )
   {
     return true;
