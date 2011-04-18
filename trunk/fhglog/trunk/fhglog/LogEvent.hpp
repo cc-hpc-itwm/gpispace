@@ -4,7 +4,6 @@
 #include <string>
 #include <sstream>
 #include <sys/types.h>
-#include <pthread.h>
 #include <fhglog/LogLevel.hpp>
 
 // serialization
@@ -21,8 +20,8 @@ namespace fhg { namespace log {
       typedef std::string message_type;
       typedef std::string module_type;
       typedef unsigned long long tstamp_type;
-      typedef pid_t     pid_type;
-      typedef pthread_t tid_type;
+      typedef pid_t         pid_type;
+      typedef unsigned long tid_type;
 
       LogEvent();
       LogEvent(const severity_type &severity

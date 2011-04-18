@@ -27,7 +27,7 @@ LogEvent::LogEvent(const severity_type &a_severity
   , message_(a_message)
   , tstamp_(now())
   , pid_(getpid())
-  , tid_(static_cast<tid_type>(pthread_self()))
+  , tid_(pthread_self())
   , module_(get_module_name_from_path(a_path))
 {
 }
