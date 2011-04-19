@@ -26,7 +26,9 @@ if (NOT FVM_FIND_QUIETLY)
   message(STATUS "FindFVM check")
 endif (NOT FVM_FIND_QUIETLY)
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+# if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+if(NOT TARGET fvm-pc)
+# if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   find_path (FVM_INCLUDE_DIR
     NAMES "fvm-pc/pc.hpp"
     HINTS ${FVM_HOME} ENV FVM_HOME
@@ -73,13 +75,16 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
       message (FATAL_ERROR "FVM could not be found!")
     endif (FVM_FIND_REQUIRED)
   endif (FVM_INCLUDE_DIR)
-else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+# else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+else(NOT TARGET fvm-pc)
   set(FVM_FOUND true)
   set(FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
 
   set(FVM_LIBRARY_DIR "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc")
-  set(FVM_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.so")
-  set(FVM_STATIC_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.a")
+  get_target_property(FVM_LIBRARY fvm-pc.shared LOCATION)
+  get_target_property(FVM_STATIC_LIBRARY fvm-pc LOCATION)
+  # set(FVM_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.so")
+  # set(FVM_STATIC_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.a")
 
   set(FVM_FAKE_LIBRARY_DIR "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake")
   set(FVM_FAKE_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake/libfvm-pc.so")
@@ -96,5 +101,6 @@ else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
       message(STATUS "Found FVM shared fake-library in ${FVM_FAKE_LIBRARY_SHARED}")
     endif (FVM_LIBRARY_SHARED)
   endif (NOT FVM_FIND_QUIETLY)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+endif(NOT TARGET fvm-pc)
+# endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
