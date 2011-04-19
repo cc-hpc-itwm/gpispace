@@ -28,31 +28,51 @@ namespace sc = boost::statechart;
 
 namespace sdpa { namespace events {
 #ifdef USE_BOOST_SC
-	class CancelJobEvent : public JobEvent, public sc::event<CancelJobEvent>
+    class CancelJobEvent : public JobEvent, public sc::event<CancelJobEvent>
 #else
-	class CancelJobEvent : public JobEvent
+                           class CancelJobEvent : public JobEvent
 #endif
     {
-	public:
-		typedef sdpa::shared_ptr<CancelJobEvent> Ptr;
+    public:
+      typedef sdpa::shared_ptr<CancelJobEvent> Ptr;
 
-        CancelJobEvent()
-          : JobEvent("", "", "")
-        {}
+      CancelJobEvent()
+        : JobEvent("", "", "")
+        , m_reason ("unknown")
+      {}
 
-		CancelJobEvent(const address_t& a_from, const address_t& a_to, const sdpa::job_id_t& a_job_id)
-          :  sdpa::events::JobEvent( a_from, a_to, a_job_id ) {
-		}
+      CancelJobEvent( const address_t& a_from
+                    , const address_t& a_to
+                    , const sdpa::job_id_t& a_job_id
+                    , const std::string & a_reason
+                    )
+        : sdpa::events::JobEvent( a_from
+                                , a_to
+                                , a_job_id
+                                )
+        , m_reason (a_reason)
+      {}
 
-		virtual ~CancelJobEvent() { }
+      virtual ~CancelJobEvent() {}
 
-		std::string str() const { return "CancelJobEvent"; }
+      std::string str() const
+      {
+        static std::string s("CancelJobEvent");
+        return s;
+      }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleCancelJobEvent(this);
-        }
-	};
-}}
+      std::string const & reason () const
+      {
+        return m_reason;
+      }
+
+      virtual void handleBy(EventHandler *handler)
+      {
+        handler->handleCancelJobEvent(this);
+      }
+    private:
+      std::string m_reason;
+    };
+  }}
 
 #endif

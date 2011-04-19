@@ -93,7 +93,7 @@ int main(int, char **)
 
   {
     std::clog << "testing CancelJobEvent...";
-    CancelJobEvent e("foo", "bar", "job-id-1");
+    CancelJobEvent e("foo", "bar", "job-id-1", "test reason");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 

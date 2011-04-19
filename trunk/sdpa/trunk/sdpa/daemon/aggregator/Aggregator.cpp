@@ -339,13 +339,19 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
   {
-    LOG(TRACE, "Propagate cancel job event downwards, to the slaves, if the job was assigned to any slave!");
+    LOG(TRACE, "Propagate cancel job event downwards.");
     try
     {
-      sdpa::worker_id_t worker_id = findWorker(pEvt->job_id()); //get("worker");// Clearly, the job can be into the submitted or acknowledged queue
+      sdpa::worker_id_t worker_id = findWorker(pEvt->job_id());
 
       SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-      CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name(), worker_id, pEvt->job_id()));
+      CancelJobEvent::Ptr pCancelEvt
+        (new CancelJobEvent( name()
+                           , worker_id
+                           , pEvt->job_id()
+                           , pEvt->reason()
+                           )
+        );
       sendEventToSlave(pCancelEvt);
     }
     catch(const NoWorkerFoundException& )
@@ -359,7 +365,6 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
   else // a Cancel message came from the upper level -> forward cancellation request to WE
   {
-    LOG(WARN, "BEEP");
     id_type workflowId = pEvt->job_id();
     reason_type reason("No reason");
     cancelWorkflow(workflowId, reason);

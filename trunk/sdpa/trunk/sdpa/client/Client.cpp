@@ -232,9 +232,13 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
   MLOG(DEBUG,"cancelling job: " << jid);
-  client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent(name()
-                                                             , orchestrator_
-                                                             , jid)));
+  client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent( name()
+                                                              , orchestrator_
+                                                              , jid
+                                                              , "user cancel"
+                                                              )
+                                       )
+                     );
   DMLOG(TRACE,"waiting for a reply");
   try
   {
