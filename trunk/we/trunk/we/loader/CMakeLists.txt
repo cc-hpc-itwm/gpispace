@@ -8,6 +8,7 @@ set (hdrs
   Module.hpp
   module_traits.hpp
   types.hpp
+  putget.hpp
   )
 
 install(FILES ${hdrs}
