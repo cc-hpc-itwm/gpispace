@@ -231,9 +231,9 @@ namespace sdpa {
 
         sdpa::status_t getStatus()
         {
-          LOG(DEBUG, "current state of job " << id() << " is " << *current_state());
+          LOG(TRACE, "current state of job " << id() << " is " << *current_state());
 
-          if (*current_state() < 0 || *current_state() > sizeof(state_names))
+          if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
           {
             LOG(ERROR, "state id out of range!");
             return "unknown";
