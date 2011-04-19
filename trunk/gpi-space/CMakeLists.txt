@@ -101,6 +101,12 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package (MMGR REQUIRED)
 include_directories(${MMGR_INCLUDE_DIR})
 
+find_package (FVM REQUIRED)
+include_directories(${FVM_INCLUDE_DIR})
+
+find_package (WE REQUIRED)
+include_directories(${WE_INCLUDE_DIR})
+
 add_subdirectory(gpi-space)
 add_subdirectory(bin)
 
