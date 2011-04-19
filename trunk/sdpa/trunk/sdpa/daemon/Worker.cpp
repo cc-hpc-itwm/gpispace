@@ -50,8 +50,8 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 
   try
   {
-	  submitted().erase(job_id);
 	  acknowledged().push(job_id);
+	  submitted().erase(job_id);
 	  DLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
 	  return true;
   }
@@ -65,28 +65,26 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
-	try {
-		pending().erase(job_id);
-		SDPA_LOG_DEBUG("Deleted " << job_id.str() << " from the submitted queue!");
-	}
-	catch( const sdpa::daemon::NotFoundItem& ex )
-	{
-		try {
-			submitted().erase(job_id);
-			DLOG(TRACE, "Deleted " << job_id.str() << " from the submitted queue of worker: " << name());
-		}
-		catch( const sdpa::daemon::NotFoundItem& ex )
-		{
-			try {
-				acknowledged().erase(job_id);
-				DLOG(TRACE, "Deleted " << job_id.str() << " from the acknowledged queue of worker: " << name());
-			}
-			catch( const sdpa::daemon::NotFoundItem& ex )
-			{
-				SDPA_LOG_ERROR("The job " << job_id.str() << " could not be found into any of the worker's queues!");
-			}
-		}
-	}
+  LOG(DEBUG, "deleting job " << job_id << " from worker " << name());
+
+  if (pending().erase(job_id))
+  {
+    LOG(TRACE, "removed from pending queue");
+  }
+
+  if (submitted().erase(job_id))
+  {
+    LOG(TRACE, "removed from submitted queue");
+
+    LOG(WARN, "did we send a cancel to the worker?");
+  }
+
+  if (acknowledged().erase(job_id))
+  {
+    LOG(TRACE, "removed from submitted queue");
+
+    LOG(WARN, "did we send a cancel to the worker?");
+  }
 }
 
 sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)

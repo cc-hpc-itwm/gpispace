@@ -308,6 +308,34 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	}
 }
 
+
+void Aggregator::job_cancelled (sdpa::job_id_t const & job)
+{
+  try
+  {
+    Job::ptr_t pJob(ptr_job_man_->findJob(job));
+
+    // update the job status to "Cancelled" we don't have an ack
+    sdpa::events::CancelJobAckEvent cae;
+    pJob->CancelJobAck(&cae);
+    ptr_scheduler_->delete_job (job);
+
+    try
+    {
+      ptr_workflow_engine_->cancelled(job);
+      ptr_job_man_->deleteJob(job);
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(WARN, "could not cancel job on the workflow engine: " << ex.what());
+    }
+  }
+  catch(const JobNotFoundException &)
+  {
+    LOG(WARN, "job_cancelled(" << job << ") failed: no such job");
+  }
+}
+
 void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
   assert (pEvt);
@@ -354,9 +382,9 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
         );
       sendEventToSlave(pCancelEvt);
     }
-    catch(const NoWorkerFoundException& )
+    catch(const NoWorkerFoundException&)
     {
-      SDPA_LOG_WARN("The job was not assigned to any worker!");
+      job_cancelled (pEvt->job_id());
     }
     catch(...)
     {

@@ -167,17 +167,24 @@ namespace sdpa { namespace daemon {
       return container_.erase(pos);
     }
 
-    inline void erase(const value_type& item)
+    inline size_t erase(const value_type& item)
     {
     	lock_type lock(mtx_);
-    	for (iterator iter = begin(); iter != end(); iter++)
-    		if( item == *iter )
-    		{
-    			erase(iter);
-    			return;
-    		}
-
-    	throw NotFoundItem(item.str());
+        size_t count(0);
+        iterator iter (begin());
+        while (iter != end())
+        {
+          if( item == *iter )
+          {
+            iter = erase(iter);
+            ++count;
+          }
+          else
+          {
+            ++iter;
+          }
+        }
+        return count;
     }
 
     inline iterator begin()

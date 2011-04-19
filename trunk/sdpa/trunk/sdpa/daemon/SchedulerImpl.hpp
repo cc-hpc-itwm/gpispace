@@ -44,6 +44,7 @@ namespace sdpa {
 	virtual void schedule(const sdpa::job_id_t& job);
 	virtual void schedule_local(const sdpa::job_id_t &job);
 	virtual void schedule_remote(const sdpa::job_id_t &job);
+    void delete_job(const sdpa::job_id_t & job);
 
 	void schedule_round_robin(const sdpa::job_id_t &job);
 	bool schedule_with_constraints(const sdpa::job_id_t &job, bool bDelNonRespWorkers = false);

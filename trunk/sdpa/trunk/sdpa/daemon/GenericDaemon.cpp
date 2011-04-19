@@ -1151,7 +1151,14 @@ void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string&
 
 void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
 {
-	ptr_workflow_engine_->cancelled( actId );
+  if (hasWorkflowEngine())
+  {
+    ptr_workflow_engine_->cancelled( actId );
+  }
+  else
+  {
+    LOG(WARN, "cannot notify cancelled(" << actId << "): no workflow engine!");
+  }
 }
 
 void GenericDaemon::incExtJobsCnt()

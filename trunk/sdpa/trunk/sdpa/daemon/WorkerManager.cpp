@@ -378,7 +378,12 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 				/*SDPA_LOG_DEBUG("Popped the job "<<jobId<<"The content of the common queue is now: ");
 				common_queue_.print();*/
 
-				MLOG(TRACE, "Putting job " << jobId << " into the submitted queue of the worker "<<worker_id);
+				MLOG( TRACE
+                                    , "Putting job "
+                                    << jobId
+                                    << " into the submitted queue of the worker "
+                                    << worker_id
+                                    );
 				ptrWorker->submitted().push(jobId);
 				ptrWorker->update();
 				return jobId;
@@ -421,6 +426,24 @@ void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 	common_queue_.push(jobId);
 	/*SDPA_LOG_DEBUG( "Content of the common queue adterwards: " );
 	common_queue_.print();*/
+}
+
+void WorkerManager::delete_job (sdpa::job_id_t const & job)
+{
+  if (common_queue_.erase(job))
+  {
+    LOG(TRACE, "removed job from common queue...");
+  }
+  else
+  {
+    for( worker_map_t::iterator iter (worker_map_.begin())
+       ; iter != worker_map_.end()
+       ; iter++
+       )
+    {
+      iter->second->delete_job(job);
+    }
+  }
 }
 
 void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)

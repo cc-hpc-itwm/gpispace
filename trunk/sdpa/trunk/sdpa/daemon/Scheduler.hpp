@@ -57,6 +57,7 @@ namespace daemon {
 	 //virtual void re_schedule(Worker::JobQueue* pQueue ) = 0;
 	 virtual void re_schedule(const Worker::worker_id_t& ) throw (WorkerNotFoundException) = 0;
 	 virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
+    virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
 
 	 //virtual void update_request_time(const sdpa::util::time_type& new_time ) = 0;
 

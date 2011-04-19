@@ -340,6 +340,12 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
 	}
 }
 
+void SchedulerImpl::delete_job (sdpa::job_id_t const & job)
+{
+  LOG(TRACE, "removing job " << job << " from the scheduler....");
+  ptr_worker_man_->delete_job(job);
+}
+
 void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
 {
 	ptr_worker_man_->dispatchJob(jobId);
@@ -655,7 +661,9 @@ void SchedulerImpl::print()
 		jobs_to_be_scheduled.print();
 	}
 	else
-		SDPA_LOG_DEBUG("No job to be scheduled left!");
+        {
+          SDPA_LOG_DEBUG("No job to be scheduled left!");
+        }
 
 	SDPA_LOG_DEBUG("The content of agent's WorkerManager is:");
 	ptr_worker_man_->print();
