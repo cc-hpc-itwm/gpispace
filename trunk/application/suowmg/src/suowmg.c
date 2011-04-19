@@ -3,6 +3,21 @@
 #include "owmg.h"
 #include "mods.h"
 
+
+#include <sys/time.h>
+
+/* ************************************************************************* */
+
+static inline double
+current_time ()
+{
+  struct timeval tv;
+
+  gettimeofday (&tv, NULL);
+
+  return ((double) tv.tv_sec) + ((double) tv.tv_usec) * 1E-6;
+}
+
 /*********************** self documentation **********************/
 char *sdoc[] = {
 "								",
@@ -33,6 +48,8 @@ float f1, f2, f3, f4, fPeak, df, dw;
 
 int main(int argc, char **argv)
 {
+	double t = -current_time();
+
   owmgData *data;
   cwp_String key1, key2;   /* header key word from segy.h         */
   cwp_String type1, type2; /* ... its type                        */
@@ -221,8 +238,16 @@ int main(int argc, char **argv)
 
       /* Propagate */
       fprintf(stderr, "Problem size: nx=%i, ny=%i, nz=%i, nxf=%i, nyf=%i, nwH=%i\n", data->nx, data->ny, data->nz, data->nxf, data->nyf, data->nwH);
+      fprintf(stderr,"time startup %g\n", t + current_time());
 
-      const int nThread = 24;
+      t = -current_time();
+
+#ifndef NTHREAD
+#define NTHREAD 4
+#else
+#endif
+
+      const int nThread = NTHREAD;
 
       pthread_attr_t attr;
       pthread_attr_init (&attr);
@@ -282,6 +307,8 @@ int main(int argc, char **argv)
       free_barrier (b);
       freefloat1 (vMin_iz);
       
+      fprintf(stderr,"%i time run %g\n", nThread, t + current_time());
+
       /* Output result */
 	  memset( (void *) trout.data, 0, nt * FSIZE);
 	  trout.ns=(unsigned short)data->nz;

@@ -61,11 +61,11 @@ owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, floa
   data->nxf   = npfao(data->nx,2*data->nx);
   data->nyf   = npfao(data->ny,2*data->ny);
 
-  data->avgList = (averageStruct **)malloc(data->nxf*data->nyf*sizeof(averageStruct *));
-  for ( int i=0; i<data->nxf*data->nyf; i++) {
+  data->avgList = malloc(data->nxf*data->nyf*sizeof(averageStruct *));
+
+  for (int i=0; i<data->nxf*data->nyf; i++) {
     data->avgList[i] = NULL;
   }
-  
 
   /* Allocate memory */
   fprintf(stderr, "Allocating memory\n");
@@ -90,9 +90,7 @@ owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, floa
     }
   }
 
-
   return data;
- 
 }
 
 void * owmg_propagate(void * arg)
@@ -221,6 +219,8 @@ void * owmg_propagate(void * arg)
 		nxA_prev=0;
 		nyA_prev=0;
 
+		float *rec1Df = (float *)data->rec[iwH][0];
+		float *src1Df = (float *)data->src[iwH][0];
 
 		// Depth loop
 		while ( iz<data->nz ) {
@@ -488,24 +488,24 @@ void * owmg_propagate(void * arg)
 			get_rtc_(&t2); tInterpUp += t2-t1;
 
 
-			float *rec1Df = (float *)data->rec[iwH][0];
-			float *src1Df = (float *)data->src[iwH][0];
-
-			float * arrUD = data->imageCubeUD[0][0];
-			float * arrDD = data->imageCubeDD[0][0];
-
 			{
-				const int id = iz + nzA - 1;
-				int pos = data->ny * data->nx * id;
-			    pthread_mutex_lock (mutex_update + id);
-				for ( iy=0; iy<data->ny; ++iy) {
-					for ( ix=0; ix<data->nx; ix++, ++pos) {
-						const int a = 2 * (iy * nxf + ix);
+				float * arrUD = data->imageCubeUD[0][0];
+				float * arrDD = data->imageCubeDD[0][0];
+
+				{
+				  const int id = iz + nzA - 1;
+				  int pos = data->ny * data->nx * id;
+
+				  pthread_mutex_lock (mutex_update + id);
+				  for ( iy=0; iy<data->ny; ++iy) {
+					int a = 2 * iy * nxf;
+					for ( ix=0; ix<data->nx; ++ix, ++pos, a += 2) {
 						arrUD[pos] += rec1Df[a]*src1Df[a] + rec1Df[a+1]*src1Df[a+1];
 						arrDD[pos] += src1Df[a]*src1Df[a] + src1Df[a+1]*src1Df[a+1];
 					}
+				  }
+                  pthread_mutex_unlock (mutex_update + id);
 				}
-				pthread_mutex_unlock (mutex_update + id);
 
 				if (nzA>1) {
 					for ( int i=1; i<nzA; i++ ) {
@@ -514,10 +514,11 @@ void * owmg_propagate(void * arg)
 						float k1 = (float)i/(float)nzA;
 						float k2 = 1.0f - k1;
 						//fprintf(stderr, "Weights: k1=%f, k2=%f\n", k1, k2);
+
 						pthread_mutex_lock (mutex_update + id);
-						for ( iy=0; iy<data->ny; iy++ ) {
-							for ( ix=0; ix<data->nx; ix++, ++pos ) {
-								const int a = 2 * (iy * nxf + ix);
+						for ( iy=0; iy<data->ny; ++iy) {
+							int a = 2 * iy * nxf;
+							for ( ix=0; ix<data->nx; ++ix, ++pos, a += 2) {
 								arrUD[pos] += (k2*recPrev[a  ] + k1*rec1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
 								           +  (k2*recPrev[a+1] + k1*rec1Df[a+1])*(k2*srcPrev[a+1] + k1*src1Df[a+1]);
 								arrDD[pos] += (k2*srcPrev[a  ] + k1*src1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
@@ -528,7 +529,6 @@ void * owmg_propagate(void * arg)
 					}
 				}
 			}
-//			pthread_mutex_unlock (&mutex_update_all);
 
 			iz += nzA;
 			nxA_prev = nxA;

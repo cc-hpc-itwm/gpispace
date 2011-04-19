@@ -5,6 +5,7 @@ CC=icc
 OPT  = -O3 -axSSE4.2,SSE4.1,SSSE3 
 #OPT = -g -ggdb
 FLAGS = -Wall -wd981 -wd1419 -wd1418
+FLAGS += $(addprefix -D,$(DEFS))
 
 C99  = -std=c99
 
