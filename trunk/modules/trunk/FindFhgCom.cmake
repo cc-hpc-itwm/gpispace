@@ -1,7 +1,7 @@
 # -*- mode: cmake; -*-
 # locates the FHG Communication framework
 # This file defines:
-# * FHGCOM_FOUND if fhglog was found
+# * FHGCOM_FOUND if fhgcom was found
 # * FHGCOM_LIBRARY The lib to link to (currently only a static unix lib)
 # * FHGCOM_INCLUDE_DIR
 
@@ -18,12 +18,12 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
   find_library (FhgCom_LIBRARY
 	NAMES libfhgcom.a
-	HINTS ${FHGLOG_HOME} ENV FHGLOG_HOME
+	HINTS ${FHGCOM_HOME} ENV FHGCOM_HOME
 	PATH_SUFFIXES lib
   )
   find_library (FhgCom_LIBRARY_SHARED
 	NAMES libfhgcom.so libfhgcom.dylib
-	HINTS ${FHGLOG_HOME} ENV FHGLOG_HOME
+	HINTS ${FHGCOM_HOME} ENV FHGCOM_HOME
 	PATH_SUFFIXES lib
   )
 
