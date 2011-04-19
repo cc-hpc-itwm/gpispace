@@ -14,3 +14,6 @@ set (hdrs
 install(FILES ${hdrs}
   DESTINATION include/we/type/value
   COMPONENT headers)
+
+add_subdirectory(cpp)
+add_subdirectory(container)

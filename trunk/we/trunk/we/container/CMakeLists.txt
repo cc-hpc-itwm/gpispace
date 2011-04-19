@@ -1,5 +1,6 @@
 # -*- mode: cmake; -*-
 set (hdrs
+  adjacency.ipp
   adjacency.hpp
   bijection.hpp
   multirel.hpp

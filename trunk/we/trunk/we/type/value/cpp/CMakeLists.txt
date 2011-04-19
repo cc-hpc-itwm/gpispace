@@ -1,8 +1,7 @@
 # -*- mode: cmake; -*-
 set (hdrs
-  types.hpp
-  cpp.hpp
+  get.hpp
 )
 install(FILES ${hdrs}
-  DESTINATION include/we/type/signature
+  DESTINATION include/we/type/value/cpp
   COMPONENT headers)
