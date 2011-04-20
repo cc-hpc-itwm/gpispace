@@ -45,8 +45,8 @@ else (NOT TARGET gpi-space-pc-client-static)
   set(GPI_SPACE_FOUND true)
   set(GPI_SPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/gpi-space;${CMAKE_BINARY_DIR}/gpi-space")
 
-  set(GPI_SPACE_LIBRARY "${CMAKE_BINARY_DIR}/gpi-space/gpi-space/pc/client/libgpi-space-pc-client.a")
-  set(GPI_SPACE_LIBRARY_SHARED "${CMAKE_BINARY_DIR}/gpi-space/gpi-space/pc/client/libgpi-space-pc-client.so")
+  set(GPI_SPACE_LIBRARY gpi-space-pc-client-static)
+  set(GPI_SPACE_LIBRARY_SHARED gpi-space-pc-client-shared)
 
   if (NOT GPI_SPACE_FIND_QUIETLY)
     message(STATUS "Found GPISpace headers in ${GPI_SPACE_INCLUDE_DIR}")
