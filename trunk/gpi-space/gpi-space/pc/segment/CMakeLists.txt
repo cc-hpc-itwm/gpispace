@@ -20,12 +20,12 @@ target_link_libraries (gpi-space-pc-segment-shared rt)
 install(TARGETS gpi-space-pc-segment
   ARCHIVE
   DESTINATION lib
-  COMPONENT modules)
+  COMPONENT libraries)
 
 install(TARGETS gpi-space-pc-segment-shared
   LIBRARY
   DESTINATION lib
-  COMPONENT modules)
+  COMPONENT libraries)
 
 install(FILES ${hdrs}
   DESTINATION include/gpi-space/pc/segment
