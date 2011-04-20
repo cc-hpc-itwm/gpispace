@@ -22,6 +22,9 @@ include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(ENABLE_REAL_GPI)
+  find_package (IBVerbs REQUIRED)
+  include_directories(${IBVerbs_INCLUDE_DIR})
+
   set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/ext)
   set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
   set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
@@ -85,9 +88,6 @@ endif (HAVE_GETPW_R_SIZE_MAX)
 include(SDPAFindBoost)
 message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
-
-find_package (IBVerbs REQUIRED)
-include_directories(${IBVerbs_INCLUDE_DIR})
 
 find_package (FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
