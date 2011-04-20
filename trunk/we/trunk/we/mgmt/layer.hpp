@@ -951,7 +951,7 @@ namespace we { namespace mgmt {
           if ( ! is_valid (act_id))
           {
             DLOG( WARN
-                , "injector[" << rank << "] woken up by old activity id " << active_id
+                , "injector[" << rank << "] woken up by old activity id " << act_id
                 );
             continue;
           }
