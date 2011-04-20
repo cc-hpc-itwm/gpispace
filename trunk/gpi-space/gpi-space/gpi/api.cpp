@@ -19,26 +19,29 @@ namespace gpi
     {
       if (!instance)
       {
-#ifdef ENABLE_REAL_GPI
-        if (impl == "gpi.api.real")
+        if (impl == FAKE_API)
         {
-           instance.reset (new real_gpi_api_t);
+          instance.reset (new fake_gpi_api_t);
+        }
+#ifdef ENABLE_REAL_GPI
+        else if (impl == REAL_API)
+        {
+          instance.reset (new real_gpi_api_t);
         }
 #endif
-
-        if (instance)
-        {
-           return *instance;
-        }
         else
         {
-           throw std::runtime_error("Implemenation not available: " + impl);
+          throw std::runtime_error
+            ("requested implementation not available in this build: " + impl);
         }
       }
       else
       {
-        throw std::runtime_error ("already created!");
+        throw std::runtime_error
+          ("gpi_api_t: singleton already created, go fix your code!");
       }
+
+      return *instance;
     }
 
     gpi_api_t & gpi_api_t::get ()
