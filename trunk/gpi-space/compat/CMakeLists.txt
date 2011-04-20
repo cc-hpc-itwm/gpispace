@@ -1,7 +1,7 @@
 find_package (FVM REQUIRED)
 include_directories(${FVM_INCLUDE_DIR})
 
-message("the fvm compat module should not require we loader stuff")
+message(STATUS "the fvm compat module should not require we loader stuff")
 find_package (WE REQUIRED)
 include_directories(${WE_INCLUDE_DIR})
 
