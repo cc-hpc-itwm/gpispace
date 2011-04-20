@@ -23,7 +23,7 @@ namespace gpifs
     typedef std::list<id_t> id_list_t;
 
     // ********************************************************************* //
-    
+
     enum { INVAL  = 0
 	 , GLOBAL = 1
 	 , LOCAL  = 2

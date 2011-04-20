@@ -29,13 +29,13 @@ namespace gpifs
       const char saved_fill (os.fill (' '));
       const std::size_t saved_width (os.width (0));
 
-      os << "0x" 
+      os << "0x"
 	 << std::setw (sizeof (id) * 2)
 	 << std::setfill ('0')
 	 << std::hex
 	 << id
 	;
-      
+
       os.flags (saved_flags);
       os.fill (saved_fill);
       os.width (saved_width);

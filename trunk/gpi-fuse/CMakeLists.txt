@@ -22,7 +22,7 @@ FOREACH (lib ${PC_FUSE_LIBRARIES})
                 HINTS
                 ${PC_FUSE_LIBDIR}
                 ${PC_FUSE_LIBRARY_DIRS}
- 	      )
+	      )
 
   SET(FUSE_LIBRARIES ${FUSE_LIBRARIES} ${FUSE_LIBRARY_${lib}})
 ENDFOREACH (lib ${PC_FUSE_LIBRARIES})

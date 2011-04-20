@@ -12,7 +12,7 @@ build_static=false
 
 build_apps=true
 build_gpi=true
-build_fuse=false
+build_gpi_fuse=false
 build_gui=true
 
 strip_log=
@@ -54,7 +54,7 @@ if [ -r "CMakeCache.txt" ] ; then
     get_cmake_cache_entry ENABLE_STATIC_BINARIES build_static
     get_cmake_cache_entry ENABLE_APPLICATION build_apps
     get_cmake_cache_entry ENABLE_GPI_SPACE build_gpi
-    get_cmake_cache_entry ENABLE_FUSE build_fuse
+    get_cmake_cache_entry ENABLE_GPI_FUSE build_gpi_fuse
     get_cmake_cache_entry ENABLE_SDPA_GUI build_gui
 
     get_cmake_cache_entry CMAKE_INSTALL_PREFIX build_prefix
@@ -83,7 +83,7 @@ cat >&2 <<EOF
 #        tests: $build_tests
 #         apps: $build_apps
 #       static: $build_static
-#         fuse: $build_fuse
+#        gpifs: $build_gpi_fuse
 #          gui: $build_gui
 #     real-gpi: $build_gpi
 #    strip-log: $strip_log
@@ -100,7 +100,7 @@ $0 [-h] [-b type] [-a|-A] [-t|-T] [-s|-S] [-g|-G] [-f|-F] [-m|-M] [-r version] [
    -tT : build tests (t:yes T:no)
    -sS : build static (s:yes S:no)
    -gG : build gpi (g:yes G:no)
-   -fF : build fuse module (f:yes F:no)
+   -fF : build gpi filesystem (f:yes F:no)
    -mM : build monitor guil (m:yes M:no)
    -r  : explicitly set revision
    -L  : strip log level up to and including N
@@ -155,11 +155,11 @@ while getopts ":hb:tTsSaAgGfFmML:r:p:" opt; do
 	    ;;
 	f)
 	    count=$(( count + 1 ))
-	    build_fuse=true
+	    build_gpi_fuse=true
 	    ;;
 	F)
 	    count=$(( count + 1 ))
-	    build_fuse=false
+	    build_gpi_fuse=false
 	    ;;
 	m)
 	    count=$(( count + 1 ))
@@ -235,10 +235,10 @@ else
     cmake_flags="$cmake_flags -DENABLE_REAL_GPI=OFF"
 fi
 
-if [ "$build_fuse" == "true" ] ; then
-    cmake_flags="$cmake_flags -DENABLE_FUSE=ON"
+if [ "$build_gpi_fuse" == "true" ] ; then
+    cmake_flags="$cmake_flags -DENABLE_GPI_FUSE=ON"
 else
-    cmake_flags="$cmake_flags -DENABLE_FUSE=OFF"
+    cmake_flags="$cmake_flags -DENABLE_GPI_FUSE=OFF"
 fi
 
 if [ "$build_gui" == "true" ] ; then
