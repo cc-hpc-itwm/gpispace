@@ -1,7 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define COMM_TEST 1
-
 #define FUSE_USE_VERSION 26
 
 #include <fuse.h>

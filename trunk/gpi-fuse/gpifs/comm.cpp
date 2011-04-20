@@ -1,17 +1,28 @@
-#ifdef COMM_TEST
-#include <ctime>
-#endif
+#include <errno.h>
+
+#include <boost/foreach.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 
 #include <gpifs/comm.hpp>
 #include <gpifs/log.hpp>
 
+
 static gpi::pc::client::api_t & gpi_api ()
 {
   static gpi::pc::client::api_t a;
   return a;
 }
+
+#define GPIFS_SHM_SIZE (128 * 1024)
+
+static gpi::pc::type::info::descriptor_t gpi_info;
+static void *shm_ptr = 0;
+static const size_t shm_size = GPIFS_SHM_SIZE;
+static const size_t scr_size = GPIFS_SHM_SIZE;
+static gpi::pc::type::segment_id_t shm_id = 0;
+static gpi::pc::type::handle_t     shm_hdl = 0;
+static gpi::pc::type::handle_t     scr_hdl = 0;
 
 namespace gpifs
 {
@@ -23,6 +34,47 @@ namespace gpifs
 
       int res (0);
 
+      const char * path = "/var/tmp/gpi-space/GPISpace-5201/control";
+
+      gpi_api().path (path);
+
+      try
+      {
+        gpi_api().start ();
+      }
+      catch (std::exception const & ex)
+      {
+        LOG( "could not connect to gpi-space at "
+           << path
+           << ": "
+           << ex.what ()
+           );
+        return -EACCES;
+      }
+
+      gpi_info = gpi_api().collect_info();
+
+      // register segment
+
+      shm_id = gpi_api().register_segment ( "gpifs"
+                                          , shm_size
+                                          , gpi::pc::type::segment::F_EXCLUSIVE
+                                          | gpi::pc::type::segment::F_FORCE_UNLINK
+                                          );
+
+      scr_hdl = gpi_api().alloc ( gpifs::segment::GPI
+                                , scr_size
+                                , "gpifs-scratch"
+                                , gpi::pc::type::handle::F_EXCLUSIVE
+                                );
+
+      shm_hdl = gpi_api().alloc ( shm_id
+                                , shm_size
+                                , "gpifs-transfer"
+                                , gpi::pc::type::handle::F_EXCLUSIVE
+                                );
+      shm_ptr = gpi_api().segments()[shm_id]->ptr();
+
       return res;
     }
     int comm::finalize ()
@@ -30,6 +82,8 @@ namespace gpifs
       LOG ("comm: finalize");
 
       int res (0);
+
+      gpi_api().stop ();
 
       return res;
     }
@@ -40,38 +94,211 @@ namespace gpifs
 
       int res (0);
 
+      try
+      {
+        gpi_api().free (id);
+      }
+      catch (std::exception const & ex)
+      {
+        res = -ENOENT;
+      }
+
       return res;
     }
     int comm::alloc (const alloc::descr & descr) const
     {
-      LOG ("comm: alloc " << descr)
+      LOG ("comm: alloc " << descr);
 
-        int res (0);
 
-      return res;
-    }
-
-    std::size_t comm::read ( const alloc::id_t & id
-                     , char * buf
-                     , std::size_t size
-                     , const std::size_t offset
-                     ) const
-    {
-      LOG ( "comm: read from handle " << id << ":" << offset
-          << " " << size << " bytes"
-          );
+      try
+      {
+        gpi_api().alloc ( descr.segment()
+                        , descr.size()
+                        , descr.name()
+                        , gpi::pc::type::handle::F_PERSISTENT
+                        );
+      }
+      catch (std::exception const & ex)
+      {
+        // TODO
+        return -EINVAL;
+      }
 
       return 0;
     }
-    std::size_t comm::write ( const alloc::id_t & id
-                      , const char * buf
-                      , std::size_t size
-                      , const std::size_t offset
+
+    namespace detail
+    {
+      int
+      get_handle_info ( const alloc::id_t id
+                      , gpi::pc::type::handle::descriptor_t & hdl_info
                       )
+      {
+        bool found (false);
+        {
+          gpi::pc::type::handle::list_t handles (gpi_api().list_allocations ());
+          for ( gpi::pc::type::handle::list_t::const_iterator it(handles.begin())
+              ; it != handles.end() && !found
+              ; ++it
+              )
+          {
+            if (it->id == id)
+            {
+              found = true;
+              hdl_info = *it;
+            }
+          }
+        }
+
+        if (!found)
+          return -ENOENT;
+
+        // global gpi handles are a bit different
+        if (hdl_info.segment == gpifs::segment::GPI
+           && (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
+           )
+        {
+          hdl_info.size *= gpi_info.nodes;
+        }
+
+        return 0;
+      }
+    }
+
+    std::size_t comm::read ( const alloc::id_t & id
+                           , char * buf
+                           , std::size_t size
+                           , std::size_t offset
+                           ) const
+    {
+      LOG( "comm: read from handle "
+         << id
+         << ":"
+         << offset
+         << " "
+         << size
+         << " bytes"
+         );
+
+      gpi::pc::type::handle::descriptor_t hdl_info;
+      {
+        int rc = detail::get_handle_info (id, hdl_info);
+        if (rc < 0)
+        {
+          return (size_t)(rc);
+        }
+      }
+
+      if (hdl_info.segment != segment::GPI)
+        return (size_t)(-EINVAL);
+
+      size = std::min (size, hdl_info.size - offset);
+
+      size_t remaining(size);
+      while (remaining)
+      {
+        size_t chunk
+          (std::min ( remaining
+                    , std::min (shm_size, scr_size)
+                    )
+          );
+
+        try
+        {
+          gpi_api().wait
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(scr_hdl, 0)
+                              , gpi::pc::type::memory_location_t(id, offset)
+                              , chunk
+                              , 0
+                              )
+            );
+
+          gpi_api().wait
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(shm_hdl, 0)
+                              , gpi::pc::type::memory_location_t(scr_hdl, 0)
+                              , chunk
+                              , 0
+                              )
+            );
+
+          memcpy (buf, shm_ptr, chunk);
+
+          buf += chunk;
+          remaining -= chunk;
+          offset += chunk;
+        }
+        catch (std::exception const & ex)
+        {
+          LOG("read: failed: " << ex.what());
+          return (size_t)(-EIO);
+        }
+      }
+
+      return size;
+    }
+
+    std::size_t comm::write ( const alloc::id_t & id
+                            , const char * buf
+                            , std::size_t size
+                            , std::size_t offset
+                            )
     {
       LOG ( "comm: write to handle " << id << ":" << offset
           << " " << size << " bytes"
           );
+
+      gpi::pc::type::handle::descriptor_t hdl_info;
+      {
+        int rc = detail::get_handle_info (id, hdl_info);
+        if (rc < 0)
+        {
+          return (size_t)(rc);
+        }
+      }
+
+      if (hdl_info.segment != gpifs::segment::GPI)
+        return (size_t)(-EINVAL);
+
+      size = std::min (size, hdl_info.size - offset);
+      size_t remaining(size);
+      while (remaining)
+      {
+        size_t chunk
+          (std::min ( remaining
+                    , std::min (shm_size, scr_size)
+                    )
+          );
+
+        memcpy (shm_ptr, buf, chunk);
+
+        try
+        {
+          gpi_api().wait
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(scr_hdl, 0)
+                              , gpi::pc::type::memory_location_t(shm_hdl, 0)
+                              , chunk
+                              , 0
+                              )
+            );
+
+          gpi_api().wait
+            (gpi_api().memcpy ( gpi::pc::type::memory_location_t(id, offset)
+                              , gpi::pc::type::memory_location_t(scr_hdl, 0)
+                              , chunk
+                              , 0
+                              )
+            );
+
+          buf += chunk;
+          remaining -= chunk;
+          offset += chunk;
+        }
+        catch (std::exception const & ex)
+        {
+          LOG("write: failed: " << ex.what());
+          return (size_t)(-EIO);
+        }
+      }
 
       return size;
     }
@@ -82,27 +309,71 @@ namespace gpifs
 
       int res (0);
 
-      list->clear();
+      try
+      {
+        gpi::pc::type::segment::list_t
+          segments (gpi_api().list_segments());
 
-#ifdef COMM_TEST
-      list_segments_test (list);
-#else // ! ifdef COMM_TEST
-#endif // ifdef COMM_TEST
+        list->clear();
+
+        BOOST_FOREACH (gpi::pc::type::segment::list_t::value_type const & seg, segments)
+        {
+          list->push_back(seg.id);
+        }
+      }
+      catch (std::exception const & ex)
+      {
+        return -EIO;
+      }
 
       return res;
     }
+
+    namespace detail
+    {
+      static alloc::alloc
+      make_alloc(gpi::pc::type::handle::descriptor_t const & hdl)
+      {
+        gpifs::alloc::id_t id (hdl.id);
+        gpifs::alloc::name_t name (hdl.name);
+        gpifs::segment::id_t seg_id (hdl.segment);
+        gpifs::alloc::size_t size (hdl.size);
+        time_t ctime (hdl.ts.modified);
+
+        // global gpi handles are a bit different
+        if (  seg_id == gpifs::segment::GPI
+           && (hdl.flags & gpi::pc::type::handle::F_GLOBAL)
+           )
+        {
+          size *= gpi_info.nodes;
+        }
+
+        return alloc::alloc (id, ctime, seg_id, size, name);
+      }
+    }
+
     int comm::list_allocs (const segment::id_t & id, alloc::list_t * list) const
     {
       LOG ("comm: list_allocs for segment " << segment::string (id));
 
       int res (0);
 
-      list->clear();
+      try
+      {
+        gpi::pc::type::handle::list_t
+          handles (gpi_api().list_allocations(id));
 
-#ifdef COMM_TEST
-      list_allocs_test (id, list);
-#else // ! ifdef COMM_TEST
-#endif // ifdef COMM_TEST
+        list->clear();
+
+        BOOST_FOREACH (gpi::pc::type::handle::list_t::value_type const & hdl, handles)
+        {
+          list->push_back(detail::make_alloc(hdl));
+        }
+      }
+      catch (std::exception const & ex)
+      {
+        return -EIO;
+      }
 
       return res;
     }

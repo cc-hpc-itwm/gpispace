@@ -25,8 +25,9 @@ foreach (target ${targets})
   endif(APPLE)
   target_link_libraries (${target} gpi-fuse)
   target_link_libraries (${target} ${FUSE_LIBRARIES})
-  target_link_libraries (${target} ${GPISpace_LIBRARY})
-  target_link_libraries (${target} ${FhgLog_LIBRARIES})
+  target_link_libraries (${target} ${GPI_SPACE_LIBRARY})
+  target_link_libraries (${target} ${FhgLog_LIBRARY})
+  target_link_libraries (${target} ${Boost_LIBRARIES})
   set_target_properties(${target} PROPERTIES
       COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
     )

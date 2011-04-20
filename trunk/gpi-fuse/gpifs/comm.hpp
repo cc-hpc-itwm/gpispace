@@ -23,26 +23,16 @@ namespace gpifs
       std::size_t read ( const alloc::id_t & id
                        , char * buf
                        , std::size_t size
-                       , const std::size_t offset
+                       , std::size_t offset
                        ) const;
       std::size_t write ( const alloc::id_t & id
                         , const char * buf
                         , std::size_t size
-                        , const std::size_t offset
+                        , std::size_t offset
                         );
 
       int list_segments (segment::id_list_t * list) const;
       int list_allocs (const segment::id_t & id, alloc::list_t * list) const;
-
-      // ******************************************************************* //
-
-#ifdef COMM_TEST
-      void list_segments_test (segment::id_list_t * list) const;
-
-      void list_allocs_test ( const segment::id_t & id
-                            , alloc::list_t * list
-                            ) const;
-#endif // ifdef COMM_TEST
     };
   } // namespace comm
 } // namespace gpu_fuse
