@@ -20,8 +20,6 @@
 #include <cstring> // memset
 #include <errno.h>
 
-#include <gpi-space/pc/client/api.hpp>
-
 // ************************************************************************* //
 
 static const gpifs::state::buffer::slot_t num_slots (256);

@@ -1,11 +1,29 @@
-add_executable(gpifs gpifs.cpp)
+set(hdrs
+  alloc.hpp
+  comm.hpp
+  file.hpp
+  id.hpp
+  log.hpp
+  segment.hpp
+  splitted_path.hpp
+  state.hpp
+  util.hpp
+  )
+
+set(srcs
+  comm.cpp
+  )
+
+add_library(gpi-fuse ${hdrs} ${srcs})
+
+add_executable(gpifs gpifs.cpp ${srcs})
 
 set(targets gpifs)
-
 foreach (target ${targets})
   if(APPLE)
     STRING(REGEX REPLACE ";" " " PC_FUSE_CFLAGS_OTHER "${PC_FUSE_CFLAGS_OTHER}")
   endif(APPLE)
+  target_link_libraries (${target} gpi-fuse)
   target_link_libraries (${target} ${FUSE_LIBRARIES})
   target_link_libraries (${target} ${GPISpace_LIBRARY})
   target_link_libraries (${target} ${FhgLog_LIBRARIES})
@@ -13,3 +31,18 @@ foreach (target ${targets})
       COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
     )
 endforeach (target ${targets})
+
+install(TARGETS gpi-fuse
+  ARCHIVE
+  DESTINATION lib
+  COMPONENT libraries)
+
+install(TARGETS gpifs
+  RUNTIME
+  DESTINATION bin
+  COMPONENT applications)
+
+install(FILES ${hdrs}
+  DESTINATION include/gpifs
+  COMPONENT headers
+  )

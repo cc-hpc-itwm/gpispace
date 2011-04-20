@@ -1,4 +1,3 @@
-
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 set (simple_tests
@@ -13,6 +12,7 @@ foreach (test ${simple_tests})
 
   add_executable(${target} ${src})
 
+  target_link_libraries (${target} gpi-fuse)
   target_link_libraries (${target} ${FUSE_LIBRARIES})
   set_target_properties(${target} PROPERTIES
       COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
