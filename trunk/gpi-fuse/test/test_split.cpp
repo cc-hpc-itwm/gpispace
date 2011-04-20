@@ -5,8 +5,8 @@
 
 #define COMM_TEST 1
 
-#include <state.hpp>
-#include <splitted_path.hpp>
+#include <gpifs/state.hpp>
+#include <gpifs/splitted_path.hpp>
 
 #include <boost/optional.hpp>
 

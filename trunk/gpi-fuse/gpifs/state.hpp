@@ -14,14 +14,14 @@
 #include <string>
 #include <stack>
 
-#include <util.hpp>
-#include <file.hpp>
-#include <id.hpp>
-#include <segment.hpp>
-#include <alloc.hpp>
-#include <comm.hpp>
-#include <splitted_path.hpp>
-#include <comm.hpp>
+#include <gpifs/util.hpp>
+#include <gpifs/file.hpp>
+#include <gpifs/id.hpp>
+#include <gpifs/segment.hpp>
+#include <gpifs/alloc.hpp>
+#include <gpifs/comm.hpp>
+#include <gpifs/splitted_path.hpp>
+#include <gpifs/comm.hpp>
 
 #include <ctime>
 

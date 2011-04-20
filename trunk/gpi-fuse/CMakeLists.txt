@@ -27,14 +27,22 @@ FOREACH (lib ${PC_FUSE_LIBRARIES})
   SET(FUSE_LIBRARIES ${FUSE_LIBRARIES} ${FUSE_LIBRARY_${lib}})
 ENDFOREACH (lib ${PC_FUSE_LIBRARIES})
 
-message (STATUS "FUSE_INCLUDE_DIR = ${FUSE_INCLUDE_DIR}")
-message (STATUS "FUSE_LIBRARIES = ${FUSE_LIBRARIES}")
-
 if (NOT FUSE_INCLUDE_DIR)
   message (FATAL_ERROR "FUSE NOT FOUND!")
 endif (NOT FUSE_INCLUDE_DIR)
-
 include_directories (${FUSE_INCLUDE_DIR})
+
+include(SDPAFindBoost)
+message(STATUS "Boost: -I${Boost_INCLUDE_DIRS} -L${Boost_LIBRARY_DIRS} -l${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
+
+find_package(GPISpace REQUIRED)
+include_directories (${GPI_SPACE_INCLUDE_DIR})
+
+find_package(FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+
+include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(gpifs)
 

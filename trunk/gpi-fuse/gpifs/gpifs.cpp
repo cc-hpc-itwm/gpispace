@@ -6,11 +6,11 @@
 
 #include <fuse.h>
 
-#include <state.hpp>
-#include <file.hpp>
-#include <segment.hpp>
+#include <gpifs/state.hpp>
+#include <gpifs/file.hpp>
+#include <gpifs/segment.hpp>
 
-#include <log.hpp>
+#include <gpifs/log.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -19,6 +19,8 @@
 
 #include <cstring> // memset
 #include <errno.h>
+
+#include <gpi-space/pc/client/api.hpp>
 
 // ************************************************************************* //
 

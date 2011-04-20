@@ -7,6 +7,8 @@ foreach (target ${targets})
     STRING(REGEX REPLACE ";" " " PC_FUSE_CFLAGS_OTHER "${PC_FUSE_CFLAGS_OTHER}")
   endif(APPLE)
   target_link_libraries (${target} ${FUSE_LIBRARIES})
+  target_link_libraries (${target} ${GPISpace_LIBRARY})
+  target_link_libraries (${target} ${FhgLog_LIBRARIES})
   set_target_properties(${target} PROPERTIES
       COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
     )

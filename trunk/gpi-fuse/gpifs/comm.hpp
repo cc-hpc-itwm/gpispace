@@ -3,14 +3,14 @@
 #ifndef FUSE_COMM_HPP
 #define FUSE_COMM_HPP 1
 
-#include <segment.hpp>
-#include <alloc.hpp>
+#include <gpifs/segment.hpp>
+#include <gpifs/alloc.hpp>
 
 #ifdef COMM_TEST
 #include <ctime>
 #endif
 
-#include <log.hpp>
+#include <gpifs/log.hpp>
 
 namespace gpifs
 {

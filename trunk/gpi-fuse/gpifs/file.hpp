@@ -7,7 +7,7 @@
 
 #include <boost/unordered_set.hpp>
 
-#include <util.hpp>
+#include <gpifs/util.hpp>
 
 #include <sstream>
 

@@ -9,8 +9,8 @@
 
 #include <stdexcept>
 
-#include <id.hpp>
-#include <util.hpp>
+#include <gpifs/id.hpp>
+#include <gpifs/util.hpp>
 
 #include <boost/optional.hpp>
 #include <cctype>
