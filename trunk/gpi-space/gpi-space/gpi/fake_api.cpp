@@ -66,6 +66,8 @@ namespace gpi
           );
       }
       memset (m_dma, 0, m_mem_size);
+
+      m_startup_done = true;
     }
 
     void fake_gpi_api_t::stop ()
@@ -73,11 +75,11 @@ namespace gpi
       lock_type lock (m_mutex);
       if (m_startup_done)
       {
-        m_startup_done = false;
         if (m_dma)
         {
           free (m_dma); m_dma = 0;
         }
+        m_startup_done = false;
       }
     }
 
