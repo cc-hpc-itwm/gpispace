@@ -2,14 +2,14 @@
 # locates the FHG Logging framework
 # This file defines:
 # * FHGLOG_FOUND if fhglog was found
-# * FHGLOG_LIBRARY The lib to link to (currently only a static unix lib) 
+# * FHGLOG_LIBRARY The lib to link to (currently only a static unix lib)
 # * FHGLOG_INCLUDE_DIR
 
 if (NOT FhgLog_FIND_QUIETLY)
   message(STATUS "FindFhgLog check")
 endif (NOT FhgLog_FIND_QUIETLY)
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+if (NOT TARGET fhglog)
   #  include(FindPackageHelper)
   #  check_package(FhgLog fhglog/fhglog.hpp fhglog 1.0)
 
@@ -41,9 +41,9 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 	endif (FhgLog_FIND_REQUIRED)
   endif (FhgLog_INCLUDE_DIR AND FhgLog_LIBRARY)
 
-else(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+else (NOT TARGET fhglog)
   set(FhgLog_FOUND true)
   set(FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
   set(FhgLog_LIBRARY_DIR "")
   set(FhgLog_LIBRARY fhglog)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+endif (NOT TARGET fhglog)
