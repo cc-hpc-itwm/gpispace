@@ -1,3 +1,11 @@
+cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
+cmake_policy(VERSION 2.6)
+if(POLICY CMP0011)
+  cmake_policy(SET CMP0011 NEW)
+endif(POLICY CMP0011)
+
+project (gpi-fuse)
+string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 FIND_PACKAGE(PkgConfig)
 PKG_CHECK_MODULES(PC_FUSE fuse)
@@ -28,18 +36,15 @@ endif (NOT FUSE_INCLUDE_DIR)
 
 include_directories (${FUSE_INCLUDE_DIR})
 
-add_executable(fuse.hello fuse.hello.c)
-add_executable(fuse fuse.cpp)
+add_executable(gpifs gpifs.cpp)
 
 set(targets
-    fuse.hello
-    fuse
+    gpifs
    )
 
 foreach (target ${targets})
   if(APPLE)
     STRING(REGEX REPLACE ";" " " PC_FUSE_CFLAGS_OTHER "${PC_FUSE_CFLAGS_OTHER}")
-    message(status "replace")
   endif(APPLE)
   target_link_libraries (${target} ${FUSE_LIBRARIES})
   set_target_properties(${target} PROPERTIES
