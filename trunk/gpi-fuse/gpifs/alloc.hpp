@@ -3,16 +3,16 @@
 #ifndef FUSE_ALLOC_HPP
 #define FUSE_ALLOC_HPP
 
-#include <boost/unordered_set.hpp>
-#include <boost/optional.hpp>
+#include <ctime>
 
 #include <list>
 
-#include <id.hpp>
-#include <segment.hpp>
-#include <util.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
 
-#include <ctime>
+#include <gpifs/id.hpp>
+#include <gpifs/segment.hpp>
+#include <gpifs/util.hpp>
 
 namespace gpifs
 {

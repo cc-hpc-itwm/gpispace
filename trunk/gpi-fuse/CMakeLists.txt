@@ -36,22 +36,9 @@ endif (NOT FUSE_INCLUDE_DIR)
 
 include_directories (${FUSE_INCLUDE_DIR})
 
-add_executable(gpifs gpifs.cpp)
+add_subdirectory(gpifs)
 
-set(targets
-    gpifs
-   )
-
-foreach (target ${targets})
-  if(APPLE)
-    STRING(REGEX REPLACE ";" " " PC_FUSE_CFLAGS_OTHER "${PC_FUSE_CFLAGS_OTHER}")
-  endif(APPLE)
-  target_link_libraries (${target} ${FUSE_LIBRARIES})
-  set_target_properties(${target} PROPERTIES
-      COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
-    )
-endforeach (target ${targets})
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-add_subdirectory(test)
+include(CTest)
+if (BUILD_TESTING)
+  add_subdirectory(test)
+endif (BUILD_TESTING)
