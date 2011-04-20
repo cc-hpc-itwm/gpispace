@@ -14,15 +14,35 @@ if (NOT TARGET gpi-space-pc-client-static)
     PATH_SUFFIXES include
     )
 
-  find_library (GPI_SPACE_LIBRARY
+  find_library (GPI_SPACE_PC_CLIENT_LIBRARY
     NAMES libgpi-space-pc-client.a
     HINTS ${GPI_SPACE_HOME} ENV GPI_SPACE_HOME
     PATH_SUFFIXES lib
     )
-  find_library (GPI_SPACE_LIBRARY_SHARED
+  find_library (GPI_SPACE_PC_CLIENT_LIBRARY_SHARED
     NAMES libgpi-space-pc-client.so libgpi-space-pc-client.dylib
     HINTS ${GPI_SPACE_HOME} ENV GPI_SPACE_HOME
     PATH_SUFFIXES lib
+    )
+
+  find_library (GPI_SPACE_PC_SEGMENT_LIBRARY
+    NAMES libgpi-space-pc-segment.a
+    HINTS ${GPI_SPACE_HOME} ENV GPI_SPACE_HOME
+    PATH_SUFFIXES lib
+    )
+  find_library (GPI_SPACE_PC_SEGMENT_LIBRARY_SHARED
+    NAMES libgpi-space-pc-segment.so libgpi-space-pc-segment.dylib
+    HINTS ${GPI_SPACE_HOME} ENV GPI_SPACE_HOME
+    PATH_SUFFIXES lib
+    )
+
+  set(GPI_SPACE_LIBRARY
+    ${GPI_SPACE_PC_CLIENT_LIBRARY}
+    ${GPI_SPACE_PC_SEGMENT_LIBRARY}
+    )
+  set(GPI_SPACE_LIBRARY_SHARED
+    ${GPI_SPACE_PC_CLIENT_LIBRARY_SHARED}
+    ${GPI_SPACE_PC_SEGMENT_LIBRARY_SHARED}
     )
 
   if (GPI_SPACE_INCLUDE_DIR)
@@ -45,8 +65,8 @@ else (NOT TARGET gpi-space-pc-client-static)
   set(GPI_SPACE_FOUND true)
   set(GPI_SPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/gpi-space;${CMAKE_BINARY_DIR}/gpi-space")
 
-  set(GPI_SPACE_LIBRARY gpi-space-pc-client-static)
-  set(GPI_SPACE_LIBRARY_SHARED gpi-space-pc-client-shared)
+  set(GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
+  set(GPI_SPACE_LIBRARY_SHARED gpi-space-pc-client-shared gpi-space-pc-segment-shared)
 
   if (NOT GPI_SPACE_FIND_QUIETLY)
     message(STATUS "Found GPISpace headers in ${GPI_SPACE_INCLUDE_DIR}")
