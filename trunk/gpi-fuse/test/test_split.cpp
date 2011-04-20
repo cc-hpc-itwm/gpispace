@@ -3,8 +3,6 @@
 #include <string>
 #include <list>
 
-#define COMM_TEST 1
-
 #include <gpifs/state.hpp>
 #include <gpifs/splitted_path.hpp>
 
