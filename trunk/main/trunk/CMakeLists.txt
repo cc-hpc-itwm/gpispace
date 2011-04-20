@@ -124,11 +124,6 @@ add_subdirectory(util)
 message(STATUS "=== [ selftest ] ===")
 add_subdirectory(selftest)
 
-if (ENABLE_GPI_FUSE)
-  message(STATUS "=== [ gpi-fuse ] ===")
-  add_subdirectory(gpi-fuse)
-endif (ENABLE_GPI_FUSE)
-
 ## dependency fixes
 if (WITH_FAKE_PC)
   add_dependencies (fvm-pc-fake mmgr)
@@ -155,6 +150,11 @@ if (ENABLE_GPI_SPACE)
   message(STATUS "=== [ gpi-space ] ===")
   add_subdirectory(gpi-space)
 endif (ENABLE_GPI_SPACE)
+
+if (ENABLE_GPI_FUSE)
+  message(STATUS "=== [ gpi-fuse ] ===")
+  add_subdirectory(gpi-fuse)
+endif (ENABLE_GPI_FUSE)
 
 if (ENABLE_APPLICATION)
   message(STATUS "=== [ applications ] ===")
