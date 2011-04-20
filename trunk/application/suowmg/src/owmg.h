@@ -14,7 +14,22 @@
 #include <fftw3.h>
 #include "rtc.h"
 
+/* ************************************************************************* */
+
 #include <pthread.h>
+#include <sys/time.h>
+
+static inline double
+current_time ()
+{
+  struct timeval tv;
+
+  gettimeofday (&tv, NULL);
+
+  return ((double) tv.tv_sec) + ((double) tv.tv_usec) * 1E-6;
+}
+
+/* ************************************************************************* */
 
 #define FALSE (0)
 #define TRUE (1)
@@ -60,9 +75,6 @@ typedef struct {
   int nwH;
   float dw;
 
-  // Interpolation
-  averageStruct **avgList;
-
   // Storage
   float ***imageCubeUD;
   float ***imageCubeDD;
@@ -74,60 +86,12 @@ typedef struct {
   float ***dCube;
 } owmgData;
 
-typedef struct
-{ pthread_mutex_t mutex;
-  pthread_cond_t cond;
-  int n;
-  int w;
-} barrier_t;
-
-static barrier_t * new_barrier (const int n)
-{
-  barrier_t * b = malloc (sizeof (barrier_t));
-
-  if (!b)
-  {
-	  fprintf(stderr, "failed to allocate memory for barrier description\n");
-	  exit (EXIT_FAILURE);
-  }
-
-  pthread_mutex_init (&b->mutex, NULL);
-  pthread_cond_init (&b->cond, NULL);
-  b->n = n;
-  b->w = 0;
-
-  return b;
-}
-
-static void free_barrier (barrier_t * b)
-{
-	pthread_cond_destroy (&b->cond);
-	pthread_mutex_destroy (&b->mutex);
-	free (b);
-}
-
-static void wait_barrier (barrier_t * b)
-{
-	pthread_mutex_lock (&b->mutex);
-	b->w = (b->w + 1) % b->n;
-	if (b->w == 0)
-	{
-		pthread_mutex_unlock (&b->mutex);
-		pthread_cond_broadcast (&b->cond);
-	}
-	else
-	{
-		pthread_cond_wait (&b->cond, &b->mutex);
-		pthread_mutex_unlock (&b->mutex);
-	}
-}
 
 typedef struct
 { owmgData * data;
   float * vMin_iz;
   int tid;
   int nThread;
-  barrier_t * barrier;
   pthread_mutex_t * mutex_update;
 } thread_arg_t;
 
