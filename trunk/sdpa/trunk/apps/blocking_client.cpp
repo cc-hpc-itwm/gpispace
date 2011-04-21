@@ -41,7 +41,7 @@ string read_workflow(string strFileName)
 	return os.str();
 }
 
-// use FHGLOG_level=MIN FHGLOG_color=off
+// use FHGLOG_level = MIN FHGLOG_color=off
 
 int main(int argc, char** argv)
 {
@@ -76,7 +76,6 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-
 		boost::char_separator<char> sep(":");
 		boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
 
