@@ -244,8 +244,3 @@ target_link_libraries(test_concurrent_clients  seda sdpa-daemon
 ${WE_PRECOMPILE_LIBRARIES})
 add_test( test_concurrent_clients test_concurrent_clients )
 
-#test_backend
-#set( test_Backend_srcs test_Backend.cpp )
-#add_executable(test_backend ${test_Backend_srcs})
-#target_link_libraries(test_backend  ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
-#add_test( test_backend test_backend )
