@@ -1,0 +1,95 @@
+#include "Transition.hpp"
+#include "Style.hpp"
+
+#include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
+#include <QPainter>
+
+namespace fhg
+{
+  namespace pnete
+  {
+    namespace graph
+    {
+      Transition::Transition(QGraphicsItem* parent)
+      : QGraphicsItem(parent),
+      _dragStart(0,0),
+      _size(150, 100),
+      _highlighted(false),
+      _dragging(false)
+      {
+          setAcceptHoverEvents(true);
+      }
+      
+      void Transition::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
+      {
+        if(_dragging)
+        {
+          _dragging = false;
+          event->setAccepted(true);
+        }
+      }
+      
+      void Transition::mousePressEvent(QGraphicsSceneMouseEvent * event)
+      {
+        //! \todo resize grap or move?
+        event->setAccepted(true);
+        _dragStart = event->pos();
+        _dragging = true;
+      }
+      
+      void Transition::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
+      {
+        if(_dragging)
+        {
+          QPointF oldLocation = pos();
+          setPos(Style::snapToRaster(oldLocation + event->pos() - _dragStart));
+          
+          // do not move, when now colliding with a different transition
+          //! \todo move this elsewhere? make this nicer, allow movement to left and right, if collision on bottom.
+          //! \todo move to the nearest possible position.
+          QList<QGraphicsItem *> collidingPorts = collidingItems();
+          for(QList<QGraphicsItem *>::iterator it = collidingPorts.begin(); it != collidingPorts.end(); ++it)
+          {
+            if(qgraphicsitem_cast<Transition*>(*it))
+            {
+              setPos(oldLocation);
+              break;
+            }
+          }
+          scene()->update();
+        }
+      }
+      
+      void Transition::hoverLeaveEvent(QGraphicsSceneHoverEvent*)
+      {
+        _highlighted = false;
+        update(boundingRect());
+      }
+      
+      void Transition::hoverEnterEvent(QGraphicsSceneHoverEvent*)
+      {
+        _highlighted = true;
+        update(boundingRect());
+      }
+      
+      QPainterPath Transition::shape() const
+      {
+        return Style::transitionShape(_size);
+      }
+      
+      QRectF Transition::boundingRect() const
+      {
+        return Style::transitionBoundingRect(_size);
+      }
+      
+      void Transition::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+      {
+        painter->setPen(QPen(QBrush(_highlighted ? Qt::red : Qt::black), 2.0f));
+        painter->setBackgroundMode(Qt::OpaqueMode);
+        painter->setBrush(QBrush(Qt::white, Qt::SolidPattern));
+        painter->drawPath(shape());
+      }
+    }
+  }
+}
