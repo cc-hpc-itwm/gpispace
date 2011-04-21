@@ -31,26 +31,38 @@ namespace gpifs
       descr ( const segment::id_t & segment
             , const size_t & size
             , const name_t & name
+            , const bool global
             )
         : _segment (segment)
         , _size (size)
         , _name (name)
+        , _global (global)
       {}
 
       const segment::id_t & segment () const { return _segment; }
       const size_t & size () const { return _size; }
       const name_t & name () const { return _name; }
+      const bool global () const { return _global; }
 
     private:
       segment::id_t _segment;
       size_t _size;
       name_t _name;
+      bool _global;
     };
 
     static inline std::ostream & operator << (std::ostream & s, const descr & d)
     {
       return
-        s << "{" << d.segment() << "/" << d.size() << "/" << d.name() << "}";
+        s << "{"
+          << d.global()
+          << "/"
+          << d.segment()
+          << "/"
+          << d.size()
+          << "/"
+          << d.name()
+          << "}";
     }
 
     // ********************************************************************* //
@@ -64,10 +76,11 @@ namespace gpifs
             , const segment::id_t & segment
             , const size_t & size
             , const name_t & name
+            , const bool global
             )
         : _id (id)
         , _ctime (ctime)
-        , _descr (segment, size, name)
+        , _descr (segment, size, name, global)
       {}
 
       const id_t & id () const { return _id; }
@@ -75,6 +88,7 @@ namespace gpifs
       const segment::id_t & segment () const { return _descr.segment(); }
       const size_t & size () const { return _descr.size(); }
       const name_t & name () const { return _descr.name(); }
+      const bool global() const { return _descr.global(); }
 
     private:
       id_t _id;
@@ -109,7 +123,14 @@ namespace gpifs
                   ++parser;
                 }
 
-              return descr (*segment, *size, name);
+              if (*segment == segment::GLOBAL)
+              {
+                return descr (segment::GPI, *size, name, true);
+              }
+              else if (*segment == segment::LOCAL)
+              {
+                return descr (segment::GPI, *size, name, false);
+              }
             }
         }
 

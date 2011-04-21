@@ -116,6 +116,7 @@ namespace gpifs
                         , descr.size()
                         , descr.name()
                         , gpi::pc::type::handle::F_PERSISTENT
+                        | (descr.global() ? gpi::pc::type::handle::F_GLOBAL : 0)
                         );
       }
       catch (std::exception const & ex)
@@ -309,22 +310,24 @@ namespace gpifs
 
       int res (0);
 
-      try
-      {
-        gpi::pc::type::segment::list_t
-          segments (gpi_api().list_segments());
+      list->clear();
+      list->push_back(segment::GPI);
 
-        list->clear();
+      // try
+      // {
+      //   gpi::pc::type::segment::list_t
+      //     segments (gpi_api().list_segments());
 
-        BOOST_FOREACH (gpi::pc::type::segment::list_t::value_type const & seg, segments)
-        {
-          list->push_back(seg.id);
-        }
-      }
-      catch (std::exception const & ex)
-      {
-        return -EIO;
-      }
+
+      //   BOOST_FOREACH (gpi::pc::type::segment::list_t::value_type const & seg, segments)
+      //   {
+      //     if (seg.id == segment::GPI)
+      //       }
+      // }
+      // catch (std::exception const & ex)
+      // {
+      //   return -EIO;
+      // }
 
       return res;
     }
@@ -348,7 +351,13 @@ namespace gpifs
           size *= gpi_info.nodes;
         }
 
-        return alloc::alloc (id, ctime, seg_id, size, name);
+        return alloc::alloc ( id
+                            , ctime
+                            , seg_id
+                            , size
+                            , name
+                            , (hdl.flags & gpi::pc::type::handle::F_GLOBAL) != 0
+                            );
       }
     }
 

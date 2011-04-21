@@ -197,7 +197,7 @@ namespace gpifs
 
       int refresh ()
       {
-        error_clear ();
+        //        error_clear ();
 
         return refresh (boost::none);
       }
@@ -396,9 +396,9 @@ namespace gpifs
           }
         else if (sp.segment == segment::root())
           {
-            fill (segment::global(), buf, filler);
-            fill (segment::local(), buf, filler);
-            fill (segment::shared(), buf, filler);
+            //            fill (segment::global(), buf, filler);
+            //            fill (segment::local(), buf, filler);
+            //            fill (segment::shared(), buf, filler);
             fill (segment::proc(), buf, filler);
 
             for ( allocs_t::const_iterator alloc (_allocs.begin())

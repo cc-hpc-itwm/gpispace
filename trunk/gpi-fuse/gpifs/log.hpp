@@ -3,6 +3,8 @@
 #ifndef FUSE_LOG_HPP
 #define FUSE_LOG_HPP 1
 
+#undef NDEBUG
+
 #ifndef NDEBUG
 #include <iostream>
 static std::ostream & logstream ()

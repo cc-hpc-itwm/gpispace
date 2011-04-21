@@ -32,6 +32,8 @@ gpifs_getattr (const char * path, struct stat * stbuf)
 {
   LOG ("getattr " << path);
 
+  state.refresh();
+
   const gpifs::state::maybe_splitted_path msp (state.split (path));
 
   if (!msp)
@@ -162,6 +164,8 @@ gpifs_readdir ( const char * path
               )
 {
   LOG ("readdir " << path);
+
+  state.refresh();
 
   const gpifs::state::maybe_splitted_path msp (state.split (path));
 
