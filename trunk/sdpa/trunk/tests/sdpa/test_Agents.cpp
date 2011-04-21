@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 	}
 	catch (const std::exception &ex) {
 		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
-		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()");
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()" );
 
 		ptrNRE_0->shutdown();
 		ptrAgg->shutdown();
@@ -243,7 +243,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
-
 
 	for( int k=0; k<m_nITER; k++ )
 	{
@@ -364,7 +363,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
-	 for( int k=0; k<m_nITER; k++ )
+	for( int k=0; k<m_nITER; k++ )
 	{
 		sdpa::job_id_t job_id_user;
 		int nTrials = 0;;
