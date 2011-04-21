@@ -291,123 +291,123 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
 void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
-	assert (pEvt);
+    assert (pEvt);
 
-	DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
+    DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
-	try
-	{
-		Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
+    try
+    {
+        Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
 
-		// update the job status to "Cancelled"
-		pJob->CancelJobAck(pEvt);
-		SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
-	}
-	catch (std::exception const & ex)
-	{
-		LOG(WARN, "could not find job: " << ex.what());
-		return;
-	}
+        // update the job status to "Cancelled"
+        pJob->CancelJobAck(pEvt);
+        SDPA_LOG_INFO("The job state is: "<<pJob->getStatus());
+    }
+    catch (std::exception const & ex)
+    {
+        LOG(WARN, "could not find job: " << ex.what());
+        return;
+    }
 
-	// the acknowledgment does not come from WE and there is a WE
-	if( pEvt->from() != sdpa::daemon::WE && hasWorkflowEngine() )
-	{
-		LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
+    // the acknowledgment does not come from WE and there is a WE
+    if( pEvt->from() != sdpa::daemon::WE && hasWorkflowEngine() )
+    {
+        LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
 
-		try
-		{
-			ptr_workflow_engine_->cancelled(pEvt->job_id());
-		}
-		catch (std::exception const & ex)
-		{
-			LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
-		}
+        try
+        {
+            ptr_workflow_engine_->cancelled(pEvt->job_id());
+        }
+        catch (std::exception const & ex)
+        {
+            LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
+        }
 
-		// delete the worker job
-		Worker::worker_id_t worker_id = pEvt->from();
-		try
-		{
-			LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
-			ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
-		}
-		catch (const WorkerNotFoundException&)
-		{
-			SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-		}
-		catch(const JobNotDeletedException& jnde)
-		{
-			LOG( ERROR
-					, "could not delete the job "
-					<< pEvt->job_id()
-					<< " from the worker "
-					<< worker_id
-					<< " : " << jnde.what()
-			);
-		}
-	}
+        // delete the worker job
+        Worker::worker_id_t worker_id = pEvt->from();
+        try
+        {
+            LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
+            ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
+        }
+        catch (const WorkerNotFoundException&)
+        {
+            SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+        }
+        catch(const JobNotDeletedException& jnde)
+        {
+            LOG( ERROR
+                            , "could not delete the job "
+                            << pEvt->job_id()
+                            << " from the worker "
+                            << worker_id
+                            << " : " << jnde.what()
+            );
+        }
+    }
 }
 
 void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
-	try {
-		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
-		pJob->RetrieveJobResults(pEvt, this);
-	}
-	catch(const JobNotFoundException&)
-	{
-		SDPA_LOG_INFO("The job "<<pEvt->job_id()<<" was not found by the JobManager");
-		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "no such job") );
-		sendEventToMaster(pErrorEvt);
-	}
+    try {
+        Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+        pJob->RetrieveJobResults(pEvt, this);
+    }
+    catch(const JobNotFoundException&)
+    {
+        SDPA_LOG_INFO("The job "<<pEvt->job_id()<<" was not found by the JobManager");
+        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "no such job") );
+        sendEventToMaster(pErrorEvt);
+    }
 }
 
 void Orchestrator::backup( std::ostream& os )
 {
-	try {
-		//std::string strArchiveName(name()+".bkp");
-		//SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+    try {
+        //std::string strArchiveName(name()+".bkp");
+        //SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
 
-		boost::archive::text_oarchive oa(os);
-		oa.register_type(static_cast<JobManager*>(NULL));
-		oa.register_type(static_cast<JobImpl*>(NULL));
-		oa.register_type(static_cast<JobFSM*>(NULL));
-		oa << ptr_job_man_;
+        boost::archive::text_oarchive oa(os);
+        oa.register_type(static_cast<JobManager*>(NULL));
+        oa.register_type(static_cast<JobImpl*>(NULL));
+        oa.register_type(static_cast<JobFSM*>(NULL));
+        oa << ptr_job_man_;
 
-		oa.register_type(static_cast<SchedulerOrch*>(NULL));
-		oa.register_type(static_cast<SchedulerImpl*>(NULL));
-		oa<<ptr_scheduler_;
-	}
-	catch(exception &e)
-	{
-		SDPA_LOG_INFO("Exception occurred: "<< e.what());
-		return;
-	}
+        oa.register_type(static_cast<SchedulerOrch*>(NULL));
+        oa.register_type(static_cast<SchedulerImpl*>(NULL));
+        oa<<ptr_scheduler_;
+    }
+    catch(exception &e)
+    {
+        SDPA_LOG_INFO("Exception occurred: "<< e.what());
+        return;
+    }
 }
 
 void Orchestrator::recover( std::istream& is )
 {
 
-	try {
+    try {
 
-		boost::archive::text_iarchive ia(is);
-		ia.register_type(static_cast<JobManager*>(NULL));
-		ia.register_type(static_cast<JobImpl*>(NULL));
-		ia.register_type(static_cast<JobFSM*>(NULL));
-		// restore the schedule from the archive
-		ia >> ptr_job_man_;
+        boost::archive::text_iarchive ia(is);
+        ia.register_type(static_cast<JobManager*>(NULL));
+        ia.register_type(static_cast<JobImpl*>(NULL));
+        ia.register_type(static_cast<JobFSM*>(NULL));
+        // restore the schedule from the archive
+        ia >> ptr_job_man_;
 
-		//SDPA_LOG_INFO("Job manager after recovery: \n");
-		//ptr_job_man_->print();
+        //SDPA_LOG_INFO("Job manager after recovery: \n");
+        //ptr_job_man_->print();
 
-		ia.register_type(static_cast<SchedulerOrch*>(NULL));
-		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia>> ptr_scheduler_;
+        ia.register_type(static_cast<SchedulerOrch*>(NULL));
+        ia.register_type(static_cast<SchedulerImpl*>(NULL));
+        ia>> ptr_scheduler_;
 
-		//SDPA_LOG_INFO("Worker manager after recovery: \n");
-		//scheduler()->print();
-	}
-	catch(exception &e)
-	{
-		SDPA_LOG_INFO("Exception occurred: "<< e.what());
-	}
+        //SDPA_LOG_INFO("Worker manager after recovery: \n");
+        //scheduler()->print();
+    }
+    catch(exception &e)
+    {
+        SDPA_LOG_INFO("Exception occurred: "<< e.what());
+    }
 }

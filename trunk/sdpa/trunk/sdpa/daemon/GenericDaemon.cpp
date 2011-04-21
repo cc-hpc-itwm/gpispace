@@ -623,87 +623,87 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
 
 void GenericDaemon::action_request_job(const RequestJobEvent& e)
 {
-	//SDPA_LOG_DEBUG("got job request from: " << e.from());
+    //SDPA_LOG_DEBUG("got job request from: " << e.from());
 
-	/*
-	the slave(aggregator) requests new executable jobs
-	this message is sent in regular frequencies depending on the load of the slave(aggregator)
-	this message can be seen as the trigger for a submitJob
-	it contains the id of the last job that has been received
-	the orchestrator answers to this message with a submitJob
-	*/
+    /*
+    the slave(aggregator) requests new executable jobs
+    this message is sent in regular frequencies depending on the load of the slave(aggregator)
+    this message can be seen as the trigger for a submitJob
+    it contains the id of the last job that has been received
+    the orchestrator answers to this message with a submitJob
+    */
 
-	// ATTENTION: you should submit/schedule only jobs that are in Pending state
-	// A job received from the user should be automatically put into the Running state
-	// after submitting the corresponding workflow to WFE
+    // ATTENTION: you should submit/schedule only jobs that are in Pending state
+    // A job received from the user should be automatically put into the Running state
+    // after submitting the corresponding workflow to WFE
 
-	//take a job from the workers' queue? and serve it
+    //take a job from the workers' queue? and serve it
 
-	//To do: replace this with schedule
-	Worker::worker_id_t worker_id = e.from();
-	try {
+    //To do: replace this with schedule
+    Worker::worker_id_t worker_id = e.from();
+    try {
 
-		// you should consume from the  worker's pending list; put the job into the worker's submitted list
-		sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(worker_id, e.last_job_id());
-		SDPA_LOG_DEBUG("Assign the job "<<jobId<<" to the worker '"<<worker_id);
+        // you should consume from the  worker's pending list; put the job into the worker's submitted list
+        sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(worker_id, e.last_job_id());
+        SDPA_LOG_DEBUG("Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
-		const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
+        const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
-		// INVESTIGATE HERE!
-		std::string job_status = ptrJob->getStatus();
-		bool bTerminal = false;
-		if( job_status.find("Finished") != std::string::npos ||
-					   job_status.find("Failed") != std::string::npos ||
-					   job_status.find("Cancelled") != std::string::npos )
-			bTerminal = true;
+        // INVESTIGATE HERE!
+        std::string job_status = ptrJob->getStatus();
+        bool bTerminal = false;
+        if( job_status.find("Finished") != std::string::npos ||
+                                   job_status.find("Failed") != std::string::npos ||
+                                   job_status.find("Cancelled") != std::string::npos )
+                bTerminal = true;
 
-		if( ptrJob.get() && !bTerminal )
-		{
-			// put the job into the Running state here
-			SDPA_LOG_DEBUG("The job status is "<<ptrJob->getStatus());
-			ptrJob->Dispatch(); // no event need to be sent
+        if( ptrJob.get() && !bTerminal )
+        {
+            // put the job into the Running state here
+            SDPA_LOG_DEBUG("The job status is "<<ptrJob->getStatus());
+            ptrJob->Dispatch(); // no event need to be sent
 
-			// create a SubmitJobEvent for the job job_id serialize and attach description
-			SDPA_LOG_DEBUG("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << e.from());
-			SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description(), ""));
+            // create a SubmitJobEvent for the job job_id serialize and attach description
+            SDPA_LOG_DEBUG("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << e.from());
+            SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), e.from(), ptrJob->id(),  ptrJob->description(), ""));
 
-			// Post a SubmitJobEvent to the slave who made the request
-			sendEventToSlave(pSubmitEvt);
-		}
-		else // send an error event
-		{
-			SDPA_LOG_DEBUG("no job available, get_next_job should probably throw an exception?");
-		}
-	}
-	catch(const NoJobScheduledException&)
-	{
-		//SDPA_LOG_DEBUG("No job was scheduled to the worker '"<<worker_id);
-	}
-	catch(const WorkerNotFoundException&)
-	{
-		SDPA_LOG_INFO("The worker " << worker_id << " is not registered! Sending him a notification ...");
+            // Post a SubmitJobEvent to the slave who made the request
+            sendEventToSlave(pSubmitEvt);
+        }
+        else // send an error event
+        {
+            SDPA_LOG_DEBUG("no job available, get_next_job should probably throw an exception?");
+        }
+    }
+    catch(const NoJobScheduledException&)
+    {
+        //SDPA_LOG_DEBUG("No job was scheduled to the worker '"<<worker_id);
+    }
+    catch(const WorkerNotFoundException&)
+    {
+        SDPA_LOG_INFO("The worker " << worker_id << " is not registered! Sending him a notification ...");
 
-		// the worker should register first, before posting a job request
-		ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+        // the worker should register first, before posting a job request
+        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
 
-		sendEventToSlave(pErrorEvt);
-	}
-	catch(const QueueFull&)
-	{
-		SDPA_LOG_ERROR("Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
-	}
-	catch(const seda::StageNotFound&)
-	{
-		SDPA_LOG_ERROR("Could not lookup stage: " << ptr_to_slave_stage_->name());
-	}
-	catch(const std::exception &ex)
-	{
-		SDPA_LOG_ERROR("Error during request-job handling: " << ex.what());
-	}
-	catch(...)
-	{
-		SDPA_LOG_ERROR("Unknown error during request-job handling!");
-	}
+        sendEventToSlave(pErrorEvt);
+    }
+    catch(const QueueFull&)
+    {
+        SDPA_LOG_ERROR("Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
+    }
+    catch(const seda::StageNotFound&)
+    {
+        SDPA_LOG_ERROR("Could not lookup stage: " << ptr_to_slave_stage_->name());
+    }
+    catch(const std::exception &ex)
+    {
+        SDPA_LOG_ERROR("Error during request-job handling: " << ex.what());
+    }
+    catch(...)
+    {
+        SDPA_LOG_ERROR("Unknown error during request-job handling!");
+    }
 }
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
@@ -1185,13 +1185,13 @@ unsigned int GenericDaemon::extJobsCnt()
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
-	SDPA_LOG_INFO("Received registration acknowledgment from "<<pRegAckEvt->from());
-	m_bRegistered = true;
+      SDPA_LOG_INFO("Received registration acknowledgment from "<<pRegAckEvt->from());
+      m_bRegistered = true;
 
-	// for all jobs that are in a terminal state and not yet acknowledged by the  master
-	// re-submit  them to the master, after registration
+      // for all jobs that are in a terminal state and not yet acknowledged by the  master
+      // re-submit  them to the master, after registration
 
-	ptr_job_man_->resubmitJobsAndResults(this);
+      ptr_job_man_->resubmitJobsAndResults(this);
 }
 
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
@@ -1201,209 +1201,209 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
-	try {
-		if(ptr_daemon_stage_.lock())
-		{
-			ptr_daemon_stage_.lock()->send(pEvt);
-			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-		}
-		else
-		{
-			SDPA_LOG_ERROR("Daemon stage not defined! ");
-		}
-	}
-	catch(const seda::QueueFull&)
-	{
-		SDPA_LOG_WARN("Could not send event. The queue is full!");
-	}
-	catch(const seda::StageNotFound& ex)
-	{
-		SDPA_LOG_ERROR("Stage not found! "<<ex.what());
-	}
-	catch(const std::exception& ex)
-	{
-		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-	}
+      try {
+              if(ptr_daemon_stage_.lock())
+              {
+                      ptr_daemon_stage_.lock()->send(pEvt);
+                      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+              }
+              else
+              {
+                      SDPA_LOG_ERROR("Daemon stage not defined! ");
+              }
+      }
+      catch(const seda::QueueFull&)
+      {
+              SDPA_LOG_WARN("Could not send event. The queue is full!");
+      }
+      catch(const seda::StageNotFound& ex)
+      {
+              SDPA_LOG_ERROR("Stage not found! "<<ex.what());
+      }
+      catch(const std::exception& ex)
+      {
+              SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+      }
 }
 
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
-	try {
-		  if( to_master_stage().get() )
-		  {
-			  to_master_stage()->send(pEvt);
-			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-			  //to_master_stage()->dump();
-		  }
-		  else
-		  {
-			  SDPA_LOG_ERROR("The master stage does not exist!");
-		  }
-	}
-	catch(const QueueFull&)
-	{
-		SDPA_LOG_WARN("Could not send event. The queue is full!");
-	}
-	catch(const seda::StageNotFound& )
-	{
-		SDPA_LOG_ERROR("Stage "<<to_master_stage()->name()<<" not found!");
-	}
-	catch(const std::exception& ex)
-	{
-		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-	}
+    try {
+              if( to_master_stage().get() )
+              {
+                      to_master_stage()->send(pEvt);
+                      DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+                      //to_master_stage()->dump();
+              }
+              else
+              {
+                      SDPA_LOG_ERROR("The master stage does not exist!");
+              }
+    }
+    catch(const QueueFull&)
+    {
+            SDPA_LOG_WARN("Could not send event. The queue is full!");
+    }
+    catch(const seda::StageNotFound& )
+    {
+            SDPA_LOG_ERROR("Stage "<<to_master_stage()->name()<<" not found!");
+    }
+    catch(const std::exception& ex)
+    {
+            SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+    }
 }
 
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
-	try {
-		  if( to_slave_stage().get() )
-		  {
-			  to_slave_stage()->send(pEvt);
-			  DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-		  }
-		  else
-		  {
-			  SDPA_LOG_ERROR("The slave stage does not exist!");
-		  }
-	}
-	catch(const QueueFull&)
-	{
-		SDPA_LOG_WARN("Could not send event. The queue is full!");
-	}
-	catch(const seda::StageNotFound& )
-	{
-		SDPA_LOG_ERROR("Stage "<<to_slave_stage()->name()<<" not found!");
-	}
-	catch(const std::exception& ex)
-	{
-		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-	}
+    try {
+        if( to_slave_stage().get() )
+        {
+                to_slave_stage()->send(pEvt);
+                DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+        }
+        else
+        {
+                SDPA_LOG_ERROR("The slave stage does not exist!");
+        }
+    }
+    catch(const QueueFull&)
+    {
+        SDPA_LOG_WARN("Could not send event. The queue is full!");
+    }
+    catch(const seda::StageNotFound& )
+    {
+        SDPA_LOG_ERROR("Stage "<<to_slave_stage()->name()<<" not found!");
+    }
+    catch(const std::exception& ex)
+    {
+        SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+    }
 }
 
 Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
 {
-	try {
-		return  ptr_scheduler_->findWorker(worker_id);
-	}
-	catch(const WorkerNotFoundException& ex) {
-          throw ex;
-	}
+    try {
+        return  ptr_scheduler_->findWorker(worker_id);
+    }
+    catch(const WorkerNotFoundException& ex) {
+      throw ex;
+    }
 }
 
 const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
-	try {
-		return  ptr_scheduler_->findWorker(job_id);
-	}
-	catch(const NoWorkerFoundException& ex) {
-		  throw ex;
-	}
+    try {
+        return  ptr_scheduler_->findWorker(job_id);
+    }
+    catch(const NoWorkerFoundException& ex) {
+        throw ex;
+    }
 }
 
 void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid )
 {
-	try {
-		ptr_scheduler_->addWorker(workerId, rank, agent_uuid);
-	}catch( const WorkerAlreadyExistException& ex )
-	{
-		throw ex;
-	}
+    try {
+        ptr_scheduler_->addWorker(workerId, rank, agent_uuid);
+    }catch( const WorkerAlreadyExistException& ex )
+    {
+        throw ex;
+    }
 }
 
 bool GenericDaemon::requestsAllowed( const sdpa::util::time_type& difftime )
 {
-	// if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
-	// reset it to the value specified by config first time when m_nExternalJobs becomes positive
-	// don't forget to decrement m_nExternalJobs when the job is finished !
-	if(!m_bRequestsAllowed)
-		return false;
+    // if m_nExternalJobs is null then slow it down, i.e. increase m_ullPollingInterval
+    // reset it to the value specified by config first time when m_nExternalJobs becomes positive
+    // don't forget to decrement m_nExternalJobs when the job is finished !
+    if(!m_bRequestsAllowed)
+        return false;
 
-	if( extJobsCnt() == 0 && m_ullPollingInterval < cfg().get<unsigned int>("upper bound polling interval") )
-		m_ullPollingInterval  = m_ullPollingInterval + 100000;
+    if( extJobsCnt() == 0 && m_ullPollingInterval < cfg().get<unsigned int>("upper bound polling interval") )
+        m_ullPollingInterval  = m_ullPollingInterval + 100000;
 
-	return (difftime>m_ullPollingInterval) &&
-		   (m_nExternalJobs<cfg().get<unsigned int>("nmax_ext_job_req"));
+    return (difftime>m_ullPollingInterval) &&
+        (m_nExternalJobs<cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
 void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
 {
-	if( hasWorkflowEngine() )
-	{
-          DLOG(TRACE, "external job failed: " << jobId);
-		workflowEngine()->failed( jobId.str(), reason );
-		jobManager()->deleteJob(jobId);
-	}
-	else
-	{
-		DLOG(TRACE, "Sent JobFailedEvent to self for the job"<<jobId);
-		JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(worker_id, name(), jobId, reason ));
-		sendEventToSelf(pEvtJobFailed);
-	}
+    if( hasWorkflowEngine() )
+    {
+        DLOG(TRACE, "external job failed: " << jobId);
+        workflowEngine()->failed( jobId.str(), reason );
+        jobManager()->deleteJob(jobId);
+    }
+    else
+    {
+        DLOG(TRACE, "Sent JobFailedEvent to self for the job"<<jobId);
+        JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent(worker_id, name(), jobId, reason ));
+        sendEventToSelf(pEvtJobFailed);
+    }
 }
 
 void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
 {
-	if( hasWorkflowEngine() )
-	{
-          DLOG(TRACE, "external job finished: " << jobId);
-		workflowEngine()->finished( jobId.str(), result );
-		jobManager()->deleteJob(jobId);
-	}
-	else
-	{
-		SDPA_LOG_INFO("Sent self a jobFinishedEvent for the job"<<jobId);
-		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(worker_id, name(), jobId, result));
-		sendEventToSelf(pEvtJobFinished);
-	}
+    if( hasWorkflowEngine() )
+    {
+        DLOG(TRACE, "external job finished: " << jobId);
+        workflowEngine()->finished( jobId.str(), result );
+        jobManager()->deleteJob(jobId);
+    }
+    else
+    {
+        SDPA_LOG_INFO("Sent self a jobFinishedEvent for the job"<<jobId);
+        JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(worker_id, name(), jobId, result));
+        sendEventToSelf(pEvtJobFinished);
+    }
 }
 
 void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
 {
-	if( hasWorkflowEngine() )
-	{
-		DLOG(TRACE, "external job cancelled: " << jobId);
-		workflowEngine()->cancelled( jobId.str() );
-		jobManager()->deleteJob(jobId);
-	}
-	else
-	{
-		DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
-		CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
-		sendEventToSelf(pEvtCancelJobAck);
-	}
+    if( hasWorkflowEngine() )
+    {
+        DLOG(TRACE, "external job cancelled: " << jobId);
+        workflowEngine()->cancelled( jobId.str() );
+        jobManager()->deleteJob(jobId);
+    }
+    else
+    {
+        DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
+        CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
+        sendEventToSelf(pEvtCancelJobAck);
+    }
 }
 
 void GenericDaemon::requestRegistration()
 {
-	// try to re-register
-  DLOG(TRACE, "Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
-	WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master(), rank(), agent_uuid()));
-	sendEventToMaster(pEvtWorkerReg);
+    // try to re-register
+    DLOG(TRACE, "Agent (" << name() << ") is sending a registration event to master (" << master() << ") now ...");
+    WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master(), rank(), agent_uuid()));
+    sendEventToMaster(pEvtWorkerReg);
 }
 
 void GenericDaemon::requestJob()
 {
-	// post a new request to the master
-	// the slave posts a job request
-	//SDPA_LOG_DEBUG( "Post a new request to "<<master() );
-	RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master() ) );
-	sendEventToMaster(pEvtReq);
+    // post a new request to the master
+    // the slave posts a job request
+    //SDPA_LOG_DEBUG( "Post a new request to "<<master() );
+    RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master() ) );
+    sendEventToMaster(pEvtReq);
 }
 
 void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 {
-	if( ptr_scheduler_ )
-	{
-		ptr_scheduler_->schedule(jobId);
-		return;
-	}
+    if( ptr_scheduler_ )
+    {
+        ptr_scheduler_->schedule(jobId);
+        return;
+    }
 
-	SDPA_LOG_ERROR("The agent "<<name()<<" has no scheduler!");
-	throw std::runtime_error(name() + " does not hava scheduler!");
+    SDPA_LOG_ERROR("The agent "<<name()<<" has no scheduler!");
+    throw std::runtime_error(name() + " does not hava scheduler!");
 }
 
 void GenericDaemon::start_fsm()
 {
-	// to be overriden in DaemonFSM
+  // to be overriden in DaemonFSM
 }

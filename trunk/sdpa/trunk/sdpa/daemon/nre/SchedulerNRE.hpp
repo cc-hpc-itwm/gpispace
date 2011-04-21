@@ -75,198 +75,199 @@ namespace sdpa {
 
 	void stop()
 	{
-		LOG(TRACE, "Stopping nre scheduler...");
-		SchedulerImpl::stop();
+            LOG(TRACE, "Stopping nre scheduler...");
+            SchedulerImpl::stop();
 
-		LOG(TRACE, "Stopping nre worker...");
-		m_worker_.stop();
+            LOG(TRACE, "Stopping nre worker...");
+            m_worker_.stop();
 	}
 
 	bool post_request(bool force = false)
 	{
-		//DMLOG(TRACE, "post request: force=" << force);
-	 	bool bReqPosted = false;
-	 	sdpa::util::time_type current_time = sdpa::util::now();
-	 	sdpa::util::time_type diff_time = current_time - m_last_request_time;
+            //DMLOG(TRACE, "post request: force=" << force);
+            bool bReqPosted = false;
+            sdpa::util::time_type current_time = sdpa::util::now();
+            sdpa::util::time_type diff_time = current_time - m_last_request_time;
 
-	 	if( force || ptr_comm_handler_->requestsAllowed(diff_time) )
-	 	{
-	 		ptr_comm_handler_->requestJob();
-	 		// SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
+            if( force || ptr_comm_handler_->requestsAllowed(diff_time) )
+            {
+                ptr_comm_handler_->requestJob();
+                // SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
 
-	 		update_request_time(current_time);
-	 		bReqPosted = true;
-	 	}
+                update_request_time(current_time);
+                bReqPosted = true;
+            }
 
-	 	return bReqPosted;
+            return bReqPosted;
 	 }
 
 	 void check_post_request()
 	 {
-	 	 if( ptr_comm_handler_->is_registered() )
-	 	 {
-	 		 // SDPA_LOG_DEBUG("Check if a new request is to be posted");
-	 		 // post job request if number_of_jobs() < #registered workers + 1
-	 		 post_request();
-	 	 }
-	 	 else // try to re-register
-			  {
-	 		 	 SDPA_LOG_INFO("Try to re-register ...");
-	 		 	 const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 1 *1000*1000) );
-	 		 	 SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-	 		  	 boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+             if( ptr_comm_handler_->is_registered() )
+             {
+                 // SDPA_LOG_DEBUG("Check if a new request is to be posted");
+                 // post job request if number_of_jobs() < #registered workers + 1
+                 post_request();
+             }
+             else // try to re-register
+              {
+                 SDPA_LOG_INFO("Try to re-register ...");
+                 const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 1 *1000*1000) );
+                 SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+                 boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
-	 		 	 ptr_comm_handler_->requestRegistration();
-			 }
+                 ptr_comm_handler_->requestRegistration();
+             }
 	 }
 
 	 virtual void execute(const sdpa::job_id_t& jobId) throw (std::exception)
 	 {
-           MLOG(TRACE, "executing activity: "<< jobId);
-		 const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-		 id_type act_id = pJob->id().str();
+             MLOG(TRACE, "executing activity: "<< jobId);
+             const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+             id_type act_id = pJob->id().str();
 
-		 execution_result_t result;
-		 encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
+             execution_result_t result;
+             encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
 
-		 if( !ptr_comm_handler_ )
-		 {
-                   LOG(ERROR, "nre scheduler does not have a comm-handler!");
-			 result_type output_fail;
-			 ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
-			 ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
-			 return;
-		 }
+             if( !ptr_comm_handler_ )
+             {
+                 LOG(ERROR, "nre scheduler does not have a comm-handler!");
+                 result_type output_fail;
+                 ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
+                 ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
+                 return;
+             }
 
-		try
-		{
-			ptr_comm_handler_->notifyActivityStarted(act_id, enc_act);
-			pJob->Dispatch();
-			result = m_worker_.execute(enc_act, pJob->walltime());
-		}
-		catch( const boost::thread_interrupted &)
-		{
-			std::string errmsg("could not execute activity: interrupted");
-			SDPA_LOG_ERROR(errmsg);
-			result = std::make_pair(ACTIVITY_FAILED, enc_act);
-		}
-		catch (const std::exception &ex)
-		{
-			std::string errmsg("could not execute activity: ");
-			errmsg += std::string(ex.what());
-			SDPA_LOG_ERROR(errmsg);
-			result = std::make_pair(ACTIVITY_FAILED, enc_act);
-		}
+            try
+            {
+                ptr_comm_handler_->notifyActivityStarted(act_id, enc_act);
+                pJob->Dispatch();
+                result = m_worker_.execute(enc_act, pJob->walltime());
+            }
+            catch( const boost::thread_interrupted &)
+            {
+                std::string errmsg("could not execute activity: interrupted");
+                SDPA_LOG_ERROR(errmsg);
+                result = std::make_pair(ACTIVITY_FAILED, enc_act);
+            }
+            catch (const std::exception &ex)
+            {
+                std::string errmsg("could not execute activity: ");
+                errmsg += std::string(ex.what());
+                SDPA_LOG_ERROR(errmsg);
+                result = std::make_pair(ACTIVITY_FAILED, enc_act);
+            }
 
-		// check the result state and invoke the NRE's callbacks
-		if( result.first == ACTIVITY_FINISHED )
-		{
-            DLOG(TRACE, "activity finished: " << act_id);
-			// notify the gui
-			// and then, the workflow engine
-			//ptr_comm_handler_->notifyActivityFinished(act_id, enc_act);
-            ptr_comm_handler_->notifyActivityFinished(act_id, result.second);
-			ptr_comm_handler_->workerJobFinished("", jobId, result.second);
-		}
-		else if( result.first == ACTIVITY_FAILED )
-		{
-			 DLOG(TRACE, "activity failed: " << act_id);
-			// notify the gui
-			// and then, the workflow engine
-			ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
-			ptr_comm_handler_->workerJobFailed("", jobId, result.second);
-		}
-		else if( result.first == ACTIVITY_CANCELLED )
-		{
-			 DLOG(TRACE, "activity cancelled: " << act_id);
+            // check the result state and invoke the NRE's callbacks
+            if( result.first == ACTIVITY_FINISHED )
+            {
+                DLOG(TRACE, "activity finished: " << act_id);
+                // notify the gui
+                // and then, the workflow engine
+                //ptr_comm_handler_->notifyActivityFinished(act_id, enc_act);
+                ptr_comm_handler_->notifyActivityFinished(act_id, result.second);
+                ptr_comm_handler_->workerJobFinished("", jobId, result.second);
+            }
+            else if( result.first == ACTIVITY_FAILED )
+            {
+                DLOG(TRACE, "activity failed: " << act_id);
+                // notify the gui
+                // and then, the workflow engine
+                ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
+                ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+            }
+            else if( result.first == ACTIVITY_CANCELLED )
+            {
+                DLOG(TRACE, "activity cancelled: " << act_id);
 
-			// notify the gui
-			// and then, the workflow engine
-			ptr_comm_handler_->notifyActivityCancelled(act_id, enc_act);
-			ptr_comm_handler_->workerJobCancelled("", jobId);
-		}
-		else
-		{
-			SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
-			ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
-			ptr_comm_handler_->workerJobFailed("", jobId, result.second);
-		}
+                // notify the gui
+                // and then, the workflow engine
+                ptr_comm_handler_->notifyActivityCancelled(act_id, enc_act);
+                ptr_comm_handler_->workerJobCancelled("", jobId);
+            }
+            else
+            {
+                SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
+                ptr_comm_handler_->notifyActivityFailed(act_id, enc_act);
+                ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+            }
 	 }
 
 	 void schedule_remote(const sdpa::job_id_t& /*jobId*/)
 	 {
-		 throw std::runtime_error ("Schedule remote not implemented for the NREs!");
+	     throw std::runtime_error ("Schedule remote not implemented for the NREs!");
 	 }
 
 	 void run()
 	 {
-	 	if(!ptr_comm_handler_)
-	 	{
-	 		SDPA_LOG_FATAL("The scheduler cannot be started. Invalid communication handler. ");
-	 		stop();
-	 		return;
-	 	}
+            if(!ptr_comm_handler_)
+            {
+                SDPA_LOG_FATAL("The scheduler cannot be started. Invalid communication handler. ");
+                stop();
+                return;
+            }
 
-	 	SDPA_LOG_DEBUG("Scheduler thread running ...");
+            SDPA_LOG_DEBUG("Scheduler thread running ...");
 
-	 	while(!bStopRequested)
-	 	{
-	 		try
-	 		{
-	 			check_post_request();
-	 			sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-	 			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+            while(!bStopRequested)
+            {
+                try
+                {
+                    check_post_request();
+                    sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+                    const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-	 			if(pJob->is_local())
-	 				schedule_local(jobId);
-	 			else
-	 			{
-					try {
-						DLOG(TRACE, "Try to execute the job "<<jobId.str()<<" ...");
-						execute(jobId);
-					}
-					catch(JobNotFoundException& ex)
-					{
-						SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
-					}
-					catch(const NoWorkerFoundException&)
-					{
-						// put the job back into the queue
-						jobs_to_be_scheduled.push(jobId);
-						SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
-					}
-	 			}
-	 		}
-			catch(JobNotFoundException const & ex)
-	 		{
-	 			SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
-	 		}
-	 		catch( const boost::thread_interrupted & )
-	 		{
-	 			DMLOG(DEBUG, "Thread interrupted ...");
-	 			bStopRequested = true; // FIXME: can probably be removed
-	 			break;
-	 		}
-	 		catch( const sdpa::daemon::QueueEmpty &)
-	 		{
-	 		  // ignore
-	 		}
-	 		catch ( const std::exception &ex )
-	 		{
-	 			MLOG(ERROR, "exception in scheduler thread: " << ex.what());
-	 		}
-	 	}
+                    if( !pJob->is_local() )
+                    {
+                        try {
+                            DLOG(TRACE, "Try to execute the job "<<jobId.str()<<" ...");
+                            execute(jobId);
+                        }
+                        catch(JobNotFoundException& ex)
+                        {
+                            SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+                        }
+                        catch(const NoWorkerFoundException&)
+                        {
+                            // put the job back into the queue
+                            jobs_to_be_scheduled.push(jobId);
+                            SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
+                        }
+                    }
+                    else
+                        schedule_local(jobId);
+
+                }
+                catch(JobNotFoundException const & ex)
+                {
+                    SDPA_LOG_DEBUG("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+                }
+                catch( const boost::thread_interrupted & )
+                {
+                    DMLOG(DEBUG, "Thread interrupted ...");
+                    bStopRequested = true; // FIXME: can probably be removed
+                    break;
+                }
+                catch( const sdpa::daemon::QueueEmpty &)
+                {
+                  // ignore
+                }
+                catch ( const std::exception &ex )
+                {
+                    MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+                }
+            }
 	 }
 
 	 void print()
 	 {
-	 	if(!jobs_to_be_scheduled.empty())
-	 	{
-	 		SDPA_LOG_DEBUG("The content of agent's scheduler queue is:");
-	 		jobs_to_be_scheduled.print();
-	 	}
-	 	else
-	 		SDPA_LOG_DEBUG("No job to be scheduled left!");
+            if(!jobs_to_be_scheduled.empty())
+            {
+                SDPA_LOG_DEBUG("The content of agent's scheduler queue is:");
+                jobs_to_be_scheduled.print();
+            }
+            else
+                SDPA_LOG_DEBUG("No job to be scheduled left!");
 	 }
 
 	 friend class boost::serialization::access;
@@ -275,8 +276,8 @@ namespace sdpa {
 	 template <class Archive>
 	 void serialize(Archive& ar, const unsigned int)
 	 {
-		ar & boost::serialization::base_object<SchedulerImpl>(*this);
-		//ar & m_worker_;  //NreWorkerClient
+	     ar & boost::serialization::base_object<SchedulerImpl>(*this);
+	     //ar & m_worker_;  //NreWorkerClient
 	 }
 
   private:

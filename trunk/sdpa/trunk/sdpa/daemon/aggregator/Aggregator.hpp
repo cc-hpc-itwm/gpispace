@@ -64,7 +64,7 @@ namespace sdpa {
 			void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
 			void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
 
-                  void job_cancelled (sdpa::job_id_t const & job);
+                        void cancelNotRunning (sdpa::job_id_t const & job);
 
 			const std::string url() const {return url_;}
 			const std::string masterName() const { return masterName_; }

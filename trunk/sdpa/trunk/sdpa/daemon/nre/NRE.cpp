@@ -164,6 +164,7 @@ void NRE<U>::handleJobFailedEvent(const JobFailedEvent* pEvt )
 	}
 }
 
+/*
 template <typename U>
 void NRE<U>::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
@@ -228,6 +229,168 @@ void NRE<U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
 			SDPA_LOG_ERROR("Unexpected exception occurred!");
 		}
 	}
+}*/
+
+template <typename U>
+void  NRE<U>::cancelNotRunning(sdpa::job_id_t const & job)
+{
+  try
+  {
+    Job::ptr_t pJob(ptr_job_man_->findJob(job));
+
+    // update the job status to "Cancelled" we don't have an ack
+    sdpa::events::CancelJobAckEvent cae;
+    pJob->CancelJobAck(&cae);
+    ptr_scheduler_->delete_job (job);
+
+    try
+    {
+      ptr_workflow_engine_->cancelled(job);
+      ptr_job_man_->deleteJob(job);
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(WARN, "could not cancel job on the workflow engine: " << ex.what());
+    }
+  }
+  catch(const JobNotFoundException &)
+  {
+    LOG(WARN, "job_cancelled(" << job << ") failed: no such job");
+  }
+}
+
+template <typename U>
+void  NRE<U>::handleCancelJobEvent(const CancelJobEvent* pEvt )
+{
+    assert (pEvt);
+
+    LOG(INFO, "cancelling job " << pEvt->job_id());
+
+    try
+    {
+        Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+
+        // change the job status to "Cancelling"
+        pJob->CancelJob(pEvt);
+        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+
+        if(is_orchestrator())
+        {
+          // send immediately an acknowledgment to the component that requested the cancellation
+          CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+
+          // only if the job was already submitted
+          sendEventToMaster(pCancelAckEvt);
+        }
+    }
+    catch(const JobNotFoundException &)
+    {
+        SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+        return;
+    }
+
+    if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
+    {
+        LOG(TRACE, "Propagate cancel job event downwards.");
+
+        //sdpa::worker_id_t worker_id = findWorker(pEvt->job_id());
+        //check if the job is in execution and effectively kill it
+        Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+
+        try {
+          sdpa::status_t job_status = pJob->getStatus();
+          if( job_status.find("Running") != std::string::npos ) //the job is in execution
+          {
+              // kill effectively the job
+              // call m_worker.cancelJob(pJob->id);
+              // when the nre worker notifies that the job was cancelled -> call pJob->CancelAckJob
+              pJob->CancelJob(pEvt);
+              DLOG(TRACE, "The job state is: "<<pJob->getStatus());
+
+          } //if not the job is in scheduler's queue
+          else
+          {
+              cancelNotRunning(pEvt->job_id());
+          }
+        }
+        catch(const std::exception& ex)
+        {
+          SDPA_LOG_ERROR("Unexpected exception occurred:"<<ex.what());
+        }
+    }
+    else // a Cancel message came from the upper level -> forward cancellation request to WE
+    {
+        id_type workflowId = pEvt->job_id();
+        reason_type reason("No reason");
+        cancelWorkflow(workflowId, reason);
+    }
+}
+
+template <typename U>
+void  NRE<U>::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
+{
+    assert (pEvt);
+
+    DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
+
+    try
+    {
+            Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
+
+            // update the job status to "Cancelled"
+            pJob->CancelJobAck(pEvt);
+            SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+    }
+    catch (std::exception const & ex)
+    {
+            LOG(WARN, "could not find job: " << ex.what());
+            return;
+    }
+
+    // the acknowledgment comes from WE or from a slave and there is no WE
+    if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
+    {
+        // just send an acknowledgment to the master
+        // send an acknowledgment to the component that requested the cancellation
+        if(!is_orchestrator())
+        {
+            CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+            // only if the job was already submitted
+            sendEventToMaster(pCancelAckEvt);
+
+            try
+            {
+                    ptr_job_man_->deleteJob(pEvt->job_id());
+            }
+            catch(const JobNotDeletedException&)
+            {
+                    LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
+            }
+        }
+    }
+    else // acknowledgment comes from a worker -> inform WE that the activity was canceled
+    {
+        LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
+
+        try
+        {
+            ptr_workflow_engine_->cancelled(pEvt->job_id());
+        }
+        catch (std::exception const & ex)
+        {
+            LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
+        }
+
+        // delete the job completely from the job manager
+        try
+        {
+            ptr_job_man_->deleteJob(pEvt->job_id());
+        }
+        catch(const JobNotDeletedException&)
+        {
+            LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
+        }
+    }
 }
 
 /**

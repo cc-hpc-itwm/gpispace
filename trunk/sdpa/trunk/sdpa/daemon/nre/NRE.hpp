@@ -115,8 +115,10 @@ namespace sdpa {
 			//ar & m_guiService;
 		}
 
+		void cancelNotRunning(sdpa::job_id_t const & job);
+
 		virtual void backup( std::ostream& );
-	    virtual void recover( std::istream& );
+		virtual void recover( std::istream& );
 
 		friend class boost::serialization::access;
 

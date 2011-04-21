@@ -309,7 +309,7 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 }
 
 
-void Aggregator::job_cancelled (sdpa::job_id_t const & job)
+void Aggregator::cancelNotRunning (sdpa::job_id_t const & job)
 {
   try
   {
@@ -384,7 +384,7 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     }
     catch(const NoWorkerFoundException&)
     {
-      job_cancelled (pEvt->job_id());
+        cancelNotRunning (pEvt->job_id());
     }
     catch(...)
     {
@@ -462,6 +462,8 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 		}
 		catch (const WorkerNotFoundException&)
 		{
+			// the job was not assigned to any worker yet -> this means that might
+			// still be in the scheduler's queue
 			SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
 		}
 		catch(const JobNotDeletedException& jnde)
@@ -473,6 +475,16 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 					<< worker_id
 					<< " : " << jnde.what()
 			);
+		}
+
+		// delete the job completely from the job manager
+		try
+		{
+			ptr_job_man_->deleteJob(pEvt->job_id());
+		}
+		catch(const JobNotDeletedException&)
+		{
+			LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
 		}
 	}
 }
