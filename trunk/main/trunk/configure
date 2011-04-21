@@ -248,7 +248,7 @@ else
 fi
 
 if [ -z "$build_prefix" ] ; then
-    build_prefix=$( grep CMAKE_INSTALL_PREFIX ./CMakeCache.txt | cut -d= -f 2 | tr -d \" 2>&1 )
+    build_prefix=$( grep CMAKE_INSTALL_PREFIX ./CMakeCache.txt 2>/dev/null | cut -d= -f 2 | tr -d \" 2>&1 )
 fi
 if [ -n "$build_prefix" ] ; then
     cmake_flags="$cmake_flags -DCMAKE_INSTALL_PREFIX=$build_prefix"
