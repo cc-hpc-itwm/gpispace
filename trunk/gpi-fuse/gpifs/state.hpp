@@ -5,6 +5,8 @@
 
 #define FUSE_USE_VERSION 26
 
+#include <string.h>
+
 #include <fuse.h>
 
 #include <boost/unordered_map.hpp>
@@ -263,7 +265,12 @@ namespace gpifs
           {
             std::ostringstream err;
 
-            err << "failed to allocate " << descr;
+            err << "failed to allocate "
+                << descr
+                << ": "
+                << strerror (-res)
+                << std::endl;
+              ;
 
             error_set (err.str());
           }

@@ -122,7 +122,7 @@ namespace gpifs
       catch (std::exception const & ex)
       {
         // TODO
-        return -EINVAL;
+        return -ENOMEM;
       }
 
       return 0;
