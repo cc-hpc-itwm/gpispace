@@ -49,7 +49,11 @@ const int NJOBS    = 20;
 struct MyFixture
 {
 	MyFixture() { FHGLOG_SETUP();}
-	~MyFixture(){}
+	~MyFixture()
+	{
+		seda::StageRegistry::instance().stopAll();
+		seda::StageRegistry::instance().clear();
+	}
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
