@@ -607,11 +607,36 @@ main (int argc, char **argv)
   oper.chmod = gpifs_chmod;
   oper.chown = gpifs_chown;
 
-  state.init();
+  int ret (0);
 
-  const int ret (fuse_main (argc, argv, &oper, NULL));
+  ret = state.init();
 
-  state.finalize();
+  if (ret != 0)
+  {
+    if (state.error_get())
+    {
+      std::cerr << "could not initialize: " << *state.error_get() << std::endl;
+    }
+    return ret;
+  }
+
+  ret = fuse_main (argc, argv, &oper, NULL);
+  if (ret != 0)
+  {
+    if (state.error_get())
+    {
+      std::cerr << "fuse_main returned non-zero: " << *state.error_get() << std::endl;
+    }
+  }
+
+  ret = state.finalize();
+  if (ret != 0)
+  {
+    if (state.error_get())
+    {
+      std::cerr << "fuse_main returned non-zero: " << *state.error_get() << std::endl;
+    }
+  }
 
   return ret;
 }
