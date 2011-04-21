@@ -49,7 +49,7 @@ namespace gpifs
            << ": "
            << ex.what ()
            );
-        return -EACCES;
+        return -EIO;
       }
 
       gpi_info = gpi_api().collect_info();
