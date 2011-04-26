@@ -22,9 +22,13 @@ namespace fhg
       class Transition : public QGraphicsItem
       {
         public:
-          Transition(QGraphicsItem* parent = NULL);
+          Transition(const QString& title, QGraphicsItem* parent = NULL);
           
           virtual QRectF boundingRect() const;
+          virtual QPainterPath shape() const;
+          
+          const QString& title() const;
+          bool highlighted() const;
           
           enum 
           {
@@ -36,7 +40,6 @@ namespace fhg
           }
       
         protected:
-          virtual QPainterPath shape() const;
           virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
           
           virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
@@ -44,6 +47,10 @@ namespace fhg
           virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
           virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
           virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+          
+          QString _title;
+          
+          //! \todo größe verstellbar.
       
           QPointF _dragStart;
           QSizeF _size;

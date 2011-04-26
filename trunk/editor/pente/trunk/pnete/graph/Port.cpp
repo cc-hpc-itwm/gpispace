@@ -14,8 +14,10 @@ namespace fhg
   {
     namespace graph
     {
-      Port::Port(Transition* parent, eDirection direction)
+      Port::Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType)
       : ConnectableItem(direction == OUT ? EAST : WEST, direction, parent),
+      _title(title),
+      _dataType(dataType),
       _dragStart(0.0f, 0.0f),
       _dragging(false),
       _highlighted(false),
@@ -249,6 +251,15 @@ namespace fhg
       const qreal& Port::length() const
       {
         return _length;
+      }
+      
+      const QString& Port::title() const
+      {
+        return _title;
+      }
+      const QString& Port::dataType() const
+      {
+        return _dataType;
       }
     }
   }

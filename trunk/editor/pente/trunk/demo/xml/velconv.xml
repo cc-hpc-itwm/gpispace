@@ -1,0 +1,5 @@
+<!-- this also works backward, doesn't it? -->
+<defun name="Velocity Conversion">
+  <in name="velocity" type="velocity_time"/>
+  <out name="velocity" type="velocity_depth"/>
+</defun>

@@ -49,7 +49,7 @@ namespace fhg
         
         _newConnection->setStart(from);
         
-        if(!_newConnection->isLookingForStart() && !_newConnection->isLookingForEnd())
+        if(_newConnection->start() && _newConnection->end())
         {
           _newConnection = NULL;
         }
@@ -63,22 +63,22 @@ namespace fhg
         
         _newConnection->setEnd(to);
         
-        if(!_newConnection->isLookingForStart() && !_newConnection->isLookingForEnd())
+        if(_newConnection->start() && _newConnection->end())
         {
           _newConnection = NULL;
         }
       }
       const bool Scene::isConnectionLookingForStart() const
       {
-        return _newConnection && _newConnection->isLookingForStart();
+        return _newConnection && !_newConnection->start();
       }
       const bool Scene::isConnectionLookingForEnd() const
       {
-        return _newConnection && _newConnection->isLookingForEnd();
+        return _newConnection && !_newConnection->end();
       }
       const bool Scene::isConnectionLooking() const
       {
-        return _newConnection && (_newConnection->isLookingForEnd() || _newConnection->isLookingForStart());
+        return _newConnection && (!_newConnection->start() || !_newConnection->end());
       }
       
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)

@@ -1,7 +1,10 @@
 #include "GraphView.hpp"
+#include "TransitionLibraryModel.hpp"
 #include "graph/Transition.hpp"
 #include "graph/Port.hpp"
 #include "graph/Style.hpp"
+#include "data/Transition.hpp"
+#include "data/Port.hpp"
 
 #include <QMimeData>
 #include <QDragEnterEvent>
@@ -15,10 +18,8 @@ namespace fhg
   {
     namespace ui
     {
-      static const QString acceptedMimetype = "text/uri-list";
-      
-      GraphView::GraphView(QWidget* parent)
-      : QGraphicsView(parent)
+      GraphView::GraphView(QGraphicsScene* scene, QWidget* parent)
+      : QGraphicsView(scene, parent)
       {
         setDragMode(QGraphicsView::ScrollHandDrag);
         setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
@@ -26,8 +27,9 @@ namespace fhg
 
       void GraphView::dragEnterEvent(QDragEnterEvent *event)
       {
+        //! \todo Paint a ghost transition.
         const QMimeData *mimeData = event->mimeData();
-        if( mimeData->hasFormat( acceptedMimetype ) )
+        if(mimeData->hasFormat(TransitionLibraryModel::mimeType))
         {
           event->acceptProposedAction();
         }
@@ -35,26 +37,43 @@ namespace fhg
       
       void GraphView::dragMoveEvent(QDragMoveEvent *event)
       {
+        //! \todo Paint a ghost transition.
         const QMimeData *mimeData = event->mimeData();
-        if( mimeData->hasFormat( acceptedMimetype ) )
+        if(mimeData->hasFormat(TransitionLibraryModel::mimeType))
         {
           event->acceptProposedAction();
         }
       }
       
+      //! \todo Move somewhere else.
+      graph::Transition* createTransitionFromMimeData(const QByteArray& data)
+      {
+        QByteArray byteArray(data);
+        data::Transition transitionData;
+        QDataStream stream(byteArray);
+        stream >> transitionData;
+        
+        graph::Transition* transition = new graph::Transition(transitionData.name());
+        foreach(data::Port port, transitionData.inPorts())
+        {
+          new graph::Port(transition, graph::Port::IN, port.name(), port.type());
+        }
+        foreach(data::Port port, transitionData.outPorts())
+        {
+          new graph::Port(transition, graph::Port::OUT, port.name(), port.type());
+        }
+        
+        return transition;
+      }
+      
       void GraphView::dropEvent(QDropEvent *event)
       {
         const QMimeData *mimeData = event->mimeData();
-        if( mimeData->hasFormat( acceptedMimetype ) )
+        if(mimeData->hasFormat(TransitionLibraryModel::mimeType))
         {
-            //Transition trans; trans.name = mimeData->data( acceptedMimetype ).data();
-          graph::Transition* stb = new graph::Transition();
-          new graph::Port(stb,graph::Port::IN);
-          new graph::Port(stb,graph::Port::IN);
-          new graph::Port(stb,graph::Port::OUT);
-          new graph::Port(stb,graph::Port::OUT);
-          scene()->addItem(stb);
-          stb->setPos(graph::Style::snapToRaster(mapToScene(event->pos())));
+          graph::Transition* transition = createTransitionFromMimeData(mimeData->data(TransitionLibraryModel::mimeType));
+          scene()->addItem(transition);
+          transition->setPos(graph::Style::snapToRaster(mapToScene(event->pos())));
           event->acceptProposedAction();
         }
       }

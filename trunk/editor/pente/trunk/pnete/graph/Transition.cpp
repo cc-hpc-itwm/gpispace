@@ -11,14 +11,15 @@ namespace fhg
   {
     namespace graph
     {
-      Transition::Transition(QGraphicsItem* parent)
+      Transition::Transition(const QString& title, QGraphicsItem* parent)
       : QGraphicsItem(parent),
       _dragStart(0,0),
       _size(150, 100),
+      _title(title),
       _highlighted(false),
       _dragging(false)
       {
-          setAcceptHoverEvents(true);
+        setAcceptHoverEvents(true);
       }
       
       void Transition::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
@@ -85,10 +86,17 @@ namespace fhg
       
       void Transition::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
       {
-        painter->setPen(QPen(QBrush(_highlighted ? Qt::red : Qt::black), 2.0f));
-        painter->setBackgroundMode(Qt::OpaqueMode);
-        painter->setBrush(QBrush(Qt::white, Qt::SolidPattern));
-        painter->drawPath(shape());
+        Style::transitionPaint(painter, this);
+      }
+      
+      const QString& Transition::title() const
+      {
+        return _title;
+      }
+      
+      bool Transition::highlighted() const
+      {
+        return _highlighted;
       }
     }
   }

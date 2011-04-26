@@ -30,10 +30,6 @@ namespace fhg
           const ConnectableItem* start() const;
           const ConnectableItem* end() const;
           
-          //! \todo deprecate.
-          const bool isLookingForStart() const;
-          const bool isLookingForEnd() const;
-          
           const QPointF startPosition() const;
           const QPointF endPosition() const;
           
@@ -55,7 +51,7 @@ namespace fhg
           virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
           
         private:
-          void recalcStartAndEnd() const;
+          void recalcMidpoints();
           
           ConnectableItem* _start;
           ConnectableItem* _end;

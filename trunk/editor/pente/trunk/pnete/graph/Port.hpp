@@ -15,10 +15,15 @@ namespace fhg
       class Port : public ConnectableItem
       {
         public:          
-          Port(Transition* parent, eDirection direction);
+          Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType);
           
           const bool& highlighted() const;
           const qreal& length() const;
+          
+          const QString& title() const;
+          const QString& dataType() const;
+          
+          virtual QRectF boundingRect() const;
     
           enum 
           {
@@ -31,7 +36,6 @@ namespace fhg
           
         protected:
           virtual QPainterPath shape() const;
-          virtual QRectF boundingRect() const;
           virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
           
           virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
@@ -43,6 +47,10 @@ namespace fhg
         private:
           bool createPendingConnectionIfPossible();
           bool connectPendingConnection();
+          
+          //! \todo QStaticText.
+          QString _title;
+          QString _dataType;
           
           QPointF _dragStart;
           

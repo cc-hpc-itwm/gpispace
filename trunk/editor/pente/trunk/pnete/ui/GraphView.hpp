@@ -8,6 +8,7 @@ class QWidget;
 class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
+class QGraphicsScene;
 
 namespace fhg
 {
@@ -20,7 +21,7 @@ namespace fhg
         Q_OBJECT
         
         public:
-          GraphView(QWidget* parent = NULL);
+          GraphView(QGraphicsScene* scene, QWidget* parent = NULL);
           
         protected:
           virtual void dragEnterEvent(QDragEnterEvent* event);

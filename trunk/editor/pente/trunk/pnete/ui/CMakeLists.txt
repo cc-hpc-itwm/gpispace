@@ -1,17 +1,26 @@
 include(${QT_USE_FILE})
 
 set(ui_SRCS
+  MainWindow.cpp
   GraphView.cpp
+  TransitionLibraryModel.cpp
+  TransitionLibraryItem.cpp
 )
 
 set(ui_HDRS
+  MainWindow.hpp
   GraphView.hpp
+  TransitionLibraryModel.hpp
+  TransitionLibraryItem.hpp
 )
 
 set(ui_UIS
 )
 set(ui_TOMOC
+  MainWindow.hpp
   GraphView.hpp
+  TransitionLibraryModel.hpp
+  TransitionLibraryItem.hpp
 )
 
 #for moced files to get their includes.

@@ -33,6 +33,7 @@ namespace fhg
           
           static const QPainterPath transitionShape(const QSizeF& size);
           static const QRectF transitionBoundingRect(const QSizeF& size);
+          static const void transitionPaint(QPainter* painter, const Transition* transition);
           
           static const qreal raster();
           static const QPointF snapToRaster(const QPointF& p);

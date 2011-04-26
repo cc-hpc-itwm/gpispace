@@ -1,0 +1,4 @@
+<defun name="Butterworth Filter">
+  <in name="input" type="trace"/>
+  <out name="output" type="trace"/>
+</defun>
