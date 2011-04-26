@@ -31,38 +31,28 @@ namespace fhg
       {
         _items->clearChildren();
  
-        readContentFromDirectoryRecursive(_items, path, true);
+        readContentFromDirectoryRecursive(_items, path);
       }
       
-      void TransitionLibraryModel::readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const QString& path, bool topLevel)
+      void TransitionLibraryModel::readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const QString& path)
       {
-        QFileInfo fileInfo(path);
-        
-        if(fileInfo.isFile())
+        QDirIterator directoryWalkerDirs(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+        while(directoryWalkerDirs.hasNext())
         {
-          data::Transition* transition = new data::Transition(fileInfo.absoluteFilePath());
-          currentRoot->appendChild(new TransitionLibraryItem(transition, currentRoot));
-        }
-        else if(fileInfo.isDir())
-        {
-          TransitionLibraryItem* newRoot;
-          if(topLevel)
-          {
-            newRoot = currentRoot;
-          }
-          else
-          {
-            newRoot = new TransitionLibraryItem(fileInfo.fileName(), currentRoot);
-            currentRoot->appendChild(newRoot);
-          }
+          directoryWalkerDirs.next();
           
-          QDirIterator directoryWalker(path, QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
-          while(directoryWalker.hasNext())
-          {
-            directoryWalker.next();
-            
-            readContentFromDirectoryRecursive(newRoot, directoryWalker.fileInfo().absoluteFilePath(), false);
-          }
+          TransitionLibraryItem* newRoot = new TransitionLibraryItem(directoryWalkerDirs.fileInfo().fileName(), currentRoot);
+          currentRoot->appendChild(newRoot);
+          readContentFromDirectoryRecursive(newRoot, directoryWalkerDirs.fileInfo().absoluteFilePath());
+        }
+        
+        QDirIterator directoryWalkerFiles(path, QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+        while(directoryWalkerFiles.hasNext())
+        {
+          directoryWalkerFiles.next();
+          
+          data::Transition* transition = new data::Transition(directoryWalkerFiles.fileInfo().absoluteFilePath());
+          currentRoot->appendChild(new TransitionLibraryItem(transition, currentRoot));
         }
       }
       
