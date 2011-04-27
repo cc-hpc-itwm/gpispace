@@ -273,6 +273,18 @@ namespace fhg
       {
         return _dataType;
       }
+      
+      void Port::deleteConnection()
+      {
+        if(_connection)
+        {
+          Connection* backup = _connection;
+          backup->setStart(NULL);
+          backup->setEnd(NULL);
+          delete backup;
+          scene()->update();
+        }
+      }
     }
   }
 }

@@ -85,19 +85,21 @@ namespace fhg
         }
       }
       
-      const Qt::GlobalColor queryColorForType(const QString& type)
+      const QColor queryColorForType(const QString& type)
       {
-        if(type == "trace")
+        //! \note Colors shamelessly stolen from PSPro.
+        //! \todo Maybe also do a gradient? Maybe looks awesome.
+        if(type.startsWith("seismic"))
         {
-          return Qt::blue;
+          return QColor(0, 130, 250); 
         }
-        else if(type == "velocity")
+        else if(type.startsWith("velocity"))
         {
-          return Qt::green;
+          return QColor(248, 248, 6); 
         }
         else
         {
-          return Qt::white;
+          return QColor(255, 255, 255);
         }
       }
       

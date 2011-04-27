@@ -1,9 +1,12 @@
 #include "Transition.hpp"
+#include "Port.hpp"
 #include "Style.hpp"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
+#include <QGraphicsSceneContextMenuEvent>
+#include <QMenu>
 
 namespace fhg
 {
@@ -97,6 +100,28 @@ namespace fhg
       bool Transition::highlighted() const
       {
         return _highlighted;
+      }
+      
+      void Transition::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
+      {
+        QMenu* menu = new QMenu();
+        menu->addAction(tr("Delete Transition"));
+        menu->popup(event->screenPos());
+      
+        connect(menu, SIGNAL(triggered(QAction *)), this, SLOT(deleteTriggered(QAction *)));
+      }
+      
+      void Transition::deleteTriggered(QAction *)
+      {
+        foreach(QGraphicsItem* child, childItems())
+        {
+          Port* port = qgraphicsitem_cast<Port*>(child);
+          if(port)
+          {
+            port->deleteConnection();
+          }
+        } 
+        scene()->removeItem(this);
       }
     }
   }

@@ -22,6 +22,7 @@ set(graph_UIS
 )
 set(graph_TOMOC
   Scene.hpp
+  Transition.hpp
 )
 
 #for moced files to get their includes.

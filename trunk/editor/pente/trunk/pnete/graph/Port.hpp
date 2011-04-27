@@ -24,6 +24,8 @@ namespace fhg
           const QString& dataType() const;
           
           virtual QRectF boundingRect() const;
+          
+          void deleteConnection();
     
           enum 
           {
