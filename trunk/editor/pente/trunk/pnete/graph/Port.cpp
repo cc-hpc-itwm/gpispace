@@ -35,6 +35,7 @@ namespace fhg
         }
         else
         {
+          bool hit = false;
           // the port starting the connection will receive this if dragged. if clicked, the correct one does.
           QList<QGraphicsItem*> itemsBelow = scene()->items(event->scenePos());
           for(QList<QGraphicsItem *>::iterator it = itemsBelow.begin(); it != itemsBelow.end(); ++it)
@@ -46,9 +47,14 @@ namespace fhg
               {
                 event->setAccepted(true);
                 scene()->update();
+                hit = true;
                 break;
               }
             }
+          }
+          if(!hit)
+          {
+            qobject_cast<Scene*>(scene())->removePendingConnection();
           }
         }
       }
@@ -64,18 +70,20 @@ namespace fhg
         if(sceneObject->isConnectionLookingForStart() && _direction == OUT)
         {
           sceneObject->addStartToConnection(this);
+          return true;
         }
         else if(sceneObject->isConnectionLookingForEnd() && _direction == IN)
         {
           sceneObject->addEndToConnection(this);
+          return true;
         }
         
-        return true;
+        return false;
       }
       
       bool Port::createPendingConnectionIfPossible()
       {
-        //! \todo move this to connectable item, add "direction-any."<
+        //! \todo move this to connectable item, add "direction-any."
         Scene* sceneObject = qobject_cast<Scene*>(scene());
       
         if(sceneObject->isConnectionLooking())
@@ -110,14 +118,18 @@ namespace fhg
       void Port::mousePressEvent(QGraphicsSceneMouseEvent* event)
       {
         //! \todo Do not do this by modifiers but via areas.
-        if(event->modifiers() & Qt::ControlModifier)
+        //if(event->modifiers() & Qt::ControlModifier)
+        switch(Style::portHit(this, event->pos()))
         {
-          _dragging = true;
-          _dragStart = event->pos();
-        }
-        else
-        {
-          createPendingConnectionIfPossible();
+          case Style::MAIN:
+            _dragging = true;
+            _dragStart = event->pos();
+            break;
+            
+          case Style::TAIL:
+          default:
+            createPendingConnectionIfPossible();
+            break;
         }
         event->setAccepted(true);
       }

@@ -92,16 +92,22 @@ namespace fhg
         QGraphicsScene::mouseMoveEvent(mouseEvent);
       }
       
+      void Scene::removePendingConnection()
+      {
+        _newConnection->setEnd(NULL);
+        _newConnection->setStart(NULL);
+        //! \todo which one?
+        delete _newConnection;
+        //removeItem(_newConnection);
+        _newConnection = NULL;
+        update();
+      }
+      
       void Scene::keyPressEvent(QKeyEvent* event)
       {
         if(_newConnection && event->key() == Qt::Key_Escape)
         {
-          _newConnection->setEnd(NULL);
-          _newConnection->setStart(NULL);
-          delete _newConnection;
-          //removeItem(_newConnection);
-          _newConnection = NULL;
-          update();
+          removePendingConnection();
         }
       }
     }

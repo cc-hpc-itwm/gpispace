@@ -23,9 +23,15 @@ namespace fhg
       class Style
       {
         public:
+          enum ePortArea
+          {
+            TAIL,
+            MAIN,
+          };
           static const QPainterPath portShape(const Port* port);
           static const QRectF portBoundingRect(const Port* port);
-          static const void portPaint(QPainter *painter, const Port* portN);
+          static const void portPaint(QPainter *painter, const Port* port);
+          static const ePortArea portHit(const Port* port, const QPointF& point);
           
           static const QPainterPath connectionShape(const Connection* connection);
           static const QRectF connectionBoundingRect(const Connection* connection);

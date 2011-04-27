@@ -32,6 +32,7 @@ namespace fhg
           void addConnection(ConnectableItem* from, ConnectableItem* to);
           void addStartToConnection(ConnectableItem* from);
           void addEndToConnection(ConnectableItem* to);
+          void removePendingConnection();
           const bool isConnectionLookingForStart() const;
           const bool isConnectionLookingForEnd() const;
           const bool isConnectionLooking() const;

@@ -82,7 +82,7 @@ namespace fhg
           case ConnectableItem::ANYORIENTATION:
           default:
             return QRectF();
-        } 
+        }
       }
       
       const Qt::GlobalColor queryColorForType(const QString& type)
@@ -111,6 +111,47 @@ namespace fhg
         painter->setPen(QPen(QBrush(Qt::black), 1.0));
         painter->setBackgroundMode(Qt::TransparentMode);
         painter->drawText(port->boundingRect(), Qt::AlignCenter, port->title());
+      }
+     
+      const Style::ePortArea Style::portHit(const Port* port, const QPointF& point)
+      {
+        const qreal& length = port->length();
+        const qreal lengthHalf = length / 2.0;
+        
+        QRectF area;
+        switch(port->orientation())
+        {
+          case ConnectableItem::NORTH:
+            area = QRectF(-portHeightHalf, -lengthHalf + capLength * 2, portHeight, length - capLength * 2);
+            break;
+            
+          case ConnectableItem::SOUTH:
+            area = QRectF(-portHeightHalf, -lengthHalf, portHeight, length - capLength * 2);
+            break;
+            
+          case ConnectableItem::EAST:
+            area = QRectF(-lengthHalf, -portHeightHalf, length - capLength * 2, portHeight);
+            break;
+            
+          case ConnectableItem::WEST:
+            area = QRectF(-lengthHalf + capLength * 2, -portHeightHalf, length - capLength * 2, portHeight);
+            break;
+            
+          case ConnectableItem::ANYORIENTATION:
+          default:
+            area = QRectF();
+            break;
+        }
+        
+        printf("point: %f %f, area: %f %f %f %f\n", point.x(), point.y(), area.x(), area.y(), area.width(), area.height());
+        if(area.contains(point))
+        {
+          return MAIN;
+        }
+        else
+        {
+          return TAIL;
+        }
       }
             
       const QPainterPath Style::connectionShape(const Connection* connection)
