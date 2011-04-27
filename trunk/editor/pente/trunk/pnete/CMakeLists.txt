@@ -16,11 +16,11 @@ add_subdirectory(data)
 add_subdirectory(ui)
 
 target_link_libraries (pnete
-  helper
-  graph
-  data
   ui
- 
+  data
+  graph
+  helper
+
 #${FhgLog_LIBRARY}
 #${Boost_LIBRARIES}
 	${QT_LIBRARIES}
