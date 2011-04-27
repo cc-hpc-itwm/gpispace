@@ -71,9 +71,6 @@ find_package(JPEG REQUIRED)
 #find_package(PNG REQUIRED)
 find_package(MNG REQUIRED)
 
-find_package(UTIL REQUIRED)
-include_directories(${UTIL_INCLUDE_DIR})
-
 find_package(WE REQUIRED)
 include_directories(${WE_INCLUDE_DIR})
 
