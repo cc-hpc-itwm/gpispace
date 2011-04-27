@@ -57,7 +57,8 @@ namespace process
 
   typedef detail::buffer<const void *> const_buffer;
   typedef detail::buffer<void *> buffer;
-  typedef boost::circular_buffer<char> circular_buffer;
+  //  typedef boost::circular_buffer<char> circular_buffer;
+  typedef std::vector<char> circular_buffer;
 
   typedef detail::file_buffer<const void *> file_const_buffer;
   typedef detail::file_buffer<void *> file_buffer;
