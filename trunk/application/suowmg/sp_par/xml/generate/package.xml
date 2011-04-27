@@ -1,0 +1,95 @@
+<defun>
+
+  <in name="config" type="config" place="config"/>
+  <out name="package" type="assigned_package" place="package"/>
+
+  <net>
+
+    <place name="config" type="config"/>
+
+    <place name="package" type="assigned_package"/>
+
+    <struct name="state">
+      <field name="max" type="long"/>
+      <field name="id" type="long"/>
+      <field name="inc" type="long"/>
+    </struct>
+
+    <place name="check_break" type="state"/>
+    <place name="state" type="state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.max} := ${config.num.trace};
+          ${state.inc} := ${config.per.bunch.trace};
+          ${state.id} := 0L;
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="state" place="check_break"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <expression>
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+    </transition>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <expression></expression>
+      </defun>
+      <condition>
+        ${state.id} :lt: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <place name="empty_interval" type="interval" virtual="true"/>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <in name="interval" type="interval"/>
+        <out name="state" type="state"/>
+        <out name="assigned_package" type="assigned_package"/>
+        <expression>
+          ${package.left.trace} := ${state.id};
+          ${package.left.extendable} := (${package.left.trace} :gt: 0L);
+
+          ${state.id} := ${state.id} + ${state.inc};
+
+          ${package.right.trace} := min (${state.max}, ${state.id});
+          ${package.right.extendable} := (${package.right.trace} :lt: ${state.max});
+
+          ${trace_size} := ${interval.size} div ${state.inc};
+
+          ${size} := ${trace_size} * (${package.right.trace} - ${package.left.trace});
+
+          ${assigned_package.package} := ${package};
+          ${assigned_package.intervals.offset}
+            := stack_push (@@, ${interval.offset});
+          ${assigned_package.intervals.size}
+            := stack_push (@@, ${size});
+        </expression>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-in port="interval" place="empty_interval"/>
+      <connect-out port="state" place="check_break"/>
+      <connect-out port="assigned_package" place="package"/>
+    </transition>
+
+  </net>
+</defun>
