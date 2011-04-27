@@ -1,0 +1,756 @@
+<defun name="suowmg_sp">
+
+  <struct name="pos">
+    <field name="trace" type="long"/>
+    <field name="extendable" type="bool"/>
+  </struct>
+
+  <struct name="package">
+    <field name="left" type="pos"/>
+    <field name="right" type="pos"/>
+  </struct>
+
+  <struct name="interval" >
+    <field name="offset" type="long"/>
+    <field name="size" type="long"/>
+  </struct>
+
+  <struct name="intervals">
+    <field name="offset" type="stack"/>
+    <field name="size" type="stack"/>
+  </struct>
+
+  <struct name="assigned_package">
+    <field name="package" type="package"/>
+    <field name="intervals" type="intervals"/>
+  </struct>
+
+  <struct name="key">
+    <field name="sx" type="long"/>
+    <field name="sy" type="long"/>
+  </struct>
+
+  <struct name="loaded_package">
+    <field name="assigned_package" type="assigned_package"/>
+    <field name="key" type="key"/>
+  </struct>
+
+  <struct name="shot">
+    <field name="loaded_package" type="loaded_package"/>
+    <field name="num" type="long"/>
+  </struct>
+
+  <struct name="list_of_loaded_packages">
+    <field name="size" type="long"/>
+    <field name="list" type="bytearray"/>
+  </struct>
+
+  <struct name="package_to_be_written">
+    <field name="loaded_package" type="loaded_package"/>
+    <field name="offset" type="long"/>
+  </struct>
+
+  <struct name="handle">
+    <field name="data" type="long"/>
+    <field name="scratch" type="long"/>
+  </struct>
+
+  <struct name="file">
+    <field name="name" type="string"/>
+    <field name="type" type="string"/>
+  </struct>
+
+  <struct name="output">
+    <struct name="trace">
+      <field name="left" type="long"/>
+      <field name="right" type="long"/>
+    </struct>
+
+    <field name="shot_num" type="long"/>
+    <field name="slot" type="long"/>
+  </struct>
+
+  <struct name="config">
+    <struct name="file">
+      <field name="input" type="file"/>
+      <field name="output" type="file"/>
+    </struct>
+
+    <struct name="handle">
+      <field name="input" type="handle"/>
+      <field name="output" type="handle"/>
+    </struct>
+
+    <struct name="size">
+      <field name="trace" type="long"/>
+      <field name="bunch" type="long"/>
+      <field name="output_per_shot" type="long"/>
+    </struct>
+
+    <struct name="per">
+      <struct name="bunch">
+        <field name="trace" type="long"/>
+      </struct>
+
+      <struct name="node">
+        <struct name="mem">
+          <field name="shmem" type="long"/>
+          <field name="gpi" type="long"/>
+        </struct>
+      </struct>
+    </struct>
+
+    <struct name="num">
+      <field name="trace" type="long"/>
+      <field name="slot" type="long"/>
+      <field name="nodes" type="long"/>
+    </struct>
+
+    <field name="param" type="param"/>
+  </struct>
+
+  <struct name="param">
+    <field name="Vnx" type="long"/>
+    <field name="Vny" type="long"/>
+    <field name="Vnz" type="long"/>
+
+    <field name="nx" type="long"/>
+    <field name="ny" type="long"/>
+    <field name="nz" type="long"/>
+
+    <field name="nxf" type="long"/>
+    <field name="nyf" type="long"/>
+
+    <field name="dx" type="double"/>
+    <field name="dy" type="double"/>
+    <field name="dz" type="double"/>
+
+    <field name="zmax" type="double"/>
+
+    <field name="lx" type="double"/>
+    <field name="ly" type="double"/>
+
+    <field name="f1" type="double"/>
+    <field name="f2" type="double"/>
+    <field name="f3" type="double"/>
+    <field name="f4" type="double"/>
+
+    <field name="pad" type="double"/>
+
+    <field name="latSamplesPerWave" type="double"/>
+    <field name="vertSamplesPerWave" type="double"/>
+
+    <field name="medium" type="string"/>
+    <field name="propagator" type="string"/>
+
+    <field name="vPFile" type="string"/>
+    <field name="eFile" type="string"/>
+    <field name="dFile" type="string"/>
+  </struct>
+
+  <in name="file_input" type="string" place="file_input"/>
+  <in name="type_input" type="string" place="type_input"/>
+  <in name="file_output" type="string" place="file_output"/>
+  <in name="type_output" type="string" place="type_output"/>
+
+  <in name="shmem_per_node" type="long" place="shmem_per_node"/>
+  <in name="gpi_mem_per_node" type="long" place="gpi_mem_per_node"/>
+
+  <in name="Vnx" type="long" place="Vnx"/>
+  <in name="Vny" type="long" place="Vny"/>
+  <in name="Vnz" type="long" place="Vnz"/>
+  <in name="dx" type="double" place="dx"/>
+  <in name="dy" type="double" place="dy"/>
+  <in name="dz" type="double" place="dz"/>
+  <in name="zmax" type="double" place="zmax"/>
+  <in name="lx" type="double" place="lx"/>
+  <in name="ly" type="double" place="ly"/>
+  <in name="f1" type="double" place="f1"/>
+  <in name="f2" type="double" place="f2"/>
+  <in name="f3" type="double" place="f3"/>
+  <in name="f4" type="double" place="f4"/>
+  <in name="pad" type="double" place="pad"/>
+  <in name="latSamplesPerWave" type="double" place="latSamplesPerWave"/>
+  <in name="vertSamplesPerWave" type="double" place="vertSamplesPerWave"/>
+  <in name="medium" type="string" place="medium"/>
+  <in name="propagator" type="string" place="propagator"/>
+  <in name="vPFile" type="string" place="vPFile"/>
+  <in name="eFile" type="string" place="eFile"/>
+  <in name="dFile" type="string" place="dFile"/>
+
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <include-template href="triple.xml"/>
+    <specialize name="scatter_config" use="triple">
+      <type-map replace="T" with="config"/>
+    </specialize>
+
+    <template name="select">
+      <in name="x" type="T"/>
+      <out name="x" type="T"/>
+      <expression/>
+    </template>
+
+    <specialize name="select_loaded_package" use="select">
+      <type-map replace="T" with="loaded_package"/>
+    </specialize>
+
+    <place name="shmem_per_node" type="long">
+      <token><value>@SHMEM_PER_NODE@</value></token>
+    </place>
+    <place name="gpi_mem_per_node" type="long">
+      <token><value>@GPI_MEM_PER_NODE@</value></token>
+    </place>
+
+    <place name="file_input" type="string">
+      <token><value>"@FILE_INPUT@"</value></token>
+    </place>
+    <place name="type_input" type="string">
+      <token><value>"@TYPE_INPUT@"</value></token>
+    </place>
+
+    <place name="file_output" type="string">
+      <token><value>"@FILE_OUTPUT@"</value></token>
+    </place>
+    <place name="type_output" type="string">
+      <token><value>"@TYPE_OUTPUT@"</value></token>
+    </place>
+
+    <place name="Vnx" type="long"><token><value>@NX@</value></token></place>
+    <place name="Vny" type="long"><token><value>@NY@</value></token></place>
+    <place name="Vnz" type="long"><token><value>@NZ@</value></token></place>
+
+    <place name="dx" type="double"><token><value>@DX@</value></token></place>
+    <place name="dy" type="double"><token><value>@DY@</value></token></place>
+    <place name="dz" type="double"><token><value>@DZ@</value></token></place>
+
+    <place name="zmax" type="double"><token><value>@ZMAX@</value></token></place>
+
+    <place name="lx" type="double"><token><value>@LX@</value></token></place>
+    <place name="ly" type="double"><token><value>@LY@</value></token></place>
+
+    <place name="f1" type="double"><token><value>@F1@</value></token></place>
+    <place name="f2" type="double"><token><value>@F2@</value></token></place>
+    <place name="f3" type="double"><token><value>@F3@</value></token></place>
+    <place name="f4" type="double"><token><value>@F4@</value></token></place>
+
+    <place name="pad" type="double"><token><value>@PAD@</value></token></place>
+    <place name="latSamplesPerWave" type="double"><token><value>@LATSAMPLESPERWAVE@</value></token></place>
+    <place name="vertSamplesPerWave" type="double"><token><value>@VERTSAMPLESPERWAVE@</value></token></place>
+
+    <place name="medium" type="string"><token><value>"@MEDIUM@"</value></token></place>
+    <place name="propagator" type="string"><token><value>"@PROPAGATOR@"</value></token></place>
+
+    <place name="vPFile" type="string"><token><value>"@VPFILE@"</value></token></place>
+    <place name="eFile" type="string"><token><value>"@EFILE@"</value></token></place>
+    <place name="dFile" type="string"><token><value>"@DFILE@"</value></token></place>
+
+    <place name="done" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <in name="file_input" type="string"/>
+        <in name="type_input" type="string"/>
+        <in name="file_output" type="string"/>
+        <in name="type_output" type="string"/>
+        <in name="shmem_per_node" type="long"/>
+        <in name="gpi_mem_per_node" type="long"/>
+        <in name="Vnx" type="long"/>
+        <in name="Vny" type="long"/>
+        <in name="Vnz" type="long"/>
+        <in name="dx" type="double"/>
+        <in name="dy" type="double"/>
+        <in name="dz" type="double"/>
+        <in name="zmax" type="double"/>
+        <in name="lx" type="double"/>
+        <in name="ly" type="double"/>
+        <in name="f1" type="double"/>
+        <in name="f2" type="double"/>
+        <in name="f3" type="double"/>
+        <in name="f4" type="double"/>
+        <in name="pad" type="double"/>
+        <in name="latSamplesPerWave" type="double"/>
+        <in name="vertSamplesPerWave" type="double"/>
+        <in name="medium" type="string"/>
+        <in name="propagator" type="string"/>
+        <in name="vPFile" type="string"/>
+        <in name="eFile" type="string"/>
+        <in name="dFile" type="string"/>
+        <out name="give_back_trace" type="long"/>
+        <out name="config" type="config"/>
+        <out name="size_wanted" type="long"/>
+        <out name="num_trace" type="long"/>
+        <out name="num_output_slot" type="long"/>
+        <out name="shot_num" type="long"/>
+        <out name="shot_trace" type="long"/>
+        <module name="sp"
+                function="init ( file_input
+                               , type_input
+                               , file_output
+                               , type_output
+                               , shmem_per_node
+                               , gpi_mem_per_node
+                               , give_back_trace
+                               , config
+                               , num_output_slot
+                               , size_wanted
+                               , num_trace
+                               , shot_num
+                               , shot_trace
+                               , Vnx
+                               , Vny
+                               , Vnz
+                               , dx
+                               , dy
+                               , dz
+                               , zmax
+                               , lx
+                               , ly
+                               , f1
+                               , f2
+                               , f3
+                               , f4
+                               , pad
+                               , latSamplesPerWave
+                               , vertSamplesPerWave
+                               , medium
+                               , propagator
+                               , vPFile
+                               , eFile
+                               , dFile
+                               )">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="stdexcept"/>
+          <cinclude href="fstream"/>
+          <cinclude href="determine_size.hpp"/>
+          <cinclude href="SegYHeader.h"/>
+          <cinclude href="SegYBHeader.h"/>
+          <cinclude href="SegYEBCHeader.h"/>
+          <cinclude href="pfafft.h"/>
+          <cinclude href="boost/filesystem/operations.hpp"/>
+          <link href="@BUILD@/application/kdm/libdetermine_size.so"/>
+          <link href="@BOOST_ROOT@/lib/libboost_filesystem.so"/>
+          <code><![CDATA[
+            LOG (INFO, "INIT");
+
+            determine_size ( file_input
+                           , type_input
+                           , config.num.trace
+                           , config.size.trace
+                           );
+
+            LOG (TRACE, "num.trace = " << config.num.trace);
+            LOG (TRACE, "size.trace = " << config.size.trace);
+
+            config.param.Vnx = Vnx;
+            config.param.Vny = Vny;
+            config.param.Vnz = Vnz;
+
+            config.param.dx = dx;
+            config.param.dy = dy;
+            config.param.dz = dz;
+
+            config.param.zmax = zmax;
+
+            config.param.lx = lx;
+            config.param.ly = ly;
+
+            config.param.f1 = f1;
+            config.param.f2 = f2;
+            config.param.f3 = f3;
+            config.param.f4 = f4;
+
+            config.param.pad = pad;
+
+            config.param.latSamplesPerWave = latSamplesPerWave;
+            config.param.vertSamplesPerWave = vertSamplesPerWave;
+
+            config.param.medium = medium;
+            config.param.propagator = propagator;
+
+            config.param.vPFile = vPFile;
+            config.param.eFile = eFile;
+            config.param.dFile = dFile;
+
+#define IMIN(a,b) ((a)<(b) ? (a) : (b))
+#define NINT(x) ((long)((x)>0.0?(x)+0.5:(x)-0.5))
+
+            config.param.nx = NINT (lx / dx) + 1;
+            config.param.ny = NINT (ly / dy) + 1;
+
+            config.param.nz = (zmax > 0.0)
+              ? IMIN (Vnz, NINT (zmax / dz))
+              : Vnz
+              ;
+
+            LOG (TRACE, "nx " << config.param.nx
+                   << ", ny " << config.param.ny
+                   << ", nz " << config.param.nz
+                );
+
+            config.param.nxf = npfao (config.param.nx, 2 * config.param.nx);
+            config.param.nyf = npfao (config.param.ny, 2 * config.param.ny);
+
+            const long size_vpcube = ( config.param.nz
+                                     * config.param.nxf
+                                     * config.param.nyf
+                                     * sizeof(float)
+                                     );
+
+            LOG (TRACE, "nxf " << config.param.nxf
+                   << ", nyf " << config.param.nyf
+                   << ", size(vPCube) " << size_vpcube
+                );
+
+            if (  !boost::filesystem::exists (vPFile)
+               || !boost::filesystem::is_regular (vPFile)
+               )
+            {
+              throw std::runtime_error ("regular vpFile missing");
+            }
+
+            boost::intmax_t size_vpfile (boost::filesystem::file_size (vPFile));
+
+            LOG (INFO, "filesize (vpfile) " << size_vpfile);
+
+            config.size.output_per_shot
+              = config.param.nx * config.param.ny
+              * (sizeof (SegYHeader) + config.param.nz * sizeof(float))
+              ;
+
+            LOG (TRACE, "size.output_per_shot = "
+                      << config.size.output_per_shot
+                );
+
+            if (gpi_mem_per_node < 2 * config.size.output_per_shot)
+              {
+                throw std::runtime_error ("not enough memory for output (gpi)");
+              }
+
+            if (shmem_per_node < config.size.output_per_shot)
+              {
+                throw std::runtime_error ("not enough memory for output (shmem)");
+              }
+
+            const long gpi_mem_for_traces
+              (gpi_mem_per_node - 2 * config.size.output_per_shot);
+            const long shmem_for_traces
+              (shmem_per_node - config.size.output_per_shot);
+
+            const long mem_for_trace_bunch (std::min ( gpi_mem_for_traces / 2
+                                                     , shmem_for_traces
+                                                     )
+                                           );
+
+            config.per.bunch.trace = mem_for_trace_bunch / config.size.trace;
+
+            LOG (TRACE, "per.bunch.trace = " << config.per.bunch.trace);
+
+            if (config.per.bunch.trace < 1)
+              {
+                throw std::runtime_error ("not enough memory for traces (shmem)");
+              }
+
+            config.size.bunch = config.per.bunch.trace * config.size.trace;
+
+            const long slot_per_node (gpi_mem_for_traces / config.size.bunch);
+
+            if (slot_per_node < 2)
+              {
+                throw std::runtime_error ("not enough memory for traces (gpi)");
+              }
+
+            config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
+
+            if (config.num.slot * fvmGetNodeCount() < 2)
+              {
+                throw std::runtime_error ("not enough memory (total)");
+              }
+
+            LOG (TRACE, "num.slot = " << config.num.slot);
+
+            config.handle.input.data = static_cast<long>
+              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.bunch));
+            config.handle.input.scratch = static_cast<long>
+              (fvmGlobalAlloc (                 1  * config.size.bunch));
+
+            config.handle.output.data = static_cast<long>
+              (fvmGlobalAlloc (config.size.output_per_shot));
+            config.handle.output.scratch = static_cast<long>
+              (fvmGlobalAlloc (config.size.output_per_shot));
+
+            if (config.handle.input.data == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.input.data == 0");
+              }
+
+            if (config.handle.input.scratch == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.input.scratch == 0");
+              }
+
+            if (config.handle.output.data == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.output.data == 0");
+              }
+
+            if (config.handle.output.scratch == 0)
+              {
+                throw std::runtime_error ("BUMMER! handle.output.scratch == 0");
+              }
+
+            config.file.input.name = file_input;
+            config.file.input.type = type_input;
+            config.file.output.name = file_output;
+            config.file.output.type = type_output;
+
+            config.per.node.mem.shmem = shmem_per_node;
+            config.per.node.mem.gpi = gpi_mem_per_node;
+
+            config.num.nodes = fvmGetNodeCount();
+
+            give_back_trace = 0;
+
+            size_wanted = config.size.trace * config.per.bunch.trace;
+            num_trace = config.num.trace;
+
+            num_output_slot = fvmGetNodeCount();
+
+            shot_num = shot_trace = 0;
+
+            std::ofstream out (config.file.output.name.c_str());
+
+            if (!out.good())
+              {
+                throw std::runtime_error
+                  ("could not open output file " + config.file.output.name);
+              }
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="file_input" place="file_input"/>
+      <connect-in port="type_input" place="type_input"/>
+      <connect-in port="file_output" place="file_output"/>
+      <connect-in port="type_output" place="type_output"/>
+      <connect-in port="shmem_per_node" place="shmem_per_node"/>
+      <connect-in port="gpi_mem_per_node" place="gpi_mem_per_node"/>
+      <connect-in port="Vnx" place="Vnx"/>
+      <connect-in port="Vny" place="Vny"/>
+      <connect-in port="Vnz" place="Vnz"/>
+      <connect-in port="dx" place="dx"/>
+      <connect-in port="dy" place="dy"/>
+      <connect-in port="dz" place="dz"/>
+      <connect-in port="zmax" place="zmax"/>
+      <connect-in port="lx" place="lx"/>
+      <connect-in port="ly" place="ly"/>
+      <connect-in port="f1" place="f1"/>
+      <connect-in port="f2" place="f2"/>
+      <connect-in port="f3" place="f3"/>
+      <connect-in port="f4" place="f4"/>
+      <connect-in port="pad" place="pad"/>
+      <connect-in port="latSamplesPerWave" place="latSamplesPerWave"/>
+      <connect-in port="vertSamplesPerWave" place="vertSamplesPerWave"/>
+      <connect-in port="medium" place="medium"/>
+      <connect-in port="propagator" place="propagator"/>
+      <connect-in port="vPFile" place="vPFile"/>
+      <connect-in port="eFile" place="eFile"/>
+      <connect-in port="dFile" place="dFile"/>
+      <connect-out port="give_back_trace" place="give_back_trace"/>
+      <connect-out port="config" place="config_generated"/>
+      <connect-out port="size_wanted" place="size_wanted"/>
+      <connect-out port="num_trace" place="num_trace"/>
+      <connect-out port="num_output_slot" place="num_output_slot"/>
+      <connect-out port="shot_num" place="shot_num"/>
+      <connect-out port="shot_trace" place="shot_trace"/>
+    </transition>
+
+    <place name="num_output_slot" type="long"/>
+    <place name="config_generated" type="config"/>
+    <place name="give_back_trace" type="long"/>
+    <place name="num_trace" type="long"/>
+
+    <transition name="scatter_config" inline="true">
+      <use name="scatter_config"/>
+      <connect-in port="in" place="config_generated"/>
+      <connect-out port="one" place="config"/>
+      <connect-out port="two" place="config_generate_package"/>
+      <connect-out port="three" place="config_generate_interval"/>
+    </transition>
+
+    <place name="config" type="config"/>
+    <place name="config_generate_package" type="config"/>
+    <place name="config_generate_interval" type="config"/>
+
+    <place name="output_slot" type="long"/>
+    <place name="output" type="output"/>
+
+    <transition name="generate_interval" inline="true">
+      <include-function href="generate/interval.xml"/>
+      <connect-in port="config" place="config_generate_interval"/>
+      <connect-out port="interval" place="interval"/>
+    </transition>
+
+    <transition name="generate_package" inline="true">
+      <include-function href="generate/package.xml"/>
+      <place-map virtual="empty_interval" real="interval"/>
+      <connect-in port="config" place="config_generate_package"/>
+      <connect-out port="package" place="assigned_package"/>
+    </transition>
+
+    <transition name="generate_output_slot" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="num_output_slot"/>
+      <connect-out port="out" place="output_slot"/>
+    </transition>
+
+    <place name="interval" type="interval"/>
+    <place name="assigned_package" type="assigned_package"/>
+
+    <transition name="load" inline="true">
+      <defun>
+        <in name="assigned_package" type="assigned_package" place="assigned_package"/>
+        <out name="shot" type="shot" place="shot"/>
+        <net>
+          <place name="config" type="config" virtual="true"/>
+          <place name="assigned_package" type="assigned_package"/>
+          <place name="shot_prepared" type="loaded_package"/>
+
+          <transition name="load_package" inline="true">
+            <include-function href="load.xml"/>
+            <place-map real="config" virtual="config"/>
+            <connect-in port="assigned_package" place="assigned_package"/>
+            <connect-out port="loaded_package" place="loaded_package"/>
+          </transition>
+
+          <place name="loaded_package" type="loaded_package"/>
+
+          <transition name="join_shot" inline="true">
+            <include-function href="join.xml"/>
+            <connect-in port="loaded_package" place="loaded_package"/>
+            <connect-out port="shot_prepared" place="shot_prepared"/>
+          </transition>
+
+          <place name="num" type="long" virtual="true"/>
+          <place name="trace" type="long" virtual="true"/>
+
+          <transition name="number_shot">
+            <defun>
+              <in name="num" type="long"/>
+              <out name="num" type="long"/>
+              <in name="trace" type="long"/>
+              <out name="trace" type="long"/>
+              <in name="shot_prepared" type="loaded_package"/>
+              <out name="shot" type="shot"/>
+              <expression>
+                ${shot.loaded_package} := ${shot_prepared};
+                ${shot.num} := ${num};
+                ${num} := ${num} + 1;
+                ${trace}
+                  := ${shot_prepared.assigned_package.package.right.trace};
+              </expression>
+              <condition>
+                ${shot_prepared.assigned_package.package.left.trace}
+                :eq:
+                ${trace}
+              </condition>
+            </defun>
+            <connect-in port="num" place="num"/>
+            <connect-out port="num" place="num"/>
+            <connect-in port="trace" place="trace"/>
+            <connect-out port="trace" place="trace"/>
+            <connect-in port="shot_prepared" place="shot_prepared"/>
+            <connect-out port="shot" place="shot"/>
+          </transition>
+
+          <place name="shot" type="shot"/>
+        </net>
+      </defun>
+      <place-map virtual="config" real="config"/>
+      <place-map virtual="num" real="shot_num"/>
+      <place-map virtual="trace" real="shot_trace"/>
+      <connect-in port="assigned_package" place="assigned_package"/>
+      <connect-out port="shot" place="shot_prepared"/>
+    </transition>
+
+    <place name="shot_num" type="long"/>
+    <place name="shot_trace" type="long"/>
+
+    <place name="shot_prepared" type="shot"/>
+
+    <transition name="run" inline="true">
+      <include-function href="run.xml"/>
+      <place-map virtual="config" real="config"/>
+      <connect-in port="shot_prepared" place="shot_prepared"/>
+      <connect-in port="output_slot" place="output_slot"/>
+      <connect-out port="shot_done" place="shot_done"/>
+      <connect-out port="output" place="output"/>
+    </transition>
+
+    <transition name="write">
+      <include-function href="write.xml"/>
+      <place-map virtual="config" real="config"/>
+      <connect-in port="output" place="output"/>
+      <connect-out port="output_finished" place="output_finished"/>
+      <connect-out port="output_slot" place="output_slot"/>
+    </transition>
+
+    <place name="output_finished" type="output"/>
+    <place name="shot_done" type="loaded_package"/>
+
+    <transition name="give_back_interval" inline="true">
+      <include-function href="interval/back.xml"/>
+      <connect-in port="shot_done" place="shot_done"/>
+      <connect-out port="empty_interval" place="empty_interval"/>
+    </transition>
+
+    <place name="empty_interval" type="interval"/>
+
+    <transition name="merge_interval" inline="true">
+      <include-function href="interval/merge.xml"/>
+      <connect-in port="empty" place="empty_interval"/>
+      <connect-out port="interval" place="interval"/>
+      <place-map virtual="size_wanted" real="size_wanted"/>
+    </transition>
+
+    <place name="size_wanted" type="long"/>
+
+    <transition name="finish_output" inline="true">
+      <include-function href="finish.xml"/>
+      <place-map virtual="num_trace" real="num_trace"/>
+      <place-map virtual="give_back_trace" real="give_back_trace"/>
+      <connect-in port="output" place="output_finished"/>
+      <connect-out port="done" place="finalize"/>
+    </transition>
+
+    <place name="finalize" type="control"/>
+
+    <transition name="finalize">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="config" type="config"/>
+        <out name="done" type="control"/>
+        <module name="sp" function="done finalize (config)">
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "FINALIZE");
+
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.data));
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.scratch));
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.data));
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.scratch));
+
+            return control();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="trigger" place="finalize"/>
+      <connect-in port="config" place="config"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+
+</defun>
