@@ -378,8 +378,9 @@ WE_MOD_INITIALIZE_START (fvm);
 
   shm_id = gpi_api().register_segment ( "fvm-pc-compat"
                                       , shm_size
-                                      , gpi::pc::type::segment::F_EXCLUSIVE
-                                      | gpi::pc::type::segment::F_FORCE_UNLINK
+//                                       , gpi::pc::type::segment::F_EXCLUSIVE
+//                                       | gpi::pc::type::segment::F_FORCE_UNLINK
+                                      , gpi::pc::type::segment::F_FORCE_UNLINK
                                       );
   shm_hdl = gpi_api().alloc ( shm_id
                             , shm_size
