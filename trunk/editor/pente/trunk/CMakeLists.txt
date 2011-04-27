@@ -27,12 +27,12 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   include (CompilerFlags)
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
-include(SDPAFindBoost)
-include_directories(${Boost_INCLUDE_DIRS})
+#include(SDPAFindBoost)
+#include_directories(${Boost_INCLUDE_DIRS})
 
 ## check for fhglog
-find_package(FhgLog REQUIRED)
-include_directories(${FhgLog_INCLUDE_DIR})
+#find_package(FhgLog REQUIRED)
+#include_directories(${FhgLog_INCLUDE_DIR})
 
 ## check for we
 #find_package(WE REQUIRED)

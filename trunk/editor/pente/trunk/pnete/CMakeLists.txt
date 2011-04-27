@@ -21,8 +21,8 @@ target_link_libraries (pnete
   data
   ui
  
-	${FhgLog_LIBRARY}
-#	${Boost_LIBRARIES}
+#${FhgLog_LIBRARY}
+#${Boost_LIBRARIES}
 	${QT_LIBRARIES}
 )
 
