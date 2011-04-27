@@ -112,7 +112,23 @@ namespace fhg
         
         painter->setPen(QPen(QBrush(Qt::black), 1.0));
         painter->setBackgroundMode(Qt::TransparentMode);
-        painter->drawText(port->boundingRect(), Qt::AlignCenter, port->title());
+        
+        if(port->orientation() == ConnectableItem::NORTH || port->orientation() == ConnectableItem::SOUTH)
+        {
+          qreal degrees = 90;
+          
+          QTransform antirotation;
+          antirotation.rotate(-degrees);
+          
+          painter->save();
+          painter->rotate(degrees); 
+          painter->drawText(antirotation.mapRect(port->boundingRect()), Qt::AlignCenter, port->title());
+          painter->restore();
+        }
+        else
+        {
+          painter->drawText(port->boundingRect(), Qt::AlignCenter, port->title());
+        }
       }
      
       const Style::ePortArea Style::portHit(const Port* port, const QPointF& point)
@@ -145,7 +161,6 @@ namespace fhg
             break;
         }
         
-        printf("point: %f %f, area: %f %f %f %f\n", point.x(), point.y(), area.x(), area.y(), area.width(), area.height());
         if(area.contains(point))
         {
           return MAIN;
