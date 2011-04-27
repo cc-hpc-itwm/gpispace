@@ -732,7 +732,7 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="done" type="control"/>
-        <module name="sp" function="done finalize (config)">
+        <module name="sp_par_vel" function="done finalize (config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
