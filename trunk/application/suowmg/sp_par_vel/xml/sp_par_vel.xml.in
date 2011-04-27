@@ -285,7 +285,7 @@
         <out name="num_output_slot" type="long"/>
         <out name="shot_num" type="long"/>
         <out name="shot_trace" type="long"/>
-        <module name="sp"
+        <module name="sp_par_vel"
                 function="init ( file_input
                                , type_input
                                , file_output
