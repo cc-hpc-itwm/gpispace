@@ -1,5 +1,5 @@
 <defun name="Depth to Time Conversion">
-  <in name="input" type="trace"/>
+  <in name="input" type="seismic_unknown"/>
   <in name="velocity" type="velocity_depth"/>
-  <out name="output" type="trace"/>
+  <out name="output" type="seismic_unknown"/>
 </defun>

@@ -1,4 +1,4 @@
 <defun name="Arbitrary to Common Shot">
-  <in name="input" type="trace"/>
-  <out name="output" type="trace"/>
+  <in name="input" type="seismic_arbitraryshot"/>
+  <out name="output" type="seismic_commonshot"/>
 </defun>

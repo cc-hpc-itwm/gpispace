@@ -1,4 +1,4 @@
 <defun name="Gaining">
-  <in name="input" type="trace"/>
-  <out name="output" type="trace"/>
+  <in name="input" type="seismic_unknown"/>
+  <out name="output" type="seismic_unknown"/>
 </defun>
