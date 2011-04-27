@@ -26,24 +26,22 @@ namespace fhg
           
           const QPointF& mousePosition() const;
           
-          //! \todo rename to pendingConnection.
-          const Connection* newConnection() const;
-          void setNewConnection(Connection* newConnection);
-          void addConnection(ConnectableItem* from, ConnectableItem* to);
-          void addStartToConnection(ConnectableItem* from);
-          void addEndToConnection(ConnectableItem* to);
+          void setPendingConnection(Connection* connection);
           void removePendingConnection();
-          const bool isConnectionLookingForStart() const;
-          const bool isConnectionLookingForEnd() const;
-          const bool isConnectionLooking() const;
+          
+          const Connection* pendingConnection() const;
+          bool pendingConnectionCanConnectTo(ConnectableItem* item) const;
+          void pendingConnectionConnectTo(ConnectableItem* item);
+          bool createPendingConnectionWith(ConnectableItem* item);
           
         protected:
           virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
+          virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
           virtual void keyPressEvent(QKeyEvent* event);
           
         private:
           QPointF _mousePosition;
-          Connection* _newConnection;
+          Connection* _pendingConnection;
       };
     }
   }

@@ -8,14 +8,16 @@
 #include <QStyleOptionGraphicsItem>
 #include <QWidget>
 
+class QGraphicsScene;
+
 namespace fhg
 {
   namespace pnete
   {
     namespace graph
     {
-      Connection::Connection(ConnectableItem* start, ConnectableItem* end, ConnectableItem* parent)
-      : QGraphicsItem(parent),
+      Connection::Connection(ConnectableItem* start, ConnectableItem* end)
+      : QGraphicsItem(NULL),
       _start(NULL),
       _end(NULL),
       _highlighted(false)
@@ -48,6 +50,21 @@ namespace fhg
           _end->disconnectMe();
         }
         _end = end;
+        recalcMidpoints();
+      }
+      
+      void Connection::removeMe(ConnectableItem* item)
+      {
+        if(_end == item)
+        {
+          _end->disconnectMe();
+          _end = NULL;
+        }
+        else if(_start == item)
+        {
+          _start->disconnectMe();
+          _start = NULL;
+        }
         recalcMidpoints();
       }
       
@@ -229,8 +246,6 @@ namespace fhg
         ConnectableItem::eOrientation startOrientation = start() ? start()->orientation() : ConnectableItem::EAST;
         ConnectableItem::eOrientation endOrientation = end() ? end()->orientation() : ConnectableItem::WEST;
         
-        _midpoints.push_back(addInOrientationDirection(startPoint, startOrientation, 20.0));
-        
         QLineF startLine(startPoint, addInOrientationDirection(startPoint, startOrientation, 1.0));
         QLineF endLine(endPoint, addInOrientationDirection(endPoint, endOrientation, 1.0));
         
@@ -241,21 +256,25 @@ namespace fhg
           QPointF mid = QLineF(startPoint, endPoint).pointAt(0.5);
           if(startOrientation == ConnectableItem::NORTH || startOrientation == ConnectableItem::SOUTH)
           {
-            _midpoints.push_back(QPointF(startPoint.x(), mid.y()));
-            _midpoints.push_back(QPointF(endPoint.x(), mid.y()));
+            if(startPoint.x() != endPoint.x())
+            {
+              _midpoints.push_back(QPointF(startPoint.x(), mid.y()));
+              _midpoints.push_back(QPointF(endPoint.x(), mid.y()));
+            }
           }
           else
           {
-            _midpoints.push_back(QPointF(mid.x(), startPoint.y()));
-            _midpoints.push_back(QPointF(mid.x(), endPoint.y()));
+            if(startPoint.y() != endPoint.y())
+            {
+              _midpoints.push_back(QPointF(mid.x(), startPoint.y()));
+              _midpoints.push_back(QPointF(mid.x(), endPoint.y()));
+            }
           }
         }
         else
         {
           _midpoints.push_back(intersection);
         }
-        
-        _midpoints.push_back(addInOrientationDirection(endPoint, endOrientation, 20.0));
       }
     }
   }

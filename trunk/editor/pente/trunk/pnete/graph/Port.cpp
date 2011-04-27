@@ -33,105 +33,23 @@ namespace fhg
           _dragging = false;
           event->setAccepted(true);
         }
-        else
-        {
-          bool hit = false;
-          // the port starting the connection will receive this if dragged. if clicked, the correct one does.
-          QList<QGraphicsItem*> itemsBelow = scene()->items(event->scenePos());
-          for(QList<QGraphicsItem *>::iterator it = itemsBelow.begin(); it != itemsBelow.end(); ++it)
-          {
-            Port* portBelow = qgraphicsitem_cast<Port*>(*it);
-            if(portBelow)
-            {
-              if(portBelow->connectPendingConnection())
-              {
-                event->setAccepted(true);
-                scene()->update();
-                hit = true;
-                break;
-              }
-            }
-          }
-          if(!hit)
-          {
-            qobject_cast<Scene*>(scene())->removePendingConnection();
-          }
-        }
-      }
-      
-      bool Port::connectPendingConnection()
-      {
-        Scene* sceneObject = qobject_cast<Scene*>(scene());
-        if(_connection || !sceneObject->isConnectionLooking())
-        {
-          return false;
-        }
-        
-        if(sceneObject->isConnectionLookingForStart() && _direction == OUT)
-        {
-          sceneObject->addStartToConnection(this);
-          return true;
-        }
-        else if(sceneObject->isConnectionLookingForEnd() && _direction == IN)
-        {
-          sceneObject->addEndToConnection(this);
-          return true;
-        }
-        
-        return false;
-      }
-      
-      bool Port::createPendingConnectionIfPossible()
-      {
-        //! \todo move this to connectable item, add "direction-any."
-        Scene* sceneObject = qobject_cast<Scene*>(scene());
-      
-        if(sceneObject->isConnectionLooking())
-        {
-          return false;
-        }
-        
-        // create new connection
-        if(!_connection)
-        {
-          ConnectableItem* from = _direction == OUT ? this : NULL;
-          ConnectableItem* to = _direction == IN ? this : NULL;
-          sceneObject->addConnection(from, to);
-        }
-        // if we have a connection, detach from our port.
-        else
-        {
-          sceneObject->setNewConnection(_connection);
-          if(_direction == OUT)
-          {
-            _connection->setStart(NULL);
-          }
-          else
-          {
-            _connection->setEnd(NULL);
-          }
-        }
-        
-        return true;
       }
       
       void Port::mousePressEvent(QGraphicsSceneMouseEvent* event)
       {
-        //! \todo Do not do this by modifiers but via areas.
-        //if(event->modifiers() & Qt::ControlModifier)
         switch(Style::portHit(this, event->pos()))
         {
           case Style::MAIN:
             _dragging = true;
             _dragStart = event->pos();
+            event->setAccepted(true);
             break;
             
           case Style::TAIL:
           default:
-            createPendingConnectionIfPossible();
+            event->setAccepted(createPendingConnectionIfPossible());
             break;
         }
-        event->setAccepted(true);
       }
       
       void Port::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
@@ -284,6 +202,20 @@ namespace fhg
           delete backup;
           scene()->update();
         }
+      }
+      
+      bool Port::canConnectTo(ConnectableItem* other) const
+      {
+        Port* otherPort = qgraphicsitem_cast<Port*>(other);
+        return otherPort 
+               && otherPort->dataType() == dataType() 
+               && otherPort->direction() != direction() 
+               && otherPort->parentItem() != parentItem();
+      }
+      
+      bool Port::canConnectIn(eDirection thatDirection) const
+      {
+        return thatDirection == direction();
       }
     }
   }

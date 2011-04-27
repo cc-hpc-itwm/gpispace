@@ -32,6 +32,7 @@ namespace fhg
           static const QRectF portBoundingRect(const Port* port);
           static const void portPaint(QPainter *painter, const Port* port);
           static const ePortArea portHit(const Port* port, const QPointF& point);
+          static const qreal portCapLength();
           
           static const QPainterPath connectionShape(const Connection* connection);
           static const QRectF connectionBoundingRect(const Connection* connection);

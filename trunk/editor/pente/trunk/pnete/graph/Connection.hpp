@@ -22,10 +22,12 @@ namespace fhg
       class Connection : public QGraphicsItem
       {
         public:
-          Connection(ConnectableItem* start = NULL, ConnectableItem* end = NULL, ConnectableItem* parent = NULL);
+          Connection(ConnectableItem* start = NULL, ConnectableItem* end = NULL);
           
           void setStart(ConnectableItem* start);
           void setEnd(ConnectableItem* end);
+          
+          void removeMe(ConnectableItem* item);
           
           const ConnectableItem* start() const;
           const ConnectableItem* end() const;

@@ -23,6 +23,8 @@ set(graph_UIS
 set(graph_TOMOC
   Scene.hpp
   Transition.hpp
+  Port.hpp
+  ConnectableItem.hpp
 )
 
 #for moced files to get their includes.

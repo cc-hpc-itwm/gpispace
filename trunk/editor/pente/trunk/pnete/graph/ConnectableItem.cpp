@@ -1,4 +1,6 @@
 #include "ConnectableItem.hpp"
+#include "Scene.hpp"
+#include "Connection.hpp"
 
 namespace fhg
 {
@@ -12,11 +14,6 @@ namespace fhg
       _direction(direction),
       _orientation(orientation)
       {
-      }
-      
-      const QGraphicsItem* ConnectableItem::toQGraphicsItem() const
-      {
-        return static_cast<const QGraphicsItem*>(this);
       }
       
       void ConnectableItem::connectMe(Connection* connection)
@@ -35,6 +32,37 @@ namespace fhg
       const ConnectableItem::eDirection& ConnectableItem::direction() const
       {
         return _direction;
+      }
+      
+      bool ConnectableItem::canConnectTo(ConnectableItem* other) const
+      {
+        return true;
+      }
+      
+      bool ConnectableItem::canConnectIn(eDirection thatDirection) const
+      {
+        return true;
+      }
+      
+      bool ConnectableItem::createPendingConnectionIfPossible()
+      {
+        Scene* sceneObject = qobject_cast<Scene*>(scene());
+      
+        if(sceneObject->pendingConnection())
+        {
+          return false;
+        }
+        
+        if(_connection)
+        {
+          sceneObject->setPendingConnection(_connection);
+          _connection->removeMe(this);
+          return true;
+        }
+        else
+        {
+          return sceneObject->createPendingConnectionWith(this);
+        }
       }
     }
   }

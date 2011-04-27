@@ -25,31 +25,65 @@ namespace fhg
       static const QPointF outgoingCap[] = { QPointF(0.0, -portHeightHalf), QPointF(capLength, 0.0), QPointF(0.0, portHeightHalf) };
       static const QPointF ingoingCap[] = { QPointF(0.0, -portHeightHalf), QPointF(capLength, -portHeightHalf), QPointF(0.0, 0.0), QPointF(capLength, portHeightHalf), QPointF(0.0, portHeightHalf) };
       
+      const qreal Style::portCapLength()
+      {
+        return capLength;
+      }
+      
+      void addOutgoingCap(QPainterPath* path, bool middle, QPointF offset = QPointF(), qreal rotation = 0.0)
+      {
+        QTransform transformation;
+        transformation.rotate(rotation);
+        
+        for(size_t i = 0; i < sizeof(outgoingCap) / sizeof(QPointF); ++i)
+        {
+          path->lineTo(transformation.map(QPointF(outgoingCap[i].x(), outgoingCap[i].y() + (middle ? portHeightHalf : 0.0))) + offset);
+        }
+      }
+      
+      void addOutgoingCap(QPolygonF* poly, QPointF offset = QPointF(), qreal rotation = 0.0)
+      {
+        QPainterPath path;
+        addOutgoingCap(&path, false, offset, rotation);
+        *poly = poly->united(path.toFillPolygon());
+      }
+      
+      void addIngoingCap(QPainterPath* path, bool middle, QPointF offset = QPointF(), qreal rotation = 0.0)
+      {
+        QTransform transformation;
+        transformation.rotate(rotation);
+        
+        for(size_t i = 0; i < sizeof(ingoingCap) / sizeof(QPointF); ++i)
+        {
+          path->lineTo(transformation.map(QPointF(ingoingCap[i].x(), ingoingCap[i].y() + (middle ? portHeightHalf : 0.0))) + offset);
+        }
+      }
+      
+      void addIngoingCap(QPolygonF* poly, QPointF offset = QPointF(), qreal rotation = 0.0)
+      {
+        QPainterPath path;
+        addIngoingCap(&path, false, offset, rotation);
+        *poly = poly->united(path.toFillPolygon());
+      }
+      
       const QPainterPath Style::portShape(const Port* port)
       {
         const qreal& length = port->length();
         const qreal lengthHalf = length / 2.0;
                 
         QPolygonF poly;
-        poly << QPointF(lengthHalf - capLength, portHeightHalf)
+        poly << QPointF(lengthHalf - portCapLength(), portHeightHalf)
              << QPointF(-lengthHalf, portHeightHalf)
              << QPointF(-lengthHalf, -portHeightHalf)
-             << QPointF(lengthHalf - capLength, -portHeightHalf);
+             << QPointF(lengthHalf - portCapLength(), -portHeightHalf);
         
-        //! \todo put capping into a function
         if(port->direction() == ConnectableItem::IN)
         {
-          for(size_t i = 0; i < sizeof(ingoingCap) / sizeof(QPointF); ++i)
-          {
-            poly << ingoingCap[i] + QPointF(lengthHalf - capLength, 0.0);
-          }
+          addIngoingCap(&poly, QPointF(lengthHalf - portCapLength(), 0.0));
         }
         else
         {
-          for(size_t i = 0; i < sizeof(outgoingCap) / sizeof(QPointF); ++i)
-          {
-            poly << outgoingCap[i] + QPointF(lengthHalf - capLength, 0.0);
-          }
+          addOutgoingCap(&poly, QPointF(lengthHalf - portCapLength(), 0.0));
         }
         
         static const qreal angles[] = { -90.0, 0.0, 90.0, 180.0 };
@@ -115,7 +149,7 @@ namespace fhg
         
         if(port->orientation() == ConnectableItem::NORTH || port->orientation() == ConnectableItem::SOUTH)
         {
-          qreal degrees = 90;
+          qreal degrees = 90.0;
           
           QTransform antirotation;
           antirotation.rotate(-degrees);
@@ -140,19 +174,19 @@ namespace fhg
         switch(port->orientation())
         {
           case ConnectableItem::NORTH:
-            area = QRectF(-portHeightHalf, -lengthHalf + capLength * 2, portHeight, length - capLength * 2);
+            area = QRectF(-portHeightHalf, -lengthHalf + portCapLength() * 2, portHeight, length - portCapLength() * 2);
             break;
             
           case ConnectableItem::SOUTH:
-            area = QRectF(-portHeightHalf, -lengthHalf, portHeight, length - capLength * 2);
+            area = QRectF(-portHeightHalf, -lengthHalf, portHeight, length - portCapLength() * 2);
             break;
             
           case ConnectableItem::EAST:
-            area = QRectF(-lengthHalf, -portHeightHalf, length - capLength * 2, portHeight);
+            area = QRectF(-lengthHalf, -portHeightHalf, length - portCapLength() * 2, portHeight);
             break;
             
           case ConnectableItem::WEST:
-            area = QRectF(-lengthHalf + capLength * 2, -portHeightHalf, length - capLength * 2, portHeight);
+            area = QRectF(-lengthHalf + portCapLength() * 2, -portHeightHalf, length - portCapLength() * 2, portHeight);
             break;
             
           case ConnectableItem::ANYORIENTATION:
@@ -173,8 +207,6 @@ namespace fhg
             
       const QPainterPath Style::connectionShape(const Connection* connection)
       {
-        //! \todo This whole thing might be done easier, better, nicer, cleaner, less buggy.
-        
         const ConnectableItem* startItem = connection->start();
         const ConnectableItem* endItem = connection->end();
         if(!startItem && !endItem)
@@ -186,7 +218,14 @@ namespace fhg
         QPointF end = connection->endPosition();
         const QList<QPointF>& mid = connection->midpoints();
         
+        //! \todo indicate connection with blob?
+        if(start == end)
+        {
+          return QPainterPath();
+        }
+        
         QPainterPath path;
+        path.setFillRule(Qt::WindingFill);
         
         QList<QPointF> allPoints;
         allPoints.push_back(start);
@@ -202,75 +241,53 @@ namespace fhg
         for(QList<QPointF>::const_iterator first = allPoints.begin(), second = allPoints.begin() + 1; second != allPoints.end(); ++first, ++second)
         {
           qreal dummyLength = QLineF(*first, *second).length();
-          QLineF dummyLineForward(QPointF(0.0, -portHeightHalf), QPointF(dummyLength, -portHeightHalf));
-          QLineF dummyLineBackward(QPointF(0.0, portHeightHalf), QPointF(dummyLength, portHeightHalf));
           
           QTransform transformation;
           transformation.translate(first->x(), first->y());
           transformation.rotate(-QLineF(*first, *second).angle());
           
-          linesForward.push_back(transformation.map(dummyLineForward));
-          linesBackward.push_front(transformation.map(dummyLineBackward));
+          linesForward.push_back(transformation.map(QLineF(QPointF(0.0, -portHeightHalf), QPointF(dummyLength, -portHeightHalf))));
+          linesBackward.push_front(transformation.map(QLineF(QPointF(0.0, portHeightHalf), QPointF(dummyLength, portHeightHalf))));
         }
         
-        for(QList<QLineF>::iterator line = linesForward.begin(), nextLine = line + 1; line != linesForward.end(); ++line, ++nextLine)
-        {
-          if(nextLine != linesForward.end())
-          {
-            QPointF intersection;
-            if(line->intersect(*nextLine, &intersection) != QLineF::NoIntersection)
-            {
-              line->setP2(intersection);
-              nextLine->setP1(intersection);
-            }
-          }
-          QPolygonF poly;
-          poly << line->p1() << line->p2();
-          path.addPolygon(poly);
-        }
+        path.moveTo(linesForward.first().p1());
         
+        QPointF intersection;
+        
+        for(QList<QLineF>::iterator line = linesForward.begin(); line != linesForward.end(); ++line)
         {
-          const QLineF& lastForward = linesForward.last();
-          QTransform transformation;
-          transformation.rotate(-lastForward.angle());
+          QPointF target = line->p2();
           
-          QPolygonF cap;
-          for(size_t i = 0; i < sizeof(outgoingCap) / sizeof(QPointF); ++i)
+          QList<QLineF>::iterator nextLine = line + 1;
+          if(nextLine != linesForward.end() && line->intersect(*nextLine, &intersection) != QLineF::NoIntersection)
           {
-            cap << transformation.map(QPointF(outgoingCap[i].x(), outgoingCap[i].y() + portHeightHalf)) + lastForward.p2();
+            target = intersection;
           }
-          path.addPolygon(cap);
-        }
-        
-        for(QList<QLineF>::iterator line = linesBackward.begin(), nextLine = line + 1; line != linesBackward.end(); ++line, ++nextLine)
-        {
-          if(nextLine != linesBackward.end())
-          {
-            QPointF intersection;
-            if(line->intersect(*nextLine, &intersection) != QLineF::NoIntersection)
-            {
-              line->setP1(intersection);
-              nextLine->setP2(intersection);
-            }
-          }
-          QPolygonF poly;
-          poly << line->p1() << line->p2();
-          path.addPolygon(poly);
-        }
-        
-        {
-          const QLineF& lastBackward = linesBackward.last();
-          QTransform transformation;
-          transformation.rotate(180-lastBackward.angle());
           
-          QPolygonF cap;
-          for(size_t i = 0; i < sizeof(ingoingCap) / sizeof(QPointF); ++i)
-          {
-            cap << transformation.map(QPointF(ingoingCap[i].x(), ingoingCap[i].y() + portHeightHalf)) + lastBackward.p1();
-          }
-          path.addPolygon(cap);
+          path.lineTo(target);
         }
-      
+        
+        addOutgoingCap(&path, true, linesForward.last().p2(), -linesForward.last().angle());
+        
+        path.lineTo(linesBackward.first().p2());
+        
+        for(QList<QLineF>::iterator line = linesBackward.begin(); line != linesBackward.end(); ++line)
+        {
+          QPointF target = line->p1();
+          
+          QList<QLineF>::iterator nextLine = line + 1;
+          if(nextLine != linesBackward.end() && line->intersect(*nextLine, &intersection) != QLineF::NoIntersection)
+          {
+            target = intersection;
+          }
+          
+          path.lineTo(target);
+        }
+        
+        addIngoingCap(&path, true, linesBackward.last().p1(), 180.0 - linesBackward.last().angle());
+        
+        path.lineTo(linesForward.first().p1());
+                
         return path;
       }
       const QRectF Style::connectionBoundingRect(const Connection* connection)
@@ -280,6 +297,8 @@ namespace fhg
       const void Style::connectionPaint(QPainter* painter, const Connection* connection)
       {        
         painter->setPen(QPen(QBrush(connection->highlighted() ? Qt::red : Qt::black), 2));
+        painter->setBackgroundMode(Qt::OpaqueMode);
+        painter->setBrush(QBrush(Qt::white, Qt::SolidPattern));
         painter->drawPath(connectionShape(connection));
       }
       

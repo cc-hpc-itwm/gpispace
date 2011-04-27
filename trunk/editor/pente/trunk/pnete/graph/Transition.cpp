@@ -16,9 +16,9 @@ namespace fhg
     {
       Transition::Transition(const QString& title, QGraphicsItem* parent)
       : QGraphicsItem(parent),
+      _title(title),
       _dragStart(0,0),
       _size(150, 100),
-      _title(title),
       _highlighted(false),
       _dragging(false)
       {

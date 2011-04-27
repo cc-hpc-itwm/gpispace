@@ -2,6 +2,7 @@
 #define GRAPHCONNECTABLEITEM_HPP 1
 
 #include <QGraphicsItem>
+#include <QObject>
 
 namespace fhg
 {
@@ -11,8 +12,11 @@ namespace fhg
     {
       class Connection;
       
-      class ConnectableItem : public QGraphicsItem
+      class ConnectableItem : public QObject, public QGraphicsItem
       {
+        Q_OBJECT
+        Q_INTERFACES(QGraphicsItem)
+        
         public:
           enum eOrientation
           {
@@ -31,13 +35,16 @@ namespace fhg
           
           ConnectableItem(eOrientation orientation, eDirection direction, QGraphicsItem* parent = NULL);
           
-          const QGraphicsItem* toQGraphicsItem() const;
-          
           void connectMe(Connection* connection);
           void disconnectMe();
           
           const eOrientation& orientation() const;
           const eDirection& direction() const;
+          
+          virtual bool canConnectTo(ConnectableItem* other) const;
+          virtual bool canConnectIn(eDirection thatDirection) const;
+          
+          bool createPendingConnectionIfPossible();
           
         protected:
           Connection* _connection;

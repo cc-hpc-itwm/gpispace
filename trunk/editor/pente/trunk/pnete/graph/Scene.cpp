@@ -1,5 +1,6 @@
 #include "Scene.hpp"
 #include "Connection.hpp"
+#include "ConnectableItem.hpp"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
@@ -11,7 +12,7 @@ namespace fhg
     namespace graph
     {
       Scene::Scene(QObject* parent)
-      : QGraphicsScene(parent), _newConnection(NULL)
+      : QGraphicsScene(parent), _pendingConnection(NULL)
       {
         _mousePosition = QPointF(0.0f, 0.0f);
       }
@@ -21,70 +22,40 @@ namespace fhg
         return _mousePosition;
       }
       
-      const Connection* Scene::newConnection() const
+      void Scene::setPendingConnection(Connection* connection)
       {
-        return _newConnection;
+        removePendingConnection();
+        _pendingConnection = connection;
+        if(_pendingConnection->scene() != this)
+        {
+          addItem(_pendingConnection);
+        }
+        update();
       }
       
-      void Scene::setNewConnection(Connection* newConnection)
+      bool Scene::createPendingConnectionWith(ConnectableItem* item)
       {
-        _newConnection = newConnection;
-        
-        if(_newConnection)
+        if(item->canConnectIn(ConnectableItem::ANYDIRECTION))
         {
-          addItem(_newConnection);
+          ;//! \note Aaaaaargh.
         }
-      }
-      
-      void Scene::addConnection(ConnectableItem* from, ConnectableItem* to)
-      {
-        setNewConnection(new Connection(from, to));
-      }
-      void Scene::addStartToConnection(ConnectableItem* from)
-      {
-        if(!_newConnection)
+        else if(item->canConnectIn(ConnectableItem::IN))
         {
-          return;
+          setPendingConnection(new Connection(NULL, item));
+          return true;
         }
-        
-        _newConnection->setStart(from);
-        
-        if(_newConnection->start() && _newConnection->end())
+        else if(item->canConnectIn(ConnectableItem::OUT))
         {
-          _newConnection = NULL;
+          setPendingConnection(new Connection(item, NULL));
+          return true;
         }
-      }
-      void Scene::addEndToConnection(ConnectableItem* to)
-      {
-        if(!_newConnection)
-        {
-          return;
-        }
-        
-        _newConnection->setEnd(to);
-        
-        if(_newConnection->start() && _newConnection->end())
-        {
-          _newConnection = NULL;
-        }
-      }
-      const bool Scene::isConnectionLookingForStart() const
-      {
-        return _newConnection && !_newConnection->start();
-      }
-      const bool Scene::isConnectionLookingForEnd() const
-      {
-        return _newConnection && !_newConnection->end();
-      }
-      const bool Scene::isConnectionLooking() const
-      {
-        return _newConnection && (!_newConnection->start() || !_newConnection->end());
+        return false;
       }
       
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
       {
         _mousePosition = mouseEvent->scenePos();
-        if(_newConnection)
+        if(_pendingConnection)
         {
           update();
         }
@@ -92,20 +63,77 @@ namespace fhg
         QGraphicsScene::mouseMoveEvent(mouseEvent);
       }
       
+      void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+      {
+        if(_pendingConnection)
+        {
+          QList<QGraphicsItem*> itemsBelow = items(event->scenePos());
+          for(QList<QGraphicsItem*>::iterator it = itemsBelow.begin(); it != itemsBelow.end(); ++it)
+          {
+            ConnectableItem* portBelow = qgraphicsitem_cast<ConnectableItem*>(*it);
+            if(portBelow && pendingConnectionCanConnectTo(portBelow))
+            {
+              pendingConnectionConnectTo(portBelow);
+              event->setAccepted(true);
+              update();
+              return;
+            }
+          }
+          
+          removePendingConnection();
+        }
+        
+        QGraphicsScene::mouseReleaseEvent(event);
+      }
+      
       void Scene::removePendingConnection()
       {
-        _newConnection->setEnd(NULL);
-        _newConnection->setStart(NULL);
-        //! \todo which one?
-        delete _newConnection;
-        //removeItem(_newConnection);
-        _newConnection = NULL;
-        update();
+        if(_pendingConnection)
+        {
+          _pendingConnection->setEnd(NULL);
+          _pendingConnection->setStart(NULL);
+          //! \todo which one?
+          delete _pendingConnection;
+          //removeItem(_pendingConnection);
+          _pendingConnection = NULL;
+          update();
+        }
+      }
+      
+      const Connection* Scene::pendingConnection() const
+      {
+        return _pendingConnection;
+      }
+      
+      bool Scene::pendingConnectionCanConnectTo(ConnectableItem* item) const
+      {
+        //! \note ugly enough?
+        return _pendingConnection
+               && !(_pendingConnection->start() && _pendingConnection->end())
+               && (  (_pendingConnection->start() && _pendingConnection->start()->canConnectTo(item))
+                  || (_pendingConnection->end() && _pendingConnection->end()->canConnectTo(item))
+                  );
+      }
+      
+      void Scene::pendingConnectionConnectTo(ConnectableItem* item)
+      {
+        if(pendingConnectionCanConnectTo(item))
+        {
+          if(_pendingConnection->start())
+          {
+            _pendingConnection->setEnd(item);
+          }
+          else
+          {
+            _pendingConnection->setStart(item);
+          }
+          _pendingConnection = NULL;
+        }
       }
       
       void Scene::keyPressEvent(QKeyEvent* event)
       {
-        if(_newConnection && event->key() == Qt::Key_Escape)
+        if(_pendingConnection && event->key() == Qt::Key_Escape)
         {
           removePendingConnection();
         }

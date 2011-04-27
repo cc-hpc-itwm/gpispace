@@ -1,6 +1,8 @@
 #ifndef GRAPHPORT_HPP
 #define GRAPHPORT_HPP 1
 
+#include <QObject>
+
 #include "ConnectableItem.hpp"
 #include "ItemTypes.hpp"
 
@@ -14,6 +16,8 @@ namespace fhg
       
       class Port : public ConnectableItem
       {
+        Q_OBJECT
+        
         public:          
           Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType);
           
@@ -26,6 +30,9 @@ namespace fhg
           virtual QRectF boundingRect() const;
           
           void deleteConnection();
+         
+          virtual bool canConnectTo(ConnectableItem* other) const;
+          virtual bool canConnectIn(eDirection thatDirection) const;
     
           enum 
           {
@@ -38,19 +45,15 @@ namespace fhg
           
         protected:
           virtual QPainterPath shape() const;
-          virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+          virtual void paint(QPainter*painter, const QStyleOptionGraphicsItem*option, QWidget*widget);
           
-          virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
-          virtual void hoverLeaveEvent ( QGraphicsSceneHoverEvent * event );
-          virtual void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent * event );
-          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent * event );
+          virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
+          virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
+          virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+          virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
     
-        private:
-          bool createPendingConnectionIfPossible();
-          bool connectPendingConnection();
-          
-          //! \todo QStaticText.
+        private:          
           QString _title;
           QString _dataType;
           
