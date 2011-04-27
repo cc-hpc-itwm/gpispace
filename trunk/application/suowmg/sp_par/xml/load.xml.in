@@ -14,7 +14,7 @@
         <in name="assigned_package" type="assigned_package"/>
         <in name="config" type="config"/>
         <out name="list" type="list_of_loaded_packages"/>
-        <module name="sp" function="list load (config, assigned_package)">
+        <module name="sp_par" function="list load (config, assigned_package)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
@@ -186,7 +186,7 @@
         <in name="list" type="list_of_loaded_packages"/>
         <out name="list" type="list_of_loaded_packages"/>
         <out name="package" type="loaded_package"/>
-        <module name="sp" function="package take (list)">
+        <module name="sp_par" function="package take (list)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="deque"/>

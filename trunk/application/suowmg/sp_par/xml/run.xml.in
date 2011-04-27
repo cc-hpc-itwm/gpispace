@@ -23,11 +23,11 @@
         <out name="output" type="output"/>
 
         <in name="config" type="config"/>
-        <module name="sp" function="output run ( config
-                                               , shot
-                                               , output_slot
-                                               , shot_done
-                                               )">
+        <module name="sp_par" function="output run ( config
+                                                   , shot
+                                                   , output_slot
+                                                   , shot_done
+                                                   )">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="util.hpp"/>
@@ -64,7 +64,7 @@
 
             std::ostringstream cmd;
 
-            cmd << "/p/herc/itwm/hpc/mr/suowmg/orig/src/suowmg";
+            cmd << "/p/herc/itwm/hpc/mr/sdpa/trunk/application/suowmg/src/suowmg";
             cmd << " nx=" << config.param.Vnx;
             cmd << " ny=" << config.param.Vny;
             cmd << " nz=" << config.param.Vnz;

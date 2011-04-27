@@ -1,12 +1,12 @@
 
-MAIN = sp
+MAIN = sp_par
 
 TRUNK = $(CURDIR)/../../../
 #BUILD = /var/tmp/mr/
 BUILD = $(TRUNK)/../build/herc/release
 LIB_DESTDIR = $(HOME)/.sdpa/modules
 
-PATH_MAIN  = $(TRUNK)/application/suowmg/sp
+PATH_MAIN  = $(TRUNK)/application/suowmg/sp_par
 UTIL = $(PATH_MAIN)/util
 SEISLIB = $(PATH_MAIN)/seislib
 

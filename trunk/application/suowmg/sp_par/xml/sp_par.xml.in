@@ -281,7 +281,7 @@
         <out name="num_output_slot" type="long"/>
         <out name="shot_num" type="long"/>
         <out name="shot_trace" type="long"/>
-        <module name="sp"
+        <module name="sp_par"
                 function="init ( file_input
                                , type_input
                                , file_output
@@ -698,7 +698,7 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="done" type="control"/>
-        <module name="sp" function="done finalize (config)">
+        <module name="sp_par" function="done finalize (config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[

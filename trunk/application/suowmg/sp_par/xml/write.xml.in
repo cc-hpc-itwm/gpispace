@@ -16,7 +16,7 @@
         <in name="config" type="config"/>
         <in name="output" type="output"/>
         <out name="output" type="output"/>
-        <module name="sp" function="write (config, output)">
+        <module name="sp_par" function="write (config, output)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
