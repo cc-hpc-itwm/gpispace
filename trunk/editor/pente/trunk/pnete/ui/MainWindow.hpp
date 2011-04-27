@@ -32,9 +32,10 @@ namespace fhg
         void addTransitionLibraryUserPath(const QString& path);
       
       private:
-        QTreeView *transitionLibrary;
+        QTreeView* transitionLibrary;
+        GraphView* graphicsView;
         
-        void setupUi();
+        void setupMenuAndToolbar();
         //! \todo This should be a complete class producing views for the same scene?
         void setupCentralWidget();
         void setupTransitionLibrary();

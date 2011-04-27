@@ -15,6 +15,7 @@
 #include <QWidget>
 #include <QDir>
 #include <QSlider>
+#include <QSpinBox>
 
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
@@ -27,10 +28,12 @@ namespace fhg
     namespace ui
     {
       MainWindow::MainWindow(QWidget* parent)
-      : QMainWindow(parent)
+      : QMainWindow(parent),
+      transitionLibrary(NULL),
+      graphicsView(NULL)
       {
-        setupUi();
         setupCentralWidget();
+        setupMenuAndToolbar();
         setupTransitionLibrary();
       }
       
@@ -47,7 +50,7 @@ namespace fhg
         transitionLibrary->expandAll();
       }
       
-      void MainWindow::setupUi()
+      void MainWindow::setupMenuAndToolbar()
       {
         setWindowTitle(tr("SDPA editor"));
         resize(800, 600);
@@ -82,13 +85,24 @@ namespace fhg
         QWidget* spacer = new QWidget(this);
         spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         mainToolBar->addWidget(spacer);
-        //! \todo icon. ._.
-        mainToolBar->addAction("Zoom");
         
         //! \todo on !OSX, orientation of the toolbar can change. take care of slider!
         QSlider* zoomSlider = new QSlider(Qt::Horizontal, this);
         zoomSlider->setMaximumSize(QSize(200, zoomSlider->height()));
+        zoomSlider->setRange(10, 300);
         mainToolBar->addWidget(zoomSlider);
+        
+        //! \todo icon. ._.
+        QSpinBox* zoomSpinBox = new QSpinBox(this);
+        zoomSpinBox->setSuffix("%");
+        zoomSpinBox->setRange(10, 300);
+        mainToolBar->addWidget(zoomSpinBox);
+        
+        connect(zoomSlider, SIGNAL(valueChanged(int)), zoomSpinBox, SLOT(setValue(int)));
+        connect(zoomSpinBox, SIGNAL(valueChanged(int)), zoomSlider, SLOT(setValue(int)));
+        connect(zoomSpinBox, SIGNAL(valueChanged(int)), graphicsView, SLOT(zoom(int)));
+        
+        zoomSlider->setValue(100);
       }
       
       void MainWindow::setupCentralWidget()
@@ -98,7 +112,7 @@ namespace fhg
         QGridLayout* centralLayout = new QGridLayout(centralWidget);
         centralLayout->setContentsMargins(2, 2, 2, 2);
         
-        GraphView* graphicsView = new GraphView(new graph::Scene(this), centralWidget);
+        graphicsView = new GraphView(new graph::Scene(this), centralWidget);
         
         centralLayout->addWidget(graphicsView);
         

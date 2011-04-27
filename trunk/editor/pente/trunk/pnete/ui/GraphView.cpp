@@ -19,10 +19,11 @@ namespace fhg
     namespace ui
     {
       GraphView::GraphView(QGraphicsScene* scene, QWidget* parent)
-      : QGraphicsView(scene, parent)
+      : QGraphicsView(scene, parent),
+      currentScale(1.0)
       {
         setDragMode(QGraphicsView::ScrollHandDrag);
-        setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+        setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
       }
 
       void GraphView::dragEnterEvent(QDragEnterEvent *event)
@@ -76,6 +77,14 @@ namespace fhg
           transition->setPos(graph::Style::snapToRaster(mapToScene(event->pos())));
           event->acceptProposedAction();
         }
+      }
+      
+      void GraphView::zoom(int to)
+      {
+        qreal target = (to / 100.0);
+        qreal factor = target / currentScale;
+        scale(factor, factor);
+        currentScale = target;
       }
     }
   }
