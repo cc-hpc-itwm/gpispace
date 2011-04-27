@@ -14,6 +14,7 @@
 #include <QGridLayout>
 #include <QWidget>
 #include <QDir>
+#include <QSlider>
 
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
@@ -39,12 +40,19 @@ namespace fhg
         transitionLibrary->setModel(fsmodel);
         transitionLibrary->expandAll();
       }
+
+      void MainWindow::addTransitionLibraryUserPath(const QString& path)
+      {
+        qobject_cast<TransitionLibraryModel*>(transitionLibrary->model())->addContentFromDirectory(path);
+        transitionLibrary->expandAll();
+      }
       
       void MainWindow::setupUi()
       {
-        setWindowTitle(tr("petri net editor"));
+        setWindowTitle(tr("SDPA editor"));
         resize(800, 600);
        
+        //! \todo icons for toolbar.
         QAction* saveDummyAction = new QAction(tr("Save"), this);
         saveDummyAction->setShortcuts(QKeySequence::Save);
         QAction* closeDummyAction = new QAction(tr("Close"), this);
@@ -66,9 +74,21 @@ namespace fhg
         setMenuBar(menuBar);
         
         QToolBar* mainToolBar = new QToolBar(this);
-        mainToolBar->addAction(saveDummyAction);
         addToolBar(Qt::TopToolBarArea, mainToolBar);
         setUnifiedTitleAndToolBarOnMac(true);
+        
+        mainToolBar->addAction(saveDummyAction);
+        
+        QWidget* spacer = new QWidget(this);
+        spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        mainToolBar->addWidget(spacer);
+        //! \todo icon. ._.
+        mainToolBar->addAction("Zoom");
+        
+        //! \todo on !OSX, orientation of the toolbar can change. take care of slider!
+        QSlider* zoomSlider = new QSlider(Qt::Horizontal, this);
+        zoomSlider->setMaximumSize(QSize(200, zoomSlider->height()));
+        mainToolBar->addWidget(zoomSlider);
       }
       
       void MainWindow::setupCentralWidget()

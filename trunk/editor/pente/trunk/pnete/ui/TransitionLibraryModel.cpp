@@ -23,7 +23,6 @@ namespace fhg
       _fileSystemWatcher(NULL),
       _items(new TransitionLibraryItem("__DUMMY__ROOT__", this))
       {
-        setFileSystemWatcher(path.path());
         readContentFromDirectory(path.path());
       }
       
@@ -32,17 +31,43 @@ namespace fhg
         _items->clearChildren();
  
         readContentFromDirectoryRecursive(_items, path);
+        _items->sortChildren();
+      }
+      
+      void TransitionLibraryModel::addContentFromDirectory(const QString& path)
+      {
+        readContentFromDirectoryRecursive(_items, path);
+        _items->sortChildren();
       }
       
       void TransitionLibraryModel::readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const QString& path)
       {
+        setFileSystemWatcher(path);
+        
         QDirIterator directoryWalkerDirs(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
         while(directoryWalkerDirs.hasNext())
         {
           directoryWalkerDirs.next();
           
-          TransitionLibraryItem* newRoot = new TransitionLibraryItem(directoryWalkerDirs.fileInfo().fileName(), currentRoot);
-          currentRoot->appendChild(newRoot);
+          const QString newName = directoryWalkerDirs.fileInfo().fileName();
+          
+          TransitionLibraryItem* newRoot;
+          bool found = false;
+          const QList<TransitionLibraryItem*>& children = currentRoot->children();
+          for(QList<TransitionLibraryItem*>::const_iterator it = children.begin(); it != children.end(); ++it)
+          {
+            if(!(*it)->data() && (*it)->name() == newName)
+            {
+              newRoot = *it;
+              found = true;
+              break;
+            }
+          }
+          if(!found)
+          {
+            newRoot = new TransitionLibraryItem(newName, currentRoot);
+            currentRoot->appendChild(newRoot);
+          }
           readContentFromDirectoryRecursive(newRoot, directoryWalkerDirs.fileInfo().absoluteFilePath());
         }
         
@@ -58,6 +83,9 @@ namespace fhg
       
       void TransitionLibraryModel::setFileSystemWatcher(const QString& path)
       {
+        //! \todo fix this to be working with more than one folder! (i.e. rescan all directories?)
+        return;
+        
         delete _fileSystemWatcher;
         
         _fileSystemWatcher = new QFileSystemWatcher(QStringList(path), this);
@@ -82,6 +110,7 @@ namespace fhg
       
       QVariant TransitionLibraryModel::data(const QModelIndex& index, int role) const
       {
+        //! \todo symbols for trusted and untrusted entries? (lib / user)
         if(!index.isValid() || role != Qt::DisplayRole)
         {
           return QVariant();
@@ -139,22 +168,18 @@ namespace fhg
       
       QModelIndex TransitionLibraryModel::index(int row, int column, const QModelIndex& parent) const
       {
-        if(!hasIndex(row, column, parent))
+        if(hasIndex(row, column, parent))
         {
-          return QModelIndex();
+          TransitionLibraryItem* parentItem = !parent.isValid() ? _items : static_cast<TransitionLibraryItem*>(parent.internalPointer());
+    
+          TransitionLibraryItem* childItem = parentItem->child(row);
+          if(childItem)
+          {
+            return createIndex(row, column, childItem);
+          }
         }
-
-        TransitionLibraryItem* parentItem = !parent.isValid() ? _items : static_cast<TransitionLibraryItem*>(parent.internalPointer());
-  
-        TransitionLibraryItem* childItem = parentItem->child(row);
-        if(childItem)
-        {
-          return createIndex(row, column, childItem);
-        }
-        else
-        {
-          return QModelIndex();
-        }
+        
+        return QModelIndex();
       }
       
       QModelIndex TransitionLibraryModel::parent(const QModelIndex& index) const

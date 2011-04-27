@@ -38,6 +38,7 @@ namespace fhg
         
         public slots:
           void readContentFromDirectory(const QString& path);
+          void addContentFromDirectory(const QString& path);
           
         private:
           void setFileSystemWatcher(const QString& path);

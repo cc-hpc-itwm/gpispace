@@ -70,6 +70,16 @@ namespace fhg
       {
         return _children.clear();
       }
+      
+      const QList<TransitionLibraryItem*>& TransitionLibraryItem::children() const
+      {
+        return _children;
+      }
+      
+      void TransitionLibraryItem::sortChildren(bool descending)
+      {
+        //! \todo folders first, then alphabetically. (i.e. by name(), then by data()->name().
+      }
     }
   }
 }

@@ -32,7 +32,11 @@ namespace fhg
           int row() const;
           TransitionLibraryItem* parent() const;
           
+          const QList<TransitionLibraryItem*>& children() const;
+          
           void clearChildren();
+          
+          void sortChildren(bool descending = false);
         
         private:
           data::Transition* _data;
