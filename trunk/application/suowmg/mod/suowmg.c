@@ -3,11 +3,21 @@
 #include "owmg.h"
 #include "mods.h"
 
+#include "pc.hpp"
+
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 /*********************** self documentation **********************/
-char *sdoc[] = {
-  "								",
-  "SUOWMG - One-Way MiGration					",
-  "								",
+const char *sdoc[] = {
+  "                             ",
+  "SUOWMG - One-Way MiGration   ",
+  "                             ",
+  "Works for a single shot only!",
+  "                             ",
   NULL
 };
 
@@ -15,26 +25,87 @@ char *sdoc[] = {
  */
 /**************** end self doc ***********************************/
 
-
 // Function prototypes
-void prepSrc ();
-void addSrc (owmgData * data);
-void addRecTrace (owmgData * data);
-void readModel (modsFILE * mFILE, float ***cube, owmgData * data);
-
-segy tr, trout;
-int Vnx, Vny, Vnz, nx, ny, nz, nt, ntf, iw1, iw2, iw3, iw4, nwH;
-float sx, sy, Lox, Loy, gx, gy, sz, rz;
-float dx, dy, dz, lx, ly;
-int iLsx, iLsy;
-float **slice, *taperw;
-fftwf_complex *trace;
-fftwf_plan plan_trace;
-float f1, f2, f3, f4, fPeak, df, dw;
+void addSrc (owmgData * data
+		, const int iLsx
+		, const int iLsy
+		, const int nwH
+		);
+void addRecTrace (segy * tr
+		, owmgData * data
+		, fftwf_complex *trace, const fftwf_plan * plan_trace
+		, float ** slice, const float * taperw
+		, const float dx, const float dy
+		, const float Lox, const float Loy
+		, const int nt, const int ntf
+		, const int iw1, const int nwH
+		);
+void readModel (modsFILE * mFILE
+		, float *cube
+		, const owmgData * data
+        , const int iVox, const int iVoy
+		, const int Vnx, const int Vny, const int Vnz
+		);
 
 int
 main (int argc, char **argv)
 {
+  initargs (argc, argv);
+  requestdoc (1);
+
+    void * shmem_ptr = 0;
+
+    {
+    	long shmem_size;
+
+    	if (!getparlong ("shmem_size", &shmem_size))
+    	    err ("must specify shmem_size=");
+
+    	const char * segname = "/fvm-pc-compat";
+
+        int err = 0;
+        int fd = -1;
+
+    	fd = shm_open (segname, O_RDWR, 0);
+
+    	if (fd < 0)
+    	{
+    		perror("shmem open");
+    		exit(-1);
+    	}
+
+    	shmem_ptr = mmap ( NULL
+    				     , shmem_size
+                         , PROT_READ | PROT_WRITE
+                         , MAP_SHARED
+                         , fd
+                         , 0
+                         );
+
+    	if (shmem_ptr == (void*)-1)
+    	{
+    		perror("mmap"); exit(-1);
+    	}
+
+    	close (fd);
+
+    	fprintf(stderr,"attached to a segment of size %ld\n", shmem_size);
+    }
+
+
+  segy tr, trout;
+  int iLsx, iLsy;
+  fftwf_complex *trace;
+  fftwf_plan plan_trace;
+  float **slice, *taperw;
+  float dx, dy, dz;
+  float lx, ly;
+  float f1, f2, f3, f4, fPeak, df, dw;
+  float Lox, Loy;
+  int Vnx, Vny, Vnz, nx, ny, nz;
+  int iw1, iw2, iw3, iw4, nwH;
+  int nt, ntf;
+
   owmgData *data;
   cwp_String key1, key2;        /* header key word from segy.h         */
   cwp_String type1, type2;      /* ... its type                        */
@@ -45,13 +116,6 @@ main (int argc, char **argv)
   float zmax, pad, latSamplesPerWave, vertSamplesPerWave;
   char *medium, *propagator, *vPFile, *dFile, *eFile;
   modsFILE *mvP, *mE, *mD;
-
-
-
-  /* Initialize */
-  initargs (argc, argv);
-  requestdoc (1);
-
 
   /* Get parameters */
   if (!getparint ("nx", &Vnx))
@@ -123,7 +187,6 @@ main (int argc, char **argv)
   type2 = hdtype (key2);
   indx2 = getindex (key2);
 
-
   /* Calculate parameters */
 
   nsegy = gettr (&tr);
@@ -140,13 +203,8 @@ main (int argc, char **argv)
     df = 1.0e6f / ((ntf - 1) * tr.dt);
     dw = 2.0f * (float) PI *df;
     nw = ntf / 2 + 1;
-    //fprintf(stderr, "dt1 = %i\n", tr.dt);
-    //fprintf(stderr, "dt2 = %f\n", tr.dt*1.0e-6);
     fprintf (stderr, "nt = %i\n", nt);
     fprintf (stderr, "ntf = %i\n", ntf);
-    //fprintf(stderr, "df = %f\n", df);
-    //fprintf(stderr, "dw = %f\n", dw);
-    //fprintf(stderr, "nw = %i\n", nw);
 
     // Initial cric. freq
     iw1 = NINT (floorf (f1 / df) + 1);
@@ -235,10 +293,54 @@ main (int argc, char **argv)
     slice[0][i] = -2.0;
   clearfloatcomplex3 (data->src, data->nwH, data->nyf, data->nxf);
   clearfloatcomplex3 (data->rec, data->nwH, data->nyf, data->nxf);
-  prepSrc ();                   //scales sx,sy,sz
-  addRecTrace (data);
 
+  // prepSrc
+  {
+    float sx, sy;
 
+    if (tr.scalco)
+      {
+        if (tr.scalco > 0)
+          {
+            sx = (float) tr.sx * tr.scalco;
+            sy = (float) tr.sy * tr.scalco;
+          }
+        else
+          {
+            sx = (float) tr.sx / ABS (tr.scalco);
+            sy = (float) tr.sy / ABS (tr.scalco);
+          }
+      }
+    else
+      {
+        sx = (float) tr.sx;
+        sy = (float) tr.sy;
+      }
+
+    Lox = sx - lx * 0.5f;
+    Loy = sy - ly * 0.5f;
+
+//    iLsx = NINT ((sx - Lox)/dx);
+//    iLsy = NINT ((sy - Loy)/dy);
+  }
+
+  iLsx = NINT ((lx * 0.5f) / dx);
+  iLsy = NINT ((ly * 0.5f) / dy);
+
+  addRecTrace (&tr, data, trace, &plan_trace, slice, taperw, dx, dy, Lox, Loy, nt, ntf, iw1, nwH);
+
+  // Read models
+  fprintf(stderr,"read models\n");
+
+  const int iVox = NINT (Lox / dx);
+  const int iVoy = NINT (Loy / dy);
+
+  readModel (mvP, data->vPCube, data, iVox, iVoy, Vnx, Vny, Vnz);
+//  if (!strcmp (medium, "VTI"))
+//    {
+//      readModel (mE, data->eCube, data, iVox, iVoy, Vnx, Vny, Vnz);
+//      readModel (mD, data->dCube, data, iVox, iVoy, Vnx, Vny, Vnz);
+//    }
 
   memset ((void *) &trout, 0, sizeof (trout));
 
@@ -258,16 +360,8 @@ main (int argc, char **argv)
           /* end of the traces.                          */
           fprintf (stderr, "Last trace\n");
 
-          // Read models
-          readModel (mvP, data->vPCube, data);
-          if (!strcmp (medium, "VTI"))
-            {
-              readModel (mE, data->eCube, data);
-              readModel (mD, data->dCube, data);
-            }
-
           // Add source signature to fsrc
-          addSrc (data);
+          addSrc (data, iLsx, iLsy, nwH);
 
           /* Propagate */
           fprintf (stderr,
@@ -278,7 +372,7 @@ main (int argc, char **argv)
           double t = -current_time ();
 
 #ifndef NTHREAD
-#define NTHREAD 12
+#define NTHREAD 4
 #endif
 
           const int nThread = NTHREAD;
@@ -302,18 +396,21 @@ main (int argc, char **argv)
 	    // Convert from velocity to slowness and calculate vMin
 	    for (int iz = first; iz < last; ++iz)
 	      {
-		vMin_iz[iz] = data->vPCube[iz][0][0];
+//		vMin_iz[iz] = data->vPCube[iz][0][0];
+		vMin_iz[iz] = data->vPCube[iz * data->nxf*data->nyf];
 
 		for (int ixy = 0; ixy < data->nxf * data->nyf; ++ixy)
 		  {
-		    const float val = data->vPCube[iz][0][ixy];
+//		    const float val = data->vPCube[iz][0][ixy];
+		    const float val = data->vPCube[iz * data->nxf*data->nyf + ixy];
 
 		    if (val < vMin_iz[iz])
 		      {
-			vMin_iz[iz] = val;
+			    vMin_iz[iz] = val;
 		      }
 
-		    data->vPCube[iz][0][ixy] = 1.0f / val;
+//		    data->vPCube[iz][0][ixy] = 1.0f / val;
+		    data->vPCube[iz * data->nxf*data->nyf + ixy] = 1.0f / val;
 		  }
 	      }
 
@@ -400,28 +497,16 @@ main (int argc, char **argv)
           // Regularize first trace in next shot
           if (nsegy)
             {
-              // from now on compare with the new value
-              val1 = valnew1;
-              val2 = valnew2;
-              fprintf (stderr, "Continuing with next shot\n");
-              for (int i = 0; i < nx * ny; i++)
-                slice[0][i] = -2.0;
-              // make sure not to run with data left by the shot before
-              clearfloatcomplex3 (data->src, data->nwH, data->nyf, data->nxf);
-              clearfloatcomplex3 (data->rec, data->nwH, data->nyf, data->nxf);
-              prepSrc ();
-              addRecTrace (data);
+        	  fprintf(stderr,"PROBLEM: More than one shot on input!\n");
+        	  exit (EXIT_FAILURE);
             }
-
-
         }
       else
         {
           /* still in same gather */
           fprintf (stderr, "Trace in gather\n");
 
-          addRecTrace (data);
-
+          addRecTrace (&tr, data, trace, &plan_trace, slice, taperw, dx, dy, Lox, Loy, nt, ntf, iw1, nwH);
         }
     }
 
@@ -445,27 +530,35 @@ main (int argc, char **argv)
 }
 
 void
-addRecTrace (owmgData * data)
+addRecTrace (segy * tr
+		, owmgData * data
+		, fftwf_complex * trace, const fftwf_plan * plan_trace
+		, float ** slice, const float * taperw
+		, const float dx, const float dy
+		, const float Lox, const float Loy
+		, const int nt, const int ntf
+		, const int iw1, const int nwH
+		)
 {
-
+float gx, gy;
   // Apply scalco
-  if (tr.scalco)
+  if (tr->scalco)
     {
-      if (tr.scalco > 0)
+      if (tr->scalco > 0)
         {
-          gx = (float) tr.gx * tr.scalco;
-          gy = (float) tr.gy * tr.scalco;
+          gx = (float) tr->gx * tr->scalco;
+          gy = (float) tr->gy * tr->scalco;
         }
       else
         {
-          gx = (float) tr.gx / ABS (tr.scalco);
-          gy = (float) tr.gy / ABS (tr.scalco);
+          gx = (float) tr->gx / ABS (tr->scalco);
+          gy = (float) tr->gy / ABS (tr->scalco);
         }
     }
   else
     {
-      gx = (float) tr.gx;
-      gy = (float) tr.gy;
+      gx = (float) tr->gx;
+      gy = (float) tr->gy;
     }
 
   // Regularize
@@ -486,9 +579,9 @@ addRecTrace (owmgData * data)
             }
           for (int i = 0; i < nt; i++)
             {
-              trace[i] = tr.data[i];
+              trace[i] = tr->data[i];
             }
-          fftwf_execute (plan_trace);
+          fftwf_execute (*plan_trace);
           for (int iw = 0; iw < nwH; iw++)
             {
               data->rec[iw][iy][ix] = (trace[iw1 + iw] * taperw[iw]);
@@ -500,7 +593,11 @@ addRecTrace (owmgData * data)
 
 
 void
-addSrc (owmgData * data)
+addSrc (owmgData * data
+		, const int iLsx
+		, const int iLsy
+		, const int nwH
+		)
 {
 
   for (int iy = 0; iy < data->nyf; iy++)
@@ -527,62 +624,17 @@ addSrc (owmgData * data)
 }
 
 void
-prepSrc ()
-{
-  if (tr.scalco)
-    {
-      if (tr.scalco > 0)
-        {
-          sx = (float) tr.sx * tr.scalco;
-          sy = (float) tr.sy * tr.scalco;
-        }
-      else
-        {
-          sx = (float) tr.sx / ABS (tr.scalco);
-          sy = (float) tr.sy / ABS (tr.scalco);
-        }
-    }
-  else
-    {
-      sx = (float) tr.sx;
-      sy = (float) tr.sy;
-    }
-  if (tr.scalel)
-    {
-      if (tr.scalel > 0)
-        {
-          sz = (float) -tr.selev * tr.scalel;
-          rz = (float) -tr.gelev * tr.scalel;
-        }
-      else
-        {
-          sz = (float) -tr.selev / ABS (tr.scalel);
-          rz = (float) -tr.gelev / ABS (tr.scalel);
-        }
-    }
-  else
-    {
-      sz = (float) -tr.selev;
-      rz = (float) -tr.gelev;
-    }
-
-  Lox = sx - lx * 0.5f;
-  Loy = sy - ly * 0.5f;
-  iLsx = NINT ((sx - Lox) / dx);
-  iLsy = NINT ((sy - Loy) / dy);
-}
-
-
-void
-readModel (modsFILE * mFILE, float ***cube, owmgData * data)
+readModel (modsFILE * mFILE
+		, float *cube
+		, const owmgData * data
+        , const int iVox, const int iVoy
+		, const int Vnx, const int Vny, const int Vnz
+		)
 {
 
   int ix, iy, iz;
   int padx1, padx2, pady1, pady2;
   float **nvec;
-
-  int iVox = NINT ((Lox - 0.0) / dx);
-  int iVoy = NINT ((Loy - 0.0) / dy);
 
   nvec = allocfloat2 (data->nxf, Vnz);
 
@@ -592,8 +644,8 @@ readModel (modsFILE * mFILE, float ***cube, owmgData * data)
   pady1 = IMAX (0, -iVoy);
   pady2 = IMAX (0, iVoy + data->nyf - Vny);
 
-  for (ix = 0; ix < data->nxf * data->nyf * data->nz; ix++)
-    cube[0][0][ix] = -2.0;
+   for (ix = 0; ix < data->nxf * data->nyf * data->nz; ++ix)
+    cube[ix] = -2.0;
 
   // Loop over y
   for (iy = iVoy + pady1; iy <= iVoy + data->nyf - 1 - pady2; iy++)
@@ -602,6 +654,7 @@ readModel (modsFILE * mFILE, float ***cube, owmgData * data)
       // Read from disk
       for (ix = 0; ix < data->nxf * Vnz; ix++)
         nvec[0][ix] = -1.0;
+
       mods_fread (mFILE, nvec[padx1], iy * Vnx * Vnz + (iVox + padx1) * Vnz,
                   (data->nxf - padx2 - padx1) * Vnz);
 
@@ -632,7 +685,8 @@ readModel (modsFILE * mFILE, float ***cube, owmgData * data)
         {
           for (iz = 0; iz < data->nz; iz++)
             {
-              cube[iz][iy - iVoy][ix] = nvec[ix][iz];
+//              cube[iz][iy - iVoy][ix] = nvec[ix][iz];
+              cube[(iz * data->nyf + iy - iVoy)*data->nxf + ix] = nvec[ix][iz];
             }
         }
     }
@@ -646,7 +700,8 @@ readModel (modsFILE * mFILE, float ***cube, owmgData * data)
             {
               for (ix = 0; ix < data->nxf; ix++)
                 {
-                  cube[iz][iy][ix] = cube[iz][pady1][ix];
+//                  cube[iz][iy][ix] = cube[iz][pady1][ix];
+                  cube[(iz * data->nyf + iy) * data->nxf + ix] = cube[(iz * data->nyf + pady1)*data->nxf + ix];
                 }
             }
         }
@@ -659,12 +714,12 @@ readModel (modsFILE * mFILE, float ***cube, owmgData * data)
             {
               for (ix = 0; ix < data->nxf; ix++)
                 {
-                  cube[iz][iy][ix] = cube[iz][data->nyf - pady2 - 1][ix];
+//                  cube[iz][iy][ix] = cube[iz][data->nyf - pady2 - 1][ix];
+                  cube[(iz*data->nyf + iy)*data->nxf + ix] = cube[(iz*data->nyf + data->nyf - pady2 - 1)*data->nxf + ix];
                 }
             }
         }
     }
 
   return;
-
 }

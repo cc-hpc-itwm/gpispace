@@ -81,9 +81,9 @@ typedef struct {
   float complex ***src;
   float complex ***rec;
   
-  float ***vPCube;
-  float ***eCube;
-  float ***dCube;
+  float *vPCube;
+//  float ***eCube;
+//  float ***dCube;
 } owmgData;
 
 

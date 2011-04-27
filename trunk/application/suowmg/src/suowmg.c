@@ -278,7 +278,7 @@ main (int argc, char **argv)
           double t = -current_time ();
 
 #ifndef NTHREAD
-#define NTHREAD 12
+#define NTHREAD 2
 #endif
 
           const int nThread = NTHREAD;

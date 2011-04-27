@@ -74,11 +74,15 @@
           ${package.right.trace} := min (${state.max}, ${state.id});
           ${package.right.extendable} := (${package.right.trace} :lt: ${state.max});
 
+          ${trace_size} := ${interval.size} div ${state.inc};
+
+          ${size} := ${trace_size} * (${package.right.trace} - ${package.left.trace});
+
           ${assigned_package.package} := ${package};
           ${assigned_package.intervals.offset}
             := stack_push (@@, ${interval.offset});
           ${assigned_package.intervals.size}
-            := stack_push (@@, ${interval.size});
+            := stack_push (@@, ${size});
         </expression>
       </defun>
       <connect-in port="state" place="state"/>

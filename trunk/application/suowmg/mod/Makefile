@@ -15,6 +15,7 @@ LINK += cwp
 LINK += fftw3f
 LINK += m
 LINK += MCTP1
+LINK += rt
 LINKS= $(addprefix -l,$(LINK))
 
 #INC= -I/prog/sdpsoft/SU/include
@@ -23,6 +24,7 @@ LINKS= $(addprefix -l,$(LINK))
 INCS += /p/herc/itwm/hpc/mr/cwp/include
 INCS += /p/herc/itwm/hpc/mr/fftw-3.2.2/include
 INCS += /opt/cluster/GPI/include
+INCS += /p/herc/itwm/hpc/mr/sdpa/trunk/fvm-pc/trunk
 INC = $(addprefix -I,$(INCS))
 
 LIBS += /p/herc/itwm/hpc/mr/cwp/lib
@@ -37,12 +39,18 @@ SUBS= 	./suowmg.o	\
 	./tools.o	\
 	./rtc.o		\
 	./pfafft.o
-
-all: suowmg
+	
+all: suowmg fread.o libfread.so
 
 suowmg: $(SUBS)
 	$(CC) $(FLAGS) $(OPT) $(C99) $(LIB) $(SUBS) -o suowmg ${LINKS}
 
+fread.o: fread.c fread.h
+	$(CC) $(FLAGS) $(OPT) $(C99) $(LIB) $(INC) -c $< -o $@ -fPIC
+	
+libfread.so: fread.o
+	$(CC) -shared -o $@ $^
+	
 rtc.o: rtc.c
 	$(CC) $(OPT)  $(INC) -c rtc.c
 

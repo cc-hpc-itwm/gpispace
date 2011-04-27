@@ -50,12 +50,16 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-FILE_INPUT       = /p/herc/itwm/hpc/mr/suowmg/data/spike6.tmax=5.0.many.su
+FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
+#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
 TYPE_INPUT       = su
-FILE_OUTPUT      = /p/herc/itwm/hpc/mr/suowmg/data/out.su
+FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
+#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
-SHMEM_PER_NODE   = 10 * 1824 +     167236640
-GPI_MEM_PER_NODE = 30 * 1824 + 2 * 167236640
+SHMEM_PER_NODE   = 6  * 1824 +     167233040
+GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640
+#SHMEM_PER_NODE   = 1073741824
+#GPI_MEM_PER_NODE = 2 * 1073741824
 
 NX = 1751
 NY = 2001
@@ -63,7 +67,7 @@ NZ = 751
 DX = 20.0
 DY = 20.0
 DZ = 20.0
-VPFILE = /p/herc/itwm/hpc/mr/suowmg/model/model.bin
+VPFILE = /fhgfs/HPC/rahn/suowmg/model.bin
 EFILE = none
 DFILE = none
 ZMAX = 4000.0
@@ -87,6 +91,7 @@ PROPAGATOR = FFD3
                               "$(SHMEM_PER_NODE)" \
                               "$(GPI_MEM_PER_NODE)" \
                               "$(BUILD)" \
+                              "$(BOOST_ROOT)" \
                               "$(NX)" \
                               "$(NY)" \
                               "$(NZ)" \
@@ -165,7 +170,7 @@ WE_EXEC  = LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH}
 WE_EXEC += FHGLOG_level=MIN
 WE_EXEC += FVM_PC_SHMSZ=`echo "$(SHMEM_PER_NODE)" | bc`
 WE_EXEC += FVM_PC_FVMSZ=`echo "$(GPI_MEM_PER_NODE)" | bc`
-WE_EXEC += $(BUILD)/we/apps/we-exec --w 12
+WE_EXEC += $(BUILD)/we/apps/we-exec --w 1
 PNET2DOT = $(BUILD)/we/apps/pnet2dot
 
 ###############################################################################

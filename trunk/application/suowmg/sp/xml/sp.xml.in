@@ -91,11 +91,19 @@
       <struct name="bunch">
         <field name="trace" type="long"/>
       </struct>
+
+      <struct name="node">
+        <struct name="mem">
+          <field name="shmem" type="long"/>
+          <field name="gpi" type="long"/>
+        </struct>
+      </struct>
     </struct>
 
     <struct name="num">
       <field name="trace" type="long"/>
       <field name="slot" type="long"/>
+      <field name="nodes" type="long"/>
     </struct>
 
     <field name="param" type="param"/>
@@ -109,6 +117,9 @@
     <field name="nx" type="long"/>
     <field name="ny" type="long"/>
     <field name="nz" type="long"/>
+
+    <field name="nxf" type="long"/>
+    <field name="nyf" type="long"/>
 
     <field name="dx" type="double"/>
     <field name="dy" type="double"/>
@@ -318,7 +329,10 @@
           <cinclude href="SegYHeader.h"/>
           <cinclude href="SegYBHeader.h"/>
           <cinclude href="SegYEBCHeader.h"/>
+          <cinclude href="pfafft.h"/>
+          <cinclude href="boost/filesystem/operations.hpp"/>
           <link href="@BUILD@/application/kdm/libdetermine_size.so"/>
+          <link href="@BOOST_ROOT@/lib/libboost_filesystem.so"/>
           <code><![CDATA[
             LOG (INFO, "INIT");
 
@@ -376,6 +390,31 @@
                    << ", ny " << config.param.ny
                    << ", nz " << config.param.nz
                 );
+
+            config.param.nxf = npfao (config.param.nx, 2 * config.param.nx);
+            config.param.nyf = npfao (config.param.ny, 2 * config.param.ny);
+
+            const long size_vpcube = ( config.param.nz
+                                     * config.param.nxf
+                                     * config.param.nyf
+                                     * sizeof(float)
+                                     );
+
+            LOG (TRACE, "nxf " << config.param.nxf
+                   << ", nyf " << config.param.nyf
+                   << ", size(vPCube) " << size_vpcube
+                );
+
+            if (  !boost::filesystem::exists (vPFile)
+               || !boost::filesystem::is_regular (vPFile)
+               )
+            {
+              throw std::runtime_error ("regular vpFile missing");
+            }
+
+            boost::intmax_t size_vpfile (boost::filesystem::file_size (vPFile));
+
+            LOG (INFO, "filesize (vpfile) " << size_vpfile);
 
             config.size.output_per_shot
               = config.param.nx * config.param.ny
@@ -467,6 +506,11 @@
             config.file.input.type = type_input;
             config.file.output.name = file_output;
             config.file.output.type = type_output;
+
+            config.per.node.mem.shmem = shmem_per_node;
+            config.per.node.mem.gpi = gpi_mem_per_node;
+
+            config.num.nodes = fvmGetNodeCount();
 
             give_back_trace = 0;
 

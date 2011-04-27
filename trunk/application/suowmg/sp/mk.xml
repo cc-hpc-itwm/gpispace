@@ -7,6 +7,7 @@ TYPE_OUTPUT=${1:?}; shift
 SHMEM_PER_NODE=${1:?}; shift
 GPI_MEM_PER_NODE=${1:?}; shift
 BUILD=${1:?}; shift
+BOOST_ROOT=${1:?}; shift
 
 NX=${1:?}; shift
 NY=${1:?}; shift
@@ -46,6 +47,7 @@ PROPAGATOR=${1:PS}; shift
   ;s|@TYPE_INPUT@|${TYPE_INPUT}|g             \
   ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|g           \
   ;s|@BUILD@|${BUILD}|g                       \
+  ;s|@BOOST_ROOT@|${BOOST_ROOT}|g             \
   ;s|@NX@|${NX}|g \
   ;s|@NY@|${NY}|g \
   ;s|@NZ@|${NZ}|g \

@@ -67,9 +67,9 @@ owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, floa
   data->src         = allocfloatcomplex3(data->nwH,data->nyf,data->nxf);
   data->rec         = allocfloatcomplex3(data->nwH,data->nyf,data->nxf);
 
-  data->vPCube  = allocfloat3(data->nz,data->nyf,data->nxf);
-  data->eCube   = allocfloat3(data->nz,data->nyf,data->nxf);
-  data->dCube   = allocfloat3(data->nz,data->nyf,data->nxf);
+  data->vPCube  = allocfloat1(data->nz*data->nyf*data->nxf);
+//  data->eCube   = allocfloat3(data->nz,data->nyf,data->nxf);
+//  data->dCube   = allocfloat3(data->nz,data->nyf,data->nxf);
 
   if (data->medium==ISO) {
     if (data->propagator==FFD3) {
@@ -169,20 +169,6 @@ void * owmg_propagate(void * arg)
   get_rtc_(&t2); tInit += t2-t1;
 
   izMin=0;
-
-  float * arrUD = malloc (data->nx * data->ny * data->nz * sizeof(float));
-  float * arrDD = malloc (data->nx * data->ny * data->nz * sizeof(float));
-
-  if (arrUD == 0 || arrDD == 0)
-    {
-      fprintf(stderr,"cannot allocate arrUD, arrDD");
-      exit(EXIT_FAILURE);
-    }
-
-  for (int i = 0; i < data->nx * data->ny * data->nz; ++i)
-    {
-      arrUD[i] = arrDD[i] = 0.0f;
-    }
 
   // Frequency loop
   for ( iw=data->iw1 + tid; iw<=data->iw4; iw += nThread) {
@@ -296,12 +282,14 @@ void * owmg_propagate(void * arg)
       get_rtc_(&t1);
       if ( (nxfA==nxf) && (nyfA==nyf) ) {
 	// Copy first nzA
-	memcpy(vP2D[0], data->vPCube[iz][0], nxf*nyf*sizeof(float));
+//	memcpy(vP2D[0], data->vPCube[iz][0], nxf*nyf*sizeof(float));
+    memcpy(vP2D[0], data->vPCube + data->nyf * data->nxf * iz, nxf*nyf*sizeof(float));
 
 	// Add all other nzA
 	for ( int i=1; i<nzA; i++ ) {
 	  for ( ix=0; ix<nxf*nyf; ix++ ) {
-	    vP2D[0][ix] += data->vPCube[iz+i][0][ix];
+//	    vP2D[0][ix] += data->vPCube[iz+i][0][ix];
+	    vP2D[0][ix] += data->vPCube[(iz+i)*data->nxf*data->nyf + ix];
 	  }
 	}
       } else {
@@ -325,7 +313,8 @@ void * owmg_propagate(void * arg)
 
 	for (int i=0; i<nzA; i++ ) {
 	  for (ix=0; ix<iAvg->i; ix++ ) {
-	    vP2D[0][iAvg->iA[ix]] += iAvg->w[ix] * data->vPCube[iz+i][0][iAvg->iOrg[ix]];
+//	    vP2D[0][iAvg->iA[ix]] += iAvg->w[ix] * data->vPCube[iz+i][0][iAvg->iOrg[ix]];
+		vP2D[0][iAvg->iA[ix]] += iAvg->w[ix] * data->vPCube[(iz+i)*data->nxf*data->nyf + iAvg->iOrg[ix]];
 	  }
 	}
 	get_rtc_(&t2); tModRun += t2-t1;
@@ -460,13 +449,15 @@ void * owmg_propagate(void * arg)
 	  const int id = iz + nzA - 1;
 	  int pos = data->ny * data->nx * id;
 
+	  pthread_mutex_lock (mutex_update + id);
 	  for ( iy=0; iy<data->ny; ++iy) {
 	    int a = 2 * iy * nxf;
 	    for ( ix=0; ix<data->nx; ++ix, ++pos, a += 2) {
-	      arrUD[pos] += rec1Df[a]*src1Df[a] + rec1Df[a+1]*src1Df[a+1];
-	      arrDD[pos] += src1Df[a]*src1Df[a] + src1Df[a+1]*src1Df[a+1];
+	    	data->imageCubeUD[0][0][pos] += rec1Df[a]*src1Df[a] + rec1Df[a+1]*src1Df[a+1];
+	    	data->imageCubeDD[0][0][pos] += src1Df[a]*src1Df[a] + src1Df[a+1]*src1Df[a+1];
 	    }
 	  }
+	  pthread_mutex_unlock (mutex_update + id);
 	}
 
 	for ( int i=1; i<nzA; i++ ) {
@@ -476,15 +467,17 @@ void * owmg_propagate(void * arg)
 	  float k2 = 1.0f - k1;
 	  //fprintf(stderr, "Weights: k1=%f, k2=%f\n", k1, k2);
 
+	  pthread_mutex_lock (mutex_update + id);
 	  for ( iy=0; iy<data->ny; ++iy) {
 	    int a = 2 * iy * nxf;
 	    for ( ix=0; ix<data->nx; ++ix, ++pos, a += 2) {
-	      arrUD[pos] += (k2*recPrev[a  ] + k1*rec1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
+	      data->imageCubeUD[0][0][pos] += (k2*recPrev[a  ] + k1*rec1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
                          +  (k2*recPrev[a+1] + k1*rec1Df[a+1])*(k2*srcPrev[a+1] + k1*src1Df[a+1]);
-	      arrDD[pos] += (k2*srcPrev[a  ] + k1*src1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
+	      data->imageCubeDD[0][0][pos] += (k2*srcPrev[a  ] + k1*src1Df[a  ])*(k2*srcPrev[a  ] + k1*src1Df[a  ])
                          +  (k2*srcPrev[a+1] + k1*src1Df[a+1])*(k2*srcPrev[a+1] + k1*src1Df[a+1]);
 	    }
 	  }
+	  pthread_mutex_unlock (mutex_update + id);
 	}
       }
 
@@ -494,24 +487,7 @@ void * owmg_propagate(void * arg)
     } // end depth loop
   } // end frequency loop over nz
 
-  //  update shared output volume, lock slices
-  int pos = 0;
-
-  for (int id = 0; id < data->nz; ++id)
-    {
-      pthread_mutex_lock (mutex_update + id);
-      for (int i = 0; i < data->nx * data->ny; ++i, ++pos)
-	{
-	  data->imageCubeUD[0][0][pos] += arrUD[pos];
-	  data->imageCubeDD[0][0][pos] += arrDD[pos];
-	}
-      pthread_mutex_unlock (mutex_update + id);
-    }
-
   get_rtc_(&tEnd);
-
-  free (arrUD);
-  free (arrDD);
 
   pthread_mutex_lock (&mutex_fftw);
   fftwf_destroy_plan(r1);
@@ -546,9 +522,9 @@ void owmg_finalize(owmgData *data)
   freefloat3(data->imageCubeDD);
   freefloatcomplex3(data->src);
   freefloatcomplex3(data->rec);
-  freefloat3(data->vPCube);
-  freefloat3(data->eCube);
-  freefloat3(data->dCube);
+  freefloat1(data->vPCube);
+//  freefloat3(data->eCube);
+//  freefloat3(data->dCube);
 
   if (data->medium==ISO) {
     if (data->propagator==FFD3) {

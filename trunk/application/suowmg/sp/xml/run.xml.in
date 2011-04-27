@@ -55,11 +55,16 @@
                                   * config.size.trace
                                   );
 
+            if (size_input + config.size.output_per_shot > config.per.node.mem.shmem)
+              {
+                throw std::runtime_error ("shot to large for shmem area");
+              }
+
             char * buf ((char *)fvmGetShmemPtr());
 
             std::ostringstream cmd;
 
-            cmd << "/p/herc/itwm/hpc/mr/sdpa/trunk/application/suowmg/src/suowmg";
+            cmd << "/p/herc/itwm/hpc/mr/sdpa/trunk/application/suowmg/mod/suowmg";
             cmd << " nx=" << config.param.Vnx;
             cmd << " ny=" << config.param.Vny;
             cmd << " nz=" << config.param.Vnz;
@@ -81,22 +86,34 @@
             cmd << " vPFile=" << config.param.vPFile;
             cmd << " eFile=" << config.param.eFile;
             cmd << " dFile=" << config.param.dFile;
+            cmd << " shmem_size=" << fvmGetShmemSize();
 
-            const std::size_t size_output
-              ( process::execute ( cmd.str()
-                                 , buf
-                                 , size_input
-                                 , buf + size_input
-                                 , config.size.output_per_shot
-                                 )
+            process::circular_buffer buf_stderr;
+
+            process::execute_return_type ret
+              ( process::execute
+                ( cmd.str()
+                , process::const_buffer (buf, size_input)
+                , process::buffer (buf + size_input, config.size.output_per_shot)
+                , buf_stderr
+                , process::file_const_buffer_list ()
+                , process::file_buffer_list ()
+                )
               );
 
-            if (size_output != config.size.output_per_shot)
+            if (ret.bytes_read_stdout != config.size.output_per_shot)
               {
                 throw std::runtime_error ("wrong size returned");
               }
 
             comm::put (config, output, size_input);
+
+            if (ret.bytes_read_stderr > 0)
+            {
+              LOG (INFO, "STDERR [" << ret.bytes_read_stderr << "]: "
+                       << std::string (buf_stderr.begin(), buf_stderr.end())
+                  );
+            }
 
             return output;
           ]]></code>
