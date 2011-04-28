@@ -103,20 +103,26 @@ namespace fhg
         
         return path;
       }
-      const QRectF Style::portBoundingRect(const Port* port)
+      const QRectF Style::portBoundingRect(const Port* port, bool withCap, int capFactor)
       {
-        const qreal& length = port->length();
+        qreal length = port->length();
         const qreal lengthHalf = length / 2.0;
+        qreal addition = withCap ? 0.0 : portCapLength() * capFactor;
+        length -= addition;
         
         switch(port->orientation())
         {
           case ConnectableItem::NORTH:
+            return QRectF(-portHeightHalf, -lengthHalf + addition, portHeight, length);
+            
           case ConnectableItem::SOUTH:
             return QRectF(-portHeightHalf, -lengthHalf, portHeight, length);
             
           case ConnectableItem::EAST:
-          case ConnectableItem::WEST:
             return QRectF(-lengthHalf, -portHeightHalf, length, portHeight);
+            
+          case ConnectableItem::WEST:
+            return QRectF(-lengthHalf + addition, -portHeightHalf, length, portHeight);
             
           case ConnectableItem::ANYORIENTATION:
           default:
@@ -152,6 +158,8 @@ namespace fhg
         painter->setPen(QPen(QBrush(Qt::black), 1.0));
         painter->setBackgroundMode(Qt::TransparentMode);
         
+        QRectF area = portBoundingRect(port, false, 1);
+        
         if(port->orientation() == ConnectableItem::NORTH || port->orientation() == ConnectableItem::SOUTH)
         {
           qreal degrees = 90.0;
@@ -161,12 +169,12 @@ namespace fhg
           
           painter->save();
           painter->rotate(degrees); 
-          painter->drawText(antirotation.mapRect(port->boundingRect()), Qt::AlignCenter, port->title());
+          painter->drawText(antirotation.mapRect(area), Qt::AlignCenter, port->title());
           painter->restore();
         }
         else
         {
-          painter->drawText(port->boundingRect(), Qt::AlignCenter, port->title());
+          painter->drawText(area, Qt::AlignCenter, port->title());
         }
       }
      
@@ -175,30 +183,7 @@ namespace fhg
         const qreal& length = port->length();
         const qreal lengthHalf = length / 2.0;
         
-        QRectF area;
-        switch(port->orientation())
-        {
-          case ConnectableItem::NORTH:
-            area = QRectF(-portHeightHalf, -lengthHalf + portCapLength() * 2, portHeight, length - portCapLength() * 2);
-            break;
-            
-          case ConnectableItem::SOUTH:
-            area = QRectF(-portHeightHalf, -lengthHalf, portHeight, length - portCapLength() * 2);
-            break;
-            
-          case ConnectableItem::EAST:
-            area = QRectF(-lengthHalf, -portHeightHalf, length - portCapLength() * 2, portHeight);
-            break;
-            
-          case ConnectableItem::WEST:
-            area = QRectF(-lengthHalf + portCapLength() * 2, -portHeightHalf, length - portCapLength() * 2, portHeight);
-            break;
-            
-          case ConnectableItem::ANYORIENTATION:
-          default:
-            area = QRectF();
-            break;
-        }
+        QRectF area = portBoundingRect(port, false, 3);
         
         if(area.contains(point))
         {

@@ -7,6 +7,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
+#include <QStaticText>
 
 namespace fhg
 {
@@ -24,6 +25,8 @@ namespace fhg
       _length(Style::portDefaultWidth())
       {
         setAcceptHoverEvents(true);
+        
+        _length = std::max(_length, QStaticText(_title).size().width() + Style::portCapLength() + 5.0);
       }
       
       void Port::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)

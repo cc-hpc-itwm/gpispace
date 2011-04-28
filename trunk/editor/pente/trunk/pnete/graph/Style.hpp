@@ -29,7 +29,7 @@ namespace fhg
             MAIN,
           };
           static const QPainterPath portShape(const Port* port);
-          static const QRectF portBoundingRect(const Port* port);
+          static const QRectF portBoundingRect(const Port* port, bool withCap = true, int capFactor = 0);
           static const void portPaint(QPainter *painter, const Port* port);
           static const ePortArea portHit(const Port* port, const QPointF& point);
           static const qreal portCapLength();
