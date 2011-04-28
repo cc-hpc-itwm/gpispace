@@ -152,7 +152,11 @@ namespace gpi
         while (amount)
         {
           const std::size_t rank(offset / per_node_size);
-          const std::size_t size(std::min(per_node_size, amount));
+          const std::size_t max_offset_on_rank ((rank + 1) * per_node_size);
+          const std::size_t size(std::min ( std::min(per_node_size, amount)
+                                          , max_offset_on_rank - offset
+                                          )
+                                );
           const std::size_t remote_offset(remote_base + (offset % per_node_size));
 
           rdma(local_offset, remote_offset, size, rank, queue);
