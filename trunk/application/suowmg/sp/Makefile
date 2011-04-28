@@ -24,28 +24,28 @@ XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml
 MK_XML      = $(PATH_MAIN)/mk.xml
 
 XML_GEN += $(XML_MAIN)
-XML_GEN += xml/load.xml
-XML_GEN += xml/run.xml
-XML_GEN += xml/write.xml
+XML_GEN += $(PATH_MAIN)/xml/load.xml
+XML_GEN += $(PATH_MAIN)/xml/run.xml
+XML_GEN += $(PATH_MAIN)/xml/write.xml
 
 ###############################################################################
 
-DEP += xml/generate/package.xml
-DEP += xml/generate/interval.xml
-DEP += xml/interval/merge.xml
-DEP += xml/interval/back.xml
-DEP += xml/join.xml
+DEP += $(PATH_MAIN)/xml/generate/package.xml
+DEP += $(PATH_MAIN)/xml/generate/interval.xml
+DEP += $(PATH_MAIN)/xml/interval/merge.xml
+DEP += $(PATH_MAIN)/xml/interval/back.xml
+DEP += $(PATH_MAIN)/xml/join.xml
 DEP += $(UTIL)/print.hpp
 DEP += $(UTIL)/comm.hpp
-DEP += Makefile
+DEP += $(PATH_MAIN)/Makefile
 DEP += $(XML_GEN)
 
-NET = $(MAIN).pnet
-GEN = gen
-OUT = $(MAIN).out
-PS  = $(MAIN).ps
+NET = $(PATH_MAIN)/$(MAIN).pnet
+GEN = $(PATH_MAIN)/gen
+OUT = $(PATH_MAIN)/$(MAIN).out
+PS  = $(PATH_MAIN)/$(MAIN).ps
 
-PATH_LIB = $(PATH_MAIN)/$(GEN)/pnetc/op
+PATH_LIB = $(GEN)/pnetc/op
 
 LIB = $(PATH_LIB)/lib$(MAIN).so
 
@@ -135,10 +135,8 @@ NOINLINE_NOT_STARTS_WITH += load
 NOINLINE_NOT_STARTS_WITH += give_back_interval
 NOINLINE_NOT_STARTS_WITH += write
 
-NET_NOINLINE = $(MAIN).noinline.pnet
-PS_NOINLINE = $(MAIN).noinline.ps
-
-###############################################################################
+NET_NOINLINE = $(PATH_MAIN)/$(MAIN).noinline.pnet
+PS_NOINLINE = $(PATH_MAIN)/$(MAIN).noinline.ps
 
 ###############################################################################
 

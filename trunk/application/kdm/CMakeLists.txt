@@ -215,7 +215,7 @@ install(FILES ${hdrs}
 
 install(TARGETS determine_size do_load do_write
   LIBRARY
-  DESTINATION lib
+  DESTINATION libexec
   COMPONENT modules)
 
 install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
