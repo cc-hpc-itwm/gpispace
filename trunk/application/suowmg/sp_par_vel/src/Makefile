@@ -2,7 +2,7 @@
 
 CC=icc
 
-OPT  = -O3 -axSSE4.2,SSE4.1,SSSE3 
+OPT  = -O3 -axSSE4.2,SSE4.1,SSSE3
 #OPT = -g -ggdb
 FLAGS = -Wall -wd981 -wd1419 -wd1418
 FLAGS += $(addprefix -D,$(DEFS))
@@ -39,18 +39,12 @@ SUBS= 	./suowmg.o	\
 	./tools.o	\
 	./rtc.o		\
 	./pfafft.o
-	
-all: suowmg fread.o libfread.so
+
+all: suowmg libfread.so
 
 suowmg: $(SUBS)
 	$(CC) $(FLAGS) $(OPT) $(C99) $(LIB) $(SUBS) -o suowmg ${LINKS}
 
-fread.o: fread.c fread.h
-	$(CC) $(FLAGS) $(OPT) $(C99) $(LIB) $(INC) -c $< -o $@ -fPIC
-	
-libfread.so: fread.o
-	$(CC) -shared -o $@ $^
-	
 rtc.o: rtc.c
 	$(CC) $(OPT)  $(INC) -c rtc.c
 

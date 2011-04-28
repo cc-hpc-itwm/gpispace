@@ -64,7 +64,7 @@
 
             std::ostringstream cmd;
 
-            cmd << "/p/herc/itwm/hpc/mr/suowmg/orig/src/suowmg";
+            cmd << "/p/herc/itwm/hpc/mr/sdpa/trunk/application/suowmg/sp/src/suowmg";
             cmd << " nx=" << config.param.Vnx;
             cmd << " ny=" << config.param.Vny;
             cmd << " nz=" << config.param.Vnz;

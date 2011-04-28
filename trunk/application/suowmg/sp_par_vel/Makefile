@@ -51,14 +51,14 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
-#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
+#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
+FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
 TYPE_INPUT       = su
-FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
-#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
+#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
+FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
 SHMEM_PER_NODE   = 6  * 1824 +     167233040 + 141120000
-GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640 + 2631317001 + 315420
+GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640 + 2631317001 + 1261680
 #                  traces      output          vpcube       vpscratch
 #SHMEM_PER_NODE   = 1073741824
 #GPI_MEM_PER_NODE = 2 * 1073741824
@@ -69,7 +69,8 @@ NZ = 751
 DX = 20.0
 DY = 20.0
 DZ = 20.0
-VPFILE = /fhgfs/HPC/rahn/suowmg/model.bin
+#VPFILE = /fhgfs/HPC/rahn/suowmg/model.bin
+VPFILE = /p/herc/itwm/hpc/mr/suowmg/model/model.bin
 EFILE = none
 DFILE = none
 ZMAX = 4000.0

@@ -49,10 +49,10 @@ typedef struct {
   int *iOrg;
   float *w;
 } averageStruct;
-  
+
 
 typedef struct {
-  
+
   // Problem definition
   int medium;
   int propagator;
@@ -80,7 +80,7 @@ typedef struct {
   float ***imageCubeDD;
   float complex ***src;
   float complex ***rec;
-  
+
   float *vPCube;
 //  float ***eCube;
 //  float ***dCube;
@@ -95,8 +95,9 @@ typedef struct
   pthread_mutex_t * mutex_update;
 } thread_arg_t;
 
-owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, float dx, float dy, float dz, 
-		    int iw1, int iw4, int nwH, float dw, float latSamplesPerWave, float vertSamplesPerWave);
+owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, float dx, float dy, float dz,
+		    int iw1, int iw4, int nwH, float dw, float latSamplesPerWave, float vertSamplesPerWave
+                   , float * pre_set_cube);
 void * owmg_propagate(void * arg);
 void owmg_finalize(owmgData *data);
 
@@ -111,6 +112,6 @@ void owmg_interp_up(int nx, int ny, int nxfA, int nyfA, int nxf, int nyf,
 		    float complex *srcA, float complex *src,
 		    float complex *recA, float complex *rec);
 void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
-		  float dxA, float dyA, float dx, float dy,		  
+		  float dxA, float dyA, float dx, float dy,
 		  averageStruct *iAvg);
 #endif

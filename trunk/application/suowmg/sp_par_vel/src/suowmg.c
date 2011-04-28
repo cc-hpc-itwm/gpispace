@@ -18,6 +18,8 @@ const char *sdoc[] = {
   "                             ",
   "Works for a single shot only!",
   "                             ",
+  "Expects already select part from vpcube in shmem",
+  "                             ",
   NULL
 };
 
@@ -40,12 +42,12 @@ void addRecTrace (segy * tr
 		, const int nt, const int ntf
 		, const int iw1, const int nwH
 		);
-void readModel (modsFILE * mFILE
-		, float *cube
-		, const owmgData * data
-        , const int iVox, const int iVoy
-		, const int Vnx, const int Vny, const int Vnz
-		);
+/* void readModel (modsFILE * mFILE */
+/* 		, float *cube */
+/* 		, const owmgData * data */
+/*         , const int iVox, const int iVoy */
+/* 		, const int Vnx, const int Vny, const int Vnz */
+/* 		); */
 
 int
 main (int argc, char **argv)
@@ -75,7 +77,7 @@ main (int argc, char **argv)
     	}
 
     	shmem_ptr = mmap ( NULL
-    				     , shmem_size
+                         , shmem_size
                          , PROT_READ | PROT_WRITE
                          , MAP_SHARED
                          , fd
@@ -255,7 +257,7 @@ main (int argc, char **argv)
   // Run owmg_init
   data =
     owmg_init (medium, propagator, nx, ny, nz, dx, dy, dz, iw1, iw4, nwH, dw,
-               latSamplesPerWave, vertSamplesPerWave);
+              latSamplesPerWave, vertSamplesPerWave, shmem_ptr);
 
   // Work storage
   slice = allocfloat2 (ny, nx);
@@ -335,12 +337,7 @@ main (int argc, char **argv)
   const int iVox = NINT (Lox / dx);
   const int iVoy = NINT (Loy / dy);
 
-  readModel (mvP, data->vPCube, data, iVox, iVoy, Vnx, Vny, Vnz);
-//  if (!strcmp (medium, "VTI"))
-//    {
-//      readModel (mE, data->eCube, data, iVox, iVoy, Vnx, Vny, Vnz);
-//      readModel (mD, data->dCube, data, iVox, iVoy, Vnx, Vny, Vnz);
-//    }
+  //  readModel (mvP, data->vPCube, data, iVox, iVoy, Vnx, Vny, Vnz);
 
   memset ((void *) &trout, 0, sizeof (trout));
 
@@ -623,103 +620,103 @@ addSrc (owmgData * data
     }
 }
 
-void
-readModel ( modsFILE * mFILE
-          , float *cube
-          , const owmgData * data
-          , const int iVox, const int iVoy
-          , const int Vnx, const int Vny, const int Vnz
-          )
-{
+/* void */
+/* readModel ( modsFILE * mFILE */
+/*           , float *cube */
+/*           , const owmgData * data */
+/*           , const int iVox, const int iVoy */
+/*           , const int Vnx, const int Vny, const int Vnz */
+/*           ) */
+/* { */
+/*   const int nxf = data->nxf; */
+/*   const int nyf = data->nyf; */
+/*   const int nz = data->nz; */
 
-  int ix, iy, iz;
-  int padx1, padx2, pady1, pady2;
-  float **nvec;
+/*   float *nvec = malloc (nxf * Vnz * sizeof (float)); */
 
-  nvec = allocfloat2 (data->nxf, Vnz);
+/*   // Calculate padding (extrapolation) */
+/*   const int padx1 = IMAX (0, -iVox); */
+/*   const int padx2 = IMAX (0, iVox + nxf - Vnx); */
+/*   const int pady1 = IMAX (0, -iVoy); */
+/*   const int pady2 = IMAX (0, iVoy + nyf - Vny); */
 
-  // Calculate padding (extrapolation)
-  padx1 = IMAX (0, -iVox);
-  padx2 = IMAX (0, iVox + data->nxf - Vnx);
-  pady1 = IMAX (0, -iVoy);
-  pady2 = IMAX (0, iVoy + data->nyf - Vny);
+/*   for (int ix = 0; ix < nxf * nyf * nz; ++ix) */
+/*     cube[ix] = -2.0; */
 
-  for (ix = 0; ix < data->nxf * data->nyf * data->nz; ++ix)
-    cube[ix] = -2.0;
+/*   // Loop over y */
+/*   for (int iy = iVoy + pady1; iy <= iVoy + nyf - 1 - pady2; iy++) */
+/*     { */
 
-  // Loop over y
-  for (iy = iVoy + pady1; iy <= iVoy + data->nyf - 1 - pady2; iy++)
-    {
+/*       // Read from disk */
+/*       for (int ix = 0; ix < nxf * Vnz; ix++) */
+/*         nvec[ix] = -1.0; */
 
-      // Read from disk
-      for (ix = 0; ix < data->nxf * Vnz; ix++)
-        nvec[0][ix] = -1.0;
+/*       mods_fread (mFILE, nvec + padx1 * Vnz, iy * Vnx * Vnz + (iVox + padx1) * Vnz, */
+/*                  (nxf - padx2 - padx1) * Vnz); */
 
-      mods_fread (mFILE, nvec[padx1], iy * Vnx * Vnz + (iVox + padx1) * Vnz,
-                 (data->nxf - padx2 - padx1) * Vnz);
+/*       // Pad in x-direction (trace by trace) */
+/*       if (padx1 > 0) */
+/*         { */
+/*           for (int ix = 0; ix < padx1; ix++) */
+/*             { */
+/*               for (int iz = 0; iz < nz; iz++) */
+/*                 { */
+/*                   nvec[Vnz * ix + iz] = nvec[Vnz * padx1 + iz]; */
+/*                 } */
+/*             } */
+/*         } */
+/*       if (padx2 > 0) */
+/*         { */
+/*           for (int ix = nxf - padx2; ix < nxf; ix++) */
+/*             { */
+/*               for (int iz = 0; iz < nz; iz++) */
+/*                 { */
+/*                   nvec[Vnz * ix + iz] = nvec[Vnz * (nxf - padx2 - 1) + iz]; */
+/*                 } */
+/*             } */
+/*         } */
 
-      // Pad in x-direction (trace by trace)
-      if (padx1 > 0)
-        {
-          for (ix = 0; ix < padx1; ix++)
-            {
-              for (iz = 0; iz < data->nz; iz++)
-                {
-                  nvec[ix][iz] = nvec[padx1][iz];
-                }
-            }
-        }
-      if (padx2 > 0)
-        {
-          for (ix = data->nxf - padx2; ix < data->nxf; ix++)
-            {
-              for (iz = 0; iz < data->nz; iz++)
-                {
-                  nvec[ix][iz] = nvec[data->nxf - padx2 - 1][iz];
-                }
-            }
-        }
+/*       // Transpose and place in cube */
+/*       for (int ix = 0; ix < nxf; ix++) */
+/*         { */
+/*           for (int iz = 0; iz < nz; iz++) */
+/*             { */
+/*               cube[(iz * nyf + iy - iVoy) * nxf + ix] = nvec[Vnz * ix + iz]; */
+/*             } */
+/*         } */
+/*     } */
 
-      // Transpose and place in cube
-      for (ix = 0; ix < data->nxf; ix++)
-        {
-          for (iz = 0; iz < data->nz; iz++)
-            {
-              //              cube[iz][iy - iVoy][ix] = nvec[ix][iz];
-              cube[(iz * data->nyf + iy - iVoy)*data->nxf + ix] = nvec[ix][iz];
-            }
-        }
-    }
+/*   if (pady1 > 0) */
+/*     { */
+/*       for (int iz = 0; iz < nz; iz++) */
+/*         { */
+/*           for (int iy = 0; iy < pady1; iy++) */
+/*             { */
+/*               for (int ix = 0; ix < nxf; ix++) */
+/*                 { */
+/*                   cube[(iz * nyf + iy) * nxf + ix] */
+/*                     = cube[(iz * nyf + pady1) * nxf + ix]; */
+/*                 } */
+/*             } */
+/*         } */
+/*     } */
 
+/*   if (pady2 > 0) */
+/*     { */
+/*       for (int iz = 0; iz < nz; iz++) */
+/*         { */
+/*           for (int iy = nyf - pady2; iy < nyf; iy++) */
+/*             { */
+/*               for (int ix = 0; ix < nxf; ix++) */
+/*                 { */
+/*                   cube[(iz * nyf + iy) * nxf + ix] */
+/*                     = cube[(iz * nyf + nyf - pady2 - 1) * nxf + ix]; */
+/*                 } */
+/*             } */
+/*         } */
+/*     } */
 
-  if (pady1 > 0)
-    {
-      for (iz = 0; iz < data->nz; iz++)
-        {
-          for (iy = 0; iy < pady1; iy++)
-            {
-              for (ix = 0; ix < data->nxf; ix++)
-                {
-                  //                  cube[iz][iy][ix] = cube[iz][pady1][ix];
-                  cube[(iz * data->nyf + iy) * data->nxf + ix] = cube[(iz * data->nyf + pady1)*data->nxf + ix];
-                }
-            }
-        }
-    }
-  if (pady2 > 0)
-    {
-      for (iz = 0; iz < data->nz; iz++)
-        {
-          for (iy = data->nyf - pady2; iy < data->nyf; iy++)
-            {
-              for (ix = 0; ix < data->nxf; ix++)
-                {
-                  //                  cube[iz][iy][ix] = cube[iz][data->nyf - pady2 - 1][ix];
-                  cube[(iz*data->nyf + iy)*data->nxf + ix] = cube[(iz*data->nyf + data->nyf - pady2 - 1)*data->nxf + ix];
-                }
-            }
-        }
-    }
+/*   free (nvec); */
 
-  return;
-}
+/*   return; */
+/* } */

@@ -54,23 +54,23 @@ LOG (TRACE, "nx " << config.param.nx
 config.param.nxf = npfao (config.param.nx, 2 * config.param.nx);
 config.param.nyf = npfao (config.param.ny, 2 * config.param.ny);
 
-const long size_vpcube = ( config.param.nz
-                         * config.param.nxf
-                         * config.param.nyf
-                         * sizeof(float)
-                         );
+config.size.vpcube = config.param.nz
+                   * config.param.nxf
+                   * config.param.nyf
+                   * sizeof(float)
+                   ;
 
 LOG (TRACE, "nxf " << config.param.nxf
        << ", nyf " << config.param.nyf
-       << ", size(vPCube) " << size_vpcube
+       << ", size.vpcube " << config.size.vpcube
     );
 
-if (config.per.node.mem.shmem < size_vpcube)
+if (config.per.node.mem.shmem < config.size.vpcube)
   {
     throw std::runtime_error ("not enough shmem for vpcube");
   }
 
-config.per.node.mem.shmem -= size_vpcube;
+config.per.node.mem.shmem -= config.size.vpcube;
 
 if (  !boost::filesystem::exists (vPFile)
    || !boost::filesystem::is_regular (vPFile)
@@ -89,10 +89,10 @@ const long size_vpfile_per_node
 config.handle.vpfile.data
   = ::sp_par_vel::alloc (size_vpfile_per_node, "vpfile.data");
 config.handle.vpfile.scratch
-  = ::sp_par_vel::alloc (config.param.nxf * config.param.Vnz, "vpfile.scratch");
+= ::sp_par_vel::alloc (sizeof (float) * config.param.nxf * config.param.Vnz, "vpfile.scratch");
 
 config.per.node.mem.gpi -= size_vpfile_per_node;
-config.per.node.mem.gpi -= config.param.nxf * config.param.Vnz;
+config.per.node.mem.gpi -= sizeof(float) * config.param.nxf * config.param.Vnz;
 
 config.size.output_per_shot
  = config.param.nx * config.param.ny

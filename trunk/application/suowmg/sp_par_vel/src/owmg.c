@@ -4,8 +4,10 @@ unsigned long long t1, t2, tModInit=0, tModRun=0;
 
 static pthread_mutex_t mutex_fftw = PTHREAD_MUTEX_INITIALIZER;
 
-owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, float dx, float dy, float dz, 
-		   int iw1, int iw4, int nwH, float dw, float latSamplesPerWave, float vertSamplesPerWave)
+owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, float dx, float dy, float dz,
+		   int iw1, int iw4, int nwH, float dw, float latSamplesPerWave, float vertSamplesPerWave
+                   , float * pre_set_cube
+                   )
 {
 
   owmgData *data = NULL;
@@ -67,7 +69,8 @@ owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, floa
   data->src         = allocfloatcomplex3(data->nwH,data->nyf,data->nxf);
   data->rec         = allocfloatcomplex3(data->nwH,data->nyf,data->nxf);
 
-  data->vPCube  = allocfloat1(data->nz*data->nyf*data->nxf);
+  data->vPCube = pre_set_cube;
+  //  data->vPCube  = allocfloat1(data->nz*data->nyf*data->nxf);
 //  data->eCube   = allocfloat3(data->nz,data->nyf,data->nxf);
 //  data->dCube   = allocfloat3(data->nz,data->nyf,data->nxf);
 
@@ -76,7 +79,7 @@ owmgData *owmg_init(char *medium, char *propagator, int nx, int ny, int nz, floa
     }
   } else if (data->medium==VTI) {
     if (data->propagator==FFD3) {
-      
+
     }
   } else if (data->medium==TTI) {
     if (data->propagator==FFD3) {
@@ -522,7 +525,7 @@ void owmg_finalize(owmgData *data)
   freefloat3(data->imageCubeDD);
   freefloatcomplex3(data->src);
   freefloatcomplex3(data->rec);
-  freefloat1(data->vPCube);
+  //  freefloat1(data->vPCube);
 //  freefloat3(data->eCube);
 //  freefloat3(data->dCube);
 
@@ -531,7 +534,7 @@ void owmg_finalize(owmgData *data)
     }
   } else if (data->medium==VTI) {
     if (data->propagator==FFD3) {
-      
+
     }
   } else if (data->medium==TTI) {
     if (data->propagator==FFD3) {
@@ -547,7 +550,7 @@ void owmg_interp_down(int nxA, int nyA, int nxfA, int nyfA, int nxf, int nyf,
 		     float complex *srcA, float complex *src,
 		     float complex *recA, float complex *rec,
 		     float *taperXYA, float  *taperXY) {
-  
+
   int ixy, ix, iy, ixOrg, iyOrg;
 
   // Zero memory area in use
@@ -556,7 +559,7 @@ void owmg_interp_down(int nxA, int nyA, int nxfA, int nyfA, int nxf, int nyf,
     recA[ixy]     = 0.0f + 0*I;
     taperXYA[ixy] = 0.0f;
   }
-  
+
   if ( (nxfA==nxf)||(nyfA==nyf) ) {
     fprintf(stderr, "Warning in interp_down: possible overflow, nxfA=%i, nyfA=%i\n", nxfA, nyfA);
   }
@@ -611,7 +614,7 @@ void owmg_interp_up(int nx, int ny, int nxfA, int nyfA, int nxf, int nyf,
 		   float dxA, float dyA, float dx, float dy,
 		   float complex *srcA, float complex *src,
 		   float complex *recA, float complex *rec) {
-  
+
   int ixy, ix, iy, ixA, iyA;
 
   // Zero memory area in use
@@ -619,7 +622,7 @@ void owmg_interp_up(int nx, int ny, int nxfA, int nyfA, int nxf, int nyf,
     src[ixy] = 0.0f+0*I;
     rec[ixy] = 0.0f+0*I;
   }
-  
+
   // Fill vectors with linear weights
   ixy=0;
   float rx, ry;
@@ -665,11 +668,11 @@ void owmg_interp_up(int nx, int ny, int nxfA, int nyfA, int nxf, int nyf,
 
     }
   }
-  
+
 }
 
 void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
-		 float dxA, float dyA, float dx, float dy,		  
+		 float dxA, float dyA, float dx, float dy,
 		 averageStruct *iAvg) {
 
   int ix, iy, ixA, iyA, iz, i, maxi;
@@ -693,14 +696,14 @@ void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
   i=0;
   for ( iy=0; iy<nyf; iy++ ) {
     for ( ix=0; ix<nxf; ix++ ) {
-	
+
       // Index on coarse grid
       ixA=NINT(ix*dx/dxA);
       iyA=NINT(iy*dy/dyA);
-	
+
       rx = (ixA*dxA-ix*dx)/dx;
       ry = (iyA*dyA-iy*dy)/dy;
-	
+
       if ( (fabsf(rx) < 0.5f) && (fabsf(ry) < 0.5f) )  {
 	// x and y on boundary
 	if (rx<0) ixA--;
@@ -729,7 +732,7 @@ void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
 	  iAvg->w   [i++]=(0.5f-rx)*(0.5f-ry);
 	  sumr[iyA+1][ixA+1] += (0.5f-rx)*(0.5f-ry);
 	}
-	  
+
       } else if ( fabsf(rx) < 0.5f )  {
 	// x on boundary
 	if (rx<0) ixA--;
@@ -745,7 +748,7 @@ void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
 	  iAvg->w   [i++]=(0.5f-rx);
 	  sumr[iyA][ixA+1] += (0.5f-rx);
 	}
-	  
+
       } else if ( fabsf(ry) < 0.5f )  {
 	// y on boundary
 	if (ry<0) iyA--;
@@ -761,7 +764,7 @@ void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
 	  iAvg->w   [i++]=(0.5f-ry);
 	  sumr[iyA+1][ixA] += (0.5f-ry);
 	}
-	  
+
       } else {
 	// interior point
 	if ( (ixA < nxfA) && (iyA < nyfA) ){
@@ -773,12 +776,12 @@ void owmg_average(int nxfA, int nyfA, int nzA, int nxf, int nyf,
       }
     }
   }
-    
+
   // Normalize weights
   for ( ix=0; ix<i; ix++ ) {
     iAvg->w[ix] /= sumr[0][iAvg->iA[ix]];
   }
-    
+
   if ( i >= maxi ) {
     fprintf(stderr, "i out of bounds, i=%i, max i=%i\n", i, maxi);
   }

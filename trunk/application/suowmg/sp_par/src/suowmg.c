@@ -626,6 +626,8 @@ readModel (modsFILE * mFILE, float ***cube, owmgData * data)
         }
     }
 
+  freefloat2 (nvec);
+
   return;
 
 }

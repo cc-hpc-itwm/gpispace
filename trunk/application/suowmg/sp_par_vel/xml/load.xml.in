@@ -86,6 +86,7 @@
 
             loaded_package.key.sx = tb[pos].getSegYHeader()->sx;
             loaded_package.key.sy = tb[pos].getSegYHeader()->sy;
+            loaded_package.key.scalco = tb[pos].getSegYHeader()->scalco;
 
             loaded_package.assigned_package = assigned_package;
             loaded_package.assigned_package.package.right.trace
@@ -129,6 +130,7 @@
 
                   loaded_package.key.sx = tb[pos].getSegYHeader()->sx;
                   loaded_package.key.sy = tb[pos].getSegYHeader()->sy;
+                  loaded_package.key.scalco = tb[pos].getSegYHeader()->scalco;
 
                   loaded_package.assigned_package.package.left.trace
                     = loaded_package.assigned_package.package.right.trace;
