@@ -1,12 +1,13 @@
 
 MAIN = sp
 
-TRUNK = $(CURDIR)/../../../
-#BUILD = /var/tmp/mr/
-BUILD = $(TRUNK)/../build/herc/release
-LIB_DESTDIR = $(HOME)/.sdpa/modules
+SDPA_INCLUDE = $(SDPA_HOME)/include
+SDPA_LIBEXEC = $(SDPA_HOME)/libexec
+SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
 
-PATH_MAIN  = $(TRUNK)/application/suowmg/sp
+LIB_DESTDIR = $(HOME)/.sdpa/modules/
+
+PATH_MAIN  = $(CURDIR)
 UTIL = $(PATH_MAIN)/util
 SEISLIB = $(PATH_MAIN)/seislib
 
@@ -19,7 +20,7 @@ CP       = /bin/cp
 
 ###############################################################################
 
-XML_MAIN    = xml/$(MAIN).xml
+XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml
 MK_XML      = $(PATH_MAIN)/mk.xml
 
 XML_GEN += $(XML_MAIN)
@@ -90,7 +91,7 @@ PROPAGATOR = FFD3
                               "$(TYPE_OUTPUT)" \
                               "$(SHMEM_PER_NODE)" \
                               "$(GPI_MEM_PER_NODE)" \
-                              "$(BUILD)" \
+                              "$(SDPA_LIBEXEC)" \
                               "$(NX)" \
                               "$(NY)" \
                               "$(NZ)" \
@@ -139,42 +140,36 @@ PS_NOINLINE = $(MAIN).noinline.ps
 
 ###############################################################################
 
-PNETC_LIB += $(TRUNK)/application/lib
-
 ###############################################################################
 
-WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
+WE_EXEC_LOAD += $(SDPA_LIBEXEC)/fake/libfvm-pc.so
 
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 
-LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
-
 ###############################################################################
 
-CXXINCLUDEPATHS += $(TRUNK)/fvm-pc/trunk
-CXXINCLUDEPATHS += $(TRUNK)/fhglog/trunk
-CXXINCLUDEPATHS += $(TRUNK)/application/example/exec
-CXXINCLUDEPATHS += $(BUILD)/fhglog
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)/process
 
 # determine_size, do_load, do_write
-CXXINCLUDEPATHS += $(TRUNK)/application/kdm/src
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)/seis
 
 CXXINCLUDEPATHS += $(UTIL)
 CXXINCLUDEPATHS += $(SEISLIB)
 
 ###############################################################################
 
-PNETC    = $(BUILD)/xml/xml/parse/pnetc
-WE_EXEC  = LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH}
+PNETC    = $(SDPA_HOME)/bin/pnetc
+WE_EXEC  = LD_LIBRARY_PATH=$(SDPA_LIBEXEC):${LD_LIBRARY_PATH}
 WE_EXEC += FHGLOG_level=MIN
 WE_EXEC += FVM_PC_SHMSZ=`echo "$(SHMEM_PER_NODE)" | bc`
 WE_EXEC += FVM_PC_FVMSZ=`echo "$(GPI_MEM_PER_NODE)" | bc`
-WE_EXEC += $(BUILD)/we/apps/we-exec --w 1
-PNET2DOT = $(BUILD)/we/apps/pnet2dot
+WE_EXEC += $(SDPA_HOME)/bin/we-exec --w 1
+PNET2DOT = $(SDPA_HOME)/bin/pnet2dot
 
 ###############################################################################
 
-PNETC += $(addprefix -I ,$(PNETC_LIB))
+PNETC += $(addprefix -I ,$(SDPA_XML_LIB))
 
 WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L ,$(WE_EXEC_LIBPATHS))
