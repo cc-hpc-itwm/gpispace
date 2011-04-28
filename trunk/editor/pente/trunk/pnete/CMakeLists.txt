@@ -7,7 +7,7 @@ set(pnete_SRCS
 )
 
 set(pnete_RCCS
-  ressources/ressources.qrc
+  resources/resources.qrc
 )
 
 QT4_ADD_RESOURCES(pnete_RCC_SRCS ${pnete_RCCS})

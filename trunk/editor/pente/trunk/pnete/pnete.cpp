@@ -1,24 +1,71 @@
 #include <QApplication>
 #include <QTranslator>
+#include <QSettings>
+#include <iostream>
 
 #include "ui/MainWindow.hpp"
 
+//! \todo inherit from QApplication and do these things in a class.
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
-  Q_INIT_RESOURCE(ressources);
+  Q_INIT_RESOURCE(resources);
+  
+  QCoreApplication::setApplicationName("pnete");
+  //! \todo get svn revision.
+  QCoreApplication::setApplicationVersion("0.1");
+  QCoreApplication::setOrganizationDomain("itwm.fhg.de");
+  QCoreApplication::setOrganizationName("Fraunhofer ITWM");
   
   QTranslator translator;
   //! \todo embed?
-  translator.load("german", QCoreApplication::applicationDirPath() + "/../../pnete/localization/"); 
+  translator.load("german", ":/localization/");
   a.installTranslator(&translator);
   
   fhg::pnete::ui::MainWindow w;
-  //! \todo Decide where to put them.
-  w.setTransitionLibraryPath(QCoreApplication::applicationDirPath() + "/../../demo/lib/");
-  //! \todo Get from some config.
-  w.addTransitionLibraryUserPath(QCoreApplication::applicationDirPath() + "/../../demo/statoil/", true);
-  w.addTransitionLibraryUserPath(QCoreApplication::applicationDirPath() + "/../../demo/user/");
+  
+  QSettings settings;
+  
+  settings.beginGroup("transitionLibrary");
+  
+#ifdef CREATE_A_NEW_SETTINGS_FILE_BY_CHANGING_THE_PATHS_IN_HERE
+  settings.setValue("basePath", "/Users/berndlorwald/Documents/Arbeit/SDPA/svn/trunk/editor/pente/trunk/demo/lib");
+  settings.beginWriteArray("trustedPaths");
+  settings.setArrayIndex(0);
+  settings.setValue("path", "/Users/berndlorwald/Documents/Arbeit/SDPA/svn/trunk/editor/pente/trunk/demo/statoil");
+  settings.endArray();
+  
+  settings.beginWriteArray("userPaths");
+  settings.setArrayIndex(0);
+  settings.setValue("path", "/Users/berndlorwald/Documents/Arbeit/SDPA/svn/trunk/editor/pente/trunk/demo/user");
+  settings.endArray();
+#endif
+  
+  if(!settings.contains("basePath"))
+  {
+    //! \todo error message, auto config creation, ...
+    std::cerr << "There is no base path set for the transition library. Fix the config file, thanks." << std::endl;
+    return -1;
+  }
+  w.setTransitionLibraryPath(settings.value("basePath").toString());
+  
+  
+  int numTrusted = settings.beginReadArray("trustedPaths");
+  for(int i = 0; i < numTrusted; ++i)
+  {
+    settings.setArrayIndex(i);
+    w.addTransitionLibraryUserPath(settings.value("path").toString(), true);
+  }
+  settings.endArray();
+  
+  int numUser = settings.beginReadArray("userPaths");
+  for(int i = 0; i < numUser; ++i)
+  {
+    settings.setArrayIndex(i);
+    w.addTransitionLibraryUserPath(settings.value("path").toString(), false);
+  }
+  settings.endArray();
+  
   w.show();
   
   return a.exec();
