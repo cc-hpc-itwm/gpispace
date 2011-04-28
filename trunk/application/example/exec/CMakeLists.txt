@@ -37,22 +37,15 @@ add_library(process ${hdrs} process.cpp)
 add_library(process.shared SHARED ${hdrs} process.cpp)
 set_target_properties(process.shared PROPERTIES OUTPUT_NAME process)
 
-set (mods
-    exec_mod
-)
 set (xmls
-)
-
-install(TARGETS ${mods}
-  LIBRARY
-  DESTINATION libexec
-  COMPONENT modules)
+  exec.xml
+  )
 
 install(FILES ${xmls}
   DESTINATION share/sdpa/xml/exec
   COMPONENT examples)
 
-install(FILES ${hrds}
+install(FILES ${hdrs}
   DESTINATION include/process
   COMPONENT headers
 )
