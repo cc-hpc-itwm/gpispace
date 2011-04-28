@@ -325,7 +325,7 @@
           <cinclude href="SegYHeader.h"/>
           <cinclude href="SegYBHeader.h"/>
           <cinclude href="SegYEBCHeader.h"/>
-          <link href="@BUILD@/application/kdm/libdetermine_size.so"/>
+          <link href="@SDPA_LIBEXEC@/libdetermine_size.so"/>
           <code><![CDATA[
             LOG (INFO, "INIT");
 

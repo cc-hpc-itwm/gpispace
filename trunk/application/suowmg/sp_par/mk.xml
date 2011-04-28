@@ -6,7 +6,7 @@ FILE_OUTPUT=${1:?}; shift
 TYPE_OUTPUT=${1:?}; shift
 SHMEM_PER_NODE=${1:?}; shift
 GPI_MEM_PER_NODE=${1:?}; shift
-BUILD=${1:?}; shift
+SDPA_LIBEXEC=${1:?}; shift
 
 NX=${1:?}; shift
 NY=${1:?}; shift
@@ -45,7 +45,7 @@ PROPAGATOR=${1:PS}; shift
   ;s|@FILE_OUTPUT@|${FILE_OUTPUT}|g           \
   ;s|@TYPE_INPUT@|${TYPE_INPUT}|g             \
   ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|g           \
-  ;s|@BUILD@|${BUILD}|g                       \
+  ;s|@SDPA_LIBEXEC@|${SDPA_LIBEXEC}|g         \
   ;s|@NX@|${NX}|g \
   ;s|@NY@|${NY}|g \
   ;s|@NZ@|${NZ}|g \
