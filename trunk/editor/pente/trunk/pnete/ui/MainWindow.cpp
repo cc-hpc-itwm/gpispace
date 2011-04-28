@@ -42,6 +42,8 @@ namespace fhg
         TransitionLibraryModel* fsmodel = new TransitionLibraryModel(QDir(path), this);
         transitionLibrary->setModel(fsmodel);
         transitionLibrary->expandAll();
+        transitionLibrary->setColumnWidth(0, 230);
+        transitionLibrary->setColumnWidth(1, 20);
       }
 
       void MainWindow::addTransitionLibraryUserPath(const QString& path)
@@ -122,7 +124,7 @@ namespace fhg
       void MainWindow::setupTransitionLibrary()
       {
         QDockWidget* transitionLibraryDockWidget = new QDockWidget(tr("Library"), this);
-        transitionLibraryDockWidget->setMinimumSize(QSize(263, 228));
+        transitionLibraryDockWidget->setMinimumSize(QSize(254, 304));
         transitionLibraryDockWidget->setAllowedAreas(Qt::RightDockWidgetArea | Qt::LeftDockWidgetArea);
         
         QWidget* transitionLibraryDockWidgetContents = new QWidget();
@@ -135,9 +137,8 @@ namespace fhg
         transitionLibrary->setFrameShadow(QFrame::Sunken);
         transitionLibrary->setDragDropMode(QAbstractItemView::DragOnly);
         transitionLibrary->header()->setVisible(true);
+        //! \todo Not resizable?
         transitionLibrary->header()->setCascadingSectionResizes(true);
-        transitionLibrary->header()->setHighlightSections(true);
-        transitionLibrary->header()->setProperty("showSortIndicator", QVariant(true));
         
         transitionLibraryDockWidgetLayout->addWidget(transitionLibrary);
         transitionLibraryDockWidget->setWidget(transitionLibraryDockWidgetContents);

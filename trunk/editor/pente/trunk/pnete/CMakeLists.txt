@@ -6,7 +6,13 @@ set(pnete_SRCS
   pnete.cpp
 )
 
-add_executable(pnete ${pnete_SRCS})
+set(pnete_RCCS
+  ressources/ressources.qrc
+)
+
+QT4_ADD_RESOURCES(pnete_RCC_SRCS ${pnete_RCCS})
+
+add_executable(pnete ${pnete_SRCS} ${pnete_RCC_SRCS})
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 

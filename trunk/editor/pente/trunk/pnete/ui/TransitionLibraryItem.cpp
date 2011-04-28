@@ -8,18 +8,20 @@ namespace fhg
   {
     namespace ui
     {
-      TransitionLibraryItem::TransitionLibraryItem(data::Transition* data, QObject* parent)
+      TransitionLibraryItem::TransitionLibraryItem(data::Transition* data, bool trusted, QObject* parent)
       : QObject(parent),
       _data(data),
       _name("SHOULD NEVER DISPLAY"),
+      _trusted(trusted),
       _parent(qobject_cast<TransitionLibraryItem*>(parent))
       {
       }
       
-      TransitionLibraryItem::TransitionLibraryItem(const QString& name, QObject* parent)
+      TransitionLibraryItem::TransitionLibraryItem(const QString& name, bool trusted, QObject* parent)
       : QObject(parent),
       _data(NULL),
       _name(name),
+      _trusted(trusted),
       _parent(qobject_cast<TransitionLibraryItem*>(parent))
       {
       }
@@ -46,7 +48,14 @@ namespace fhg
       
       const QString& TransitionLibraryItem::name() const
       {
-        return _name;
+        if(data())
+        {
+          return data()->name();
+        }
+        else
+        {
+          return _name;
+        }
       }
       
       int TransitionLibraryItem::row() const
@@ -79,6 +88,11 @@ namespace fhg
       void TransitionLibraryItem::sortChildren(bool descending)
       {
         //! \todo folders first, then alphabetically. (i.e. by name(), then by data()->name().
+      }
+      
+      const bool& TransitionLibraryItem::trusted() const
+      {
+        return _trusted;
       }
     }
   }

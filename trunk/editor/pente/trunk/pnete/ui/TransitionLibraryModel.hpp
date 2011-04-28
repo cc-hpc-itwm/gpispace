@@ -42,7 +42,7 @@ namespace fhg
           
         private:
           void setFileSystemWatcher(const QString& path);
-          void readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const QString& path);
+          void readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const bool& trusted, const QString& path);
           
           QFileSystemWatcher* _fileSystemWatcher;
           TransitionLibraryItem* _items;

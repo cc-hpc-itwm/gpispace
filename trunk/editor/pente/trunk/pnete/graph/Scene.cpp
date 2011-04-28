@@ -28,7 +28,6 @@ namespace fhg
       
       const QPointF& Scene::mousePosition() const
       {
-        printf("mouseposition is %f %f\n", _mousePosition.x(), _mousePosition.y());
         return _mousePosition;
       }
       
@@ -65,7 +64,6 @@ namespace fhg
       
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
       {
-        printf("mouseposition set to %f %f\n", _mousePosition.x(), _mousePosition.y());
         _mousePosition = mouseEvent->scenePos();
         if(_pendingConnection)
         {

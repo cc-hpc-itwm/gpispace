@@ -20,8 +20,8 @@ namespace fhg
         Q_OBJECT
         
         public:
-          TransitionLibraryItem(data::Transition* data, QObject* parent = NULL);
-          TransitionLibraryItem(const QString& name, QObject* parent = NULL);
+          TransitionLibraryItem(data::Transition* data, bool trusted = false, QObject* parent = NULL);
+          TransitionLibraryItem(const QString& name, bool trusted = false, QObject* parent = NULL);
           
           void appendChild(TransitionLibraryItem* child);
           
@@ -37,10 +37,14 @@ namespace fhg
           void clearChildren();
           
           void sortChildren(bool descending = false);
+          
+          const bool& trusted() const;
         
         private:
           data::Transition* _data;
           QString _name;
+          
+          bool _trusted;
           
           QList<TransitionLibraryItem*> _children;
           TransitionLibraryItem* _parent;

@@ -9,6 +9,8 @@
 #include <QDir>
 #include <QFileSystemWatcher>
 #include <QDirIterator>
+#include <QIcon>
+#include <QCoreApplication>
 
 namespace fhg
 {
@@ -21,7 +23,7 @@ namespace fhg
       TransitionLibraryModel::TransitionLibraryModel(const QDir& path, QWidget* parent)
       : QAbstractItemModel(parent),
       _fileSystemWatcher(NULL),
-      _items(new TransitionLibraryItem("__DUMMY__ROOT__", this))
+      _items(new TransitionLibraryItem("__DUMMY__ROOT__", true, this))
       {
         readContentFromDirectory(path.path());
       }
@@ -30,17 +32,17 @@ namespace fhg
       {
         _items->clearChildren();
  
-        readContentFromDirectoryRecursive(_items, path);
+        readContentFromDirectoryRecursive(_items, true, path);
         _items->sortChildren();
       }
       
       void TransitionLibraryModel::addContentFromDirectory(const QString& path)
       {
-        readContentFromDirectoryRecursive(_items, path);
+        readContentFromDirectoryRecursive(_items, false, path);
         _items->sortChildren();
       }
       
-      void TransitionLibraryModel::readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const QString& path)
+      void TransitionLibraryModel::readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const bool& trusted, const QString& path)
       {
         setFileSystemWatcher(path);
         
@@ -65,10 +67,10 @@ namespace fhg
           }
           if(!found)
           {
-            newRoot = new TransitionLibraryItem(newName, currentRoot);
+            newRoot = new TransitionLibraryItem(newName, trusted, currentRoot);
             currentRoot->appendChild(newRoot);
           }
-          readContentFromDirectoryRecursive(newRoot, directoryWalkerDirs.fileInfo().absoluteFilePath());
+          readContentFromDirectoryRecursive(newRoot, trusted, directoryWalkerDirs.fileInfo().absoluteFilePath());
         }
         
         QDirIterator directoryWalkerFiles(path, QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
@@ -77,7 +79,7 @@ namespace fhg
           directoryWalkerFiles.next();
           
           data::Transition* transition = new data::Transition(directoryWalkerFiles.fileInfo().absoluteFilePath());
-          currentRoot->appendChild(new TransitionLibraryItem(transition, currentRoot));
+          currentRoot->appendChild(new TransitionLibraryItem(transition, trusted, currentRoot));
         }
       }
       
@@ -105,33 +107,48 @@ namespace fhg
       
       int TransitionLibraryModel::columnCount(const QModelIndex& parent) const
       {
-        return 1;
+        return 2;
       }
       
       QVariant TransitionLibraryModel::data(const QModelIndex& index, int role) const
       {
         //! \todo symbols for trusted and untrusted entries? (lib / user)
-        if(!index.isValid() || role != Qt::DisplayRole)
-        {
-          return QVariant();
-        }
-        else
+        if(index.isValid())
         {
           TransitionLibraryItem* item = static_cast<TransitionLibraryItem*>(index.internalPointer());
-          if(item->data())
+          switch(role)
           {
-            return item->data()->name();
-          }
-          else
-          {
-            return item->name();
+            case Qt::DisplayRole:
+              if(index.column() == 0)
+              {
+                return item->name();
+              }
+              break;
+              
+            case Qt::DecorationRole:
+              if(index.column() == 1 && item->data() && item->trusted())
+              {
+                return QIcon(":/lock.png");
+              }
+              break;
+              
+            case Qt::ToolTipRole:
+              if(index.column() == 1 && item->data() && item->trusted())
+              {
+                return tr("Trusted Transition");
+              }
+              break;
+              
+            default:
+              ;
           }
         }
+        return QVariant();
       }
       
       QVariant TransitionLibraryModel::headerData(int section, Qt::Orientation orientation, int role) const
       {
-        if(orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        if(orientation != Qt::Horizontal || role != Qt::DisplayRole || section != 0)
         {
           return QVariant();
         }
@@ -143,10 +160,7 @@ namespace fhg
       
       QMimeData* TransitionLibraryModel::mimeData(const QModelIndexList& indexes) const
       {
-        if(indexes.size() != 1)
-        {
-          return NULL;
-        }
+        //! \todo multiple at once!
         
         TransitionLibraryItem* item = static_cast<TransitionLibraryItem*>(indexes.first().internalPointer());
         if(item->data())
