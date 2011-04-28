@@ -139,7 +139,7 @@ namespace fhg
       
       const void Style::portPaint(QPainter *painter, const Port* port)
       {
-        painter->setPen(QPen(QBrush(port->highlighted() ? Qt::red : Qt::black), 2.0f));
+        painter->setPen(QPen(QBrush(port->highlighted() ? Qt::red : Qt::black), 2.0));
         painter->setBackgroundMode(Qt::OpaqueMode);
         painter->setBrush(QBrush(queryColorForType(port->dataType()), Qt::SolidPattern));
         painter->drawPath(portShape(port));
@@ -310,7 +310,7 @@ namespace fhg
       }
       const QRectF Style::transitionBoundingRect(const QSizeF& size)
       {
-        return QRectF(0.0f, 0.0f, size.width(), size.height());
+        return QRectF(0.0, 0.0, size.width(), size.height());
       }
       const void Style::transitionPaint(QPainter* painter, const Transition* transition)
       {

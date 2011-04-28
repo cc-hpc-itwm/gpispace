@@ -7,6 +7,7 @@
 
 class QGraphicsSceneMouseEvent;
 class QKeyEvent;
+class QRectF;
 
 namespace fhg
 {
@@ -23,6 +24,7 @@ namespace fhg
     
         public:
           Scene(QObject* parent = NULL);
+          Scene(const QRectF& sceneRect, QObject* parent = NULL);
           
           const QPointF& mousePosition() const;
           
@@ -40,8 +42,8 @@ namespace fhg
           virtual void keyPressEvent(QKeyEvent* event);
           
         private:
-          QPointF _mousePosition;
           Connection* _pendingConnection;
+          QPointF _mousePosition;
       };
     }
   }

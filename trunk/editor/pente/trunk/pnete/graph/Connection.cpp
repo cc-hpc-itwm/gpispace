@@ -188,7 +188,7 @@ namespace fhg
 #ifdef STEFAN
         QPointF midPoint = start() ? ( end() ? QLineF(startPoint, endPoint).pointAt(0.5) : endPoint ) : startPoint;
         
-        const qreal padding = Style::raster() * 3;
+        const qreal padding = Style::raster() * 3.0;
         
         if(start())
         {

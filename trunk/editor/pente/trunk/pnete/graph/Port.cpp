@@ -18,7 +18,7 @@ namespace fhg
       : ConnectableItem(direction == OUT ? EAST : WEST, direction, parent),
       _title(title),
       _dataType(dataType),
-      _dragStart(0.0f, 0.0f),
+      _dragStart(0.0, 0.0),
       _dragging(false),
       _highlighted(false),
       _length(60.0)
@@ -68,7 +68,7 @@ namespace fhg
         QPointF parentBottomRightPoint = parentItem()->boundingRect().bottomRight();
         
         // decide orientation
-        if(newLocation.x() <= 0.0f)
+        if(newLocation.x() <= 0.0)
         {
           _orientation = WEST;
         }
@@ -76,7 +76,7 @@ namespace fhg
         {
           _orientation = EAST;
         }
-        else if(newLocation.y() <= 0.0f)
+        else if(newLocation.y() <= 0.0)
         {
           _orientation = NORTH;
         }
@@ -99,13 +99,13 @@ namespace fhg
         switch(_orientation)
         {
           case WEST:
-            newLocation.setX(0.0f);
+            newLocation.setX(0.0);
             break;
           case EAST:
             newLocation.setX(parentSize.width());
             break;
           case NORTH:
-            newLocation.setY(0.0f);
+            newLocation.setY(0.0);
             break;
           case SOUTH:
             newLocation.setY(parentSize.height());
@@ -119,13 +119,13 @@ namespace fhg
         
         if(_orientation == WEST || _orientation == EAST)
         {
-          const qreal minimumDistance = boundingRect().height() / 2 + 1;
+          const qreal minimumDistance = boundingRect().height() / 2.0 + 1.0;
           newLocation.setX(std::max(std::min(parentSize.width(), newLocation.x()), 0.0));
           newLocation.setY(std::max(std::min(parentSize.height() - minimumDistance, newLocation.y()), minimumDistance));
         }
         else
         {
-          const qreal minimumDistance = boundingRect().width() / 2 + 1;
+          const qreal minimumDistance = boundingRect().width() / 2.0 + 1.0;
           newLocation.setX(std::max(std::min(parentSize.width() - minimumDistance, newLocation.x()), minimumDistance));
           newLocation.setY(std::max(std::min(parentSize.height(), newLocation.y()), 0.0));
         }

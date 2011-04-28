@@ -4,6 +4,7 @@
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
+#include <QRectF>
 
 namespace fhg
 {
@@ -12,13 +13,22 @@ namespace fhg
     namespace graph
     {
       Scene::Scene(QObject* parent)
-      : QGraphicsScene(parent), _pendingConnection(NULL)
+      : QGraphicsScene(parent),
+      _pendingConnection(NULL),
+      _mousePosition(QPointF(0.0, 0.0))
       {
-        _mousePosition = QPointF(0.0f, 0.0f);
+      }
+      
+      Scene::Scene(const QRectF& sceneRect, QObject* parent)
+      : QGraphicsScene(sceneRect, parent),
+      _pendingConnection(NULL),
+      _mousePosition(QPointF(0.0, 0.0))
+      {
       }
       
       const QPointF& Scene::mousePosition() const
       {
+        printf("mouseposition is %f %f\n", _mousePosition.x(), _mousePosition.y());
         return _mousePosition;
       }
       
@@ -29,6 +39,7 @@ namespace fhg
         if(_pendingConnection->scene() != this)
         {
           addItem(_pendingConnection);
+          _pendingConnection->setPos(0.0, 0.0);
         }
         update();
       }
@@ -54,6 +65,7 @@ namespace fhg
       
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
       {
+        printf("mouseposition set to %f %f\n", _mousePosition.x(), _mousePosition.y());
         _mousePosition = mouseEvent->scenePos();
         if(_pendingConnection)
         {

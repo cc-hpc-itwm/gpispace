@@ -112,7 +112,7 @@ namespace fhg
         QGridLayout* centralLayout = new QGridLayout(centralWidget);
         centralLayout->setContentsMargins(2, 2, 2, 2);
         
-        graphicsView = new GraphView(new graph::Scene(this), centralWidget);
+        graphicsView = new GraphView(new graph::Scene(QRectF(-500.0, -500.0, 1000.0, 1000.0), this), centralWidget);
         
         centralLayout->addWidget(graphicsView);
         
