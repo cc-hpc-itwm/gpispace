@@ -24,8 +24,8 @@
           <cinclude href="process.hpp"/>
           <cinclude href="tracebunch.hpp"/>
           <cinclude href="deque"/>
-          <link href="@BUILD@/application/kdm/libdo_load.so"/>
-          <link href="@BUILD@/application/example/exec/libprocess.so"/>
+          <link href="@SDPA_LIBEXEC@/libdo_load.so"/>
+          <link href="@SDPA_LIBEXEC@/libprocess.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::assigned_package (assigned_package));
 
