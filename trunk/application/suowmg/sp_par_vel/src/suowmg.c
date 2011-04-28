@@ -624,12 +624,12 @@ addSrc (owmgData * data
 }
 
 void
-readModel (modsFILE * mFILE
-		, float *cube
-		, const owmgData * data
-        , const int iVox, const int iVoy
-		, const int Vnx, const int Vny, const int Vnz
-		)
+readModel ( modsFILE * mFILE
+          , float *cube
+          , const owmgData * data
+          , const int iVox, const int iVoy
+          , const int Vnx, const int Vny, const int Vnz
+          )
 {
 
   int ix, iy, iz;
@@ -644,7 +644,7 @@ readModel (modsFILE * mFILE
   pady1 = IMAX (0, -iVoy);
   pady2 = IMAX (0, iVoy + data->nyf - Vny);
 
-   for (ix = 0; ix < data->nxf * data->nyf * data->nz; ++ix)
+  for (ix = 0; ix < data->nxf * data->nyf * data->nz; ++ix)
     cube[ix] = -2.0;
 
   // Loop over y
@@ -656,7 +656,7 @@ readModel (modsFILE * mFILE
         nvec[0][ix] = -1.0;
 
       mods_fread (mFILE, nvec[padx1], iy * Vnx * Vnz + (iVox + padx1) * Vnz,
-                  (data->nxf - padx2 - padx1) * Vnz);
+                 (data->nxf - padx2 - padx1) * Vnz);
 
       // Pad in x-direction (trace by trace)
       if (padx1 > 0)
@@ -685,7 +685,7 @@ readModel (modsFILE * mFILE
         {
           for (iz = 0; iz < data->nz; iz++)
             {
-//              cube[iz][iy - iVoy][ix] = nvec[ix][iz];
+              //              cube[iz][iy - iVoy][ix] = nvec[ix][iz];
               cube[(iz * data->nyf + iy - iVoy)*data->nxf + ix] = nvec[ix][iz];
             }
         }
@@ -700,7 +700,7 @@ readModel (modsFILE * mFILE
             {
               for (ix = 0; ix < data->nxf; ix++)
                 {
-//                  cube[iz][iy][ix] = cube[iz][pady1][ix];
+                  //                  cube[iz][iy][ix] = cube[iz][pady1][ix];
                   cube[(iz * data->nyf + iy) * data->nxf + ix] = cube[(iz * data->nyf + pady1)*data->nxf + ix];
                 }
             }
@@ -714,7 +714,7 @@ readModel (modsFILE * mFILE
             {
               for (ix = 0; ix < data->nxf; ix++)
                 {
-//                  cube[iz][iy][ix] = cube[iz][data->nyf - pady2 - 1][ix];
+                  //                  cube[iz][iy][ix] = cube[iz][data->nyf - pady2 - 1][ix];
                   cube[(iz*data->nyf + iy)*data->nxf + ix] = cube[(iz*data->nyf + data->nyf - pady2 - 1)*data->nxf + ix];
                 }
             }

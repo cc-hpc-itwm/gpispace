@@ -26,6 +26,7 @@ XML_GEN += $(XML_MAIN)
 XML_GEN += xml/load.xml
 XML_GEN += xml/run.xml
 XML_GEN += xml/write.xml
+XML_GEN += xml/load_vp.xml
 
 ###############################################################################
 
@@ -56,8 +57,9 @@ TYPE_INPUT       = su
 FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
 #FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
-SHMEM_PER_NODE   = 6  * 1824 +     167233040
-GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640
+SHMEM_PER_NODE   = 6  * 1824 +     167233040 + 141120000
+GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640 + 2631317001 + 315420
+#                  traces      output          vpcube       vpscratch
 #SHMEM_PER_NODE   = 1073741824
 #GPI_MEM_PER_NODE = 2 * 1073741824
 
@@ -118,6 +120,7 @@ PROPAGATOR = FFD3
 ###############################################################################
 
 NOINLINE_NOT_ENDS_WITH += gen
+NOINLINE_NOT_ENDS_WITH += load
 
 NOINLINE_NOT_STARTS_WITH += dup
 NOINLINE_NOT_STARTS_WITH += scatter
@@ -131,9 +134,9 @@ NOINLINE_NOT_STARTS_WITH += join_shot
 NOINLINE_NOT_STARTS_WITH += load_package
 NOINLINE_NOT_STARTS_WITH += finish_output
 NOINLINE_NOT_STARTS_WITH += run
-NOINLINE_NOT_STARTS_WITH += load
 NOINLINE_NOT_STARTS_WITH += give_back_interval
 NOINLINE_NOT_STARTS_WITH += write
+NOINLINE_NOT_STARTS_WITH += generate
 
 NET_NOINLINE = $(MAIN).noinline.pnet
 PS_NOINLINE = $(MAIN).noinline.ps

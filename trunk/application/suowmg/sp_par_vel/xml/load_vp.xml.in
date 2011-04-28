@@ -1,0 +1,141 @@
+<defun>
+  <in name="config" type="config" place="config_IN"/>
+  <out name="config" type="config" place="done"/>
+
+  <net>
+    <place name="config_IN" type="config"/>
+    <place name="config" type="config"/>
+    <place name="done" type="config"/>
+
+    <transition name="extract">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="N" type="long"/>
+        <out name="wait" type="long"/>
+        <out name="config" type="config"/>
+        <expression>
+          ${N} := ${config.num.nodes};
+          ${wait} := ${N};
+        </expression>
+      </defun>
+      <connect-in port="config" place="config_IN"/>
+      <connect-out port="wait" place="wait"/>
+      <connect-out port="N" place="N"/>
+      <connect-out port="config" place="config"/>
+    </transition>
+
+    <place name="wait" type="long"/>
+    <place name="N" type="long"/>
+
+    <place name="id" type="long"/>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="N"/>
+      <connect-out port="out" place="id"/>
+    </transition>
+
+    <transition name="load_vp">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="id" type="long"/>
+        <out name="id" type="long"/>
+        <module name="sp_par_vel" function="load_vp (config, id)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="fstream"/>
+          <cinclude href="iostream"/>
+          <cinclude href="algorithm"/>
+          <code><![CDATA[
+            const long first
+              ( ( id      * config.size.vpfile + config.num.nodes - 1)
+              / config.num.nodes
+              );
+            const long last
+              ( ((id + 1) * config.size.vpfile + config.num.nodes - 1)
+              / config.num.nodes
+              );
+
+            LOG(INFO, "load_vp " << id << " [" << first << ".." << last << ")");
+
+            const long buf_size (1 << 25);
+
+            const fvmAllocHandle_t scratch (fvmLocalAlloc (buf_size));
+
+            if (scratch == 0)
+              {
+                throw std::runtime_error ("failed to allocate scratch");
+              }
+
+            std::ifstream stream (config.param.vPFile.c_str(), std::ios::binary);
+
+            stream.seekg (first, std::ios::beg);
+
+            if (!stream.good())
+              {
+                throw std::runtime_error ("stream not good");
+              }
+
+            long left (last - first);
+
+            char * buf (static_cast<char *>(fvmGetShmemPtr()));
+
+            while (left > 0)
+            {
+              LOG (INFO, "bytes left " << left);
+
+              const long size (std::min (left, buf_size));
+
+              LOG(INFO, "read " << size << " bytes");
+
+              stream.read (buf, size);
+
+              waitComm (fvmPutGlobalData ( config.handle.vpfile.data
+                                         , last - left
+                                         , size
+                                         , 0
+                                         , scratch
+                                         )
+                       );
+
+              left -= size;
+            }
+
+            fvmLocalFree (scratch);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="id" place="id"/>
+      <connect-out port="id" place="id_done"/>
+    </transition>
+
+    <place name="id_done" type="long"/>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_id" use="wait">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="wait" inline="true">
+      <use name="wait_id"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="trigger" place="id_done"/>
+      <connect-out port="done" place="ids_done"/>
+    </transition>
+
+    <place name="ids_done" type="control"/>
+
+    <transition name="done">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <in name="trigger" type="control"/>
+        <expression/>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="config" place="done"/>
+      <connect-in port="trigger" place="ids_done"/>
+    </transition>
+  </net>
+</defun>

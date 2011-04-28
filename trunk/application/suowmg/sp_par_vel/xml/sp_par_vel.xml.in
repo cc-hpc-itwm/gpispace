@@ -79,12 +79,14 @@
     <struct name="handle">
       <field name="input" type="handle"/>
       <field name="output" type="handle"/>
+      <field name="vpfile" type="handle"/>
     </struct>
 
     <struct name="size">
       <field name="trace" type="long"/>
       <field name="bunch" type="long"/>
       <field name="output_per_shot" type="long"/>
+      <field name="vpfile" type="long"/>
     </struct>
 
     <struct name="per">
@@ -182,8 +184,8 @@
 
   <net>
 
-    <include-template href="triple.xml"/>
-    <specialize name="scatter_config" use="triple">
+    <include-template href="4.xml"/>
+    <specialize name="scatter_config" use="quad">
       <type-map replace="T" with="config"/>
     </specialize>
 
@@ -330,205 +332,11 @@
           <cinclude href="SegYBHeader.h"/>
           <cinclude href="SegYEBCHeader.h"/>
           <cinclude href="pfafft.h"/>
+          <cinclude href="alloc.hpp"/>
           <cinclude href="boost/filesystem/operations.hpp"/>
           <link href="@BUILD@/application/kdm/libdetermine_size.so"/>
           <link href="@BOOST_ROOT@/lib/libboost_filesystem.so"/>
-          <code><![CDATA[
-            LOG (INFO, "INIT");
-
-            determine_size ( file_input
-                           , type_input
-                           , config.num.trace
-                           , config.size.trace
-                           );
-
-            LOG (TRACE, "num.trace = " << config.num.trace);
-            LOG (TRACE, "size.trace = " << config.size.trace);
-
-            config.param.Vnx = Vnx;
-            config.param.Vny = Vny;
-            config.param.Vnz = Vnz;
-
-            config.param.dx = dx;
-            config.param.dy = dy;
-            config.param.dz = dz;
-
-            config.param.zmax = zmax;
-
-            config.param.lx = lx;
-            config.param.ly = ly;
-
-            config.param.f1 = f1;
-            config.param.f2 = f2;
-            config.param.f3 = f3;
-            config.param.f4 = f4;
-
-            config.param.pad = pad;
-
-            config.param.latSamplesPerWave = latSamplesPerWave;
-            config.param.vertSamplesPerWave = vertSamplesPerWave;
-
-            config.param.medium = medium;
-            config.param.propagator = propagator;
-
-            config.param.vPFile = vPFile;
-            config.param.eFile = eFile;
-            config.param.dFile = dFile;
-
-#define IMIN(a,b) ((a)<(b) ? (a) : (b))
-#define NINT(x) ((long)((x)>0.0?(x)+0.5:(x)-0.5))
-
-            config.param.nx = NINT (lx / dx) + 1;
-            config.param.ny = NINT (ly / dy) + 1;
-
-            config.param.nz = (zmax > 0.0)
-              ? IMIN (Vnz, NINT (zmax / dz))
-              : Vnz
-              ;
-
-            LOG (TRACE, "nx " << config.param.nx
-                   << ", ny " << config.param.ny
-                   << ", nz " << config.param.nz
-                );
-
-            config.param.nxf = npfao (config.param.nx, 2 * config.param.nx);
-            config.param.nyf = npfao (config.param.ny, 2 * config.param.ny);
-
-            const long size_vpcube = ( config.param.nz
-                                     * config.param.nxf
-                                     * config.param.nyf
-                                     * sizeof(float)
-                                     );
-
-            LOG (TRACE, "nxf " << config.param.nxf
-                   << ", nyf " << config.param.nyf
-                   << ", size(vPCube) " << size_vpcube
-                );
-
-            if (  !boost::filesystem::exists (vPFile)
-               || !boost::filesystem::is_regular (vPFile)
-               )
-            {
-              throw std::runtime_error ("regular vpFile missing");
-            }
-
-            boost::intmax_t size_vpfile (boost::filesystem::file_size (vPFile));
-
-            LOG (INFO, "filesize (vpfile) " << size_vpfile);
-
-            config.size.output_per_shot
-              = config.param.nx * config.param.ny
-              * (sizeof (SegYHeader) + config.param.nz * sizeof(float))
-              ;
-
-            LOG (TRACE, "size.output_per_shot = "
-                      << config.size.output_per_shot
-                );
-
-            if (gpi_mem_per_node < 2 * config.size.output_per_shot)
-              {
-                throw std::runtime_error ("not enough memory for output (gpi)");
-              }
-
-            if (shmem_per_node < config.size.output_per_shot)
-              {
-                throw std::runtime_error ("not enough memory for output (shmem)");
-              }
-
-            const long gpi_mem_for_traces
-              (gpi_mem_per_node - 2 * config.size.output_per_shot);
-            const long shmem_for_traces
-              (shmem_per_node - config.size.output_per_shot);
-
-            const long mem_for_trace_bunch (std::min ( gpi_mem_for_traces / 2
-                                                     , shmem_for_traces
-                                                     )
-                                           );
-
-            config.per.bunch.trace = mem_for_trace_bunch / config.size.trace;
-
-            LOG (TRACE, "per.bunch.trace = " << config.per.bunch.trace);
-
-            if (config.per.bunch.trace < 1)
-              {
-                throw std::runtime_error ("not enough memory for traces (shmem)");
-              }
-
-            config.size.bunch = config.per.bunch.trace * config.size.trace;
-
-            const long slot_per_node (gpi_mem_for_traces / config.size.bunch);
-
-            if (slot_per_node < 2)
-              {
-                throw std::runtime_error ("not enough memory for traces (gpi)");
-              }
-
-            config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
-
-            if (config.num.slot * fvmGetNodeCount() < 2)
-              {
-                throw std::runtime_error ("not enough memory (total)");
-              }
-
-            LOG (TRACE, "num.slot = " << config.num.slot);
-
-            config.handle.input.data = static_cast<long>
-              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.bunch));
-            config.handle.input.scratch = static_cast<long>
-              (fvmGlobalAlloc (                 1  * config.size.bunch));
-
-            config.handle.output.data = static_cast<long>
-              (fvmGlobalAlloc (config.size.output_per_shot));
-            config.handle.output.scratch = static_cast<long>
-              (fvmGlobalAlloc (config.size.output_per_shot));
-
-            if (config.handle.input.data == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.input.data == 0");
-              }
-
-            if (config.handle.input.scratch == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.input.scratch == 0");
-              }
-
-            if (config.handle.output.data == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.output.data == 0");
-              }
-
-            if (config.handle.output.scratch == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.output.scratch == 0");
-              }
-
-            config.file.input.name = file_input;
-            config.file.input.type = type_input;
-            config.file.output.name = file_output;
-            config.file.output.type = type_output;
-
-            config.per.node.mem.shmem = shmem_per_node;
-            config.per.node.mem.gpi = gpi_mem_per_node;
-
-            config.num.nodes = fvmGetNodeCount();
-
-            give_back_trace = 0;
-
-            size_wanted = config.size.trace * config.per.bunch.trace;
-            num_trace = config.num.trace;
-
-            num_output_slot = fvmGetNodeCount();
-
-            shot_num = shot_trace = 0;
-
-            std::ofstream out (config.file.output.name.c_str());
-
-            if (!out.good())
-              {
-                throw std::runtime_error
-                  ("could not open output file " + config.file.output.name);
-              }
-          ]]></code>
+          <code><![CDATA[#include "init_impl.hpp"]]></code>
         </module>
       </defun>
       <connect-in port="file_input" place="file_input"/>
@@ -578,11 +386,21 @@
       <connect-out port="one" place="config"/>
       <connect-out port="two" place="config_generate_package"/>
       <connect-out port="three" place="config_generate_interval"/>
+      <connect-out port="four" place="config_load_vp"/>
     </transition>
 
     <place name="config" type="config"/>
     <place name="config_generate_package" type="config"/>
     <place name="config_generate_interval" type="config"/>
+    <place name="config_load_vp" type="config"/>
+
+    <transition name="load_vp" inline="true">
+      <include-function href="load_vp.xml"/>
+      <connect-in port="config" place="config_load_vp"/>
+      <connect-out port="config" place="config_run"/>
+    </transition>
+
+    <place name="config_run" type="config"/>
 
     <place name="output_slot" type="long"/>
     <place name="output" type="output"/>
@@ -682,7 +500,7 @@
 
     <transition name="run" inline="true">
       <include-function href="run.xml"/>
-      <place-map virtual="config" real="config"/>
+      <place-map virtual="config" real="config_run"/>
       <connect-in port="shot_prepared" place="shot_prepared"/>
       <connect-in port="output_slot" place="output_slot"/>
       <connect-out port="shot_done" place="shot_done"/>
@@ -731,6 +549,7 @@
       <defun>
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
+        <in name="config_run" type="config"/>
         <out name="done" type="control"/>
         <module name="sp_par_vel" function="done finalize (config)">
           <cinclude href="fvm-pc/pc.hpp"/>
@@ -742,6 +561,8 @@
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.scratch));
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.data));
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.scratch));
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.vpfile.data));
+            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.vpfile.scratch));
 
             return control();
           ]]></code>
@@ -749,6 +570,7 @@
       </defun>
       <connect-in port="trigger" place="finalize"/>
       <connect-in port="config" place="config"/>
+      <connect-in port="config_run" place="config_run"/>
       <connect-out port="done" place="done"/>
     </transition>
   </net>
