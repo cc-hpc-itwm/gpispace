@@ -35,10 +35,12 @@ namespace fhg
           virtual Qt::ItemFlags flags(const QModelIndex& index) const;
           virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
           virtual QMimeData * mimeData(const QModelIndexList& indexes) const;
+          
+          void readContentFromDirectory(const QString& path);
+          void addContentFromDirectory(const QString& path, bool trusted = false);
         
         public slots:
-          void readContentFromDirectory(const QString& path);
-          void addContentFromDirectory(const QString& path);
+          //! \todo update on fsw change.
           
         private:
           void setFileSystemWatcher(const QString& path);

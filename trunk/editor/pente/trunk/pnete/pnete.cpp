@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   //! \todo Decide where to put them.
   w.setTransitionLibraryPath(QCoreApplication::applicationDirPath() + "/../../demo/lib/");
   //! \todo Get from some config.
-  w.addTransitionLibraryUserPath(QCoreApplication::applicationDirPath() + "/../../demo/statoil/");
+  w.addTransitionLibraryUserPath(QCoreApplication::applicationDirPath() + "/../../demo/statoil/", true);
   w.addTransitionLibraryUserPath(QCoreApplication::applicationDirPath() + "/../../demo/user/");
   w.show();
   

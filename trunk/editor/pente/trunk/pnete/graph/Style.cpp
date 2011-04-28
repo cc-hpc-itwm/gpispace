@@ -18,6 +18,7 @@ namespace fhg
       
       static const qreal portHeight = 20.0;
       static const qreal portHeightHalf = portHeight / 2.0;
+      static const qreal defaultPortWidth = 60.0;
       
       static const qreal capLength = 10.0;
       
@@ -28,6 +29,10 @@ namespace fhg
       const qreal Style::portCapLength()
       {
         return capLength;
+      }
+      const qreal Style::portDefaultWidth()
+      {
+        return defaultPortWidth;
       }
       
       void addOutgoingCap(QPainterPath* path, bool middle, QPointF offset = QPointF(), qreal rotation = 0.0)
@@ -321,7 +326,13 @@ namespace fhg
         
         painter->setPen(QPen(QBrush(Qt::black), 1.0));
         painter->setBackgroundMode(Qt::TransparentMode);
-        painter->drawText(transition->boundingRect(), Qt::AlignCenter, transition->title());
+        
+        QRectF boundingRect = transition->boundingRect();
+        boundingRect.setWidth(boundingRect.width() - portDefaultWidth());
+        boundingRect.setHeight(boundingRect.height() - portDefaultWidth());
+        boundingRect.translate(portDefaultWidth() / 2.0, portDefaultWidth() / 2.0);
+        
+        painter->drawText(boundingRect, Qt::AlignCenter | Qt::TextWordWrap, transition->title());
       }
     
       const qreal Style::raster()

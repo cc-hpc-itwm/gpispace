@@ -18,7 +18,7 @@ namespace fhg
       : QGraphicsItem(parent),
       _title(title),
       _dragStart(0,0),
-      _size(150, 100),
+      _size(160, 100),
       _highlighted(false),
       _dragging(false)
       {

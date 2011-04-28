@@ -29,7 +29,7 @@ namespace fhg
         explicit MainWindow(QWidget *parent = NULL);
         
         void setTransitionLibraryPath(const QString& path);
-        void addTransitionLibraryUserPath(const QString& path);
+        void addTransitionLibraryUserPath(const QString& path, bool trusted = false);
       
       private:
         QTreeView* transitionLibrary;

@@ -46,9 +46,9 @@ namespace fhg
         transitionLibrary->setColumnWidth(1, 20);
       }
 
-      void MainWindow::addTransitionLibraryUserPath(const QString& path)
+      void MainWindow::addTransitionLibraryUserPath(const QString& path, bool trusted)
       {
-        qobject_cast<TransitionLibraryModel*>(transitionLibrary->model())->addContentFromDirectory(path);
+        qobject_cast<TransitionLibraryModel*>(transitionLibrary->model())->addContentFromDirectory(path, trusted);
         transitionLibrary->expandAll();
       }
       

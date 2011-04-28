@@ -21,7 +21,7 @@ namespace fhg
       _dragStart(0.0, 0.0),
       _dragging(false),
       _highlighted(false),
-      _length(60.0)
+      _length(Style::portDefaultWidth())
       {
         setAcceptHoverEvents(true);
       }

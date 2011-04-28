@@ -36,9 +36,9 @@ namespace fhg
         _items->sortChildren();
       }
       
-      void TransitionLibraryModel::addContentFromDirectory(const QString& path)
+      void TransitionLibraryModel::addContentFromDirectory(const QString& path, bool trusted)
       {
-        readContentFromDirectoryRecursive(_items, false, path);
+        readContentFromDirectoryRecursive(_items, trusted, path);
         _items->sortChildren();
       }
       
@@ -88,10 +88,10 @@ namespace fhg
         //! \todo fix this to be working with more than one folder! (i.e. rescan all directories?)
         return;
         
-        delete _fileSystemWatcher;
+        //delete _fileSystemWatcher;
         
-        _fileSystemWatcher = new QFileSystemWatcher(QStringList(path), this);
-        connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(readContentFromDirectory(const QString&)));
+        //_fileSystemWatcher = new QFileSystemWatcher(QStringList(path), this);
+        //connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(readContentFromDirectory(const QString&)));
       }
       
       int TransitionLibraryModel::rowCount(const QModelIndex& parent) const
@@ -126,6 +126,7 @@ namespace fhg
               break;
               
             case Qt::DecorationRole:
+            //! \todo folder icon?
               if(index.column() == 1 && item->data() && item->trusted())
               {
                 return QIcon(":/lock.png");

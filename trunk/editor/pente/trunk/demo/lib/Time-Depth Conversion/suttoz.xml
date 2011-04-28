@@ -1,4 +1,4 @@
-<defun name="Time to Depth Conversion">
+<defun name="Seismic Time to Depth">
   <in name="input" type="seismic_unknown"/>
   <in name="velocity" type="velocity_time"/>
   <out name="output" type="seismic_unknown"/>
