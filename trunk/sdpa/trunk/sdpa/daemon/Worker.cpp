@@ -75,15 +75,11 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
   if (submitted().erase(job_id))
   {
     LOG(TRACE, "removed from submitted queue");
-
-    LOG(WARN, "did we send a cancel to the worker?");
   }
 
   if (acknowledged().erase(job_id))
   {
     LOG(TRACE, "removed from submitted queue");
-
-    LOG(WARN, "did we send a cancel to the worker?");
   }
 }
 
