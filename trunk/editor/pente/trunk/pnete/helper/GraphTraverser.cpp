@@ -62,6 +62,7 @@ namespace fhg
           else if(transition)
           {
             w.writeStartElement("transition");
+            w.writeAttribute("name", makeValidName(QString("transition_%1").arg((long)transition)));
             
             // write the transition with its ports
             if(transition->producedFrom().path() != QString())
