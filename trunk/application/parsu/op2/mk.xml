@@ -9,7 +9,7 @@ TYPE_OUTPUT=${6:?}
 OP=${7:?}
 SHMEM_PER_NODE=${8:?}
 GPI_MEM_PER_NODE=${9:?}
-BUILD=${10:?}
+SDPA_LIBEXEC=${10:?}
 
 `which sed`                                  \
   "s|@SHMEM_PER_NODE@|${SHMEM_PER_NODE}|     \
@@ -21,4 +21,4 @@ BUILD=${10:?}
   ;s|@TYPE1_INPUT@|${TYPE1_INPUT}|           \
   ;s|@TYPE2_INPUT@|${TYPE2_INPUT}|           \
   ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|           \
-  ;s|@BUILD@|${BUILD}|                       "
+  ;s|@SDPA_LIBEXEC@|${SDPA_LIBEXEC}|         "
