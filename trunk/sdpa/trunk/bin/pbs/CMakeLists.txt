@@ -12,5 +12,5 @@ set (prgs
 )
 
 install(PROGRAMS ${prgs}
-  DESTINATION bin/pbs
+  DESTINATION bin
   COMPONENT applications)
