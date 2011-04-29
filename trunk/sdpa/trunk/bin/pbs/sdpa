@@ -3,10 +3,55 @@
 # usage: sdpa {start|stop|status|submit file}
 #
 
-config_file=""
+# increment this value up to date if anything config related changes!
+CONFIG_VERSION=1
+
+config_file="$HOME/.sdpa/configs/sdpa.rc"
 state_dir="$HOME/.sdpa/state"
 
-function setup ()
+##############################################
+#                                            #
+#  F U N C T I O N    D E F I N I T I O N S  #
+#                                            #
+##############################################
+
+function log ()
+{
+    echo "$@" >&2
+}
+
+function get ()
+{
+    local key="$1"; shift
+    local def="$1"; shift
+
+    fhgcfg -f "$config_file" -g "$key" -v "$def"
+}
+
+function put ()
+{
+    local key="$1"; shift
+    local val="$1"; shift
+
+    fhgcfg -f "$config_file" -a "$key" -v "$val"
+}
+
+#
+# check, if we have to start the setup routine
+#
+function setup_required ()
+{
+    test -e "$config_file" || return 0
+    local cfg_version=$( get "config.version" )
+    test -n "$cfg_version" || return 0
+    if ! test "$cfg_version" == "$CONFIG_VERSION" ; then
+	log "W: config is outdated"
+	return 0
+    fi
+    return 1
+}
+
+function setup_state_dir ()
 {
     if [ ! -d "$state_dir" ] ; then
 	local msg=$( mkdir -p "$state_dir" 2>&1 )
@@ -15,14 +60,375 @@ function setup ()
 	    return 1
 	fi
     fi
-    # read config file
-    # read pids etc
     return 0
+}
+
+function setup_kvs ()
+{
+    local kvs_data_dir="$HOME/.sdpa/data"
+    if ! test -d "$kvs_data_dir" ; then
+	if ! mkdir -p "$kvs_data_dir" ; then
+	    log "E: failed to create kvs data directory: $kvs_data_dir"
+	    return 1
+	fi
+    fi
+    local kvs_store="$kvs_data_dir/kvs.dat"
+
+    put "kvs.store" "$kvs_store"
+
+    log "I: kvs configured to store data in $kvs_store"
+
+    return 0
+}
+
+function y_n_p ()
+{
+    local prompt="$1" ; shift
+    read -n 1 -p "$prompt [y/N] " yes_or_no
+    case "$yes_or_no" in
+	y|Y)
+	    echo
+	    return 0
+	    ;;
+	?)
+	    echo
+	    return 1
+	    ;;
+	*)
+	    return 1
+	    ;;
+    esac
+}
+
+function get_user_input ()
+{
+    local prompt="$1"; shift
+    local var="$1"; shift
+    local doc="$1"; shift
+    if [ -n "$doc" ] ; then
+	cat <<EOF
+$doc
+EOF
+    fi
+    read -e -p "  $prompt " new_val
+    if [ -n "$new_val" ] ; then
+	eval "$var=$new_val"
+    fi
+}
+
+function setup_scratch ()
+{
+    local doc='=====   Scratch directory  ====
+
+The "scratch"  directory should be a directory  you are allowed to  write to and
+that is shared among all nodes. I will create a "log" directory within that into
+which all components are going to log.
+'
+    local key="sdpa.scratch_dir"
+    local val=$(get "$key")
+    local prompt="scratch directory to use [$val]:"
+    get_user_input "$prompt" val "$doc"
+
+    if ! test -d "$val" ; then
+	if ! mkdir -p "$val" ; then
+	    log "E: failed to create scratch directory: $val"
+	    return 1
+	fi
+    fi
+
+    put "$key" "$val"
+}
+
+function setup_logging ()
+{
+    local doc='=====   Logging configuration  ====
+
+This "host:port" definition  defines where all the components  send log messages
+to. It should be on the same host that you run the GUI on.'
+    local key="log.server.url"
+    local val=$(get "$key" "$(hostname):$(( $(id -u) + 1024))")
+    local prompt="remote logging to (host:port) [$val]:"
+    get_user_input "$prompt" val "$doc"
+    put "$key" "$val"
+
+    local key="log.server.level"
+    local val=$(get "$key" "INFO")
+    local prompt="log level [$val]:"
+    get_user_input "log level to use [$val]:" val ""
+    val=$( echo "$val" | tr [a-z] [A-Z] )
+    put "$key" "$val"
+}
+
+function setup_temp ()
+{
+    local doc='=====   Node-local temporary directory  ====
+
+This  directory  should point  to  a  path that  is  local  to  each node,  like
+/var/tmp. It is used to create local temporary files that might be necessary for
+some components.
+'
+    local key="sdpa.temp_dir"
+    local val=$(get "$key")
+    local prompt="temporary directory to use [$val]:"
+    get_user_input "$prompt" val "$doc"
+
+    if ! test -d "$val" ; then
+	if ! mkdir -p "$val" ; then
+	    log "E: failed to create temporary directory: $val"
+	    return 1
+	fi
+    fi
+
+    put "$key" "$val"
+}
+
+function setup_gui ()
+{
+    local doc='=====   GUI configuration  ====
+
+Now I need a "host:port" string on which the graphical monitor interface will be
+running.  It  does not  have to run  all the  time, but if  you want  to monitor
+activities, I need to know that location. Please make sure that nobody else uses
+this location.
+'
+    local key="sdpa.gui"
+    local val=$(get "$key" "$(hostname):$(( $(id -u) + 1023))")
+    local prompt="location of the monitor gui (host:port) [$val]:"
+    get_user_input "$prompt" val "$doc"
+    put "$key" "$val"
+}
+
+function setup_plugins ()
+{
+    local mod_dir="$HOME/.sdpa/modules"
+    if ! test -d "$mod_dir" ; then
+	if ! mkdir -p "$mod_dir" ; then
+	    log "E: failed to create modules directory: $mod_dir"
+	    return 1
+	fi
+    fi
+
+    local plugin_dir="$HOME/.sdpa/plugins/autoload"
+    if ! test -d "$plugin_dir" ; then
+	if ! mkdir -p "$plugin_dir" ; then
+	    log "E: failed to create plugins directory: $plugin_dir"
+	    return 1
+	fi
+    fi
+
+    local prefix=$(get "sdpa.home" "$SDPA_HOME")
+    if [ -z "$prefix" ] ; then
+	mydir=$(cd $(dirname $( which $0 )) && pwd)
+	prefix=$(dirname "$mydir")
+    fi
+#    put "sdpa.home" "$prefix"
+
+    local count=0
+    # fill in some autoload plugins
+    for p in fvm-pc-compat sinc ; do
+	local plugin="$prefix/libexec/lib${p}.so"
+	if test -e "$plugin" ; then
+	    local c=$( printf "%0.2d" $count )
+	    local link="$plugin_dir/${c}${p}.so"
+	    if ln -sf "$plugin" "$link" ; then
+		log "I: autoloading plugin $p (from $plugin)"
+	    fi
+	    count=$(( count + 1 ))
+	fi
+    done
+}
+
+function parse_human_readable_size ()
+{
+    local size_value="$1"; shift
+    local var="$1"; shift
+    size_value=$( echo "$size_value" | tr [a-z] [A-Z] )
+    size_value=$( echo "$size_value" | sed -e 's/E$/*1024T/' )
+    size_value=$( echo "$size_value" | sed -e 's/T$/*1024G/' )
+    size_value=$( echo "$size_value" | sed -e 's/G$/*1024M/' )
+    size_value=$( echo "$size_value" | sed -e 's/M$/*1024K/' )
+    size_value=$( echo "$size_value" | sed -e 's/K$/*1024B/'  )
+    size_value=$( echo "$size_value" | sed -e 's/B$/*1/'  )
+
+    # compute the total and round to an integer
+    size_value=$( echo "$size_value" | bc | xargs printf "%1.0f" )
+    if [ -n "$var" ] ; then
+	eval "$var=$size_value"
+    else
+	echo "$size_value"
+    fi
+}
+
+function to_human_readable_size ()
+{
+    local size_value="$1"; shift
+    local var="$1"; shift
+
+    local new_val="1"
+    local tmp=$( echo "$size_value > 1024" | bc )
+    while test "$tmp" == "1" ; do
+	new_val="$new_val*1024"
+	size_value=$( echo "scale=2; $size_value/1024.0" | bc )
+	tmp=$( echo "$size_value > 1024" | bc )
+    done
+
+    new_val=$( echo "$new_val" | sed -e 's/*1024$/K/' )
+    new_val=$( echo "$new_val" | sed -e 's/*1024K$/M/' )
+    new_val=$( echo "$new_val" | sed -e 's/*1024M$/G/' )
+    new_val=$( echo "$new_val" | sed -e 's/*1024G$/T/' )
+    new_val=$( echo "$new_val" | sed -e 's/^1//')
+
+    new_val="${size_value}${new_val}"
+    if [ -n "$var" ] ; then
+	eval "$var=$new_val"
+    else
+	echo "$new_val"
+    fi
+}
+
+function setup_gpi ()
+{
+    local gpi_size=$(get "gpi.memory_size" "5G")
+    get_user_input "gpi memory size (per node) [$gpi_size]:" gpi_size
+    parse_human_readable_size $gpi_size gpi_size
+    if [ $gpi_size -le 0 ] ; then
+	log "E: size must be larger than 0: $gpi_size"
+	return 1
+    fi
+
+    local shm_size=$(get "api.compat.shm_size" "1G")
+    get_user_input "shm memory size (per node) [$shm_size]:" shm_size
+    parse_human_readable_size $shm_size shm_size
+    if [ $shm_size -le 0 ] ; then
+	log "E: size must be larger than 0: $shm_size"
+	return 1
+    fi
+
+    local mem_size=$(( $gpi_size + $shm_size ))
+
+    # try to get total memory size
+    local total_mem=$( grep ^MemTotal: /proc/meminfo | awk '{print $2}')
+    total_mem=$(( total_mem * 1024 ))
+    if [ $mem_size -gt $total_mem ] ; then
+	log "W: the sum of your specified memory sizes exceeds your available memory!"
+	log "-:     max available: $total_mem"
+	log "-:          gpi size: $gpi_size"
+	log "-:          shm size: $shm_size"
+	if ! y_n_p "Are you really sure to use these values?" ; then
+	    return 1
+	fi
+    fi
+
+    local gpi_api=$(get gpi.api "gpi.api.real")
+    put "gpi.api" "gpi.api.real"
+
+    put "gpi.memory_size" "$gpi_size"
+    put "api.compat.shm_size" "$shm_size"
+
+    put "gpi.timeout" "30"
+    put "gpi.socket_mode" "0700"
+    put "gpi.mtu" "default"
+    put "gpi.network_type" "default"
+    put "gpi.port" "default"
+    put "gpi.processes" "-1"
+
+    local sdpa_temp_dir=$(get "sdpa.temp_dir")
+    local gpi_socket_path="$sdpa_temp_dir/gpi-space"
+    put "gpi.socket_path" "$gpi_socket_path"
+    if ! test -d "$gpi_socket_path" ; then
+	if ! mkdir -p "$gpi_socket_path" ; then
+	    log "E: failed to create gpi socket directory: $gpi_socket_path"
+	    return 1
+	fi
+    fi
+    chmod 1777 "$gpi_socket_path"
+
+    put "gpi.socket_name" "control"
+
+    if test -L "$HOME/.sdpa/configs/gpi.rc" ; then
+	:
+    elif test -f "$HOME/.sdpa/configs/gpi.rc" ; then
+	mv "$HOME/.sdpa/configs/gpi.rc" "$HOME/.sdpa/configs/gpi.rc.bak"
+	log "I: created a backup of your old gpi.rc"
+    fi
+    ln -sf "$config_file" "$HOME/.sdpa/configs/gpi.rc"
+}
+
+function setup_client ()
+{
+    if ! test -e "$HOME/.sdpa/configs/sdpac.rc" ; then
+	sdpac --make-config
+    fi
+}
+
+function setup ()
+{
+    if test -f "$config_file" ; then
+	cp "$config_file" "$config_file.bak"
+    fi
+
+    local parts=$1
+    if [ -z "$parts" ] ; then
+	parts="state_dir kvs scratch logging temp gui plugins gpi client"
+    else
+	shift
+    fi
+
+    local p
+    for p in $parts ; do
+	log "-: setting up $p"
+	setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
+	echo
+    done
+
+    put "config.version" "$CONFIG_VERSION"
+    put "config.modified" "$(date)"
+}
+
+function generate_environment ()
+{
+    # read variables from config and write them to an environment file
+    #     replacing init-screen.env in principle
+
+    fhgcfg -f "$config_file" -l | while read key dummy val ; do
+	case "$key" in
+	    log.server.level)
+		echo export FHGLOG_level="$val"
+		;;
+	    log.server.url)
+		echo export FHGLOG_to_server="$val"
+		;;
+	    kvs.store)
+		echo export KVS_STORE="$val"
+		;;
+	    sdpa.gui)
+		echo export SDPA_GUI="$val"
+		;;
+	    sdpa.scratch_dir)
+		echo export SDPA_SCRATCH_DIR="$val"
+		;;
+	    sdpa.temp_dir)
+		echo export SDPA_TEMP_DIR="$val"
+		;;
+	    sdpa.log_dir)
+		echo export SDPA_LOG_DIR="$val"
+		;;
+	    *)
+		;;
+	esac
+    done
+    if ! grep -q "$HOME/.sdpa/modules" <<<"$PC_LIBRARY_PATH" ; then
+	echo export PC_LIBRARY_PATH="$HOME/.sdpa/modules:$PC_LIBRARY_PATH"
+    fi
+    if ! grep -q "$HOME/.sdpa/modules" <<<"$LD_LIBRARY_PATH" ; then
+	echo export LD_LIBRARY_PATH="$HOME/.sdpa/modules:$LD_LIBRARY_PATH"
+    fi
 }
 
 function configure ()
 {
-    return 0
+    generate_environment > "$HOME/.sdpa.env"
+    source $HOME/.sdpa.env
 }
 
 function cleanup ()
@@ -545,7 +951,24 @@ function submit ()
     fi
 }
 
-if ! setup ; then
+##########################################################
+#                                                        #
+#          S C R I P T     B E H A V I O R               #
+#                                                        #
+##########################################################
+
+
+if setup_required ; then
+    if setup ; then
+	log "I: setup complete"
+    else
+	rc=$?
+	log E: setup was unsuccessful: $rc
+	exit $rc
+    fi
+fi
+
+if ! configure ; then
     exit $?
 fi
 
@@ -581,6 +1004,10 @@ case "$1" in
     submit)
 	shift
 	submit $@
+	;;
+    setup)
+	shift
+	setup $@
 	;;
     help)
 	help
