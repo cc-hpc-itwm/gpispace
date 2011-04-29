@@ -455,14 +455,6 @@ used on each node.
     chmod 1777 "$gpi_socket_path"
 
     put "gpi.socket_name" "control"
-
-    if test -L "$HOME/.sdpa/configs/gpi.rc" ; then
-	:
-    elif test -f "$HOME/.sdpa/configs/gpi.rc" ; then
-	mv "$HOME/.sdpa/configs/gpi.rc" "$HOME/.sdpa/configs/gpi.rc.bak"
-	log "I: created a backup of your old gpi.rc"
-    fi
-    ln -sf "$config_file" "$HOME/.sdpa/configs/gpi.rc"
 }
 
 function setup_client ()
@@ -519,6 +511,14 @@ EOF
     # putting config in place
     config_file="$real_config_file"
     eval $old_trap
+
+    if test -L "$HOME/.sdpa/configs/gpi.rc" ; then
+	:
+    elif test -f "$HOME/.sdpa/configs/gpi.rc" ; then
+	mv "$HOME/.sdpa/configs/gpi.rc" "$HOME/.sdpa/configs/gpi.rc.bak"
+	log "I: created a backup of your old gpi.rc"
+    fi
+    ln -sf "$config_file" "$HOME/.sdpa/configs/gpi.rc"
 
     echo
     log "I: setup complete."
@@ -577,6 +577,9 @@ function generate_environment ()
 		echo export SDPA_HOME="$sdpa_home"
 		echo export SDPA_LIBEXEC="$sdpa_home/libexec"
 
+		prepend_to_path PATH "$SDPA_HOME/bin"
+		prepend_to_path PATH "$SDPA_HOME/bin/pbs"
+		prepend_to_path PATH "$SDPA_HOME/bin/parsu"
 		prepend_to_path LD_LIBRARY_PATH "$sdpa_home/lib"
 		prepend_to_path LD_LIBRARY_PATH "$sdpa_home/libexec"
 		prepend_to_path PC_LIBRARY_PATH "$sdpa_home/libexec"
@@ -592,6 +595,7 @@ function generate_environment ()
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
     echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH"
+    echo export PATH="$PATH"
 }
 
 function dump_config ()
@@ -1129,6 +1133,33 @@ function status ()
     return $rc
 }
 
+function cancel ()
+{
+    local jobs="$@"
+    if [ -z "$jobs" ] ; then
+	if test -e "$state_dir/current_job" ; then
+	    jobs=$(cat "$state_dir/current_job")
+	fi
+    fi
+
+    if [ -z "$jobs" ] ; then
+	log "E: nothing to cancel"
+	return 1
+    fi
+
+    for job in $jobs ; do
+	echo -n "cancelling $job"
+	sdpac cancel $job
+	local err=$(sdpac cancel "$job" 2>&1)
+	local ec=$?
+	if [ $ec -ne 0 ] ; then
+	    echo " failed: $ec: $err"
+	else
+	    echo " ok"
+	fi
+    done
+}
+
 function submit ()
 {
     # check system health
@@ -1300,6 +1331,10 @@ case "$1" in
 	else
 	    cleanup
 	fi
+	;;
+    cancel)
+	shift
+	cancel $@
 	;;
     submit)
 	shift
