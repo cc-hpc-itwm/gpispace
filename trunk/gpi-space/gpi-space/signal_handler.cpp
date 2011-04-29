@@ -197,8 +197,8 @@ namespace gpi
         siginfo_t sig_info;
 
         struct timespec timeout;
-        timeout.tv_sec = 1;
-        timeout.tv_nsec = 500 * 1000 * 1000;
+        timeout.tv_sec = 0;
+        timeout.tv_nsec = 100 * 1000 * 1000;
 
         int ec = sigtimedwait (&restrict, &sig_info, &timeout);
         //int ec = sigwaitinfo (&restrict,&sig_info);
