@@ -2,10 +2,16 @@ include(${QT_USE_FILE})
 
 set(helper_SRCS
   XMLQuery.cpp
+  GraphTraverser.cpp
+  DataGraphConversion.cpp
+  TraverserReceiver.cpp
 )
 
 set(helper_HDRS
   XMLQuery.hpp
+  GraphTraverser.hpp
+  DataGraphConversion.hpp
+  TraverserReceiver.hpp
 )
 
 #for moced files to get their includes.

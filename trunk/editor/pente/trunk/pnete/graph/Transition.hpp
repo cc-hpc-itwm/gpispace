@@ -14,6 +14,7 @@ class QGraphicsSceneContextMenuEvent;
 class QWidget;
 class QAction;
 
+#include "data/Transition.hpp"
 #include "ItemTypes.hpp"
 
 namespace fhg
@@ -28,7 +29,7 @@ namespace fhg
         Q_INTERFACES(QGraphicsItem)
         
         public:
-          Transition(const QString& title, QGraphicsItem* parent = NULL);
+          explicit Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent = NULL);
           
           virtual QRectF boundingRect() const;
           virtual QPainterPath shape() const;
@@ -37,6 +38,8 @@ namespace fhg
           bool highlighted() const;
           
           void repositionChildrenAndResize();
+          
+          const data::Transition& producedFrom() const;
           
           enum 
           {
@@ -69,6 +72,8 @@ namespace fhg
           
           bool _highlighted;
           bool _dragging;
+          
+          data::Transition _producedFrom;
       };
     }
   }

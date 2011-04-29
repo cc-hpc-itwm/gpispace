@@ -3,11 +3,13 @@ include(${QT_USE_FILE})
 set(data_SRCS
   Transition.cpp
   Port.cpp
+  Connection.cpp
 )
 
 set(data_HDRS
   Transition.hpp
   Port.hpp
+  Connection.hpp
 )
 
 set(data_UIS

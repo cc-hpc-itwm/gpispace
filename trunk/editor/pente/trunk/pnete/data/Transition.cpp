@@ -3,6 +3,8 @@
 #include "helper/XMLQuery.hpp"
 
 #include <QStringList>
+#include <QDataStream>
+#include <QXmlStreamWriter>
 
 namespace fhg
 {
@@ -11,6 +13,7 @@ namespace fhg
     namespace data
     {      
       Transition::Transition(const QString& path)
+      : _path(path)
       {
         _name = path.mid(path.lastIndexOf("/") + 1).remove(".xml");
         
@@ -36,8 +39,9 @@ namespace fhg
         }
       }
       
-      Transition::Transition(const QString& name, const QList<Port>& inPorts, const QList<Port>& outPorts)
-      : _name(name),
+      Transition::Transition(const QString& name, const QList<Port>& inPorts, const QList<Port>& outPorts, const QString& path)
+      : _path(path),
+      _name(name),
       _inPorts(inPorts),
       _outPorts(outPorts)
       {
@@ -53,6 +57,11 @@ namespace fhg
         return _name;
       }
       
+      const QString& Transition::path() const
+      {
+        return _path;
+      }
+      
       const QList<Port>& Transition::inPorts() const
       {
         return _inPorts;
@@ -63,17 +72,21 @@ namespace fhg
         return _outPorts;
       }
       
+      void Transition::toXML(QXmlStreamWriter& w, const QString& transname) const
+      {
+      }
+      
       QDataStream& operator<<(QDataStream& stream, const Transition& trans)
       {
-        stream << trans.name() << trans.inPorts() << trans.outPorts();
+        stream << trans.path() << trans.name() << trans.inPorts() << trans.outPorts();
         return stream;
       }
       QDataStream& operator>>(QDataStream& stream, Transition& trans)
       {
-        QString name;
+        QString name, path;
         QList<Port> inPorts, outPorts;
-        stream >> name >> inPorts >> outPorts;
-        trans = Transition(name, inPorts, outPorts);
+        stream >> path >> name >> inPorts >> outPorts;
+        trans = Transition(name, inPorts, outPorts, path);
         return stream;
       }
     }

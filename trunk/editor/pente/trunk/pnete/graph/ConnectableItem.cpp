@@ -69,6 +69,11 @@ namespace fhg
       {
         _orientation = orientation;
       }
+      
+      const Connection* ConnectableItem::connection() const
+      {
+        return _connection;
+      }
     }
   }
 }

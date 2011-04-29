@@ -48,6 +48,8 @@ namespace fhg
           
           bool createPendingConnectionIfPossible();
           
+          const Connection* connection() const;
+          
         protected:
           Connection* _connection;
           

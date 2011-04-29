@@ -55,7 +55,7 @@ namespace fhg
         QDataStream stream(byteArray);
         stream >> transitionData;
         
-        graph::Transition* transition = new graph::Transition(transitionData.name());
+        graph::Transition* transition = new graph::Transition(transitionData.name(), transitionData);
         foreach(data::Port port, transitionData.inPorts())
         {
           new graph::Port(transition, graph::Port::IN, port.name(), port.type());

@@ -14,13 +14,14 @@ namespace fhg
   {
     namespace graph
     {
-      Transition::Transition(const QString& title, QGraphicsItem* parent)
+      Transition::Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent)
       : QGraphicsItem(parent),
       _title(title),
       _dragStart(0,0),
       _size(160, 100),
       _highlighted(false),
-      _dragging(false)
+      _dragging(false),
+      _producedFrom(producedFrom)
       {
         setAcceptHoverEvents(true);
       }
@@ -158,6 +159,11 @@ namespace fhg
         positionAny -= 10.0;
         
         _size = QSizeF(std::max(_size.width(), positionAny), std::max(_size.height(), std::max(positionOut, positionIn)));
+      }
+      
+      const data::Transition& Transition::producedFrom() const
+      {
+        return _producedFrom;
       }
     }
   }

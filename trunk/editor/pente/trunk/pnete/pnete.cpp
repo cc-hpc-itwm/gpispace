@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
   a.processEvents();
 
   QTranslator translator;
-  //! \todo embed?
   translator.load("german", ":/localization/");
-
+  a.installTranslator(&translator);
+  
   QSettings settings;
 
   settings.beginGroup("transitionLibrary");

@@ -12,7 +12,7 @@ namespace fhg
       class Port
       {
         public:
-          Port(const QString& name = "__DUMMY__", const QString& type = "__DUMMY__");
+          Port(const QString& name = QString(), const QString& type = QString());
           
           const QString& name() const;
           const QString& type() const;

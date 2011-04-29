@@ -17,6 +17,10 @@ namespace fhg
 {
   namespace pnete
   {
+    namespace graph
+    {
+      class Scene;
+    }
     namespace ui
     {
       class GraphView;
@@ -30,10 +34,15 @@ namespace fhg
         
         void setTransitionLibraryPath(const QString& path);
         void addTransitionLibraryUserPath(const QString& path, bool trusted = false);
+        
+      public slots:
+        void save();
       
       private:
-        QTreeView* transitionLibrary;
-        GraphView* graphicsView;
+        QTreeView* _transitionLibrary;
+        GraphView* _graphicsView;
+        
+        graph::Scene* _scene;
         
         void setupMenuAndToolbar();
         //! \todo This should be a complete class producing views for the same scene?

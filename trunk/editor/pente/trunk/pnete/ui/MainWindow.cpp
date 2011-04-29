@@ -20,6 +20,8 @@
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
 #include "graph/Scene.hpp"
+#include "helper/GraphTraverser.hpp"
+#include "helper/TraverserReceiver.hpp"
 
 namespace fhg
 {
@@ -29,8 +31,9 @@ namespace fhg
     {
       MainWindow::MainWindow(QWidget* parent)
       : QMainWindow(parent),
-      transitionLibrary(NULL),
-      graphicsView(NULL)
+      _transitionLibrary(NULL),
+      _graphicsView(NULL),
+      _scene(NULL)
       {
         setupCentralWidget();
         setupMenuAndToolbar();
@@ -40,16 +43,16 @@ namespace fhg
       void MainWindow::setTransitionLibraryPath(const QString& path)
       {
         TransitionLibraryModel* fsmodel = new TransitionLibraryModel(QDir(path), this);
-        transitionLibrary->setModel(fsmodel);
-        transitionLibrary->expandAll();
-        transitionLibrary->setColumnWidth(0, 230);
-        transitionLibrary->setColumnWidth(1, 20);
+        _transitionLibrary->setModel(fsmodel);
+        _transitionLibrary->expandAll();
+        _transitionLibrary->setColumnWidth(0, 230);
+        _transitionLibrary->setColumnWidth(1, 20);
       }
 
       void MainWindow::addTransitionLibraryUserPath(const QString& path, bool trusted)
       {
-        qobject_cast<TransitionLibraryModel*>(transitionLibrary->model())->addContentFromDirectory(path, trusted);
-        transitionLibrary->expandAll();
+        qobject_cast<TransitionLibraryModel*>(_transitionLibrary->model())->addContentFromDirectory(path, trusted);
+        _transitionLibrary->expandAll();
       }
       
       void MainWindow::setupMenuAndToolbar()
@@ -58,12 +61,13 @@ namespace fhg
         resize(800, 600);
        
         //! \todo icons for toolbar.
-        QAction* saveDummyAction = new QAction(tr("Save"), this);
-        saveDummyAction->setShortcuts(QKeySequence::Save);
-        QAction* closeDummyAction = new QAction(tr("Close"), this);
-        closeDummyAction->setShortcuts(QKeySequence::Close);
+        QAction* saveAction = new QAction(tr("Save"), this);
+        saveAction->setShortcuts(QKeySequence::Save);
+        QAction* closeAction = new QAction(tr("Close"), this);
+        closeAction->setShortcuts(QKeySequence::Close);
         
-        connect(closeDummyAction, SIGNAL(triggered()), this, SLOT(close()));
+        connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
+        connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
         
         //! \todo Do not make this a child of MainWindow on OSX for being global across windows.
         QMenuBar* menuBar = new QMenuBar(this);
@@ -73,8 +77,8 @@ namespace fhg
         QMenu* menuFile = new QMenu(tr("File"), menuBar);
         
         menuBar->addAction(menuFile->menuAction());
-        menuFile->addAction(saveDummyAction);
-        menuFile->addAction(closeDummyAction);
+        menuFile->addAction(saveAction);
+        menuFile->addAction(closeAction);
         
         setMenuBar(menuBar);
         
@@ -82,7 +86,7 @@ namespace fhg
         addToolBar(Qt::TopToolBarArea, mainToolBar);
         setUnifiedTitleAndToolBarOnMac(true);
         
-        mainToolBar->addAction(saveDummyAction);
+        mainToolBar->addAction(saveAction);
         
         QWidget* spacer = new QWidget(this);
         spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -102,9 +106,9 @@ namespace fhg
         
         connect(zoomSlider, SIGNAL(valueChanged(int)), zoomSpinBox, SLOT(setValue(int)));
         connect(zoomSpinBox, SIGNAL(valueChanged(int)), zoomSlider, SLOT(setValue(int)));
-        connect(zoomSpinBox, SIGNAL(valueChanged(int)), graphicsView, SLOT(zoom(int)));
-        connect(graphicsView, SIGNAL(zoomed(int)), zoomSpinBox, SLOT(setValue(int)));
-        connect(graphicsView, SIGNAL(zoomed(int)), zoomSlider, SLOT(setValue(int)));
+        connect(zoomSpinBox, SIGNAL(valueChanged(int)), _graphicsView, SLOT(zoom(int)));
+        connect(_graphicsView, SIGNAL(zoomed(int)), zoomSpinBox, SLOT(setValue(int)));
+        connect(_graphicsView, SIGNAL(zoomed(int)), zoomSlider, SLOT(setValue(int)));
         
         zoomSlider->setValue(100);
       }
@@ -116,9 +120,10 @@ namespace fhg
         QGridLayout* centralLayout = new QGridLayout(centralWidget);
         centralLayout->setContentsMargins(2, 2, 2, 2);
         
-        graphicsView = new GraphView(new graph::Scene(QRectF(-500.0, -500.0, 1000.0, 1000.0), this), centralWidget);
+        _scene = new graph::Scene(QRectF(-500.0, -500.0, 1000.0, 1000.0), this);
+        _graphicsView = new GraphView(_scene, centralWidget);
         
-        centralLayout->addWidget(graphicsView);
+        centralLayout->addWidget(_graphicsView);
         
         setCentralWidget(centralWidget);
       }
@@ -134,18 +139,28 @@ namespace fhg
         QGridLayout* transitionLibraryDockWidgetLayout = new QGridLayout(transitionLibraryDockWidgetContents);
         transitionLibraryDockWidgetLayout->setContentsMargins(2, 2, 2, 2);
         
-        transitionLibrary = new QTreeView(transitionLibraryDockWidgetContents);
-        transitionLibrary->setFrameShape(QFrame::StyledPanel);
-        transitionLibrary->setFrameShadow(QFrame::Sunken);
-        transitionLibrary->setDragDropMode(QAbstractItemView::DragOnly);
-        transitionLibrary->header()->setVisible(true);
+        _transitionLibrary = new QTreeView(transitionLibraryDockWidgetContents);
+        _transitionLibrary->setFrameShape(QFrame::StyledPanel);
+        _transitionLibrary->setFrameShadow(QFrame::Sunken);
+        _transitionLibrary->setDragDropMode(QAbstractItemView::DragOnly);
+        _transitionLibrary->header()->setVisible(true);
         //! \todo Not resizable?
-        transitionLibrary->header()->setCascadingSectionResizes(true);
+        _transitionLibrary->header()->setCascadingSectionResizes(true);
         
-        transitionLibraryDockWidgetLayout->addWidget(transitionLibrary);
+        transitionLibraryDockWidgetLayout->addWidget(_transitionLibrary);
         transitionLibraryDockWidget->setWidget(transitionLibraryDockWidgetContents);
         
         addDockWidget(Qt::RightDockWidgetArea, transitionLibraryDockWidget);
+      }
+      
+      void MainWindow::save()
+      {
+        if(_scene)
+        {
+          helper::GraphTraverser traverser(_scene);
+          helper::TraverserReceiver receiver;
+          traverser.traverse(&receiver);
+        }
       }
     }
   }

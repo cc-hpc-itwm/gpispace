@@ -3,7 +3,11 @@
 
 #include <QString>
 #include <QList>
-#include <QDataStream>
+
+class QDataStream;
+class QXmlStreamWriter;
+
+#include "Port.hpp"
 
 namespace fhg
 {
@@ -11,19 +15,22 @@ namespace fhg
   {
     namespace data
     {
-      class Port;
       class Transition
       {
         public:
           Transition();
           Transition(const QString& path);
-          Transition(const QString& name, const QList<Port>& inPorts, const QList<Port>& outPorts);
+          Transition(const QString& name, const QList<Port>& inPorts, const QList<Port>& outPorts, const QString& path = QString());
           
           const QString& name() const;
           const QList<Port>& inPorts() const;
           const QList<Port>& outPorts() const;
+          const QString& path() const;
+          
+          void toXML(QXmlStreamWriter& streamWriter, const QString& transname = QString()) const;
           
         private:
+          QString _path;
           QString _name;
           QList<Port> _inPorts;
           QList<Port> _outPorts;
