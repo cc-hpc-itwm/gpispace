@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD=${1:?}; shift
+SDPA_LIBEXEC=${1:?}; shift
 
 `which sed`                                   \
-  "s|@BUILD@|${BUILD}|g                       "
+  "s|@SDPA_LIBEXEC@|${SDPA_LIBEXEC}|g         "

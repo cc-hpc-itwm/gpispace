@@ -12,8 +12,6 @@ SET(SRCS3 ${SRCS} mcbeispiel.cpp )
 
 include_directories(.)
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/pnet/make.defs.in ${CMAKE_CURRENT_SOURCE_DIR}/pnet/make.defs @ONLY)
-
 add_executable(Asian ${SRCS3})
 
 ADD_LIBRARY(asian_x86 STATIC ${SRCS2})

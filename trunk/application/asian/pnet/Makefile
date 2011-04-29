@@ -1,10 +1,13 @@
-include make.defs
 
 MAIN = asian
 
-PATH_MAIN  = $(TRUNK)/application/asian/pnet
-#UTIL = $(PATH_MAIN)/util
-#SEISLIB = $(PATH_MAIN)/seislib
+SDPA_INCLUDE = $(SDPA_HOME)/include
+SDPA_LIBEXEC = $(SDPA_HOME)/libexec
+SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
+
+LIB_DESTDIR = $(HOME)/.sdpa/modules/
+
+PATH_MAIN = $(CURDIR)
 
 TEE      = /usr/bin/tee
 DOT      = /usr/bin/dot -Tps -Grankdir=LR
@@ -34,14 +37,14 @@ GEN = gen
 OUT = $(MAIN).out
 PS  = $(MAIN).ps
 
-PATH_LIB = $(PATH_MAIN)/$(GEN)/pnetc/op
+PATH_LIB = $(GEN)/pnetc/op
 
 LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
 %.xml: %.xml.in $(filter-out %.xml,$(DEP))
-	$(CAT) $< | $(MK_XML) "$(BUILD)" > $@
+	$(CAT) $< | $(MK_XML) "$(SDPA_LIBEXEC)" > $@
 
 ###############################################################################
 
@@ -66,31 +69,19 @@ PNETC_LIB += $(TRUNK)/application/lib
 
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 
-LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
-
 ###############################################################################
 
-# CXXINCLUDEPATHS += $(TRUNK)/fvm-pc/trunk
-CXXINCLUDEPATHS += $(TRUNK)/fhglog/trunk
-CXXINCLUDEPATHS += $(TRUNK)/application/example/exec
-CXXINCLUDEPATHS += $(BUILD)/fhglog
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)/process
 CXXINCLUDEPATHS += $(PATH_MAIN)
 
-# determine_size, do_load, do_write
-# CXXINCLUDEPATHS += $(TRUNK)/application/kdm/src
-
-# CXXINCLUDEPATHS += $(UTIL)
-# CXXINCLUDEPATHS += $(SEISLIB)
-
 ###############################################################################
 
-PNETC    = $(BUILD)/xml/xml/parse/pnetc
-WE_EXEC  = LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH}
+PNETC    = $(SDPA_HOME)/bin/pnetc
+WE_EXEC  = LD_LIBRARY_PATH=$(SDPA_LIBEXEC):${LD_LIBRARY_PATH}
 WE_EXEC += FHGLOG_level=MIN
-# WE_EXEC += FVM_PC_SHMSZ=`echo "$(SHMEM_PER_NODE)" | bc`
-# WE_EXEC += FVM_PC_FVMSZ=`echo "$(GPI_MEM_PER_NODE)" | bc`
-WE_EXEC += $(BUILD)/we/apps/we-exec --w 1
-PNET2DOT = $(BUILD)/we/apps/pnet2dot
+WE_EXEC += $(SDPA_HOME)/bin/we-exec --w 1
+PNET2DOT = $(SDPA_HOME)/bin/pnet2dot
 
 ###############################################################################
 

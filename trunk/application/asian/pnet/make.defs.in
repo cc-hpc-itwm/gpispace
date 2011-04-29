@@ -1,4 +1,0 @@
-TRUNK       = @CMAKE_SOURCE_DIR@/../../
-DESTDIR     = $(SDPA_LIBEXEC)/
-LIB_DESTDIR = $(HOME)/.sdpa/modules/
-BUILD       = @CMAKE_BINARY_DIR@/
