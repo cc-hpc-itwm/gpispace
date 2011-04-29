@@ -76,10 +76,10 @@ namespace sdpa { namespace nre { namespace worker {
       , my_reply_port_(0)
       , service_thread_(NULL)
       , socket_(NULL)
-      , timer_timeout_(5)
+      , timer_timeout_(3)
       , timer_active_(false)
       , timer_(io_service_)
-      , ping_interval_(10) // 10 seconds
+      , ping_interval_(1) // 1 seconds
       , ping_interval_timer_(io_service_)
       , not_responded_to_ping_(0)
       , ping_trials_(3)

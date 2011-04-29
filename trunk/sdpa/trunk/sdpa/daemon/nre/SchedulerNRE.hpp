@@ -41,7 +41,7 @@ namespace sdpa {
         , SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
         , m_worker_(workerUrl, bLaunchNrePcd, fvmPCBinary, fvmPCSearchPath, fvmPCPreLoad)
       {
-        m_worker_.set_ping_interval(60);
+        m_worker_.set_ping_interval(1);
         m_worker_.set_ping_timeout(3);
         m_worker_.set_ping_trials(3);
       }
