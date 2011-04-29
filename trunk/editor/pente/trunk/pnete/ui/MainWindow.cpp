@@ -103,6 +103,8 @@ namespace fhg
         connect(zoomSlider, SIGNAL(valueChanged(int)), zoomSpinBox, SLOT(setValue(int)));
         connect(zoomSpinBox, SIGNAL(valueChanged(int)), zoomSlider, SLOT(setValue(int)));
         connect(zoomSpinBox, SIGNAL(valueChanged(int)), graphicsView, SLOT(zoom(int)));
+        connect(graphicsView, SIGNAL(zoomed(int)), zoomSpinBox, SLOT(setValue(int)));
+        connect(graphicsView, SIGNAL(zoomed(int)), zoomSlider, SLOT(setValue(int)));
         
         zoomSlider->setValue(100);
       }

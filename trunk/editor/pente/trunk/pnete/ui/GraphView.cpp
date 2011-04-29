@@ -11,6 +11,7 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QPainter>
+#include <QWheelEvent>
 
 namespace fhg
 {
@@ -20,7 +21,7 @@ namespace fhg
     {
       GraphView::GraphView(QGraphicsScene* scene, QWidget* parent)
       : QGraphicsView(scene, parent),
-      currentScale(1.0)
+      _currentScale(1.0)
       {
         setDragMode(QGraphicsView::ScrollHandDrag);
         setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
@@ -80,12 +81,32 @@ namespace fhg
         }
       }
       
+      void GraphView::wheelEvent(QWheelEvent* event)
+      {
+        if(event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical)
+        {
+          //! \note magic number taken from QWheelEvent::delta() documentation.
+          //! \note for the love of god, don't remove the +0.005.
+          int current = static_cast<int>((_currentScale + 0.005) * 100.0);
+          int plus = event->delta() > 0 ? 5 : -5;
+          //! \todo max and min zoom level from somewhere, not hardcoded?
+          int to = std::max(10, std::min(300, current + plus));
+          zoom(to);
+        }
+        else
+        {
+          QGraphicsView::wheelEvent(event);
+        }
+      }
+      
       void GraphView::zoom(int to)
       {
         qreal target = (to / 100.0);
-        qreal factor = target / currentScale;
+        qreal factor = target / _currentScale;
         scale(factor, factor);
-        currentScale = target;
+        _currentScale = target;
+        
+        emit zoomed(to);
       }
     }
   }

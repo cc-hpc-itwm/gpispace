@@ -8,7 +8,6 @@
 #include <QMimeData>
 #include <QDir>
 #include <QFileSystemWatcher>
-#include <QDirIterator>
 #include <QIcon>
 #include <QCoreApplication>
 
@@ -48,7 +47,7 @@ namespace fhg
         
         QDir directory(path);
         
-        foreach(QFileInfo fileInfo, dir.entryInfoList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot))
+        foreach(QFileInfo fileInfo, directory.entryInfoList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot))
         {
           const QString newName = fileInfo.fileName();
           
@@ -69,7 +68,7 @@ namespace fhg
           readContentFromDirectoryRecursive(newRoot, trusted, fileInfo.absoluteFilePath());
         }
         
-        foreach(QFileInfo fileInfo, dir.entryInfoList(QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot))
+        foreach(QFileInfo fileInfo, directory.entryInfoList(QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot))
         {
           data::Transition* transition = new data::Transition(fileInfo.absoluteFilePath());
           currentRoot->appendChild(new TransitionLibraryItem(transition, trusted, currentRoot));

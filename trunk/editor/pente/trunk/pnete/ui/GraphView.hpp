@@ -9,6 +9,7 @@ class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
 class QGraphicsScene;
+class QWheelEvent;
 
 namespace fhg
 {
@@ -26,13 +27,17 @@ namespace fhg
         public slots:
           void zoom(int to);
           
+        signals:
+          void zoomed(int to);
+          
         protected:
           virtual void dragEnterEvent(QDragEnterEvent* event);
           virtual void dragMoveEvent(QDragMoveEvent* event);
           virtual void dropEvent(QDropEvent* event);
+          virtual void wheelEvent(QWheelEvent* event);
           
         private:
-          qreal currentScale;
+          qreal _currentScale;
       };
     }
   }
