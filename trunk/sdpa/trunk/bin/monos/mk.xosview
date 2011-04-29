@@ -1,0 +1,9 @@
+
+cat $PBS_NODEFILE | \
+         sort -u  | \
+         perl -e 'while (<>) { print $c++, " ", $_}' | \
+         while read line; do
+           echo "sh un.xosview $line"
+         done > sc.xosview
+
+sh sc.xosview

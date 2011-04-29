@@ -1,0 +1,31 @@
+id=${1:?}; shift
+host=${1:?}; shift
+
+
+width=116
+height=94
+width_border=12
+height_border=34
+height_panel=26
+
+screen_width=1664
+screen_height=1050
+
+col=$((((id * (width + width_border))) % screen_width))
+row=$((((id * (width + width_border))) / screen_width))
+
+echo xosview -page \
+             -int  \
+             -disk \
+             -load \
+             -swap \
+             -labels \
+             -title $host \
+             -net \
+             -geometry ${width}x${height}+${col}+$((height_panel + row * (height + height_border))) \
+           | ssh $host &
+
+echo $$
+
+sleep 2
+
