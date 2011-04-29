@@ -28,9 +28,9 @@ fi
 shmem_per_node_default=$((2**28))
 gpi_mem_per_node_default=$((2**30))
 
-if [ $# -lt 5 ]; then
-  echo "usage: $0 input-file input-type output-file output-type [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
-  exit 1
+if [ $# -lt 6 ]; then
+    echo "usage: $0 input-file-A input-type-A input-file-B input-type-B output-file output-type [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
+    exit 1
 fi
 
 in1f=${1}
@@ -39,6 +39,7 @@ in2f=${3}
 in2t=${4}
 outf=${5}
 outt=${6}
+
 shmem_per_node=${7:-${shmem_per_node_default}}
 gpi_mem_per_node=${8:-${gpi_mem_per_node_default}}
 
