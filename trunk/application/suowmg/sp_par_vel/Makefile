@@ -52,11 +52,11 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
-FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
+FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
+#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
 TYPE_INPUT       = su
-#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
-FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
+FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
+#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
 SHMEM_PER_NODE   = 6  * 1824 +     167233040 + 141120000
 GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640 + 2631317001 + 1261680
@@ -126,8 +126,8 @@ NOINLINE_NOT_ENDS_WITH += load
 
 NOINLINE_NOT_STARTS_WITH += dup
 NOINLINE_NOT_STARTS_WITH += scatter
-NOINLINE_NOT_STARTS_WITH += generate_interval
-NOINLINE_NOT_STARTS_WITH += generate_package
+#NOINLINE_NOT_STARTS_WITH += generate_interval
+#NOINLINE_NOT_STARTS_WITH += generate_package
 NOINLINE_NOT_STARTS_WITH += generate_output_slot
 NOINLINE_NOT_STARTS_WITH += wait
 NOINLINE_NOT_STARTS_WITH += eat
@@ -138,7 +138,9 @@ NOINLINE_NOT_STARTS_WITH += finish_output
 NOINLINE_NOT_STARTS_WITH += run
 NOINLINE_NOT_STARTS_WITH += give_back_interval
 NOINLINE_NOT_STARTS_WITH += write
-NOINLINE_NOT_STARTS_WITH += generate
+#NOINLINE_NOT_STARTS_WITH += generate
+NOINLINE_NOT_STARTS_WITH += load_vp
+
 
 NET_NOINLINE = $(MAIN).noinline.pnet
 PS_NOINLINE = $(MAIN).noinline.ps
