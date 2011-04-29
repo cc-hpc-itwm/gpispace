@@ -41,7 +41,7 @@ function put ()
 #
 function setup_required ()
 {
-    test -e "$config_file" || return 0
+    test -e "$config_file" || { touch "$config_file"; return 0; }
     local cfg_version=$( get "config.version" )
     test -n "$cfg_version" || return 0
     if ! test "$cfg_version" == "$CONFIG_VERSION" ; then
