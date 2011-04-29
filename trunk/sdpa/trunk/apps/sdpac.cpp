@@ -322,6 +322,7 @@ int main (int argc, char **argv) {
       return 0;
     }
 
+    try
     {
       // initialize the KVS
 
@@ -342,6 +343,11 @@ int main (int argc, char **argv) {
                                                   , 1
                                                   );
       }
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "E: could not connect to KVS: " << ex.what() << std::endl;
+      return EXIT_FAILURE;
     }
 
     if (! cfg.is_set("command"))
