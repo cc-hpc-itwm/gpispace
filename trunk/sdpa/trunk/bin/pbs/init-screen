@@ -21,6 +21,12 @@ gui_url="$SDPA_GUI"
 gpi_priv_dir="$GPI_PRIV_DIR"
 screen_name="$SCREEN_SOCKET"
 
+prefix="$SDPA_HOME"
+if [ -z "$prefix" ] ; then
+    mydir=$(cd $(dirname $( which $0 )) && pwd)
+    prefix=$(dirname "$mydir")
+fi
+
 function usage ()
 {
 	cat >&2 <<EOF
@@ -283,11 +289,11 @@ function sanity_check_directories ()
     fi
 
     if [ ! -d "$log_dir" ] ; then
-	mkdir -p "$log_dir"
+	mkdir -p "$log_dir" || { log "E: could not create log directory: $log_dir" >&2 ; return 1; }
     fi
 
     if [ ! -d "$HOME/.sdpa/modules" ] ; then
-	mkdir -p "$HOME/.sdpa/modules"
+	mkdir -p "$HOME/.sdpa/modules" || { log "E: could not create $HOME/.sdpa/modules" >&2 ; return 1; }
     fi
     return 0
 }
@@ -303,13 +309,13 @@ if [ x"$init_screen_ver" != x"$INIT_SCREEN_VER" ] ; then
 fi
 
 # check GPI config
-if [ ! -e "$HOME/.sdpa/configs/sdpa-gpi.cfg" ] ; then
-    log "E: $HOME/.sdpa/configs/sdpa-gpi.cfg does not exist!"
-    log "I:    please copy it from $SDPA_HOME/etc/gpi/sdpa-gpi.cfg.tpl"
+if [ ! -e "$HOME/.sdpa/configs/gpi.rc" ] ; then
+    log "E: $HOME/.sdpa/configs/gpi.rc does not exist!"
+    log "I:    please copy it from $prefix/share/gpi/gpi.rc.tpl"
     log "-:"
-    log "I:        cp $SDPA_HOME/etc/gpi/sdpa-gpi.cfg.tpl $HOME/.sdpa/configs/sdpa-gpi.cfg"
+    log "I:        cp $prefix/share/gpi/gpi.rc.tpl $HOME/.sdpa/configs/gpi.rc"
     log "-:"
-    log "I:    edit the file to your needs and create the specified paths MSQFILE and SHMFILE"
+    log "I:    edit the file to your needs."
     exit 1
 fi
 
