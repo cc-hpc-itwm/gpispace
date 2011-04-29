@@ -4,10 +4,10 @@
 #
 
 # increment this value up to date if anything config related changes!
-CONFIG_VERSION=1
+CONFIG_VERSION=2
 
-config_file="$HOME/.sdpa/configs/sdpa.rc"
-state_dir="$HOME/.sdpa/state"
+config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
+state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 
 ##############################################
 #                                            #
@@ -51,7 +51,7 @@ function setup_required ()
     return 1
 }
 
-function setup_state_dir ()
+function setup_state ()
 {
     if [ ! -d "$state_dir" ] ; then
 	local msg=$( mkdir -p "$state_dir" 2>&1 )
@@ -60,6 +60,23 @@ function setup_state_dir ()
 	    return 1
 	fi
     fi
+
+    local sdpa_home=$(get "sdpa.home" "$SDPA_HOME")
+    if [ -z "$sdpa_home" ] ; then
+	mydir=$(cd $(dirname $( which $0 )) && pwd)
+	sdpa_home=$(dirname "$mydir")
+    fi
+    get_user_input "SDPA installation directory [$sdpa_home]:" sdpa_home
+
+    put "sdpa.home" "$sdpa_home"
+
+    local node_file="$state_dir/nodefile"
+
+    put "sdpa.node_file" "$node_file"
+    log "I: node file configured to be stored in $node_file"
+
+    put "sdpa.state_dir" "$state_dir"
+    log "I: state directory configured to be in $state_dir"
     return 0
 }
 
@@ -100,6 +117,33 @@ function y_n_p ()
     esac
 }
 
+function prepend_to_path ()
+{
+    local var="$1"; shift
+    local val=$(eval echo \$${var})
+    for v ; do
+	val=$(echo "$val" | sed "s,:$v:,:,g")
+	val=$(echo "$val" | sed -e "s,^$v:,,g")
+	val=$(echo "$val" | sed -e "s,:$v\$,,g")
+	if ! echo "$val" | grep -q -- "$v" ; then
+	    val="$v:$val"
+	fi
+    done
+    eval "$var=$val"
+}
+
+function append_to_path ()
+{
+    local var="$1"; shift
+    local val=$(eval echo \$${var})
+    for v ; do
+	if ! echo "$val" | grep -q -- "$v" ; then
+	    val="$val:$v"
+	fi
+    done
+    eval "$var=$val"
+}
+
 function get_user_input ()
 {
     local prompt="$1"; shift
@@ -112,56 +156,86 @@ EOF
     fi
     read -e -p "  $prompt " new_val
     if [ -n "$new_val" ] ; then
+	new_val=$(eval echo "$new_val")
 	eval "$var=$new_val"
     fi
 }
 
 function setup_scratch ()
 {
-    local doc='=====   Scratch directory  ====
+    local doc='
+
+                 ================================
+                 *       Scratch directory      *
+                 ================================
 
 The "scratch"  directory should be a directory  you are allowed to  write to and
-that is shared among all nodes. I will create a "log" directory within that into
-which all components are going to log.
+that is shared among all nodes.
 '
-    local key="sdpa.scratch_dir"
-    local val=$(get "$key")
-    local prompt="scratch directory to use [$val]:"
-    get_user_input "$prompt" val "$doc"
 
-    if ! test -d "$val" ; then
-	if ! mkdir -p "$val" ; then
-	    log "E: failed to create scratch directory: $val"
+    local scratch_dir=$(get "sdpa.scratch_dir")
+    get_user_input "scratch directory to use [$scratch_dir]:" scratch_dir "$doc"
+
+    if ! test -d "$scratch_dir" ; then
+	if ! mkdir -p "$scratch_dir" ; then
+	    log "E: failed to create scratch directory: $scratch_dir"
 	    return 1
 	fi
     fi
 
-    put "$key" "$val"
+    put "sdpa.scratch_dir" "$scratch_dir"
+    log "-: using scratch dir $scratch_dir"
 }
 
 function setup_logging ()
 {
-    local doc='=====   Logging configuration  ====
+    local doc='
+
+                 ================================
+                 *     Logging Configuration    *
+                 ================================
 
 This "host:port" definition  defines where all the components  send log messages
-to. It should be on the same host that you run the GUI on.'
-    local key="log.server.url"
-    local val=$(get "$key" "$(hostname):$(( $(id -u) + 1024))")
-    local prompt="remote logging to (host:port) [$val]:"
-    get_user_input "$prompt" val "$doc"
-    put "$key" "$val"
+to. It should be on the same host that you run the GUI on.
+'
+    local url=$(get "log.server.url" "$(hostname -f):$(( $(id -u) + 1024))")
+    local prompt="remote logging to (host:port) [$url]:"
+    get_user_input "$prompt" url "$doc"
 
-    local key="log.server.level"
-    local val=$(get "$key" "INFO")
-    local prompt="log level [$val]:"
-    get_user_input "log level to use [$val]:" val ""
-    val=$( echo "$val" | tr [a-z] [A-Z] )
-    put "$key" "$val"
+    local lvl=$(get "log.server.level" "INFO")
+    local prompt="log level [$lvl]:"
+    get_user_input "log level to use [$lvl]:" lvl ""
+    lvl=$( echo "$lvl" | tr [a-z] [A-Z] )
+
+    local log_dir=$(get "sdpa.log_dir")
+    if [ -z "$log_dir" ] ; then
+	log_dir=$(get "sdpa.scratch_dir")/log
+    fi
+    get_user_input "log directory to use [$log_dir]:" log_dir ""
+
+    if ! test -d "$log_dir" ; then
+	if ! mkdir -p "$log_dir" ; then
+	    log "E: failed to create log directory: $log_dir"
+	    return 1
+	fi
+    fi
+
+    put "log.server.url" "$url"
+    put "log.server.level" "$lvl"
+    put "sdpa.log_dir" "$log_dir"
+
+    log "-: using log server at $url"
+    log "-: using log level of $lvl"
+    log "-: using log dir $log_dir"
 }
 
 function setup_temp ()
 {
-    local doc='=====   Node-local temporary directory  ====
+    local doc='
+
+                 ================================
+                 *     Node local directory     *
+                 ================================
 
 This  directory  should point  to  a  path that  is  local  to  each node,  like
 /var/tmp. It is used to create local temporary files that might be necessary for
@@ -180,11 +254,17 @@ some components.
     fi
 
     put "$key" "$val"
+
+    log "-: using node local directory $val"
 }
 
 function setup_gui ()
 {
-    local doc='=====   GUI configuration  ====
+    local doc='
+
+                 ================================
+                 *   Graphical User Interface   *
+                 ================================
 
 Now I need a "host:port" string on which the graphical monitor interface will be
 running.  It  does not  have to run  all the  time, but if  you want  to monitor
@@ -192,14 +272,21 @@ activities, I need to know that location. Please make sure that nobody else uses
 this location.
 '
     local key="sdpa.gui"
-    local val=$(get "$key" "$(hostname):$(( $(id -u) + 1023))")
+    local val=$(get "$key" "$(hostname -f):$(( $(id -u) + 1023))")
     local prompt="location of the monitor gui (host:port) [$val]:"
     get_user_input "$prompt" val "$doc"
     put "$key" "$val"
+
+    log "-: using gui at $val"
 }
 
 function setup_plugins ()
 {
+    cat <<EOF
+
+Setting up plugins....
+EOF
+
     local mod_dir="$HOME/.sdpa/modules"
     if ! test -d "$mod_dir" ; then
 	if ! mkdir -p "$mod_dir" ; then
@@ -218,10 +305,11 @@ function setup_plugins ()
 
     local prefix=$(get "sdpa.home" "$SDPA_HOME")
     if [ -z "$prefix" ] ; then
-	mydir=$(cd $(dirname $( which $0 )) && pwd)
-	prefix=$(dirname "$mydir")
+	log "E: sdpa.home is not defined!"
+	return 1
     fi
-#    put "sdpa.home" "$prefix"
+
+    log "-: using SDPA plugins from $prefix"
 
     local count=0
     # fill in some autoload plugins
@@ -288,6 +376,24 @@ function to_human_readable_size ()
 
 function setup_gpi ()
 {
+    local doc='
+
+                 ================================
+                 *        Fraunhofer GPI        *
+                 ================================
+
+This step configures  the GPI part of  the SDPA.  I will ask  for the privileged
+directory from which user binaries are  allowed to be executed (the -p parameter
+to the  gpid.exe). Additionally I will  ask for the  amount of GPI memory  to be
+used on each node.
+
+'
+    local gpid_pid=$(ps -C gpid.exe -o pid= | tr -d ' ')
+    local gpid_dir=$(cat /proc/$gpid_pid/cmdline 2>/dev/null | tr '\0' ' ' | grep -o -- '-p [^ ]*' | cut -d' ' -f 2)
+
+    gpid_dir=$(get "gpi.priv_dir" "$gpid_dir")
+    get_user_input "GPI privileged directory to use [$gpid_dir]:" gpid_dir "$doc"
+
     local gpi_size=$(get "gpi.memory_size" "5G")
     get_user_input "gpi memory size (per node) [$gpi_size]:" gpi_size
     parse_human_readable_size $gpi_size gpi_size
@@ -324,6 +430,7 @@ function setup_gpi ()
 
     put "gpi.memory_size" "$gpi_size"
     put "api.compat.shm_size" "$shm_size"
+    put "gpi.priv_dir" "$gpid_dir"
 
     put "gpi.timeout" "30"
     put "gpi.socket_mode" "0700"
@@ -363,26 +470,54 @@ function setup_client ()
 
 function setup ()
 {
-    if test -f "$config_file" ; then
-	cp "$config_file" "$config_file.bak"
-    fi
+    cat <<EOF
+                 ================================
+                 *          SDPA setup          *
+                 ================================
+
+Initiating the  setup routine of  SDPA. In case  of errors or  questions, please
+contact 'Alexander Petry <petry@itwm.fhg.de>'.
+
+
+
+
+EOF
+
+    local real_config_file="$config_file"
+    local temp_config_file="${config_file}~"
+
+    local old_trap=$(trap -p EXIT)
+    trap -- "rm -f $temp_config_file" EXIT
 
     local parts=$1
     if [ -z "$parts" ] ; then
-	parts="state_dir kvs scratch logging temp gui plugins gpi client"
+	parts="state kvs scratch logging temp gui plugins gpi client"
     else
 	shift
     fi
 
+    if test -f "$real_config_file" ; then
+	cp "$real_config_file" "$temp_config_file"
+    fi
+    config_file="$temp_config_file"
+
     local p
     for p in $parts ; do
-	log "-: setting up $p"
 	setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
-	echo
     done
 
     put "config.version" "$CONFIG_VERSION"
     put "config.modified" "$(date)"
+
+    cp "$real_config_file" "${real_config_file}.bak"
+    mv "$temp_config_file" "$real_config_file"
+
+    # putting config in place
+    config_file="$real_config_file"
+    eval $old_trap
+
+    echo
+    log "I: setup complete."
 }
 
 function generate_environment ()
@@ -413,22 +548,65 @@ function generate_environment ()
 	    sdpa.log_dir)
 		echo export SDPA_LOG_DIR="$val"
 		;;
+	    sdpa.state_dir)
+		echo export SDPA_STATE_DIR="$val"
+		;;
+	    sdpa.node_file)
+		echo export SDPA_NODEFILE="$val"
+		;;
+	    sdpa.home)
+		local sdpa_home="$val"
+
+		echo export SDPA_HOME="$sdpa_home"
+		echo export SDPA_LIBEXEC="$sdpa_home/libexec"
+
+		prepend_to_path LD_LIBRARY_PATH "$sdpa_home/lib"
+		prepend_to_path LD_LIBRARY_PATH "$sdpa_home/libexec"
+		prepend_to_path PC_LIBRARY_PATH "$sdpa_home/libexec"
+		;;
 	    *)
 		;;
 	esac
     done
-    if ! grep -q "$HOME/.sdpa/modules" <<<"$PC_LIBRARY_PATH" ; then
-	echo export PC_LIBRARY_PATH="$HOME/.sdpa/modules:$PC_LIBRARY_PATH"
-    fi
-    if ! grep -q "$HOME/.sdpa/modules" <<<"$LD_LIBRARY_PATH" ; then
-	echo export LD_LIBRARY_PATH="$HOME/.sdpa/modules:$LD_LIBRARY_PATH"
-    fi
+
+    prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
+    prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
+    prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/plugins"
+
+    echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+    echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH"
 }
 
-function configure ()
+function dump_config ()
 {
-    generate_environment > "$HOME/.sdpa.env"
-    source $HOME/.sdpa.env
+    fhgcfg -f "$config_file" -p
+}
+
+function initialize ()
+{
+    :> "$state_dir/sdpa.env"
+    echo test -e "$state_dir/sdpa.pre.env" \&\& source "$state_dir/sdpa.pre.env" >> "$state_dir/sdpa.env"
+    generate_environment >> "$state_dir/sdpa.env"
+    echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$state_dir/sdpa.env"
+    echo ":" >> "$state_dir/sdpa.env"
+
+    local node_file=$(get "sdpa.node_file" "$SDPA_NODEFILE")
+    if [ -n "$PBS_NODEFILE" ] ; then
+	if ! cp "$PBS_NODEFILE" "$node_file" ; then
+	    log "E: could not copy nodefile from $PBS_NODEFILE to $node_file"
+	    return 1
+	fi
+    else
+	if ! test -e "$node_file" ; then
+	    log "E: node file $node_file does not exist!"
+	    return 1
+	fi
+    fi
+
+    local sdpa_home=$(get "sdpa.home" "$SDPA_HOME")
+    if [ -z "$sdpa_home" ] ; then
+	log "W: sdpa.home is not defined!"
+    fi
 }
 
 function cleanup ()
@@ -458,7 +636,7 @@ function cleanup ()
 
 function help ()
 {
-    echo "usage: $0 {start|stop|status|cleanup|submit <file>}" >&2
+    echo "usage: $0 {start|stop|status|setup|gui|cleanup|submit <file>}" >&2
     return 0
 }
 
@@ -732,6 +910,39 @@ function stop_nre ()
     node_loop stop_nre_on_node $@
 }
 
+function start_gui ()
+{
+    local log_url=$(get "log.server.url")
+    local log_port=$(echo "$log_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
+    if [ -z "$log_port" ] ; then
+	log "E: log url ($log_url) does not contain a port!"
+	return 1
+    fi
+    local log_host=$(echo "$log_url" | cut -d ':' -f 1)
+
+    local gui_url=$(get "sdpa.gui")
+    local gui_port=$(echo "$gui_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
+    if [ -z "$gui_port" ] ; then
+	log "E: gui url ($gui_url) does not contain a port!"
+	return 1
+    fi
+    local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
+
+    local cmd="sdpa-gui $gui_port $log_port"
+    if [ "$gui_host" != "$(hostname -f)" ] ; then
+	log "E: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
+	cmd="ssh -X $gui_host $cmd"
+    fi
+
+    if [ "$log_host" != "$gui_host" ] ; then
+	log "E: cannot start gui on different hosts: $log_host vs. $gui_host"
+	return 1
+    fi
+
+    log "I: starting gui with $cmd ..."
+    $cmd &
+}
+
 function start_gpi ()
 {
     if ! start_proc "gpi-space" "start-gpi" "-f" ; then
@@ -951,6 +1162,11 @@ function submit ()
     fi
 }
 
+function configure()
+{
+    test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
+}
+
 ##########################################################
 #                                                        #
 #          S C R I P T     B E H A V I O R               #
@@ -969,10 +1185,17 @@ if setup_required ; then
 fi
 
 if ! configure ; then
+    log "E: configure() failed"
     exit $?
 fi
 
 case "$1" in
+    init)
+	if ! initialize ; then
+	    log "E: could not initialize!"
+	    exit 1
+	fi
+	;;
     start)
 	shift
 	start $@
@@ -1011,6 +1234,15 @@ case "$1" in
 	;;
     help)
 	help
+	;;
+    gui)
+	start_gui
+	;;
+    config)
+	dump_config
+	;;
+    load)
+	test -f "$state_dir/sdpa.env" && cat "$state_dir/sdpa.env"
 	;;
     '')
 	help
