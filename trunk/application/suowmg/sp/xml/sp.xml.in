@@ -555,6 +555,7 @@
 
     <transition name="generate_interval" inline="true">
       <include-function href="generate/interval.xml"/>
+      <place-map virtual="trigger_interval" real="trigger_interval"/>
       <connect-in port="config" place="config_generate_interval"/>
       <connect-out port="interval" place="interval"/>
     </transition>
@@ -562,9 +563,12 @@
     <transition name="generate_package" inline="true">
       <include-function href="generate/package.xml"/>
       <place-map virtual="empty_interval" real="interval"/>
+      <place-map virtual="trigger_interval" real="trigger_interval"/>
       <connect-in port="config" place="config_generate_package"/>
       <connect-out port="package" place="assigned_package"/>
     </transition>
+
+    <place name="trigger_interval" type="control"/>
 
     <transition name="generate_output_slot" inline="true">
       <include-function href="sequence.xml"/>

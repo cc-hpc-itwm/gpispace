@@ -45,9 +45,12 @@
       <connect-in port="state" place="state"/>
     </transition>
 
+    <place name="trigger_interval" type="control" virtual="true"/>
+
     <transition name="not_done">
       <defun>
         <in name="state" type="state"/>
+        <in name="trigger" type="control"/>
         <out name="state" type="state"/>
         <out name="interval" type="interval"/>
         <expression>
@@ -60,6 +63,7 @@
         ${state.counter.id} :lt: ${state.counter.max}
       </condition>
       <connect-in port="state" place="state"/>
+      <connect-in port="trigger" place="trigger_interval"/>
       <connect-out port="state" place="state"/>
       <connect-out port="interval" place="interval"/>
     </transition>

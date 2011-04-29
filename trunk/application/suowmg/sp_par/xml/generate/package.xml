@@ -48,14 +48,20 @@
       <defun>
         <in name="state" type="state"/>
         <out name="state" type="state"/>
-        <expression></expression>
+        <out name="trigger_interval" type="control"/>
+        <expression>
+          ${trigger_interval} := []
+        </expression>
       </defun>
       <condition>
         ${state.id} :lt: ${state.max}
       </condition>
       <connect-in port="state" place="check_break"/>
       <connect-out port="state" place="state"/>
+      <connect-out port="trigger_interval" place="trigger_interval"/>
     </transition>
+
+    <place name="trigger_interval" type="control" virtual="true"/>
 
     <place name="empty_interval" type="interval" virtual="true"/>
 
