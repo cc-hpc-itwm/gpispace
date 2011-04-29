@@ -64,6 +64,7 @@ add_subdirectory(pnete)
 
 install(DIRECTORY demo DESTINATION share/pnete
   USE_SOURCE_PERMISSIONS
+  FILES_MATCHING PATTERN "*.xml"
   PATTERN ".svn" EXCLUDE
  )
 
