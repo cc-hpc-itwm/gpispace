@@ -36,6 +36,8 @@ namespace fhg
           const QString& title() const;
           bool highlighted() const;
           
+          void repositionChildrenAndResize();
+          
           enum 
           {
             Type = TransitionType,

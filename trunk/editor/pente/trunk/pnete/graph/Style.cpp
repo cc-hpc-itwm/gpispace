@@ -34,6 +34,10 @@ namespace fhg
       {
         return defaultPortWidth;
       }
+      const qreal Style::portDefaultHeight()
+      {
+        return portHeight;
+      }
       
       void addOutgoingCap(QPainterPath* path, bool middle, QPointF offset = QPointF(), qreal rotation = 0.0)
       {
@@ -219,9 +223,9 @@ namespace fhg
         
         QList<QPointF> allPoints;
         allPoints.push_back(start);
-        for(QList<QPointF>::const_iterator it = mid.begin(); it != mid.end(); ++it)
+        foreach(QPointF point, mid)
         {
-          allPoints.push_back(*it);
+          allPoints.push_back(point);
         }
         allPoints.push_back(end);
         

@@ -25,6 +25,8 @@ namespace fhg
       _length(Style::portDefaultWidth())
       {
         setAcceptHoverEvents(true);
+        //! \todo verbose name
+        setToolTip(dataType);
         
         _length = std::max(_length, QStaticText(_title).size().width() + Style::portCapLength() + 5.0);
       }
@@ -55,6 +57,92 @@ namespace fhg
         }
       }
       
+      QPointF Port::snapToEdge(const QPointF& position, eOrientation edge) const
+      {
+        QSizeF parentSize = parentItem()->boundingRect().size();
+        
+        QPointF newPosition = position;
+        
+        switch(_orientation)
+        {
+          case WEST:
+            newPosition.setX(0.0);
+            break;
+          case EAST:
+            newPosition.setX(parentSize.width());
+            break;
+          case NORTH:
+            newPosition.setY(0.0);
+            break;
+          case SOUTH:
+            newPosition.setY(parentSize.height());
+            break;
+          case ANYORIENTATION:
+            // you're fucked.
+            break;
+        }
+        
+        return newPosition;
+      }
+      
+      ConnectableItem::eOrientation Port::getNearestEdge(const QPointF& position) const
+      {
+        QSizeF parentSize = parentItem()->boundingRect().size();
+        QPointF parentBottomRightPoint = parentItem()->boundingRect().bottomRight();
+        
+        eOrientation orientation;
+        
+        if(position.x() <= 0.0)
+        {
+          orientation = WEST;
+        }
+        else if(position.x() > parentSize.width())
+        {
+          orientation = EAST;
+        }
+        else if(position.y() <= 0.0)
+        {
+          orientation = NORTH;
+        }
+        else if(position.y() > parentSize.height())
+        {
+          orientation = SOUTH;
+        }
+        else
+        {
+          QPointF diffMax = position - parentBottomRightPoint;
+          QPointF distMin = QPointF(position.x() * position.x(), position.y() * position.y());
+          QPointF distMax = QPointF(diffMax.x() * diffMax.x(), diffMax.y() * diffMax.y());
+          QPointF minimumDistance = QPointF(std::min(distMin.x(), distMax.x()), std::min(distMin.y(), distMax.y()));
+          eOrientation horizontal = distMin.x() < distMax.x() ? WEST : EAST; 
+          eOrientation vertical = distMin.y() < distMax.y() ? NORTH : SOUTH ; 
+          orientation = minimumDistance.x() < minimumDistance.y() ? horizontal : vertical;
+        }
+        return orientation;
+      }
+      
+      QPointF Port::checkForMinimumDistance(const QPointF& position) const
+      {
+        QSizeF parentSize = parentItem()->boundingRect().size();
+        
+        QPointF newPosition = position;
+        
+        if(_orientation == WEST || _orientation == EAST)
+        {
+          const qreal minimumDistance = boundingRect().height() / 2.0 + 1.0;
+          newPosition.setX(std::max(std::min(parentSize.width(), newPosition.x()), 0.0));
+          newPosition.setY(std::max(std::min(parentSize.height() - minimumDistance, newPosition.y()), minimumDistance));
+        }
+        else
+        {
+          const qreal minimumDistance = boundingRect().width() / 2.0 + 1.0;
+          newPosition.setX(std::max(std::min(parentSize.width() - minimumDistance, newPosition.x()), minimumDistance));
+          newPosition.setY(std::max(std::min(parentSize.height(), newPosition.y()), 0.0));
+        }
+        
+        return newPosition;
+      }
+      
       void Port::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
       {
         if(!_dragging)
@@ -67,80 +155,16 @@ namespace fhg
         
         QPointF newLocation = pos() + event->pos() - _dragStart;
         
-        QSizeF parentSize = parentItem()->boundingRect().size();
-        QPointF parentBottomRightPoint = parentItem()->boundingRect().bottomRight();
-        
-        // decide orientation
-        if(newLocation.x() <= 0.0)
-        {
-          _orientation = WEST;
-        }
-        else if(newLocation.x() > parentSize.width())
-        {
-          _orientation = EAST;
-        }
-        else if(newLocation.y() <= 0.0)
-        {
-          _orientation = NORTH;
-        }
-        else if(newLocation.y() > parentSize.height())
-        {
-          _orientation = SOUTH;
-        }
-        else // somewhere in the middle.
-        {
-          QPointF diffMax = newLocation - parentBottomRightPoint;
-          QPointF distMin = QPointF(newLocation.x() * newLocation.x(), newLocation.y() * newLocation.y());
-          QPointF distMax = QPointF(diffMax.x() * diffMax.x(), diffMax.y() * diffMax.y());
-          QPointF minimumDistance = QPointF(std::min(distMin.x(), distMax.x()), std::min(distMin.y(), distMax.y()));
-          eOrientation horizontal = distMin.x() < distMax.x() ? WEST : EAST; 
-          eOrientation vertical = distMin.y() < distMax.y() ? NORTH : SOUTH ; 
-          _orientation = minimumDistance.x() < minimumDistance.y() ? horizontal : vertical;
-        }
-        
-        // snap to specific edge
-        switch(_orientation)
-        {
-          case WEST:
-            newLocation.setX(0.0);
-            break;
-          case EAST:
-            newLocation.setX(parentSize.width());
-            break;
-          case NORTH:
-            newLocation.setY(0.0);
-            break;
-          case SOUTH:
-            newLocation.setY(parentSize.height());
-            break;
-          case ANYORIENTATION:
-            // you're fucked.
-            break;
-        }
-          
-        //! \todo Loop over all ports and check if a minimum distance is given.
-        
-        if(_orientation == WEST || _orientation == EAST)
-        {
-          const qreal minimumDistance = boundingRect().height() / 2.0 + 1.0;
-          newLocation.setX(std::max(std::min(parentSize.width(), newLocation.x()), 0.0));
-          newLocation.setY(std::max(std::min(parentSize.height() - minimumDistance, newLocation.y()), minimumDistance));
-        }
-        else
-        {
-          const qreal minimumDistance = boundingRect().width() / 2.0 + 1.0;
-          newLocation.setX(std::max(std::min(parentSize.width() - minimumDistance, newLocation.x()), minimumDistance));
-          newLocation.setY(std::max(std::min(parentSize.height(), newLocation.y()), 0.0));
-        }
-        
+        _orientation = getNearestEdge(newLocation);
+        newLocation = snapToEdge(newLocation, _orientation);
+        newLocation = checkForMinimumDistance(newLocation);
+                
         setPos(Style::snapToRaster(newLocation));
         
         // do not move, when now colliding with a different port
-        QList<QGraphicsItem *> collidingPorts = collidingItems();
-        for(QList<QGraphicsItem *>::iterator it = collidingPorts.begin(); it != collidingPorts.end(); ++it)
+        foreach(QGraphicsItem* collidingItem, collidingItems())
         {
-          //! \todo only if on this transition?
-          if(qgraphicsitem_cast<Port*>(*it))
+          if(qgraphicsitem_cast<Port*>(collidingItem) && collidingItem->parentItem() == parentItem())
           {
             _orientation = oldOrientation;
             setPos(oldLocation);

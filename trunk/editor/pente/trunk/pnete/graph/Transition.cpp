@@ -52,10 +52,9 @@ namespace fhg
           // do not move, when now colliding with a different transition
           //! \todo move this elsewhere? make this nicer, allow movement to left and right, if collision on bottom.
           //! \todo move to the nearest possible position.
-          QList<QGraphicsItem *> collidingPorts = collidingItems();
-          for(QList<QGraphicsItem *>::iterator it = collidingPorts.begin(); it != collidingPorts.end(); ++it)
+          foreach(QGraphicsItem* collidingItem, collidingItems())
           {
-            if(qgraphicsitem_cast<Transition*>(*it))
+            if(qgraphicsitem_cast<Transition*>(collidingItem))
             {
               setPos(oldLocation);
               break;
@@ -122,6 +121,43 @@ namespace fhg
           }
         } 
         scene()->removeItem(this);
+      }
+      
+      void Transition::repositionChildrenAndResize()
+      {
+        qreal positionIn, positionOut, positionAny;
+        positionIn = positionOut = positionAny = Style::portDefaultHeight();
+        
+        foreach(QGraphicsItem* child, childItems())
+        {
+          Port* port = qgraphicsitem_cast<Port*>(child);
+          if(port)
+          {
+            if(port->direction() == ConnectableItem::IN)
+            {
+              port->setOrientation(ConnectableItem::WEST);
+              port->setPos(Style::snapToRaster(QPointF(0.0, positionIn)));
+              positionIn += Style::portDefaultHeight() + 10.0;
+            }
+            else if(port->direction() == ConnectableItem::OUT)
+            {
+              port->setOrientation(ConnectableItem::EAST);
+              port->setPos(Style::snapToRaster(QPointF(boundingRect().width(), positionOut)));
+              positionOut += Style::portDefaultHeight() + 10.0;
+            }
+            else
+            {
+              port->setOrientation(ConnectableItem::NORTH);
+              port->setPos(Style::snapToRaster(QPointF(positionAny, 0.0)));
+              positionAny += Style::portDefaultHeight() + 10.0;
+            }
+          }
+        }
+        positionIn -= 10.0;
+        positionOut -= 10.0;
+        positionAny -= 10.0;
+        
+        _size = QSizeF(std::max(_size.width(), positionAny), std::max(_size.height(), std::max(positionOut, positionIn)));
       }
     }
   }

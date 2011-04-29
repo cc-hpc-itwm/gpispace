@@ -63,6 +63,7 @@ namespace fhg
         {
           new graph::Port(transition, graph::Port::OUT, port.name(), port.type());
         }
+        transition->repositionChildrenAndResize();
         
         return transition;
       }

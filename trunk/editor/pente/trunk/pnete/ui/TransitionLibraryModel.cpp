@@ -46,39 +46,32 @@ namespace fhg
       {
         setFileSystemWatcher(path);
         
-        QDirIterator directoryWalkerDirs(path, QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
-        while(directoryWalkerDirs.hasNext())
+        QDir directory(path);
+        
+        foreach(QFileInfo fileInfo, dir.entryInfoList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot))
         {
-          directoryWalkerDirs.next();
+          const QString newName = fileInfo.fileName();
           
-          const QString newName = directoryWalkerDirs.fileInfo().fileName();
-          
-          TransitionLibraryItem* newRoot;
-          bool found = false;
-          const QList<TransitionLibraryItem*>& children = currentRoot->children();
-          for(QList<TransitionLibraryItem*>::const_iterator it = children.begin(); it != children.end(); ++it)
+          TransitionLibraryItem* newRoot = NULL;
+          foreach(TransitionLibraryItem* child, currentRoot->children())
           {
-            if(!(*it)->data() && (*it)->name() == newName)
+            if(!child->data() && child->name() == newName)
             {
-              newRoot = *it;
-              found = true;
+              newRoot = child;
               break;
             }
           }
-          if(!found)
+          if(!newRoot)
           {
             newRoot = new TransitionLibraryItem(newName, trusted, currentRoot);
             currentRoot->appendChild(newRoot);
           }
-          readContentFromDirectoryRecursive(newRoot, trusted, directoryWalkerDirs.fileInfo().absoluteFilePath());
+          readContentFromDirectoryRecursive(newRoot, trusted, fileInfo.absoluteFilePath());
         }
         
-        QDirIterator directoryWalkerFiles(path, QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
-        while(directoryWalkerFiles.hasNext())
+        foreach(QFileInfo fileInfo, dir.entryInfoList(QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot))
         {
-          directoryWalkerFiles.next();
-          
-          data::Transition* transition = new data::Transition(directoryWalkerFiles.fileInfo().absoluteFilePath());
+          data::Transition* transition = new data::Transition(fileInfo.absoluteFilePath());
           currentRoot->appendChild(new TransitionLibraryItem(transition, trusted, currentRoot));
         }
       }

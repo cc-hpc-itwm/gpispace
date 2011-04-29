@@ -77,10 +77,9 @@ namespace fhg
       {
         if(_pendingConnection)
         {
-          QList<QGraphicsItem*> itemsBelow = items(event->scenePos());
-          for(QList<QGraphicsItem*>::iterator it = itemsBelow.begin(); it != itemsBelow.end(); ++it)
+          foreach(QGraphicsItem* itemBelow, items(event->scenePos()))
           {
-            ConnectableItem* portBelow = qgraphicsitem_cast<ConnectableItem*>(*it);
+            ConnectableItem* portBelow = qgraphicsitem_cast<ConnectableItem*>(itemBelow);
             if(portBelow && pendingConnectionCanConnectTo(portBelow))
             {
               pendingConnectionConnectTo(portBelow);

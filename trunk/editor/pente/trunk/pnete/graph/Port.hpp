@@ -33,6 +33,10 @@ namespace fhg
          
           virtual bool canConnectTo(ConnectableItem* other) const;
           virtual bool canConnectIn(eDirection thatDirection) const;
+          
+          QPointF snapToEdge(const QPointF& position, eOrientation edge) const;
+          eOrientation getNearestEdge(const QPointF& position) const;
+          QPointF checkForMinimumDistance(const QPointF& position) const;
     
           enum 
           {

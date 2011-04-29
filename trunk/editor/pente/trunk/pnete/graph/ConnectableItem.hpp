@@ -41,6 +41,8 @@ namespace fhg
           const eOrientation& orientation() const;
           const eDirection& direction() const;
           
+          void setOrientation(const eOrientation& orientation);
+          
           virtual bool canConnectTo(ConnectableItem* other) const;
           virtual bool canConnectIn(eDirection thatDirection) const;
           

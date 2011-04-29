@@ -64,6 +64,11 @@ namespace fhg
           return sceneObject->createPendingConnectionWith(this);
         }
       }
+      
+      void ConnectableItem::setOrientation(const eOrientation& orientation)
+      {
+        _orientation = orientation;
+      }
     }
   }
 }

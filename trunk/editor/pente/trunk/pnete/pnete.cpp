@@ -1,6 +1,9 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QSettings>
+#include <QPixmap>
+#include <QSplashScreen>
+
 #include <iostream>
 
 #include "ui/MainWindow.hpp"
@@ -16,6 +19,11 @@ int main(int argc, char *argv[])
   QCoreApplication::setApplicationVersion("0.1");
   QCoreApplication::setOrganizationDomain("itwm.fhg.de");
   QCoreApplication::setOrganizationName("Fraunhofer ITWM");
+  
+  QPixmap pixmap(":/pente.png");
+  QSplashScreen splash(pixmap);
+  splash.show();
+  a.processEvents();
   
   QTranslator translator;
   //! \todo embed?
@@ -67,6 +75,7 @@ int main(int argc, char *argv[])
   settings.endArray();
   
   w.show();
+  splash.finish(&w);
   
   return a.exec();
 }
