@@ -614,8 +614,6 @@ function cleanup ()
     echo "cleaning up" >&2
     echo "  * logs" >&2
     clear-logs -f -a -x
-    echo "  * IPC" >&2
-    ipc-cleanup >/dev/null 2>&1
     echo "  * backup files" >&2
     for f in "$HOME"/*.bkp *.bkp ; do
 	if [ -e "$f" ] ; then
