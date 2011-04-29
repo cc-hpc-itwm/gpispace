@@ -218,9 +218,9 @@ else
 fi
 
 if [ "$build_static" == "true" ] ; then
-    cmake_flags="$cmake_flags -DBUILD_STATIC_BINARIES=ON"
+    cmake_flags="$cmake_flags -DENABLE_STATIC_BINARIES=ON"
 else
-    cmake_flags="$cmake_flags -DBUILD_STATIC_BINARIES=OFF"
+    cmake_flags="$cmake_flags -DENABLE_STATIC_BINARIES=OFF"
 fi
 
 if [ "$build_apps" == "true" ] ; then
