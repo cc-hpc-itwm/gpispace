@@ -32,21 +32,23 @@ int main(int argc, char *argv[])
   QTranslator translator;
   translator.load("german", ":/localization/");
   a.installTranslator(&translator);
-  
+
   QSettings settings;
 
   settings.beginGroup("transitionLibrary");
 
 #ifdef CREATE_A_NEW_SETTINGS_FILE_BY_CHANGING_THE_PATHS_IN_HERE
-  settings.setValue("basePath", "/Users/berndlorwald/Documents/Arbeit/SDPA/svn/trunk/editor/pente/trunk/demo/lib");
+  // eq. to $SDPA_HOME
+#define PREFIX "/p/hpc/soft/sdpa/ap/share/pnete/demo"
+  settings.setValue("basePath", PREFIX "/lib");
   settings.beginWriteArray("trustedPaths");
   settings.setArrayIndex(0);
-  settings.setValue("path", "/Users/berndlorwald/Documents/Arbeit/SDPA/svn/trunk/editor/pente/trunk/demo/statoil");
+  settings.setValue("path", PREFIX "/statoil");
   settings.endArray();
 
   settings.beginWriteArray("userPaths");
   settings.setArrayIndex(0);
-  settings.setValue("path", "/Users/berndlorwald/Documents/Arbeit/SDPA/svn/trunk/editor/pente/trunk/demo/user");
+  settings.setValue("path", PREFIX "/user");
   settings.endArray();
 #endif
 
