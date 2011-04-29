@@ -1,7 +1,6 @@
 id=${1:?}; shift
 host=${1:?}; shift
 
-
 width=116
 height=94
 width_border=12
@@ -23,9 +22,9 @@ echo xosview -page \
              -title $host \
              -net \
              -geometry ${width}x${height}+${col}+$((height_panel + row * (height + height_border))) \
-           | ssh $host &
+           | ssh -t $host &
 
-echo $$
+echo $!
 
 sleep 2
 
