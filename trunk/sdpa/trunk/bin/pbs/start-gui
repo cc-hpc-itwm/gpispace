@@ -1,0 +1,6 @@
+#!/bin/sh
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+log "Running sdpa-gui $@ on $hostname"
+sdpa-gui $@

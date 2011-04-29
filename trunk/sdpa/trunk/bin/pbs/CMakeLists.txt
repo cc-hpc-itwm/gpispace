@@ -4,6 +4,7 @@ set (prgs
   sdpa
   start-agg
   start-gpi
+  start-gui
   start-nre
   start-orch
   start-pc
