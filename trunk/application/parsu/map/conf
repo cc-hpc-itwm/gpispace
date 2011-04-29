@@ -1,8 +1,0 @@
-tune.trace_per_bunch       12
-tune.memsize               10485760
-output.file                /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk/application/example/filter/simple.test.out
-output.type                text
-input.file                 /amd/nfs/root/gpfs/u/r/rahn/SDPA/trunk/application/example/filter/simple.test.txt
-input.type                 text
-trace_detect.size_in_bytes 300
-trace_detect.number        100
