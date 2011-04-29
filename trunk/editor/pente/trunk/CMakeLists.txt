@@ -62,6 +62,11 @@ find_package(Qt4 4.4.3 COMPONENTS QtCore QtGui QtXml REQUIRED)
 
 add_subdirectory(pnete)
 
+install(DIRECTORY demo DESTINATION share/pnete
+  USE_SOURCE_PERMISSIONS
+  PATTERN ".svn" EXCLUDE
+ )
+
 # CTest
 #include(CTest)
 #if (BUILD_TESTING)
