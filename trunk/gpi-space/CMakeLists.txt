@@ -112,3 +112,8 @@ include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)
+
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gpi.rc.tpl
+  DESTINATION share/gpi/
+  COMPONENT configurations
+  )
