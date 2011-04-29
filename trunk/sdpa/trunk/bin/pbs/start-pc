@@ -1,5 +1,6 @@
 #!/bin/bash
-test -r ~/.init-screen.env && source ~/.init-screen.env
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
 debug=false
 rank=0

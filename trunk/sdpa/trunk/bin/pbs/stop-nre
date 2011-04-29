@@ -1,5 +1,7 @@
 #!/bin/sh
 
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
 user=$( id -un )
 local p
 for p in nre ; do

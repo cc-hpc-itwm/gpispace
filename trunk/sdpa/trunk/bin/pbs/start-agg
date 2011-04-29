@@ -1,8 +1,6 @@
 #!/bin/sh
 
-if [ -r ~/.init-screen.env ]; then
-    source ~/.init-screen.env
-fi
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
 debug=false
 #url="0.0.0.0:5001"

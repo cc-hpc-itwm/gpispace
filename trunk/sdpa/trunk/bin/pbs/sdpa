@@ -522,6 +522,13 @@ EOF
 
 function generate_environment ()
 {
+    if ! on_master_node ; then
+	log "E: cannot generate environment on slave node!"
+	return 1
+    fi
+
+    echo export KVS_URL="$(hostname -s):2439"
+
     # read variables from config and write them to an environment file
     #     replacing init-screen.env in principle
 
@@ -535,6 +542,12 @@ function generate_environment ()
 		;;
 	    kvs.store)
 		echo export KVS_STORE="$val"
+		;;
+	    kvs.url)
+		echo export KVS_URL="$val"
+		;;
+	    gpi.priv_dir)
+		echo export GPI_PRIV_DIR="$val"
 		;;
 	    sdpa.gui)
 		echo export SDPA_GUI="$val"
@@ -584,29 +597,38 @@ function dump_config ()
 
 function initialize ()
 {
-    :> "$state_dir/sdpa.env"
-    echo test -e "$state_dir/sdpa.pre.env" \&\& source "$state_dir/sdpa.pre.env" >> "$state_dir/sdpa.env"
-    generate_environment >> "$state_dir/sdpa.env"
-    echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$state_dir/sdpa.env"
-    echo ":" >> "$state_dir/sdpa.env"
-
     local node_file=$(get "sdpa.node_file" "$SDPA_NODEFILE")
-    if [ -n "$PBS_NODEFILE" ] ; then
-	if ! cp "$PBS_NODEFILE" "$node_file" ; then
-	    log "E: could not copy nodefile from $PBS_NODEFILE to $node_file"
-	    return 1
-	fi
-    else
-	if ! test -e "$node_file" ; then
-	    log "E: node file $node_file does not exist!"
-	    return 1
-	fi
+    if [ -z "$PBS_NODEFILE" ] ; then
+	log "E: PBS_NODEFILE is not set, please export it before and run init again"
+	return 1
     fi
+
+    if ! cp "$PBS_NODEFILE" "$node_file" ; then
+	log "E: could not copy nodefile from $PBS_NODEFILE to $node_file"
+	return 1
+    fi
+
+    local tmp_file="$state_dir/sdpa.env~"
+    :> "$tmp_file"
+    echo test -e "$state_dir/sdpa.pre.env" \&\& source "$state_dir/sdpa.pre.env" >> "$tmp_file"
+    if ! generate_environment >> "$tmp_file" ; then
+	return 1
+    fi
+    cat >>"$tmp_file" <<EOF
+function log()
+{
+  echo "\$@" >&2
+  test -x "\$SDPA_HOME/bin/fhglogc" && "\$SDPA_HOME/bin/fhglogc" -t "\$0" -p 2 -m "\$*"
+}
+EOF
+    echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$tmp_file"
+    echo ":" >> "$tmp_file"
 
     local sdpa_home=$(get "sdpa.home" "$SDPA_HOME")
     if [ -z "$sdpa_home" ] ; then
 	log "W: sdpa.home is not defined!"
     fi
+    mv "$tmp_file" "$state_dir/sdpa.env"
 }
 
 function cleanup ()
@@ -926,9 +948,9 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="sdpa-gui $gui_port $log_port"
+    local cmd="start-gui $gui_port $log_port"
     if [ "$gui_host" != "$(hostname -f)" ] ; then
-	log "E: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
+	log "W: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
 	cmd="ssh -X $gui_host $cmd"
     fi
 
@@ -1165,12 +1187,40 @@ function configure()
     test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
 }
 
+function on_valid_host ()
+{
+    local host="$(hostname -s)"
+    if test -r "$state_dir/nodefile" ; then
+	if grep -q -e "$host" "$state_dir/nodefile" ; then
+	    return 0
+	else
+	    log "E: your hostname ($host) does not match any in $state_dir/nodefile"
+	fi
+    else
+	log "E: no nodefile present"
+    fi
+    return 1
+}
+
+function on_master_node ()
+{
+    local host="$(hostname -s)"
+    if test -r "$state_dir/nodefile" ; then
+	local master=$( head -n 1 "$state_dir/nodefile" )
+	if [ "$host" = "$master" ] ; then
+	    return 0
+	fi
+    else
+	log "E: no nodefile present"
+    fi
+    return 1
+}
+
 ##########################################################
 #                                                        #
 #          S C R I P T     B E H A V I O R               #
 #                                                        #
 ##########################################################
-
 
 if setup_required ; then
     if setup ; then
@@ -1182,27 +1232,48 @@ if setup_required ; then
     fi
 fi
 
+if [ "$1" = "init" ] ; then
+    if ! initialize ; then
+	log "E: could not initialize!"
+	exit 1
+    else
+	exit 0
+    fi
+fi
+
+if ! on_valid_host ; then
+    log "E: you are executing 'sdpa' on an invalid host"
+    log "E: please run 'sdpa init' on the master node first!"
+    exit 1
+fi
+
 if ! configure ; then
     log "E: configure() failed"
     exit $?
 fi
 
 case "$1" in
-    init)
-	if ! initialize ; then
-	    log "E: could not initialize!"
+    start)
+	if ! on_master_node ; then
+	    log "E: not on master node"
 	    exit 1
 	fi
-	;;
-    start)
 	shift
 	start $@
 	;;
     stop)
+	if ! on_master_node ; then
+	    log "E: not on master node"
+	    exit 1
+	fi
 	shift
 	stop $@
 	;;
     restart)
+	if ! on_master_node ; then
+	    log "E: not on master node"
+	    exit 1
+	fi
 	shift
 	if stop $@ ; then
 	    start $@
@@ -1211,6 +1282,10 @@ case "$1" in
 	fi
 	;;
     status)
+	if ! on_master_node ; then
+	    log "E: not on master node"
+	    exit 1
+	fi
 	shift
 	status $@
 	;;
@@ -1240,7 +1315,9 @@ case "$1" in
 	dump_config
 	;;
     load)
-	test -f "$state_dir/sdpa.env" && cat "$state_dir/sdpa.env"
+	if test -f "$state_dir/sdpa.env" ; then
+	    echo source "$state_dir/sdpa.env"\;
+	fi
 	;;
     '')
 	help
