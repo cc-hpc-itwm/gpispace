@@ -158,36 +158,6 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
   }
 }
 
-void SchedulerImpl::detectTimedoutWorkers( sdpa::util::time_type const & timeout )
-{
-  ptr_worker_man_->detectTimedoutWorkers(timeout);
-}
-
-// move this to the monitoring service
-/*void SchedulerImpl::deleteNonResponsiveWorkers( sdpa::util::time_type const & timeout )
-{
-  // mark timedout workers and reschedule  their work...
-  std::vector<Worker::worker_id_t> nonResponsive;
-  ptr_worker_man_->detectTimedoutWorkers (timeout, &nonResponsive);
-
-  if (!nonResponsive.empty())
-    {
-      LOG ( ERROR
-          ,  "AVOID TO DELETE "
-          << nonResponsive.size()
-          << " NONRESPONSIVE WORKERS! WORK HERE!"
-          );
-    }
-//   std::for_each ( nonResponsive.begin()
-//                 , nonResponsive.end()
-//                 , boost::bind ( &SchedulerImpl::delWorker
-//                               , this
-//                               , _1
-//                               )
-//                 );
-}
-*/
-
 /*
 	Schedule a job locally, send the job to WE
 */
@@ -267,12 +237,12 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 
     if( ptr_worker_man_ )
     {
-            SDPA_LOG_DEBUG("Get the next worker ...");
-            const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
+      SDPA_LOG_DEBUG("Get the next worker ...");
+      const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
-            SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
+      SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
-            pWorker->dispatch(jobId);
+      pWorker->dispatch(jobId);
     }
   }
   catch(const NoWorkerFoundException&)
@@ -397,7 +367,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
           {
               preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
 
-              const preference_t::rank_list_type& list_prefs=job_pref.ranks();
+              const preference_t::rank_list_type& list_prefs = job_pref.ranks();
               for( preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
               {
                 // use try-catch for the case when the no worker with that rank exists
@@ -457,12 +427,6 @@ void SchedulerImpl::schedule_remote(const sdpa::job_id_t& jobId)
   // fairly re-distribute tasks, if necessary
   // ptr_worker_man_->balanceWorkers();
   // fix this later -> use a monitoring thread
-  //if(bDelNonRespWorkers)
-  if(ptr_comm_handler_->cfg().is_set("worker_timeout"))
-  {
-      //SDPA_LOG_WARN("Delete timed-out/non-responsive workers!");
-      detectTimedoutWorkers (ptr_comm_handler_->cfg().get<sdpa::util::time_type>("worker_timeout"));
-  }
 
   if( !numberOfWorkers() )
   {

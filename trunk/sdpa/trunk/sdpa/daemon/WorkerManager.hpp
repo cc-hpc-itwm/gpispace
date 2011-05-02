@@ -48,8 +48,6 @@ namespace sdpa { namespace daemon {
       void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
       void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 
-      void detectTimedoutWorkers( sdpa::util::time_type const&, std::vector<Worker::worker_id_t> * = 0);
-
       void getListOfRegisteredRanks( std::vector<unsigned int>& );
 
       const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);

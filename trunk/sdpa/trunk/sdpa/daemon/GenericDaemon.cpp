@@ -474,7 +474,6 @@ void GenericDaemon::setDefaultConfiguration()
 	cfg().put("polling interval",    			1 * 1000 * 1000);
 	cfg().put("upper bound polling interval", 	5 * 1000 * 1000 );
 	cfg().put("life-sign interval",  			2 * 1000 * 1000);
-	cfg().put("worker_timeout",        		   20 * 1000 * 1000); // 6s
 	cfg().put("registration_timeout", 			1 * 1000 * 1000); // 1s
 	cfg().put("backup_interval", 			    5 * 1000 * 1000); // 3s*/
 }
@@ -817,61 +816,57 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
-	worker_id_t worker_id (evtRegWorker.from());
-	unsigned int rank (evtRegWorker.rank());
+  worker_id_t worker_id (evtRegWorker.from());
+  unsigned int rank (evtRegWorker.rank());
 
-	// check if the worker evtRegWorker.from() has already registered!
-	try {
+  // check if the worker evtRegWorker.from() has already registered!
+  try
+  {
+      SDPA_LOG_INFO("Trying to register new worker " << worker_id << ", with the rank " << rank);
 
-            if(cfg().is_set("worker_timeout"))
-            {
-                const unsigned long long worker_timeout (cfg().get<unsigned long long>("worker_timeout", 30 * 1000 * 1000));
-                scheduler()->detectTimedoutWorkers(worker_timeout);
-            }
+      addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
 
-            SDPA_LOG_INFO("Trying to register new worker " << worker_id << ", with the rank " << rank);
+      SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
 
-            addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
+      // send back an acknowledgment
+      SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
+      WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+      pWorkerRegAckEvt->id() = evtRegWorker.id();
+      sendEventToSlave(pWorkerRegAckEvt);
+  }
+  catch(WorkerAlreadyExistException& ex)
+  {
+      if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
+      {
+          LOG(TRACE, "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
 
-            SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
+          LOG(TRACE, "Re-schedule the jobs");
+          scheduler()->re_schedule( worker_id );
+          LOG(TRACE,"Delete worker "<<worker_id);
 
-            // send back an acknowledgment
-            SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
-            WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-            pWorkerRegAckEvt->id() = evtRegWorker.id();
-            sendEventToSlave(pWorkerRegAckEvt);
-	}
-	catch(WorkerAlreadyExistException& ex)
-	{
-		if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
-		{
-			LOG(TRACE, "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
-			LOG(TRACE, "Re-schedule the jobs");
-			scheduler()->re_schedule( worker_id );
-			LOG(TRACE,"Delete worker "<<worker_id);
-			scheduler()->delWorker(worker_id);
-			LOG(TRACE, "Add worker"<<worker_id );
-			addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
-		}
+          scheduler()->delWorker(worker_id);
+          LOG(TRACE, "Add worker"<<worker_id );
+          addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
+      }
 
-		SDPA_LOG_INFO("The worker " << worker_id << ", with the rank " << rank<<" is already registered");
+      SDPA_LOG_INFO("The worker " << worker_id << ", with the rank " << rank<<" is already registered");
 
-		// send back an acknowledgment
-		SDPA_LOG_INFO("Send registration ack to the agent " << worker_id << ", with the rank " << rank);
-		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-		pWorkerRegAckEvt->id() = evtRegWorker.id();
-		sendEventToSlave(pWorkerRegAckEvt);
-	}
-	catch(const QueueFull& ex)
-	{
-		SDPA_LOG_FATAL("could not send WorkerRegistrationAck: queue is full, this should never happen!"<<ex.what());
-		throw;
-	}
-	catch(const seda::StageNotFound& snf)
-	{
-		SDPA_LOG_FATAL("could not send WorkerRegistrationAck: locate slave-stage failed: " << snf.what());
-		throw;
-	}
+      // send back an acknowledgment
+      SDPA_LOG_INFO("Send registration ack to the agent " << worker_id << ", with the rank " << rank);
+      WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+      pWorkerRegAckEvt->id() = evtRegWorker.id();
+      sendEventToSlave(pWorkerRegAckEvt);
+  }
+  catch(const QueueFull& ex)
+  {
+      SDPA_LOG_FATAL("could not send WorkerRegistrationAck: queue is full, this should never happen!"<<ex.what());
+      throw;
+  }
+  catch(const seda::StageNotFound& snf)
+  {
+      SDPA_LOG_FATAL("could not send WorkerRegistrationAck: locate slave-stage failed: " << snf.what());
+      throw;
+  }
 }
 
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
