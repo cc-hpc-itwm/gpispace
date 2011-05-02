@@ -1,0 +1,8 @@
+<defun name="Save Velocity (depth)">
+  <in name="data" type="velocity_depth"/>
+  <in name="filename" type="string">
+    <properties name="pnete">
+      <property key="cant_connect"/>
+    </properties>
+  </in>
+</defun>

@@ -1,0 +1,8 @@
+<defun name="Load Velocity (time)">
+  <in name="filename" type="string">
+    <properties name="pnete">
+      <property key="cant_connect"/>
+    </properties>
+  </in>
+  <out name="data" type="velocity_time"/>
+</defun>
