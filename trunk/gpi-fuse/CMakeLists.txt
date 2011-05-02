@@ -42,6 +42,9 @@ include_directories (${GPI_SPACE_INCLUDE_DIR})
 find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
+find_package(UTIL REQUIRED)
+include_directories(${UTIL_INCLUDE_DIR})
+
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(gpifs)

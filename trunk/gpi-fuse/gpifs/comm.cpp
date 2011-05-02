@@ -1,7 +1,10 @@
 #include <errno.h>
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
+#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
 #include <gpifs/comm.hpp>
@@ -34,9 +37,28 @@ namespace gpifs
 
       int res (0);
 
-      const char * path = "/var/tmp/gpi-space/GPISpace-5201/control";
+      namespace fs = boost::filesystem;
+      gpi_space::parser::config_parser_t cfg_parser;
+      {
+        fs::path config_file
+          (std::string(getenv("HOME")) + "/.sdpa/configs/gpi.rc");
 
-      gpi_api().path (path);
+        try
+        {
+          gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
+        }
+        catch (std::exception const & ex)
+        {
+          LOG("could not parse config file " << config_file << ": " << ex.what());
+          return -EIO;
+        }
+      }
+
+      fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp/gpi-space"));
+      socket_path /= ("GPISpace-" + boost::lexical_cast<std::string>(getuid()));
+      socket_path /= cfg_parser.get("gpi.socket_name", "control");
+
+      gpi_api().path (socket_path.string());
 
       try
       {
