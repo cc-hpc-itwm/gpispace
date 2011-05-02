@@ -61,15 +61,14 @@ namespace sdpa {
 	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
 
 	virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
-    virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+	virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+        void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
-    void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
-
-    virtual void detectTimedoutWorkers( sdpa::util::time_type const & timeout );
-    virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
+        virtual void detectTimedoutWorkers( sdpa::util::time_type const & timeout );
+        //virtual void deleteNonResponsiveWorkers ( sdpa::util::time_type const & );
 
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
-    virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& );
+	virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& );
 
 	virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
