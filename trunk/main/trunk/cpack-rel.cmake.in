@@ -18,8 +18,11 @@ include(packages.list.cmake)
 
 set(COMPONENTS_TO_INSTALL
   applications
-  modules
+  libraries
+  headers
+  documentation
   configurations
+  modules
   examples
   parsu
 )
