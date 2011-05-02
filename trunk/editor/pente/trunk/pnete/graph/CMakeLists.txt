@@ -7,6 +7,7 @@ set(graph_SRCS
   Port.cpp
   Scene.cpp
   Transition.cpp
+  #ParameterPort.cpp
 )
 
 set(graph_HDRS
@@ -16,6 +17,7 @@ set(graph_HDRS
   Port.hpp
   Scene.hpp
   Transition.hpp
+  #ParameterPort.hpp
 )
 
 set(graph_UIS
@@ -25,6 +27,7 @@ set(graph_TOMOC
   Transition.hpp
   Port.hpp
   ConnectableItem.hpp
+  #ParameterPort.hpp
 )
 
 #for moced files to get their includes.

@@ -19,6 +19,7 @@ namespace fhg
       class Connection;
       class Transition;
       class Port;
+      class ParameterPort;
       
       class Style
       {
@@ -35,6 +36,10 @@ namespace fhg
           static const qreal portCapLength();
           static const qreal portDefaultWidth();
           static const qreal portDefaultHeight();
+          
+          static const QPainterPath parameterPortShape(const ParameterPort* port);
+          static const QRectF parameterPortBoundingRect(const ParameterPort* port);
+          static const void parameterPortPaint(QPainter *painter, const ParameterPort* port);
           
           static const QPainterPath connectionShape(const Connection* connection);
           static const QRectF connectionBoundingRect(const Connection* connection);

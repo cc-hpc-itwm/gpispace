@@ -5,6 +5,7 @@
 #include "graph/Style.hpp"
 #include "data/Transition.hpp"
 #include "data/Port.hpp"
+#include "graph/ParameterPort.hpp"
 
 #include <QMimeData>
 #include <QDragEnterEvent>
@@ -58,11 +59,11 @@ namespace fhg
         graph::Transition* transition = new graph::Transition(transitionData.name(), transitionData);
         foreach(data::Port port, transitionData.inPorts())
         {
-          new graph::Port(transition, graph::Port::IN, port.name(), port.type());
+          new graph::Port(transition, graph::Port::IN, port.name(), port.type(), port.notConnectable());
         }
         foreach(data::Port port, transitionData.outPorts())
         {
-          new graph::Port(transition, graph::Port::OUT, port.name(), port.type());
+          new graph::Port(transition, graph::Port::OUT, port.name(), port.type(), false);
         }
         transition->repositionChildrenAndResize();
         

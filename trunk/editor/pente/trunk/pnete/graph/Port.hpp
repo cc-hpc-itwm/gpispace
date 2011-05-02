@@ -19,13 +19,15 @@ namespace fhg
         Q_OBJECT
         
         public:          
-          Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType);
+          Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType, bool notConnectable = false);
           
           const bool& highlighted() const;
           const qreal& length() const;
           
           const QString& title() const;
           const QString& dataType() const;
+          
+          const bool& notConnectable() const;
           
           virtual QRectF boundingRect() const;
           
@@ -65,6 +67,7 @@ namespace fhg
           
           bool _dragging;
           bool _highlighted;
+          bool _notConnectable;
           
           qreal _length;
       };

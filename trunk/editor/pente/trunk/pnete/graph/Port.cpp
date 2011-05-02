@@ -8,6 +8,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStaticText>
+#include <QDebug>
 
 namespace fhg
 {
@@ -15,13 +16,14 @@ namespace fhg
   {
     namespace graph
     {
-      Port::Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType)
+      Port::Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType, bool notConnectable)
       : ConnectableItem(direction == OUT ? EAST : WEST, direction, parent),
       _title(title),
       _dataType(dataType),
       _dragStart(0.0, 0.0),
       _dragging(false),
       _highlighted(false),
+      _notConnectable(notConnectable),
       _length(Style::portDefaultWidth())
       {
         setAcceptHoverEvents(true);
@@ -208,6 +210,11 @@ namespace fhg
       const qreal& Port::length() const
       {
         return _length;
+      }
+      
+      const bool& Port::notConnectable() const
+      {
+        return _notConnectable;
       }
       
       const QString& Port::title() const

@@ -14,6 +14,7 @@ namespace fhg
         ConnectionType    = QGraphicsItem::UserType + 1,
         PortType          = QGraphicsItem::UserType + 2,
         TransitionType    = QGraphicsItem::UserType + 3,
+        ParameterPortType = QGraphicsItem::UserType + 4,
         /* ... */
       };
     }

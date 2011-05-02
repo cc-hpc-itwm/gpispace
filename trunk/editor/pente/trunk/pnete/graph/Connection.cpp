@@ -24,6 +24,8 @@ namespace fhg
       {
         setStart(start);
         setEnd(end);
+        
+        setZValue(-1);
       }
       
       void Connection::setStart(ConnectableItem* start)

@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <QDataStream>
 #include <QXmlStreamWriter>
+#include <QDebug>
 
 namespace fhg
 {
@@ -26,7 +27,14 @@ namespace fhg
         {
           QString type;
           query.exec("/defun/in[@name=\"" + port + "\"]/@type", &type);
-          _inPorts.push_back(Port(port, type));
+          QStringList properties;
+          query.exec("/defun/in[@name=\"" + port + "\"]/properties/property/@key", &properties);
+          bool propertyPort = false;
+          foreach(QString prop, properties)
+          {
+            propertyPort = propertyPort || prop == QString("cant_connect");
+          }
+          _inPorts.push_back(Port(port, type, propertyPort));
         }
         
         QStringList outPorts;
@@ -35,7 +43,7 @@ namespace fhg
         {
           QString type;
           query.exec("/defun/out[@name=\"" + port + "\"]/@type", &type);
-          _outPorts.push_back(Port(port, type));
+          _outPorts.push_back(Port(port, type, false));
         }
       }
       

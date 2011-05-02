@@ -7,6 +7,7 @@
 #include <QPainter>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
+#include <QDebug>
 
 namespace fhg
 {
@@ -126,15 +127,22 @@ namespace fhg
       
       void Transition::repositionChildrenAndResize()
       {
-        qreal positionIn, positionOut, positionAny;
+        qreal positionIn, positionOut, positionAny, positionParam;
         positionIn = positionOut = positionAny = Style::portDefaultHeight();
+        positionParam = boundingRect().width() - Style::portDefaultHeight();
         
         foreach(QGraphicsItem* child, childItems())
         {
           Port* port = qgraphicsitem_cast<Port*>(child);
           if(port)
           {
-            if(port->direction() == ConnectableItem::IN)
+            if(port->notConnectable())
+            {
+              port->setOrientation(ConnectableItem::SOUTH);
+              port->setPos(Style::snapToRaster(QPointF(positionParam, boundingRect().height())));
+              positionParam -= Style::portDefaultHeight() + 10.0;
+            }
+            else if(port->direction() == ConnectableItem::IN)
             {
               port->setOrientation(ConnectableItem::WEST);
               port->setPos(Style::snapToRaster(QPointF(0.0, positionIn)));
@@ -157,8 +165,16 @@ namespace fhg
         positionIn -= 10.0;
         positionOut -= 10.0;
         positionAny -= 10.0;
+        positionParam += 10.0;
         
         _size = QSizeF(std::max(_size.width(), positionAny), std::max(_size.height(), std::max(positionOut, positionIn)));
+        
+        // is this correct?
+        if(positionParam < 0.0)
+        {
+          _size.setWidth(_size.width() - positionParam);
+          repositionChildrenAndResize();
+        }
       }
       
       const data::Transition& Transition::producedFrom() const

@@ -13,9 +13,11 @@
 #include <QTreeView>
 #include <QGridLayout>
 #include <QWidget>
+#include <QFileDialog>
 #include <QDir>
 #include <QSlider>
 #include <QSpinBox>
+#include <QTextStream>
 
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
@@ -143,9 +145,9 @@ namespace fhg
         _transitionLibrary->setFrameShape(QFrame::StyledPanel);
         _transitionLibrary->setFrameShadow(QFrame::Sunken);
         _transitionLibrary->setDragDropMode(QAbstractItemView::DragOnly);
-        _transitionLibrary->header()->setVisible(true);
+        _transitionLibrary->header()->setVisible(false);
         //! \todo Not resizable?
-        _transitionLibrary->header()->setCascadingSectionResizes(true);
+        //_transitionLibrary->header()->setCascadingSectionResizes(true);
         
         transitionLibraryDockWidgetLayout->addWidget(_transitionLibrary);
         transitionLibraryDockWidget->setWidget(transitionLibraryDockWidgetContents);
@@ -159,7 +161,17 @@ namespace fhg
         {
           helper::GraphTraverser traverser(_scene);
           helper::TraverserReceiver receiver;
-          traverser.traverse(&receiver);
+          
+          QFile xmlFile(QFileDialog::getSaveFileName(this, tr("Save net"), QDir::homePath(), tr("XML files (*.xml)")));
+          
+          if (!xmlFile.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+         
+          QTextStream out(&xmlFile);
+          out << traverser.traverse(&receiver, QFileInfo(xmlFile).baseName()) << "\n";
+          out.flush();
+          
+          xmlFile.close();
         }
       }
     }

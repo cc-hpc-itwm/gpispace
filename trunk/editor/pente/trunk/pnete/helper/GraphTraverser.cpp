@@ -6,6 +6,7 @@
 #include "graph/Port.hpp"
 #include "graph/Connection.hpp"
 #include "graph/Transition.hpp"
+#include "graph/ParameterPort.hpp"
 
 #include "data/Port.hpp"
 #include "data/Connection.hpp"
@@ -31,7 +32,7 @@ namespace fhg
         return ret.replace(" ", "____");
       }
       
-      void GraphTraverser::traverse(TraverserReceiver* dataReceiver, const QString& fileName) const
+      QString GraphTraverser::traverse(TraverserReceiver* dataReceiver, const QString& fileName) const
       {
         QString xml;
         QXmlStreamWriter w(&xml);
@@ -62,7 +63,7 @@ namespace fhg
           else if(transition)
           {
             w.writeStartElement("transition");
-            w.writeAttribute("name", makeValidName(QString("transition_%1").arg((long)transition)));
+            w.writeAttribute("name", makeValidName(QString("transition_%1").arg((long)transition, 0, 16)));
             
             // write the transition with its ports
             if(transition->producedFrom().path() != QString())
@@ -87,6 +88,15 @@ namespace fhg
                   w.writeStartElement(port->direction() == graph::Port::IN ? "in" : "out");
                   w.writeAttribute("name", makeValidName(port->title()));
                   w.writeAttribute("type", port->dataType());
+                  if(port->notConnectable())
+                  {
+                    w.writeStartElement("properties");
+                    w.writeAttribute("name", "pnete");
+                    w.writeStartElement("property");
+                    w.writeAttribute("key", "cant_connect");
+                    w.writeEndElement();
+                    w.writeEndElement();
+                  }
                   w.writeEndElement();
                 }
               }
@@ -150,7 +160,7 @@ namespace fhg
         
           <in name="desc" type="string" place="desc"/>*/
         
-        qDebug() << xml;
+        return xml;
       }
     }
   }
