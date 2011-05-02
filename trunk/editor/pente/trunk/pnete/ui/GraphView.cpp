@@ -5,7 +5,6 @@
 #include "graph/Style.hpp"
 #include "data/Transition.hpp"
 #include "data/Port.hpp"
-#include "graph/ParameterPort.hpp"
 
 #include <QMimeData>
 #include <QDragEnterEvent>

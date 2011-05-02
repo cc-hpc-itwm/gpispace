@@ -54,7 +54,10 @@ namespace fhg
             
           case Style::TAIL:
           default:
-            event->setAccepted(createPendingConnectionIfPossible());
+            if(!notConnectable())
+            {
+              event->setAccepted(createPendingConnectionIfPossible());
+            }
             break;
         }
       }

@@ -2,7 +2,6 @@
 #include "Connection.hpp"
 #include "Port.hpp"
 #include "Transition.hpp"
-#include "ParameterPort.hpp"
 
 #include <QPainter>
 #include <QPen>

@@ -6,7 +6,6 @@
 #include "graph/Port.hpp"
 #include "graph/Connection.hpp"
 #include "graph/Transition.hpp"
-#include "graph/ParameterPort.hpp"
 
 #include "data/Port.hpp"
 #include "data/Connection.hpp"
