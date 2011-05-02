@@ -823,23 +823,23 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 	// check if the worker evtRegWorker.from() has already registered!
 	try {
 
-		if(cfg().is_set("worker_timeout"))
-		{
-			const unsigned long long worker_timeout (cfg().get<unsigned long long>("worker_timeout", 30 * 1000 * 1000));
-			ptr_scheduler_->deleteNonResponsiveWorkers(worker_timeout);
-		}
+            if(cfg().is_set("worker_timeout"))
+            {
+                const unsigned long long worker_timeout (cfg().get<unsigned long long>("worker_timeout", 30 * 1000 * 1000));
+                scheduler()->detectTimedoutWorkers(worker_timeout);
+            }
 
-        SDPA_LOG_INFO("Trying to register new worker " << worker_id << ", with the rank " << rank);
+            SDPA_LOG_INFO("Trying to register new worker " << worker_id << ", with the rank " << rank);
 
-		addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
+            addWorker( worker_id, rank, evtRegWorker.agent_uuid() );
 
-		SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
+            SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
 
-		// send back an acknowledgment
-		SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
-		WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-		pWorkerRegAckEvt->id() = evtRegWorker.id();
-		sendEventToSlave(pWorkerRegAckEvt);
+            // send back an acknowledgment
+            SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
+            WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
+            pWorkerRegAckEvt->id() = evtRegWorker.id();
+            sendEventToSlave(pWorkerRegAckEvt);
 	}
 	catch(WorkerAlreadyExistException& ex)
 	{
