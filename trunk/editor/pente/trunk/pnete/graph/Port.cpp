@@ -54,6 +54,7 @@ namespace fhg
             
           case Style::TAIL:
           default:
+            //! \note Maybe not needed and checked somewhere else.
             if(!notConnectable())
             {
               event->setAccepted(createPendingConnectionIfPossible());
@@ -244,7 +245,7 @@ namespace fhg
       bool Port::canConnectTo(ConnectableItem* other) const
       {
         Port* otherPort = qgraphicsitem_cast<Port*>(other);
-        return otherPort 
+        return !notConnectable() && otherPort 
                && otherPort->dataType() == dataType() 
                && otherPort->direction() != direction() 
                && otherPort->parentItem() != parentItem();
@@ -252,7 +253,7 @@ namespace fhg
       
       bool Port::canConnectIn(eDirection thatDirection) const
       {
-        return thatDirection == direction();
+        return !notConnectable() && thatDirection == direction();
       }
     }
   }
