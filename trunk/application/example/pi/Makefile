@@ -1,12 +1,13 @@
 
 MAIN = pi
 
-TRUNK = $(CURDIR)/../../../
-BUILD = $(TRUNK)/../build/herc/release
+SDPA_INCLUDE = $(SDPA_HOME)/include
+SDPA_LIBEXEC = $(SDPA_HOME)/libexec
+SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
 
-#include ../make.defs
+LIB_DESTDIR = $(HOME)/.sdpa/modules/
 
-PATH_MAIN  = $(TRUNK)/application/example/$(MAIN)
+PATH_MAIN  = $(CURDIR)
 
 TEE      = /usr/bin/tee
 DOT      = /usr/bin/dot -Tps -Grankdir=LR
@@ -17,9 +18,9 @@ CP       = /bin/cp
 
 ###############################################################################
 
-XML_MAIN    = xml/$(MAIN).xml
+XML_MAIN    = $(PATH_MAIN)/xml/$(MAIN).xml
 XML_MAIN_IN = $(XML_MAIN).in
-MK_XML      = $(TRUNK)/application/example/$(MAIN)/mk.xml
+MK_XML      = $(PATH_MAIN)/mk.xml
 
 ###############################################################################
 
@@ -65,36 +66,19 @@ PS_NOINLINE = $(MAIN).noinline.ps
 
 ###############################################################################
 
-PNETC_LIB += $(TRUNK)/application/lib
+WE_EXEC_LIBPATHS += $(PATH_LIB)
 
 ###############################################################################
 
-#WE_EXEC_LOAD += $(BUILD)/fvm-pc/fvm-pc/fake/libfvm-pc.so
-
-WE_EXEC_LIBPATHS += $(TRUNK)/application/example/$(MAIN)/$(GEN)/pnetc/op
-
-#LIB_PATH = $(BUILD)/application/kdm:$(BUILD)/application/example/exec
+CXXINCLUDEPATHS += $(SDPA_INCLUDE)
 
 ###############################################################################
 
-#CXXINCLUDEPATHS += $(TRUNK)/fvm-pc/trunk
-CXXINCLUDEPATHS += $(TRUNK)/fhglog/trunk
-#CXXINCLUDEPATHS += $(TRUNK)/application/example/exec
-CXXINCLUDEPATHS += $(BUILD)/fhglog
-
-# determine_size, do_load, do_write
-#CXXINCLUDEPATHS += $(TRUNK)/application/kdm/src
-
-# print.hpp, comm.hpp
-#CXXINCLUDEPATHS += $(UTIL)
-
-###############################################################################
-
-PNETC    = $(BUILD)/xml/xml/parse/pnetc
-WE_EXEC += LD_LIBRARY_PATH=$(LIB_PATH):${LD_LIBRARY_PATH}
-WE_EXEC += $(BUILD)/we/apps/we-exec
-WE_EXEC +=  --w 16
-PNET2DOT = $(BUILD)/we/apps/pnet2dot
+PNETC    = $(SDPA_HOME)/bin/pnetc
+WE_EXEC += LD_LIBRARY_PATH=$(SDPA_LIBEXEC):${LD_LIBRARY_PATH}
+WE_EXEC += $(SDPA_HOME)/bin/we-exec
+WE_EXEC +=  --w 1
+PNET2DOT = $(SDPA_HOME)/bin/pnet2dot
 
 ###############################################################################
 
@@ -143,7 +127,7 @@ $(GEN): $(XML_MAIN) $(DEP)
 .PHONY: install
 
 install: $(GEN)
-	$(CP) $(LIB) $(SDPA_LIBEXEC)
+	$(CP) $(LIB) $(LIB_DESTDIR)
 
 ###############################################################################
 
