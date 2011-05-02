@@ -37,26 +37,43 @@ int main(int argc, char *argv[])
 
   settings.beginGroup("transitionLibrary");
 
-#ifdef CREATE_A_NEW_SETTINGS_FILE_BY_CHANGING_THE_PATHS_IN_HERE
-  // eq. to $SDPA_HOME
-#define PREFIX "/p/hpc/soft/sdpa/ap/share/pnete/demo"
-  settings.setValue("basePath", PREFIX "/lib");
-  settings.beginWriteArray("trustedPaths");
-  settings.setArrayIndex(0);
-  settings.setValue("path", PREFIX "/statoil");
-  settings.endArray();
+  if (argc > 1)
+  {
+    if (0 == strcmp ("--make-config" , argv[1]))
+    {
+      const char * PREFIX = getenv ("SDPA_HOME");
 
-  settings.beginWriteArray("userPaths");
-  settings.setArrayIndex(0);
-  settings.setValue("path", PREFIX "/user");
-  settings.endArray();
-#endif
+      if (0 == PREFIX)
+      {
+        std::cerr << "E: SDPA_HOME is not set, please export it first!" << std::endl;
+        return EXIT_FAILURE;
+      }
+
+      char buffer[4096];
+
+      snprintf (buffer, sizeof(buffer), "%s/lib", PREFIX);
+      settings.setValue("basePath", buffer);
+      settings.beginWriteArray("trustedPaths");
+      settings.setArrayIndex(0);
+
+      snprintf (buffer, sizeof(buffer), "%s/statoil", PREFIX);
+      settings.setValue("path", buffer);
+      settings.endArray();
+
+      snprintf (buffer, sizeof(buffer), "%s/user", PREFIX);
+      settings.beginWriteArray("userPaths");
+      settings.setArrayIndex(0);
+      settings.setValue("path", buffer);
+      settings.endArray();
+    }
+  }
 
   if(!settings.contains("basePath"))
   {
     //! \todo error message, auto config creation, ...
-    std::cerr << "There is no base path set for the transition library. Fix the config file, thanks." << std::endl;
-    return -1;
+    std::cerr << "There is no base path set for the transition library." << std::endl;
+    std::cerr << "Please run " << argv[0] << " --make-config" << std::endl;
+    return EXIT_FAILURE;
   }
 
   fhg::pnete::ui::MainWindow w;
