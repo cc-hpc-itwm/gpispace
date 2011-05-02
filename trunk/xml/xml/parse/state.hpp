@@ -263,6 +263,7 @@ namespace xml
 
         // ***************************************************************** //
 
+        // WORK HERE: better name!
         bool property ( const property::path_type & path
                       , const property::value_type & value
                       )

@@ -906,18 +906,25 @@ namespace xml
                     {
                       if (cdata.empty())
                         {
-                          throw error::property_generic
-                            ( "no value given"
-                            , state.prop_path()
-                            , state.file_in_progress()
-                            );
-                        }
+//                           throw error::property_generic
+//                             ( "no value given"
+//                             , state.prop_path()
+//                             , state.file_in_progress()
+//                             );
 
-                      util::property::set_state ( state
-                                                , prop
-                                                , state.prop_path()
-                                                , cdata.front()
-                                                );
+                          util::property::set_state ( state
+                                                    , prop
+                                                    , state.prop_path()
+                                                    );
+                        }
+                      else
+                        {
+                          util::property::set_state ( state
+                                                    , prop
+                                                    , state.prop_path()
+                                                    , cdata.front()
+                                                    );
+                        }
                     }
                   else
                     {

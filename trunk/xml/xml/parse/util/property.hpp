@@ -32,7 +32,7 @@ namespace xml
 
           if (old.isJust())
             {
-              state.warn 
+              state.warn
                 ( warning::property_overwritten ( path
                                                 , *old
                                                 , value
@@ -46,8 +46,11 @@ namespace xml
                               , property::type & prop
                               , const property::path_type & path
                               , const property::value_type & value
+                              = property::value_type()
                               )
         {
+          // WORK HERE: much better name
+          // WORK HERE: store even if interpreted by pnetc
           if (!state.property (path, value))
             {
               ::xml::parse::util::property::set (state, prop, path, value);
