@@ -37,42 +37,36 @@ int main(int argc, char *argv[])
 
   settings.beginGroup("transitionLibrary");
 
-  if (argc > 1)
+  QStringList arguments = QCoreApplication::arguments();
+  if(arguments.contains("--make-config"))
   {
-    if (0 == strcmp ("--make-config" , argv[1]))
+    if(arguments.size() <= arguments.indexOf("--make-config") + 1)
     {
-      const char * PREFIX = getenv ("SDPA_HOME");
-
-      if (0 == PREFIX)
-      {
-        std::cerr << "E: SDPA_HOME is not set, please export it first!" << std::endl;
-        return EXIT_FAILURE;
-      }
-
-      char buffer[4096];
-
-      snprintf (buffer, sizeof(buffer), "%s/lib", PREFIX);
-      settings.setValue("basePath", buffer);
-      settings.beginWriteArray("trustedPaths");
-      settings.setArrayIndex(0);
-
-      snprintf (buffer, sizeof(buffer), "%s/statoil", PREFIX);
-      settings.setValue("path", buffer);
-      settings.endArray();
-
-      snprintf (buffer, sizeof(buffer), "%s/user", PREFIX);
-      settings.beginWriteArray("userPaths");
-      settings.setArrayIndex(0);
-      settings.setValue("path", buffer);
-      settings.endArray();
+      std::cerr << "Please also specify a path containing lib/, statoil/ and user/!" << std::endl;
+      return EXIT_FAILURE;
     }
+   
+    QString pnetedir = arguments.at(arguments.indexOf("--make-config") + 1);
+     
+    settings.setValue("basePath", QString("%1/lib").arg(pnetedir));
+    
+    //! \todo this should not be default!
+    settings.beginWriteArray("trustedPaths");
+    settings.setArrayIndex(0);
+    settings.setValue("path", QString("%1/statoil").arg(pnetedir));
+    settings.endArray();
+  
+    settings.beginWriteArray("userPaths");
+    settings.setArrayIndex(0);
+    settings.setValue("path", QString("%1/user").arg(pnetedir));
+    settings.endArray();
   }
 
   if(!settings.contains("basePath"))
   {
-    //! \todo error message, auto config creation, ...
+    //! \todo error message.
     std::cerr << "There is no base path set for the transition library." << std::endl;
-    std::cerr << "Please run " << argv[0] << " --make-config" << std::endl;
+    std::cerr << "Please run \"" << qPrintable(arguments.at(0)) << " --make-config <path>\", where path contains lib." << std::endl;
     return EXIT_FAILURE;
   }
 
