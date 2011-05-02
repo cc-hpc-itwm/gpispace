@@ -126,7 +126,7 @@ int main (int argc, char **argv) {
 
   sdpa::client::config_t cfg = sdpa::client::ClientApi::config();
   cfg.tool_opts().add_options()
-    ("output,o", "path to output file")
+    ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
     ("poll-interval,t", su::po::value<int>()->default_value(1), "sets the poll interval")
     ("force,f", "force the operation")
