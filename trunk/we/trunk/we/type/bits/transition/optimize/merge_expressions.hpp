@@ -164,6 +164,13 @@ namespace we { namespace type {
                      }
                   }
               }
+            else if (net.in_to_place (*p).empty())
+             {
+               // WORK HERE: possible optimization: make the place an
+               // input place of the only one predecessor
+               // BEWARE: check the conditions!
+               return fhg::util::Nothing<trans_info>();
+             }
             else
               {
                 for ( adj_transition_const_it t (net.in_to_place (*p))
