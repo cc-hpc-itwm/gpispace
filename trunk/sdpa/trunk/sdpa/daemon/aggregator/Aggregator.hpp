@@ -20,7 +20,7 @@
 
 #include <sdpa/daemon/daemonFSM/DaemonFSM.hpp>
 #include <sdpa/daemon/aggregator/SchedulerAgg.hpp>
-#include <boost/serialization/base_object.hpp>
+//#include <boost/serialization/base_object.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 
