@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-#define BOOST_TEST_MODULE TestLoadBalancer
+#define BOOST_TEST_MODULE TestScheduler
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
