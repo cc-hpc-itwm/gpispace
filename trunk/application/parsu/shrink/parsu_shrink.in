@@ -41,6 +41,11 @@ if [ ! -r "$inf" ] ; then
   exit 1
 fi
 
+if [ -e "$outf" ] ; then
+    echo "W: deleting old output file" >/dev/stderr
+    rm "$outf"
+fi
+
 cleanup ()
 {
     test -e "${xml_file}"  && rm -f "${xml_file}"
@@ -91,7 +96,7 @@ abs_outf="$REPLY"
 echo "-: generating command script..." >&2
 cat > "$script_file" <<EOF
 #!/bin/sh
-$cmd $@
+exec $cmd $@
 EOF
 
 echo -n "-: generating job description..." >/dev/stderr

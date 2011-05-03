@@ -53,6 +53,11 @@ if [ ! -r "${in2f}" ] ; then
   exit 1
 fi
 
+if [ -e "$outf" ] ; then
+    echo "W: deleting old output file" > /dev/stderr
+    rm "$outf"
+fi
+
 abspath ()
 {
   p="$1"
