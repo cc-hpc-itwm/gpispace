@@ -366,19 +366,6 @@
                     , buf + size / 2
                     );
 
-            // WORK HERE:
-	    // instead of calling segyclean, we call a clear routine
-            // on each traceheader
-
-            const unsigned nt
-              ((package.package.size.trace/2 - sizeof(SegYHeader))/sizeof(float));
-
-            seislib::TraceBunch b (buf, 2*package.package.num.trace, nt);
-
-            // This is not implemented yet, for now, we call the clear
-            // as a side effect of -=
-	    // b.call (clear());
-
             comm::put (config, package);
           ]]></code>
         </module>

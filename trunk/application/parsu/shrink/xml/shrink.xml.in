@@ -296,7 +296,6 @@
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
-          <cinclude href="process.hpp"/>
           <link href="@SDPA_LIBEXEC@/libdo_load.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::loaded_package (package));
@@ -320,20 +319,6 @@
                     , package.package.num.trace
                     , buf
                     );
-
-            const std::size_t size_cleaned
-              ( process::execute ( "segyclean"
-                                 , buf
-                                 , size
-                                 , buf
-                                 , size
-                                 )
-              );
-
-            if (size_cleaned != size)
-              {
-                throw std::runtime_error ("size after segyclean differs");
-              }
 
             comm::put (config, package);
           ]]></code>

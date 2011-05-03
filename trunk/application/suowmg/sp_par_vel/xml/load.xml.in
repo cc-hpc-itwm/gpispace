@@ -25,7 +25,6 @@
           <cinclude href="tracebunch.hpp"/>
           <cinclude href="deque"/>
           <link href="@SDPA_LIBEXEC@/libdo_load.so"/>
-          <link href="@SDPA_LIBEXEC@/libprocess.so"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::assigned_package (assigned_package));
 
@@ -52,20 +51,6 @@
                     , ::util::size (assigned_package)
                     , buf
                     );
-
-            const std::size_t size_cleaned
-              ( process::execute ( "segyclean"
-                                 , buf
-                                 , size
-                                 , buf
-                                 , size
-                                 )
-              );
-
-            if (size_cleaned != size)
-              {
-                throw std::runtime_error ("size after segyclean differs");
-              }
 
             comm::put (config, assigned_package);
 
