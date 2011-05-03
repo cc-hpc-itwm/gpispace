@@ -96,7 +96,7 @@ abs_outf="$REPLY"
 echo "-: generating command script..." >&2
 cat > "$script_file" <<EOF
 #!/bin/sh
-exec $cmd \$@
+exec $cmd
 EOF
 
 echo -n "-: generating job description..." >/dev/stderr
