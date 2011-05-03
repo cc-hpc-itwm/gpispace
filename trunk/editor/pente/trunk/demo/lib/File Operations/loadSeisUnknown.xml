@@ -4,5 +4,5 @@
       <property key="cant_connect"/>
     </properties>
   </in>
-  <out name="data" type="seismic_unknown"/>
+  <out name="data" type="seismic"/>
 </defun>

@@ -1,5 +1,5 @@
 <defun name="Save Seismic">
-  <in name="data" type="seismic_unknown"/>
+  <in name="data" type="seismic"/>
   <in name="filename" type="string">
     <properties name="pnete">
       <property key="cant_connect"/>

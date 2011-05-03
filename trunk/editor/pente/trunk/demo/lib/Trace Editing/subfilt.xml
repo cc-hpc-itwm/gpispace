@@ -1,9 +1,9 @@
 <defun name="Butterworth Filter">
-  <in name="input" type="seismic_unknown"/>
+  <in name="input" type="seismic"/>
   <in name="params" type="subfilt_param">
     <properties name="pnete">
       <property key="cant_connect"/>
     </properties>
   </in>
-  <out name="output" type="seismic_unknown"/>
+  <out name="output" type="seismic"/>
 </defun>

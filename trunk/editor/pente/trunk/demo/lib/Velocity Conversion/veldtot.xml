@@ -1,9 +1,9 @@
 <defun name="Velocity Depth to Time">
-  <in name="velocity_in" type="velocity_depth"/>
+  <in name="input" type="velocity_depth"/>
   <in name="params" type="veldtot_param">
     <properties name="pnete">
       <property key="cant_connect"/>
     </properties>
   </in>
-  <out name="velocity_out" type="velocity_time"/>
+  <out name="output" type="velocity_time"/>
 </defun>

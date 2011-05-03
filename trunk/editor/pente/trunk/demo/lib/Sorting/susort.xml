@@ -1,9 +1,9 @@
 <defun name="Arbitrary to Common Shot">
-  <in name="input" type="seismic_arbitraryshot"/>
+  <in name="input" type="seismic"/>
   <in name="params" type="susort_param">
     <properties name="pnete">
       <property key="cant_connect"/>
     </properties>
   </in>
-  <out name="output" type="seismic_commonshot"/>
+  <out name="output" type="seismic"/>
 </defun>
