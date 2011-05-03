@@ -1,14 +1,14 @@
 <defun>
 
   <in name="config" type="shrink_config" place="config"/>
-  <out name="package" type="loaded_package" place="package"/>
+  <out name="package" type="shrink_loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
 
   <net>
 
     <place name="config" type="shrink_config"/>
 
-    <place name="package" type="loaded_package"/>
+    <place name="package" type="shrink_loaded_package"/>
     <place name="num" type="long"/>
 
     <struct name="state">
@@ -71,7 +71,7 @@
         <in name="state" type="state"/>
         <in name="slot" type="long"/>
         <out name="state" type="state"/>
-        <out name="loaded_package" type="loaded_package"/>
+        <out name="loaded_package" type="shrink_loaded_package"/>
         <expression>
           ${package.left} := ${state.id};
 
