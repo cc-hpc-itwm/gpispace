@@ -51,6 +51,7 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
+SUOWMG           = $(PATH_MAIN)/src/suowmg
 FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
 #FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
 TYPE_INPUT       = su
@@ -85,7 +86,8 @@ MEDIUM = ISO
 PROPAGATOR = FFD3
 
 %.xml: %.xml.in $(filter-out %.xml,$(DEP))
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" \
+	$(CAT) $< | $(MK_XML) "$(SUOWMG)" \
+                              "$(FILE_INPUT)" \
                               "$(TYPE_INPUT)" \
                               "$(FILE_OUTPUT)" \
                               "$(TYPE_OUTPUT)" \
