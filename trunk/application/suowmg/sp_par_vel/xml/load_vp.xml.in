@@ -82,11 +82,11 @@
 
             while (left > 0)
             {
-              LOG (INFO, "bytes left " << left);
+              DLOG (TRACE, "bytes left " << left);
 
               const long size (std::min (left, buf_size));
 
-              LOG(INFO, "read " << size << " bytes");
+              DLOG(TRACE, "read " << size << " bytes");
 
               stream.read (buf, size);
 
