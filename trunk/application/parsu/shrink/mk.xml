@@ -10,11 +10,11 @@ GPI_MEM_PER_NODE=${7:?}
 SDPA_LIBEXEC=${8:?}
 
 `which sed`                                  \
-  "s|@SHMEM_PER_NODE@|${SHMEM_PER_NODE}|     \
-  ;s|@GPI_MEM_PER_NODE@|${GPI_MEM_PER_NODE}| \
-  ;s|@CMD@|${CMD}|                           \
-  ;s|@FILE_INPUT@|${FILE_INPUT}|             \
-  ;s|@FILE_OUTPUT@|${FILE_OUTPUT}|           \
-  ;s|@TYPE_INPUT@|${TYPE_INPUT}|             \
-  ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|           \
-  ;s|@SDPA_LIBEXEC@|${SDPA_LIBEXEC}|         "
+  "s;@SHMEM_PER_NODE@;${SHMEM_PER_NODE};     \
+  ;s;@GPI_MEM_PER_NODE@;${GPI_MEM_PER_NODE}; \
+  ;s;@CMD@;${CMD};                           \
+  ;s;@FILE_INPUT@;${FILE_INPUT};             \
+  ;s;@FILE_OUTPUT@;${FILE_OUTPUT};           \
+  ;s;@TYPE_INPUT@;${TYPE_INPUT};             \
+  ;s;@TYPE_OUTPUT@;${TYPE_OUTPUT};           \
+  ;s;@SDPA_LIBEXEC@;${SDPA_LIBEXEC};         "
