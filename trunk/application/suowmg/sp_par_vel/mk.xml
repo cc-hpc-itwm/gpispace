@@ -1,5 +1,6 @@
 #!/bin/bash
 
+SUOWMG=${1:?}; shift
 FILE_INPUT=${1:?}; shift
 TYPE_INPUT=${1:?}; shift
 FILE_OUTPUT=${1:?}; shift
@@ -48,6 +49,7 @@ PROPAGATOR=${1:PS}; shift
   ;s|@TYPE_OUTPUT@|${TYPE_OUTPUT}|g           \
   ;s|@SDPA_LIBEXEC@|${SDPA_LIBEXEC}|g         \
   ;s|@BOOST_ROOT@|${BOOST_ROOT}|g             \
+  ;s|@SUOWMG@|${SUOWMG}|g \
   ;s|@NX@|${NX}|g \
   ;s|@NY@|${NY}|g \
   ;s|@NZ@|${NZ}|g \

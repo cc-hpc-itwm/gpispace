@@ -8,6 +8,8 @@ LOG (TRACE, "size.trace = " << config.size.trace);
 config.per.node.mem.shmem = shmem_per_node;
 config.per.node.mem.gpi = gpi_mem_per_node;
 
+config.suowmg = suowmg;
+
 config.param.Vnx = Vnx;
 config.param.Vny = Vny;
 config.param.Vnz = Vnz;

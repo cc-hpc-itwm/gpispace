@@ -52,11 +52,12 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 ###############################################################################
 
-FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
-#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
+SUOWMG           = $(PATH_MAIN)/src/suowmg
+#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
+FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
 TYPE_INPUT       = su
-FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
-#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
+#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
+FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
 SHMEM_PER_NODE   = 6  * 1824 +     167233040 + 141120000
 GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640 + 2631317001 + 1261680
@@ -88,7 +89,8 @@ MEDIUM = ISO
 PROPAGATOR = FFD3
 
 %.xml: %.xml.in $(filter-out %.xml,$(DEP))
-	$(CAT) $< | $(MK_XML) "$(FILE_INPUT)" \
+	$(CAT) $< | $(MK_XML) "$(SUOWMG)" \
+                              "$(FILE_INPUT)" \
                               "$(TYPE_INPUT)" \
                               "$(FILE_OUTPUT)" \
                               "$(TYPE_OUTPUT)" \

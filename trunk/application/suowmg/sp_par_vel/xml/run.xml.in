@@ -225,7 +225,7 @@ LOG(INFO,"DONE READ MODEL");
 
             std::ostringstream cmd;
 
-            cmd << "/p/herc/itwm/hpc/mr/sdpa/trunk/application/suowmg/sp_par_vel/src/suowmg";
+            cmd << config.suowmg;
             cmd << " nx=" << config.param.Vnx;
             cmd << " ny=" << config.param.Vny;
             cmd << " nz=" << config.param.Vnz;

@@ -111,6 +111,8 @@
     </struct>
 
     <field name="param" type="param"/>
+
+    <field name="suowmg" type="string"/>
   </struct>
 
   <struct name="param">
@@ -182,6 +184,8 @@
   <in name="eFile" type="string" place="eFile"/>
   <in name="dFile" type="string" place="dFile"/>
 
+  <in name="suowmg" type="string" place="suowmg"/>
+
   <out name="done" type="control" place="done"/>
 
   <net>
@@ -220,6 +224,10 @@
     </place>
     <place name="type_output" type="string">
       <token><value>"@TYPE_OUTPUT@"</value></token>
+    </place>
+
+    <place name="suowmg" type="string">
+      <token><value>"@SUOWMG@"</value></token>
     </place>
 
     <place name="Vnx" type="long"><token><value>@NX@</value></token></place>
@@ -282,6 +290,7 @@
         <in name="vPFile" type="string"/>
         <in name="eFile" type="string"/>
         <in name="dFile" type="string"/>
+        <in name="suowmg" type="string"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
         <out name="size_wanted" type="long"/>
@@ -324,6 +333,7 @@
                                , vPFile
                                , eFile
                                , dFile
+                               , suowmg
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -368,6 +378,7 @@
       <connect-in port="vPFile" place="vPFile"/>
       <connect-in port="eFile" place="eFile"/>
       <connect-in port="dFile" place="dFile"/>
+      <connect-in port="suowmg" place="suowmg"/>
       <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
       <connect-out port="size_wanted" place="size_wanted"/>
