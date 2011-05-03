@@ -100,6 +100,7 @@ namespace we {
         }
         else
         {
+          LOG(INFO, "loaded module " << module_name << " from " << path);
           ++module_counter_;
           return mod;
         }
@@ -169,6 +170,27 @@ namespace we {
         os << "}";
       }
 
+      size_t unload_autoloaded ()
+      {
+        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+
+        size_t count (0);
+        module_table_t::iterator m(module_table_.begin());
+        while (m != module_table_.end())
+        {
+          if (m->first.find("mod-") == 0)
+          {
+            ++m;
+          }
+          else
+          {
+            m = unload (m);
+            ++count;
+          }
+        }
+        return count;
+      }
+
       int selftest ()
       {
         int ec (0);
@@ -229,10 +251,11 @@ namespace we {
         }
       }
 
-      void unload(module_table_t::iterator mod)
+      module_table_t::iterator unload(module_table_t::iterator mod)
       {
         assert(mod != module_table_.end());
-        module_table_.erase(mod);
+        LOG(INFO, "unloading " << mod->first);
+        return module_table_.erase(mod);
       }
 
       module_table_t module_table_;

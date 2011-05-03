@@ -134,7 +134,7 @@ int main(int ac, char **av)
           ; ++mod
           )
       {
-        executor->loader().load(*mod, *mod);
+        executor->loader().load(*mod);
       }
     }
     catch (const ModuleLoadFailed &mlf)

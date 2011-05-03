@@ -373,7 +373,7 @@ cont:
             switch (sig)
             {
             case SIGHUP:
-              LOG(INFO, "unloading modules, implement me!");
+              loader().unload_autoloaded();
               break;
             case SIGTERM: // fall through
             case SIGKILL:
