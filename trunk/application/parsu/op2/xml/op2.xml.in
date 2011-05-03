@@ -48,7 +48,7 @@
     <field name="type" type="string"/>
   </struct>
 
-  <struct name="config">
+  <struct name="op2_config">
     <struct name="file">
       <field name="input1" type="file"/>
       <field name="input2" type="file"/>
@@ -88,7 +88,7 @@
 
     <include-template href="triple.xml"/>
     <specialize name="triple_config" use="triple">
-      <type-map replace="T" with="config"/>
+      <type-map replace="T" with="op2_config"/>
     </specialize>
 
     <!-- tuning -->
@@ -137,7 +137,7 @@
         <in name="op" type="string"/>
         <out name="write_info" type="write_info"/>
         <out name="give_back_trace" type="long"/>
-        <out name="config" type="config"/>
+        <out name="config" type="op2_config"/>
         <module name="op2" function="init ( file1_input
                                , type1_input
                                , file2_input
@@ -270,7 +270,7 @@
       <connect-out port="config" place="config_generated"/>
     </transition>
 
-    <place name="config_generated" type="config" />
+    <place name="config_generated" type="op2_config" />
 
     <transition name="scatter_config" inline="true">
       <use name="triple_config"/>
@@ -280,9 +280,9 @@
       <connect-out port="three" place="config_generate_slot"/>
     </transition>
 
-    <place name="config" type="config"/>
-    <place name="config_generate_package" type="config"/>
-    <place name="config_generate_slot" type="config"/>
+    <place name="config" type="op2_config"/>
+    <place name="config_generate_package" type="op2_config"/>
+    <place name="config_generate_slot" type="op2_config"/>
 
     <place name="write_info" type="write_info"/>
     <place name="give_back_trace" type="long"/>
@@ -290,8 +290,8 @@
     <transition name="extract_eat_slot">
       <defun>
         <in name="trigger" type="control"/>
-        <in name="config" type="config"/>
-        <out name="config" type="config"/>
+        <in name="config" type="op2_config"/>
+        <out name="config" type="op2_config"/>
         <out name="N" type="long"/>
         <expression>
           ${N} := ${config.num.slot}
@@ -303,7 +303,7 @@
       <connect-out port="N" place="num_slot_eat"/>
     </transition>
 
-    <place name="config_finalize" type="config"/>
+    <place name="config_finalize" type="op2_config"/>
 
     <place name="num_slot_eat" type="long"/>
 
@@ -329,7 +329,7 @@
     <transition name="load">
       <defun>
         <in name="package" type="loaded_package"/>
-        <in name="config" type="config"/>
+        <in name="config" type="op2_config"/>
         <out name="package" type="loaded_package"/>
         <module name="op2" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -400,7 +400,7 @@
     <transition name="op2">
       <defun>
         <in name="package" type="loaded_package"/>
-        <in name="config" type="config"/>
+        <in name="config" type="op2_config"/>
         <out name="package" type="loaded_package"/>
         <module name="op2" function="op2 (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -490,7 +490,7 @@
     <transition name="write">
       <defun>
         <in name="package_to_be_written" type="package_to_be_written"/>
-        <in name="config" type="config"/>
+        <in name="config" type="op2_config"/>
         <out name="p" type="loaded_package"/>
         <module name="op2" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
@@ -598,7 +598,7 @@
 
     <transition name="finalize">
       <defun>
-        <in name="config" type="config"/>
+        <in name="config" type="op2_config"/>
         <out name="trigger" type="control"/>
         <module name="op2" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
