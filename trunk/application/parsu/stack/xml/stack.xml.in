@@ -15,29 +15,29 @@
     <field name="extendable" type="bool"/>
   </struct>
 
-  <struct name="package">
+  <struct name="stack_package">
     <field name="left" type="pos"/>
     <field name="right" type="pos"/>
     <field name="size" type="long"/>
   </struct>
 
-  <struct name="loaded_package">
-    <field name="package" type="package"/>
+  <struct name="stack_loaded_package">
+    <field name="package" type="stack_package"/>
     <field name="slot" type="long"/>
   </struct>
 
-  <struct name="pair_of_packages">
-    <field name="x" type="loaded_package"/>
-    <field name="y" type="loaded_package"/>
+  <struct name="stack_pair_of_packages">
+    <field name="x" type="stack_loaded_package"/>
+    <field name="y" type="stack_loaded_package"/>
   </struct>
 
-  <struct name="write_info">
+  <struct name="stack_write_info">
     <field name="next_trace" type="long"/>
     <field name="offset" type="long"/>
   </struct>
 
-  <struct name="package_to_be_written">
-    <field name="loaded_package" type="loaded_package"/>
+  <struct name="stack_package_to_be_written">
+    <field name="loaded_package" type="stack_loaded_package"/>
     <field name="offset" type="long"/>
   </struct>
 
@@ -127,7 +127,7 @@
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
         <in name="key" type="string"/>
-        <out name="write_info" type="write_info"/>
+        <out name="write_info" type="stack_write_info"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="stack_config"/>
         <module name="stack"
@@ -248,7 +248,7 @@
     <place name="config_generate_package" type="stack_config"/>
     <place name="config_generate_slot" type="stack_config"/>
 
-    <place name="write_info" type="write_info"/>
+    <place name="write_info" type="stack_write_info"/>
     <place name="give_back_trace" type="long"/>
 
     <transition name="extract_eat_slot">
@@ -279,7 +279,7 @@
 
     <place name="empty_slot" type="long"/>
 
-    <place name="new_package" type="loaded_package"/>
+    <place name="new_package" type="stack_loaded_package"/>
     <place name="num_packages" type="long"/>
 
     <transition name="generate_package" inline="true">
@@ -292,9 +292,9 @@
 
     <transition name="load">
       <defun>
-        <in name="package" type="loaded_package"/>
+        <in name="package" type="stack_loaded_package"/>
         <in name="config" type="stack_config"/>
-        <out name="package" type="loaded_package"/>
+        <out name="package" type="stack_loaded_package"/>
         <module name="stack" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
@@ -348,13 +348,13 @@
       <connect-out port="package" place="loaded_package"/>
     </transition>
 
-    <place name="loaded_package" type="loaded_package"/>
+    <place name="loaded_package" type="stack_loaded_package"/>
 
     <transition name="stack">
       <defun>
-        <in name="package" type="loaded_package"/>
+        <in name="package" type="stack_loaded_package"/>
         <in name="config" type="stack_config"/>
-        <out name="package" type="loaded_package"/>
+        <out name="package" type="stack_loaded_package"/>
         <module name="stack" function="stack (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
@@ -390,8 +390,8 @@
       <connect-out port="package" place="package"/>
     </transition>
 
-    <place name="package" type="loaded_package"/>
-    <place name="package_check_done" type="loaded_package" capacity="1"/>
+    <place name="package" type="stack_loaded_package"/>
+    <place name="package_check_done" type="stack_loaded_package" capacity="1"/>
 
     <transition name="select_package">
       <use name="select_package"/>
@@ -401,8 +401,8 @@
 
     <transition name="package_done">
       <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
+        <in name="package" type="stack_loaded_package"/>
+        <out name="package" type="stack_loaded_package"/>
         <expression></expression>
         <condition>
           ${package.package.left.extendable} :eq: false
@@ -417,8 +417,8 @@
 
     <transition name="package_not_done">
       <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
+        <in name="package" type="stack_loaded_package"/>
+        <out name="package" type="stack_loaded_package"/>
         <expression></expression>
         <condition>
           (${package.package.left.extendable} :eq: true)
@@ -430,16 +430,16 @@
       <connect-out port="package" place="not_done_package"/>
     </transition>
 
-    <place name="done_package" type="loaded_package" capacity="1"/>
-    <place name="not_done_package" type="loaded_package" capacity="1"/>
+    <place name="done_package" type="stack_loaded_package" capacity="1"/>
+    <place name="not_done_package" type="stack_loaded_package" capacity="1"/>
 
-    <place name="packages_to_match" type="loaded_package"/>
+    <place name="packages_to_match" type="stack_loaded_package"/>
 
     <transition name="match" priority="1">
       <defun>
-        <in name="x" type="loaded_package"/>
-        <in name="y" type="loaded_package"/>
-        <out name="p" type="pair_of_packages"/>
+        <in name="x" type="stack_loaded_package"/>
+        <in name="y" type="stack_loaded_package"/>
+        <out name="p" type="stack_pair_of_packages"/>
         <expression>
           ${p.x} := ${x}; ${p.y} := ${y}
         </expression>
@@ -454,12 +454,12 @@
       <connect-out port="p" place="pair_of_packages"/>
     </transition>
 
-    <place name="pair_of_packages" type="pair_of_packages"/>
+    <place name="pair_of_packages" type="stack_pair_of_packages"/>
 
     <transition name="no_match">
       <defun>
-        <in name="x" type="loaded_package"/>
-        <out name="x" type="loaded_package"/>
+        <in name="x" type="stack_loaded_package"/>
+        <out name="x" type="stack_loaded_package"/>
         <expression></expression>
       </defun>
       <connect-in port="x" place="not_done_package"/>
@@ -468,9 +468,9 @@
 
     <transition name="stack2">
       <defun>
-        <in name="p" type="pair_of_packages"/>
+        <in name="p" type="stack_pair_of_packages"/>
         <in name="config" type="stack_config"/>
-        <out name="p" type="pair_of_packages"/>
+        <out name="p" type="stack_pair_of_packages"/>
         <module name="stack" function="stack2 (p, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -478,12 +478,12 @@
           <cinclude href="comm.hpp"/>
           <cinclude href="process.hpp"/>
           <code><![CDATA[
-            ::pnetc::type::loaded_package::loaded_package & left
+            ::pnetc::type::stack_loaded_package::stack_loaded_package & left
               ( (p.x.package.left.trace == p.y.package.right.trace)
               ? p.y
               : p.x
               );
-            ::pnetc::type::loaded_package::loaded_package & right
+            ::pnetc::type::stack_loaded_package::stack_loaded_package & right
               ( (p.x.package.left.trace == p.y.package.right.trace)
               ? p.x
               : p.y
@@ -564,13 +564,13 @@
       <connect-out port="p" place="done_pair_of_packages"/>
     </transition>
 
-    <place name="done_pair_of_packages" type="pair_of_packages"/>
+    <place name="done_pair_of_packages" type="stack_pair_of_packages"/>
 
     <transition name="unpair">
       <defun>
-        <in name="p" type="pair_of_packages"/>
-        <out name="x" type="loaded_package"/>
-        <out name="y" type="loaded_package"/>
+        <in name="p" type="stack_pair_of_packages"/>
+        <out name="x" type="stack_loaded_package"/>
+        <out name="y" type="stack_loaded_package"/>
         <expression>
           ${x} := ${p.x};
           ${y} := ${p.y};
@@ -581,12 +581,12 @@
       <connect-out port="y" place="done_package_2"/>
     </transition>
 
-    <place name="done_package_1" type="loaded_package"/>
-    <place name="done_package_2" type="loaded_package"/>
+    <place name="done_package_1" type="stack_loaded_package"/>
+    <place name="done_package_2" type="stack_loaded_package"/>
 
     <defun name="select_package">
-      <in name="x" type="loaded_package"/>
-      <out name="x" type="loaded_package"/>
+      <in name="x" type="stack_loaded_package"/>
+      <out name="x" type="stack_loaded_package"/>
       <expression></expression>
     </defun>
 
@@ -604,8 +604,8 @@
 
     <transition name="take_nonzero">
       <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
+        <in name="package" type="stack_loaded_package"/>
+        <out name="package" type="stack_loaded_package"/>
         <expression></expression>
       </defun>
       <condition>
@@ -617,8 +617,8 @@
 
     <transition name="clear_zero">
       <defun>
-        <in name="package" type="loaded_package"/>
-        <out name="package" type="loaded_package"/>
+        <in name="package" type="stack_loaded_package"/>
+        <out name="package" type="stack_loaded_package"/>
         <expression>
         </expression>
       </defun>
@@ -629,14 +629,14 @@
       <connect-out port="package" place="loaded_package_finished"/>
     </transition>
 
-    <place name="writeable_package" type="loaded_package"/>
+    <place name="writeable_package" type="stack_loaded_package"/>
 
     <transition name="select_writeable">
       <defun>
-        <in name="write_info" type="write_info"/>
-        <out name="write_info" type="write_info"/>
-        <in name="p" type="loaded_package"/>
-        <out name="w" type="package_to_be_written"/>
+        <in name="write_info" type="stack_write_info"/>
+        <out name="write_info" type="stack_write_info"/>
+        <in name="p" type="stack_loaded_package"/>
+        <out name="w" type="stack_package_to_be_written"/>
         <expression>
           ${w.loaded_package} := ${p};
           ${w.offset} := ${write_info.offset};
@@ -654,13 +654,13 @@
       <connect-out port="w" place="package_to_be_written"/>
     </transition>
 
-    <place name="package_to_be_written" type="package_to_be_written"/>
+    <place name="package_to_be_written" type="stack_package_to_be_written"/>
 
     <transition name="write">
       <defun>
-        <in name="package_to_be_written" type="package_to_be_written"/>
+        <in name="package_to_be_written" type="stack_package_to_be_written"/>
         <in name="config" type="stack_config"/>
-        <out name="p" type="loaded_package"/>
+        <out name="p" type="stack_loaded_package"/>
         <module name="stack" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -669,7 +669,7 @@
           <cinclude href="comm.hpp"/>
           <link href="@SDPA_LIBEXEC@/libdo_write.so"/>
           <code><![CDATA[
-            const ::pnetc::type::loaded_package::loaded_package & p
+            const ::pnetc::type::stack_loaded_package::stack_loaded_package & p
               (package_to_be_written.loaded_package);
 
             LOG (INFO, "WRITE " << ::print::loaded_package (p)
@@ -708,14 +708,14 @@
       <connect-out port="p" place="package_written"/>
     </transition>
 
-    <place name="package_written" type="loaded_package"/>
+    <place name="package_written" type="stack_loaded_package"/>
 
     <transition name="back_loaded_package">
       <defun>
-        <in name="loaded_package" type="loaded_package"/>
+        <in name="loaded_package" type="stack_loaded_package"/>
         <in name="give_back_trace" type="long"/>
         <out name="give_back_trace" type="long"/>
-        <out name="loaded_package" type="loaded_package"/>
+        <out name="loaded_package" type="stack_loaded_package"/>
         <expression>
           ${give_back_trace} := ${loaded_package.package.right.trace};
         </expression>
@@ -729,12 +729,12 @@
       <connect-out port="give_back_trace" place="give_back_trace"/>
     </transition>
 
-    <place name="loaded_package_finished" type="loaded_package"/>
+    <place name="loaded_package_finished" type="stack_loaded_package"/>
 
     <transition name="back_store">
       <defun>
-        <in name="loaded_package" type="loaded_package"/>
-        <out name="package" type="package"/>
+        <in name="loaded_package" type="stack_loaded_package"/>
+        <out name="package" type="stack_package"/>
         <out name="slot" type="long"/>
         <expression>
           ${package} := ${loaded_package.package};
@@ -746,11 +746,11 @@
       <connect-out port="slot" place="empty_slot"/>
     </transition>
 
-    <place name="package_finished" type="package"/>
+    <place name="package_finished" type="stack_package"/>
 
     <include-template href="wait.xml"/>
     <specialize name="wait_package" use="wait">
-      <type-map replace="T" with="package"/>
+      <type-map replace="T" with="stack_package"/>
     </specialize>
 
     <transition name="wait_package">
@@ -842,7 +842,7 @@
       <defun>
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
-        <in name="write_info" type="write_info"/>
+        <in name="write_info" type="stack_write_info"/>
         <in name="give_back_trace" type="long"/>
 
         <out name="done" type="control"/>
