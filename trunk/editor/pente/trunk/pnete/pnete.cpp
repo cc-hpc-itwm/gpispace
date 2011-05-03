@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
   }
   settings.endArray();
 
-  w.show();
+  w.showMaximized();
   splash.finish(&w);
   return a.exec();
 }

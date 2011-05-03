@@ -60,7 +60,7 @@ namespace fhg
       void MainWindow::setupMenuAndToolbar()
       {
         setWindowTitle(tr("SDPA editor"));
-        resize(800, 600);
+        resize(600+250, 600+20);
        
         //! \todo icons for toolbar.
         QAction* saveAction = new QAction(tr("Save"), this);
@@ -122,7 +122,7 @@ namespace fhg
         QGridLayout* centralLayout = new QGridLayout(centralWidget);
         centralLayout->setContentsMargins(2, 2, 2, 2);
         
-        _scene = new graph::Scene(QRectF(-500.0, -500.0, 1000.0, 1000.0), this);
+        _scene = new graph::Scene(QRectF(-2000.0, -2000.0, 4000.0, 4000.0), this);
         _graphicsView = new GraphView(_scene, centralWidget);
         
         centralLayout->addWidget(_graphicsView);
