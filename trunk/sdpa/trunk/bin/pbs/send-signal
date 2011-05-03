@@ -1,0 +1,56 @@
+#!/bin/sh
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: `basename $0` [options]
+
+    -h: print this help
+    -n name : name of the component to send the signal to
+    -s signal : signal to send (parameter to kill -SIGNAL)
+EOF
+}
+
+sig=
+name=
+
+while getopts ":hs:n:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	n)
+	    name="$OPTARG"
+	    ;;
+	s)
+	    sig="$OPTARG"
+	    ;;
+	\?)
+	    echo "invalid option: -$OPTARG" >&2
+	    echo "try: $0 -h" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+if [ -z "$sig" ] ; then
+    echo "no signal given!" >&2
+    exit 2
+fi
+
+if [ -z "$name" ] ; then
+    echo "no command given!" >&2
+    exit 2
+fi
+
+pid=$(ps -C "$name" -o pid=)
+rc=$?
+if [ $rc != 0 -o -z "$pid" ] ; then
+    echo "no such process: $name" >&2
+    exit 3
+fi
+
+kill -s "$sig" $pid

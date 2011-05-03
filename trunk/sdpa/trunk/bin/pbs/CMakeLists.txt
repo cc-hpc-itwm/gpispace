@@ -10,6 +10,7 @@ set (prgs
   start-pc
   stop-nre
   stop-pc
+  send-signal
 )
 
 install(PROGRAMS ${prgs}

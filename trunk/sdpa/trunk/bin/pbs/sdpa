@@ -868,6 +868,29 @@ function node_loop ()
     return $rc
 }
 
+function kill_pc ()
+{
+    if [ $# -ne 1 ] ; then
+	echo "you have to specify a signal to send!" >&2
+	return 1
+    fi
+    node_loop send_signal_to_pc "" $@
+}
+
+function send_signal_to_pc ()
+{
+    local node=$1 ; shift
+    local rank=$1 ; shift
+    local sig=$1 ; shift
+    echo send-signal -n "nre-pcd" -s "$sig" | ssh -T -x "$node" 2>&1
+    if [ $? -ne 0 ] ; then
+	echo "could not send signal $sig to pc on node $node" >&2
+	return 1
+    else
+	return 0
+    fi
+}
+
 function start_pc ()
 {
     sleep 1
@@ -1467,6 +1490,14 @@ case "$1" in
 	if test -f "$state_dir/sdpa.env" ; then
 	    echo source "$state_dir/sdpa.env"\;
 	fi
+	;;
+    unload)
+	if ! on_master_node ; then
+	    log "E: not on master node"
+	    exit 1
+	fi
+	shift
+	kill_pc HUP
 	;;
     selftest)
 	if ! on_master_node ; then
