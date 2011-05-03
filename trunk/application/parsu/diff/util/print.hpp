@@ -1,9 +1,9 @@
 #ifndef _PRINT_HPP
 #define _PRINT_HPP 1
 
-#include <pnetc/type/package.hpp>
-#include <pnetc/type/loaded_package.hpp>
-#include <pnetc/type/package_to_be_written.hpp>
+#include <pnetc/type/diff_package.hpp>
+#include <pnetc/type/diff_loaded_package.hpp>
+#include <pnetc/type/diff_package_to_be_written.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -11,7 +11,7 @@
 
 namespace print
 {
-  inline std::string package (const ::pnetc::type::package::package & p)
+  inline std::string package (const ::pnetc::type::diff_package::diff_package & p)
   {
     std::ostringstream os;
 
@@ -29,7 +29,7 @@ namespace print
   }
 
   inline std::string loaded_package
-  (const ::pnetc::type::loaded_package::loaded_package & p)
+  (const ::pnetc::type::diff_loaded_package::diff_loaded_package & p)
   {
     std::ostringstream os;
 
@@ -41,7 +41,7 @@ namespace print
   }
 
   inline std::string package_to_be_written
-  (const ::pnetc::type::package_to_be_written::package_to_be_written & p)
+  (const ::pnetc::type::diff_package_to_be_written::diff_package_to_be_written & p)
   {
     std::ostringstream os;
 

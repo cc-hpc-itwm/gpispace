@@ -1,8 +1,8 @@
 #ifndef _COMM_HPP
 #define _COMM_HPP 1
 
-#include <pnetc/type/config.hpp>
-#include <pnetc/type/loaded_package.hpp>
+#include <pnetc/type/diff_config.hpp>
+#include <pnetc/type/diff_loaded_package.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -15,8 +15,8 @@
 namespace comm
 {
   inline void put
-  ( const ::pnetc::type::config::config config
-  , const ::pnetc::type::loaded_package::loaded_package package
+  ( const ::pnetc::type::diff_config::diff_config config
+  , const ::pnetc::type::diff_loaded_package::diff_loaded_package package
   , const long shmem_offset = 0
   )
   {
@@ -39,8 +39,8 @@ namespace comm
   }
 
   inline void get
-  ( const ::pnetc::type::config::config config
-  , const ::pnetc::type::loaded_package::loaded_package package
+  ( const ::pnetc::type::diff_config::diff_config config
+  , const ::pnetc::type::diff_loaded_package::diff_loaded_package package
   , const long shmem_offset = 0
   )
   {

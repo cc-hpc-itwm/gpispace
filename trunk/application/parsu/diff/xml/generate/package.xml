@@ -1,14 +1,14 @@
 <defun>
 
-  <in name="config" type="config" place="config"/>
-  <out name="package" type="loaded_package" place="package"/>
+  <in name="config" type="diff_config" place="config"/>
+  <out name="package" type="diff_loaded_package" place="package"/>
   <out name="num" type="long" place="num"/>
 
   <net>
 
-    <place name="config" type="config"/>
+    <place name="config" type="diff_config"/>
 
-    <place name="package" type="loaded_package"/>
+    <place name="package" type="diff_loaded_package"/>
     <place name="num" type="long"/>
 
     <struct name="state">
@@ -23,7 +23,7 @@
 
     <transition name="init">
       <defun>
-        <in name="config" type="config"/>
+        <in name="config" type="diff_config"/>
         <out name="state" type="state"/>
         <out name="num" type="long"/>
         <expression>
@@ -71,7 +71,7 @@
         <in name="state" type="state"/>
         <in name="slot" type="long"/>
         <out name="state" type="state"/>
-        <out name="loaded_package" type="loaded_package"/>
+        <out name="loaded_package" type="diff_loaded_package"/>
         <expression>
           ${package.left} := ${state.id};
 
