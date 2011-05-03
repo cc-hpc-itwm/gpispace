@@ -2,7 +2,7 @@
 #define _COMM_HPP 1
 
 #include <pnetc/type/op2_config.hpp>
-#include <pnetc/type/loaded_package.hpp>
+#include <pnetc/type/op2_loaded_package.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -16,7 +16,7 @@ namespace comm
 {
   inline void put
   ( const ::pnetc::type::op2_config::op2_config config
-  , const ::pnetc::type::loaded_package::loaded_package package
+  , const ::pnetc::type::op2_loaded_package::op2_loaded_package package
   , const long shmem_offset = 0
   )
   {
@@ -40,7 +40,7 @@ namespace comm
 
   inline void get
   ( const ::pnetc::type::op2_config::op2_config config
-  , const ::pnetc::type::loaded_package::loaded_package package
+  , const ::pnetc::type::op2_loaded_package::op2_loaded_package package
   , const long shmem_offset = 0
   )
   {

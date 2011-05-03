@@ -12,7 +12,7 @@
 
   <out name="done" type="control" place="done"/>
 
-  <struct name="package">
+  <struct name="op2_package">
     <field name="left" type="long"/>
     <field name="right" type="long"/>
     <struct name="num">
@@ -23,18 +23,18 @@
     </struct>
   </struct>
 
-  <struct name="loaded_package">
-    <field name="package" type="package"/>
+  <struct name="op2_loaded_package">
+    <field name="package" type="op2_package"/>
     <field name="slot" type="long"/>
   </struct>
 
-  <struct name="write_info">
+  <struct name="op2_write_info">
     <field name="next_trace" type="long"/>
     <field name="offset" type="long"/>
   </struct>
 
-  <struct name="package_to_be_written">
-    <field name="loaded_package" type="loaded_package"/>
+  <struct name="op2_package_to_be_written">
+    <field name="loaded_package" type="op2_loaded_package"/>
     <field name="offset" type="long"/>
   </struct>
 
@@ -135,7 +135,7 @@
         <in name="shmem_per_node" type="long"/>
         <in name="gpi_mem_per_node" type="long"/>
         <in name="op" type="string"/>
-        <out name="write_info" type="write_info"/>
+        <out name="write_info" type="op2_write_info"/>
         <out name="give_back_trace" type="long"/>
         <out name="config" type="op2_config"/>
         <module name="op2" function="init ( file1_input
@@ -284,7 +284,7 @@
     <place name="config_generate_package" type="op2_config"/>
     <place name="config_generate_slot" type="op2_config"/>
 
-    <place name="write_info" type="write_info"/>
+    <place name="write_info" type="op2_write_info"/>
     <place name="give_back_trace" type="long"/>
 
     <transition name="extract_eat_slot">
@@ -315,7 +315,7 @@
 
     <place name="empty_slot" type="long"/>
 
-    <place name="new_package" type="loaded_package"/>
+    <place name="new_package" type="op2_loaded_package"/>
     <place name="num_packages" type="long"/>
 
     <transition name="generate_package" inline="true">
@@ -328,9 +328,9 @@
 
     <transition name="load">
       <defun>
-        <in name="package" type="loaded_package"/>
+        <in name="package" type="op2_loaded_package"/>
         <in name="config" type="op2_config"/>
-        <out name="package" type="loaded_package"/>
+        <out name="package" type="op2_loaded_package"/>
         <module name="op2" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="do_load.hpp"/>
@@ -395,13 +395,13 @@
       <connect-out port="package" place="loaded_package"/>
     </transition>
 
-    <place name="loaded_package" type="loaded_package"/>
+    <place name="loaded_package" type="op2_loaded_package"/>
 
     <transition name="op2">
       <defun>
-        <in name="package" type="loaded_package"/>
+        <in name="package" type="op2_loaded_package"/>
         <in name="config" type="op2_config"/>
-        <out name="package" type="loaded_package"/>
+        <out name="package" type="op2_loaded_package"/>
         <module name="op2" function="op2 (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="print.hpp"/>
@@ -457,14 +457,14 @@
       <connect-out port="package" place="writeable_package"/>
     </transition>
 
-    <place name="writeable_package" type="loaded_package"/>
+    <place name="writeable_package" type="op2_loaded_package"/>
 
     <transition name="select_writeable">
       <defun>
-        <in name="write_info" type="write_info"/>
-        <out name="write_info" type="write_info"/>
-        <in name="p" type="loaded_package"/>
-        <out name="w" type="package_to_be_written"/>
+        <in name="write_info" type="op2_write_info"/>
+        <out name="write_info" type="op2_write_info"/>
+        <in name="p" type="op2_loaded_package"/>
+        <out name="w" type="op2_package_to_be_written"/>
         <expression>
           ${w.loaded_package} := ${p};
           ${w.offset} := ${write_info.offset};
@@ -485,13 +485,13 @@
       <connect-out port="w" place="package_to_be_written"/>
     </transition>
 
-    <place name="package_to_be_written" type="package_to_be_written"/>
+    <place name="package_to_be_written" type="op2_package_to_be_written"/>
 
     <transition name="write">
       <defun>
-        <in name="package_to_be_written" type="package_to_be_written"/>
+        <in name="package_to_be_written" type="op2_package_to_be_written"/>
         <in name="config" type="op2_config"/>
-        <out name="p" type="loaded_package"/>
+        <out name="p" type="op2_loaded_package"/>
         <module name="op2" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -500,7 +500,7 @@
           <cinclude href="comm.hpp"/>
           <link href="@SDPA_LIBEXEC@/libdo_write.so"/>
           <code><![CDATA[
-            const ::pnetc::type::loaded_package::loaded_package & p
+            const ::pnetc::type::op2_loaded_package::op2_loaded_package & p
               (package_to_be_written.loaded_package);
 
             LOG (INFO, "WRITE " << ::print::loaded_package (p)
@@ -539,14 +539,14 @@
       <connect-out port="p" place="package_written"/>
     </transition>
 
-    <place name="package_written" type="loaded_package"/>
+    <place name="package_written" type="op2_loaded_package"/>
 
     <transition name="back_loaded_package">
       <defun>
-        <in name="loaded_package" type="loaded_package"/>
+        <in name="loaded_package" type="op2_loaded_package"/>
         <in name="give_back_trace" type="long"/>
         <out name="give_back_trace" type="long"/>
-        <out name="loaded_package" type="loaded_package"/>
+        <out name="loaded_package" type="op2_loaded_package"/>
         <expression>
           ${give_back_trace} := ${loaded_package.package.right};
         </expression>
@@ -560,12 +560,12 @@
       <connect-out port="give_back_trace" place="give_back_trace"/>
     </transition>
 
-    <place name="loaded_package_finished" type="loaded_package"/>
+    <place name="loaded_package_finished" type="op2_loaded_package"/>
 
     <transition name="back_store">
       <defun>
-        <in name="loaded_package" type="loaded_package"/>
-        <out name="package" type="package"/>
+        <in name="loaded_package" type="op2_loaded_package"/>
+        <out name="package" type="op2_package"/>
         <out name="slot" type="long"/>
         <expression>
           ${package} := ${loaded_package.package};
@@ -577,11 +577,11 @@
       <connect-out port="slot" place="empty_slot"/>
     </transition>
 
-    <place name="package_finished" type="package"/>
+    <place name="package_finished" type="op2_package"/>
 
     <include-template href="wait.xml"/>
     <specialize name="wait_package" use="wait">
-      <type-map replace="T" with="package"/>
+      <type-map replace="T" with="op2_package"/>
     </specialize>
 
     <transition name="wait_package">
@@ -673,7 +673,7 @@
       <defun>
         <in name="done_eat" type="control"/>
         <in name="done_finalize" type="control"/>
-        <in name="write_info" type="write_info"/>
+        <in name="write_info" type="op2_write_info"/>
         <in name="give_back_trace" type="long"/>
 
         <out name="done" type="control"/>
