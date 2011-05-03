@@ -13,22 +13,10 @@ fi
 xml_file_in="${optwo_dir}/op2.xml.in"
 mk_xml="${optwo_dir}/mk.xml"
 
-xml_file=$( mktemp "${tmp_dir}/parsu_op2.xml.XXXXXX" )
-if [ $? -ne 0 ] ; then
-  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
-  exit 2
-fi
-
-pnet_file=$( mktemp "${tmp_dir}/parsu_op2.pnet.XXXXXX" )
-if [ $? -ne 0 ] ; then
-  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
-  exit 2
-fi
-
 shmem_per_node_default=$((2**28))
 gpi_mem_per_node_default=$((2**30))
 
-if [ $# -lt 5 ]; then
+if [ $# -lt 7 ]; then
   echo "usage: $0 input-file1 input-type1 input-file2 input-type2 output-file output-type operation [shmem-per-node:${shmem_per_node_default}] [gpi-mem-per-node:${gpi_mem_per_node_default}]"
   exit 1
 fi
@@ -53,6 +41,25 @@ if [ ! -r "${in2f}" ] ; then
   exit 1
 fi
 
+cleanup ()
+{
+  rm -f "${xml_file}"
+  rm -f "${pnet_file}"
+}
+trap cleanup EXIT
+
+xml_file=$( mktemp "${tmp_dir}/parsu_op2.xml.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
+  exit 2
+fi
+
+pnet_file=$( mktemp "${tmp_dir}/parsu_op2.pnet.XXXXXX" )
+if [ $? -ne 0 ] ; then
+  echo "could not create temporary file in ${tmp_dir}" >/dev/stderr
+  exit 2
+fi
+
 abspath ()
 {
   p="$1"
@@ -75,13 +82,6 @@ abs_in2f="$REPLY"
 
 abspath "${outf}"
 abs_outf="$REPLY"
-
-cleanup ()
-{
-  rm -f "${xml_file}"
-  rm -f "${pnet_file}"
-}
-trap cleanup EXIT
 
 echo -n "-: generating job description..." >/dev/stderr
 
