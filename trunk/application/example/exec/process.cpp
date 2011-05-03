@@ -84,6 +84,15 @@ namespace process
 
     /* ********************************************************************* */
 
+    inline void try_close (int * fd)
+    {
+      close (*fd);
+
+      *fd = -1;
+    }
+
+    /* ********************************************************************* */
+
     enum {RD = 0, WR = 1};
 
     /* ********************************************************************* */
@@ -600,6 +609,22 @@ namespace process
 
         waitpid (pid, &status, 0);
 
+
+        DLOG (TRACE, "join threads");
+
+        thread_buf_stdin.join();
+        thread_buf_stdout.join();
+        thread_buf_stderr.join();
+
+        writers.join_all();
+        readers.join_all();
+
+        DLOG (TRACE, "close pipes");
+
+        detail::try_close (in + detail::WR);
+        detail::try_close (out + detail::RD);
+        detail::try_close (err + detail::RD);
+
         if (WIFEXITED (status))
           {
             const int ec (WEXITSTATUS(status));
@@ -619,15 +644,6 @@ namespace process
           {
             detail::put_error ("strange child status", status);
           }
-
-        DLOG (TRACE, "join threads");
-
-        thread_buf_stdin.join();
-        thread_buf_stdout.join();
-        thread_buf_stderr.join();
-
-        writers.join_all();
-        readers.join_all();
 
         DMLOG (TRACE, "finished command: " << command);
       }
