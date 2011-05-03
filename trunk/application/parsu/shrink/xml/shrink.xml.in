@@ -46,7 +46,7 @@
     <field name="type" type="string"/>
   </struct>
 
-  <struct name="config">
+  <struct name="shrink_config">
     <struct name="file">
       <field name="input" type="file"/>
       <field name="output" type="file"/>
@@ -85,7 +85,7 @@
 
     <include-template href="triple.xml"/>
     <specialize name="triple_config" use="triple">
-      <type-map replace="T" with="config"/>
+      <type-map replace="T" with="shrink_config"/>
     </specialize>
 
     <!-- tuning -->
@@ -126,7 +126,7 @@
         <in name="cmd" type="string"/>
         <out name="write_info" type="write_info"/>
         <out name="give_back_trace" type="long"/>
-        <out name="config" type="config"/>
+        <out name="config" type="shrink_config"/>
         <module name="shrink"
                 function="init ( file_input
                                , type_input
@@ -230,7 +230,7 @@
       <connect-out port="config" place="config_generated"/>
     </transition>
 
-    <place name="config_generated" type="config"/>
+    <place name="config_generated" type="shrink_config"/>
 
     <transition name="scatter_config" inline="true">
       <use name="triple_config"/>
@@ -240,9 +240,9 @@
       <connect-out port="three" place="config_generate_slot"/>
     </transition>
 
-    <place name="config" type="config"/>
-    <place name="config_generate_package" type="config"/>
-    <place name="config_generate_slot" type="config"/>
+    <place name="config" type="shrink_config"/>
+    <place name="config_generate_package" type="shrink_config"/>
+    <place name="config_generate_slot" type="shrink_config"/>
 
     <place name="write_info" type="write_info"/>
     <place name="give_back_trace" type="long"/>
@@ -250,8 +250,8 @@
     <transition name="extract_eat_slot">
       <defun>
         <in name="trigger" type="control"/>
-        <in name="config" type="config"/>
-        <out name="config" type="config"/>
+        <in name="config" type="shrink_config"/>
+        <out name="config" type="shrink_config"/>
         <out name="N" type="long"/>
         <expression>
           ${N} := ${config.num.slot}
@@ -263,7 +263,7 @@
       <connect-out port="N" place="num_slot_eat"/>
     </transition>
 
-    <place name="config_finalize" type="config"/>
+    <place name="config_finalize" type="shrink_config"/>
 
     <place name="num_slot_eat" type="long"/>
 
@@ -289,7 +289,7 @@
     <transition name="load">
       <defun>
         <in name="package" type="loaded_package"/>
-        <in name="config" type="config"/>
+        <in name="config" type="shrink_config"/>
         <out name="package" type="loaded_package"/>
         <module name="shrink" function="load (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -349,7 +349,7 @@
     <transition name="shrink">
       <defun>
         <in name="package" type="loaded_package"/>
-        <in name="config" type="config"/>
+        <in name="config" type="shrink_config"/>
         <out name="package" type="loaded_package"/>
         <module name="shrink" function="shrink (package, config)">
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -424,7 +424,7 @@
     <transition name="write">
       <defun>
         <in name="package_to_be_written" type="package_to_be_written"/>
-        <in name="config" type="config"/>
+        <in name="config" type="shrink_config"/>
         <out name="p" type="loaded_package"/>
         <module name="shrink" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
@@ -532,7 +532,7 @@
 
     <transition name="finalize">
       <defun>
-        <in name="config" type="config"/>
+        <in name="config" type="shrink_config"/>
         <out name="trigger" type="control"/>
         <module name="shrink" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>

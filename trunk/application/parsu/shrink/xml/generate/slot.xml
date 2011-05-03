@@ -1,16 +1,16 @@
 <defun>
 
-  <in name="config" type="config" place="config"/>
+  <in name="config" type="shrink_config" place="config"/>
   <out name="slot" type="long" place="slot"/>
 
   <net>
 
-    <place name="config" type="config"/>
+    <place name="config" type="shrink_config"/>
     <place name="slot" type="long"/>
 
     <transition name="extractN">
       <defun>
-        <in name="config" type="config"/>
+        <in name="config" type="shrink_config"/>
         <out name="N" type="long"/>
         <expression>
           ${N} := ${config.num.slot};
