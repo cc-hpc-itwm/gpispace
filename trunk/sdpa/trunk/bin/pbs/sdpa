@@ -1385,6 +1385,7 @@ if [ "$1" = "init" ] ; then
 	log "E: could not initialize!"
 	exit 1
     else
+	log "I: please don't forget to execute \"eval \$(sdpa load)\""
 	exit 0
     fi
 fi
