@@ -1,7 +1,7 @@
 #ifndef _COMM_HPP
 #define _COMM_HPP 1
 
-#include <pnetc/type/config.hpp>
+#include <pnetc/type/stack_config.hpp>
 #include <pnetc/type/loaded_package.hpp>
 
 #include <iostream>
@@ -15,7 +15,7 @@
 namespace comm
 {
   inline void put
-  ( const ::pnetc::type::config::config config
+  ( const ::pnetc::type::stack_config::stack_config config
   , const ::pnetc::type::loaded_package::loaded_package package
   , const long shmem_offset = 0
   )
@@ -46,7 +46,7 @@ namespace comm
   }
 
   inline void get
-  ( const ::pnetc::type::config::config config
+  ( const ::pnetc::type::stack_config::stack_config config
   , const ::pnetc::type::loaded_package::loaded_package package
   , const long shmem_offset = 0
   )
