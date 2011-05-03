@@ -1,9 +1,24 @@
+#!/bin/sh
 
-cat $PBS_NODEFILE | \
-         sort -u  | \
-         perl -e 'while (<>) { print $c++, " ", $_}' | \
-         while read line; do
-           echo "sh un.xosview $line"
-         done > sc.xosview
+if [ $# -lt 1 ] ; then
+   echo "usage: $(basename $0) nodefile" >&2
+   exit 1
+fi
 
-sh sc.xosview
+nodefile="$1" ; shift
+
+if ! test -e "$nodefile" ; then
+    echo "node-file \"$nodefile\" does not exist!" >&2
+    exit 2
+fi
+
+cat "$nodefile" | \
+    sort -u  | \
+    perl -e 'while (<>) { print $c++, " ", $_}' | \
+    while read line; do
+    echo "sh un.xosview $line"
+done > sc.xosview
+
+sh sc.xosview > pids.xosview
+echo "wrote pids to pids.xosview" >&2
+echo "# xargs kill < pids.xosview" >&2
