@@ -260,16 +260,23 @@ int main (int ac, char *av[])
       const std::string config_file (*p);
       if (files_seen.find (config_file) == files_seen.end())
       {
+        namespace fs = boost::filesystem;
+
         LOG(TRACE, "trying to read config from: " << config_file);
-        try
+
+        files_seen[config_file] = true;
+
+        if (fs::exists(fs::path(config_file)))
         {
-          gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
-          files_seen[config_file] = true;
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(WARN, "could not read config file: " << config_file << ": " << ex.what());
-          continue;
+          try
+          {
+            gpi_space::parser::parse (config_file, boost::ref(cfg_parser));
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "could not read config file: " << config_file << ": " << ex.what());
+            return EXIT_FAILURE;
+          }
         }
       }
     }

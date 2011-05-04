@@ -902,7 +902,7 @@ function send_signal_to_pc ()
     local node=$1 ; shift
     local rank=$1 ; shift
     local sig=$1 ; shift
-    echo send-signal -n "nre-pcd" -s "$sig" | ssh -T -x "$node" 2>&1
+    echo "$SDPA_HOME/bin/send-signal" -n "nre-pcd" -s "$sig" | ssh -T -x "$node" 2>&1
     if [ $? -ne 0 ] ; then
 	echo "could not send signal $sig to pc on node $node" >&2
 	return 1
@@ -924,7 +924,7 @@ function start_pc_on_node ()
     local rank=$1 ; shift
 
     rm -f "$SDPA_LOG_DIR/pc.$node.log"
-    echo start-pc -D -r $rank $@ | ssh -T -x "$node" >/dev/null 2>&1
+    echo "$SDPA_HOME/bin/start-pc" -D -r $rank $@ | ssh -T -x "$node" >/dev/null 2>&1
     if [ $? -ne 0 ] ; then
 	echo "pc did not startup on node $node: $output" >&2
 	return 1
@@ -946,7 +946,7 @@ function start_nre_on_node ()
     local rank=$1 ; shift
 
     rm -f "$SDPA_LOG_DIR/nre.$node.log"
-    echo start-nre -D $@ | ssh -T -x "$node" >/dev/null 2>&1
+    echo "$SDPA_HOME/bin/start-nre" -D $@ | ssh -T -x "$node" >/dev/null 2>&1
     if [ $? -ne 0 ] ; then
 	echo "nre did not startup on node $node: $output" >&2
 	return 1
@@ -959,7 +959,7 @@ function stop_pc_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    echo stop-pc -r $rank | ssh -T -x $node >/dev/null 2>&1
+    echo "$SDPA_HOME/bin/stop-pc" -r $rank | ssh -T -x $node >/dev/null 2>&1
 }
 
 function stop_pc ()
@@ -972,7 +972,7 @@ function stop_nre_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    echo stop-nre -r $rank | ssh -T -x $node >/dev/null 2>&1
+    echo "$SDPA_HOME/bin/stop-nre" -r $rank | ssh -T -x $node >/dev/null 2>&1
 }
 
 function stop_nre ()
