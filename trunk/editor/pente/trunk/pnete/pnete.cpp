@@ -29,9 +29,10 @@ int main(int argc, char *argv[])
   // splash.show();
   a.processEvents();
 
-  QTranslator translator;
-  translator.load("german", ":/localization/");
-  a.installTranslator(&translator);
+  // TODO: add translation for english
+  // QTranslator translator;
+  // translator.load("german", ":/localization/");
+  // a.installTranslator(&translator);
 
   QSettings settings;
 
