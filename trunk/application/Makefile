@@ -1,10 +1,11 @@
-SUBDIRS = parsu suowmg
+SUBDIRS = parsu suowmg asian/pnet example/pi
+TBZ = applications.tar.bz2
 
 ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS=all
 endif
 
-.PHONY : all $(SUBDIRS)
+.PHONY : all $(SUBDIRS) package
 
 all: $(SUBDIRS)
 
@@ -15,3 +16,8 @@ $(SUBDIRS):
 	for d in $(SUBDIRS) ; do \
 	  make -C $$d $(MAKECMDGOALS) ; \
 	done
+
+package: $(TBZ)
+
+$(TBZ):
+	tar cfjv $@ Makefile $(SUBDIRS)
