@@ -146,7 +146,16 @@ namespace fhg
           w.writeAttribute("name", makeValidName(QString("%2_%1").arg((long)port->parentItem(), 0, 16).arg(port->title())));
           w.writeAttribute("type", port->dataType());
           w.writeAttribute("place", makeValidName(QString("place_%1_%2").arg((long)port->parentItem(), 0, 16).arg(port->title())));
-          w.writeEndElement();
+          if(port->notConnectable())
+          {
+            w.writeStartElement("properties");
+            w.writeAttribute("name", "pnete");
+            w.writeStartElement("property");
+            w.writeAttribute("key", "cant_connect");
+            w.writeEndElement();
+            w.writeEndElement();
+          }
+        w.writeEndElement();
         }
         
         w.writeEndElement();
