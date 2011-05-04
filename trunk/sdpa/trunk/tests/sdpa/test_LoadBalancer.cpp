@@ -29,6 +29,7 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sstream>
 #include <sdpa/JobId.hpp>
+#include <seda/StageRegistry.hpp>
 
 using namespace std;
 using namespace sdpa::tests;
@@ -41,8 +42,8 @@ struct MyFixture
   MyFixture() :SDPA_INIT_LOGGER("sdpa.tests.testLoadBalancer"){}
   ~MyFixture()
   {
-          seda::StageRegistry::instance().stopAll();
-          seda::StageRegistry::instance().clear();
+    seda::StageRegistry::instance().stopAll();
+    seda::StageRegistry::instance().clear();
   }
 
   SDPA_DECLARE_LOGGER();
