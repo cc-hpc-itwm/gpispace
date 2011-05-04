@@ -44,15 +44,6 @@ CREDIT_RUN = 32
 CREDIT_GET_KEY = 1
 SEED = 271828
 
-$(XML_MAIN): $(XML_MAIN_IN) $(DEP)
-	$(CAT) $< | $(MK_XML) "$(NUM_PACKET)" \
-                              "$(POINTS_PER_PACKET)" \
-                              "$(CREDIT_GENERATE)" \
-                              "$(CREDIT_RUN)" \
-                              "$(CREDIT_GET_KEY)" \
-                              "$(SEED)" \
-                              > $@
-
 ###############################################################################
 
 #NOINLINE_NOT_ENDS_WITH += generate
@@ -101,15 +92,24 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 .PHONY: default ps all out net
 
-default: $(OUT)
+default: all
 
 ps: $(PS) $(PS_NOINLINE)
 
 net: $(NET)
 
-all: ps default
+all: ps net $(GEN)
 
 ###############################################################################
+
+$(XML_MAIN): $(XML_MAIN_IN) $(DEP)
+	$(CAT) $< | $(MK_XML) "$(NUM_PACKET)" \
+                              "$(POINTS_PER_PACKET)" \
+                              "$(CREDIT_GENERATE)" \
+                              "$(CREDIT_RUN)" \
+                              "$(CREDIT_GET_KEY)" \
+                              "$(SEED)" \
+                              > $@
 
 $(NET): $(XML_MAIN) $(DEP)
 	$(PNETC) $(XML_MAIN) -o $@
