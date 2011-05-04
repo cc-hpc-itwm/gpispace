@@ -47,13 +47,14 @@ int main(int argc, char** argv)
 {
 	string orch;
 	std::string strFileName;
+	std::string strKvsUrl;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	   ("help", "Display this message. To see logging messages, use FHGLOG_level=MIN and FHGLOG_color=off")
 	   ("orchestrator,o",  po::value<std::string>(&orch)->default_value("orchestrator"), "The orchestrator's name")
 	   ("file,f", po::value<std::string>(&strFileName)->default_value("stresstest.pnet"), "Workflow file name")
-	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
+	   ("kvs_url,k",  po::value<string>(&strKvsUrl), "The kvs daemon's url")
 	   ;
 
 	po::variables_map vm;
@@ -69,30 +70,29 @@ int main(int argc, char** argv)
 
 	FHGLOG_SETUP();
 
-	if( !vm.count("kvs_url") )
+	if( strKvsUrl.empty() )
 	{
 		LOG(ERROR, "The url of the kvs daemon was not specified!");
 		return -1;
 	}
 	else
 	{
+	    boost::char_separator<char> sep(":");
+	    boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
 
-		boost::char_separator<char> sep(":");
-		boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+	    vector< string > vec;
+	    vec.assign(tok.begin(),tok.end());
 
-		vector< string > vec;
-		vec.assign(tok.begin(),tok.end());
-
-		if( vec.size() != 2 )
-		{
-			LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
-			return -1;
-		}
-		else
-		{
-			LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
-			fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
-		}
+	    if( vec.size() != 2 )
+	      {
+	        LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
+	        return -1;
+	      }
+	    else
+	      {
+	        LOG(INFO, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+	        fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(10), 3);
+	      }
 	}
 
 	LOG(INFO, "Starting the user client ...");
@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	boost::this_thread::sleep(boost::posix_time::microseconds(2000000)); //50ms
+	boost::this_thread::sleep(boost::posix_time::microseconds(5000000)); //50ms
 	ptrCli->cancelJob(job_id_user);
 	//LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 	std::cout<<std::endl;
@@ -177,22 +177,22 @@ int main(int argc, char** argv)
 	std::cout<<std::endl;
 	nTrials = 0;
 	try {
-			LOG( INFO, "Retrieve results of the job "<<job_id_user);
-			ptrCli->retrieveResults(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+          LOG( INFO, "Retrieve results of the job "<<job_id_user);
+          ptrCli->retrieveResults(job_id_user);
+          boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-		if(nTrials++ > NMAXTRIALS)
-		{
-			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+          if(nTrials++ > NMAXTRIALS)
+          {
+                  LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return -1;
-		}
+                  ptrCli->shutdown_network();
+                  ptrCli.reset();
+                  return -1;
+          }
 
-		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+          boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 
 	// reset trials counter
@@ -204,16 +204,16 @@ int main(int argc, char** argv)
 	}
 	catch(const sdpa::client::ClientException& cliExc)
 	{
-		if(nTrials++ > NMAXTRIALS)
-		{
-			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+          if(nTrials++ > NMAXTRIALS)
+          {
+            LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return -1;
-		}
+            ptrCli->shutdown_network();
+            ptrCli.reset();
+            return -1;
+          }
 
-		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+          boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 
 	ptrCli->shutdown_network();
