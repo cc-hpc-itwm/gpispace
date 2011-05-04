@@ -16,8 +16,6 @@
  * =====================================================================================
  */
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
-#include <sdpa/daemon/aggregator/Aggregator.hpp>
-
 
 using namespace std;
 using namespace sdpa::daemon;
