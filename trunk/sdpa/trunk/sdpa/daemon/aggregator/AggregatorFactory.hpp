@@ -31,10 +31,10 @@ namespace daemon {
 		template <typename T>
 		struct AggregatorFactory
 		{
-			static Aggregator::ptr_t create( 	const std::string& name,
-												const std::string& url,
-												const std::string& masterName,
-												const std::string& appGuiUrl = "")
+			static Aggregator::ptr_t create(  const std::string& name,
+                                                          const std::string& url,
+                                                          const std::string& masterName,
+                                                          const std::string& appGuiUrl = "")
 			{
 
 
@@ -51,10 +51,10 @@ namespace daemon {
 		template <>
 		struct AggregatorFactory<void>
 		{
-			static Aggregator::ptr_t create( 	const std::string& name,
-												const std::string& url,
-												const std::string& masterName,
-												const std::string& appGuiUrl = "")
+			static Aggregator::ptr_t create(  const std::string& name,
+			                                  const std::string& url,
+			                                  const std::string& masterName,
+			                                  const std::string& appGuiUrl = "")
 			{
 				LOG( DEBUG, "Create Aggregator "<<name<<" with no workflow engine" );
 				Aggregator::ptr_t pAgg( new Aggregator( name, url, masterName, appGuiUrl ) );
