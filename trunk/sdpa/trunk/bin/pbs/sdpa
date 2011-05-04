@@ -429,22 +429,20 @@ used on each node.
 	fi
     fi
 
-    local gpi_api=$(get gpi.api "gpi.api.real")
-    put "gpi.api" "gpi.api.real"
-
     put "gpi.memory_size" "$gpi_size"
     put "api.compat.shm_size" "$shm_size"
     put "gpi.priv_dir" "$gpid_dir"
 
-    put "gpi.timeout" "30"
-    put "gpi.socket_mode" "0700"
-    put "gpi.mtu" "default"
-    put "gpi.network_type" "default"
-    put "gpi.port" "default"
-    put "gpi.processes" "-1"
+    put "gpi.api" $(get gpi.api "gpi.api.real")
+    put "gpi.timeout" $(get gpi.timeout "30")
+    put "gpi.socket_mode" $(get gpi.socket_mode "0700")
+    put "gpi.mtu" $(get gpi.mtu "default")
+    put "gpi.network_type" $(get gpi.network_type "default")
+    put "gpi.port" $(get gpi.port "default")
+    put "gpi.processes" $(get gpi.processes "-1")
 
     local sdpa_temp_dir=$(get "sdpa.temp_dir")
-    local gpi_socket_path="$sdpa_temp_dir/gpi-space"
+    local gpi_socket_path=$(get gpi.socket_path "$sdpa_temp_dir/gpi-space")
     put "gpi.socket_path" "$gpi_socket_path"
     if ! test -d "$gpi_socket_path" ; then
 	if ! mkdir -p "$gpi_socket_path" ; then
@@ -454,7 +452,7 @@ used on each node.
     fi
     chmod 1777 "$gpi_socket_path"
 
-    put "gpi.socket_name" "control"
+    put "gpi.socket_name" $(get gpi.socket_name "control")
 }
 
 function setup_client ()
