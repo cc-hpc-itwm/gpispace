@@ -662,7 +662,29 @@ function cleanup ()
 
 function help ()
 {
-    echo "usage: $0 {start|stop|status|setup|gui|cleanup|submit <file>}" >&2
+    cat >&2 <<EOF
+usage: `basename $0` command [parameters...]
+
+   available commands:
+        setup       - setup SDPA
+        init        - initialize environment file
+                      execute this in a a fresh allocation
+        load        - print instructions to load
+                      the environment file: eval \$(sdpa load)
+     selftest       - perform a self-test
+       config       - dump the current config
+
+  start [component] - start all components or "component"
+   stop [component] - stop all components or "component"
+restart [component] - restart all components or "component"
+ status [component] - get the current status of component
+                gui - start the GUI
+
+      submit <file> - submit a job
+ cancel [job-id...] - cancel the given job or the current job
+     unload-modules - unload modules in the process containers
+
+EOF
     return 0
 }
 
@@ -1392,6 +1414,18 @@ function selftest ()
 #                                                        #
 ##########################################################
 
+if [ "$1" = "help" ] ; then
+    shift
+    help $@
+    exit $?
+fi
+
+if [ "$1" = "version" ] ; then
+    shift
+    sdpac --version
+    exit $?
+fi
+
 if setup_required ; then
     if setup ; then
 	log "I: setup complete"
@@ -1402,8 +1436,15 @@ if setup_required ; then
     fi
 fi
 
+if [ "$1" = "setup" ] ; then
+    shift
+    setup $@
+    exit $?
+fi
+
 if [ "$1" = "init" ] ; then
-    if ! initialize ; then
+    shift
+    if ! initialize $@; then
 	log "E: could not initialize!"
 	exit 1
     else
@@ -1472,10 +1513,6 @@ case "$1" in
 	shift
 	submit $@
 	;;
-    setup)
-	shift
-	setup $@
-	;;
     help)
 	help
 	;;
@@ -1490,7 +1527,7 @@ case "$1" in
 	    echo source "$state_dir/sdpa.env"\;
 	fi
 	;;
-    unload)
+    unload-modules)
 	if ! on_master_node ; then
 	    log "E: not on master node"
 	    exit 1
