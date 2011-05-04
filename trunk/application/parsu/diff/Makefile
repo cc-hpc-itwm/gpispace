@@ -125,13 +125,13 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 .PHONY: default ps all out net
 
-default: $(OUT)
+default: all
 
 ps: $(PS) $(PS_NOINLINE)
 
 net: $(NET)
 
-all: ps default
+all: ps net $(GEN)
 
 ###############################################################################
 
