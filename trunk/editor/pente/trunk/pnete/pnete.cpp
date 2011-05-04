@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
   QCoreApplication::setOrganizationDomain("itwm.fhg.de");
   QCoreApplication::setOrganizationName("Fraunhofer ITWM");
 
-  QPixmap pixmap(":/pente.png");
-  QSplashScreen splash(pixmap);
-  splash.show();
+  // QPixmap pixmap(":/pente.png");
+  // QSplashScreen splash(pixmap);
+  // splash.show();
   a.processEvents();
 
   QTranslator translator;
@@ -90,6 +90,6 @@ int main(int argc, char *argv[])
   settings.endArray();
 
   w.showMaximized();
-  splash.finish(&w);
+  // splash.finish(&w);
   return a.exec();
 }
