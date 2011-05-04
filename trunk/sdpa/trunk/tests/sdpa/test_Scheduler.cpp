@@ -26,6 +26,8 @@
 #include <sdpa/util/util.hpp>
 #include <fstream>
 
+#include <seda/StageRegistry.hpp>
+
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 
