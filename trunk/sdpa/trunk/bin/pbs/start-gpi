@@ -63,9 +63,9 @@ if [ -z "$gpi_bin_path" ] ; then
     exit 1
 fi
 
-gpi_exe_path="$( which ${gpi_exe} 2>/dev/null )"
-if [ ! -f "${gpi_exe_path}" -a ! -x "${gpi_exe_path}" ] ; then
-    log "Sorry, no ${gpi_exe} binary found in PATH"
+gpi_exe_path="$SDPA_HOME/bin/gpi-space"
+if [ ! -x "${gpi_exe_path}" ] ; then
+    log "Sorry, ${gpi_exe} is not executable"
     exit 1
 fi
 gpi_exe="$(basename ${gpi_exe_path})"
