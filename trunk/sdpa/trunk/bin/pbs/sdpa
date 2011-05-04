@@ -1002,7 +1002,7 @@ function start_gui ()
     local cmd="start-gui $gui_port $log_port"
     if [ "$gui_host" != "$(hostname -f)" ] ; then
 	log "W: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
-	cmd="ssh -X $gui_host $cmd"
+	cmd="echo $SDPA_HOME/bin/start-gui $gui_port $log_port | ssh -T -X $gui_host"
     fi
 
     if [ "$log_host" != "$gui_host" ] ; then
@@ -1011,7 +1011,7 @@ function start_gui ()
     fi
 
     log "I: starting gui with $cmd ..."
-    $cmd &
+    eval $cmd &
 }
 
 function start_gpi ()
