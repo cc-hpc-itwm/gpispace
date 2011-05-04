@@ -1036,6 +1036,7 @@ function start ()
 	if ! start_$p $@ ; then
 	    echo "Start of $p failed!" >&2
 	    rc=$(( rc + 1 ))
+	    break
 	fi
     done
     return $rc
