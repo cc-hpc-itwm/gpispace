@@ -42,6 +42,11 @@ namespace fhg
         setupTransitionLibrary();
       }
       
+      void MainWindow::expandTree()
+      {
+        _transitionLibrary->expandAll();
+      }
+      
       void MainWindow::setTransitionLibraryPath(const QString& path)
       {
         TransitionLibraryModel* fsmodel = new TransitionLibraryModel(QDir(path), this);
@@ -49,6 +54,8 @@ namespace fhg
         _transitionLibrary->expandAll();
         _transitionLibrary->setColumnWidth(0, 230);
         _transitionLibrary->setColumnWidth(1, 20);
+        
+        connect(fsmodel, SIGNAL(layoutChanged()), SLOT(expandTree()));
       }
 
       void MainWindow::addTransitionLibraryUserPath(const QString& path, bool trusted)

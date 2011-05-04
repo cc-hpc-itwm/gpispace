@@ -37,6 +37,7 @@ namespace fhg
         
       public slots:
         void save();
+        void expandTree();
       
       private:
         QTreeView* _transitionLibrary;

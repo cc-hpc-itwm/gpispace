@@ -10,6 +10,7 @@
 #include <QFileSystemWatcher>
 #include <QIcon>
 #include <QCoreApplication>
+#include <QDebug>
 
 namespace fhg
 {
@@ -31,12 +32,21 @@ namespace fhg
       {
         _items->clearChildren();
  
+        _trustedPaths.push_back(path);
         readContentFromDirectoryRecursive(_items, true, path);
         _items->sortChildren();
       }
       
       void TransitionLibraryModel::addContentFromDirectory(const QString& path, bool trusted)
       {
+        if(trusted)
+        {
+          _trustedPaths.push_back(path);
+        }
+        else
+        {
+          _untrustedPaths.push_back(path);
+        }
         readContentFromDirectoryRecursive(_items, trusted, path);
         _items->sortChildren();
       }
@@ -75,15 +85,39 @@ namespace fhg
         }
       }
       
+      void TransitionLibraryModel::rereadAllDirectories(const QString& path)
+      {
+        //! \todo only re-read the changed directory instead of deleting everything.
+        delete _fileSystemWatcher;
+        _fileSystemWatcher = new QFileSystemWatcher(this);
+        connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(rereadAllDirectories(const QString&)));        
+        
+        emit layoutAboutToBeChanged();
+        _items->clearChildren();
+        emit layoutChanged();
+        
+        foreach(QString path, _trustedPaths)
+        {
+          readContentFromDirectoryRecursive(_items, true, path);
+        }
+        foreach(QString path, _untrustedPaths)
+        {
+          readContentFromDirectoryRecursive(_items, false, path);
+        }
+        
+        emit layoutAboutToBeChanged();
+        _items->sortChildren();
+        emit layoutChanged();
+      }
+      
       void TransitionLibraryModel::setFileSystemWatcher(const QString& path)
       {
-        //! \todo fix this to be working with more than one folder! (i.e. rescan all directories?)
-        return;
-        
-        //delete _fileSystemWatcher;
-        
-        //_fileSystemWatcher = new QFileSystemWatcher(QStringList(path), this);
-        //connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(readContentFromDirectory(const QString&)));
+        if(!_fileSystemWatcher)
+        {
+          _fileSystemWatcher = new QFileSystemWatcher(this);
+          connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(rereadAllDirectories(const QString&)));
+        }
+        _fileSystemWatcher->addPath(path);
       }
       
       int TransitionLibraryModel::rowCount(const QModelIndex& parent) const

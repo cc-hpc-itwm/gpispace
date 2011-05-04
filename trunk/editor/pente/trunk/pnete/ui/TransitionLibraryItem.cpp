@@ -2,6 +2,9 @@
 
 #include "data/Transition.hpp"
 
+#include <QDebug>
+#include <QtAlgorithms>
+
 namespace fhg
 {
   namespace pnete
@@ -77,7 +80,11 @@ namespace fhg
       
       void TransitionLibraryItem::clearChildren()
       {
-        return _children.clear();
+        foreach(TransitionLibraryItem* child, _children)
+        {
+          child->clearChildren();
+        }
+        _children.clear();
       }
       
       const QList<TransitionLibraryItem*>& TransitionLibraryItem::children() const
@@ -85,9 +92,52 @@ namespace fhg
         return _children;
       }
       
+      bool sortAscending(const TransitionLibraryItem* l, const TransitionLibraryItem* r)
+      {
+        if(l->data() && !r->data())
+        {
+          return false;
+        }
+        else if(!l->data() && r->data())
+        {
+          return true;
+        }
+        else
+        {
+          return l->name() < r->name();
+        }
+      }
+      
+      bool sortDescending(const TransitionLibraryItem* l, const TransitionLibraryItem* r)
+      {
+        if(l->data() && !r->data())
+        {
+          return true;
+        }
+        else if(!l->data() && r->data())
+        {
+          return false;
+        }
+        else
+        {
+          return l->name() > r->name();
+        }
+      }
+      
       void TransitionLibraryItem::sortChildren(bool descending)
       {
-        //! \todo folders first, then alphabetically. (i.e. by name(), then by data()->name().
+        if(descending)
+        {
+          qSort(_children.begin(), _children.end(), sortDescending);
+        }
+        else
+        {
+          qSort(_children.begin(), _children.end(), sortAscending);
+        }
+        foreach(TransitionLibraryItem* child, _children)
+        {
+          child->sortChildren();
+        }
       }
       
       const bool& TransitionLibraryItem::trusted() const

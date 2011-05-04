@@ -40,7 +40,7 @@ namespace fhg
           void addContentFromDirectory(const QString& path, bool trusted = false);
         
         public slots:
-          //! \todo update on fsw change.
+          void rereadAllDirectories(const QString& /*path*/);
           
         private:
           void setFileSystemWatcher(const QString& path);
@@ -48,6 +48,9 @@ namespace fhg
           
           QFileSystemWatcher* _fileSystemWatcher;
           TransitionLibraryItem* _items;
+          
+          QList<QString> _trustedPaths;
+          QList<QString> _untrustedPaths;
       };
     }
   }
