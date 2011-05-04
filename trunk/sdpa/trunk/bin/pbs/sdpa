@@ -959,7 +959,12 @@ function stop_pc_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    echo "$SDPA_HOME/bin/stop-pc" -r $rank | ssh -T -x $node >/dev/null 2>&1
+    local err=$(echo "$SDPA_HOME/bin/stop-pc" | ssh -T -x $node >/dev/null)
+    local ec=$?
+    if [ -n "$err" ] ; then
+	log "W: stop-pc on node $node: $err"
+    fi
+    return $ec
 }
 
 function stop_pc ()
@@ -972,7 +977,12 @@ function stop_nre_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    echo "$SDPA_HOME/bin/stop-nre" -r $rank | ssh -T -x $node >/dev/null 2>&1
+    local err=$(echo "$SDPA_HOME/bin/stop-nre" | ssh -T -x $node >/dev/null)
+    local ec=$?
+    if [ -n "$err" ] ; then
+	log "W: stop-nre on node $node: $err"
+    fi
+    return $ec
 }
 
 function stop_nre ()
