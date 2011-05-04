@@ -2,5 +2,5 @@
 
 test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
-log "Running sdpa-gui $@ on $hostname"
+log "Running sdpa-gui $@ on $(hostname)"
 sdpa-gui $@ 2>/dev/null
