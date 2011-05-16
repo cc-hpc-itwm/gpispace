@@ -26,77 +26,78 @@
 
 namespace sdpa {
 	namespace daemon {
-		class Aggregator : public dsm::DaemonFSM {
-			public:
-			typedef sdpa::shared_ptr<Aggregator > ptr_t;
-			SDPA_DECLARE_LOGGER();
+		class Aggregator : public dsm::DaemonFSM
+		{
+                  public:
+                  typedef sdpa::shared_ptr<Aggregator > ptr_t;
+                  SDPA_DECLARE_LOGGER();
 
-			Aggregator( const std::string& name = "",
-						const std::string& url = "",
-						const std::string& masterName = "",
-						const std::string& guiUrl = "")
-			: DaemonFSM( name, NULL ),
-			  SDPA_INIT_LOGGER(name),
-			  url_(url),
-			  masterName_(masterName),
-			  m_guiService("SDPA", guiUrl)
-			{
-				SDPA_LOG_DEBUG("Aggregator's constructor called ...");
-				//ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
+                  Aggregator( const std::string& name = "",
+                                          const std::string& url = "",
+                                          const std::string& masterName = "",
+                                          const std::string& guiUrl = "")
+                  : DaemonFSM( name, NULL ),
+                    SDPA_INIT_LOGGER(name),
+                    url_(url),
+                    masterName_(masterName),
+                    m_guiService("SDPA", guiUrl)
+                  {
+                    SDPA_LOG_DEBUG("Aggregator's constructor called ...");
+                    //ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::SchedulerAgg(this));
 
-				// application gui service
-				if(!guiUrl.empty())
-				{
-					m_guiService.open ();
-					// attach gui observer
-					SDPA_LOG_INFO("Application GUI service at " << guiUrl << " attached...");
-				}
-			}
+                    // application gui service
+                    if(!guiUrl.empty())
+                    {
+                      m_guiService.open ();
+                      // attach gui observer
+                      SDPA_LOG_INFO("Application GUI service at " << guiUrl << " attached...");
+                    }
+                  }
 
-			virtual ~Aggregator();
+                  virtual ~Aggregator();
 
-			void action_configure( const sdpa::events::StartUpEvent& );
-			void action_config_ok( const sdpa::events::ConfigOkEvent& );
+                  void action_configure( const sdpa::events::StartUpEvent& );
+                  void action_config_ok( const sdpa::events::ConfigOkEvent& );
 
-			void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
-			void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+                  void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
+                  void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
 
-			void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
-			void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
+                  void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
+                  void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
 
-                        void cancelNotRunning (sdpa::job_id_t const & job);
+                  void cancelNotRunning (sdpa::job_id_t const & job);
 
-			const std::string url() const {return url_;}
-			const std::string masterName() const { return masterName_; }
-			//const std::string& masterUrl() const { return masterUrl_; }
+                  const std::string url() const {return url_;}
+                  const std::string masterName() const { return masterName_; }
+                  //const std::string& masterUrl() const { return masterUrl_; }
 
-			template <class Archive>
-			void serialize(Archive& ar, const unsigned int)
-			{
-				ar & boost::serialization::base_object<DaemonFSM>(*this);
-				ar & url_; //boost::serialization::make_nvp("url_", url_);
-				ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
-			}
+                  template <class Archive>
+                  void serialize(Archive& ar, const unsigned int)
+                  {
+                    ar & boost::serialization::base_object<DaemonFSM>(*this);
+                    ar & url_; //boost::serialization::make_nvp("url_", url_);
+                    ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
+                  }
 
-			virtual void backup( std::ostream& );
-			virtual void recover( std::istream& );
+                  virtual void backup( std::ostream& );
+                  virtual void recover( std::istream& );
 
-			friend class boost::serialization::access;
-			//friend class sdpa::tests::WorkerSerializationTest;
+                  friend class boost::serialization::access;
+                  //friend class sdpa::tests::WorkerSerializationTest;
 
-			void notifyAppGui(const result_type & result);
+                  void notifyAppGui(const result_type & result);
 
-			private:
-			Scheduler* create_scheduler()
-			{
-				DLOG(TRACE, "creating aggregator scheduler...");
-				return new SchedulerAgg(this);
-			}
+                  private:
+                  Scheduler* create_scheduler()
+                  {
+                    DLOG(TRACE, "creating aggregator scheduler...");
+                    return new SchedulerAgg(this);
+                  }
 
-			std::string url_;
-			std::string masterName_;
+                  std::string url_;
+                  std::string masterName_;
 
-			NotificationService m_guiService;
+                  NotificationService m_guiService;
 		};
 	}
 }
