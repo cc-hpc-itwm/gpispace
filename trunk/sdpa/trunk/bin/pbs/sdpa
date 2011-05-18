@@ -8,6 +8,7 @@ CONFIG_VERSION=2
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
+ssh_opts="-x"
 
 ##############################################
 #                                            #
@@ -34,6 +35,15 @@ function put ()
     local val="$1"; shift
 
     fhgcfg -f "$config_file" -a "$key" -v "$val"
+}
+
+function rexec ()
+{
+    local node="$1"; shift
+    local tmp=$(ssh $ssh_opts "$node" $@ 2>&1)
+    local rc=$?
+    echo $tmp
+    return $rc
 }
 
 #
@@ -902,7 +912,7 @@ function send_signal_to_pc ()
     local node=$1 ; shift
     local rank=$1 ; shift
     local sig=$1 ; shift
-    local err=$(echo "$SDPA_HOME/bin/send-signal" -n "nre-pcd" -s "$sig" | ssh -T -x "$node" 2>&1)
+    local err=$(rexec "$node" "$SDPA_HOME/bin/send-signal" -n "nre-pcd" -s "$sig")
     ec=$?
     if [ $ec -ne 0 ] ; then
 	echo "could not send signal $sig to pc on node $node: $err" >&2
@@ -925,7 +935,7 @@ function start_pc_on_node ()
     local rank=$1 ; shift
 
     rm -f "$SDPA_LOG_DIR/pc.$node.log"
-    local err=$(echo "$SDPA_HOME/bin/start-pc" -D -r $rank $@ | ssh -T -x "$node" 2>&1)
+    local err=$(rexec "$node" "$SDPA_HOME/bin/start-pc" -D -r $rank $@)
     if [ $? -ne 0 ] ; then
 	log "E: pc did not startup on node $node: $err" >&2
 	return 1
@@ -947,7 +957,7 @@ function start_nre_on_node ()
     local rank=$1 ; shift
 
     rm -f "$SDPA_LOG_DIR/nre.$node.log"
-    local err=$(echo "$SDPA_HOME/bin/start-nre" -D $@ | ssh -T -x "$node" 2>&1)
+    local err=$(rexec "$node" "$SDPA_HOME/bin/start-nre" -D $@)
     if [ $? -ne 0 ] ; then
 	log "E: nre did not startup on node $node: $err" >&2
 	return 1
@@ -960,7 +970,7 @@ function stop_pc_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    local err=$(echo "$SDPA_HOME/bin/stop-pc" | ssh -T -x $node 2>&1)
+    local err=$(rexec "$node" "$SDPA_HOME/bin/stop-pc")
     local ec=$?
     if [ $ec -ne 0 ] ; then
 	log "W: stop-pc on node $node: $err"
@@ -978,7 +988,7 @@ function stop_nre_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    local err=$(echo "$SDPA_HOME/bin/stop-nre" | ssh -T -x $node 2>&1)
+    local err=$(rexec "$node" "$SDPA_HOME/bin/stop-nre")
     local ec=$?
     if [ $ec -ne 0 ] ; then
 	log "W: stop-nre on node $node: $err"
@@ -1010,10 +1020,10 @@ function start_gui ()
     fi
     local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
 
-    local cmd="start-gui $gui_port $log_port"
+    local cmd="$SDPA_HOME/bin/start-gui $gui_port $log_port"
     if [ "$gui_host" != "$(hostname -f)" ] ; then
 	log "W: gui-url ($gui_url) specifies a different host than your current host: $(hostname -f)"
-	cmd="echo $SDPA_HOME/bin/start-gui $gui_port $log_port | ssh -T -X $gui_host"
+	cmd="ssh -X $gui_host $cmd"
     fi
 
     if [ "$log_host" != "$gui_host" ] ; then
@@ -1022,7 +1032,7 @@ function start_gui ()
     fi
 
     log "I: starting gui with $cmd ..."
-    eval $cmd &
+    $cmd &
 }
 
 function start_gpi ()
@@ -1133,8 +1143,8 @@ function status_nre_on_node ()
 {
     local node=$1; shift
     local rank=$1; shift
-    local pid=$( echo pidof nre | ssh -T -x $node 2>/dev/null )
-    if [ -z "$pid" ] ; then
+    local pid=$(rexec $node pidof nre)
+    if [ $? -ne 0 ] ; then
 	return 1
     else
 	return 0
@@ -1145,8 +1155,8 @@ function status_pc_on_node ()
 {
     local node=$1; shift
     local rank=$1; shift
-    local pid=$( echo pidof nre-pcd | ssh -T -x $node 2>/dev/null )
-    if [ -z "$pid" ] ; then
+    local pid=$(rexec $node pidof nre-pcd)
+    if [ $? -ne 0 ] ; then
 	return 1
     else
 	return 0
