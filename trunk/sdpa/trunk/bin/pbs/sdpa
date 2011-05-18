@@ -8,7 +8,6 @@ CONFIG_VERSION=2
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
-ssh_opts="-T"
 
 ##############################################
 #                                            #
@@ -41,7 +40,7 @@ function rexec ()
 {
     local node="$1"; shift
     local err
-    err=$(ssh $ssh_opts "$node" $@ 2>&1)
+    err=$(ssh -T -x "$node" $@ 2>&1)
     local rc=$?
     if [ $rc -ne 0 ] ; then
 	log "E: execution of $@ on node $node failed: $rc: $err"
