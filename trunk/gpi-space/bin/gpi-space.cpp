@@ -68,8 +68,8 @@ static void distribute_config (const gpi_space::config & cfg, gpi_api_t & gpi_ap
 
   const gpi::queue_desc_t queue(0);
 
-  // distribute to all
-  gpi::size_t success_count (0);
+  gpi::size_t success_count (1);
+  // distribute to all other nodes
   for (gpi::rank_t n (1); n < gpi_api.number_of_nodes(); ++n)
   {
     if (gpi_api.max_dma_requests_reached(queue))
