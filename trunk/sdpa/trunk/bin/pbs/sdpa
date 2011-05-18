@@ -8,7 +8,7 @@ CONFIG_VERSION=2
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
-ssh_opts="-x"
+ssh_opts="-T"
 
 ##############################################
 #                                            #
@@ -40,10 +40,15 @@ function put ()
 function rexec ()
 {
     local node="$1"; shift
-    local tmp=$(ssh $ssh_opts "$node" $@ 2>&1)
+    local err
+    err=$(ssh $ssh_opts "$node" $@ 2>&1)
     local rc=$?
-    echo $tmp
-    return $rc
+    if [ $rc -ne 0 ] ; then
+	log "E: execution of $@ on node $node failed: $rc: $err"
+	return 1
+    else
+	return 0
+    fi
 }
 
 #
@@ -915,7 +920,7 @@ function send_signal_to_pc ()
     local err=$(rexec "$node" "$SDPA_HOME/bin/send-signal" -n "nre-pcd" -s "$sig")
     ec=$?
     if [ $ec -ne 0 ] ; then
-	echo "could not send signal $sig to pc on node $node: $err" >&2
+	log "E: could not send signal $sig to pc on node $node: $err"
 	return 1
     else
 	return 0
@@ -947,7 +952,7 @@ function start_pc_on_node ()
 function start_nre ()
 {
     sleep 1
-    echo "  * nres" >&2
+    log "  * nres" >&2
     node_loop start_nre_on_node $@
 }
 
@@ -970,17 +975,19 @@ function stop_pc_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    local err=$(rexec "$node" "$SDPA_HOME/bin/stop-pc")
-    local ec=$?
+    local err
+    local ec
+    err=$(rexec "$node" "$SDPA_HOME/bin/stop-pc")
+    ec=$?
     if [ $ec -ne 0 ] ; then
-	log "W: stop-pc on node $node: $err"
+	log "W: stop-pc on node $node failed: $ec: $err"
     fi
     return $ec
 }
 
 function stop_pc ()
 {
-    echo "  * process container" >&2
+    log "  * process container" >&2
     node_loop stop_pc_on_node $@
 }
 
@@ -988,17 +995,19 @@ function stop_nre_on_node ()
 {
     local node=$1 ; shift
     local rank=$1 ; shift
-    local err=$(rexec "$node" "$SDPA_HOME/bin/stop-nre")
-    local ec=$?
+    local err
+    local ec
+    err=$(rexec "$node" "$SDPA_HOME/bin/stop-nre")
+    ec=$?
     if [ $ec -ne 0 ] ; then
-	log "W: stop-nre on node $node: $err"
+	log "W: stop-nre on node $node failed: $ec: $err"
     fi
     return $ec
 }
 
 function stop_nre ()
 {
-    echo "  * nres" >&2
+    log "  * nres" >&2
     node_loop stop_nre_on_node $@
 }
 
@@ -1038,7 +1047,7 @@ function start_gui ()
 function start_gpi ()
 {
     if ! start_proc "gpi-space" "start-gpi" "-f" ; then
-	echo "E: could not start GPI, giving up!" >&2
+	log "E: could not start GPI, giving up!"
 	return 1
     else
 	sleep 5
@@ -1048,9 +1057,9 @@ function start_gpi ()
 
 function stop_gpi ()
 {
-    echo "  * gpi"
+    log "  * gpi"
     if ! stop_proc "gpi-space" "gpi-space" ; then
-	echo "E: could not stop gpi" >&2
+	log "E: could not stop gpi"
 	return 1
     else
 	return 0
@@ -1071,11 +1080,11 @@ function start ()
     for p in $parts ; do
 	status $@ >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
-	    echo "W: $p still running!" >&2
+	    log "W: $p still running!"
 	fi
 
 	if ! start_$p $@ ; then
-	    echo "Start of $p failed!" >&2
+	    log "Start of $p failed!"
 	    rc=$(( rc + 1 ))
 	    break
 	fi
@@ -1107,7 +1116,7 @@ function restart ()
     if stop $@ ; then
 	start $@
     else
-	echo "E: stop failed, not starting!" >&2
+	log "E: stop failed, not starting!"
 	return 1
     fi
 }
@@ -1143,34 +1152,37 @@ function status_nre_on_node ()
 {
     local node=$1; shift
     local rank=$1; shift
-    local pid=$(rexec $node pidof nre)
-    if [ $? -ne 0 ] ; then
-	return 1
-    else
-	return 0
-    fi
+    local pid
+    pid=$(rexec $node "$SDPA_HOME/bin/pidof" nre)
+    return $?
 }
 
 function status_pc_on_node ()
 {
     local node=$1; shift
     local rank=$1; shift
-    local pid=$(rexec $node pidof nre-pcd)
-    if [ $? -ne 0 ] ; then
-	return 1
-    else
-	return 0
-    fi
+    local pid
+    pid=$(rexec $node "$SDPA_HOME/bin/pidof" nre-pcd)
+    return $?
 }
 
 function status_nre ()
 {
-    node_loop status_nre_on_node $@ >/dev/null 2>&1
+    local err
+    local ec
+
+    err=$(node_loop status_nre_on_node $@ 2>&1)
+    ec=$?
+    return $ec
 }
 
 function status_pc ()
 {
-    node_loop status_pc_on_node $@ >/dev/null 2>&1
+    local err
+    local ec
+    err=$(node_loop status_pc_on_node $@ 2>&1)
+    ec=$?
+    return $ec
 }
 
 function status_kvs ()
@@ -1195,14 +1207,14 @@ function status ()
     # check system status
     local rc=0
     local p
+    local err
     for p in $parts ; do
-	echo -n "  $p is " >&2
-	status_$p $@
+	err=$(status_$p $@)
 	if [ $? -ne 0 ] ; then
-	    echo "dead" >&2
+	    log "$p is dead:  $err"
 	    rc=$(( rc + 1 ))
 	else
-	    echo "alive" >&2
+	    log "$p is alive"
 	fi
     done
     return $rc
@@ -1222,15 +1234,13 @@ function cancel ()
 	return 1
     fi
 
+    local err
     for job in $jobs ; do
-	echo -n "cancelling $job"
-	sdpac cancel $job
-	local err=$(sdpac cancel "$job" 2>&1)
+	log "I: cancelling job $job"
+	err=$(sdpac cancel "$job" 2>&1)
 	local ec=$?
 	if [ $ec -ne 0 ] ; then
-	    echo " failed: $ec: $err"
-	else
-	    echo " ok"
+	    log "E: failed: $ec: $err"
 	fi
     done
 }
@@ -1242,15 +1252,15 @@ function submit ()
     #       abort/ask
     #    else
     #       submit
-    net="$1" ; shift
+    local net="$1" ; shift
     if [ ! -r "$net" ] ; then
-	echo "E: submit: cannot read file: $net" >&2
+	log "E: submit: cannot read file: $net"
 	return 42
     fi
 
-    echo -n "checking system status..." >&2
+    log "I: checking system status..."
     if ! status kvs >/dev/null 2>&1 || ! status orch >/dev/null 2>&1 ; then
-	echo "dead" >&2
+	log "W: system not completely up and running"
 	read -t 15 -n 1 -p "Do you want me to start it? [Y/n] " do_start
 	case "$do_start" in
 	    n|N)
@@ -1259,32 +1269,42 @@ function submit ()
 	    *)
 		echo
 		if ! start ; then
-		    echo "Could not start, please check the logs" >&2
+		    log "E: could not start, please check the logs"
 		    return 3
 		else
 		    sleep 5
 		fi
 		;;
 	esac
-    else
-	echo "ok" >&2
     fi
 
-    echo "submitting file: $net" >&2
+    log "I: submitting file: $net"
     jobid=$( sdpac submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
-	echo "Submission failed: $jobid"
+	log "E: submission failed: $jobid"
 	return 4
     else
-	echo "  + job ($jobid)"
+	log "  + job ($jobid)"
 	echo "$jobid" > "$state_dir/current_job"
 	sdpac wait "$jobid"
-	s=$( sdpac status "${jobid}" )
-	echo "$jobid -> $s" >&2
-	if echo "$s" | grep -q -i 'finish' ; then
-	    echo "Done." >&2
-	    sdpac results "$jobid"
-	fi
+	s=$(sdpac status "${jobid}")
+	log "    $jobid -> $s"
+	s=$(echo "$s" | tr [A-Z] [a-z])
+	case "$s" in
+	    *finish*)
+		log "I: job finished"
+		;;
+	    *fail*)
+		log "E: job faiiled"
+		;;
+	    *cancel*)
+		log "E: job cancelled"
+		;;
+	    *)
+		log "W: unknown state: $s"
+		;;
+	esac
+	sdpac results "$jobid"
 	sdpac delete "${jobid}"
 	if [ $? -eq 0 ] ; then
 	    echo "  - job ($jobid)"
@@ -1472,6 +1492,11 @@ if [ "$1" = "init" ] ; then
 	log "I: please don't forget to execute \"eval \$(sdpa load)\""
 	exit 0
     fi
+fi
+
+if [ "$1" = "gui" ] ; then
+    start_gui
+    exit $?
 fi
 
 if ! on_valid_host ; then
