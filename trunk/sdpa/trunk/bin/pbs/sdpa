@@ -15,6 +15,18 @@ state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 #                                            #
 ##############################################
 
+function log_helper ()
+{
+    local fn="$1"; shift
+    local ln="$1"; shift
+    local file="$0"
+
+    echo "$file:$ln - $@" >&2
+    $SDPA_HOME/bin/fhglogc -L "$ln" -F "$file" -p 2 -m "$@"
+}
+
+do_log="eval log_helper \"\$FUNCNAME\" \"\$LINENO\""
+
 function log ()
 {
     echo "$@" >&2
