@@ -1,5 +1,7 @@
 #!/bin/bash
 
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
 stack_dir="@PARSU_STACK_DIR@"
 
 tmp_dir=${PARSU_TMP_DIR:-${TMPDIR}}
