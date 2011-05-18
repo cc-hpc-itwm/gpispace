@@ -11,6 +11,7 @@ set (prgs
   stop-nre
   stop-pc
   send-signal
+  pidof
 )
 
 install(PROGRAMS ${prgs}

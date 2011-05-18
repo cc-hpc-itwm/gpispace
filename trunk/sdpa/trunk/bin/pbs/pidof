@@ -1,0 +1,12 @@
+#!/bin/bash
+ec=1
+pids=
+for cmd ; do
+    pid=$(ps -C "$cmd" -o pid=)
+    if [ $? -eq 0 ] ; then
+       ec=0
+    fi
+    pids="$pids $pid"
+done
+echo $pids
+exit $ec
