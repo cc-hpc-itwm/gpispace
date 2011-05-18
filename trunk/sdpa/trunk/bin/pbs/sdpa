@@ -62,6 +62,15 @@ function rexec ()
     fi
 }
 
+function guess_head_node ()
+{
+    if [ -n "$PBS_O_HOST" ] ; then
+	echo "$PBS_O_HOST"
+    else
+	echo "$(hostname -f)"
+    fi
+}
+
 #
 # check, if we have to start the setup routine
 #
@@ -203,7 +212,7 @@ The "scratch"  directory should be a directory  you are allowed to  write to and
 that is shared among all nodes.
 '
 
-    local scratch_dir=$(get "sdpa.scratch_dir")
+    local scratch_dir=$(get "sdpa.scratch_dir" "/scratch/$USER/sdpa")
     get_user_input "scratch directory to use [$scratch_dir]:" scratch_dir "$doc"
 
     if ! test -d "$scratch_dir" ; then
@@ -228,7 +237,9 @@ function setup_logging ()
 This "host:port" definition  defines where all the components  send log messages
 to. It should be on the same host that you run the GUI on.
 '
-    local url=$(get "log.server.url" "$(hostname -f):$(( $(id -u) + 1024))")
+    local head_node=$(guess_head_node)
+
+    local url=$(get "log.server.url" "${head_node}:$(( $(id -u) + 1024))")
     local prompt="remote logging to (host:port) [$url]:"
     get_user_input "$prompt" url "$doc"
 
@@ -272,7 +283,7 @@ This  directory  should point  to  a  path that  is  local  to  each node,  like
 some components.
 '
     local key="sdpa.temp_dir"
-    local val=$(get "$key")
+    local val=$(get "$key" "/var/tmp")
     local prompt="temporary directory to use [$val]:"
     get_user_input "$prompt" val "$doc"
 
@@ -301,8 +312,9 @@ running.  It  does not  have to run  all the  time, but if  you want  to monitor
 activities, I need to know that location. Please make sure that nobody else uses
 this location.
 '
+    local head_node=$(guess_head_node)
     local key="sdpa.gui"
-    local val=$(get "$key" "$(hostname -f):$(( $(id -u) + 1023))")
+    local val=$(get "$key" "${head_node}:$(( $(id -u) + 1023))")
     local prompt="location of the monitor gui (host:port) [$val]:"
     get_user_input "$prompt" val "$doc"
     put "$key" "$val"
@@ -1482,6 +1494,12 @@ if [ "$1" = "version" ] ; then
     exit $?
 fi
 
+if [ "$1" = "setup" ] ; then
+    shift
+    setup $@
+    exit $?
+fi
+
 if setup_required ; then
     if setup ; then
 	log "I: setup complete"
@@ -1490,12 +1508,6 @@ if setup_required ; then
 	log E: setup was unsuccessful: $rc
 	exit $rc
     fi
-fi
-
-if [ "$1" = "setup" ] ; then
-    shift
-    setup $@
-    exit $?
 fi
 
 if [ "$1" = "init" ] ; then
