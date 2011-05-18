@@ -123,7 +123,7 @@ namespace sdpa
         const fhg::com::p2p::address_t & addr = m_message.header.src;
         if (addr != m_peer->address())
         {
-          LOG(WARN, "connection to " << m_peer->resolve (addr, "*unknown*") << " lost: " << ec);
+          DLOG(WARN, "connection to " << m_peer->resolve (addr, "*unknown*") << " lost: " << ec);
 
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( m_peer->resolve(addr, "*unknown*")
