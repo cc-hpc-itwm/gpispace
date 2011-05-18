@@ -1210,7 +1210,11 @@ function status ()
     for p in $parts ; do
 	err=$(status_$p $@)
 	if [ $? -ne 0 ] ; then
-	    log "$p is dead:  $err"
+	    if [ -z "$err" ] ; then
+		log "$p is dead"
+	    else
+		log "$p is dead: $err"
+	    fi
 	    rc=$(( rc + 1 ))
 	else
 	    log "$p is alive"
