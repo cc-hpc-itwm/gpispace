@@ -17,9 +17,6 @@ target_link_libraries (sdpa-mon
 	${FhgLog_LIBRARY}
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
-	${TIFF_LIBRARIES}
-	${JPEG_LIBRARIES}
-	${MNG_LIBRARIES}
 )
 
 install(TARGETS sdpa-mon

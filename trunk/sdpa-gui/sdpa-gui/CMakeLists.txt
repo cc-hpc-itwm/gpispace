@@ -35,9 +35,6 @@ target_link_libraries (sdpa-gui
 	${FhgLog_LIBRARY}
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
-	${TIFF_LIBRARIES}
-	${JPEG_LIBRARIES}
-	${MNG_LIBRARIES}
 )
 
 install(FILES ${sdpa-gui_HDRS}
