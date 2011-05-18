@@ -76,7 +76,7 @@ namespace process
     {
       if (close (*fd) < 0)
         {
-          do_error ("close failed");
+          do_error("close failed");
         }
 
       *fd = -1;
@@ -175,7 +175,8 @@ namespace process
 
           if (r < 0)
             {
-              detail::do_error ("circ read failed");
+              MLOG(ERROR, "circ read failed: " << strerror(errno));
+              break;
             }
           else if (r == 0)
             {
@@ -233,7 +234,8 @@ namespace process
 
           if (r < 0)
             {
-              detail::do_error ("read stdout failed");
+              MLOG(ERROR, "read from stdout failed: " << strerror(errno));
+              break;
             }
           else if (r == 0)
             {
@@ -264,10 +266,13 @@ namespace process
 
       if (fd == -1)
         {
-          detail::do_error ("open file for reading failed", filename);
+          MLOG(ERROR, "open file for reading failed: " << filename << ": " << strerror(errno));
+          return;
         }
 
       thread::reader (fd, buf, max_size, bytes_read, PIPE_BUF);
+
+      close (fd);
     }
 
     /* ********************************************************************* */
@@ -292,12 +297,12 @@ namespace process
 
           if (w < 0)
             {
-              detail::do_error ("write stdin failed");
+              MLOG(ERROR, "write stdin failed: " << strerror(errno));
+              fd = -1;
             }
           else if (w == 0)
             {
               DLOG (TRACE, "write pipe closed");
-
               fd = -1;
             }
           else
@@ -310,9 +315,9 @@ namespace process
         }
 
       if (fd != -1)
-        {
-          detail::do_close (&fd);
-        }
+      {
+        detail::try_close(&fd);
+      }
 
       DLOG (TRACE, "done thread write");
     }
@@ -327,10 +332,13 @@ namespace process
 
       if (fd == -1)
         {
-          detail::do_error ("open file for writing failed", filename);
+          MLOG(ERROR, "open file for writing failed: " << filename << ": " << strerror(errno));
+          return;
         }
 
       thread::writer (fd, buf, bytes_left, PIPE_BUF);
+
+      close (fd);
     }
   } // namespace thread
 
