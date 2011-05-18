@@ -52,12 +52,14 @@ function rexec ()
 {
     local node="$1"; shift
     local err
-    err=$(ssh -T -x "$node" $@ 2>&1)
+    local ssh_opts="-q -x -T -n -o CheckHostIP=no -o Ciphers=arcfour -o StrictHostKeyChecking=no"
+    err=$(ssh $ssh_opts "$node" $@ 2>&1)
     local rc=$?
     if [ $rc -ne 0 ] ; then
-	log "E: execution of $@ on node $node failed: $rc: $err"
-	return 1
+	echo $err
+	return $rc
     else
+	echo $err
 	return 0
     fi
 }
@@ -486,9 +488,13 @@ used on each node.
 	if ! mkdir -p "$gpi_socket_path" ; then
 	    log "E: failed to create gpi socket directory: $gpi_socket_path"
 	    return 1
+	else
+	    if ! chmod 1777 "$gpi_socket_path" ; then
+		log "E: failed to adjust mode on $gpi_socket_path"
+		return 1
+	    fi
 	fi
     fi
-    chmod 1777 "$gpi_socket_path"
 
     put "gpi.socket_name" $(get gpi.socket_name "control")
 }
@@ -496,7 +502,7 @@ used on each node.
 function setup_client ()
 {
     if ! test -e "$HOME/.sdpa/configs/sdpac.rc" ; then
-	sdpac --make-config
+	touch "$HOME/.sdpa/configs/sdpac.rc"
     fi
 }
 
