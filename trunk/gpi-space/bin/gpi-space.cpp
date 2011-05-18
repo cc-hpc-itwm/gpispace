@@ -72,16 +72,30 @@ static void distribute_config (const gpi_space::config & cfg, gpi_api_t & gpi_ap
   gpi::size_t success_count (0);
   for (gpi::rank_t n (1); n < gpi_api.number_of_nodes(); ++n)
   {
-    gpi_api.write_dma (0, 0, sizeof(cfg), n, queue);
-
     if (gpi_api.max_dma_requests_reached(queue))
     {
       success_count += gpi_api.wait_dma (queue);
     }
+
+    try
+    {
+       gpi_api.write_dma (0, 0, sizeof(cfg), n, queue);
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "write dma to node " << n << " failed: " << ex.what());
+    }
   }
   success_count += gpi_api.wait_dma (queue);
 
-  LOG(DEBUG, "config successfully distributed to " << success_count << " nodes");
+  if (success_count != gpi_api.number_of_nodes())
+  {
+    throw std::runtime_error ("could not distribute config!");
+  }
+  else
+  {
+    LOG(INFO, "config successfully distributed to " << success_count << " nodes");
+  }
 }
 
 static void receive_config (gpi_space::config & cfg, gpi_api_t & gpi_api)
@@ -337,7 +351,16 @@ int main (int ac, char *av[])
   //    get everything else from there
   if (gpi_api.is_master())
   {
-    distribute_config(config, gpi_api);
+    try
+    {
+      distribute_config(config, gpi_api);
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "could not distribute config: " << ex.what() << std::endl;
+      exit (1);
+    }
+
     gpi_api.barrier();
   }
   else
