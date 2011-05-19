@@ -213,6 +213,11 @@ install(FILES ${hdrs}
   COMPONENT headers
   )
 
+install(PROGRAMS kdm.sh
+  DESTINATION bin
+  COMPONENT examples
+)
+
 install(TARGETS determine_size do_load do_write
   LIBRARY
   DESTINATION libexec
