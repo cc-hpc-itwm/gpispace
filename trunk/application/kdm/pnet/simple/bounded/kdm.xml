@@ -14,11 +14,13 @@
 -->
 
    <place name="config_file" type="string">
+<!--
      <token>
        <value>
 "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_Model.xml"
 </value>
      </token>
+-->
    </place>
    <place name="done" type="control"/>
 

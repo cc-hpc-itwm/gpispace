@@ -11,7 +11,6 @@
 
 <!--
 "/p/herc/itwm/hpc/soft/sdpa/kdm/Kirchhoff_TestKDMDaniel_new_fineTT_fineSL"
--->
     <properties name="pnetc">
       <properties name="context">
         <property key="file">
@@ -19,9 +18,12 @@
         </property>
       </properties>
     </properties>
+-->
 
     <place name="file_config" type="string">
+<!--
       <token><value>${file} + ".xml"</value></token>
+-->
     </place>
 
     <place name="memsizeGPI" type="long">
