@@ -520,6 +520,10 @@ contact 'Alexander Petry <petry@itwm.fhg.de>'.
 
 
 EOF
+    if ! test -e "$config_file" ; then
+      mkdir -p $(dirname "$config_file") 2>/dev/null
+      touch "$config_file"
+    fi
 
     local real_config_file="$config_file"
     local temp_config_file="${config_file}~"
