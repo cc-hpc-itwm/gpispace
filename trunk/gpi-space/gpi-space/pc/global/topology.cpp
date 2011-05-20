@@ -317,24 +317,26 @@ namespace gpi
         LOG(TRACE, "establishing topology...");
 
         // this barrier is nice, but barriers are broken: see ticket #251
-        gpi::api::gpi_api_t::get().barrier();
+        //        gpi::api::gpi_api_t::get().barrier();
 
         BOOST_FOREACH(child_map_t::value_type const & n, m_children)
         {
           useconds_t snooze(500 * 1000);
-          int i = 5;
+          int i = 30;
           while (i --> 0)
           {
             try
             {
+              LOG(TRACE, "trying to connect to " << n.second.name);
               m_peer->send (n.second.name, detail::command_t("CONNECT"));
               break;
             }
             catch (std::exception const & ex)
             {
-              if (0 == i)
+              if (i > 0)
               {
-                throw;
+                usleep (snooze);
+                snooze = std::min(10 * 1000 * 1000u, snooze*2);
               }
               else
               {
@@ -342,8 +344,7 @@ namespace gpi
                    , "could not establish connection to rank " << n.first
                    << ": " << ex.what()
                    );
-                usleep (snooze);
-                snooze = std::min(10 * 1000 * 1000u, snooze*2);
+                throw;
               }
             }
           }
