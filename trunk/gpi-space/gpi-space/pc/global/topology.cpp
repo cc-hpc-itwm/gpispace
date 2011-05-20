@@ -316,6 +316,8 @@ namespace gpi
       {
         LOG(TRACE, "establishing topology...");
 
+        gpi::api::gpi_api_t::get().barrier();
+
         BOOST_FOREACH(child_map_t::value_type const & n, m_children)
         {
           useconds_t snooze(500 * 1000);
