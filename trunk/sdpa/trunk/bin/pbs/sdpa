@@ -1352,6 +1352,8 @@ function submit ()
 function configure()
 {
     test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
+    # write the kvs url to a file
+    echo "$KVS_URL" > "$state_dir/kvs.url"
 }
 
 function on_valid_host ()
