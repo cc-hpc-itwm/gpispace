@@ -31,11 +31,11 @@ namespace gpi_space
       {
         daemonize = fhg::util::read_bool
           (m.get("node.daemonize", "false"));
-        std::string default_url(fhg::util::getenv("KVS_URL", "localhost:2439"));
+
         snprintf ( kvs_url
                  , gpi_space::MAX_HOST_LEN
                  , "%s"
-                 , m.get("kvs.url", default_url).c_str()
+                 , m.get("kvs.url", kvs_url).c_str()
                  );
       }
 

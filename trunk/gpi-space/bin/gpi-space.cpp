@@ -60,49 +60,6 @@ static int resume_handler (int signal)
   return 0;
 }
 
-static void distribute_config (const gpi_space::config & cfg, gpi_api_t & gpi_api)
-{
-  DLOG(TRACE, "distributing config...");
-
-  memcpy (gpi_api.dma_ptr(), &cfg, sizeof (cfg));
-
-  const gpi::queue_desc_t queue(0);
-
-  gpi::size_t success_count (1);
-  // distribute to all other nodes
-  for (gpi::rank_t n (1); n < gpi_api.number_of_nodes(); ++n)
-  {
-    if (gpi_api.max_dma_requests_reached(queue))
-    {
-      success_count += gpi_api.wait_dma (queue);
-    }
-
-    try
-    {
-       gpi_api.write_dma (0, 0, sizeof(cfg), n, queue);
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "write dma to node " << n << " failed: " << ex.what());
-    }
-  }
-  success_count += gpi_api.wait_dma (queue);
-
-  if (success_count != gpi_api.number_of_nodes())
-  {
-    throw std::runtime_error ("could not distribute config!");
-  }
-  else
-  {
-    LOG(INFO, "config successfully distributed to " << success_count << " nodes");
-  }
-}
-
-static void receive_config (gpi_space::config & cfg, gpi_api_t & gpi_api)
-{
-  memcpy (&cfg, gpi_api.dma_ptr(), sizeof (cfg));
-}
-
 static void configure (const gpi_space::config & cfg)
 {
   gpi_space::logging::configure (cfg.logging);
@@ -209,11 +166,6 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
   return EXIT_SUCCESS;
 }
 
-static void init_config (gpi_space::config & cfg)
-{
-  cfg.gpi.timeout_in_sec = 0;
-}
-
 namespace
 {
   static std::string get_home_dir()
@@ -241,6 +193,26 @@ namespace
       s.replace(pos, 1, home_dir().c_str());
     }
     return s;
+  }
+
+  static void init_config (gpi_space::config & cfg)
+  {
+    cfg.gpi.timeout_in_sec = 0;
+
+    std::string kvs_url_file (home_dir() + "/.sdpa/state/kvs.url");
+    std::ifstream ifs(kvs_url_file.c_str());
+    if (! ifs)
+    {
+      throw std::runtime_error("could not open kvs url file: " + kvs_url_file);
+    }
+    std::string kvs_url("localhost:2439");
+    std::getline(ifs, kvs_url);
+
+    snprintf ( cfg.node.kvs_url
+             , gpi_space::MAX_HOST_LEN
+             , "%s"
+             , kvs_url.c_str()
+             );
   }
 }
 
@@ -340,34 +312,6 @@ int main (int ac, char *av[])
   gpi::signal::handler().connect(SIGTERM, &shutdown_handler);
   gpi::signal::handler().connect(SIGTSTP, &suspend_handler);
   gpi::signal::handler().connect(SIGCONT, &resume_handler);
-
-  // unfortunately this is still required due to KVS!!!  if we have another way,
-  // we don't have to distribute the config via this mechanism
-  //
-  // idea:
-  //
-  //    *one* file somewhere in $HOME that contains the url to the kvs
-  //    connect to the kvs
-  //    get everything else from there
-  if (gpi_api.is_master())
-  {
-    try
-    {
-      distribute_config(config, gpi_api);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "could not distribute config: " << ex.what() << std::endl;
-      exit (1);
-    }
-
-    gpi_api.barrier();
-  }
-  else
-  {
-    gpi_api.barrier();
-    receive_config (config, gpi_api);
-  }
 
   int rc (EXIT_SUCCESS);
   try
