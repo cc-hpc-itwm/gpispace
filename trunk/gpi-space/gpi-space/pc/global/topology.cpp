@@ -316,6 +316,7 @@ namespace gpi
       {
         LOG(TRACE, "establishing topology...");
 
+        // this barrier is nice, but barriers are broken: see ticket #251
         gpi::api::gpi_api_t::get().barrier();
 
         BOOST_FOREACH(child_map_t::value_type const & n, m_children)
