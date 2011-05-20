@@ -11,7 +11,7 @@ elif [ -r "$HOME/.sdpa/configs/gpi.dir" ] ; then
 fi
 
 gpi_cfg=
-gpi_exe="gpi-space"
+gpi_exe="$(which gpi-space)"
 force=false
 debug=false
 
@@ -63,27 +63,22 @@ if [ -z "$gpi_bin_path" ] ; then
     exit 1
 fi
 
-gpi_exe_path="$SDPA_HOME/bin/gpi-space"
-if [ ! -x "${gpi_exe_path}" ] ; then
+if [ ! -x "${gpi_exe}" ] ; then
     log "Sorry, ${gpi_exe} is not executable"
     exit 1
 fi
-gpi_exe="$(basename ${gpi_exe_path})"
+gpi_bin=$(basename "$gpi_exe")
 
 need_copy=false
-if [ ! -x "${gpi_bin_path}/${gpi_exe}" ] ; then
-    log "${gpi_exe} does not seem to be installed in $gpi_bin_path"
+if [ ! -x "${gpi_bin_path}/${gpi_bin}" ] ; then
+    log "${gpi_bin} does not seem to be installed in $gpi_bin_path"
     need_copy=true
 else
-    ts_inst=$( stat -c %Y "${gpi_bin_path}/${gpi_exe}" )
-    ts_cand=$( stat -c %Y "${gpi_exe_path}" )
-    if [ $ts_cand -gt $ts_inst ] ; then
-	md_inst=$( md5sum "${gpi_bin_path}/${gpi_exe}" | cut -d ' ' -f 1 )
-	md_cand=$( md5sum "${gpi_exe_path}" | cut -d ' ' -f 1 )
-	if [ "$md_inst" != "$md_cand" ] ; then
-	    log "candidate ${gpi_exe_path} is newer than the one in ${gpi_bin_path}"
-	    need_copy=true
-	fi
+    md_inst=$( md5sum "${gpi_bin_path}/${gpi_bin}" | cut -d ' ' -f 1 )
+    md_cand=$( md5sum "${gpi_exe}" | cut -d ' ' -f 1 )
+    if [ "$md_inst" != "$md_cand" ] ; then
+	log "candidate ${gpi_exe} is different than the one in ${gpi_bin_path}"
+	need_copy=true
     fi
 fi
 
@@ -92,7 +87,7 @@ if [ $need_copy == "true" -a $force == "true" ] ; then
     do_copy=true
 fi
 if [ $need_copy == "true" -a $do_copy == "false" ] ; then
-    read -t 5 -n 1 -p "Do you want me to copy \"$gpi_exe_path\" to \"$gpi_bin_path\"? [y/N] " ans
+    read -t 5 -n 1 -p "Do you want me to copy \"$gpi_exe\" to \"$gpi_bin_path\"? [y/N] " ans
     case "$ans" in
 	y|Y)
 	    do_copy=true
@@ -111,18 +106,18 @@ if [ $do_copy == "true" ] ; then
 	fi
     fi
     if [ -w "$gpi_bin_path" ] ; then
-	cp "${gpi_exe_path}" "${gpi_bin_path}/${gpi_exe}"
+	cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}"
     else
 	log "$gpi_bin_path does not exist, or i am not allowed to write to it!"
     fi
 fi
 
-if [ -x "$gpi_bin_path/$gpi_exe" ] ; then
+if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     cmdline=
     if [ "$debug" = "true" ] ; then
 	cmdline="gdb -ex run --args $cmdline"
     fi
-    cmdline="$cmdline ${gpi_bin_path}/${gpi_exe}"
+    cmdline="$cmdline ${gpi_bin_path}/${gpi_bin}"
 
     if [ -n "$gpi_cfg" ] ; then
 	log "# Using config file in: $gpi_cfg"
