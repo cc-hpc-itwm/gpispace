@@ -200,7 +200,7 @@ namespace fhg
 
         if (peer_info.empty())
         {
-          LOG(ERROR, "could not lookup location information for " << addr);
+          DLOG(ERROR, "could not lookup location information for " << addr);
           try
           {
             using namespace boost::system;
