@@ -37,7 +37,7 @@ int main (int argc, char **argv)
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
-	   ("help", "Display this message")
+	   ("help,h", "Display this message")
 	   ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
 	   ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
 	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Orchestrator's backup folder")

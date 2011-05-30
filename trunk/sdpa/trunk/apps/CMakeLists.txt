@@ -29,6 +29,16 @@ install(TARGETS aggregator
   DESTINATION bin
   COMPONENT applications)
   
+  #
+# Aggregator
+#
+add_executable(agent agent.cpp)
+target_link_libraries(agent ${daemon_libs})
+install(TARGETS agent
+  RUNTIME
+  DESTINATION bin
+  COMPONENT applications)
+  
 #
 # Nre
 #

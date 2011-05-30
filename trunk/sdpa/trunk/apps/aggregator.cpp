@@ -11,6 +11,8 @@
 #include <sdpa/util/Config.hpp>
 
 #include <boost/program_options.hpp>
+#include <boost/foreach.hpp>
+
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
@@ -27,8 +29,8 @@ int main (int argc, char **argv)
 {
 	string aggName;
 	string aggUrl;
-	string orchName;
-	string orchUrl;
+	vector<string> arrMasterNames;
+	vector<string> arrMasterUrls;
 	string appGuiUrl;
 	string kvsUrl;
 
@@ -40,10 +42,10 @@ int main (int argc, char **argv)
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
-	   ("help", "Display this message")
+	   ("help,h", "Display this message")
 	   ("name,n", po::value<std::string>(&aggName)->default_value("aggregator"), "Aggregator's logical name")
 	   ("url,u",  po::value<std::string>(&aggUrl)->default_value("localhost"), "Aggregator's url")
-	   ("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
+	   ("master,m", po::value<vector<string> >(&arrMasterNames)->multitoken(), "Aggregator's master list")
 	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Aggregator's backup folder")
 	   ("backup_file,f", po::value<std::string>(&backup_file), "Aggregator's backup file (stored into the backup folder)")
 	   ("app_gui_url,a",  po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
@@ -148,16 +150,25 @@ int main (int argc, char **argv)
 			bDoBackup = false;
 	}
 
+        if( arrMasterNames.empty() )
+          arrMasterNames.push_back("orchestrator"); // default master name
 
-	LOG(INFO, "Starting the aggregator with the name = '"<<aggName<<"' at location "<<aggUrl<<", having the master "<<orchName<<"("<<orchUrl<<")");
+	LOG(INFO, "Starting the agent with the name = '"<<aggName<<"' at location "<<aggUrl<<", having the masters: ");
+        BOOST_FOREACH(string master, arrMasterNames)
+        {
+           cout<<"   "<<master<<std::endl;
+        }
 
 	try {
-		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName, aggUrl, orchName, appGuiUrl ); //, orchUrl );
+		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName,
+		                                                                                                      aggUrl,
+		                                                                                                      arrMasterNames,
+		                                                                                                      appGuiUrl ); //, orchUrl );
 
 		if(bDoBackup)
-			ptrAgg->start_agent(bkp_path/backup_file);
+		  ptrAgg->start_agent(bkp_path/backup_file);
 		else
-			ptrAgg->start_agent();
+		  ptrAgg->start_agent();
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
