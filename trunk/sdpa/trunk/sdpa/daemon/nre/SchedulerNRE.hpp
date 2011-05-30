@@ -65,9 +65,10 @@ namespace sdpa {
     	  try {
     		  ptr_comm_handler_->rank() = m_worker_.start();
     	  }
-    	  catch(const std::exception& val) {
-    		  SDPA_LOG_ERROR("Could not start the nre-worker-client: " << val.what());
-			  throw;
+    	  catch(const std::exception& val)
+    	  {
+    	      SDPA_LOG_ERROR("Could not start the nre-worker-client: " << val.what());
+    	      throw;
     	  }
 
     	  SchedulerImpl::start(p);
@@ -82,30 +83,11 @@ namespace sdpa {
             m_worker_.stop();
 	}
 
-	bool post_request(bool force = false)
-	{
-            //DMLOG(TRACE, "post request: force=" << force);
-            bool bReqPosted = false;
-            sdpa::util::time_type current_time = sdpa::util::now();
-            sdpa::util::time_type diff_time = current_time - m_last_request_time;
-
-            if( force || ptr_comm_handler_->requestsAllowed(diff_time) )
-            {
-                ptr_comm_handler_->requestJob();
-                // SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
-
-                update_request_time(current_time);
-                bReqPosted = true;
-            }
-
-            return bReqPosted;
-	 }
-
 	 void check_post_request()
 	 {
              if( ptr_comm_handler_->is_registered() )
              {
-                 // SDPA_LOG_DEBUG("Check if a new request is to be posted");
+                 //SDPA_LOG_DEBUG("Check if a new request is to be posted");
                  // post job request if number_of_jobs() < #registered workers + 1
                  post_request();
              }

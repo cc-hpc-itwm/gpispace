@@ -32,7 +32,6 @@ SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler )
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name():"tests::sdpa::SchedulerImpl")
   , m_timeout(boost::posix_time::milliseconds(100))
-  , m_last_request_time(0)
 {
 }
 
@@ -169,9 +168,9 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
   if( !ptr_comm_handler_ )
   {
-          SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
-          stop();
-          return;
+      SDPA_LOG_ERROR("Cannot schedule locally the job "<<jobId<<"! No communication handler specified.");
+      stop();
+      return;
   }
 
   try {
@@ -185,8 +184,8 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 
     if(pJob->description().empty() )
     {
-            SDPA_LOG_ERROR("Empty Workflow!!!!");
-            // declare job as failed
+        SDPA_LOG_ERROR("Empty Workflow!!!!");
+        // declare job as failed
     }
 
     ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
@@ -516,20 +515,22 @@ bool SchedulerImpl::post_request(bool force)
   }
 
   bool bReqPosted = false;
-  sdpa::util::time_type current_time = sdpa::util::now();
-  sdpa::util::time_type difftime = current_time - m_last_request_time;
 
   if(force || ( !ptr_comm_handler_->is_orchestrator()  &&  ptr_comm_handler_->is_registered() ) )
   {
-      if( difftime > ptr_comm_handler_->cfg().get<sdpa::util::time_type>("polling interval") )
+      bool bReqAllowed = ptr_comm_handler_->requestsAllowed();
+      if(!bReqAllowed)
       {
-        // post a new request to the master
-        // the slave posts a job request
-        ptr_comm_handler_->requestJob();
-
-        m_last_request_time = current_time;
-        bReqPosted = true;
+          SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" is not allowed to post job requests!");
       }
+
+      if( force || bReqAllowed )
+      {
+          ptr_comm_handler_->requestJob();
+          SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
+          bReqPosted = true;
+      }
+
   }
 
   return bReqPosted;
