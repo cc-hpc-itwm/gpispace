@@ -79,7 +79,7 @@ namespace gpi_space
 
         {
           std::string c_procs (m.get("gpi.processes", boost::lexical_cast<std::string>(processes)));
-          if (c_procs != "default")
+          if (c_procs != "default" || c_procs != "-1")
           {
             processes = boost::lexical_cast<unsigned int>(c_procs);
           }
