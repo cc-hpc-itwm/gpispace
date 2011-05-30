@@ -29,34 +29,34 @@ namespace daemon {
 		template <typename T>
 		struct OrchestratorFactory
 		{
-			static Orchestrator::ptr_t create( 	const std::string& name,
-												const std::string& url )
+			static Orchestrator::ptr_t create( const std::string& name,
+			                                   const std::string& url )
 			{
 
 
-				LOG( DEBUG, "Create orchestrator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
-				pOrch->create_workflow_engine<T>();
-				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
-				pOrch->setStage(daemon_stage);
-				seda::StageRegistry::instance().insert(daemon_stage);
-				return pOrch;
+                            LOG( DEBUG, "Create orchestrator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
+                            Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
+                            pOrch->create_workflow_engine<T>();
+                            seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
+                            pOrch->setStage(daemon_stage);
+                            seda::StageRegistry::instance().insert(daemon_stage);
+                            return pOrch;
 			}
 		};
 
 		template <>
 		struct OrchestratorFactory<void>
 		{
-			static Orchestrator::ptr_t create( 	const std::string& name,
-												const std::string& url )
-			{
-				LOG( DEBUG, "Create Orchestrator "<<name<<" with no workflow engine" );
-				Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
-				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
-				pOrch->setStage(daemon_stage);
-				seda::StageRegistry::instance().insert(daemon_stage);
-				return pOrch;
-			}
+                    static Orchestrator::ptr_t create( const std::string& name,
+                                                       const std::string& url )
+                    {
+                            LOG( DEBUG, "Create Orchestrator "<<name<<" with no workflow engine" );
+                            Orchestrator::ptr_t pOrch( new Orchestrator( name, url ) );
+                            seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
+                            pOrch->setStage(daemon_stage);
+                            seda::StageRegistry::instance().insert(daemon_stage);
+                            return pOrch;
+                    }
 		};
 
 	}
