@@ -34,6 +34,7 @@ set (srcs
 add_subdirectory(orchestrator)
 add_subdirectory(aggregator)
 add_subdirectory(nre)
+add_subdirectory(agent)
 
 add_subdirectory(jobFSM)
 add_subdirectory(daemonFSM)
