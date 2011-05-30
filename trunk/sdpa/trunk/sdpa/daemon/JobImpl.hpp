@@ -60,45 +60,48 @@ namespace sdpa { namespace daemon {
         virtual bool is_local();
         virtual void set_local(bool);
 
+        virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
+        virtual sdpa::worker_id_t owner() { return m_owner; }
+
         virtual unsigned long &walltime() { return walltime_;}
 
         // job FSM actions
-		virtual void action_run_job();
-		virtual void action_cancel_job(const sdpa::events::CancelJobEvent&);
-		virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&);
-		virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&);
-		virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
-		//virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&);
-		virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
-		virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
-		virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
+        virtual void action_run_job();
+        virtual void action_cancel_job(const sdpa::events::CancelJobEvent&);
+        virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&);
+        virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&);
+        virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
+        //virtual void action_query_job_status(const sdpa::events::QueryJobStatusEvent&);
+        virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
+        virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
+        virtual void action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent&);
 
-		virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
+        virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
 
 
-		virtual std::string print_info()
-		{
-			std::ostringstream os;
-			os<<std::endl;
-			os<<"id: "<<id_<<std::endl;
-			os<<"type: "<<(b_local_?"local job":"remote job")<<std::endl;
-			os<<"status: "<<getStatus()<<std::endl;
-			os<<"parent: "<<parent_<<std::endl;
-			//os<<"description: "<<desc_<<std::endl;
+        virtual std::string print_info()
+        {
+                std::ostringstream os;
+                os<<std::endl;
+                os<<"id: "<<id_<<std::endl;
+                os<<"type: "<<(b_local_?"local job":"remote job")<<std::endl;
+                os<<"status: "<<getStatus()<<std::endl;
+                os<<"parent: "<<parent_<<std::endl;
+                //os<<"description: "<<desc_<<std::endl;
 
-			return os.str();
-		}
+                return os.str();
+        }
 
-		template <class Archive> void serialize(Archive& ar, const unsigned int)
-		{
-			ar & boost::serialization::base_object<Job>(*this);
-			ar & id_;
-			ar & desc_;
-			ar & parent_;
-			ar & result_;
-			ar & walltime_;
-			ar & b_local_;
-		}
+        template <class Archive> void serialize(Archive& ar, const unsigned int)
+        {
+                ar & boost::serialization::base_object<Job>(*this);
+                ar & id_;
+                ar & desc_;
+                ar & parent_;
+                ar & result_;
+                ar & walltime_;
+                ar & b_local_;
+        }
 
     protected:
         SDPA_DECLARE_LOGGER();
@@ -113,8 +116,10 @@ namespace sdpa { namespace daemon {
         sdpa::job_result_t result_;
 
         friend class boost::serialization::access;
-
         unsigned long walltime_;
+
+        sdpa::worker_id_t m_owner;
+
     protected:
 
     public:

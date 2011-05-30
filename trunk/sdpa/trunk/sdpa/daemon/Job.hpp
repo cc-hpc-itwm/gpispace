@@ -60,26 +60,29 @@ namespace sdpa { namespace daemon {
 
         virtual unsigned long& walltime() = 0;
 
+        virtual void set_owner(const sdpa::worker_id_t& owner) = 0;
+        virtual sdpa::worker_id_t owner() = 0;
+
 #ifdef USE_BOOST_SC
         virtual void process_event( const boost::statechart::event_base &) {}
 #endif
 
         //transitions
-		virtual void CancelJob(const sdpa::events::CancelJobEvent*);
-		virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
-		virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IComm*);
-		virtual void JobFailed(const sdpa::events::JobFailedEvent*);
-		virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
-		virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IComm* );
-		virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IComm*);
-		virtual void Dispatch();
+        virtual void CancelJob(const sdpa::events::CancelJobEvent*);
+        virtual void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
+        virtual void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IComm*);
+        virtual void JobFailed(const sdpa::events::JobFailedEvent*);
+        virtual void JobFinished(const sdpa::events::JobFinishedEvent*);
+        virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IComm* );
+        virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IComm*);
+        virtual void Dispatch();
 
-		virtual void setResult(const sdpa::job_result_t& ) =0;
-		virtual sdpa::status_t getStatus() { return "Undefined"; }
+        virtual void setResult(const sdpa::job_result_t& ) =0;
+        virtual sdpa::status_t getStatus() { return "Undefined"; }
 
-		friend class boost::serialization::access;
-		template<class Archive>
-			void serialize(Archive&, const unsigned int /* file version */){}
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive&, const unsigned int /* file version */){}
     };
 }}
 
