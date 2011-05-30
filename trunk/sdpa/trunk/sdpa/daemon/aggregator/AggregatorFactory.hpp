@@ -33,13 +33,13 @@ namespace daemon {
 		{
 			static Aggregator::ptr_t create(  const std::string& name,
                                                           const std::string& url,
-                                                          const std::string& masterName,
+                                                          const sdpa::master_list_t& arrMasterNames,
                                                           const std::string& appGuiUrl = "")
 			{
 
 
 				LOG( DEBUG, "Create aggregator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-				Aggregator::ptr_t pAgg( new Aggregator( name, url, masterName, appGuiUrl ) );
+				Aggregator::ptr_t pAgg( new Aggregator( name, url, arrMasterNames, appGuiUrl ) );
 				pAgg->create_workflow_engine<T>();
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
 				pAgg->setStage(daemon_stage);
@@ -53,11 +53,11 @@ namespace daemon {
 		{
 			static Aggregator::ptr_t create(  const std::string& name,
 			                                  const std::string& url,
-			                                  const std::string& masterName,
+			                                  const sdpa::master_list_t& arrMasterNames,
 			                                  const std::string& appGuiUrl = "")
 			{
 				LOG( DEBUG, "Create Aggregator "<<name<<" with no workflow engine" );
-				Aggregator::ptr_t pAgg( new Aggregator( name, url, masterName, appGuiUrl ) );
+				Aggregator::ptr_t pAgg( new Aggregator( name, url, arrMasterNames, appGuiUrl ) );
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
 				pAgg->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);
