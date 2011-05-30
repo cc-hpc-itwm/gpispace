@@ -36,66 +36,69 @@ DaemonFSM::DaemonFSM(	const std::string &name,
 	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
 }
 
-DaemonFSM::DaemonFSM(  const std::string &name,
-						IWorkflowEngine*  pArgSdpa2Gwes,
-						const std::string& toMasterStageName,
-						const std::string& toSlaveStageName )
-				: GenericDaemon(name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes),
-				  SDPA_INIT_LOGGER(name+"FSM")
+DaemonFSM::DaemonFSM( const std::string &name,
+                      IWorkflowEngine*  pArgSdpa2Gwes,
+                      const std::string& toMasterStageName,
+                      const std::string& toSlaveStageName )
+  : GenericDaemon(name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes),
+    SDPA_INIT_LOGGER(name+"FSM")
 {
-	initiate();
-	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
+  initiate();
+  SDPA_LOG_DEBUG("Daemon state machine initialized ...");
 }
 
-DaemonFSM::DaemonFSM( const std::string &name, IWorkflowEngine*  pArgSdpa2Gwes)
-	: GenericDaemon(name, pArgSdpa2Gwes),
-	  SDPA_INIT_LOGGER(name+"FSM")
+DaemonFSM::DaemonFSM( const std::string &name,
+                      const std::vector<std::string>& arrMasterNames = std::vector<std::string>(),
+                      IWorkflowEngine*  pArgSdpa2Gwes)
+  : GenericDaemon(name, arrMasterNames, pArgSdpa2Gwes),
+    SDPA_INIT_LOGGER(name+"FSM")
 {
-	initiate();
-	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
+  initiate();
+  SDPA_LOG_DEBUG("Daemon state machine initialized ...");
 }
 
-DaemonFSM::~DaemonFSM() {
-	terminate();
-	SDPA_LOG_DEBUG("Daemon state machine destroyed ...");
+DaemonFSM::~DaemonFSM()
+{
+  terminate();
+  SDPA_LOG_DEBUG("Daemon state machine destroyed ...");
 }
 
 void DaemonFSM :: print_states()
 {
-	for( state_iterator it = state_begin(); it != state_end(); it++ )
-		std::cout<<"State "<<typeid(*it).name()<<std::endl;
+  for( state_iterator it = state_begin(); it != state_end(); it++ )
+    std::cout<<"State "<<typeid(*it).name()<<std::endl;
 }
 
 void DaemonFSM::handleStartUpEvent(const StartUpEvent* pEvent)
 {
-	lock_type lock(mtx_);
-	//SDPA_LOG_DEBUG("Process StartUpEvent");
-	process_event(*pEvent);
+    lock_type lock(mtx_);
+    //SDPA_LOG_DEBUG("Process StartUpEvent");
+    process_event(*pEvent);
 
-	if( m_bConfigOk )
-	{
-		SDPA_LOG_INFO("Starting the scheduler...");
-		//sdpa::daemon::Scheduler::ptr_t ptrSched(this->create_scheduler());
-		//ptr_scheduler_ = ptrSched;
-		ptr_scheduler_->start(this);
+    if( m_bConfigOk )
+    {
+        SDPA_LOG_INFO("Starting the scheduler...");
+        //sdpa::daemon::Scheduler::ptr_t ptrSched(this->create_scheduler());
+        //ptr_scheduler_ = ptrSched;
+        ptr_scheduler_->start(this);
 
-		// start the network stage
-		ptr_to_master_stage_->start();
+        // start the network stage
+        ptr_to_master_stage_->start();
 
-		m_bRequestsAllowed = true;
+        m_bRequestsAllowed = true;
 
-		// if the configuration step was ok send a ConfigOkEvent
-		ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
-		sendEventToSelf(pEvtConfigOk);
-	}
-	else //if not
-	{
-		m_bRequestsAllowed = false;
+        // if the configuration step was ok send a ConfigOkEvent
+        ConfigOkEvent::Ptr pEvtConfigOk( new ConfigOkEvent(name(), name()));
+        sendEventToSelf(pEvtConfigOk);
+    }
+    else //if not
+    {
+        m_bRequestsAllowed = false;
 
-		// if the configuration step was ok send a ConfigOkEvent
-		ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
-		sendEventToSelf(pEvtConfigNok);
-	}
+        // if the configuration step was ok send a ConfigOkEvent
+        ConfigNokEvent::Ptr pEvtConfigNok( new ConfigNokEvent(name(), name()));
+        sendEventToSelf(pEvtConfigNok);
+    }
 }
 
 void DaemonFSM::handleConfigOkEvent(const ConfigOkEvent* pEvent)

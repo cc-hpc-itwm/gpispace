@@ -41,7 +41,7 @@ namespace sdpa {
 			// front-end: define the FSM structure
 			struct DaemonFSM_ : public msm::front::state_machine_def<DaemonFSM_>
                         {
-        virtual ~DaemonFSM_ () {}
+			        virtual ~DaemonFSM_ () {}
 
 				// The list of FSM states
 				struct Down : public msm::front::state<>{};
@@ -86,7 +86,7 @@ namespace sdpa {
 				template <class FSM, class Event>
 				void no_transition(Event const& e, FSM&, int state)
 				{
-					LOG(DEBUG, "no transition from state "<< " on event " << typeid(e).name());
+				  LOG(DEBUG, "no transition from state "<< " on event " << typeid(e).name());
 				}
 			};
 
@@ -98,19 +98,20 @@ namespace sdpa {
 				typedef boost::recursive_mutex mutex_type;
 				typedef boost::unique_lock<mutex_type> lock_type;
 
-				// obsolete
-				DaemonFSM(	const std::string &name,
-							seda::Stage* ptrToMasterStage,
-							seda::Stage* ptrToSlaveStage,
-							IWorkflowEngine*  pArgSdpa2Gwes
-							);
-				// obsolete
 				DaemonFSM(  const std::string &name,
-							IWorkflowEngine*  pArgSdpa2Gwes,
-							const std::string& toMasterStageName,
-							const std::string& toSlaveStageName = std::string("") );
+				            seda::Stage* ptrToMasterStage,
+				            seda::Stage* ptrToSlaveStage,
+				            IWorkflowEngine*  pArgSdpa2Gwes);
 
-				DaemonFSM( const std::string &name = "", IWorkflowEngine* pArgSdpa2Gwes = NULL );
+                                DaemonFSM(  const std::string &name,
+                                            IWorkflowEngine*  pArgSdpa2Gwes,
+                                            const std::string& toMasterStageName,
+                                            const std::string& toSlaveStageName = std::string(""));
+
+			        DaemonFSM(  const std::string &name = "",
+			                    const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),
+			                    IWorkflowEngine* pArgSdpa2Gwes = NULL );
+
 
 				virtual ~DaemonFSM();
 
@@ -144,8 +145,8 @@ namespace sdpa {
 				template <class Archive>
 				void serialize(Archive& ar, const unsigned int)
 				{
-					ar & boost::serialization::base_object<GenericDaemon>(*this);
-					ar & boost::serialization::base_object<msm::back::state_machine<DaemonFSM_> >(*this);
+				  ar & boost::serialization::base_object<GenericDaemon>(*this);
+				  ar & boost::serialization::base_object<msm::back::state_machine<DaemonFSM_> >(*this);
 				}
 
 				friend class boost::serialization::access;

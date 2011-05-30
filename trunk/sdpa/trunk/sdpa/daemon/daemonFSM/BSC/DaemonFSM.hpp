@@ -42,17 +42,21 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 {
 	typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
 
-	DaemonFSM(	const std::string &name,
-				seda::Stage* ptrToMasterStage,
-				seda::Stage* ptrToSlaveStage,
-				IWorkflowEngine*  pArgSdpa2Gwes);
+	DaemonFSM(  const std::string &name,
+	            seda::Stage* ptrToMasterStage,
+	            seda::Stage* ptrToSlaveStage,
+	            IWorkflowEngine*  pArgSdpa2Gwes);
 
 	DaemonFSM(  const std::string &name,
-				IWorkflowEngine*  pArgSdpa2Gwes,
-				const std::string& toMasterStageName,
-				const std::string& toSlaveStageName = std::string(""));
+	            IWorkflowEngine*  pArgSdpa2Gwes,
+	            const std::string& toMasterStageName,
+	            const std::string& toSlaveStageName = std::string(""));
 
-	DaemonFSM( const std::string &name = "", IWorkflowEngine*  pArgSdpa2Gwes = NULL);
+	DaemonFSM(  const std::string &name = "",
+	            const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),
+	            IWorkflowEngine* pArgSdpa2Gwes = NULL );
+
+
 
 	virtual ~DaemonFSM();
 
@@ -72,30 +76,31 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	virtual void handleErrorEvent(const sdpa::events::ErrorEvent* pEvent);
 
 
-	virtual void process_event( const boost::statechart::event_base & e) {
-		 sc::state_machine<DaemonFSM, Down>::process_event(e);
+	virtual void process_event( const boost::statechart::event_base & e)
+	{
+	  sc::state_machine<DaemonFSM, Down>::process_event(e);
 	}
 
 	template<class Archive>
 	void save(Archive & ar, const unsigned int) const
 	{
-		int stateId(m_fsmContext.getState().getId());
+	  int stateId(m_fsmContext.getState().getId());
 
-		// invoke serialization of the base class
-		ar << boost::serialization::base_object<GenericDaemon>(*this);
-		//ar << stateId;
+	  // invoke serialization of the base class
+	  ar << boost::serialization::base_object<GenericDaemon>(*this);
+	  //ar << stateId;
 	}
 
 	template<class Archive>
 	void load(Archive & ar, const unsigned int)
 	{
-		int stateId;
+	  int stateId;
 
-		// invoke serialization of the base class
-		ar >> boost::serialization::base_object<GenericDaemon>(*this);
-		//ar >> stateId;
+	  // invoke serialization of the base class
+	  ar >> boost::serialization::base_object<GenericDaemon>(*this);
+	  //ar >> stateId;
 
-		//m_fsmContext.setState(m_fsmContext.valueOf(stateId));
+	  //m_fsmContext.setState(m_fsmContext.valueOf(stateId));
 	}
 
 	BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -111,8 +116,8 @@ private:
 struct Down : sc::simple_state<Down, DaemonFSM>
 {
 	typedef mpl::list< sc::custom_reaction<sdpa::events::StartUpEvent>,
-					   sc::custom_reaction<sdpa::events::ErrorEvent>,
-					   sc::custom_reaction<sc::exception_thrown> > reactions;
+	                   sc::custom_reaction<sdpa::events::ErrorEvent>,
+	                   sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Down() : SDPA_INIT_LOGGER("sdpa.fsm.bsc.Down") { }
 	~Down() { }
@@ -125,10 +130,10 @@ struct Down : sc::simple_state<Down, DaemonFSM>
 
 struct Configuring  : sc::simple_state<Configuring, DaemonFSM>
 {
-	typedef mpl::list< sc::custom_reaction<sdpa::events::ConfigOkEvent>,
-					   sc::custom_reaction<sdpa::events::ConfigNokEvent>,
-					   sc::custom_reaction<sdpa::events::ErrorEvent>,
-					   sc::custom_reaction<sc::exception_thrown> > reactions;
+	typedef mpl::list<  sc::custom_reaction<sdpa::events::ConfigOkEvent>,
+	                    sc::custom_reaction<sdpa::events::ConfigNokEvent>,
+	                    sc::custom_reaction<sdpa::events::ErrorEvent>,
+	                    sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Configuring():  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Configuring") { }
 	~Configuring() { }
@@ -143,14 +148,14 @@ struct Configuring  : sc::simple_state<Configuring, DaemonFSM>
 struct Up : sc::simple_state<Up, DaemonFSM>
 {
 	typedef mpl::list< sc::custom_reaction<sdpa::events::InterruptEvent>,
-//                   sc::custom_reaction<sdpa::events::LifeSignEvent>,
-                   sc::custom_reaction<sdpa::events::DeleteJobEvent>,
-                   sc::custom_reaction<sdpa::events::RequestJobEvent>,
-                   sc::custom_reaction<sdpa::events::SubmitJobEvent>,
-                   sc::custom_reaction<sdpa::events::ConfigRequestEvent>,
-                   sc::custom_reaction<sdpa::events::WorkerRegistrationEvent>,
-                   sc::custom_reaction<sdpa::events::ErrorEvent>,
-                   sc::custom_reaction<sc::exception_thrown> > reactions;
+//                         sc::custom_reaction<sdpa::events::LifeSignEvent>,
+	                   sc::custom_reaction<sdpa::events::DeleteJobEvent>,
+	                   sc::custom_reaction<sdpa::events::RequestJobEvent>,
+	                   sc::custom_reaction<sdpa::events::SubmitJobEvent>,
+	                   sc::custom_reaction<sdpa::events::ConfigRequestEvent>,
+	                   sc::custom_reaction<sdpa::events::WorkerRegistrationEvent>,
+	                   sc::custom_reaction<sdpa::events::ErrorEvent>,
+	                   sc::custom_reaction<sc::exception_thrown> > reactions;
 
 	Up() :  SDPA_INIT_LOGGER("sdpa.fsm.bsc.Up") { }
 	~Up() { }
@@ -158,13 +163,13 @@ struct Up : sc::simple_state<Up, DaemonFSM>
 	sc::result react( const sdpa::events::InterruptEvent& );
 //	sc::result react( const sdpa::events::LifeSignEvent& );
   	sc::result react( const sdpa::events::DeleteJobEvent& );
-    sc::result react( const sdpa::events::RequestJobEvent& );
-    sc::result react( const sdpa::events::SubmitJobEvent& );
-    sc::result react( const sdpa::events::ConfigRequestEvent& );
-    sc::result react( const sdpa::events::WorkerRegistrationEvent& );
-    sc::result react( const sdpa::events::ErrorEvent& );
-    sc::result react( const sc::exception_thrown& );
-    SDPA_DECLARE_LOGGER();
+        sc::result react( const sdpa::events::RequestJobEvent& );
+        sc::result react( const sdpa::events::SubmitJobEvent& );
+        sc::result react( const sdpa::events::ConfigRequestEvent& );
+        sc::result react( const sdpa::events::WorkerRegistrationEvent& );
+        sc::result react( const sdpa::events::ErrorEvent& );
+        sc::result react( const sc::exception_thrown& );
+        SDPA_DECLARE_LOGGER();
 };
 
 }}}
