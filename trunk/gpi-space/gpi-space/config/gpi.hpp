@@ -61,7 +61,11 @@ namespace gpi_space
           }
           try
           {
-            memory_size = boost::lexical_cast<uint64_t>(mem_size) * multiplier;
+            memory_size = (uint64_t)(boost::lexical_cast<double>(mem_size) * multiplier + 0.5);
+            if (memory_size <= 0)
+            {
+              throw std::runtime_error ("invalid memory_size: must be positive");
+            }
           }
           catch (std::exception const & ex)
           {
@@ -79,7 +83,7 @@ namespace gpi_space
 
         {
           std::string c_procs (m.get("gpi.processes", boost::lexical_cast<std::string>(processes)));
-          if (c_procs != "default" || c_procs != "-1")
+          if (c_procs != "default" && c_procs != "-1")
           {
             processes = boost::lexical_cast<unsigned int>(c_procs);
           }
