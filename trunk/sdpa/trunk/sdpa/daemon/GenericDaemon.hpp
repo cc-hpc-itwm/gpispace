@@ -296,7 +296,7 @@ protected:
 
         sdpa::weak_ptr<seda::Stage> ptr_daemon_stage_;
         //seda::Stage* ptr_daemon_stage_;
-        std::string master_;
+        //std::string master_;
 
         sdpa::util::Config daemon_cfg_;
 

@@ -63,14 +63,16 @@ const std::string USER("user");
 	  virtual void workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result ) = 0;
 	  virtual void workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
 
-	  virtual std::string master()const = 0;
 	  virtual const std::string& name() const = 0;
 	  virtual bool is_registered() const = 0;
 	  virtual sdpa::util::Config& cfg() = 0;
 
 	  virtual unsigned int& rank() = 0;
 	  virtual const sdpa::worker_id_t& agent_uuid() = 0;
-	  virtual bool requestsAllowed(const sdpa::util::time_type&) = 0;
+
+	  virtual void update_last_request_time() = 0;
+	  virtual bool requestsAllowed() = 0;
+
 	  virtual void schedule(const sdpa::job_id_t& job) = 0;
 
 	  virtual bool hasWorkflowEngine() = 0;
