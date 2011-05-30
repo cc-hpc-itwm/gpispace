@@ -77,7 +77,7 @@ fi
 args="$args --name=$name"
 args="$args --url=$listen"
 args="$args --worker_url=$worker"
-args="$args --agg_name=$parent"
+args="$args --master=$parent"
 args="$args --gui_url=$gui"
 args="$args --kvs_url=$KVS_URL"
 
