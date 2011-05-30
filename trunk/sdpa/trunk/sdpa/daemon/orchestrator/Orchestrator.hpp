@@ -30,13 +30,13 @@ namespace daemon {
 		typedef sdpa::shared_ptr<Orchestrator> ptr_t;
 		SDPA_DECLARE_LOGGER();
 
-		Orchestrator(  	const std::string &name = "",
-						const std::string& url = "" )
-		: DaemonFSM( name, NULL ),
+		Orchestrator( const std::string &name = "",
+		              const std::string& url = "" )
+		: DaemonFSM( name, sdpa::master_list_t(), NULL),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url)
 		{
-			SDPA_LOG_DEBUG("Orchestrator's constructor called ...");
+		  SDPA_LOG_DEBUG("Orchestrator's constructor called ...");
 		}
 
 		virtual ~Orchestrator();
@@ -58,8 +58,8 @@ namespace daemon {
 		template <class Archive>
 		void serialize(Archive& ar, const unsigned int)
 		{
-			ar & boost::serialization::base_object<DaemonFSM>(*this);
-			ar & url_; //boost::serialization::make_nvp("url_", url_);
+		    ar & boost::serialization::base_object<DaemonFSM>(*this);
+		    ar & url_; //boost::serialization::make_nvp("url_", url_);
 		}
 
 		virtual void backup( std::ostream& );
@@ -70,8 +70,8 @@ namespace daemon {
 	  private:
 		Scheduler* create_scheduler()
 		{
-            DLOG(TRACE, "creating orchestrator scheduler...");
-			return new SchedulerOrch(this);
+		    DLOG(TRACE, "creating orchestrator scheduler...");
+                    return new SchedulerOrch(this);
 		}
 
 		std::string url_;
