@@ -8,6 +8,8 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/signal_handler.hpp>
 
+#include "system.hpp"
+
 namespace gpi
 {
   namespace api
@@ -57,6 +59,26 @@ namespace gpi
       assert (! m_startup_done);
       if (m_dma)
         free (m_dma);
+
+      if (sys::get_total_memory_size() < m_mem_size)
+      {
+        LOG( ERROR
+           , "requested memory size (" << m_mem_size << ")"
+           <<" exceeds total memory size (" << sys::get_total_memory_size() << ")"
+           );
+        throw gpi::exception::gpi_error
+          ( gpi::error::startup_failed()
+          , "not enough memory"
+          );
+      }
+      else if (sys::get_avail_memory_size() < m_mem_size)
+      {
+        LOG( WARN
+           , "requested memory size (" << m_mem_size << ")"
+           <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
+           );
+      }
+
       m_dma = malloc(m_mem_size * sizeof (char));
       if (! m_dma)
       {

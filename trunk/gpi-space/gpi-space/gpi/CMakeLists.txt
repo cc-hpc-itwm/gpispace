@@ -5,10 +5,12 @@ if(ENABLE_REAL_GPI)
 endif(ENABLE_REAL_GPI)
 
 set (hdrs
+  system.hpp
   api.hpp
 )
 
 set (srcs
+  system.cpp
   api.cpp
   fake_api.cpp
 )
