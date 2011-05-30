@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, std::vector<std::string>(1,"orchestrator_0"));
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE,"aggregator_0",
+				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
 				                             workerUrl,
 				                             //strAppGuiUrl,
 				                             guiUrl,
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"));
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE,"aggregator_0",
+				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
 				                             workerUrl,
 				                             //strAppGuiUrl,
 				                             guiUrl,
@@ -373,20 +373,19 @@ retry:	try {
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+                    if(nTrials > NMAXTRIALS)
+                    {
+                        LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				ptrNRE_0->shutdown();
-				ptrAgg->shutdown();
-				ptrOrch->shutdown();
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-			else
-				goto retry;
-
+                        ptrNRE_0->shutdown();
+                        ptrAgg->shutdown();
+                        ptrOrch->shutdown();
+                        ptrCli->shutdown_network();
+                        ptrCli.reset();
+                        return;
+                    }
+                    else
+                      goto retry;
 		}
 
 		LOG( DEBUG, "*****JOB #"<<k<<"******");

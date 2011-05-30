@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	ptrOrch->start_agent();
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,"orchestrator_0");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"));
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE,"aggregator_0",
+											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
 											 workerUrl,
 											 /*strAppGuiUrl,*/
 											 guiUrl,
