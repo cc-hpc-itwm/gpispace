@@ -1,5 +1,7 @@
 #include "real_api.hpp"
 
+#include <unistd.h> // getpagesize, sysconf
+
 #include <csignal> // sigwait
 #include <cstring> // strerror
 #include <limits>
@@ -13,6 +15,22 @@
 
 #include <gpi-space/exception.hpp>
 #include <gpi-space/signal_handler.hpp>
+
+namespace sys
+{
+  static uint64_t get_total_memory_size ()
+  {
+    const long total_pages = sysconf(_SC_PHYS_PAGES);
+    return total_pages * getpagesize();
+  }
+
+  static uint64_t get_avail_memory_size ()
+  {
+    const long avail_pages = sysconf(_SC_AVPHYS_PAGES);
+    return avail_pages * getpagesize();
+  }
+}
+
 
 namespace gpi
 {
@@ -58,6 +76,25 @@ namespace gpi
     void real_gpi_api_t::start (const gpi::timeout_t timeout)
     {
       assert (! m_startup_done);
+
+      if (sys::get_total_memory_size() < m_mem_size)
+      {
+        LOG( ERROR
+           , "requested memory size (" << m_mem_size << ")"
+           <<" exceeds total memory size (" << sys::get_total_memory_size() << ")"
+           );
+        throw gpi::exception::gpi_error
+          ( gpi::error::startup_failed()
+          , "not enough memory"
+          );
+      }
+      else if (sys::get_avail_memory_size() < m_mem_size)
+      {
+        LOG( WARN
+           , "requested memory size (" << m_mem_size << ")"
+           <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
+           );
+      }
 
       int rc (0);
 
