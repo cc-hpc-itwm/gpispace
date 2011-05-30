@@ -1,7 +1,6 @@
 #include "LogEvent.hpp"
 #include <sys/time.h>
 #include <iostream>
-#include <pthread.h>
 #include "util.hpp"
 
 using namespace fhg::log;
@@ -27,7 +26,7 @@ LogEvent::LogEvent(const severity_type &a_severity
   , message_(a_message)
   , tstamp_(now())
   , pid_(getpid())
-  , tid_(pthread_self())
+  , tid_(gettid())
   , module_(get_module_name_from_path(a_path))
 {
 }

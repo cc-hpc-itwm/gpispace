@@ -16,6 +16,10 @@
  * =====================================================================================
  */
 
+#ifdef WIN32
+
+#else
+
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
@@ -102,3 +106,5 @@ int main (int , char **)
 
   return errcount;
 }
+
+#endif

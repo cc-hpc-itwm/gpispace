@@ -34,6 +34,7 @@ set (hdrs
   )
 
 set (srcs
+  util.cpp
   DefaultConfiguration.cpp
   color_map.cpp
   error_handler.cpp

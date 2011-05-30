@@ -145,6 +145,8 @@ namespace fhg { namespace log {
       }
       return env;
   }
+
+    unsigned int gettid();
 }}
 
 #endif
