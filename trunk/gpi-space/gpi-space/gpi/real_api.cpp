@@ -324,31 +324,35 @@ namespace gpi
 
       std::string host (hostname (node));
 
-      LOG(DEBUG, "checking GPI on host := " << host << " rank := " << node);
+      LOG(DEBUG, "checking GPI on host := " << host << " rank := " << node << " port := " << port());
 
       if (!ping (host))
       {
         LOG(ERROR, "failed to ping GPI daemon on host := " << host);
         throw gpi::exception::gpi_error
-          ( gpi::error::ping_check_failed () );
+          ( gpi::error::ping_check_failed ()
+          , "host = " + host
+          );
       }
 
       int rc (0);
       int errors (0);
 
-      rc = checkPortGPI (host.c_str(), port());
-      if (rc != 0)
+      if (checkPortGPI(host.c_str(), port()) != 0)
       {
-        LOG(WARN, "failed to check port " << port() << " on " << host << " with error " << rc);
+        LOG(WARN, "*** port " << port() << " on " << host << " seems to be in use!");
         ++errors;
 
-        if (findProcGPI (host.c_str()) == 0)
+        if (findProcGPI (host.c_str()) == 1)
         {
           LOG(WARN, "another GPI binary is still running and blocking the port, trying to kill it now");
           if (killProcsGPI() == 0)
           {
-            LOG(INFO, "successfully killed old processes");
-            --errors;
+            if (checkPortGPI(host.c_str(), port()))
+            {
+              LOG(INFO, "successfully killed old processes");
+              --errors;
+            }
           }
           else
           {
@@ -357,8 +361,16 @@ namespace gpi
         }
         else
         {
-          LOG(ERROR, "another program seems to block port " << port());
+          LOG(ERROR, "another program seems to block port " << port() << " on node " << host);
         }
+      }
+
+      if (errors)
+      {
+        throw gpi::exception::gpi_error
+          ( gpi::error::port_check_failed()
+          , "[" + host + "]:" + boost::lexical_cast<std::string>(port())
+          );
       }
 
       rc = checkSharedLibsGPI(host.c_str());
@@ -389,8 +401,22 @@ namespace gpi
           );
       }
 
+      size_t max_rank = 0;
+      {
+        int tmp = generateHostlistGPI();
+        if (tmp <= 0)
+        {
+          throw gpi::exception::gpi_error
+            ( gpi::error::internal_error()
+            , "generateHostlist() failed"
+            );
+        }
+        max_rank  = (size_t)(tmp);
+      }
+
       LOG(DEBUG, "running GPI check...");
-      for (rank_t nd (0); nd < number_of_nodes(); ++nd)
+      size_t rc (0);
+      for (rank_t nd (0); nd < max_rank; ++nd)
       {
         check (nd);
       }

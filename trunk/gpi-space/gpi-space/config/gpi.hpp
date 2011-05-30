@@ -69,6 +69,22 @@ namespace gpi_space
           }
         }
 
+        {
+          std::string c_port (m.get("gpi.port", boost::lexical_cast<std::string>(port)));
+          if (c_port != "default")
+          {
+            port = boost::lexical_cast<unsigned int>(c_port);
+          }
+        }
+
+        {
+          std::string c_procs (m.get("gpi.processes", boost::lexical_cast<std::string>(processes)));
+          if (c_procs != "default")
+          {
+            processes = boost::lexical_cast<unsigned int>(c_procs);
+          }
+        }
+
         mode = boost::lexical_cast<mode_t>(m.get("gpi.socket_mode", "0700"));
         std::string default_path ("/var/tmp/gpi-space");
         snprintf( socket_path

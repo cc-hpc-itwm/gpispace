@@ -291,12 +291,21 @@ int main (int ac, char *av[])
     LOG(INFO, "GPIApi version: " << gpi_api.version());
   }
 
+  gpi_api.set_memory_size (config.gpi.memory_size);
+  gpi_api.set_port (config.gpi.port);
+
   if (gpi_api.is_master ())
   {
-    gpi_api.check();
+    try
+    {
+      gpi_api.check();
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "*** gpi check failed: " << ex.what());
+      return EXIT_FAILURE;
+    }
   }
-
-  gpi_api.set_memory_size (config.gpi.memory_size);
 
   try
   {
