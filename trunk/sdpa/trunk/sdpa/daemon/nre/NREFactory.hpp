@@ -29,31 +29,31 @@ namespace daemon {
 		template <typename T, typename U >
 		struct NREFactory
 		{
-			static typename NRE<U>::ptr_t create(   const std::string& name
-												   , const std::string& url
-												   , const std::string& masterName
-												   , const std::string& workerUrl
-												   , const std::string& guiUrl = "127.0.0.1:9000"
-												   , bool bLaunchNrePcd = false
-												   , const std::string & fvmPCBinary = ""
-												   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
-												   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
-												   )
+			static typename NRE<U>::ptr_t create(  const std::string& name
+                                                               , const std::string& url
+                                                               , const sdpa::master_list_t& arrMasterNames
+                                                               , const std::string& workerUrl
+                                                               , const std::string& guiUrl = "127.0.0.1:9000"
+                                                               , bool bLaunchNrePcd = false
+                                                               , const std::string & fvmPCBinary = ""
+                                                               , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                                                               , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                                                             )
 			{
 
 
 
 				LOG( DEBUG, "Create NRE \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
 				typename NRE<U>::ptr_t pNRE( new NRE<U>( name
-													   , url
-													   , masterName
-													   , workerUrl
-													   , guiUrl
-													   , bLaunchNrePcd
-													   , fvmPCBinary
-													   , fvmPCSearchPath
-													   , fvmPCPreLoad
-													   ) );
+                                                                         , url
+                                                                         , arrMasterNames
+                                                                         , workerUrl
+                                                                         , guiUrl
+                                                                         , bLaunchNrePcd
+                                                                         , fvmPCBinary
+                                                                         , fvmPCSearchPath
+                                                                         , fvmPCPreLoad
+                                                                         ) );
 
 				pNRE->template create_workflow_engine<T>();
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pNRE, 1) );
@@ -67,27 +67,27 @@ namespace daemon {
 		struct NREFactory<void, U>
 		{
 			static typename NRE<U>::ptr_t create(  const std::string& name
-												   , const std::string& url
-												   , const std::string& masterName
-												   , const std::string& workerUrl
-												   , const std::string& guiUrl = "127.0.0.1:9000"
-												   , bool bLaunchNrePcd = false
-												   , const std::string & fvmPCBinary = ""
-												   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
-												   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
-												   )
+                                                               , const std::string& url
+                                                               , const sdpa::master_list_t& arrMasterNames
+                                                               , const std::string& workerUrl
+                                                               , const std::string& guiUrl = "127.0.0.1:9000"
+                                                               , bool bLaunchNrePcd = false
+                                                               , const std::string & fvmPCBinary = ""
+                                                               , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                                                               , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                                                             )
 			{
 				LOG( DEBUG, "Create NRE "<<name<<" with no workflow engine " );
-				typename NRE<U>::ptr_t pNRE( new NRE<U>(   name
-														   , url
-														   , masterName
-														   , workerUrl
-														   , guiUrl
-														   , bLaunchNrePcd
-														   , fvmPCBinary
-														   , fvmPCSearchPath
-														   , fvmPCPreLoad
-														   )
+				typename NRE<U>::ptr_t pNRE( new NRE<U>(  name
+				                                          , url
+                                                                          , arrMasterNames
+                                                                          , workerUrl
+                                                                          , guiUrl
+                                                                          , bLaunchNrePcd
+                                                                          , fvmPCBinary
+                                                                          , fvmPCSearchPath
+                                                                          , fvmPCPreLoad
+                                                                          )
                       );
 
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pNRE, 1) );
