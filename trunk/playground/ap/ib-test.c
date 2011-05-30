@@ -127,7 +127,7 @@ int main(int ac, char *av[])
 
   if (0 == mr)
   {
-    printf ("failed: ibv_reg_mr(%p, %p, %ull, %x): %s\n", pd,mem,size,flags,strerror(errno));
+    printf ("failed: ibv_reg_mr(%p, %p, %llu, %x): %s\n", pd,mem,size,flags,strerror(errno));
     printf ("   hint: try to check the parameter 'log_mtts_per_seg' of the mlx4_core kernel module\n");
     return 5;
   }
