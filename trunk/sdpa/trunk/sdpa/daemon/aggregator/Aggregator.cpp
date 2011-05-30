@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  Aggreagtor.hpp
+ *       Filename:  Aggregator.hpp
  *
  *    Description:  Contains the Aggregator class
  *
@@ -24,7 +24,7 @@ using namespace sdpa::events;
 
 Aggregator::~Aggregator()
 {
-	SDPA_LOG_INFO("Aggregator's destructor called ...");
+  SDPA_LOG_INFO("Aggregator's destructor called ...");
 }
 
 void Aggregator::action_configure(const StartUpEvent &se)
@@ -44,10 +44,6 @@ void Aggregator::action_config_ok(const ConfigOkEvent& e)
   SDPA_LOG_INFO("Configuration (aggregator) was ok");
 
   cfg().print();
-
-  /*SDPA_LOG_INFO("Aggregator (" << name() << ") sending registration event to master (" << master() << ")");
-  WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent(name(), master(), rank()));
-  sendEventToMaster (pEvtWorkerReg);*/
 }
 
 void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
@@ -96,7 +92,7 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	    // forward it up
 	    JobFinishedEvent::Ptr pEvtJobFinished
                           (new JobFinishedEvent( name()
-                                               , master()
+                                               , pJob->owner()
                                                , pEvt->job_id()
                                                , pEvt->result()
                                                )
@@ -225,7 +221,7 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
       // the message comes from GWES
       try {
           // forward it up
-          JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), master(), pEvt->job_id(), pEvt->result()));
+          JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), pJob->owner(), pEvt->job_id(), pEvt->result()));
 
           // send the event to the master
           sendEventToMaster(pEvtJobFailedEvent);
@@ -344,11 +340,11 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
     if(is_orchestrator())
     {
-      // send immediately an acknowledgment to the component that requested the cancellation
-      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+        // send immediately an acknowledgment to the component that requested the cancellation
+        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
 
-      // only if the job was already submitted
-      sendEventToMaster(pCancelAckEvt);
+        // only if the job was already submitted
+        sendEventToMaster(pCancelAckEvt);
     }
   }
   catch(const JobNotFoundException &)
@@ -362,17 +358,15 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     LOG(TRACE, "Propagate cancel job event downwards.");
     try
     {
-      sdpa::worker_id_t worker_id = findWorker(pEvt->job_id());
+        sdpa::worker_id_t worker_id = findWorker(pEvt->job_id());
 
-      SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
-      CancelJobEvent::Ptr pCancelEvt
-        (new CancelJobEvent( name()
-                           , worker_id
-                           , pEvt->job_id()
-                           , pEvt->reason()
-                           )
-        );
-      sendEventToSlave(pCancelEvt);
+        SDPA_LOG_DEBUG("Send CancelJobEvent to the worker "<<worker_id);
+        CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
+                                        , worker_id
+                                        , pEvt->job_id()
+                                        , pEvt->reason()
+                                       ) );
+        sendEventToSlave(pCancelEvt);
     }
     catch(const NoWorkerFoundException&)
     {
@@ -380,48 +374,95 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     }
     catch(...)
     {
-      SDPA_LOG_ERROR("Unexpected exception occurred!");
+        SDPA_LOG_ERROR("Unexpected exception occurred!");
     }
   }
   else // a Cancel message came from the upper level -> forward cancellation request to WE
   {
-    id_type workflowId = pEvt->job_id();
-    reason_type reason("No reason");
-    cancelWorkflow(workflowId, reason);
+      id_type workflowId = pEvt->job_id();
+      reason_type reason("No reason");
+      cancelWorkflow(workflowId, reason);
   }
 }
 
 void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
-  assert (pEvt);
+    assert (pEvt);
 
-  DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
+    DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
-  try
-  {
-    Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
+    try
+    {
+        Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
 
-    // update the job status to "Cancelled"
-    pJob->CancelJobAck(pEvt);
-    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not find job: " << ex.what());
-    return;
-  }
+        // update the job status to "Cancelled"
+        pJob->CancelJobAck(pEvt);
+        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+    }
+    catch (std::exception const & ex)
+    {
+        LOG(WARN, "could not find job: " << ex.what());
+        return;
+    }
 
-  // the acknowledgment comes from WE or from a slave and there is no WE
-  if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
-  {
-      // just send an acknowledgment to the master
-      // send an acknowledgment to the component that requested the cancellation
-      if(!is_orchestrator())
-      {
-        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
-        // only if the job was already submitted
-        sendEventToMaster(pCancelAckEvt);
+    // the acknowledgment comes from WE or from a slave and there is no WE
+    if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
+    {
+        // just send an acknowledgment to the master
+        // send an acknowledgment to the component that requested the cancellation
+        if(!is_orchestrator())
+        {
+            CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+            // only if the job was already submitted
+            sendEventToMaster(pCancelAckEvt);
 
+            try
+            {
+                ptr_job_man_->deleteJob(pEvt->job_id());
+            }
+            catch(const JobNotDeletedException&)
+            {
+                LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
+            }
+        }
+    }
+    else // acknowledgment comes from a worker -> inform WE that the activity was canceled
+    {
+        LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
+
+        try
+        {
+            ptr_workflow_engine_->cancelled(pEvt->job_id());
+        }
+        catch (std::exception const & ex)
+        {
+            LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
+        }
+
+        // delete the worker job
+        Worker::worker_id_t worker_id = pEvt->from();
+        try
+        {
+            LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
+            ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
+        }
+        catch (const WorkerNotFoundException&)
+        {
+            // the job was not assigned to any worker yet -> this means that might
+            // still be in the scheduler's queue
+            SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+        }
+        catch(const JobNotDeletedException& jnde)
+        {
+            LOG( ERROR, "could not delete the job "
+                        << pEvt->job_id()
+                        << " from the worker "
+                        << worker_id
+                        << " : " << jnde.what()
+            );
+        }
+
+        // delete the job completely from the job manager
         try
         {
             ptr_job_man_->deleteJob(pEvt->job_id());
@@ -430,62 +471,14 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         {
             LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
         }
-      }
-  }
-  else // acknowledgment comes from a worker -> inform WE that the activity was canceled
-  {
-    LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
-
-    try
-    {
-        ptr_workflow_engine_->cancelled(pEvt->job_id());
     }
-    catch (std::exception const & ex)
-    {
-        LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
-    }
-
-    // delete the worker job
-    Worker::worker_id_t worker_id = pEvt->from();
-    try
-    {
-        LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
-        ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
-    }
-    catch (const WorkerNotFoundException&)
-    {
-      // the job was not assigned to any worker yet -> this means that might
-      // still be in the scheduler's queue
-      SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-    }
-    catch(const JobNotDeletedException& jnde)
-    {
-      LOG( ERROR
-                      , "could not delete the job "
-                      << pEvt->job_id()
-                      << " from the worker "
-                      << worker_id
-                      << " : " << jnde.what()
-      );
-    }
-
-    // delete the job completely from the job manager
-    try
-    {
-        ptr_job_man_->deleteJob(pEvt->job_id());
-    }
-    catch(const JobNotDeletedException&)
-    {
-        LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
-    }
-  }
 }
 
 void Aggregator::backup( std::ostream& ofs )
 {
     try {
         //std::string strArchiveName(name()+".bkp");
-        //SDPA_LOG_DEBUG("Backup the agent "<<name()<<" to file "<<strArchiveName);
+        //SDPA_LOG_DEBUG("Backup the aggregator "<<name()<<" to file "<<strArchiveName);
 
         boost::archive::text_oarchive oa(ofs);
         oa.register_type(static_cast<JobManager*>(NULL));
@@ -499,8 +492,8 @@ void Aggregator::backup( std::ostream& ofs )
     }
     catch(exception &e)
     {
-      cout <<"Exception occurred: "<< e.what() << endl;
-      return;
+        cout <<"Exception occurred: "<< e.what() << endl;
+        return;
     }
 }
 
