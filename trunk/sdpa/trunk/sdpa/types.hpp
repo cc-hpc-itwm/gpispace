@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sdpa/JobId.hpp>
+#include <vector>
 
 namespace sdpa {
 	typedef sdpa::JobId job_id_t;
@@ -11,6 +12,7 @@ namespace sdpa {
 	typedef std::string worker_id_t;
 	typedef std::string status_t;
 	typedef std::string job_result_t;
+	typedef std::vector<std::string> master_list_t;
 }
 
 #endif
