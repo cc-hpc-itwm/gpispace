@@ -33,13 +33,13 @@ namespace sdpa {
                   SDPA_DECLARE_LOGGER();
 
                   Aggregator( const std::string& name = "",
-                                          const std::string& url = "",
-                                          const std::string& masterName = "",
-                                          const std::string& guiUrl = "")
-                  : DaemonFSM( name, NULL ),
+                              const std::string& url = "",
+                              const sdpa::master_list_t& arrMasterNames = std::vector<std::string>(),
+                              const std::string& guiUrl = "")
+                  : DaemonFSM( name, arrMasterNames, NULL ),
                     SDPA_INIT_LOGGER(name),
                     url_(url),
-                    masterName_(masterName),
+                    //masterName_(masterName),
                     m_guiService("SDPA", guiUrl)
                   {
                     SDPA_LOG_DEBUG("Aggregator's constructor called ...");
@@ -68,15 +68,12 @@ namespace sdpa {
                   void cancelNotRunning (sdpa::job_id_t const & job);
 
                   const std::string url() const {return url_;}
-                  const std::string masterName() const { return masterName_; }
-                  //const std::string& masterUrl() const { return masterUrl_; }
 
                   template <class Archive>
                   void serialize(Archive& ar, const unsigned int)
                   {
                     ar & boost::serialization::base_object<DaemonFSM>(*this);
                     ar & url_; //boost::serialization::make_nvp("url_", url_);
-                    ar & masterName_; //boost::serialization::make_nvp("url_", masterName_);
                   }
 
                   virtual void backup( std::ostream& );
@@ -95,7 +92,7 @@ namespace sdpa {
                   }
 
                   std::string url_;
-                  std::string masterName_;
+                  //std::string masterName_;
 
                   NotificationService m_guiService;
 		};
