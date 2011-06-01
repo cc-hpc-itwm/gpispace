@@ -44,11 +44,6 @@ namespace we
 
       namespace util
       {
-        static void level (std::ostream & s, const unsigned int l)
-        {
-          for (unsigned int i (0); i < l; ++i) { s << "  "; }
-        }
-
         static path_type split (const key_type & s, const char & sep = '.')
         {
           return fhg::util::split<key_type, path_type> (s, sep);
@@ -161,32 +156,6 @@ namespace we
           bool operator () (const value_type &) const { return true; }
           template<typename T>
           bool operator () (const T &) const { return false; }
-        };
-
-        template<typename T>
-        class show : public boost::static_visitor<>
-        {
-        private:
-          std::ostream & s;
-          unsigned int l;
-
-        public:
-          show ( std::ostream & _s
-               , const unsigned int _l = 0
-               )
-            : s (_s)
-            , l (_l)
-          {}
-
-          void operator () (const value_type & v) const
-          {
-            util::level(s, l); s << v << std::endl;
-          }
-
-          void operator () (const T & t) const
-          {
-            t.writeTo (s, l);
-          }
         };
       }
 
@@ -459,23 +428,6 @@ namespace we
 
           del (path_splitted);
         }
-
-        // ----------------------------------------------------------------- //
-
-        void writeTo (std::ostream & s, const unsigned int l) const
-        {
-          for ( map_type::const_iterator pos (map.begin())
-              ; pos != map.end()
-              ; ++pos
-              )
-            {
-              util::level (s, l); s << pos->first << ":" << std::endl;
-
-              boost::apply_visitor ( visitor::show<type> (s, l + 1)
-                                   , pos->second
-                                   );
-            }
-        }
       };
 
       namespace dump
@@ -502,7 +454,7 @@ namespace we
             {
               s.open ("property");
               s.attr ("key", key);
-              s.attr ("value", v);
+              s.content (v);
               s.close ();
             }
 
