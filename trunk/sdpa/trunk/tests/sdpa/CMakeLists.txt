@@ -139,17 +139,16 @@ set( test_serialize_agents_srcs
   	test_SerializeAgents.cpp
 )
 
-add_executable(test_serialize_agents_suite ${test_serialize_agents_srcs})
-target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
-									 sdpa-client
-									 sdpa-events
-									 sdpa-util
-									 sdpa
-									 dl
-									 #uuid
-									 ${Boost_LIBRARIES}
-                                                                         ${WE_PRECOMPILE_LIBRARIES})
-add_test(test_serialize_agents_suite test_serialize_agents_suite)
+#add_executable(test_serialize_agents_suite ${test_serialize_agents_srcs})
+#target_link_libraries(test_serialize_agents_suite  seda sdpa-daemon
+#									 sdpa-client
+#									 sdpa-events
+#									 sdpa-util
+#									 sdpa
+#									 dl
+#									 ${Boost_LIBRARIES}
+#                                    ${WE_PRECOMPILE_LIBRARIES})
+#add_test(test_serialize_agents_suite test_serialize_agents_suite)
 
 set( test_agents_and_act_exec_srcs
   	test_AgentsAndActExec.cpp
