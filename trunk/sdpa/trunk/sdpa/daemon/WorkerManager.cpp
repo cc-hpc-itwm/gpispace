@@ -182,7 +182,6 @@ void WorkerManager::balanceWorkers()
   }
 }
 
-
 /**
  * get next worker to be served (Round-Robin scheduling)
  */
@@ -201,7 +200,6 @@ const Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundExceptio
 
   return iter->second;
 }
-
 
 /**
  * compare the workers
@@ -312,12 +310,12 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
     // look first into the worker's queue
     try {
-            jobId = ptrWorker->get_next_job(last_job_id);
+        jobId = ptrWorker->get_next_job(last_job_id);
 
-            // delete the job from the affinity list of the other workers
-            deleteJobFromAllAffinityLists(jobId);
+        // delete the job from the affinity list of the other workers
+        deleteJobFromAllAffinityLists(jobId);
 
-            return jobId;
+        return jobId;
     }
     catch(const NoJobScheduledException& ex)
     {
@@ -387,7 +385,7 @@ void WorkerManager::delete_job (sdpa::job_id_t const & job)
 {
   if (common_queue_.erase(job))
   {
-    LOG(TRACE, "removed job from common queue...");
+    LOG(TRACE, "removed job from the central queue...");
   }
   else
   {

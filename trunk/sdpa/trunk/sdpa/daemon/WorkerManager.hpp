@@ -77,32 +77,32 @@ namespace sdpa { namespace daemon {
       template <class Archive>
       void serialize(Archive& ar, const unsigned int)
       {
-              ar & worker_map_;
-              ar & rank_map_;
-              ar & owner_map_;
-              ar & common_queue_;
+          ar & worker_map_;
+          ar & rank_map_;
+          ar & owner_map_;
+          ar & common_queue_;
       }
 
       friend class boost::serialization::access;
 
       void print()
       {
-              if(!common_queue_.empty())
-              {
-                      SDPA_LOG_DEBUG("The content of the common queue is: ");
-                      common_queue_.print();
-              }
-              else
-                      SDPA_LOG_DEBUG("No job without preferences available!");
+          if(!common_queue_.empty())
+          {
+            SDPA_LOG_DEBUG("The content of the common queue is: ");
+            common_queue_.print();
+          }
+          else
+            SDPA_LOG_DEBUG("No job without preferences available!");
 
-              if( worker_map_.begin() == worker_map_.end() )
-                      SDPA_LOG_DEBUG("The worker manager has NO worker! ");
-              else
-              {
-                      SDPA_LOG_DEBUG("The worker manager has workers! ");
-                      for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
-                              (*it).second->print();
-              }
+          if( worker_map_.begin() == worker_map_.end() )
+            SDPA_LOG_DEBUG("The worker manager has NO worker! ");
+          else
+          {
+              SDPA_LOG_DEBUG("The worker manager has workers! ");
+              for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
+                (*it).second->print();
+          }
       }
 
 
@@ -112,8 +112,8 @@ namespace sdpa { namespace daemon {
       owner_map_t& owner_map() { return owner_map_; }
 
 protected:
-      worker_map_t	worker_map_;
-      rank_map_t 	rank_map_;
+      worker_map_t  worker_map_;
+      rank_map_t    rank_map_;
       owner_map_t   owner_map_;
 
       SDPA_DECLARE_LOGGER();
