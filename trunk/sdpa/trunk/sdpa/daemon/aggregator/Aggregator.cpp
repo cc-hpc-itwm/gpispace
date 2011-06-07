@@ -230,11 +230,11 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
       {
           SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
       }
-      catch(seda::StageNotFound const &)
+      catch(seda::StageNotFound const& )
       {
           SDPA_LOG_ERROR("Stage not found when trying to submit JobFailedEvent");
       }
-      catch(std::exception const & ex)
+      catch(std::exception const& ex )
       {
           SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
           throw;
@@ -296,7 +296,6 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
     }
 }
 
-
 void Aggregator::cancelNotRunning (sdpa::job_id_t const & job)
 {
   try
@@ -310,8 +309,12 @@ void Aggregator::cancelNotRunning (sdpa::job_id_t const & job)
 
     try
     {
-      ptr_workflow_engine_->cancelled(job);
-      ptr_job_man_->deleteJob(job);
+    	if(hasWorkflowEngine())
+    	{
+    		LOG(INFO, "Inform the workflow engine that the activity "<<job.str()<<" was cancelled!");
+			workflowEngine()->cancelled(job);
+    		ptr_job_man_->deleteJob(job);
+    	}
     }
     catch (std::exception const & ex)
     {
@@ -326,9 +329,16 @@ void Aggregator::cancelNotRunning (sdpa::job_id_t const & job)
 
 void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
-  assert (pEvt);
+	assert (pEvt);
 
-  LOG(INFO, "cancelling job " << pEvt->job_id());
+	if( pEvt->from() == sdpa::daemon::WE )
+	{
+		LOG(INFO, "The workflow engine requested the cancellation of the job "<<pEvt->job_id().str());
+	}
+	else
+	{
+		LOG(INFO, "The master requested the cancellation of the job "<<pEvt->job_id().str());
+	}
 
   try
   {
@@ -355,7 +365,6 @@ void Aggregator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
   {
-    LOG(TRACE, "Propagate cancel job event downwards.");
     try
     {
         sdpa::worker_id_t worker_id = findWorker(pEvt->job_id());
