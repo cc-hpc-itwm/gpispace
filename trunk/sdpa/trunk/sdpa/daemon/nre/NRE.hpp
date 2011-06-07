@@ -34,22 +34,21 @@ namespace sdpa {
 
             SDPA_DECLARE_LOGGER();
 
-            NRE(   const std::string& name = ""
-                       , const std::string& url = ""
-                       , const std::vector<std::string> arrMasterNames = std::vector<std::string>()
-                       //, const std::string& masterUrl = ""
-                       , const std::string& workerUrl = ""
-                       , const std::string& guiUrl = ""
-                       // TODO: fixme, this is ugly
-                       , bool bLaunchNrePcd = false
-                       , const std::string & fvmPCBinary = ""
-                       , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
-                       , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>() )
+            NRE( const std::string& name = ""
+                 , const std::string& url = ""
+                 , const std::vector<std::string> arrMasterNames = std::vector<std::string>()
+                 //, const std::string& masterUrl = ""
+                 , const std::string& workerUrl = ""
+                 , const std::string& guiUrl = ""
+                 // TODO: fixme, this is ugly
+                 , bool bLaunchNrePcd = false
+                 , const std::string & fvmPCBinary = ""
+                 , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                 , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>() )
 
             : dsm::DaemonFSM( name, arrMasterNames, NULL )
               , SDPA_INIT_LOGGER(name)
               , url_(url)
-              //, masterName_(masterName)
               , workerUrl_(workerUrl)
               , m_guiService("SDPA", guiUrl)
               , bLaunchNrePcd_(bLaunchNrePcd)
@@ -102,6 +101,11 @@ namespace sdpa {
 
             const std::string url() const {return url_;}
 
+            virtual void feed_workers()
+            {
+              // eventually feed the process container daemons here!!!!
+            }
+
             template <class Archive>
             void serialize(Archive& ar, const unsigned int)
             {
@@ -125,11 +129,11 @@ namespace sdpa {
               DLOG(TRACE, "creating nre scheduler...");
 
               return new SchedulerNRE<U>( this
-                                        , workerUrl_
-                                        , bLaunchNrePcd_
-                                        , nre_pcd_binary_
-                                        , nre_pcd_search_path_
-                                        , nre_pcd_pre_load_
+                                          , workerUrl_
+                                          , bLaunchNrePcd_
+                                          , nre_pcd_binary_
+                                          , nre_pcd_search_path_
+                                          , nre_pcd_pre_load_
                                         );
             }
 
