@@ -35,16 +35,16 @@ namespace sdpa {
 
   public:
 
-    typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
+	typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
 	typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
-	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL);
+	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = true);
 	virtual ~SchedulerImpl();
 
 	virtual void schedule(const sdpa::job_id_t& job);
 	virtual void schedule_local(const sdpa::job_id_t &job);
 	virtual void schedule_remote(const sdpa::job_id_t &job);
-    void delete_job(const sdpa::job_id_t & job);
+        void delete_job(const sdpa::job_id_t & job);
 
 	void schedule_round_robin(const sdpa::job_id_t &job);
 	bool schedule_with_constraints(const sdpa::job_id_t &job, bool bDelNonRespWorkers = false);
@@ -74,6 +74,9 @@ namespace sdpa {
 
 	virtual void check_post_request();
 	virtual bool post_request(bool force = false);
+	virtual void feed_workers();
+
+	virtual bool UseRequestModel() { return m_bUseRequestModel; }
 
 	void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
@@ -85,9 +88,9 @@ namespace sdpa {
 	template <class Archive>
 	void serialize(Archive& ar, const unsigned int)
 	{
-		ar & boost::serialization::base_object<Scheduler>(*this);
-		ar & jobs_to_be_scheduled;
-		ar & ptr_worker_man_;
+	  ar & boost::serialization::base_object<Scheduler>(*this);
+	  ar & jobs_to_be_scheduled;
+	  ar & ptr_worker_man_;
 	}
 
 	friend class boost::serialization::access;
@@ -103,6 +106,8 @@ namespace sdpa {
 	  mutable sdpa::daemon::IComm* ptr_comm_handler_;
 	  SDPA_DECLARE_LOGGER();
 	  boost::posix_time::time_duration m_timeout;
+
+	  bool m_bUseRequestModel; // true -> request model, false -> push model
   };
 }}
 
