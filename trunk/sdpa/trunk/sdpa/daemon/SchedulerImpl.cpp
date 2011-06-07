@@ -22,16 +22,18 @@
 #include <sdpa/events/id_generator.hpp>
 
 #include <cassert>
+#include <boost/foreach.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler )
+SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler, bool bUseRequestModel )
   : ptr_worker_man_(new WorkerManager())
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name():"tests::sdpa::SchedulerImpl")
   , m_timeout(boost::posix_time::milliseconds(100))
+  , m_bUseRequestModel(bUseRequestModel)
 {
 }
 
@@ -227,28 +229,28 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
 
   if(!ptr_comm_handler_)
   {
-    SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
-    stop();
-    return;
+      SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
+      stop();
+      return;
   }
 
   try {
 
     if( ptr_worker_man_ )
     {
-      SDPA_LOG_DEBUG("Get the next worker ...");
-      const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
+        SDPA_LOG_DEBUG("Get the next worker ...");
+        const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
-      SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
+        SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
-      pWorker->dispatch(jobId);
+        pWorker->dispatch(jobId);
     }
   }
   catch(const NoWorkerFoundException&)
   {
-    // put the job back into the queue
-    ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
-    SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
+      // put the job back into the queue
+      ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
+      SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
   }
 }
 
@@ -409,9 +411,9 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
   }
   else
   {
-    LOG(WARN, "could not schedule job: no worker available: " << jobId);
-    ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
-    return false;
+      LOG(WARN, "could not schedule job: no worker available: " << jobId);
+      ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
+      return false;
   }
 
   return false;
@@ -536,20 +538,41 @@ bool SchedulerImpl::post_request(bool force)
   return bReqPosted;
 }
 
+
+void SchedulerImpl::feed_workers()
+{
+  // for any worker take a job from its pending queue, a
+  std::list<std::string> workerList;
+  ptr_worker_man_->getWorkerList(workerList);
+  BOOST_FOREACH(sdpa::worker_id_t worker_id, workerList)
+  {
+    try {
+        SDPA_LOG_WARN("Serve a job to the worker "<<worker_id);
+        ptr_comm_handler_->serve_job(worker_id, "");
+    }
+    catch(NoJobScheduledException) {
+        SDPA_LOG_WARN("No job scheduled to the worker "<<worker_id);
+    }
+    catch(WorkerNotFoundException) {
+        SDPA_LOG_WARN("Couldn't find the worker "<<worker_id);
+    }
+  }
+}
+
 void SchedulerImpl::check_post_request()
 {
   if(!ptr_comm_handler_)
   {
-    SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-    stop();
-    return;
+      SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+      stop();
+      return;
   }
 
   if( !ptr_comm_handler_->is_orchestrator())
   {
       // TODO: remove requests
       if (ptr_comm_handler_->is_registered() && jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
-            post_request();
+        post_request();
   }
 }
 
@@ -557,64 +580,68 @@ void SchedulerImpl::run()
 {
   if(!ptr_comm_handler_)
   {
-          SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-          stop();
-          return;
+      SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+      stop();
+      return;
   }
 
   SDPA_LOG_DEBUG("Scheduler thread running ...");
 
   while(!bStopRequested)
   {
-    try
-    {
-      check_post_request();
-
-      sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-      const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-
-      if( pJob->is_local() )
-        schedule_local(jobId);
-      else
+      try
       {
-        // if it's an NRE just execute it!
-        // Attention!: an NRE has no WorkerManager!!!!
-        // or has an Worker Manager and the workers are threads
+          if(UseRequestModel())
+            check_post_request(); // eventually, post a request
 
-        try
-        {
-            schedule_remote(jobId);
-        }
-        catch( const NoWorkerFoundException& ex)
-        {
-            SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
-            // do so as when no preferences were set, just ignore them right now
-            //schedule_anywhere(jobId);
+          sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+          const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-            ptr_worker_man_->dispatchJob(jobId);
-        }
+          if( pJob->is_local() )
+            schedule_local(jobId);
+          else
+          {
+              // if it's an NRE just execute it!
+              // Attention!: an NRE has no WorkerManager!!!!
+              // or has an Worker Manager and the workers are threads
+
+              try
+              {
+                  schedule_remote(jobId);
+                  if(!UseRequestModel())
+                    feed_workers();
+
+              }
+              catch( const NoWorkerFoundException& ex)
+              {
+                  SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
+                  // do so as when no preferences were set, just ignore them right now
+                  //schedule_anywhere(jobId);
+
+                  ptr_worker_man_->dispatchJob(jobId);
+              }
+          }
       }
-    }
-    catch(const JobNotFoundException& ex)
-    {
-        SDPA_LOG_DEBUG("Job not found! Could not schedule the job "<<ex.job_id().str());
-        throw;
-    }
-    catch( const boost::thread_interrupted & )
-    {
-        DMLOG(DEBUG, "Thread interrupted ...");
-        bStopRequested = true; // FIXME: can probably be removed
-        break;
-    }
-    catch( const sdpa::daemon::QueueEmpty &)
-    {
-        // ignore
-    }
-    catch ( const std::exception &ex )
-    {
-        MLOG(ERROR, "exception in scheduler thread: " << ex.what());
-        throw;
-    }
+      catch(const JobNotFoundException& ex)
+      {
+          SDPA_LOG_DEBUG("Job not found! Could not schedule the job "<<ex.job_id().str());
+          throw;
+      }
+      catch( const boost::thread_interrupted & )
+      {
+          DMLOG(DEBUG, "Thread interrupted ...");
+          bStopRequested = true; // FIXME: can probably be removed
+          break;
+      }
+      catch( const sdpa::daemon::QueueEmpty &)
+      {
+          // ignore
+      }
+      catch ( const std::exception &ex )
+      {
+          MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+          throw;
+      }
   }
 }
 
@@ -716,19 +743,19 @@ void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& 
 
   if( ptr_comm_handler_ )
   {
-    if(workerList.empty())
-    {
-        SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
-        return;
-    }
+      if(workerList.empty())
+      {
+          SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
+          return;
+      }
 
-    for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
-    {
-        SDPA_LOG_INFO("Send notification to the worker "<<*iter<<" "<< errcode<<" ...");
-        ErrorEvent::Ptr pErrEvt(new ErrorEvent( ptr_comm_handler_->name(), *iter, errcode,  "worker notification") );
-        //ErrorEvent::SDPA_EWORKERNOTREG
-        ptr_comm_handler_->sendEventToMaster(pErrEvt);
-    }
+      for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
+      {
+          SDPA_LOG_INFO("Send notification to the worker "<<*iter<<" "<< errcode<<" ...");
+          ErrorEvent::Ptr pErrEvt(new ErrorEvent( ptr_comm_handler_->name(), *iter, errcode,  "worker notification") );
+          //ErrorEvent::SDPA_EWORKERNOTREG
+          ptr_comm_handler_->sendEventToMaster(pErrEvt);
+      }
   }
   else
     SDPA_LOG_ERROR("No valid communication handler!");
