@@ -178,15 +178,19 @@ void  NRE<U>::cancelNotRunning(sdpa::job_id_t const & job)
   {
     Job::ptr_t pJob(ptr_job_man_->findJob(job));
 
-    // update the job status to "Cancelled" we don't have an ack
+    LOG(INFO, "Update the job status to \"Cancelled\"");
     sdpa::events::CancelJobAckEvent cae;
     pJob->CancelJobAck(&cae);
     ptr_scheduler_->delete_job (job);
 
     try
     {
-        ptr_workflow_engine_->cancelled(job);
-        ptr_job_man_->deleteJob(job);
+       	if(hasWorkflowEngine())
+       	{
+       		LOG(INFO, "Inform the workflow engine that the activity "<<job.str()<<" was cancelled!");
+   			workflowEngine()->cancelled(job);
+       		ptr_job_man_->deleteJob(job);
+       	}
     }
     catch (std::exception const & ex)
     {
@@ -204,7 +208,14 @@ void  NRE<U>::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
     assert (pEvt);
 
-    LOG(INFO, "cancelling job " << pEvt->job_id());
+    if( pEvt->from() == sdpa::daemon::WE )
+	{
+		LOG(INFO, "The workflow engine requested the cancellation of the job "<<pEvt->job_id().str());
+	}
+	else
+	{
+		LOG(INFO, "The master requested the cancellation of the job "<<pEvt->job_id().str());
+	}
 
     try
     {
@@ -225,14 +236,12 @@ void  NRE<U>::handleCancelJobEvent(const CancelJobEvent* pEvt )
     }
     catch(const JobNotFoundException &)
     {
-        SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+        SDPA_LOG_WARN("Job "<<pEvt->job_id().str()<<" not found!");
         return;
     }
 
-    if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
+    if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
     {
-        LOG(TRACE, "Propagate cancel job event downwards.");
-
         //sdpa::worker_id_t worker_id = findWorker(pEvt->job_id());
         //check if the job is in execution and effectively kill it
         Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
