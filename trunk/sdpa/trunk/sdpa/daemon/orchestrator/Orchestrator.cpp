@@ -17,6 +17,8 @@
  */
 
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
