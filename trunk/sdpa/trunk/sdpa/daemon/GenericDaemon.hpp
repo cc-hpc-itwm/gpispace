@@ -140,6 +140,8 @@ namespace sdpa { namespace daemon {
       virtual bool failed(const id_type & id, const result_type & result);
       virtual bool cancelled(const id_type & id);
 
+      virtual void serve_job(const Worker::worker_id_t& worker_id, const job_id_t&  last_job_id );
+
       virtual void workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t&, const std::string& result /*or reason*/) ;
       virtual void workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t & id, const result_type& result );
       virtual void workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id);
