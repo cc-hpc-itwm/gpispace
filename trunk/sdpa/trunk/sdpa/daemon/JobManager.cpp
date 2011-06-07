@@ -58,27 +58,27 @@ JobManager::~JobManager(){
 //helpers
 Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
 {
-	lock_type lock(mtx_);
-	job_map_t::iterator it = job_map_.find( job_id );
-	if( it != job_map_.end() )
-		return it->second;
-	else
-		throw JobNotFoundException( job_id );
+    lock_type lock(mtx_);
+    job_map_t::iterator it = job_map_.find( job_id );
+    if( it != job_map_.end() )
+      return it->second;
+    else
+      throw JobNotFoundException( job_id );
 }
 
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotAddedException)
 {
-	lock_type lock(mtx_);
-	job_map_t::iterator it;
-	bool bsucc = false;
+    lock_type lock(mtx_);
+    job_map_t::iterator it;
+    bool bsucc = false;
 
-	pair<job_map_t::iterator, bool> ret_pair(it, bsucc);
-	pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
+    pair<job_map_t::iterator, bool> ret_pair(it, bsucc);
+    pair<sdpa::job_id_t, Job::ptr_t> job_pair(job_id, pJob);
 
-	ret_pair =  job_map_.insert(job_pair);
+    ret_pair =  job_map_.insert(job_pair);
 
-	if(! ret_pair.second)
-          throw JobNotAddedException(job_id);
+    if(! ret_pair.second)
+      throw JobNotAddedException(job_id);
 }
 
 void JobManager::markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException)

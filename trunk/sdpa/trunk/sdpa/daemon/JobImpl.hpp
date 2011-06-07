@@ -78,7 +78,6 @@ namespace sdpa { namespace daemon {
 
         virtual void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
 
-
         virtual std::string print_info()
         {
                 std::ostringstream os;

@@ -63,7 +63,7 @@ namespace daemon {
 
 	class NoJobScheduledException : public WorkerException {
 		public:
-			NoJobScheduledException( const sdpa::worker_id_t& worker_id)
+	        NoJobScheduledException( const sdpa::worker_id_t& worker_id)
 			: WorkerException("No job was scheduled!", worker_id) {}
 		virtual ~NoJobScheduledException() throw() {}
 	};
