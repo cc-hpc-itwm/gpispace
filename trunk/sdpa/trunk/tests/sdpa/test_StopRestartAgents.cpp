@@ -681,7 +681,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient )
 	LOG( INFO, "The test case testBackupRecoverOrchRealWfeWithClient terminated!" );
 }
 
-BOOST_AUTO_TEST_CASE( testStopRestartAggRealWeWithClient )
+/*BOOST_AUTO_TEST_CASE( testStopRestartAggRealWeWithClient )
 {
 	LOG( INFO, "***** testStopRestartAggRealWeWithClient *****"<<std::endl);
 
@@ -841,5 +841,6 @@ BOOST_AUTO_TEST_CASE( testStopRestartNRERealWeWithClient )
 	LOG( INFO, "The test case testStopRestartNRE terminated!");
 	LOG( INFO, "Shutdown the orchestrator, the aggregator and the nre!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

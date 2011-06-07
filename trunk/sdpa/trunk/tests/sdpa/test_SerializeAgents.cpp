@@ -1,7 +1,8 @@
 #define BOOST_TEST_MODULE TestAgentsSerialization
 
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <iostream>
 
 #include <sdpa/daemon/Worker.hpp>
