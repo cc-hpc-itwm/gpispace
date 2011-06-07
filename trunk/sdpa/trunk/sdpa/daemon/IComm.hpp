@@ -73,6 +73,8 @@ const std::string USER("user");
 	  virtual void update_last_request_time() = 0;
 	  virtual bool requestsAllowed() = 0;
 
+	  virtual void serve_job(const Worker::worker_id_t& worker_id, const job_id_t&  last_job_id ) = 0;
+
 	  virtual void schedule(const sdpa::job_id_t& job) = 0;
 
 	  virtual bool hasWorkflowEngine() = 0;
