@@ -49,8 +49,9 @@ DaemonFSM::DaemonFSM( const std::string &name,
 
 DaemonFSM::DaemonFSM( const std::string &name,
                       const std::vector<std::string>& arrMasterNames = std::vector<std::string>(),
+                      unsigned int cap,
                       IWorkflowEngine*  pArgSdpa2Gwes)
-  : GenericDaemon(name, arrMasterNames, pArgSdpa2Gwes),
+  : GenericDaemon(name, arrMasterNames, cap, pArgSdpa2Gwes),
     SDPA_INIT_LOGGER(name+"FSM")
 {
   initiate();

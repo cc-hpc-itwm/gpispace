@@ -54,6 +54,7 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 
 	DaemonFSM(  const std::string &name = "",
 	            const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),
+	            unsigned int cap = 2,
 	            IWorkflowEngine* pArgSdpa2Gwes = NULL );
 
 

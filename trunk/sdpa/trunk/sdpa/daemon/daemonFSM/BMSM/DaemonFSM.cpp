@@ -99,8 +99,9 @@ namespace sdpa {
 
       DaemonFSM::DaemonFSM( const std::string &name,
                             const sdpa::master_list_t& arrMasterNames,
+                            unsigned int cap,
                             IWorkflowEngine* pArgSdpa2Gwes )
-      : GenericDaemon(name, arrMasterNames, pArgSdpa2Gwes)
+      : GenericDaemon(name, arrMasterNames, cap, pArgSdpa2Gwes)
       {
         DLOG(TRACE, "Daemon state machine created");
       }
