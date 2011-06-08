@@ -30,9 +30,10 @@ namespace daemon {
 		typedef sdpa::shared_ptr<Orchestrator> ptr_t;
 		SDPA_DECLARE_LOGGER();
 
-		Orchestrator( const std::string &name = "",
-		              const std::string& url = "" )
-		: DaemonFSM( name, sdpa::master_list_t(), NULL),
+		Orchestrator( const std::string &name = ""
+		              , const std::string& url = ""
+		              , unsigned int cap = MAX_CAPACITY )
+		: DaemonFSM( name, sdpa::master_list_t(), cap, NULL),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url)
 		{
