@@ -355,13 +355,13 @@ namespace we { namespace mgmt {
               {
                 info.status = activity_information_t::SUSPENDED;
               }
-              else if (desc->activity().is_cancelled())
-              {
-                info.status = activity_information_t::CANCELLED;
-              }
               else if (desc->activity().is_failed())
               {
                 info.status = activity_information_t::FAILED;
+              }
+              else if (desc->activity().is_cancelled())
+              {
+                info.status = activity_information_t::CANCELLED;
               }
               else if (desc->activity().is_finished())
               {
@@ -1139,7 +1139,17 @@ namespace we { namespace mgmt {
           }
           else if (desc->sent_to_external())
           {
-            ext_cancel (desc->to_external_id(), "WFE policy cancel-on-failure in place");
+            if (! (  desc->activity().is_cancelling()
+                  || desc->activity().is_failed()
+                  || desc->activity().is_cancelled()
+                  || desc->activity().is_finished()
+                  )
+               )
+            {
+              ext_cancel ( desc->to_external_id()
+                         , "WFE policy cancel-on-failure in place"
+                         );
+            }
           }
           else
           {
