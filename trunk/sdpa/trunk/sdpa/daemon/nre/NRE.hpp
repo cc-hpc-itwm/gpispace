@@ -37,6 +37,7 @@ namespace sdpa {
             NRE( const std::string& name = ""
                  , const std::string& url = ""
                  , const std::vector<std::string> arrMasterNames = std::vector<std::string>()
+                 , unsigned int cap = MAX_CAPACITY
                  //, const std::string& masterUrl = ""
                  , const std::string& workerUrl = ""
                  , const std::string& guiUrl = ""
@@ -46,7 +47,7 @@ namespace sdpa {
                  , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
                  , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>() )
 
-            : dsm::DaemonFSM( name, arrMasterNames, NULL )
+            : dsm::DaemonFSM( name, arrMasterNames, cap, NULL )
               , SDPA_INIT_LOGGER(name)
               , url_(url)
               , workerUrl_(workerUrl)

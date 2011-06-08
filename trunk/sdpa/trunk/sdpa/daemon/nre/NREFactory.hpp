@@ -47,6 +47,7 @@ namespace daemon {
                     typename NRE<U>::ptr_t pNRE( new NRE<U>( name
                                                              , url
                                                              , arrMasterNames
+                                                             , 2
                                                              , workerUrl
                                                              , guiUrl
                                                              , bLaunchNrePcd
@@ -81,6 +82,7 @@ namespace daemon {
                     typename NRE<U>::ptr_t pNRE( new NRE<U>(  name
                                                               , url
                                                               , arrMasterNames
+                                                              , 2
                                                               , workerUrl
                                                               , guiUrl
                                                               , bLaunchNrePcd
