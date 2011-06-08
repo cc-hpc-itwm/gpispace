@@ -78,7 +78,7 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
 /**
  * add new worker
  */
-void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int cap, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
   lock_type lock(mtx_);
 
@@ -107,7 +107,7 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
     }*/
   }
 
-  Worker::ptr_t pWorker( new Worker( workerId, rank, agent_uuid ));
+  Worker::ptr_t pWorker( new Worker( workerId, rank, cap, agent_uuid ));
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
   rank_map_.insert(rank_map_t::value_type(rank, pWorker->name()));

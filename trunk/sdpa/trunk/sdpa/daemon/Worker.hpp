@@ -86,7 +86,11 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       @param location how to reach that worker (might be the same as the former)
       */
-    explicit Worker(const worker_id_t& name = "", const unsigned int& rank = 0, const sdpa::worker_id_t& agent_uuid = "", const location_t &location = "");
+    explicit Worker( 	const worker_id_t& name = "",
+    					const unsigned int& rank = 0,
+    					const unsigned int& cap = MAX_CAPACITY,
+    					const sdpa::worker_id_t& agent_uuid = "",
+    					const location_t &location = "" );
 
     /**
       Take an event related to that particular worker and update the internal
@@ -126,9 +130,9 @@ namespace sdpa { namespace daemon {
     /**
          Return the rank of the worker.
      */
-    unsigned int rank() const { return rank_; }
-
-    const sdpa::worker_id_t& agent_uuid() { return agent_uuid_; }
+    const unsigned int rank() const { return rank_; }
+    const unsigned int capacity() const { return capacity_; }
+    const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_; }
 
     /**
          Checks if the worker has job
@@ -186,6 +190,8 @@ namespace sdpa { namespace daemon {
     JobQueue& acknowledged() { return acknowledged_; }
     const JobQueue& acknowledged() const { return acknowledged_; }
 
+    size_t nbAllocatedJobs();
+
     // add a method get_next_prefernce and use it sched.. with constr
     void add_to_affinity_list(const pref_deg_t&, const sdpa::job_id_t& );
 
@@ -214,7 +220,8 @@ namespace sdpa { namespace daemon {
     SDPA_DECLARE_LOGGER();
 
     worker_id_t name_; //! name of the worker
-    const unsigned int rank_;
+    unsigned int rank_;
+    unsigned int capacity_;
 	sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received

@@ -66,7 +66,8 @@ namespace sdpa { namespace daemon {
 
         GenericDaemon( const std::string name = "orchestrator_0",
                        const sdpa::master_list_t& m_arrMasterNames =  sdpa::master_list_t(),
-                       IWorkflowEngine* pArgSdpa2Gwes = NULL );
+                       unsigned int cap = MAX_CAPACITY,
+                       IWorkflowEngine* pArgSdpa2Gwes = NULL);
 
         virtual ~GenericDaemon();
 
@@ -154,7 +155,7 @@ namespace sdpa { namespace daemon {
       virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const;
 
       const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) const;
-      virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid  = "");
+      virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int cap, const sdpa::worker_id_t& agent_uuid  = "");
 
       const std::string& name() const { return Strategy::name(); }
 
@@ -179,6 +180,10 @@ namespace sdpa { namespace daemon {
 
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
+
+      const unsigned int& capacity() const { return m_nCap; }
+      unsigned int& capacity() { return m_nCap; }
+
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
       //boost::bind(&sdpa_daemon::gen_id, this))
@@ -304,6 +309,7 @@ protected:
 
         bool m_bRegistered;
         unsigned int m_nRank;
+        unsigned int m_nCap; // maximum number of external jobs
         sdpa::worker_id_t m_strAgentUID;
 
         sdpa::util::time_type m_ullPollingInterval;

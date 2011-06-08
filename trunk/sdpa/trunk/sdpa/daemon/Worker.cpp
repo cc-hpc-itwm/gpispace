@@ -6,7 +6,8 @@
 
 using namespace sdpa::daemon;
 
-Worker::Worker(const worker_id_t& name, const unsigned int& rank, const sdpa::worker_id_t& agent_uuid, const location_t &location)
+Worker::Worker(	const worker_id_t& name, const unsigned int& rank, const unsigned int& cap,
+		     	const sdpa::worker_id_t& agent_uuid, const location_t &location)
   : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
     name_(name),
     rank_(rank),
@@ -128,4 +129,10 @@ void Worker::delete_from_affinity_list(const sdpa::job_id_t& job_id)
 
 	// delete the entry corresponding to job_id in jobs_preferring_this_
 	mi_jobIds.erase(job_id);
+}
+
+
+size_t Worker::nbAllocatedJobs()
+{
+	return pending().size() + submitted().size() + acknowledged().size();
 }
