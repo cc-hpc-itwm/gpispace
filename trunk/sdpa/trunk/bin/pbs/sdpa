@@ -1239,16 +1239,22 @@ function status ()
     local p
     local err
     for p in $parts ; do
-	err=$(status_$p $@)
-	if [ $? -ne 0 ] ; then
-	    if [ -z "$err" ] ; then
-		log "$p is dead"
+	local cmd
+	cmd="status_$p"
+	if type "$cmd" >/dev/null 2>&1 ; then
+	    err=$(status_$p $@)
+	    if [ $? -ne 0 ] ; then
+		if [ -z "$err" ] ; then
+		    log "$p is dead"
+		else
+		    log "$p is dead: $err"
+		fi
+		rc=$(( rc + 1 ))
 	    else
-		log "$p is dead: $err"
+		log "$p is alive"
 	    fi
-	    rc=$(( rc + 1 ))
 	else
-	    log "$p is alive"
+	    sdpac status $p
 	fi
     done
     return $rc
