@@ -41,15 +41,26 @@ namespace sdpa { namespace events {
         : MgmtEvent()
       {}
 
-      WorkerRegistrationEvent(const address_t& a_from, const address_t& a_to, const int rank, const sdpa::worker_id_t& agent_uuid = "" )
-		  : MgmtEvent(a_from, a_to), rank_(rank), agent_uuid_(agent_uuid) { }
+      WorkerRegistrationEvent(	const address_t& a_from,
+    		  	  	  	  	  	const address_t& a_to,
+    		            		const unsigned int rank = 0,
+    		            		const unsigned int capacity = 2,
+    		            		const sdpa::worker_id_t& agent_uuid = "" )
+		  : MgmtEvent(a_from, a_to),
+		    rank_(rank),
+		    capacity_(capacity),
+		    agent_uuid_(agent_uuid)
+      { }
 
       virtual ~WorkerRegistrationEvent() { }
 
       std::string str() const { return "WorkerRegistrationEvent"; }
 
-      const int& rank() const { return rank_; }
-      int& rank() { return rank_; }
+      const unsigned int& rank() const { return rank_; }
+      unsigned int& rank() { return rank_; }
+
+      const unsigned int& capacity() const { return capacity_; }
+      unsigned int& capacity() { return capacity_; }
 
       const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_;}
       sdpa::worker_id_t& agent_uuid() { return agent_uuid_;}
@@ -60,7 +71,8 @@ namespace sdpa { namespace events {
       }
 
     private:
-      int rank_;
+      unsigned int rank_;
+      unsigned int capacity_;
       sdpa::worker_id_t agent_uuid_;
   };
 }}
