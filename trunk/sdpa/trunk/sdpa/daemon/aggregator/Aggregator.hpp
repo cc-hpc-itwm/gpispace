@@ -35,8 +35,9 @@ namespace sdpa {
                   Aggregator( const std::string& name = "",
                               const std::string& url = "",
                               const sdpa::master_list_t& arrMasterNames = std::vector<std::string>(),
+                              unsigned int cap = MAX_CAPACITY,
                               const std::string& guiUrl = "" )
-                  : DaemonFSM( name, arrMasterNames, NULL ),
+                  : DaemonFSM( name, arrMasterNames, cap, NULL ),
                     SDPA_INIT_LOGGER(name),
                     url_(url),
                     //masterName_(masterName),
