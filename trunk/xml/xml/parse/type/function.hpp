@@ -1853,17 +1853,20 @@ namespace xml
           };
         } // namespace visitor
 
-        inline void dump ( xml_util::xmlstream & s
-                         , const function_type & f
-                         , const bool is_template = false
-                         )
+        inline void dump_before_property ( xml_util::xmlstream & s
+                                         , const function_type & f
+                                         , const bool is_template = false
+                                         )
         {
           s.open (is_template ? "template" : "defun");
           s.attr ("name", f.name);
           s.attr ("internal", f.internal);
+        }
 
-          ::we::type::property::dump::dump (s, f.prop);
-
+        inline void dump_after_property ( xml_util::xmlstream & s
+                                        , const function_type & f
+                                        )
+        {
           dumps (s, f.structs.begin(), f.structs.end());
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");
@@ -1881,6 +1884,32 @@ namespace xml
             }
 
           s.close ();
+        }
+
+        inline void dump ( xml_util::xmlstream & s
+                         , const function_type & f
+                         , const state::type & state
+                         )
+        {
+          dump_before_property (s, f, false);
+
+          state.dump_context (s);
+
+          ::we::type::property::dump::dump (s, f.prop);
+
+          dump_after_property (s, f);
+        }
+
+        inline void dump ( xml_util::xmlstream & s
+                         , const function_type & f
+                         , const bool is_template = false
+                         )
+        {
+          dump_before_property (s, f, is_template);
+
+          ::we::type::property::dump::dump (s, f.prop);
+
+          dump_after_property (s, f);
         }
       } // namespace dump
     }

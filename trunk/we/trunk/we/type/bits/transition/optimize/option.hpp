@@ -3,8 +3,6 @@
 #ifndef WE_TYPE_BITS_TRANSITION_OPTIMIZE_OPTION_HPP
 #define WE_TYPE_BITS_TRANSITION_OPTIMIZE_OPTION_HPP 1
 
-#include <we/type/property.hpp>
-
 #include <boost/program_options.hpp>
 
 #include <fhg/util/read_bool.hpp>
@@ -17,7 +15,6 @@ namespace we { namespace type {
       namespace options
       {
         namespace po = boost::program_options;
-        namespace property = we::type::property;
 
         struct type
         {
@@ -40,33 +37,6 @@ namespace we { namespace type {
             , _Osimple_pipe_elimination ("Osimple-pipe-elimination")
             , _Omerge_expressions ("Omerge-expressions")
           {}
-
-          // *************************************************************** //
-
-          bool property ( const property::path_type & path
-                        , const property::value_type & value
-                        )
-          {
-            if (path.size() != 1)
-              {
-                return false;
-              }
-
-#define GET_PROP(x)                                                       \
-            else if (path.size() == 1 && path[0] == _O ## x)              \
-              {                                                           \
-                _ ## x = fhg::util::read_bool (value); return true;       \
-              }
-
-            GET_PROP(simple_pipe_elimination)
-            GET_PROP(merge_expressions)
-
-#undef GET_PROP
-            else
-              {
-                return false;
-              }
-          }
 
           // *************************************************************** //
 

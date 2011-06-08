@@ -49,9 +49,7 @@ namespace xml
                               = property::value_type()
                               )
         {
-          // WORK HERE: much better name
-          // WORK HERE: store even if interpreted by pnetc
-          if (!state.property (path, value))
+          if (!state.interpret_context_property (path, value))
             {
               ::xml::parse::util::property::set (state, prop, path, value);
             }

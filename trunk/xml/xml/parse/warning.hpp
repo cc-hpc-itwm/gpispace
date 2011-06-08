@@ -289,6 +289,34 @@ namespace xml
 
       // ******************************************************************* //
 
+      class property_unknown : public generic
+      {
+      private:
+        std::string nice ( const we::type::property::path_type & key
+                         , const we::type::property::value_type & val
+                         , const boost::filesystem::path & path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "unknown property " << fhg::util::join (key, ".")
+            << " value " << val
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        property_unknown ( const we::type::property::path_type & key
+                         , const we::type::property::value_type & val
+                         , const boost::filesystem::path & path
+                         )
+          : generic (nice (key, val, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class property_overwritten : public generic
       {
       private:

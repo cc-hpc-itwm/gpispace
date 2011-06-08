@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include <vector>
+#include <list>
 
 #include <stdexcept>
 
@@ -24,6 +25,9 @@
 #include <xml/parse/util/weparse.hpp>
 
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
 
 // ************************************************************************* //
 
@@ -45,6 +49,26 @@ namespace xml
 
       // ******************************************************************* //
 
+      struct key_value_t
+      {
+      private:
+        const property::key_type _key;
+        const property::value_type _value;
+
+      public:
+        key_value_t (const std::string & key, const std::string & value)
+          : _key (key)
+          , _value (value)
+        {}
+
+        const std::string & key () const { return _key; }
+        const std::string & value () const { return _value; }
+      };
+
+      typedef std::list<key_value_t> key_value_list_t;
+
+      // ******************************************************************* //
+
       struct type
       {
       public:
@@ -55,6 +79,7 @@ namespace xml
         in_progress_type _in_progress;
         property::path_type _prop_path;
         context_t _context;
+        key_value_list_t _key_value_list;
         optimize::options::type _options_optimize;
         bool _ignore_properties;
         bool _Werror;
@@ -77,6 +102,7 @@ namespace xml
         bool _Wconflicting_port_types;
         bool _Woverwrite_file;
         bool _Wduplicate_external_function;
+        bool _Wproperty_unknown;
 
         std::string _dump_xml_file;
         bool _no_inline;
@@ -109,6 +135,7 @@ namespace xml
         std::string _OWconflicting_port_types;
         std::string _OWoverwrite_file;
         std::string _OWduplicate_external_function;
+        std::string _OWproperty_unknown;
 
         std::string _Odump_xml_file;
         std::string _Ono_inline;
@@ -197,6 +224,7 @@ namespace xml
           , _Wconflicting_port_types (true)
           , _Woverwrite_file (true)
           , _Wduplicate_external_function (true)
+          , _Wproperty_unknown (true)
 
           , _dump_xml_file ("")
           , _no_inline (false)
@@ -228,6 +256,7 @@ namespace xml
           , _OWconflicting_port_types ("Wconflicting-port-types")
           , _OWoverwrite_file ("Woverwrite-file")
           , _OWduplicate_external_function ("Wduplicate-external-function")
+          , _OWproperty_unknown ("Wproperty-unknown")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
@@ -263,113 +292,71 @@ namespace xml
 
         // ***************************************************************** //
 
-        // WORK HERE: better name!
-        bool property ( const property::path_type & path
-                      , const property::value_type & value
-                      )
+        bool interpret_context_property ( const property::path_type & path
+                                        , const property::value_type & value
+                                        )
         {
-          if (path.size() < 2 || path[0] != "pnetc")
+          if (path.size() == 3 && path[0] == "pnetc")
             {
-              return false;
-            }
-          else if (path.size() == 3 && path[1] == "context")
-            {
-              std::ostringstream s;
-
-              s << "when try to bind context key "
-                << path[2] << " with " << value
-                << " in " << file_in_progress()
-                ;
-
-              try
+              if (path[1] != "context")
                 {
-                  const value::type & old_val (_context.value (path[2]));
-
-                  warn ( overwrite_context ( path[2]
-                                           , value
-                                           , old_val
-                                           , file_in_progress()
-                                           )
+                  warn ( property_unknown ( path
+                                          , value
+                                          , file_in_progress()
+                                          )
                        );
                 }
-              catch (const value::container::exception::missing_binding &)
+              else
                 {
-                  /* do nothing, that's what we want */
+                  std::ostringstream s;
+
+                  s << "when try to bind context key "
+                    << path[2] << " with " << value
+                    << " in " << file_in_progress()
+                    ;
+
+                  try
+                    {
+                      const value::type & old_val (_context.value (path[2]));
+
+                      warn ( overwrite_context ( path[2]
+                                               , value
+                                               , old_val
+                                               , file_in_progress()
+                                               )
+                           );
+                    }
+                  catch (const value::container::exception::missing_binding &)
+                    {
+                      /* do nothing, that's what we want */
+                    }
+
+                  const util::we_parser_t parser
+                    ( util::generic_we_parse ( "${" + path[2] + "}:=" + value
+                                             , s.str()
+                                             )
+                    );
+
+                  try
+                    {
+                      parser.eval_all (_context);
+
+                      _key_value_list.push_back (key_value_t (path[2], value));
+                    }
+                  catch (const expr::exception::eval::divide_by_zero & e)
+                    {
+                      throw error::eval_context_bind (s.str(), e.what());
+                    }
+                  catch (const expr::exception::eval::type_error & e)
+                    {
+                      throw error::eval_context_bind (s.str(), e.what());
+                    }
+
+                  return true;
                 }
-
-              const util::we_parser_t parser
-                ( util::generic_we_parse ( "${" + path[2] + "}:=" + value
-                                         , s.str()
-                                         )
-                );
-
-              try
-                {
-                  parser.eval_all (_context);
-                }
-              catch (const expr::exception::eval::divide_by_zero & e)
-                {
-                  throw error::eval_context_bind (s.str(), e.what());
-                }
-              catch (const expr::exception::eval::type_error & e)
-                {
-                  throw error::eval_context_bind (s.str(), e.what());
-                }
-
-              return true;
-            }
-          else if (path.size() == 2 && path[1] == _Osearch_path)
-            {
-              _search_path.push_back (value); return true;
-            }
-          else if (path.size() == 2 && path[1] == _Opath_to_cpp)
-            {
-              _path_to_cpp = value; return true;
-            }
-          else if (path.size() == 2 && path[1] == _Odump_xml_file)
-            {
-              _dump_xml_file = value; return true;
             }
 
-#define GET_PROP(x)                                               \
-          else if (path.size() == 2 && path[1] == _O ## x)        \
-            {                                                     \
-              _ ## x = fhg::util::read_bool (value); return true; \
-            }
-
-          GET_PROP (ignore_properties)
-          GET_PROP (Werror)
-          GET_PROP (Wall)
-          GET_PROP (Woverwrite_function_name_as)
-          GET_PROP (Woverwrite_template_name_as)
-          GET_PROP (Wshadow)
-          GET_PROP (Wdefault_construction)
-          GET_PROP (Wunused_field)
-          GET_PROP (Wport_not_connected)
-          GET_PROP (Wunexpected_element)
-          GET_PROP (Woverwrite_function_name_trans)
-          GET_PROP (Woverwrite_function_internal_trans)
-          GET_PROP (Wproperty_overwritten)
-          GET_PROP (Wtype_map_duplicate)
-          GET_PROP (Wtype_get_duplicate)
-          GET_PROP (Woverwrite_context)
-          GET_PROP (Windependent_place)
-          GET_PROP (Windependent_transition)
-          GET_PROP (Wconflicting_port_types)
-          GET_PROP (Woverwrite_file)
-          GET_PROP (Wduplicate_external_function)
-
-          GET_PROP (no_inline)
-          GET_PROP (synthesize_virtual_places)
-
-#undef GET_PROP
-          else
-            {
-              property::path_type deeper (path.begin() + 1, path.end());
-
-              return _options_optimize.property (deeper, value);
-            }
-
+          return false;
         }
 
         // ***************************************************************** //
@@ -400,6 +387,36 @@ namespace xml
         const std::string & dump_xml_file (void) const
         {
           return _dump_xml_file;
+        }
+
+        // ***************************************************************** //
+
+        void dump_context (xml_util::xmlstream & s) const
+        {
+          typedef key_value_list_t::const_iterator it_t;
+
+          it_t kv (_key_value_list.begin());
+          const it_t end (_key_value_list.end());
+
+          if (kv != end)
+            {
+              s.open ("properties"); s.attr ("name", "pnetc");
+              s.open ("properties"); s.attr ("name", "context");
+
+              while (kv != end)
+                {
+                  s.open ("property"); s.attr ("key", kv->key());
+
+                  s.content (kv->value());
+
+                  s.close();
+
+                  ++kv;
+                }
+
+              s.close ();
+              s.close ();
+            }
         }
 
         // ***************************************************************** //
@@ -452,6 +469,7 @@ namespace xml
         ACCESS(Wconflicting_port_types)
         ACCESS(Woverwrite_file)
         ACCESS(Wduplicate_external_function)
+        ACCESS(Wproperty_unknown)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
@@ -485,6 +503,7 @@ namespace xml
         WARN(conflicting_port_types)
         WARN(overwrite_file)
         WARN(duplicate_external_function)
+        WARN(property_unknown)
 
 #undef WARN
 
@@ -644,6 +663,10 @@ namespace xml
             ( _OWduplicate_external_function.c_str()
             , BOOLVAL(Wduplicate_external_function)
             , "warn when an external function has multiple occurrences"
+            )
+            ( _OWproperty_unknown.c_str()
+            , BOOLVAL(Wproperty_unknown)
+            , "warn when a property is unknown"
             )
             ( _Ono_inline.c_str()
             , BOOLVAL(no_inline)

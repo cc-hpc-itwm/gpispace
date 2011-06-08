@@ -1465,7 +1465,7 @@ namespace xml
 
           fhg::util::xml::xmlstream s (stream);
 
-          xml::parse::type::dump::dump (s, f);
+          xml::parse::type::dump::dump (s, f, state);
         }
 
       f.specialize (state);
