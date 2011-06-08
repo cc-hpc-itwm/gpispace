@@ -1158,11 +1158,8 @@ function program_status ()
 {
     local p=$1 ; shift
     local rc=0
-    local pid_file="$state_dir/$p.pid"
-    local pid=$( cat "$pid_file" 2>/dev/null)
-    if [ -z "$pid" ] ; then
-	pid=$(pidof "$p")
-    fi
+    local pid
+    pid=$(pidof "$p")
 
     if is_proc_alive "$p" "$pid" ; then
 	return 0
