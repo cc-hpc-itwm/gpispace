@@ -53,10 +53,10 @@ SchedulerImpl::~SchedulerImpl()
   }
 }
 
-void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int cap, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
   try {
-      ptr_worker_man_->addWorker(workerId, rank, agent_uuid);
+      ptr_worker_man_->addWorker(workerId, rank, cap, agent_uuid);
       // only with a round-robin schedule
       // ptr_worker_man_->balanceWorkers();
 
@@ -547,14 +547,24 @@ void SchedulerImpl::feed_workers()
   BOOST_FOREACH(sdpa::worker_id_t worker_id, workerList)
   {
     try {
-        SDPA_LOG_WARN("Serve a job to the worker "<<worker_id);
-        ptr_comm_handler_->serve_job(worker_id, "");
+
+    	Worker::ptr_t pWorker(findWorker(worker_id));
+
+    	if( pWorker->nbAllocatedJobs() < pWorker->capacity() )
+    	{
+    		SDPA_LOG_WARN("Serve a job to the worker "<<worker_id);
+    		ptr_comm_handler_->serve_job(worker_id, "");
+    	}
     }
     catch(NoJobScheduledException) {
         SDPA_LOG_WARN("No job scheduled to the worker "<<worker_id);
     }
     catch(WorkerNotFoundException) {
         SDPA_LOG_WARN("Couldn't find the worker "<<worker_id);
+    }
+    catch (std::exception const& ex)
+    {
+    	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
     }
   }
 }
