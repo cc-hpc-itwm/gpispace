@@ -66,6 +66,7 @@ int main (int argc, char **argv)
      ("backup_folder,d", po::value<std::string>(&backup_folder), "NRE's backup folder")
      ("backup_file,f", po::value<std::string>(&backup_file), "NRE's backup file")
      ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
+    ("use-push-model", "use push model instead of request model")
      ;
 
   po::variables_map vm;
@@ -186,6 +187,7 @@ int main (int argc, char **argv)
 										    , workerUrl
 									            , guiUrl);
 
+          ptrNRE->set_use_request_model (vm.count("use-push-model") == 0);
 	  if(bDoBackup)
 		  ptrNRE->start_agent(bkp_path/backup_file);
 	  else

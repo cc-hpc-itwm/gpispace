@@ -34,6 +34,10 @@ typedef std::string encoded_type;
 
 struct IAgent
 {
+  IAgent ()
+    : b_use_request_model (true)
+  {}
+
     virtual void submit(const id_type & id, const encoded_type & ) = 0;
     virtual bool cancel(const id_type & id, const reason_type & reason) = 0;
 
@@ -48,6 +52,12 @@ struct IAgent
     void serialize(Archive&, const unsigned int ){}
 
     virtual void notifyAppGui(const result_type & result) {};
+
+  bool use_request_model () const { return b_use_request_model; }
+  void set_use_request_model (bool b) { b_use_request_model = b; }
+
+private:
+  bool b_use_request_model;
 };
 
 #endif //IAGENT_HPP

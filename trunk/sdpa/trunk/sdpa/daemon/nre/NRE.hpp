@@ -45,7 +45,8 @@ namespace sdpa {
                  , bool bLaunchNrePcd = false
                  , const std::string & fvmPCBinary = ""
                  , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
-                 , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>() )
+                 , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+               )
 
             : dsm::DaemonFSM( name, arrMasterNames, cap, NULL )
               , SDPA_INIT_LOGGER(name)
@@ -135,6 +136,7 @@ namespace sdpa {
                                           , nre_pcd_binary_
                                           , nre_pcd_search_path_
                                           , nre_pcd_pre_load_
+                                        , use_request_model()
                                         );
             }
 

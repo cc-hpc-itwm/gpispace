@@ -36,8 +36,9 @@ namespace sdpa {
                   , const std::string & fvmPCBinary = ""
                   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
                   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                  , bool use_request_model = true
                   )
-        : sdpa::daemon::SchedulerImpl(pHandler)
+        : sdpa::daemon::SchedulerImpl(pHandler, use_request_model)
         , SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
         , m_worker_(workerUrl, bLaunchNrePcd, fvmPCBinary, fvmPCSearchPath, fvmPCPreLoad)
       {
