@@ -19,7 +19,7 @@ using std::endl;
 int
 main ()
 {
-  adjacency::table<row_t,col_t,adj_t> t (invalid);
+  adjacency::table<row_t,col_t,adj_t> t (invalid, 1, 1);
 
   t.set_adjacent (0, 23, 'a');
   t.set_adjacent (0, 24, 'a');

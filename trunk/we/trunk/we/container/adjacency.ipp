@@ -9,8 +9,8 @@ namespace adjacency
 {
   template<typename ROW, typename COL, typename ADJ>
   table<ROW,COL,ADJ>::table ( const ADJ & _invalid
-                            , const ROW & r = 1
-                            , const COL & c = 1
+                            , const ROW & r
+                            , const COL & c
                             )
     : invalid (_invalid)
     , row_tab (std::max (static_cast<ROW>(1), r)) // size >= 1
