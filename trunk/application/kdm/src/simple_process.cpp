@@ -1,3 +1,8 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 #include <we/loader/macros.hpp>
 #include <we/loader/putget.hpp>
 #include <fhglog/fhglog.hpp>

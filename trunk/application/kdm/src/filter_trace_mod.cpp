@@ -12,6 +12,7 @@
 #include "TraceBunch.hpp"
 #include "TraceData.hpp"
 
+#include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 
