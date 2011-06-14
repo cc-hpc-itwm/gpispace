@@ -1,5 +1,6 @@
 #include "session.hpp"
 #include <fhgcom/util/to_hex.hpp>
+#include <boost/bind.hpp>
 
 using namespace fhg::com;
 

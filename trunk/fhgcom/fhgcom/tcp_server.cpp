@@ -1,4 +1,5 @@
 #include "tcp_server.hpp"
+#include <boost/bind.hpp>
 
 using namespace fhg::com;
 using namespace boost::asio::ip;
