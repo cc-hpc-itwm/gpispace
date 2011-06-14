@@ -602,9 +602,8 @@ namespace we { namespace type {
       ( const transition_t<P,E,T> & t
       , id_type & id
       , const options<Pred> & opts
-      , const level_type l = 1
+      , const level_type l
       , const petri_net::prio_t & prio
-      = petri_net::traits::id_traits<petri_net::prio_t>::invalid()
       )
       {
         typedef transition_t<P,E,T> trans_t;
