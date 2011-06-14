@@ -40,7 +40,14 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
       "-O0 -fprofile-arcs -ftest-coverage -pg -g -ggdb -Wreturn-type -Woverloaded-virtual -Wno-system-headers"
       CACHE STRING "Flags for Profile build"
      )
-endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+endif ()
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -fPIC -W -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-constant-logical-operand")
+endif()
 
 # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
