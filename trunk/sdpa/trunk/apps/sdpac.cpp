@@ -11,6 +11,8 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
+#include <fhglog/FileAppender.hpp>
+#include <fhglog/StreamAppender.hpp>
 
 #include <fhg/util/getenv.hpp>
 
