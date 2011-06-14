@@ -1,9 +1,22 @@
 #include "DefaultConfiguration.hpp"
 
 #include <fhglog/fhglog.hpp>
+#include <fhglog/Appender.hpp>
+#include <fhglog/Filter.hpp>
+#include <fhglog/LogEvent.hpp>
 #include <fhglog/CompoundAppender.hpp>
 #include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
+#include <fhglog/StreamAppender.hpp>
+#include <fhglog/SynchronizedAppender.hpp>
+#include <fhglog/FileAppender.hpp>
+#include <fhglog/CompoundAppender.hpp>
+
+#if defined(FHGLOG_WITH_REMOTE_LOGGING)
+#   include <fhglog/remote/RemoteAppender.hpp>
+#endif
+
+
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower
 
