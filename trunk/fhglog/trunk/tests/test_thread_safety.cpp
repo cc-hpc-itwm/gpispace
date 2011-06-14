@@ -26,6 +26,7 @@ int main()
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
+#include <fhglog/StreamAppender.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
 #include <unistd.h> // usleep
 #include <pthread.h>

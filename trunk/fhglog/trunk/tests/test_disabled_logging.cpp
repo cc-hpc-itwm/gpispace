@@ -22,6 +22,7 @@
 
 #define FHGLOG_DISABLE_LOGGING 1
 #include <fhglog/fhglog.hpp>
+#include <fhglog/StreamAppender.hpp>
 
 // UNUSED
 // static std::string simulate_computation(std::size_t time = 5)

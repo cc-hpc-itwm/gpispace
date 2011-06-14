@@ -20,6 +20,8 @@
 #include    <sstream>
 #include    <unistd.h>
 #include    <fhglog/fhglog.hpp>
+#include    <fhglog/format.hpp>
+#include    <fhglog/StreamAppender.hpp>
 #include    <fhglog/Configuration.hpp>
 
 class Test

@@ -18,6 +18,8 @@
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
+#include <fhglog/StreamAppender.hpp>
+#include <fhglog/CompoundAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <fhglog/remote/LogServer.hpp>
 

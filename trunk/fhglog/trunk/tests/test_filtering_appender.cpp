@@ -18,6 +18,7 @@
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
+#include <fhglog/StreamAppender.hpp>
 #include <fhglog/FilteringAppender.hpp>
 #include <fhglog/Filter.hpp>
 

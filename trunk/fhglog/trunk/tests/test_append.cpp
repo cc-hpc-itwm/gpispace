@@ -18,6 +18,8 @@
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
+#include <fhglog/StreamAppender.hpp>
+#include <fhglog/format.hpp>
 #include <fhglog/NullAppender.hpp>
 
 class FormattingNullAppender : public fhg::log::Appender

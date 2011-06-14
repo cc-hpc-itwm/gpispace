@@ -17,7 +17,10 @@
  */
 
 #include <sstream> // ostringstream
+#include <vector>
+
 #include <fhglog/fhglog.hpp>
+#include <fhglog/StreamAppender.hpp>
 #include <fhglog/format.hpp>
 
 class VectorAppender : public fhg::log::Appender
