@@ -130,8 +130,8 @@ namespace sdpa { namespace daemon {
     /**
          Return the rank of the worker.
      */
-    const unsigned int rank() const { return rank_; }
-    const unsigned int capacity() const { return capacity_; }
+    unsigned int rank() const { return rank_; }
+    unsigned int capacity() const { return capacity_; }
     const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_; }
 
     /**

@@ -165,7 +165,7 @@ namespace condition
       ar & BOOST_SERIALIZATION_NVP(expression_);
     }
     template <typename Archive>
-    void load(Archive & ar, const unsigned int) const
+    void load(Archive & ar, const unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(expression_);
       parser = expr::parse::parser(expression_);
