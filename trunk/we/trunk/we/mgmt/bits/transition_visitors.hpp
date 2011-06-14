@@ -44,6 +44,8 @@ namespace we { namespace mgmt { namespace visitor {
     : public boost::static_visitor<bool>
   {
   public:
+    has_enabled () {}
+
     template <typename Place, typename Trans, typename Edge, typename Token>
     bool operator () (const petri_net::net<Place, Trans, Edge, Token> & net) const
     {
@@ -61,6 +63,8 @@ namespace we { namespace mgmt { namespace visitor {
     : public boost::static_visitor<std::string>
   {
   public:
+    type_to_string_visitor () {}
+
     template <typename Place, typename Trans, typename Edge, typename Token>
     std::string operator () (const petri_net::net < Place
                                                   , Trans
