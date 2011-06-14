@@ -1,4 +1,5 @@
 add_subdirectory(util)
+add_subdirectory(plugin)
 
 add_custom_target (generate_revision_cpp ALL
     ${CMAKE_CURRENT_SOURCE_DIR}/../gen-revision-cpp ${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp
