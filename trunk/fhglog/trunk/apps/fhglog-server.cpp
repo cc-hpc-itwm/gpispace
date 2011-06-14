@@ -23,6 +23,7 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/util.hpp>
 #include <fhglog/remote/LogServer.hpp>
+#include <fhglog/StreamAppender.hpp>
 #include <fhglog/FilteringAppender.hpp>
 #include <fhglog/format.hpp>
 #include <boost/program_options.hpp>
