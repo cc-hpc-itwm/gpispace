@@ -4,8 +4,6 @@
 #include <list>
 #include <string>
 
-#include <boost/thread.hpp>
-
 #include <fhglog/memory.hpp>
 #include <fhglog/LogLevel.hpp>
 #include <fhglog/LogEvent.hpp>
@@ -38,8 +36,6 @@ namespace fhg { namespace log {
       typedef shared_ptr<Logger> ptr_t;
 
       typedef std::size_t verbosity_type;
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::lock_guard<mutex_type> lock_type;
 
       static Logger::ptr_t get();
       static Logger::ptr_t get(const std::string &name, const std::string &base = "default");
