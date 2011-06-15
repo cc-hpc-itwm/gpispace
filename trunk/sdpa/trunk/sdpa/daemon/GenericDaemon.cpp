@@ -54,7 +54,7 @@ GenericDaemon::GenericDaemon( const std::string &name,
         ptr_to_slave_stage_(ptrToSlaveStage),
         m_bRegistered(false),
         m_nRank(0),
-        m_nCap(2),
+        m_nCap(10000),
         m_strAgentUID(id_generator::instance().next()),
         m_nExternalJobs(0),
         m_bRequestsAllowed(false),
@@ -78,7 +78,7 @@ GenericDaemon::GenericDaemon( const std::string &name,
         ptr_workflow_engine_(pArgSdpa2Gwes),
         m_bRegistered(false),
         m_nRank(0),
-        m_nCap(2),
+        m_nCap(10000),
         m_strAgentUID(id_generator::instance().next()),
         m_nExternalJobs(0),
         m_to_master_stage_name_(toMasterStageName),
@@ -312,6 +312,7 @@ void GenericDaemon::shutdown(std::string& strBackup )
   if(!m_bStopped)
     stop();
 
+  SDPA_LOG_INFO("Get the last backup of the daemon "<<name());
   strBackup = m_threadBkpService.getLastBackup();
 }
 
@@ -417,15 +418,16 @@ void GenericDaemon::stop()
   SDPA_LOG_INFO("The backup service was stopped!");
 
   // here one should only generate a message of type interrupt
-  SDPA_LOG_DEBUG("Send self an InterruptEvent...");
+  SDPA_LOG_DEBUG("Send to self an InterruptEvent...");
   InterruptEvent::Ptr pEvtInterrupt(new InterruptEvent(name(), name()));
   sendEventToSelf(pEvtInterrupt);
 
   // wait to be stopped
   {
-    lock_type lock(mtx_);
-    while(!is_stopped())
-      cond_can_stop_.wait(lock);
+	  SDPA_LOG_INFO("The daemon can be safely stopped now ...");
+	  lock_type lock(mtx_);
+	  while(!is_stopped())
+		  cond_can_stop_.wait(lock);
   }
 
   SDPA_LOG_INFO("Shutdown the network...");
@@ -439,19 +441,22 @@ void GenericDaemon::stop()
   SDPA_LOG_DEBUG("shutdown the network stage "<<m_to_master_stage_name_);
   seda::StageRegistry::instance().lookup(m_to_master_stage_name_)->stop();
 
-  SDPA_LOG_INFO("Remove stages...");
+  SDPA_LOG_INFO("Removing the network stage...");
   // remove the network stage
   seda::StageRegistry::instance().remove(m_to_master_stage_name_);
 
+  SDPA_LOG_INFO("Removing the daemon stage...");
   // remove the daemon stage
   seda::StageRegistry::instance().remove(name());
 
   if ( hasWorkflowEngine() )
   {
-    SDPA_LOG_DEBUG("Delete the workflow engine ...");
+    SDPA_LOG_DEBUG("Deleting the workflow engine ...");
     delete ptr_workflow_engine_;
     ptr_workflow_engine_ = NULL;
   }
+
+  SDPA_LOG_INFO("The daemon "<<name()<<" was successfully stopped!");
 }
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
@@ -674,6 +679,8 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
         if( ptrJob.get() && !bTerminal )
         {
+        	SDPA_LOG_INFO("Serve a job to the worker "<<worker_id);
+
             // put the job into the Running state here
             SDPA_LOG_DEBUG("The job status is "<<ptrJob->getStatus());
             ptrJob->Dispatch(); // no event need to be sent
@@ -862,11 +869,11 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   // check if the worker evtRegWorker.from() has already registered!
   try
   {
-      SDPA_LOG_INFO("Trying to register new worker " << worker_id << ", with the rank " << rank);
+      SDPA_LOG_INFO("****************Register new worker, " << worker_id << ", with the rank " << rank<<" and the capacity "<<evtRegWorker.capacity()<<"***********");
 
       addWorker( worker_id, evtRegWorker.rank(), evtRegWorker.capacity(), evtRegWorker.agent_uuid() );
 
-      SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank);
+      SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank<<" and the capacity "<<evtRegWorker.capacity());
 
       // send back an acknowledgment
       SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -1446,7 +1453,7 @@ void GenericDaemon::requestRegistration()
     // try to re-register
     BOOST_FOREACH(std::string master, m_arrMasterNames)
     {
-        DLOG(TRACE, "Agent (" << name() << ") is sending a registration event to master (" << master << ") now ...");
+        SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << master << "), capacity = "<<capacity());
         WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master, rank(), capacity(), agent_uuid()));
         sendEventToMaster(pEvtWorkerReg);
     }
