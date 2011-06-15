@@ -22,7 +22,7 @@
 #include <boost/thread.hpp>
 #include <sdpa/SDPAException.hpp>
 #include <iostream>
-
+#include <sdpa/logging.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
@@ -229,9 +229,11 @@ namespace sdpa { namespace daemon {
     void print()
     {
     	lock_type lock(mtx_);
-    	for( iterator it = begin(); it!= end(); it++)
-    		std::cout<<*it<<" ";
-    	std::cout<<std::endl;
+    	unsigned int k = 0;
+    	for( iterator it = begin(); it!= end(); it++, k++)
+    	{
+    		LOG(INFO, "   element "<<k<<": \""<<*it<<"\"");
+    	}
     }
 
   private:
