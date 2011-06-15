@@ -141,7 +141,7 @@ void Aggregator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
         }
 
         try {
-            SDPA_LOG_DEBUG("Remove the job "<<actId<<" from the worker "<<worker_id);
+            SDPA_LOG_INFO("Remove the job "<<actId<<" from the worker "<<worker_id);
             ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
         }
         catch(WorkerNotFoundException const &)
@@ -261,7 +261,7 @@ void Aggregator::handleJobFailedEvent(const JobFailedEvent* pEvt )
            }
 
             try {
-                SDPA_LOG_DEBUG("Remove the job "<< pJob->id()<<" from the worker"<<worker_id);
+            	SDPA_LOG_INFO("Remove the job "<< pJob->id()<<" from the worker"<<worker_id);
                 ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
             }
             catch(WorkerNotFoundException const &)
@@ -452,7 +452,7 @@ void Aggregator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         Worker::worker_id_t worker_id = pEvt->from();
         try
         {
-            LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
+        	SDPA_LOG_INFO("Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
             ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
         }
         catch (const WorkerNotFoundException&)
