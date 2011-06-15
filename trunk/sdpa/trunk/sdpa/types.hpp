@@ -5,8 +5,6 @@
 #include <sdpa/JobId.hpp>
 #include <vector>
 
-const int MAX_CAPACITY = 10000;
-
 namespace sdpa {
 	typedef sdpa::JobId job_id_t;
 	typedef std::string job_desc_t;
