@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancer)
     oss.str("");
     oss<<"TestWorker_"<<k;
     sdpa::JobId id;
-    wm.addWorker(oss.str(), k, MAX_CAPACITY, id.str());
+    wm.addWorker(oss.str(), k, 100, id.str());
   }
 
   // submit jobs to the workers

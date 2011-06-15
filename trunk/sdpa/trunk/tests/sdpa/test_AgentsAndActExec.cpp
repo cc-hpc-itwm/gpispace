@@ -87,29 +87,30 @@ struct MyFixture
 	  , m_sleep_interval(1000000)
 	{ //initialize and start the finite state machine
 
-            FHGLOG_SETUP();
+		FHGLOG_SETUP();
 
-            LOG(DEBUG, "Fixture's constructor called ...");
+		LOG(DEBUG, "Fixture's constructor called ...");
 
-            m_ptrPool = new fhg::com::io_service_pool(1);
-            m_ptrKvsd = new fhg::com::kvs::server::kvsd ("");
-            m_ptrServ = new fhg::com::tcp_server( *m_ptrPool
-                                                  , *m_ptrKvsd
-                                                  , kvs_host ()
-                                                  , kvs_port ()
-                                                  , true
-                                                 );
-            m_ptrThrd = new boost::thread( boost::bind( &fhg::com::io_service_pool::run, m_ptrPool ) );
+		m_ptrPool = new fhg::com::io_service_pool(1);
+		m_ptrKvsd = new fhg::com::kvs::server::kvsd ("");
+		m_ptrServ = new fhg::com::tcp_server( *m_ptrPool
+											  , *m_ptrKvsd
+											  , kvs_host ()
+											  , kvs_port ()
+											  , true
+											 );
 
-            m_ptrServ->start();
+		m_ptrThrd = new boost::thread( boost::bind( &fhg::com::io_service_pool::run, m_ptrPool ) );
 
-            LOG(INFO, "kvs daemon is listening on port " << m_ptrServ->port ());
+		m_ptrServ->start();
 
-            fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-                                                      , boost::lexical_cast<std::string>(m_ptrServ->port())
-                                                      , boost::posix_time::seconds(10)
-                                                      , 3
-                                                      );
+		LOG(INFO, "kvs daemon is listening on port " << m_ptrServ->port ());
+
+		fhg::com::kvs::global::get_kvs_info().init(   kvs_host()
+												  	  , boost::lexical_cast<std::string>(m_ptrServ->port())
+												  	  , boost::posix_time::seconds(10)
+												  	  , 3
+												   );
 	}
 
 	~MyFixture()
@@ -297,7 +298,7 @@ void MyFixture::startDaemons(const std::string& workerUrl)
   // use external scheduler and real GWES
   //LOG( DEBUG, "Create the NRE ...");
   sdpa::daemon::NRE<WorkerClient>::ptr_t
-          ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE",addrNRE, std::vector<std::string>(1, "aggregator_0"),  workerUrl, guiUrl );
+          ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE",addrNRE, std::vector<std::string>(1, "aggregator_0"),  workerUrl, guiUrl, false );
 
   try {
           ptrNRE->start_agent();
@@ -380,7 +381,7 @@ BOOST_FIXTURE_TEST_SUITE( test_suite_agent_int, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 {
-	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByNRE *****"<<std::endl);
+	LOG( INFO, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByNRE *****"<<std::endl);
 	string guiUrl   = "";
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
@@ -412,7 +413,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 				                             addrNRE, std::vector<std::string>(1, "aggregator_0"),
 				                             workerUrl,
 				                             guiUrl,
-				                             bLaunchNrePcd,
+				                             true,
 				                             TESTS_NRE_PCD_BIN_PATH,
 				                             v_fake_PC_search_path,
 				                             v_module_preload );
@@ -487,14 +488,14 @@ retry:	try {
 		ptrCli->deleteJob(job_id_user);
 	}
 
-	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
 	ptrNRE_0->shutdown();
+	LOG(WARN, "NRE_0 refcount = "<<ptrNRE_0.use_count());
 
-	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
 	ptrAgg->shutdown();
+	LOG(WARN, "aggregator_0 refcount = "<<ptrAgg.use_count());
 
-	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
 	ptrOrch->shutdown();
+	LOG(WARN, "orchestrator_0 refcount = "<<ptrOrch.use_count());
 
 	ptrCli->shutdown_network();
     ptrCli.reset();
@@ -504,7 +505,7 @@ retry:	try {
 
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 {
-	LOG( DEBUG, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
+	LOG( INFO, "***** testActivityRealWeAllCompAndNreWorkerSpawnedByTest *****"<<std::endl);
 
 	string workerUrl = "127.0.0.1:12500";
 
@@ -531,7 +532,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByTest )
 
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 {
-	LOG( DEBUG, "***** testActivityRealWeAllCompAndActExec *****"<<std::endl);
+	LOG( INFO, "***** testActivityRealWeAllCompAndActExec *****"<<std::endl);
 	string guiUrl   = "";
 	string workerUrl = "127.0.0.1:12500";
 	string addrOrch = "127.0.0.1";
@@ -661,6 +662,7 @@ retry:	try {
 
 	LOG( DEBUG, "The test case testActivityRealWeAllCompAndActExec with fvm-pc terminated!");
 }
+
 
 BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 {

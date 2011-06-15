@@ -62,45 +62,45 @@ BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
 BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 {
-  sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create("orchestrator_1", "127.0.0.1:7100");
+	string addrOrch = "127.0.0.1";
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
 
-  ostringstream oss;
-  sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl);
-  ptr_scheduler_->start(ptrOrch.get());
+	ostringstream oss;
+	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get(), false));
 
-   // add a number of workers
-   for( int k=0; k<NWORKERS; k++ )
-   {
-     oss.str("");
-     oss<<"Worker"<<k;
-     ptr_scheduler_->addWorker(oss.str(), k);
-   }
+	// add a number of workers
+	for( int k=0; k<NWORKERS; k++ )
+	{
+		oss.str("");
+		oss<<"Worker"<<k;
+		ptr_scheduler_->addWorker(oss.str(), k);
+	}
 
-   // submit a number of remote jobs and schedule them
-   for(int i=0; i<NJOBS; i++)
-   {
-      JobId job_id;
-      Job::ptr_t pJob( new JobFSM( job_id, ""));
-      pJob->set_local(false);
+	// submit a number of remote jobs and schedule them
+	for(int i=0; i<NJOBS; i++)
+	{
+		JobId job_id;
+		Job::ptr_t pJob( new JobFSM( job_id, ""));
+		pJob->set_local(false);
 
-      // specify some preferences for this job
-      // job i prefers (i%NWORKERS + NWORKERS -1 )%NWORKERS, i%NWORKERS, (i%NWORKERS + 1)%NWORKERS,
-      // mandatory
-      preference_t job_pref(true);
-      job_pref.want( (i%NWORKERS + NWORKERS -1 )%NWORKERS );
-      job_pref.want( i%NWORKERS );
-      job_pref.want( (i%NWORKERS + 1)%NWORKERS );
+		// specify some preferences for this job
+		// job i prefers (i%NWORKERS + NWORKERS -1 )%NWORKERS, i%NWORKERS, (i%NWORKERS + 1)%NWORKERS,
+		// mandatory
+		preference_t job_pref(true);
+		job_pref.want( (i%NWORKERS + NWORKERS -1 )%NWORKERS );
+		job_pref.want( i%NWORKERS );
+		job_pref.want( (i%NWORKERS + 1)%NWORKERS );
 
-      ptrOrch->jobManager()->addJob(job_id, pJob);
-      ptrOrch->jobManager()->addJobPreferences(job_id, job_pref);
+		ptrOrch->jobManager()->addJob(job_id, pJob);
+		ptrOrch->jobManager()->addJobPreferences(job_id, job_pref);
 
-      //add later preferences to the jobs
-      ptr_scheduler_->schedule_remote(job_id);
-   }
+		//add later preferences to the jobs
+		ptr_scheduler_->schedule_remote(job_id);
+	}
 
-   // the workers request jobs
-   int nJobsCompleted = 0;
-   while( nJobsCompleted<NJOBS )
+	// the workers request jobs
+	int nJobsCompleted = 0;
+	while( nJobsCompleted<NJOBS )
      for( int k=0; k<NWORKERS; k++ )
      {
          oss.str("");
@@ -119,7 +119,6 @@ BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
      }
 
    LOG(DEBUG, "All "<<NJOBS<<" jobs were successfully executed!" );
-   ptr_scheduler_->stop();
    seda::StageRegistry::instance().remove(ptrOrch->name());
 }
 

@@ -45,7 +45,7 @@ struct MyFixture
 BOOST_FIXTURE_TEST_SUITE( test_Worker, MyFixture )
 
 BOOST_AUTO_TEST_CASE(testDispatch) {
-  Worker worker("w0", 0, MAX_CAPACITY, "localhost");
+  Worker worker("w0", 0, 100, "localhost");
   BOOST_CHECK(worker.pending().empty());
 
   job_id_t jobId("1");
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(testDispatch) {
 }
 
 BOOST_AUTO_TEST_CASE(testGetNextJob) {
-  Worker worker("w0", 0, MAX_CAPACITY, "localhost");
+  Worker worker("w0", 0, 100, "localhost");
 
   job_id_t jobId("1");
   worker.dispatch(jobId);
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(testGetNextJob) {
 
 BOOST_AUTO_TEST_CASE(testAcknowledge)
 {
-  Worker worker("w0", 0, MAX_CAPACITY, "localhost");
+  Worker worker("w0", 0, 100, "localhost");
 
   job_id_t jobId("1");
   worker.dispatch(jobId);
