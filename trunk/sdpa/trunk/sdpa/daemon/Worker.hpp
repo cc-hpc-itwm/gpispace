@@ -87,8 +87,8 @@ namespace sdpa { namespace daemon {
       @param location how to reach that worker (might be the same as the former)
       */
     explicit Worker( 	const worker_id_t& name = "",
-    					const unsigned int& rank = 0,
-    					const unsigned int& cap = MAX_CAPACITY,
+    					const unsigned int rank = 0,
+    					const unsigned int cap = 10000,
     					const sdpa::worker_id_t& agent_uuid = "",
     					const location_t &location = "" );
 
@@ -190,7 +190,7 @@ namespace sdpa { namespace daemon {
     JobQueue& acknowledged() { return acknowledged_; }
     const JobQueue& acknowledged() const { return acknowledged_; }
 
-    size_t nbAllocatedJobs();
+    unsigned int nbAllocatedJobs();
 
     // add a method get_next_prefernce and use it sched.. with constr
     void add_to_affinity_list(const pref_deg_t&, const sdpa::job_id_t& );

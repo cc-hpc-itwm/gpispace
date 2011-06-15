@@ -6,11 +6,12 @@
 
 using namespace sdpa::daemon;
 
-Worker::Worker(	const worker_id_t& name, const unsigned int& rank, const unsigned int& cap,
+Worker::Worker(	const worker_id_t& name, const unsigned int rank, const unsigned int cap,
 		     	const sdpa::worker_id_t& agent_uuid, const location_t &location)
   : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
     name_(name),
     rank_(rank),
+    capacity_(cap),
     agent_uuid_(agent_uuid),
     location_(location),
     tstamp_(sdpa::util::now()),
@@ -47,13 +48,13 @@ void Worker::dispatch(const sdpa::job_id_t& jobId)
 
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
-  update();
+  //update();
 
   try
   {
 	  acknowledged().push(job_id);
 	  submitted().erase(job_id);
-	  DLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
+	  SDPA_LOG_DEBUG("acknowledged job(" << job_id.str() << ")");
 	  return true;
   }
   catch (const sdpa::daemon::NotFoundItem& ex)
@@ -70,24 +71,24 @@ void Worker::delete_job(const sdpa::job_id_t &job_id)
 
   if (pending().erase(job_id))
   {
-    LOG(TRACE, "removed from pending queue");
+    LOG(TRACE, "removed the job "<<job_id.str()<<" from pending queue");
   }
 
   if (submitted().erase(job_id))
   {
-    LOG(TRACE, "removed from submitted queue");
+    LOG(TRACE, "removed the job "<<job_id.str()<<" submitted queue");
   }
 
   if (acknowledged().erase(job_id))
   {
-    LOG(TRACE, "removed from submitted queue");
+    LOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
   }
 }
 
 sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
 {
 	// acknowledge a previous job
-	if(last_job_id != sdpa::job_id_t::invalid_job_id())
+	if( !last_job_id.str().empty() && last_job_id != sdpa::job_id_t::invalid_job_id())
 		acknowledge(last_job_id);
 
 	try
@@ -95,7 +96,7 @@ sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (No
 		// move the job from pending to submitted
 		sdpa::job_id_t jobId = pending().pop();
 		submitted().push(jobId);
-		update();
+		//update();
 		return jobId;
 	}
 	catch(const QueueEmpty& )
@@ -108,11 +109,11 @@ void Worker::print()
 {
 	// print the values of the restored job queue
 	std::cout<<name()<<"'s queues:"<<std::endl;
-	std::cout<<"Pending jobs:"<<std::endl;
+	std::cout<<"There are still "<<pending().size()<<" pending jobs:"<<std::endl;
 	pending().print();
-	std::cout<<"Submitted jobs:"<<std::endl;
+	std::cout<<"There are still "<<submitted().size()<<" submitted jobs:"<<std::endl;
 	submitted().print();
-	std::cout<<"Acknowledged jobs:"<<std::endl;
+	std::cout<<"There are still "<<acknowledged().size()<<" acknowledged jobs:"<<std::endl;
 	acknowledged().print();
 }
 
@@ -132,7 +133,9 @@ void Worker::delete_from_affinity_list(const sdpa::job_id_t& job_id)
 }
 
 
-size_t Worker::nbAllocatedJobs()
+unsigned int Worker::nbAllocatedJobs()
 {
-	return pending().size() + submitted().size() + acknowledged().size();
+	unsigned int nJobs = pending().size() + submitted().size() + acknowledged().size();
+
+	return nJobs;
 }
