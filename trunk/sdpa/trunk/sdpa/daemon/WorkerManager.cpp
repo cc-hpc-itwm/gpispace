@@ -112,6 +112,8 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
   rank_map_.insert(rank_map_t::value_type(rank, pWorker->name()));
 
+  SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<", rank = "<<pWorker->rank()<<", capacity = "<<pWorker->capacity() );
+
   if(worker_map_.size() == 1)
     iter_last_worker_ = worker_map_.begin();
 }
@@ -306,7 +308,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
   try {
     const Worker::ptr_t& ptrWorker = findWorker(worker_id);
-    ptrWorker->update();
+    //ptrWorker->update();
 
     // look first into the worker's queue
     try {
@@ -314,6 +316,8 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
         // delete the job from the affinity list of the other workers
         deleteJobFromAllAffinityLists(jobId);
+
+        SDPA_LOG_INFO("The worker "<<worker_id<<" has a capacity of "<<ptrWorker->capacity()<<" jobs and has "<<ptrWorker->nbAllocatedJobs()<<" jobs allocated!");
 
         return jobId;
     }
