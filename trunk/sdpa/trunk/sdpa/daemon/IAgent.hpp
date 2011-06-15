@@ -35,7 +35,7 @@ typedef std::string encoded_type;
 struct IAgent
 {
   IAgent ()
-    : b_use_request_model (true)
+    : b_use_request_model(true)
   {}
 
     virtual void submit(const id_type & id, const encoded_type & ) = 0;
