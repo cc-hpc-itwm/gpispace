@@ -110,7 +110,7 @@ namespace sdpa {
 
 				DaemonFSM(  const std::string &name = "",
 							const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),
-							unsigned int cap = MAX_CAPACITY,
+							unsigned int cap = 10000,
 							IWorkflowEngine* pArgSdpa2Gwes = NULL );
 
 
