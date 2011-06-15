@@ -23,6 +23,8 @@
 #include <seda/StageRegistry.hpp>
 #include <typeinfo>
 
+const int NRE_MAX_CAP = 10000;
+
 namespace sdpa {
 namespace daemon {
 

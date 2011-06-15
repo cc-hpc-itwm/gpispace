@@ -37,7 +37,7 @@ namespace sdpa {
             NRE( const std::string& name = ""
                  , const std::string& url = ""
                  , const std::vector<std::string> arrMasterNames = std::vector<std::string>()
-                 , unsigned int cap = MAX_CAPACITY
+                 , unsigned int cap = 10000
                  //, const std::string& masterUrl = ""
                  , const std::string& workerUrl = ""
                  , const std::string& guiUrl = ""
