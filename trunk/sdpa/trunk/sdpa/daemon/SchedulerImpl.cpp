@@ -107,7 +107,7 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
   try {
     const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-    pWorker->set_timedout();
+    //pWorker->set_timedout();
 
     // The jobs submitted by the WE should have set a property
     // which indicates whether the daemon can safely re-schedule these activities or not (reason: ex global mem. alloc)
@@ -118,13 +118,20 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
     // or declare it failed
 
     // declare the submitted jobs failed
-    declare_jobs_failed( worker_id, &pWorker->submitted() );
+    //declare_jobs_failed( worker_id, &pWorker->submitted() );
+    re_schedule( &pWorker->submitted() );
 
     // declare the acknowledged jobs failed
-    declare_jobs_failed( worker_id, &pWorker->acknowledged() );
+    //declare_jobs_failed( worker_id, &pWorker->acknowledged() );
+    re_schedule( &pWorker->acknowledged() );
 
     // re-schedule the pending jobs
     re_schedule( &pWorker->pending() );
+
+    // put the jobs back into the central queue and don't forget
+    // to reset the status
+
+
   }
   catch (const WorkerNotFoundException& ex)
   {
@@ -138,19 +145,30 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
   try {
-      re_schedule(worker_id);
+	  //re_schedule(worker_id);
 
-      {
         const Worker::ptr_t& pWorker = findWorker(worker_id);
-        LOG_IF( FATAL
-                ,  pWorker->pending().size()
-                || pWorker->submitted().size()
-                || pWorker->acknowledged().size()
-                , "tried to remove worker " << worker_id << " while there are still jobs scheduled!"
-                );
-      }
-      // delete the worker from the worker map
-      ptr_worker_man_->delWorker(worker_id);
+
+        if( !pWorker->pending().empty() )
+        {
+        	SDPA_LOG_WARN( "The worker " << worker_id << " has still pending jobs!");
+        	pWorker->print();
+        }
+
+        if( !pWorker->submitted().empty() )
+        {
+        	SDPA_LOG_WARN( "The worker " << worker_id << " has still submitted jobs and not acknowledged!");
+        	pWorker->print();
+        }
+
+        if( !pWorker->acknowledged().empty() )
+        {
+        	SDPA_LOG_WARN( "The worker " << worker_id << " has still acknowledged jobs and not finished!");
+        	pWorker->print();
+        }
+
+        // delete the worker from the worker map
+        ptr_worker_man_->delWorker(worker_id);
   }
   catch (const WorkerNotFoundException& ex)
   {
@@ -504,7 +522,7 @@ void SchedulerImpl::stop()
          , "there are still jobs to be scheduled: " << jobs_to_be_scheduled.size()
          );
 
-  ptr_comm_handler_ = NULL;
+  //ptr_comm_handler_ = NULL;
 }
 
 bool SchedulerImpl::post_request(bool force)
@@ -544,6 +562,8 @@ void SchedulerImpl::feed_workers()
   // for any worker take a job from its pending queue, a
   std::list<std::string> workerList;
   ptr_worker_man_->getWorkerList(workerList);
+
+  // start here with the last served worker
   BOOST_FOREACH(sdpa::worker_id_t worker_id, workerList)
   {
     try {
@@ -552,9 +572,18 @@ void SchedulerImpl::feed_workers()
 
     	if( pWorker->nbAllocatedJobs() < pWorker->capacity() )
     	{
-    		SDPA_LOG_WARN("Serve a job to the worker "<<worker_id);
-    		ptr_comm_handler_->serve_job(worker_id, "");
+    		if(ptr_comm_handler_)
+    		{
+    			ptr_comm_handler_->serve_job(worker_id);
+    		}
+    		else
+    		{
+    			SDPA_LOG_WARN("Invalid communication handler");
+    		}
     	}
+
+    	//pWorker->print();
+
     }
     catch(NoJobScheduledException) {
         SDPA_LOG_WARN("No job scheduled to the worker "<<worker_id);
@@ -573,7 +602,7 @@ void SchedulerImpl::check_post_request()
 {
   if(!ptr_comm_handler_)
   {
-      SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+      SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler.");
       stop();
       return;
   }
@@ -602,7 +631,9 @@ void SchedulerImpl::run()
       try
       {
           if(UseRequestModel())
-            check_post_request(); // eventually, post a request
+        	  check_post_request(); // eventually, post a request
+          else
+        	  feed_workers(); //eventually, feed some workers
 
           sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
           const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
@@ -617,10 +648,7 @@ void SchedulerImpl::run()
 
               try
               {
-                  schedule_remote(jobId);
-                  if(!UseRequestModel())
-                    feed_workers();
-
+            	  schedule_remote(jobId);
               }
               catch( const NoWorkerFoundException& ex)
               {
