@@ -315,41 +315,41 @@ namespace sdpa { namespace nre { namespace worker {
 
 	    LOG(DEBUG, "Send a synchronous ping ... ");
 
-            std::size_t trials (10);
-            while (trials --> 0)
-            {
-              try
-              {
-                ping();
-              }
-              catch (std::exception const & ex)
-              {
-                if (trials)
-                {
-                  LOG(WARN, "no process container found, retrying...");
-                  usleep (1 * 1000 * 1000);
-                }
-                else
-                {
-                  if (nre_pcd_do_exec_)
-                  {
-                    try
-                    {
-                      startNrePcd();
-                    }
-                    catch (std::exception const & ex)
-                    {
-                      LOG(ERROR, "no process container found and starting one failed: " << ex.what());
-                      throw;
-                    }
-                  }
-                  else
-                  {
-                    throw;
-                  }
-                }
-              }
-            }
+		std::size_t trials (3);
+		while (trials --> 0)
+		{
+		  try
+		  {
+			ping();
+		  }
+		  catch (std::exception const & ex)
+		  {
+			if (trials)
+			{
+			  LOG(WARN, "no process container found, retrying...");
+			  usleep (1 * 1000 * 1000);
+			}
+			else
+			{
+			  if (nre_pcd_do_exec_)
+			  {
+				try
+				{
+				  startNrePcd();
+				}
+				catch (std::exception const & ex)
+				{
+				  LOG(ERROR, "no process container found and starting one failed: " << ex.what());
+				  throw;
+				}
+			  }
+			  else
+			  {
+				throw;
+			  }
+			}
+		  }
+		}
 
 		started_ = true;
 		not_responded_to_ping_ = 0;
