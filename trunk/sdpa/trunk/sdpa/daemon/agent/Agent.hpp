@@ -33,7 +33,7 @@ namespace sdpa {
         Agent(const std::string& name = "",
               const std::string& url = "",
               const sdpa::master_list_t arrMasterNames = sdpa::master_list_t(),
-              unsigned int cap = MAX_CAPACITY,
+              unsigned int cap = 10000,
               const std::string& guiUrl = "")
         : DaemonFSM( name, arrMasterNames, cap, NULL ),
           SDPA_INIT_LOGGER(name),
