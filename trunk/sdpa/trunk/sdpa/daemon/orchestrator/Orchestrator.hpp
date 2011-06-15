@@ -32,7 +32,7 @@ namespace daemon {
 
 		Orchestrator( const std::string &name = ""
 		              , const std::string& url = ""
-		              , unsigned int cap = MAX_CAPACITY )
+		              , unsigned int cap = 10000 )
 		: DaemonFSM( name, sdpa::master_list_t(), cap, NULL),
 		  SDPA_INIT_LOGGER(name),
 		  url_(url)
@@ -72,7 +72,7 @@ namespace daemon {
 		Scheduler* create_scheduler()
 		{
 		    DLOG(TRACE, "creating orchestrator scheduler...");
-                    return new SchedulerOrch(this);
+		    return new SchedulerOrch(this, use_request_model());
 		}
 
 		std::string url_;

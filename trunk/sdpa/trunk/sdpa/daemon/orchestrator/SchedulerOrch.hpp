@@ -29,8 +29,8 @@ namespace sdpa {
   class SchedulerOrch : public SchedulerImpl {
 
   public:
-	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL):
-		 SchedulerImpl(pCommHandler),
+	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL,  bool use_request_model=true):
+		 SchedulerImpl(pCommHandler, use_request_model),
 		 SDPA_INIT_LOGGER("Scheduler " + (pCommHandler?pCommHandler->name():"ORCH"))
 	 {}
 
@@ -62,13 +62,13 @@ namespace sdpa {
 
 	 bool has_job(const sdpa::job_id_t& job_id)
 	 {
-            if( jobs_to_be_scheduled.find(job_id) != jobs_to_be_scheduled.end() )
-            {
-                SDPA_LOG_INFO("The job "<<job_id<<" is still in the jobs_to_be_scheduled queue!");
-                return true;
-            }
+		if( jobs_to_be_scheduled.find(job_id) != jobs_to_be_scheduled.end() )
+		{
+			SDPA_LOG_INFO("The job "<<job_id<<" is still in the jobs_to_be_scheduled queue!");
+			return true;
+		}
 
-            return ptr_worker_man_->has_job(job_id);
+		return ptr_worker_man_->has_job(job_id);
 	 }
 
   private:
