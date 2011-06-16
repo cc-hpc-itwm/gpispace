@@ -187,7 +187,8 @@ int main (int argc, char **argv)
 										    , workerUrl
 									            , guiUrl);
 
-          ptrNRE->set_use_request_model (vm.count("use-push-model") == 0);
+	  ptrNRE->setUseRequestModel (vm.count("use-push-model") == 0);
+
 	  if(bDoBackup)
 		  ptrNRE->start_agent(bkp_path/backup_file);
 	  else

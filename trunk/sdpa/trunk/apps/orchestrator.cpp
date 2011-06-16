@@ -43,6 +43,7 @@ int main (int argc, char **argv)
 	   ("backup_folder,d", po::value<std::string>(&backup_folder), "Orchestrator's backup folder")
 	   ("backup_file,f", po::value<std::string>(&backup_file), "Orchestrator's backup file")
 	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
+	   ("use-push-model", "use push model instead of request model")
 	   ;
 
 	po::variables_map vm;
@@ -145,6 +146,8 @@ int main (int argc, char **argv)
 
 	try {
 		sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( orchName, orchUrl  );
+
+		ptrOrch->setUseRequestModel(vm.count("use-push-model") == 0);
 
 		if(bDoBackup)
 		{

@@ -51,6 +51,7 @@ int main (int argc, char **argv)
 	   ("backup_file,f", po::value<string>(&backup_file), "Agent's backup file (stored into the backup folder)")
 	   ("app_gui_url,a",  po::value<string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
 	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
+	   ("use-push-model", "use push model instead of request model")
 	   ;
 
 	po::variables_map vm;
@@ -160,12 +161,14 @@ int main (int argc, char **argv)
 
 	try
 	{
-            sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, arrMasterNames, appGuiUrl ); //, orchUrl );
+            sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, arrMasterNames, appGuiUrl ); //, orchUrl );
+
+            ptrAgent->setUseRequestModel(vm.count("use-push-model") == 0);
 
             if(bDoBackup)
-              ptrAgg->start_agent(bkp_path/backup_file);
+              ptrAgent->start_agent(bkp_path/backup_file);
             else
-              ptrAgg->start_agent();
+              ptrAgent->start_agent();
 
             LOG(DEBUG, "waiting for signals...");
             sigset_t waitset;
@@ -201,7 +204,7 @@ int main (int argc, char **argv)
 
             LOG(INFO, "terminating...");
 
-            ptrAgg->shutdown();
+            ptrAgent->shutdown();
 	}
 	catch ( std::exception& )
 	{

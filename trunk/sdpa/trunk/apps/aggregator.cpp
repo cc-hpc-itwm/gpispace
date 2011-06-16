@@ -50,7 +50,7 @@ int main (int argc, char **argv)
 	   ("backup_file,f", po::value<std::string>(&backup_file), "Aggregator's backup file (stored into the backup folder)")
 	   ("app_gui_url,a",  po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
 	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
-          ("use-push-model", "use push model instead of request model")
+       ("use-push-model", "use push model instead of request model")
 	   ;
 
 	po::variables_map vm;
@@ -154,7 +154,7 @@ int main (int argc, char **argv)
         if( arrMasterNames.empty() )
           arrMasterNames.push_back("orchestrator"); // default master name
 
-	LOG(INFO, "Starting the agent with the name = '"<<aggName<<"' at location "<<aggUrl<<", having the masters: ");
+        LOG(INFO, "Starting the agent with the name = '"<<aggName<<"' at location "<<aggUrl<<", having the masters: ");
         BOOST_FOREACH(string master, arrMasterNames)
         {
            cout<<"   "<<master<<std::endl;
@@ -165,7 +165,7 @@ int main (int argc, char **argv)
 		                                                                                                      aggUrl,
 		                                                                                                      arrMasterNames,
 		                                                                                                      appGuiUrl ); //, orchUrl );
-                ptrAgg->set_use_request_model (vm.count("use-push-model") == 0);
+		ptrAgg->setUseRequestModel(vm.count("use-push-model") == 0);
 
 		if(bDoBackup)
 		  ptrAgg->start_agent(bkp_path/backup_file);
