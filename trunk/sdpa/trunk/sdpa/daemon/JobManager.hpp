@@ -70,9 +70,9 @@ namespace sdpa { namespace daemon {
 	  size_t number_of_jobs() const { return job_map_.size(); }
 
 	  void waitForFreeSlot();
-          bool slotAvailable() const;
+	  bool slotAvailable() const;
 
-          void resubmitJobsAndResults(IComm* );
+      void resubmitJobsAndResults(IComm* );
 
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)

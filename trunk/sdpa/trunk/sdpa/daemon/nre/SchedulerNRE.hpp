@@ -196,7 +196,7 @@ namespace sdpa {
             {
                 try
                 {
-                    if(UseRequestModel())
+                    if(useRequestModel())
                       check_post_request();
 
                     sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);

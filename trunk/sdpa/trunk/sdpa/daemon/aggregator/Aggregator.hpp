@@ -89,7 +89,7 @@ namespace sdpa {
                   Scheduler* create_scheduler()
                   {
                     DLOG(TRACE, "creating aggregator scheduler...");
-                    return new SchedulerAgg(this, use_request_model());
+                    return new SchedulerAgg(this, useRequestModel());
                   }
 
                   std::string url_;

@@ -62,7 +62,8 @@ GenericDaemon::GenericDaemon( const std::string &name,
         m_bStarted(false),
         m_bConfigOk(false),
         m_threadBkpService(this),
-        m_last_request_time(0)
+        m_last_request_time(0),
+        m_bUseRequestModel(false)
 {
 	//daemon_cfg_ = new sdpa::util::Config;
 }
@@ -88,7 +89,8 @@ GenericDaemon::GenericDaemon( const std::string &name,
         m_bStarted(false),
         m_bConfigOk(false),
         m_threadBkpService(this),
-        m_last_request_time(0)
+        m_last_request_time(0),
+        m_bUseRequestModel(false)
 {
 	if(!toMasterStageName.empty())
 	{
@@ -129,7 +131,8 @@ GenericDaemon::GenericDaemon( 	const std::string name,
         m_bConfigOk(false),
         m_threadBkpService(this),
         m_last_request_time(0),
-        m_arrMasterNames(m_arrMasterNames)
+        m_arrMasterNames(m_arrMasterNames),
+        m_bUseRequestModel(false)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
 	//     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -764,6 +767,18 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
    * put the job into the job-map
    * send a submitJobAck back
   */
+
+  //if my capacity is reached, refuse to take any job until at least one of my
+  //assigned jobs completes
+  if( useRequestModel() && jobManager()->numberExtJobs() > capacity() )
+  {
+	  //generate a reject event
+	  //send it upwards
+	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBREJECTED, e.job_id().str()) );
+	  sendEventToMaster(pErrorEvt);
+
+	  return;
+  }
 
   static const JobId job_id_empty ("");
 

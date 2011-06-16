@@ -72,7 +72,7 @@ namespace daemon {
 		Scheduler* create_scheduler()
 		{
 		    DLOG(TRACE, "creating orchestrator scheduler...");
-		    return new SchedulerOrch(this, use_request_model());
+		    return new SchedulerOrch(this, useRequestModel());
 		}
 
 		std::string url_;

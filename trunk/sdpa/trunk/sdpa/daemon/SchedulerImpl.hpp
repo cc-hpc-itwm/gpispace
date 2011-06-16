@@ -76,7 +76,8 @@ namespace sdpa {
 	virtual bool post_request(bool force = false);
 	virtual void feed_workers();
 
-	virtual bool UseRequestModel() { return m_bUseRequestModel; }
+	virtual bool useRequestModel() { return m_bUseRequestModel; }
+	void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
 
 	void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 

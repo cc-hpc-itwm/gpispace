@@ -136,7 +136,7 @@ namespace sdpa {
                                           , nre_pcd_binary_
                                           , nre_pcd_search_path_
                                           , nre_pcd_pre_load_
-                                        , use_request_model()
+                                          , useRequestModel()
                                         );
             }
 

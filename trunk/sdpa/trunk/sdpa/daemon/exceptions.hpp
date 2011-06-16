@@ -61,6 +61,14 @@ namespace daemon {
 		virtual ~WorkerNotFoundException() throw() {}
 	};
 
+	class AllWorkersFullException : public WorkerException
+	{
+		public:
+		AllWorkersFullException( )
+			: WorkerException("All workers are full!!", "") {}
+		virtual ~AllWorkersFullException() throw() {}
+	};
+
 	class NoJobScheduledException : public WorkerException {
 		public:
 	        NoJobScheduledException( const sdpa::worker_id_t& worker_id)

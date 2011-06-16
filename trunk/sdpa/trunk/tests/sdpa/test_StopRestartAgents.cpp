@@ -285,6 +285,7 @@ void MyFixture::run_client()
 	}
 
 	ptrCli->shutdown_network();
+	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
     ptrCli.reset();
 }
 

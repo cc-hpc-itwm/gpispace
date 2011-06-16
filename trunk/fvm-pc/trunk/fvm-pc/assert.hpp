@@ -22,6 +22,7 @@
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
 #include <stdexcept>
+#include <stdio.h>
 
 namespace fvm
 {

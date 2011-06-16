@@ -296,6 +296,7 @@ retry:	try {
 	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
+	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
     ptrCli.reset();
 
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
@@ -415,6 +416,7 @@ retry:	try {
 	ptrOrch->shutdown();
 
 	ptrCli->shutdown_network();
+	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
     ptrCli.reset();
 
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");

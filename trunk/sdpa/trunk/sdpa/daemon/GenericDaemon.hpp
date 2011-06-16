@@ -246,6 +246,9 @@ namespace sdpa { namespace daemon {
       //void notifyMaster(const sdpa::events::ErrorEvent::error_code_t&);
       void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t&);
 
+      bool useRequestModel () const { return m_bUseRequestModel; }
+      void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
+
 protected:
 
        // observe workflow engine
@@ -322,9 +325,6 @@ protected:
         condition_type cond_can_stop_;
         condition_type cond_can_start_;
 
-      private:
-        //mutable mutex_type ext_job_cnt_mtx_;
-
       protected:
         bool m_bRequestsAllowed;
         bool m_bStopped;
@@ -334,6 +334,10 @@ protected:
 
         sdpa::util::time_type m_last_request_time;
         sdpa::master_list_t m_arrMasterNames;
+
+      private:
+        bool m_bUseRequestModel;
+
   };
 }}
 

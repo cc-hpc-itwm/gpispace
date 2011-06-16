@@ -556,8 +556,55 @@ bool SchedulerImpl::post_request(bool force)
   return bReqPosted;
 }
 
-
 void SchedulerImpl::feed_workers()
+{
+	// for any worker take a job from its pending queue, a
+	// std::list<std::string> listAvailWorkers;
+	// ptr_worker_man_->getListAvailWorkers(listAvailWorkers);
+
+	// start here with the last served worker
+	// BOOST_FOREACH(sdpa::worker_id_t worker_id, listAvailWorkers)
+
+	// as long as there are still jobs into the central queue
+	// and there are still workers not fully loaded do feed workers
+	// i.e take jobs from the pending queues (or from the common queue )
+	// and send them
+
+	// attention: some jobs may be rejected i.e. an error message of type SDPA_EJOBREJECTED
+	// is triggered with the reason = job_id -> handle this message -> re-schedule the
+	// job: don't forget to update the job status -> reverse state or create a new job
+	// with the same id after deleting the original one
+
+  {
+    try {
+
+    	sdpa::worker_id_t worker_id = ptr_worker_man_->getLeastLoadedWorker();
+    	{
+    		if(ptr_comm_handler_)
+    		{
+    			ptr_comm_handler_->serve_job(worker_id);
+    		}
+    		else
+    		{
+    			SDPA_LOG_WARN("Invalid communication handler");
+    		}
+    	}
+
+    	// pWorker->print();
+    }
+    catch(const NoWorkerFoundException& ) {
+        // SDPA_LOG_WARN("No worker found!");
+    }
+    catch(const AllWorkersFullException&) {
+    	SDPA_LOG_WARN("All workers are full!");
+    }
+    catch (std::exception const& ex) {
+    	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
+    }
+  }
+}
+
+/*void SchedulerImpl::feed_workers()
 {
   // for any worker take a job from its pending queue, a
   std::list<std::string> workerList;
@@ -597,6 +644,7 @@ void SchedulerImpl::feed_workers()
     }
   }
 }
+*/
 
 void SchedulerImpl::check_post_request()
 {
@@ -630,7 +678,7 @@ void SchedulerImpl::run()
   {
       try
       {
-          if(UseRequestModel())
+          if(useRequestModel())
         	  check_post_request(); // eventually, post a request
           else
         	  feed_workers(); //eventually, feed some workers
