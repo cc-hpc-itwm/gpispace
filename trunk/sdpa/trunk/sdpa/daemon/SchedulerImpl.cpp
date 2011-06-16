@@ -20,6 +20,7 @@
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/id_generator.hpp>
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 
 #include <cassert>
 #include <boost/foreach.hpp>
@@ -68,18 +69,6 @@ void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int
   }
 }
 
-void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
-{
-  assert (pQueue);
-
-  while( !pQueue->empty() )
-  {
-    sdpa::job_id_t jobId = pQueue->pop_and_wait();
-    SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
-    schedule_with_constraints(jobId);
-  }
-}
-
 void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Worker::JobQueue* pQueue )
 {
   assert (pQueue);
@@ -98,6 +87,61 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
           SDPA_LOG_ERROR("Invalid communication handler!");
       }
   }
+}
+
+
+void SchedulerImpl::re_schedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException)
+{
+	// The result was succesfully delivered, so I can delete the job from the job map
+	ostringstream os;
+	try {
+		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
+		// delete it from the map when you receive a JobFinishedAckEvent!
+
+		JobFSM* ptrFSM = new JobFSM( job_id, pJob->description(), ptr_comm_handler_, pJob->parent() );
+
+		ptrFSM->start_fsm();
+
+		Job::ptr_t pNewJob( ptrFSM );
+		pNewJob->set_owner(pJob->owner());
+
+		ptr_comm_handler_->jobManager()->deleteJob(job_id); // delete the old state machine
+
+		ptr_comm_handler_->jobManager()->addJob(job_id, pNewJob); // add the new job (re-start the fsm)
+
+		// check if the message comes from outside/slave or from WFE
+		// if it comes from outside set it as local
+		if( pJob->owner() != sdpa::daemon::WE && ptr_comm_handler_->hasWorkflowEngine() ) //e.to())
+		{
+			pJob->set_local(true);
+		}
+
+		schedule(job_id);
+	}
+	catch(JobNotFoundException const &ex)
+	{
+		SDPA_LOG_ERROR("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+		throw ex;
+	}
+	catch(JobNotDeletedException const & ex)
+	{
+		SDPA_LOG_ERROR("The job " << job_id << " could not be deleted: " << ex.what());
+	}
+	catch(const std::exception& ex) {
+		SDPA_LOG_ERROR( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+	}
+}
+
+void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
+{
+	assert (pQueue);
+
+	while( !pQueue->empty() )
+	{
+		sdpa::job_id_t jobId = pQueue->pop_and_wait();
+		SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
+		re_schedule(jobId);
+	}
 }
 
 void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
@@ -147,28 +191,28 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
   try {
 	  //re_schedule(worker_id);
 
-        const Worker::ptr_t& pWorker = findWorker(worker_id);
+	  const Worker::ptr_t& pWorker = findWorker(worker_id);
 
-        if( !pWorker->pending().empty() )
-        {
-        	SDPA_LOG_WARN( "The worker " << worker_id << " has still pending jobs!");
-        	pWorker->print();
-        }
+      if( !pWorker->pending().empty() )
+      {
+    	  SDPA_LOG_WARN( "The worker " << worker_id << " has still pending jobs!");
+    	  pWorker->print();
+      }
 
-        if( !pWorker->submitted().empty() )
-        {
-        	SDPA_LOG_WARN( "The worker " << worker_id << " has still submitted jobs and not acknowledged!");
-        	pWorker->print();
-        }
+      if( !pWorker->submitted().empty() )
+      {
+    	  SDPA_LOG_WARN( "The worker " << worker_id << " has still submitted jobs and not acknowledged!");
+    	  pWorker->print();
+      }
 
-        if( !pWorker->acknowledged().empty() )
-        {
-        	SDPA_LOG_WARN( "The worker " << worker_id << " has still acknowledged jobs and not finished!");
-        	pWorker->print();
-        }
+      if( !pWorker->acknowledged().empty() )
+      {
+    	  SDPA_LOG_WARN( "The worker " << worker_id << " has still acknowledged jobs and not finished!");
+    	  pWorker->print();
+      }
 
-        // delete the worker from the worker map
-        ptr_worker_man_->delWorker(worker_id);
+      // delete the worker from the worker map
+      ptr_worker_man_->delWorker(worker_id);
   }
   catch (const WorkerNotFoundException& ex)
   {
@@ -844,5 +888,5 @@ void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& 
       }
   }
   else
-    SDPA_LOG_ERROR("No valid communication handler!");
+	  SDPA_LOG_ERROR("No valid communication handler!");
 }
