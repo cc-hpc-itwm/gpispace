@@ -375,11 +375,11 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
       try
       {
         sdpa::com::NetworkStrategy::ptr_t net
-              (new sdpa::com::NetworkStrategy( /*daemon_stage_->*/name()
-                                                                         , name()
-                                                                         , fhg::com::host_t (bind_addr)
-                                                                         , fhg::com::port_t (bind_port)
-                                                                         )
+              (new sdpa::com::NetworkStrategy( 	 /*daemon_stage_->*/name()
+												 , name()
+												 , fhg::com::host_t (bind_addr)
+												 , fhg::com::port_t (bind_port)
+												)
               );
 
         seda::Stage::Ptr network_stage (new seda::Stage(m_to_master_stage_name_, net));
@@ -487,10 +487,10 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 
 void GenericDaemon::setDefaultConfiguration()
 {
-  cfg().put("polling interval",    		1 * 1000 * 1000);
-  cfg().put("upper bound polling interval", 	2 * 1000 * 1000 ); // 2s
+  cfg().put("polling interval",    			1 * 1000 * 1000);
+  cfg().put("upper bound polling interval", 2 * 1000 * 1000 ); // 2s
   cfg().put("registration_timeout", 		1 * 1000 * 1000); // 1s
-  cfg().put("backup_interval", 			5 * 1000 * 1000); // 3s*/
+  cfg().put("backup_interval", 				5 * 1000 * 1000); // 3s*/
 }
 
 
@@ -529,7 +529,7 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
       }
 
       try {
-        cfg().read(evt.cfgFile());
+    	  cfg().read(evt.cfgFile());
       }
       catch (const sdpa::util::InvalidConfiguration& ex )
       {
@@ -539,8 +539,8 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
   else
     SDPA_LOG_WARN("No configuration file was specified. Using the default configuration.");
 
-  m_ullPollingInterval =cfg().get<sdpa::util::time_type>("polling interval");
-  m_threadBkpService.setBackupInterval(cfg().get<sdpa::util::time_type>("backup_interval") );
+  m_ullPollingInterval = cfg().get<sdpa::util::time_type>("polling interval");
+  m_threadBkpService.setBackupInterval( cfg().get<sdpa::util::time_type>("backup_interval") );
 
   try {
       SDPA_LOG_INFO("Try to configure the network now ... ");
@@ -556,20 +556,19 @@ void GenericDaemon::action_configure(const StartUpEvent& evt)
 
 void GenericDaemon::action_config_ok(const ConfigOkEvent&)
 {
-  // check if the system should be recovered
-  // should be overriden by the orchestrator, aggregator and NRE
-  SDPA_LOG_INFO("The configuration phase succeeded!");
-  m_bRequestsAllowed = true;
+	// check if the system should be recovered
+	// should be overriden by the orchestrator, aggregator and NRE
+	SDPA_LOG_INFO("The configuration phase succeeded!");
+	m_bRequestsAllowed = true;
 }
 
 void GenericDaemon::action_config_nok(const ConfigNokEvent &pEvtCfgNok)
 {
-  SDPA_LOG_ERROR("the configuration phase failed!");
-
+	SDPA_LOG_ERROR("the configuration phase failed!");
 }
 
 void GenericDaemon::action_interrupt(const InterruptEvent& pEvtInt)
-  {
+{
   SDPA_LOG_DEBUG("Call 'action_interrupt'");
   // save the current state of the system .i.e serialize the daemon's state
   // the following code shoud be executed on action action_interrupt!!
@@ -770,7 +769,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
   //if my capacity is reached, refuse to take any job until at least one of my
   //assigned jobs completes
-  if( useRequestModel() && jobManager()->numberExtJobs() > capacity() )
+  if( !useRequestModel() && jobManager()->numberExtJobs() > capacity() )
   {
 	  //generate a reject event
 	  //send it upwards
@@ -900,7 +899,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   {
       if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
       {
-          LOG(TRACE, "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
+    	  LOG(TRACE, "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
 
           LOG(TRACE, "Re-schedule the jobs");
           scheduler()->re_schedule( worker_id );
@@ -942,22 +941,29 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
   {
     case ErrorEvent::SDPA_ENOERROR:
     {
-      // everything is fine, nothing to do
-      break;
+    	// everything is fine, nothing to do
+    	break;
+    }
+    case ErrorEvent::SDPA_EJOBREJECTED:
+    {
+    	sdpa::job_id_t jobId(error.reason());
+
+    	scheduler()->re_schedule(jobId);
+        break;
     }
     case ErrorEvent::SDPA_EWORKERNOTREG:
     {
-      SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
-      // mark the agen as not-registered
+    	SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
+    	// mark the agen as not-registered
 
-      const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-      SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-      boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+    	const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+    	SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+    	boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
-      m_bRegistered = false;
-      requestRegistration();
+    	m_bRegistered = false;
+    	requestRegistration();
 
-      break;
+    	break;
     }
     case ErrorEvent::SDPA_ENODE_SHUTDOWN:
     {
@@ -977,20 +983,20 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
           // check if the message comes from a master
           BOOST_FOREACH(std::string master, m_arrMasterNames)
           {
-            if( error.from() == master )
-            {
-                SDPA_LOG_WARN("Master " << master << " is down");
+        	  if( error.from() == master )
+        	  {
+        		  SDPA_LOG_WARN("Master " << master << " is down");
 
-                const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-                SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-                boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+        		  const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+        		  SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+        		  boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
-                if( !is_orchestrator() )
-                {
-                    m_bRegistered = false;
-                    requestRegistration();
-                }
-            }
+        		  if( !is_orchestrator() )
+        		  {
+        			  m_bRegistered = false;
+        			  requestRegistration();
+        		  }
+        	  }
           }
       }
       catch (std::exception const& ex)
@@ -1034,7 +1040,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
       ptr_job_man_->waitForFreeSlot ();
 
       // don't forget to set here the job's preferences
-      SubmitJobEvent::Ptr pEvtSubmitJob(new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+      SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
       sendEventToSelf(pEvtSubmitJob);
   }
   catch(QueueFull const &)
