@@ -94,9 +94,9 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
 
     if( it->second->rank() == rank )
     {
-      //SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
-      bFound = true;
-      throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
+      //SDPA_LOG_WARN("An worker with the rank"<<rank<<" already exist into the worker map!");
+      //bFound = true;
+      //throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
     }
 
     /*if( it->second->agent_uuid() == agent_uuid )
@@ -211,7 +211,8 @@ struct compare_workers
   typedef WorkerManager::worker_map_t::value_type T;
   bool operator()( T const& a, T const& b)
   {
-    return a.second->pending().size() < b.second->pending().size();
+	  //return a.second->pending().size() < b.second->pending().size();
+	  return a.second->nbAllocatedJobs() < b.second->nbAllocatedJobs();
   }
 };
 
@@ -219,9 +220,9 @@ struct compare_workers
 /**
  * get the least loaded worker
  */
-unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException)
+sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException)
 {
-  DLOG(TRACE, "Get the least loaded worker ...");
+  //SDPA_LOG_INFO("Get the least loaded worker ...");
 
   lock_type lock(mtx_);
 
@@ -229,9 +230,12 @@ unsigned int WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundException
     throw NoWorkerFoundException();
 
   worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
-  unsigned int rank_ll = it->second->rank();
+  //unsigned int rank_ll = it->second->rank();
 
-  return rank_ll;
+  if( it->second->nbAllocatedJobs() >= it->second->capacity() )
+	  throw AllWorkersFullException();
+
+  return it->first;
 }
 
 Worker::worker_id_t WorkerManager::getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException)

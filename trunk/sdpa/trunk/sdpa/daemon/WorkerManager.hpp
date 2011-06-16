@@ -51,7 +51,7 @@ namespace sdpa { namespace daemon {
       void getListOfRegisteredRanks( std::vector<unsigned int>& );
 
       const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-      unsigned int getLeastLoadedWorker() throw (NoWorkerFoundException);
+      worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
