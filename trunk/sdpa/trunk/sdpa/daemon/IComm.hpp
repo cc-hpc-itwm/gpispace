@@ -39,6 +39,7 @@ const std::string WE("WE");
 const std::string USER("user");
 
   class JobNotDeletedException;
+  class JobManager;
 
   class IComm{
   public:
@@ -49,6 +50,8 @@ const std::string USER("user");
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
 	  virtual void requestRegistration() = 0;
 	  virtual void requestJob() = 0;
+
+	  virtual JobManager::ptr_t jobManager() const = 0;
 
 	  virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const = 0;
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const = 0;
