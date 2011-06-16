@@ -46,7 +46,8 @@ namespace sdpa { namespace events {
           SDPA_ENODE_SHUTDOWN,
           SDPA_EBUSY,
           SDPA_EAGAIN,
-          SDPA_EUNKNOWN
+          SDPA_EUNKNOWN,
+          SDPA_EJOBREJECTED,
       };
 
       ErrorEvent()
