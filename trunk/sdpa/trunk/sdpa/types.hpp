@@ -13,6 +13,7 @@ namespace sdpa {
 	typedef std::string status_t;
 	typedef std::string job_result_t;
 	typedef std::vector<std::string> master_list_t;
+	enum worker_kind {AGENT, PCD};
 }
 
 #endif
