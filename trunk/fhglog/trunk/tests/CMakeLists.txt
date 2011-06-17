@@ -31,6 +31,7 @@ foreach (tc_src ${tc_srcs})
 
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name} fhglog)
+  target_link_libraries(${tc_name} ${Boost_UNIT_TEST_LIBRARIES})
   target_link_libraries(${tc_name} ${Boost_LIBRARIES})
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})

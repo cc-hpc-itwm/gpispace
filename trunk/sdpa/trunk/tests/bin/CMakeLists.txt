@@ -15,17 +15,18 @@ foreach (tc_src ${tc_srcs})
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name} sdpa-com)
   target_link_libraries(${tc_name} sdpa-daemon)
-  
+
 if (USE_SMC_SC)
   	target_link_libraries(${tc_name} sdpa-jobFSM_SMC)
 endif (USE_SMC_SC)
-  
+
   target_link_libraries(${tc_name} sdpa-events)
   target_link_libraries(${tc_name} sdpa-util)
   target_link_libraries(${tc_name} sdpa)
   target_link_libraries(${tc_name} seda)
   target_link_libraries(${tc_name} ${FhgCom_LIBRARY})
   target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
+  target_link_libraries(${tc_name} ${Boost_UNIT_TEST_LIBRARIES})
   target_link_libraries(${tc_name} ${Boost_LIBRARIES})
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
