@@ -147,10 +147,13 @@ capabilities_set_t Worker::capabilities() const
 
 void Worker::addCapabilities(const capabilities_set_t& cpbset)
 {
-
+	capabilities_.insert(cpbset.begin(), cpbset.end());
 }
 
 void Worker::removeCapabilities(const capabilities_set_t& cpbset)
 {
-
+	for(capabilities_set_t::iterator iter = cpbset.begin(); iter != cpbset.end(); iter++ )
+	{
+		capabilities_.erase(*iter);
+	}
 }
