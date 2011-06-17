@@ -2,7 +2,7 @@
 set(Boost_FIND_QUIETLY NO)
 set(Boost_USE_STATIC_LIBS ON)
 #set(Boost_USE_STATIC_LIBS OFF)
-set (COMPONENTS thread system filesystem serialization program_options iostreams test_exec_monitor)
+set (COMPONENTS thread system filesystem serialization program_options iostreams unit_test_framework)
 find_package(Boost 1.45 REQUIRED COMPONENTS ${COMPONENTS})
 if (Boost_MAJOR_VERSION LESS 1)
   message(FATAL_ERROR "At least Boost 1.45 is required. Found ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
