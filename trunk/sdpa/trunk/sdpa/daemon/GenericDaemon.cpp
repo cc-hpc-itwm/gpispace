@@ -885,7 +885,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   {
       SDPA_LOG_INFO("****************Register new worker, " << worker_id << ", with the rank " << rank<<" and the capacity "<<evtRegWorker.capacity()<<"***********");
 
-      addWorker( worker_id, evtRegWorker.rank(), evtRegWorker.capacity(), evtRegWorker.agent_uuid() );
+      addWorker( worker_id, evtRegWorker.rank(), evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
 
       SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank<<" and the capacity "<<evtRegWorker.capacity());
 
@@ -907,7 +907,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
           scheduler()->delWorker(worker_id);
           LOG(TRACE, "Add worker"<<worker_id );
-          addWorker( worker_id, evtRegWorker.rank(), evtRegWorker.capacity(), evtRegWorker.agent_uuid() );
+          addWorker( worker_id, evtRegWorker.rank(), evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
       }
 
       SDPA_LOG_INFO("The worker " << worker_id << ", with the rank " << rank<<" is already registered");
@@ -1344,10 +1344,11 @@ const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_i
   }
 }
 
-void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int cap, const sdpa::worker_id_t& agent_uuid )
+void GenericDaemon::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int cap,
+		                       const capabilities_set_t& cpbset,  const sdpa::worker_id_t& agent_uuid )
 {
   try {
-      ptr_scheduler_->addWorker(workerId, rank, cap, agent_uuid);
+      ptr_scheduler_->addWorker(workerId, rank, cap, cpbset, agent_uuid);
   }catch( const WorkerAlreadyExistException& ex )
   {
       throw ex;
@@ -1475,7 +1476,8 @@ void GenericDaemon::requestRegistration()
     BOOST_FOREACH(std::string master, m_arrMasterNames)
     {
         SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << master << "), capacity = "<<capacity());
-        WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master, rank(), capacity(), agent_uuid()));
+        capabilities_set_t capabilities;
+        WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master, rank(), capacity(), capabilities, agent_uuid()));
         sendEventToMaster(pEvtWorkerReg);
     }
 }

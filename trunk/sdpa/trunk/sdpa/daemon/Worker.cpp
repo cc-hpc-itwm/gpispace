@@ -4,10 +4,10 @@
 #include <sdpa/daemon/exceptions.hpp>
 #include <iostream>
 
+using namespace sdpa;
 using namespace sdpa::daemon;
 
-Worker::Worker(	const worker_id_t& name, const unsigned int rank, const unsigned int cap,
-		     	const sdpa::worker_id_t& agent_uuid, const location_t &location)
+Worker::Worker(	const worker_id_t& name, const unsigned int rank, const unsigned int cap, const sdpa::worker_id_t& agent_uuid, const location_t &location)
   : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
     name_(name),
     rank_(rank),
@@ -138,4 +138,19 @@ unsigned int Worker::nbAllocatedJobs()
 	unsigned int nJobs = pending().size() + submitted().size() + acknowledged().size();
 
 	return nJobs;
+}
+
+capabilities_set_t Worker::capabilities() const
+{
+	return capabilities_;
+}
+
+void Worker::addCapabilities(const capabilities_set_t& cpbset)
+{
+
+}
+
+void Worker::removeCapabilities(const capabilities_set_t& cpbset)
+{
+
 }

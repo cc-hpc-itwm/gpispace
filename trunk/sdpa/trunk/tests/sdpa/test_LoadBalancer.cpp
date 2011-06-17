@@ -30,8 +30,10 @@
 #include <sstream>
 #include <sdpa/JobId.hpp>
 #include <seda/StageRegistry.hpp>
+#include <sdpa/types.hpp>
 
 using namespace std;
+using namespace sdpa;
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
 
@@ -63,7 +65,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancer)
     oss.str("");
     oss<<"TestWorker_"<<k;
     sdpa::JobId id;
-    wm.addWorker(oss.str(), k, 100, id.str());
+    wm.addWorker(oss.str(), k, 100, capabilities_set_t(), id.str());
   }
 
   // submit jobs to the workers

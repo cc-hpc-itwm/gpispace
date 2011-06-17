@@ -45,10 +45,12 @@ namespace sdpa { namespace events {
     		  	  	  	  	  	const address_t& a_to,
     		            		const unsigned int rank = 0,
     		            		const unsigned int capacity = 2,
+    		            		const capabilities_set_t& cpbset = capabilities_set_t(),
     		            		const sdpa::worker_id_t& agent_uuid = "" )
 		  : MgmtEvent(a_from, a_to),
 		    rank_(rank),
 		    capacity_(capacity),
+		    cpbset_(cpbset),
 		    agent_uuid_(agent_uuid)
       { }
 
@@ -62,8 +64,8 @@ namespace sdpa { namespace events {
       const unsigned int& capacity() const { return capacity_; }
       unsigned int& capacity() { return capacity_; }
 
-      const worker_kind& kind() const { return kind_; }
-      worker_kind& kind() { return kind_; }
+      const capabilities_set_t& capabilities() const { return cpbset_; }
+      capabilities_set_t& capabilities() { return cpbset_; }
 
       const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_;}
       sdpa::worker_id_t& agent_uuid() { return agent_uuid_;}
@@ -76,7 +78,7 @@ namespace sdpa { namespace events {
     private:
       unsigned int rank_;
       unsigned int capacity_;
-      worker_kind  kind_;
+      capabilities_set_t  cpbset_;
       sdpa::worker_id_t agent_uuid_;
   };
 }}

@@ -54,10 +54,11 @@ SchedulerImpl::~SchedulerImpl()
   }
 }
 
-void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int cap, const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int capacity,
+		                       const capabilities_set_t& cpbset , const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
   try {
-      ptr_worker_man_->addWorker(workerId, rank, cap, agent_uuid);
+      ptr_worker_man_->addWorker(workerId, rank, capacity, cpbset, agent_uuid);
       // only with a round-robin schedule
       // ptr_worker_man_->balanceWorkers();
 

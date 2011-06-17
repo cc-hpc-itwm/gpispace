@@ -37,6 +37,7 @@ namespace sdpa { namespace daemon {
 
     typedef sdpa::location_t location_t;
     typedef sdpa::worker_id_t worker_id_t;
+    typedef sdpa::capabilities_set_t capabilities_set_t;
 
     // TODO: to be replaced by a real class (synchronization!)
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
@@ -134,6 +135,12 @@ namespace sdpa { namespace daemon {
     unsigned int capacity() const { return capacity_; }
     const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_; }
 
+    // capabilities
+    capabilities_set_t capabilities() const;
+
+    void addCapabilities(const capabilities_set_t& cpbset);
+    void removeCapabilities(const capabilities_set_t& cpbset);
+
     /**
          Checks if the worker has job
     */
@@ -222,6 +229,7 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     unsigned int rank_;
     unsigned int capacity_;
+    sdpa::capabilities_set_t capabilities_;
 	sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received

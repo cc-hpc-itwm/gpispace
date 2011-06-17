@@ -282,6 +282,7 @@ void MyFixture::run_client(int i)
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
 				ptrCli->shutdown_network();
+				boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
 				ptrCli.reset();
 				return;
 			}
@@ -291,6 +292,7 @@ void MyFixture::run_client(int i)
 	}
 
 	ptrCli->shutdown_network();
+	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
     ptrCli.reset();
 }
 
