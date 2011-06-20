@@ -50,6 +50,8 @@ namespace sdpa {
 	  class SubmitJobEvent;
 	  class WorkerRegistrationAckEvent;
 	  class WorkerRegistrationEvent;
+	  class CapabilitiesGainedEvent;
+	  class CapabilitiesLostEvent;
 
 	  class EventHandler
 	  {
@@ -82,6 +84,8 @@ namespace sdpa {
 		virtual void handleSubmitJobEvent(const SubmitJobEvent *) {}
 		virtual void handleWorkerRegistrationAckEvent(const WorkerRegistrationAckEvent *) {}
 		virtual void handleWorkerRegistrationEvent(const WorkerRegistrationEvent *) {}
+		virtual void handleCapabilitiesGainedEvent(const CapabilitiesGainedEvent*) {}
+		virtual void handleCapabilitiesLostEvent(const CapabilitiesLostEvent*) {}
 	  };
 	}
 }

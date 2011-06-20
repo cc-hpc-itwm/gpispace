@@ -123,6 +123,8 @@ namespace sdpa { namespace daemon {
         virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
         virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
         virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
+        virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
+        virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
 
         virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
         virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
@@ -167,7 +169,7 @@ namespace sdpa { namespace daemon {
 
       void setStage(const seda::Stage::Ptr& stage)
       {
-        ptr_daemon_stage_ = stage ;
+    	  ptr_daemon_stage_ = stage ;
       }
 
       virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }

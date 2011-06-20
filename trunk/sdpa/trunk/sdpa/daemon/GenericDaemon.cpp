@@ -1242,6 +1242,16 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
+void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*)
+{
+	SDPA_LOG_FATAL("To be implemented!");
+}
+
+void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*)
+{
+	SDPA_LOG_FATAL("To be implemented!");
+}
+
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
   try {
