@@ -49,6 +49,9 @@
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
+#include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <boost/serialization/set.hpp>
 
 
 namespace boost { namespace serialization {
@@ -102,7 +105,7 @@ namespace boost { namespace serialization {
 	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
 	  ar & e.rank();
 	  ar & e.capacity();
-	  //ar & e.capabilities();
+	  ar & e.capabilities();
 	  ar & e.agent_uuid();
   }
 
@@ -221,6 +224,21 @@ namespace boost { namespace serialization {
     ar & boost::serialization::base_object<sdpa::events::JobEvent>(e);
     ar & e.status();
   }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::CapabilitiesGainedEvent & e, unsigned int /* version */)
+  {
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+	  ar & e.capabilities();
+  }
+
+  template <class Archive>
+   void serialize(Archive & ar, sdpa::events::CapabilitiesLostEvent & e, unsigned int /* version */)
+   {
+ 	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+ 	  ar & e.capabilities();
+   }
+
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::SDPAEvent)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::JobEvent)

@@ -24,6 +24,8 @@
 #include <sdpa/events/ConfigReplyEvent.hpp>
 #include <sdpa/events/StartUpEvent.hpp>
 #include <sdpa/events/ConfigOkEvent.hpp>
+#include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/events/CapabilitiesLostEvent.hpp>
 
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/id_generator.hpp>
@@ -1242,14 +1244,41 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 	SDPA_LOG_DEBUG("Received ConfigReplyEvent from "<<pCfgReplyEvt->from());
 }
 
-void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*)
+void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
-	SDPA_LOG_FATAL("To be implemented!");
+	SDPA_LOG_DEBUG("Received CapabilitiesGainedEvent!");
+	// tell the scheduler to add the capabilities of the worker pCpbGainEvt->from
+	sdpa::worker_id_t worker_id = pCpbGainEvt->from();
+	try {
+		scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
+	}
+	catch( const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Could not add new capabilities. The worker "<<worker_id<<" was not found!");
+	}
+	catch( const std::exception& ex)
+	{
+		SDPA_LOG_ERROR("Unexpected exception ("<<ex.what()<<") occurred when trying to add new capabilities to the worker "<<worker_id);
+	}
 }
 
-void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*)
+void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent* pCpbLostEvt)
 {
-	SDPA_LOG_FATAL("To be implemented!");
+	SDPA_LOG_DEBUG("Received CapabilitiesLostEvent!");
+	// tell the scheduler to remove the capabilities of the worker pCpbLostEvt->from
+
+	sdpa::worker_id_t worker_id = pCpbLostEvt->from();
+	try {
+		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
+	}
+	catch( const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Could not remove the specified capabilities. The worker "<<worker_id<<" was not found!");
+	}
+	catch( const std::exception& ex)
+	{
+		SDPA_LOG_ERROR("Unexpected exception ("<<ex.what()<<") occurred when trying to remove some capabilities of the worker "<<worker_id);
+	}
 }
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)

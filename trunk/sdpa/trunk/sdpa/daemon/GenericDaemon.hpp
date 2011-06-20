@@ -44,6 +44,8 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/weak_ptr.hpp>
+#include <boost/serialization/set.hpp>
+
 #include <boost/utility.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}

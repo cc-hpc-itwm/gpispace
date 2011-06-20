@@ -891,3 +891,13 @@ void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& 
   else
 	  SDPA_LOG_ERROR("No valid communication handler!");
 }
+
+void SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
+{
+	ptr_worker_man_->addCapabilities(worker_id, cpbset);
+}
+
+void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
+{
+	ptr_worker_man_->removeCapabilities(worker_id, cpbset);
+}

@@ -232,7 +232,7 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
   if( worker_map_.empty() )
     throw NoWorkerFoundException();
 
-  worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
+  worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end()); //, compare_workers());
   //unsigned int rank_ll = it->second->rank();
 
   if( it->second->nbAllocatedJobs() >= it->second->capacity() )
@@ -504,4 +504,28 @@ void WorkerManager::getWorkerList(std::list<std::string>& workerList)
   lock_type lock(mtx_);
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
     workerList.push_back(iter->second->name());
+}
+
+void WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException)
+{
+	lock_type lock(mtx_);
+	worker_map_t::iterator it = worker_map_.find(worker_id);
+	if( it != worker_map_.end() )
+	{
+		it->second->addCapabilities(cpbset);
+	}
+	else
+		throw WorkerNotFoundException(worker_id);
+}
+
+void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
+{
+	lock_type lock(mtx_);
+	worker_map_t::iterator it = worker_map_.find(worker_id);
+	if( it != worker_map_.end() )
+	{
+		it->second->removeCapabilities(cpbset);
+	}
+	else
+		throw WorkerNotFoundException(worker_id);
 }

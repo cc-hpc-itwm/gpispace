@@ -36,9 +36,7 @@ namespace sdpa { namespace events {
 	public:
 		typedef sdpa::shared_ptr<CapabilitiesGainedEvent> Ptr;
 
-        CapabilitiesGainedEvent() : MgmtEvent()
-          , last_job_id_("")
-        {}
+        CapabilitiesGainedEvent() : MgmtEvent() {}
 
 		CapabilitiesGainedEvent( const address_t& from , const address_t& to, const sdpa::capabilities_set_t& cpbs = capabilities_set_t() )
           : MgmtEvent(from, to)
@@ -47,8 +45,8 @@ namespace sdpa { namespace events {
 
 		virtual ~CapabilitiesGainedEvent() { }
 
-		const sdpa::job_id_t& capabilities() const { return capabilities_; }
-		sdpa::job_id_t& capabilities() { return capabilities_; }
+		const sdpa::capabilities_set_t& capabilities() const { return capabilities_; }
+		sdpa::capabilities_set_t& capabilities() { return capabilities_; }
 
 		std::string str() const { return "CapabilitiesGainedEvent"; }
 
