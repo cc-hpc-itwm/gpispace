@@ -63,7 +63,7 @@ static const std::string kvs_host () { static std::string s("localhost"); return
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
 const int NMAXTRIALS = 10000;
-const int NMAXTHRDS = 2;
+const int NMAXTHRDS = 1;
 
 namespace po = boost::program_options;
 #define NO_GUI ""

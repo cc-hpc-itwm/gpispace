@@ -177,7 +177,7 @@ struct MyFixture
 	pid_t pidPcd_;
 };
 
-BOOST_FIXTURE_TEST_SUITE( test_orchestrator_empty_we, MyFixture )
+BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 {

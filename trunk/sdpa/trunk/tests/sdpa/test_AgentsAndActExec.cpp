@@ -377,7 +377,7 @@ retry:	try {
   ptrCli.reset();
 }
 
-BOOST_FIXTURE_TEST_SUITE( test_suite_agent_int, MyFixture )
+BOOST_FIXTURE_TEST_SUITE( test_agents_and_act_exec, MyFixture )
 
 BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 {
@@ -390,6 +390,10 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+
+	if(m_strWorkflow.empty())
+		LOG( FATAL, "The test workflow is empty. Check if the workflow exists!");
+
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create the Orchestrator ...");
