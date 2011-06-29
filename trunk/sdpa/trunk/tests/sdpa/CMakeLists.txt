@@ -63,7 +63,7 @@ set (tc_srcs
   test_Agents.cpp
   test_StopRestartAgents.cpp
   test_ConcurrentClients.cpp
- # test_MultipleMasters.cpp
+  test_MultipleMasters.cpp
 )
 
 foreach (tc_src ${tc_srcs})
