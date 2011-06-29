@@ -38,7 +38,7 @@ namespace sdpa {
 	typedef sdpa::shared_ptr<SchedulerImpl> ptr_t;
 	typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
-	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = false);
+	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = true );
 	virtual ~SchedulerImpl();
 
 	virtual void schedule(const sdpa::job_id_t& job);

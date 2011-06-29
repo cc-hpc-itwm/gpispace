@@ -126,7 +126,7 @@ namespace sdpa {
 
       protected:
 
-            Scheduler* create_scheduler()
+            Scheduler* create_scheduler(bool bUseReqModel)
             {
               DLOG(TRACE, "creating nre scheduler...");
 
@@ -136,7 +136,7 @@ namespace sdpa {
                                           , nre_pcd_binary_
                                           , nre_pcd_search_path_
                                           , nre_pcd_pre_load_
-                                          , useRequestModel()
+                                          , bUseReqModel
                                         );
             }
 

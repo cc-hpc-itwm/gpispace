@@ -89,10 +89,10 @@ namespace sdpa {
         void notifyAppGui(const result_type & result);
 
         private:
-        Scheduler* create_scheduler()
+        Scheduler* create_scheduler(bool bUseReqModel)
         {
-          DLOG(TRACE, "creating aggregator scheduler...");
-          return new AgentScheduler(this);
+          DLOG(TRACE, "creating agent scheduler...");
+          return new AgentScheduler(this, bUseReqModel);
         }
 
         std::string url_;

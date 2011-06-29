@@ -23,7 +23,6 @@
 #include <seda/StageRegistry.hpp>
 #include <typeinfo>
 
-const int ORCH_MAX_CAP = 10000;
 
 namespace sdpa {
 namespace daemon {
@@ -32,12 +31,13 @@ namespace daemon {
 		struct OrchestratorFactory
 		{
 			static Orchestrator::ptr_t create( const std::string& name,
-			                                   const std::string& url )
+			                                   const std::string& url,
+			                                   const unsigned int capacity )
 			{
 
 
                             LOG( DEBUG, "Create orchestrator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-                            Orchestrator::ptr_t pOrch( new Orchestrator( name, url, ORCH_MAX_CAP ) );
+                            Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
                             pOrch->create_workflow_engine<T>();
                             seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
                             pOrch->setStage(daemon_stage);
@@ -50,10 +50,11 @@ namespace daemon {
 		struct OrchestratorFactory<void>
 		{
                     static Orchestrator::ptr_t create( const std::string& name,
-                                                       const std::string& url )
+                                                       const std::string& url,
+                                                       const unsigned int capacity )
                     {
                             LOG( DEBUG, "Create Orchestrator "<<name<<" with no workflow engine" );
-                            Orchestrator::ptr_t pOrch( new Orchestrator( name, url, ORCH_MAX_CAP ) );
+                            Orchestrator::ptr_t pOrch( new Orchestrator( name, url, capacity ) );
                             seda::Stage::Ptr daemon_stage( new seda::Stage(name, pOrch, 1) );
                             pOrch->setStage(daemon_stage);
                             seda::StageRegistry::instance().insert(daemon_stage);

@@ -69,10 +69,10 @@ namespace daemon {
 		friend class boost::serialization::access;
 
 	  private:
-		Scheduler* create_scheduler()
+		Scheduler* create_scheduler(bool bUseReqModel)
 		{
 		    DLOG(TRACE, "creating orchestrator scheduler...");
-		    return new SchedulerOrch(this, useRequestModel());
+		    return new SchedulerOrch(this, bUseReqModel);
 		}
 
 		std::string url_;

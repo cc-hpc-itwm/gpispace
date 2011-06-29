@@ -78,9 +78,9 @@ namespace sdpa { namespace daemon {
         // API
         virtual void start_fsm();
 
-        void start_agent( const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
-        void start_agent( std::string& strBackup, const std::string& cfgFile = ""  );
-        void start_agent( const std::string& cfgFile = "" ); // no recovery
+        void start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
+        void start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile = ""  );
+        void start_agent( bool bUseReqModel = true, const std::string& cfgFile = "" ); // no recovery
 
         void shutdown(std::string&); // no backup
         void shutdown( const bfs::path& backup_path );
@@ -251,8 +251,8 @@ namespace sdpa { namespace daemon {
       //void notifyMaster(const sdpa::events::ErrorEvent::error_code_t&);
       void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t&);
 
-      bool useRequestModel () const { return m_bUseRequestModel; }
-      void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
+      //bool useRequestModel () const { return m_bUseRequestModel; }
+      //void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
 
 protected:
 
@@ -297,7 +297,7 @@ protected:
         // obsolete
         GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
 
-        virtual Scheduler* create_scheduler()
+        virtual Scheduler* create_scheduler(bool bUseReqModel)
         {
            return NULL;
         }
@@ -341,7 +341,7 @@ protected:
         sdpa::master_list_t m_arrMasterNames;
 
       private:
-        bool m_bUseRequestModel;
+        //bool m_bUseRequestModel;
 
   };
 }}

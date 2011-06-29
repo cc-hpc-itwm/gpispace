@@ -25,8 +25,6 @@
 #include <seda/StageRegistry.hpp>
 #include <typeinfo>
 
-const int AGG_MAX_CAP = 10000;
-
 namespace sdpa {
 namespace daemon {
 
@@ -36,12 +34,13 @@ namespace daemon {
 			static Aggregator::ptr_t create(  const std::string& name,
 											  const std::string& url,
 											  const sdpa::master_list_t& arrMasterNames,
+											  const unsigned int capacity,
 											  const std::string& appGuiUrl = "")
 			{
 
 
 				LOG( DEBUG, "Create aggregator \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-				Aggregator::ptr_t pAgg( new Aggregator( name, url, arrMasterNames, AGG_MAX_CAP, appGuiUrl ) );
+				Aggregator::ptr_t pAgg( new Aggregator( name, url, arrMasterNames, capacity, appGuiUrl ) );
 				pAgg->create_workflow_engine<T>();
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
 				pAgg->setStage(daemon_stage);
@@ -56,10 +55,11 @@ namespace daemon {
 			static Aggregator::ptr_t create(  const std::string& name,
 			                                  const std::string& url,
 			                                  const sdpa::master_list_t& arrMasterNames,
+			                                  const unsigned int capacity,
 			                                  const std::string& appGuiUrl = "")
 			{
 				LOG( DEBUG, "Create Aggregator "<<name<<" with no workflow engine" );
-				Aggregator::ptr_t pAgg( new Aggregator( name, url, arrMasterNames, AGG_MAX_CAP, appGuiUrl ) );
+				Aggregator::ptr_t pAgg( new Aggregator( name, url, arrMasterNames, capacity, appGuiUrl ) );
 				seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgg, 1) );
 				pAgg->setStage(daemon_stage);
 				seda::StageRegistry::instance().insert(daemon_stage);

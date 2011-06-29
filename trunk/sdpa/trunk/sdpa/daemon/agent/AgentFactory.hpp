@@ -25,7 +25,6 @@
 #include <vector>
 #include <string>
 
-const int AGENT_MAX_CAP = 10000;
 
 namespace sdpa {
 namespace daemon {
@@ -35,10 +34,11 @@ namespace daemon {
     static Agent::ptr_t create( const std::string& name,
                                 const std::string& url,
                                 const sdpa::master_list_t& arrMasterNames,
+                                const unsigned int capacity,
                                 const std::string& appGuiUrl = "" )
     {
       LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, AGENT_MAX_CAP, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, appGuiUrl ) );
       pAgent->create_workflow_engine<T>();
       seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgent, 1) );
       pAgent->setStage(daemon_stage);
@@ -54,10 +54,11 @@ namespace daemon {
     static Agent::ptr_t create( const std::string& name,
                                 const std::string& url,
                                 const sdpa::master_list_t& arrMasterNames,
+                                const unsigned int capacity,
                                 const std::string& appGuiUrl = "" )
     {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, AGENT_MAX_CAP, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, appGuiUrl ) );
       seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgent, 1) );
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);

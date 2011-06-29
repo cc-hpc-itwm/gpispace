@@ -86,10 +86,10 @@ namespace sdpa {
                   void notifyAppGui(const result_type & result);
 
                   private:
-                  Scheduler* create_scheduler()
+                  Scheduler* create_scheduler(bool bUseReqModel)
                   {
                     DLOG(TRACE, "creating aggregator scheduler...");
-                    return new SchedulerAgg(this, useRequestModel());
+                    return new SchedulerAgg(this, bUseReqModel);
                   }
 
                   std::string url_;

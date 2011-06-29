@@ -64,8 +64,8 @@ GenericDaemon::GenericDaemon( const std::string &name,
         m_bStarted(false),
         m_bConfigOk(false),
         m_threadBkpService(this),
-        m_last_request_time(0),
-        m_bUseRequestModel(false)
+        m_last_request_time(0)
+       //, m_bUseRequestModel(false)
 {
 	//daemon_cfg_ = new sdpa::util::Config;
 }
@@ -91,8 +91,8 @@ GenericDaemon::GenericDaemon( const std::string &name,
         m_bStarted(false),
         m_bConfigOk(false),
         m_threadBkpService(this),
-        m_last_request_time(0),
-        m_bUseRequestModel(false)
+        m_last_request_time(0)
+        //, m_bUseRequestModel(false)
 {
 	if(!toMasterStageName.empty())
 	{
@@ -133,8 +133,8 @@ GenericDaemon::GenericDaemon( 	const std::string name,
         m_bConfigOk(false),
         m_threadBkpService(this),
         m_last_request_time(0),
-        m_arrMasterNames(m_arrMasterNames),
-        m_bUseRequestModel(false)
+        m_arrMasterNames(m_arrMasterNames)
+       //,  m_bUseRequestModel(false)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
 	//     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -152,12 +152,12 @@ GenericDaemon::~GenericDaemon()
   SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 }
 
-void GenericDaemon::start_agent( const bfs::path& bkp_file, const std::string& cfgFile )
+void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, const std::string& cfgFile )
 {
     if(!ptr_scheduler_)
     {
         SDPA_LOG_INFO("Create the scheduler...");
-        sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler());
+        sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
         ptr_scheduler_ = ptrSched;
     }
 
@@ -213,12 +213,12 @@ void GenericDaemon::start_agent( const bfs::path& bkp_file, const std::string& c
     }
 }
 
-void GenericDaemon::start_agent( std::string& strBackup, const std::string& cfgFile )
+void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile )
 {
     if(!ptr_scheduler_)
     {
         SDPA_LOG_INFO("Create the scheduler...");
-        sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler());
+        sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
         ptr_scheduler_ = ptrSched;
     }
 
@@ -272,12 +272,12 @@ void GenericDaemon::start_agent( std::string& strBackup, const std::string& cfgF
     }
 }
 
-void GenericDaemon::start_agent( const std::string& cfgFile )
+void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 {
   if(!ptr_scheduler_)
   {
     SDPA_LOG_INFO("Create the scheduler...");
-    sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler());
+    sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
     ptr_scheduler_ = ptrSched;
   }
 
@@ -300,7 +300,7 @@ void GenericDaemon::start_agent( const std::string& cfgFile )
 
     SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
     if( !is_orchestrator() )
-            requestRegistration();
+    	requestRegistration();
 
     SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
     notifyWorkers(sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG);
@@ -771,7 +771,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
   //if my capacity is reached, refuse to take any job until at least one of my
   //assigned jobs completes
-  if( !useRequestModel() && jobManager()->numberExtJobs() > capacity() )
+  if( !scheduler()->useRequestModel() && jobManager()->numberExtJobs() > capacity() )
   {
 	  //generate a reject event
 	  //send it upwards

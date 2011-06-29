@@ -30,15 +30,16 @@ namespace sdpa {
     template <typename U>
     class SchedulerNRE : public SchedulerImpl {
     public:
-      SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL, std::string workerUrl = ""
+      SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL,
+    		  	  std::string workerUrl = ""
                   // TODO: fixme, this is ugly
                   , bool bLaunchNrePcd = false
                   , const std::string & fvmPCBinary = ""
                   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
                   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
-                  , bool use_request_model = true
+                  , bool bUseReqModel = true
                   )
-        : sdpa::daemon::SchedulerImpl(pHandler, use_request_model)
+        : sdpa::daemon::SchedulerImpl(pHandler, bUseReqModel)
         , SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
         , m_worker_(workerUrl, bLaunchNrePcd, fvmPCBinary, fvmPCSearchPath, fvmPCPreLoad)
       {

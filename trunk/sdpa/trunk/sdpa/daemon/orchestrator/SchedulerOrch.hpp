@@ -29,22 +29,22 @@ namespace sdpa {
   class SchedulerOrch : public SchedulerImpl {
 
   public:
-	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL,  bool use_request_model=true):
-		 SchedulerImpl(pCommHandler, use_request_model),
+	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL,  bool bUseReqModel = true):
+		 SchedulerImpl(pCommHandler, bUseReqModel),
 		 SDPA_INIT_LOGGER("Scheduler " + (pCommHandler?pCommHandler->name():"ORCH"))
 	 {}
 
 	 virtual ~SchedulerOrch()
 	 {
-            try
-            {
-                SDPA_LOG_INFO("destructing SchedulerOrch");
-                stop();
-            }
-            catch (std::exception const & ex)
-            {
-                SDPA_LOG_ERROR("could not stop SchedulerOrch: " << ex.what());
-            }
+		try
+		{
+			SDPA_LOG_INFO("destructing SchedulerOrch");
+			stop();
+		}
+		catch (std::exception const & ex)
+		{
+			SDPA_LOG_ERROR("could not stop SchedulerOrch: " << ex.what());
+		}
 	 }
 
 	 bool post_request( bool ) { return false; }
