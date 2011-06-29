@@ -24,6 +24,7 @@ namespace po = boost::program_options;
 using namespace std;
 
 enum eBkOpt { NO_BKP=1, FILE_DEF, FLD_DEF, FLDANDFILE_DEF=6 };
+const unsigned int MAX_CAP = 10000;
 
 int main (int argc, char **argv)
 {
@@ -164,13 +165,14 @@ int main (int argc, char **argv)
 		sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create( aggName,
 		                                                                                                      aggUrl,
 		                                                                                                      arrMasterNames,
+		                                                                                                      MAX_CAP,
 		                                                                                                      appGuiUrl ); //, orchUrl );
-		ptrAgg->setUseRequestModel(vm.count("use-push-model") == 0);
+		 bool bUseRequestModel(vm.count("use-push-model") == 0);
 
 		if(bDoBackup)
-		  ptrAgg->start_agent(bkp_path/backup_file);
+		  ptrAgg->start_agent(bUseRequestModel, bkp_path/backup_file);
 		else
-		  ptrAgg->start_agent();
+		  ptrAgg->start_agent(bUseRequestModel);
 
 		LOG(DEBUG, "waiting for signals...");
 		sigset_t waitset;
