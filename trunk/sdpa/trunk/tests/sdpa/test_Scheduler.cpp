@@ -47,6 +47,7 @@ using namespace sdpa::daemon;
 
 const int NWORKERS = 5;
 const int NJOBS    = 20;
+const int MAX_CAP  = 100;
 
 struct MyFixture
 {
@@ -63,7 +64,7 @@ BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 BOOST_AUTO_TEST_CASE(testSchedulerWithPrefs)
 {
 	string addrOrch = "127.0.0.1";
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 
 	ostringstream oss;
 	sdpa::daemon::Scheduler::ptr_t ptr_scheduler_(new SchedulerImpl(ptrOrch.get(), false));

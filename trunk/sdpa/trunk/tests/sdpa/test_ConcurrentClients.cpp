@@ -62,8 +62,9 @@ using namespace seda;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
-const int NMAXTRIALS = 10000;
-const int NMAXTHRDS = 1;
+const int NMAXTRIALS 	= 10000;
+const int NMAXTHRDS 	= 1;
+const int MAX_CAP 		= 100;
 
 namespace po = boost::program_options;
 #define NO_GUI ""
@@ -311,11 +312,11 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	string addrNRE = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent();
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"));
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -328,6 +329,7 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 2,
 											 workerUrl,
 											 /*strAppGuiUrl,*/
 											 guiUrl,

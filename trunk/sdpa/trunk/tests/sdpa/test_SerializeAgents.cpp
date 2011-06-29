@@ -46,6 +46,8 @@
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 
+const int MAX_CAP = 100;
+
 #ifdef USE_REAL_WE
 	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
 #else
@@ -214,6 +216,7 @@ BOOST_AUTO_TEST_CASE(testNRESerialization)
                             >::create( "NRE_0"
                                      , "127.0.0.1:7002"
                                      , std::vector<std::string>(1,"aggregator_0")
+                                     , MAX_CAP
                                      , "127.0.0.1:7001"
                                      , "127.0.0.1:8000"
                                      )
@@ -308,7 +311,10 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
 {
     std::cout<<std::endl<<"----------------Begin  testAggregatorSerialization----------------"<<std::endl;
     std::string filename = "testSerializeAggregator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-    Aggregator::ptr_t pAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", "127.0.0.1:7001",std::vector<std::string>(1,"orchestrator_0")); //, "127.0.0.1:7000");
+    Aggregator::ptr_t pAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create(	"aggregator_0",
+    																						"127.0.0.1:7001",
+    																						std::vector<std::string>(1,"orchestrator_0"),
+    																						MAX_CAP); //, "127.0.0.1:7000");
 
     pAgg->setScheduler(new SchedulerImpl());
     SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pAgg->scheduler().get());
@@ -419,7 +425,7 @@ BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
 {
     std::cout<<std::endl<<"----------------Begin  testOrchestratorSerialization----------------"<<std::endl;
     std::string filename = "testSerializeOrchestrator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-    Orchestrator::ptr_t pOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create( "orchestrator_0", "127.0.0.1:6000");
+    Orchestrator::ptr_t pOrch = sdpa::daemon::OrchestratorFactory<DummyWorkflowEngine>::create( "orchestrator_0", "127.0.0.1:6000", MAX_CAP);
 
     pOrch->setScheduler(new SchedulerImpl());
     SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pOrch->scheduler().get());

@@ -46,6 +46,7 @@
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
+#include <boost/thread.hpp>
 
 #ifdef USE_REAL_WE
 	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
@@ -55,6 +56,8 @@
 
 
 const int NMAXTRIALS=5;
+const int MAX_CAP = 100;
+
 
 namespace po = boost::program_options;
 
@@ -142,6 +145,8 @@ struct MyFixture
 		seda::StageRegistry::instance().clear();
 	}
 
+	void run_client();
+
 	string read_workflow(string strFileName)
 	{
 		ifstream f(strFileName.c_str());
@@ -177,9 +182,122 @@ struct MyFixture
 	pid_t pidPcd_;
 };
 
+void MyFixture::run_client()
+{
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	cav.push_back("--orchestrator=orchestrator_0");
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+
+	for( int k=0; k<m_nITER; k++ )
+	{
+		int nTrials = 0;
+		sdpa::job_id_t job_id_user;
+
+		try {
+
+			LOG( DEBUG, "Submitting the following test workflow: \n"<<m_strWorkflow);
+			job_id_user = ptrCli->submitJob(m_strWorkflow);
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials++ > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
+		}
+
+		LOG( DEBUG, "*****JOB #"<<k<<"******");
+
+		std::string job_status = ptrCli->queryJob(job_id_user);
+		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+		nTrials = 0;
+		while( job_status.find("Finished") == std::string::npos &&
+			   job_status.find("Failed") == std::string::npos &&
+			   job_status.find("Cancelled") == std::string::npos)
+		{
+			try {
+				job_status = ptrCli->queryJob(job_id_user);
+				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+				boost::this_thread::sleep(boost::posix_time::seconds(10));
+			}
+			catch(const sdpa::client::ClientException& cliExc)
+			{
+				if(nTrials++ > NMAXTRIALS)
+				{
+					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
+
+					ptrCli->shutdown_network();
+					ptrCli.reset();
+					return;
+				}
+
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
+			}
+		}
+
+		nTrials = 0;
+
+		try {
+				LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
+				ptrCli->retrieveResults(job_id_user);
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials++ > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
+
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
+
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
+		}
+
+		nTrials = 0;
+
+		try {
+			LOG( DEBUG, "User: delete the job "<<job_id_user);
+			ptrCli->deleteJob(job_id_user);
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
+		}
+		catch(const sdpa::client::ClientException& cliExc)
+		{
+			if(nTrials++ > NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
+
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
+
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
+		}
+	}
+
+	ptrCli->shutdown_network();
+	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+    ptrCli.reset();
+}
+
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
+BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Push )
 {
 	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
 	//guiUrl
@@ -195,11 +313,83 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+	ptrOrch->start_agent(false);
+
+	//LOG( DEBUG, "Create the Aggregator ...");
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	ptrAgg->start_agent(false);
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	// use external scheduler and real GWES
+	//LOG( DEBUG, "Create the NRE ...");
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
+				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
+				                             2,
+				                             workerUrl,
+				                             //strAppGuiUrl,
+				                             guiUrl,
+				                             m_bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
+
+	try {
+		ptrNRE_0->start_agent(false);
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()" );
+
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
+
+		return;
+	}
+
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Req )
+{
+	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	//guiUrl
+	string guiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgg 		= "127.0.0.1";
+	string addrNRE 		= "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, std::vector<std::string>(1,"orchestrator_0"));
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -213,6 +403,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
+				                             2,
 				                             workerUrl,
 				                             //strAppGuiUrl,
 				                             guiUrl,
@@ -235,74 +426,21 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe )
 		return;
 	}
 
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-
-	for( int k=0; k<m_nITER; k++ )
-	{
-		sdpa::job_id_t job_id_user; int nTrials = 0;;
-retry:	try {
-			nTrials++;
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrNRE_0->shutdown();
-				ptrAgg->shutdown();
-				ptrOrch->shutdown();
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-			else
-				goto retry;
-
-		}
-
-		LOG( DEBUG, "*****JOB #"<<k<<"******");
-
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
-			job_status = ptrCli->queryJob(job_id_user);
-			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-		}
-
-		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-		ptrCli->retrieveResults(job_id_user);
-
-		LOG( DEBUG, "User: delete the job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
-	}
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
 
 	ptrNRE_0->shutdown();
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
 
-	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
-
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
+
+BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe_Req )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
 	//guiUrl
@@ -316,11 +454,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
 
 	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch);
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"));
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -334,6 +472,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
+				                             2, //capacity of the NRE is set to 2
 				                             workerUrl,
 				                             //strAppGuiUrl,
 				                             guiUrl,
@@ -355,69 +494,15 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe )
 		return;
 	}
 
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	config.parse_command_line(cav);
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
-	ptrCli->configure_network( config );
-
-	for( int k=0; k<m_nITER; k++ )
-	{
-		sdpa::job_id_t job_id_user;
-		int nTrials = 0;;
-retry:	try {
-			nTrials++;
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-                    if(nTrials > NMAXTRIALS)
-                    {
-                        LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-                        ptrNRE_0->shutdown();
-                        ptrAgg->shutdown();
-                        ptrOrch->shutdown();
-                        ptrCli->shutdown_network();
-                        ptrCli.reset();
-                        return;
-                    }
-                    else
-                      goto retry;
-		}
-
-		LOG( DEBUG, "*****JOB #"<<k<<"******");
-
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
-			job_status = ptrCli->queryJob(job_id_user);
-			LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-		}
-
-		LOG( DEBUG, "User: retrieve results of the job "<<job_id_user);
-		ptrCli->retrieveResults(job_id_user);
-
-		LOG( DEBUG, "User: delete the job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
-	}
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
 
 	ptrNRE_0->shutdown();
 	ptrAgg->shutdown();
 	ptrOrch->shutdown();
-
-	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
 
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
 }
