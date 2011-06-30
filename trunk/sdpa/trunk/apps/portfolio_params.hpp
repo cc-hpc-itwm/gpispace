@@ -11,6 +11,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include "sdpa/daemon/jobFSM/JobFSM.hpp"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>

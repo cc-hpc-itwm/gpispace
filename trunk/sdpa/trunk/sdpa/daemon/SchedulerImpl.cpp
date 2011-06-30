@@ -15,12 +15,12 @@
  *
  * =====================================================================================
  */
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <sdpa/daemon/SchedulerImpl.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/RequestJobEvent.hpp>
 #include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/id_generator.hpp>
-#include <sdpa/daemon/jobFSM/JobFSM.hpp>
 
 #include <cassert>
 #include <boost/foreach.hpp>
@@ -28,6 +28,7 @@
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
+
 
 SchedulerImpl::SchedulerImpl(sdpa::daemon::IComm* pCommHandler, bool bUseRequestModel )
   : ptr_worker_man_(new WorkerManager())
@@ -91,31 +92,14 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
 }
 
 
-void SchedulerImpl::re_schedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException)
+void SchedulerImpl::reschedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException)
 {
 	// The result was succesfully delivered, so I can delete the job from the job map
 	ostringstream os;
 	try {
 		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
-		// delete it from the map when you receive a JobFinishedAckEvent!
-
-		JobFSM* ptrFSM = new JobFSM( job_id, pJob->description(), ptr_comm_handler_, pJob->parent() );
-
-		ptrFSM->start_fsm();
-
-		Job::ptr_t pNewJob( ptrFSM );
-		pNewJob->set_owner(pJob->owner());
-
-		ptr_comm_handler_->jobManager()->deleteJob(job_id); // delete the old state machine
-
-		ptr_comm_handler_->jobManager()->addJob(job_id, pNewJob); // add the new job (re-start the fsm)
-
-		// check if the message comes from outside/slave or from WFE
-		// if it comes from outside set it as local
-		if( pJob->owner() != sdpa::daemon::WE && ptr_comm_handler_->hasWorkflowEngine() ) //e.to())
-		{
-			pJob->set_local(true);
-		}
+		pJob->Reschedule(); // put the job back into the pending state
+		// delete it from the map when you send the result to the master
 
 		schedule(job_id);
 	}
@@ -133,7 +117,7 @@ void SchedulerImpl::re_schedule( const sdpa::job_id_t& job_id ) throw (JobNotFou
 	}
 }
 
-void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
+void SchedulerImpl::reschedule( Worker::JobQueue* pQueue )
 {
 	assert (pQueue);
 
@@ -141,11 +125,11 @@ void SchedulerImpl::re_schedule( Worker::JobQueue* pQueue )
 	{
 		sdpa::job_id_t jobId = pQueue->pop_and_wait();
 		SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
-		re_schedule(jobId);
+		reschedule(jobId);
 	}
 }
 
-void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
+void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
 {
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
@@ -164,14 +148,14 @@ void SchedulerImpl::re_schedule( const Worker::worker_id_t& worker_id ) throw (W
 
     // declare the submitted jobs failed
     //declare_jobs_failed( worker_id, &pWorker->submitted() );
-    re_schedule( &pWorker->submitted() );
+    reschedule( &pWorker->submitted() );
 
     // declare the acknowledged jobs failed
     //declare_jobs_failed( worker_id, &pWorker->acknowledged() );
-    re_schedule( &pWorker->acknowledged() );
+    reschedule( &pWorker->acknowledged() );
 
     // re-schedule the pending jobs
-    re_schedule( &pWorker->pending() );
+    reschedule( &pWorker->pending() );
 
     // put the jobs back into the central queue and don't forget
     // to reset the status
@@ -620,7 +604,7 @@ void SchedulerImpl::feed_workers()
 	// job: don't forget to update the job status -> reverse state or create a new job
 	// with the same id after deleting the original one
 
-  {
+
     try {
 
     	sdpa::worker_id_t worker_id = ptr_worker_man_->getLeastLoadedWorker();
@@ -646,7 +630,7 @@ void SchedulerImpl::feed_workers()
     catch (std::exception const& ex) {
     	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
     }
-  }
+
 }
 
 /*void SchedulerImpl::feed_workers()

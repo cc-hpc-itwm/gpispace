@@ -57,7 +57,7 @@ namespace daemon {
 	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const preference_t& job_pref ) = 0;
 	 virtual void schedule_remote(const sdpa::job_id_t &job) = 0;
 	 virtual void schedule_local(const sdpa::job_id_t &job) = 0;
-	 virtual void re_schedule(const Worker::worker_id_t& ) throw (WorkerNotFoundException) = 0;
+	 virtual void reschedule(const Worker::worker_id_t& ) throw (WorkerNotFoundException) = 0;
 	 virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
 	 virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
 

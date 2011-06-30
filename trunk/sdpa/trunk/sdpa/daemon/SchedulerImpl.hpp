@@ -51,9 +51,9 @@ namespace sdpa {
 	bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const preference_t& job_pref);
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
-	void re_schedule(Worker::JobQueue* pQueue );
-	void re_schedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
-	void re_schedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException);
+	void reschedule(Worker::JobQueue* pQueue );
+	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
+	void reschedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException);
 
 	virtual bool has_job(const sdpa::job_id_t& job_id);
 

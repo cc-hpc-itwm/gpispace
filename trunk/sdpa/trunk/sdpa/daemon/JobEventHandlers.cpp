@@ -15,6 +15,10 @@
  *
  * =====================================================================================
  */
+#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+#define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
+#define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
+
 #include <seda/StageRegistry.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
@@ -35,6 +39,12 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 
 	Worker::worker_id_t worker_id = pEvent->from();
 	try {
+
+		// Only, now should be state of the job updated to RUNNING
+		// since it was not rejected, no error occured etc ....
+		//find the job ptrJob and call
+		Job::ptr_t ptrJob = ptr_job_man_->findJob(pEvent->job_id());
+		ptrJob->Dispatch();
 		ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
 	} catch(WorkerNotFoundException const &) {
 		SDPA_LOG_ERROR("job submission could not be acknowledged: worker " << worker_id << " not found!!");

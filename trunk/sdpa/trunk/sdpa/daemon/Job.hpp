@@ -76,6 +76,7 @@ namespace sdpa { namespace daemon {
         virtual void QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IComm* );
         virtual void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IComm*);
         virtual void Dispatch();
+        virtual void Reschedule();
 
         virtual void setResult(const sdpa::job_result_t& ) =0;
         virtual sdpa::status_t getStatus() { return "Undefined"; }

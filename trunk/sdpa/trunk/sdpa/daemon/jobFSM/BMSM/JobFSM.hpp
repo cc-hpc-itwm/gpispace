@@ -24,7 +24,6 @@
 //front-end
 #include <boost/msm/front/state_machine_def.hpp>
 
-
 #include <sdpa/daemon/IComm.hpp>
 #include <sdpa/daemon/JobImpl.hpp>
 #include <sdpa/logging.hpp>
@@ -34,6 +33,7 @@
 
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
+//#include <boost/msm/back/favor_compile_time.hpp>
 
 //using namespace sdpa;
 //using namespace sdpa::daemon;
@@ -54,6 +54,7 @@ namespace sdpa {
   namespace fsm {
     namespace bmsm {
       struct MSMDispatchEvent{};
+      struct MSMRescheduleEvent{};
 
       // front-end: define the FSM structure
       struct JobFSM_ : public msm::front::state_machine_def<JobFSM_>
@@ -93,6 +94,7 @@ namespace sdpa {
         a_row<  Running,    sdpa::events::JobFailedEvent, 	 	Failed, 	&sm::action_job_failed >,
         a_row<  Running,    sdpa::events::CancelJobEvent,      	Cancelling, &sm::action_cancel_job >,
         a_row<  Running,    sdpa::events::CancelJobAckEvent, 	Cancelled,  &sm::action_cancel_job_ack >,
+        _row<   Running,    MSMRescheduleEvent,                 Pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
         a_irow< Finished,   sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
         _irow<  Finished,   sdpa::events::JobFinishedEvent >,
@@ -195,7 +197,19 @@ namespace sdpa {
           ptr_comm->sendEventToMaster(pResReply);
         }
 
-        void Dispatch() { MSMDispatchEvent DispEvt;lock_type lock(mtx_); process_event(DispEvt);}
+        void Reschedule()
+        {
+        	MSMRescheduleEvent ReschedEvt;
+        	lock_type lock(mtx_);
+        	process_event(ReschedEvt);
+        }
+
+        void Dispatch()
+        {
+        	MSMDispatchEvent DispEvt;
+        	lock_type lock(mtx_);
+        	process_event(DispEvt);
+        }
 
         // actions
         void action_run_job() {
@@ -231,17 +245,17 @@ namespace sdpa {
 
         sdpa::status_t getStatus()
         {
-          LOG(TRACE, "current state of job " << id() << " is " << *current_state());
+        	LOG(TRACE, "current state of job " << id() << " is " << *current_state());
 
-          if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
-          {
-            LOG(ERROR, "state id out of range!");
-            return "unknown";
-          }
-          else
-          {
-            return state_names[*current_state()];
-          }
+        	if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
+        	{
+        		LOG(ERROR, "state id out of range!");
+        		return "unknown";
+        	}
+        	else
+        	{
+        		return state_names[*current_state()];
+        	}
         }
 
         template <class Archive>

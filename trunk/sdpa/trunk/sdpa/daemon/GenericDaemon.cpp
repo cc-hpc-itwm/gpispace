@@ -15,6 +15,7 @@
  *
  * =====================================================================================
  */
+
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/events/CodecStrategy.hpp>
@@ -35,7 +36,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
-
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -687,7 +687,8 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
             // put the job into the Running state here
             SDPA_LOG_DEBUG("The job status is "<<ptrJob->getStatus());
-            ptrJob->Dispatch(); // no event need to be sent
+
+            //ptrJob->Dispatch(); // no event need to be sent
 
             // create a SubmitJobEvent for the job job_id serialize and attach description
             SDPA_LOG_DEBUG("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
@@ -774,6 +775,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   if( !scheduler()->useRequestModel() && jobManager()->numberExtJobs() > capacity() )
   {
 	  //generate a reject event
+	  SDPA_LOG_INFO("Capacity exceeded! Cannot accept new jobs. Reject the job "<<e.job_id().str());
 	  //send it upwards
 	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBREJECTED, e.job_id().str()) );
 	  sendEventToMaster(pErrorEvt);
@@ -904,7 +906,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
     	  LOG(TRACE, "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
 
           LOG(TRACE, "Re-schedule the jobs");
-          scheduler()->re_schedule( worker_id );
+          scheduler()->reschedule( worker_id );
           LOG(TRACE,"Delete worker "<<worker_id);
 
           scheduler()->delWorker(worker_id);
@@ -949,8 +951,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     case ErrorEvent::SDPA_EJOBREJECTED:
     {
     	sdpa::job_id_t jobId(error.reason());
+    	SDPA_LOG_WARN("The worker "<<error.from()<<" rejected the job "<<jobId.str()<<". Reschedule it now!");
 
-    	scheduler()->re_schedule(jobId);
+    	scheduler()->reschedule(jobId);
         break;
     }
     case ErrorEvent::SDPA_EWORKERNOTREG:
@@ -969,47 +972,47 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     }
     case ErrorEvent::SDPA_ENODE_SHUTDOWN:
     {
-      worker_id_t worker_id(error.from());
+    	worker_id_t worker_id(error.from());
 
-      try
-      {
-          findWorker(worker_id);
+    	try
+    	{
+    		findWorker(worker_id);
 
-          SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
-          ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
-      }
-      catch (WorkerNotFoundException const& /*ignored*/)
-      {
-          // that's not true -> to be reviewed !
+    		SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
+    		ptr_scheduler_->reschedule(worker_id);
+    		ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
+    	}
+    	catch (WorkerNotFoundException const& /*ignored*/)
+    	{
+    		// that's not true -> to be reviewed !
+    		// check if the message comes from a master
+    		BOOST_FOREACH(std::string master, m_arrMasterNames)
+			{
+    			if( error.from() == master )
+    			{
+    				SDPA_LOG_WARN("Master " << master << " is down");
 
-          // check if the message comes from a master
-          BOOST_FOREACH(std::string master, m_arrMasterNames)
-          {
-        	  if( error.from() == master )
-        	  {
-        		  SDPA_LOG_WARN("Master " << master << " is down");
+    				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+    				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
-        		  const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-        		  SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-        		  boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-        		  if( !is_orchestrator() )
-        		  {
-        			  m_bRegistered = false;
-        			  requestRegistration();
-        		  }
-        	  }
-          }
-      }
-      catch (std::exception const& ex)
-      {
-          LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
-      }
-      break;
+    				if( !is_orchestrator() )
+    				{
+    					m_bRegistered = false;
+    					requestRegistration();
+    				}
+    			}
+			}
+    	}
+    	catch (std::exception const& ex)
+    	{
+    		LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
+    	}
+    	break;
     }
     default:
     {
-        MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+    	MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
     }
   }
 }
@@ -1188,11 +1191,11 @@ void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
 const preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& jobId) const
 {
   try {
-          return ptr_job_man_->getJobPreferences(jobId);
+	  return ptr_job_man_->getJobPreferences(jobId);
   }
   catch (const NoJobPreferences& ex)
   {
-          throw ex;
+      throw ex;
   }
 }
 
@@ -1315,7 +1318,7 @@ void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
       {
           to_master_stage()->send(pEvt);
           DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-          //to_master_stage()->dump();
+          // to_master_stage()->dump();
       }
       else
       {
@@ -1530,7 +1533,7 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
     }
 
     SDPA_LOG_ERROR("The agent "<<name()<<" has no scheduler!");
-    throw std::runtime_error(name() + " does not hava scheduler!");
+    throw std::runtime_error(name() + " does not have scheduler!");
 }
 
 void GenericDaemon::start_fsm()

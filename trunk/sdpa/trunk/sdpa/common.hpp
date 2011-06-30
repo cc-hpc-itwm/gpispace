@@ -6,5 +6,4 @@
 #endif
 
 #include <sdpa/logging.hpp>
-
 #endif

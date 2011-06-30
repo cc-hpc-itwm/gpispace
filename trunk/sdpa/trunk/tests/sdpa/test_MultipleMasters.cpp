@@ -299,7 +299,6 @@ void MyFixture::run_client(int i)
 
 BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
 
-/*
 BOOST_AUTO_TEST_CASE( testMultipleMasters_req )
 {
 	LOG( INFO, "***** testMultipleMasters1 *****"<<std::endl);
@@ -377,8 +376,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_req )
 
 	LOG( INFO, "The test case testMultipleMasters1 terminated!" );
 }
-*/
-
 
 BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 {

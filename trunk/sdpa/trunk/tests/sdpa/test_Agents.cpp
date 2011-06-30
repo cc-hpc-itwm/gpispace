@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE TestOrchestratorEmptyWe
+#include "sdpa/daemon/jobFSM/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>

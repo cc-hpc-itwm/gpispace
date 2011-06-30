@@ -10,3 +10,4 @@ void Job::JobFinished(const sdpa::events::JobFinishedEvent*) { }
 void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent*, sdpa::daemon::IComm* ) { }
 void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent*, sdpa::daemon::IComm*) { }
 void Job::Dispatch() { }
+void Job::Reschedule() {};
