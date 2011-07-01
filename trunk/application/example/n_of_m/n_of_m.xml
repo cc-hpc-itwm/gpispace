@@ -68,7 +68,7 @@
         <in name="m" type="long"/>
         <out name="n" type="long"/>
         <module name="n_of_m" function="run (cmd, n, m)">
-          <cindlude href="sstream"/>
+          <cinclude href="sstream"/>
           <cinclude href="process.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
           <link href="/u/herc/rahn/.sdpa/modules/libprocess.so"/>
