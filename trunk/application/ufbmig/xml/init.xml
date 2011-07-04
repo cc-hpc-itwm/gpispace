@@ -1,0 +1,59 @@
+<defun name="init">
+
+  <include-structs href="types.xml"/>
+
+  <in name="description" type="string" place="description"/>
+  <in name="file_with_config" type="string" place="file_with_config"/>
+  <out name="config" type="config" place="config_written"/>
+
+  <net>
+    <place name="description" type="string"/>
+    <place name="file_with_config" type="string"/>
+    <place name="config" type="config"/>
+    <place name="config_written" type="config"/>
+
+    <transition name="init">
+      <defun>
+        <in name="description" type="string"/>
+        <out name="config" type="config"/>
+        <module name="ufbmig" function="config init (description)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "init: " << description);
+
+            ::pnetc::type::config::config config;
+
+            config.size.mem.gpi = 0L;
+            config.size.mem.shmem = 0L;
+
+            namespace vmem = ::ufbmig::util::memory::global;
+
+            config.handle.data.fine_any = vmem::alloc (0, "data.fine");
+            config.handle.data.coarse_mask = vmem::alloc (0, "data.coarse_mask");
+            config.handle.data.coarse_vel = vmem::alloc (0, "data.coarse_vel");
+            config.handle.data.output = vmem::alloc (0, "data.output");
+            config.handle.data.update = vmem::alloc (0, "data.update");
+
+            return config;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="description" place="description"/>
+      <connect-out port="config" place="config"/>
+    </transition>
+
+    <include-template href="rw/write.xml"/>
+    <specialize name="write_config" use="write">
+      <type-map replace="T" with="config"/>
+    </specialize>
+
+    <transition name="write">
+      <use name="write_config"/>
+      <connect-in port="filename" place="file_with_config"/>
+      <connect-in port="x" place="config"/>
+      <connect-out port="x" place="config_written"/>
+    </transition>
+  </net>
+
+</defun>

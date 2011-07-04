@@ -1,0 +1,22 @@
+<structs>
+
+  <struct name="config">
+    <struct name="size">
+      <struct name="mem">
+        <field name="gpi" type="long"/>
+        <field name="shmem" type="long"/>
+      </struct>
+    </struct>
+
+    <struct name="handle">
+      <struct name="data">
+        <field name="fine_any" type="long"/>
+        <field name="coarse_mask" type="long"/>
+        <field name="coarse_vel" type="long"/>
+        <field name="output" type="long"/>
+        <field name="update" type="long"/>
+      </struct>
+    </struct>
+  </struct>
+
+</structs>

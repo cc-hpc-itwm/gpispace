@@ -1,0 +1,51 @@
+<defun name="finalize">
+
+  <include-structs href="types.xml"/>
+
+  <in name="file_with_config" type="string" place="file_with_config"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+    <place name="file_with_config" type="string"/>
+    <place name="config" type="config"/>
+    <place name="done" type="control"/>
+
+    <include-template href="rw/read.xml"/>
+    <specialize name="read_config" use="read">
+      <type-map replace="T" with="config"/>
+    </specialize>
+
+    <transition name="read">
+      <use name="read_config"/>
+      <connect-in port="filename" place="file_with_config"/>
+      <connect-out port="x" place="config"/>
+    </transition>
+
+    <transition name="finalize">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="done" type="control"/>
+        <module name="ufbmig" function="done finalize (config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="util/memory.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "finalize: " << config);
+
+            namespace vmem = ::ufbmig::util::memory::global;
+
+            vmem::free (config.handle.data.fine_any);
+            vmem::free (config.handle.data.coarse_mask);
+            vmem::free (config.handle.data.coarse_vel);
+            vmem::free (config.handle.data.output);
+            vmem::free (config.handle.data.update);
+
+            return control();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+
+</defun>
