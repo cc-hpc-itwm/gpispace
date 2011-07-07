@@ -10,15 +10,10 @@
     <place name="config" type="config"/>
     <place name="done" type="control"/>
 
-    <include-template href="rw/read.xml"/>
-    <specialize name="read_config" use="read">
-      <type-map replace="T" with="config"/>
-    </specialize>
-
-    <transition name="read">
-      <use name="read_config"/>
-      <connect-in port="filename" place="file_with_config"/>
-      <connect-out port="x" place="config"/>
+    <transition name="read_config" inline="true">
+      <include-function href="read/config.xml"/>
+      <connect-in port="file_with_config" place="file_with_config"/>
+      <connect-out port="config" place="config"/>
     </transition>
 
     <transition name="finalize">

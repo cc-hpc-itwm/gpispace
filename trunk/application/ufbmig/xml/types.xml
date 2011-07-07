@@ -19,4 +19,17 @@
     </struct>
   </struct>
 
+  <include-structs href="interval/types.xml"/>
+
+  <struct name="point">
+    <field name="x" type="double"/>
+    <field name="y" type="double"/>
+    <field name="z" type="double"/>
+  </struct>
+
+  <struct name="contribution">
+    <field name="point" type="point"/>
+    <field name="value" type="double"/>
+  </struct>
+
 </structs>

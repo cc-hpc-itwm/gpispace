@@ -43,16 +43,11 @@
       <connect-out port="config" place="config"/>
     </transition>
 
-    <include-template href="rw/write.xml"/>
-    <specialize name="write_config" use="write">
-      <type-map replace="T" with="config"/>
-    </specialize>
-
-    <transition name="write">
-      <use name="write_config"/>
-      <connect-in port="filename" place="file_with_config"/>
-      <connect-in port="x" place="config"/>
-      <connect-out port="x" place="config_written"/>
+    <transition name="write_config" inline="true">
+      <include-function href="write/config.xml"/>
+      <connect-in port="file_with_config" place="file_with_config"/>
+      <connect-in port="config" place="config"/>
+      <connect-out port="config" place="config_written"/>
     </transition>
   </net>
 

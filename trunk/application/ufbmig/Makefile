@@ -50,6 +50,9 @@ NOINLINE_NOT_STARTS_WITH += generate
 NOINLINE_NOT_STARTS_WITH += wait
 NOINLINE_NOT_STARTS_WITH += eat
 
+NOINLINE_NOT_ENDS_WITH += read_config
+NOINLINE_NOT_ENDS_WITH += write_config
+
 ###############################################################################
 
 WE_EXEC_LOAD += $(SDPA_LIBEXEC)/fake/libfvm-pc.so
@@ -72,6 +75,7 @@ WE_EXEC += FVM_PC_SHMSZ=`echo "$(SHMEM_PER_NODE)" | bc`
 WE_EXEC += FVM_PC_FVMSZ=`echo "$(GPI_MEM_PER_NODE)" | bc`
 WE_EXEC += $(SDPA_HOME)/bin/we-exec --w 2
 PNET2DOT = $(SDPA_HOME)/bin/pnet2dot
+PNETPUT  = $(SDPA_HOME)/bin/pnetput
 
 ###############################################################################
 
@@ -103,9 +107,9 @@ xml           = $(PATH_XML)/$(1).xml
 
 ###############################################################################
 
-.PHONY: default nets net noinline.net
+.PHONY: default nets net noinline.net put
 
-default: nets pss
+default: puts pss
 
 net: $(PNET)
 noinline.net: $(NOINLINE_PNET)
@@ -115,15 +119,35 @@ ps: $(PS)
 noinline.ps: $(NOINLINE_PS)
 pss: ps noinline.ps
 
-###############################################################################
+put: $(addsuffix .put,$(PNET))
 
-%.pnet: $(call xml,%) $(DEP)
-	$(PNETC) $< -o $@
+###############################################################################
 
 %.noinline.pnet: $(call xml,%) $(DEP)
 	$(PNETC_NOINLINE) $< -o $@
 
+%.pnet: $(call xml,%) $(DEP)
+	$(PNETC) $< -o $@
+
 ###############################################################################
+
+PORT_FILE_WITH_CONFIG = file_with_config=\"/fhgfs/HPC/rahn/sdpa/ufbmig.config\"
+
+PORTS_INIT += description=\"interactive_test\"
+PORTS_INIT += $(PORT_FILE_WITH_CONFIG)
+
+init.pnet.put: init.pnet
+	$(PNETPUT) --if $< --of $@ $(addprefix -p,$(PORTS_INIT))
+
+PORTS_FINALIZE += $(PORT_FILE_WITH_CONFIG)
+
+finalize.pnet.put: finalize.pnet
+	$(PNETPUT) --if $< --of $@ $(addprefix -p,$(PORTS_FINALIZE))
+
+###############################################################################
+
+%.noinline.ps: %.noinline.pnet
+	$(PNET2DOT_NOINLINE) --input $< | $(DOT) -o $@
 
 %.ps: %.pnet
 	$(PNET2DOT) --input $< | $(DOT) -o $@
@@ -178,6 +202,7 @@ out: $(GEN) $(NET)
 
 clean:
 	$(RM) $(PNET)
+	$(RM) $(addsuffix .put,$(PNET))
 	$(RM) $(NOINLINE_PNET)
 	$(RM) $(PS)
 	$(RM) $(NOINLINE_PS)

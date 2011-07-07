@@ -1,4 +1,4 @@
-<template name="read">
+<template name="generic_read">
   <in name="filename" type="string"/>
   <out name="x" type="T"/>
   <module name="ufbmig" function="read (filename, x)">

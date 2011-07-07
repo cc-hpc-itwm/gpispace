@@ -1,4 +1,4 @@
-<template name="write">
+<template name="generic_write">
   <in name="filename" type="string"/>
   <in name="x" type="T"/>
   <out name="x" type="T"/>
