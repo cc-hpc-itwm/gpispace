@@ -128,6 +128,7 @@ namespace we { namespace type {
         set_of_pair_type preds;
         set_of_tid_pid_type preds_read;
         pid_set_type pid_read;
+        std::size_t max_successors_of_pred = 0;
 
         for ( adj_place_const_it p (net.in_to_transition (tid))
             ; p.has_more()
@@ -197,6 +198,11 @@ namespace we { namespace type {
                           {
                             return fhg::util::Nothing<trans_info>();
                           }
+
+                        max_successors_of_pred =
+                          std::max ( max_successors_of_pred
+                                   , net.out_of_place (*tp).size()
+                                   );
                       }
 
                     preds.insert (pair_type (trans, tid_pred));
@@ -204,7 +210,9 @@ namespace we { namespace type {
               }
           }
 
-        if (preds.size() != 1)
+        if (  (preds.size() != 1)
+           || (!preds_read.empty() && max_successors_of_pred > 1)
+           )
           {
             return fhg::util::Nothing<trans_info>();
           }
