@@ -18,13 +18,10 @@
 #ifndef JOBFSM_HPP_
 #define JOBFSM_HPP_
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
-#define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
-
 #include <sdpa/sdpa-config.hpp>
 
 #ifdef USE_BOOST_MSM
+#   include <sdpa/daemon/mpl.hpp>
 #   include <sdpa/daemon/jobFSM/BMSM/JobFSM.hpp>
 namespace jsm = sdpa::fsm::bmsm;
 #elif USE_BOOST_SC
