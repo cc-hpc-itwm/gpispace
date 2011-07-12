@@ -3,10 +3,11 @@ MAIN = ufbmig
 
 NETS += init
 NETS += finalize
+NETS += calc
 
 SDPA_INCLUDE = $(SDPA_HOME)/include
 SDPA_LIBEXEC = $(SDPA_HOME)/libexec
-SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml/lib
+SDPA_XML_LIB = $(SDPA_HOME)/share/sdpa/xml
 
 LIB_DESTDIR = $(HOME)/.sdpa/modules/
 
@@ -32,8 +33,9 @@ CP    := $(call pathsearch,cp)
 ###############################################################################
 
 DEP += $(PATH_MAIN)/Makefile
-DEP += $(PATH_XML)/types.xml
-DEP += $(PATH_UTIL)/memory.hpp
+DEP += $(wildcard $(PATH_XML)/*.xml)
+DEP += $(wildcard $(PATH_XML)/*/*.xml)
+DEP += $(wildcard $(PATH_UTIL)/*.hpp)
 
 LIB = $(PATH_LIB)/lib$(MAIN).so
 
@@ -49,6 +51,15 @@ NOINLINE_NOT_STARTS_WITH += scatter
 NOINLINE_NOT_STARTS_WITH += generate
 NOINLINE_NOT_STARTS_WITH += wait
 NOINLINE_NOT_STARTS_WITH += eat
+
+NOINLINE_NOT_ENDS_WITH += init
+NOINLINE_NOT_ENDS_WITH += calculate
+NOINLINE_NOT_ENDS_WITH += load
+NOINLINE_NOT_ENDS_WITH += split
+NOINLINE_NOT_ENDS_WITH += merge_interval
+NOINLINE_NOT_ENDS_WITH += generate_interval
+#NOINLINE_NOT_ENDS_WITH += generate_store
+#NOINLINE_NOT_ENDS_WITH += generate_package
 
 NOINLINE_NOT_ENDS_WITH += read_config
 NOINLINE_NOT_ENDS_WITH += write_config
@@ -143,6 +154,11 @@ PORTS_FINALIZE += $(PORT_FILE_WITH_CONFIG)
 
 finalize.pnet.put: finalize.pnet
 	$(PNETPUT) --if $< --of $@ $(addprefix -p,$(PORTS_FINALIZE))
+
+PORTS_CALC += $(PORT_FILE_WITH_CONFIG)
+
+calc.pnet.put: calc.pnet
+	$(PNETPUT) --if $< --of $@ $(addprefix -p,$(PORTS_CALC))
 
 ###############################################################################
 

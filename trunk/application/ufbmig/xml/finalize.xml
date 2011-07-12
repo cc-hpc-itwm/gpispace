@@ -33,6 +33,9 @@
             vmem::free (config.handle.data.coarse_vel);
             vmem::free (config.handle.data.output);
             vmem::free (config.handle.data.update);
+            vmem::free (config.handle.data.input);
+
+            vmem::free (config.handle.scratch.update);
 
             return control();
           ]]></code>

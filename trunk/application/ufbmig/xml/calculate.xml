@@ -1,0 +1,93 @@
+<defun>
+  <in name="config" type="config" place="config"/>
+  <in name="empty_interval" type="interval" place="empty_interval"/>
+  <in name="loaded_package" type="assigned_package" place="loaded_package"/>
+  <out name="processed_interval" type="interval" place="processed_interval"/>
+  <out name="empty_store" type="store" place="empty_store"/>
+
+  <net>
+    <place name="config" type="config"/>
+    <place name="empty_interval" type="interval"/>
+    <place name="loaded_package" type="assigned_package"/>
+    <place name="processed_interval" type="interval"/>
+    <place name="empty_store" type="store"/>
+
+    <transition name="ready_package">
+      <defun>
+        <in name="loaded_package" type="assigned_package"/>
+        <in name="interval" type="interval"/>
+        <out name="ready_package" type="ready_package"/>
+        <expression>
+          ${ready_package.assigned_package} := ${loaded_package};
+          ${ready_package.interval} := ${interval};
+        </expression>
+      </defun>
+      <connect-in port="loaded_package" place="loaded_package"/>
+      <connect-in port="interval" place="empty_interval"/>
+      <connect-out port="ready_package" place="ready_package"/>
+    </transition>
+
+    <place name="ready_package" type="ready_package"/>
+
+    <transition name="calculate">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="ready_package" type="ready_package"/>
+        <out name="ready_package" type="ready_package"/>
+        <module name="ufbmig" function="calculate (config, ready_package)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="string"/>
+          <code><![CDATA[
+            LOG (INFO, "RUN " << ready_package);
+
+            char * update_descr = static_cast<char *> (fvmGetShmemPtr());
+
+            const ::pnetc::type::interval::interval & interval
+             (ready_package.interval);
+
+            for (long i (0); i < interval.size; ++i)
+              {
+                update_descr[i] = 'a' + (i % (interval.size / 2));
+              }
+
+            LOG ( INFO
+                , "RESULT: "
+                << std::string (update_descr, update_descr + interval.size)
+                );
+
+            waitComm ( fvmPutGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
+                       , interval.offset
+                       , interval.size
+                       , 0
+                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       )
+                     );
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="ready_package" place="ready_package"/>
+      <connect-out port="ready_package" place="done_package"/>
+    </transition>
+
+    <place name="done_package" type="ready_package"/>
+
+    <transition name="finalize_package">
+      <defun>
+        <in name="done_package" type="ready_package"/>
+        <out name="store" type="store"/>
+        <out name="interval" type="interval"/>
+        <expression>
+          ${store} := ${done_package.assigned_package.store};
+          ${interval} := ${done_package.interval};
+        </expression>
+      </defun>
+      <connect-in port="done_package" place="done_package"/>
+      <connect-out port="store" place="empty_store"/>
+      <connect-out port="interval" place="processed_interval"/>
+    </transition>
+
+  </net>
+</defun>

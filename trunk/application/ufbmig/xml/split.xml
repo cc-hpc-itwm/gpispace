@@ -1,0 +1,175 @@
+<defun>
+  <in name="config" type="config" place="config"/>
+  <in name="interval" type="interval" place="interval"/>
+  <out name="interval" type="interval" place="splitted"/>
+
+  <net>
+    <place name="config" type="config"/>
+    <place name="interval" type="interval"/>
+    <place name="splitted" type="interval"/>
+
+    <struct name="intervals">
+      <field name="interval" type="interval"/>
+      <field name="sizes" type="stack"/>
+    </struct>
+
+    <transition name="split">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="interval" type="interval"/>
+        <out name="intervals" type="intervals"/>
+        <module name="ufbmig" function="intervals split (config, interval)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <cinclude href="algorithm"/>
+          <cinclude href="stdexcept"/>
+          <code><![CDATA[
+            if (interval.size <= 0)
+              {
+                throw std::runtime_error
+                  ("STRANGE: empty interval given to split");
+              }
+
+            ::pnetc::type::intervals::intervals intervals;
+
+            intervals.interval = interval;
+            intervals.sizes.clear();
+            intervals.sizes.push_front (1L);
+
+            waitComm ( fvmGetGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
+                       , interval.offset
+                       , interval.size
+                       , 0
+                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       )
+                     );
+
+            char * update_descr = static_cast<char *> (fvmGetShmemPtr());
+
+            std::sort (update_descr, update_descr + interval.size);
+
+            waitComm ( fvmPutGlobalData
+                       ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
+                       , interval.offset
+                       , interval.size
+                       , 0
+                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
+                       )
+                     );
+
+            char x (update_descr[0]);
+
+            for (long i (1); i < interval.size; ++i)
+              {
+                const char & y (update_descr[i]);
+
+                if (y != x)
+                  {
+                    intervals.sizes.push_front (1L);
+
+                    x = y;
+                  }
+                else
+                  {
+                    intervals.sizes.front() += 1L;
+                  }
+              }
+
+            LOG ( INFO
+                , "SPLITTED "
+                << std::string (update_descr, update_descr + interval.size)
+                << " into " << intervals
+                );
+
+            return intervals;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="interval" place="interval"/>
+      <connect-out port="intervals" place="update_wait"/>
+    </transition>
+
+    <place name="update_wait" type="intervals"/>
+
+    <transition name="update_wait">
+      <defun>
+        <in name="intervals" type="intervals"/>
+        <out name="intervals" type="intervals"/>
+        <in name="wait" type="long"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${wait} := ${wait} - 1 + stack_size (${intervals.sizes})
+        </expression>
+      </defun>
+      <connect-in port="intervals" place="update_wait"/>
+      <connect-out port="intervals" place="pre_intervals"/>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <place name="pre_intervals" type="intervals"/>
+
+    <transition name="select">
+      <defun>
+        <in name="intervals" type="intervals"/>
+        <out name="intervals" type="intervals"/>
+        <expression/>
+      </defun>
+      <connect-in port="intervals" place="pre_intervals"/>
+      <connect-out port="intervals" place="intervals"/>
+    </transition>
+
+    <place name="intervals" type="intervals" capacity="1"/>
+    <place name="wait" type="long" virtual="true"/>
+
+    <transition name="empty">
+      <defun>
+        <in name="intervals" type="intervals"/>
+        <expression/>
+        <condition>
+          stack_empty (${intervals.sizes})
+        </condition>
+      </defun>
+      <connect-in port="intervals" place="intervals"/>
+    </transition>
+
+    <transition name="not_empty">
+      <defun>
+        <in name="intervals" type="intervals"/>
+        <out name="intervals" type="intervals"/>
+        <expression/>
+        <condition>
+          !stack_empty (${intervals.sizes})
+        </condition>
+      </defun>
+      <connect-in port="intervals" place="intervals"/>
+      <connect-out port="intervals" place="nonempty_intervals"/>
+    </transition>
+
+    <place name="nonempty_intervals" type="intervals"/>
+
+    <transition name="take">
+      <defun>
+        <in name="intervals" type="intervals"/>
+        <out name="intervals" type="intervals"/>
+        <out name="interval" type="interval"/>
+        <expression>
+          ${interval} := ${intervals.interval};
+          ${interval.size} := stack_top (${intervals.sizes});
+
+          ${intervals.interval.offset} :=
+            ${intervals.interval.offset} + stack_top (${intervals.sizes});
+
+          ${intervals.sizes} := stack_pop (${intervals.sizes});
+        </expression>
+      </defun>
+      <connect-in port="intervals" place="nonempty_intervals"/>
+      <connect-out port="intervals" place="pre_intervals"/>
+      <connect-out port="interval" place="splitted"/>
+    </transition>
+
+  </net>
+
+</defun>

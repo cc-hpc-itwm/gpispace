@@ -5,9 +5,4 @@
     <field name="size" type="long"/>
   </struct>
 
-  <struct name="intervals">
-    <field name="offset" type="stack"/>
-    <field name="size" type="stack"/>
-  </struct>
-
 </structs>

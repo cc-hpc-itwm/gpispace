@@ -1,0 +1,89 @@
+<defun>
+
+  <in name="config" type="config" place="config"/>
+  <out name="assigned_package"
+       type="assigned_package"
+       place="assigned_package"
+  />
+
+  <net>
+
+    <place name="config" type="config"/>
+    <place name="assigned_package" type="assigned_package"/>
+
+    <struct name="state">
+      <field name="max" type="long"/>
+      <field name="id" type="long"/>
+    </struct>
+
+    <place name="check_break" type="state"/>
+    <place name="state" type="state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.max} := ${config.num.package};
+          ${state.id} := 0L;
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-out port="state" place="check_break"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <expression>
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+    </transition>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${trigger} := []
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :lt: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+      <connect-out port="state" place="state"/>
+      <connect-out port="trigger" place="trigger"/>
+    </transition>
+
+    <place name="trigger" type="control" virtual="true"/>
+    <place name="store" type="store" virtual="true"/>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <in name="store" type="store"/>
+        <out name="state" type="state"/>
+        <out name="assigned_package" type="assigned_package"/>
+        <expression>
+          ${package.id} := ${state.id};
+
+          ${state.id} := ${state.id} + 1;
+
+          ${assigned_package.package} := ${package};
+          ${assigned_package.store} := ${store};
+        </expression>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-in port="store" place="store"/>
+      <connect-out port="state" place="check_break"/>
+      <connect-out port="assigned_package" place="assigned_package"/>
+    </transition>
+
+  </net>
+</defun>

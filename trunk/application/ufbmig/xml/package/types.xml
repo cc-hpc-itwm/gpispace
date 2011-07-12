@@ -1,0 +1,7 @@
+<structs>
+
+  <struct name="package">
+    <field name="id" type="long"/>
+  </struct>
+
+</structs>

@@ -6,6 +6,26 @@
         <field name="gpi" type="long"/>
         <field name="shmem" type="long"/>
       </struct>
+
+      <struct name="alloc">
+        <field name="fine_any" type="long"/>
+        <field name="coarse_mask" type="long"/>
+        <field name="coarse_vel" type="long"/>
+        <field name="output" type="long"/>
+        <field name="update" type="long"/>
+        <field name="input" type="long"/>
+      </struct>
+
+      <field name="input" type="long"/>
+      <field name="package" type="long"/>
+      <field name="interval" type="long"/>
+    </struct>
+
+    <struct name="num">
+      <field name="nodes" type="long"/>
+      <field name="interval" type="long"/>
+      <field name="package" type="long"/>
+      <field name="store" type="long"/>
     </struct>
 
     <struct name="handle">
@@ -15,21 +35,33 @@
         <field name="coarse_vel" type="long"/>
         <field name="output" type="long"/>
         <field name="update" type="long"/>
+        <field name="input" type="long"/>
+      </struct>
+
+      <struct name="scratch">
+        <field name="fine_any" type="long"/>
+        <field name="coarse_mask" type="long"/>
+        <field name="coarse_vel" type="long"/>
+        <field name="output" type="long"/>
+        <field name="update" type="long"/>
+        <field name="input" type="long"/>
       </struct>
     </struct>
   </struct>
 
+  <include-structs href="package/types.xml"/>
+  <include-structs href="store/types.xml"/>
+
+  <struct name="assigned_package">
+    <field name="package" type="package"/>
+    <field name="store" type="store"/>
+  </struct>
+
+  <struct name="ready_package">
+    <field name="assigned_package" type="assigned_package"/>
+    <field name="interval" type="interval"/>
+  </struct>
+
   <include-structs href="interval/types.xml"/>
-
-  <struct name="point">
-    <field name="x" type="double"/>
-    <field name="y" type="double"/>
-    <field name="z" type="double"/>
-  </struct>
-
-  <struct name="contribution">
-    <field name="point" type="point"/>
-    <field name="value" type="double"/>
-  </struct>
 
 </structs>
