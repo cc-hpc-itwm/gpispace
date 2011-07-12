@@ -1,12 +1,11 @@
 <defun>
-  <in name="config" type="config" place="config"/>
   <in name="empty_interval" type="interval" place="empty_interval"/>
   <in name="loaded_package" type="assigned_package" place="loaded_package"/>
   <out name="processed_interval" type="interval" place="processed_interval"/>
   <out name="empty_store" type="store" place="empty_store"/>
 
   <net>
-    <place name="config" type="config"/>
+    <place name="config" type="config" virtual="true"/>
     <place name="empty_interval" type="interval"/>
     <place name="loaded_package" type="assigned_package"/>
     <place name="processed_interval" type="interval"/>
@@ -48,7 +47,7 @@
 
             for (long i (0); i < interval.size; ++i)
               {
-                update_descr[i] = 'a' + (i % (interval.size / 2));
+                update_descr[i] = 'a' + i % config.num.nodes;
               }
 
             LOG ( INFO
@@ -67,7 +66,7 @@
           ]]></code>
         </module>
       </defun>
-      <connect-in port="config" place="config"/>
+      <connect-read port="config" place="config"/>
       <connect-in port="ready_package" place="ready_package"/>
       <connect-out port="ready_package" place="done_package"/>
     </transition>

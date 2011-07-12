@@ -44,8 +44,8 @@
             config.size.alloc.fine_any = 0L;
             config.size.alloc.coarse_mask = 0L;
             config.size.alloc.coarse_vel = 0L;
-            config.size.alloc.output = 0L;
-            config.size.alloc.update = 5L * config.num.interval;
+            config.size.alloc.output = 100 * 100 * 200 * sizeof(float);
+            config.size.alloc.update = 37L * config.num.interval;
             config.size.alloc.input = 2L * config.num.nodes * config.size.package;
 
             config.num.store = config.size.alloc.input / config.size.package;
@@ -86,11 +86,12 @@
 
             config.handle.scratch.update
               = vmem::alloc (config.size.alloc.update, "scratch.update");
+            config.handle.scratch.output
+              = vmem::alloc (config.size.alloc.output, "scratch.output");
 
             config.handle.scratch.fine_any = 0L;
             config.handle.scratch.coarse_mask = 0L;
             config.handle.scratch.coarse_vel = 0L;
-            config.handle.scratch.output = 0L;
             config.handle.scratch.input = 0L;
 
             // ************************************************************* //

@@ -1,16 +1,17 @@
 <defun>
   <in name="config" type="config" place="config"/>
   <in name="interval" type="interval" place="interval"/>
-  <out name="interval" type="interval" place="splitted"/>
+  <out name="interval_tagged" type="interval_tagged_with_id" place="splitted"/>
 
   <net>
     <place name="config" type="config"/>
     <place name="interval" type="interval"/>
-    <place name="splitted" type="interval"/>
+    <place name="splitted" type="interval_tagged_with_id"/>
 
     <struct name="intervals">
       <field name="interval" type="interval"/>
       <field name="sizes" type="stack"/>
+      <field name="ids" type="stack"/>
     </struct>
 
     <transition name="split">
@@ -29,12 +30,6 @@
                 throw std::runtime_error
                   ("STRANGE: empty interval given to split");
               }
-
-            ::pnetc::type::intervals::intervals intervals;
-
-            intervals.interval = interval;
-            intervals.sizes.clear();
-            intervals.sizes.push_front (1L);
 
             waitComm ( fvmGetGlobalData
                        ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
@@ -60,15 +55,22 @@
 
             char x (update_descr[0]);
 
+            ::pnetc::type::intervals::intervals intervals;
+
+            intervals.interval = interval;
+            intervals.sizes.push_front (1L);
+            intervals.ids.push_front (static_cast<long>(x - 'a'));
+
             for (long i (1); i < interval.size; ++i)
               {
                 const char & y (update_descr[i]);
 
                 if (y != x)
                   {
-                    intervals.sizes.push_front (1L);
-
                     x = y;
+
+                    intervals.sizes.push_front (1L);
+                    intervals.ids.push_front (static_cast<long>(x - 'a'));
                   }
                 else
                   {
@@ -154,15 +156,17 @@
       <defun>
         <in name="intervals" type="intervals"/>
         <out name="intervals" type="intervals"/>
-        <out name="interval" type="interval"/>
+        <out name="interval" type="interval_tagged_with_id"/>
         <expression>
-          ${interval} := ${intervals.interval};
-          ${interval.size} := stack_top (${intervals.sizes});
+          ${interval.interval} := ${intervals.interval};
+          ${interval.interval.size} := stack_top (${intervals.sizes});
+          ${interval.id} := stack_top (${intervals.ids});
 
           ${intervals.interval.offset} :=
             ${intervals.interval.offset} + stack_top (${intervals.sizes});
 
           ${intervals.sizes} := stack_pop (${intervals.sizes});
+          ${intervals.ids} := stack_pop (${intervals.ids});
         </expression>
       </defun>
       <connect-in port="intervals" place="nonempty_intervals"/>

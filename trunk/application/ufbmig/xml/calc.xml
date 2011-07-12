@@ -17,11 +17,13 @@
         <out name="config" type="config" place="config"/>
         <out name="wait" type="long" place="wait"/>
         <out name="interval_size" type="long" place="interval_size"/>
+        <out name="num_outputslots" type="long" place="num_outputslots"/>
         <net>
           <place name="file_with_config" type="string"/>
           <place name="config" type="config"/>
           <place name="wait" type="long"/>
           <place name="interval_size" type="long"/>
+          <place name="num_outputslots" type="long"/>
 
           <transition name="read_config" inline="true">
             <include-function href="read/config.xml"/>
@@ -36,14 +38,17 @@
               <in name="config" type="config"/>
               <out name="config" type="config"/>
               <out name="interval_size" type="long"/>
+              <out name="num_outputslots" type="long"/>
               <out name="wait" type="long"/>
               <expression>
                 ${interval_size} := ${config.size.interval};
-                ${wait} := ${config.num.package}
+                ${wait} := ${config.num.package};
+                ${num_outputslots} := ${config.num.nodes};
               </expression>
             </defun>
             <connect-in port="config" place="config_read"/>
             <connect-out port="interval_size" place="interval_size"/>
+            <connect-out port="num_outputslots" place="num_outputslots"/>
             <connect-out port="wait" place="wait"/>
             <connect-out port="config" place="config"/>
           </transition>
@@ -53,6 +58,7 @@
       <connect-out port="config" place="config"/>
       <connect-out port="wait" place="wait"/>
       <connect-out port="interval_size" place="interval_size"/>
+      <connect-out port="num_outputslots" place="num_outputslots"/>
     </transition>
 
     <include-template href="lib/4.xml"/>
@@ -63,28 +69,25 @@
     <transition name="scatter_config" inline="true">
       <use name="scatter_config"/>
       <connect-in port="in" place="config"/>
-      <connect-out port="one" place="config_generate_interval"/>
-      <connect-out port="two" place="config_generate_store"/>
-      <connect-out port="three" place="config_generate_package"/>
-      <connect-out port="four" place="config_read"/>
+      <connect-out port="one" place="config_read"/>
+      <connect-out port="two" place="config_generate_interval"/>
+      <connect-out port="three" place="config_generate_store"/>
+      <connect-out port="four" place="config_generate_package"/>
     </transition>
 
+    <place name="config_read" type="config"/>
     <place name="config_generate_interval" type="config"/>
     <place name="config_generate_store" type="config"/>
     <place name="config_generate_package" type="config"/>
-    <place name="config_read" type="config"/>
 
-    <include-template href="lib/wait.xml"/>
-    <specialize name="wait_interval" use="wait">
-      <type-map replace="T" with="interval"/>
-    </specialize>
-
-    <transition name="wait">
-      <use name="wait_interval"/>
-      <place-map virtual="wait" real="wait"/>
-      <connect-in port="trigger" place="done_interval"/>
-      <connect-out port="done" place="done_update"/>
+    <transition name="generate_outputslots" inline="true">
+      <include-function href="lib/sequence.xml"/>
+      <connect-in port="amount" place="num_outputslots"/>
+      <connect-out port="out" place="output"/>
     </transition>
+
+    <place name="num_outputslots" type="long"/>
+    <place name="output" type="long"/>
 
     <place name="done_update" type="control"/>
     <place name="wait" type="long"/>
@@ -103,130 +106,88 @@
     <place name="empty_store" type="store"/>
     <place name="assigned_package" type="assigned_package"/>
 
-          <place name="trigger_store" type="control"/>
+    <place name="trigger_store" type="control"/>
 
-          <transition name="generate_store" inline="true">
-            <include-function href="store/generate.xml"/>
-            <place-map virtual="trigger" real="trigger_store"/>
-            <connect-in port="config" place="config_generate_store"/>
-            <connect-out port="store" place="empty_store"/>
-          </transition>
+    <transition name="generate_store" inline="true">
+      <include-function href="store/generate.xml"/>
+      <place-map virtual="trigger" real="trigger_store"/>
+      <connect-in port="config" place="config_generate_store"/>
+      <connect-out port="store" place="empty_store"/>
+    </transition>
 
-          <transition name="generate_package" inline="true">
-            <include-function href="package/generate.xml"/>
-            <place-map virtual="trigger" real="trigger_store"/>
-            <place-map virtual="store" real="empty_store"/>
-            <connect-in port="config" place="config_generate_package"/>
-            <connect-out port="assigned_package" place="assigned_package"/>
-          </transition>
+    <transition name="generate_package" inline="true">
+      <include-function href="package/generate.xml"/>
+      <place-map virtual="trigger" real="trigger_store"/>
+      <place-map virtual="store" real="empty_store"/>
+      <connect-in port="config" place="config_generate_package"/>
+      <connect-out port="assigned_package" place="assigned_package"/>
+    </transition>
 
     <transition name="load" inline="true">
       <include-function href="load.xml"/>
-      <connect-read port="config" place="config_read"/>
       <connect-in port="assigned_package" place="assigned_package"/>
       <connect-out port="assigned_package" place="loaded_package"/>
       <connect-out port="trigger" place="trigger_interval"/>
+      <place-map virtual="config" real="config_read"/>
     </transition>
 
     <place name="loaded_package" type="assigned_package"/>
 
     <transition name="calculate" inline="true">
       <include-function href="calculate.xml"/>
-      <connect-read port="config" place="config_read"/>
       <connect-in port="empty_interval" place="empty_interval"/>
       <connect-in port="loaded_package" place="loaded_package"/>
       <connect-out port="processed_interval" place="processed_interval"/>
       <connect-out port="empty_store" place="empty_store"/>
+      <place-map virtual="config" real="config_read"/>
     </transition>
 
     <place name="processed_interval" type="interval"/>
 
-    <transition name="split" inline="true">
-      <include-function href="split.xml"/>
-      <connect-read port="config" place="config_read"/>
-      <connect-in port="interval" place="processed_interval"/>
-      <connect-out port="interval" place="update_interval"/>
+    <transition name="update" inline="true">
+      <include-function href="update.xml"/>
+      <connect-in port="processed_interval" place="processed_interval"/>
+      <connect-out port="empty_interval" place="empty_interval"/>
+      <connect-out port="done_update" place="done_update"/>
       <place-map virtual="wait" real="wait"/>
-    </transition>
-
-    <place name="update_interval" type="interval"/>
-
-    <transition name="update">
-      <defun>
-        <in name="config" type="config"/>
-        <in name="interval" type="interval"/>
-        <out name="interval" type="interval"/>
-        <module name="ufbmig" function="update (config, interval)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="fvm-pc/pc.hpp"/>
-          <code><![CDATA[
-            LOG (INFO, "UPDATE " << interval);
-
-            waitComm ( fvmGetGlobalData
-                       ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
-                       , interval.offset
-                       , interval.size
-                       , 0
-                       , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
-                       )
-                     );
-
-            char * update_descr = static_cast<char *> (fvmGetShmemPtr());
-
-            LOG ( INFO
-                , "UPDATE_WITH "
-                << std::string (update_descr, update_descr + interval.size)
-                );
-          ]]></code>
-        </module>
-      </defun>
-      <connect-read port="config" place="config_read"/>
-      <connect-in port="interval" place="update_interval"/>
-      <connect-out port="interval" place="updated_interval"/>
-    </transition>
-
-    <include-template href="lib/dup.xml"/>
-    <specialize name="dup_interval" use="dup">
-      <type-map replace="T" with="interval"/>
-    </specialize>
-
-    <transition name="scatter_interval" inline="true">
-      <use name="dup_interval"/>
-      <connect-in port="in" place="updated_interval"/>
-      <connect-out port="one" place="done_interval"/>
-      <connect-out port="two" place="interval_to_merge"/>
-    </transition>
-
-    <place name="updated_interval" type="interval"/>
-    <place name="done_interval" type="interval"/>
-    <place name="interval_to_merge" type="interval"/>
-
-    <transition name="merge_interval" inline="true">
-      <include-function href="interval/merge.xml"/>
-      <connect-in port="empty" place="interval_to_merge"/>
-      <connect-out port="interval" place="empty_interval"/>
-      <place-map virtual="size_wanted" real="interval_size"/>
+      <place-map virtual="config" real="config_read"/>
+      <place-map virtual="interval_size" real="interval_size"/>
+      <place-map virtual="output" real="output"/>
     </transition>
 
     <place name="interval_size" type="long"/>
 
     <transition name="finalize">
       <defun>
-        <in name="config" type="config"/>
-        <in name="done" type="control"/>
-        <out name="done" type="control"/>
-        <module name="ufbmig" function="done finalize (config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <code><![CDATA[
-            LOG (INFO, "FINALIZE " << config);
+        <in name="done" type="control" place="done_update"/>
+        <out name="done" type="control" place="done"/>
+        <net>
+          <place name="config" type="config" virtual="true"/>
+          <place name="done_update" type="control"/>
+          <place name="done" type="control"/>
+          <transition name="finalize">
+            <defun>
+              <in name="config" type="config"/>
+              <in name="done" type="control"/>
+              <out name="done" type="control"/>
+              <module name="ufbmig" function="done finalize (config)">
+                <cinclude href="fhglog/fhglog.hpp"/>
+                <code><![CDATA[
+                  LOG (INFO, "FINALIZE " << config);
 
-            return control();
-          ]]></code>
-        </module>
+                  return control();
+                ]]></code>
+              </module>
+            </defun>
+            <connect-in port="config" place="config"/>
+            <connect-in port="done" place="done_update"/>
+            <connect-out port="done" place="done"/>
+          </transition>
+        </net>
       </defun>
-      <connect-in port="config" place="config_read"/>
       <connect-in port="done" place="done_update"/>
       <connect-out port="done" place="done"/>
+      <place-map virtual="config" real="config_read"/>
     </transition>
 
   </net>

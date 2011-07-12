@@ -36,6 +36,7 @@
             vmem::free (config.handle.data.input);
 
             vmem::free (config.handle.scratch.update);
+            vmem::free (config.handle.scratch.output);
 
             return control();
           ]]></code>

@@ -28,6 +28,10 @@
       <field name="store" type="long"/>
     </struct>
 
+    <struct name="output">
+      <field name="multiplicity" type="long"/>
+    </struct>
+
     <struct name="handle">
       <struct name="data">
         <field name="fine_any" type="long"/>
