@@ -28,20 +28,33 @@
 
     <place name="output" type="long" virtual="true"/>
 
+    <transition name="select">
+      <defun>
+        <in name="interval_tagged" type="interval_tagged_with_id"/>
+        <in name="output" type="long"/>
+        <out name="interval_tagged" type="interval_tagged_with_id"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${interval_tagged.id} :eq: ${output}
+      </condition>
+      <connect-in port="interval_tagged" place="update_interval"/>
+      <connect-in port="output" place="output"/>
+      <connect-out port="interval_tagged" place="selected_interval"/>
+    </transition>
+
+    <place name="selected_interval" type="interval_tagged_with_id"/>
+
     <transition name="update">
       <defun>
         <in name="config" type="config"/>
         <in name="interval_tagged" type="interval_tagged_with_id"/>
-        <in name="output" type="long"/>
-        <out name="output" type="long"/>
-        <out name="interval" type="interval"/>
-        <module name="ufbmig"
-                function="interval update (config, interval_tagged, output)"
-        >
+        <out name="interval_tagged" type="interval_tagged_with_id"/>
+        <module name="ufbmig" function="update (config, interval_tagged)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <code><![CDATA[
-            LOG (INFO, "UPDATE " << output << " with " << interval_tagged);
+            LOG (INFO, "UPDATE " << interval_tagged);
 
             const ::pnetc::type::interval::interval & interval (interval_tagged.interval);
 
@@ -60,17 +73,27 @@
                 , "UPDATE_WITH "
                 << std::string (update_descr, update_descr + interval.size)
                 );
-
-            return interval;
           ]]></code>
         </module>
       </defun>
-      <condition>
-        ${output} :eq: ${interval_tagged.id}
-      </condition>
       <connect-read port="config" place="config"/>
-      <connect-in port="interval_tagged" place="update_interval"/>
-      <connect-in port="output" place="output"/>
+      <connect-in port="interval_tagged" place="selected_interval"/>
+      <connect-out port="interval_tagged" place="updated_interval_tagged"/>
+    </transition>
+
+    <place name="updated_interval_tagged" type="interval_tagged_with_id"/>
+
+    <transition name="give_back">
+      <defun>
+        <in name="interval_tagged" type="interval_tagged_with_id"/>
+        <out name="output" type="long"/>
+        <out name="interval" type="interval"/>
+        <expression>
+          ${output} := ${interval_tagged.id};
+          ${interval} := ${interval_tagged.interval}
+        </expression>
+      </defun>
+      <connect-in port="interval_tagged" place="updated_interval_tagged"/>
       <connect-out port="output" place="output"/>
       <connect-out port="interval" place="updated_interval"/>
     </transition>
