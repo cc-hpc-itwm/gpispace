@@ -75,6 +75,7 @@
         <expression>
           ${rest.offset} := ${interval.offset} + ${size_wanted};
           ${rest.size} := ${interval.size} - ${size_wanted};
+          ${rest.used} := 0L;
           ${interval.size} := ${size_wanted}
         </expression>
       </defun>
@@ -95,6 +96,7 @@
         <expression>
           ${s.offset} := ${b.offset};
           ${s.size} := ${a.size} + ${b.size};
+          ${s.used} := 0L;
         </expression>
       </defun>
       <condition>
@@ -113,6 +115,7 @@
         <expression>
           ${s.offset} := ${a.offset};
           ${s.size} := ${a.size} + ${b.size};
+          ${s.used} := 0L;
         </expression>
       </defun>
       <condition>

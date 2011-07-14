@@ -28,7 +28,7 @@
             config.size.mem.shmem = 0L;
 
             config.size.package = (4L << 10);
-            config.size.input = 50L * config.size.package;
+            config.size.input = 51L * config.size.package;
 
             config.num.nodes = fvmGetNodeCount();
 

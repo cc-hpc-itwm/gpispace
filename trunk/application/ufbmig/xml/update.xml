@@ -18,10 +18,44 @@
     <place name="done_update" type="control"/>
     <place name="interval_size" type="long" virtual="true"/>
 
+    <place name="nonempty_processed_interval" type="interval"/>
+
+    <transition name="empty">
+      <defun>
+        <in name="i" type="interval"/>
+        <out name="i" type="interval"/>
+        <in name="wait" type="long"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${wait} := ${wait} - 1L;
+        </expression>
+      </defun>
+      <condition>
+        ${i.used} :le: 0L
+      </condition>
+      <connect-in port="i" place="processed_interval"/>
+      <connect-out port="i" place="updated_interval"/>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <transition name="nonempty">
+      <defun>
+        <in name="i" type="interval"/>
+        <out name="i" type="interval"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${i.used} :gt: 0L
+      </condition>
+      <connect-in port="i" place="processed_interval"/>
+      <connect-out port="i" place="nonempty_processed_interval"/>
+    </transition>
+
     <transition name="split" inline="true">
       <include-function href="split.xml"/>
       <connect-read port="config" place="config"/>
-      <connect-in port="interval" place="processed_interval"/>
+      <connect-in port="interval" place="nonempty_processed_interval"/>
       <connect-out port="interval_tagged" place="update_interval"/>
       <place-map virtual="wait" real="wait"/>
     </transition>
@@ -56,12 +90,12 @@
           <code><![CDATA[
             LOG (INFO, "UPDATE " << interval_tagged);
 
-            const ::pnetc::type::interval::interval & interval (interval_tagged.interval);
+            ::pnetc::type::interval::interval & interval (interval_tagged.interval);
 
             waitComm ( fvmGetGlobalData
                        ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
                        , interval.offset
-                       , interval.size
+                       , interval.used
                        , 0
                        , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
                        )
@@ -71,8 +105,10 @@
 
             LOG ( INFO
                 , "UPDATE_WITH "
-                << std::string (update_descr, update_descr + interval.size)
+                << std::string (update_descr, update_descr + interval.used)
                 );
+
+            interval.used = 0L;
           ]]></code>
         </module>
       </defun>

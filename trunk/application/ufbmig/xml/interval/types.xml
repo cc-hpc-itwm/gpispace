@@ -3,6 +3,7 @@
   <struct name="interval">
     <field name="offset" type="long"/>
     <field name="size" type="long"/>
+    <field name="used" type="long"/>
   </struct>
 
 </structs>

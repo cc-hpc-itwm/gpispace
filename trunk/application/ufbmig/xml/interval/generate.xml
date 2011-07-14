@@ -88,6 +88,7 @@
         <expression>
           ${interval.offset} := ${state.counter.id} * ${state.size};
           ${interval.size} := ${state.size};
+          ${interval.used} := 0L;
 
           ${state.counter.id} := ${state.counter.id} + 1
         </expression>

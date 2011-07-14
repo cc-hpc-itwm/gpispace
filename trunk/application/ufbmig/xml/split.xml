@@ -11,6 +11,7 @@
     <struct name="intervals">
       <field name="interval" type="interval"/>
       <field name="sizes" type="stack"/>
+      <field name="useds" type="stack"/>
       <field name="ids" type="stack"/>
     </struct>
 
@@ -25,7 +26,7 @@
           <cinclude href="algorithm"/>
           <cinclude href="stdexcept"/>
           <code><![CDATA[
-            if (interval.size <= 0)
+            if (interval.used <= 0)
               {
                 throw std::runtime_error
                   ("STRANGE: empty interval given to split");
@@ -34,7 +35,7 @@
             waitComm ( fvmGetGlobalData
                        ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
                        , interval.offset
-                       , interval.size
+                       , interval.used
                        , 0
                        , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
                        )
@@ -42,12 +43,12 @@
 
             char * update_descr = static_cast<char *> (fvmGetShmemPtr());
 
-            std::sort (update_descr, update_descr + interval.size);
+            std::sort (update_descr, update_descr + interval.used);
 
             waitComm ( fvmPutGlobalData
                        ( static_cast<fvmAllocHandle_t> (config.handle.data.update)
                        , interval.offset
-                       , interval.size
+                       , interval.used
                        , 0
                        , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
                        )
@@ -59,9 +60,10 @@
 
             intervals.interval = interval;
             intervals.sizes.push_front (1L);
+            intervals.useds.push_front (1L);
             intervals.ids.push_front (static_cast<long>(x - 'a'));
 
-            for (long i (1); i < interval.size; ++i)
+            for (long i (1); i < interval.used; ++i)
               {
                 const char & y (update_descr[i]);
 
@@ -70,19 +72,33 @@
                     x = y;
 
                     intervals.sizes.push_front (1L);
+                    intervals.useds.push_front (1L);
                     intervals.ids.push_front (static_cast<long>(x - 'a'));
                   }
                 else
                   {
                     intervals.sizes.front() += 1L;
+                    intervals.useds.front() += 1L;
                   }
               }
 
-            LOG ( INFO
-                , "SPLITTED "
-                << std::string (update_descr, update_descr + interval.size)
-                << " into " << intervals
-                );
+            intervals.sizes.front() += interval.size - interval.used;
+
+            {
+              std::ostringstream oss;
+
+              for (long i (interval.used); i < interval.size; ++i)
+                {
+                  oss << ".";
+                }
+
+              LOG ( INFO
+                  , "SPLITTED "
+                  << std::string (update_descr, update_descr + interval.used)
+                  << oss.str()
+                  << " into " << intervals
+                  );
+            }
 
             return intervals;
           ]]></code>
@@ -160,12 +176,14 @@
         <expression>
           ${interval.interval} := ${intervals.interval};
           ${interval.interval.size} := stack_top (${intervals.sizes});
+          ${interval.interval.used} := stack_top (${intervals.useds});
           ${interval.id} := stack_top (${intervals.ids});
 
           ${intervals.interval.offset} :=
             ${intervals.interval.offset} + stack_top (${intervals.sizes});
 
           ${intervals.sizes} := stack_pop (${intervals.sizes});
+          ${intervals.useds} := stack_pop (${intervals.useds});
           ${intervals.ids} := stack_pop (${intervals.ids});
         </expression>
       </defun>

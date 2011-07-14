@@ -141,6 +141,7 @@
       <connect-out port="empty_store" place="empty_store"/>
       <place-map virtual="config" real="config_read"/>
       <place-map virtual="trigger_interval" real="trigger_interval"/>
+      <place-map virtual="wait" real="wait"/>
     </transition>
 
     <place name="processed_interval" type="interval"/>
