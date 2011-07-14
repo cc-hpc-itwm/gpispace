@@ -204,18 +204,6 @@ install: $(PATH_GEN)
 
 ###############################################################################
 
-%.run.init: $(GEN) init.pnet
-	pnetput --if init.pnet --of init.putted.pnet -p description=\"$*\"
-	$(WE_EXEC) --net init.putted.pnet
-
-$(OUT): $(GEN) $(NET)
-	$(WE_EXEC) --net $(NET) 2>&1 | $(TEE) $@
-
-out: $(GEN) $(NET)
-	$(WE_EXEC) --net $(NET) 2>&1 | $(TEE) $(OUT)
-
-###############################################################################
-
 .PHONY: clean
 
 clean:
