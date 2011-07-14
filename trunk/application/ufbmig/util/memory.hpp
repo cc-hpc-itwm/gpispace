@@ -35,7 +35,7 @@ namespace ufbmig
         {
           const fvmAllocHandle_t handle (static_cast<fvmAllocHandle_t> (h));
 
-          if (h != 0)
+          if (handle != 0)
             {
               fvmGlobalFree (handle);
             }
