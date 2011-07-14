@@ -72,6 +72,8 @@
         <out name="assigned_package" type="assigned_package"/>
         <expression>
           ${package.id} := ${state.id};
+          ${package.work.done} := false;
+          ${package.work.ptr} := 0L;
 
           ${state.id} := ${state.id} + 1;
 

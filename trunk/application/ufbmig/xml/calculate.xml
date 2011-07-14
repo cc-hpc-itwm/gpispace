@@ -44,11 +44,21 @@
 
             const ::pnetc::type::interval::interval & interval
              (ready_package.interval);
+            ::pnetc::type::package::package & package
+             (ready_package.assigned_package.package);
 
-            for (long i (0); i < interval.size; ++i)
+            const long ptr0 (package.work.ptr);
+            const long num_updates (53);
+
+            for ( long i (0)
+                ; (i < interval.size) && (package.work.ptr < num_updates)
+                ; ++i, ++package.work.ptr
+                )
               {
-                update_descr[i] = 'a' + i % config.num.nodes;
+                update_descr[i] = 'a' + (i + ptr0) % config.num.nodes;
               }
+
+            package.work.done = (package.work.ptr >= num_updates);
 
             LOG ( INFO
                 , "RESULT: "
@@ -83,10 +93,36 @@
           ${interval} := ${done_package.interval};
         </expression>
       </defun>
+      <condition>
+        ${done_package.assigned_package.package.work.done}
+      </condition>
       <connect-in port="done_package" place="done_package"/>
       <connect-out port="store" place="empty_store"/>
       <connect-out port="interval" place="processed_interval"/>
     </transition>
+
+    <transition name="resubmit_package">
+      <defun>
+        <in name="done_package" type="ready_package"/>
+        <out name="loaded_package" type="assigned_package"/>
+        <out name="interval" type="interval"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${loaded_package} := ${done_package.assigned_package};
+          ${interval} := ${done_package.interval};
+          ${trigger} := [];
+        </expression>
+      </defun>
+      <condition>
+        !${done_package.assigned_package.package.work.done}
+      </condition>
+      <connect-in port="done_package" place="done_package"/>
+      <connect-out port="loaded_package" place="loaded_package"/>
+      <connect-out port="interval" place="processed_interval"/>
+      <connect-out port="trigger" place="trigger_interval"/>
+    </transition>
+
+    <place name="trigger_interval" type="control" virtual="true"/>
 
   </net>
 </defun>
