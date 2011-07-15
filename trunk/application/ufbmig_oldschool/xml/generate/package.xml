@@ -30,7 +30,8 @@
 
             ::pnetc::type::state_gen_package::state_gen_package state;
 
-            const long theM (10L);
+            // could be anything, smaller or larger then the number of nodes
+            const long theM (2L);
 
             state.id = 0L;
             state.offset = offset;
