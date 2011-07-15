@@ -1,0 +1,303 @@
+<defun name="ufbmig_oldschool">
+
+  <struct name="config">
+    <struct name="num">
+      <field name="offset" type="long"/>
+      <field name="store" type="long"/>
+    </struct>
+  </struct>
+
+  <struct name="package">
+    <field name="offset" type="offset"/>
+    <field name="id" type="long"/>
+    <field name="M" type="long"/>
+    <field name="reducetreesize" type="long"/>
+  </struct>
+
+  <struct name="assigned_package">
+    <field name="package" type="package"/>
+    <field name="store" type="store"/>
+  </struct>
+
+  <struct name="store">
+    <field name="id" type="long"/>
+  </struct>
+
+  <struct name="offset">
+    <field name="id" type="long"/>
+  </struct>
+
+  <in name="description" type="string" place="description"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+
+    <place name="description" type="string"/>
+    <place name="done" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <in name="description" type="string"/>
+        <out name="config" type="config"/>
+        <module name="ufbmig_oldschool" function="config init (description)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fvm-pc/pc.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "INIT " << description);
+
+            ::pnetc::type::config::config config;
+
+            config.num.store = fvmGetNodeCount();
+            config.num.offset = 4L;
+
+            return config;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="description" place="description"/>
+      <connect-out port="config" place="config_initialized"/>
+    </transition>
+
+    <place name="config_initialized" type="config"/>
+
+    <transition name="init_net">
+      <defun>
+        <in name="config" type="config"/>
+        <out name="config" type="config"/>
+        <out name="wait" type="long"/>
+        <expression>
+          ${wait} := ${config.num.offset}
+        </expression>
+      </defun>
+      <connect-in port="config" place="config_initialized"/>
+      <connect-out port="config" place="config"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <place name="config" type="config"/>
+    <place name="wait" type="long"/>
+
+    <include-template href="lib/triple.xml"/>
+    <specialize name="scatter_config" use="triple">
+      <type-map replace="T" with="config"/>
+    </specialize>
+
+    <transition name="scatter_config" inline="true">
+      <use name="scatter_config"/>
+      <connect-in port="in" place="config"/>
+      <connect-out port="one" place="config_read"/>
+      <connect-out port="two" place="config_generate_store"/>
+      <connect-out port="three" place="config_generate_offset"/>
+    </transition>
+
+    <place name="config_read" type="config"/>
+    <place name="config_generate_store" type="config"/>
+    <place name="config_generate_offset" type="config"/>
+
+    <transition name="generate_offset">
+      <include-function href="generate/offset.xml"/>
+      <connect-in port="config" place="config_generate_offset"/>
+      <connect-out port="offsetA" place="offset_reduce"/>
+      <connect-out port="offsetB" place="offset_generate_package"/>
+      <place-map virtual="trigger" real="trigger_offset"/>
+    </transition>
+
+    <place name="trigger_offset" type="control"/>
+    <place name="offset_generate_package" type="offset"/>
+    <place name="offset_reduce" type="offset"/>
+
+    <transition name="generate_store">
+      <include-function href="generate/store.xml"/>
+      <connect-in port="config" place="config_generate_store"/>
+      <connect-out port="store" place="store"/>
+      <place-map virtual="trigger" real="trigger_store"/>
+    </transition>
+
+    <place name="trigger_store" type="control"/>
+    <place name="store" type="store"/>
+
+    <transition name="generate_package">
+      <include-function href="generate/package.xml"/>
+      <connect-in port="offset" place="offset_generate_package"/>
+      <connect-out port="assigned_package" place="assigned_package"/>
+      <place-map virtual="config" real="config_read"/>
+      <place-map virtual="trigger" real="trigger_store"/>
+      <place-map virtual="store" real="store"/>
+      <place-map virtual="trigger_offset" real="trigger_offset"/>
+    </transition>
+
+    <place name="assigned_package" type="assigned_package"/>
+
+    <transition name="work">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="assigned_package" type="assigned_package"/>
+        <out name="assigned_package" type="assigned_package"/>
+        <module name="ufbmig_oldschool" function="work (config, assigned_package)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            const ::pnetc::type::package::package & package (assigned_package.package);
+            const ::pnetc::type::store::store & store (assigned_package.store);
+
+            LOG ( INFO
+                , "WORK on package " << package.id << " out of " << package.M
+                << " in offsetclass " << package.offset.id
+                << " stored in slot " << store.id
+                );
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config_read"/>
+      <connect-in port="assigned_package" place="assigned_package"/>
+      <connect-out port="assigned_package" place="done_package"/>
+    </transition>
+
+    <place name="done_package" type="assigned_package"/>
+
+    <transition name="reduce_start">
+      <defun>
+        <in name="offset" type="offset"/>
+        <in name="package" type="assigned_package"/>
+        <out name="package" type="assigned_package"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${package.package.offset} :eq: ${offset}
+      </condition>
+      <connect-in port="offset" place="offset_reduce"/>
+      <connect-in port="package" place="done_package"/>
+      <connect-out port="package" place="in_reduction"/>
+    </transition>
+
+    <place name="in_reduction" type="assigned_package"/>
+
+    <transition name="reduce_step">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="done" type="assigned_package"/>
+        <in name="in_reduction" type="assigned_package"/>
+        <out name="in_reduction" type="assigned_package"/>
+        <out name="finished" type="assigned_package"/>
+        <module name="ufbmig_oldschool"
+                function="reduce_step (config, done, in_reduction, finished)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "REDUCE " << done << " and " << in_reduction);
+
+            in_reduction.package.reducetreesize += done.package.reducetreesize;
+
+            finished = done;
+          ]]></code>
+        </module>
+      </defun>
+      <condition>
+        ${done.package.offset} :eq: ${in_reduction.package.offset}
+      </condition>
+      <connect-read port="config" place="config_read"/>
+      <connect-in port="done" place="done_package"/>
+      <connect-in port="in_reduction" place="in_reduction"/>
+      <connect-out port="in_reduction" place="check_reduce_done"/>
+      <connect-out port="finished" place="finished_package"/>
+    </transition>
+
+    <place name="check_reduce_done" type="assigned_package"/>
+    <place name="finished_package" type="assigned_package"/>
+
+    <transition name="back_store">
+      <defun>
+        <in name="package" type="assigned_package"/>
+        <out name="store" type="store"/>
+        <expression>
+          ${store} := ${package.store}
+        </expression>
+      </defun>
+      <connect-in port="package" place="finished_package"/>
+      <connect-out port="store" place="store"/>
+    </transition>
+
+    <transition name="reduce_done">
+      <defun>
+        <in name="package" type="assigned_package"/>
+        <out name="package" type="assigned_package"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${package.package.reducetreesize} :ge: ${package.package.M}
+      </condition>
+      <connect-in port="package" place="check_reduce_done"/>
+      <connect-out port="package" place="reduced"/>
+    </transition>
+
+    <place name="reduced" type="assigned_package"/>
+
+    <transition name="reduce_not_done">
+      <defun>
+        <in name="package" type="assigned_package"/>
+        <out name="package" type="assigned_package"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${package.package.reducetreesize} :lt: ${package.package.M}
+      </condition>
+      <connect-in port="package" place="check_reduce_done"/>
+      <connect-out port="package" place="in_reduction"/>
+    </transition>
+
+    <transition name="finalize_offset">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="reduced" type="assigned_package"/>
+        <out name="store" type="store"/>
+        <out name="offset" type="offset"/>
+        <module name="ufbmig_oldschool"
+                function="finalize_offset (config, reduced, store, offset)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "FINALIZE OFFSET " << reduced);
+
+            store = reduced.store;
+            offset = reduced.package.offset;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config_read"/>
+      <connect-in port="reduced" place="reduced"/>
+      <connect-out port="offset" place="offset_done"/>
+      <connect-out port="store" place="store"/>
+    </transition>
+
+    <place name="offset_done" type="offset"/>
+
+    <include-template href="lib/wait.xml"/>
+    <specialize name="wait_offset" use="wait">
+      <type-map replace="T" with="offset"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_offset"/>
+      <connect-in port="trigger" place="offset_done"/>
+      <connect-out port="done" place="offsets_done"/>
+      <place-map virtual="wait" real="wait"/>
+    </transition>
+
+    <place name="offsets_done" type="control"/>
+
+    <transition name="finalize">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="trigger" type="control"/>
+        <out name="trigger" type="control"/>
+        <module name="ufbmig_oldschool" function="finalize (config)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "FINALIZE TOTAL " << config);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config_read"/>
+      <connect-in port="trigger" place="offsets_done"/>
+      <connect-out port="trigger" place="done"/>
+    </transition>
+  </net>
+
+</defun>

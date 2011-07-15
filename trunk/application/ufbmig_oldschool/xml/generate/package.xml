@@ -1,0 +1,110 @@
+<defun>
+
+  <in name="offset" type="offset" place="offset"/>
+  <out name="assigned_package" type="assigned_package" place="assigned_package"/>
+
+  <net>
+
+    <place name="offset" type="offset"/>
+    <place name="config" type="config" virtual="true"/>
+    <place name="assigned_package" type="assigned_package"/>
+
+    <struct name="state_gen_package">
+      <field name="max" type="long"/>
+      <field name="id" type="long"/>
+      <field name="offset" type="offset"/>
+    </struct>
+
+    <place name="check_break" type="state_gen_package"/>
+    <place name="state" type="state_gen_package"/>
+
+    <transition name="init">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="offset" type="offset"/>
+        <out name="state" type="state_gen_package"/>
+        <module name="ufbmig_oldschool" function="state initM(config, offset)">
+          <cinclude href="fhglog/fhglog.hpp"/>
+          <code><![CDATA[
+            LOG (INFO, "INIT num of packages for offset class " << offset.id);
+
+            ::pnetc::type::state_gen_package::state_gen_package state;
+
+            const long theM (10L);
+
+            state.id = 0L;
+            state.offset = offset;
+            state.max = theM;
+
+            return state;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="config" place="config"/>
+      <connect-in port="offset" place="offset"/>
+      <connect-out port="state" place="check_break"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state_gen_package"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${trigger} := [];
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+      <connect-out port="trigger" place="trigger_offset"/>
+    </transition>
+
+    <place name="trigger_offset" type="control" virtual="true"/>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="state_gen_package"/>
+        <out name="state" type="state_gen_package"/>
+        <out name="trigger" type="control"/>
+        <expression>
+          ${trigger} := []
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :lt: ${state.max}
+      </condition>
+      <connect-in port="state" place="check_break"/>
+      <connect-out port="state" place="state"/>
+      <connect-out port="trigger" place="trigger"/>
+    </transition>
+
+    <place name="trigger" type="control" virtual="true"/>
+    <place name="store" type="store" virtual="true"/>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state_gen_package"/>
+        <in name="store" type="store"/>
+        <out name="state" type="state_gen_package"/>
+        <out name="assigned_package" type="assigned_package"/>
+        <expression>
+          ${package.offset} := ${state.offset};
+          ${package.id} := ${state.id};
+          ${package.M} := ${state.max};
+          ${package.reducetreesize} := 1L;
+
+          ${state.id} := ${state.id} + 1;
+
+          ${assigned_package.package} := ${package};
+          ${assigned_package.store} := ${store};
+        </expression>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-in port="store" place="store"/>
+      <connect-out port="state" place="check_break"/>
+      <connect-out port="assigned_package" place="assigned_package"/>
+    </transition>
+
+  </net>
+</defun>
