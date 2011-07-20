@@ -11,14 +11,15 @@ set(hdrs
 
 add_subdirectory(core)
 
-set(fhg-plugin-static-libs "fhg-plugin-core")
+set(fhg-plugin-static-libs fhg-plugin-core)
 
 add_subdirectory(stats)
-#if(STATS_PLUGIN_STATIC)
-#set(fhg-plugin-static-libs "${fhg-plugin-static-libs};${stats-plugin.static}")
+#if(STATIC_STATS_PLUGIN)
+  list(APPEND fhg-plugin-static-libs stats-plugin.static)
 #endif()
+list(APPEND fhg-plugin-static-libs ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 
-set(fhg-plugin-static-libs "${fhg-plugin-static-libs};${FhgLog_LIBRARY};${Boost_LIBRARIES}")
+message(STATUS "***************** ${fhg-plugin-static-libs}")
 
 include(libutils)
 merge_static_libs(fhg-plugin fhg-plugin "${fhg-plugin-static-libs}")
