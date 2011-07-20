@@ -1,15 +1,4 @@
-macro(FHG_ADD_PLUGIN name sources)
-  add_library(${name}-plugin MODULE ${sources})
-  set_target_properties(${name}-plugin PROPERTIES OUTPUT_NAME ${name})
-  set_target_properties(${name}-plugin PROPERTIES PREFIX "")
-  string(TOUPPER ${name} upper_name)
-  if (BUILTIN_${upper_name}_PLUGIN)
-    add_library(${name}-plugin.static ${sources})
-    set_target_properties(${name}-plugin.static PROPERTIES OUTPUT_NAME ${name})
-    set_target_properties(${name}-plugin.static PROPERTIES COMPILE_FLAGS "-DFHG_STATIC_PLUGIN=1")
-    list(APPEND builtin-plugins "${name}-plugin.static")
-  endif()
-endmacro()
+include(fhg_plugin_macros)
 
 #set (BUILTIN_STATS_PLUGIN ON)
 
