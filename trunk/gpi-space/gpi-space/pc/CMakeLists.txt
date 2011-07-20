@@ -8,6 +8,8 @@ add_subdirectory (memory)
 add_subdirectory (container)
 add_subdirectory (global)
 
+add_subdirectory (plugin)
+
 include(libutils)
 
 find_library (LIBRT_LIBRARY
