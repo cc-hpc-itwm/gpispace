@@ -1,6 +1,6 @@
 #include <fhg/plugin/kernel.hpp>
 
-#include <fhg/plugin/plugin.hpp>
+#include <fhg/plugin/config.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 
 #include <boost/thread.hpp>
@@ -47,29 +47,28 @@ int kernel_impl::load_plugin(std::string const & file)
 {
   try
   {
-    lock_type plugins_lock (m_mtx_plugins);
-
     plugin_ptr p (fhg::core::plugin_t::create (file));
-    if (m_plugins.find(p->name()) != m_plugins.end())
     {
-      throw std::runtime_error ("already loaded: " + p->name());
+      lock_type plugins_lock (m_mtx_plugins);
+      if (m_plugins.find(p->name()) != m_plugins.end())
+      {
+        // TODO: print descriptor of other plugin
+        throw std::runtime_error ("another plugin with the same name is already loaded: " + p->name());
+      }
+      m_plugins.insert (std::make_pair(p->name(), p));
     }
 
-    p->check_dependencies();
+    // check_dependencies(p);
 
     // get global config here and filter by name
     fhg::plugin::config_t cfg;
-    p->configure(cfg);
-
-    p->start ();
-
-    m_plugins.insert (std::make_pair(p->name(), p));
+    p->start (cfg);
 
     // update_dependencies(p);
   }
   catch (std::exception const & ex)
   {
-    //
+    throw;
   }
 
   // dlopen file

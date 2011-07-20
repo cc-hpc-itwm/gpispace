@@ -1,21 +1,20 @@
 #ifndef FHG_PLUGIN_CORE_PLUGIN_HPP
 #define FHG_PLUGIN_CORE_PLUGIN_HPP 1
 
-#include <boost/shared_ptr.hpp>
+#include <list>
+#include <string>
 
-#include <fhg/plugin/plugin_info.hpp>
-#include <fhg/plugin/configurable.hpp>
-#include <fhg/plugin/startable.hpp>
-#include <fhg/plugin/stoppable.hpp>
+#include <boost/shared_ptr.hpp>
+#include <fhg/plugin/build.hpp>
+#include <fhg/plugin/config.hpp>
 
 namespace fhg
 {
+  namespace plugin { class Plugin; }
+
   namespace core
   {
-    class plugin_t : public fhg::plugin::Configurable
-                   , public fhg::plugin::Startable
-                   , public fhg::plugin::Stoppable
-                   , public fhg::plugin::PluginInfo
+    class plugin_t
     {
     public:
       typedef boost::shared_ptr<plugin_t> ptr_t;
@@ -26,37 +25,33 @@ namespace fhg
 
       std::string const & name () const;
 
+      const fhg_plugin_descriptor_t * descriptor() const;
+      fhg::plugin::Plugin * get_plugin();
+      const fhg::plugin::Plugin * get_plugin() const;
+
       size_t use_count() const;
       void used_by   (const plugin_t *p);
+      bool is_used_by (const plugin_t *p) const;
       void unused_by (const plugin_t *p);
+
+      int start (fhg::plugin::config_t const &);
+      int stop ();
+    private:
+      typedef std::list<const plugin_t*> used_by_list_t;
 
       void check_dependencies();
 
-      // plugin info
-      std::string const & type () const;
-      std::string const & info () const;
-
-      // configurable
-      void configure (fhg::plugin::config_t const &);
-
-      // startable
-      void start ();
-
-      // stoppable
-      void stop  ();
-
-    private:
-      typedef std::list<plugin_t*> used_by_list_t;
-
       plugin_t ( std::string const & name
                , std::string const & filename
-               , void *handle
+               , fhg::plugin::Plugin *
+               , const fhg_plugin_descriptor_t *
                , int flags
                );
 
-      std::string m_file_name;
       std::string m_name;
-      void *m_handle;
+      std::string m_file_name;
+      fhg::plugin::Plugin *m_plugin;
+      const fhg_plugin_descriptor_t *m_descriptor;
       int m_flags;
 
       used_by_list_t m_used_by;

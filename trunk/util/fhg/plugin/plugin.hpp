@@ -5,22 +5,24 @@
 #include <map>
 
 #include <fhg/plugin/build.hpp>
+#include <fhg/plugin/config.hpp>
 
 namespace fhg
 {
-  class Plugin
+  namespace plugin
   {
-  public:
-    typedef std::map<std::string, std::string> config_t;
+    class Plugin
+    {
+    public:
+      virtual ~Plugin(){}
 
-    virtual ~Plugin(){}
-
-    virtual void fhg_plugin_start (config_t const &) {}
-    virtual void fhg_plugin_stop  () {}
-  };
+      virtual int fhg_plugin_start (config_t const &) { return 0; }
+      virtual int fhg_plugin_stop  () { return 0; }
+    };
+  }
 }
 
-#define IS_A_FHG_PLUGIN public fhg::Plugin
+#define IS_A_FHG_PLUGIN public fhg::plugin::Plugin
 
 #ifdef FHG_STATIC_PLUGIN
 
@@ -33,7 +35,7 @@ namespace fhg
         {#name,desc,author,version,license,depends,key,FHG_PLUGIN_VERSION_MAGIC}; \
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
-    fhg::Plugin *fhg_get_plugin_instance_##name()                       \
+    fhg::plugin::Plugin *fhg_get_plugin_instance_##name()               \
     {                                                                   \
       static cls* fhg_plugin_instance_##name = 0;                       \
       if (0 == fhg_plugin_instance_##name)                              \
@@ -55,7 +57,7 @@ namespace fhg
         {#name,desc,author,version,license,depends,key,FHG_PLUGIN_VERSION_MAGIC}; \
       return &fhg_plugin_descriptor;                                    \
     }                                                                   \
-    fhg::Plugin *fhg_get_plugin_instance()                              \
+    fhg::plugin::Plugin *fhg_get_plugin_instance()                      \
     {                                                                   \
       static cls* instance = 0;                                         \
       if (0 == instance)                                                \
@@ -69,9 +71,9 @@ namespace fhg
 #endif
 
 #define FHG_IMPORT_PLUGIN(name)                                         \
-  extern void fhgRegisterStaticPlugin(const fhg_plugin_descriptor_t *(query)(void), fhg::Plugin* (*create)(void)); \
+  extern void fhgRegisterStaticPlugin(const fhg_plugin_descriptor_t *(query)(void), fhg::plugin::Plugin* (*create)(void)); \
   extern const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name(); \
-  extern fhg::Plugin *fhg_get_plugin_instance_##name();                 \
+  extern fhg::plugin::Plugin *fhg_get_plugin_instance_##name();         \
   struct fhgStatic_##name##_initializer_t                               \
   {                                                                     \
     fhgStatic_##name##_initializer_t ()                                 \
