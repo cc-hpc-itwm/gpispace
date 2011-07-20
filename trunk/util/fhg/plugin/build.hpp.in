@@ -1,18 +1,38 @@
 #ifndef FHG_PLUGIN_BUILD_HPP
 #define FHG_PLUGIN_BUILD_HPP 1
 
+typedef void* (*create_function_t)(void);
+typedef void  (*destroy_function_t)(void*);
+
 struct fhg_plugin_desc_t
 {
   const char * name;
   const char * type;
-  void * (*create)(void);
-  void (*destroy)(void*);
+  create_function_t create;
+  destroy_function_t destroy;
 };
 
 #define FHG_PLUGIN_BUILD_INFO_STRING "/release=@PROJECT_REVISION@"
 #define TOSTR_(x) #x
 #define TOSTR(x) TOSTR_(x)
-#define FHG_PLUGIN_DESCRIPTOR(name, type, create, destroy)              \
+
+#ifdef FHG_STATIC_PLUGIN
+
+#  define FHG_PLUGIN(name, type, create, destroy)                       \
+  extern void fhgRegisterStaticPlugin(const char*, const char*, create_function_t, destroy_function_t); \
+  struct StaticFhgPluginInitializer_##name                              \
+  {                                                                     \
+  StaticFhgPluginInitializer_##name()                                   \
+  {                                                                     \
+    fhgRegisterStaticPlugin(#name, type, create, destroy);              \
+  }                                                                     \
+  ~StaticFhgPluginInitializer_##name() {}                               \
+  };                                                                    \
+  static StaticFhgPluginInitializer_##name __staticFhgPluginInitializer_##name
+
+#else
+
+#  define FHG_PLUGIN(name, type, create, destroy)                       \
   static const char *build_info_##name = FHG_PLUGIN_BUILD_INFO_STRING;  \
   extern "C"                                                            \
   {                                                                     \
@@ -24,6 +44,8 @@ struct fhg_plugin_desc_t
       return &desc;                                                     \
     }                                                                   \
   }                                                                     \
+
+#endif
 
 #undef TOSTR_
 #undef TOSTR

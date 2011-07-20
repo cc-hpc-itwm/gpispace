@@ -13,10 +13,8 @@ add_subdirectory(core)
 
 set(fhg-plugin-static-libs fhg-plugin-core)
 
-add_subdirectory(stats)
-#if(STATIC_STATS_PLUGIN)
-  list(APPEND fhg-plugin-static-libs stats-plugin.static)
-#endif()
+add_subdirectory(builtin)
+list(APPEND fhg-plugin-static-libs fhg-builtin-plugins)
 list(APPEND fhg-plugin-static-libs ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
 
 message(STATUS "***************** ${fhg-plugin-static-libs}")

@@ -4,7 +4,7 @@
 #include <string>
 
 #include <fhg/plugin/build.hpp>
-#include <fhg/plugin/stats/stats.hpp>
+#include <fhg/plugin/builtin/stats.hpp>
 
 class StatisticsImpl : public stats::Statistics
 {
@@ -61,4 +61,4 @@ static void destroy_stats (void*p)
   delete reinterpret_cast<StatisticsImpl*>(p);
 }
 
-FHG_PLUGIN_DESCRIPTOR(stats, "stats", create_stats, destroy_stats);
+FHG_PLUGIN(simple_stats, "stats", create_stats, destroy_stats);
