@@ -26,6 +26,7 @@ namespace fhg
       , m_descriptor (my_desc)
       , m_flags (my_flags)
       , m_handle (my_handle)
+      , m_started (false)
     {
       assert (m_plugin != 0);
       assert (m_descriptor != 0);
@@ -34,7 +35,9 @@ namespace fhg
 
     plugin_t::~plugin_t ()
     {
-      assert (m_used_by.empty());
+      assert (! is_in_use());
+      stop ();
+      if (m_plugin) delete m_plugin;
       dlclose (m_handle);
     }
 
@@ -87,7 +90,17 @@ namespace fhg
 
     int plugin_t::start (fhg::plugin::config_t const & cfg)
     {
-      return m_plugin->fhg_plugin_start(cfg);
+      if (!m_started)
+      {
+        int rc = m_plugin->fhg_plugin_start(cfg);
+        if (rc == 0)
+          m_started = true;
+        return rc;
+      }
+      else
+      {
+        return 0;
+      }
     }
 
     int plugin_t::stop ()
@@ -96,9 +109,16 @@ namespace fhg
       {
         return -EBUSY;
       }
+      else if (m_started)
+      {
+        int rc = m_plugin->fhg_plugin_stop();
+        if (rc == 0)
+          m_started = false;
+        return rc;
+      }
       else
       {
-        return m_plugin->fhg_plugin_stop();
+        return 0;
       }
     }
 

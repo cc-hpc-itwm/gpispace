@@ -27,6 +27,7 @@ namespace fhg
       fhg::plugin::Plugin * get_plugin();
       const fhg::plugin::Plugin * get_plugin() const;
 
+      bool is_in_use() const { return use_count() != 0; }
       size_t use_count() const;
       void used_by   (const plugin_t *p);
       bool is_used_by (const plugin_t *p) const;
@@ -66,6 +67,7 @@ namespace fhg
       int m_flags;
       void *m_handle;
 
+      bool m_started;
       used_by_list_t m_used_by;
     };
   }
