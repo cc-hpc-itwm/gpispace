@@ -13,7 +13,7 @@ public:
   HelloImpl () {}
   ~HelloImpl () {}
 
-  FHG_PLUGIN_START(config)
+  FHG_PLUGIN_START(kernel)
   {
     m_thread = boost::thread(boost::bind( &HelloImpl::say
                                         , this
@@ -22,7 +22,7 @@ public:
     FHG_PLUGIN_STARTED();
   }
 
-  FHG_PLUGIN_STOP()
+  FHG_PLUGIN_STOP(kernel)
   {
     m_thread.join();
     FHG_PLUGIN_STOPPED();

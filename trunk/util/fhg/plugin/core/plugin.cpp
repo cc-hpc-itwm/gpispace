@@ -26,7 +26,7 @@ namespace fhg
       , m_descriptor (my_desc)
       , m_flags (my_flags)
       , m_handle (my_handle)
-      , m_started (false)
+      , m_kernel (0)
     {
       assert (m_plugin != 0);
       assert (m_descriptor != 0);
@@ -87,38 +87,16 @@ namespace fhg
       assert (! is_used_by(other));
     }
 
-    int plugin_t::start (fhg::plugin::config_t const & cfg)
+    int plugin_t::start (fhg::plugin::Kernel *kernel)
     {
-      if (!m_started)
-      {
-        int rc = m_plugin->fhg_plugin_start(cfg);
-        if (rc == 0)
-          m_started = true;
-        return rc;
-      }
-      else
-      {
-        return 0;
-      }
+      m_kernel = kernel;
+      return m_plugin->fhg_plugin_start(kernel);
     }
 
     int plugin_t::stop ()
     {
-      if (use_count())
-      {
-        return -EBUSY;
-      }
-      else if (m_started)
-      {
-        int rc = m_plugin->fhg_plugin_stop();
-        if (rc == 0)
-          m_started = false;
-        return rc;
-      }
-      else
-      {
-        return 0;
-      }
+      if   (is_in_use()) return -EBUSY;
+      else               return m_plugin->fhg_plugin_stop(m_kernel);
     }
 
     plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)

@@ -6,6 +6,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <fhg/plugin/build.hpp>
+#include <fhg/plugin/kernel.hpp>
 #include <fhg/plugin/plugin_base.hpp>
 
 namespace fhg
@@ -27,14 +28,14 @@ namespace fhg
       fhg::plugin::Plugin * get_plugin();
       const fhg::plugin::Plugin * get_plugin() const;
 
-      bool is_in_use() const { return use_count() != 0; }
+      bool is_in_use() const { return use_count() > 0; }
       size_t use_count() const;
       void used_by   (const plugin_t *p);
       bool is_used_by (const plugin_t *p) const;
       void unused_by (const plugin_t *p);
 
-      int start (fhg::plugin::config_t const &);
-      int stop ();
+      int start (fhg::plugin::Kernel*);
+      int stop  ();
 
       template <typename T>
       T* as ()
@@ -66,6 +67,7 @@ namespace fhg
       const fhg_plugin_descriptor_t *m_descriptor;
       int m_flags;
       void *m_handle;
+      fhg::plugin::Kernel *m_kernel;
 
       bool m_started;
       used_by_list_t m_used_by;

@@ -1,5 +1,3 @@
-#include <fhg/plugin/kernel.hpp>
-
 #include <fhg/plugin/config.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 
@@ -7,18 +5,16 @@
 
 typedef boost::shared_ptr<fhg::core::plugin_t> plugin_ptr;
 
-class kernel_impl : public fhg::plugin::kernel_t
+class kernel_impl
 {
 public:
   kernel_impl ();
   ~kernel_impl ();
 
-  fhg::plugin::plugin_info_list_t list_plugins () const;
-
   int load_plugin (std::string const & file);
   int unload_plugin (std::string const &name);
 
-  void schedule(fhg::plugin::task_t);
+  //  void schedule(fhg::plugin::task_t);
 protected:
   void * acquire(std::string const & name);
   void * acquire(std::string const & name, std::string const &version);
@@ -60,11 +56,16 @@ int kernel_impl::load_plugin(std::string const & file)
 
     // check_dependencies(p);
 
-    // get global config here and filter by name
-    fhg::plugin::config_t cfg;
-    p->start (cfg);
-
-    // update_dependencies(p);
+    // create mediator class PluginKernelMediator : public Kernel
+    //    m = new PluginKernelMediator(p, this);
+    //    p->start(m);
+    // check return code
+    //    if 0:
+    //      insert m into list of plugins
+    //    if 1:
+    //      insert m into list of incomplete plugins
+    //    else:
+    //      drop plugin
   }
   catch (std::exception const & ex)
   {
@@ -82,17 +83,12 @@ int kernel_impl::unload_plugin (std::string const &name)
   return 0;
 }
 
-void kernel_impl::schedule(fhg::plugin::task_t t)
-{
+//void kernel_impl::schedule(fhg::plugin::task_t t)
+//{
   // m_task_queue.push(t);
-}
+//}
 
 void *kernel_impl::acquire (std::string const & name)
 {
   return 0;
-}
-
-fhg::plugin::plugin_info_list_t kernel_impl::list_plugins () const
-{
-  return fhg::plugin::plugin_info_list_t();
 }
