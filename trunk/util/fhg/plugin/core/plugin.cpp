@@ -30,7 +30,6 @@ namespace fhg
     {
       assert (m_plugin != 0);
       assert (m_descriptor != 0);
-      assert (my_handle);
     }
 
     plugin_t::~plugin_t ()
@@ -38,7 +37,7 @@ namespace fhg
       assert (! is_in_use());
       stop ();
       if (m_plugin) delete m_plugin;
-      dlclose (m_handle);
+      if (m_handle) dlclose (m_handle);
     }
 
     std::string const & plugin_t::name () const

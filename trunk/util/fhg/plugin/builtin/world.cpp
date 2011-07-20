@@ -12,12 +12,12 @@ public:
 
   FHG_PLUGIN_START(config)
   {
-    return 0;
+    FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
-    return 0;
+    FHG_PLUGIN_STOPPED();
   }
 
   void say () const

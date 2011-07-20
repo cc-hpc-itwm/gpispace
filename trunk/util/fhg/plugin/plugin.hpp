@@ -1,6 +1,9 @@
 #ifndef FHG_PLUGIN_HPP
 #define FHG_PLUGIN_HPP 1
 
+#include <errno.h>
+
+#include <cassert>
 #include <string>
 #include <map>
 
@@ -12,7 +15,14 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 
 #define IS_A_FHG_PLUGIN public fhg::plugin::Plugin
 #define FHG_PLUGIN_START(cfg) int fhg_plugin_start (fhg::plugin::config_t const &cfg)
+
+#define FHG_PLUGIN_STARTED() return 0
+#define FHG_PLUGIN_INCOMPLETE() return 1
+#define FHG_PLUGIN_FAILED(err) assert((err) > 0); return -err
+
 #define FHG_PLUGIN_STOP() int fhg_plugin_stop ()
+#define FHG_PLUGIN_STOPPED() return 0
+#define FHG_PLUGIN_BUSY() FHG_PLUGIN_FAILED(EBUSY)
 
 #ifdef FHG_STATIC_PLUGIN
 

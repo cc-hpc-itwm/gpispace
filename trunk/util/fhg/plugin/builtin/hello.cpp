@@ -19,13 +19,13 @@ public:
                                         , this
                                         )
                             );
-    return 0;
+    FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
     m_thread.join();
-    return 0;
+    FHG_PLUGIN_STOPPED();
   }
 
   void say () const
