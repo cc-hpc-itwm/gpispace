@@ -5,6 +5,8 @@
 #include <string>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
 #include <fhg/plugin/build.hpp>
 #include <fhg/plugin/kernel.hpp>
 #include <fhg/plugin/plugin_base.hpp>
@@ -28,12 +30,13 @@ namespace fhg
       fhg::plugin::Plugin * get_plugin();
       const fhg::plugin::Plugin * get_plugin() const;
 
+      bool is_depending_on(const ptr_t &) const;
       bool is_in_use() const { return use_count() > 0; }
       size_t use_count() const;
       void add_dependency (const ptr_t &);
       void del_dependency (const ptr_t &);
-      bool is_depending_on(const ptr_t &) const;
 
+      int init ();
       int start (fhg::plugin::Kernel*);
       int stop  ();
 
@@ -56,16 +59,23 @@ namespace fhg
       }
     private:
       typedef std::list<ptr_t> dependency_list_t;
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
 
       void check_dependencies();
 
+      void inc_refcount ();
+      void dec_refcount ();
+
       plugin_t ( std::string const & name
                , std::string const & filename
-               , fhg::plugin::Plugin *
                , const fhg_plugin_descriptor_t *
                , int flags
                , void * handle
                );
+
+      mutable mutex_type m_refcount_mtx;
+      mutable mutex_type m_dependencies_mtx;
 
       std::string m_name;
       std::string m_file_name;

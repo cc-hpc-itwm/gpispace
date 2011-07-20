@@ -4,36 +4,46 @@
 #include <string>
 #include <iostream>
 
+#include <boost/bind.hpp>
+#include <boost/foreach.hpp>
+
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/builtin/stats.hpp>
-#include <boost/bind.hpp>
 
 class StatisticsImpl : FHG_PLUGIN
                      , public stats::Statistics
 {
 public:
   StatisticsImpl () {}
-  ~StatisticsImpl () {}
+  ~StatisticsImpl (){}
 
   FHG_PLUGIN_START(kernel)
   {
-    kernel->plugin_loaded.connect (boost::bind( &StatisticsImpl::inc
-                                              , this
-                                              , "plugin.loaded"
-                                              )
-                                  );
-    kernel->plugin_unloaded.connect (boost::bind( &StatisticsImpl::inc
-                                                , this
-                                                , "plugin.unloaded"
-                                                )
-                                    );
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP(kernel)
   {
-    std::cout << "plugin.loaded = " << m_counter["plugin.loaded"] << std::endl;
-    std::cout << "plugin.unloaded = " << m_counter["plugin.unloaded"] << std::endl;
+    std::cout << "*** Statistics gathered ***" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  [timer]" << std::endl;
+    for ( std::map<std::string,time_t>::const_iterator it (m_timer.begin())
+        ; it != m_timer.end()
+        ; ++it
+        )
+    {
+      std::cout << "  " << it->first << " = " << it->second << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << "  [counter]" << std::endl;
+    for ( std::map<std::string,size_t>::const_iterator it (m_counter.begin())
+        ; it != m_counter.end()
+        ; ++it
+        )
+    {
+      std::cout << "  " << it->first << " = " << it->second << std::endl;
+    }
     FHG_PLUGIN_STOPPED();
   }
 

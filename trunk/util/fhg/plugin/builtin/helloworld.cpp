@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <fhglog/minimal.hpp>
+
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/builtin/hello.hpp>
 #include <fhg/plugin/builtin/world.hpp>
@@ -22,18 +24,20 @@ public:
     m_hello = kernel->acquire_plugin<example::Hello>("hello");
     m_world = kernel->acquire_plugin<example::World>("world");
 
-    m_thread = boost::thread( &HelloWorldImpl::say
-                            , this
-                            , boost::ref(std::cout)
-                            );
+    kernel->schedule_later( boost::bind( &HelloWorldImpl::say
+                                       , this
+                                       , boost::ref(std::cout)
+                                       )
+                          , 10
+                          );
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP(kernel)
   {
-    m_thread.join();
     kernel->release("world");
     kernel->release("hello");
+    MLOG(INFO, "helloworld plugin stopped");
     FHG_PLUGIN_STOPPED();
   }
 
@@ -45,7 +49,6 @@ public:
 private:
   example::Hello *m_hello;
   example::World *m_world;
-  boost::thread m_thread;
 };
 
 EXPORT_FHG_PLUGIN( helloworld

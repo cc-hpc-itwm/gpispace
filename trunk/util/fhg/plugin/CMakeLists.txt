@@ -1,3 +1,6 @@
+find_package(FhgLog REQUIRED)
+include_directories(${FhgLog_INCLUDE_DIR})
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/build.hpp @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(hdrs

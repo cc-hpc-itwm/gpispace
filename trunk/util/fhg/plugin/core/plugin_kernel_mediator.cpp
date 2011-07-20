@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <fhg/plugin/core/plugin_kernel_mediator.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
@@ -15,17 +17,34 @@ namespace fhg
       assert (m_kernel);
     }
 
-    PluginKernelMediator::~PluginKernelMediator()
+    int PluginKernelMediator::start ()
     {
+      return m_plugin->start(this);
     }
+
+    int PluginKernelMediator::stop ()
+    {
+      return m_plugin->stop();
+    }
+
+    PluginKernelMediator::~PluginKernelMediator()
+    {}
 
     fhg::plugin::Plugin * PluginKernelMediator::acquire(std::string const & name)
     {
       fhg::core::plugin_t::ptr_t p = m_kernel->lookup_plugin(name);
       if (p)
       {
-        m_plugin->add_dependency(p);
-        return p->get_plugin();
+        if (! p->is_depending_on(m_plugin))
+        {
+          m_plugin->add_dependency(p);
+          return p->get_plugin();
+        }
+        else
+        {
+          throw std::runtime_error
+            ("dependency cycle detected between " + name + " -> " + m_plugin->name());
+        }
       }
       else
       {
@@ -47,14 +66,16 @@ namespace fhg
       return m_plugin;
     }
 
-    void PluginKernelMediator::schedule_immediate(fhg::plugin::task_t)
+    void PluginKernelMediator::schedule_immediate(fhg::plugin::task_t task)
     {
+      m_kernel->schedule_immediate (m_plugin->name(), task);
     }
 
-    void PluginKernelMediator::schedule_later( fhg::plugin::task_t
-                                             , unsigned long millis_from_now
+    void PluginKernelMediator::schedule_later( fhg::plugin::task_t task
+                                             , size_t ticks
                                              )
     {
+      m_kernel->schedule_later (m_plugin->name(), task, ticks);
     }
   }
 }

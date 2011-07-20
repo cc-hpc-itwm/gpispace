@@ -23,9 +23,12 @@ namespace fhg
       virtual void release(std::string const &name);
 
       void schedule_immediate(fhg::plugin::task_t);
-      void schedule_later(fhg::plugin::task_t, unsigned long millis_from_now);
+      void schedule_later(fhg::plugin::task_t, size_t ticks);
 
       fhg::core::plugin_t::ptr_t plugin ();
+
+      int start ();
+      int stop ();
     private:
       fhg::core::plugin_t::ptr_t m_plugin;
       fhg::core::kernel_t *m_kernel;

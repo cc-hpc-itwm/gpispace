@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 
-#include <boost/signals2.hpp>
 #include <boost/function.hpp>
 
 #include <fhg/plugin/plugin_base.hpp>
@@ -13,7 +12,6 @@ namespace fhg
 {
   namespace plugin
   {
-    typedef boost::signals2::signal<void (std::string const &)> plugin_signal_t;
     typedef boost::function<void (void)> task_t;
 
     // this class only represents the interface available for a single plugin it
@@ -25,10 +23,6 @@ namespace fhg
     public:
       virtual ~Kernel() {}
 
-      // signals
-      plugin_signal_t plugin_loaded;
-      plugin_signal_t plugin_unloaded;
-
       template <typename T>
       T* acquire_plugin (std::string const & name)
       {
@@ -38,7 +32,7 @@ namespace fhg
       virtual void     release(std::string const & name) = 0;
 
       virtual void schedule_immediate(task_t) = 0;
-      virtual void schedule_later(task_t, unsigned long millis_from_now) = 0;
+      virtual void schedule_later(task_t, size_t ticks) = 0;
     };
   }
 }

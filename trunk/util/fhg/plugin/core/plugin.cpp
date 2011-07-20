@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 
+#include <iostream>
 #include <stdexcept>
 #include <algorithm>
 
@@ -15,14 +16,13 @@ namespace fhg
   {
     plugin_t::plugin_t ( std::string const & my_name
                        , std::string const & my_filename
-                       , fhg::plugin::Plugin *my_plugin
                        , const fhg_plugin_descriptor_t *my_desc
                        , int my_flags
                        , void *my_handle
                        )
       : m_name (my_name)
       , m_file_name(my_filename)
-      , m_plugin (my_plugin)
+      , m_plugin (0)
       , m_descriptor (my_desc)
       , m_flags (my_flags)
       , m_handle (my_handle)
@@ -31,7 +31,6 @@ namespace fhg
       , m_dependencies()
       , m_refcount(0)
     {
-      assert (m_plugin != 0);
       assert (m_descriptor != 0);
     }
 
@@ -63,14 +62,29 @@ namespace fhg
       return m_plugin;
     }
 
+    void plugin_t::inc_refcount ()
+    {
+      lock_type lock(m_refcount_mtx);
+      ++m_refcount;
+    }
+
+    void plugin_t::dec_refcount ()
+    {
+      lock_type lock(m_refcount_mtx);
+      assert (m_refcount > 0);
+      --m_refcount;
+    }
+
     size_t plugin_t::use_count () const
     {
+      lock_type lock(m_refcount_mtx);
       return m_refcount;
     }
 
     bool plugin_t::is_depending_on(const plugin_t::ptr_t &other) const
     {
       assert (other != 0);
+
       return std::find( m_dependencies.begin()
                       , m_dependencies.end()
                       , other
@@ -79,16 +93,21 @@ namespace fhg
 
     void plugin_t::add_dependency(const plugin_t::ptr_t &other)
     {
+      lock_type lock(m_dependencies_mtx);
+
       assert (other != 0);
+
       if (! is_depending_on(other))
       {
         m_dependencies.push_back(other);
-        ++other->m_refcount;
+        other->inc_refcount();
       }
     }
 
     void plugin_t::del_dependency(const plugin_t::ptr_t &other)
     {
+      lock_type lock(m_dependencies_mtx);
+
       if (is_depending_on(other))
       {
         m_dependencies.erase(std::find( m_dependencies.begin()
@@ -96,20 +115,68 @@ namespace fhg
                                       , other
                                       )
                             );
-        --other->m_refcount;
+        other->dec_refcount();
       }
+    }
+
+    int plugin_t::init ()
+    {
+      char *error;
+      fhg_plugin_create create_plugin;
+
+      dlerror();
+      *(void**)(&create_plugin) = dlsym(m_handle, "fhg_get_plugin_instance");
+      if ((error = dlerror()) != NULL)
+      {
+        dlclose(m_handle);
+        throw std::runtime_error("could not get create function: " + std::string(error));
+      }
+
+      m_plugin = create_plugin();
+      return 0;
     }
 
     int plugin_t::start (fhg::plugin::Kernel *kernel)
     {
-      m_kernel = kernel;
-      return m_plugin->fhg_plugin_start(m_kernel);
+      if (m_plugin)
+      {
+        m_kernel = kernel;
+        m_started = true;
+        return m_plugin->fhg_plugin_start(m_kernel);
+      }
+      else
+      {
+        return -EINVAL;
+      }
     }
 
     int plugin_t::stop ()
     {
-      if   (is_in_use()) return -EBUSY;
-      else               return m_plugin->fhg_plugin_stop(m_kernel);
+      if   (is_in_use())
+      {
+        return -EBUSY;
+      }
+      else if (m_started)
+      {
+        int rc = m_plugin->fhg_plugin_stop(m_kernel);
+
+        if (rc == 0)
+        {
+          m_started = false;
+          lock_type lock_dep (m_dependencies_mtx);
+          while (! m_dependencies.empty())
+          {
+            ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
+            dep->dec_refcount();
+          }
+        }
+
+        return rc;
+      }
+      else
+      {
+        return 0;
+      }
     }
 
     plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)
@@ -117,7 +184,6 @@ namespace fhg
       // dlopen file
       char *error;
       fhg_plugin_query query_plugin;
-      fhg_plugin_create create_plugin;
       void *handle;
 
       handle = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
@@ -153,19 +219,8 @@ namespace fhg
         }
       }
 
-      dlerror();
-      *(void**)(&create_plugin) = dlsym(handle, "fhg_get_plugin_instance");
-      if ((error = dlerror()) != NULL)
-      {
-        dlclose(handle);
-        throw std::runtime_error("could not get create function: " + std::string(error));
-      }
-
-      fhg::plugin::Plugin* p = create_plugin();
-
       return plugin_t::ptr_t( new plugin_t( desc->name
                                           , filename
-                                          , p
                                           , desc
                                           , 0
                                           , handle

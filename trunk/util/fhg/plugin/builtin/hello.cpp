@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/builtin/hello.hpp>
 
