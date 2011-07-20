@@ -8,6 +8,7 @@
 #include <boost/program_options.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
 static fhg::core::kernel_t kernel;

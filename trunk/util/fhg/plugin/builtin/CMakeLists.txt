@@ -11,6 +11,8 @@ macro(FHG_ADD_PLUGIN name sources)
   endif()
 endmacro()
 
+#set (BUILTIN_STATS_PLUGIN ON)
+
 fhg_add_plugin(stats stats.cpp)
 fhg_add_plugin(hello hello.cpp)
 fhg_add_plugin(world world.cpp)

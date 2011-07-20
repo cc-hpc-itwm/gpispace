@@ -26,20 +26,16 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 #define FHG_PLUGIN_BUSY() FHG_PLUGIN_FAILED(EBUSY)
 
 #ifdef FHG_STATIC_PLUGIN
-
 #  define EXPORT_FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \
-  extern "C"                                                            \
+  const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name()   \
   {                                                                     \
-    const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name() \
-    {                                                                   \
-      static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =   \
-        {FHG_PLUGIN_VERSION_MAGIC,#name,desc,author,version,__DATE__ " " __TIME__,license,depends,key}; \
-      return &fhg_plugin_descriptor_##name;                             \
-    }                                                                   \
-    fhg::plugin::Plugin *fhg_get_plugin_instance_##name()               \
-    {                                                                   \
-      return = new cls();                                               \
-    }                                                                   \
+    static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =       \
+      {FHG_PLUGIN_VERSION_MAGIC,#name,desc,author,version,__DATE__ " " __TIME__,license,depends,key}; \
+    return &fhg_plugin_descriptor_##name;                               \
+  }                                                                     \
+  fhg::plugin::Plugin *fhg_get_plugin_instance_##name()                 \
+  {                                                                     \
+    return new cls();                                                   \
   }
 
 #else

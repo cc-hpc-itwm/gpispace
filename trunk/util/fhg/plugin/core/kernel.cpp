@@ -4,6 +4,7 @@
 #include <fhglog/minimal.hpp>
 
 #include <fhg/plugin/config.hpp>
+#include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
@@ -16,6 +17,11 @@
 
 #define START_SUCCESSFUL 0
 #define START_INCOMPLETE 1
+
+void fhgRegisterStaticPlugin(fhg_plugin_query q, fhg_plugin_create c)
+{
+  std::cerr << "TODO: register static plugin: " << q()->name << std::endl;
+}
 
 namespace fhg
 {
