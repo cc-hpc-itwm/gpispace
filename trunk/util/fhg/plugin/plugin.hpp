@@ -9,11 +9,12 @@
 
 #include <fhg/plugin/build.hpp>
 #include <fhg/plugin/plugin_base.hpp>
+#include <fhg/plugin/kernel.hpp>
 
 typedef const fhg_plugin_descriptor_t* (*fhg_plugin_query)(void);
 typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 
-#define IS_A_FHG_PLUGIN public fhg::plugin::Plugin
+#define FHG_PLUGIN public fhg::plugin::Plugin
 #define FHG_PLUGIN_START(krnl) int fhg_plugin_start (fhg::plugin::Kernel *krnl)
 
 #define FHG_PLUGIN_STARTED() return 0
@@ -26,7 +27,7 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 
 #ifdef FHG_STATIC_PLUGIN
 
-#  define FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \
+#  define EXPORT_FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \
   extern "C"                                                            \
   {                                                                     \
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name() \
@@ -43,7 +44,7 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 
 #else
 
-#  define FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \
+#  define EXPORT_FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \
   extern "C"                                                            \
   {                                                                     \
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor()        \

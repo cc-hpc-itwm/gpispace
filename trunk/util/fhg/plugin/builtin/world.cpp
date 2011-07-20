@@ -3,8 +3,11 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/builtin/world.hpp>
 
-class WorldImpl : IS_A_FHG_PLUGIN
-                , public world::World
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+
+class WorldImpl : FHG_PLUGIN
+                , public example::World
 {
 public:
   WorldImpl () {}
@@ -20,18 +23,18 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
-  void say () const
+  std::string text () const
   {
-    std::cout << "world!" << std::endl;
+    return "World!";
   }
 };
 
-FHG_PLUGIN( world
-          , WorldImpl
-          , "say world"
-          , "Alexander Petry <petry@itwm.fhg.de>"
-          , "v0.0.1"
-          , "GPL"
-          , "hello"
-          , ""
-          );
+EXPORT_FHG_PLUGIN( world
+                 , WorldImpl
+                 , "say world"
+                 , "Alexander Petry <petry@itwm.fhg.de>"
+                 , "v0.0.1"
+                 , "GPL"
+                 , ""
+                 , ""
+                 );

@@ -35,9 +35,10 @@ namespace fhg
         return dynamic_cast<T*>(this->acquire(name));
       }
       virtual Plugin * acquire(std::string const & name) = 0;
-      virtual void   release(Plugin *) = 0;
+      virtual void     release(std::string const & name) = 0;
 
-      virtual void schedule(task_t, unsigned long millis_from_now = 0) = 0;
+      virtual void schedule_immediate(task_t) = 0;
+      virtual void schedule_later(task_t, unsigned long millis_from_now) = 0;
     };
   }
 }

@@ -30,12 +30,18 @@ namespace fhg
 
       bool is_in_use() const { return use_count() > 0; }
       size_t use_count() const;
-      void used_by   (const plugin_t *p);
-      bool is_used_by (const plugin_t *p) const;
-      void unused_by (const plugin_t *p);
+      void add_dependency (const ptr_t &);
+      void del_dependency (const ptr_t &);
+      bool is_depending_on(const ptr_t &) const;
 
       int start (fhg::plugin::Kernel*);
       int stop  ();
+
+      template <typename T>
+      bool implements()
+      {
+        return this->as<T>() != 0;
+      }
 
       template <typename T>
       T* as ()
@@ -49,7 +55,7 @@ namespace fhg
         return dynamic_cast<const T*>(get_plugin());
       }
     private:
-      typedef std::list<const plugin_t*> used_by_list_t;
+      typedef std::list<ptr_t> dependency_list_t;
 
       void check_dependencies();
 
@@ -70,11 +76,10 @@ namespace fhg
       fhg::plugin::Kernel *m_kernel;
 
       bool m_started;
-      used_by_list_t m_used_by;
+      dependency_list_t m_dependencies;
+      std::size_t m_refcount;
     };
   }
 }
-
-//extern void registerStaticPluginCreator(const char *, void* (*creator)());
 
 #endif

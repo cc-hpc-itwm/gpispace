@@ -1,9 +1,6 @@
 #include <iostream>
 #include <fhg/plugin/core/plugin.hpp>
 
-#include <fhg/plugin/builtin/hello.hpp>
-#include <fhg/plugin/builtin/world.hpp>
-
 int main(int ac, char **av)
 {
   if (ac <= 1)

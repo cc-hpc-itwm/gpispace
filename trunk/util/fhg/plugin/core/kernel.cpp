@@ -1,94 +1,112 @@
 #include <fhg/plugin/config.hpp>
 #include <fhg/plugin/core/plugin.hpp>
+#include <fhg/plugin/core/kernel.hpp>
 
 #include <boost/thread.hpp>
 
-typedef boost::shared_ptr<fhg::core::plugin_t> plugin_ptr;
+#define START_SUCCESSFUL 0
+#define START_INCOMPLETE 1
 
-class kernel_impl
+namespace fhg
 {
-public:
-  kernel_impl ();
-  ~kernel_impl ();
-
-  int load_plugin (std::string const & file);
-  int unload_plugin (std::string const &name);
-
-  //  void schedule(fhg::plugin::task_t);
-protected:
-  void * acquire(std::string const & name);
-  void * acquire(std::string const & name, std::string const &version);
-  void   release(void *);
-private:
-  typedef boost::recursive_mutex mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
-
-  mutable mutex_type m_mtx_plugins;
-  /* loaded plugins, interdependencies, reference counts */
-  std::map<std::string, plugin_ptr> m_plugins;
-
-  /* task queue */
-  /* thread */
-};
-
-kernel_impl::kernel_impl ()
-{}
-
-kernel_impl::~kernel_impl ()
-{
-  // unload all non-static plugins according to dependency graph
-}
-
-int kernel_impl::load_plugin(std::string const & file)
-{
-  try
+  namespace core
   {
-    plugin_ptr p (fhg::core::plugin_t::create (file, false));
+    kernel_t::kernel_t ()
+    {}
+
+    kernel_t::~kernel_t ()
     {
-      lock_type plugins_lock (m_mtx_plugins);
-      if (m_plugins.find(p->name()) != m_plugins.end())
-      {
-        // TODO: print descriptor of other plugin
-        throw std::runtime_error ("another plugin with the same name is already loaded: " + p->name());
-      }
-      m_plugins.insert (std::make_pair(p->name(), p));
+      // unload all non-static plugins according to dependency graph
     }
 
-    // check_dependencies(p);
+    plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
+    {
+      lock_type plugins_lock (m_mtx_plugins);
+      plugin_map_t::iterator p (m_plugins.find(name));
+      if (p != m_plugins.end())
+      {
+        return p->second->plugin();
+      }
+      else
+      {
+        return plugin_t::ptr_t();
+      }
+    }
 
-    // create mediator class PluginKernelMediator : public Kernel
-    //    m = new PluginKernelMediator(p, this);
-    //    p->start(m);
-    // check return code
-    //    if 0:
-    //      insert m into list of plugins
-    //    if 1:
-    //      insert m into list of incomplete plugins
-    //    else:
-    //      drop plugin
+    int kernel_t::load_plugin(std::string const & file)
+    {
+      lock_type load_plugin_lock (m_mtx_load_plugin);
+      int rc = 0;
+
+      try
+      {
+        plugin_t::ptr_t p (plugin_t::create (file, false));
+        {
+          lock_type plugins_lock (m_mtx_plugins);
+          if (m_plugins.find(p->name()) != m_plugins.end())
+          {
+            // TODO: print descriptor of other plugin
+            throw std::runtime_error
+              ("another plugin with the same name is already loaded: " + p->name());
+          }
+        }
+
+        // create mediator
+        mediator_ptr m(new PluginKernelMediator(p, this));
+
+        // check_dependencies(p);
+        rc = p->start (m.get());
+        if (rc == START_SUCCESSFUL) // started
+        {
+          lock_type plugins_lock (m_mtx_plugins);
+          m_plugins.insert (std::make_pair(p->name(), m));
+
+          // notify loaded plugins about the new plugin
+          for ( plugin_map_t::iterator it (m_plugins.begin())
+              ; it != m_plugins.end()
+              ; ++it
+              )
+          {
+            it->second->plugin_loaded (p->name());
+          }
+        }
+        else if (rc == START_INCOMPLETE) // incomplete
+        {
+          lock_type plugins_lock (m_mtx_incomplete_plugins);
+          m_incomplete_plugins.insert (std::make_pair(p->name(), m));
+        }
+        else
+        {
+          throw std::runtime_error
+            ("plugin " + p->name() + " failed to start!");
+        }
+      }
+      catch (std::exception const & ex)
+      {
+        throw;
+      }
+
+      return rc;
+    }
+
+    int kernel_t::unload_plugin (std::string const &name)
+    {
+      plugin_t::ptr_t plugin = lookup_plugin(name);
+      if (plugin)
+      {
+        if (plugin->is_in_use())
+        {
+          return -EBUSY;
+        }
+        else
+        {
+          return 0;
+        }
+      }
+      else
+      {
+        return -ESRCH;
+      }
+    }
   }
-  catch (std::exception const & ex)
-  {
-    throw;
-  }
-
-  return 0;
-}
-
-int kernel_impl::unload_plugin (std::string const &name)
-{
-  // check reference count
-  // if 0 -> unload and remove plugin, dlclose file
-  // else return -EBUSY
-  return 0;
-}
-
-//void kernel_impl::schedule(fhg::plugin::task_t t)
-//{
-  // m_task_queue.push(t);
-//}
-
-void *kernel_impl::acquire (std::string const & name)
-{
-  return 0;
 }

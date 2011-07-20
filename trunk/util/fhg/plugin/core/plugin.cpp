@@ -27,6 +27,9 @@ namespace fhg
       , m_flags (my_flags)
       , m_handle (my_handle)
       , m_kernel (0)
+      , m_started (false)
+      , m_dependencies()
+      , m_refcount(0)
     {
       assert (m_plugin != 0);
       assert (m_descriptor != 0);
@@ -62,35 +65,45 @@ namespace fhg
 
     size_t plugin_t::use_count () const
     {
-      return m_used_by.size();
+      return m_refcount;
     }
 
-    bool plugin_t::is_used_by(const plugin_t *other) const
+    bool plugin_t::is_depending_on(const plugin_t::ptr_t &other) const
     {
       assert (other != 0);
-      return std::find(m_used_by.begin(), m_used_by.end(), other) != m_used_by.end();
+      return std::find( m_dependencies.begin()
+                      , m_dependencies.end()
+                      , other
+                      ) != m_dependencies.end();
     }
 
-    void plugin_t::used_by(const plugin_t *other)
+    void plugin_t::add_dependency(const plugin_t::ptr_t &other)
     {
       assert (other != 0);
-      if (! is_used_by(other))
-        m_used_by.push_back(other);
+      if (! is_depending_on(other))
+      {
+        m_dependencies.push_back(other);
+        ++other->m_refcount;
+      }
     }
 
-    void plugin_t::unused_by(const plugin_t *other)
+    void plugin_t::del_dependency(const plugin_t::ptr_t &other)
     {
-      assert (is_used_by(other));
-
-      m_used_by.erase(std::find(m_used_by.begin(), m_used_by.end(), other));
-
-      assert (! is_used_by(other));
+      if (is_depending_on(other))
+      {
+        m_dependencies.erase(std::find( m_dependencies.begin()
+                                      , m_dependencies.end()
+                                      , other
+                                      )
+                            );
+        --other->m_refcount;
+      }
     }
 
     int plugin_t::start (fhg::plugin::Kernel *kernel)
     {
       m_kernel = kernel;
-      return m_plugin->fhg_plugin_start(kernel);
+      return m_plugin->fhg_plugin_start(m_kernel);
     }
 
     int plugin_t::stop ()
@@ -107,7 +120,7 @@ namespace fhg
       fhg_plugin_create create_plugin;
       void *handle;
 
-      handle = dlopen(filename.c_str(), RTLD_LAZY);
+      handle = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
       if (!handle)
       {
         throw std::runtime_error("dlopen() failed: " + filename + dlerror());
