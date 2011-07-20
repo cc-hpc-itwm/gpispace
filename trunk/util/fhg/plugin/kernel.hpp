@@ -5,47 +5,62 @@
 #include <string>
 
 #include <boost/signals2.hpp>
+#include <boost/function.hpp>
 
 namespace fhg
 {
-  struct capability_t
+  namespace plugin
   {
-    std::string type;
-    std::string version;
-  };
-
-  typedef std::vector<capability_t> capability_list_t;
-  typedef boost::signals2::signal<void (capability_t const &)> capability_signal_t;
-
-  class plugin;
-  class kernel
-  {
-  public:
-    virtual ~kernel() {}
-
-    // signals
-    capability_signal_t capability_gained;
-    capability_signal_t capability_lost;
-
-    virtual capability_list_t capabilities() const = 0;
-
-    template <typename T>
-    T* acquire_capability (std::string const & type)
+    struct plugin_info_t
     {
-      return dynamic_cast<T*>(acquire(type));
-    }
-    template <typename T>
-    T* acquire_capability (std::string const & type, std::string const &version)
+      std::string name;
+      std::string type;
+      std::string version;
+    };
+
+    typedef boost::function<void (void)> task_t;
+    typedef std::vector<plugin_info_t> plugin_info_list_t;
+    typedef boost::signals2::signal<void (plugin_info_t const &)> plugin_signal_t;
+
+    class kernel_t
     {
-      return dynamic_cast<T*>(acquire(type, version));
-    }
+    public:
+      virtual ~kernel_t() {}
 
-  protected:
-    virtual void * acquire(std::string const & type) = 0;
-    virtual void * acquire(std::string const & type, std::string const &version) = 0;
-  };
+      // signals
+      plugin_signal_t plugin_loaded;
+      plugin_signal_t plugin_unloaded;
 
-  kernel & get_kernel ();
+      virtual plugin_info_list_t list_plugins() const = 0;
+
+      template <typename T>
+      T* acquire_plugin (std::string const & name)
+      {
+        return dynamic_cast<T*>(acquire(name));
+      }
+      template <typename T>
+      T* acquire_plugin (std::string const & name, std::string const &version)
+      {
+        return dynamic_cast<T*>(acquire(name, version));
+      }
+
+      void release_plugin (void *c)
+      {
+        release (c);
+      }
+
+      virtual int load_plugin (std::string const & file) = 0;
+      virtual int unload_plugin (std::string const &name) = 0;
+
+      virtual void schedule(task_t) = 0;
+    protected:
+      virtual void * acquire(std::string const & name) = 0;
+      virtual void * acquire(std::string const & name, std::string const &version) = 0;
+      virtual void   release(void *) = 0;
+    };
+
+    extern kernel_t * get_kernel ();
+  }
 }
 
 #endif

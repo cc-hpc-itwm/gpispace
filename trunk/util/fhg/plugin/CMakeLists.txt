@@ -1,12 +1,29 @@
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/build.hpp @ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(hdrs
+  ${CMAKE_CURRENT_BINARY_DIR}/build.hpp
   kernel.hpp
+  configurable.hpp
+  startable.hpp
+  stoppable.hpp
+  plugin_info.hpp
 )
 
-set(srcs
-  kernel.cpp
-)
+add_subdirectory(core)
 
-add_library(fhg-plugin-core ${srcs})
+set(fhg-plugin-static-libs "fhg-plugin-core")
+
+add_subdirectory(stats)
+#if(STATS_PLUGIN_STATIC)
+#set(fhg-plugin-static-libs "${fhg-plugin-static-libs};${stats-plugin.static}")
+#endif()
+
+set(fhg-plugin-static-libs "${fhg-plugin-static-libs};${FhgLog_LIBRARY};${Boost_LIBRARIES}")
 
 include(libutils)
-merge_static_libs(fhg-plugin fhg-plugin "fhg-plugin-core;${FhgLog_LIBRARY};${Boost_LIBRARIES}")
+merge_static_libs(fhg-plugin fhg-plugin "${fhg-plugin-static-libs}")
+
+install (FILES ${hdrs}
+  DESTINATION include/fhg/plugin
+  COMPONENT headers
+)
