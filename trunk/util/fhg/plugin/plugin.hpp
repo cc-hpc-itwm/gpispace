@@ -14,6 +14,7 @@
 typedef const fhg_plugin_descriptor_t* (*fhg_plugin_query)(void);
 typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 
+typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 #define FHG_PLUGIN public fhg::plugin::Plugin
 #define FHG_PLUGIN_START(krnl) int fhg_plugin_start (fhg::plugin::Kernel *krnl)
 

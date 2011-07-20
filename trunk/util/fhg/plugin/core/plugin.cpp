@@ -144,7 +144,7 @@ namespace fhg
       {
         m_kernel = kernel;
         m_started = true;
-        return m_plugin->fhg_plugin_start(m_kernel);
+        return m_plugin->fhg_plugin_start_entry(m_kernel);
       }
       else
       {
@@ -160,7 +160,7 @@ namespace fhg
       }
       else if (m_started)
       {
-        int rc = m_plugin->fhg_plugin_stop(m_kernel);
+        int rc = m_plugin->fhg_plugin_stop_entry(m_kernel);
 
         if (rc == 0)
         {
@@ -197,12 +197,17 @@ namespace fhg
 
     plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)
     {
+      return create(filename, force, RTLD_GLOBAL | RTLD_LAZY);
+    }
+
+    plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force, int flags)
+    {
       // dlopen file
       char *error;
       fhg_plugin_query query_plugin;
       void *handle;
 
-      handle = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+      handle = dlopen(filename.c_str(), flags);
       if (!handle)
       {
         throw std::runtime_error("dlopen() failed: " + filename + dlerror());
