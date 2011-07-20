@@ -13,12 +13,12 @@ public:
   WorldImpl () {}
   ~WorldImpl () {}
 
-  FHG_PLUGIN_START(kernel)
+  FHG_PLUGIN_START()
   {
     FHG_PLUGIN_STARTED();
   }
 
-  FHG_PLUGIN_STOP(kernel)
+  FHG_PLUGIN_STOP()
   {
     FHG_PLUGIN_STOPPED();
   }

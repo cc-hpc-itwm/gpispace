@@ -31,12 +31,12 @@ public:
   StatisticsImpl () {}
   ~StatisticsImpl (){}
 
-  FHG_PLUGIN_START(kernel)
+  FHG_PLUGIN_START()
   {
     FHG_PLUGIN_STARTED();
   }
 
-  FHG_PLUGIN_STOP(kernel)
+  FHG_PLUGIN_STOP()
   {
     print(std::cout);
     FHG_PLUGIN_STOPPED();

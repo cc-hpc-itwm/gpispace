@@ -41,14 +41,12 @@ public:
   {}
   ~HelloWorldImpl () {}
 
-  FHG_PLUGIN_START(kernel)
+  FHG_PLUGIN_START()
   {
-    krnl = kernel;
+    m_hello = fhg_kernel()->acquire<example::Hello>("hello");
+    m_world = fhg_kernel()->acquire<example::World>("world");
 
-    m_hello = kernel->acquire<example::Hello>("hello");
-    m_world = kernel->acquire<example::World>("world");
-
-    if ((statistics = kernel->acquire<stats::Statistics>("stats")) != 0)
+    if ((statistics = fhg_kernel()->acquire<stats::Statistics>("stats")) != 0)
     {
       count = real_count;
     }
@@ -57,18 +55,18 @@ public:
       count = fake_count;
     }
 
-    krnl->schedule( boost::bind( &HelloWorldImpl::do_it
-                               , this
-                               )
-                  );
+    fhg_kernel()->schedule( boost::bind( &HelloWorldImpl::do_it
+                                       , this
+                                       )
+                          );
     FHG_PLUGIN_STARTED();
   }
 
-  FHG_PLUGIN_STOP(kernel)
+  FHG_PLUGIN_STOP()
   {
-    kernel->release("world");
-    kernel->release("hello");
-    kernel->release("stats");
+    fhg_kernel()->release("world");
+    fhg_kernel()->release("hello");
+    fhg_kernel()->release("stats");
     MLOG(INFO, "helloworld plugin stopped");
     FHG_PLUGIN_STOPPED();
   }
@@ -77,19 +75,18 @@ public:
   {
     start_timer("helloworld.say");
     say (std::cout);
-
-    krnl->schedule( boost::bind( &HelloWorldImpl::do_it
-                               , this
-                               )
-                  , 5
-                  );
-
-    count("helloworld.say");
     stop_timer("helloworld.say");
+
+    fhg_kernel()->schedule( boost::bind( &HelloWorldImpl::do_it
+                                       , this
+                                       )
+                          , 5
+                          );
   }
 
   void say (std::ostream &os) const
   {
+    count("helloworld.say");
     os << m_hello->text() << ", " << m_world->text() << std::endl;
   }
 
