@@ -13,8 +13,6 @@ struct fhg_plugin_desc_t
 };
 
 #define FHG_PLUGIN_BUILD_INFO_STRING "/release=@PROJECT_REVISION@"
-#define TOSTR_(x) #x
-#define TOSTR(x) TOSTR_(x)
 
 #ifdef FHG_STATIC_PLUGIN
 
@@ -46,8 +44,5 @@ struct fhg_plugin_desc_t
   }                                                                     \
 
 #endif
-
-#undef TOSTR_
-#undef TOSTR
 
 #endif
