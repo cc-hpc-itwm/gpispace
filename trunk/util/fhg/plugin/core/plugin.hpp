@@ -18,9 +18,11 @@ namespace fhg
                    , public fhg::plugin::PluginInfo
     {
     public:
+      typedef boost::shared_ptr<plugin_t> ptr_t;
+
       ~plugin_t ();
 
-      static plugin_t * create (std::string const & filename);
+      static ptr_t create (std::string const & filename);
 
       std::string const & name () const;
 
@@ -53,7 +55,9 @@ namespace fhg
                );
 
       std::string m_file_name;
+      std::string m_name;
       void *m_handle;
+      int m_flags;
 
       used_by_list_t m_used_by;
     };

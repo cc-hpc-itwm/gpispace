@@ -3,10 +3,11 @@
 #include <map>
 #include <string>
 
-#include <fhg/plugin/build.hpp>
+#include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/builtin/stats.hpp>
 
-class StatisticsImpl : public stats::Statistics
+class StatisticsImpl : IS_A_FHG_PLUGIN
+                     , public stats::Statistics
 {
 public:
   StatisticsImpl () {}
@@ -52,13 +53,12 @@ private:
   std::map<std::string, time_t> m_timer;
 };
 
-static void* create_stats ()
-{
-  return new StatisticsImpl;
-}
-static void destroy_stats (void*p)
-{
-  delete reinterpret_cast<StatisticsImpl*>(p);
-}
-
-FHG_PLUGIN(simple_stats, "stats", create_stats, destroy_stats);
+FHG_PLUGIN( simple_stats
+          , StatisticsImpl
+          , "a simple statistics plugin"
+          , "Alexander Petry <petry@itwm.fhg.de>"
+          , "v0.0.1"
+          , "GPL"
+          , ""
+          , ""
+          );

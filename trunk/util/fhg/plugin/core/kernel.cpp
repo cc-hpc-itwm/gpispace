@@ -1,4 +1,6 @@
 #include <fhg/plugin/kernel.hpp>
+
+#include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 
 #include <boost/thread.hpp>

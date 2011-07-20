@@ -1,48 +1,18 @@
 #ifndef FHG_PLUGIN_BUILD_HPP
 #define FHG_PLUGIN_BUILD_HPP 1
 
-typedef void* (*create_function_t)(void);
-typedef void  (*destroy_function_t)(void*);
+#  define FHG_PLUGIN_VERSION_MAGIC "/release=@PROJECT_REVISION@"
 
-struct fhg_plugin_desc_t
+struct fhg_plugin_descriptor_t
 {
-  const char * name;
-  const char * type;
-  create_function_t create;
-  destroy_function_t destroy;
+  const char *name;
+  const char *description;
+  const char *author;
+  const char *version;
+  const char *license;
+  const char *depends;
+  const char *featurekey;
+  const char *magic;
 };
-
-#define FHG_PLUGIN_BUILD_INFO_STRING "/release=@PROJECT_REVISION@"
-
-#ifdef FHG_STATIC_PLUGIN
-
-#  define FHG_PLUGIN(name, type, create, destroy)                       \
-  extern void fhgRegisterStaticPlugin(const char*, const char*, create_function_t, destroy_function_t); \
-  struct StaticFhgPluginInitializer_##name                              \
-  {                                                                     \
-  StaticFhgPluginInitializer_##name()                                   \
-  {                                                                     \
-    fhgRegisterStaticPlugin(#name, type, create, destroy);              \
-  }                                                                     \
-  ~StaticFhgPluginInitializer_##name() {}                               \
-  };                                                                    \
-  static StaticFhgPluginInitializer_##name __staticFhgPluginInitializer_##name
-
-#else
-
-#  define FHG_PLUGIN(name, type, create, destroy)                       \
-  static const char *build_info_##name = FHG_PLUGIN_BUILD_INFO_STRING;  \
-  extern "C"                                                            \
-  {                                                                     \
-    const char *fhg_plugin_build_info() { return build_info_ ## name; } \
-                                                                        \
-    const fhg_plugin_desc_t *fhg_plugin_descriptor()                    \
-    {                                                                   \
-      static fhg_plugin_desc_t desc = {#name ,type,create,destroy };    \
-      return &desc;                                                     \
-    }                                                                   \
-  }                                                                     \
-
-#endif
 
 #endif
