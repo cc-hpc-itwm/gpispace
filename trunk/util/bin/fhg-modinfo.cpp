@@ -21,7 +21,11 @@ int main(int ac, char **av)
     std::cout << "key: " << p->descriptor()->featurekey << std::endl;
     std::cout << "magic: " << p->descriptor()->magic << std::endl;
 
-    std::cout << "my magic: " << FHG_PLUGIN_VERSION_MAGIC << std::endl;
+    if (std::string(FHG_PLUGIN_VERSION_MAGIC) != p->descriptor()->magic)
+    {
+      std::cout << "my magic: " << FHG_PLUGIN_VERSION_MAGIC << std::endl;
+      std::cout << "WARNING: version magics differ, this module might be incompatible!" << std::endl;
+    }
   }
   catch (std::exception const &ex)
   {

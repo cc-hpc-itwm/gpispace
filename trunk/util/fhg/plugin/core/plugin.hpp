@@ -6,12 +6,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include <fhg/plugin/build.hpp>
-#include <fhg/plugin/config.hpp>
+#include <fhg/plugin/plugin_base.hpp>
 
 namespace fhg
 {
-  namespace plugin { class Plugin; }
-
   namespace core
   {
     class plugin_t
@@ -36,6 +34,18 @@ namespace fhg
 
       int start (fhg::plugin::config_t const &);
       int stop ();
+
+      template <typename T>
+      T* as ()
+      {
+        return dynamic_cast<T*>(get_plugin());
+      }
+
+      template <typename T>
+      const T* as () const
+      {
+        return dynamic_cast<const T*>(get_plugin());
+      }
     private:
       typedef std::list<const plugin_t*> used_by_list_t;
 

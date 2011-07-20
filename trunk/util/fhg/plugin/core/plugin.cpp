@@ -110,7 +110,7 @@ namespace fhg
       fhg_plugin_create create_plugin;
       void *handle;
 
-      handle = dlopen(filename.c_str(), RTLD_NOW);
+      handle = dlopen(filename.c_str(), RTLD_LAZY);
       if (!handle)
       {
         throw std::runtime_error("dlopen() failed: " + filename + dlerror());

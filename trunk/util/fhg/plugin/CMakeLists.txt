@@ -19,6 +19,8 @@ message(STATUS "***************** ${fhg-plugin-static-libs}")
 include(libutils)
 merge_static_libs(fhg-plugin fhg-plugin "${fhg-plugin-static-libs}")
 
+target_link_libraries(fhg-plugin dl)
+
 install (FILES ${hdrs}
   DESTINATION include/fhg/plugin
   COMPONENT headers

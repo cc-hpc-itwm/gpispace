@@ -5,27 +5,14 @@
 #include <map>
 
 #include <fhg/plugin/build.hpp>
-#include <fhg/plugin/config.hpp>
-
-namespace fhg
-{
-  namespace plugin
-  {
-    class Plugin
-    {
-    public:
-      virtual ~Plugin(){}
-
-      virtual int fhg_plugin_start (config_t const &) { return 0; }
-      virtual int fhg_plugin_stop  () { return 0; }
-    };
-  }
-}
+#include <fhg/plugin/plugin_base.hpp>
 
 typedef const fhg_plugin_descriptor_t* (*fhg_plugin_query)(void);
 typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 
 #define IS_A_FHG_PLUGIN public fhg::plugin::Plugin
+#define FHG_PLUGIN_START(cfg) int fhg_plugin_start (fhg::plugin::config_t const &cfg)
+#define FHG_PLUGIN_STOP() int fhg_plugin_stop ()
 
 #ifdef FHG_STATIC_PLUGIN
 
