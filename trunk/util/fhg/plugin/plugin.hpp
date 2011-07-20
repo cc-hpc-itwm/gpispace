@@ -37,12 +37,7 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
     }                                                                   \
     fhg::plugin::Plugin *fhg_get_plugin_instance_##name()               \
     {                                                                   \
-      static cls* fhg_plugin_instance_##name = 0;                       \
-      if (0 == fhg_plugin_instance_##name)                              \
-      {                                                                 \
-        fhg_plugin_instance_##name = new cls();                         \
-      }                                                                 \
-      return fhg_plugin_instance_##name;                                \
+      return = new cls();                                               \
     }                                                                   \
   }
 
@@ -59,12 +54,7 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
     }                                                                   \
     fhg::plugin::Plugin *fhg_get_plugin_instance()                      \
     {                                                                   \
-      static cls* instance = 0;                                         \
-      if (0 == instance)                                                \
-      {                                                                 \
-        instance = new cls();                                           \
-      }                                                                 \
-      return instance;                                                  \
+      return new cls();                                                 \
     }                                                                   \
   }
 
