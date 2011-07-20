@@ -47,7 +47,7 @@ int kernel_impl::load_plugin(std::string const & file)
 {
   try
   {
-    plugin_ptr p (fhg::core::plugin_t::create (file));
+    plugin_ptr p (fhg::core::plugin_t::create (file, false));
     {
       lock_type plugins_lock (m_mtx_plugins);
       if (m_plugins.find(p->name()) != m_plugins.end())
@@ -70,20 +70,6 @@ int kernel_impl::load_plugin(std::string const & file)
   {
     throw;
   }
-
-  // dlopen file
-
-  // check/compare build information string
-
-  // check name
-  //    plugin already registered with that name
-
-  // get plugin descriptor
-  //    check dependencies
-
-  // instantiate plugin
-  //    use count = 0
-  //    used by = []
 
   return 0;
 }

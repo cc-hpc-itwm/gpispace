@@ -1,5 +1,9 @@
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dlfcn.h>
 
+#include <stdexcept>
 #include <algorithm>
 
 #include <fhg/plugin/core/plugin.hpp>
@@ -14,20 +18,24 @@ namespace fhg
                        , fhg::plugin::Plugin *my_plugin
                        , const fhg_plugin_descriptor_t *my_desc
                        , int my_flags
+                       , void *my_handle
                        )
       : m_name (my_name)
       , m_file_name(my_filename)
       , m_plugin (my_plugin)
       , m_descriptor (my_desc)
       , m_flags (my_flags)
+      , m_handle (my_handle)
     {
       assert (m_plugin != 0);
       assert (m_descriptor != 0);
+      assert (my_handle);
     }
 
     plugin_t::~plugin_t ()
     {
       assert (m_used_by.empty());
+      dlclose (m_handle);
     }
 
     std::string const & plugin_t::name () const
@@ -92,6 +100,67 @@ namespace fhg
       {
         return m_plugin->fhg_plugin_stop();
       }
+    }
+
+    plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)
+    {
+      // dlopen file
+      char *error;
+      fhg_plugin_query query_plugin;
+      fhg_plugin_create create_plugin;
+      void *handle;
+
+      handle = dlopen(filename.c_str(), RTLD_NOW);
+      if (!handle)
+      {
+        throw std::runtime_error("dlopen() failed: " + filename + dlerror());
+      }
+
+      dlerror();
+      *(void**)(&query_plugin) = dlsym(handle, "fhg_query_plugin_descriptor");
+
+      if ((error = dlerror()) != NULL)
+      {
+        dlclose(handle);
+        throw std::runtime_error("could not get query function: " + std::string(error));
+      }
+
+      const fhg_plugin_descriptor_t *desc = query_plugin();
+      if (desc == 0)
+      {
+        dlclose(handle);
+        throw std::runtime_error("could not query plugin: no descriptor");
+      }
+
+      if (! force)
+      {
+        const std::string magic(FHG_PLUGIN_VERSION_MAGIC);
+        if (magic != desc->magic)
+        {
+          dlclose(handle);
+          throw std::runtime_error
+            ("could not load plugin: version mismatch: expected := " + magic + " got := " + desc->magic);
+        }
+      }
+
+      dlerror();
+      *(void**)(&create_plugin) = dlsym(handle, "fhg_get_plugin_instance");
+      if ((error = dlerror()) != NULL)
+      {
+        dlclose(handle);
+        throw std::runtime_error("could not get create function: " + std::string(error));
+      }
+
+      fhg::plugin::Plugin* p = create_plugin();
+
+      return plugin_t::ptr_t( new plugin_t( desc->name
+                                          , filename
+                                          , p
+                                          , desc
+                                          , 0
+                                          , handle
+                                          )
+                            );
     }
   }
 }

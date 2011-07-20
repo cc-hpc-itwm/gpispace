@@ -22,6 +22,9 @@ namespace fhg
   }
 }
 
+typedef const fhg_plugin_descriptor_t* (*fhg_plugin_query)(void);
+typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
+
 #define IS_A_FHG_PLUGIN public fhg::plugin::Plugin
 
 #ifdef FHG_STATIC_PLUGIN
@@ -71,7 +74,7 @@ namespace fhg
 #endif
 
 #define FHG_IMPORT_PLUGIN(name)                                         \
-  extern void fhgRegisterStaticPlugin(const fhg_plugin_descriptor_t *(query)(void), fhg::plugin::Plugin* (*create)(void)); \
+  extern void fhgRegisterStaticPlugin(fhg_plugin_query, fhg_plugin_create); \
   extern const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name(); \
   extern fhg::plugin::Plugin *fhg_get_plugin_instance_##name();         \
   struct fhgStatic_##name##_initializer_t                               \

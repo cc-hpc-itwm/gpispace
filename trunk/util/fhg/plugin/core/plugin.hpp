@@ -21,7 +21,7 @@ namespace fhg
 
       ~plugin_t ();
 
-      static ptr_t create (std::string const & filename);
+      static ptr_t create (std::string const & filename, bool force);
 
       std::string const & name () const;
 
@@ -46,6 +46,7 @@ namespace fhg
                , fhg::plugin::Plugin *
                , const fhg_plugin_descriptor_t *
                , int flags
+               , void * handle
                );
 
       std::string m_name;
@@ -53,6 +54,7 @@ namespace fhg
       fhg::plugin::Plugin *m_plugin;
       const fhg_plugin_descriptor_t *m_descriptor;
       int m_flags;
+      void *m_handle;
 
       used_by_list_t m_used_by;
     };
