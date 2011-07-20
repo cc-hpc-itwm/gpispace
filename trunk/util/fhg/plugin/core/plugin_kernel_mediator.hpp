@@ -22,8 +22,8 @@ namespace fhg
       virtual fhg::plugin::Plugin * acquire(std::string const & name);
       virtual void release(std::string const &name);
 
-      void schedule_immediate(fhg::plugin::task_t);
-      void schedule_later(fhg::plugin::task_t, size_t ticks);
+      void schedule(fhg::plugin::task_t);
+      void schedule(fhg::plugin::task_t, size_t ticks);
 
       fhg::core::plugin_t::ptr_t plugin ();
 

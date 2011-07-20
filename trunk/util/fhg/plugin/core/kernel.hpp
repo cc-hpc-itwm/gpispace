@@ -114,18 +114,18 @@ namespace fhg
       void stop ();
       void reset ();
 
-      void set_plugin_event_listener( fhg::core::plugin_t::ptr_t
+      void add_plugin_event_listener( std::string const & owner
                                     , fhg::plugin::EventListener *l
                                     );
-      void del_plugin_event_listener(fhg::core::plugin_t::ptr_t);
+      void del_plugin_event_listener(std::string const & owner);
 
       int load_plugin (std::string const & file);
       int unload_plugin (std::string const &name);
 
       void unload_all ();
 
-      void schedule_immediate(std::string const &owner, fhg::plugin::task_t);
-      void schedule_later(std::string const &owner, fhg::plugin::task_t, size_t ticks);
+      void schedule(std::string const &owner, fhg::plugin::task_t);
+      void schedule(std::string const &owner, fhg::plugin::task_t, size_t ticks);
       plugin_t::ptr_t lookup_plugin(std::string const & name);
 
       time_t tick_time () const;
@@ -134,7 +134,7 @@ namespace fhg
 
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
-      typedef boost::condition_variable condition_type;
+      typedef boost::condition_variable_any condition_type;
 
       typedef boost::shared_ptr<PluginKernelMediator> mediator_ptr;
       typedef std::map<std::string, mediator_ptr> plugin_map_t;

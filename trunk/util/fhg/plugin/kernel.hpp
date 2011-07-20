@@ -23,16 +23,21 @@ namespace fhg
     public:
       virtual ~Kernel() {}
 
-      template <typename T>
-      T* acquire_plugin (std::string const & name)
+      template <typename Iface>
+      Iface* acquire (std::string const & name)
       {
-        return dynamic_cast<T*>(this->acquire(name));
+        Iface* iface = dynamic_cast<Iface*>(this->acquire(name));
+        if (0 == iface)
+        {
+          this->release(name);
+        }
+        return iface;
       }
       virtual Plugin * acquire(std::string const & name) = 0;
       virtual void     release(std::string const & name) = 0;
 
-      virtual void schedule_immediate(task_t) = 0;
-      virtual void schedule_later(task_t, size_t ticks) = 0;
+      virtual void schedule(task_t) = 0;
+      virtual void schedule(task_t, size_t ticks) = 0;
     };
   }
 }

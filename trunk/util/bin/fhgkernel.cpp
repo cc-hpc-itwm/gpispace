@@ -30,10 +30,12 @@ int main(int ac, char **av)
   po::options_description desc("options");
 
   std::vector<std::string> mods_to_load;
+  bool keep_going (false);
 
   desc.add_options()
     ("help,h", "this message")
     ("verbose,v", "be verbose")
+    ( "keep-going,k", "just log errors, but do not refuse to start")
     ( "load,l"
     , po::value<std::vector<std::string> >(&mods_to_load)
     , "modules to load"
@@ -44,10 +46,19 @@ int main(int ac, char **av)
   p.add("load", -1);
 
   po::variables_map vm;
-  po::store( po::command_line_parser(ac, av)
-           . options(desc).positional(p).run()
-           , vm
-           );
+  try
+  {
+    po::store( po::command_line_parser(ac, av)
+             . options(desc).positional(p).run()
+             , vm
+             );
+  }
+  catch (std::exception const &ex)
+  {
+    std::cerr << "invalid command line: " << ex.what() << std::endl;
+    std::cerr << "use " << av[0] << " --help to get a list of options" << std::endl;
+    return EXIT_FAILURE;
+  }
   po::notify (vm);
 
   if (vm.count("help"))
@@ -58,6 +69,8 @@ int main(int ac, char **av)
     return EXIT_SUCCESS;
   }
 
+  keep_going = vm.count("keep-going") != 0;
+
   BOOST_FOREACH (std::string const & p, mods_to_load)
   {
     try
@@ -66,7 +79,11 @@ int main(int ac, char **av)
     }
     catch (std::exception const &ex)
     {
-      std::cerr << "*** could not load `" << p << "' : " << ex.what() << std::endl;
+      MLOG(ERROR, "could not load `" << p << "' : " << ex.what());
+      if (! keep_going)
+      {
+        return EXIT_FAILURE;
+      }
     }
   }
 

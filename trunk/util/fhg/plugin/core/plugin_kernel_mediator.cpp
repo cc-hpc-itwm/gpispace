@@ -66,16 +66,16 @@ namespace fhg
       return m_plugin;
     }
 
-    void PluginKernelMediator::schedule_immediate(fhg::plugin::task_t task)
+    void PluginKernelMediator::schedule(fhg::plugin::task_t task)
     {
-      m_kernel->schedule_immediate (m_plugin->name(), task);
+      m_kernel->schedule (m_plugin->name(), task);
     }
 
-    void PluginKernelMediator::schedule_later( fhg::plugin::task_t task
-                                             , size_t ticks
-                                             )
+    void PluginKernelMediator::schedule( fhg::plugin::task_t task
+                                       , size_t ticks
+                                       )
     {
-      m_kernel->schedule_later (m_plugin->name(), task, ticks);
+      m_kernel->schedule (m_plugin->name(), task, ticks);
     }
   }
 }

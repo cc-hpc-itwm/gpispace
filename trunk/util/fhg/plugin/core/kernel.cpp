@@ -183,17 +183,17 @@ namespace fhg
       }
     }
 
-    void kernel_t::schedule_immediate( std::string const &owner
-                                     , fhg::plugin::task_t task
-                                     )
+    void kernel_t::schedule( std::string const &owner
+                           , fhg::plugin::task_t task
+                           )
     {
-      schedule_later (owner, task, 0);
+      schedule (owner, task, 0);
     }
 
-    void kernel_t::schedule_later( std::string const &owner
-                                 , fhg::plugin::task_t task
-                                 , size_t ticks
-                                 )
+    void kernel_t::schedule( std::string const &owner
+                           , fhg::plugin::task_t task
+                           , size_t ticks
+                           )
     {
       lock_type lock(m_mtx_pending_tasks);
       m_pending_tasks.push_back(task_info_t(owner, task, ticks));

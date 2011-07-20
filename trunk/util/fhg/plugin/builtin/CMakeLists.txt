@@ -11,7 +11,7 @@ macro(FHG_ADD_PLUGIN name sources)
   endif()
 endmacro()
 
-fhg_add_plugin(simple_stats stats.cpp)
+fhg_add_plugin(stats stats.cpp)
 fhg_add_plugin(hello hello.cpp)
 fhg_add_plugin(world world.cpp)
 fhg_add_plugin(helloworld helloworld.cpp)

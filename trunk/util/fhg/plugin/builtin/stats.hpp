@@ -1,6 +1,8 @@
 #ifndef FHG_PLUGIN_STATS_HPP
 #define FHG_PLUGIN_STATS_HPP 1
 
+#include <ostream>
+
 namespace stats
 {
   class Statistics
@@ -14,8 +16,10 @@ namespace stats
     virtual void start_timer (const char * timer) = 0;
     virtual void stop_timer (const char * timer) = 0;
 
-    virtual size_t get_counter(const char *name) const = 0;
-    virtual size_t get_time(const char *name) const = 0;
+    virtual size_t count(const char *name) const = 0;
+    virtual double timer(const char *name) const = 0;
+
+    virtual void print(std::ostream &os) const = 0;
   };
 }
 

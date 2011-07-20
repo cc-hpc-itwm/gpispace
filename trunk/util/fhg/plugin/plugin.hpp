@@ -33,7 +33,7 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name() \
     {                                                                   \
       static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =   \
-        {#name,desc,author,version,license,depends,key,FHG_PLUGIN_VERSION_MAGIC}; \
+        {FHG_PLUGIN_VERSION_MAGIC,#name,desc,author,version,__DATE__ " " __TIME__,license,depends,key}; \
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
     fhg::plugin::Plugin *fhg_get_plugin_instance_##name()               \
@@ -50,7 +50,7 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor()        \
     {                                                                   \
       static fhg_plugin_descriptor_t fhg_plugin_descriptor =            \
-        {#name,desc,author,version,license,depends,key,FHG_PLUGIN_VERSION_MAGIC}; \
+        {FHG_PLUGIN_VERSION_MAGIC,#name,desc,author,version,__DATE__ " " __TIME__,license,depends,key}; \
       return &fhg_plugin_descriptor;                                    \
     }                                                                   \
     fhg::plugin::Plugin *fhg_get_plugin_instance()                      \

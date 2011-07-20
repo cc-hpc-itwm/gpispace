@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <algorithm>
 
+#include <fhglog/minimal.hpp>
+
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
