@@ -2,6 +2,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build.hpp.in ${CMAKE_CURRENT_BINARY_D
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(hdrs
   ${CMAKE_CURRENT_BINARY_DIR}/build.hpp
+  config.hpp
+  plugin_base.hpp
   plugin.hpp
   kernel.hpp
 )
