@@ -42,6 +42,16 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
+  void fhg_on_plugin_loaded(std::string const &)
+  {
+    inc("plugin.loaded");
+  }
+
+  void fhg_on_plugin_unload(std::string const &)
+  {
+    inc("plugin.unload");
+  }
+
   void inc(const char * counter)
   {
     lock_type l(mtx_count);

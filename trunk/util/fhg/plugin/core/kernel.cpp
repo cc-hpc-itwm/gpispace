@@ -81,9 +81,21 @@ namespace fhg
       rc = m->start ();
       if (rc == START_SUCCESSFUL) // started
       {
-        lock_type plugins_lock (m_mtx_plugins);
-        m_plugins.insert (std::make_pair(p->name(), m));
+        {
+          lock_type plugins_lock (m_mtx_plugins);
+          m_plugins.insert (std::make_pair(p->name(), m));
+        }
+
         MLOG(TRACE, p->name() << " plugin loaded");
+
+        for ( plugin_map_t::iterator it (m_plugins.begin())
+            ; it != m_plugins.end()
+            ; ++it
+            )
+        {
+          mediator_ptr m = it->second;
+          m->plugin()->handle_plugin_loaded(p->name());
+        }
       }
       else if (rc == START_INCOMPLETE) // incomplete
       {
@@ -95,6 +107,56 @@ namespace fhg
         throw std::runtime_error
           ("plugin " + p->name() + " failed to start!");
       }
+
+      return rc;
+    }
+
+    int kernel_t::unload_plugin (kernel_t::plugin_map_t::iterator p)
+    {
+      assert (p != m_plugins.end());
+      assert (! p->second->plugin()->is_in_use());
+
+      // remove pending tasks
+      lock_type lock_pending (m_mtx_pending_tasks);
+      lock_type lock_task_q (m_mtx_task_queue);
+
+      for ( task_queue_t::iterator it = m_pending_tasks.begin()
+          ; it != m_pending_tasks.end()
+          ; ++it
+          )
+      {
+        if (p->first == it->owner)
+        {
+          it = m_pending_tasks.erase(it);
+          if (it == m_pending_tasks.end()) break;
+        }
+      }
+
+      for ( task_queue_t::iterator it = m_task_queue.begin()
+          ; it != m_task_queue.end()
+          ; ++it
+          )
+      {
+        if (p->first == it->owner)
+        {
+          it = m_task_queue.erase(it);
+          if (it == m_task_queue.end()) break;
+        }
+      }
+
+      int rc = p->second->stop();
+
+      LOG(TRACE, p->first << " plugin unloaded");
+
+      for ( plugin_map_t::iterator it (m_plugins.begin())
+          ; it != m_plugins.end()
+          ; ++it
+          )
+      {
+        it->second->plugin()->handle_plugin_unload (p->first);
+      }
+
+      m_plugins.erase (p);
 
       return rc;
     }
@@ -111,39 +173,7 @@ namespace fhg
         }
         else
         {
-          // remove pending tasks
-          lock_type lock_pending (m_mtx_pending_tasks);
-          lock_type lock_task_q (m_mtx_task_queue);
-
-          for ( task_queue_t::iterator it = m_pending_tasks.begin()
-              ; it != m_pending_tasks.end()
-              ; ++it
-              )
-          {
-            if (name == it->owner)
-            {
-              it = m_pending_tasks.erase(it);
-              if (it == m_pending_tasks.end()) break;
-            }
-          }
-
-          for ( task_queue_t::iterator it = m_task_queue.begin()
-              ; it != m_task_queue.end()
-              ; ++it
-              )
-          {
-            if (name == it->owner)
-            {
-              it = m_task_queue.erase(it);
-              if (it == m_task_queue.end()) break;
-            }
-          }
-
-          int rc = m->stop();
-
-          m_plugins.erase(name);
-
-          return rc;
+          return unload_plugin(it);
         }
       }
       else
@@ -181,10 +211,13 @@ namespace fhg
             ; ++it
             )
         {
-          mediator_ptr m = it->second;
-          if (m->plugin()->is_in_use()) continue;
-
-          unload_plugin (m->plugin()->name());
+          if (it->second->plugin()->is_in_use())
+            continue;
+          else
+          {
+            unload_plugin (it);
+            break; // we modified the map, so retry everything
+          }
         }
       }
     }

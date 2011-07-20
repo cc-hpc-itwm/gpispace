@@ -11,11 +11,6 @@
 
 namespace fhg
 {
-  namespace plugin
-  {
-    class EventListener;
-  }
-
   namespace core
   {
     struct task_info_t
@@ -114,11 +109,6 @@ namespace fhg
       void stop ();
       void reset ();
 
-      void add_plugin_event_listener( std::string const & owner
-                                    , fhg::plugin::EventListener *l
-                                    );
-      void del_plugin_event_listener(std::string const & owner);
-
       int load_plugin (std::string const & file);
       int unload_plugin (std::string const &name);
 
@@ -138,9 +128,9 @@ namespace fhg
 
       typedef boost::shared_ptr<PluginKernelMediator> mediator_ptr;
       typedef std::map<std::string, mediator_ptr> plugin_map_t;
-      typedef std::pair<fhg::core::plugin_t::ptr_t, fhg::plugin::EventListener*> plugin_event_listener_t;
-      typedef std::list<plugin_event_listener_t> event_listener_list_t;
       typedef std::list<task_info_t> task_queue_t;
+
+      int unload_plugin (plugin_map_t::iterator it);
 
       mutable mutex_type m_mtx_plugins;
       mutable mutex_type m_mtx_load_plugin;
@@ -154,7 +144,6 @@ namespace fhg
       plugin_map_t m_plugins;
       plugin_map_t m_incomplete_plugins;
 
-      event_listener_list_t m_event_listener;
       task_queue_t m_task_queue;
       task_queue_t m_pending_tasks;
     };
