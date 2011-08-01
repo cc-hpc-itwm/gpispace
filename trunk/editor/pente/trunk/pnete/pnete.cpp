@@ -12,9 +12,12 @@
 
 #include "ui/MainWindow.hpp"
 
+#define BE_PENTE 1
+
 //! \todo inherit from QApplication and do these things in a class.
 int main(int argc, char *argv[])
 {
+                                                                                // hardcoded constants
   QApplication a(argc, argv);
   Q_INIT_RESOURCE(resources);
 
@@ -24,15 +27,17 @@ int main(int argc, char *argv[])
   QCoreApplication::setOrganizationDomain("itwm.fhg.de");
   QCoreApplication::setOrganizationName("Fraunhofer ITWM");
 
-  // QPixmap pixmap(":/pente.png");
-  // QSplashScreen splash(pixmap);
-  // splash.show();
+#ifdef BE_PENTE
+  QPixmap pixmap(":/pente.png");
+  QSplashScreen splash(pixmap);
+  splash.show();
   a.processEvents();
+#endif
 
-  // TODO: add translation for english
-  // QTranslator translator;
-  // translator.load("german", ":/localization/");
-  // a.installTranslator(&translator);
+  //! \todo Fix applying the translator if locale is correct only!
+  QTranslator translator;
+  translator.load("german", ":/localization/");
+  a.installTranslator(&translator);
 
   QSettings settings;
 
@@ -91,6 +96,10 @@ int main(int argc, char *argv[])
   settings.endArray();
 
   w.showMaximized();
-  // splash.finish(&w);
+#ifdef BE_PENTE
+  splash.finish(&w);
+#endif
   return a.exec();
 }
+
+#undef BE_PENTE
