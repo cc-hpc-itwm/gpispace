@@ -52,8 +52,8 @@ namespace fhg
         TransitionLibraryModel* fsmodel = new TransitionLibraryModel(QDir(path), this);
         _transitionLibrary->setModel(fsmodel);
         _transitionLibrary->expandAll();
-        _transitionLibrary->setColumnWidth(0, 230);
-        _transitionLibrary->setColumnWidth(1, 20);
+        _transitionLibrary->setColumnWidth(0, 230);                             // hardcoded constant
+        _transitionLibrary->setColumnWidth(1, 20);                              // hardcoded constant
         
         connect(fsmodel, SIGNAL(layoutChanged()), SLOT(expandTree()));
       }
@@ -67,7 +67,7 @@ namespace fhg
       void MainWindow::setupMenuAndToolbar()
       {
         setWindowTitle(tr("SDPA editor"));
-        resize(600+250, 600+20);
+        resize(600+250, 600+20);                                                // hardcoded constant
        
         //! \todo icons for toolbar.
         QAction* saveAction = new QAction(tr("Save"), this);
@@ -103,14 +103,14 @@ namespace fhg
         
         //! \todo on !OSX, orientation of the toolbar can change. take care of slider!
         QSlider* zoomSlider = new QSlider(Qt::Horizontal, this);
-        zoomSlider->setMaximumSize(QSize(200, zoomSlider->height()));
-        zoomSlider->setRange(10, 300);
+        zoomSlider->setMaximumSize(QSize(200, zoomSlider->height()));           // hardcoded constant
+        zoomSlider->setRange(10, 300);                                          // hardcoded constant
         mainToolBar->addWidget(zoomSlider);
         
         //! \todo icon. ._.
         QSpinBox* zoomSpinBox = new QSpinBox(this);
         zoomSpinBox->setSuffix("%");
-        zoomSpinBox->setRange(10, 300);
+        zoomSpinBox->setRange(10, 300);                                         // hardcoded constant
         mainToolBar->addWidget(zoomSpinBox);
         
         connect(zoomSlider, SIGNAL(valueChanged(int)), zoomSpinBox, SLOT(setValue(int)));
@@ -119,7 +119,7 @@ namespace fhg
         connect(_graphicsView, SIGNAL(zoomed(int)), zoomSpinBox, SLOT(setValue(int)));
         connect(_graphicsView, SIGNAL(zoomed(int)), zoomSlider, SLOT(setValue(int)));
         
-        zoomSlider->setValue(100);
+        zoomSlider->setValue(100);                                              // hardcoded constant
       }
       
       void MainWindow::setupCentralWidget()
@@ -127,9 +127,9 @@ namespace fhg
         QWidget* centralWidget = new QWidget(this);
         
         QGridLayout* centralLayout = new QGridLayout(centralWidget);
-        centralLayout->setContentsMargins(2, 2, 2, 2);
+        centralLayout->setContentsMargins(2, 2, 2, 2);                          // hardcoded constant
         
-        _scene = new graph::Scene(QRectF(-2000.0, -2000.0, 4000.0, 4000.0), this);
+        _scene = new graph::Scene(QRectF(-2000.0, -2000.0, 4000.0, 4000.0), this);  // hardcoded constant
         _graphicsView = new GraphView(_scene, centralWidget);
         
         centralLayout->addWidget(_graphicsView);
@@ -140,7 +140,7 @@ namespace fhg
       void MainWindow::setupTransitionLibrary()
       {
         QDockWidget* transitionLibraryDockWidget = new QDockWidget(tr("Library"), this);
-        transitionLibraryDockWidget->setMinimumSize(QSize(254, 304));
+        transitionLibraryDockWidget->setMinimumSize(QSize(254, 304));           // hardcoded constant
         transitionLibraryDockWidget->setAllowedAreas(Qt::RightDockWidgetArea | Qt::LeftDockWidgetArea);
         
         QWidget* transitionLibraryDockWidgetContents = new QWidget();

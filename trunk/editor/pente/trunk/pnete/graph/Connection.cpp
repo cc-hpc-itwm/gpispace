@@ -25,7 +25,7 @@ namespace fhg
         setStart(start);
         setEnd(end);
         
-        setZValue(-1);
+        setZValue(-1);                                                          // hardcoded constant
       }
       
       void Connection::setStart(ConnectableItem* start)
@@ -85,7 +85,7 @@ namespace fhg
         switch(orientation)
         {
           case ConnectableItem::NORTH:
-            ret += QPointF(0.0, -value);
+            ret += QPointF(0.0, -value);                                        // hardcoded constants
             break;
           case ConnectableItem::EAST:
             ret += QPointF(value, 0.0);
@@ -114,7 +114,7 @@ namespace fhg
             const Port* port = qgraphicsitem_cast<const Port*>(start());
             if(port)
             {
-              qreal lengthHalf = port->length() / 2.0;
+              qreal lengthHalf = port->length() / 2.0;                          // hardcoded constant
               position = addInOrientationDirection(position, port->orientation(), lengthHalf);
             }
           }
@@ -122,7 +122,7 @@ namespace fhg
           {
             position = qobject_cast<Scene*>(scene())->mousePosition();
           }
-          position -= mapToScene(0.0, 0.0);
+          position -= scenePos();
         }
         return position;
       }
@@ -137,7 +137,7 @@ namespace fhg
             const Port* port = qgraphicsitem_cast<const Port*>(end());
             if(port)
             {
-              qreal lengthHalf = port->length() / 2.0;
+              qreal lengthHalf = port->length() / 2.0;                          // hardcoded constant
               position = addInOrientationDirection(position, port->orientation(), lengthHalf);
             }
           }
@@ -145,7 +145,7 @@ namespace fhg
           {
             position = qobject_cast<Scene*>(scene())->mousePosition();
           }
-          position -= mapToScene(0.0, 0.0);
+          position -= scenePos();
         }
         return position;
       }
@@ -190,7 +190,7 @@ namespace fhg
 #ifdef STEFAN
         QPointF midPoint = start() ? ( end() ? QLineF(startPoint, endPoint).pointAt(0.5) : endPoint ) : startPoint;
         
-        const qreal padding = Style::raster() * 3.0;
+        const qreal padding = Style::raster() * 3.0;                            // hardcoded constant
         
         if(start())
         {
@@ -248,8 +248,8 @@ namespace fhg
         ConnectableItem::eOrientation startOrientation = start() ? start()->orientation() : ConnectableItem::EAST;
         ConnectableItem::eOrientation endOrientation = end() ? end()->orientation() : ConnectableItem::WEST;
         
-        QLineF startLine(startPoint, addInOrientationDirection(startPoint, startOrientation, 1.0));
-        QLineF endLine(endPoint, addInOrientationDirection(endPoint, endOrientation, 1.0));
+        QLineF startLine(startPoint, addInOrientationDirection(startPoint, startOrientation, 1.0));   // hardcoded constant
+        QLineF endLine(endPoint, addInOrientationDirection(endPoint, endOrientation, 1.0));           // hardcoded constant
         
         //! \todo more than these simple cases.
         QPointF intersection;

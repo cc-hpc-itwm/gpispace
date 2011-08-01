@@ -18,12 +18,12 @@ namespace fhg
   {
     namespace ui
     {
-      const QString TransitionLibraryModel::mimeType = "pnete/transition";
+      const QString TransitionLibraryModel::mimeType = "pnete/transition";      // hardcoded constant
       
       TransitionLibraryModel::TransitionLibraryModel(const QDir& path, QWidget* parent)
       : QAbstractItemModel(parent),
       _fileSystemWatcher(NULL),
-      _items(new TransitionLibraryItem("__DUMMY__ROOT__", true, this))
+      _items(new TransitionLibraryItem("__DUMMY__ROOT__", true, this))          // hardcoded constant
       {
         readContentFromDirectory(path.path());
       }
@@ -90,7 +90,7 @@ namespace fhg
         //! \todo only re-read the changed directory instead of deleting everything.
         delete _fileSystemWatcher;
         _fileSystemWatcher = new QFileSystemWatcher(this);
-        connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(rereadAllDirectories(const QString&)));        
+        connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(rereadAllDirectories(const QString&)));
         
         emit layoutAboutToBeChanged();
         _items->clearChildren();
@@ -155,7 +155,7 @@ namespace fhg
             //! \todo folder icon?
               if(index.column() == 1 && item->data() && item->trusted())
               {
-                return QIcon(":/lock.png");
+                return QIcon(":/lock.png");                                     // hardcoded constant
               }
               break;
               

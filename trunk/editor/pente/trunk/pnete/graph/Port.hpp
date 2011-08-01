@@ -18,7 +18,7 @@ namespace fhg
       {
         Q_OBJECT
         
-        public:          
+        public:
           Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType, bool notConnectable = false);
           
           const bool& highlighted() const;
@@ -59,7 +59,7 @@ namespace fhg
           virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
           virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
     
-        private:          
+        private:
           QString _title;
           QString _dataType;
           

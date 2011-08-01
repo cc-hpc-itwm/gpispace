@@ -135,13 +135,13 @@ namespace fhg
         
         if(_orientation == WEST || _orientation == EAST)
         {
-          const qreal minimumDistance = boundingRect().height() / 2.0 + 1.0;
+          const qreal minimumDistance = boundingRect().height() / 2.0 + 1.0;    // hardcoded constant
           newPosition.setX(std::max(std::min(parentSize.width(), newPosition.x()), 0.0));
           newPosition.setY(std::max(std::min(parentSize.height() - minimumDistance, newPosition.y()), minimumDistance));
         }
         else
         {
-          const qreal minimumDistance = boundingRect().width() / 2.0 + 1.0;
+          const qreal minimumDistance = boundingRect().width() / 2.0 + 1.0;     // hardcoded constant
           newPosition.setX(std::max(std::min(parentSize.width() - minimumDistance, newPosition.x()), minimumDistance));
           newPosition.setY(std::max(std::min(parentSize.height(), newPosition.y()), 0.0));
         }

@@ -28,11 +28,12 @@ namespace fhg
       QString makeValidName(const QString& name)
       {
         QString ret = name;
-        return ret.replace(" ", "____");
+        return ret.replace(" ", "____");                                        // hardcoded constant
       }
       
       QString GraphTraverser::traverse(TraverserReceiver* dataReceiver, const QString& fileName) const
       {
+                                                                                // hardcoded constants for names and params.
         QString xml;
         QXmlStreamWriter w(&xml);
         w.setAutoFormatting(true);

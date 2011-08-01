@@ -87,10 +87,10 @@ namespace fhg
         {
           //! \note magic number taken from QWheelEvent::delta() documentation.
           //! \note for the love of god, don't remove the +0.005.
-          int current = static_cast<int>((_currentScale + 0.005) * 100.0);
+          int current = static_cast<int>((_currentScale + 0.005) * 100.0);      // hardcoded constant
           int plus = event->delta() > 0 ? 5 : -5;
           //! \todo max and min zoom level from somewhere, not hardcoded?
-          int to = std::max(10, std::min(300, current + plus));
+          int to = std::max(10, std::min(300, current + plus));                 // hardcoded constant
           zoom(to);
         }
         else
@@ -101,7 +101,7 @@ namespace fhg
       
       void GraphView::zoom(int to)
       {
-        qreal target = (to / 100.0);
+        qreal target = (to / 100.0);                                            // hardcoded constant
         qreal factor = target / _currentScale;
         scale(factor, factor);
         _currentScale = target;

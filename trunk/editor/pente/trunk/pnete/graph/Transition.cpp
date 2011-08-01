@@ -19,7 +19,7 @@ namespace fhg
       : QGraphicsItem(parent),
       _title(title),
       _dragStart(0,0),
-      _size(160, 100),
+      _size(160, 100),                                                          // hardcoded constant
       _highlighted(false),
       _dragging(false),
       _producedFrom(producedFrom)
@@ -130,7 +130,9 @@ namespace fhg
         qreal positionIn, positionOut, positionAny, positionParam;
         positionIn = positionOut = positionAny = Style::portDefaultHeight();
         positionParam = boundingRect().width() - Style::portDefaultHeight();
-        
+
+        const qreal padding = 10.0;                                             // hardcoded constant
+
         foreach(QGraphicsItem* child, childItems())
         {
           Port* port = qgraphicsitem_cast<Port*>(child);
@@ -140,32 +142,32 @@ namespace fhg
             {
               port->setOrientation(ConnectableItem::SOUTH);
               port->setPos(Style::snapToRaster(QPointF(positionParam, boundingRect().height())));
-              positionParam -= Style::portDefaultHeight() + 10.0;
+              positionParam -= Style::portDefaultHeight() + padding;
             }
             else if(port->direction() == ConnectableItem::IN)
             {
               port->setOrientation(ConnectableItem::WEST);
               port->setPos(Style::snapToRaster(QPointF(0.0, positionIn)));
-              positionIn += Style::portDefaultHeight() + 10.0;
+              positionIn += Style::portDefaultHeight() + padding;
             }
             else if(port->direction() == ConnectableItem::OUT)
             {
               port->setOrientation(ConnectableItem::EAST);
               port->setPos(Style::snapToRaster(QPointF(boundingRect().width(), positionOut)));
-              positionOut += Style::portDefaultHeight() + 10.0;
+              positionOut += Style::portDefaultHeight() + padding;
             }
             else
             {
               port->setOrientation(ConnectableItem::NORTH);
               port->setPos(Style::snapToRaster(QPointF(positionAny, 0.0)));
-              positionAny += Style::portDefaultHeight() + 10.0;
+              positionAny += Style::portDefaultHeight() + padding;
             }
           }
         }
-        positionIn -= 10.0;
-        positionOut -= 10.0;
-        positionAny -= 10.0;
-        positionParam += 10.0;
+        positionIn -= padding;
+        positionOut -= padding;
+        positionAny -= padding;
+        positionParam += padding;
         
         _size = QSizeF(std::max(_size.width(), positionAny), std::max(_size.height(), std::max(positionOut, positionIn)));
         

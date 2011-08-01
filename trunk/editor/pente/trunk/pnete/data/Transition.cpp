@@ -16,6 +16,7 @@ namespace fhg
       Transition::Transition(const QString& path)
       : _path(path)
       {
+                                                                                // hardcoded constant
         _name = path.mid(path.lastIndexOf("/") + 1).remove(".xml");
         
         helper::XMLQuery query(path);
