@@ -28,24 +28,24 @@ namespace fhg
             TAIL,
             MAIN,
           };
-          static const QPainterPath portShape(const Port* port);
-          static const QRectF portBoundingRect(const Port* port, bool withCap = true, int capFactor = 0);
-          static const void portPaint(QPainter *painter, const Port* port);
-          static const ePortArea portHit(const Port* port, const QPointF& point);
-          static const qreal portCapLength();
-          static const qreal portDefaultWidth();
-          static const qreal portDefaultHeight();
+          static QPainterPath portShape(const Port* port);
+          static QRectF portBoundingRect(const Port* port, bool withCap = true, int capFactor = 0);
+          static void portPaint(QPainter *painter, const Port* port);
+          static ePortArea portHit(const Port* port, const QPointF& point);
+          static qreal portCapLength();
+          static qreal portDefaultWidth();
+          static qreal portDefaultHeight();
           
-          static const QPainterPath connectionShape(const Connection* connection);
-          static const QRectF connectionBoundingRect(const Connection* connection);
-          static const void connectionPaint(QPainter* painter, const Connection* connection);
+          static QPainterPath connectionShape(const Connection* connection);
+          static QRectF connectionBoundingRect(const Connection* connection);
+          static void connectionPaint(QPainter* painter, const Connection* connection);
           
-          static const QPainterPath transitionShape(const QSizeF& size);
-          static const QRectF transitionBoundingRect(const QSizeF& size);
-          static const void transitionPaint(QPainter* painter, const Transition* transition);
+          static QPainterPath transitionShape(const QSizeF& size);
+          static QRectF transitionBoundingRect(const QSizeF& size);
+          static void transitionPaint(QPainter* painter, const Transition* transition);
           
-          static const qreal raster();
-          static const QPointF snapToRaster(const QPointF& p);
+          static qreal raster();
+          static QPointF snapToRaster(const QPointF& p);
       };
     }
   }

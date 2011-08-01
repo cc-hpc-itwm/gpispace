@@ -26,15 +26,15 @@ namespace fhg
       static const QPointF outgoingCap[] = { QPointF(0.0, -portHeightHalf), QPointF(capLength, 0.0), QPointF(0.0, portHeightHalf) };
       static const QPointF ingoingCap[] = { QPointF(0.0, -portHeightHalf), QPointF(capLength, -portHeightHalf), QPointF(0.0, 0.0), QPointF(capLength, portHeightHalf), QPointF(0.0, portHeightHalf) };
       
-      const qreal Style::portCapLength()
+      qreal Style::portCapLength()
       {
         return capLength;
       }
-      const qreal Style::portDefaultWidth()
+      qreal Style::portDefaultWidth()
       {
         return defaultPortWidth;
       }
-      const qreal Style::portDefaultHeight()
+      qreal Style::portDefaultHeight()
       {
         return portHeight;
       }
@@ -75,7 +75,7 @@ namespace fhg
         *poly = poly->united(path.toFillPolygon());
       }
       
-      const QPainterPath Style::portShape(const Port* port)
+      QPainterPath Style::portShape(const Port* port)
       {
         const qreal& length = port->length();
         const qreal lengthHalf = length / 2.0;                                  // hardcoded constant
@@ -119,7 +119,7 @@ namespace fhg
         return path;
       }
       
-      const QRectF Style::portBoundingRect(const Port* port, bool withCap, int capFactor)
+      QRectF Style::portBoundingRect(const Port* port, bool withCap, int capFactor)
       {
         qreal length = port->length();
         const qreal lengthHalf = length / 2.0;                                  // hardcoded constant
@@ -146,7 +146,7 @@ namespace fhg
         }
       }
       
-      const QColor queryColorForType(const QString& type)
+      QColor queryColorForType(const QString& type)
       {
         //! \note Colors shamelessly stolen from PSPro.
         //! \todo Maybe also do a gradient? Maybe looks awesome.
@@ -164,7 +164,7 @@ namespace fhg
         }
       }
       
-      const void Style::portPaint(QPainter *painter, const Port* port)
+      void Style::portPaint(QPainter *painter, const Port* port)
       {
                                                                                 // hardcoded constants
         painter->setPen(QPen(QBrush(port->highlighted() ? Qt::red : Qt::black), 2.0));
@@ -195,7 +195,7 @@ namespace fhg
         }
       }
       
-      const Style::ePortArea Style::portHit(const Port* port, const QPointF& point)
+      Style::ePortArea Style::portHit(const Port* port, const QPointF& point)
       {
         if(port->notConnectable())
         {
@@ -219,7 +219,7 @@ namespace fhg
         }
       }
 
-      const QPainterPath Style::connectionShape(const Connection* connection)
+      QPainterPath Style::connectionShape(const Connection* connection)
       {
         const ConnectableItem* startItem = connection->start();
         const ConnectableItem* endItem = connection->end();
@@ -304,11 +304,11 @@ namespace fhg
 
         return path;
       }
-      const QRectF Style::connectionBoundingRect(const Connection* connection)
+      QRectF Style::connectionBoundingRect(const Connection* connection)
       {
         return connectionShape(connection).boundingRect();
       }
-      const void Style::connectionPaint(QPainter* painter, const Connection* connection)
+      void Style::connectionPaint(QPainter* painter, const Connection* connection)
       {
                                                                                 // hardcoded constants
         painter->setPen(QPen(QBrush(connection->highlighted() ? Qt::red : Qt::black), 2));
@@ -317,17 +317,17 @@ namespace fhg
         painter->drawPath(connectionShape(connection));
       }
       
-      const QPainterPath Style::transitionShape(const QSizeF& size)
+      QPainterPath Style::transitionShape(const QSizeF& size)
       {
         QPainterPath path;
         path.addRoundRect(transitionBoundingRect(size), 20);                    // hardcoded constant
         return path;
       }
-      const QRectF Style::transitionBoundingRect(const QSizeF& size)
+      QRectF Style::transitionBoundingRect(const QSizeF& size)
       {
         return QRectF(0.0, 0.0, size.width(), size.height());
       }
-      const void Style::transitionPaint(QPainter* painter, const Transition* transition)
+      void Style::transitionPaint(QPainter* painter, const Transition* transition)
       {
                                                                                 // hardcoded constants
         painter->setPen(QPen(QBrush(transition->highlighted() ? Qt::red : Qt::black), 2.0));
@@ -346,11 +346,11 @@ namespace fhg
         painter->drawText(boundingRect, Qt::AlignCenter | Qt::TextWordWrap, transition->title());
       }
     
-      const qreal Style::raster()
+      qreal Style::raster()
       {
         return rasterSize;
       }
-      const QPointF Style::snapToRaster(const QPointF& pos)
+      QPointF Style::snapToRaster(const QPointF& pos)
       {
         qreal raster = Style::raster();
         return QPointF(raster * static_cast<int>(pos.x() / raster), raster * static_cast<int>(pos.y() / raster));
