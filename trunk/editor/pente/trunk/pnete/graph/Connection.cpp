@@ -69,7 +69,7 @@ namespace fhg
         }
         recalcMidpoints();
       }
-      
+
       const ConnectableItem* Connection::start() const
       {
         return _start;
@@ -78,23 +78,26 @@ namespace fhg
       {
         return _end;
       }
-      
+
       QPointF addInOrientationDirection(const QPointF& point, ConnectableItem::eOrientation orientation, qreal value)
       {
-        QPointF ret(point);
+        static const QPointF horizontal( value, 0.0 );
+        static const QPointF vertical( 0.0, value );
+
+        QPointF ret = point;
         switch(orientation)
         {
           case ConnectableItem::NORTH:
-            ret += QPointF(0.0, -value);                                        // hardcoded constants
-            break;
-          case ConnectableItem::EAST:
-            ret += QPointF(value, 0.0);
+            ret -= vertical;
             break;
           case ConnectableItem::SOUTH:
-            ret += QPointF(0.0, value);
+            ret += vertical;
+            break;
+          case ConnectableItem::EAST:
+            ret += horizontal;
             break;
           case ConnectableItem::WEST:
-            ret += QPointF(-value, 0.0);
+            ret -= horizontal;
             break;
           case ConnectableItem::ANYORIENTATION:
           default:
@@ -102,7 +105,7 @@ namespace fhg
         }
         return ret;
       }
-      
+
       const QPointF Connection::startPosition() const
       {
         QPointF position;

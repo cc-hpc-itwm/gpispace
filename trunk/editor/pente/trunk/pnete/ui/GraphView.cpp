@@ -36,7 +36,7 @@ namespace fhg
           event->acceptProposedAction();
         }
       }
-      
+
       void GraphView::dragMoveEvent(QDragMoveEvent *event)
       {
         //! \todo Paint a ghost transition.
@@ -46,7 +46,7 @@ namespace fhg
           event->acceptProposedAction();
         }
       }
-      
+
       //! \todo Move somewhere else.
       graph::Transition* createTransitionFromMimeData(const QByteArray& data)
       {
@@ -54,7 +54,7 @@ namespace fhg
         data::Transition transitionData;
         QDataStream stream(byteArray);
         stream >> transitionData;
-        
+
         graph::Transition* transition = new graph::Transition(transitionData.name(), transitionData);
         foreach(data::Port port, transitionData.inPorts())
         {
@@ -65,10 +65,10 @@ namespace fhg
           new graph::Port(transition, graph::Port::OUT, port.name(), port.type(), false);
         }
         transition->repositionChildrenAndResize();
-        
+
         return transition;
       }
-      
+
       void GraphView::dropEvent(QDropEvent *event)
       {
         const QMimeData *mimeData = event->mimeData();
@@ -80,7 +80,11 @@ namespace fhg
           event->acceptProposedAction();
         }
       }
-      
+
+      //! \todo Make configurable.
+      static const int maximumZoomLevel = 300;                                  // hardcoded constant
+      static const int minimumZoomLevel = 30;                                   // hardcoded constant
+
       void GraphView::wheelEvent(QWheelEvent* event)
       {
         if(event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical)
@@ -90,7 +94,7 @@ namespace fhg
           int current = static_cast<int>((_currentScale + 0.005) * 100.0);      // hardcoded constant
           int plus = event->delta() > 0 ? 5 : -5;
           //! \todo max and min zoom level from somewhere, not hardcoded?
-          int to = std::max(10, std::min(300, current + plus));                 // hardcoded constant
+          int to = std::max(minimumZoomLevel, std::min(maximumZoomLevel, current + plus));
           zoom(to);
         }
         else
@@ -98,14 +102,14 @@ namespace fhg
           QGraphicsView::wheelEvent(event);
         }
       }
-      
+
       void GraphView::zoom(int to)
       {
         qreal target = (to / 100.0);                                            // hardcoded constant
         qreal factor = target / _currentScale;
         scale(factor, factor);
         _currentScale = target;
-        
+
         emit zoomed(to);
       }
     }

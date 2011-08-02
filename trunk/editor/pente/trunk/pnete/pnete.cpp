@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
 #ifdef BE_PENTE
   splash.finish(&w);
 #endif
+
   return a.exec();
 }
 
