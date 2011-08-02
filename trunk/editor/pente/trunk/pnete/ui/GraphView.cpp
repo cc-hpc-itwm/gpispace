@@ -1,8 +1,8 @@
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
-#include "graph/Transition.hpp"
-#include "graph/Port.hpp"
-#include "graph/Style.hpp"
+#include "GraphTransition.hpp"
+#include "GraphPort.hpp"
+#include "GraphStyle.hpp"
 #include "data/Transition.hpp"
 #include "data/Port.hpp"
 

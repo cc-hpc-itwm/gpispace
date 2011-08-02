@@ -1,8 +1,9 @@
 
-#include "Connection.hpp"
-#include "ConnectableItem.hpp"
-#include "Style.hpp"
-#include "Scene.hpp"
+#include "GraphConnection.hpp"
+#include "GraphConnectableItem.hpp"
+#include "GraphStyle.hpp"
+#include "GraphPort.hpp"
+#include "GraphScene.hpp"
 
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>

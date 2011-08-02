@@ -1,7 +1,7 @@
-#include "Style.hpp"
-#include "Connection.hpp"
-#include "Port.hpp"
-#include "Transition.hpp"
+#include "GraphStyle.hpp"
+#include "GraphConnection.hpp"
+#include "GraphPort.hpp"
+#include "GraphTransition.hpp"
 
 #include <QPainter>
 #include <QPen>

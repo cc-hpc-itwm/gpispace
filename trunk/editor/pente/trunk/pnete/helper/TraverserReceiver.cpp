@@ -3,7 +3,7 @@
 #include "data/Transition.hpp"
 #include "data/Connection.hpp"
 #include "data/Port.hpp"
-#include "graph/Scene.hpp"
+#include "ui/GraphScene.hpp"
 
 #include <QDebug>
 #include <QXmlStreamWriter>

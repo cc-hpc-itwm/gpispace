@@ -5,7 +5,7 @@
 #include <QPointF>
 #include <QList>
 
-#include "ItemTypes.hpp"
+#include "GraphItemTypes.hpp"
 
 class QPainter;
 class QStyleOptionGraphicsItem;

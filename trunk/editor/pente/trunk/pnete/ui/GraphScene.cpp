@@ -1,6 +1,6 @@
-#include "Scene.hpp"
-#include "Connection.hpp"
-#include "ConnectableItem.hpp"
+#include "GraphScene.hpp"
+#include "GraphConnection.hpp"
+#include "GraphConnectableItem.hpp"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>

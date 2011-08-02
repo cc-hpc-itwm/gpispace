@@ -1,6 +1,6 @@
-#include "Transition.hpp"
-#include "Port.hpp"
-#include "Style.hpp"
+#include "GraphTransition.hpp"
+#include "GraphPort.hpp"
+#include "GraphStyle.hpp"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -26,7 +26,7 @@ namespace fhg
       {
         setAcceptHoverEvents(true);
       }
-      
+
       void Transition::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
       {
         if(_dragging)
@@ -35,7 +35,7 @@ namespace fhg
           event->setAccepted(true);
         }
       }
-      
+
       void Transition::mousePressEvent(QGraphicsSceneMouseEvent * event)
       {
         //! \todo resize grap or move?
@@ -43,14 +43,14 @@ namespace fhg
         _dragStart = event->pos();
         _dragging = true;
       }
-      
+
       void Transition::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
       {
         if(_dragging)
         {
           QPointF oldLocation = pos();
           setPos(Style::snapToRaster(oldLocation + event->pos() - _dragStart));
-          
+
           // do not move, when now colliding with a different transition
           //! \todo move this elsewhere? make this nicer, allow movement to left and right, if collision on bottom.
           //! \todo move to the nearest possible position.

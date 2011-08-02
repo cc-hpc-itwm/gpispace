@@ -1,6 +1,12 @@
 include(${QT_USE_FILE})
 
 set(ui_SRCS
+  GraphStyle.cpp
+  GraphConnection.cpp
+  GraphConnectableItem.cpp
+  GraphPort.cpp
+  GraphScene.cpp
+  GraphTransition.cpp
   MainWindow.cpp
   GraphView.cpp
   TransitionLibraryModel.cpp
@@ -8,6 +14,12 @@ set(ui_SRCS
 )
 
 set(ui_HDRS
+  GraphStyle.hpp
+  GraphConnection.hpp
+  GraphConnectableItem.hpp
+  GraphPort.hpp
+  GraphScene.hpp
+  GraphTransition.hpp
   MainWindow.hpp
   GraphView.hpp
   TransitionLibraryModel.hpp
@@ -17,6 +29,10 @@ set(ui_HDRS
 set(ui_UIS
 )
 set(ui_TOMOC
+  GraphConnectableItem.hpp
+  GraphPort.hpp
+  GraphScene.hpp
+  GraphTransition.hpp
   MainWindow.hpp
   GraphView.hpp
   TransitionLibraryModel.hpp

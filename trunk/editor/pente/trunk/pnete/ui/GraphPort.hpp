@@ -3,8 +3,8 @@
 
 #include <QObject>
 
-#include "ConnectableItem.hpp"
-#include "ItemTypes.hpp"
+#include "GraphConnectableItem.hpp"
+#include "GraphItemTypes.hpp"
 
 namespace fhg
 {

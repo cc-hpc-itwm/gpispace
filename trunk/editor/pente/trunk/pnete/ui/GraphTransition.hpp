@@ -15,7 +15,7 @@ class QWidget;
 class QAction;
 
 #include "data/Transition.hpp"
-#include "ItemTypes.hpp"
+#include "GraphItemTypes.hpp"
 
 namespace fhg
 {

@@ -1,6 +1,6 @@
-#include "ConnectableItem.hpp"
-#include "Scene.hpp"
-#include "Connection.hpp"
+#include "GraphConnectableItem.hpp"
+#include "GraphScene.hpp"
+#include "GraphConnection.hpp"
 
 namespace fhg
 {

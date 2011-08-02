@@ -17,14 +17,12 @@ add_executable(pnete ${pnete_SRCS} ${pnete_RCC_SRCS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(helper)
-add_subdirectory(graph)
 add_subdirectory(data)
 add_subdirectory(ui)
 
 target_link_libraries (pnete
   ui
   data
-  graph
   helper
 
 #${FhgLog_LIBRARY}

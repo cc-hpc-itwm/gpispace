@@ -1,8 +1,8 @@
 #include "DataGraphConversion.hpp"
 
-#include "graph/Port.hpp"
-#include "graph/Connection.hpp"
-#include "graph/Transition.hpp"
+#include "ui/GraphPort.hpp"
+#include "ui/GraphConnection.hpp"
+#include "ui/GraphTransition.hpp"
 
 #include "data/Port.hpp"
 #include "data/Connection.hpp"

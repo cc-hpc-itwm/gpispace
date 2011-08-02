@@ -1,8 +1,8 @@
-#include "Port.hpp"
-#include "Transition.hpp"
-#include "Scene.hpp"
-#include "Connection.hpp"
-#include "Style.hpp"
+#include "GraphPort.hpp"
+#include "GraphTransition.hpp"
+#include "GraphScene.hpp"
+#include "GraphConnection.hpp"
+#include "GraphStyle.hpp"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>

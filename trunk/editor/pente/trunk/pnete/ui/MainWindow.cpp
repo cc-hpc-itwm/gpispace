@@ -21,7 +21,7 @@
 
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
-#include "graph/Scene.hpp"
+#include "GraphScene.hpp"
 #include "helper/GraphTraverser.hpp"
 #include "helper/TraverserReceiver.hpp"
 

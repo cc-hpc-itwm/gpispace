@@ -8,8 +8,6 @@
 
 class QPainter;
 
-#include "Port.hpp"
-
 namespace fhg
 {
   namespace pnete
