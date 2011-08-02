@@ -7,6 +7,7 @@
 class QDataStream;
 class QXmlStreamWriter;
 
+// for QList<Port>s. Use pointers? Who deletes those?
 #include "Port.hpp"
 
 namespace fhg
@@ -21,12 +22,12 @@ namespace fhg
           Transition();
           Transition(const QString& path);
           Transition(const QString& name, const QList<Port>& inPorts, const QList<Port>& outPorts, const QString& path = QString());
-          
+
           const QString& name() const;
           const QList<Port>& inPorts() const;
           const QList<Port>& outPorts() const;
           const QString& path() const;
-          
+
           void toXML(QXmlStreamWriter& streamWriter, const QString& transname = QString()) const;
           
         private:
