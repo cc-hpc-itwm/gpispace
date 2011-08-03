@@ -7,6 +7,7 @@
 
 //! \note Only for testing content.
 #include <QPushButton>
+#include <QPropertyAnimation>
 
 #include "PopoverWidget.hpp"
 
@@ -44,8 +45,21 @@ namespace fhg
           delete _popup;
           _popup = NULL;
         }
-        _popup = scene()->addWidget(new PopoverWidget(_cogwheelButton, new QPushButton("aloha")), Qt::Popup);
-        _popup->setPos(scenePos() - QPointF( -10.0, 23.0 ));
+        QWidget* content = new QPushButton("aloha");
+        content->setMinimumSize(QSize(100,100));
+        _popup = scene()->addWidget(new PopoverWidget(_cogwheelButton, content), Qt::Popup);
+
+        const QPointF wantedPosition = scenePos() - QPointF( -10.0, 23.0 );
+        _popup->setPos(wantedPosition);
+
+        const qreal _contentPadding = 40.0;
+        const QSizeF wantedSize = content->minimumSize() + QSizeF(_contentPadding, _contentPadding);
+        QPropertyAnimation *animation = new QPropertyAnimation(_popup, "geometry");
+        animation->setDuration(300);
+        animation->setStartValue(QRectF(wantedPosition, QSizeF( 0.5 * wantedSize.width(), 0.5 * wantedSize.height())));
+        animation->setEndValue(QRectF(wantedPosition, wantedSize));
+        animation->setEasingCurve(QEasingCurve::OutBack);
+        animation->start();
       }
     }
   }

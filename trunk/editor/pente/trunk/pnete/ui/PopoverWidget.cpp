@@ -21,8 +21,9 @@ namespace fhg
         , _attachTo( attachTo )
         , _content( content )
         {
-          createShape( content->sizeHint() + QSize( _contentPadding, _contentPadding ) );
-          content->setParent( this );
+          const QSize wantedSize = content->sizeHint() + QSize(_contentPadding, _contentPadding);
+          createShape(wantedSize);
+          content->setParent(this);
           connect(attachTo, SIGNAL(destroyed()), SLOT(deleteLater()));
         }
 
