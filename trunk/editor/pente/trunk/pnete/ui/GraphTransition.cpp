@@ -1,6 +1,4 @@
 #include "GraphTransition.hpp"
-#include "GraphPort.hpp"
-#include "GraphStyle.hpp"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -8,6 +6,11 @@
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
 #include <QDebug>
+
+#include "GraphPort.hpp"
+#include "GraphStyle.hpp"
+
+#include "ui/PopoverWidgetButton.hpp"
 
 namespace fhg
 {
@@ -24,6 +27,7 @@ namespace fhg
       _dragging(false),
       _producedFrom(producedFrom)
       {
+        new ui::PopoverWidgetButton( this );
         setAcceptHoverEvents(true);
       }
 

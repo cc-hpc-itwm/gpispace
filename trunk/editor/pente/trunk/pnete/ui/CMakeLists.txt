@@ -11,6 +11,8 @@ set(ui_SRCS
   GraphView.cpp
   TransitionLibraryModel.cpp
   TransitionLibraryItem.cpp
+  PopoverWidget.cpp
+  PopoverWidgetButton.cpp
 )
 
 set(ui_HDRS
@@ -24,6 +26,8 @@ set(ui_HDRS
   GraphView.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
+  PopoverWidget.hpp
+  PopoverWidgetButton.hpp
 )
 
 set(ui_UIS
@@ -37,6 +41,8 @@ set(ui_TOMOC
   GraphView.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
+  PopoverWidget.hpp
+  PopoverWidgetButton.hpp
 )
 
 #for moced files to get their includes.
