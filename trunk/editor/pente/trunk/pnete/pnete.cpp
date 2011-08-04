@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   }
   settings.endArray();
 
-  w.showMaximized();
+  w.show();
 #ifdef BE_PENTE
   splash.finish(&w);
 #endif
