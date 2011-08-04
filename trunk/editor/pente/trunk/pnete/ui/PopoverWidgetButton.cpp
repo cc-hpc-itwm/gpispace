@@ -1,65 +1,62 @@
 #include "PopoverWidgetButton.hpp"
 
-#include <QAction>
-#include <QIcon>
-#include <QToolButton>
-#include <QGraphicsScene>
+#include <QSizeF>
+#include <QPointF>
+#include <QRectF>
+#include <QPainter>
+#include <QGraphicsSceneMouseEvent>
 
-//! \note Only for testing content.
+//! \note popover content. to be removed.
+#include <QWidget>
 #include <QPushButton>
-#include <QPropertyAnimation>
 
+#include "GraphTransition.hpp"
 #include "PopoverWidget.hpp"
 
 namespace fhg
 {
   namespace pnete
   {
-    namespace ui
+    namespace graph
     {
-      PopoverWidgetButton::PopoverWidgetButton(QGraphicsItem* parent)
-      : QGraphicsProxyWidget(parent)
-      , _cogwheelButton(new QToolButton())
-      , _popup(NULL)
+      TransitionCogWheelButton::TransitionCogWheelButton(Transition* linkedTransition)
+      : QGraphicsItem(linkedTransition)
+      , _linkedTransition(linkedTransition)
       {
-        QAction* cogwheelAction = new QAction( QIcon(":/lock.png"), tr("Preferences of this transition"), this );
-        connect(cogwheelAction, SIGNAL(triggered()), SLOT(openPopover()));
-        _cogwheelButton->setDefaultAction( cogwheelAction );
-        _cogwheelButton->setAutoRaise(true);
-        setWidget(_cogwheelButton);
-
         const qreal padding = 5.0;                                              // hardcoded constant
-
-        QSizeF temp = parent->boundingRect().size() - _cogwheelButton->size();
+        const QSizeF temp = parentItem()->boundingRect().size() - boundingRect().size();
         setPos( QPointF( temp.width() - padding, temp.height() - padding ) );
       }
 
-      void PopoverWidgetButton::openPopover()
+      QRectF TransitionCogWheelButton::boundingRect() const
       {
-        //! \todo Attach a parent-less PopoverWidget to the button's position.
-        //! \note Do _not_ add this to the scene, so it wont get hidden when scrolling away.
-        //! \note Still have this change it's position when scrolling, moving the item and stuff.
-        if(_popup)
-        {
-          scene()->removeItem(_popup);
-          delete _popup;
-          _popup = NULL;
-        }
+        return QRectF(0.0, 0.0, 20.0, 20.0);
+      }
+
+      void TransitionCogWheelButton::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
+      {
+        //! \todo Draw cogwheel.
+        painter->drawRect(boundingRect());
+      }
+
+      void TransitionCogWheelButton::mousePressEvent(QGraphicsSceneMouseEvent* event)
+      {
+        //! \note Needed to get the release event later.
+        event->accept();
+      }
+
+      void TransitionCogWheelButton::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+      {
+        //! \todo Real content of the popover.
         QWidget* content = new QPushButton("aloha");
         content->setMinimumSize(QSize(100,100));
-        _popup = scene()->addWidget(new PopoverWidget(_cogwheelButton, content), Qt::Popup);
 
-        const QPointF wantedPosition = scenePos() - QPointF( -10.0, 23.0 );
-        _popup->setPos(wantedPosition);
+        QPointF clickPosition = event->pos();
+        QPointF cursorPosition = QCursor::pos();
 
-        const qreal _contentPadding = 40.0;
-        const QSizeF wantedSize = content->minimumSize() + QSizeF(_contentPadding, _contentPadding);
-        QPropertyAnimation *animation = new QPropertyAnimation(_popup, "geometry");
-        animation->setDuration(300);
-        animation->setStartValue(QRectF(wantedPosition, QSizeF( 0.5 * wantedSize.width(), 0.5 * wantedSize.height())));
-        animation->setEndValue(QRectF(wantedPosition, wantedSize));
-        animation->setEasingCurve(QEasingCurve::OutBack);
-        animation->start();
+        ui::PopoverWidget* popupWidget = new ui::PopoverWidget(content);
+        popupWidget->move((cursorPosition - clickPosition).toPoint() + popupWidget->arrowAdjustment());
+        popupWidget->show();
       }
     }
   }

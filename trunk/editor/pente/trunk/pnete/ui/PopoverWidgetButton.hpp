@@ -1,29 +1,33 @@
-#ifndef UIPOPOVERWIDGETBUTTON_HPP
-#define UIPOPOVERWIDGETBUTTON_HPP 1
+#ifndef GRAPHTRANSITIONCOGWHEELBUTTON_HPP
+#define GRAPHTRANSITIONCOGWHEELBUTTON_HPP 1
 
-#include <QGraphicsProxyWidget>
+#include <QGraphicsItem>
+#include <QRectF>
 
-class QGraphicsItem;
-class QToolButton;
+class QPainter;
+class QGraphicsSceneMouseEvent;
 
 namespace fhg
 {
   namespace pnete
   {
-    namespace ui
+    namespace graph
     {
-      class PopoverWidgetButton : public QGraphicsProxyWidget
-      {
-        Q_OBJECT
-        public:
-          PopoverWidgetButton(QGraphicsItem* parent = NULL);
+      class Transition;
 
-        public slots:
-          void openPopover();
+      class TransitionCogWheelButton : public QGraphicsItem
+      {
+        public:
+          TransitionCogWheelButton(Transition* linkedTransition);
+          virtual QRectF boundingRect() const;
+          virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*);
+
+        protected:
+          virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
 
         private:
-          QToolButton* _cogwheelButton;
-          QGraphicsProxyWidget* _popup;
+          Transition* _linkedTransition;
       };
     }
   }

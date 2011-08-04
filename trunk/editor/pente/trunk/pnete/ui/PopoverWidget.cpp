@@ -5,6 +5,11 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QResizeEvent>
+#include <QCloseEvent>
+#include <QPropertyAnimation>
+#include <QTimer>
+
+#include "PopoverWidgetButton.hpp"
 
 namespace fhg
 {
@@ -12,27 +17,106 @@ namespace fhg
   {
     namespace ui
     {
-      PopoverWidget::PopoverWidget(QWidget* attachTo, QWidget* content)
+
+      PopoverWidget::PopoverWidget(QWidget* content)
         : QWidget( NULL, Qt::FramelessWindowHint | Qt::Popup )
         , _arrowOffset( 20 )
         , _arrowLength( 20 )
         , _roundness( 20 )
         , _contentPadding( 10 )
-        , _attachTo( attachTo )
         , _content( content )
+        , _closingAnimation(NULL)
+        , _wantedSize(_content->minimumSize() + QSize(2 * _contentPadding, 2 * _contentPadding))
+        , _hideTimer(new QTimer(this))
+        , _hideTimeout(300)
         {
-          const QSize wantedSize = content->sizeHint() + QSize(_contentPadding, _contentPadding);
-          createShape(wantedSize);
-          content->setParent(this);
-          connect(attachTo, SIGNAL(destroyed()), SLOT(deleteLater()));
+          _content->setParent(this);
+
+          createShape();
+
+          _hideTimer->setSingleShot(true);
+          connect(_hideTimer, SIGNAL(timeout()), this, SLOT(close()));
         }
 
-        void PopoverWidget::createShapeWithArrowInSize( const QSize& size )
+        QPoint PopoverWidget::arrowAdjustment() const
         {
-          createShape( size - QSize( _arrowLength, 0 ) );
+          return QPoint(0.0, -_arrowOffset);
         }
 
-        void PopoverWidget::createShape( const QSize& size )
+        void PopoverWidget::enterEvent(QEvent* event)
+        {
+          printf("enter - stopping\n");
+          _hideTimer->stop();
+          if(_closingAnimation)
+          {
+            printf("breaking animation\n");
+            _closingAnimation->disconnect();
+            int curTime = _closingAnimation->currentTime();
+            _closingAnimation->setDirection(QPropertyAnimation::Backward);
+            _closingAnimation->start();
+            _closingAnimation->setCurrentTime(curTime);
+          }
+          QWidget::enterEvent(event);
+        }
+
+        void PopoverWidget::leaveEvent(QEvent* event)
+        {
+          printf("leave - starting\n");
+          _hideTimer->start(_hideTimeout);
+          QWidget::leaveEvent(event);
+        }
+
+        void PopoverWidget::animationFinished()
+        {
+          printf("animation finished\n");
+          delete _closingAnimation;
+          _closingAnimation = NULL;
+        }
+
+        void PopoverWidget::showEvent(QShowEvent* event)
+        {
+          printf("show - animating\n");
+          QPropertyAnimation* animation = new QPropertyAnimation(this, "geometry");
+          animation->setDuration(500);
+          animation->setStartValue(QRectF(pos(), QSizeF( 0.5 * _wantedSize.width(), 0.5 * _wantedSize.height())));
+          animation->setEndValue(QRectF(pos(), _wantedSize));
+          animation->setEasingCurve(QEasingCurve::OutBack);
+
+          animation->start();
+
+          connect(animation, SIGNAL(finished()), this, SLOT(animationFinished()));
+
+          QWidget::showEvent(event);
+        }
+
+        void PopoverWidget::closeEvent(QCloseEvent* event)
+        {
+          if(_closingAnimation)
+          {
+            printf("close - closing\n");
+            delete _closingAnimation;
+            _closingAnimation = NULL;
+            QWidget::closeEvent(event);
+          }
+          else
+          {
+            printf("close - animating\n");
+            event->ignore();
+
+            _closingAnimation = new QPropertyAnimation(this, "geometry");
+            _closingAnimation->setDuration(500);
+            _closingAnimation->setStartValue(QRectF(pos(), size()));
+            _closingAnimation->setEndValue(QRectF(pos(), QSizeF( 0.5 * size().width(), 0.5 * size().height())));
+            _closingAnimation->setEasingCurve(QEasingCurve::InBack);
+
+            _closingAnimation->start();
+
+            connect(_closingAnimation, SIGNAL(finished()), this, SLOT(close()));
+            connect(_closingAnimation, SIGNAL(finished()), this, SLOT(animationFinished()));
+          }
+        }
+
+        void PopoverWidget::createShape()
         {
           QPainterPath arrowPath;
           QPainterPath areaPath;
@@ -47,14 +131,14 @@ namespace fhg
           {
             arrowPoly.translate( _arrowLength, _arrowOffset );
             arrowPath.addPolygon( arrowPoly );
-            areaPath.addRoundRect( QRect( QPoint( _arrowLength, 0 ), size ), _roundness );
+            areaPath.addRoundRect( QRect( QPoint( _arrowLength, 0 ), _wantedSize ), _roundness );
             _content->move( _arrowLength + _contentPadding, _contentPadding );
           }
           else /*right*/
           {
-            arrowPoly.translate( size.width(), _arrowOffset );
+            arrowPoly.translate( _wantedSize.width(), _arrowOffset );
             arrowPath.addPolygon( arrowPoly );
-            areaPath.addRoundRect( QRect( QPoint(), size ), _roundness );
+            areaPath.addRoundRect( QRect( QPoint(), _wantedSize ), _roundness );
             _content->move( _contentPadding, _contentPadding );
           }
 
@@ -74,7 +158,8 @@ namespace fhg
 
         void PopoverWidget::resizeEvent( QResizeEvent* event )
         {
-          createShapeWithArrowInSize( event->size() );
+          _wantedSize = event->size() -  QSize(_arrowLength, 0);
+          createShape();
         }
 
         QSize PopoverWidget::sizeHint() const

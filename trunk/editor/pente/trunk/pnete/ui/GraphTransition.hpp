@@ -51,7 +51,7 @@ namespace fhg
           }
           
         public slots:
-          void deleteTriggered(QAction *);
+          void deleteTriggered(QAction*);
       
         protected:
           virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);

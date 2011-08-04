@@ -80,7 +80,7 @@ namespace fhg
         
         foreach(QFileInfo fileInfo, directory.entryInfoList(QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot))
         {
-          data::Transition* transition = new data::Transition(fileInfo.absoluteFilePath());
+          data::Transition* transition = new data::Transition(fileInfo.absoluteFilePath());     // memory is leaked.
           currentRoot->appendChild(new TransitionLibraryItem(transition, trusted, currentRoot));
         }
       }

@@ -3,6 +3,9 @@
 
 #include <QWidget>
 
+class QPropertyAnimation;
+class QTimer;
+
 namespace fhg
 {
   namespace pnete
@@ -16,28 +19,39 @@ namespace fhg
 
         public:
           //! \note the PopoverWidget takes ownership of content!
-          PopoverWidget(QWidget* attachTo, QWidget* content);
+          PopoverWidget(QWidget* content);
           QSize sizeHint() const;
 
+          QPoint arrowAdjustment() const;
+
         protected:
-          void paintEvent(QPaintEvent* event);
-          void resizeEvent(QResizeEvent* event);
+          virtual void paintEvent(QPaintEvent* event);
+          virtual void resizeEvent(QResizeEvent* event);
+          virtual void closeEvent(QCloseEvent* event);
+          virtual void showEvent(QShowEvent* event);
+          virtual void leaveEvent(QEvent* event);
+          virtual void enterEvent(QEvent* event);
+
+        public slots:
+          void animationFinished();
 
         private:
-          void createShape( const QSize& size );
-          void createShapeWithArrowInSize( const QSize& size );
+          void createShape();
 
           const int _arrowOffset;
           const int _arrowLength;
           const int _roundness;
           const int _contentPadding;
 
-          QWidget* _attachTo;
           QWidget* _content;
 
           QRegion _widgetShape;
           QPainterPath _shapePath;
-          QSize _sizeHint;
+          QPropertyAnimation* _closingAnimation;
+          QSize _wantedSize;
+
+          QTimer* _hideTimer;
+          int _hideTimeout;
       };
     }
   }

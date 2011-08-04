@@ -6,6 +6,9 @@
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
 #include <QDebug>
+#include <QToolButton>
+#include <QGraphicsProxyWidget>
+#include <QPushButton>
 
 #include "GraphPort.hpp"
 #include "GraphStyle.hpp"
@@ -27,7 +30,7 @@ namespace fhg
       _dragging(false),
       _producedFrom(producedFrom)
       {
-        new ui::PopoverWidgetButton( this );
+        new TransitionCogWheelButton(this);
         setAcceptHoverEvents(true);
       }
 
