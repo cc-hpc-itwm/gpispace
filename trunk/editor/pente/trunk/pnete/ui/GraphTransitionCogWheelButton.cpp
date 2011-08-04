@@ -1,4 +1,4 @@
-#include "PopoverWidgetButton.hpp"
+#include "GraphTransitionCogWheelButton.hpp"
 
 #include <QSizeF>
 #include <QPointF>

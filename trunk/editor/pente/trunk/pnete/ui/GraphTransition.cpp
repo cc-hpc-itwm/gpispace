@@ -12,8 +12,7 @@
 
 #include "GraphPort.hpp"
 #include "GraphStyle.hpp"
-
-#include "ui/PopoverWidgetButton.hpp"
+#include "GraphTransitionCogWheelButton.hpp"
 
 namespace fhg
 {

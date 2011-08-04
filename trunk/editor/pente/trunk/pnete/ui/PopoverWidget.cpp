@@ -9,8 +9,6 @@
 #include <QPropertyAnimation>
 #include <QTimer>
 
-#include "PopoverWidgetButton.hpp"
-
 namespace fhg
 {
   namespace pnete
@@ -45,11 +43,9 @@ namespace fhg
 
         void PopoverWidget::enterEvent(QEvent* event)
         {
-          printf("enter - stopping\n");
           _hideTimer->stop();
           if(_closingAnimation)
           {
-            printf("breaking animation\n");
             _closingAnimation->disconnect();
             int curTime = _closingAnimation->currentTime();
             _closingAnimation->setDirection(QPropertyAnimation::Backward);
@@ -61,21 +57,18 @@ namespace fhg
 
         void PopoverWidget::leaveEvent(QEvent* event)
         {
-          printf("leave - starting\n");
           _hideTimer->start(_hideTimeout);
           QWidget::leaveEvent(event);
         }
 
         void PopoverWidget::animationFinished()
         {
-          printf("animation finished\n");
           delete _closingAnimation;
           _closingAnimation = NULL;
         }
 
         void PopoverWidget::showEvent(QShowEvent* event)
         {
-          printf("show - animating\n");
           QPropertyAnimation* animation = new QPropertyAnimation(this, "geometry");
           animation->setDuration(500);
           animation->setStartValue(QRectF(pos(), QSizeF( 0.5 * _wantedSize.width(), 0.5 * _wantedSize.height())));
@@ -93,14 +86,12 @@ namespace fhg
         {
           if(_closingAnimation)
           {
-            printf("close - closing\n");
             delete _closingAnimation;
             _closingAnimation = NULL;
             QWidget::closeEvent(event);
           }
           else
           {
-            printf("close - animating\n");
             event->ignore();
 
             _closingAnimation = new QPropertyAnimation(this, "geometry");
