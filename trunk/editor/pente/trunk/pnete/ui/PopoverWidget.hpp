@@ -2,8 +2,8 @@
 #define UIPOPOVERWIDGET_HPP 1
 
 #include <QWidget>
+#include <QPropertyAnimation>
 
-class QPropertyAnimation;
 class QTimer;
 
 namespace fhg
@@ -37,6 +37,7 @@ namespace fhg
 
         private:
           void createShape();
+          QPropertyAnimation* createAnimation();
 
           const int _arrowOffset;
           const int _arrowLength;

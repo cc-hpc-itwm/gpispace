@@ -46,10 +46,9 @@ namespace fhg
           _hideTimer->stop();
           if(_closingAnimation)
           {
-            _closingAnimation->pause();
             _closingAnimation->disconnect();
             int curTime = _closingAnimation->currentTime();
-            _closingAnimation->setDirection(QPropertyAnimation::Backward);
+            _closingAnimation->setDirection(QPropertyAnimation::Forward);
             _closingAnimation->start();
             _closingAnimation->setCurrentTime(curTime);
             connect(_closingAnimation, SIGNAL(finished()), this, SLOT(animationFinished()));
@@ -65,21 +64,26 @@ namespace fhg
 
         void PopoverWidget::animationFinished()
         {
-          delete _closingAnimation;
           _closingAnimation = NULL;
+        }
+
+        QPropertyAnimation* PopoverWidget::createAnimation()
+        {
+          QPropertyAnimation *animation = new QPropertyAnimation(this, "geometry");
+          animation->setDuration(500);
+          animation->setStartValue(QRectF(pos(), size() * 0.5));
+          animation->setEndValue(QRectF(pos(), size()));
+          animation->setEasingCurve(QEasingCurve::OutBack);
+          return animation;
         }
 
         void PopoverWidget::showEvent(QShowEvent* event)
         {
-          QPropertyAnimation* animation = new QPropertyAnimation(this, "geometry");
-          animation->setDuration(500);
-          animation->setStartValue(QRectF(pos(), QSizeF( 0.5 * _wantedSize.width(), 0.5 * _wantedSize.height())));
-          animation->setEndValue(QRectF(pos(), _wantedSize));
-          animation->setEasingCurve(QEasingCurve::OutBack);
-
-          animation->start();
+          QPropertyAnimation *animation = createAnimation();
 
           connect(animation, SIGNAL(finished()), this, SLOT(animationFinished()));
+
+          animation->start(QPropertyAnimation::DeleteWhenStopped);
 
           QWidget::showEvent(event);
         }
@@ -96,16 +100,13 @@ namespace fhg
           {
             event->ignore();
 
-            _closingAnimation = new QPropertyAnimation(this, "geometry");
-            _closingAnimation->setDuration(500);
-            _closingAnimation->setStartValue(QRectF(pos(), size()));
-            _closingAnimation->setEndValue(QRectF(pos(), QSizeF( 0.5 * size().width(), 0.5 * size().height())));
-            _closingAnimation->setEasingCurve(QEasingCurve::InBack);
-
-            _closingAnimation->start();
+            _closingAnimation = createAnimation();
+            _closingAnimation->setDirection(QPropertyAnimation::Backward);
 
             connect(_closingAnimation, SIGNAL(finished()), this, SLOT(close()));
             connect(_closingAnimation, SIGNAL(finished()), this, SLOT(animationFinished()));
+
+            _closingAnimation->start(QPropertyAnimation::DeleteWhenStopped);
           }
         }
 
@@ -142,6 +143,7 @@ namespace fhg
 
         void PopoverWidget::paintEvent(QPaintEvent *)
         {
+          //QPixmap QPixmap::grabWidget ( QWidget * widget, const QRect & rectangle )
           static const QPen border( QBrush( Qt::black ), 4 );
 
           QPainter painter(this);
