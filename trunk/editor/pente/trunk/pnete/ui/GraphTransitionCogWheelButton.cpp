@@ -23,14 +23,13 @@ namespace fhg
       : QGraphicsItem(linkedTransition)
       , _linkedTransition(linkedTransition)
       {
-        const qreal padding = 5.0;                                              // hardcoded constant
-        const QSizeF temp = parentItem()->boundingRect().size() - boundingRect().size();
-        setPos( QPointF( temp.width() - padding, temp.height() - padding ) );
+        const QPointF padding(5.0, 5.0);                                        // hardcoded constant
+        setPos(parentItem()->boundingRect().bottomRight() - boundingRect().bottomRight() - padding);
       }
 
       QRectF TransitionCogWheelButton::boundingRect() const
       {
-        return QRectF(0.0, 0.0, 20.0, 20.0);
+        return QRectF(0.0, 0.0, 20.0, 20.0);                                    // hardcoded constant
       }
 
       void TransitionCogWheelButton::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)

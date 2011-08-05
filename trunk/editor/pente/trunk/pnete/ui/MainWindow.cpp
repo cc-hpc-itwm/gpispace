@@ -102,11 +102,12 @@ namespace fhg
         mainToolBar->addWidget(spacer);
         
         //! \todo on !OSX, orientation of the toolbar can change. take care of slider!
+        //! \note mainToolBar emits orientationChanged -> set slider orientation.
         QSlider* zoomSlider = new QSlider(Qt::Horizontal, this);
         zoomSlider->setMaximumSize(QSize(200, zoomSlider->height()));           // hardcoded constant
         zoomSlider->setRange(10, 300);                                          // hardcoded constant
         mainToolBar->addWidget(zoomSlider);
-        
+
         //! \todo icon. ._.
         QSpinBox* zoomSpinBox = new QSpinBox(this);
         zoomSpinBox->setSuffix("%");

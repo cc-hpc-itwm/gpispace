@@ -23,7 +23,7 @@ namespace fhg
       Transition::Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent)
       : QGraphicsItem(parent),
       _title(title),
-      _dragStart(0,0),
+      _dragStart(0, 0),
       _size(160, 100),                                                          // hardcoded constant
       _highlighted(false),
       _dragging(false),
@@ -71,53 +71,53 @@ namespace fhg
           scene()->update();
         }
       }
-      
+
       void Transition::hoverLeaveEvent(QGraphicsSceneHoverEvent*)
       {
         _highlighted = false;
         update(boundingRect());
       }
-      
+
       void Transition::hoverEnterEvent(QGraphicsSceneHoverEvent*)
       {
         _highlighted = true;
         update(boundingRect());
       }
-      
+
       QPainterPath Transition::shape() const
       {
         return Style::transitionShape(_size);
       }
-      
+
       QRectF Transition::boundingRect() const
       {
         return Style::transitionBoundingRect(_size);
       }
-      
+
       void Transition::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
       {
         Style::transitionPaint(painter, this);
       }
-      
+
       const QString& Transition::title() const
       {
         return _title;
       }
-      
+
       bool Transition::highlighted() const
       {
         return _highlighted;
       }
-      
+
       void Transition::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
       {
         QMenu* menu = new QMenu();
         menu->addAction(tr("Delete Transition"));
         menu->popup(event->screenPos());
-      
+
         connect(menu, SIGNAL(triggered(QAction *)), this, SLOT(deleteTriggered(QAction *)));
       }
-      
+
       void Transition::deleteTriggered(QAction *)
       {
         foreach(QGraphicsItem* child, childItems())
@@ -127,10 +127,10 @@ namespace fhg
           {
             port->deleteConnection();
           }
-        } 
+        }
         scene()->removeItem(this);
       }
-      
+
       void Transition::repositionChildrenAndResize()
       {
         qreal positionIn, positionOut, positionAny, positionParam;
@@ -174,9 +174,9 @@ namespace fhg
         positionOut -= padding;
         positionAny -= padding;
         positionParam += padding;
-        
+
         _size = QSizeF(std::max(_size.width(), positionAny), std::max(_size.height(), std::max(positionOut, positionIn)));
-        
+
         // is this correct?
         if(positionParam < 0.0)
         {
@@ -184,7 +184,7 @@ namespace fhg
           repositionChildrenAndResize();
         }
       }
-      
+
       const data::Transition& Transition::producedFrom() const
       {
         return _producedFrom;

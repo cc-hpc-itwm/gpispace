@@ -38,6 +38,7 @@ namespace fhg
 
         QPoint PopoverWidget::arrowAdjustment() const
         {
+          //! \todo other side?
           return QPoint(0.0, -_arrowOffset);
         }
 
