@@ -1,6 +1,7 @@
  <!DOCTYPE RCC><RCC version="1.0">
  <qresource>
      <file>lock.png</file>
+     <file>cogwheel.png</file>
      <file>pente.png</file>
      <file>localization/german.qm</file>
  </qresource>

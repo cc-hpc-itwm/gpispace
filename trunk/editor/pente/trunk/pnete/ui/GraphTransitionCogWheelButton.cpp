@@ -5,6 +5,7 @@
 #include <QRectF>
 #include <QPainter>
 #include <QGraphicsSceneMouseEvent>
+#include <QImage>
 
 //! \note popover content. to be removed.
 #include <QWidget>
@@ -29,13 +30,12 @@ namespace fhg
 
       QRectF TransitionCogWheelButton::boundingRect() const
       {
-        return QRectF(0.0, 0.0, 20.0, 20.0);                                    // hardcoded constant
+        return QRectF(0.0, 0.0, 22.0, 22.0);                                    // hardcoded constant
       }
 
       void TransitionCogWheelButton::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
       {
-        //! \todo Draw cogwheel.
-        painter->drawRect(boundingRect());
+        painter->drawImage(QPointF(), QImage(":/cogwheel.png"), QRectF(0.0, 0.0, 22.0, 22.0));
       }
 
       void TransitionCogWheelButton::mousePressEvent(QGraphicsSceneMouseEvent* event)
