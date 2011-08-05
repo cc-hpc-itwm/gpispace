@@ -76,7 +76,7 @@ namespace fhg
         {
           graph::Transition* transition = createTransitionFromMimeData(mimeData->data(TransitionLibraryModel::mimeType));
           scene()->addItem(transition);
-          transition->setPos(graph::Style::snapToRaster(mapToScene(event->pos())));
+          transition->setPos(graph::Style::snapToRaster(mapToScene(event->pos()) - transition->boundingRect().bottomRight() / 2.0));
           event->acceptProposedAction();
         }
       }
