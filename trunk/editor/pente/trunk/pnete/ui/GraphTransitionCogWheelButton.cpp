@@ -35,6 +35,7 @@ namespace fhg
 
       void TransitionCogWheelButton::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
       {
+        //! \todo Use licenced icon.
         painter->drawImage(QPointF(), QImage(":/cogwheel.png"), QRectF(0.0, 0.0, 22.0, 22.0));
       }
 
