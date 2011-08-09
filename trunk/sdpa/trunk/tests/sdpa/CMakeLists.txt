@@ -64,7 +64,6 @@ set (tc_srcs
   test_StopRestartAgents.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
-  test_PushCap
 )
 
 foreach (tc_src ${tc_srcs})
