@@ -576,7 +576,7 @@ bool SchedulerImpl::post_request(bool force)
       if( force || bReqAllowed )
       {
           ptr_comm_handler_->requestJob();
-          SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
+          //SDPA_LOG_DEBUG("The agent "<<ptr_comm_handler_->name()<<" has posted a new job request!");
           bReqPosted = true;
       }
 
@@ -608,6 +608,10 @@ void SchedulerImpl::feed_workers()
     try {
 
     	sdpa::worker_id_t worker_id = ptr_worker_man_->getLeastLoadedWorker();
+
+    	Worker::ptr_t pWorker(findWorker(worker_id));
+
+    	if( pWorker->nbAllocatedJobs() < pWorker->capacity() )
     	{
     		if(ptr_comm_handler_)
     		{
@@ -618,6 +622,8 @@ void SchedulerImpl::feed_workers()
     			SDPA_LOG_WARN("Invalid communication handler");
     		}
     	}
+    	else
+    		SDPA_LOG_WARN("All the workers are fully loaded!");
 
     	// pWorker->print();
     }

@@ -76,7 +76,7 @@ class DummyWorkflowEngine : public IWorkflowEngine {
     	pIAgent_ = pIAgent;
     }
 
- /*   we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
+ /* we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const & )> sig_submitted;
     we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_finished;
     we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_failed;
     we::mgmt::util::signal<void (const DummyWorkflowEngine*, internal_id_type const &, std::string const &)> sig_cancelled;
