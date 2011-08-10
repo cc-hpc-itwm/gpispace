@@ -98,16 +98,6 @@ namespace sdpa {
 				typedef boost::recursive_mutex mutex_type;
 				typedef boost::unique_lock<mutex_type> lock_type;
 
-				DaemonFSM(  const std::string &name,
-				            seda::Stage* ptrToMasterStage,
-				            seda::Stage* ptrToSlaveStage,
-				            IWorkflowEngine*  pArgSdpa2Gwes);
-
-				DaemonFSM(  const std::string &name,
-							IWorkflowEngine*  pArgSdpa2Gwes,
-							const std::string& toMasterStageName,
-							const std::string& toSlaveStageName = std::string(""));
-
 				DaemonFSM(  const std::string &name = "",
 							const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),
 							unsigned int cap = 10000,

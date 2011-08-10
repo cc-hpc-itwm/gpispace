@@ -25,27 +25,6 @@ using namespace sdpa::events;
 using namespace sdpa::daemon;
 using namespace sdpa::fsm::bsc;
 
-DaemonFSM::DaemonFSM(	const std::string &name,
-		seda::Stage* ptrToMasterStage,
-		seda::Stage* ptrToSlaveStage,
-		IWorkflowEngine*  pArgSdpa2Gwes)
-	: GenericDaemon(name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
-	  SDPA_INIT_LOGGER("sdpa.fsm.bsc.DaemonFSM")
-{
-	initiate();
-	SDPA_LOG_DEBUG("Daemon state machine initialized ...");
-}
-
-DaemonFSM::DaemonFSM( const std::string &name,
-                      IWorkflowEngine*  pArgSdpa2Gwes,
-                      const std::string& toMasterStageName,
-                      const std::string& toSlaveStageName )
-  : GenericDaemon(name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes),
-    SDPA_INIT_LOGGER(name+"FSM")
-{
-  initiate();
-  SDPA_LOG_DEBUG("Daemon state machine initialized ...");
-}
 
 DaemonFSM::DaemonFSM( const std::string &name,
                       const std::vector<std::string>& arrMasterNames = std::vector<std::string>(),

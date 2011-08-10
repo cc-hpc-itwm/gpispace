@@ -41,76 +41,7 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 
-// constructor for (obsolete) test cases without network
-//Provide ptr to an implementation of Sdpa2Gwes
-GenericDaemon::GenericDaemon( const std::string &name,
-                              seda::Stage* ptrToMasterStage,
-                              seda::Stage* ptrToSlaveStage,
-                              IWorkflowEngine*  pArgSdpa2Gwes)
-      : Strategy(name),
-        SDPA_INIT_LOGGER(name),
-        ptr_job_man_(new JobManager()),
-        ptr_scheduler_(),
-        ptr_workflow_engine_(pArgSdpa2Gwes),
-        ptr_to_master_stage_(ptrToMasterStage),
-        ptr_to_slave_stage_(ptrToSlaveStage),
-        m_bRegistered(false),
-        m_nRank(0),
-        m_nCap(10000),
-        m_strAgentUID(id_generator::instance().next()),
-        m_nExternalJobs(0),
-        m_bRequestsAllowed(false),
-        m_bStopped(false),
-        m_bStarted(false),
-        m_bConfigOk(false),
-        m_threadBkpService(this),
-        m_last_request_time(0)
-       //, m_bUseRequestModel(false)
-{
-	//daemon_cfg_ = new sdpa::util::Config;
-}
-
-GenericDaemon::GenericDaemon( const std::string &name,
-                              const std::string& toMasterStageName,
-                              const std::string& toSlaveStageName,
-                              IWorkflowEngine*  pArgSdpa2Gwes )
-      : Strategy(name),
-        SDPA_INIT_LOGGER(name),
-        ptr_job_man_(new JobManager()),
-        ptr_scheduler_(),
-        ptr_workflow_engine_(pArgSdpa2Gwes),
-        m_bRegistered(false),
-        m_nRank(0),
-        m_nCap(10000),
-        m_strAgentUID(id_generator::instance().next()),
-        m_nExternalJobs(0),
-        m_to_master_stage_name_(toMasterStageName),
-        m_to_slave_stage_name_(toSlaveStageName),
-        m_bRequestsAllowed(false),
-        m_bStopped(false),
-        m_bStarted(false),
-        m_bConfigOk(false),
-        m_threadBkpService(this),
-        m_last_request_time(0)
-        //, m_bUseRequestModel(false)
-{
-	if(!toMasterStageName.empty())
-	{
-	    seda::Stage::Ptr pshToMasterStage = seda::StageRegistry::instance().lookup(toMasterStageName);
-	    ptr_to_master_stage_ = pshToMasterStage;
-	}
-
-	if(!toSlaveStageName.empty())
-	{
-	    seda::Stage::Ptr pshToSlaveStage = seda::StageRegistry::instance().lookup(toSlaveStageName);
-	    ptr_to_slave_stage_ = pshToSlaveStage;
-	}
-
-	//daemon_cfg_ = new sdpa::util::Config;
-}
-
-// current constructor
-// with network scommunication
+//constructor
 GenericDaemon::GenericDaemon( 	const std::string name,
 								const std::vector<std::string>& m_arrMasterNames,
 								unsigned int cap,
@@ -775,7 +706,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   if( !scheduler()->useRequestModel() && jobManager()->numberExtJobs() > capacity() )
   {
 	  //generate a reject event
-	  SDPA_LOG_INFO("Capacity exceeded! Cannot accept new jobs. Reject the job "<<e.job_id().str());
+	  SDPA_LOG_INFO("Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
 	  //send it upwards
 	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBREJECTED, e.job_id().str()) );
 	  sendEventToMaster(pErrorEvt);

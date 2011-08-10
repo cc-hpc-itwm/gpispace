@@ -80,24 +80,6 @@ namespace sdpa {
       }
 
       DaemonFSM::DaemonFSM( const std::string &name,
-                              seda::Stage* ptrToMasterStage,
-                              seda::Stage* ptrToSlaveStage,
-                              IWorkflowEngine*  pArgSdpa2Gwes )
-      :GenericDaemon( name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes )
-      {
-        DLOG(TRACE, "Daemon state machine created");
-      }
-
-      DaemonFSM::DaemonFSM(  const std::string &name,
-                              IWorkflowEngine*  pArgSdpa2Gwes,
-                              const std::string& toMasterStageName,
-                              const std::string& toSlaveStageName )
-      : GenericDaemon( name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes )
-      {
-        DLOG(TRACE, "Daemon state machine created");
-      }
-
-      DaemonFSM::DaemonFSM( const std::string &name,
                             const sdpa::master_list_t& arrMasterNames,
                             unsigned int cap,
                             IWorkflowEngine* pArgSdpa2Gwes )

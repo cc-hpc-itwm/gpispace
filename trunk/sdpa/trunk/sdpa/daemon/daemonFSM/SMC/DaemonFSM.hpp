@@ -35,7 +35,7 @@ namespace sdpa {
                 //typedef boost::unique_lock<mutex_type> lock_type;
 
                 // obsolete
-                DaemonFSM( const std::string &name,
+                /*DaemonFSM( const std::string &name,
                            seda::Stage* ptrToMasterStage,
                            seda::Stage* ptrToSlaveStage,
                            IWorkflowEngine*  pArgSdpa2Gwes)
@@ -56,7 +56,7 @@ namespace sdpa {
                   m_fsmContext(*this)
                 {
                   DLOG(TRACE, "Daemon state machine created");
-                }
+                }*/
 
                 DaemonFSM(  const std::string &name = "",
                             const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),

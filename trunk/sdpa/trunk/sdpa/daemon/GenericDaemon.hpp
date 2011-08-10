@@ -292,11 +292,6 @@ protected:
            l->print_statistics( std::cerr );
        }
 
-        // obsolete
-        GenericDaemon( const std::string&, seda::Stage*, seda::Stage*, IWorkflowEngine* );
-        // obsolete
-        GenericDaemon( const std::string &name, const std::string&, const std::string&, IWorkflowEngine* );
-
         virtual Scheduler* create_scheduler(bool bUseReqModel)
         {
            return NULL;

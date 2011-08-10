@@ -63,7 +63,7 @@ static const std::string kvs_host () { static std::string s("localhost"); return
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
 const int NMAXTRIALS = 10000;
-const int NMAXTHRDS = 10;
+const int NMAXTHRDS = 5;
 const int MAX_CAP = 100;
 
 namespace po = boost::program_options;
@@ -299,9 +299,9 @@ void MyFixture::run_client(int i)
 
 BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testMultipleMasters_req )
+/*BOOST_AUTO_TEST_CASE( testMultipleMasters_req )
 {
-	LOG( INFO, "***** testMultipleMasters1 *****"<<std::endl);
+	LOG( INFO, "***** testMultipleMasters_req *****"<<std::endl);
 
 	//string strAppGuiUrl   	= "";
 	string guiUrl   	= "";
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_req )
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 																					 addrNRE,
 																					 vecMasters,
-																					 20,
+																					 1,
 																					 workerUrl,
 																					 guiUrl,
 																					 bLaunchNrePcd,
@@ -374,12 +374,13 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_req )
 
 	ptrOrch->shutdown();
 
-	LOG( INFO, "The test case testMultipleMasters1 terminated!" );
+	LOG( INFO, "The test case testMultipleMasters_req terminated!" );
 }
+*/
 
 BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 {
-	LOG( INFO, "***** testMultipleMasters1 *****"<<std::endl);
+	LOG( INFO, "***** testMultipleMasters_push *****"<<std::endl);
 
 	//string strAppGuiUrl   	= "";
 	string guiUrl   	= "";
@@ -416,7 +417,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 																					 addrNRE,
 																					 vecMasters,
-																					 100,
+																					 1,
 																					 workerUrl,
 																					 guiUrl,
 																					 bLaunchNrePcd,
@@ -452,7 +453,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 
 	ptrOrch->shutdown();
 
-	LOG( INFO, "The test case testMultipleMasters1 terminated!" );
+	LOG( INFO, "The test case testMultipleMasters_push terminated!" );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

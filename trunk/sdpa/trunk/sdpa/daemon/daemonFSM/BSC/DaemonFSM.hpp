@@ -42,21 +42,10 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 {
 	typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
 
-	DaemonFSM(  const std::string &name,
-	            seda::Stage* ptrToMasterStage,
-	            seda::Stage* ptrToSlaveStage,
-	            IWorkflowEngine*  pArgSdpa2Gwes);
-
-	DaemonFSM(  const std::string &name,
-	            IWorkflowEngine*  pArgSdpa2Gwes,
-	            const std::string& toMasterStageName,
-	            const std::string& toSlaveStageName = std::string(""));
-
 	DaemonFSM(  const std::string &name = "",
 	            const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),
 	            unsigned int cap = 10000,
 	            IWorkflowEngine* pArgSdpa2Gwes = NULL );
-
 
 
 	virtual ~DaemonFSM();
