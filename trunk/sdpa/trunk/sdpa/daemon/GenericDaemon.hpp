@@ -248,8 +248,11 @@ namespace sdpa { namespace daemon {
       //void decExtJobsCnt();
       //unsigned int extJobsCnt();
 
-      //void notifyMaster(const sdpa::events::ErrorEvent::error_code_t&);
-      void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t&);
+      template <typename T>
+      void notifyMasters(const T& ptrNotEvt);
+
+      template <typename T>
+      void notifyWorkers(const T& ptrNotEvt);
 
       //bool useRequestModel () const { return m_bUseRequestModel; }
       //void setUseRequestModel (bool b) { m_bUseRequestModel = b; }

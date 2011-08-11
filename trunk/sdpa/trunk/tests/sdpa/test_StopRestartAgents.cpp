@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 	LOG( DEBUG, "Shutdown the orchestrator");
 
 	ptrOrch->shutdown(strBackupOrch);
-	LOG( INFO, "Shutted-down the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
+	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
@@ -493,7 +493,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient_Req )
 	LOG( DEBUG, "Shutdown the orchestrator");
 
 	ptrOrch->shutdown(strBackupOrch);
-	LOG( INFO, "Shutted-down the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
+	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
@@ -573,7 +573,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient_Push )
 	LOG( DEBUG, "Shutdown the orchestrator");
 
 	ptrOrch->shutdown(strBackupOrch);
-	LOG( INFO, "Shutted-down the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
+	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
@@ -654,7 +654,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient_Req )
 	LOG( DEBUG, "Shutdown the orchestrator");
 
 	ptrOrch->shutdown(strBackupOrch);
-	LOG( INFO, "Shutted-down the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
+	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 
@@ -734,7 +734,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient_Push )
 	LOG( DEBUG, "Shutdown the orchestrator");
 
 	ptrOrch->shutdown(strBackupOrch);
-	LOG( INFO, "Shutted-down the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
+	LOG( INFO, "Shutdown the orchestrator. The recovery string is "<<strBackupOrch<<std::endl<<std::endl<<std::endl);
 
 	boost::this_thread::sleep(boost::posix_time::seconds(3));
 

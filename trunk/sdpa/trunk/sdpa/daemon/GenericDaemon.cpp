@@ -136,7 +136,9 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
           requestRegistration();
 
         SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
-        notifyWorkers(sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG);
+
+        ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
+        notifyWorkers(pErrEvt);
     }
     else
     {
@@ -195,7 +197,9 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
                 requestRegistration();
 
         SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
-        notifyWorkers(sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG);
+
+        ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
+        notifyWorkers(pErrEvt);
     }
     else
     {
@@ -234,7 +238,9 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
     	requestRegistration();
 
     SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
-    notifyWorkers(sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG);
+
+    ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
+    notifyWorkers(pErrEvt);
   }
   else
   {
@@ -258,17 +264,41 @@ void GenericDaemon::shutdown( )
     stop();
 }
 
-/*void GenericDaemon::notifyMaster(const sdpa::events::ErrorEvent::error_code_t& errcode )
+template <typename T>
+void GenericDaemon::notifyMasters(const T& ptrNotEvt)
 {
-  //notify master
-  ErrorEvent::Ptr pErrEvt(new ErrorEvent(name(), master(), errcode, "notify the master"));
-  sendEventToMaster(pErrEvt);
-}*/
+	if(m_arrMasterNames.empty())
+	{
+		SDPA_LOG_INFO("The master list is empty. No mater to be notified exist!");
+		return;
+	}
 
-void GenericDaemon::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& errcode)
+	for( sdpa::master_list_t::iterator& iter = m_arrMasterNames.begin(); iter != m_arrMasterNames.end(); iter++ )
+	{
+		ptrNotEvt->to() = *iter;
+		SDPA_LOG_INFO("Send notification to the master "<<*iter);
+		sendEventToMaster(ptrNotEvt);
+	}
+}
+
+template <typename T>
+void GenericDaemon::notifyWorkers(const T& ptrNotEvt)
 {
-  // notify workers
-  scheduler()->notifyWorkers(errcode);
+	std::list<std::string> workerList;
+	scheduler()->getWorkerList(workerList);
+
+	if(workerList.empty())
+	{
+		SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
+	    return;
+	}
+
+	for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
+	{
+		ptrNotEvt->to() = *iter;
+		SDPA_LOG_INFO("Send notification to the worker "<<*iter);
+	    sendEventToMaster(ptrNotEvt);
+	}
 }
 
 // TODO: work here

@@ -67,8 +67,10 @@ namespace sdpa {
 	virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 	void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
+	virtual void getWorkerList(std::list<std::string>&);
+
 	virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
-	virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& );
+	//virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& );
 
 	virtual void addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
 	virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);

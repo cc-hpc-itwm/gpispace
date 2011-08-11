@@ -857,7 +857,13 @@ bool SchedulerImpl::has_job(const sdpa::job_id_t& job_id)
   return ptr_worker_man_->has_job(job_id);
 }
 
-void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& errcode)
+void SchedulerImpl::getWorkerList(std::list<std::string>& workerList)
+{
+	ptr_worker_man_->getWorkerList(workerList);
+}
+
+
+/*void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& errcode)
 {
   std::list<std::string> workerList;
   ptr_worker_man_->getWorkerList(workerList);
@@ -881,6 +887,7 @@ void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& 
   else
 	  SDPA_LOG_ERROR("No valid communication handler!");
 }
+*/
 
 void SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
 {
