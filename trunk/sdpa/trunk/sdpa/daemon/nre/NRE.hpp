@@ -114,6 +114,7 @@ namespace sdpa {
               ar & boost::serialization::base_object<DaemonFSM>(*this);
               ar & url_; //boost::serialization::make_nvp("url_", url_);
               ar & workerUrl_;
+              ar & m_arrMasterNames;
               //ar & m_guiService;
             }
 
