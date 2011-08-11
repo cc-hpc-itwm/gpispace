@@ -524,3 +524,4 @@ void Agent::notifyAppGui(const result_type & result)
     m_guiService.update(evtGui);
     SDPA_LOG_INFO("Sent notification to the application gui! (result ="<<result<<")");
 }
+

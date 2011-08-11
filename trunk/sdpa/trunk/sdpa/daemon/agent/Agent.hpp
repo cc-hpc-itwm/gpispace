@@ -40,11 +40,6 @@ namespace sdpa {
           url_(url),
           m_guiService("SDPA", guiUrl)
         {
-          /*BOOST_FOREACH(std::string master, arrMasterNames)
-          {
-            m_arrMasterNames.push_back(master);
-          }*/
-
           SDPA_LOG_DEBUG("Agent's constructor called ...");
           //ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::Scheduler(this));
 
@@ -77,7 +72,7 @@ namespace sdpa {
         {
           ar & boost::serialization::base_object<DaemonFSM>(*this);
           ar & url_; //boost::serialization::make_nvp("url_", url_);
-          //ar & m_arrMasterNames; //boost::serialization::make_nvp("url_", m_arrMasterNames);
+          ar & m_arrMasterNames; //boost::serialization::make_nvp("url_", m_arrMasterNames);
         }
 
         virtual void backup( std::ostream& );
