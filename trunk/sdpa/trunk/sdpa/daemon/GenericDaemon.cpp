@@ -273,7 +273,7 @@ void GenericDaemon::notifyMasters(const T& ptrNotEvt)
 		return;
 	}
 
-	for( sdpa::master_list_t::iterator& iter = m_arrMasterNames.begin(); iter != m_arrMasterNames.end(); iter++ )
+	for( sdpa::master_list_t::iterator iter = m_arrMasterNames.begin(); iter != m_arrMasterNames.end(); iter++ )
 	{
 		ptrNotEvt->to() = *iter;
 		SDPA_LOG_INFO("Send notification to the master "<<*iter);
