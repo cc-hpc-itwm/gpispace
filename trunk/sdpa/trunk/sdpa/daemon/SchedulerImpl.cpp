@@ -335,10 +335,10 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, 
     pWorker->dispatch(jobId);
     ptr_worker_man_->make_owner(jobId, worker_id);
 
-    const preference_t::rank_list_type& list_ranks = job_pref.ranks();
+    const preference_t::value_list_type& list_ranks = job_pref.values();
 
     int k=0;
-    for( preference_t::rank_list_type::const_iterator it = list_ranks.begin(); it != list_ranks.end(); it++ )
+    for( preference_t::value_list_type::const_iterator it = list_ranks.begin(); it != list_ranks.end(); it++ )
       if( ptr_worker_man_->worker(*it) != worker_id )
       {
           Worker::pref_deg_t pref_deg = k++;
@@ -415,8 +415,8 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
           {
               preference_t::exclude_set_type uset_excluded = job_pref.exclusion();
 
-              const preference_t::rank_list_type& list_prefs = job_pref.ranks();
-              for( preference_t::rank_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
+              const preference_t::value_list_type& list_prefs = job_pref.values();
+              for( preference_t::value_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
               {
                 // use try-catch for the case when the no worker with that rank exists
                 if( schedule_to(jobId, *it, job_pref) )

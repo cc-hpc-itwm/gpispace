@@ -88,12 +88,11 @@ namespace we
       template <typename T>
       struct preference_t
       {
-        typedef T rank_type;
-        typedef rank_type value_type;
-        typedef rank_type argument_type;
+        typedef T value_type;
+        typedef value_type argument_type;
 
         typedef boost::unordered_set<value_type> exclude_set_type;
-        typedef std::vector<value_type> rank_list_type;
+        typedef std::vector<value_type> value_list_type;
 
         explicit
         preference_t (const bool _mandatory = false)
@@ -102,24 +101,24 @@ namespace we
 
         virtual ~preference_t () {}
 
-        yes_no_may can (const rank_type rank) const
+        yes_no_may can (const value_type val) const
         {
           if (is_mandatory())
           {
-            if (is_wanted (rank)) return yes_no_may::YES;
+            if (is_wanted (val)) return yes_no_may::YES;
             return yes_no_may::NO;
           }
           else
           {
-            if (is_wanted (rank)) return yes_no_may::YES;
-            if (is_excluded (rank)) return yes_no_may::NO;
+            if (is_wanted (val)) return yes_no_may::YES;
+            if (is_excluded (val)) return yes_no_may::NO;
             return yes_no_may::MAY;
           }
         }
 
-        bool operator () (const rank_type rank) const
+        bool operator () (const value_type val) const
         {
-          return can(rank);
+          return can(val);
         }
 
         virtual bool is_mandatory (void) const
@@ -127,18 +126,18 @@ namespace we
           return mandatory_;
         }
 
-        bool is_wanted (const rank_type rank) const
+        bool is_wanted (const value_type val) const
         {
-          return ( std::find ( ranks_.begin()
-                             , ranks_.end()
-                             , rank
-                             ) != ranks_.end()
+          return ( std::find ( values_.begin()
+                             , values_.end()
+                             , val
+                             ) != values_.end()
                  );
         }
 
-        preference_t & want (const rank_type rank)
+        preference_t & want (const value_type val)
         {
-          ranks_.push_back (rank);
+          values_.push_back (val);
           return *this;
         }
 
@@ -153,14 +152,14 @@ namespace we
           return *this;
         }
 
-        bool is_excluded (rank_type rank) const
+        bool is_excluded (value_type val) const
         {
-          return excluded_ranks_.find(rank) != excluded_ranks_.end();
+          return excluded_values_.find(val) != excluded_values_.end();
         }
 
-        preference_t & cant (const rank_type rank)
+        preference_t & cant (const value_type val)
         {
-          excluded_ranks_.insert (rank);
+          excluded_values_.insert (val);
           return *this;
         }
 
@@ -175,45 +174,45 @@ namespace we
           return *this;
         }
 
-        preference_t & operator+= (rank_type const & r)
+        preference_t & operator+= (value_type const & r)
         {
           return want (r);
         }
 
-        preference_t & operator-= (rank_type const & r)
+        preference_t & operator-= (value_type const & r)
         {
           return cant (r);
         }
 
-        rank_list_type & ranks(void)
+        value_list_type & values(void)
         {
-          return ranks_;
+          return values_;
         }
 
-        rank_list_type const & ranks(void) const
+        value_list_type const & values(void) const
         {
-          return ranks_;
+          return values_;
         }
 
         exclude_set_type & exclusion (void)
         {
-          return excluded_ranks_;
+          return excluded_values_;
         }
 
         exclude_set_type const & exclusion (void) const
         {
-          return excluded_ranks_;
+          return excluded_values_;
         }
 
         bool empty (void) const
         {
-          return ranks_.empty();
+          return values_.empty();
         }
 
       private:
         bool mandatory_;
-        rank_list_type ranks_;
-        exclude_set_type excluded_ranks_;
+        value_list_type values_;
+        exclude_set_type excluded_values_;
       };
 
       template <typename T>
@@ -240,8 +239,8 @@ namespace we
           os << "want";
         os << ", ";
 
-        os << "{ranks, ";
-        os << fhg::util::show (p.ranks().begin(), p.ranks().end());
+        os << "{values, ";
+        os << fhg::util::show (p.values().begin(), p.values().end());
         os << "}";
 
         if (! p.is_mandatory())
