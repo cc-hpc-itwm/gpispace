@@ -2,6 +2,7 @@
 #ifndef _SDPA_DAEMON_MPL_HPP
 #define _SDPA_DAEMON_MPL_HPP 1
 
+/*
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 
 #undef BOOST_MPL_LIMIT_VECTOR_SIZE
@@ -9,6 +10,6 @@
 
 #undef BOOST_MPL_LIMIT_MAP_SIZE
 #define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
-
+*/
 
 #endif

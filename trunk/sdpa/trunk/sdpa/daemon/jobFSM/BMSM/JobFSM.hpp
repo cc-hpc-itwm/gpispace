@@ -97,11 +97,11 @@ namespace sdpa {
         _row<   Running,    MSMRescheduleEvent,                 Pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
         a_irow< Finished,   sdpa::events::DeleteJobEvent, 					&sm::action_delete_job >,
-        _irow<  Finished,   sdpa::events::JobFinishedEvent >,
+        //_irow<  Finished,   sdpa::events::JobFinishedEvent >,
         a_irow< Finished,   sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
         //      +-----------+------------------------+----------+---------------------+-----
         a_irow< Failed, 	sdpa::events::DeleteJobEvent, 		 		 	&sm::action_delete_job >,
-        _irow<  Failed, 	sdpa::events::JobFailedEvent >,
+        //_irow<  Failed, 	sdpa::events::JobFailedEvent >,
         a_irow< Failed, 	sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
         //      +-----------+------------------------+----------+---------------------+-----
         a_irow< Cancelling, sdpa::events::RetrieveJobResultsEvent, 			&sm::action_retrieve_job_results >,
@@ -111,7 +111,7 @@ namespace sdpa {
         a_row<  Cancelling, sdpa::events::JobFailedEvent, 		 Cancelled, &sm::action_job_failed>,
         //      +-----------+------------------------+----------+---------------------+-----
         a_irow< Cancelled,  sdpa::events::DeleteJobEvent, 		 			&sm::action_delete_job >,
-        _irow<  Cancelled,  sdpa::events::CancelJobEvent >,
+        //_irow<  Cancelled,  sdpa::events::CancelJobEvent >,
         a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,			&sm::action_retrieve_job_results >
         >{};
 
