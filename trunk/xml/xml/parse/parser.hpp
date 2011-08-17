@@ -27,6 +27,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <sstream>
+
 // ************************************************************************* //
 
 namespace xml
@@ -118,11 +120,39 @@ namespace xml
 
       input_type inp (f);
 
-      doc.parse < rapidxml::parse_full
-                | rapidxml::parse_trim_whitespace
-                | rapidxml::parse_normalize_whitespace
-                > (inp.data())
-        ;
+      try
+        {
+          doc.parse < rapidxml::parse_full
+                    | rapidxml::parse_trim_whitespace
+                    | rapidxml::parse_normalize_whitespace
+                    > (inp.data())
+                    ;
+        }
+      catch (const rapidxml::parse_error & e)
+        {
+          int line = 1;
+          int col = 0;
+
+          for ( char * pos = const_cast<char *>(inp.data())
+              ; pos != e.where<char>()
+              ; ++pos
+              )
+            {
+              col += 1;
+
+              if (*pos == '\n')
+                {
+                  col = 0;
+                  line += 1;
+                }
+            }
+
+          std::ostringstream oss;
+
+          oss << "Parse error [" << line << ":" << col << "]: " << e.what();
+
+          throw rapidxml::parse_error (oss.str().c_str(), e.where<void>());
+        }
 
       xml_node_type * node (doc.first_node());
 
