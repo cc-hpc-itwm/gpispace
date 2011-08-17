@@ -73,12 +73,13 @@ foreach (tc_src ${tc_srcs})
 
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name}
-                        seda
                         sdpa-daemon
+			sdpa-com
                         sdpa-client
                         sdpa-events
                         sdpa-util
                         sdpa
+			seda
                         ${FhgLog_LIBRARY}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
@@ -93,19 +94,22 @@ if (USE_REAL_WE)
   set( test_agents_and_act_exec_srcs
     test_AgentsAndActExec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
-)
+    )
 
 add_executable(test_agents_and_act_exec_suite ${test_agents_and_act_exec_srcs} )
 target_link_libraries(  test_agents_and_act_exec_suite
-                        seda
                         sdpa-daemon
+			sdpa-com
                         sdpa-client
                         sdpa-events
                         sdpa-util
                         sdpa
-                        dl
+			seda
+			${FhgLog_LIBRARY}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
-                        ${WE_PRECOMPILE_LIBRARIES})
+                        ${WE_PRECOMPILE_LIBRARIES}
+			dl
+			)
   add_test(test_agents_and_act_exec_suite test_agents_and_act_exec_suite)
 endif (USE_REAL_WE)
