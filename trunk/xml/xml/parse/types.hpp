@@ -44,6 +44,7 @@ namespace xml
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/specialize.hpp>
+#include <xml/parse/type/capability.hpp>
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/transition.hpp>

@@ -1,0 +1,64 @@
+<defun name="capability_propagation">
+  <capability key="GPU" mandatory="false"/>
+  <capability key="I/O" mandatory="false"/>
+  <capability key="LOG" mandatory="false"/>
+  <in name="trigger" type="control" place="trigger"/>
+  <out name="done" type="control" place="done"/>
+  <net>
+    <place name="trigger" type="control"/>
+    <place name="done" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <capability key="GPI"/>
+        <capability key="GPU"/>
+        <capability key="I/O" mandatory="false"/>
+        <capability key="LOG" mandatory="false"/>
+        <capability key="cap23" mandatory="false"/>
+        <capability key="cap2818" mandatory="false"/>
+        <in name="trigger" type="control"/>
+        <out name="done" type="control"/>
+        <condition>
+          ${trigger} :eq: []
+        </condition>
+      </defun>
+      <connect-in port="trigger" place="trigger"/>
+      <connect-out port="done" place="done_init"/>
+    </transition>
+
+    <place name="done_init" type="control"/>
+
+    <transition name="run" inline="false">
+      <defun>
+        <capability key="cap42" mandatory="false"/>
+        <in name="trigger" type="control" place="trigger"/>
+        <out name="done" type="control" place="done"/>
+        <net>
+          <place name="trigger" type="control"/>
+          <place name="done" type="control"/>
+
+          <transition name="run">
+            <defun>
+              <capability key="cap23"/>
+              <capability key="cap3141" mandatory="false"/>
+              <capability key="GPI"/>
+              <capability key="GPU" mandatory="false"/>
+              <capability key="I/O"/>
+              <capability key="LOG" mandatory="false"/>
+              <in name="trigger" type="control"/>
+              <out name="done" type="control"/>
+              <expression/>
+              <condition>
+                ${trigger} :eq: []
+              </condition>
+            </defun>
+            <connect-in port="trigger" place="trigger"/>
+            <connect-out port="done" place="done"/>
+          </transition>
+        </net>
+      </defun>
+      <connect-in port="trigger" place="done_init"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

@@ -435,6 +435,8 @@ namespace xml
 
         cond_vec_type cond;
 
+        capabilities_type capabilities;
+
         we::type::property::type prop;
 
         type f;
@@ -1868,6 +1870,9 @@ namespace xml
                                         )
         {
           dumps (s, f.structs.begin(), f.structs.end());
+
+          dump (s, f.capabilities);
+
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");
 

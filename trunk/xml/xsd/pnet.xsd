@@ -137,6 +137,11 @@
     <xsd:attribute name="name" type="xsd:ID" use="required"/>
   </xsd:complexType>
 
+  <xsd:complexType name="capability_type">
+    <xsd:attribute name="key" type="xsd:string" use="required"/>
+    <xsd:attribute name="mandatory" type="xsd:boolean" use="optional"/>
+  </xsd:complexType>
+
   <xsd:complexType name="place_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
@@ -189,6 +194,7 @@
         <xsd:element name="struct" type="struct_type"/>
         <xsd:element name="include-structs" type="struct_include_type"/>
       </xsd:choice>
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="capability" type="capability_type"/>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="in" type="port_type"/>
         <xsd:element name="out" type="port_type"/>
