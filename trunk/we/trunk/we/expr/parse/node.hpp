@@ -15,8 +15,6 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-
 #include <boost/variant.hpp>
 
 namespace expr
