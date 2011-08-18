@@ -1,0 +1,5 @@
+<defun name="err1">
+  <in name="beep" type="long"/>
+  <out name="boop" type="long"/>
+  <expression>
+</defun>
