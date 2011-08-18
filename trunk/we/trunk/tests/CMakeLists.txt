@@ -26,6 +26,7 @@ set(tc_srcs
     test_expr_parser.cpp
     test_expr_parser_ite.cpp
     test_expr_rename.cpp
+    test_expr_get_names.cpp
     test_generic_permute.cpp
     test_independent_loops.cpp
     test_kirchhoff.cpp
