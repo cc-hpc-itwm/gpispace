@@ -1,6 +1,6 @@
 set (hdrs
   error.hpp
-  parser.hpp
+  pnetc.hpp
   state.hpp
   types.hpp
   util.hpp
@@ -26,7 +26,7 @@ add_custom_command(OUTPUT ${headerlist_hpp}
                    DEPENDS ${headerlist_gen}
                   )
 
-add_executable(pnetc parser.cpp ${headerlist_hpp})
+add_executable(pnetc pnetc.cpp ${headerlist_hpp})
 target_link_libraries(pnetc ${Boost_LIBRARIES})
 target_link_libraries(pnetc ${WE_PRECOMPILE_LIBRARIES})
 install (TARGETS pnetc
@@ -35,7 +35,7 @@ install (TARGETS pnetc
   COMPONENT applications)
 
 if (ENABLE_STATIC_BINARIES)
-  add_executable(pnetc.static parser.cpp ${headerlist_hpp})
+  add_executable(pnetc.static pnetc.cpp ${headerlist_hpp})
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
   target_link_libraries(pnetc.static ${WE_PRECOMPILE_LIBRARIES})
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
