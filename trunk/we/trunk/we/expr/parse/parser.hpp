@@ -22,7 +22,7 @@
 #include <fhg/util/show.hpp>
 
 #include <stack>
-#include <deque>
+#include <list>
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -53,7 +53,7 @@ namespace expr
     public:
       typedef node::key_vec_t key_vec_t;
       typedef node::type nd_t;
-      typedef std::deque<nd_t> nd_stack_t;
+      typedef std::list<nd_t> nd_stack_t;
 
       // iterate through the entries
       typedef nd_stack_t::const_iterator nd_const_it_t;
@@ -306,6 +306,8 @@ namespace expr
 
     public:
       parser (const std::string & input, eval::context & context)
+        : op_stack ()
+        , nd_stack ()
       {
         parse (input, boost::bind ( eval::refnode_value
                                   , boost::ref(context)
@@ -315,9 +317,16 @@ namespace expr
       }
 
       parser (const std::string & input)
+        : op_stack ()
+        , nd_stack ()
       {
         parse (input, eval::refnode_name);
       }
+
+      parser (const nd_stack_t & seq)
+        : op_stack ()
+        , nd_stack (seq)
+      {}
 
       // the parsed expressions in the correct order
       bool empty (void) const { return nd_stack.empty(); }
