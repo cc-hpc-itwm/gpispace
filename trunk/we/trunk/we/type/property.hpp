@@ -479,12 +479,9 @@ namespace we
               ; ++pos
               )
             {
-              if (pos->first != "dump")
-                {
-                  boost::apply_visitor ( visitor::dump (s, pos->first)
-                                       , pos->second
-                                       );
-                }
+              boost::apply_visitor ( visitor::dump (s, pos->first)
+                                   , pos->second
+                                   );
             }
         }
       }

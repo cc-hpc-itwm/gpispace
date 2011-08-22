@@ -22,8 +22,13 @@
 #include <string>
 #include <ostream>
 #include <boost/serialization/nvp.hpp>
+#include <boost/optional.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
+
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
 
 namespace we
 {
@@ -235,6 +240,87 @@ namespace we
       }
       os << "}";
       return os;
+    }
+
+    namespace dump
+    {
+      namespace detail
+      {
+        template<typename Sig, typename Id>
+        inline void dump_generic
+        ( xml_util::xmlstream & s
+        , const port<Sig,Id> & p
+        , const std::string & head
+        , const boost::optional<std::string> & place_name = boost::none
+        )
+        {
+          s.open (head);
+          s.attr ("name", p.name());
+          s.attr ("type", p.signature().nice());
+
+          if (place_name)
+            {
+              s.attr ("place", *place_name);
+            }
+
+          we::type::property::dump::dump (s, p.property());
+
+          s.close ();
+        }
+
+        template<typename Sig, typename Id>
+        inline void dump_with_optional_place_name
+        ( xml_util::xmlstream & s
+        , const port<Sig,Id> & p
+        , const boost::optional<std::string> & place_name = boost::none
+        )
+        {
+          switch (p.direction())
+            {
+            case PORT_IN:
+            case PORT_READ:
+              dump_generic (s, p, "in", place_name);
+              break;
+            case PORT_OUT:
+              dump_generic (s, p, "out", place_name);
+              break;
+            case PORT_IN_OUT:
+              dump_generic (s, p, "in", place_name);
+              dump_generic (s, p, "out", place_name);
+              break;
+            default:
+              throw std::runtime_error ("STRANGE: unknown port direction");
+              break;
+            }
+        }
+      }
+
+      template<typename Sig, typename Id, typename Net>
+      inline void dump ( xml_util::xmlstream & s
+                       , const port<Sig,Id> & p
+                       , const Net & net
+                       )
+      {
+        if (p.has_associated_place())
+          {
+            const std::string & place_name
+              (net.get_place (p.associated_place()).get_name());
+
+            detail::dump_with_optional_place_name (s, p, place_name);
+          }
+        else
+          {
+            detail::dump_with_optional_place_name (s, p);
+          }
+      }
+
+      template<typename Sig, typename Id>
+      inline void dump ( xml_util::xmlstream & s
+                       , const port<Sig,Id> & p
+                       )
+      {
+        detail::dump_with_optional_place_name (s, p);
+      }
     }
   }
 }

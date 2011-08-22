@@ -29,6 +29,9 @@
 #include <we/type/id.hpp>
 
 #include <fhg/util/show.hpp>
+#include <fhg/util/xml.hpp>
+
+namespace xml_util = ::fhg::util::xml;
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -1046,6 +1049,8 @@ namespace we { namespace type {
 
       const we::type::property::type & prop (void) const { return prop_; }
 
+      const port_map_t & ports () const { return ports_; }
+
     private:
       std::string name_;
       data_type data_;
@@ -1114,6 +1119,71 @@ namespace we { namespace type {
     {
       boost::hash<std::string> hasher;
       return hasher(t.name());
+    }
+
+    namespace dump
+    {
+      namespace visitor
+      {
+        template<typename Port>
+        class dump_port : public boost::static_visitor<void>
+        {
+        private:
+          xml_util::xmlstream & _s;
+          const Port & _p;
+
+        public:
+          dump_port (xml_util::xmlstream & s, const Port & p)
+            : _s (s)
+            , _p (p)
+          {}
+
+          template <typename P, typename E, typename T>
+          void operator () ( const petri_net::net< P
+                                                 , transition_t<P, E, T>
+                                                 , E
+                                                 , T
+                                                 > & net
+                           ) const
+          {
+            dump (_s, _p, net);
+          }
+
+          template<typename Other>
+          void operator () (const Other & _) const
+          {
+            dump (_s, _p);
+          }
+        };
+      }
+
+      template<typename P, typename E, typename T>
+      inline void dump ( xml_util::xmlstream & s
+                       , const transition_t<P,E,T> & t
+                       )
+      {
+        typedef transition_t<P,E,T> trans_t;
+
+        s.open ("defun");
+        s.attr ("name", t.name());
+
+        for ( typename trans_t::port_map_t::const_iterator p (t.ports().begin())
+            ; p != t.ports().end()
+            ; ++p
+            )
+          {
+            boost::apply_visitor
+              ( visitor::dump_port<typename trans_t::port_t> (s, p->second)
+              , t.data())
+              ;
+          }
+
+        s.open ("condition");
+        s.content (t.condition());
+        s.close();
+
+        s.close();
+      }
     }
 
     namespace detail
