@@ -18,8 +18,7 @@ namespace expr
     {
       typedef std::string key_type;
       typedef std::size_t version_type;
-//      typedef std::list<expr_type>::iterator line_type;
-      typedef std::size_t line_type;
+      typedef expr::parse::parser::nd_const_it_t line_type;
       typedef std::pair<version_type,line_type> item_type;
       typedef std::vector<item_type> values_type;
 
@@ -83,12 +82,11 @@ namespace expr
             {
               return const_cast<tree_node_type*>(this);
             }
-
             const map_type::const_iterator & child (childs.find (*pos));
 
             if (child != childs.end())
             {
-              return find_child (pos + 1, end);
+              return child->second->find_child (pos + 1, end);
             }
             else
             {
@@ -102,9 +100,9 @@ namespace expr
           }
 
           tree_node_type& add_child ( const key_vec_t::const_iterator & pos
-                                     , const key_vec_t::const_iterator & end
-                                     , const line_type & line
-                                     )
+                                    , const key_vec_t::const_iterator & end
+                                    , const line_type & line
+                                    )
           {
             if (pos == end)
             {
@@ -132,8 +130,14 @@ namespace expr
           {
             const std::string indentstr (helper::indention (indention));
 
-            const values_type::value_type & back (values.back());
-            std::cout << "[" << back.first << ", " << back.second << "]";
+            for( values_type::const_iterator it (values.begin()), end (values.end())
+               ; it != end
+               ; ++it )
+            {
+              //! \todo Make this possible again, by passing in the iterator to begin() and use distance(begin, second).
+              //std::cout << "[" << back.first << ", " << back.second << "]";
+              std::cout << "[" << it->first << "]";
+            }
             if (!childs.empty())
             {
               std::cout << " {\n";
