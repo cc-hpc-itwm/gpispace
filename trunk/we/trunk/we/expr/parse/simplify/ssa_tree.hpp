@@ -4,14 +4,11 @@
 #define _EXPR_PARSE_SIMPLIFY_SSA_TREE_HPP 1
 
 #include <boost/unordered_set.hpp>
-//#include <boost/variant/recursive_wrapper.hpp>
 
 #include <we/expr/parse/node.hpp>
 #include <we/type/value.hpp>
 
 #include <sstream>
-
-//#include <boost/variant.hpp>
 
 namespace expr
 {
