@@ -3,7 +3,8 @@
 #include <we/type/property.hpp>
 
 #include <fhg/util/join.hpp>
-#include <fhg/util/maybe.hpp>
+
+#include <boost/optional.hpp>
 
 #include <iostream>
 
@@ -15,10 +16,10 @@ void set (const std::string & path, const std::string & val)
 {
   std::cout << "# set " << path << std::endl;
 
-  const fhg::util::maybe<prop::mapped_type> old (p.set (path, val));
+  const boost::optional<prop::mapped_type> old (p.set (path, val));
 
   std::cout << p
-            << "overwritten " << (old.isJust() ? "true" : "false")
+            << "overwritten " << (old ? "true" : "false")
             << std::endl
     ;
 }
@@ -57,7 +58,7 @@ void get_val (const std::string & path)
 
 void get_maybe_val (const std::string & path)
 {
-  std::cout << "# get_maybe_val " << path 
+  std::cout << "# get_maybe_val " << path
             << " => " << p.get_maybe_val (path)
             << std::endl
     ;
@@ -65,7 +66,7 @@ void get_maybe_val (const std::string & path)
 
 void get_with_default (const std::string & path, const std::string & dflt)
 {
-  std::cout << "# get_with_default " << path 
+  std::cout << "# get_with_default " << path
             << " => " << p.get_with_default (path, dflt)
             << std::endl
     ;

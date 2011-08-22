@@ -5,6 +5,7 @@
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/optional.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -16,7 +17,6 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 
-#include <fhg/util/maybe.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -215,21 +215,20 @@ namespace we
         }
 
         template<typename IT>
-        const fhg::util::maybe<const value_type &>
+        const boost::optional<const value_type &>
         get_maybe_val (IT pos, IT end, IT zero) const
         {
           try
             {
-              return
-                fhg::util::maybe<const value_type &> (get_val (pos, end, zero));
+              return get_val (pos, end, zero);
             }
           catch (const exception::missing_binding &)
             {
-              return fhg::util::maybe<const value_type &>();
+              return boost::none;
             }
           catch (const exception::not_a_val &)
             {
-              return fhg::util::maybe<const value_type &>();
+              return boost::none;
             }
         }
 
@@ -243,12 +242,12 @@ namespace we
         // ----------------------------------------------------------------- //
 
         template<typename IT>
-        fhg::util::maybe<mapped_type> set ( IT pos
-                                          , IT end
-                                          , const value_type & val
-                                          )
+        boost::optional<mapped_type> set ( IT pos
+                                         , IT end
+                                         , const value_type & val
+                                         )
         {
-          fhg::util::maybe<mapped_type> old_value;
+          boost::optional<mapped_type> old_value;
 
           if (pos == end)
             {
@@ -281,17 +280,17 @@ namespace we
           return old_value;
         }
 
-        fhg::util::maybe<mapped_type>
+        boost::optional<mapped_type>
         set (const path_type & path, const value_type & val)
         {
           return set (path.begin(), path.end(), val);
         }
 
-        fhg::util::maybe<mapped_type>
+        boost::optional<mapped_type>
         set (const std::string & path, const value_type & val)
         {
           const path_type path_splitted (util::split (path));
-          const fhg::util::maybe<mapped_type> ret (set (path_splitted, val));
+          const boost::optional<mapped_type> ret (set (path_splitted, val));
 
           return ret;
         }
@@ -341,23 +340,23 @@ namespace we
         // ----------------------------------------------------------------- //
 
         template<typename IT>
-        const fhg::util::maybe<const value_type &>
+        const boost::optional<const value_type &>
         get_maybe_val (IT pos, IT end) const
         {
           return get_maybe_val (pos, end, pos);
         }
 
-        const fhg::util::maybe<const value_type &>
+        const boost::optional<const value_type &>
         get_maybe_val (const path_type & path) const
         {
           return get_maybe_val (path.begin(), path.end());
         }
 
-        const fhg::util::maybe<const value_type &>
+        const boost::optional<const value_type &>
         get_maybe_val (const std::string & path) const
         {
           const path_type path_splitted (util::split (path));
-          const fhg::util::maybe<const value_type &> ret
+          const boost::optional<const value_type &> ret
             (get_maybe_val (path_splitted));
 
           return ret;
@@ -369,7 +368,7 @@ namespace we
         const value_type &
         get_with_default (IT pos, IT end, const value_type & dflt) const
         {
-          return get_maybe_val (pos, end, pos).get_with_default (dflt);
+          return get_maybe_val (pos, end, pos).get_value_or (dflt);
         }
 
         const value_type &
@@ -480,9 +479,12 @@ namespace we
               ; ++pos
               )
             {
-              boost::apply_visitor ( visitor::dump (s, pos->first)
-                                   , pos->second
-                                   );
+              if (pos->first != "dump")
+                {
+                  boost::apply_visitor ( visitor::dump (s, pos->first)
+                                       , pos->second
+                                       );
+                }
             }
         }
       }
