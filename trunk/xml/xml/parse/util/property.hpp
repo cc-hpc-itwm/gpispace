@@ -7,9 +7,9 @@
 #include <xml/parse/state.hpp>
 #include <xml/parse/warning.hpp>
 
-#include <fhg/util/maybe.hpp>
-
 #include <we/type/property.hpp>
+
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -27,10 +27,10 @@ namespace xml
                         , const property::value_type & value
                         )
         {
-          const fhg::util::maybe<property::mapped_type> old
+          const boost::optional<property::mapped_type> old
             (prop.set (path, value));
 
-          if (old.isJust())
+          if (old)
             {
               state.warn
                 ( warning::property_overwritten ( path
