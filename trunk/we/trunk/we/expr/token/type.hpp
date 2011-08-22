@@ -45,7 +45,7 @@ namespace expr
     , val                     // value
     , ref                     // reference to context
 
-    , define                  // prec -99, left associative
+    , define                  // prec -99, right associative
 
     , _if, _then, _else, _endif, _ite
 

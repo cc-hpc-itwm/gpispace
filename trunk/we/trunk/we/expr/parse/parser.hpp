@@ -274,8 +274,6 @@ namespace expr
                         + " must be reference name"
                         , k
                         );
-                    op_stack.push (*token);
-                    break;
                   default:
                     {
                     ACTION:
