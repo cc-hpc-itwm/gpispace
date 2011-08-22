@@ -52,23 +52,26 @@ namespace expr
     {
     public:
       typedef node::key_vec_t key_vec_t;
-
-    private:
       typedef node::type nd_t;
       typedef std::deque<nd_t> nd_stack_t;
-      typedef std::stack<token::type> op_stack_t;
-      nd_stack_t nd_stack;
-      op_stack_t op_stack;
 
       // iterate through the entries
       typedef nd_stack_t::const_iterator nd_const_it_t;
       typedef nd_stack_t::iterator nd_it_t;
 
-      nd_const_it_t begin () const { return nd_stack.begin(); }
-      nd_const_it_t end () const { return nd_stack.end(); }
+    private:
+      typedef std::stack<token::type> op_stack_t;
+      op_stack_t op_stack;
+      nd_stack_t nd_stack;
+
       nd_it_t begin () { return nd_stack.begin(); }
       nd_it_t end () { return nd_stack.end(); }
 
+    public:
+      nd_const_it_t begin () const { return nd_stack.begin(); }
+      nd_const_it_t end () const { return nd_stack.end(); }
+
+    private:
       void unary (const token::type & token, const std::size_t k)
       {
         if (nd_stack.empty())
@@ -351,7 +354,7 @@ namespace expr
         return value::function::is_true(get_front ());
       }
 
-      // evaluate the hole stack in order, return the last value
+      // evaluate the whole stack in order, return the last value
       value::type eval_all (eval::context & context) const
       {
         value::type v;
