@@ -69,6 +69,24 @@ namespace expr
 
         return names;
       }
+
+      static name_set_t
+      get_names (const expr::parse::parser & p)
+      {
+        name_set_t names;
+
+        for ( expr::parse::parser::nd_const_it_t it (p.begin()), end (p.end())
+            ; it != end
+            ; ++it )
+        {
+          boost::apply_visitor
+              ( detail::get_names (&names)
+              , *it
+              );
+        }
+
+        return names;
+      }
     }
   }
 }
