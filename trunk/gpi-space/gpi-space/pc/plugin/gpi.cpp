@@ -25,21 +25,23 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
-  gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t
-                                   , const gpi::pc::type::size_t
+  gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id
+                                   , const gpi::pc::type::size_t sz
                                    , const std::string & desc
-                                   , const gpi::pc::type::flags_t
+                                   , const gpi::pc::type::flags_t flgs
                                    )
   {
-    return 0;
+    return api.alloc(seg_id, sz, desc, flgs);
   }
 
-  void free (const gpi::pc::type::handle_id_t)
-  {}
+  void free (const gpi::pc::type::handle_id_t hdl)
+  {
+    return api.free(hdl);
+  }
 
   gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg)
   {
-    return gpi::pc::type::handle::list_t();
+    return api.list_allocations(seg);
   }
 
   gpi::pc::type::queue_id_t memcpy ( gpi::pc::type::memory_location_t const & dst
@@ -48,7 +50,7 @@ public:
                                    , const gpi::pc::type::queue_id_t queue
                                    )
   {
-    return 0;
+    return api.memcpy(dst, src, amount, queue);
   }
 
   gpi::pc::type::handle_t memset (const gpi::pc::type::handle_t h
@@ -56,45 +58,55 @@ public:
                                  , size_t count
                                  )
   {
-    return h;
+    return api.memset(h,value,count);
   }
 
   void * ptr(const gpi::pc::type::handle_t h)
   {
-    return (void*)(0);
+    return api.ptr(h);
   }
 
-  gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t)
+  gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t q)
   {
-    return 0;
+    return api.wait(q);
   }
 
   std::vector<gpi::pc::type::size_t> wait ()
   {
-    return std::vector<gpi::pc::type::size_t>();
+    return api.wait();
   }
 
   gpi::pc::type::segment_id_t register_segment( std::string const & name
                                               , const gpi::pc::type::size_t sz
-                                              , const gpi::pc::type::flags_t
+                                              , const gpi::pc::type::flags_t flgs
                                               )
   {
-    return 0;
+    return api.register_segment(name,sz,flgs);
   }
 
-  void unregister_segment(const gpi::pc::type::segment_id_t)
-  {}
+  void unregister_segment(const gpi::pc::type::segment_id_t id)
+  {
+    return api.unregister_segment(id);
+  }
 
-  void attach_segment(const gpi::pc::type::segment_id_t id){ }
-  void detach_segment(const gpi::pc::type::segment_id_t id){ }
+  void attach_segment(const gpi::pc::type::segment_id_t id)
+  {
+    return api.attach_segment(id);
+  }
+
+  void detach_segment(const gpi::pc::type::segment_id_t id)
+  {
+    return api.detach_segment(id);
+  }
+
   gpi::pc::type::segment::list_t list_segments ()
   {
-    return gpi::pc::type::segment::list_t();
+    return api.list_segments();
   }
 
   gpi::pc::type::info::descriptor_t collect_info ()
   {
-    return gpi::pc::type::info::descriptor_t();
+    return api.collect_info();
   }
 
 private:
