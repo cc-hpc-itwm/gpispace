@@ -26,6 +26,7 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -45,18 +46,22 @@ namespace sdpa { namespace daemon {
       Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
       const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
-      void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int capacity,
+      void addWorker( const Worker::worker_id_t& workerId, unsigned int capacity,
     		          const capabilities_set_t& cpbset = capabilities_set_t(), const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
+
       void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 
       virtual void addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
       virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
 
-      void getListOfRegisteredRanks( std::vector<unsigned int>& );
+     // void getListOfRegisteredRanks( std::vector<unsigned int>& );
 
       const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
       worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
+
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
+
+      sdpa::worker_id_list_t getListWidsMatchMandPref( const preference_t& job_prefs ) throw (NoWorkerFoundException, AllWorkersFullException);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
       void dispatchJob(const sdpa::job_id_t& jobId);

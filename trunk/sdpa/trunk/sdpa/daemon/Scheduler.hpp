@@ -43,8 +43,11 @@ namespace daemon {
 
 	 virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException) = 0;
 
-	 virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int capacity = 10000,
-			                 const capabilities_set_t& cpbset = capabilities_set_t(), const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException) = 0;
+	 virtual void addWorker( const Worker::worker_id_t& workerId,
+			 	 	 	 	 unsigned int capacity = 10000,
+			                 const capabilities_set_t& cpbset = capabilities_set_t(),
+			                 const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException) = 0;
+
 	 virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException) = 0;
 
 	 virtual void getWorkerList(std::list<std::string>&) = 0;
@@ -57,7 +60,8 @@ namespace daemon {
 	 virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;
 
 	 virtual void schedule(const sdpa::job_id_t& jobId) = 0;
-	 virtual bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const preference_t& job_pref ) = 0;
+	 virtual bool schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& workerId, const preference_t& job_pref ) = 0;
+
 	 virtual void schedule_remote(const sdpa::job_id_t &job) = 0;
 	 virtual void schedule_local(const sdpa::job_id_t &job) = 0;
 	 virtual void reschedule(const Worker::worker_id_t& ) throw (WorkerNotFoundException) = 0;

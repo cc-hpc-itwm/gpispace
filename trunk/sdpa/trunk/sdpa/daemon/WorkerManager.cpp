@@ -78,7 +78,7 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
 /**
  * add new worker
  */
-void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int rank, unsigned int capacity,
+void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int capacity,
 		                       const capabilities_set_t& cpbset , const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
   lock_type lock(mtx_);
@@ -90,14 +90,7 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
     {
       //SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
       bFound = true;
-      throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
-    }
-
-    if( it->second->rank() == rank )
-    {
-      //SDPA_LOG_WARN("An worker with the rank"<<rank<<" already exist into the worker map!");
-      //bFound = true;
-      //throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
+      throw WorkerAlreadyExistException(workerId, 0, agent_uuid);
     }
 
     /*if( it->second->agent_uuid() == agent_uuid )
@@ -109,13 +102,14 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
   }
 
   // add cpbset HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  Worker::ptr_t pWorker( new Worker( workerId, rank, capacity, agent_uuid ) );
+  Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_uuid ) );
   pWorker->addCapabilities(cpbset);
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
-  rank_map_.insert(rank_map_t::value_type(rank, pWorker->name()));
 
-  SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<", rank = "<<pWorker->rank()<<", capacity = "<<pWorker->capacity() );
+  //rank_map_.insert(rank_map_t::value_type(rank, pWorker->name()));
+
+  SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<" with capacity = "<<pWorker->capacity() );
 
   if(worker_map_.size() == 1)
     iter_last_worker_ = worker_map_.begin();
@@ -257,6 +251,7 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
   // check if it still exists into the pending queue of the owner worker,
   // steal it and become the new owner
 
+  /*
   Worker::mi_ordered_prefs& mi_pref = get<0>(ptrWorker->mi_affinity_list);
   Worker::mi_ordered_prefs::iterator it = mi_pref.begin();
 
@@ -303,9 +298,12 @@ const sdpa::job_id_t WorkerManager::stealWork(const Worker::worker_id_t& worker_
     }
   }
 
+  */
+
   // erase the job from
   throw NoJobScheduledException(worker_id);
 }
+
 
 const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException)
 {
@@ -467,12 +465,12 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
     }
 }
 
-void WorkerManager::getListOfRegisteredRanks( std::vector<unsigned int>& v)
+/*void WorkerManager::getListOfRegisteredRanks( std::vector<unsigned int>& v)
 {
   lock_type lock(mtx_);
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
     v.push_back(iter->second->rank());
-}
+}*/
 
 void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id )
 {
@@ -528,4 +526,26 @@ void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 	}
 	else
 		throw WorkerNotFoundException(worker_id);
+}
+
+
+bool matchPrefs( const sdpa::capabilities_set_t worker_pbs, const preference_t job_prefs )
+{
+	bool bMatching = false;
+
+	return bMatching;
+}
+
+sdpa::worker_id_list_t WorkerManager::getListWidsMatchMandPref( const preference_t& job_prefs ) throw (NoWorkerFoundException, AllWorkersFullException)
+{
+	sdpa::worker_id_list_t list_matching_wids;
+
+	for(worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+	{
+		/*if( matchPrefs(iter->second->capabilities(), job_prefs ) )
+			list_matching_wids.insert(iter->first);*/
+
+	}
+
+	return list_matching_wids;
 }

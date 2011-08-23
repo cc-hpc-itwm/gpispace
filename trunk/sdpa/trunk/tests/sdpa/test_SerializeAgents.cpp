@@ -307,6 +307,7 @@ BOOST_AUTO_TEST_CASE(testNRESerialization)
 
 }
 
+/*
 BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
 {
     std::cout<<std::endl<<"----------------Begin  testAggregatorSerialization----------------"<<std::endl;
@@ -532,7 +533,6 @@ BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
 
     std::cout<<std::endl<<"----------------End  testOrchestratorSerialization----------------"<<std::endl;
 }
-
 
 BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
 {
@@ -816,7 +816,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
       return;
   }
 }
-
+*/
 
 BOOST_AUTO_TEST_CASE(testWorkerSerialization)
 {
