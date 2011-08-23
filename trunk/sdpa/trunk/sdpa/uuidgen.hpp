@@ -10,6 +10,7 @@ namespace sdpa {
     void operator()(uuid &uid){
       return generate(uid);
     }
+    uuid operator()();
   };
 }
 

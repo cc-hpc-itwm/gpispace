@@ -14,3 +14,10 @@ void uuidgen::generate(sdpa::uuid &uid)
 	boost::uuids::basic_random_generator<boost::mt19937> gen(&ran);
 	uid = gen();*/
 }
+
+sdpa::uuid uuidgen::operator()()
+{
+  sdpa::uuid u;
+  generate (u);
+  return u;
+}
