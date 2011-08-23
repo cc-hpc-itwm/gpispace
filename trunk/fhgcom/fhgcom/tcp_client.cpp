@@ -324,7 +324,7 @@ namespace fhg
               , "recv failed: " << ec << ": " << ec.message();
               );
         throw boost::system::system_error ( ec.value()
-                                          , boost::asio::error::get_misc_category()
+                                          , boost::asio::error::get_system_category()
                                           );
       }
 
