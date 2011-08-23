@@ -207,7 +207,7 @@ namespace fhg
       fhg_plugin_query query_plugin;
       void *handle;
 
-      handle = dlopen(filename.c_str(), flags);
+      handle = dlopen(filename.c_str(), RTLD_GLOBAL | flags);
       if (!handle)
       {
         throw std::runtime_error("dlopen() failed: " + filename + dlerror());
