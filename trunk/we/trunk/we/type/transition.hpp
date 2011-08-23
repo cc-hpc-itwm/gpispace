@@ -1146,13 +1146,13 @@ namespace we { namespace type {
                                                  > & net
                            ) const
           {
-            dump (_s, _p, net);
+            ::we::type::dump::dump (_s, _p, net);
           }
 
           template<typename Other>
           void operator () (const Other & _) const
           {
-            dump (_s, _p);
+            ::we::type::dump::dump (_s, _p);
           }
         };
       }
