@@ -36,6 +36,11 @@ namespace fhg
     {
       // unload all non-static plugins according to dependency graph
       unload_all ();
+
+      // warning:  we must  not have  any  tasks stored,  since we  would get  a
+      // segfault due to dynamic symbols
+      assert (m_task_queue.empty());
+      assert (m_pending_tasks.empty());
     }
 
     plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
@@ -143,27 +148,33 @@ namespace fhg
       lock_type lock_pending (m_mtx_pending_tasks);
       lock_type lock_task_q (m_mtx_task_queue);
 
-      for ( task_queue_t::iterator it = m_pending_tasks.begin()
-          ; it != m_pending_tasks.end()
-          ; ++it
-          )
-      {
-        if (p->first == it->owner)
-        {
-          it = m_pending_tasks.erase(it);
-          if (it == m_pending_tasks.end()) break;
-        }
-      }
-
       for ( task_queue_t::iterator it = m_task_queue.begin()
           ; it != m_task_queue.end()
-          ; ++it
+          ; // done explicitly
           )
       {
         if (p->first == it->owner)
         {
           it = m_task_queue.erase(it);
-          if (it == m_task_queue.end()) break;
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
+      for ( task_queue_t::iterator it = m_pending_tasks.begin()
+          ; it != m_pending_tasks.end()
+          ; // done explicitly
+          )
+      {
+        if (p->first == it->owner)
+        {
+          it = m_pending_tasks.erase(it);
+        }
+        else
+        {
+          ++it;
         }
       }
 
@@ -270,31 +281,29 @@ namespace fhg
       {
         gettimeofday(&tv_start, 0);
 
-        /* decrement tick count of pending tasks and move them */
-        {
+        { /* decrement tick count of pending tasks and move them */
           lock_type lock_pending (m_mtx_pending_tasks);
           lock_type lock_task_q (m_mtx_task_queue);
           for ( task_queue_t::iterator it = m_pending_tasks.begin()
               ; it != m_pending_tasks.end()
-              ; ++it
+              ;
               )
           {
             if (0 == it->ticks)
             {
               m_task_queue.push_back (*it);
               it = m_pending_tasks.erase (it);
-              if (it == m_pending_tasks.end()) break;
             }
             else
             {
               --it->ticks;
+              ++it;
             }
           }
         }
 
-        /* run due tasks */
-        {
-          lock_type lock (m_mtx_task_queue);
+        { // run due tasks
+          lock_type lock_task_q (m_mtx_task_queue);
           while (! m_task_queue.empty())
           {
             task_info_t task = m_task_queue.front();
@@ -302,6 +311,7 @@ namespace fhg
 
             try
             {
+              LOG(TRACE, "executing task of plugin " << task.owner);
               task.execute();
             }
             catch (std::exception const & ex)
