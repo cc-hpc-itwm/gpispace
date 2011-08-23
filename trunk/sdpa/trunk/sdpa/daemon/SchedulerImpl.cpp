@@ -461,6 +461,8 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
 466	  return false;
 467	}
 //  END Scheduling with constraints (OBSOLETE)
+*/
+
 /*
  * Scheduling with constraints
  */
@@ -506,6 +508,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 
         	  try
         	  {
+                    /*
         		  std::list<sdpa::worker_id_t> listWidsMatchMandPref = ptr_worker_man_->getListWidsMatchMandPref(job_pref);
 
 				  const preference_t::value_list_type& list_prefs = job_pref.values();
@@ -514,8 +517,6 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 					// use try-catch for the case when the no worker with that rank exists
 					if( schedule_to(jobId, *it, job_pref) )
 					  return true;
-
-					/*uset_excluded.insert(*it);*/
 				  }
 
 				  // if the assignment to one of the preferred workers
@@ -529,6 +530,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 
 				  // TODO: we had preferences but we could not fulfill them
 				  ptr_comm_handler_->workerJobFailed("", jobId, "The job had preferences which could not be fulfilled!");
+                    */
 				  return false;
         	  }
         	  catch(const NoWorkerFoundException& ex1)
