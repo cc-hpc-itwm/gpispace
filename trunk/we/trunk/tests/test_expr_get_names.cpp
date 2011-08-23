@@ -25,23 +25,7 @@ main (int argc, char ** argv)
       ; ++name
       )
     {
-      //      add (root, name, line);
-
-      for ( name_set_t::value_type::const_iterator field (name->begin())
-          , end = name->end()
-          ; field != end
-          ; ++field
-          )
-        {
-          std::cout << *field;
-
-          if (field + 1 != end)
-            {
-              std::cout << ".";
-            }
-        }
-
-      std::cout << std::endl;
+      std::cout << expr::parse::util::write_key_vec (*name) << std::endl;
     }
 
   return EXIT_SUCCESS;
