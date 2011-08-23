@@ -5,8 +5,8 @@
 
 #include <boost/variant.hpp>
 
+#include <we/expr/token/assoc.hpp>
 #include <we/expr/parse/node.hpp>
-#include <we/expr/parse/parser.hpp>
 #include <we/expr/parse/util/get_names.hpp>
 #include <we/expr/parse/simplify/ssa_tree.hpp>
 
@@ -70,8 +70,6 @@ namespace expr
 
           node::type operator () (node::binary_t & b) const
           {
-            associativity::type assoc = associativity::associativity (b.token);
-
             if (token::is_define (b.token))
             {
               b.r = boost::apply_visitor (*this, b.r);
@@ -90,7 +88,7 @@ namespace expr
             }
             else
             {
-              if (assoc == associativity::left)
+              if (associativity::associativity (b.token) == associativity::left)
               {
                 b.l = boost::apply_visitor (*this, b.l);
                 b.r = boost::apply_visitor (*this, b.r);
@@ -118,11 +116,11 @@ namespace expr
       }
 
       static void
-      numbering_and_propagation_pass ( expression_list & p
+      numbering_and_propagation_pass ( expression_list & list
                                      , tree_node_type& ssa_tree
                                      )
       {
-        for ( expression_list::node_stack_it_t it (p.begin()), end (p.end())
+        for ( expression_list::node_stack_it_t it (list.begin()), end (list.end())
             ; it != end
             ; ++it )
         {
