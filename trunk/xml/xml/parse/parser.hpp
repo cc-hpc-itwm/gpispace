@@ -423,13 +423,13 @@ namespace xml
     // ********************************************************************* //
 
     static void
-    capability_type ( type::capabilities_type & capabilities
-                    , const xml_node_type * node
-                    , state::type & state
-                    )
+    require_type ( type::requirements_type & requirements
+                 , const xml_node_type * node
+                 , state::type & state
+                 )
     {
       const std::string key
-        (required ("capability_type", node, "key", state.file_in_progress()));
+        (required ("require_type", node, "key", state.file_in_progress()));
       const fhg::util::maybe<bool> mmandatory
         ( fhg::util::fmap<std::string, bool>( fhg::util::read_bool
                                             , optional (node, "mandatory")
@@ -437,10 +437,10 @@ namespace xml
         );
       const bool mandatory (mmandatory.isJust() ? *mmandatory : true);
 
-      capabilities.set (key, mandatory);
+      requirements.set (key, mandatory);
 
-      // collect all the capabilities for the top level function
-      state.set_capability (key, mandatory);
+      // collect all the requirements for the top level function
+      state.set_requirement (key, mandatory);
     }
 
     // ********************************************************************* //
@@ -537,9 +537,9 @@ namespace xml
 
                   util::property::join (state, f.prop, deeper);
                 }
-              else if (child_name == "capability")
+              else if (child_name == "require")
                 {
-                  capability_type (f.capabilities, child, state);
+                  require_type (f.requirements, child, state);
                 }
               else
                 {
@@ -1510,8 +1510,8 @@ namespace xml
       type::function_type f
         (state.generic_parse<type::function_type> (parse_function, input));
 
-      // set all the collected capabilities to the top level function
-      f.capabilities = state.capabilities();
+      // set all the collected requirements to the top level function
+      f.requirements = state.requirements();
 
       if (state.dump_xml_file().size() > 0)
         {

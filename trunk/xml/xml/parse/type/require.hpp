@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_CAPABILITY_HPP
-#define _XML_PARSE_TYPE_CAPABILITY_HPP 1
+#ifndef _XML_PARSE_TYPE_REQUIRE_HPP
+#define _XML_PARSE_TYPE_REQUIRE_HPP 1
 
 #include <string>
 
@@ -15,19 +15,19 @@ namespace xml
   {
     namespace type
     {
-      typedef std::string capability_key_type;
+      typedef std::string require_key_type;
 
-      struct capabilities_type
+      struct requirements_type
       {
       private:
-        typedef boost::unordered_map<capability_key_type,bool> map_type;
+        typedef boost::unordered_map<require_key_type,bool> map_type;
 
         map_type map;
 
       public:
-        capabilities_type () : map (0) {}
+        requirements_type () : map (0) {}
 
-        void set ( const capability_key_type & key
+        void set ( const require_key_type & key
                  , const bool & mandatory = true
                  )
         {
@@ -51,14 +51,14 @@ namespace xml
 
       namespace dump
       {
-        inline void dump (xml_util::xmlstream & s, const capabilities_type & cs)
+        inline void dump (xml_util::xmlstream & s, const requirements_type & cs)
         {
-          for ( capabilities_type::iterator cap (cs.begin())
+          for ( requirements_type::iterator cap (cs.begin())
               ; cap != cs.end()
               ; ++cap
               )
             {
-              s.open ("capability");
+              s.open ("require");
               s.attr ("key", cap->first);
               s.attr ("mandatory", cap->second);
               s.close ();

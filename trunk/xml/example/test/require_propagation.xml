@@ -1,7 +1,7 @@
-<defun name="capability_propagation">
-  <capability key="GPU" mandatory="false"/>
-  <capability key="I/O" mandatory="false"/>
-  <capability key="LOG" mandatory="false"/>
+<defun name="require_propagation">
+  <require key="GPU" mandatory="false"/>
+  <require key="I/O" mandatory="false"/>
+  <require key="LOG" mandatory="false"/>
   <in name="trigger" type="control" place="trigger"/>
   <out name="done" type="control" place="done"/>
   <net>
@@ -10,12 +10,12 @@
 
     <transition name="init">
       <defun>
-        <capability key="GPI"/>
-        <capability key="GPU"/>
-        <capability key="I/O" mandatory="false"/>
-        <capability key="LOG" mandatory="false"/>
-        <capability key="cap23" mandatory="false"/>
-        <capability key="cap2818" mandatory="false"/>
+        <require key="GPI"/>
+        <require key="GPU"/>
+        <require key="I/O" mandatory="false"/>
+        <require key="LOG" mandatory="false"/>
+        <require key="cap23" mandatory="false"/>
+        <require key="cap2818" mandatory="false"/>
         <in name="trigger" type="control"/>
         <out name="done" type="control"/>
         <condition>
@@ -30,7 +30,7 @@
 
     <transition name="run" inline="false">
       <defun>
-        <capability key="cap42" mandatory="false"/>
+        <require key="cap42" mandatory="false"/>
         <in name="trigger" type="control" place="trigger"/>
         <out name="done" type="control" place="done"/>
         <net>
@@ -39,12 +39,12 @@
 
           <transition name="run">
             <defun>
-              <capability key="cap23"/>
-              <capability key="cap3141" mandatory="false"/>
-              <capability key="GPI"/>
-              <capability key="GPU" mandatory="false"/>
-              <capability key="I/O"/>
-              <capability key="LOG" mandatory="false"/>
+              <require key="cap23"/>
+              <require key="cap3141" mandatory="false"/>
+              <require key="GPI"/>
+              <require key="GPU" mandatory="false"/>
+              <require key="I/O"/>
+              <require key="LOG" mandatory="false"/>
               <in name="trigger" type="control"/>
               <out name="done" type="control"/>
               <expression/>

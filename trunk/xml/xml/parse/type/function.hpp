@@ -435,7 +435,7 @@ namespace xml
 
         cond_vec_type cond;
 
-        capabilities_type capabilities;
+        requirements_type requirements;
 
         we::type::property::type prop;
 
@@ -1871,7 +1871,7 @@ namespace xml
         {
           dumps (s, f.structs.begin(), f.structs.end());
 
-          dump (s, f.capabilities);
+          dump (s, f.requirements);
 
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");

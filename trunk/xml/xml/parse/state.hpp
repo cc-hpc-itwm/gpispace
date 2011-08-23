@@ -24,7 +24,7 @@
 #include <xml/parse/error.hpp>
 #include <xml/parse/util/weparse.hpp>
 
-#include <xml/parse/type/capability.hpp>
+#include <xml/parse/type/require.hpp>
 
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/xml.hpp>
@@ -77,7 +77,7 @@ namespace xml
         typedef expr::eval::context context_t;
 
       private:
-        ::xml::parse::type::capabilities_type _capabilities;
+        ::xml::parse::type::requirements_type _requirements;
         search_path_type _search_path;
         in_progress_type _in_progress;
         property::path_type _prop_path;
@@ -276,17 +276,17 @@ namespace xml
 
         // ***************************************************************** //
 
-        const ::xml::parse::type::capabilities_type & capabilities () const
+        const ::xml::parse::type::requirements_type & requirements () const
         {
-          return _capabilities;
+          return _requirements;
         }
 
-        void set_capability
-        ( const ::xml::parse::type::capability_key_type & key
+        void set_requirement
+        ( const ::xml::parse::type::require_key_type & key
         , const bool & mandatory
         )
         {
-          _capabilities.set (key, mandatory);
+          _requirements.set (key, mandatory);
         }
 
         // ***************************************************************** //
