@@ -7,6 +7,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <we/expr/parse/node.hpp>
+#include <we/expr/parse/simplify/expression_list.hpp>
 #include <we/type/value.hpp>
 
 #include <sstream>
@@ -19,7 +20,7 @@ namespace expr
     {
       typedef std::string key_type;
       typedef std::size_t version_type;
-      typedef expr::parse::parser::nd_const_it_t line_type;
+      typedef expression_list::node_stack_it_t line_type;
       typedef std::pair<version_type,line_type> item_type;
       typedef std::vector<item_type> values_type;
 
