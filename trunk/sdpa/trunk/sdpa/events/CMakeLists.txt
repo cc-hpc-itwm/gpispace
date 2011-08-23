@@ -1,6 +1,7 @@
 # -*- mode: cmake; -*-
 
 set (hdrs
+  events.hpp
   CancelJobAckEvent.hpp
   CancelJobEvent.hpp
   Codec.hpp
