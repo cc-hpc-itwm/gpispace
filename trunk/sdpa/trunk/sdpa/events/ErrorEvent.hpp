@@ -48,6 +48,7 @@ namespace sdpa { namespace events {
           SDPA_EAGAIN,
           SDPA_EUNKNOWN,
           SDPA_EJOBREJECTED,
+          SDPA_EPERM,
       };
 
       ErrorEvent()
