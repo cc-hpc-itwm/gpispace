@@ -3,12 +3,33 @@
 #include <iostream>
 #include <string>
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/parse/util/get_names.hpp>
 
 #include <we/expr/parse/simplify/ssa_tree.hpp>
 #include <we/expr/parse/simplify/expression_list.hpp>
 #include <we/expr/parse/simplify/numbering_and_propagation_pass.hpp>
+#include <we/expr/parse/simplify/dead_code_elimination_pass.hpp>
+
+static inline expr::parse::node::key_vec_t
+key_vec_from_string (const std::string & in)
+{
+  expr::parse::node::key_vec_t result;
+  boost::algorithm::split (result, in, boost::algorithm::is_any_of ("."));
+  return result;
+}
+
+static inline void
+add_to_bindings_list ( const std::string & name
+                     , const expr::parse::simplify::tree_node_type & tree
+                     , expr::parse::util::name_set_t & bindings
+                     )
+{
+  bindings.insert( tree.get_ssa_name (key_vec_from_string (name)));
+}
 
 int
 main (int argc, char ** argv)
@@ -49,7 +70,9 @@ main (int argc, char ** argv)
      "(${z.a} := []);\n"
      "(${z.b} := []);\n"
      "(${z} := []);\n"
-     "(${z.a} := []);\n");
+     "(${z.a} := []);\n"
+     "([]);\n"
+    );
 
   expr::parse::parser parser (input);
 
@@ -70,6 +93,22 @@ main (int argc, char ** argv)
         // steps to be done:
         //  * dead-code elimination
         //  * copy propagation fixup
+
+  expr::parse::util::name_set_t needed_bindings;
+  add_to_bindings_list ("___loadTT_generate_init_state", tree, needed_bindings);
+  add_to_bindings_list ("__generate_offset_credits_trigger_when_amount_state", tree, needed_bindings);
+  add_to_bindings_list ("__generate_volume_credits_trigger_when_amount_state", tree, needed_bindings);
+  add_to_bindings_list ("_extract_number_of_volume_credits_b", tree, needed_bindings);
+  add_to_bindings_list ("state", tree, needed_bindings);
+  add_to_bindings_list ("_init_wait_wait", tree, needed_bindings);
+  add_to_bindings_list ("object", tree, needed_bindings);
+  add_to_bindings_list ("wait", tree, needed_bindings);
+  add_to_bindings_list ("b", tree, needed_bindings);
+  add_to_bindings_list ("volume", tree, needed_bindings);
+  add_to_bindings_list ("state", tree, needed_bindings);
+
+  expr::parse::simplify::dead_code_elimination_pass
+      (expressions, needed_bindings);
 
   expr::parse::parser result_parser (expressions.node_stack());
 
