@@ -5,13 +5,13 @@ include(fhg_plugin_macros)
 #
 
 # distributed runtime system plugin, aka interface to SDPA agent
-fhg_add_plugin(drts drts.cpp)
-target_link_libraries(drts-plugin
-  sdpa-events
-  sdpa-util
-  sdpa
-  ${FhgCom_LIBRARY}
-  ${BOOST_ROOT}/lib/libboost_serialization.so
+fhg_add_plugin(drts drts.cpp
+  EXPORTS DRTS
+  LINK_LIBRARIES sdpa-events
+                 sdpa-util
+                 sdpa
+                 ${FhgCom_LIBRARY}
+                 ${BOOST_ROOT}/lib/libboost_serialization.so
 )
 
 install(FILES drts.hpp DESTINATION include/plugins COMPONENT headers)
@@ -20,10 +20,9 @@ install(TARGETS drts-plugin LIBRARY
   COMPONENT plugins
   )
 
-fhg_add_plugin(kvs kvs.cpp)
-target_link_libraries(kvs-plugin
-  ${FhgCom_LIBRARY}
-  ${BOOST_ROOT}/lib/libboost_serialization.so
+fhg_add_plugin(kvs kvs.cpp
+  LINK_LIBRARIES ${FhgCom_LIBRARY}
+                 ${BOOST_ROOT}/lib/libboost_serialization.so
 )
 
 install(FILES kvs.hpp DESTINATION include/plugins COMPONENT headers)
@@ -31,4 +30,3 @@ install(TARGETS kvs-plugin LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins
   )
-
