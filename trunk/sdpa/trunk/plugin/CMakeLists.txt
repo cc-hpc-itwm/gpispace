@@ -1,7 +1,5 @@
 include(fhg_plugin_macros)
 
-include_directories("${CMAKE_INSTALL_PREFIX}/include")
-
 #
 #SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 #
