@@ -58,7 +58,7 @@ namespace expr
       }
 
       static name_set_t
-      get_names (const expr::parse::node::type & nd)
+      get_names (const node::type & nd)
       {
         name_set_t names;
 
@@ -71,11 +71,11 @@ namespace expr
       }
 
       static name_set_t
-      get_names (const expr::parse::parser & p)
+      get_names (const parser & p)
       {
         name_set_t names;
 
-        for ( expr::parse::parser::nd_const_it_t it (p.begin()), end (p.end())
+        for ( parser::nd_const_it_t it (p.begin()), end (p.end())
             ; it != end
             ; ++it )
         {
