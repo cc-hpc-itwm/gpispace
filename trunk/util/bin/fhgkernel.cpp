@@ -12,17 +12,23 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
-static fhg::core::kernel_t kernel;
+static fhg::core::kernel_t *kernel = 0;
 
+static void at_exit ()
+{
+  if (kernel) kernel->stop();
+}
 
 static void sig_term(int)
 {
-  kernel.stop ();
+  if (kernel) kernel->stop ();
 }
 
 int main(int ac, char **av)
 {
   FHGLOG_SETUP(ac,av);
+
+  kernel = new fhg::core::kernel_t;
 
   signal (SIGINT, sig_term);
   signal (SIGTERM, sig_term);
@@ -86,7 +92,7 @@ int main(int ac, char **av)
     else
     {
       MLOG(TRACE, "setting " << kv.first << " to " << kv.second);
-      kernel.put(kv.first, kv.second);
+      kernel->put(kv.first, kv.second);
     }
   }
 
@@ -94,7 +100,7 @@ int main(int ac, char **av)
   {
     try
     {
-      kernel.load_plugin (p);
+      kernel->load_plugin (p);
     }
     catch (std::exception const &ex)
     {
@@ -106,8 +112,13 @@ int main(int ac, char **av)
     }
   }
 
-  int rc = kernel.run();
+  atexit(&at_exit);
+  int rc = kernel->run();
   MLOG(INFO, "shutting down... (" << rc << ")");
-  kernel.unload_all();
+  kernel->unload_all();
+
+  delete kernel;
+  kernel = 0;
+
   return rc;
 }
