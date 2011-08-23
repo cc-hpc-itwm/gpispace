@@ -106,8 +106,9 @@ namespace expr
 
           node::type operator () (node::ternary_t & t) const
           {
-            //! \todo Don't fail with control-flow-statements.
-            throw std::runtime_error("sorry, we can't handle simplifying expressions with control flow expressions right now.");
+            if (t.token == token::_ite)
+              //! \todo Don't fail with control-flow-statements.
+              throw std::runtime_error("sorry, we can't handle simplifying expressions with control flow expressions right now.");
             t.child0 = boost::apply_visitor (*this, t.child0);
             t.child1 = boost::apply_visitor (*this, t.child1);
             t.child2 = boost::apply_visitor (*this, t.child2);
