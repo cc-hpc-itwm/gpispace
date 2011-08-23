@@ -122,8 +122,11 @@ namespace fhg
 
       std::string get(std::string const & key, std::string const &dflt) const;
       std::string put(std::string const & key, std::string const &value);
+
+      void plugin_start_completed(std::string const & name, int);
     private:
       void check_dependencies (fhg::core::plugin_t::ptr_t const &);
+      void remove_pending_tasks (std::string const & owner);
 
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;

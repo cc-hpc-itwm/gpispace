@@ -31,6 +31,7 @@ namespace fhg
       int stop ();
 
       std::string get(std::string const & key, std::string const &dflt) const;
+      void start_completed(int);
     private:
       fhg::core::plugin_t::ptr_t m_plugin;
       fhg::core::kernel_t *m_kernel;

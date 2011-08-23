@@ -82,5 +82,10 @@ namespace fhg
     {
       return m_kernel->get("plugin." + m_plugin->name() + "." + key, dflt);
     }
+
+    void PluginKernelMediator::start_completed(int ec)
+    {
+      m_kernel->plugin_start_completed(m_plugin->name(), ec);
+    }
   }
 }

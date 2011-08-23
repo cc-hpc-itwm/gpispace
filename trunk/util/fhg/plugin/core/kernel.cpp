@@ -106,13 +106,16 @@ namespace fhg
             )
         {
           mediator_ptr m = it->second;
-          m->plugin()->handle_plugin_loaded(p->name());
+          if (it->first != p->name())
+            m->plugin()->handle_plugin_loaded(p->name());
         }
       }
       else if (rc == START_INCOMPLETE) // incomplete
       {
         lock_type plugins_lock (m_mtx_incomplete_plugins);
         m_incomplete_plugins.insert (std::make_pair(p->name(), m));
+
+        MLOG(TRACE, "start of " << p->name() << " incomplete");
       }
       else
       {
@@ -144,39 +147,7 @@ namespace fhg
         return -EBUSY;
       }
 
-      // remove pending tasks
-      lock_type lock_pending (m_mtx_pending_tasks);
-      lock_type lock_task_q (m_mtx_task_queue);
-
-      for ( task_queue_t::iterator it = m_task_queue.begin()
-          ; it != m_task_queue.end()
-          ; // done explicitly
-          )
-      {
-        if (p->first == it->owner)
-        {
-          it = m_task_queue.erase(it);
-        }
-        else
-        {
-          ++it;
-        }
-      }
-
-      for ( task_queue_t::iterator it = m_pending_tasks.begin()
-          ; it != m_pending_tasks.end()
-          ; // done explicitly
-          )
-      {
-        if (p->first == it->owner)
-        {
-          it = m_pending_tasks.erase(it);
-        }
-        else
-        {
-          ++it;
-        }
-      }
+      remove_pending_tasks(p->first);
 
       int rc = p->second->stop();
 
@@ -198,6 +169,42 @@ namespace fhg
       return rc;
     }
 
+    void kernel_t::remove_pending_tasks(std::string const &owner)
+    {
+      lock_type lock_pending (m_mtx_pending_tasks);
+      lock_type lock_task_q (m_mtx_task_queue);
+
+      for ( task_queue_t::iterator it = m_task_queue.begin()
+          ; it != m_task_queue.end()
+          ; // done explicitly
+          )
+      {
+        if (it->owner == owner)
+        {
+          it = m_task_queue.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
+      for ( task_queue_t::iterator it = m_pending_tasks.begin()
+          ; it != m_pending_tasks.end()
+          ; // done explicitly
+          )
+      {
+        if (it->owner == owner)
+        {
+          it = m_pending_tasks.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+    }
+
     int kernel_t::unload_plugin (std::string const &name)
     {
       plugin_map_t::iterator it = m_plugins.find(name);
@@ -208,6 +215,45 @@ namespace fhg
       else
       {
         return -ESRCH;
+      }
+    }
+
+    void kernel_t::plugin_start_completed(std::string const & name, int ec)
+    {
+      lock_type plugins_lock (m_mtx_incomplete_plugins);
+
+      plugin_map_t::iterator p_it (m_incomplete_plugins.find(name));
+      mediator_ptr m = p_it->second;
+      if (p_it == m_incomplete_plugins.end())
+      {
+        MLOG(WARN, "got completion event for illegal plugin: " << name);
+      }
+      else
+      {
+        m_incomplete_plugins.erase (p_it);
+      }
+
+      if (ec)
+      {
+        remove_pending_tasks(name);
+        m->stop();
+      }
+      else
+      {
+        lock_type plugins_lock (m_mtx_plugins);
+        m_plugins.insert (std::make_pair(name, m));
+
+        MLOG(TRACE, name << " plugin finished starting");
+
+        for ( plugin_map_t::iterator it (m_plugins.begin())
+            ; it != m_plugins.end()
+            ; ++it
+            )
+        {
+          mediator_ptr other = it->second;
+          if (it->first != name)
+            other->plugin()->handle_plugin_loaded(name);
+        }
       }
     }
 
@@ -230,17 +276,28 @@ namespace fhg
 
     void kernel_t::unload_all ()
     {
-      // TODO: make sure to also remove all scheduled 'tasks'!
-      m_incomplete_plugins.clear();
-
-      while (! m_plugins.empty())
       {
-        for ( plugin_map_t::iterator it (m_plugins.begin())
-            ; it != m_plugins.end()
-            ; ++it
-            )
+        lock_type plugins_lock (m_mtx_incomplete_plugins);
+        while (m_incomplete_plugins.empty())
         {
-          if (unload_plugin (it) < 0) continue;
+          mediator_ptr m = m_incomplete_plugins.begin()->second;
+          m_incomplete_plugins.erase(m_incomplete_plugins.begin());
+          remove_pending_tasks (m->plugin()->name());
+        }
+      }
+
+      {
+        lock_type plugins_lock (m_mtx_plugins);
+
+        while (! m_plugins.empty())
+        {
+          for ( plugin_map_t::iterator it (m_plugins.begin())
+              ; it != m_plugins.end()
+              ; ++it
+              )
+          {
+            if (unload_plugin (it) < 0) continue;
+          }
         }
       }
     }

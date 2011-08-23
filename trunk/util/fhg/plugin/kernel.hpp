@@ -49,6 +49,8 @@ namespace fhg
         s >> v;
         return v;
       }
+
+      virtual void start_completed(int) = 0;
     };
   }
 }
