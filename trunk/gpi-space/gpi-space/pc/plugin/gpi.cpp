@@ -15,6 +15,7 @@ public:
 
   FHG_PLUGIN_START()
   {
+    api.path (fhg_kernel()->get("socket", "/var/tmp/gpi-space/control"));
     try_start ();
     FHG_PLUGIN_STARTED();
   }
@@ -105,8 +106,9 @@ private:
     }
     catch (std::exception const &ex)
     {
-      LOG(WARN, "could not start gpi connection: " << ex.what());
-
+      LOG( WARN
+         , "could not start gpi connection on `" << api.path() << "': " << ex.what()
+         );
       fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::try_start
                                           , this
                                           )
