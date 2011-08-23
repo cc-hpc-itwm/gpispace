@@ -24,12 +24,15 @@ namespace drts
   class JobListener
   {
   public:
+    virtual ~JobListener() {}
     virtual void jobStatusChanged(job_id_t const &, drts::status::status_t) = 0;
   };
 
   class DRTS
   {
   public:
+    virtual ~DRTS() {}
+
     virtual int exec (job_desc_t const &, job_id_t &, JobListener *) = 0;
     virtual status::status_t query (job_id_t const & jobid) = 0;
     virtual int cancel (job_id_t const & jobid) = 0;

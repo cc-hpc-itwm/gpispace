@@ -5,13 +5,13 @@ include(fhg_plugin_macros)
 #
 
 # distributed runtime system plugin, aka interface to SDPA agent
-fhg_add_plugin(drts drts.cpp
+fhg_add_plugin(drts drts.cpp master.cpp
   EXPORTS DRTS
   LINK_LIBRARIES sdpa-events
                  sdpa-util
-                 sdpa
-                 ${FhgCom_LIBRARY}
-                 ${BOOST_ROOT}/lib/libboost_serialization.so
+		 sdpa
+		 ${FhgCom_LIBRARY}
+		 ${BOOST_ROOT}/lib/libboost_serialization.so
 )
 
 install(FILES drts.hpp DESTINATION include/plugins COMPONENT headers)
