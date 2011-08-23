@@ -39,48 +39,63 @@ void tcp_server::start ( const std::string & host
                        , const bool reuse_addr
                        )
 {
-  acceptor_.close ();
+  const bool prefer_ipv6 = false;
 
-  boost::asio::ip::tcp::resolver resolver (service_pool_.get_io_service());
-  boost::asio::ip::tcp::resolver::query query(host, service);
-  boost::asio::ip::tcp::resolver::iterator endpoint_iterator
-    (resolver.resolve (query));
+  acceptor_.close ();
 
   boost::system::error_code ec;
 
+  boost::asio::ip::tcp::resolver resolver (service_pool_.get_io_service());
+  boost::asio::ip::tcp::resolver::query query(host, service);
+  boost::asio::ip::tcp::resolver::iterator
+    endpoint_iterator(resolver.resolve (query));
+
   while (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
   {
-    boost::asio::ip::tcp::endpoint endpoint (*endpoint_iterator);
-    DLOG(TRACE, "trying to bind to " << endpoint);
-    acceptor_.open (endpoint.protocol(), ec);
-    boost::asio::detail::throw_error (ec);
-
-    if (reuse_addr)
-    {
-      acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
-      boost::asio::detail::throw_error (ec);
-    }
-
-    acceptor_.bind (endpoint, ec);
-    if (! ec)
-    {
-      acceptor_.listen (tcp::acceptor::max_connections, ec);
-      if (! ec)
-      {
-        LOG(DEBUG, "successfully bound to: " << acceptor_.local_endpoint());
-        accept ();
-        break;
-      }
-    }
-
-    LOG(WARN, "could not bind to " << endpoint << " = " << ec.message() << ": " << ec);
-
-    acceptor_.close();
-    ++endpoint_iterator;
+    if   (try_start(*endpoint_iterator, ec, reuse_addr)) break;
+    else ++endpoint_iterator;
   }
 
   // throw remaining error if any
   boost::asio::detail::throw_error (ec);
+}
+
+bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
+                           , boost::system::error_code & ec
+                           , bool reuse_addr
+                           )
+{
+  DLOG(TRACE, "trying to bind to " << endpoint);
+  acceptor_.close ();
+  acceptor_.open (endpoint.protocol(), ec);
+
+  if (ec) return false;
+
+  if (reuse_addr)
+  {
+    acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
+    if (ec) return false;
+  }
+
+  acceptor_.bind (endpoint, ec);
+  if (! ec)
+  {
+    acceptor_.listen (tcp::acceptor::max_connections, ec);
+    if (! ec)
+    {
+      LOG(DEBUG, "successfully bound to: " << acceptor_.local_endpoint());
+      accept ();
+    }
+  }
+
+  if (ec)
+  {
+    LOG(WARN, "could not bind to " << endpoint << " = " << ec.message() << ": " << ec);
+    acceptor_.close();
+    return false;
+  }
+
+  return true;
 }
 
 void tcp_server::accept ()

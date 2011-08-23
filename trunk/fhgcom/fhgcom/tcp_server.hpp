@@ -35,7 +35,10 @@ namespace fhg
 
       unsigned short port () const;
     private:
-
+      bool try_start ( boost::asio::ip::tcp::endpoint ep
+                     , boost::system::error_code & ec
+                     , bool reuse_addr = true
+                     );
       void accept ();
       void handle_accept ( session_ptr session
                          , const boost::system::error_code & error
