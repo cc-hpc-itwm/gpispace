@@ -12,7 +12,7 @@ target_link_libraries(gpi-plugin
   $ENV{BOOST_ROOT}/lib/libboost_serialization.so
 )
 
-install(FILES gpi.hpp DESTINATION include/plugins COMPONENT plugins)
+install(FILES gpi.hpp DESTINATION include/plugins COMPONENT headers)
 install(TARGETS gpi-plugin LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins

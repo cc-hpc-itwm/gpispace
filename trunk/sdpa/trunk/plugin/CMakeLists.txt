@@ -1,5 +1,7 @@
 include(fhg_plugin_macros)
 
+include_directories("${CMAKE_INSTALL_PREFIX}/include")
+
 #
 #SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 #
@@ -14,7 +16,7 @@ target_link_libraries(drts-plugin
   ${BOOST_ROOT}/lib/libboost_serialization.so
 )
 
-install(FILES drts.hpp DESTINATION include/plugins COMPONENT plugins)
+install(FILES drts.hpp DESTINATION include/plugins COMPONENT headers)
 install(TARGETS drts-plugin LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins
