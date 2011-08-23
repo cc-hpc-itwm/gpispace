@@ -16,8 +16,13 @@ public:
   FHG_PLUGIN_START()
   {
     api.path (fhg_kernel()->get("socket", "/var/tmp/gpi-space/control"));
-    try_start ();
-    FHG_PLUGIN_STARTED();
+
+    fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::try_start
+                                        , this
+                                        )
+                          , 0
+                          );
+    FHG_PLUGIN_INCOMPLETE();
   }
 
   FHG_PLUGIN_STOP()
@@ -115,6 +120,7 @@ private:
     try
     {
       api.start();
+      fhg_kernel()->start_completed(0);
     }
     catch (std::exception const &ex)
     {
