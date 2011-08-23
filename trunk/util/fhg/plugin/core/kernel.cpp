@@ -314,5 +314,30 @@ namespace fhg
     {
       return m_tick_time;
     }
+
+    std::string kernel_t::get( std::string const & key
+                             , std::string const &dflt
+                             ) const
+    {
+      lock_type lock (m_mtx_config);
+      config_t::const_iterator it (m_config.find(key));
+      if (it == m_config.end()) return dflt;
+      else                      return it->second;
+    }
+
+    std::string kernel_t::put( std::string const & key
+                             , std::string const & val
+                             )
+    {
+      lock_type lock (m_mtx_config);
+      config_t::const_iterator it (m_config.find(key));
+      std::string old;
+      if (it != m_config.end())
+      {
+        old = it->second;
+      }
+      m_config[key] = val;
+      return old;
+    }
   }
 }

@@ -29,6 +29,8 @@ namespace fhg
 
       int start ();
       int stop ();
+
+      std::string get(std::string const & key, std::string const &dflt) const;
     private:
       fhg::core::plugin_t::ptr_t m_plugin;
       fhg::core::kernel_t *m_kernel;

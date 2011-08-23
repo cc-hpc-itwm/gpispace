@@ -8,6 +8,7 @@
 #include <boost/program_options.hpp>
 
 #include <fhglog/minimal.hpp>
+#include <fhg/util/split.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
@@ -31,11 +32,13 @@ int main(int ac, char **av)
   po::options_description desc("options");
 
   std::vector<std::string> mods_to_load;
+  std::vector<std::string> config_vars;
   bool keep_going (false);
 
   desc.add_options()
     ("help,h", "this message")
     ("verbose,v", "be verbose")
+    ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
     ( "keep-going,k", "just log errors, but do not refuse to start")
     ( "load,l"
     , po::value<std::vector<std::string> >(&mods_to_load)
@@ -71,6 +74,21 @@ int main(int ac, char **av)
   }
 
   keep_going = vm.count("keep-going") != 0;
+
+  BOOST_FOREACH (std::string const & p, config_vars)
+  {
+    typedef std::pair<std::string,std::string> key_val_t;
+    key_val_t kv (fhg::util::split_string(p, "="));
+    if (kv.first.empty())
+    {
+      MLOG(WARN, "invalid config variable: must not be empty");
+    }
+    else
+    {
+      MLOG(TRACE, "setting " << kv.first << " to " << kv.second);
+      kernel.put(kv.first, kv.second);
+    }
+  }
 
   BOOST_FOREACH (std::string const & p, mods_to_load)
   {

@@ -119,6 +119,9 @@ namespace fhg
       plugin_t::ptr_t lookup_plugin(std::string const & name);
 
       time_t tick_time () const;
+
+      std::string get(std::string const & key, std::string const &dflt) const;
+      std::string put(std::string const & key, std::string const &value);
     private:
       void check_dependencies (fhg::core::plugin_t::ptr_t const &);
 
@@ -129,6 +132,7 @@ namespace fhg
       typedef boost::shared_ptr<PluginKernelMediator> mediator_ptr;
       typedef std::map<std::string, mediator_ptr> plugin_map_t;
       typedef std::list<task_info_t> task_queue_t;
+      typedef std::map<std::string, std::string> config_t;
 
       int unload_plugin (plugin_map_t::iterator it);
 
@@ -138,6 +142,7 @@ namespace fhg
       mutable mutex_type m_mtx_task_queue;
       mutable mutex_type m_mtx_pending_tasks;
       mutable condition_type m_task_eligible;
+      mutable mutex_type m_mtx_config;
 
       time_t m_tick_time;
       bool m_stop_requested;
@@ -146,6 +151,7 @@ namespace fhg
 
       task_queue_t m_task_queue;
       task_queue_t m_pending_tasks;
+      config_t m_config;
     };
   }
 }

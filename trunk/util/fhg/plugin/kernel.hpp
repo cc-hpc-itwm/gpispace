@@ -1,6 +1,7 @@
 #ifndef FHG_PLUGIN_KERNEL_HPP
 #define FHG_PLUGIN_KERNEL_HPP 1
 
+#include <sstream>
 #include <vector>
 #include <string>
 
@@ -38,6 +39,16 @@ namespace fhg
 
       virtual void schedule(task_t) = 0;
       virtual void schedule(task_t, size_t ticks) = 0;
+
+      virtual std::string get(std::string const & key, std::string const &dflt) const = 0;
+      template <typename T>
+      T get(std::string const & key, std::string const &dflt) const
+      {
+        std::stringstream s (get(key, dflt));
+        T v;
+        s >> v;
+        return v;
+      }
     };
   }
 }

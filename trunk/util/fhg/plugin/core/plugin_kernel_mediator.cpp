@@ -77,5 +77,10 @@ namespace fhg
     {
       m_kernel->schedule (m_plugin->name(), task, ticks);
     }
+
+    std::string PluginKernelMediator::get(std::string const & key, std::string const &dflt) const
+    {
+      return m_kernel->get("plugin." + m_plugin->name() + "." + key, dflt);
+    }
   }
 }
