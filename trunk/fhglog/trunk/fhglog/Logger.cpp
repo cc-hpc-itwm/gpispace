@@ -48,7 +48,8 @@ namespace state
     logger_map_t m_loggers;
   };
 
-  typedef fhg::log::shared_ptr<state_t> state_ptr;
+  //  typedef fhg::log::shared_ptr<state_t> state_ptr;
+  typedef state_t* state_ptr;
   static state_ptr static_state;
 
   state_ptr get ()

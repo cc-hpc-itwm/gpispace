@@ -19,16 +19,9 @@
 #include "StreamAppender.hpp"
 #include "format.hpp"
 #include "fileno.hpp" // fileno for streams
-#include "color_map.hpp"
 #include "unistd.h"   // isatty
 
 using namespace fhg::log;
-
-static color_map_t & get_color_map()
-{
-  static color_map_t color_map;
-  return color_map;
-}
 
 StreamAppender::StreamAppender( const std::string &a_name
                               , std::ostream &stream
@@ -58,13 +51,13 @@ void
 StreamAppender::append(const LogEvent &evt)
 {
   if (color_mode_ == COLOR_ON)
-    stream_ << get_color_map()[(evt.severity())];
+    stream_ << color_map[(evt.severity())];
 
   // TODO: pass color mapper into the formatter
   stream_ << format(fmt_, evt);
 
   if (color_mode_ == COLOR_ON)
-    stream_ << get_color_map().reset_escape_code();
+    stream_ << color_map.reset_escape_code();
 }
 
 void

@@ -20,26 +20,27 @@
 #ifndef  STREAM_APPENDER_INC
 #define  STREAM_APPENDER_INC
 
-#include	<iostream>
-#include    <fhglog/Appender.hpp>
+#include <iostream>
+#include <fhglog/Appender.hpp>
+#include <fhglog/color_map.hpp>
 
 namespace fhg { namespace log {
-  class StreamAppender : public Appender
-  {
+    class StreamAppender : public Appender
+    {
     public:
       enum ColorMode
         {
-            COLOR_OFF
+          COLOR_OFF
           , COLOR_ON
           , COLOR_AUTO
         };
 
       /*
-      * Create a new StreamAppender with the given name.
-      *
-      * The appender does not take ownership of the stream, i.e. you have to
-      * close the stream on your own.
-      */
+       * Create a new StreamAppender with the given name.
+       *
+       * The appender does not take ownership of the stream, i.e. you have to
+       * close the stream on your own.
+       */
       StreamAppender( const std::string &a_name
                     , std::ostream &stream
                     , std::string const & fmt
@@ -53,6 +54,7 @@ namespace fhg { namespace log {
       std::ostream &stream_;
       std::string fmt_;
       ColorMode color_mode_;
-  };
+      color_map_t color_map;
+    };
 }}
 #endif   /* ----- #ifndef STREAM_APPENDER_INC  ----- */
