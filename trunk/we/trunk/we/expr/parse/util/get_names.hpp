@@ -62,10 +62,7 @@ namespace expr
       {
         name_set_t names;
 
-        boost::apply_visitor
-          ( detail::get_names (&names)
-          , nd
-          );
+        boost::apply_visitor (detail::get_names (&names), nd);
 
         return names;
       }
@@ -79,13 +76,28 @@ namespace expr
             ; it != end
             ; ++it )
         {
-          boost::apply_visitor
-              ( detail::get_names (&names)
-              , *it
-              );
+          boost::apply_visitor (detail::get_names (&names), *it);
         }
 
         return names;
+      }
+
+      static std::string
+      write_key_vec (const name_set_t::value_type & vec)
+      {
+        std::string name;
+        for ( name_set_t::value_type::const_iterator it (vec.begin()), end (vec.end())
+            ; it != end
+            ; ++it
+            )
+        {
+          name += *it;
+          if (it + 1 != end)
+          {
+            name += ".";
+          }
+        }
+        return name;
       }
     }
   }
