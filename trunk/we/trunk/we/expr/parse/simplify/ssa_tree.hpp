@@ -177,12 +177,12 @@ namespace expr
               std::cout << " {\n";
               for ( map_type::const_iterator child (childs.begin()), end (childs.end())
                   ; child != end
-                  ; ++child
+                  ; /* due to fuckup in the const_iterator, we iterate when comparing below. */
                   )
               {
                 std::cout << indentstr << "  " << child->first;
                 child->second->dump (indention + 1);
-                if( child + 1 != end )
+                if( ++child != end )
                   std::cout << ",\n";
               }
               std::cout << "\n" << indentstr << "}";
