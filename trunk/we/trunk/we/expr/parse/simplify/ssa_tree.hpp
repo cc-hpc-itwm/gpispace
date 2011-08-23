@@ -4,6 +4,7 @@
 #define _EXPR_PARSE_SIMPLIFY_SSA_TREE_HPP 1
 
 #include <boost/unordered_set.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <we/expr/parse/node.hpp>
 #include <we/type/value.hpp>
@@ -124,6 +125,38 @@ namespace expr
                                     )
           {
             return add_child (keyvec.begin(), keyvec.end(), line);
+          }
+
+          void get_ssa_name( const key_vec_t::const_iterator & pos
+                           , const key_vec_t::const_iterator & end
+                           , key_vec_t & name
+                           ) const
+          {
+            name.push_back (boost::lexical_cast<key_vec_t::value_type> (values.back().first));
+
+            if (pos == end)
+            {
+              return;
+            }
+
+            const map_type::const_iterator & child (childs.find (*pos));
+
+            if (child != childs.end())
+            {
+              name.push_back (*pos);
+              child->second->get_ssa_name (pos + 1, end, name);
+            }
+            else
+            {
+              throw std::runtime_error ("variable not found");
+            }
+          }
+
+          key_vec_t get_ssa_name (const key_vec_t & keyvec) const
+          {
+            key_vec_t name;
+            get_ssa_name (keyvec.begin(), keyvec.end(), name);
+            return name;
           }
 
           void dump (std::size_t indention) const
