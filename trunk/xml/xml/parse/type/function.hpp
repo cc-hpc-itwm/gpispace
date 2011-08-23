@@ -1871,7 +1871,7 @@ namespace xml
         {
           dumps (s, f.structs.begin(), f.structs.end());
 
-          xml::parse::type::dump::dump (s, f.capabilities);
+          xml::parse::type::dump::dump (s, f.requirements);
 
           dumps (s, f.in().begin(), f.in().end(), "in");
           dumps (s, f.out().begin(), f.out().end(), "out");
