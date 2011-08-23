@@ -278,7 +278,7 @@ namespace fhg
     {
       {
         lock_type plugins_lock (m_mtx_incomplete_plugins);
-        while (m_incomplete_plugins.empty())
+        while (! m_incomplete_plugins.empty())
         {
           mediator_ptr m = m_incomplete_plugins.begin()->second;
           m_incomplete_plugins.erase(m_incomplete_plugins.begin());
