@@ -28,6 +28,7 @@ namespace fhg
 
       virtual void fhg_on_plugin_loaded (std::string const & name) {}
       virtual void fhg_on_plugin_unload (std::string const & name) {}
+      virtual void fhg_on_plugin_preunload (std::string const & name) {}
     protected:
       Plugin ()
         : m_kernel (0)

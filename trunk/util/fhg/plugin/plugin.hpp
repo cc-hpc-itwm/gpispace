@@ -28,6 +28,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 
 #define FHG_ON_PLUGIN_LOADED(p) void fhg_on_plugin_loaded(std::string const &p)
 #define FHG_ON_PLUGIN_UNLOAD(p) void fhg_on_plugin_unload(std::string const &p)
+#define FHG_ON_PLUGIN_PREUNLOAD(p) void fhg_on_plugin_preunload(std::string const &p)
 
 #ifdef FHG_STATIC_PLUGIN
 #  define EXPORT_FHG_PLUGIN(name, cls, desc, author, version, license, depends, key) \

@@ -61,6 +61,7 @@ namespace fhg
 
       void handle_plugin_loaded (std::string const &name);
       void handle_plugin_unload (std::string const &name);
+      void handle_plugin_preunload (std::string const &name);
     private:
       typedef std::list<ptr_t> dependency_list_t;
       typedef boost::recursive_mutex mutex_type;

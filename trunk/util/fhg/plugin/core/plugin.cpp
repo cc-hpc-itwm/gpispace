@@ -195,6 +195,13 @@ namespace fhg
       m_plugin->fhg_on_plugin_unload (name);
     }
 
+    void plugin_t::handle_plugin_preunload (std::string const &name)
+    {
+      assert (m_plugin);
+      assert (m_started);
+      m_plugin->fhg_on_plugin_preunload (name);
+    }
+
     plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)
     {
       return create(filename, force, RTLD_GLOBAL | RTLD_LAZY);

@@ -121,7 +121,23 @@ namespace fhg
     int kernel_t::unload_plugin (kernel_t::plugin_map_t::iterator p)
     {
       assert (p != m_plugins.end());
-      assert (! p->second->plugin()->is_in_use());
+
+      for ( plugin_map_t::iterator it (m_plugins.begin())
+          ; it != m_plugins.end()
+          ; ++it
+          )
+      {
+        if (it->first != p->first)
+        {
+          mediator_ptr m = it->second;
+          m->plugin()->handle_plugin_preunload(p->first);
+        }
+      }
+
+      if (p->second->plugin()->is_in_use())
+      {
+        return -EBUSY;
+      }
 
       // remove pending tasks
       lock_type lock_pending (m_mtx_pending_tasks);
@@ -160,7 +176,10 @@ namespace fhg
           ; ++it
           )
       {
-        it->second->plugin()->handle_plugin_unload (p->first);
+        if (it->first != p->first)
+        {
+          it->second->plugin()->handle_plugin_unload (p->first);
+        }
       }
 
       m_plugins.erase (p);
@@ -173,15 +192,7 @@ namespace fhg
       plugin_map_t::iterator it = m_plugins.find(name);
       if (it != m_plugins.end())
       {
-        mediator_ptr m = it->second;
-        if (m->plugin()->is_in_use())
-        {
-          return -EBUSY;
-        }
-        else
-        {
-          return unload_plugin(it);
-        }
+        return unload_plugin(it);
       }
       else
       {
@@ -218,13 +229,7 @@ namespace fhg
             ; ++it
             )
         {
-          if (it->second->plugin()->is_in_use())
-            continue;
-          else
-          {
-            unload_plugin (it);
-            break; // we modified the map, so retry everything
-          }
+          if (unload_plugin (it) < 0) continue;
         }
       }
     }
