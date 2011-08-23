@@ -66,6 +66,21 @@ namespace fhg
         boost::asio::ip::tcp::resolver resolver(io_service_);
         boost::asio::ip::tcp::resolver::query query(host_, port_);
         boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+
+        const bool prefer_ipv6 = false;
+
+        if (host_ == "*")
+        {
+          if (prefer_ipv6)
+          {
+            endpoint.address(boost::asio::ip::address_v6::any());
+          }
+          else
+          {
+            endpoint.address(boost::asio::ip::address_v4::any());
+          }
+        }
+
         acceptor_.open(endpoint.protocol());
         acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
         acceptor_.bind(endpoint);
@@ -546,6 +561,17 @@ namespace fhg
         values[prefix + "." + "location" + "." + "port"] =
           boost::lexical_cast<std::string>(endpoint.port());
         values[prefix + "." + "name"] = name_;
+
+        if (  (endpoint.address() == boost::asio::ip::address_v4::any())
+           || (endpoint.address() == boost::asio::ip::address_v6::any())
+           )
+        {
+          const std::string h(boost::asio::ip::host_name());
+          LOG( WARN
+             , "endpoint is any address, changing registration host to: " << h
+             );
+          values[prefix + "." + "location" + "." + "host"] = h;
+        }
 
         kvs::put (values);
 
