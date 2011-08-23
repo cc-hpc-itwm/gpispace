@@ -107,6 +107,7 @@ int main(int ac, char **av)
   }
 
   int rc = kernel.run();
+  MLOG(INFO, "shutting down... (" << rc << ")");
   kernel.unload_all();
   return rc;
 }
