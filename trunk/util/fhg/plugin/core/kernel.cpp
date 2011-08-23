@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sys/time.h>
+#include <dlfcn.h>
 
 #include <fhglog/minimal.hpp>
 
@@ -10,17 +11,16 @@
 
 #include <fhg/util/split.hpp>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
-
-#include <iostream>
 
 #define START_SUCCESSFUL 0
 #define START_INCOMPLETE 1
 
 void fhgRegisterStaticPlugin(fhg_plugin_query q, fhg_plugin_create c)
 {
-  std::cerr << "TODO: register static plugin: " << q()->name << std::endl;
+  LOG(ERROR, "TODO: register static plugin: " << q()->name);
 }
 
 namespace fhg
@@ -57,7 +57,14 @@ namespace fhg
       lock_type load_plugin_lock (m_mtx_load_plugin);
       int rc = 0;
 
-      plugin_t::ptr_t p (plugin_t::create (file, false));
+      bool load_force (boost::lexical_cast<bool>(get("kernel.load.force", "0")));
+      bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
+
+      plugin_t::ptr_t p (plugin_t::create( file
+                                         , load_force
+                                         , (load_lazy?RTLD_LAZY:RTLD_NOW)
+                                         )
+                        );
       {
         lock_type plugins_lock (m_mtx_plugins);
         if (m_plugins.find(p->name()) != m_plugins.end())
