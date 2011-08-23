@@ -43,7 +43,7 @@ set(tc_srcs
     test_parallel_execution_factored_out.cpp
     test_parallel_execution_with_extractor_and_injector.cpp
     test_port.cpp
-    test_preference.cpp
+#    test_requirements.cpp
     test_property.cpp
     test_queue.cpp
     test_signal.cpp

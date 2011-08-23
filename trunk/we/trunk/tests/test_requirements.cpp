@@ -1,15 +1,13 @@
 #include <iostream>
 #include <set>
 #include <algorithm>
-#include <we/mgmt/type/preference.hpp>
+#include <we/mgmt/type/requirement.hpp>
 #include <functional>
-
-using namespace we::mgmt::pref;
 
 int main()
 {
-  preference_t<unsigned int> p_preferred = make_preferred<unsigned int>();
-  preference_t<unsigned int> p_mandatory = make_mandatory<unsigned int>();
+  we::mgmt::requirement_t<unsigned int> p_mandatory = we::mgmt::make_mandatory(1);
+  we::mgmt::requirement_t<unsigned int> p_optional  = we::mgmt::make_optional(1);
 
   const unsigned int wanted[] =
     {
