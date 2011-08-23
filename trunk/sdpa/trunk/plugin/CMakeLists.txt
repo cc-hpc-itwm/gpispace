@@ -19,3 +19,16 @@ install(TARGETS drts-plugin LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins
   )
+
+fhg_add_plugin(kvs kvs.cpp)
+target_link_libraries(kvs-plugin
+  ${FhgCom_LIBRARY}
+  ${BOOST_ROOT}/lib/libboost_serialization.so
+)
+
+install(FILES kvs.hpp DESTINATION include/plugins COMPONENT headers)
+install(TARGETS kvs-plugin LIBRARY
+  DESTINATION libexec/plugins
+  COMPONENT plugins
+  )
+
