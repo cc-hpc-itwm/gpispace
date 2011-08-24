@@ -165,7 +165,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      typedef std::vector<connect_type> connect_vec_type;
+      typedef xml::util::unique<connect_type>::elements_type connections_type;
 
       struct transition_type
       {
@@ -197,9 +197,9 @@ namespace xml
 
         // ***************************************************************** //
 
-        const connect_vec_type & in (void) const { return _in.elements(); }
-        const connect_vec_type & out (void) const { return _out.elements(); }
-        const connect_vec_type & read (void) const { return _read.elements(); }
+        const connections_type & in (void) const { return _in.elements(); }
+        const connections_type & out (void) const { return _out.elements(); }
+        const connections_type & read (void) const { return _read.elements(); }
         const place_map_vec_type & place_map (void) const
         {
           return _place_map.elements();
@@ -355,7 +355,7 @@ namespace xml
         void type_check (const Net & net, const state::type & state) const
         {
           // local checks
-          for ( connect_vec_type::const_iterator connect (in().begin())
+          for ( connections_type::const_iterator connect (in().begin())
               ; connect != in().end()
               ; ++connect
               )
@@ -363,7 +363,7 @@ namespace xml
               type_check ("in", *connect, net, state);
             }
 
-          for ( connect_vec_type::const_iterator connect (read().begin())
+          for ( connections_type::const_iterator connect (read().begin())
               ; connect != read().end()
               ; ++connect
               )
@@ -371,7 +371,7 @@ namespace xml
               type_check ("read", *connect, net, state);
             }
 
-          for ( connect_vec_type::const_iterator connect (out().begin())
+          for ( connections_type::const_iterator connect (out().begin())
               ; connect != out().end()
               ; ++connect
               )
@@ -432,7 +432,7 @@ namespace xml
             )
           );
 
-        for ( port_vec_type::const_iterator port_in (fun.in().begin())
+        for ( ports_type::const_iterator port_in (fun.in().begin())
             ; port_in != fun.in().end()
             ; ++port_in
             )
@@ -566,7 +566,7 @@ namespace xml
               , fun.prop
               );
 
-            for ( port_vec_type::const_iterator port (fun.in().begin())
+            for ( ports_type::const_iterator port (fun.in().begin())
                 ; port != fun.in().end()
                 ; ++port
                 )
@@ -596,7 +596,7 @@ namespace xml
                   }
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            for ( connections_type::const_iterator connect (trans.in().begin())
                 ; connect != trans.in().end()
                 ; ++connect
                 )
@@ -606,7 +606,7 @@ namespace xml
                   ;
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            for ( connections_type::const_iterator connect (trans.read().begin())
                 ; connect != trans.read().end()
                 ; ++connect
                 )
@@ -618,7 +618,7 @@ namespace xml
 
             const tid_t tid_in (we_net.add_transition (trans_in));
 
-            for ( port_vec_type::const_iterator port (fun.in().begin())
+            for ( ports_type::const_iterator port (fun.in().begin())
                 ; port != fun.in().end()
                 ; ++port
                 )
@@ -637,7 +637,7 @@ namespace xml
                   }
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            for ( connections_type::const_iterator connect (trans.in().begin())
                 ; connect != trans.in().end()
                 ; ++connect
                 )
@@ -652,7 +652,7 @@ namespace xml
                   ;
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            for ( connections_type::const_iterator connect (trans.read().begin())
                 ; connect != trans.read().end()
                 ; ++connect
                 )
@@ -686,7 +686,7 @@ namespace xml
               , fun.prop
               );
 
-            for ( port_vec_type::const_iterator port (fun.out().begin())
+            for ( ports_type::const_iterator port (fun.out().begin())
                 ; port != fun.out().end()
                 ; ++port
                 )
@@ -716,7 +716,7 @@ namespace xml
                   }
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            for ( connections_type::const_iterator connect (trans.out().begin())
                 ; connect != trans.out().end()
                 ; ++connect
                 )
@@ -728,7 +728,7 @@ namespace xml
 
             const tid_t tid_out (we_net.add_transition (trans_out));
 
-            for ( port_vec_type::const_iterator port (fun.out().begin())
+            for ( ports_type::const_iterator port (fun.out().begin())
                 ; port != fun.out().end()
                 ; ++port
                 )
@@ -747,7 +747,7 @@ namespace xml
                     }
                 }
 
-            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            for ( connections_type::const_iterator connect (trans.out().begin())
                 ; connect != trans.out().end()
                 ; ++connect
                 )
@@ -805,7 +805,7 @@ namespace xml
                 )
               );
 
-            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            for ( connections_type::const_iterator connect (trans.in().begin())
                 ; connect != trans.in().end()
                 ; ++connect
                 )
@@ -815,7 +815,7 @@ namespace xml
                   ;
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            for ( connections_type::const_iterator connect (trans.read().begin())
                 ; connect != trans.read().end()
                 ; ++connect
                 )
@@ -825,7 +825,7 @@ namespace xml
                   ;
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            for ( connections_type::const_iterator connect (trans.out().begin())
                 ; connect != trans.out().end()
                 ; ++connect
                 )
@@ -842,7 +842,7 @@ namespace xml
                 we_net.set_transition_priority (tid, *trans.priority);
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.in().begin())
+            for ( connections_type::const_iterator connect (trans.in().begin())
                 ; connect != trans.in().end()
                 ; ++connect
                 )
@@ -852,7 +852,7 @@ namespace xml
                   ;
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.read().begin())
+            for ( connections_type::const_iterator connect (trans.read().begin())
                 ; connect != trans.read().end()
                 ; ++connect
                 )
@@ -862,7 +862,7 @@ namespace xml
                   ;
               }
 
-            for ( connect_vec_type::const_iterator connect (trans.out().begin())
+            for ( connections_type::const_iterator connect (trans.out().begin())
                 ; connect != trans.out().end()
                 ; ++connect
                 )

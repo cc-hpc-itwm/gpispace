@@ -13,6 +13,7 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/util/weparse.hpp>
+#include <xml/parse/util/unique.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/signature.hpp>
@@ -274,7 +275,7 @@ namespace xml
         }
       };
 
-      typedef std::vector<place_type> place_vec_type;
+      typedef xml::util::unique<place_type>::elements_type place_vec_type;
 
       // ******************************************************************* //
 

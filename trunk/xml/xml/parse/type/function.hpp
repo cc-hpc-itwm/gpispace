@@ -44,7 +44,7 @@ namespace xml
   {
     namespace type
     {
-      typedef std::vector<port_type> port_vec_type;
+      typedef xml::util::unique<port_type>::elements_type ports_type;
       typedef std::vector<std::string> cond_vec_type;
 
       // ******************************************************************* //
@@ -225,11 +225,11 @@ namespace xml
         typedef boost::unordered_map<std::string, pid_t> pid_of_place_type;
 
         void add_ports ( we_transition_type & trans
-                       , const port_vec_type & ports
+                       , const ports_type & ports
                        , const we::type::PortDirection & direction
                        ) const
         {
-          for ( port_vec_type::const_iterator port (ports.begin())
+          for ( ports_type::const_iterator port (ports.begin())
               ; port != ports.end()
               ; ++port
               )
@@ -243,12 +243,12 @@ namespace xml
 
         template<typename Map>
         void add_ports ( we_transition_type & trans
-                       , const port_vec_type & ports
+                       , const ports_type & ports
                        , const we::type::PortDirection & direction
                        , const Map & pid_of_place
                        ) const
         {
-          for ( port_vec_type::const_iterator port (ports.begin())
+          for ( ports_type::const_iterator port (ports.begin())
               ; port != ports.end()
               ; ++port
               )
@@ -456,8 +456,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        const port_vec_type & in (void) const { return _in.elements(); }
-        const port_vec_type & out (void) const { return _out.elements(); }
+        const ports_type & in (void) const { return _in.elements(); }
+        const ports_type & out (void) const { return _out.elements(); }
 
         bool get_port_in (const std::string & name, port_type & port) const
         {
@@ -511,7 +511,7 @@ namespace xml
         {
           xml::parse::struct_t::forbidden_type forbidden;
 
-          for ( port_vec_type::const_iterator pos (in().begin())
+          for ( ports_type::const_iterator pos (in().begin())
               ; pos != in().end()
               ; ++pos
               )
@@ -519,7 +519,7 @@ namespace xml
               forbidden[pos->type] = pos->name;
             }
 
-          for ( port_vec_type::const_iterator pos (out().begin())
+          for ( ports_type::const_iterator pos (out().begin())
               ; pos != out().end()
               ; ++pos
               )
@@ -609,7 +609,7 @@ namespace xml
 
         void type_check (const state::type & state) const
         {
-          for ( port_vec_type::const_iterator port (in().begin())
+          for ( ports_type::const_iterator port (in().begin())
               ; port != in().end()
               ; ++port
               )
@@ -618,7 +618,7 @@ namespace xml
                 (port_type_check<net_type> ("in", *port, path, state), f);
             }
 
-          for ( port_vec_type::const_iterator port (out().begin())
+          for ( ports_type::const_iterator port (out().begin())
               ; port != out().end()
               ; ++port
               )
@@ -676,7 +676,7 @@ namespace xml
               return;
             }
 
-          for ( std::vector<port_type>::iterator port (_in.elements().begin())
+          for ( ports_type::iterator port (_in.elements().begin())
               ; port != _in.elements().end()
               ; ++port
               )
@@ -684,7 +684,7 @@ namespace xml
               port->specialize (map,  state);
             }
 
-          for ( std::vector<port_type>::iterator port (_out.elements().begin())
+          for ( ports_type::iterator port (_out.elements().begin())
               ; port != _out.elements().end()
               ; ++port
               )

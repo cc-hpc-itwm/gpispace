@@ -37,8 +37,6 @@ namespace xml
         {}
       };
 
-      typedef std::vector<connect_type> connect_vec_type;
-
       namespace dump
       {
         inline void dump ( xml_util::xmlstream & s

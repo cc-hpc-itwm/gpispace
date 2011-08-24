@@ -3,7 +3,7 @@
 #ifndef _XML_UTIL_UNIQUE_HPP
 #define _XML_UTIL_UNIQUE_HPP
 
-#include <vector>
+#include <list>
 #include <string>
 #include <boost/unordered_map.hpp>
 
@@ -14,74 +14,80 @@ namespace xml
     template<typename T, typename Key = std::string>
     struct unique
     {
-    private:
-      typedef std::vector<T> vec_type;
-      typedef boost::unordered_map< Key
-                                  , typename vec_type::size_type
-                                  > map_type;
+    public:
+      typedef std::list<T> elements_type;
 
-      vec_type vec;
-      map_type names;
-      typename vec_type::size_type pos;
+    private:
+      typedef boost::unordered_map< Key
+                                  , typename elements_type::iterator
+                                  > names_type;
+
+      elements_type _elements;
+      names_type _names;
 
     public:
-      unique () : vec (), names (), pos (0) {}
+      unique () : _elements (), _names () {}
 
       bool push (const T & x, T & old)
       {
-        const typename map_type::const_iterator found (names.find (x.name));
+        const typename names_type::const_iterator found (_names.find (x.name));
 
-        if (found != names.end())
+        if (found != _names.end())
           {
-            old = vec[found->second];
+            old = *found->second;
 
             return false;
           }
 
-        names[x.name] = pos++;
-        vec.push_back (x);
+        _names[x.name] = _elements.insert (_elements.end(), x);
 
         return true;
       }
 
       bool push (const T & x)
       {
-        if (names.find (x.name) != names.end())
+        const typename names_type::const_iterator found (_names.find (x.name));
+
+        if (found != _names.end())
           {
             return false;
           }
 
-        names[x.name] = pos++;
-        vec.push_back (x);
+        _names[x.name] = _elements.insert (_elements.end(), x);
 
         return true;
       }
 
       bool by_key (const Key & key, T & x) const
       {
-        const typename map_type::const_iterator found (names.find (key));
+        const typename names_type::const_iterator found (_names.find (key));
 
-        if (found == names.end())
+        if (found == _names.end())
           {
             return false;
           }
 
-        x = vec[found->second];
+        x = *found->second;
 
         return true;
       }
 
       bool is_element (const Key & key) const
       {
-        T x;
+        const typename names_type::const_iterator found (_names.find (key));
 
-        return by_key (key, x);
+        if (found == _names.end())
+          {
+            return false;
+          }
+
+        return true;
       }
 
-      void clear (void) { vec.clear(); names.clear(); pos = 0; }
+      void clear (void) { _elements.clear(); _names.clear(); }
 
-      vec_type & elements (void) { return vec; }
-      const vec_type & elements (void) const { return vec; }
+      elements_type & elements (void) { return _elements; }
+      const elements_type & elements (void) const { return _elements; }
     };
   }
 }

@@ -13,6 +13,8 @@
 
 #include <fhg/util/xml.hpp>
 
+#include <xml/parse/util/unique.hpp>
+
 namespace xml_util = ::fhg::util::xml;
 
 namespace xml
@@ -38,7 +40,7 @@ namespace xml
         {}
       };
 
-      typedef std::vector<place_map_type> place_map_vec_type;
+      typedef xml::util::unique<place_map_type>::elements_type place_map_vec_type;
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
 
       namespace dump

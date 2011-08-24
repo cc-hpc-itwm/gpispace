@@ -40,11 +40,11 @@ namespace xml
         xml::util::unique<specialize_type> _specializes;
 
       public:
-        typedef std::vector<place_type> place_vec_type;
-        typedef std::vector<function_type> function_vec_type;
-        typedef std::vector<function_type> template_vec_type;
-        typedef std::vector<transition_type> transition_vec_type;
-        typedef std::vector<specialize_type> specialize_vec_type;
+        typedef xml::util::unique<place_type>::elements_type place_vec_type;
+        typedef xml::util::unique<function_type>::elements_type function_vec_type;
+        typedef xml::util::unique<function_type>::elements_type template_vec_type;
+        typedef xml::util::unique<transition_type>::elements_type transition_vec_type;
+        typedef xml::util::unique<specialize_type>::elements_type specialize_vec_type;
 
         bool contains_a_module_call;
         struct_vec_type structs;
@@ -441,7 +441,7 @@ namespace xml
 
             transition_new.clear_ports();
 
-            for (connect_vec_type::const_iterator
+            for (connections_type::const_iterator
                    connect_in_old (transition_old->in().begin())
                 ; connect_in_old != transition_old->in().end()
                 ; ++connect_in_old
@@ -454,7 +454,7 @@ namespace xml
                 transition_new.push_in (connect_in_new);
               }
 
-            for (connect_vec_type::const_iterator
+            for (connections_type::const_iterator
                    connect_read_old (transition_old->read().begin())
                 ; connect_read_old != transition_old->read().end()
                 ; ++connect_read_old
@@ -467,7 +467,7 @@ namespace xml
                 transition_new.push_read (connect_read_new);
               }
 
-            for (connect_vec_type::const_iterator
+            for (connections_type::const_iterator
                    connect_out_old (transition_old->out().begin())
                 ; connect_out_old != transition_old->out().end()
                 ; ++connect_out_old
