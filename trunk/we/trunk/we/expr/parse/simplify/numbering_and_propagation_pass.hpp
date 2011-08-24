@@ -50,8 +50,39 @@ namespace expr
             propagation_map_t::const_iterator entry
                 (_propagation_map.find (key));
             if (entry != _propagation_map.end())
-            {
               return entry->second;
+
+            typedef node::key_vec_t::const_iterator key_const_iter;
+            key_const_iter key_end (key.end ());
+
+            for ( propagation_map_t::const_iterator it (_propagation_map.begin())
+                  , end (_propagation_map.end())
+                ; it != end
+                ; ++it
+                )
+            {
+              if (const node::key_vec_t* rhs_value = boost::get<node::key_vec_t> (&it->second))
+              {
+                key_const_iter key_it (key.begin ());
+                key_const_iter rhs_it (it->first.begin ()), rhs_end (it->first.end ());
+
+                //! \note This is an extended std::mismatch, also checking for rhs_end.
+                while (key_it != key_end && rhs_it != rhs_end)
+                {
+                  if (*key_it != *rhs_it)
+                  {
+                    break;
+                  }
+                  ++key_it;
+                  ++rhs_it;
+                }
+                if (rhs_it == rhs_end && key_it != key_end)
+                {
+                  node::key_vec_t result (rhs_value->begin(), rhs_value->end());
+                  std::copy (key_it, key_end, std::back_inserter (result));
+                  return result;
+                }
+              }
             }
             return key;
           }
