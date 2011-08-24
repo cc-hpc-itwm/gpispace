@@ -176,7 +176,11 @@ namespace xml
             (warning::unexpected_element (name, pre, state.file_in_progress()));
         }
 
-      if (node->next_sibling())
+      xml_node_type * sib (node->next_sibling());
+
+      skip (sib, rapidxml::node_comment);
+
+      if (sib)
         {
           throw error::more_than_one_definition (pre, state.file_in_progress());
         }
