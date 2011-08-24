@@ -137,7 +137,7 @@ namespace expr
         };
       }
 
-      static void
+      inline void
       dead_code_elimination_pass ( expression_list & list
                                  , const util::name_set_t & needed_bindings_ssa
                                  )

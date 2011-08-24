@@ -61,6 +61,7 @@ namespace expr
                 ; ++it
                 )
             {
+              //! \todo fhgutil::isprefixof?
               if (const node::key_vec_t* rhs_value = boost::get<node::key_vec_t> (&it->second))
               {
                 key_const_iter key_it (key.begin ());
@@ -108,6 +109,7 @@ namespace expr
               b.l = boost::apply_visitor (*this, b.l);
 
               //! \note we only handle constant and copy propagation, not expression propagation.
+              //! \todo visitor? (no.)
               if (const node::key_vec_t* rhs = boost::get<node::key_vec_t> (&b.r))
               {
                 _propagation_map[boost::get<node::key_vec_t> (b.l)] = *rhs;
@@ -146,7 +148,7 @@ namespace expr
         };
       }
 
-      static void
+      inline void
       numbering_and_propagation_pass ( expression_list & list
                                      , tree_node_type& ssa_tree
                                      )

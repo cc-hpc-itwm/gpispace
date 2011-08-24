@@ -13,6 +13,7 @@
 #include <we/expr/parse/simplify/expression_list.hpp>
 #include <we/expr/parse/simplify/numbering_and_propagation_pass.hpp>
 #include <we/expr/parse/simplify/dead_code_elimination_pass.hpp>
+#include <we/expr/parse/simplify/bad_access_fix_and_unnumbering_pass.hpp>
 
 static inline expr::parse::node::key_vec_t
 key_vec_from_string (const std::string & in)
@@ -84,13 +85,11 @@ main (int argc, char ** argv)
 
   expr::parse::simplify::expression_list expressions (parser);
 
-        // steps done:
         //  * add ssa numbering
         //  * copy and constant propagation
 
   expr::parse::simplify::numbering_and_propagation_pass (expressions, tree);
 
-        // steps to be done:
         //  * dead-code elimination
         //  * copy propagation fixup
 
@@ -109,6 +108,9 @@ main (int argc, char ** argv)
 
   expr::parse::simplify::dead_code_elimination_pass
       (expressions, needed_bindings);
+
+  expr::parse::simplify::bad_access_fix_and_unnumbering_pass
+      (expressions, tree);
 
   expr::parse::parser result_parser (expressions.node_stack());
 

@@ -22,15 +22,18 @@ namespace expr
           : public boost::static_visitor<node::type>
         {
         private:
-          tree_node_type& _ssa_tree;
-          const line_type& _line;
+          tree_node_type & _ssa_tree;
+          const line_type & _line;
+          expression_list & _expression_list;
 
         public:
           bad_access_fix_and_unnumbering_pass ( tree_node_type& ssa_tree
                                               , const line_type & line
+                                              , expression_list & list
                                               )
           : _ssa_tree (ssa_tree)
           , _line (line)
+          , _expression_list (list)
           {}
 
           node::type operator () (const value::type & t) const
@@ -39,9 +42,17 @@ namespace expr
           }
 
         private:
+          void create_dummy ( const line_type & line
+                            , const node::key_vec_t & name) const
+          {
+            node::type node = name;
+            _expression_list.insert (line, node);
+          }
+
           static node::key_vec_t
           get_normal_name (node::key_vec_t ssa_name)
           {
+            //! \note Yes, a size_t would be nicer, but would get termination-problems.
             signed long i = ssa_name.size() - 1;
             while (i >= 0)
             {
@@ -54,6 +65,7 @@ namespace expr
         public:
           node::type operator () (const node::key_vec_t & key) const
           {
+            //create_dummy (_line, key);
             return get_normal_name (key);
           }
 
@@ -65,24 +77,15 @@ namespace expr
 
           node::type operator () (node::binary_t & b) const
           {
-            if (token::is_define (b.token))
+            if (associativity::associativity (b.token) == associativity::left)
             {
-              b.r = boost::apply_visitor (*this, b.r);
-              //inc (_ssa_tree, boost::get<node::key_vec_t> (b.l), _line);
               b.l = boost::apply_visitor (*this, b.l);
+              b.r = boost::apply_visitor (*this, b.r);
             }
             else
             {
-              if (associativity::associativity (b.token) == associativity::left)
-              {
-                b.l = boost::apply_visitor (*this, b.l);
-                b.r = boost::apply_visitor (*this, b.r);
-              }
-              else
-              {
-                b.r = boost::apply_visitor (*this, b.r);
-                b.l = boost::apply_visitor (*this, b.l);
-              }
+              b.r = boost::apply_visitor (*this, b.r);
+              b.l = boost::apply_visitor (*this, b.l);
             }
             return b;
           }
@@ -97,9 +100,9 @@ namespace expr
         };
       }
 
-      static void
+      inline void
       bad_access_fix_and_unnumbering_pass ( expression_list & list
-                                          , tree_node_type& ssa_tree
+                                          , tree_node_type & ssa_tree
                                           )
       {
         for ( expression_list::node_stack_it_t it (list.begin()), end (list.end())
@@ -107,7 +110,7 @@ namespace expr
             ; ++it )
         {
           *it = boost::apply_visitor
-              ( detail::bad_access_fix_and_unnumbering_pass (ssa_tree, it)
+              ( detail::bad_access_fix_and_unnumbering_pass (ssa_tree, it, list)
               , *it
               );
         }

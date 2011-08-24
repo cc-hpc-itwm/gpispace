@@ -209,18 +209,21 @@ namespace expr
         }
       }
 
-      void inc (tree_node_type & root, const key_vec_t & key, const line_type & line)
+      inline void
+      inc (tree_node_type & root, const key_vec_t & key, const line_type & line)
       {
         root.find_child (key)->inc (line);
       }
 
-      void add (tree_node_type & root, const key_vec_t & key, const line_type & line)
+      inline void
+      add (tree_node_type & root, const key_vec_t & key, const line_type & line)
       {
         root.add_child (key, line);
       }
 
-      tree_node_type create_from_name_set ( const util::name_set_t& set
-                                          , const line_type & line)
+      inline tree_node_type
+      create_from_name_set ( const util::name_set_t& set
+                           , const line_type & line)
       {
         tree_node_type root (line);
 

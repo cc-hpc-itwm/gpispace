@@ -44,6 +44,10 @@ namespace expr
         {
           return _node_stack.erase (it);
         }
+        void insert (const node_stack_it_t & it, node_t & value)
+        {
+          _node_stack.insert (it, value);
+        }
       };
     }
   }
