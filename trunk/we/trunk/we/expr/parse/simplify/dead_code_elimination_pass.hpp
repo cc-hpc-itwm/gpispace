@@ -48,10 +48,42 @@ namespace expr
           }
 
         private:
+          static bool
+          partially_match (const node::key_vec_t & lhs, const node::key_vec_t & rhs)
+          {
+            typedef node::key_vec_t::const_iterator key_iter;
+            key_iter lhs_it (lhs.begin ()), lhs_end (lhs.end ());
+            key_iter rhs_it (rhs.begin ()), rhs_end (rhs.end ());
+
+            //! \note This is std::mismatch with an additional check for rhs_end.
+            while (lhs_it != lhs_end && rhs_it != rhs_end)
+            {
+              if (*lhs_it != *rhs_it)
+              {
+                return false;
+              }
+              ++lhs_it;
+              ++rhs_it;
+            }
+            return true;
+          }
+
           bool variable_or_member_referenced (const node::key_vec_t & k) const
           {
-            //! \todo Partial variable name matches!
-            return _referenced_names->count (k);
+            if (_referenced_names->count (k))
+              return true;
+
+            for ( util::name_set_t::const_iterator it (_referenced_names->begin ())
+                  , end (_referenced_names->end ())
+                ; it != end
+                ; ++it
+                )
+            {
+              if (partially_match (k, *it))
+                return true;
+            }
+
+            return false;
           }
 
         public:
