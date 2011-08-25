@@ -42,7 +42,7 @@ namespace we
 
       ~requirement_t () {}
 
-      virtual bool is_mandatory (void) const
+      bool is_mandatory (void) const
       {
         return mandatory_;
       }
