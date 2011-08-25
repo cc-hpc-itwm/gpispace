@@ -88,6 +88,8 @@ struct MyFixture
 	    	, m_kvsd (0)
 	    	, m_serv (0)
 	    	, m_thrd (0)
+			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
@@ -168,6 +170,9 @@ struct MyFixture
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
 	boost::thread *m_thrd;
+
+	sdpa::master_info_list_t m_arrAggMasterInfo;
+	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	std::string strBackupOrch;
 	std::string strBackupAgg;
@@ -295,7 +300,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverAllToFile )
 
 	LOG( INFO, "Create the Aggregator ...");
 	bfs::path fileBackupAgg("aggregator.bak");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"));
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<void>::create("aggregator_0", addrAgg,m_arrAggMasterInfo);
 	ptrAgg->start_agent(false, fileBackupAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -307,7 +312,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverAllToFile )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<void, TestWorkerClient>::create("NRE_0",
-											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 addrNRE, m_arrNreMasterInfo,
 											 workerUrl,
 											 guiUrl,
 											 bLaunchNrePcd,
@@ -373,7 +378,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 	ptrOrch->start_agent(false, strBackupOrch);
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent(false, strBackupAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -385,7 +390,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchDummyWfeWithClient )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<TestWorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<DummyWorkflowEngine, TestWorkerClient>::create("NRE_0",
-											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 addrNRE, m_arrNreMasterInfo,
 											 2,
 											 workerUrl,
 											 guiUrl,
@@ -458,7 +463,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient_Req )
 	ptrOrch->start_agent(true, strBackupOrch);
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent(true, strBackupAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -470,7 +475,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient_Req )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 addrNRE, m_arrNreMasterInfo,
 											 2,
 											 workerUrl,
 											 guiUrl,
@@ -538,7 +543,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient_Push )
 	ptrOrch->start_agent(false, strBackupOrch);
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent(false, strBackupAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -550,7 +555,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient_Push )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 addrNRE, m_arrNreMasterInfo,
 											 2,
 											 workerUrl,
 											 guiUrl,
@@ -619,7 +624,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient_Req )
 	ptrOrch->start_agent(true, strBackupOrch);
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent(true, strBackupAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -631,7 +636,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient_Req )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 addrNRE, m_arrNreMasterInfo,
 											 2,
 											 workerUrl,
 											 guiUrl,
@@ -699,7 +704,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient_Push )
 	ptrOrch->start_agent(false, strBackupOrch);
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent(false, strBackupAgg);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -711,7 +716,7 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverOrchRealWfeWithClient_Push )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 addrNRE, m_arrNreMasterInfo,
 											 2,
 											 workerUrl,
 											 guiUrl,

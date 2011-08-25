@@ -86,7 +86,9 @@ struct MyFixture
 {
 	MyFixture()
 	: m_nITER(1)
-	  , m_sleep_interval(1000000)
+	, m_sleep_interval(1000000)
+	, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+	, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
@@ -273,6 +275,9 @@ struct MyFixture
 	fhg::com::tcp_server *m_ptrServ;
 	boost::thread *m_ptrThrd;
 
+	sdpa::master_info_list_t m_arrAggMasterInfo;
+	sdpa::master_info_list_t m_arrNreMasterInfo;
+
 	pid_t pidPcd_;
 };
 
@@ -294,13 +299,13 @@ void MyFixture::startDaemons(const std::string& workerUrl)
   ptrOrch->start_agent();
 
   //LOG( DEBUG, "Create the Aggregator ...");
-  sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, std::vector<std::string>(1, "orchestrator_0"), MAX_CAP);
+  sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, m_arrAggMasterInfo, MAX_CAP);
   ptrAgg->start_agent();
 
   // use external scheduler and real GWES
   //LOG( DEBUG, "Create the NRE ...");
   sdpa::daemon::NRE<WorkerClient>::ptr_t
-          ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE",addrNRE, std::vector<std::string>(1, "aggregator_0"), 2, workerUrl, guiUrl, false );
+          ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE",addrNRE, m_arrNreMasterInfo, 2, workerUrl, guiUrl, false );
 
   try {
           ptrNRE->start_agent();
@@ -403,7 +408,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -416,7 +421,7 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompAndNreWorkerSpawnedByNRE )
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE, std::vector<std::string>(1, "aggregator_0"),
+				                             addrNRE, m_arrNreMasterInfo,
 				                             2,
 				                             workerUrl,
 				                             guiUrl,
@@ -554,13 +559,13 @@ BOOST_AUTO_TEST_CASE( testActivityRealWeAllCompActExec )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent();
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE, std::vector<std::string>(1, "aggregator_0"), 2, workerUrl, guiUrl );
+		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE, m_arrNreMasterInfo, 2, workerUrl, guiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));
@@ -688,13 +693,13 @@ BOOST_AUTO_TEST_CASE( testActivityDummyWeAllCompActExec )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent();
 
 	// use external scheduler and dummy WE
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE, std::vector<std::string>(1, "aggregator_0"),  2, workerUrl, guiUrl );
+		ptrNRE_0 = sdpa::daemon::NREFactory<DummyWorkflowEngine, WorkerClient>::create("NRE_0", addrNRE, m_arrNreMasterInfo,  2, workerUrl, guiUrl );
 
 	LOG( DEBUG, "starting process container on location: "<<workerUrl<< std::endl);
 	sdpa::shared_ptr<sdpa::nre::worker::ActivityExecutor> executor(new sdpa::nre::worker::ActivityExecutor(workerUrl));

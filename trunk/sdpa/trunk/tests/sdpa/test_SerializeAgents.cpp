@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE(testNRESerialization)
                             , WorkerClient
                             >::create( "NRE_0"
                                      , "127.0.0.1:7002"
-                                     , std::vector<std::string>(1,"aggregator_0")
+                                     , sdpa::master_info_list_t(1, MasterInfo("aggregator_0"))
                                      , MAX_CAP
                                      , "127.0.0.1:7001"
                                      , "127.0.0.1:8000"

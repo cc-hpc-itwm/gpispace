@@ -87,6 +87,8 @@ struct MyFixture
 	    	, m_kvsd (0)
 	    	, m_serv (0)
 	    	, m_thrd (0)
+			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start_agent the finite state machine
 
 		FHGLOG_SETUP();
@@ -173,6 +175,9 @@ struct MyFixture
 	fhg::com::kvs::server::kvsd *m_kvsd;
 	fhg::com::tcp_server *m_serv;
 	boost::thread *m_thrd;
+
+	sdpa::master_info_list_t m_arrAggMasterInfo;
+	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
@@ -318,7 +323,11 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Push )
 	ptrOrch->start_agent(false);
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create(  "aggregator_0",
+																											addrAgg,
+																											m_arrAggMasterInfo,
+																											MAX_CAP );
 	ptrAgg->start_agent(false);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -329,9 +338,94 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Push )
 
 	// use external scheduler and real GWES
 	//LOG( DEBUG, "Create the NRE ...");
+
+
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
+		ptrNRE_0 = sdpa::daemon::NREFactory< RealWorkflowEngine,
+											 WorkerClient>::create("NRE_0",
+				                             addrNRE,
+				                             m_arrNreMasterInfo,
+				                             2,
+				                             workerUrl,
+				                             //strAppGuiUrl,
+				                             guiUrl,
+				                             m_bLaunchNrePcd,
+				                             TESTS_NRE_PCD_BIN_PATH,
+				                             v_fake_PC_search_path,
+				                             v_module_preload );
+
+	try {
+		ptrNRE_0->start_agent(false);
+	}
+	catch (const std::exception &ex) {
+		LOG( FATAL, "Could not start_agent NRE: " << ex.what());
+		LOG( WARN, "TODO: implement NRE-PCD fork/exec with a Restart_agentStrategy->restart_agent()" );
+
+		ptrNRE_0->shutdown();
+		ptrAgg->shutdown();
+		ptrOrch->shutdown();
+
+		return;
+	}
+
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
+
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+
+	ptrNRE_0->shutdown();
+	ptrAgg->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+}
+
+
+BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe_Push )
+{
+	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	//guiUrl
+	string guiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgg 		= "127.0.0.1";
+	string addrNRE 		= "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	//LOG( DEBUG, "Create Orchestrator with an empty workflow engine ...");
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<EmptyWorkflowEngine>::create("orchestrator_0", addrOrch, MAX_CAP);
+	ptrOrch->start_agent(false);
+
+	//LOG( DEBUG, "Create the Aggregator ...");
+
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create(  "aggregator_0",
+																											addrAgg,
+																											m_arrAggMasterInfo,
+																											MAX_CAP );
+	ptrAgg->start_agent(false);
+
+	std::vector<std::string> v_fake_PC_search_path;
+	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	std::vector<std::string> v_module_preload;
+	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+
+	// use external scheduler and real GWES
+	//LOG( DEBUG, "Create the NRE ...");
+
+
+	sdpa::daemon::NRE<WorkerClient>::ptr_t
+		ptrNRE_0 = sdpa::daemon::NREFactory< RealWorkflowEngine,
+											 WorkerClient>::create("NRE_0",
+				                             addrNRE,
+				                             m_arrNreMasterInfo,
 				                             2,
 				                             workerUrl,
 				                             //strAppGuiUrl,
@@ -390,7 +484,10 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Req )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create(	"aggregator_0",
+																											addrAgg,
+																											m_arrAggMasterInfo,
+																											MAX_CAP);
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -403,7 +500,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Req )
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
+				                             addrNRE,
+				                             m_arrNreMasterInfo,
 				                             2,
 				                             workerUrl,
 				                             //strAppGuiUrl,
@@ -440,7 +538,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Req )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe_Req )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
@@ -459,7 +556,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe_Req )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg, m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -472,7 +569,8 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe_Req )
 	//LOG( DEBUG, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE_0 = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-				                             addrNRE, std::vector<std::string>(1,"aggregator_0"),
+				                             addrNRE,
+				                             m_arrNreMasterInfo,
 				                             2, //capacity of the NRE is set to 2
 				                             workerUrl,
 				                             //strAppGuiUrl,

@@ -88,6 +88,8 @@ struct MyFixture
 	    	, m_kvsd (0)
 	    	, m_serv (0)
 	    	, m_thrd (0)
+			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
@@ -172,6 +174,9 @@ struct MyFixture
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
 	std::stringstream sstrNRE;
+
+	sdpa::master_info_list_t m_arrAggMasterInfo;
+	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	boost::thread m_threadClient;
 	pid_t pidPcd_;
@@ -316,7 +321,7 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	ptrOrch->start_agent();
 
 	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"), MAX_CAP);
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -328,7 +333,7 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE, std::vector<std::string>(1,"aggregator_0"),
+											 addrNRE, m_arrNreMasterInfo,
 											 2,
 											 workerUrl,
 											 /*strAppGuiUrl,*/

@@ -88,6 +88,8 @@ struct MyFixture
 	    	, m_kvsd (0)
 	    	, m_serv (0)
 	    	, m_thrd (0)
+			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
+			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
@@ -172,6 +174,9 @@ struct MyFixture
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
 	std::stringstream sstrNRE;
+
+	sdpa::master_info_list_t m_arrAggMasterInfo;
+	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	boost::thread m_threadClient;
 	pid_t pidPcd_;
@@ -316,11 +321,11 @@ BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
 	ptrOrch->start_agent(true);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg_0, std::vector<std::string>(1,"orchestrator_0"), 10);
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg_0,m_arrAggMasterInfo, 10);
 	ptrAgent0->start_agent(true);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_1", addrAgg_1, std::vector<std::string>(1,"orchestrator_0"), 10);
+	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_1", addrAgg_1,m_arrAggMasterInfo, 10);
 	ptrAgent1->start_agent(true);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -329,15 +334,15 @@ BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
 	std::vector<std::string> v_module_preload;
 	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
 
-	std::vector<std::string> vecMasters;
-	vecMasters.push_back("agent_0");
-	vecMasters.push_back("agent_1");
+	master_info_list_t vecNreMasters;
+	vecNreMasters.push_back(MasterInfo("agent_0"));
+	vecNreMasters.push_back(MasterInfo("agent_1"));
 
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 																					 addrNRE,
-																					 vecMasters,
+																					 vecNreMasters,
 																					 1,
 																					 workerUrl,
 																					 guiUrl,
@@ -395,11 +400,11 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 	ptrOrch->start_agent(false);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg_0, std::vector<std::string>(1,"orchestrator_0"), 100);
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg_0,m_arrAggMasterInfo, 100);
 	ptrAgent0->start_agent(false);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_1", addrAgg_1, std::vector<std::string>(1,"orchestrator_0"), 100);
+	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_1", addrAgg_1,m_arrAggMasterInfo, 100);
 	ptrAgent1->start_agent(false);
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -408,15 +413,15 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 	std::vector<std::string> v_module_preload;
 	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
 
-	std::vector<std::string> vecMasters;
-	vecMasters.push_back("agent_0");
-	vecMasters.push_back("agent_1");
+	master_info_list_t vecNreMasters;
+	vecNreMasters.push_back(MasterInfo("agent_0"));
+	vecNreMasters.push_back(MasterInfo("agent_1"));
 
 	LOG( INFO, "Create the NRE ...");
 	sdpa::daemon::NRE<WorkerClient>::ptr_t
 		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
 																					 addrNRE,
-																					 vecMasters,
+																					 vecNreMasters,
 																					 1,
 																					 workerUrl,
 																					 guiUrl,
