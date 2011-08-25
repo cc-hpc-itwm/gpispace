@@ -31,7 +31,7 @@ namespace daemon {
     {
             static typename NRE<U>::ptr_t create(  const std::string& name
                                                    , const std::string& url
-                                                   , const sdpa::master_list_t& arrMasterNames
+                                                   , const sdpa::master_info_list_t& arrMasterNames
                                                    , const unsigned int capacity
                                                    , const std::string& workerUrl
                                                    , const std::string& guiUrl = "127.0.0.1:9000"
@@ -70,7 +70,7 @@ namespace daemon {
     {
             static typename NRE<U>::ptr_t create(  const std::string& name
                                                    , const std::string& url
-                                                   , const sdpa::master_list_t& arrMasterNames
+                                                   , const sdpa::master_info_list_t& arrMasterNames
                                                    , const unsigned int capacity
                                                    , const std::string& workerUrl
                                                    , const std::string& guiUrl = "127.0.0.1:9000"

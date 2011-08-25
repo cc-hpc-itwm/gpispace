@@ -34,10 +34,10 @@ namespace sdpa {
 
                   Aggregator( const std::string& name = "",
                               const std::string& url = "",
-                              const sdpa::master_list_t& arrMasterNames = std::vector<std::string>(),
+                              const sdpa::master_info_list_t& m_arrMasterInfo = sdpa::master_info_list_t(),
                               unsigned int cap = 10000,
                               const std::string& guiUrl = "" )
-                  : DaemonFSM( name, arrMasterNames, cap, NULL ),
+                  : DaemonFSM( name, m_arrMasterInfo, cap, NULL ),
                     SDPA_INIT_LOGGER(name),
                     url_(url),
                     //masterName_(masterName),
@@ -75,7 +75,7 @@ namespace sdpa {
                   {
                     ar & boost::serialization::base_object<DaemonFSM>(*this);
                     ar & url_; //boost::serialization::make_nvp("url_", url_);
-                    ar & m_arrMasterNames;
+                    ar & m_arrMasterInfo;
                   }
 
                   virtual void backup( std::ostream& );
@@ -89,8 +89,8 @@ namespace sdpa {
                   private:
                   Scheduler* create_scheduler(bool bUseReqModel)
                   {
-                    DLOG(TRACE, "creating aggregator scheduler...");
-                    return new SchedulerAgg(this, bUseReqModel);
+                	  DLOG(TRACE, "creating aggregator scheduler...");
+                	  return new SchedulerAgg(this, bUseReqModel);
                   }
 
                   std::string url_;

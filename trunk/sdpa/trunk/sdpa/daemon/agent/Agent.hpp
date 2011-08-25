@@ -32,7 +32,7 @@ namespace sdpa {
 
         Agent(const std::string& name = "",
               const std::string& url = "",
-              const sdpa::master_list_t arrMasterNames = sdpa::master_list_t(),
+              const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
               unsigned int cap = 10000,
               const std::string& guiUrl = "")
         : DaemonFSM( name, arrMasterNames, cap, NULL ),
@@ -72,7 +72,7 @@ namespace sdpa {
         {
           ar & boost::serialization::base_object<DaemonFSM>(*this);
           ar & url_; //boost::serialization::make_nvp("url_", url_);
-          ar & m_arrMasterNames; //boost::serialization::make_nvp("url_", m_arrMasterNames);
+          //ar & m_arrMasterNames; //boost::serialization::make_nvp("url_", m_arrMasterNames);
         }
 
         virtual void backup( std::ostream& );

@@ -36,7 +36,7 @@ namespace sdpa {
 
             NRE( const std::string& name = ""
                  , const std::string& url = ""
-                 , const std::vector<std::string> arrMasterNames = std::vector<std::string>()
+                 , const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t()
                  , unsigned int cap = 10000
                  //, const std::string& masterUrl = ""
                  , const std::string& workerUrl = ""
@@ -114,7 +114,7 @@ namespace sdpa {
               ar & boost::serialization::base_object<DaemonFSM>(*this);
               ar & url_; //boost::serialization::make_nvp("url_", url_);
               ar & workerUrl_;
-              ar & m_arrMasterNames;
+              ar & m_arrMasterInfo;
               //ar & m_guiService;
             }
 
