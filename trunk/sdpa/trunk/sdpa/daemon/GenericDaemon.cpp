@@ -43,7 +43,7 @@ using namespace sdpa::events;
 
 //constructor
 GenericDaemon::GenericDaemon( 	const std::string name,
-								const std::vector<std::string>& m_arrMasterNames,
+								const master_info_list_t arrMasterInfo,
 								unsigned int cap,
 								IWorkflowEngine*  pArgSdpa2Gwes	 )
       : Strategy(name),
@@ -64,7 +64,7 @@ GenericDaemon::GenericDaemon( 	const std::string name,
         m_bConfigOk(false),
         m_threadBkpService(this),
         m_last_request_time(0),
-        m_arrMasterNames(m_arrMasterNames)
+        m_arrMasterInfo(arrMasterInfo)
        //,  m_bUseRequestModel(false)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
@@ -267,17 +267,20 @@ void GenericDaemon::shutdown( )
 template <typename T>
 void GenericDaemon::notifyMasters(const T& ptrNotEvt)
 {
-	if(m_arrMasterNames.empty())
+	if(m_arrMasterInfo.empty())
 	{
 		SDPA_LOG_INFO("The master list is empty. No mater to be notified exist!");
 		return;
 	}
 
-	for( sdpa::master_list_t::iterator iter = m_arrMasterNames.begin(); iter != m_arrMasterNames.end(); iter++ )
+	BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
 	{
-		ptrNotEvt->to() = *iter;
-		SDPA_LOG_INFO("Send notification to the master "<<*iter);
-		sendEventToMaster(ptrNotEvt);
+		if( masterInfo.is_registered() )
+		{
+			ptrNotEvt->to() = masterInfo.name();
+			SDPA_LOG_INFO("Send notification to the master "<<masterInfo.name());
+			sendEventToMaster(ptrNotEvt);
+		}
 	}
 }
 
@@ -364,10 +367,10 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 
 void GenericDaemon::shutdown_network()
 {
-    BOOST_FOREACH(std::string master, m_arrMasterNames )
+    BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo )
     {
-      if( !master.empty() && is_registered() )
-    	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), master, ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
+      if( !masterInfo.name().empty() && masterInfo.is_registered() )
+    	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
     }
 }
 
@@ -947,11 +950,11 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	{
     		// that's not true -> to be reviewed !
     		// check if the message comes from a master
-    		BOOST_FOREACH(std::string master, m_arrMasterNames)
+    		BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
 			{
-    			if( error.from() == master )
+    			if( error.from() == masterInfo.name() )
     			{
-    				SDPA_LOG_WARN("Master " << master << " is down");
+    				SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
 
     				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
     				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
@@ -959,8 +962,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
     				if( !is_orchestrator() )
     				{
-    					m_bRegistered = false;
-    					requestRegistration();
+    					masterInfo.set_registered(false);
+    					requestRegistration(masterInfo);
     				}
     			}
 			}
@@ -1149,12 +1152,12 @@ void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
   jobManager()->deleteJob(jobId);
 }
 
-const preference_t& GenericDaemon::getJobPreferences(const sdpa::job_id_t& jobId) const
+const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
   try {
-	  return ptr_job_man_->getJobPreferences(jobId);
+	  return ptr_job_man_->getJobRequirements(jobId);
   }
-  catch (const NoJobPreferences& ex)
+  catch (const NoJobRequirements& ex)
   {
       throw ex;
   }
@@ -1194,13 +1197,21 @@ void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
-  SDPA_LOG_INFO("Received registration acknowledgment from "<<pRegAckEvt->from());
-  m_bRegistered = true;
+	std::string masterName = pRegAckEvt->from();
+	SDPA_LOG_INFO("Received registration acknowledgment from "<<masterName);
 
-  // for all jobs that are in a terminal state and not yet acknowledged by the  master
-  // re-submit  them to the master, after registration
+	bool bFound = false;
+	for(sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end() && !bFound; it++)
+		if(it->name() == masterName)
+		{
+			it->set_registered(true);
+			bFound=true;
+		}
 
-  ptr_job_man_->resubmitJobsAndResults(this);
+	// for all jobs that are in a terminal state and not yet acknowledged by the  master
+	// re-submit  them to the master, after registration
+
+	ptr_job_man_->resubmitJobsAndResults(this);
 }
 
 void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent* pCfgReplyEvt)
@@ -1390,24 +1401,6 @@ bool GenericDaemon::requestsAllowed()
   return ( diff_time > m_ullPollingInterval ) && ( ptr_job_man_->numberExtJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
-void GenericDaemon::requestJob()
-{
-    // post a new request to the master
-    // the slave posts a job request
-    if(m_arrMasterNames.empty())
-      return;
-
-    BOOST_FOREACH(std::string master, m_arrMasterNames)
-    {
-      //SDPA_LOG_INFO( "Post a new job request to the master "<<master );
-      RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), master ) );
-      sendEventToMaster(pEvtReq);
-    }
-
-    update_last_request_time();
-}
-
-
 void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)
 {
   if( hasWorkflowEngine() )
@@ -1475,16 +1468,48 @@ void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, con
   }
 }
 
+void GenericDaemon::requestJob(const MasterInfo& masterInfo)
+{
+    // post a new request to the master
+    // the slave posts a job request
+
+	/*if(m_arrMasterInfo.empty())
+      return;*/
+
+    //BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
+    {
+		if( masterInfo.is_registered() )
+		{
+			//SDPA_LOG_INFO( "Post a new job request to the master "<<master );
+			RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), masterInfo.name() ) );
+			sendEventToMaster(pEvtReq);
+		}
+    }
+    update_last_request_time();
+}
+
+void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
+{
+    // try to re-register
+    //BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
+	{
+		if( !masterInfo.is_registered() )
+		{
+			SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << masterInfo.name() << "), capacity = "<<capacity());
+			capabilities_set_t capabilities;
+			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), rank(), capacity(), capabilities, agent_uuid()));
+			sendEventToMaster(pEvtWorkerReg);
+		}
+	}
+}
+
 void GenericDaemon::requestRegistration()
 {
     // try to re-register
-    BOOST_FOREACH(std::string master, m_arrMasterNames)
-    {
-        SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << master << "), capacity = "<<capacity());
-        capabilities_set_t capabilities;
-        WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), master, rank(), capacity(), capabilities, agent_uuid()));
-        sendEventToMaster(pEvtWorkerReg);
-    }
+    BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
+	{
+    	requestRegistration(masterInfo);
+	}
 }
 
 void GenericDaemon::schedule(const sdpa::job_id_t& jobId)

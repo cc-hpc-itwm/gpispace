@@ -60,83 +60,83 @@ namespace sdpa { namespace daemon {
 						boost::noncopyable
 {
   public:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::condition_variable_any condition_type;
+	  typedef boost::recursive_mutex mutex_type;
+	  typedef boost::unique_lock<mutex_type> lock_type;
+	  typedef boost::condition_variable_any condition_type;
 
-        typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
+	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 
-        GenericDaemon( const std::string name = "orchestrator_0",
-                       const sdpa::master_list_t& m_arrMasterNames =  sdpa::master_list_t(),
-                       unsigned int cap = 10000,
-                       IWorkflowEngine* pArgSdpa2Gwes = NULL);
+	  GenericDaemon( const std::string name = "orchestrator_0",
+					   const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
+					   unsigned int cap = 10000,
+					   IWorkflowEngine* pArgSdpa2Gwes = NULL);
 
-        virtual ~GenericDaemon();
+	  virtual ~GenericDaemon();
 
-        SDPA_DECLARE_LOGGER();
+	  SDPA_DECLARE_LOGGER();
 
-        // API
-        virtual void start_fsm();
+	  // API
+	  virtual void start_fsm();
 
-        void start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
-        void start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile = ""  );
-        void start_agent( bool bUseReqModel = true, const std::string& cfgFile = "" ); // no recovery
+	  void start_agent( bool bUseReqModel, const bfs::path& bkpFile, const std::string& cfgFile = ""  ); // from cfg file!
+	  void start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile = ""  );
+	  void start_agent( bool bUseReqModel = true, const std::string& cfgFile = "" ); // no recovery
 
-        void shutdown(std::string&); // no backup
-        void shutdown( const bfs::path& backup_path );
-        void shutdown();
+	  void shutdown(std::string&); // no backup
+	  void shutdown( const bfs::path& backup_path );
+	  void shutdown();
 
-        virtual void configure_network( const std::string& daemonUrl/*, const std::string& masterName = ""*/ );
-        virtual void shutdown_network();
-        void stop();
+	  virtual void configure_network( const std::string& daemonUrl/*, const std::string& masterName = ""*/ );
+	  virtual void shutdown_network();
+	  void stop();
 
-        virtual void perform(const seda::IEvent::Ptr&);
-        virtual void schedule(const sdpa::job_id_t& job);
+	  virtual void perform(const seda::IEvent::Ptr&);
+	  virtual void schedule(const sdpa::job_id_t& job);
 
-        bool is_configured()  { return m_bConfigOk; }
-        bool is_stopped()     { return m_bStopped; }
-        bool is_started()     { return m_bStarted; }
+	  bool is_configured()  { return m_bConfigOk; }
+	  bool is_stopped()     { return m_bStopped; }
+	  bool is_started()     { return m_bStarted; }
 
-        void setDefaultConfiguration();
+	  void setDefaultConfiguration();
 
-        // daemon actions
-        virtual void action_configure( const sdpa::events::StartUpEvent& );
-        virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
-        virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
-        virtual void action_interrupt( const sdpa::events::InterruptEvent& );
-        //virtual void action_lifesign( const sdpa::events::LifeSignEvent& );
-        virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
-        virtual void action_request_job( const sdpa::events::RequestJobEvent& );
-        virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
-        virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
-        virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
-        virtual void action_error_event(const sdpa::events::ErrorEvent& );
+	  // daemon actions
+	  virtual void action_configure( const sdpa::events::StartUpEvent& );
+	  virtual void action_config_ok( const sdpa::events::ConfigOkEvent& );
+	  virtual void action_config_nok( const sdpa::events::ConfigNokEvent& );
+	  virtual void action_interrupt( const sdpa::events::InterruptEvent& );
+	  virtual void action_delete_job( const sdpa::events::DeleteJobEvent& );
+	  virtual void action_request_job( const sdpa::events::RequestJobEvent& );
+	  virtual void action_submit_job( const sdpa::events::SubmitJobEvent& );
+	  virtual void action_config_request( const sdpa::events::ConfigRequestEvent& );
+	  virtual void action_register_worker(const sdpa::events::WorkerRegistrationEvent& );
+	  virtual void action_error_event(const sdpa::events::ErrorEvent& );
 
-        virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
-        virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*);
+	  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
+	  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*);
 
-        // job event handlers
-        virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
-        virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
-        virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
-        virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
-        virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
-        virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
-        virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
-        virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
-        virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
-        virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
-        virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
+	  // job event handlers
+	  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
+	  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*);
+	  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* );
+	  virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
+	  virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+	  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
+	  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
+	  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
+	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
+	  virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
+	  virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
 
-        virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
-        virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
-        virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
-        virtual void requestRegistration();
-        virtual void requestJob();
+	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
+	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
+	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
+	  virtual void requestRegistration();
+	  virtual void requestRegistration(const MasterInfo& masterInfo);
+	  virtual void requestJob(const MasterInfo& masterInfo);
 
-        virtual sdpa::status_t getStatus() { throw std::runtime_error("not implemented by the generic daemon!"); }
+	  virtual sdpa::status_t getStatus() { throw std::runtime_error("not implemented by the generic daemon!"); }
 
-        virtual bool is_scheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
+	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
 
       // WE interface
       virtual void submit(const id_type & id, const encoded_type & );
@@ -159,8 +159,10 @@ namespace sdpa { namespace daemon {
       virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) const;
 
       const Worker::ptr_t & findWorker(const Worker::worker_id_t& worker_id) const;
-      virtual void addWorker( const Worker::worker_id_t& workerId, unsigned int cap,
-    		                  const capabilities_set_t& cpbset, const sdpa::worker_id_t& agent_uuid  = "");
+      virtual void addWorker( const Worker::worker_id_t& workerId,
+    		  	  	  	  	  unsigned int cap,
+    		                  const capabilities_set_t& cpbset,
+    		                  const sdpa::worker_id_t& agent_uuid  = "");
 
       const std::string& name() const { return Strategy::name(); }
 
@@ -177,8 +179,7 @@ namespace sdpa { namespace daemon {
       virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
       virtual seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
 
-      //virtual void set_to_slave_stage(seda::Stage* argStage) { ptr_to_slave_stage_= argStage; }
-
+      // OBSOLETE!!!!!
       virtual bool is_registered() const { return m_bRegistered;}
 
       sdpa::util::Config& cfg() { return daemon_cfg_;}
@@ -195,7 +196,7 @@ namespace sdpa { namespace daemon {
       std::string gen_id() { JobId jobId; return jobId.str(); }
 
       void jobFailed(const job_id_t&, const std::string& reason);
-      const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const;
+      const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
       virtual void update_last_request_time();
       virtual bool requestsAllowed();
@@ -210,7 +211,7 @@ namespace sdpa { namespace daemon {
           ar & ptr_scheduler_;
           //ar & ptr_workflow_engine_;
 
-          ar & m_arrMasterNames; //boost::serialization::make_nvp("url_", m_arrMasterNames);
+          ar & m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
       }
 
       friend class boost::serialization::access;
@@ -244,18 +245,13 @@ namespace sdpa { namespace daemon {
       virtual const std::string url() const {return std::string();}
       //virtual const std::string masterName() const { return  std::string(); }
 
-      //void incExtJobsCnt();
-      //void decExtJobsCnt();
-      //unsigned int extJobsCnt();
-
       template <typename T>
       void notifyMasters(const T& ptrNotEvt);
 
       template <typename T>
       void notifyWorkers(const T& ptrNotEvt);
 
-      //bool useRequestModel () const { return m_bUseRequestModel; }
-      //void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
+      sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
 
 protected:
 
@@ -308,8 +304,6 @@ protected:
         seda::Stage::Ptr  ptr_to_slave_stage_;
 
         sdpa::weak_ptr<seda::Stage> ptr_daemon_stage_;
-        //seda::Stage* ptr_daemon_stage_;
-        //std::string master_;
 
         sdpa::util::Config daemon_cfg_;
 
@@ -336,7 +330,7 @@ protected:
         BackupService m_threadBkpService;
 
         sdpa::util::time_type m_last_request_time;
-        sdpa::master_list_t m_arrMasterNames;
+        sdpa::master_info_list_t m_arrMasterInfo;
 
       private:
         //bool m_bUseRequestModel;
