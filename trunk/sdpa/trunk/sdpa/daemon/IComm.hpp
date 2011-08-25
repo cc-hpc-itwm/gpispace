@@ -49,7 +49,8 @@ const std::string USER("user");
 	  virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e) = 0;
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
 	  virtual void requestRegistration() = 0;
-	  virtual void requestJob() = 0;
+	  virtual void requestRegistration(const MasterInfo& masterInfo) = 0;
+ 	  virtual void requestJob(const MasterInfo& masterInfo) = 0;
 
 	  virtual JobManager::ptr_t jobManager() const = 0;
 
@@ -57,7 +58,7 @@ const std::string USER("user");
 	  virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const = 0;
 	  virtual void deleteJob(const sdpa::job_id_t& ) = 0;
 
-	  virtual const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const = 0;
+	  virtual const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
 
 	  virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
 	  virtual void cancelWorkflow(const id_type& workflowId, const std::string& reason) = 0;
@@ -94,6 +95,8 @@ const std::string USER("user");
 	  virtual void notifyActivityFinished(const id_type&, const std::string& )  { throw std::runtime_error("not supported by this component"); }
 	  virtual void notifyActivityFailed(const id_type&, const std::string& )    { throw std::runtime_error("not supported by this component"); }
 	  virtual void notifyActivityCancelled(const id_type&, const std::string& ) { throw std::runtime_error("not supported by this component"); }
+
+	  virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
   };
 }}
 
