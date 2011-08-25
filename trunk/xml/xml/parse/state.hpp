@@ -692,7 +692,7 @@ namespace xml
             )
             ( _Osynthesize_virtual_places.c_str()
             , BOOLVAL(synthesize_virtual_places)
-            , "if set, ignore the keyword inline"
+            , "if set, synthesize virtual places"
             )
             ;
 #undef TYPEDVAL
