@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <dlfcn.h>
+#include <cstring>
 
 #include <fhglog/minimal.hpp>
 
@@ -120,7 +121,7 @@ namespace fhg
       else
       {
         throw std::runtime_error
-          ("plugin " + p->name() + " failed to start!");
+          ("plugin " + p->name() + " failed to start: " + std::string(strerror(-rc)));
       }
 
       return rc;

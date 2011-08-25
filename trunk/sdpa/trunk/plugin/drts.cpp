@@ -1,5 +1,6 @@
 #include "drts.hpp"
 #include "master.hpp"
+#include "job.hpp"
 
 #include <errno.h>
 
@@ -10,6 +11,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/thread/queue.hpp>
+#include <fhg/util/thread/event.hpp>
 
 //#include <gpi-space/pc/plugin/gpi.hpp>
 #include <sdpa/uuidgen.hpp>
@@ -27,15 +29,32 @@ class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS
                , public sdpa::events::EventHandler
 {
+  typedef boost::mutex mutex_type;
+  typedef boost::condition_variable condition_type;
+  typedef boost::unique_lock<mutex_type> lock_type;
+
   typedef fhg::thread::queue< sdpa::events::SDPAEvent::Ptr
                             , std::list
                             > event_queue_t;
 
+  typedef boost::shared_ptr<drts::Master> master_ptr;
+  typedef std::map< std::string
+                  , master_ptr
+                  > map_of_masters_t;
+
+  typedef boost::shared_ptr<drts::Job> job_ptr_t;
+  typedef std::map< std::string
+                  , job_ptr_t
+                  > map_of_jobs_t;
+  typedef fhg::thread::queue< job_ptr_t
+                            , std::list
+                            > job_queue_t;
 public:
   FHG_PLUGIN_START()
   {
     m_shutting_down = false;
-    m_my_name = fhg_kernel()->get("name", "drts");
+    m_my_name =      fhg_kernel()->get("name", "drts");
+    m_backlog_size = boost::lexical_cast<size_t>(fhg_kernel()->get("backlog", "3"));
 
     assert (! m_event_thread);
 
@@ -61,11 +80,25 @@ public:
     start_receiver();
 
     {
-      const std::string master_name (fhg_kernel()->get("master", "aggregator"));
+      const std::string master_name (fhg_kernel()->get("master", ""));
+      if (master_name.empty())
+      {
+        LOG(ERROR, "name of master not specified, please set plugin.drts.master!");
+        FHG_PLUGIN_FAILED(EINVAL);
+      }
+
+      if (master_name == m_my_name)
+      {
+        LOG(ERROR, "I (" << m_my_name << "), myself, cannot be my master...");
+        FHG_PLUGIN_FAILED(EINVAL);
+      }
+
       LOG(INFO, "adding master \"" << master_name << "\"");
       m_masters.insert
-        (std::make_pair(master_name, boost::shared_ptr<drts::Master>(new drts::Master(master_name))));
+        (std::make_pair(master_name, master_ptr(new drts::Master(master_name))));
     }
+
+    m_request_thread.reset(new boost::thread(&DRTSImpl::job_requestor_thread, this));
 
     start_connect ();
 
@@ -82,6 +115,13 @@ public:
   {
     // cancel running jobs etc.
     m_shutting_down = true;
+
+    if (m_request_thread)
+    {
+      m_request_thread->interrupt();
+      m_request_thread->join();
+      m_request_thread.reset();
+    }
 
     if (m_event_thread)
     {
@@ -184,6 +224,38 @@ public:
   }
 
   // event handler callbacks
+  //    implemented events
+  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e)
+  {
+    map_of_masters_t::iterator master_it (m_masters.find(e->from()));
+    if (master_it != m_masters.end() && !master_it->second->is_connected())
+    {
+      LOG(INFO, "successfully connected to " << master_it->second->name());
+      master_it->second->is_connected(true);
+
+      m_connected_event.notify(master_it->second->name());
+    }
+  }
+  virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent *e)
+  {
+    LOG(WARN, "worker tried to register: " << e->from());
+
+    send_event (new sdpa::events::ErrorEvent( m_my_name
+                                            , e->from()
+                                            , sdpa::events::ErrorEvent::SDPA_EPERM
+                                            , "you are not allowed to connect"
+                                            )
+               );
+  }
+
+  virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*)
+  {
+  }
+
+  virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*)
+  {
+  }
+
   virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *)
   {
   }
@@ -196,28 +268,35 @@ public:
   {
   }
 
-  virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent *)
-  {
-
-  }
-  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *)
-  {
-
-  }
-
-  virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *)
+  virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent *)
   {
   }
 
-  virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *)
-  {
-  }
-
-  virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent *) {}
   virtual void handleErrorEvent(const sdpa::events::ErrorEvent *)
   {
-
   }
+
+  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent *)
+  {
+  }
+
+  virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent *)
+  {
+  }
+
+  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent *)
+  {
+  }
+
+  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *)
+  {
+  }
+
+  // not implemented events
+  virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent *) {}
+  virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *) {}
+  virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *) {}
+  virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}
   virtual void handleInterruptEvent(const sdpa::events::InterruptEvent *){}
   virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *){}
   virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
@@ -226,35 +305,11 @@ public:
   virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}
   virtual void handleJobStatusReplyEvent(const sdpa::events::JobStatusReplyEvent *) {}
   virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent *) {}
-  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent *) {}
-  virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent *) {}
-  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent *) {}
   virtual void handleRunJobEvent(const sdpa::events::RunJobEvent *) {}
   virtual void handleStartUpEvent(const sdpa::events::StartUpEvent *) {}
   virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent *) {}
-  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *) {}
-  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e)
-  {
-    LOG(INFO, "successfully connected to " << e->from());
-    m_connected = true;
-
-    // start to poll
-  }
-  virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent *e)
-  {
-    LOG(WARN, "worker tried to register: " << e->from());
-    /*
-    send_event (new sdpa::events::ErrorEvent( m_my_name
-                                            , e->from()
-                                            , sdpa::events::ErrorEvent::SDPA_EPERM
-                                            , "you are not allowed to connect"
-                                            )
-               );
-    */
-  }
-  virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*) {}
-  virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*) {}
 private:
+  // threads
   void event_thread ()
   {
     for (;;)
@@ -262,6 +317,12 @@ private:
       try
       {
         sdpa::events::SDPAEvent::Ptr evt(m_event_queue.get());
+        map_of_masters_t::iterator m(m_masters.find(evt->from()));
+        if (m != m_masters.end())
+        {
+          m->second->update_recv();
+        }
+
         evt->handleBy(this);
       }
       catch (boost::thread_interrupted const & irq)
@@ -272,6 +333,67 @@ private:
       catch (std::exception const & ex)
       {
         LOG(WARN, "event could not be handled: " << ex.what());
+      }
+    }
+  }
+
+  void job_requestor_thread ()
+  {
+    for (;;)
+    {
+      {
+        lock_type lock(m_job_computed_mutex);
+        while (m_backlog_size && (m_backlog_size < m_pending_jobs.size()))
+        {
+          LOG(TRACE, "job requestor waits until job queue frees up some slots");
+          m_job_computed.wait(lock);
+        }
+      }
+
+      bool at_least_one_connected = false;
+      unsigned long min_sleep_time = 0;
+
+      for ( map_of_masters_t::const_iterator master_it (m_masters.begin())
+          ; master_it != m_masters.end()
+          ; ++master_it
+          )
+      {
+        master_ptr master (master_it->second);
+        if (master->is_connected() && master->is_polling())
+        {
+          boost::this_thread::interruption_point();
+
+          at_least_one_connected = true;
+
+          send_event(new sdpa::events::RequestJobEvent( m_my_name
+                                                      , master->name()
+                                                      )
+                    );
+          master->update_send();
+
+          //             if last-time-of-recvd-job is long ago
+          //                increase poll-interval
+          //             if shall poll master:
+          //                send job request
+          //                update timestamps
+        }
+      }
+
+      if (! at_least_one_connected)
+      {
+        std::string m;
+        m_connected_event.wait(m);
+        LOG(INFO, "requestor awaken!");
+      }
+
+      // job-requestor:
+      //   poll-for-jobs (if #pending jobs < backlog)
+      //      foreach connected master:
+      //         if polling enabled(master)
+
+      if (m_pending_jobs.size() < m_backlog_size)
+      {
+
       }
     }
   }
@@ -291,25 +413,37 @@ private:
     //        retry = true
     // if retry: reschedule start-connect
 
-    if (! m_connected)
+    bool at_least_one_disconnected = false;
+
+    for ( map_of_masters_t::iterator master_it (m_masters.begin())
+        ; master_it != m_masters.end()
+        ; ++master_it
+        )
     {
-      const std::string parent("aggregator");
+      boost::shared_ptr<drts::Master> master (master_it->second);
 
-      sdpa::events::WorkerRegistrationEvent::Ptr evt
-        (new sdpa::events::WorkerRegistrationEvent( m_my_name
-                                                  , parent
-                                                  )
-        );
-      evt->rank() = 0;
-      evt->capacity() = 2;
-      sdpa::uuidgen gen;
-      evt->capabilities().insert(sdpa::capability_t(gen().str(), "drts"));
-      evt->capabilities().insert(sdpa::capability_t(gen().str(), "gpi"));
+      if (! master->is_connected())
+      {
+        sdpa::events::WorkerRegistrationEvent::Ptr evt
+          (new sdpa::events::WorkerRegistrationEvent( m_my_name
+                                                    , master->name()
+                                                    )
+          );
+        sdpa::uuidgen gen;
 
-      LOG(INFO, "start_connect time = " << time(NULL));
+        // foreach capability:
+        //    add capability to event
 
-      send_event(evt);
+        send_event(evt);
 
+        master->update_send();
+
+        at_least_one_disconnected = true;
+      }
+    }
+
+    if (at_least_one_disconnected)
+    {
       fhg_kernel()->schedule (boost::bind( &DRTSImpl::start_connect
                                          , this
                                          )
@@ -355,14 +489,22 @@ private:
       const fhg::com::p2p::address_t & addr = m_message.header.src;
       if (addr != m_peer->address())
       {
-        LOG(WARN, "connection to " << m_peer->resolve (addr, "*unknown*") << " lost: " << ec);
+        const std::string other_name(m_peer->resolve (addr, "*unknown*"));
 
-        m_connected = false;
-        fhg_kernel()->schedule (boost::bind( &DRTSImpl::start_connect
-                                           , this
-                                           )
-                               , 5
-                               );
+        map_of_masters_t::iterator master(m_masters.find(other_name));
+        if (master != m_masters.end() && master->second->is_connected())
+        {
+          LOG(WARN, "connection to " << other_name << " lost: " << ec);
+
+          master->second->is_connected(false);
+
+          fhg_kernel()->schedule (boost::bind( &DRTSImpl::start_connect
+                                             , this
+                                             )
+                                 , 5
+                                 );
+        }
+
         start_receiver();
       }
       else
@@ -403,21 +545,31 @@ private:
   }
 
   bool m_shutting_down;
-  bool m_connected;
+
   boost::shared_ptr<boost::thread>    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   std::string m_my_name;
-  std::map<std::string, boost::shared_ptr<drts::Master> > m_masters;
+  map_of_masters_t m_masters;
 
   event_queue_t m_event_queue;
   boost::shared_ptr<boost::thread>    m_event_thread;
 
+  boost::shared_ptr<boost::thread>    m_request_thread;
+
+  mutable mutex_type m_job_map_mutex;
+  mutable mutex_type m_job_computed_mutex;
+  condition_type     m_job_computed;
+
+  fhg::util::thread::event<std::string> m_connected_event;
+
+  // jobs + their states
+  size_t m_backlog_size;
+  map_of_jobs_t m_jobs;
+  job_queue_t m_pending_jobs;
+
   // workflow engine
   // module loader
-  // connections to other agents
-  // jobs + their states
-  // job-queue(s) (1 per core?)
 };
 
 EXPORT_FHG_PLUGIN( drts

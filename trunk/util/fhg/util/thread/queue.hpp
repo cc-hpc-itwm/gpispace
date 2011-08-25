@@ -23,6 +23,7 @@ namespace fhg
     public:
       typedef T value_type;
       typedef Container<T, Allocator> container_type;
+      typedef typename container_type::size_type size_type;
 
       T get()
       {
@@ -32,13 +33,34 @@ namespace fhg
         return t;
       }
 
-      void put(T t)
+      void put(T const & t)
       {
         lock_type lock(m_mtx);
         m_container.push_back(t);
         m_cond.notify_one();
       }
 
+      size_type size() const
+      {
+        lock_type lock(m_mtx);
+        return m_container.size();
+      }
+
+      size_t erase (T const &t)
+      {
+        lock_type lock(m_mtx);
+        size_t cnt (0);
+        for ( typename container_type::iterator it (m_container.begin())
+            ; it != m_container.end()
+            ;
+            )
+        {
+          if (*it == t) { it = m_container.erase(it); ++cnt; }
+          else          ++it;
+        }
+
+        return cnt;
+      }
     private:
       mutable mutex m_mtx;
       mutable condition m_cond;

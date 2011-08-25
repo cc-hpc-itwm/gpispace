@@ -26,7 +26,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   endif (W_NO_IGNORED_QUALIFIERS)
 
   # release flags
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-unused-parameter -fstack-protector-all")
 
   # debug flags
   set(CMAKE_CXX_FLAGS_DEBUG

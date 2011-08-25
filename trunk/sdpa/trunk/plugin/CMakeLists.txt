@@ -5,7 +5,7 @@ include(fhg_plugin_macros)
 #
 
 # distributed runtime system plugin, aka interface to SDPA agent
-fhg_add_plugin(drts drts.cpp master.cpp
+fhg_add_plugin(drts drts.cpp master.cpp job.cpp
   EXPORTS DRTS
   LINK_LIBRARIES sdpa-events
                  sdpa-util
