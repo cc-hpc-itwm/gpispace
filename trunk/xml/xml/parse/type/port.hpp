@@ -33,7 +33,7 @@ namespace xml
         fhg::util::maybe<std::string> place;
         we::type::property::type prop;
 
-        port_type () : name (), type (), place () {}
+        port_type () : name (), type (), place (), prop () {}
 
         port_type ( const std::string & _name
                   , const std::string & _type
@@ -42,6 +42,7 @@ namespace xml
           : name (_name)
           , type (_type)
           , place (_place)
+          , prop ()
         {}
 
         void specialize ( const type::type_map_type & map_in
