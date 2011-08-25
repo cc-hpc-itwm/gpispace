@@ -13,10 +13,10 @@ namespace fhg
       {
         public:
           XMLQuery(const QString& path);
-          
+
           bool exec(const QString& xpath, QString* result) const;
           bool exec(const QString& xpath, QStringList* result) const;
-          
+
         private:
           QString _path;
       };

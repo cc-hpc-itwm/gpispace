@@ -17,16 +17,16 @@ namespace fhg
     namespace ui
     {
       class TransitionLibraryItem;
-      
+
       class TransitionLibraryModel : public QAbstractItemModel
       {
         Q_OBJECT
-        
+
         public:
           TransitionLibraryModel(const QDir& path, QWidget* parent = NULL);
-          
+
           static const QString mimeType;
-          
+
           virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
           virtual QModelIndex parent(const QModelIndex& index) const;
           virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -35,20 +35,20 @@ namespace fhg
           virtual Qt::ItemFlags flags(const QModelIndex& index) const;
           virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
           virtual QMimeData * mimeData(const QModelIndexList& indexes) const;
-          
+
           void readContentFromDirectory(const QString& path);
           void addContentFromDirectory(const QString& path, bool trusted = false);
-        
+
         public slots:
           void rereadAllDirectories(const QString& /*path*/);
-          
+
         private:
           void setFileSystemWatcher(const QString& path);
           void readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const bool& trusted, const QString& path);
-          
+
           QFileSystemWatcher* _fileSystemWatcher;
           TransitionLibraryItem* _items;
-          
+
           QList<QString> _trustedPaths;
           QList<QString> _untrustedPaths;
       };

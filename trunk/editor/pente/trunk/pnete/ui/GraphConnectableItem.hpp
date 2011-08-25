@@ -11,12 +11,12 @@ namespace fhg
     namespace graph
     {
       class Connection;
-      
+
       class ConnectableItem : public QObject, public QGraphicsItem
       {
         Q_OBJECT
         Q_INTERFACES(QGraphicsItem)
-        
+
         public:
           enum eOrientation
           {
@@ -32,27 +32,27 @@ namespace fhg
             OUT = 1,
             ANYDIRECTION = 2,
           };
-          
+
           ConnectableItem(eOrientation orientation, eDirection direction, QGraphicsItem* parent = NULL);
-          
+
           void connectMe(Connection* connection);
           void disconnectMe();
-          
+
           const eOrientation& orientation() const;
           const eDirection& direction() const;
-          
+
           void setOrientation(const eOrientation& orientation);
-          
+
           virtual bool canConnectTo(ConnectableItem* other) const;
           virtual bool canConnectIn(eDirection thatDirection) const;
-          
+
           bool createPendingConnectionIfPossible();
-          
+
           const Connection* connection() const;
-          
+
         protected:
           Connection* _connection;
-          
+
           eDirection _direction;
           eOrientation _orientation;
       };

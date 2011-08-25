@@ -18,9 +18,9 @@ namespace fhg
       {
         public:
           GraphTraverser(const graph::Scene* scene);
-          
+
           QString traverse(TraverserReceiver* dataReceiver, const QString& fileName = "myNet") const;
-          
+
         private:
           const graph::Scene* _scene;
       };

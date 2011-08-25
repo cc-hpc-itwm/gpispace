@@ -16,16 +16,16 @@ namespace fhg
     {
       TraverserReceiver::TraverserReceiver()
       {
-      } 
+      }
       TraverserReceiver::~TraverserReceiver()
       {
       }
-          
+
       void TraverserReceiver::transitionFound(const data::Transition& transition)
       {
 
       }
-      
+
       void TraverserReceiver::connectionFound(const data::Connection& connection)
       {
       }

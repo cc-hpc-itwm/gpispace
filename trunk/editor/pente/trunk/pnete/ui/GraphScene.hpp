@@ -21,26 +21,26 @@ namespace fhg
       class Scene : public QGraphicsScene
       {
         Q_OBJECT
-    
+
         public:
           Scene(QObject* parent = NULL);
           Scene(const QRectF& sceneRect, QObject* parent = NULL);
-          
+
           const QPointF& mousePosition() const;
-          
+
           void setPendingConnection(Connection* connection);
           void removePendingConnection();
-          
+
           const Connection* pendingConnection() const;
           bool pendingConnectionCanConnectTo(ConnectableItem* item) const;
           void pendingConnectionConnectTo(ConnectableItem* item);
           bool createPendingConnectionWith(ConnectableItem* item);
-          
+
         protected:
           virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
           virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
           virtual void keyPressEvent(QKeyEvent* event);
-          
+
         private:
           Connection* _pendingConnection;
           QPointF _mousePosition;

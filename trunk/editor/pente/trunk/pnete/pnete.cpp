@@ -51,17 +51,17 @@ int main(int argc, char *argv[])
       std::cerr << "Please also specify a path containing lib/, statoil/ and user/!" << std::endl;
       return EXIT_FAILURE;
     }
-   
+
     QString pnetedir = arguments.at(arguments.indexOf("--make-config") + 1);
-     
+
     settings.setValue("basePath", QString("%1/lib").arg(pnetedir));
-    
+
     //! \todo this should not be default!
     settings.beginWriteArray("trustedPaths");
     settings.setArrayIndex(0);
     settings.setValue("path", QString("%1/statoil").arg(pnetedir));
     settings.endArray();
-  
+
     settings.beginWriteArray("userPaths");
     settings.setArrayIndex(0);
     settings.setValue("path", QString("%1/user").arg(pnetedir));

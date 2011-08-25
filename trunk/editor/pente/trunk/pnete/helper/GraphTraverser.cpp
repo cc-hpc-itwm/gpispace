@@ -19,37 +19,37 @@ namespace fhg
   namespace pnete
   {
     namespace helper
-    {      
+    {
       GraphTraverser::GraphTraverser(const graph::Scene* scene)
       : _scene(scene)
       {
       }
-      
+
       QString makeValidName(const QString& name)
       {
         QString ret = name;
         return ret.replace(" ", "____");                                        // hardcoded constant
       }
-      
+
       QString GraphTraverser::traverse(TraverserReceiver* dataReceiver, const QString& fileName) const
       {
                                                                                 // hardcoded constants for names and params.
         QString xml;
         QXmlStreamWriter w(&xml);
         w.setAutoFormatting(true);
-          
+
         QList<graph::Port*> openPorts;
-        
+
         w.writeStartElement("defun");
         w.writeAttribute("name", makeValidName(fileName));
-        
+
         w.writeStartElement("net");
-        
+
         foreach(QGraphicsItem* item, _scene->items())
         {
           graph::Connection* connection = qgraphicsitem_cast<graph::Connection*>(item);
           graph::Transition* transition = qgraphicsitem_cast<graph::Transition*>(item);
-          
+
           if(connection)
           {
             if(connection->start() && connection->end())
@@ -64,7 +64,7 @@ namespace fhg
           {
             w.writeStartElement("transition");
             w.writeAttribute("name", makeValidName(QString("transition_%1").arg((long)transition, 0, 16)));
-            
+
             // write the transition with its ports
             if(transition->producedFrom().path() != QString())
             {
@@ -79,7 +79,7 @@ namespace fhg
               {
                 w.writeAttribute("name", makeValidName(transition->title()));
               }
-              
+
               foreach(QGraphicsItem* child, transition->childItems())
               {
                 graph::Port* port = qgraphicsitem_cast<graph::Port*>(child);
@@ -100,10 +100,10 @@ namespace fhg
                   w.writeEndElement();
                 }
               }
-              
+
               w.writeEndElement();
             }
-            
+
             // write all connections.
             foreach(QGraphicsItem* child, transition->childItems())
             {
@@ -130,7 +130,7 @@ namespace fhg
             w.writeEndElement();
           }
         }
-        
+
         foreach(graph::Port* port, openPorts)
         {
           w.writeStartElement("place");
@@ -138,9 +138,9 @@ namespace fhg
           w.writeAttribute("type", port->dataType());
           w.writeEndElement();
         }
-        
+
         w.writeEndElement();
-        
+
         foreach(graph::Port* port, openPorts)
         {
           w.writeStartElement(port->direction() == graph::Port::IN ? "in" : "out");
@@ -158,17 +158,17 @@ namespace fhg
           }
         w.writeEndElement();
         }
-        
+
         w.writeEndElement();
-        
+
         /*
           w.writeStartElement(port->direction() == graph::Port::IN ? "in" : "out");
           w.writeAttribute("port", port->title());
           w.writeAttribute("place", QString("place_%1_%2").arg((long)port->parentItem(), 0, 16).arg(port->title()));
           w.writeEndElement();
-        
+
           <in name="desc" type="string" place="desc"/>*/
-        
+
         return xml;
       }
     }

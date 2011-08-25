@@ -29,7 +29,7 @@ namespace fhg
           const QString& path() const;
 
           void toXML(QXmlStreamWriter& streamWriter, const QString& transname = QString()) const;
-          
+
         private:
           QString _path;
           QString _name;

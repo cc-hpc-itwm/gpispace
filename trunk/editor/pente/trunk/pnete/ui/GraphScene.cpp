@@ -18,19 +18,19 @@ namespace fhg
       _mousePosition(QPointF(0.0, 0.0))
       {
       }
-      
+
       Scene::Scene(const QRectF& sceneRect, QObject* parent)
       : QGraphicsScene(sceneRect, parent),
       _pendingConnection(NULL),
       _mousePosition(QPointF(0.0, 0.0))
       {
       }
-      
+
       const QPointF& Scene::mousePosition() const
       {
         return _mousePosition;
       }
-      
+
       void Scene::setPendingConnection(Connection* connection)
       {
         removePendingConnection();
@@ -42,7 +42,7 @@ namespace fhg
         }
         update();
       }
-      
+
       bool Scene::createPendingConnectionWith(ConnectableItem* item)
       {
         if(item->canConnectIn(ConnectableItem::ANYDIRECTION))
@@ -61,7 +61,7 @@ namespace fhg
         }
         return false;
       }
-      
+
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
       {
         _mousePosition = mouseEvent->scenePos();
@@ -69,10 +69,10 @@ namespace fhg
         {
           update();
         }
-        
+
         QGraphicsScene::mouseMoveEvent(mouseEvent);
       }
-      
+
       void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
       {
         if(_pendingConnection)
@@ -88,13 +88,13 @@ namespace fhg
               return;
             }
           }
-          
+
           removePendingConnection();
         }
-        
+
         QGraphicsScene::mouseReleaseEvent(event);
       }
-      
+
       void Scene::removePendingConnection()
       {
         if(_pendingConnection)
@@ -108,12 +108,12 @@ namespace fhg
           update();
         }
       }
-      
+
       const Connection* Scene::pendingConnection() const
       {
         return _pendingConnection;
       }
-      
+
       bool Scene::pendingConnectionCanConnectTo(ConnectableItem* item) const
       {
         //! \note ugly enough?
@@ -123,7 +123,7 @@ namespace fhg
                   || (_pendingConnection->end() && _pendingConnection->end()->canConnectTo(item))
                   );
       }
-      
+
       void Scene::pendingConnectionConnectTo(ConnectableItem* item)
       {
         if(pendingConnectionCanConnectTo(item))
@@ -139,7 +139,7 @@ namespace fhg
           _pendingConnection = NULL;
         }
       }
-      
+
       void Scene::keyPressEvent(QKeyEvent* event)
       {
         if(_pendingConnection && event->key() == Qt::Key_Escape)

@@ -26,17 +26,17 @@ namespace fhg
             data::Port* dataPortPtr = portFromGraph(*port);
             data::Port dataPort = *dataPortPtr;
             delete dataPortPtr;
-            
+
             switch(port->direction())
             {
               case graph::Port::IN:
                 inPorts.push_back(dataPort);
                 break;
-                
+
               case graph::Port::OUT:
                 outPorts.push_back(dataPort);
                 break;
-                
+
               default:
               case graph::Port::ANYDIRECTION:
                 // nope, not for me.
@@ -46,33 +46,33 @@ namespace fhg
         }
         return new data::Transition(transition.title(), inPorts, outPorts);
       }
-      
+
       data::Port* DataGraphConversion::portFromGraph(const graph::Port& port)
       {
         return new data::Port(port.title(), port.dataType());
       }
-      
+
       data::Connection* DataGraphConversion::connectionFromGraph(const graph::Connection& connection)
       {
         return new data::Connection();
       }
-      
-      
+
+
       graph::Transition* DataGraphConversion::transitionFromData(const data::Transition& transition)
       {
         return new graph::Transition(QString(), QString(), NULL);
       }
-      
+
       graph::Port* DataGraphConversion::portFromData(const data::Port& port)
       {
         return new graph::Port(NULL, graph::ConnectableItem::ANYDIRECTION, QString(), QString());
       }
-      
+
       graph::Connection* DataGraphConversion::connectionFromData(const data::Connection& connection)
       {
         return new graph::Connection();
       }
-      
+
     }
   }
 }

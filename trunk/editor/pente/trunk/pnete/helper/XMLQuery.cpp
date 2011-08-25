@@ -9,13 +9,13 @@ namespace fhg
   namespace pnete
   {
     namespace helper
-    {      
+    {
       XMLQuery::XMLQuery(const QString& path)
       : _path(path)
       {
         //! \todo Detection of zero byte files?
       }
-      
+
       bool XMLQuery::exec(const QString& xpath, QString* result) const
       {
         QXmlQuery query;
@@ -30,7 +30,7 @@ namespace fhg
         }
         return false;
       }
-      
+
       bool XMLQuery::exec(const QString& xpath, QStringList* result) const
       {
         QXmlQuery query;

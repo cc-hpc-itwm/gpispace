@@ -17,7 +17,7 @@ namespace fhg
       class Connection;
       class Transition;
       class Port;
-      
+
       class Style
       {
         public:
@@ -33,15 +33,15 @@ namespace fhg
           static qreal portCapLength();
           static qreal portDefaultWidth();
           static qreal portDefaultHeight();
-          
+
           static QPainterPath connectionShape(const Connection* connection);
           static QRectF connectionBoundingRect(const Connection* connection);
           static void connectionPaint(QPainter* painter, const Connection* connection);
-          
+
           static QPainterPath transitionShape(const QSizeF& size);
           static QRectF transitionBoundingRect(const QSizeF& size);
           static void transitionPaint(QPainter* painter, const Transition* transition);
-          
+
           static qreal raster();
           static QPointF snapToRaster(const QPointF& p);
       };

@@ -20,22 +20,22 @@ namespace fhg
       class GraphView : public QGraphicsView
       {
         Q_OBJECT
-        
+
         public:
           GraphView(QGraphicsScene* scene, QWidget* parent = NULL);
-          
+
         public slots:
           void zoom(int to);
-          
+
         signals:
           void zoomed(int to);
-          
+
         protected:
           virtual void dragEnterEvent(QDragEnterEvent* event);
           virtual void dragMoveEvent(QDragMoveEvent* event);
           virtual void dropEvent(QDropEvent* event);
           virtual void wheelEvent(QWheelEvent* event);
-          
+
         private:
           qreal _currentScale;
       };

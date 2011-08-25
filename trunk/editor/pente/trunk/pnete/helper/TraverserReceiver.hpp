@@ -17,7 +17,7 @@ namespace fhg
         public:
           TraverserReceiver();
           virtual ~TraverserReceiver();
-          
+
           virtual void transitionFound(const data::Transition& transition);
           virtual void connectionFound(const data::Connection& connection);
       };

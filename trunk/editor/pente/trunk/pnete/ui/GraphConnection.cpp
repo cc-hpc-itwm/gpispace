@@ -25,10 +25,10 @@ namespace fhg
       {
         setStart(start);
         setEnd(end);
-        
+
         setZValue(-1);                                                          // hardcoded constant
       }
-      
+
       void Connection::setStart(ConnectableItem* start)
       {
         if(start)
@@ -55,7 +55,7 @@ namespace fhg
         _end = end;
         recalcMidpoints();
       }
-      
+
       void Connection::removeMe(ConnectableItem* item)
       {
         if(_end == item)
@@ -153,7 +153,7 @@ namespace fhg
         }
         return position;
       }
-      
+
       QPainterPath Connection::shape() const
       {
         return Style::connectionShape(this);
@@ -163,23 +163,23 @@ namespace fhg
       {
         return Style::connectionBoundingRect(this);
       }
-      
+
       void Connection::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
       {
         recalcMidpoints();
         Style::connectionPaint(painter, this);
       }
-      
+
       const QList<QPointF>& Connection::midpoints() const
       {
         return _midpoints;
       }
-      
+
       const bool& Connection::highlighted() const
       {
         return _highlighted;
       }
-      
+
       void Connection::recalcMidpoints()
       {
         _midpoints.clear();
@@ -187,26 +187,26 @@ namespace fhg
         {
           return;
         }
-        
+
         QPointF startPoint = startPosition();
         QPointF endPoint = endPosition();
-        
+
 #ifdef STEFAN
         QPointF midPoint = start() ? ( end() ? QLineF(startPoint, endPoint).pointAt(0.5) : endPoint ) : startPoint;
-        
+
         const qreal padding = Style::raster() * 3.0;                            // hardcoded constant
-        
+
         if(start())
         {
           QRectF transitionBounding = start()->parentItem()->sceneBoundingRect();
           QPointF transitionBottomRight = transitionBounding.bottomRight();
           QPointF transitionTopLeft = transitionBounding.topLeft();
-          
+
           QPointF posdiff = startPoint + midPoint;
           QPointF portdiff = transitionTopLeft + transitionBottomRight;
-          
+
           transitionBounding.adjust(-padding, -padding, padding, padding);
-          
+
           _midpoints.push_back(midPoint);
           if(posdiff.x() < portdiff.x())
           {
@@ -242,19 +242,19 @@ namespace fhg
           }
           _midpoints.push_back(startPoint);
         }
-        
+
         if(end())
         {
          // QRectF endTransitionBounding = end()->parentItem()->sceneBoundingRect().adjust(-padding, -padding, padding, padding);
         }
 #endif
-        
+
         ConnectableItem::eOrientation startOrientation = start() ? start()->orientation() : ConnectableItem::EAST;
         ConnectableItem::eOrientation endOrientation = end() ? end()->orientation() : ConnectableItem::WEST;
-        
+
         QLineF startLine(startPoint, addInOrientationDirection(startPoint, startOrientation, 1.0));   // hardcoded constant
         QLineF endLine(endPoint, addInOrientationDirection(endPoint, endOrientation, 1.0));           // hardcoded constant
-        
+
         //! \todo more than these simple cases.
         QPointF intersection;
         if(startLine.intersect(endLine, &intersection) == QLineF::NoIntersection)

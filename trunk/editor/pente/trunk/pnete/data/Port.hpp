@@ -13,11 +13,11 @@ namespace fhg
       {
         public:
           Port(const QString& name = QString(), const QString& type = QString(), bool notConnectable = false);
-          
+
           const QString& name() const;
           const QString& type() const;
           const bool& notConnectable() const;
-          
+
         private:
           QString _name;
           QString _type;
