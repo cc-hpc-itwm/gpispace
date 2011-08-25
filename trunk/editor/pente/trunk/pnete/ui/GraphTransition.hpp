@@ -7,12 +7,14 @@
 #include <QPointF>
 #include <QSizeF>
 #include <QObject>
+#include <QMenu>
 
 class QPainter;
 class QStyleOptionGraphicsItem;
 class QGraphicsSceneContextMenuEvent;
 class QWidget;
 class QAction;
+class QMenu;
 
 #include "data/Transition.hpp"
 #include "GraphItemTypes.hpp"
@@ -27,21 +29,21 @@ namespace fhg
       {
         Q_OBJECT
         Q_INTERFACES(QGraphicsItem)
-        
+
         public:
           explicit Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent = NULL);
-          
+
           virtual QRectF boundingRect() const;
           virtual QPainterPath shape() const;
-          
+
           const QString& title() const;
           bool highlighted() const;
-          
+
           void repositionChildrenAndResize();
-          
+
           const data::Transition& producedFrom() const;
-          
-          enum 
+
+          enum
           {
             Type = TransitionType,
           };
@@ -49,31 +51,37 @@ namespace fhg
           {
             return Type;
           }
-          
+
         public slots:
-          void deleteTriggered(QAction*);
-      
+          void slot_delete(void);
+          void slot_add_port(void);
+
         protected:
           virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-          
+
           virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
           virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
           virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
           virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
           virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
           virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
-          
+
           QString _title;
-          
+
           //! \todo größe verstellbar.
-      
+
           QPointF _dragStart;
           QSizeF _size;
-          
+
           bool _highlighted;
           bool _dragging;
-          
+
           data::Transition _producedFrom;
+
+        QMenu _menu_context;
+
+      private:
+        void init_menu_context();
       };
     }
   }

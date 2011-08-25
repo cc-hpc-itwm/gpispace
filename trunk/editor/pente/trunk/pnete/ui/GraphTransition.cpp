@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
+#include <QAction>
 #include <QDebug>
 #include <QToolButton>
 #include <QGraphicsProxyWidget>
@@ -21,16 +22,29 @@ namespace fhg
     namespace graph
     {
       Transition::Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent)
-      : QGraphicsItem(parent),
-      _title(title),
-      _dragStart(0, 0),
-      _size(160, 100),                                                          // hardcoded constant
-      _highlighted(false),
-      _dragging(false),
-      _producedFrom(producedFrom)
+      : QGraphicsItem(parent)
+      , _title(title)
+      , _dragStart(0, 0)
+      , _size(160, 100) // hardcoded constant
+      , _highlighted(false)
+      , _dragging(false)
+      , _producedFrom(producedFrom)
+      , _menu_context()
       {
         new TransitionCogWheelButton(this);
         setAcceptHoverEvents(true);
+        init_menu_context();
+      }
+
+      void Transition::init_menu_context()
+      {
+        QAction* action_add_port = _menu_context.addAction(tr("Add Port"));
+        connect (action_add_port, SIGNAL(triggered()), this, SLOT(slot_add_port()));
+
+        _menu_context.addSeparator();
+
+        QAction* action_delete = _menu_context.addAction(tr("Delete"));
+        connect (action_delete, SIGNAL(triggered()), this, SLOT(slot_delete()));
       }
 
       void Transition::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
@@ -111,24 +125,25 @@ namespace fhg
 
       void Transition::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
       {
-        QMenu* menu = new QMenu();
-        menu->addAction(tr("Delete Transition"));
-        menu->popup(event->screenPos());
-
-        connect(menu, SIGNAL(triggered(QAction *)), this, SLOT(deleteTriggered(QAction *)));
+        _menu_context.popup(event->screenPos());
       }
 
-      void Transition::deleteTriggered(QAction *)
+      void Transition::slot_delete()
       {
         foreach(QGraphicsItem* child, childItems())
-        {
-          Port* port = qgraphicsitem_cast<Port*>(child);
-          if(port)
           {
-            port->deleteConnection();
+            Port* port = qgraphicsitem_cast<Port*>(child);
+            if(port)
+              {
+                port->deleteConnection();
+              }
           }
-        }
         scene()->removeItem(this);
+      }
+
+      void Transition::slot_add_port()
+      {
+        qDebug() << "Transition::slot_add_port()";
       }
 
       void Transition::repositionChildrenAndResize()
