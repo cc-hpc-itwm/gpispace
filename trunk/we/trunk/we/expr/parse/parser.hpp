@@ -331,11 +331,11 @@ namespace expr
       void pop_front (void) { nd_stack.pop_front(); }
       const nd_t & front (void) const { return nd_stack.front(); }
 
-      void add (parser & other)
+      void add (const parser & other)
       {
-        while (!other.empty())
+        for (nd_const_it_t nd (other.begin()); nd != other.end(); ++nd)
           {
-            nd_stack.push_back (other.front()); other.pop_front();
+            nd_stack.push_back (*nd);
           }
       }
 

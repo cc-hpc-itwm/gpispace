@@ -22,20 +22,24 @@ namespace we { namespace type {
           bool _not;
           bool _simple_pipe_elimination;
           bool _merge_expressions;
+          bool _simplify_expression_sequences;
 
           std::string _Onot;
           std::string _Osimple_pipe_elimination;
           std::string _Omerge_expressions;
+          std::string _Osimplify_expression_sequences;
 
         public:
           type (void)
             : _not (false)
             , _simple_pipe_elimination (true)
             , _merge_expressions (true)
+            , _simplify_expression_sequences (false)
 
             , _Onot ("Onot")
             , _Osimple_pipe_elimination ("Osimple-pipe-elimination")
             , _Omerge_expressions ("Omerge-expressions")
+            , _Osimplify_expression_sequences ("Osimplify-expression-sequences")
           {}
 
           // *************************************************************** //
@@ -46,6 +50,7 @@ namespace we { namespace type {
 
         ACCESS(simple_pipe_elimination)
         ACCESS(merge_expressions)
+        ACCESS(simplify_expression_sequences)
 #undef ACCESS
 
           // *************************************************************** //
@@ -66,6 +71,10 @@ namespace we { namespace type {
               ( _Omerge_expressions.c_str()
               , VAL(merge_expressions)
               , "merge consecutive expression transitions"
+              )
+              ( _Osimplify_expression_sequences.c_str()
+              , VAL(simplify_expression_sequences)
+              , "simplify expression sequences, e.g. dead code elimination"
               )
               ;
 #undef VAL

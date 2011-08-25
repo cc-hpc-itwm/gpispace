@@ -49,13 +49,19 @@ namespace we { namespace type {
 
     const std::string & expression () const { return expr_; }
     const ast_t & ast () const { return ast_; }
-    ast_t & ast () { return ast_; }
     bool is_empty () const { return expr_ == ""; }
 
-    void expression (const std::string & expr)
+    bool simplify ()
     {
-      ast_ = ast_t (expr);
-      expr_ = expr;
+      bool modified (false);
+
+      std::cerr << "SIMPLIFY-EXPRESSION-SEQUENCES: NOT YET IMPLEMENTED"
+                << std::endl
+                << expression()
+                << std::endl
+        ;
+
+      return modified;
     }
 
     void rename ( const ast_t::key_vec_t::value_type & from
@@ -66,7 +72,7 @@ namespace we { namespace type {
       expr_ = ast_.string();
     }
 
-    void add (expression_t & other)
+    void add (const expression_t & other)
     {
       ast_.add (other.ast());
       expr_ = ast_.string();
@@ -88,7 +94,8 @@ namespace we { namespace type {
     {
       std::string tmp;
       ar >> boost::serialization::make_nvp("expr", tmp);
-      expression (tmp);
+      ast_ = ast_t (tmp);
+      expr_ = tmp;
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
   };
