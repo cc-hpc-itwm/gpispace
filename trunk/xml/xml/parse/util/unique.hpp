@@ -15,18 +15,19 @@ namespace xml
     struct unique
     {
     public:
-      typedef std::list<T> elements_type;
+      typedef std::vector<T> elements_type;
 
     private:
       typedef boost::unordered_map< Key
-                                  , typename elements_type::iterator
+                                  , std::size_t
                                   > names_type;
 
       elements_type _elements;
       names_type _names;
+      std::size_t _pos;
 
     public:
-      unique () : _elements (), _names () {}
+      unique () : _elements (), _names (), _pos (0) {}
 
       bool push (const T & x, T & old)
       {
@@ -34,12 +35,13 @@ namespace xml
 
         if (found != _names.end())
           {
-            old = *found->second;
+            old = _elements[found->second];
 
             return false;
           }
 
-        _names[x.name] = _elements.insert (_elements.end(), x);
+        _names[x.name] = _pos++;
+        _elements.insert (_elements.end(), x);
 
         return true;
       }
@@ -53,7 +55,8 @@ namespace xml
             return false;
           }
 
-        _names[x.name] = _elements.insert (_elements.end(), x);
+        _names[x.name] = _pos++;
+        _elements.insert (_elements.end(), x);
 
         return true;
       }
@@ -67,7 +70,7 @@ namespace xml
             return false;
           }
 
-        x = *found->second;
+        x = _elements[found->second];
 
         return true;
       }
@@ -84,7 +87,7 @@ namespace xml
         return true;
       }
 
-      void clear (void) { _elements.clear(); _names.clear(); }
+      void clear (void) { _elements.clear(); _names.clear(); _pos = 0; }
 
       elements_type & elements (void) { return _elements; }
       const elements_type & elements (void) const { return _elements; }
