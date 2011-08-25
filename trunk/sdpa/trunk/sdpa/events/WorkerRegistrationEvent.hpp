@@ -36,6 +36,7 @@ namespace sdpa { namespace events {
   {
     public:
       typedef sdpa::shared_ptr<WorkerRegistrationEvent> Ptr;
+      typedef enum { PUSH, REQ } service_model_t;
 
       WorkerRegistrationEvent()
         : MgmtEvent()
@@ -43,23 +44,37 @@ namespace sdpa { namespace events {
 
       WorkerRegistrationEvent(	const address_t& a_from,
     		  	  	  	  	  	const address_t& a_to,
-    		            		const unsigned int rank = 0,
     		            		const unsigned int capacity = 2,
     		            		const capabilities_set_t& cpbset = capabilities_set_t(),
     		            		const sdpa::worker_id_t& agent_uuid = "" )
 		  : MgmtEvent(a_from, a_to),
-		    rank_(rank),
 		    capacity_(capacity),
 		    cpbset_(cpbset),
 		    agent_uuid_(agent_uuid)
       { }
 
+      WorkerRegistrationEvent( const WorkerRegistrationEvent& regEvt )
+      {
+    	  capacity_ 	 = regEvt.capacity_;
+    	  cpbset_ 		 = regEvt.cpbset_;
+    	  agent_uuid_ 	 = regEvt.agent_uuid_;
+	  }
+
+      WorkerRegistrationEvent& operator=( const WorkerRegistrationEvent& regEvt )
+	  {
+    	  if(this != &regEvt)
+    	  {
+			  capacity_ 	 = regEvt.capacity_;
+			  cpbset_ 		 = regEvt.cpbset_;
+			  agent_uuid_ 	 = regEvt.agent_uuid_;
+    	  }
+
+		  return *this;
+	  }
+
       virtual ~WorkerRegistrationEvent() { }
 
       std::string str() const { return "WorkerRegistrationEvent"; }
-
-      const unsigned int& rank() const { return rank_; }
-      unsigned int& rank() { return rank_; }
 
       const unsigned int& capacity() const { return capacity_; }
       unsigned int& capacity() { return capacity_; }
@@ -76,9 +91,8 @@ namespace sdpa { namespace events {
       }
 
     private:
-      unsigned int rank_;
       unsigned int capacity_;
-      capabilities_set_t  cpbset_;
+      capabilities_set_t cpbset_;
       sdpa::worker_id_t agent_uuid_;
   };
 }}
