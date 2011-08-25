@@ -539,9 +539,9 @@ int main(int, char **)
     const sdpa::events::SDPAEvent::address_t from ("from");
     const sdpa::events::SDPAEvent::address_t to ("to");
     const sdpa::worker_id_t worker_id ("worker_id");
-    const unsigned int rank (23);
+
     const unsigned int capacity (10);
-    WorkerRegistrationEvent e(from, to, rank, capacity);
+    WorkerRegistrationEvent e(from, to, capacity);
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
