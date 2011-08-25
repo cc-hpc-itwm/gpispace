@@ -85,7 +85,7 @@ namespace sdpa {
             m_worker_.stop();
 	}
 
-	 void check_post_request()
+	 /*void check_post_request()
 	 {
              if( ptr_comm_handler_->is_registered() )
              {
@@ -102,7 +102,7 @@ namespace sdpa {
 
                  ptr_comm_handler_->requestRegistration();
              }
-	 }
+	 }*/
 
 	 virtual void execute(const sdpa::job_id_t& jobId) throw (std::exception)
 	 {

@@ -50,7 +50,7 @@ namespace sdpa {
 		}
 	 }
 
-	 void check_post_request()
+	 /*void check_post_request()
 	 {
            if( ptr_comm_handler_->is_registered() )
            {
@@ -66,8 +66,7 @@ namespace sdpa {
 
                ptr_comm_handler_->requestRegistration();
            }
-	 }
-
+	 }*/
 
 	friend class boost::serialization::access;
 	//friend class sdpa::tests::WorkerSerializationTest;
