@@ -15,19 +15,38 @@ namespace xml
     struct unique
     {
     public:
-      typedef std::vector<T> elements_type;
+      typedef std::list<T> elements_type;
 
     private:
       typedef boost::unordered_map< Key
-                                  , std::size_t
+                                  , typename elements_type::iterator
                                   > names_type;
 
       elements_type _elements;
       names_type _names;
-      std::size_t _pos;
 
     public:
-      unique () : _elements (), _names (), _pos (0) {}
+      unique () : _elements (), _names () {}
+      unique (const unique & old) : _elements (), _names () { *this = old; }
+
+      unique & operator = (const unique & other)
+      {
+        if (this != &other)
+          {
+            clear();
+
+            for ( typename elements_type::const_iterator
+                    element (other._elements.begin())
+                ; element != other._elements.end()
+                ; ++element
+                )
+              {
+                push (*element);
+              }
+          }
+
+        return *this;
+      }
 
       bool push (const T & x, T & old)
       {
@@ -35,13 +54,12 @@ namespace xml
 
         if (found != _names.end())
           {
-            old = _elements[found->second];
+            old = *(found->second);
 
             return false;
           }
 
-        _names[x.name] = _pos++;
-        _elements.insert (_elements.end(), x);
+        _names[x.name] = _elements.insert (_elements.end(), x);
 
         return true;
       }
@@ -55,8 +73,7 @@ namespace xml
             return false;
           }
 
-        _names[x.name] = _pos++;
-        _elements.insert (_elements.end(), x);
+        _names[x.name] = _elements.insert (_elements.end(), x);
 
         return true;
       }
@@ -70,7 +87,7 @@ namespace xml
             return false;
           }
 
-        x = _elements[found->second];
+        x = *(found->second);
 
         return true;
       }
@@ -87,7 +104,7 @@ namespace xml
         return true;
       }
 
-      void clear (void) { _elements.clear(); _names.clear(); _pos = 0; }
+      void clear (void) { _elements.clear(); _names.clear(); }
 
       elements_type & elements (void) { return _elements; }
       const elements_type & elements (void) const { return _elements; }
