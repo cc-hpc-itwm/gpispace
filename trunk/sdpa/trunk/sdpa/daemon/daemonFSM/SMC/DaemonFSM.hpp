@@ -59,7 +59,7 @@ namespace sdpa {
                 }*/
 
                 DaemonFSM(  const std::string &name = "",
-                            const sdpa::master_list_t& arrMasterNames = sdpa::master_list_t(),
+                            const sdpa::master_info_list_t& arrMasterNames = sdpa::master_info_list_t(),
                             unsigned int cap = 10000,
                             IWorkflowEngine* pArgSdpa2Gwes = NULL )
                 : GenericDaemon(name, arrMasterNames, cap, pArgSdpa2Gwes),

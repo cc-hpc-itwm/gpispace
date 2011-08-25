@@ -80,7 +80,7 @@ namespace sdpa {
       }
 
       DaemonFSM::DaemonFSM( const std::string &name,
-                            const sdpa::master_list_t& arrMasterNames,
+                            const sdpa::master_info_list_t& arrMasterNames,
                             unsigned int cap,
                             IWorkflowEngine* pArgSdpa2Gwes )
       : GenericDaemon(name, arrMasterNames, cap, pArgSdpa2Gwes)
