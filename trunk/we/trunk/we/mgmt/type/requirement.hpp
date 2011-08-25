@@ -1,5 +1,5 @@
-#ifndef WE_MGMT_TYPE_PREFERENCE_HPP
-#define WE_MGMT_TYPE_PREFERENCE_HPP 1
+#ifndef WE_MGMT_TYPE_REQUIREMENT_HPP
+#define WE_MGMT_TYPE_REQUIREMENT_HPP 1
 
 #include <vector>
 #include <ostream>
