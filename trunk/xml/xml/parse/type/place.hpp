@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <string>
-#include <vector>
+#include <list>
 
 #include <xml/parse/type/token.hpp>
 #include <xml/parse/types.hpp>
@@ -211,7 +211,8 @@ namespace xml
 
       // ******************************************************************* //
 
-      typedef std::vector<value::type> value_vec_type;
+      typedef std::list<value::type> values_type;
+      typedef std::list<token_type> tokens_type;
 
       struct place_type
       {
@@ -219,8 +220,8 @@ namespace xml
         std::string name;
         std::string type;
         fhg::util::maybe<petri_net::capacity_t> capacity;
-        std::vector<token_type> tokens;
-        value_vec_type values;
+        tokens_type tokens;
+        values_type values;
         signature::type sig;
         we::type::property::type prop;
         fhg::util::maybe<bool> is_virtual;
@@ -247,7 +248,7 @@ namespace xml
                        , const state::type & state
                        )
         {
-          for ( std::vector<token_type>::const_iterator tok (tokens.begin())
+          for ( tokens_type::const_iterator tok (tokens.begin())
               ; tok != tokens.end()
               ; ++tok
               )
@@ -275,7 +276,7 @@ namespace xml
         }
       };
 
-      typedef xml::util::unique<place_type>::elements_type place_vec_type;
+      typedef xml::util::unique<place_type>::elements_type places_type;
 
       // ******************************************************************* //
 
@@ -291,7 +292,7 @@ namespace xml
 
           ::we::type::property::dump::dump (s, p.prop);
 
-          for ( std::vector<token_type>::const_iterator tok (p.tokens.begin())
+          for ( tokens_type::const_iterator tok (p.tokens.begin())
               ; tok != p.tokens.end()
               ; ++tok
               )

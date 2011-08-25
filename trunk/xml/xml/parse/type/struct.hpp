@@ -7,7 +7,7 @@
 #include <we/type/literal/valid_name.hpp>
 
 #include <iostream>
-#include <vector>
+#include <list>
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
@@ -43,7 +43,7 @@ namespace xml
         return !(a == b);
       }
 
-      typedef std::vector<struct_t> struct_vec_type;
+      typedef std::list<struct_t> structs_type;
 
       namespace dump
       {
@@ -69,12 +69,12 @@ namespace xml
 
       // ******************************************************************* //
 
-      set_type make (const type::struct_vec_type & struct_vec)
+      set_type make (const type::structs_type & structs)
       {
         set_type set;
 
-        for ( type::struct_vec_type::const_iterator pos (struct_vec.begin())
-            ; pos != struct_vec.end()
+        for ( type::structs_type::const_iterator pos (structs.begin())
+            ; pos != structs.end()
             ; ++pos
             )
           {

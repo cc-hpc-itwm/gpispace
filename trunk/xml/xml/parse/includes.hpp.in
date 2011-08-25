@@ -3,7 +3,6 @@
 #ifndef _XML_PARSE_INCLUDE_HPP
 #define _XML_PARSE_INCLUDE_HPP 1
 
-#include <vector>
 #include <boost/filesystem.hpp>
 
 // force dependencies
@@ -22,6 +21,8 @@
 #include <we/type/value/container/type.hpp>
 #include <we/type/value/cpp/get.hpp>
 
+#include <list>
+
 namespace pnetc
 {
   namespace includes
@@ -35,14 +36,14 @@ namespace pnetc
       return ret;
     }
 
-    typedef std::vector<boost::filesystem::path> name_list;
+    typedef std::list<boost::filesystem::path> names_type;
 
     namespace detail
     {
       struct includes
       {
       private:
-        name_list _names;
+        names_type _names;
 
       public:
         includes () : _names ()
@@ -65,11 +66,11 @@ namespace pnetc
           _names.push_back (fs::path ("we/type/literal/show.hpp"));
         }
 
-        const name_list & names () const { return _names; }
+        const names_type & names () const { return _names; }
       };
     }
 
-    inline const name_list & includes ()
+    inline const names_type & includes ()
     {
       static const detail::includes is;
 

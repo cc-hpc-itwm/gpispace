@@ -28,6 +28,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <sstream>
+#include <vector>
 
 // ************************************************************************* //
 
@@ -67,15 +68,15 @@ namespace xml
                                  , state::type &
                                  );
     static we::type::property::type
-    property_map_list_type (const xml_node_type *, state::type &);
+    property_maps_type (const xml_node_type *, state::type &);
 
-    static type::struct_vec_type structs_type ( const xml_node_type *
+    static type::structs_type structs_type ( const xml_node_type *
                                               , state::type & state
                                               );
 
     static type::function_type parse_function (std::istream &, state::type &);
     static type::function_type parse_template (std::istream &, state::type &);
-    static type::struct_vec_type parse_structs (std::istream &, state::type &);
+    static type::structs_type parse_structs (std::istream &, state::type &);
     static we::type::property::type parse_props (std::istream &, state::type &);
 
     // ********************************************************************* //
@@ -92,10 +93,10 @@ namespace xml
       return state.generic_include<type::function_type> (parse_template, file);
     }
 
-    static type::struct_vec_type
+    static type::structs_type
     structs_include (const std::string & file, state::type & state)
     {
-      return state.generic_include<type::struct_vec_type> (parse_structs, file);
+      return state.generic_include<type::structs_type> (parse_structs, file);
     }
 
     static we::type::property::type
@@ -201,7 +202,7 @@ namespace xml
         generic_parse (function_type, f, state, "template", "parse_template");
     }
 
-    static type::struct_vec_type
+    static type::structs_type
     parse_structs (std::istream & f, state::type & state)
     {
       return generic_parse (structs_type, f, state, "structs", "parse_structs");
@@ -210,7 +211,7 @@ namespace xml
     static we::type::property::type
     parse_props (std::istream & f, state::type & state)
     {
-      return generic_parse ( property_map_list_type
+      return generic_parse ( property_maps_type
                            , f
                            , state
                            , "props"
@@ -220,10 +221,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    static type::struct_vec_type
+    static type::structs_type
     structs_type (const xml_node_type * node, state::type & state)
     {
-      type::struct_vec_type v;
+      type::structs_type v;
 
       for ( xml_node_type * child (node->first_node())
           ; child
@@ -241,7 +242,7 @@ namespace xml
                 }
               else if (child_name == "include-structs")
                 {
-                  const type::struct_vec_type structs
+                  const type::structs_type structs
                     ( structs_include ( required ( "structs_type"
                                                  , child
                                                  , "href"
@@ -271,7 +272,7 @@ namespace xml
     // ********************************************************************* //
 
     static we::type::property::type
-    property_map_list_type (const xml_node_type * node, state::type & state)
+    property_maps_type (const xml_node_type * node, state::type & state)
     {
       we::type::property::type prop;
 
@@ -292,7 +293,7 @@ namespace xml
               else if (child_name == "include-properties")
                 {
                   const we::type::property::type deeper
-                    ( properties_include ( required ( "property_map_list_type"
+                    ( properties_include ( required ( "property_maps_type"
                                                     , child
                                                     , "href"
                                                     , state.file_in_progress()
@@ -486,7 +487,7 @@ namespace xml
                 }
               else if (child_name == "include-structs")
                 {
-                  const type::struct_vec_type structs
+                  const type::structs_type structs
                     ( structs_include ( required ( "function_type"
                                                  , child
                                                  , "href"
@@ -505,7 +506,11 @@ namespace xml
                 {
                   f.add_expression
                     ( type::expression_type
-                      (parse_cdata (child, state.file_in_progress()))
+                      ( parse_cdata<type::expressions_type>
+                        ( child
+                        , state.file_in_progress()
+                        )
+                      )
                     );
                 }
               else if (child_name == "module")
@@ -518,8 +523,12 @@ namespace xml
                 }
               else if (child_name == "condition")
                 {
-                  const type::cond_vec_type conds
-                    (parse_cdata (child, state.file_in_progress()));
+                  const type::conditions_type conds
+                    ( parse_cdata<type::conditions_type>
+                      ( child
+                      , state.file_in_progress()
+                      )
+                    );
 
                   f.cond.insert (f.cond.end(), conds.begin(), conds.end());
                 }
@@ -597,8 +606,14 @@ namespace xml
                 }
               else if (child_name == "code")
                 {
-                  const std::vector<std::string> cdata
-                    (parse_cdata (child, state.file_in_progress()));
+                  typedef std::vector<std::string> cdatas_container_type;
+
+                  const cdatas_container_type cdata
+                    ( parse_cdata<cdatas_container_type>
+                      ( child
+                      , state.file_in_progress()
+                      )
+                    );
 
                   mod.code = fhg::util::join (cdata, "\n");
                 }
@@ -663,7 +678,7 @@ namespace xml
                 }
               else if (child_name == "include-structs")
                 {
-                  const type::struct_vec_type structs
+                  const type::structs_type structs
                     ( structs_include ( required ( "net_type"
                                                  , child
                                                  , "href"
@@ -949,8 +964,15 @@ namespace xml
                                         );
                   const fhg::util::maybe<std::string>
                     value (optional (child, "value"));
-                  const std::vector<std::string> cdata
-                    (parse_cdata (child, state.file_in_progress()));
+
+                  typedef std::vector<std::string> cdatas_container_type;
+
+                  const cdatas_container_type cdata
+                    ( parse_cdata<cdatas_container_type>
+                      ( child
+                      , state.file_in_progress()
+                      )
+                    );
 
                   state.prop_path().push_back (key);
 
@@ -1468,8 +1490,12 @@ namespace xml
                 }
               else if (child_name == "condition")
                 {
-                  const type::cond_vec_type conds
-                    (parse_cdata (child, state.file_in_progress()));
+                  const type::conditions_type conds
+                    ( parse_cdata<type::conditions_type>
+                      ( child
+                      , state.file_in_progress()
+                      )
+                    );
 
                   t.cond.insert (t.cond.end(), conds.begin(), conds.end());
                 }
@@ -1546,10 +1572,10 @@ namespace xml
           type::mk_wrapper (state, m);
           type::mk_makefile (state, m);
 
-          includes::descr_list list;
+          includes::descrs_type descrs;
 
-          includes::mk_list (list);
-          includes::we_header_gen (state, list);
+          includes::mks (descrs);
+          includes::we_header_gen (state, descrs);
 
           type::struct_to_cpp (state, f);
         }

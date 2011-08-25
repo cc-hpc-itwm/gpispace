@@ -29,8 +29,8 @@ namespace xml
 
       inline void
       split_structs ( const xml::parse::struct_t::set_type & global
-                    , struct_vec_type & child_structs
-                    , struct_vec_type & parent_structs
+                    , structs_type & child_structs
+                    , structs_type & parent_structs
                     , const type_get_type & type_get
                     , const state::type & state
                     )
@@ -49,11 +49,11 @@ namespace xml
                      )
           );
 
-        struct_vec_type structs (child_structs);
+        structs_type structs (child_structs);
 
         child_structs.clear();
 
-        for ( struct_vec_type::iterator s (structs.begin())
+        for ( structs_type::iterator s (structs.begin())
             ; s != structs.end()
             ; ++s
             )
@@ -77,11 +77,11 @@ namespace xml
 
       inline void
       specialize_structs ( const type_map_type & map
-                         , struct_vec_type & structs
+                         , structs_type & structs
                          , const state::type & state
                          )
       {
-        for ( struct_vec_type::iterator s (structs.begin())
+        for ( structs_type::iterator s (structs.begin())
             ; s != structs.end()
             ; ++s
             )

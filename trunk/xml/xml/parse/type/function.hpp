@@ -10,7 +10,7 @@
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/mk_fstream.hpp>
 
-#include <vector>
+#include <list>
 
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
@@ -45,7 +45,7 @@ namespace xml
     namespace type
     {
       typedef xml::util::unique<port_type>::elements_type ports_type;
-      typedef std::vector<std::string> cond_vec_type;
+      typedef std::list<std::string> conditions_type;
 
       // ******************************************************************* //
 
@@ -428,12 +428,12 @@ namespace xml
                                > type;
 
         bool contains_a_module_call;
-        struct_vec_type structs;
+        structs_type structs;
 
         fhg::util::maybe<std::string> name;
         fhg::util::maybe<bool> internal;
 
-        cond_vec_type cond;
+        conditions_type cond;
 
         requirements_type requirements;
 
@@ -715,11 +715,11 @@ namespace xml
       {
         std::string name;
         std::string code;
-        link_list_type links;
+        links_type links;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
-                      , const link_list_type & _links
+                      , const links_type & _links
                       )
           : name (_name)
           , code (_code)
@@ -740,9 +740,9 @@ namespace xml
         return hasher (fi.name);
       }
 
-      typedef boost::unordered_set<fun_info_type> fun_info_list_type;
+      typedef boost::unordered_set<fun_info_type> fun_infos_type;
 
-      typedef boost::unordered_map<std::string,fun_info_list_type> fun_info_map;
+      typedef boost::unordered_map<std::string,fun_infos_type> fun_info_map;
 
       typedef boost::filesystem::path path_t;
 
@@ -766,9 +766,9 @@ namespace xml
 
             cpp_util::include (stream, "we/loader/macros.hpp");
 
-            const fun_info_list_type & funs (mod->second);
+            const fun_infos_type & funs (mod->second);
 
-            for ( fun_info_list_type::const_iterator fun (funs.begin())
+            for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
                 ; ++fun
                 )
@@ -779,7 +779,7 @@ namespace xml
             stream << std::endl;
             stream << "WE_MOD_INITIALIZE_START (" << mod->first << ");" << std::endl;
             stream << "{" << std::endl;
-            for ( fun_info_list_type::const_iterator fun (funs.begin())
+            for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
                 ; ++fun
                 )
@@ -861,9 +861,9 @@ namespace xml
             )
           {
             const std::string objs ("OBJ_" + mod->first);
-            const fun_info_list_type & funs (mod->second);
+            const fun_infos_type & funs (mod->second);
 
-            for ( fun_info_list_type::const_iterator fun (funs.begin())
+            for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
                 ; ++fun
                 )
@@ -880,12 +880,12 @@ namespace xml
             stream << cpp_util::make::mod_so (mod->first)
                    << ": $(" << objs << ")";
 
-            for ( fun_info_list_type::const_iterator fun (funs.begin())
+            for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
                 ; ++fun
                 )
               {
-                for ( link_list_type::const_iterator link (fun->links.begin())
+                for ( links_type::const_iterator link (fun->links.begin())
                     ; link != fun->links.end()
                     ; ++link
                     )
@@ -989,7 +989,7 @@ namespace xml
       {
         n.contains_a_module_call = false;
 
-        for ( typename NET::transition_vec_type::iterator pos
+        for ( typename NET::transitions_type::iterator pos
                 (n.transitions().begin())
             ; pos != n.transitions().end()
             ; ++pos
@@ -1009,7 +1009,7 @@ namespace xml
 
       namespace visitor
       {
-        typedef boost::unordered_set<std::string> type_list;
+        typedef boost::unordered_set<std::string> types_type;
 
         struct port_with_type
         {
@@ -1024,11 +1024,11 @@ namespace xml
           {}
         };
 
-        typedef std::vector<port_with_type> port_list;
+        typedef std::list<port_with_type> ports_type;
 
-        inline void mod_includes (std::ostream & os, const type_list & types)
+        inline void mod_includes (std::ostream & os, const types_type & types)
         {
-          for ( type_list::const_iterator type (types.begin())
+          for ( types_type::const_iterator type (types.begin())
               ; type != types.end()
               ; ++type
               )
@@ -1136,9 +1136,9 @@ namespace xml
         inline void
         mod_signature ( std::ostream & os
                       , const fhg::util::maybe<port_with_type> & port_return
-                      , const port_list & ports_const
-                      , const port_list & ports_mutable
-                      , const port_list & ports_out
+                      , const ports_type & ports_const
+                      , const ports_type & ports_mutable
+                      , const ports_type & ports_out
                       , const mod_type & mod
                       )
         {
@@ -1167,7 +1167,7 @@ namespace xml
 
           bool first (true);
 
-          for ( port_list::const_iterator port (ports_const.begin())
+          for ( ports_type::const_iterator port (ports_const.begin())
               ; port != ports_const.end()
               ; ++port, first = false
               )
@@ -1178,7 +1178,7 @@ namespace xml
                 ;
             }
 
-          for ( port_list::const_iterator port (ports_mutable.begin())
+          for ( ports_type::const_iterator port (ports_mutable.begin())
               ; port != ports_mutable.end()
               ; ++port, first = false
               )
@@ -1189,7 +1189,7 @@ namespace xml
                 ;
             }
 
-          for ( port_list::const_iterator port (ports_out.begin())
+          for ( ports_type::const_iterator port (ports_out.begin())
               ; port != ports_out.end()
               ; ++port, first = false
               )
@@ -1207,9 +1207,9 @@ namespace xml
         mod_wrapper ( std::ostream & os
                     , const mod_type & mod
                     , const path_t file_hpp
-                    , const port_list & ports_const
-                    , const port_list & ports_mutable
-                    , const port_list & ports_out
+                    , const ports_type & ports_const
+                    , const ports_type & ports_mutable
+                    , const ports_type & ports_out
                     , const fhg::util::maybe<port_with_type> & port_return
                     )
         {
@@ -1226,7 +1226,7 @@ namespace xml
              << "      "
              << "{" << std::endl;
 
-          for ( port_list::const_iterator port (ports_const.begin())
+          for ( ports_type::const_iterator port (ports_const.begin())
               ; port != ports_const.end()
               ; ++port
               )
@@ -1235,7 +1235,7 @@ namespace xml
                  << "  const " << mk_get (*port, "& ");
             }
 
-          for ( port_list::const_iterator port (ports_mutable.begin())
+          for ( ports_type::const_iterator port (ports_mutable.begin())
               ; port != ports_mutable.end()
               ; ++port
               )
@@ -1244,7 +1244,7 @@ namespace xml
                  << "  " << mk_get (*port);
             }
 
-          for ( port_list::const_iterator port (ports_out.begin())
+          for ( ports_type::const_iterator port (ports_out.begin())
               ; port != ports_out.end()
               ; ++port
               )
@@ -1294,7 +1294,7 @@ namespace xml
 
           bool first_param (true);
 
-          for ( port_list::const_iterator port (ports_const.begin())
+          for ( ports_type::const_iterator port (ports_const.begin())
               ; port != ports_const.end()
               ; ++port, first_param = false
               )
@@ -1302,7 +1302,7 @@ namespace xml
               os << (first_param ? "" : ", ") << port->name;
             }
 
-          for ( port_list::const_iterator port (ports_mutable.begin())
+          for ( ports_type::const_iterator port (ports_mutable.begin())
               ; port != ports_mutable.end()
               ; ++port, first_param = false
               )
@@ -1310,7 +1310,7 @@ namespace xml
               os << (first_param ? "" : ", ") << port->name;
             }
 
-          for ( port_list::const_iterator port (ports_out.begin())
+          for ( ports_type::const_iterator port (ports_out.begin())
               ; port != ports_out.end()
               ; ++port, first_param = false
               )
@@ -1332,7 +1332,7 @@ namespace xml
 
           os << ";" << std::endl;
 
-          for ( port_list::const_iterator port (ports_mutable.begin())
+          for ( ports_type::const_iterator port (ports_mutable.begin())
               ; port != ports_mutable.end()
               ; ++port
               )
@@ -1354,7 +1354,7 @@ namespace xml
                 ;
             }
 
-          for ( port_list::const_iterator port (ports_out.begin())
+          for ( ports_type::const_iterator port (ports_out.begin())
               ; port != ports_out.end()
               ; ++port
               )
@@ -1417,11 +1417,11 @@ namespace xml
                                   << mod.function             \
                                   )
 
-            port_list ports_const;
-            port_list ports_mutable;
-            port_list ports_out;
+            ports_type ports_const;
+            ports_type ports_mutable;
+            ports_type ports_out;
             fhg::util::maybe<port_with_type> port_return;
-            type_list types;
+            types_type types;
 
             if (mod.port_return.isJust())
               {
@@ -1436,7 +1436,7 @@ namespace xml
                 types.insert (port.type);
               }
 
-            for ( port_arg_vec_type::const_iterator name (mod.port_arg.begin())
+            for ( port_args_type::const_iterator name (mod.port_arg.begin())
                 ; name != mod.port_arg.end()
                 ; ++name
                 )
@@ -1604,7 +1604,7 @@ namespace xml
                                 , cpp_util::path::op() / mod.name / file_hpp
                                 );
 
-              for ( cinclude_list_type::const_iterator inc
+              for ( cincludes_type::const_iterator inc
                       (mod.cincludes.begin())
                   ; inc != mod.cincludes.end()
                   ; ++inc
@@ -1687,11 +1687,11 @@ namespace xml
         stream.close();
       }
 
-      inline void structs_to_cpp ( const struct_vec_type & structs
+      inline void structs_to_cpp ( const structs_type & structs
                                  , const state::type & state
                                  )
       {
-        for ( struct_vec_type::const_iterator pos (structs.begin())
+        for ( structs_type::const_iterator pos (structs.begin())
             ; pos != structs.end()
             ; ++pos
             )
@@ -1744,7 +1744,7 @@ namespace xml
 
             structs_to_cpp (n.structs, state);
 
-            for ( typename NET::function_vec_type::const_iterator pos
+            for ( typename NET::functions_type::const_iterator pos
                    (n.functions().begin())
                 ; pos != n.functions().end()
                 ; ++pos
@@ -1753,7 +1753,7 @@ namespace xml
                 xml::parse::type::struct_to_cpp (state, *pos);
               }
 
-            for ( typename NET::transition_vec_type::const_iterator pos
+            for ( typename NET::transitions_type::const_iterator pos
                    (n.transitions().begin())
                 ; pos != n.transitions().end()
                 ; ++pos
@@ -1878,7 +1878,7 @@ namespace xml
 
           boost::apply_visitor (visitor::function_dump<net_type> (s), f.f);
 
-          for ( cond_vec_type::const_iterator cond (f.cond.begin())
+          for ( conditions_type::const_iterator cond (f.cond.begin())
               ; cond != f.cond.end()
               ; ++cond
               )

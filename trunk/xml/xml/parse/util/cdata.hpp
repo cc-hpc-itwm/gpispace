@@ -35,12 +35,13 @@ namespace xml
       return;
     }
 
-    std::vector<std::string>
+    template<typename Container>
+    Container
     parse_cdata ( const xml_node_type * node
                 , const boost::filesystem::path & path
                 )
     {
-      std::vector<std::string> v;
+      Container v;
 
       for ( xml_node_type * child (node->first_node())
           ; child

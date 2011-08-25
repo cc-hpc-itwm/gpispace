@@ -14,7 +14,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <vector>
+#include <list>
 
 #include <fhg/util/xml.hpp>
 
@@ -26,9 +26,9 @@ namespace xml
   {
     namespace type
     {
-      typedef std::vector<std::string> port_arg_vec_type;
-      typedef std::vector<std::string> cinclude_list_type;
-      typedef std::vector<std::string> link_list_type;
+      typedef std::list<std::string> port_args_type;
+      typedef std::list<std::string> cincludes_type;
+      typedef std::list<std::string> links_type;
 
       struct mod_type
       {
@@ -36,11 +36,11 @@ namespace xml
         std::string name;
         std::string function;
         fhg::util::maybe<std::string> port_return;
-        port_arg_vec_type port_arg;
+        port_args_type port_arg;
 
         fhg::util::maybe<std::string> code;
-        cinclude_list_type cincludes;
-        link_list_type links;
+        cincludes_type cincludes;
+        links_type links;
 
         // ***************************************************************** //
 
@@ -61,7 +61,7 @@ namespace xml
                 }
             }
 
-          for ( port_arg_vec_type::const_iterator port (port_arg.begin())
+          for ( port_args_type::const_iterator port (port_arg.begin())
               ; port != port_arg.end()
               ; ++port
               )
@@ -191,7 +191,7 @@ namespace xml
 
           bool first (true);
 
-          for ( port_arg_vec_type::const_iterator arg (m.port_arg.begin())
+          for ( port_args_type::const_iterator arg (m.port_arg.begin())
               ; arg != m.port_arg.end()
               ; ++arg, first = false
               )
@@ -215,7 +215,7 @@ namespace xml
           s.attr ("name", m.name);
           s.attr ("function", dump_fun (m));
 
-          for ( cinclude_list_type::const_iterator inc (m.cincludes.begin())
+          for ( cincludes_type::const_iterator inc (m.cincludes.begin())
               ; inc != m.cincludes.end()
               ; ++inc
               )
@@ -225,7 +225,7 @@ namespace xml
               s.close ();
             }
 
-          for ( link_list_type::const_iterator link (m.links.begin())
+          for ( links_type::const_iterator link (m.links.begin())
               ; link != m.links.end()
               ; ++link
               )

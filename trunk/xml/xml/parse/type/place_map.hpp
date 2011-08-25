@@ -40,7 +40,7 @@ namespace xml
         {}
       };
 
-      typedef xml::util::unique<place_map_type>::elements_type place_map_vec_type;
+      typedef xml::util::unique<place_map_type>::elements_type place_maps_type;
       typedef boost::unordered_map<std::string, petri_net::pid_t> place_map_map_type;
 
       namespace dump

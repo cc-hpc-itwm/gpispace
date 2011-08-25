@@ -5,6 +5,7 @@
 
 #include <string>
 #include <iostream>
+#include <list>
 
 #include <fhg/util/join.hpp>
 
@@ -20,15 +21,15 @@ namespace xml
   {
     namespace type
     {
-      typedef std::vector<std::string> expression_vec_type;
+      typedef std::list<std::string> expressions_type;
 
       struct expression_type
       {
-        expression_vec_type expressions;
+        expressions_type expressions;
 
         expression_type () : expressions () {}
 
-        expression_type (const expression_vec_type & _expressions)
+        expression_type (const expressions_type & _expressions)
           : expressions (_expressions)
         {}
 

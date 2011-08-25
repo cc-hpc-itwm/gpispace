@@ -2,8 +2,6 @@
 
 #include <xml/parse/includes.hpp>
 
-#include <boost/unordered_map.hpp>
-
 #include <boost/filesystem/fstream.hpp>
 
 #include <iostream>
@@ -45,7 +43,7 @@ main ()
 
   std::cout << "// force dependencies"                             << std::endl;
 
-  for ( name_list::const_iterator name (includes().begin())
+  for ( names_type::const_iterator name (includes().begin())
       ; name != includes().end()
       ; ++name
       )
@@ -63,10 +61,10 @@ main ()
   std::cout << "    {"                                             << std::endl;
   std::cout                                                        << std::endl;
 
-  std::cout << "      inline void mk_list (descr_list & list)"     << std::endl;
+  std::cout << "      inline void mks (descrs_type & descrs)"      << std::endl;
   std::cout << "      {"                                           << std::endl;
 
-  for ( name_list::const_iterator name (includes().begin())
+  for ( names_type::const_iterator name (includes().begin())
       ; name != includes().end()
       ; ++name
       )
@@ -92,11 +90,11 @@ main ()
 
       std::cout << "\";"                                           << std::endl;
       std::cout                                                    << std::endl;
-      std::cout << "          list.push_back (d);"                 << std::endl;
+      std::cout << "          descrs.push_back (d);"               << std::endl;
       std::cout << "        }"                                     << std::endl;
     }
 
-  std::cout << "      } // mk_list"                                << std::endl;
+  std::cout << "      } // mks"                                << std::endl;
   std::cout << "    } // namespace includes"                       << std::endl;
   std::cout << "  } // namespace parse"                            << std::endl;
   std::cout << "} // namespace xml"                                << std::endl;

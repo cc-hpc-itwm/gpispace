@@ -8,8 +8,6 @@
 
 #include <xml/parse/util/unique.hpp>
 
-#include <vector>
-
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
 
@@ -40,14 +38,14 @@ namespace xml
         xml::util::unique<specialize_type> _specializes;
 
       public:
-        typedef xml::util::unique<place_type>::elements_type place_vec_type;
-        typedef xml::util::unique<function_type>::elements_type function_vec_type;
-        typedef xml::util::unique<function_type>::elements_type template_vec_type;
-        typedef xml::util::unique<transition_type>::elements_type transition_vec_type;
-        typedef xml::util::unique<specialize_type>::elements_type specialize_vec_type;
+        typedef xml::util::unique<place_type>::elements_type places_type;
+        typedef xml::util::unique<function_type>::elements_type functions_type;
+        typedef xml::util::unique<function_type>::elements_type templates_type;
+        typedef xml::util::unique<transition_type>::elements_type transitions_type;
+        typedef xml::util::unique<specialize_type>::elements_type specializes_type;
 
         bool contains_a_module_call;
-        struct_vec_type structs;
+        structs_type structs;
 
         boost::filesystem::path path;
 
@@ -74,31 +72,31 @@ namespace xml
 
         // ***************************************************************** //
 
-        const place_vec_type & places (void) const
+        const places_type & places (void) const
         {
           return _places.elements();
         }
 
-        const transition_vec_type & transitions (void) const
+        const transitions_type & transitions (void) const
         {
           return _transitions.elements();
         }
-        transition_vec_type & transitions (void)
+        transitions_type & transitions (void)
         {
           return _transitions.elements();
         }
 
-        const function_vec_type & functions (void) const
+        const functions_type & functions (void) const
         {
           return _functions.elements();
         }
 
-        const specialize_vec_type & specializes (void) const
+        const specializes_type & specializes (void) const
         {
           return _specializes.elements();
         }
 
-        const template_vec_type & templates (void) const
+        const templates_type & templates (void) const
         {
           return _templates.elements();
         }
@@ -218,7 +216,7 @@ namespace xml
         {
           namespace st = xml::parse::struct_t;
 
-          for ( specialize_vec_type::iterator
+          for ( specializes_type::iterator
                   specialize (_specializes.elements().begin())
               ; specialize != _specializes.elements().end()
               ; ++specialize
@@ -256,7 +254,7 @@ namespace xml
 
           _specializes.clear();
 
-          for ( function_vec_type::iterator fun (_functions.elements().begin())
+          for ( functions_type::iterator fun (_functions.elements().begin())
               ; fun != _functions.elements().end()
               ; ++fun
               )
@@ -276,7 +274,7 @@ namespace xml
                             );
             }
 
-          for ( transition_vec_type::iterator
+          for ( transitions_type::iterator
                   trans (_transitions.elements().begin())
               ; trans != _transitions.elements().end()
               ; ++trans
@@ -297,7 +295,7 @@ namespace xml
                             );
             }
 
-          for ( place_vec_type::iterator place (_places.elements().begin())
+          for ( places_type::iterator place (_places.elements().begin())
               ; place != _places.elements().end()
               ; ++place
               )
@@ -338,7 +336,7 @@ namespace xml
                 );
             }
 
-          for ( function_vec_type::iterator fun (_functions.elements().begin())
+          for ( functions_type::iterator fun (_functions.elements().begin())
               ; fun != _functions.elements().end()
               ; ++fun
               )
@@ -346,7 +344,7 @@ namespace xml
               fun->resolve (structs_resolved, state, st::forbidden_type());
             }
 
-          for ( transition_vec_type::iterator
+          for ( transitions_type::iterator
                   trans (_transitions.elements().begin())
               ; trans != _transitions.elements().end()
               ; ++trans
@@ -355,7 +353,7 @@ namespace xml
               trans->resolve (structs_resolved, state, st::forbidden_type());
             }
 
-          for ( place_vec_type::iterator place (_places.elements().begin())
+          for ( places_type::iterator place (_places.elements().begin())
               ; place != _places.elements().end()
               ; ++place
               )
@@ -369,7 +367,7 @@ namespace xml
 
         void sanity_check (const state::type & state) const
         {
-          for ( transition_vec_type::const_iterator trans (transitions().begin())
+          for ( transitions_type::const_iterator trans (transitions().begin())
               ; trans != transitions().end()
               ; ++trans
               )
@@ -377,7 +375,7 @@ namespace xml
               trans->sanity_check (state);
             }
 
-          for ( function_vec_type::const_iterator fun (functions().begin())
+          for ( functions_type::const_iterator fun (functions().begin())
               ; fun != functions().end()
               ; ++fun
               )
@@ -390,7 +388,7 @@ namespace xml
 
         void type_check (const state::type & state) const
         {
-          for ( transition_vec_type::const_iterator trans (transitions().begin())
+          for ( transitions_type::const_iterator trans (transitions().begin())
               ; trans != transitions().end()
               ; ++trans
               )
@@ -398,7 +396,7 @@ namespace xml
               trans->type_check<net_type> (*this, state);
             }
 
-          for ( function_vec_type::const_iterator fun (functions().begin())
+          for ( functions_type::const_iterator fun (functions().begin())
               ; fun != functions().end()
               ; ++fun
               )
@@ -417,7 +415,7 @@ namespace xml
         net_new.clear_places();
         net_new.clear_transitions();
 
-        for ( net_type::place_vec_type::const_iterator
+        for ( net_type::places_type::const_iterator
                 place_old (net_old.places().begin())
             ; place_old != net_old.places().end()
             ; ++place_old
@@ -430,7 +428,7 @@ namespace xml
             net_new.push_place (place_new);
           }
 
-        for ( net_type::transition_vec_type::const_iterator
+        for ( net_type::transitions_type::const_iterator
                 transition_old (net_old.transitions().begin())
             ; transition_old != net_old.transitions().end()
             ; ++transition_old
@@ -482,7 +480,7 @@ namespace xml
 
             transition_new.clear_place_map();
 
-            for (place_map_vec_type::const_iterator
+            for (place_maps_type::const_iterator
                    place_map_old (transition_old->place_map().begin())
                 ; place_map_old != transition_old->place_map().end()
                 ; ++place_map_old
@@ -525,7 +523,7 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for ( place_vec_type::const_iterator place (net.places().begin())
+        for ( places_type::const_iterator place (net.places().begin())
             ; place != net.places().end()
             ; ++place
             )
@@ -574,7 +572,7 @@ namespace xml
                 }
             }
 
-          for ( typename Net::transition_vec_type::const_iterator transition
+          for ( typename Net::transitions_type::const_iterator transition
                   (net.transitions().begin())
               ; transition != net.transitions().end()
               ; ++transition
@@ -589,14 +587,14 @@ namespace xml
                 (*transition, state, net, we_net, pid_of_place, e);
             }
 
-          for ( place_vec_type::const_iterator place (net.places().begin())
+          for ( places_type::const_iterator place (net.places().begin())
               ; place != net.places().end()
               ; ++place
               )
             {
               const pid_t pid (pid_of_place.at (place->name));
 
-              for ( value_vec_type::const_iterator val (place->values.begin())
+              for ( values_type::const_iterator val (place->values.begin())
                   ; val != place->values.end()
                   ; ++val
                   )

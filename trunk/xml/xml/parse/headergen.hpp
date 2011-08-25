@@ -29,15 +29,18 @@ namespace xml
         {}
       };
 
-      typedef std::list<descr> descr_list;
+      typedef std::list<descr> descrs_type;
 
       inline void we_header_gen ( const state::type & state
-                                , const descr_list & list
+                                , const descrs_type & descrs
                                 )
       {
         const boost::filesystem::path prefix (state.path_to_cpp());
 
-        for (descr_list::const_iterator d (list.begin()); d != list.end(); ++d)
+        for ( descrs_type::const_iterator d (descrs.begin())
+            ; d != descrs.end()
+            ; ++d
+            )
           {
             const boost::filesystem::path file (prefix / d->name);
 

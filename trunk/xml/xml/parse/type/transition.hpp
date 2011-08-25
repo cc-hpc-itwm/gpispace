@@ -11,8 +11,6 @@
 #include <xml/parse/util/weparse.hpp>
 #include <xml/parse/util/validprefix.hpp>
 
-#include <vector>
-
 #include <iostream>
 
 #include <boost/variant.hpp>
@@ -185,9 +183,9 @@ namespace xml
 
         we::type::property::type prop;
 
-        struct_vec_type structs;
+        structs_type structs;
 
-        cond_vec_type cond;
+        conditions_type cond;
 
         fhg::util::maybe<petri_net::prio_t> priority;
 
@@ -200,7 +198,7 @@ namespace xml
         const connections_type & in (void) const { return _in.elements(); }
         const connections_type & out (void) const { return _out.elements(); }
         const connections_type & read (void) const { return _read.elements(); }
-        const place_map_vec_type & place_map (void) const
+        const place_maps_type & place_map (void) const
         {
           return _place_map.elements();
         }
@@ -513,7 +511,7 @@ namespace xml
 
             place_map_map_type place_map_map;
 
-            for ( place_map_vec_type::const_iterator
+            for ( place_maps_type::const_iterator
                     pm (trans.place_map().begin())
                 ; pm != trans.place_map().end()
                 ; ++pm
@@ -768,7 +766,7 @@ namespace xml
           { // not unfold
 
             // set the real-property
-            for ( place_map_vec_type::const_iterator
+            for ( place_maps_type::const_iterator
                     pm (trans.place_map().begin())
                 ; pm != trans.place_map().end()
                 ; ++pm
@@ -952,7 +950,7 @@ namespace xml
           dumps (s, t.in().begin(), t.in().end(), "in");
           dumps (s, t.out().begin(), t.out().end(), "out");
 
-          for ( cond_vec_type::const_iterator cond (t.cond.begin())
+          for ( conditions_type::const_iterator cond (t.cond.begin())
               ; cond != t.cond.end()
               ; ++cond
               )

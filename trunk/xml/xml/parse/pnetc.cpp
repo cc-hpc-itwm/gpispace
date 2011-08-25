@@ -3,7 +3,6 @@
 #include <xml/parse/parser.hpp>
 
 #include <iostream>
-#include <vector>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>

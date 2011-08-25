@@ -67,7 +67,7 @@ namespace xml
         const std::string & value () const { return _value; }
       };
 
-      typedef std::list<key_value_t> key_value_list_t;
+      typedef std::list<key_value_t> key_values_t;
 
       // ******************************************************************* //
 
@@ -82,7 +82,7 @@ namespace xml
         in_progress_type _in_progress;
         property::path_type _prop_path;
         context_t _context;
-        key_value_list_t _key_value_list;
+        key_values_t _key_values;
         optimize::options::type _options_optimize;
         bool _ignore_properties;
         bool _Werror;
@@ -359,7 +359,7 @@ namespace xml
                     {
                       parser.eval_all (_context);
 
-                      _key_value_list.push_back (key_value_t (path[2], value));
+                      _key_values.push_back (key_value_t (path[2], value));
                     }
                   catch (const expr::exception::eval::divide_by_zero & e)
                     {
@@ -411,10 +411,10 @@ namespace xml
 
         void dump_context (xml_util::xmlstream & s) const
         {
-          typedef key_value_list_t::const_iterator it_t;
+          typedef key_values_t::const_iterator it_t;
 
-          it_t kv (_key_value_list.begin());
-          const it_t end (_key_value_list.end());
+          it_t kv (_key_values.begin());
+          const it_t end (_key_values.end());
 
           if (kv != end)
             {
