@@ -846,7 +846,6 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
-  unsigned int rank (evtRegWorker.rank());
 
   // check if the worker evtRegWorker.from() has already registered!
   try
@@ -855,7 +854,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
       addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
 
-      SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the rank " << rank<<" and the capacity "<<evtRegWorker.capacity());
+      SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the capacity "<<evtRegWorker.capacity());
 
       // send back an acknowledgment
       SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -878,10 +877,10 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
           addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
       }
 
-      SDPA_LOG_INFO("The worker " << worker_id << ", with the rank " << rank<<" is already registered");
+      SDPA_LOG_INFO("The worker " << worker_id << " is already registered!");
 
       // send back an acknowledgment
-      SDPA_LOG_INFO("Send registration ack to the agent " << worker_id << ", with the rank " << rank);
+      SDPA_LOG_INFO("Send registration ack to the agent " << worker_id );
       WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
       pWorkerRegAckEvt->id() = evtRegWorker.id();
       sendEventToSlave(pWorkerRegAckEvt);
@@ -1485,7 +1484,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 	{
 		SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << masterInfo.name() << "), capacity = "<<capacity());
 		capabilities_set_t capabilities;
-		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), rank(), capacity(), capabilities, agent_uuid()));
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), capabilities, agent_uuid()));
 		sendEventToMaster(pEvtWorkerReg);
 	}
 }
