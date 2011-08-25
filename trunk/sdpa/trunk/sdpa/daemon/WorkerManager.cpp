@@ -18,6 +18,7 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <boost/unordered_map.hpp>
 #include <algorithm>
+#include <sdpa/types.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -528,24 +529,27 @@ void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 		throw WorkerNotFoundException(worker_id);
 }
 
-
-bool matchPrefs( const sdpa::capabilities_set_t worker_pbs, const preference_t job_prefs )
+template <typename CpbSet, typename ReqSet>
+bool matchRequirements( const CpbSet worker_cpb_set, const ReqSet job_req_set )
 {
-	bool bMatching = false;
+	bool bMatching = true;
+
+	for( typename ReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end() && bMatching; it++ )
+		if( it->is_mandatory() && worker_cpb_set.find(it->value()) != worker_cpb_set.end() )
+			bMatching = false;
 
 	return bMatching;
 }
 
-sdpa::worker_id_list_t WorkerManager::getListWidsMatchMandPref( const preference_t& job_prefs ) throw (NoWorkerFoundException, AllWorkersFullException)
+sdpa::worker_id_list_t WorkerManager::getListWidsMatchingReqs( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException, AllWorkersFullException)
 {
 	sdpa::worker_id_list_t list_matching_wids;
 
 	for(worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-	{
-		/*if( matchPrefs(iter->second->capabilities(), job_prefs ) )
-			list_matching_wids.insert(iter->first);*/
+		//the template prameters can be skipped as they are parameter types in the constructor
+		if( matchRequirements( iter->second->capabilities(), listJobReq ) )
+			list_matching_wids.push_back(iter->first);
 
-	}
 
 	return list_matching_wids;
 }
