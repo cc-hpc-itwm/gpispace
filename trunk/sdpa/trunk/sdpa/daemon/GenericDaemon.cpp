@@ -125,7 +125,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
 
     lock_type lock(mtx_);
     while(!m_bStarted)
-            cond_can_start_.wait(lock);
+    	cond_can_start_.wait(lock);
 
     if( is_configured() )  // can register now
     {
@@ -1043,25 +1043,25 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
  */
 bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason)
 {
-  SDPA_LOG_INFO ("The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
+	SDPA_LOG_INFO ("The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
 
-  // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
-  // look for the job_id corresponding to the received workflowId into job_map_
-  // in fact they should be the same!
-  // generate const CancelJobEvent& event
-  // Job& job = job_map_[job_id];
-  // call job.CancelJob(event);
+	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
+	// look for the job_id corresponding to the received workflowId into job_map_
+	// in fact they should be the same!
+	// generate const CancelJobEvent& event
+	// Job& job = job_map_[job_id];
+	// call job.CancelJob(event);
 
-  job_id_t job_id(activityId);
-  CancelJobEvent::Ptr pEvtCancelJob
-    (new CancelJobEvent( sdpa::daemon::WE
-                       , name()
-                       , job_id
-                       , reason
-                       )
+	job_id_t job_id(activityId);
+	CancelJobEvent::Ptr pEvtCancelJob
+		(new CancelJobEvent( sdpa::daemon::WE
+							, name()
+							, job_id
+							, reason
+                       	   )
     );
-  sendEventToSelf(pEvtCancelJob);
-  return true;
+	sendEventToSelf(pEvtCancelJob);
+	return true;
 }
 
 /**
@@ -1070,22 +1070,22 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
  */
 bool GenericDaemon::finished(const id_type& workflowId, const result_type& result)
 {
-  SDPA_LOG_INFO ("activity finished: " << workflowId);
-  // generate a JobFinishedEvent for self!
-  // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
-  // look for the job_id corresponding to the received workflowId into job_map_
-  // in fact they should be the same!
-  // generate const JobFinishedEvent& event
-  // Job& job = job_map_[job_id];
-  // call job.JobFinished(event);
+	SDPA_LOG_INFO ("activity finished: " << workflowId);
+	// generate a JobFinishedEvent for self!
+	// cancel the job corresponding to that activity -> send downward a CancelJobEvent?
+	// look for the job_id corresponding to the received workflowId into job_map_
+	// in fact they should be the same!
+	// generate const JobFinishedEvent& event
+	// Job& job = job_map_[job_id];
+	// call job.JobFinished(event);
 
-  job_id_t job_id(workflowId);
-  JobFinishedEvent::Ptr pEvtJobFinished( new JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result ));
-  sendEventToSelf(pEvtJobFinished);
+	job_id_t job_id(workflowId);
+	JobFinishedEvent::Ptr pEvtJobFinished( new JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result ));
+	sendEventToSelf(pEvtJobFinished);
 
-  // notify the GUI that the activity finished
+	// notify the GUI that the activity finished
 
-  return true;
+	return true;
 }
 
 /**
@@ -1094,15 +1094,15 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
  */
 bool GenericDaemon::failed(const id_type& workflowId, const result_type & result)
 {
-  SDPA_LOG_WARN ("activity failed: " << workflowId);
-  // generate a JobFinishedEvent for self!
+	SDPA_LOG_WARN ("activity failed: " << workflowId);
+	// generate a JobFinishedEvent for self!
 
-  job_id_t job_id(workflowId);
+	job_id_t job_id(workflowId);
 
-  JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, name(), job_id, result ));
-  sendEventToSelf(pEvtJobFailed);
+	JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, name(), job_id, result ));
+	sendEventToSelf(pEvtJobFailed);
 
-  return true;
+	return true;
 }
 
 /**
@@ -1111,17 +1111,16 @@ bool GenericDaemon::failed(const id_type& workflowId, const result_type & result
  */
 bool GenericDaemon::cancelled(const id_type& workflowId)
 {
-  SDPA_LOG_INFO ("activity cancelled: " << workflowId);
-  // generate a JobCancelledEvent for self!
+	SDPA_LOG_INFO ("activity cancelled: " << workflowId);
+	// generate a JobCancelledEvent for self!
 
-  job_id_t job_id(workflowId);
+	job_id_t job_id(workflowId);
 
-  CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
-  sendEventToSelf(pEvtCancelJobAck);
+	CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id, SDPAEvent::message_id_type()));
+	sendEventToSelf(pEvtCancelJobAck);
 
-  return true;
+	return true;
 }
-
 
 Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
@@ -1431,7 +1430,7 @@ void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, cons
       DLOG(TRACE, "external job finished: " << jobId);
       workflowEngine()->finished( jobId.str(), result );
       try {
-		  jobManager()->deleteJob(jobId);
+    	  jobManager()->deleteJob(jobId);
 	   }
 	   catch(const JobNotDeletedException& ex)
 	   {
@@ -1448,58 +1447,46 @@ void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, cons
 
 void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
 {
-  if( hasWorkflowEngine() )
-  {
-      DLOG(TRACE, "external job cancelled: " << jobId);
-      workflowEngine()->cancelled( jobId.str() );
-      try {
-    	  jobManager()->deleteJob(jobId);
-      }
-      catch(const JobNotDeletedException& ex)
-      {
-    	  SDPA_LOG_WARN("Could not find the job "<<jobId.str()<<" ...");
-      }
-  }
-  else
-  {
-      DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
-      CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
-      sendEventToSelf(pEvtCancelJobAck);
-  }
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "external job cancelled: " << jobId);
+		workflowEngine()->cancelled( jobId.str() );
+		try {
+			jobManager()->deleteJob(jobId);
+		}
+		catch(const JobNotDeletedException& ex)
+		{
+			SDPA_LOG_WARN("Could not find the job "<<jobId.str()<<" ...");
+		}
+	}
+	else
+	{
+	  DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
+	  CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
+	  sendEventToSelf(pEvtCancelJobAck);
+	}
 }
 
 void GenericDaemon::requestJob(const MasterInfo& masterInfo)
 {
-    // post a new request to the master
-    // the slave posts a job request
+	if( masterInfo.is_registered() )
+	{
+		//SDPA_LOG_INFO( "Post a new job request to the master "<<master );
+		RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), masterInfo.name() ) );
+		sendEventToMaster(pEvtReq);
+	}
 
-	/*if(m_arrMasterInfo.empty())
-      return;*/
-
-    //BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
-    {
-		if( masterInfo.is_registered() )
-		{
-			//SDPA_LOG_INFO( "Post a new job request to the master "<<master );
-			RequestJobEvent::Ptr pEvtReq( new RequestJobEvent( name(), masterInfo.name() ) );
-			sendEventToMaster(pEvtReq);
-		}
-    }
     update_last_request_time();
 }
 
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
-    // try to re-register
-    //BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
+    if( !masterInfo.is_registered() )
 	{
-		if( !masterInfo.is_registered() )
-		{
-			SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << masterInfo.name() << "), capacity = "<<capacity());
-			capabilities_set_t capabilities;
-			WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), rank(), capacity(), capabilities, agent_uuid()));
-			sendEventToMaster(pEvtWorkerReg);
-		}
+		SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << masterInfo.name() << "), capacity = "<<capacity());
+		capabilities_set_t capabilities;
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), rank(), capacity(), capabilities, agent_uuid()));
+		sendEventToMaster(pEvtWorkerReg);
 	}
 }
 
