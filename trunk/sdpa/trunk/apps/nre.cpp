@@ -172,11 +172,14 @@ int main (int argc, char **argv)
   if( arrMasterNames.empty() )
     arrMasterNames.push_back("aggregator"); // default master name
 
+  sdpa::master_info_list_t listMasterInfo;
   LOG(INFO, "Starting the agent with the name = '"<<nreName<<"' at location "<<nreUrl<<", with the nre-worker running at "<<workerUrl
              <<"and having the masters: ");
+
   BOOST_FOREACH(string master, arrMasterNames)
   {
-    cout<<"   "<<master<<std::endl;
+	  cout<<"   "<<master<<std::endl;
+  	  listMasterInfo.push_back(sdpa::MasterInfo(master));
   }
 
   try {
@@ -184,7 +187,7 @@ int main (int argc, char **argv)
 	  sdpa::daemon::NRE<WorkerClient>::ptr_t ptrNRE
 	     = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient >::create( nreName
 										    , nreUrl
-										    , arrMasterNames
+										    , listMasterInfo
 										    , MAX_CAP
 										    , workerUrl
 									        , guiUrl);

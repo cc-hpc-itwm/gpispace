@@ -155,15 +155,18 @@ int main (int argc, char **argv)
 	if( arrMasterNames.empty() )
 	  arrMasterNames.push_back("orchestrator"); // default master name
 
+	sdpa::master_info_list_t listMasterInfo;
+
 	LOG(INFO, "Starting the agent with the name = '"<<agentName<<"' at location "<<agentUrl<<", having the masters: ");
 	BOOST_FOREACH(string master, arrMasterNames)
 	{
 	   cout<<"   "<<master<<std::endl;
+	   listMasterInfo.push_back(sdpa::MasterInfo(master));
 	}
 
 	try
 	{
-            sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, arrMasterNames, MAX_CAP, appGuiUrl ); //, orchUrl );
+            sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, listMasterInfo, MAX_CAP, appGuiUrl ); //, orchUrl );
 
             bool bUseRequestModel(vm.count("use-push-model") == 0);
 
