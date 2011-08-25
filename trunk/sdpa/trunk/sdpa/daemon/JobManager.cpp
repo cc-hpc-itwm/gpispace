@@ -49,8 +49,8 @@ JobManager::~JobManager(){
         , "there are still entries left in the mark-for-deletion map: " << job_map_marked_for_del_.size()
         );
   LOG_IF( WARN
-        , job_preferences_.size()
-        , "there are still entries left in the preferences map: " << job_preferences_.size()
+        , job_requirements_.size()
+        , "there are still entries left in the preferences map: " << job_requirements_.size()
         );
 
 }
@@ -103,7 +103,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     ostringstream os;
 
     // delete the preferences
-    preference_map_t::size_type rc = job_preferences_.erase(job_id);
+    requirements_map_t::size_type rc = job_requirements_.erase(job_id);
 
     if(rc)
     {
@@ -154,31 +154,30 @@ std::string JobManager::print() const
     return os.str();
 }
 
-const preference_t& JobManager::getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences)
+const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements)
 {
     lock_type lock(mtx_);
-    if( job_preferences_.empty() )
-            throw NoJobPreferences(jobId);
+    if( job_requirements_.empty() )
+            throw NoJobRequirements(jobId);
 
     SDPA_LOG_DEBUG("Locate the preferences of the job "<<jobId.str());
-    preference_map_t::const_iterator it_pref = job_preferences_.find(jobId);
-    if( it_pref == job_preferences_.end() )
-            throw NoJobPreferences(jobId);
+    requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
+    if( it_req == job_requirements_.end() )
+            throw NoJobRequirements(jobId);
 
-    const preference_t& job_pref = it_pref->second;
-    SDPA_LOG_DEBUG("The preferences of the job "<<jobId.str()<<" are: "<<job_pref);
+    //SDPA_LOG_DEBUG("The preferences of the job "<<jobId.str()<<" are: "<<job_pref);
 
-    return job_pref;
+    return it_req->second;;
 }
 
-void JobManager::addJobPreferences(const sdpa::job_id_t& job_id, const preference_t& pref) throw (JobNotFoundException)
+void JobManager::addJobRequirement(const sdpa::job_id_t& job_id, const requirement_t& req) throw (JobNotFoundException)
 {
     lock_type lock(mtx_);
     if( job_map_.find( job_id ) == job_map_.end() )
-                    throw JobNotFoundException( job_id );
+          throw JobNotFoundException( job_id );
 
     // eventually, re-write the existing preferences
-    job_preferences_[job_id] = pref;
+    job_requirements_[job_id].push_back(req);
 }
 
 static const std::size_t MAX_PARALLEL_JOBS = 1024;

@@ -37,7 +37,7 @@ namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_
 
 namespace sdpa { namespace daemon {
 
-    typedef boost::unordered_map<sdpa::job_id_t, preference_t> preference_map_t;
+    typedef boost::unordered_map<sdpa::job_id_t, requirement_list_t> requirements_map_t;
 
   class JobManager  {
   public:
@@ -63,8 +63,8 @@ namespace sdpa { namespace daemon {
 
 	  unsigned int numberExtJobs();
 
-	  void addJobPreferences( const sdpa::job_id_t&, const preference_t& ) throw (JobNotFoundException);
-	  const preference_t& getJobPreferences(const sdpa::job_id_t& jobId) const throw (NoJobPreferences);
+	  void addJobRequirement( const sdpa::job_id_t&, const requirement_t& ) throw (JobNotFoundException);
+	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
 
 	  std::string print() const;
 	  size_t number_of_jobs() const { return job_map_.size(); }
@@ -112,8 +112,8 @@ namespace sdpa { namespace daemon {
 
 	  job_map_t job_map_marked_for_del_;
 	  mutable mutex_type mtx_;
-          boost::condition_variable_any free_slot_;
-	  preference_map_t job_preferences_;
+      boost::condition_variable_any free_slot_;
+      requirements_map_t job_requirements_;
   };
 }}
 
