@@ -42,6 +42,8 @@ namespace drts
     time_t last_recv() const { return m_last_recv; }
     time_t last_job_recv() const { return m_last_job_recv; }
 
+    void job_received();
+
     bool is_polling () const { return m_polling; }
   private:
     mutable mutex_type m_stats_mutex;
