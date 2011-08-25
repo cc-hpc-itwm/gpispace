@@ -30,8 +30,8 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 namespace sdpa {
-	namespace daemon {
-  class SchedulerImpl : public Scheduler {
+  namespace daemon {
+	class SchedulerImpl : public Scheduler {
 
   public:
 
@@ -41,26 +41,25 @@ namespace sdpa {
 	SchedulerImpl(sdpa::daemon::IComm* pHandler = NULL, bool bUseRequestModel = true );
 	virtual ~SchedulerImpl();
 
-	virtual void schedule(const sdpa::job_id_t& job);
-	virtual void schedule_local(const sdpa::job_id_t &job);
-	virtual void schedule_remote(const sdpa::job_id_t &job);
-	void delete_job(const sdpa::job_id_t & job);
+	virtual void schedule(const sdpa::job_id_t&);
+	virtual void schedule_local(const sdpa::job_id_t&);
+	virtual void schedule_remote(const sdpa::job_id_t&);
+	void delete_job(const sdpa::job_id_t&);
 
-	void schedule_round_robin(const sdpa::job_id_t &job);
-	bool schedule_with_constraints(const sdpa::job_id_t &job, bool bDelNonRespWorkers = false);
-	bool schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& workerId, const preference_t& job_pref);
+	void schedule_round_robin(const sdpa::job_id_t&);
+	bool schedule_with_constraints(const sdpa::job_id_t&, bool bDelNonRespWorkers = false);
+	bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&, const requirement_t&);
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
 	void reschedule(Worker::JobQueue* pQueue );
 	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
 	void reschedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException);
 
-	virtual bool has_job(const sdpa::job_id_t& job_id);
+	virtual bool has_job(const sdpa::job_id_t&);
+	virtual void start_job(const sdpa::job_id_t&);
 
-	virtual void start_job(const sdpa::job_id_t &job);
-
-	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
-	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&  ) throw(WorkerNotFoundException);
+	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
+	virtual const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
 
 	virtual void addWorker( const Worker::worker_id_t& workerId,
 							unsigned int capacity = 10000,
@@ -84,7 +83,7 @@ namespace sdpa {
 	virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
 	virtual void check_post_request();
-	virtual bool post_request(bool force = false);
+	virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
 	virtual void feed_workers();
 
 	virtual bool useRequestModel() { return m_bUseRequestModel; }
@@ -108,18 +107,18 @@ namespace sdpa {
 	friend class boost::serialization::access;
 
 	virtual void print();
-  //protected:
-	  JobQueue jobs_to_be_scheduled;
-	  WorkerManager::ptr_t ptr_worker_man_;
+	//protected:
+	JobQueue jobs_to_be_scheduled;
+	WorkerManager::ptr_t ptr_worker_man_;
 
-	  bool bStopRequested;
-	  boost::thread m_thread;
+	bool bStopRequested;
+	boost::thread m_thread;
 
-	  mutable sdpa::daemon::IComm* ptr_comm_handler_;
-	  SDPA_DECLARE_LOGGER();
-	  boost::posix_time::time_duration m_timeout;
+	mutable sdpa::daemon::IComm* ptr_comm_handler_;
+	SDPA_DECLARE_LOGGER();
+	boost::posix_time::time_duration m_timeout;
 
-	  bool m_bUseRequestModel; // true -> request model, false -> push model
+	bool m_bUseRequestModel; // true -> request model, false -> push model
   };
 }}
 
