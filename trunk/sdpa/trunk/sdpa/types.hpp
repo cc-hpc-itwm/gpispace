@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <map>
 
 namespace sdpa {
 	typedef sdpa::JobId job_id_t;
@@ -15,6 +16,7 @@ namespace sdpa {
 	typedef std::string status_t;
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
+	typedef std::map<sdpa::worker_id_t, unsigned int> map_degs_t;
 
 	class MasterInfo
 	{
@@ -40,21 +42,21 @@ namespace sdpa {
 
 	typedef std::vector<MasterInfo> master_info_list_t;
 
-	/*typedef std::pair<std::string,std::string> capability_t;
+	//pair -> (capability name, multiplicity )
+	typedef std::pair<std::string, unsigned int> capability_t;
 
 	struct comp_capabilities
 	{
 	  bool operator()( capability_t const& a, capability_t const& b)
 	  {
-		  return a.first < b.first; // compare the uuids
+		  return a.first < b.first; // compare the names
 	  }
 	};
 
 	typedef std::set<capability_t, comp_capabilities > capabilities_set_t;
-	*/
 
-	typedef std::string capability_t;
-	typedef std::set<capability_t > capabilities_set_t;
+	//typedef std::string capability_t;
+	//typedef std::set<capability_t > capabilities_set_t;
 }
 
 #endif
