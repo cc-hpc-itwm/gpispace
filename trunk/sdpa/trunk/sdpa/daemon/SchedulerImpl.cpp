@@ -304,7 +304,7 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
  * return true only if scheduling the job jobid on the worker with the rank 'rank' succeeded
  */
 // test if the specified rank is valid
-bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& worker_id, const requirement_t& job_req  )
+bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& worker_id )
 {
 	// attention! rank might not be of one of the preferred nodes when the preferences are not mandatory!
 	SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to rank "<<worker_id);
@@ -506,12 +506,15 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 
         	  try
         	  {
+        		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
         		  sdpa::worker_id_list_t listWidsMatchReq = ptr_worker_man_->getListWidsMatchingReqs(job_req);
 
-        		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
         		  // second round: extract from the above one worker whose optional requirements best match the capabilities
-        		  // if there are several like this, take the least loaded one
+        		  // choose the one whose capabilities are best maczhing the job requirements (apart the mandatory ones!!!!)
+        		  // worker_id_t worker_id = getBestMatchingWid(listWidsMatchReq, job_req);
+
         		  // schedule the job to that one
+        		  // schedule_to(jobId, worker_id);
 
         		  /*
 					  const requirement:_t::value_list_type& list_prefs = job_req.values();
@@ -687,12 +690,7 @@ void SchedulerImpl::check_post_request()
 {
 	BOOST_FOREACH(sdpa::MasterInfo masterInfo, ptr_comm_handler_->getListMasterInfo())
 	{
-		if( masterInfo.is_registered() )
-		{
-			// post job request if number_of_jobs() < #registered workers +1
-			post_request(masterInfo);
-		}
-		else // try to re-register
+		if( !masterInfo.is_registered() )
 		{
 			SDPA_LOG_INFO("Try to re-register ...");
 			const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 1 *1000*1000) );
@@ -700,6 +698,12 @@ void SchedulerImpl::check_post_request()
 			boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
 			ptr_comm_handler_->requestRegistration(masterInfo);
+		}
+		else
+		{
+			// post job request if number_of_jobs() < #registered workers +1
+			if( useRequestModel() )
+				post_request(masterInfo);
 		}
 	}
 }
@@ -758,67 +762,6 @@ void SchedulerImpl::feed_workers()
 
 }
 
-/*void SchedulerImpl::feed_workers()
-{
-  // for any worker take a job from its pending queue, a
-  std::list<std::string> workerList;
-  ptr_worker_man_->getWorkerList(workerList);
-
-  // start here with the last served worker
-  BOOST_FOREACH(sdpa::worker_id_t worker_id, workerList)
-  {
-    try {
-
-    	Worker::ptr_t pWorker(findWorker(worker_id));
-
-    	if( pWorker->nbAllocatedJobs() < pWorker->capacity() )
-    	{
-    		if(ptr_comm_handler_)
-    		{
-    			ptr_comm_handler_->serve_job(worker_id);
-    		}
-    		else
-    		{
-    			SDPA_LOG_WARN("Invalid communication handler");
-    		}
-    	}
-
-    	//pWorker->print();
-
-    }
-    catch(NoJobScheduledException) {
-        SDPA_LOG_WARN("No job scheduled to the worker "<<worker_id);
-    }
-    catch(WorkerNotFoundException) {
-        SDPA_LOG_WARN("Couldn't find the worker "<<worker_id);
-    }
-    catch (std::exception const& ex)
-    {
-    	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
-    }
-  }
-}
-*/
-
-/*void SchedulerImpl::check_post_request()
-{
-  if(!ptr_comm_handler_)
-  {
-      SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler.");
-      stop();
-      return;
-  }
-
-  if( !ptr_comm_handler_->is_orchestrator())
-  {
-      // TODO: remove requests
-      if (ptr_comm_handler_->is_registered() && jobs_to_be_scheduled.size() <= numberOfWorkers() + 3)
-        post_request();
-  }
-
-	SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler.");
-}*/
-
 void SchedulerImpl::run()
 {
   if(!ptr_comm_handler_)
@@ -834,10 +777,10 @@ void SchedulerImpl::run()
   {
       try
       {
-          if(useRequestModel())
-        	  check_post_request(); // eventually, post a request
-          else
-        	  feed_workers(); //eventually, feed some workers
+
+    	  check_post_request(); // eventually, post a request to the master
+
+          feed_workers(); //eventually, feed some workers
 
           sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
           const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
@@ -982,33 +925,6 @@ void SchedulerImpl::getWorkerList(std::list<std::string>& workerList)
 {
 	ptr_worker_man_->getWorkerList(workerList);
 }
-
-
-/*void SchedulerImpl::notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& errcode)
-{
-  std::list<std::string> workerList;
-  ptr_worker_man_->getWorkerList(workerList);
-
-  if( ptr_comm_handler_ )
-  {
-      if(workerList.empty())
-      {
-          SDPA_LOG_INFO("The worker list is empty. No worker to be notified exist!");
-          return;
-      }
-
-      for( std::list<std::string>::iterator iter = workerList.begin(); iter != workerList.end(); iter++ )
-      {
-          SDPA_LOG_INFO("Send notification to the worker "<<*iter<<" "<< errcode<<" ...");
-          ErrorEvent::Ptr pErrEvt(new ErrorEvent( ptr_comm_handler_->name(), *iter, errcode,  "worker notification") );
-          //ErrorEvent::SDPA_EWORKERNOTREG
-          ptr_comm_handler_->sendEventToMaster(pErrEvt);
-      }
-  }
-  else
-	  SDPA_LOG_ERROR("No valid communication handler!");
-}
-*/
 
 void SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
 {

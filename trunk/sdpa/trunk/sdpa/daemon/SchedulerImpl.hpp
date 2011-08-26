@@ -48,7 +48,7 @@ namespace sdpa {
 
 	void schedule_round_robin(const sdpa::job_id_t&);
 	bool schedule_with_constraints(const sdpa::job_id_t&, bool bDelNonRespWorkers = false);
-	bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&, const requirement_t&);
+	bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&);
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
 	void reschedule(Worker::JobQueue* pQueue );
