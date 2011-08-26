@@ -19,6 +19,7 @@
 #include <boost/unordered_map.hpp>
 #include <algorithm>
 #include <sdpa/types.hpp>
+#include <boost/foreach.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -529,27 +530,55 @@ void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 		throw WorkerNotFoundException(worker_id);
 }
 
-template <typename CpbSet, typename ReqSet>
-bool matchRequirements( const CpbSet worker_cpb_set, const ReqSet job_req_set )
+bool has_capability(const sdpa::capabilities_set_t& worker_cpb_set, const std::string& cpbName)
 {
-	bool bMatching = true;
+	bool bFound = false;
+	for( sdpa::capabilities_set_t::iterator it = worker_cpb_set.begin(); it != worker_cpb_set.end() && !bFound; it++ )
+		if( it->first == cpbName )
+			bFound = true;
 
-	for( typename ReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end() && bMatching; it++ )
-		if( it->is_mandatory() && worker_cpb_set.find(it->value()) != worker_cpb_set.end() )
-			bMatching = false;
-
-	return bMatching;
+	return bFound;
 }
 
-sdpa::worker_id_list_t WorkerManager::getListWidsMatchingReqs( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException, AllWorkersFullException)
+template <typename CpbSet, typename ReqSet>
+unsigned int matchRequirements( const CpbSet worker_cpb_set, const ReqSet job_req_set )
 {
-	sdpa::worker_id_list_t list_matching_wids;
+	unsigned int matchingDeg = 0;
 
-	for(worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-		//the template prameters can be skipped as they are parameter types in the constructor
-		if( matchRequirements( iter->second->capabilities(), listJobReq ) )
-			list_matching_wids.push_back(iter->first);
+	for( typename ReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
+	{
+		if( has_capability(worker_cpb_set, it->value()) )
+			matchingDeg++;
+		else
+			if( it->is_mandatory())
+			{
+				matchingDeg = 0;
+				break;
+			}
+	}
 
+	return matchingDeg;
+}
 
-	return list_matching_wids;
+bool compare(sdpa::map_degs_t::value_type &i1, sdpa::map_degs_t::value_type &i2)
+{
+	return i1.second<i2.second;
+}
+
+Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException)
+{
+	if( worker_map_.empty() )
+		throw NoWorkerFoundException();
+
+	sdpa::map_degs_t mapDegs;
+
+	BOOST_FOREACH( worker_map_t::value_type pair, worker_map_ )
+	{
+		unsigned int matchingDeg = matchRequirements( pair.second->capabilities(), listJobReq );
+		mapDegs[pair.first] = matchingDeg;
+	}
+
+	sdpa::map_degs_t::iterator iter = std::max_element( mapDegs.begin(), mapDegs.end(), compare );
+
+	return worker_map_[iter->first];
 }

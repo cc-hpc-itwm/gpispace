@@ -61,7 +61,7 @@ namespace sdpa { namespace daemon {
 
       const sdpa::job_id_t stealWork(const Worker::worker_id_t& worker_id) throw (NoJobScheduledException);
 
-      sdpa::worker_id_list_t getListWidsMatchingReqs( const requirement_list_t&  ) throw (NoWorkerFoundException, AllWorkersFullException);
+      Worker::ptr_t getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException);
 
       const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
       void dispatchJob(const sdpa::job_id_t& jobId);
