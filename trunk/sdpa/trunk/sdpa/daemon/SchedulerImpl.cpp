@@ -222,47 +222,47 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
   }
 
   try {
-    const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+	  const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-    // Should set the workflow_id here, or send it together with the workflow description
-    SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. Workflow description follows: ");
-    SDPA_LOG_DEBUG(pJob->description());
+	  // Should set the workflow_id here, or send it together with the workflow description
+	  SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. Workflow description follows: ");
+	  SDPA_LOG_DEBUG(pJob->description());
 
-    pJob->Dispatch();
+	  pJob->Dispatch();
 
-    if(pJob->description().empty() )
-    {
-        SDPA_LOG_ERROR("Empty Workflow!!!!");
-        // declare job as failed
-    }
+	  if(pJob->description().empty() )
+	  {
+		  SDPA_LOG_ERROR("Empty Workflow!!!!");
+		  // declare job as failed
+	  }
 
-    ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
+	  ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
   }
   catch(const NoWorkflowEngine& ex)
   {
-    SDPA_LOG_ERROR("No workflow engine!!!");
-    sdpa::job_result_t result(ex.what());
+	  SDPA_LOG_ERROR("No workflow engine!!!");
+	  sdpa::job_result_t result(ex.what());
 
-    JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	  JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
+	  ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
   catch(const JobNotFoundException& ex)
   {
-    SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
-    sdpa::job_result_t result(ex.what());
+	  SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+	  sdpa::job_result_t result(ex.what());
 
-    JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	  JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
+	  ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
   catch (std::exception const & ex)
   {
-    SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
+	  SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
-    //send a JobFailed event
-    sdpa::job_result_t result(ex.what());
+	  //send a JobFailed event
+	  sdpa::job_result_t result(ex.what());
 
-    JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+	  JobFailedEvent::Ptr pEvtJobFailed( new JobFailedEvent( sdpa::daemon::WE, ptr_comm_handler_->name(), jobId, result) );
+	  ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
 }
 
@@ -280,21 +280,21 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
       return;
   }
 
-  try {
+  try
+  {
+	  if( ptr_worker_man_ )
+	  {
+		  SDPA_LOG_DEBUG("Get the next worker ...");
+		  const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
 
-    if( ptr_worker_man_ )
-    {
-        SDPA_LOG_DEBUG("Get the next worker ...");
-        const Worker::ptr_t& pWorker = ptr_worker_man_->getNextWorker();
+		  SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
-        SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
-
-        pWorker->dispatch(jobId);
-    }
+		  pWorker->dispatch(jobId);
+	  }
   }
   catch(const NoWorkerFoundException&)
   {
-      // put the job back into the queue
+	  // put the job back into the queue
       ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
       SDPA_LOG_DEBUG("Cannot schedule the job. No worker available! Put the job back into the queue.");
   }
@@ -304,19 +304,18 @@ void SchedulerImpl::schedule_round_robin(const sdpa::job_id_t& jobId)
  * return true only if scheduling the job jobid on the worker with the rank 'rank' succeeded
  */
 // test if the specified rank is valid
-bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& worker_id )
+bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const Worker::ptr_t& pWorker)
 {
-	// attention! rank might not be of one of the preferred nodes when the preferences are not mandatory!
-	SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to rank "<<worker_id);
+	sdpa::worker_id_t worker_id = pWorker->name();
 
+	// attention! rank might not be of one of the preferred nodes when the preferences are not mandatory!
+	SDPA_LOG_DEBUG("Schedule job "<<jobId.str()<<" to the worker "<<worker_id);
 
 	// if the worker is marked for deletion don't schedule any job on it
 	// should have a monitoring thread that detects the timedout nodes
 	// add a boolean variable to the worker bTimedout or not
 	try
 	{
-		const Worker::ptr_t& pWorker = findWorker( worker_id);
-
 		if( pWorker->timedout() )
 		{
 			SDPA_LOG_WARN("Couldn't schedule the job "<<jobId.str()<<" on the worker "<<worker_id<<". Timeout detected!");
@@ -326,21 +325,6 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_
 		SDPA_LOG_DEBUG("The job "<<jobId<<" was assigned to the worker '"<<pWorker->name()<<"'!");
 
 		pWorker->dispatch(jobId);
-
-		/*ptr_worker_man_->make_owner(jobId, worker_id);
-		const requirement:_t::value_list_type& list_prefs = job_req.values();
-
-		int k=0;
-		for( requirement:_t::value_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
-		  if( ptr_worker_man_->worker(*it) != worker_id )
-		  {
-			  Worker::pref_deg_t pref_deg = k++;
-
-			  const Worker::ptr_t& pOtherWorker = ptr_worker_man_->findWorker( ptr_worker_man_->worker(worker_id) );
-			  pOtherWorker->add_to_affinity_list(pref_deg, jobId);
-		  }
-		*/
-
 		return true;
 	}
 	catch( const NoWorkerFoundException& ex1)
@@ -355,6 +339,12 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_
 	}
 }
 
+bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& workerId)
+{
+	const Worker::ptr_t& pWorker = findWorker( workerId);
+	return schedule_to(jobId, workerId);
+}
+
 void SchedulerImpl::delete_job (sdpa::job_id_t const & job)
 {
   LOG(TRACE, "removing job " << job << " from the scheduler....");
@@ -366,105 +356,10 @@ void SchedulerImpl::schedule_anywhere( const sdpa::job_id_t& jobId )
   ptr_worker_man_->dispatchJob(jobId);
 }
 
-/*
-377	// begin Scheduling with constraints . OBSOLETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-378
-379	bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bDelNonRespWorkers )
-380	{
-381	  DLOG(TRACE, "Called schedule_with_contraints ...");
-382
-383	  if(!ptr_comm_handler_)
-384	  {
-385	      SDPA_LOG_ERROR("Invalid communication handler. "<<jobId.str());
-386	      stop();
-387	      return false;
-388	  }
-389
-390	  if( ptr_worker_man_ )
-391	  {
-392	      // if no preferences are explicitly set for this job
-393	      LOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
-394
-395	      try
-396	      {
-397	          const requirement:_t& job_req = ptr_comm_handler_->getJobRequirements(jobId);
-398	          // the preferences not specified
-399	          if( job_req.empty() )
-400	          {
-401	              if(job_req.is_mandatory())
-402	              {
-403	                  LOG(WARN, "a job requested an empty list of mandatory nodes: " << jobId);
-404	                  ptr_comm_handler_->workerJobFailed("", jobId, "The list of nodes needed is empty!");
-405	                  return false;
-406	              }
-407	              else
-408	              {
-409	                  // schedule to the first worker that requests a job
-410	                  schedule_anywhere(jobId);
-411	                  return true;
-412	              }
-413	          }
-414	          else // the job has preferences
-415	          {
-416	              requirement:_t::exclude_set_type uset_excluded = job_req.exclusion();
-417
-418	              const requirement:_t::value_list_type& list_prefs = job_req.values();
-419	              for( requirement:_t::value_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
-420	              {
-421	                // use try-catch for the case when the no worker with that rank exists
-422	                if( schedule_to(jobId, *it, job_req) )
-423	                  return true;
-424	                else
-425	                  uset_excluded.insert(*it);
-426	              }
-427
-428	              // if the assignment to one of the preferred workers
-429	              // fails and mandatory is set then -> declare the job failed
-430	              if( job_req.is_mandatory() )
-431	              {
-432	                LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_req);
-433	                ptr_comm_handler_->workerJobFailed("", jobId, "Couldn't match the mandatory preferences with a registered worker!");
-434	                return false;
-435	              }
-436	              else  // continue with the rest of the workers not in uset_excluded
-437	              {
-438	                std::vector<unsigned int> registered_ranks;
-439	                ptr_worker_man_->getListOfRegisteredRanks(registered_ranks);
-440
-441	                for( std::vector<unsigned int>::const_iterator iter (registered_ranks.begin()); iter != registered_ranks.end(); iter++ )
-442	                  // return immediately if rank not excluded and scheduling to rank succeeded
-443	                  if( uset_excluded.find(*iter) == uset_excluded.end() && schedule_to(jobId, *iter, job_req) )
-444	                    return true;
-445	              }
-446
-447	              // TODO: we had preferences but we could not fulfill them
-448	              ptr_comm_handler_->workerJobFailed("", jobId, "The job had preferences which could not be fulfilled!");
-449	              return false;
-450	          }
-451	    }
-452	    catch(const NoJobRequirements& )
-453	    {
-454	        // schedule to the first worker that requests a job
-455	        schedule_anywhere(jobId);
-456	        return true;
-457	    }
-458	  }
-459	  else
-460	  {
-461	      LOG(WARN, "could not schedule job: no worker available: " << jobId);
-462	      ptr_comm_handler_->workerJobFailed("", jobId, "No worker available!");
-463	      return false;
-464	  }
-465
-466	  return false;
-467	}
-//  END Scheduling with constraints (OBSOLETE)
-*/
 
 /*
  * Scheduling with constraints
  */
-
 bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool bDelNonRespWorkers )
 {
   DLOG(TRACE, "Called schedule_with_contraints ...");
@@ -479,7 +374,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
   if( ptr_worker_man_ )
   {
       // if no preferences are explicitly set for this job
-      LOG(TRACE, "Check if the job "<<jobId.str()<<" has preferences ... ");
+      LOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
 
       try
       {
@@ -492,61 +387,23 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
               schedule_anywhere(jobId);
               return true;
           }
-          else // the job has preferences
+          else // there are requirements specified for that job
           {
-        	  // if the job has preferences then find a worker
-        	  // whose capabilities best match the job
-        	  // preferences
-
-        	  // first, select all workers that fulfill the mandatory preferences
-        	  // if no one exist, declare the job failed
-        	  // else determine which one among these matches most of the optional preferences
-        	  // attention, don't select workers that have capabilities specified in the excluded
-        	  // list!!!!
-
         	  try
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-        		  sdpa::worker_id_list_t listWidsMatchReq = ptr_worker_man_->getListWidsMatchingReqs(job_req);
+        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req);
 
-        		  // second round: extract from the above one worker whose optional requirements best match the capabilities
-        		  // choose the one whose capabilities are best maczhing the job requirements (apart the mandatory ones!!!!)
-        		  // worker_id_t worker_id = getBestMatchingWid(listWidsMatchReq, job_req);
+        		  // effectively assign the job to that worker
 
         		  // schedule the job to that one
-        		  // schedule_to(jobId, worker_id);
-
-        		  /*
-					  const requirement:_t::value_list_type& list_prefs = job_req.values();
-					  for( requirement:_t::value_list_type::const_iterator it = list_prefs.begin(); it != list_prefs.end(); it++ )
-					  {
-						// use try-catch for the case when the no worker with that rank exists
-						if( schedule_to(jobId, *it, job_req) )
-						  return true;
-					  }
-
-					  // if the assignment to one of the preferred workers
-					  // fails and mandatory is set then -> declare the job failed
-					  if( job_req.is_mandatory() )
-					  {
-						LOG(WARN, "Couldn't match the mandatory preferences with a registered worker: job-id := " << jobId << " pref := " << job_req);
-						ptr_comm_handler_->workerJobFailed("", jobId, "Couldn't match the mandatory preferences with a registered worker!");
-						return false;
-					  }
-
-					  // TODO: we had preferences but we could not fulfill them
-					  ptr_comm_handler_->workerJobFailed("", jobId, "The job had preferences which could not be fulfilled!");
-        		   */
-
-        		  return false;
+        		  return schedule_to(jobId, ptrBestWorker);
         	  }
         	  catch(const NoWorkerFoundException& ex1)
         	  {
-
-        	  }
-        	  catch(const AllWorkersFullException& ex2)
-        	  {
-
+        		  LOG(WARN, "No worker meets the requirements for the job " << jobId.str()<<" found!");
+        		  ptr_comm_handler_->workerJobFailed("", jobId, "No worker meets the requirements for this job!");
+        		  return false;
         	  }
           }
     }
