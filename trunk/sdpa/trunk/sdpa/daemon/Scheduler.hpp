@@ -60,6 +60,7 @@ namespace daemon {
 	 virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;
 
 	 virtual void schedule(const sdpa::job_id_t& jobId) = 0;
+	 virtual bool schedule_to(const sdpa::job_id_t&, const Worker::ptr_t& pWorker) = 0;
 	 virtual bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&) = 0;
 	 virtual void schedule_remote(const sdpa::job_id_t &job) = 0;
 	 virtual void schedule_local(const sdpa::job_id_t &job) = 0;

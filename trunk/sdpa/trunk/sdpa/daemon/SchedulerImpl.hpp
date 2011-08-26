@@ -49,6 +49,7 @@ namespace sdpa {
 	void schedule_round_robin(const sdpa::job_id_t&);
 	bool schedule_with_constraints(const sdpa::job_id_t&, bool bDelNonRespWorkers = false);
 	bool schedule_to(const sdpa::job_id_t&, const sdpa::worker_id_t&);
+	bool schedule_to(const sdpa::job_id_t&, const Worker::ptr_t& pWorker);
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
 	void reschedule(Worker::JobQueue* pQueue );
@@ -67,6 +68,7 @@ namespace sdpa {
 			                const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
 
 	virtual void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+
 	void declare_jobs_failed( const Worker::worker_id_t&, Worker::JobQueue* pQueue );
 
 	virtual void getWorkerList(std::list<std::string>&);
