@@ -5,6 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 #include <QRectF>
+#include <QDebug>
 
 namespace fhg
 {
@@ -13,17 +14,82 @@ namespace fhg
     namespace graph
     {
       Scene::Scene(QObject* parent)
-      : QGraphicsScene(parent),
-      _pendingConnection(NULL),
-      _mousePosition(QPointF(0.0, 0.0))
+        : QGraphicsScene(parent)
+        , _pendingConnection(NULL)
+        , _mousePosition(QPointF(0.0, 0.0))
+        , _menu_new ("New")
+        , _menu_context ()
       {
+        init_menu_new();
+        init_menu_context();
       }
 
       Scene::Scene(const QRectF& sceneRect, QObject* parent)
-      : QGraphicsScene(sceneRect, parent),
-      _pendingConnection(NULL),
-      _mousePosition(QPointF(0.0, 0.0))
+        : QGraphicsScene(sceneRect, parent)
+        , _pendingConnection(NULL)
+        , _mousePosition(QPointF(0.0, 0.0))
+        , _menu_new ("New")
+        , _menu_context()
       {
+        init_menu_new();
+        init_menu_context();
+      }
+
+      void Scene::init_menu_new ()
+      {
+        QAction* action_add_transition (_menu_new.addAction (tr("transition")));
+        connect ( action_add_transition
+                , SIGNAL(triggered())
+                , this
+                , SLOT(slot_add_transition())
+                );
+
+        QAction* action_add_place (_menu_new.addAction (tr("place")));
+        connect ( action_add_place
+                , SIGNAL(triggered())
+                , this
+                , SLOT(slot_add_place())
+                );
+
+        _menu_new.addSeparator();
+
+        QAction* action_add_struct (_menu_new.addAction (tr("struct")));
+        connect ( action_add_struct
+                , SIGNAL(triggered())
+                , this
+                , SLOT(slot_add_struct())
+                );
+      }
+
+      void Scene::init_menu_context()
+      {
+        _menu_context.addMenu (&_menu_new);
+      }
+
+      void Scene::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
+      {
+        QGraphicsScene::contextMenuEvent(event);
+
+        if (!event->isAccepted())
+          {
+            _menu_context.popup(event->screenPos());
+            event->accept();
+          }
+      }
+
+      void Scene::slot_add_transition ()
+      {
+        qDebug() << "Scene::add_transition";
+      }
+
+      void Scene::slot_add_place ()
+      {
+        qDebug() << "Scene::add_place";
+      }
+
+      void Scene::slot_add_struct ()
+      {
+        qDebug() << "Scene::add_struct";
       }
 
       const QPointF& Scene::mousePosition() const
@@ -60,6 +126,11 @@ namespace fhg
           return true;
         }
         return false;
+      }
+
+      QMenu * Scene::menu_new ()
+      {
+        return &_menu_new;
       }
 
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)

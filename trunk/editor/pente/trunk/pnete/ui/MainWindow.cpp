@@ -32,10 +32,10 @@ namespace fhg
     namespace ui
     {
       MainWindow::MainWindow(QWidget* parent)
-      : QMainWindow(parent),
-      _transitionLibrary(NULL),
-      _graphicsView(NULL),
-      _scene(NULL)
+      : QMainWindow(parent)
+      , _transitionLibrary(NULL)
+      , _graphicsView(NULL)
+      , _scene(NULL)
       {
         setupCentralWidget();
         setupMenuAndToolbar();
@@ -64,6 +64,11 @@ namespace fhg
         _transitionLibrary->expandAll();
       }
 
+      graph::Scene * MainWindow::scene ()
+      {
+        return _scene;
+      }
+
       void MainWindow::setupMenuAndToolbar()
       {
         setWindowTitle(tr("SDPA editor"));
@@ -88,6 +93,11 @@ namespace fhg
         menuBar->addAction(menuFile->menuAction());
         menuFile->addAction(saveAction);
         menuFile->addAction(closeAction);
+
+        QMenu* menuEdit = new QMenu(tr("Edit"), menuBar);
+
+        menuBar->addAction(menuEdit->menuAction());
+        menuEdit->addMenu(scene()->menu_new());
 
         setMenuBar(menuBar);
 

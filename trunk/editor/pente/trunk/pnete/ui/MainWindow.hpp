@@ -27,13 +27,15 @@ namespace fhg
 
       class MainWindow : public QMainWindow
       {
-      Q_OBJECT
+        Q_OBJECT
 
       public:
         explicit MainWindow(QWidget *parent = NULL);
 
         void setTransitionLibraryPath(const QString& path);
         void addTransitionLibraryUserPath(const QString& path, bool trusted = false);
+
+        graph::Scene * scene ();
 
       public slots:
         void save();

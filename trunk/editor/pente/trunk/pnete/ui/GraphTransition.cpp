@@ -23,13 +23,13 @@ namespace fhg
     {
       Transition::Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent)
       : QGraphicsItem(parent)
-      , _title(title)
       , _dragStart(0, 0)
       , _size(160, 100) // hardcoded constant
       , _highlighted(false)
       , _dragging(false)
       , _producedFrom(producedFrom)
       , _menu_context()
+      , _title(title)
       {
         new TransitionCogWheelButton(this);
         setAcceptHoverEvents(true);
@@ -125,7 +125,13 @@ namespace fhg
 
       void Transition::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
       {
-        _menu_context.popup(event->screenPos());
+        QGraphicsItem::contextMenuEvent(event);
+
+        if (!event->isAccepted())
+          {
+            _menu_context.popup(event->screenPos());
+            event->accept();
+          }
       }
 
       void Transition::slot_delete()

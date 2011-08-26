@@ -62,7 +62,13 @@ namespace fhg
 
       void Port::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
       {
-        _menu_context.popup(event->screenPos());
+        QGraphicsItem::contextMenuEvent(event);
+
+        if (!event->isAccepted())
+          {
+            _menu_context.popup(event->screenPos());
+            event->accept();
+          }
       }
 
       void Port::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
@@ -70,20 +76,20 @@ namespace fhg
         if(_dragging)
         {
           _dragging = false;
-          event->setAccepted(true);
+          event->accept();
         }
       }
 
       void Port::mousePressEvent(QGraphicsSceneMouseEvent* event)
       {
-              if (!(event->buttons() & Qt::RightButton))
+        if (!(event->buttons() & Qt::RightButton))
           {
             switch(Style::portHit(this, event->pos()))
               {
               case Style::MAIN:
                 _dragging = true;
                 _dragStart = event->pos();
-                event->setAccepted(true);
+                event->accept();
                 break;
 
               case Style::TAIL:

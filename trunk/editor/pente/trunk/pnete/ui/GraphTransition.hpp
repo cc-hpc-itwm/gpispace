@@ -66,9 +66,7 @@ namespace fhg
           virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
           virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
-          QString _title;
-
-          //! \todo größe verstellbar.
+          //! \todo size verstellbar
 
           QPointF _dragStart;
           QSizeF _size;
@@ -78,10 +76,12 @@ namespace fhg
 
           data::Transition _producedFrom;
 
+      private:
         QMenu _menu_context;
 
-      private:
         void init_menu_context();
+
+        QString _title;
       };
     }
   }
