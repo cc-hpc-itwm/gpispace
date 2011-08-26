@@ -307,14 +307,13 @@ BOOST_AUTO_TEST_CASE(testNRESerialization)
 
 }
 
-/*
 BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
 {
     std::cout<<std::endl<<"----------------Begin  testAggregatorSerialization----------------"<<std::endl;
     std::string filename = "testSerializeAggregator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
     Aggregator::ptr_t pAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create(	"aggregator_0",
     																						"127.0.0.1:7001",
-    																						std::vector<std::string>(1,"orchestrator_0"),
+    																						sdpa::master_info_list_t(1,MasterInfo("orchestrator_0")),
     																						MAX_CAP); //, "127.0.0.1:7000");
 
     pAgg->setScheduler(new SchedulerImpl());
@@ -364,7 +363,7 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
         sdpa::job_id_t jobId(ossJobId.str());
 
         const preference_t job_pref;
-        pScheduler->schedule_to(jobId, k, job_pref);
+        pScheduler->schedule_to(jobId, workerId);
         if(l>=1)
         {
           sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -475,7 +474,7 @@ BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
           sdpa::job_id_t jobId(ossJobId.str());
 
           const preference_t job_pref;
-          pScheduler->schedule_to(jobId, k, job_pref);
+          pScheduler->schedule_to(jobId, workerId);
           if(l>=1)
           {
               sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -536,9 +535,8 @@ BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
 
 BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
 {
-  std::vector<std::string> arrMasterNames;
   std::string filename = "testSerializeDaemons.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-  GenericDaemon::ptr_t pGenDaemon( new GenericDaemon( sdpa::daemon::ORCHESTRATOR, arrMasterNames, NULL ));
+  GenericDaemon::ptr_t pGenDaemon( new GenericDaemon( sdpa::daemon::ORCHESTRATOR ));
 
   pGenDaemon->setScheduler( new SchedulerImpl() );
   SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pGenDaemon->scheduler().get());
@@ -590,7 +588,7 @@ BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
           sdpa::job_id_t jobId(ossJobId.str());
 
           const preference_t job_pref;
-          pScheduler->schedule_to(jobId, k, job_pref);
+          pScheduler->schedule_to(jobId, workerId);
           if(l>=1)
           {
                   sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -640,9 +638,8 @@ BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
 
 BOOST_AUTO_TEST_CASE(testDaemonSerialization)
 {
-  std::vector<std::string> arrMasterNames;
   std::string filename = "testSerializeDaemons.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-  GenericDaemon::ptr_t pGenDaemon( new GenericDaemon( sdpa::daemon::ORCHESTRATOR, arrMasterNames, NULL ));
+  GenericDaemon::ptr_t pGenDaemon( new GenericDaemon( sdpa::daemon::ORCHESTRATOR ));
 
   pGenDaemon->setScheduler(new SchedulerImpl());
   SchedulerImpl* pScheduler = dynamic_cast<SchedulerImpl*>(pGenDaemon->scheduler().get());
@@ -694,7 +691,7 @@ BOOST_AUTO_TEST_CASE(testDaemonSerialization)
         sdpa::job_id_t jobId(ossJobId.str());
 
         const preference_t job_pref;
-        pScheduler->schedule_to(jobId, k, job_pref);
+        pScheduler->schedule_to(jobId, workerId);
         if(l>=1)
         {
                 sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -770,7 +767,7 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
         sdpa::job_id_t jobId(ossJobId.str());
 
         const preference_t job_pref;
-        pScheduler->schedule_to(jobId, k, job_pref);
+        pScheduler->schedule_to(jobId, workerId);
         if(l>=1)
         {
                 sdpa::job_id_t jobToSubmit = pScheduler->getNextJob(workerId, "");
@@ -816,7 +813,6 @@ BOOST_AUTO_TEST_CASE(testSchedulerSerialization)
       return;
   }
 }
-*/
 
 BOOST_AUTO_TEST_CASE(testWorkerSerialization)
 {

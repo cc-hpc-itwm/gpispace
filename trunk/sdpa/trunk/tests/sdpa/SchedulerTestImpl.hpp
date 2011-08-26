@@ -24,7 +24,7 @@ class SchedulerTestImpl : public Scheduler {
 	 virtual ~SchedulerTestImpl();
 
     void schedule(sdpa::job_id_t& );
-    bool schedule_to(const sdpa::job_id_t& jobId, unsigned int rank, const preference_t& job_pref );
+    bool schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& );
     void re_schedule(Worker::JobQueue* pQueue );
 
 	virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
