@@ -5,12 +5,15 @@
 
 #include <boost/unordered_set.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/utility.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <we/expr/parse/node.hpp>
 #include <we/expr/parse/simplify/expression_list.hpp>
 #include <we/type/value.hpp>
 
-#include <sstream>
+#include <fhg/util/xml.hpp>
 
 namespace expr
 {
@@ -18,224 +21,253 @@ namespace expr
   {
     namespace simplify
     {
-      typedef std::string key_type;
-      typedef std::size_t version_type;
-      typedef expression_list::node_stack_it_t line_type;
-      typedef std::pair<version_type,line_type> item_type;
-      typedef std::vector<item_type> values_type;
+      typedef util::name_set_t::value_type key_type;
+      typedef key_type::value_type key_part_type;
+      typedef expression_list::nodes_type::iterator line_type;
 
-      typedef util::name_set_t::value_type key_vec_t;
-
-      struct tree_node_type;
-
-      typedef boost::unordered_map<key_type, boost::shared_ptr<tree_node_type> > map_type;
-
-      namespace helper
-      {
-        std::string indention (std::size_t indent);
-      }
-
-      struct tree_node_type
+      class variable_not_found : public std::exception
       {
         private:
-          void reset_childs (const line_type & line)
+          const std::string _what;
+        public:
+          variable_not_found() : _what ("variable not found") {}
+          variable_not_found(const std::string & reason)
+            : _what ("variable not found: " + reason) {}
+          virtual ~variable_not_found() throw() {}
+          virtual const char* what() const throw() { return _what.c_str(); }
+      };
+
+      class tree_node_type
+        : public boost::enable_shared_from_this<tree_node_type>
+      {
+        private:
+          typedef boost::shared_ptr<tree_node_type> ptr;
+          typedef boost::shared_ptr<tree_node_type> const_ptr;
+
+          typedef std::size_t version_type;
+          typedef std::pair<version_type,line_type> item_type;
+          typedef std::vector<item_type> values_type;
+          typedef boost::unordered_map< key_part_type
+                                      , tree_node_type::ptr > childs_type;
+
+          inline void
+          initialize_childs (const line_type & line)
           {
-            for ( map_type::iterator child (childs.begin())
-                ; child != childs.end()
+            for ( childs_type::iterator child (_childs.begin())
+                , end (_childs.end())
+                ; child != end
                 ; ++child
                 )
             {
-              child->second->reset (line);
+              child->second->initialize (line);
             }
           }
 
-          values_type values;
-          map_type childs;
-
-        public:
-          tree_node_type (const line_type & begin)
-          : values (0)
-          , childs (0)
+          inline bool
+          has_child (const key_part_type & part) const
           {
-            values.push_back (item_type (version_type (), begin));
+            return _childs.count (part) != 0;
           }
 
-          void inc (const line_type & line)
-          {
-            version_type version (values.back().first);
+          values_type _values;
+          childs_type _childs;
 
-            values.push_back (item_type (++version, line));
-
-            reset_childs (line);
-          }
-
-          void reset (const line_type & line)
-          {
-            values.push_back (item_type (version_type (), line));
-
-            reset_childs (line);
-          }
-
-          tree_node_type* find_child ( const key_vec_t::const_iterator & pos
-                                     , const key_vec_t::const_iterator & end
-                                     ) const
+          tree_node_type::ptr
+          insert_child ( const key_type::const_iterator & pos
+                       , const key_type::const_iterator & end
+                       )
           {
             if (pos == end)
             {
-              return const_cast<tree_node_type*>(this);
+              return shared_from_this();
             }
-            const map_type::const_iterator & child (childs.find (*pos));
 
-            if (child != childs.end())
+            if (!has_child (*pos))
             {
-              return child->second->find_child (pos + 1, end);
+              _childs[*pos] = tree_node_type::ptr (new tree_node_type());
+              for ( values_type::const_iterator it (_values.begin())
+                  , end (_values.end())
+                  ; it != end
+                  ; ++it
+                  )
+              {
+                _childs[*pos]->initialize (it->second);
+              }
             }
-            else
-            {
-              throw std::runtime_error ("variable not found");
-            }
+
+            return _childs[*pos]->insert_child (pos + 1, end);
           }
 
-          tree_node_type* find_child (const key_vec_t & keyvec) const
+          void
+          get_current_name ( const key_type::const_iterator & pos
+                           , const key_type::const_iterator & end
+                           , key_type & name
+                           )
           {
-            return find_child (keyvec.begin(), keyvec.end());
-          }
-
-          tree_node_type& add_child ( const key_vec_t::const_iterator & pos
-                                    , const key_vec_t::const_iterator & end
-                                    , const line_type & line
-                                    )
-          {
-            if (pos == end)
-            {
-              return *this;
-            }
-
-            const map_type::const_iterator & child (childs.find (*pos));
-
-            if (child == childs.end())
-            {
-              childs[*pos] = boost::shared_ptr<tree_node_type> ( new tree_node_type (line));
-            }
-
-            return childs[*pos]->add_child (pos + 1, end, line);
-          }
-
-          tree_node_type& add_child ( const key_vec_t & keyvec
-                                    , const line_type & line
-                                    )
-          {
-            return add_child (keyvec.begin(), keyvec.end(), line);
-          }
-
-          void get_ssa_name( const key_vec_t::const_iterator & pos
-                           , const key_vec_t::const_iterator & end
-                           , key_vec_t & name
-                           ) const
-          {
-            name.push_back (boost::lexical_cast<key_vec_t::value_type> (values.back().first));
+            name.push_back
+                (boost::lexical_cast<key_part_type> (_values.back().first));
 
             if (pos == end)
             {
               return;
             }
 
-            const map_type::const_iterator & child (childs.find (*pos));
+            name.push_back (*pos);
 
-            if (child != childs.end())
+            if (!has_child (*pos))
             {
-              name.push_back (*pos);
-              child->second->get_ssa_name (pos + 1, end, name);
+              insert_child (pos, end);
             }
-            else
-            {
-              throw std::runtime_error ("variable not found");
-            }
+
+            _childs[*pos]->get_current_name (pos + 1, end, name);
           }
 
-          key_vec_t get_ssa_name (const key_vec_t & keyvec) const
+          tree_node_type::ptr
+          get_entry ( const key_type::const_iterator & pos
+                    , const key_type::const_iterator & end
+                    )
           {
-            key_vec_t name;
-            get_ssa_name (keyvec.begin(), keyvec.end(), name);
-            return name;
+            if (pos == end)
+            {
+              return shared_from_this();
+            }
+
+            if (has_child (*pos))
+            {
+              return _childs[*pos]->get_entry (pos + 1, end);
+            }
+
+            return insert_child (pos, end);
           }
 
-          void dump (std::size_t indention) const
+          const line_type &
+          get_line_of ( const key_type::const_iterator & number
+                      , const key_type::const_iterator & end
+                      , const line_type & last_parent_line
+                      )
           {
-            const std::string indentstr (helper::indention (indention));
+            version_type wanted_version
+                (boost::lexical_cast<version_type>(*number));
 
-            for( values_type::const_iterator it (values.begin()), end (values.end())
+            values_type::iterator value (_values.begin());
+            //! \note Yes, I assume that there are no bad entries.
+            while (value->second != last_parent_line)
+            {
+              ++value;
+            }
+
+            while (value->first != wanted_version)
+            {
+              ++value;
+            }
+
+            line_type & last_line (value->second);
+
+            if (number + 1 == end)
+            {
+              values_type::iterator next_value (value + 1);
+              if (next_value != _values.end())
+              {
+                return next_value->second;
+              }
+              return line_type ();
+            }
+
+            const key_part_type & name (*(number + 1));
+
+            if (!has_child (name))
+            {
+              key_type ssa_free
+                  (util::get_normal_name (key_type (number + 1, end)));
+              insert_child (ssa_free.begin(), ssa_free.end());
+            }
+
+            return _childs[name]->get_line_of (number + 2, end, last_line);
+          }
+
+          void
+          dump (fhg::util::xml::xmlstream & stream) const
+          {
+            for( values_type::const_iterator it (_values.begin())
+               , end (_values.end())
                ; it != end
                ; ++it )
             {
-              //! \todo Make this possible again, by passing in the iterator to begin() and use distance(begin, second).
-              //std::cout << "[" << back.first << ", " << back.second << "]";
-              std::cout << "[" << it->first << "]";
+              stream.open ("ssa");
+              stream.attr ("number", it->first);
+              //stream.attr ("line", ...);
+              stream.close();
             }
-            if (!childs.empty())
+            for ( childs_type::const_iterator child (_childs.begin())
+                , end (_childs.end())
+                ; child != end
+                ; ++child
+                )
             {
-              std::cout << " {\n";
-              for ( map_type::const_iterator child (childs.begin()), end (childs.end())
-                  ; child != end
-                  ; /* due to fuckup in the const_iterator, we iterate when comparing below. */
-                  )
-              {
-                std::cout << indentstr << "  " << child->first;
-                child->second->dump (indention + 1);
-                if( ++child != end )
-                  std::cout << ",\n";
-              }
-              std::cout << "\n" << indentstr << "}";
+              stream.open ("child");
+              stream.attr ("name", child->first);
+              child->second->dump (stream);
+              stream.close();
             }
+          }
+
+        public:
+          explicit tree_node_type () : _values (0), _childs (0)
+          {}
+
+          inline void
+          add_reference (const line_type & line)
+          {
+            version_type version (_values.back().first);
+
+            _values.push_back (item_type (++version, line));
+
+            initialize_childs (line);
+          }
+
+          inline void
+          add_reference (const key_type & key, const line_type & line)
+          {
+            get_entry (key.begin (), key.end ())->add_reference (line);
+          }
+
+          inline void
+          initialize (const line_type & line = line_type ())
+          {
+            _values.push_back (item_type (version_type(), line));
+
+            initialize_childs (line);
+          }
+
+          inline key_type
+          get_current_name (const key_type & key)
+          {
+            key_type name;
+            get_current_name (key.begin(), key.end(), name);
+            return name;
+          }
+
+          inline const line_type &
+          get_last_line_of (const key_type & key)
+          {
+            return get_entry (key.begin (), key.end ())->_values.back().second;
+          }
+
+          inline const line_type &
+          get_line_of (const key_type & key)
+          {
+            return get_line_of (key.begin (), key.end (), line_type());
+          }
+
+          inline void
+          dump (std::ostream & s = std::cout) const
+          {
+            fhg::util::xml::xmlstream stream (s);
+            stream.open ("root");
+            dump (stream);
+            stream.close();
           }
       };
-
-      namespace helper
-      {
-        std::string indention (std::size_t indent)
-        {
-          std::stringstream ss;
-          while( indent-- )
-          {
-            ss << "  ";
-          }
-          return ss.str();
-        }
-
-        void dump (const tree_node_type & root)
-        {
-          root.dump (0);
-          std::cout << std::endl;
-        }
-      }
-
-      inline void
-      inc (tree_node_type & root, const key_vec_t & key, const line_type & line)
-      {
-        root.find_child (key)->inc (line);
-      }
-
-      inline void
-      add (tree_node_type & root, const key_vec_t & key, const line_type & line)
-      {
-        root.add_child (key, line);
-      }
-
-      inline tree_node_type
-      create_from_name_set ( const util::name_set_t& set
-                           , const line_type & line)
-      {
-        tree_node_type root (line);
-
-        for ( util::name_set_t::const_iterator name = set.begin()
-            ; name != set.end()
-            ; ++name)
-        {
-          add( root, *name, line );
-        }
-
-        return root;
-      }
     }
   }
 }

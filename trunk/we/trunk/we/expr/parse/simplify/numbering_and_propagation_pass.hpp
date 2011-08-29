@@ -18,9 +18,10 @@ namespace expr
     {
       typedef boost::variant<value::type, node::key_vec_t> propagated_type;
       typedef boost::unordered_map < node::key_vec_t
-                                   , propagated_type> propagation_map_t;
+                                   , propagated_type
+                                   > propagation_map_type;
 
-      propagation_map_t _propagation_map;
+      propagation_map_type _propagation_map;
 
       namespace detail
       {
@@ -30,13 +31,16 @@ namespace expr
         private:
           tree_node_type& _ssa_tree;
           const line_type& _line;
+          expression_list & _expression_list;
 
         public:
           numbering_and_propagation_pass ( tree_node_type& ssa_tree
                                          , const line_type & line
+                                         , expression_list & list
                                          )
           : _ssa_tree (ssa_tree)
           , _line (line)
+          , _expression_list (list)
           {}
 
           node::type operator () (const value::type & t) const
@@ -47,7 +51,7 @@ namespace expr
         private:
           node::type do_propagation (const node::key_vec_t & key) const
           {
-            propagation_map_t::const_iterator entry
+            propagation_map_type::const_iterator entry
                 (_propagation_map.find (key));
             if (entry != _propagation_map.end())
               return entry->second;
@@ -55,7 +59,8 @@ namespace expr
             typedef node::key_vec_t::const_iterator key_const_iter;
             key_const_iter key_end (key.end ());
 
-            for ( propagation_map_t::const_iterator it (_propagation_map.begin())
+            typedef propagation_map_type::const_iterator map_iter;
+            for ( map_iter it (_propagation_map.begin())
                   , end (_propagation_map.end())
                 ; it != end
                 ; ++it
@@ -65,9 +70,10 @@ namespace expr
               if (const node::key_vec_t* rhs_value = boost::get<node::key_vec_t> (&it->second))
               {
                 key_const_iter key_it (key.begin ());
-                key_const_iter rhs_it (it->first.begin ()), rhs_end (it->first.end ());
+                key_const_iter rhs_it (it->first.begin ());
+                key_const_iter rhs_end (it->first.end ());
 
-                //! \note This is an extended std::mismatch, also checking for rhs_end.
+                //! \note This is an std::mismatch, also checking for rhs_end.
                 while (key_it != key_end && rhs_it != rhs_end)
                 {
                   if (*key_it != *rhs_it)
@@ -88,10 +94,45 @@ namespace expr
             return key;
           }
 
-        public:
-          node::type operator () (const node::key_vec_t & key) const
+          key_type create_temp_assignment ( const line_type & line
+                                          , const key_type & name) const
           {
-            return do_propagation (_ssa_tree.get_ssa_name (key));
+            key_type temp_name (name);
+            temp_name.insert (temp_name.begin(), ".temp");
+            temp_name.insert (temp_name.begin(), "0");
+            node::type to (temp_name);
+            node::type from (name);
+            node::type assignment (node::binary_t (token::define, to, from));
+            _expression_list.insert (line, assignment);
+            return temp_name;
+          }
+
+          static bool
+          is_before (const line_type & first, const line_type & second)
+          {
+            return std::distance (first, second) > std::distance (second, first);
+          }
+
+        public:
+          node::type operator () (const key_type & key) const
+          {
+            node::type propagated_node
+                (do_propagation (_ssa_tree.get_current_name (key)));
+
+            if (boost::get<value::type> (&propagated_node))
+            {
+              return propagated_node;
+            }
+
+            const node::key_vec_t propagated_key
+                (boost::get<node::key_vec_t> (propagated_node));
+
+            const line_type & key_line = _ssa_tree.get_line_of (propagated_key);
+            if (key_line != line_type () && is_before (_line, key_line))
+            {
+              return create_temp_assignment (key_line, propagated_key);
+            }
+            return propagated_key;
           }
 
           node::type operator () (node::unary_t & u) const
@@ -104,19 +145,22 @@ namespace expr
           {
             if (token::is_define (b.token))
             {
+              node::key_vec_t lhs_old (boost::get<node::key_vec_t> (b.l));
+
               b.r = boost::apply_visitor (*this, b.r);
-              inc (_ssa_tree, boost::get<node::key_vec_t> (b.l), _line);
+              _ssa_tree.add_reference (lhs_old, _line);
               b.l = boost::apply_visitor (*this, b.l);
 
-              //! \note we only handle constant and copy propagation, not expression propagation.
-              //! \todo visitor? (no.)
+              node::key_vec_t lhs (boost::get<node::key_vec_t> (b.l));
+
+              //! \note we only handle constant and copy propagation.
               if (const node::key_vec_t* rhs = boost::get<node::key_vec_t> (&b.r))
               {
-                _propagation_map[boost::get<node::key_vec_t> (b.l)] = *rhs;
+                _propagation_map[lhs] = *rhs;
               }
               else if (const value::type* rhs = boost::get<value::type> (&b.r))
               {
-                _propagation_map[boost::get<node::key_vec_t> (b.l)] = *rhs;
+                _propagation_map[lhs] = *rhs;
               }
             }
             else
@@ -137,9 +181,13 @@ namespace expr
 
           node::type operator () (node::ternary_t & t) const
           {
+            //! \todo Don't fail with control-flow-statements.
             if (t.token == token::_ite)
-              //! \todo Don't fail with control-flow-statements.
-              throw std::runtime_error("sorry, we can't handle simplifying expressions with control flow expressions right now.");
+            {
+              throw std::runtime_error("sorry, we can't handle simplifying "
+                                       "expressions with control flow "
+                                       "expressions right now.");
+            }
             t.child0 = boost::apply_visitor (*this, t.child0);
             t.child1 = boost::apply_visitor (*this, t.child1);
             t.child2 = boost::apply_visitor (*this, t.child2);
@@ -153,12 +201,13 @@ namespace expr
                                      , tree_node_type& ssa_tree
                                      )
       {
-        for ( expression_list::node_stack_it_t it (list.begin()), end (list.end())
+        for ( expression_list::nodes_type::iterator it (list.begin())
+            , end (list.end())
             ; it != end
             ; ++it )
         {
           *it = boost::apply_visitor
-              ( detail::numbering_and_propagation_pass (ssa_tree, it)
+              ( detail::numbering_and_propagation_pass (ssa_tree, it, list)
               , *it
               );
         }
