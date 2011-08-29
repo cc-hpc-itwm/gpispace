@@ -30,11 +30,11 @@ namespace sdpa {
 		bool is_registered() const { return registered_; }
 		void set_registered(bool b) { registered_ = b; }
 
-		 template <class Archive>
-		  void serialize(Archive& ar, const unsigned int)
-		  {
-			  ar & name_;
-		  }
+		template <class Archive>
+		void serialize(Archive& ar, const unsigned int)
+		{
+			ar & name_;
+		}
 	private:
 		std::string name_;
 		bool registered_;
@@ -42,21 +42,10 @@ namespace sdpa {
 
 	typedef std::vector<MasterInfo> master_info_list_t;
 
-	//pair -> (capability name, multiplicity )
-	typedef std::pair<std::string, unsigned int> capability_t;
+	typedef std::string capability_t;
+	typedef std::set<capability_t> capabilities_set_t;
+	typedef std::map<capability_t, unsigned int > capabilities_map_t;
 
-	struct comp_capabilities
-	{
-	  bool operator()( capability_t const& a, capability_t const& b)
-	  {
-		  return a.first < b.first; // compare the names
-	  }
-	};
-
-	typedef std::set<capability_t, comp_capabilities > capabilities_set_t;
-
-	//typedef std::string capability_t;
-	//typedef std::set<capability_t > capabilities_set_t;
 }
 
 #endif
