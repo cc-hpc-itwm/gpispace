@@ -61,7 +61,10 @@ main (int argc, char ** argv)
      "(${__generate_volume_credits_trigger_when_amount_state.max} := ${a});\n"
      "(${pair} := ${state.pair});\n"
      "(${state.pair.id} := (${state.pair.id} + 1L));\n"
+     "(${aha} := ${state.pair});\n"
      "(${volume.id} := ${pair.id});\n"
+     "(${b} := ${pair.id});\n"
+     "(${test} := ${aha.id});\n"
      "(${volume.offset} := ${pair.tag});\n"
      "(${z.a} := []);\n"
      "(${z.b} := []);\n"
@@ -82,6 +85,7 @@ main (int argc, char ** argv)
   add_to_bindings_list ("b", needed_bindings);
   add_to_bindings_list ("volume", needed_bindings);
   add_to_bindings_list ("state", needed_bindings);
+  add_to_bindings_list ("test", needed_bindings);
 
   expr::parse::parser parser (input);
 
