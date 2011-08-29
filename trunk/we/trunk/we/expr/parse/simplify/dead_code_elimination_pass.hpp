@@ -94,10 +94,11 @@ namespace expr
             {
               b.r = boost::apply_visitor (*this, b.r);
 
-              //! \note If the left hand side never got referenced below, let  \
-                        us be the right hand side. Else, mark, that there is   \
-                        an assignment somewhere and stay unchanged, except for \
-                        removing the ssa numbering on the left hand side.
+              //! \note If the left hand side never got referenced
+              // below, let us be the right hand side. Else, mark,
+              // that there is an assignment somewhere and stay
+              // unchanged, except for removing the ssa numbering on
+              // the left hand side.
 
               key_type lhs (boost::get<key_type> (b.l));
 
