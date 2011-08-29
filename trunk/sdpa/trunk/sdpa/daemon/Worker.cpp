@@ -139,20 +139,48 @@ unsigned int Worker::nbAllocatedJobs()
 	return nJobs;
 }
 
-capabilities_set_t Worker::capabilities() const
+capabilities_map_t Worker::capabilities() const
 {
 	return capabilities_;
 }
 
 void Worker::addCapabilities(const capabilities_set_t& cpbset)
 {
-	capabilities_.insert(cpbset.begin(), cpbset.end());
+	for( capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); it++ )
+	{
+		capabilities_map_t::iterator itw = capabilities_.find(*it);
+		if( itw != capabilities_.end() )
+		{
+			// the subtree headed by this worker has already such capability
+			// -> just increment the multiplicity
+			itw->second++;
+		}
+		else
+		{
+			// create new entry
+			capabilities_[*it] = 1;
+		}
+	}
 }
 
-void Worker::removeCapabilities(const capabilities_set_t& cpbset)
+void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
-	for(capabilities_set_t::iterator iter = cpbset.begin(); iter != cpbset.end(); iter++ )
+	for(capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); it++ )
 	{
-		capabilities_.erase(*iter);
+		capabilities_map_t::iterator itw = capabilities_.find(*it);
+		if( itw != capabilities_.end() )
+		{
+			// the subtree headed by this worker has already such capability
+			// -> just decrement the multiplicity
+			if(itw->second-- == 1)
+			{
+				capabilities_.erase(itw);
+			}
+		}
+		else
+		{
+			// do nothing
+			LOG(ERROR, "The worker "<<name()<<" doesn't possess such capability!");
+		}
 	}
 }

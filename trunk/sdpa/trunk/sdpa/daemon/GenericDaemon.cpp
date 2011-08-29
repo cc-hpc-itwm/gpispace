@@ -1224,6 +1224,13 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 	sdpa::worker_id_t worker_id = pCpbGainEvt->from();
 	try {
 		scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
+
+		// forward this event to the masters
+		if( !is_orchestrator() )
+		{
+			sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(*pCpbGainEvt));
+			sendEventToMaster(shpCpbGainEvt);
+		}
 	}
 	catch( const WorkerNotFoundException& ex)
 	{
@@ -1243,6 +1250,13 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 	sdpa::worker_id_t worker_id = pCpbLostEvt->from();
 	try {
 		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
+
+		// forward this event to the masters
+		if( !is_orchestrator() )
+		{
+			sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new sdpa::events::CapabilitiesLostEvent(*pCpbLostEvt));
+			sendEventToMaster(shpCpbLostEvt);
+		}
 	}
 	catch( const WorkerNotFoundException& ex)
 	{

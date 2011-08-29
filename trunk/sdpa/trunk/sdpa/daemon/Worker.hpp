@@ -134,7 +134,7 @@ namespace sdpa { namespace daemon {
     const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_; }
 
     // capabilities
-    capabilities_set_t capabilities() const;
+    capabilities_map_t capabilities() const;
 
     void addCapabilities(const capabilities_set_t& cpbset);
     void removeCapabilities(const capabilities_set_t& cpbset);
@@ -227,7 +227,7 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     //unsigned int rank_;
     unsigned int capacity_;
-    sdpa::capabilities_set_t capabilities_;
+    sdpa::capabilities_map_t capabilities_;
 	sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received

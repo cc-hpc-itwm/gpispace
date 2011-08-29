@@ -81,7 +81,7 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
  * add new worker
  */
 void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int capacity,
-		                       const capabilities_set_t& cpbset , const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+		                       const capabilities_set_t& TCpbSet , const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
   lock_type lock(mtx_);
 
@@ -103,9 +103,9 @@ void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int
     }*/
   }
 
-  // add cpbset HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // add TCpbSet HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_uuid ) );
-  pWorker->addCapabilities(cpbset);
+  pWorker->addCapabilities(TCpbSet);
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
@@ -506,48 +506,48 @@ void WorkerManager::getWorkerList(std::list<std::string>& workerList)
     workerList.push_back(iter->second->name());
 }
 
-void WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException)
+void WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& TCpbSet)  throw (WorkerNotFoundException)
 {
 	lock_type lock(mtx_);
 	worker_map_t::iterator it = worker_map_.find(worker_id);
 	if( it != worker_map_.end() )
 	{
-		it->second->addCapabilities(cpbset);
+		it->second->addCapabilities(TCpbSet);
 	}
 	else
 		throw WorkerNotFoundException(worker_id);
 }
 
-void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
+void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& TCpbSet) throw (WorkerNotFoundException)
 {
 	lock_type lock(mtx_);
 	worker_map_t::iterator it = worker_map_.find(worker_id);
 	if( it != worker_map_.end() )
 	{
-		it->second->removeCapabilities(cpbset);
+		it->second->removeCapabilities(TCpbSet);
 	}
 	else
 		throw WorkerNotFoundException(worker_id);
 }
 
-bool has_capability(const sdpa::capabilities_set_t& worker_cpb_set, const std::string& cpbName)
+template <typename T>
+bool has_capability(const T& worker_cpb_map, const std::string& cpbName)
 {
-	bool bFound = false;
-	for( sdpa::capabilities_set_t::iterator it = worker_cpb_set.begin(); it != worker_cpb_set.end() && !bFound; it++ )
-		if( it->first == cpbName )
-			bFound = true;
-
-	return bFound;
+	typename T::const_iterator it = worker_cpb_map.find(cpbName);
+	if(it != worker_cpb_map.end())
+		return true;
+	else
+		return false;
 }
 
-template <typename CpbSet, typename ReqSet>
-unsigned int matchRequirements( const CpbSet worker_cpb_set, const ReqSet job_req_set )
+template <typename TCpbMap, typename TReqSet>
+unsigned int matchRequirements( const TCpbMap worker_cpb_map, const TReqSet job_req_set )
 {
 	unsigned int matchingDeg = 0;
 
-	for( typename ReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
+	for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
 	{
-		if( has_capability(worker_cpb_set, it->value()) )
+		if( has_capability(worker_cpb_map, it->value()) )
 			matchingDeg++;
 		else
 			if( it->is_mandatory())

@@ -57,7 +57,6 @@ enum ExecutionState
 
 typedef std::pair<ExecutionState, result_type> execution_result_t;
 
-
 #ifdef USE_REAL_WE
 		typedef we::mgmt::requirement_t<std::string> requirement_t;
 		typedef std::list<requirement_t> requirement_list_t;
@@ -220,7 +219,6 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 			virtual bool cancelled(const id_type & id) = 0;
 
 			virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
-
 			virtual ~IWorkflowEngine() {}
 
 			friend class boost::serialization::access;
