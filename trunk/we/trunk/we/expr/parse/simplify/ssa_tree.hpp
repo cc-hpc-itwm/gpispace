@@ -140,6 +140,59 @@ namespace expr
             return insert_child (pos, end);
           }
 
+          void
+          fill_asterics_with_latest ( const key_type::iterator & number
+                                    , const key_type::iterator & end
+                                    , const line_type & last_parent_line
+                                    )
+          {
+            values_type::iterator value (_values.begin());
+            //! \note Yes, I assume that there are no bad entries.
+            while (value->second != last_parent_line)
+            {
+              ++value;
+            }
+
+            if (*number == "*")
+            {
+              // breaks when either last entry or next entry is (0, *).
+              while ((value + 1) != _values.end() && (value + 1)->first != 0)
+              {
+                ++value;
+              }
+              *number = boost::lexical_cast<key_part_type> (value->first);
+            }
+            else
+            {
+              version_type wanted_version
+                  (boost::lexical_cast<version_type>(*number));
+
+              while (value->first != wanted_version)
+              {
+                ++value;
+              }
+            }
+
+            line_type & last_line (value->second);
+
+            if (number + 1 == end)
+            {
+              return;
+            }
+
+            const key_part_type & name (*(number + 1));
+
+            if (!has_child (name))
+            {
+              key_type ssa_free
+                  (util::get_normal_name (key_type (number + 1, end)));
+              insert_child (ssa_free.begin(), ssa_free.end());
+            }
+
+            _childs[name]->fill_asterics_with_latest
+                (number + 2, end, last_line);
+          }
+
           line_type
           get_line_of ( const key_type::const_iterator & number
                       , const key_type::const_iterator & end
@@ -257,6 +310,12 @@ namespace expr
           get_line_of (const key_type & key)
           {
             return get_line_of (key.begin (), key.end (), line_type());
+          }
+
+          inline void
+          fill_asterics_with_latest (key_type & key)
+          {
+            fill_asterics_with_latest (key.begin(), key.end(), line_type());
           }
 
           inline void

@@ -61,56 +61,92 @@ namespace expr
 
             typedef propagation_map_type::const_iterator map_iter;
             for ( map_iter it (_propagation_map.begin())
-                  , end (_propagation_map.end())
+                , end (_propagation_map.end())
                 ; it != end
                 ; ++it
                 )
             {
-              //! \todo fhgutil::isprefixof?
-              if (const node::key_vec_t* rhs_value = boost::get<node::key_vec_t> (&it->second))
-              {
-                key_const_iter key_it (key.begin ());
-                key_const_iter rhs_it (it->first.begin ());
-                key_const_iter rhs_end (it->first.end ());
+              const node::key_vec_t* rhs_value
+                  (boost::get<node::key_vec_t> (&it->second));
 
-                //! \note This is an std::mismatch, also checking for rhs_end.
-                while (key_it != key_end && rhs_it != rhs_end)
-                {
-                  if (*key_it != *rhs_it)
-                  {
-                    break;
-                  }
-                  ++key_it;
-                  ++rhs_it;
-                }
-                if (rhs_it == rhs_end && key_it != key_end)
-                {
-                  node::key_vec_t result (rhs_value->begin(), rhs_value->end());
-                  std::copy (key_it, key_end, std::back_inserter (result));
-                  return result;
-                }
+              if (!rhs_value)
+              {
+                continue;
               }
+
+              key_const_iter key_it (key.begin ());
+              key_const_iter rhs_it (it->first.begin ());
+              key_const_iter rhs_end (it->first.end ());
+
+              while (key_it != key_end && rhs_it != rhs_end)
+              {
+                if (*key_it != *rhs_it)
+                {
+                  break;
+                }
+                ++key_it;
+                ++rhs_it;
+              }
+
+              if (rhs_it != rhs_end || key_it == key_end)
+              {
+                continue;
+              }
+
+              key_type first_part (rhs_value->begin(), rhs_value->end());
+              key_type second_part (key_it, key_end);
+
+              for (key_type::iterator it (second_part.begin() + 1)
+                  , end (second_part.end())
+                  ; it != end && it + 1 != end
+                  ; advance (it, 2)
+                  )
+              {
+                *it = "*";
+              }
+
+              std::copy ( second_part.begin(), second_part.end()
+                        , std::back_inserter (first_part));
+
+              _ssa_tree.fill_asterics_with_latest (first_part);
+
+              return first_part;
             }
             return key;
           }
 
-          key_type create_temp_assignment ( const line_type & line
-                                          , const key_type & name) const
+          key_type
+          create_temp_assignment ( const line_type & line
+                                 , const key_type & name) const
           {
             key_type temp_name (name);
             temp_name.insert (temp_name.begin(), ".temp");
             temp_name.insert (temp_name.begin(), "0");
-            node::type to (temp_name);
-            node::type from (name);
-            node::type assignment (node::binary_t (token::define, to, from));
-            _expression_list.insert (line, assignment);
+
+            propagation_map_type::const_iterator it
+                (_propagation_map.find (temp_name));
+
+            node::type rhs_node (name);
+
+            //! \note Do not add another copy for this thing..
+            if (it == _propagation_map.end ())
+            {
+              node::type assignment ( node::binary_t ( token::define
+                                    , node::type (temp_name)
+                                    , rhs_node));
+
+              _expression_list.insert (line, assignment);
+              _propagation_map[temp_name] = propagated_type (name);
+            }
             return temp_name;
           }
 
           static bool
           is_before (const line_type & first, const line_type & second)
           {
-            return std::distance (first, second) > std::distance (second, first);
+            size_t fs (std::distance (first, second));
+            size_t sf (std::distance (second, first));
+            return fs > sf;
           }
 
         public:
@@ -128,9 +164,13 @@ namespace expr
                 (boost::get<node::key_vec_t> (propagated_node));
 
             const line_type & key_line = _ssa_tree.get_line_of (propagated_key);
-            if (key_line != line_type () && is_before (_line, key_line))
+            if (key_line != line_type ())
             {
-              return create_temp_assignment (key_line, propagated_key);
+              std::cout << util::write_key_vec(propagated_key) << ": ";
+              if(is_before (_line, key_line))
+              {
+                return create_temp_assignment (key_line, propagated_key);
+              }
             }
             return propagated_key;
           }
