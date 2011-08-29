@@ -25,7 +25,8 @@ namespace expr
           mutable bool _has_assignment_somewhere;
 
         public:
-          dead_code_elimination_and_unnumbering_pass (util::name_set_t & referenced_names)
+          dead_code_elimination_and_unnumbering_pass
+              (util::name_set_t & referenced_names)
             : _referenced_names (referenced_names)
             , _has_assignment_somewhere (false)
           {}
@@ -48,7 +49,7 @@ namespace expr
           }
 
         private:
-          static bool
+          static inline bool
           partially_match (const key_type & lhs, const key_type & rhs)
           {
             typedef key_type::const_iterator key_iter;
@@ -94,11 +95,10 @@ namespace expr
             {
               b.r = boost::apply_visitor (*this, b.r);
 
-              //! \note If the left hand side never got referenced
-              // below, let us be the right hand side. Else, mark,
-              // that there is an assignment somewhere and stay
-              // unchanged, except for removing the ssa numbering on
-              // the left hand side.
+              // If the left hand side never got referenced below, let us be
+              // the right hand side. Else, mark that there is an assignment
+              // somewhere and stay unchanged, except for removing the ssa
+              // numbering on the left hand side.
 
               key_type lhs (boost::get<key_type> (b.l));
 
@@ -154,7 +154,9 @@ namespace expr
 
         while (it != list.rend())
         {
-          detail::dead_code_elimination_and_unnumbering_pass visitor (referenced_names);
+          detail::dead_code_elimination_and_unnumbering_pass visitor
+              (referenced_names);
+
           *it = boost::apply_visitor (visitor, *it);
 
           if (!visitor.had_assignment_somewhere ())
