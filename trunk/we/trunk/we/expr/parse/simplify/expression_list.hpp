@@ -4,6 +4,7 @@
 #define _EXPR_PARSE_SIMPLIFY_EXPRESSION_LIST_HPP 1
 
 #include <we/expr/parse/parser.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace expr
 {
@@ -11,42 +12,38 @@ namespace expr
   {
     namespace simplify
     {
-      struct expression_list
+      class expression_list : boost::noncopyable
       {
-        typedef parser::nd_stack_t node_stack_t;
-        typedef node_stack_t::value_type node_t;
-        typedef node_stack_t::iterator node_stack_it_t;
-        typedef node_stack_t::reverse_iterator node_stack_r_it_t;
-        typedef node_stack_t::const_iterator node_stack_const_it_t;
+      public:
+        typedef parser::nd_stack_t nodes_type;
 
       private:
-        node_stack_t _node_stack;
+        nodes_type _nodes;
 
       public:
-        const node_stack_t& node_stack() const
-        {
-          return _node_stack;
-        }
-
         explicit expression_list (const parser & p)
-        : _node_stack (p.begin(), p.end())
+        : _nodes (p.begin(), p.end())
         {}
 
-        node_stack_it_t begin () { return _node_stack.begin(); }
-        node_stack_it_t end () { return _node_stack.end(); }
-        node_stack_r_it_t rbegin () { return _node_stack.rbegin(); }
-        node_stack_r_it_t rend () { return _node_stack.rend(); }
-
-        node_stack_const_it_t begin () const { return _node_stack.begin(); }
-        node_stack_const_it_t end () const { return _node_stack.end(); }
-
-        node_stack_it_t erase (const node_stack_it_t & it)
+        const nodes_type & nodes() const
         {
-          return _node_stack.erase (it);
+          return _nodes;
         }
-        void insert (const node_stack_it_t & it, node_t & value)
+
+        nodes_type::iterator begin () { return _nodes.begin(); }
+        nodes_type::iterator end () { return _nodes.end(); }
+        nodes_type::reverse_iterator rbegin () { return _nodes.rbegin(); }
+        nodes_type::reverse_iterator rend () { return _nodes.rend(); }
+        nodes_type::const_iterator begin () const { return _nodes.begin(); }
+        nodes_type::const_iterator end () const { return _nodes.end(); }
+
+        nodes_type::iterator erase (const nodes_type::iterator & it)
         {
-          _node_stack.insert (it, value);
+          return _nodes.erase (it);
+        }
+        void insert (const nodes_type::iterator & it, nodes_type::value_type & value)
+        {
+          _nodes.insert (it, value);
         }
       };
     }
