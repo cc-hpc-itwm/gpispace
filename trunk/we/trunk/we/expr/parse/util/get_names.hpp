@@ -24,17 +24,17 @@ namespace expr
         class get_names : public boost::static_visitor<void>
         {
         private:
-          name_set_t * _names;
+          name_set_t & _names;
 
         public:
-          get_names (name_set_t * names) : _names (names) {}
+          get_names (name_set_t & names) : _names (names) {}
 
           void operator () (const value::type &) const
           {}
 
           void operator () (const node::key_vec_t & key) const
           {
-            _names->insert (key);
+            _names.insert (key);
           }
 
           void operator () (const node::unary_t & u) const
@@ -57,17 +57,17 @@ namespace expr
         };
       }
 
-      static name_set_t
+      inline name_set_t
       get_names (const node::type & nd)
       {
         name_set_t names;
 
-        boost::apply_visitor (detail::get_names (&names), nd);
+        boost::apply_visitor (detail::get_names (names), nd);
 
         return names;
       }
 
-      static name_set_t
+      inline name_set_t
       get_names (const parser & p)
       {
         name_set_t names;
@@ -76,13 +76,13 @@ namespace expr
             ; it != end
             ; ++it )
         {
-          boost::apply_visitor (detail::get_names (&names), *it);
+          boost::apply_visitor (detail::get_names (names), *it);
         }
 
         return names;
       }
 
-      static std::string
+      inline std::string
       write_key_vec (const name_set_t::value_type & vec)
       {
         std::string name;
@@ -98,6 +98,25 @@ namespace expr
           }
         }
         return name;
+      }
+
+      inline node::key_vec_t
+      get_normal_name (node::key_vec_t ssa_name)
+      {
+        if (ssa_name[1] == ".temp")
+        {
+          ssa_name.erase (ssa_name.begin());
+          return ssa_name;
+        }
+
+        //! \note Yes, a size_t would be nicer, but would get termination-problems.
+        signed long i = ssa_name.size() - 1;
+        while (i >= 0)
+        {
+          ssa_name.erase (ssa_name.begin() + i);
+          i -= 2;
+        }
+        return ssa_name;
       }
     }
   }
