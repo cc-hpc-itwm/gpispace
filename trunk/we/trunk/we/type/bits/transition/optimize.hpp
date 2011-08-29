@@ -17,6 +17,8 @@
 
 #include <fhg/util/maybe.hpp>
 
+#include <we/expr/parse/util/get_names.hpp>
+
 namespace we
 {
   namespace type
@@ -28,12 +30,34 @@ namespace we
         template<typename Trans>
         class simplify_expression_sequences : public boost::static_visitor<bool>
         {
+        private:
+          typedef typename Trans::port_names_t port_names_t;
+          port_names_t _outport_names;
+
         public:
+          simplify_expression_sequences (const port_names_t & outport_names)
+            : _outport_names (outport_names)
+          {}
+
           bool operator () (module_call_t &) const { return false; }
 
           bool operator () (expression_t & expr) const
           {
-            return expr.simplify();
+            expr::parse::util::name_set_t needed_bindings;
+
+            for ( typename port_names_t::const_iterator name (_outport_names.begin())
+                ; name != _outport_names.end()
+                ; ++name
+                )
+              {
+                expr::parse::util::name_set_t::value_type val;
+
+                val.push_back (*name);
+
+                needed_bindings.insert (val);
+              }
+
+            return expr.simplify(needed_bindings);
           }
 
           template<typename P, typename E, typename T>
@@ -62,7 +86,11 @@ namespace we
                 transition_t trans (net.get_transition (tid));
 
                 const bool trans_modified
-                  (boost::apply_visitor (*this, trans.data()));
+                  ( boost::apply_visitor
+                    ( simplify_expression_sequences(trans.port_names(PORT_OUT))
+                    , trans.data()
+                    )
+                  );
 
                 if (trans_modified)
                   {
@@ -160,7 +188,8 @@ namespace we
           |
           (  opts.simplify_expression_sequences()
           && boost::apply_visitor
-             ( visitor::simplify_expression_sequences<transition_t>()
+             ( visitor::simplify_expression_sequences<transition_t>
+               (t.port_names(PORT_OUT))
              , t.data()
              )
           )

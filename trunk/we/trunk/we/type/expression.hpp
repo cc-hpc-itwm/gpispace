@@ -21,6 +21,7 @@
 
 #include <string>
 #include <we/expr/parse/parser.hpp>
+#include <we/expr/parse/util/get_names.hpp>
 
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -51,11 +52,35 @@ namespace we { namespace type {
     const ast_t & ast () const { return ast_; }
     bool is_empty () const { return expr_ == ""; }
 
-    bool simplify ()
+    bool simplify (const expr::parse::util::name_set_t & needed_bindings)
     {
       bool modified (false);
 
       std::cerr << "SIMPLIFY-EXPRESSION-SEQUENCES: NOT YET IMPLEMENTED"
+                << std::endl
+                << "### Needed bindings"
+                << std::endl
+        ;
+
+      for ( expr::parse::util::name_set_t::const_iterator n (needed_bindings.begin())
+          ; n != needed_bindings.end()
+          ; ++n
+          )
+        {
+          for ( expr::parse::util::name_set_t::value_type::const_iterator f (n->begin())
+              ; f != n->end()
+              ; ++f
+              )
+            {
+              std::cerr << "+"
+                        << ((f != n->begin()) ? "." : " ")
+                        << *f
+                        << std::endl
+                ;
+            }
+        }
+
+      std::cerr << "### Expression sequence: "
                 << std::endl
                 << expression()
                 << std::endl
