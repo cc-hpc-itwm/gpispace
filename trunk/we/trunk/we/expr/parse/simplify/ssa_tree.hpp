@@ -140,7 +140,7 @@ namespace expr
             return insert_child (pos, end);
           }
 
-          const line_type &
+          line_type
           get_line_of ( const key_type::const_iterator & number
                       , const key_type::const_iterator & end
                       , const line_type & last_parent_line
@@ -253,7 +253,7 @@ namespace expr
             return get_entry (key.begin (), key.end ())->_values.back().second;
           }
 
-          inline const line_type &
+          inline line_type
           get_line_of (const key_type & key)
           {
             return get_line_of (key.begin (), key.end (), line_type());
