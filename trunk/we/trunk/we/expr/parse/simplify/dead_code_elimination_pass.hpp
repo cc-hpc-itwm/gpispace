@@ -17,15 +17,15 @@ namespace expr
     {
       namespace detail
       {
-        class dead_code_elimination_pass
+        class dead_code_elimination_and_unnumbering_pass
           : public boost::static_visitor<node::type>
         {
         private:
-          util::name_set_t* _referenced_names;
+          util::name_set_t & _referenced_names;
           mutable bool _has_assignment_somewhere;
 
         public:
-          dead_code_elimination_pass (util::name_set_t * referenced_names)
+          dead_code_elimination_and_unnumbering_pass (util::name_set_t & referenced_names)
             : _referenced_names (referenced_names)
             , _has_assignment_somewhere (false)
           {}
@@ -35,10 +35,10 @@ namespace expr
             return t;
           }
 
-          node::type operator () (const node::key_vec_t & t) const
+          node::type operator () (const key_type & key) const
           {
-            _referenced_names->insert (t);
-            return t;
+            _referenced_names.insert (key);
+            return util::get_normal_name (key);
           }
 
           node::type operator () (node::unary_t & u) const
@@ -49,9 +49,9 @@ namespace expr
 
         private:
           static bool
-          partially_match (const node::key_vec_t & lhs, const node::key_vec_t & rhs)
+          partially_match (const key_type & lhs, const key_type & rhs)
           {
-            typedef node::key_vec_t::const_iterator key_iter;
+            typedef key_type::const_iterator key_iter;
             key_iter lhs_it (lhs.begin ()), lhs_end (lhs.end ());
             key_iter rhs_it (rhs.begin ()), rhs_end (rhs.end ());
 
@@ -68,13 +68,13 @@ namespace expr
             return true;
           }
 
-          bool variable_or_member_referenced (const node::key_vec_t & k) const
+          bool variable_or_member_referenced (const key_type & k) const
           {
-            if (_referenced_names->count (k))
+            if (_referenced_names.count (k))
               return true;
 
-            for ( util::name_set_t::const_iterator it (_referenced_names->begin ())
-                  , end (_referenced_names->end ())
+            for ( util::name_set_t::const_iterator it (_referenced_names.begin ())
+                  , end (_referenced_names.end ())
                 ; it != end
                 ; ++it
                 )
@@ -96,13 +96,17 @@ namespace expr
 
               //! \note If the left hand side never got referenced below, let  \
                         us be the right hand side. Else, mark, that there is   \
-                        an assignment somewhere and stay unchanged.
+                        an assignment somewhere and stay unchanged, except for \
+                        removing the ssa numbering on the left hand side.
 
-              if (!variable_or_member_referenced (boost::get<node::key_vec_t> (b.l)))
+              key_type lhs (boost::get<key_type> (b.l));
+
+              if (!variable_or_member_referenced (lhs))
               {
                 return b.r;
               }
 
+              b.l = util::get_normal_name (lhs);
               _has_assignment_somewhere = true;
             }
             else
@@ -138,21 +142,23 @@ namespace expr
       }
 
       inline void
-      dead_code_elimination_pass ( expression_list & list
+      dead_code_elimination_and_unnumbering_pass ( expression_list & list
                                  , const util::name_set_t & needed_bindings_ssa
                                  )
       {
         util::name_set_t referenced_names (needed_bindings_ssa);
 
-        expression_list::node_stack_r_it_t it (list.rbegin());
+        typedef expression_list::nodes_type::reverse_iterator reverse_iter;
+        reverse_iter it (list.rbegin());
+
         while (it != list.rend())
         {
-          detail::dead_code_elimination_pass visitor (&referenced_names);
+          detail::dead_code_elimination_and_unnumbering_pass visitor (referenced_names);
           *it = boost::apply_visitor (visitor, *it);
 
           if (!visitor.had_assignment_somewhere ())
           {
-            it = expression_list::node_stack_r_it_t (list.erase (--it.base()));
+            it = reverse_iter (list.erase (--it.base()));
           }
           else
           {
