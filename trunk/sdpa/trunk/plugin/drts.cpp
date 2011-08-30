@@ -266,6 +266,12 @@ public:
       master_it->second->reset_poll_rate();
 
       m_connected_event.notify(master_it->second->name());
+
+      // simulate
+      {
+        lock_type lock(m_job_arrived_mutex);
+        m_job_arrived.notify_all();
+      }
     }
   }
   virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent *e)
