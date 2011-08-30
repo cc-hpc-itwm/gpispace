@@ -342,22 +342,23 @@ public:
   virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
   {
     // check master
+    map_of_masters_t::const_iterator master (m_masters.find(e->from()));
+
+    if (master == m_masters.end())
     {
-      map_of_masters_t::const_iterator master (m_masters.find(e->from()));
-      if (master == m_masters.end())
-      {
-        LOG(ERROR, "got SubmitJob from unknown source: " << e->from());
-      }
-      else if (! master->second->is_connected())
-      {
-        LOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
-        send_event (new sdpa::events::ErrorEvent( m_my_name
-                                                , e->from()
-                                                , sdpa::events::ErrorEvent::SDPA_EPERM
-                                                , "you are not allowed yet connected"
-                                                )
-                   );
-      }
+      LOG(ERROR, "got SubmitJob from unknown source: " << e->from());
+      return;
+    }
+    else if (! master->second->is_connected())
+    {
+      LOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
+      send_event (new sdpa::events::ErrorEvent( m_my_name
+                                              , e->from()
+                                              , sdpa::events::ErrorEvent::SDPA_EPERM
+                                              , "you are not yet connected"
+                                              )
+                 );
+      return;
     }
 
     job_ptr_t job (new drts::Job( drts::Job::ID(e->job_id())
@@ -388,14 +389,14 @@ public:
                                                        , "empy-message-id"
                                                        )
                    );
-
+        master->second->reset_poll_rate();
         m_jobs.insert (std::make_pair(job->id(), job));
         m_pending_jobs.put(job);
-
-        lock_type lock(m_job_arrived_mutex);
-        m_job_arrived.notify_all();
       }
     }
+
+    //    lock_type lock(m_job_arrived_mutex);
+    m_job_arrived.notify_all();
   }
 
   // not implemented events
@@ -460,6 +461,9 @@ private:
       boost::posix_time::time_duration min_sleep_time
         (boost::posix_time::minutes(5));
 
+      const boost::posix_time::ptime now
+        (boost::posix_time::microsec_clock::universal_time());
+
       for ( map_of_masters_t::const_iterator master_it (m_masters.begin())
           ; master_it != m_masters.end()
           ; ++master_it
@@ -472,12 +476,12 @@ private:
         {
           at_least_one_connected = true;
 
-          if (  boost::posix_time::microsec_clock::universal_time()
-             >= (master->last_job_rqst() + master->cur_poll_interval())
-             )
-          {
+          const boost::posix_time::ptime time_of_next_request
+            (master->last_job_rqst() + master->cur_poll_interval());
 
-            LOG(TRACE, "requesting job from " << master->name());
+          if (now >= time_of_next_request)
+          {
+            DLOG(TRACE, "requesting job from " << master->name());
 
             send_event(new sdpa::events::RequestJobEvent( m_my_name
                                                         , master->name()
@@ -485,11 +489,13 @@ private:
                       );
             master->job_requested();
             master->update_send();
+          }
 
-            if (master->cur_poll_interval() < min_sleep_time)
-            {
-              min_sleep_time = master->cur_poll_interval();
-            }
+          boost::posix_time::time_duration delta_to_next_request
+            (time_of_next_request - now);
+          if (delta_to_next_request < min_sleep_time )
+          {
+            min_sleep_time = delta_to_next_request;
           }
         }
       }
@@ -497,15 +503,16 @@ private:
       if (! at_least_one_connected)
       {
         std::string m;
+        LOG(TRACE, "no body is connected, going to sleep...");
         m_connected_event.wait(m);
-        LOG(INFO, "requestor awaken!");
+        LOG(TRACE, "starting to request jobs...");
       }
       else
       {
         // job arrived and computed?
         lock_type lock(m_job_arrived_mutex);
         m_job_arrived.timed_wait ( lock
-                                 , boost::get_system_time() + min_sleep_time
+                                 , now + min_sleep_time
                                  )
                                  ;
       }
@@ -555,9 +562,11 @@ private:
 
 
           }
-          // mark job as done
-          //     send jobfinished
-          //     note: regularly resend finished job notifications
+
+          {
+            lock_type lock(m_job_computed_mutex);
+            m_job_computed.notify_one();
+          }
         }
         catch (std::exception const & ex)
         {

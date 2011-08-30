@@ -35,6 +35,7 @@ fhg_add_plugin(wfe wfe.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${WE_PRECOMPILE_LIBRARIES}
                  ${BOOST_ROOT}/lib/libboost_serialization.so
+                 ${BOOST_ROOT}/lib/libboost_filesystem.so
 )
 
 install(FILES wfe.hpp DESTINATION include/plugins COMPONENT headers)
