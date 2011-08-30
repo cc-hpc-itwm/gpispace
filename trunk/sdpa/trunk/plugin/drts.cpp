@@ -528,6 +528,7 @@ private:
                                                     , master->name()
                                                     )
           );
+        evt->capacity() = m_backlog_size;
         sdpa::uuidgen gen;
 
         // foreach capability:
