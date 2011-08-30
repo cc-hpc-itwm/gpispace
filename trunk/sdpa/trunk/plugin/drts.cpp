@@ -56,7 +56,15 @@ public:
   {
     m_shutting_down = false;
     m_my_name =      fhg_kernel()->get("name", "drts");
-    m_backlog_size = boost::lexical_cast<size_t>(fhg_kernel()->get("backlog", "3"));
+    try
+    {
+      m_backlog_size = boost::lexical_cast<size_t>(fhg_kernel()->get("backlog", "3"));
+    }
+    catch (std::exception const &ex)
+    {
+      LOG(ERROR, "could not parse backlog size: " << fhg_kernel()->get("backlog", "3") << ": " << ex.what());
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
 
     m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
     if (0 == m_wfe)
