@@ -12,6 +12,8 @@ namespace kvs
     typedef std::string key_type;
     typedef std::string value_type;
 
+    virtual ~KeyValueStore() {}
+
     virtual value_type get(key_type const & k, value_type const &dflt) const = 0;
     virtual void       put(key_type const & k, value_type const &value) = 0;
     virtual void       del(key_type const & k) = 0;
