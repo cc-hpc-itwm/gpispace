@@ -10,6 +10,7 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/plugin/capability.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -149,9 +150,9 @@ public:
 
   FHG_ON_PLUGIN_LOADED(plugin)
   {
-    if ("gpi" == plugin)
+    if (fhg::plugin::Capability* cap = fhg_kernel()->acquire<fhg::plugin::Capability>(plugin))
     {
-      LOG(INFO, "gained capability: gpi");
+      LOG(INFO, "gained capability: " << cap->capability_name() << " of type " << cap->capability_type());
     }
   }
 

@@ -1,17 +1,22 @@
 #include <fhglog/minimal.hpp>
 
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/plugin/capability.hpp>
 #include "gpi.hpp"
 
 #include <gpi-space/pc/client/api.hpp>
 
 class GpiPluginImpl : FHG_PLUGIN
                     , public gpi::GPI
+                    , public fhg::plugin::Capability
 {
 public:
   GpiPluginImpl()
     : api ("")
   {}
+
+  const char * capability_name () { return "GPI";  }
+  const char * capability_type () { return "PGAS"; }
 
   FHG_PLUGIN_START()
   {
