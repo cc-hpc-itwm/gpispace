@@ -1,6 +1,7 @@
 #include "drts.hpp"
 #include "master.hpp"
 #include "job.hpp"
+#include "wfe.hpp"
 
 #include <errno.h>
 
@@ -56,6 +57,13 @@ public:
     m_shutting_down = false;
     m_my_name =      fhg_kernel()->get("name", "drts");
     m_backlog_size = boost::lexical_cast<size_t>(fhg_kernel()->get("backlog", "3"));
+
+    m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
+    if (0 == m_wfe)
+    {
+      LOG(ERROR, "could not access workflow-engine plugin!");
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
 
     assert (! m_event_thread);
 
@@ -156,6 +164,8 @@ public:
 
     m_peer_thread.reset();
     m_peer.reset();
+
+    m_wfe = 0;
 
     FHG_PLUGIN_STOPPED();
   }
@@ -642,6 +652,8 @@ private:
 
   bool m_shutting_down;
 
+  wfe::WFE *m_wfe;
+
   boost::shared_ptr<boost::thread>    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
@@ -676,6 +688,6 @@ EXPORT_FHG_PLUGIN( drts
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "v.0.0.1"
                  , "NA"
-                 , "kvs"
+                 , "kvs,wfe"
                  , ""
                  );
