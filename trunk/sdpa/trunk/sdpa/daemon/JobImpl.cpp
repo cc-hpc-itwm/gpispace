@@ -104,7 +104,7 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& evt)
     {
-      LOG(TRACE, "acknowledged cancelling job " << evt.id());
+      LOG(TRACE, "acknowledged cancelling job " << id());
     }
 
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
