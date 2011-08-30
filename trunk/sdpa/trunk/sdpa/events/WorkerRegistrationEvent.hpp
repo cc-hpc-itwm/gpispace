@@ -54,23 +54,25 @@ namespace sdpa { namespace events {
       { }
 
       WorkerRegistrationEvent( const WorkerRegistrationEvent& regEvt )
+        : MgmtEvent (regEvt)
       {
     	  capacity_ 	 = regEvt.capacity_;
     	  cpbset_ 		 = regEvt.cpbset_;
     	  agent_uuid_ 	 = regEvt.agent_uuid_;
 	  }
 
-      WorkerRegistrationEvent& operator=( const WorkerRegistrationEvent& regEvt )
-	  {
-    	  if(this != &regEvt)
-    	  {
-			  capacity_ 	 = regEvt.capacity_;
-			  cpbset_ 		 = regEvt.cpbset_;
-			  agent_uuid_ 	 = regEvt.agent_uuid_;
-    	  }
+    WorkerRegistrationEvent& operator=( const WorkerRegistrationEvent& regEvt )
+    {
+      if(this != &regEvt)
+      {
+        *((MgmtEvent*)(this)) = (MgmtEvent&)(regEvt);
+        capacity_ 	 = regEvt.capacity_;
+        cpbset_ 		 = regEvt.cpbset_;
+        agent_uuid_ 	 = regEvt.agent_uuid_;
+      }
 
-		  return *this;
-	  }
+      return *this;
+    }
 
       virtual ~WorkerRegistrationEvent() { }
 
