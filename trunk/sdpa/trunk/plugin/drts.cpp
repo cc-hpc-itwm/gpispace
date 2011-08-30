@@ -51,6 +51,8 @@ class DRTSImpl : FHG_PLUGIN
   typedef fhg::thread::queue< job_ptr_t
                             , std::list
                             > job_queue_t;
+
+  typedef std::map<std::string, fhg::plugin::Capability*> map_of_capabilities_t;
 public:
   FHG_PLUGIN_START()
   {
@@ -183,6 +185,8 @@ public:
     if (fhg::plugin::Capability* cap = fhg_kernel()->acquire<fhg::plugin::Capability>(plugin))
     {
       LOG(INFO, "gained capability: " << cap->capability_name() << " of type " << cap->capability_type());
+      lock_type cap_lock(m_capabilities_mutex);
+      m_capabilities.insert (std::make_pair(cap->capability_name(), cap));
     }
   }
 
@@ -192,10 +196,13 @@ public:
 
   FHG_ON_PLUGIN_PREUNLOAD(plugin)
   {
-    if ("gpi" == plugin)
+    lock_type cap_lock(m_capabilities_mutex);
+    map_of_capabilities_t::iterator cap(m_capabilities.find(plugin));
+    if (cap != m_capabilities.end())
     {
-      LOG(INFO, "lost capability: gpi");
-
+      LOG(INFO, "lost capability: " << plugin);
+      LOG(WARN, "TODO: make sure none of jobs make use of this capability");
+      m_capabilities.erase(cap);
     }
   }
 
@@ -267,7 +274,7 @@ public:
 
       m_connected_event.notify(master_it->second->name());
 
-      // simulate
+      // simulate a new job to wake up requestor thread if necessary
       {
         lock_type lock(m_job_arrived_mutex);
         m_job_arrived.notify_all();
@@ -353,7 +360,7 @@ public:
       }
     }
 
-    job_ptr_t job (new drts::Job( drts::Job::ID(e->id())
+    job_ptr_t job (new drts::Job( drts::Job::ID(e->job_id())
                                 , drts::Job::Description(e->description())
                                 , drts::Job::Owner(e->from())
                                 )
@@ -361,16 +368,33 @@ public:
 
     {
       lock_type job_map_lock(m_job_map_mutex);
-      m_jobs.insert (std::make_pair(job->id(), job));
-    }
 
-    {
-      m_pending_jobs.put(job);
-    }
+      if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
+      {
+        LOG(WARN, "cannot accept new jobs, backlog is full.");
+        send_event (new sdpa::events::ErrorEvent( m_my_name
+                                                , e->from()
+                                                , sdpa::events::ErrorEvent::SDPA_EBUSY
+                                                , "I am busy right now, please try again later"
+                                                )
+                   );
+        return;
+      }
+      else
+      {
+        send_event (new sdpa::events::SubmitJobAckEvent( m_my_name
+                                                       , job->owner()
+                                                       , job->id()
+                                                       , "empy-message-id"
+                                                       )
+                   );
 
-    {
-      lock_type lock(m_job_arrived_mutex);
-      m_job_arrived.notify_all();
+        m_jobs.insert (std::make_pair(job->id(), job));
+        m_pending_jobs.put(job);
+
+        lock_type lock(m_job_arrived_mutex);
+        m_job_arrived.notify_all();
+      }
     }
   }
 
@@ -502,12 +526,35 @@ private:
 
         try
         {
-          /*
-            int ec = m_wfe->execute( job->description()
-                                   , m_capabilities
-                                   , result
-                                   );
-          */
+          std::string result;
+          int ec = m_wfe->execute ( job->id()
+                                  , job->description()
+                                  , m_capabilities
+                                  , result
+                                  // TODO: walltime
+                                  );
+          if (ec)
+          {
+            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::FAILED);
+            send_event (new sdpa::events::JobFailedEvent ( m_my_name
+                                                         , job->owner()
+                                                         , job->id()
+                                                         , result
+                                                         )
+                       );
+          }
+          else
+          {
+            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::FINISHED);
+            send_event (new sdpa::events::JobFinishedEvent ( m_my_name
+                                                           , job->owner()
+                                                           , job->id()
+                                                           , result
+                                                           )
+                       );
+
+
+          }
           // mark job as done
           //     send jobfinished
           //     note: regularly resend finished job notifications
@@ -688,12 +735,14 @@ private:
 
   fhg::util::thread::event<std::string> m_connected_event;
 
+  mutable mutex_type m_capabilities_mutex;
+  map_of_capabilities_t m_capabilities;
+
   // jobs + their states
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
   job_queue_t m_pending_jobs;
 
-  // workflow engine
   // module loader
 };
 
