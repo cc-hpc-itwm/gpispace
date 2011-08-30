@@ -301,14 +301,6 @@ public:
   {
   }
 
-  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *)
-  {
-  }
-
-  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *)
-  {
-  }
-
   virtual void handleConfigNokEvent(const sdpa::events::ConfigNokEvent *)
   {
   }
@@ -399,15 +391,110 @@ public:
     m_job_arrived.notify_all();
   }
 
+  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
+  {
+    // locate the job
+    lock_type job_map_lock (m_job_map_mutex);
+    map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+    if (job_it == m_jobs.end())
+    {
+      LOG(ERROR, "could not cancel job: " << e->job_id() << ": not found");
+      send_event (new sdpa::events::ErrorEvent( m_my_name
+                                              , e->from()
+                                              , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                              , "could not find job " + std::string(e->job_id())
+                                              )
+                 );
+      return;
+    }
+    else if (job_it->second->owner() != e->from())
+    {
+      LOG(ERROR, "could not cancel job: " << e->job_id() << ": not owner");
+      send_event (new sdpa::events::ErrorEvent( m_my_name
+                                              , e->from()
+                                              , sdpa::events::ErrorEvent::SDPA_EPERM
+                                              , "you are not the owner of job " + std::string(e->job_id())
+                                              )
+                 );
+      return;
+    }
+
+    LOG(TRACE, "trying to cancel job " << e->job_id());
+    m_wfe->cancel (e->job_id());
+  }
+
+  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
+  {
+    // locate the job
+    lock_type job_map_lock (m_job_map_mutex);
+    map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+    if (job_it == m_jobs.end())
+    {
+      LOG(ERROR, "could not acknowledge failed job: " << e->job_id() << ": not found");
+      send_event (new sdpa::events::ErrorEvent( m_my_name
+                                              , e->from()
+                                              , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                              , "could not find job " + std::string(e->job_id())
+                                              )
+                 );
+      return;
+    }
+    else if (job_it->second->owner() != e->from())
+    {
+      LOG(ERROR, "could not acknowledge failed job: " << e->job_id() << ": not owner");
+      send_event (new sdpa::events::ErrorEvent( m_my_name
+                                              , e->from()
+                                              , sdpa::events::ErrorEvent::SDPA_EPERM
+                                              , "you are not the owner of job " + std::string(e->job_id())
+                                              )
+                 );
+      return;
+    }
+
+    LOG(TRACE, "removing job " << e->job_id());
+    m_jobs.erase (job_it);
+  }
+
+  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e)
+  {
+    // locate the job
+    lock_type job_map_lock (m_job_map_mutex);
+    map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+    if (job_it == m_jobs.end())
+    {
+      LOG(ERROR, "could not acknowledge finished job: " << e->job_id() << ": not found");
+      send_event (new sdpa::events::ErrorEvent( m_my_name
+                                              , e->from()
+                                              , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                              , "could not find job " + std::string(e->job_id())
+                                              )
+                 );
+      return;
+    }
+    else if (job_it->second->owner() != e->from())
+    {
+      LOG(ERROR, "could not acknowledge finished job: " << e->job_id() << ": not owner");
+      send_event (new sdpa::events::ErrorEvent( m_my_name
+                                              , e->from()
+                                              , sdpa::events::ErrorEvent::SDPA_EPERM
+                                              , "you are not the owner of job " + std::string(e->job_id())
+                                              )
+                 );
+      return;
+    }
+
+    LOG(TRACE, "removing job " << e->job_id());
+    m_jobs.erase (job_it);
+  }
+
   // not implemented events
+  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *){}
   virtual void handleConfigOkEvent(const sdpa::events::ConfigOkEvent *) {}
   virtual void handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent *) {}
   virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent *) {}
   virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}
   virtual void handleInterruptEvent(const sdpa::events::InterruptEvent *){}
-  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *){}
   virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
-  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *) {}
   virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *) {}
   virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}
   virtual void handleJobStatusReplyEvent(const sdpa::events::JobStatusReplyEvent *) {}
@@ -540,7 +627,7 @@ private:
                                   , result
                                   // TODO: walltime
                                   );
-          if (ec)
+          if (ec > 0)
           {
             job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::FAILED);
             send_event (new sdpa::events::JobFailedEvent ( m_my_name
@@ -549,6 +636,22 @@ private:
                                                          , result
                                                          )
                        );
+          }
+          else if (ec < 0)
+          {
+            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::CANCELLED);
+            send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
+                                                            , job->owner()
+                                                            , job->id()
+                                                            , result
+                                                            )
+                       );
+
+            lock_type job_map_lock (m_job_map_mutex);
+            map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
+            assert (job_it != m_jobs.end());
+            LOG(TRACE, "removing job " << job->id());
+            m_jobs.erase(job_it);
           }
           else
           {

@@ -48,10 +48,13 @@ struct search_path_appender
 class WFEImpl : FHG_PLUGIN
               , public wfe::WFE
 {
+  typedef boost::mutex mutex_type;
+  typedef boost::unique_lock<mutex_type> lock_type;
+
   typedef fhg::thread::queue< wfe_task_t *
                             , std::list
                             > task_list_t;
-
+  typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
   virtual ~WFEImpl() {}
 
@@ -76,6 +79,12 @@ public:
       {
         LOG(INFO, "initialized loader with search path: " << search_path);
       }
+
+      // TODO: figure out, why this doesn't work as it is supposed to
+      // adjust ld_library_path
+      std::string ld_library_path (fhg::util::getenv("LD_LIBRARY_PATH", ""));
+      ld_library_path = search_path + ":" + ld_library_path;
+      setenv("LD_LIBRARY_PATH", ld_library_path.c_str(), true);
     }
 
     m_worker.reset(new boost::thread(&WFEImpl::execution_thread, this));
@@ -109,13 +118,19 @@ public:
 
     MLOG(INFO, "executing...");
 
+    wfe_task_t task;
+    task.state = wfe_task_t::PENDING;
+    task.id = job_id;
+    task.capabilities = capabilities;
+
+    {
+      lock_type task_map_lock(m_mutex);
+      m_task_map.insert(std::make_pair(job_id, &task));
+    }
+
     try
     {
-      wfe_task_t task;
-      task.state = wfe_task_t::PENDING;
-      task.id = job_id;
       task.activity = we::util::text_codec::decode<we::activity_t>(job_description);
-      task.capabilities = capabilities;
 
       m_tasks.put(&task);
 
@@ -124,8 +139,8 @@ public:
         LOG(INFO, "task has a walltime of " << walltime);
         if (! task.done.timed_wait(ec, boost::get_system_time()+walltime))
         {
-          task.state = wfe_task_t::CANCELED;
-          ec = -ETIMEDOUT;
+          task.state = wfe_task_t::FAILED;
+          ec = ETIMEDOUT;
         }
       }
       else
@@ -136,18 +151,32 @@ public:
       if (0 == ec)
       {
         MLOG(INFO, "task finished: " << task.id);
+        task.state = wfe_task_t::FINISHED;
         result = task.result;
+      }
+      else if (ec < 0)
+      {
+        MLOG(WARN, "task canceled: " << task.id << ": " << strerror(-ec) << ": " << task.result);
+        task.state = wfe_task_t::CANCELED;
+        result = task.result; //we::util::text_codec::encode(task.activity);
       }
       else
       {
-        MLOG(WARN, "task failed: " << task.id << ": " << strerror(-ec) << ": " << task.result);
+        MLOG(WARN, "task failed: " << task.id << ": " << task.result);
+        task.state = wfe_task_t::FAILED;
         result = task.result; //we::util::text_codec::encode(task.activity);
       }
     }
     catch (std::exception const & ex)
     {
       LOG(ERROR, "could not parse activity: " << ex.what());
-      return -EINVAL;
+      task.state = wfe_task_t::FAILED;
+      ec = EINVAL;
+    }
+
+    {
+      lock_type task_map_lock(m_mutex);
+      m_task_map.erase (job_id);
     }
 
     return ec;
@@ -155,7 +184,18 @@ public:
 
   int cancel (std::string const &job_id)
   {
-    return -ESRCH;
+    lock_type job_map_lock(m_mutex);
+    map_of_tasks_t::iterator task_it (m_task_map.find(job_id));
+    if (task_it == m_task_map.end())
+    {
+      return -ESRCH;
+    }
+    else
+    {
+      task_it->second->state = wfe_task_t::CANCELED;
+    }
+
+    return 0;
   }
 private:
   void execution_thread ()
@@ -173,20 +213,30 @@ private:
         try
         {
           task->activity.execute (ctxt);
-          task->result = we::util::text_codec::encode(task->activity);
-          task->done.notify(0);
+          if (task->state == wfe_task_t::FINISHED)
+          {
+            task->result = we::util::text_codec::encode(task->activity);
+            task->done.notify(0);
+          }
+          else if (task->state == wfe_task_t::CANCELED)
+          {
+            task->result = "cancelled";
+            task->done.notify(-ECANCELED);
+          }
         }
         catch (std::exception const & ex)
         {
           task->result = ex.what();
-          task->done.notify(-EFAULT);
+          task->done.notify(1);
         }
       }
     }
   }
 
-  we::loader::loader::ptr_t m_loader;
+  mutable mutex_type m_mutex;
+  map_of_tasks_t m_task_map;
   task_list_t m_tasks;
+  we::loader::loader::ptr_t m_loader;
   boost::shared_ptr<boost::thread> m_worker;
 };
 
