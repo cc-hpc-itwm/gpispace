@@ -233,6 +233,7 @@ public:
     {
       LOG(INFO, "successfully connected to " << master_it->second->name());
       master_it->second->is_connected(true);
+      master_it->second->reset_poll_rate();
 
       m_connected_event.notify(master_it->second->name());
     }
@@ -295,8 +296,42 @@ public:
   {
   }
 
-  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *)
+  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
   {
+    // check master
+    {
+      map_of_masters_t::const_iterator master (m_masters.find(e->from()));
+      if (master == m_masters.end())
+      {
+        LOG(ERROR, "got SubmitJob from unknown source: " << e->from());
+      }
+      else if (! master->second->is_connected())
+      {
+        LOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
+        send_event (new sdpa::events::ErrorEvent( m_my_name
+                                                , e->from()
+                                                , sdpa::events::ErrorEvent::SDPA_EPERM
+                                                , "you are not allowed yet connected"
+                                                )
+                   );
+      }
+    }
+
+    job_ptr_t job (new drts::Job( drts::Job::ID(e->id())
+                                , drts::Job::Description(e->description())
+                                , drts::Job::Owner(e->from())
+                                )
+                  );
+
+    {
+      lock_type job_map_lock(m_job_map_mutex);
+      m_jobs.insert (std::make_pair(job->id(), job));
+    }
+
+    {
+      m_pending_jobs.put(job);
+    }
+
     {
       lock_type lock(m_job_arrived_mutex);
       m_job_arrived.notify_all();
@@ -571,8 +606,15 @@ private:
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt)
   {
-    LOG(TRACE, "received event: " << evt->str());
-    m_event_queue.put(evt);
+    if (evt)
+    {
+      LOG(TRACE, "received event: " << evt->str());
+      m_event_queue.put(evt);
+    }
+    else
+    {
+      LOG(WARN, "got invalid message from suspicious source");
+    }
   }
 
   bool m_shutting_down;

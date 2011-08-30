@@ -54,7 +54,10 @@ namespace drts
     void job_requested();
 
     bool is_polling () const { return m_polling; }
+    void reset_poll_rate();
+    void decrease_poll_rate();
   private:
+
     mutable mutex_type m_stats_mutex;
 
     // disallow copy construction
@@ -74,6 +77,7 @@ namespace drts
     size_t m_num_jobs_rqst;
 
     bool m_polling;
+    size_t        m_poll_backoff_counter;
     time_duration m_min_poll_interval;
     time_duration m_cur_poll_interval;
     time_duration m_max_poll_interval;

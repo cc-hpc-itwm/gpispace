@@ -29,9 +29,6 @@ namespace drts
       {}
 
       const std::string value;
-    private:
-      ID(ID const &);
-      ID& operator=(ID const &);
     };
 
     struct Description
@@ -41,9 +38,6 @@ namespace drts
       {}
 
       const std::string value;
-    private:
-      Description(Description const &);
-      Description& operator=(Description const &);
     };
 
     struct Owner
@@ -53,9 +47,6 @@ namespace drts
       {}
 
       const std::string value;
-    private:
-      Owner(Owner const &);
-      Owner& operator=(Owner const &);
     };
 
     explicit
