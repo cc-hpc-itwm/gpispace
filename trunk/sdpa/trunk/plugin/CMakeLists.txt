@@ -30,3 +30,15 @@ install(TARGETS kvs-plugin LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins
   )
+
+fhg_add_plugin(wfe wfe.cpp
+  LINK_LIBRARIES ${FhgCom_LIBRARY}
+                 ${WE_PRECOMPILE_LIBRARIES}
+                 ${BOOST_ROOT}/lib/libboost_serialization.so
+)
+
+install(FILES wfe.hpp DESTINATION include/plugins COMPONENT headers)
+install(TARGETS wfe-plugin LIBRARY
+  DESTINATION libexec/plugins
+  COMPONENT plugins
+  )
