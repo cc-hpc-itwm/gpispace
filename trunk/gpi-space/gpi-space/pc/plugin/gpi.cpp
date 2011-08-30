@@ -15,8 +15,13 @@ public:
     : api ("")
   {}
 
-  const char * capability_name () { return "GPI";  }
-  const char * capability_type () { return "PGAS"; }
+  virtual ~GpiPluginImpl()
+  {
+    api.stop();
+  }
+
+  const char * capability_name () const { return "GPI";  }
+  const char * capability_type () const { return "PGAS"; }
 
   FHG_PLUGIN_START()
   {
@@ -32,6 +37,7 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    api.stop();
     FHG_PLUGIN_STOPPED();
   }
 

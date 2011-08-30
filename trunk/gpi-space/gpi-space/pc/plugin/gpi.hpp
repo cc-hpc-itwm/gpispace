@@ -13,6 +13,8 @@ namespace gpi
   class GPI
   {
   public:
+    virtual ~GPI() {}
+
     virtual gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t
                                              , const gpi::pc::type::size_t
                                              , const std::string & desc

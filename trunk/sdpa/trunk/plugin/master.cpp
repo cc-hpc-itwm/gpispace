@@ -31,8 +31,6 @@ namespace drts
 
   void Master::job_received()
   {
-    update_recv();
-
     lock_type lock(m_stats_mutex);
     ++m_num_jobs_recv;
     m_last_job_recv = m_last_recv;
