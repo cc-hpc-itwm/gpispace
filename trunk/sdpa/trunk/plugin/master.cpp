@@ -61,7 +61,7 @@ namespace drts
     if (m_cur_poll_interval < m_max_poll_interval)
     {
       m_cur_poll_interval +=
-        boost::posix_time::milliseconds(std::exp((double)m_poll_backoff_counter/3.0));
+        boost::posix_time::milliseconds((int)(std::exp((double)m_poll_backoff_counter/3.0)));
       if (m_cur_poll_interval > m_max_poll_interval)
         m_cur_poll_interval = m_max_poll_interval;
       ++m_poll_backoff_counter;
