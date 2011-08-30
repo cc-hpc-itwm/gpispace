@@ -57,8 +57,8 @@ namespace we
         value_ = val;
       }
     private:
-      bool mandatory_;
       value_type value_;
+      bool mandatory_;
     };
 
     template <typename T>
