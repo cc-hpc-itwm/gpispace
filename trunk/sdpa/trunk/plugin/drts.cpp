@@ -281,8 +281,14 @@ public:
   {
   }
 
-  virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent *)
+  virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent *e)
   {
+    send_event (new sdpa::events::ErrorEvent( m_my_name
+                                            , e->from()
+                                            , sdpa::events::ErrorEvent::SDPA_EPERM
+                                            , "you are not allowed to request jobs"
+                                            )
+               );
   }
 
   virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent *)
@@ -291,6 +297,10 @@ public:
 
   virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *)
   {
+    {
+      lock_type lock(m_job_arrived_mutex);
+      m_job_arrived.notify_all();
+    }
   }
 
   // not implemented events
@@ -352,31 +362,47 @@ private:
       }
 
       bool at_least_one_connected = false;
-      unsigned long min_sleep_time = 0;
+      boost::posix_time::time_duration min_sleep_time
+        (boost::posix_time::minutes(5));
 
       for ( map_of_masters_t::const_iterator master_it (m_masters.begin())
           ; master_it != m_masters.end()
           ; ++master_it
           )
       {
+        boost::this_thread::interruption_point();
+
         master_ptr master (master_it->second);
         if (master->is_connected() && master->is_polling())
         {
-          boost::this_thread::interruption_point();
-
           at_least_one_connected = true;
 
-          send_event(new sdpa::events::RequestJobEvent( m_my_name
-                                                      , master->name()
-                                                      )
-                    );
-          master->update_send();
+          LOG( INFO
+             , "considering " << master->name()
+             << " now = " << boost::posix_time::microsec_clock::universal_time()
+             << " last = " <<  (master->last_job_rqst())
+             << " poll = " << master->cur_poll_interval()
+             << " diff = " << (master->last_job_rqst() + master->cur_poll_interval())
+             );
+          if (  boost::posix_time::microsec_clock::universal_time()
+             >= (master->last_job_rqst() + master->cur_poll_interval())
+             )
+          {
 
-          //             if last-time-of-recvd-job is long ago
-          //                increase poll-interval
-          //             if shall poll master:
-          //                send job request
-          //                update timestamps
+            LOG(TRACE, "requesting job from " << master->name());
+
+            send_event(new sdpa::events::RequestJobEvent( m_my_name
+                                                        , master->name()
+                                                        )
+                      );
+            master->job_requested();
+            master->update_send();
+
+            if (master->cur_poll_interval() < min_sleep_time)
+            {
+              min_sleep_time = master->cur_poll_interval();
+            }
+          }
         }
       }
 
@@ -386,16 +412,20 @@ private:
         m_connected_event.wait(m);
         LOG(INFO, "requestor awaken!");
       }
+      else
+      {
+        // job arrived and computed?
+        lock_type lock(m_job_arrived_mutex);
+        m_job_arrived.timed_wait ( lock
+                                 , boost::get_system_time() + min_sleep_time
+                                 )
+                                 ;
+      }
 
       // job-requestor:
       //   poll-for-jobs (if #pending jobs < backlog)
       //      foreach connected master:
       //         if polling enabled(master)
-
-      if (m_pending_jobs.size() < m_backlog_size)
-      {
-
-      }
     }
   }
 
@@ -561,6 +591,8 @@ private:
   mutable mutex_type m_job_map_mutex;
   mutable mutex_type m_job_computed_mutex;
   condition_type     m_job_computed;
+  mutable mutex_type m_job_arrived_mutex;
+  condition_type     m_job_arrived;
 
   fhg::util::thread::event<std::string> m_connected_event;
 
