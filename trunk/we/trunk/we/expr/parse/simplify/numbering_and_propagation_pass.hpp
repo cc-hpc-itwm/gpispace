@@ -164,13 +164,9 @@ namespace expr
                 (boost::get<node::key_vec_t> (propagated_node));
 
             const line_type & key_line = _ssa_tree.get_line_of (propagated_key);
-            if (key_line != line_type ())
+            if (key_line != line_type () && is_before (_line, key_line))
             {
-              std::cout << util::write_key_vec(propagated_key) << ": ";
-              if(is_before (_line, key_line))
-              {
                 return create_temp_assignment (key_line, propagated_key);
-              }
             }
             return propagated_key;
           }
