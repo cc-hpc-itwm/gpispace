@@ -58,7 +58,9 @@ namespace drts
     ~Job() {}
 
     inline state_t state () const { lock_type lck(m_mutex); return m_state; }
-    inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
+    state_t cmp_and_swp_state( state_t expected
+                             , state_t newstate
+                             );
 
     std::string const & id() const { return m_id; }
     std::string const & description() const { return m_description; }
@@ -67,6 +69,7 @@ namespace drts
     std::string const & result() const { lock_type lck(m_mutex); return m_result; }
     void result(std::string const &r) { lock_type lck(m_mutex); m_result = r; }
   private:
+    inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
     mutable mutex_type m_mutex;
 
     std::string m_id;

@@ -100,6 +100,7 @@ public:
     }
 
     m_request_thread.reset(new boost::thread(&DRTSImpl::job_requestor_thread, this));
+    m_execution_thread.reset(new boost::thread(&DRTSImpl::job_execution_thread, this));
 
     start_connect ();
 
@@ -123,6 +124,17 @@ public:
       m_request_thread->join();
       m_request_thread.reset();
     }
+
+    if (m_execution_thread)
+    {
+      m_execution_thread->interrupt();
+      m_execution_thread->join ();
+      m_execution_thread.reset();
+    }
+
+    // cancel all pending jobs
+    //    try to deliver outstanding notifications
+    //    dump state of job-map
 
     if (m_event_thread)
     {
@@ -412,13 +424,6 @@ private:
         {
           at_least_one_connected = true;
 
-          LOG( INFO
-             , "considering " << master->name()
-             << " now = " << boost::posix_time::microsec_clock::universal_time()
-             << " last = " <<  (master->last_job_rqst())
-             << " poll = " << master->cur_poll_interval()
-             << " diff = " << (master->last_job_rqst() + master->cur_poll_interval())
-             );
           if (  boost::posix_time::microsec_clock::universal_time()
              >= (master->last_job_rqst() + master->cur_poll_interval())
              )
@@ -456,29 +461,47 @@ private:
                                  )
                                  ;
       }
-
-      // job-requestor:
-      //   poll-for-jobs (if #pending jobs < backlog)
-      //      foreach connected master:
-      //         if polling enabled(master)
     }
   }
 
-  void do_start()
+  void job_execution_thread ()
   {
-    // start scheduler threads (configured #)
-    // initialize gui-observer if requested
+    for (;;)
+    {
+      job_ptr_t job = m_pending_jobs.get();
+      if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
+                                                      , drts::Job::RUNNING
+                                                      )
+         )
+      {
+        LOG(INFO, "executing job " << job->id());
+
+        try
+        {
+          /*
+            int ec = m_wfe->execute( job->description()
+                                   , m_capabilities
+                                   , result
+                                   );
+          */
+          // mark job as done
+          //     send jobfinished
+          //     note: regularly resend finished job notifications
+        }
+        catch (std::exception const & ex)
+        {
+          // mark job as failed
+        }
+      }
+      else
+      {
+        LOG(INFO, "ignoring non-pending job " << job->id());
+      }
+    }
   }
 
   void start_connect ()
   {
-    // bool retry=false
-    // for each configured parent
-    //    if !connected
-    //        send registration
-    //        retry = true
-    // if retry: reschedule start-connect
-
     bool at_least_one_disconnected = false;
 
     for ( map_of_masters_t::iterator master_it (m_masters.begin())
@@ -627,8 +650,8 @@ private:
 
   event_queue_t m_event_queue;
   boost::shared_ptr<boost::thread>    m_event_thread;
-
   boost::shared_ptr<boost::thread>    m_request_thread;
+  boost::shared_ptr<boost::thread>    m_execution_thread;
 
   mutable mutex_type m_job_map_mutex;
   mutable mutex_type m_job_computed_mutex;
