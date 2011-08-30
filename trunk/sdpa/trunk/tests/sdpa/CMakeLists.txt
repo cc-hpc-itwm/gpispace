@@ -64,6 +64,7 @@ set (tc_srcs
   test_StopRestartAgents.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
+  test_Topologies.cpp
 )
 
 foreach (tc_src ${tc_srcs})
@@ -74,12 +75,12 @@ foreach (tc_src ${tc_srcs})
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name}
                         sdpa-daemon
-			sdpa-com
+			            sdpa-com
                         sdpa-client
                         sdpa-events
                         sdpa-util
                         sdpa
-			seda
+			            seda
                         ${FhgLog_LIBRARY}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
@@ -99,17 +100,17 @@ if (USE_REAL_WE)
 add_executable(test_agents_and_act_exec_suite ${test_agents_and_act_exec_srcs} )
 target_link_libraries(  test_agents_and_act_exec_suite
                         sdpa-daemon
-			sdpa-com
+			            sdpa-com
                         sdpa-client
                         sdpa-events
                         sdpa-util
                         sdpa
-			seda
-			${FhgLog_LIBRARY}
+			            seda
+			            ${FhgLog_LIBRARY}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
                         ${WE_PRECOMPILE_LIBRARIES}
-			dl
+			            dl
 			)
   add_test(test_agents_and_act_exec_suite test_agents_and_act_exec_suite)
 endif (USE_REAL_WE)
