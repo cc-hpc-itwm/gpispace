@@ -3,9 +3,12 @@
 
 #include <QTreeView>
 
+#include <string>
+
 class QStandardItem;
 class QStandardItemModel;
 class QWidget;
+class QString;
 
 namespace xml
 {
@@ -27,8 +30,9 @@ namespace fhg
       class StructureView : public QTreeView
       {
       public:
-        StructureView (QWidget* parent = 0);
+        StructureView (const QString & load, QWidget* parent = 0);
 
+        void fromFile (const std::string & input);
         void from (const ::xml::parse::type::function_type * fun);
 
       private:

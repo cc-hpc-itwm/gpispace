@@ -19,6 +19,7 @@
 #include <QSpinBox>
 #include <QTextStream>
 #include <QStandardItemModel>
+#include <QString>
 
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
@@ -33,7 +34,7 @@ namespace fhg
   {
     namespace ui
     {
-      MainWindow::MainWindow(QWidget* parent)
+      MainWindow::MainWindow(const QString & load, QWidget* parent)
       : QMainWindow(parent)
       , _transitionLibrary(NULL)
       , _graphicsView(NULL)
@@ -42,7 +43,7 @@ namespace fhg
         setupCentralWidget();
         setupMenuAndToolbar();
         setupTransitionLibrary();
-        setupStructureView();
+        setupStructureView(load);
       }
 
       void MainWindow::expandTree()
@@ -176,7 +177,7 @@ namespace fhg
         addDockWidget(Qt::RightDockWidgetArea, transitionLibraryDockWidget);
       }
 
-      void MainWindow::setupStructureView()
+      void MainWindow::setupStructureView(const QString & load)
       {
         QDockWidget* dockWidget (new QDockWidget(tr("Structure"), this));
         dockWidget->setMinimumSize(QSize(254, 304));           // hardcoded constant
@@ -188,7 +189,7 @@ namespace fhg
         QGridLayout* dockWidgetLayout (new QGridLayout(dockWidgetContents));
         dockWidgetLayout->setContentsMargins(2, 2, 2, 2);
 
-        _structureView = new StructureView(dockWidgetContents);
+        _structureView = new StructureView(load, dockWidgetContents);
 
         dockWidgetLayout->addWidget(_structureView);
         dockWidget->setWidget(dockWidgetContents);

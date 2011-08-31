@@ -12,6 +12,7 @@ class QToolBar;
 class QTreeView;
 class QVBoxLayout;
 class QWidget;
+class QString;
 
 namespace fhg
 {
@@ -31,7 +32,7 @@ namespace fhg
         Q_OBJECT
 
       public:
-        explicit MainWindow(QWidget *parent = NULL);
+        explicit MainWindow(const QString & load = "", QWidget *parent = NULL);
 
         void setTransitionLibraryPath(const QString& path);
         void addTransitionLibraryUserPath(const QString& path, bool trusted = false);
@@ -54,7 +55,7 @@ namespace fhg
         void setupTransitionLibrary();
 
         StructureView* _structureView;
-        void setupStructureView();
+        void setupStructureView(const QString & load);
       };
     }
   }

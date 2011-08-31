@@ -68,6 +68,19 @@ int main(int argc, char *argv[])
     settings.endArray();
   }
 
+  QString load;
+
+  if (arguments.contains("--load"))
+    {
+      if(arguments.size() <= arguments.indexOf("--make-config") + 1)
+        {
+          std::cerr << "--load requires a path" << std::endl;
+          return EXIT_FAILURE;
+        }
+
+      load = arguments.at (arguments.indexOf("--load") + 1);
+    }
+
   if(!settings.contains("basePath"))
   {
     //! \todo error message.
@@ -76,7 +89,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  fhg::pnete::ui::MainWindow w;
+  fhg::pnete::ui::MainWindow w (load);
   w.setTransitionLibraryPath(settings.value("basePath").toString());
 
   int numTrusted = settings.beginReadArray("trustedPaths");
