@@ -80,41 +80,42 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
 /**
  * add new worker
  */
-void WorkerManager::addWorker( const Worker::worker_id_t& workerId, unsigned int capacity,
-		                       const capabilities_set_t& TCpbSet , const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
+								unsigned int capacity,
+								const capabilities_set_t& TCpbSet,
+								const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
-  lock_type lock(mtx_);
+	lock_type lock(mtx_);
 
-  bool bFound = false;
-  for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
-  {
-    if( it->second->name() ==  workerId)
-    {
-      //SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
-      bFound = true;
-      throw WorkerAlreadyExistException(workerId, 0, agent_uuid);
-    }
+	bool bFound = false;
+	for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
+	{
+		//if( it->second->name() ==  workerId )
+		if( it->first ==  workerId )
+		{
+			//SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
+			bFound = true;
+			throw WorkerAlreadyExistException(workerId, agent_uuid);
+		}
 
-    /*if( it->second->agent_uuid() == agent_uuid )
-    {
-      //SDPA_LOG_ERROR("An worker with the rank"<<rank<<" already exist into the worker map!");
-      bFound = true;
-      throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
-    }*/
-  }
+		/*if( it->second->agent_uuid() == agent_uuid )
+		{
+		  //SDPA_LOG_ERROR("An worker with the uuid"<<agent_uuid<<" already exist into the worker map!");
+		  bFound = true;
+		  throw WorkerAlreadyExistException(workerId, rank, agent_uuid);
+		}*/
+	}
 
-  // add TCpbSet HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_uuid ) );
-  pWorker->addCapabilities(TCpbSet);
+	// add TCpbSet HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_uuid ) );
+	pWorker->addCapabilities(TCpbSet);
 
-  worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
+	worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
-  //rank_map_.insert(rank_map_t::value_type(rank, pWorker->name()));
+	SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<" with capacity = "<<pWorker->capacity() );
 
-  SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<" with capacity = "<<pWorker->capacity() );
-
-  if(worker_map_.size() == 1)
-    iter_last_worker_ = worker_map_.begin();
+	if(worker_map_.size() == 1)
+		iter_last_worker_ = worker_map_.begin();
 }
 
 // you should here delete_worker as well, for the
@@ -466,13 +467,6 @@ void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (Work
         break;
     }
 }
-
-/*void WorkerManager::getListOfRegisteredRanks( std::vector<unsigned int>& v)
-{
-  lock_type lock(mtx_);
-  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-    v.push_back(iter->second->rank());
-}*/
 
 void WorkerManager::make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id )
 {
