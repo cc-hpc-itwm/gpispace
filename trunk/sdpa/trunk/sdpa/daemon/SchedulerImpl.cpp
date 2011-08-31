@@ -55,8 +55,10 @@ SchedulerImpl::~SchedulerImpl()
   }
 }
 
-void SchedulerImpl::addWorker( const Worker::worker_id_t& workerId, unsigned int capacity,
-		                       const capabilities_set_t& cpbset , const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+void SchedulerImpl::addWorker( 	const Worker::worker_id_t& workerId,
+								unsigned int capacity,
+								const capabilities_set_t& cpbset,
+								const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
   try {
       ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_uuid);
@@ -549,7 +551,7 @@ void SchedulerImpl::check_post_request()
 	{
 		if( !masterInfo.is_registered() )
 		{
-			SDPA_LOG_INFO("Try to re-register ...");
+			SDPA_LOG_INFO("I'm not yet registered. Try to re-register ...");
 			const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 1 *1000*1000) );
 			SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
 			boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
@@ -634,7 +636,6 @@ void SchedulerImpl::run()
   {
       try
       {
-
     	  check_post_request(); // eventually, post a request to the master
 
           feed_workers(); //eventually, feed some workers
