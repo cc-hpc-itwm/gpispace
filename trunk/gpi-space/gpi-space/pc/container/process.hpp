@@ -56,6 +56,8 @@ namespace gpi
                              , gpi::pc::type::handle::list_t & l
                              ) const;
 
+        gpi::pc::type::handle::descriptor_t info (const gpi::pc::type::handle_id_t) const;
+
         gpi::pc::type::queue_id_t memcpy ( gpi::pc::type::memory_location_t const & dst
                                          , gpi::pc::type::memory_location_t const & src
                                          , const gpi::pc::type::size_t amount

@@ -306,6 +306,15 @@ namespace gpi
         global::memory_manager().free (hdl);
       }
 
+      gpi::pc::type::handle::descriptor_t
+      manager_t::info ( const gpi::pc::type::process_id_t
+                      , const gpi::pc::type::handle_id_t hdl
+                      ) const
+      {
+//        check_permissions (permission::info_t (proc_id, hdl));
+        return global::memory_manager().info (hdl);
+      }
+
       void
       manager_t::list_allocations ( const gpi::pc::type::process_id_t proc_id
                                   , const gpi::pc::type::segment_id_t seg_id

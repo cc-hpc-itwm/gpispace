@@ -269,10 +269,57 @@ namespace gpi
         throw std::runtime_error("memset: not yet implemented");
       }
 
+      gpi::pc::type::handle::descriptor_t
+      api_t::info(const gpi::pc::type::handle_t h)
+      {
+        using namespace gpi::pc;
+        proto::memory::info_t rqst;
+        rqst.handle = h;
+
+        proto::message_t reply (communicate (proto::memory::message_t (rqst)));
+
+        try
+        {
+          proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
+          proto::memory::info_reply_t info_rpl (boost::get<proto::memory::info_reply_t>(mem_msg));
+          return info_rpl.descriptor;
+        }
+        catch (boost::bad_get const & ex)
+        {
+          proto::error::error_t error (boost::get<proto::error::error_t>(reply));
+          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
+          throw std::runtime_error (error.detail);
+        }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
+        }
+      }
+
       void *
       api_t::ptr(const gpi::pc::type::handle_t h)
       {
-        throw std::runtime_error("ptr(): hdl->void*: not yet implemented");
+        try
+        {
+          gpi::pc::type::handle::descriptor_t
+            descriptor = info(h);
+
+          lock_type lock(m_mutex);
+          segment_map_t::const_iterator seg_it (m_segments.find(descriptor.segment));
+          if (seg_it != m_segments.end())
+          {
+            return seg_it->second->ptr<char>() + descriptor.offset;
+          }
+          else
+          {
+            return 0;
+          }
+        }
+        catch (std::exception const &)
+        {
+          return 0;
+        }
       }
 
       gpi::pc::type::queue_id_t

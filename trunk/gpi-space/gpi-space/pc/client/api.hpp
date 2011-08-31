@@ -45,6 +45,10 @@ namespace gpi
                                 , const type::flags_t = gpi::pc::type::handle::F_NONE
                                 );
         void free (const type::handle_id_t);
+
+        gpi::pc::type::handle::descriptor_t
+        info(const gpi::pc::type::handle_t h);
+
         gpi::pc::type::handle::list_t
         list_allocations (const gpi::pc::type::segment_id_t seg = gpi::pc::type::segment::SEG_INVAL);
 

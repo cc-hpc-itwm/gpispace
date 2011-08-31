@@ -128,6 +128,24 @@ namespace gpi
             }
           }
 
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::memory::info_t & info)
+          {
+            try
+            {
+              gpi::pc::proto::memory::info_reply_t rpl;
+              rpl.descriptor = m_proc.info (info.handle);
+              return gpi::pc::proto::memory::message_t (rpl);
+            }
+            catch (std::exception const & ex)
+            {
+              gpi::pc::proto::error::error_t error;
+              error.code = gpi::pc::proto::error::bad_request;
+              error.detail = ex.what();
+              return error;
+            }
+          }
+
           /**********************************************/
           /***     S E G M E N T   R E L A T E D      ***/
           /**********************************************/

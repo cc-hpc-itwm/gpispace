@@ -295,6 +295,13 @@ namespace gpi
       }
 
       template <typename M>
+      gpi::pc::type::handle::descriptor_t
+      process_t<M>::info (const gpi::pc::type::handle_id_t hdl) const
+      {
+        return m_mgr.info (m_id, hdl);
+      }
+
+      template <typename M>
       void
       process_t<M>::list_allocations( const gpi::pc::type::segment_id_t seg
                                     , gpi::pc::type::handle::list_t & l

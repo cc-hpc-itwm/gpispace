@@ -402,6 +402,12 @@ namespace gpi
             );
       }
 
+      gpi::pc::type::handle::descriptor_t
+      manager_t::info (const gpi::pc::type::handle_t hdl) const
+      {
+        return get_area_by_handle(hdl)->descriptor(hdl);
+      }
+
       void
       manager_t::list_allocations( const gpi::pc::type::segment_id_t id
                                  , gpi::pc::type::handle::list_t & l

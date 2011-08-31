@@ -159,6 +159,30 @@ namespace gpi
           }
         };
 
+        struct info_t
+        {
+          gpi::pc::type::handle_id_t handle;
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP( handle );
+          }
+        };
+
+        struct info_reply_t
+        {
+          gpi::pc::type::handle::descriptor_t descriptor;
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP( descriptor );
+          }
+        };
+
         typedef boost::variant<
           memory::alloc_t
           , memory::alloc_reply_t
@@ -169,6 +193,8 @@ namespace gpi
           , memory::memcpy_reply_t
           , memory::wait_t
           , memory::wait_reply_t
+          , memory::info_t
+          , memory::info_reply_t
           > message_t;
       }
     }
