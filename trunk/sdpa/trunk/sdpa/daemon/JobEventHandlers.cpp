@@ -66,16 +66,34 @@ void GenericDaemon::handleCancelJobEvent(const CancelJobEvent* /* pEvt */ )
 	SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
 }
 
-void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* /* pEvt */)
+void GenericDaemon::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt )
 {
-  // TODO: investigate if this function shouldn't be the same as the following two Ack callbacks
 	SDPA_LOG_DEBUG("Not implemented! Should be overridden by the daemons.");
+
+	ostringstream os;
+	try {
+		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
+		// delete it from the map when you receive a CancelJobAckEvent!
+		ptr_job_man_->deleteJob(pEvt->job_id());
+	}
+	catch(JobNotFoundException const &)
+	{
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
+	}
+	catch(JobNotDeletedException const & ex)
+	{
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex.what());
+	}
+	catch(...) {
+		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not deleted, unexpected error!");
+	}
 }
 
 // respond to a worker that the JobFinishedEvent was received
 void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 {
-   // The result was succesfully delivered, so I can delete the job from the job map
+    // The result was successfully delivered by the worker and the WE was notified
+	//therefore, I can delete the job from the job map
 	ostringstream os;
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
@@ -99,9 +117,6 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 // respond to a worker that the JobFailedEvent was received
 void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
 {
-	// check if the message comes from outside/slave or from WFE
-	// if it comes from a slave, one should inform WFE -> subjob
-	// if it comes from WFE -> concerns the master job
 	ostringstream os;
 	try {
 		Job::ptr_t pJob = ptr_job_man_->findJob(pEvt->job_id());
