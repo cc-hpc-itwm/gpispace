@@ -28,16 +28,14 @@ namespace daemon {
 
 	class WorkerException : public sdpa::SDPAException {
 	public:
-		WorkerException(const std::string &reason, const sdpa::worker_id_t& worker_id, const unsigned int rank = 0 )
-			: sdpa::SDPAException(reason), worker_id_(worker_id), rank_(rank) {}
+		WorkerException(const std::string &reason, const sdpa::worker_id_t& worker_id)
+			: sdpa::SDPAException(reason), worker_id_(worker_id){}
 
 		virtual ~WorkerException() throw() {}
 		const sdpa::worker_id_t& worker_id() const { return worker_id_; }
-		const unsigned int& rank() const { return rank_; }
 
 		private:
 		sdpa::worker_id_t worker_id_;
-		unsigned int rank_;
 	};
 
 	class JobNotFoundException : public JobException {
@@ -78,8 +76,8 @@ namespace daemon {
 
 	class WorkerAlreadyExistException : public WorkerException {
 		public:
-		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id, const unsigned int rank, const sdpa::worker_id_t& agent_uuid )
-			: WorkerException("A worker with either the same name, rank or uid already registerd!", worker_id, rank),
+		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id, const sdpa::worker_id_t& agent_uuid )
+			: WorkerException("A worker with either the same name or the same uuid has already registerd!", worker_id),
 			  agent_uuid_(agent_uuid) {}
 		virtual ~WorkerAlreadyExistException() throw() {}
 
