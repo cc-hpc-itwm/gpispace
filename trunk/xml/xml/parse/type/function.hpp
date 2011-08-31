@@ -32,6 +32,8 @@
 
 #include <fhg/util/xml.hpp>
 
+#include <fstream>
+
 namespace cpp_util = ::fhg::util::cpp;
 namespace xml_util = ::fhg::util::xml;
 

@@ -11,6 +11,8 @@
 
 #include <fhg/util/join.hpp>
 
+#include <xml/parse/util/show_node_type.hpp> // WORK HERE: for quote only
+
 #include <boost/filesystem.hpp>
 
 namespace xml

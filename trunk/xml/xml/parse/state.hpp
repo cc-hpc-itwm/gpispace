@@ -10,7 +10,7 @@
 
 #include <we/type/bits/transition/optimize.hpp>
 
-#include <iostream>
+#include <fstream>
 
 #include <vector>
 #include <list>

@@ -3,7 +3,7 @@
 #ifndef _XML_PARSE_UTIL_MKFSTREAM_HPP
 #define _XML_PARSE_UTIL_MKFSTREAM_HPP 1
 
-#include <iostream>
+#include <fstream>
 
 #include <boost/filesystem.hpp>
 
