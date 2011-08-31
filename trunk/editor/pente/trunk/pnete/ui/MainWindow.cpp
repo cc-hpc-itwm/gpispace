@@ -18,12 +18,14 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QTextStream>
+#include <QStandardItemModel>
 
 #include "GraphView.hpp"
 #include "TransitionLibraryModel.hpp"
 #include "GraphScene.hpp"
 #include "helper/GraphTraverser.hpp"
 #include "helper/TraverserReceiver.hpp"
+#include "StructureView.hpp"
 
 namespace fhg
 {
@@ -40,6 +42,7 @@ namespace fhg
         setupCentralWidget();
         setupMenuAndToolbar();
         setupTransitionLibrary();
+        setupStructureView();
       }
 
       void MainWindow::expandTree()
@@ -171,6 +174,26 @@ namespace fhg
         transitionLibraryDockWidget->setWidget(transitionLibraryDockWidgetContents);
 
         addDockWidget(Qt::RightDockWidgetArea, transitionLibraryDockWidget);
+      }
+
+      void MainWindow::setupStructureView()
+      {
+        QDockWidget* dockWidget (new QDockWidget(tr("Structure"), this));
+        dockWidget->setMinimumSize(QSize(254, 304));           // hardcoded constant
+        dockWidget->setAllowedAreas( Qt::LeftDockWidgetArea
+                                   | Qt::RightDockWidgetArea
+                                   );
+
+        QWidget* dockWidgetContents (new QWidget());
+        QGridLayout* dockWidgetLayout (new QGridLayout(dockWidgetContents));
+        dockWidgetLayout->setContentsMargins(2, 2, 2, 2);
+
+        _structureView = new StructureView(dockWidgetContents);
+
+        dockWidgetLayout->addWidget(_structureView);
+        dockWidget->setWidget(dockWidgetContents);
+
+        addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
       }
 
       void MainWindow::save()

@@ -4,14 +4,14 @@
 #include <QMainWindow>
 
 class QAction;
-class QWidget;
-class QVBoxLayout;
-class QMenuBar;
-class QMenu;
-class QToolBar;
-class QStatusBar;
 class QDockWiget;
+class QMenu;
+class QMenuBar;
+class QStatusBar;
+class QToolBar;
 class QTreeView;
+class QVBoxLayout;
+class QWidget;
 
 namespace fhg
 {
@@ -24,6 +24,7 @@ namespace fhg
     namespace ui
     {
       class GraphView;
+      class StructureView;
 
       class MainWindow : public QMainWindow
       {
@@ -51,6 +52,9 @@ namespace fhg
         //! \todo This should be a complete class producing views for the same scene?
         void setupCentralWidget();
         void setupTransitionLibrary();
+
+        StructureView* _structureView;
+        void setupStructureView();
       };
     }
   }
