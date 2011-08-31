@@ -102,12 +102,12 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
     lock_type lock(mtx_);
     ostringstream os;
 
-    // delete the preferences
+    // delete the requirements of this job
     requirements_map_t::size_type rc = job_requirements_.erase(job_id);
 
     if(rc)
     {
-        DLOG(TRACE, "Erased the preferences of the job "<<job_id.str());
+        DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
     }
 
     job_map_t::size_type ret = job_map_.erase(job_id);
