@@ -1,5 +1,6 @@
 #include <fhglog/minimal.hpp>
 
+#include <fhg/util/read_bool.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/capability.hpp>
 #include "gpi.hpp"
@@ -26,12 +27,30 @@ public:
   FHG_PLUGIN_START()
   {
     api.path (fhg_kernel()->get("socket", "/var/tmp/gpi-space/control"));
-
-    fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::try_start
-                                        , this
-                                        )
-                          , 0
-                          );
+    if (fhg_kernel()->get("startmode", "nowait")  == "wait")
+    {
+      LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
+      while (!try_start())
+      {
+        sleep (1);
+      }
+      FHG_PLUGIN_STARTED();
+    }
+    else
+    {
+      if (try_start())
+      {
+        FHG_PLUGIN_STARTED();
+      }
+      else
+      {
+        fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::restart_loop
+                                            , this
+                                            )
+                              , 0
+                              );
+      }
+    }
     FHG_PLUGIN_INCOMPLETE();
   }
 
@@ -126,19 +145,31 @@ public:
   }
 
 private:
-  void try_start ()
+  bool try_start ()
   {
     try
     {
       api.start();
-      fhg_kernel()->start_completed(0);
+      return true;
     }
     catch (std::exception const &ex)
     {
       LOG( WARN
          , "could not start gpi connection on `" << api.path() << "': " << ex.what()
          );
-      fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::try_start
+      return false;
+    }
+  }
+
+  void restart_loop ()
+  {
+    if (try_start())
+    {
+      fhg_kernel()->start_completed(0);
+    }
+    else
+    {
+      fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::restart_loop
                                           , this
                                           )
                             , 5
