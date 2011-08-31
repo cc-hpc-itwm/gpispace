@@ -205,6 +205,7 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 	std::cout<<std::endl<<"----------------End  testDummyWorkflowEngineSerialization----------------"<<std::endl;
 }
 
+/*
 BOOST_AUTO_TEST_CASE(testNRESerialization)
 {
 	std::cout<<std::endl<<"----------------Begin  testNRESerialization----------------"<<std::endl;
@@ -420,7 +421,6 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
     std::cout<<std::endl<<"----------------End  testAggregatorSerialization----------------"<<std::endl;
 }
 
-
 BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
 {
     std::cout<<std::endl<<"----------------Begin  testOrchestratorSerialization----------------"<<std::endl;
@@ -634,7 +634,6 @@ BOOST_AUTO_TEST_CASE(testDaemonSerializationWithFSMs)
       return;
   }
 }
-
 
 BOOST_AUTO_TEST_CASE(testDaemonSerialization)
 {
@@ -901,5 +900,6 @@ BOOST_AUTO_TEST_CASE(testSynchQueueSerialization)
         cout<<jobIdRestored.str()<<std::endl;
     }
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
