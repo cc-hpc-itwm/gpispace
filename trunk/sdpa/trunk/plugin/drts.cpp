@@ -72,7 +72,7 @@ public:
     if (0 == m_wfe)
     {
       LOG(ERROR, "could not access workflow-engine plugin!");
-      FHG_PLUGIN_FAILED(EINVAL);
+      FHG_PLUGIN_FAILED(ELIBACC);
     }
 
     assert (! m_event_thread);
@@ -625,7 +625,6 @@ private:
                                   , job->description()
                                   , m_capabilities
                                   , result
-                                  // TODO: walltime
                                   );
           if (ec > 0)
           {

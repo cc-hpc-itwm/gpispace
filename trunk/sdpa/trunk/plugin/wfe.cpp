@@ -8,6 +8,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -111,7 +112,6 @@ public:
               , std::string const &job_description
               , wfe::capabilities_t const & capabilities
               , std::string & result
-              , boost::posix_time::time_duration const & walltime
               )
   {
     int ec = -EINVAL;
@@ -131,6 +131,9 @@ public:
     try
     {
       task.activity = we::util::text_codec::decode<we::activity_t>(job_description);
+
+      // TODO get walltime from activity properties
+      boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
       m_tasks.put(&task);
 

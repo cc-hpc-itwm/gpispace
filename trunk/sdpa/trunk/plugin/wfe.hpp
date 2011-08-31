@@ -3,7 +3,6 @@
 
 #include <map>
 #include <fhg/plugin/capability.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace wfe
 {
@@ -18,7 +17,6 @@ namespace wfe
                         , std::string const &job_description
                         , capabilities_t const & capabilities
                         , std::string & result
-                        , boost::posix_time::time_duration const & walltime = boost::posix_time::seconds(0)
                         ) = 0;
     virtual int cancel (std::string const &job_id) = 0;
   };
