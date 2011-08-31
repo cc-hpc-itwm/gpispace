@@ -290,9 +290,10 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
     DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
+    Job::ptr_t pJob;
     try
     {
-        Job::ptr_t pJob(ptr_job_man_->findJob(pEvt->job_id()));
+        pJob = ptr_job_man_->findJob(pEvt->job_id());
 
         // update the job status to "Cancelled"
         pJob->CancelJobAck(pEvt);
@@ -304,42 +305,50 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
         return;
     }
 
-    // the acknowledgment does not come from WE and there is a WE
-    if( pEvt->from() != sdpa::daemon::WE && hasWorkflowEngine() )
-    {
-        LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
+    // It's an worker who has sent the message
+	if( (pEvt->from() != sdpa::daemon::WE) )
+	{
+	  Worker::worker_id_t worker_id = pEvt->from();
+	  id_type actId = pJob->id().str();
 
-        try
-        {
-            ptr_workflow_engine_->cancelled(pEvt->job_id());
-        }
-        catch (std::exception const & ex)
-        {
-            LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
-        }
+	  try {
+		  //result_type output = pEvt->result();
 
-        // delete the worker job
-        Worker::worker_id_t worker_id = pEvt->from();
-        try
-        {
-            LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
-            ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
-        }
-        catch (const WorkerNotFoundException&)
-        {
-            SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-        }
-        catch(const JobNotDeletedException& jnde)
-        {
-            LOG( ERROR
-                            , "could not delete the job "
-                            << pEvt->job_id()
-                            << " from the worker "
-                            << worker_id
-                            << " : " << jnde.what()
-            );
-        }
-    }
+		  if( hasWorkflowEngine() )
+		  {
+			  SDPA_LOG_DEBUG("Inform the workflow engine that the activity "<<actId<<" was cancelled");
+			  ptr_workflow_engine_->cancelled( pEvt->job_id());
+		  }
+
+		  try {
+			  SDPA_LOG_DEBUG("Remove job "<<actId<<" from the worker "<<worker_id;);
+			  ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
+		  }
+		  catch(const WorkerNotFoundException&)
+		  {
+			  SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+		  }
+		  catch(const JobNotDeletedException&)
+		  {
+			  SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
+		  }
+
+		  if( hasWorkflowEngine() )
+		  {
+			  try {
+				  //delete it also from job_map_
+				  ptr_job_man_->deleteJob(pEvt->job_id());
+			  }
+			  catch(const JobNotDeletedException&)
+			  {
+				  SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
+			  }
+		  }
+	  }
+	  catch(...) {
+		  SDPA_LOG_ERROR("Unexpected exception occurred!");
+	  }
+	}
 }
 
 void Orchestrator::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
