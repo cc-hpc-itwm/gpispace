@@ -858,15 +858,17 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
       // send back an acknowledgment
       SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
-      WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-      pWorkerRegAckEvt->id() = evtRegWorker.id();
+      WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
+
+      //pWorkerRegAckEvt->id() = evtRegWorker.id();
+
       sendEventToSlave(pWorkerRegAckEvt);
   }
   catch(WorkerAlreadyExistException& ex)
   {
       if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
       {
-    	  LOG(TRACE, "The worker manager already contains an worker with the same id or rank (id="<<ex.worker_id()<<", rank="<<ex.rank()<<"), but with a different agent_uuid!" );
+    	  LOG(TRACE, "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
 
           LOG(TRACE, "Re-schedule the jobs");
           scheduler()->reschedule( worker_id );
@@ -1199,9 +1201,10 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 	SDPA_LOG_INFO("Received registration acknowledgment from "<<masterName);
 
 	bool bFound = false;
-	for(sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end() && !bFound; it++)
-		if(it->name() == masterName)
+	for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end() && !bFound; it++)
+		if( it->name() == masterName )
 		{
+			SDPA_LOG_INFO("Mark the agent "<<name()<<" as registered within the corresponding MasterInfo object ... ");
 			it->set_registered(true);
 			bFound=true;
 		}
