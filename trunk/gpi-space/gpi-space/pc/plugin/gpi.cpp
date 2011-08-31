@@ -32,7 +32,10 @@ public:
       LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
       while (!try_start())
       {
-        sleep (1);
+        if (usleep (2 * 1000 * 1000) < 0)
+        {
+          FHG_PLUGIN_FAILED(EADDRNOTAVAIL);
+        }
       }
       FHG_PLUGIN_STARTED();
     }
