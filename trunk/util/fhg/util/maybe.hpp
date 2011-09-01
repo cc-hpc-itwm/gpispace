@@ -76,6 +76,11 @@ namespace fhg
       maybe () : m () {}
       maybe (const_reference t) : m (t) {}
 
+      operator bool (void) const
+      {
+        return isJust();
+      }
+
       bool isJust (void) const
       {
         return boost::apply_visitor (detail::isJust(), m);
