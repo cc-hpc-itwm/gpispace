@@ -163,7 +163,8 @@ namespace expr
             const node::key_vec_t propagated_key
                 (boost::get<node::key_vec_t> (propagated_node));
 
-            const line_type & key_line = _ssa_tree.get_line_of (propagated_key);
+            const line_type & key_line
+                (_ssa_tree.get_line_of_next_write (propagated_key));
             if (key_line != line_type () && is_before (_line, key_line))
             {
                 return create_temp_assignment (key_line, propagated_key);
@@ -193,6 +194,7 @@ namespace expr
               if (const node::key_vec_t* rhs = boost::get<node::key_vec_t> (&b.r))
               {
                 _propagation_map[lhs] = *rhs;
+                _ssa_tree.latest_version_is_a_copy (lhs, *rhs);
               }
               else if (const value::type* rhs = boost::get<value::type> (&b.r))
               {

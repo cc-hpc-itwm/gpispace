@@ -42,13 +42,16 @@ namespace expr
       {
         private:
           typedef boost::shared_ptr<tree_node_type> ptr;
-          typedef boost::shared_ptr<tree_node_type> const_ptr;
 
           typedef std::size_t version_type;
           typedef std::pair<version_type,line_type> item_type;
           typedef std::vector<item_type> values_type;
           typedef boost::unordered_map< key_part_type
                                       , tree_node_type::ptr > childs_type;
+
+
+          values_type _values;
+          childs_type _childs;
 
           inline void
           initialize_childs (const line_type & line)
@@ -69,8 +72,21 @@ namespace expr
             return _childs.count (part) != 0;
           }
 
-          values_type _values;
-          childs_type _childs;
+          inline tree_node_type::ptr
+          insert_child (const key_part_type & name)
+          {
+            tree_node_type::ptr temp (tree_node_type::ptr (new tree_node_type()));
+            _childs[name] = temp;
+            for ( values_type::const_iterator it (_values.begin())
+                , end (_values.end())
+                ; it != end
+                ; ++it
+                )
+            {
+              temp->initialize (it->second);
+            }
+            return temp;
+          }
 
           tree_node_type::ptr
           insert_child ( const key_type::const_iterator & pos
@@ -84,15 +100,7 @@ namespace expr
 
             if (!has_child (*pos))
             {
-              _childs[*pos] = tree_node_type::ptr (new tree_node_type());
-              for ( values_type::const_iterator it (_values.begin())
-                  , end (_values.end())
-                  ; it != end
-                  ; ++it
-                  )
-              {
-                _childs[*pos]->initialize (it->second);
-              }
+              insert_child (*pos);
             }
 
             return _childs[*pos]->insert_child (pos + 1, end);
@@ -193,28 +201,43 @@ namespace expr
                 (number + 2, end, last_line);
           }
 
+          inline line_type &
+          iterate_to_given_version ( values_type::iterator & it
+                                   , const line_type & last_parent_line
+                                   , const version_type & wanted_version
+                                   ) const
+
+          {
+            //! \note Yes, I assume that there are no bad entries.
+            while (it->second != last_parent_line)
+            {
+              ++it;
+            }
+
+            while (it->first != wanted_version)
+            {
+              ++it;
+            }
+
+            return it->second;
+          }
+
           line_type
-          get_line_of ( const key_type::const_iterator & number
-                      , const key_type::const_iterator & end
-                      , const line_type & last_parent_line
-                      )
+          get_line_of_next_write ( const key_type::const_iterator & number
+                                 , const key_type::const_iterator & end
+                                 , const line_type & last_parent_line
+                                 )
           {
             version_type wanted_version
                 (boost::lexical_cast<version_type>(*number));
 
             values_type::iterator value (_values.begin());
-            //! \note Yes, I assume that there are no bad entries.
-            while (value->second != last_parent_line)
-            {
-              ++value;
-            }
 
-            while (value->first != wanted_version)
-            {
-              ++value;
-            }
-
-            line_type & last_line (value->second);
+            line_type & last_line
+                (iterate_to_given_version ( value
+                                          , last_parent_line
+                                          , wanted_version
+                                          ));
 
             if (number + 1 == end)
             {
@@ -235,7 +258,85 @@ namespace expr
               insert_child (ssa_free.begin(), ssa_free.end());
             }
 
-            return _childs[name]->get_line_of (number + 2, end, last_line);
+            return _childs[name]->get_line_of_next_write ( number + 2
+                                                         , end
+                                                         , last_line
+                                                         );
+          }
+
+          tree_node_type::ptr
+          get_entry_and_line ( const key_type::const_iterator & number
+                             , const key_type::const_iterator & end
+                             , line_type & last_parent_line
+                             )
+          {
+            version_type wanted_version
+                (boost::lexical_cast<version_type>(*number));
+
+            values_type::iterator value (_values.begin());
+
+            last_parent_line = iterate_to_given_version
+                (value, last_parent_line, wanted_version);
+
+            if (number + 1 == end)
+            {
+              return shared_from_this();
+            }
+
+            const key_part_type & name (*(number + 1));
+
+            if (!has_child (name))
+            {
+              key_type ssa_free
+                  (util::get_normal_name (key_type (number + 1, end)));
+              insert_child (ssa_free.begin(), ssa_free.end());
+            }
+
+            return _childs[name]->get_entry_and_line ( number + 2
+                                                     , end
+                                                     , last_parent_line
+                                                     );
+          }
+
+          void
+          copy_children ( std::size_t versions // actually, the number of zeros searched for before returning
+                        , line_type & starting_at_line
+                        , tree_node_type::ptr other
+                        , line_type & starting_at_line_other
+                        )
+          {
+            values_type::iterator value (_values.begin());
+            while (value->second != starting_at_line)
+            {
+              ++value;
+            }
+            ++value;
+
+            //! \note \warning \todo This most likely is horribly wrong.
+            std::size_t my_versions (0);
+            values_type::iterator end_of_range (value);
+            while (end_of_range != _values.end() && versions-- != 0)
+            {
+              ++end_of_range;
+              ++my_versions;
+            }
+            ++my_versions;
+
+            other->_values.insert (other->_values.end (), value, end_of_range);
+
+            for ( childs_type::const_iterator child (_childs.begin())
+                , end (_childs.end())
+                ; child != end
+                ; ++child
+                )
+            {
+              tree_node_type::ptr new_child (other->insert_child (child->first));
+              child->second->copy_children ( my_versions
+                                           , starting_at_line
+                                           , new_child
+                                           , starting_at_line_other
+                                           );
+            }
           }
 
           void
@@ -296,7 +397,7 @@ namespace expr
           get_current_name (const key_type & key)
           {
             key_type name;
-            get_current_name (key.begin(), key.end(), name);
+            get_current_name (key.begin (), key.end (), name);
             return name;
           }
 
@@ -307,15 +408,45 @@ namespace expr
           }
 
           inline line_type
-          get_line_of (const key_type & key)
+          get_line_of_next_write (const key_type & key)
           {
-            return get_line_of (key.begin (), key.end (), line_type());
+            return get_line_of_next_write ( key.begin ()
+                                          , key.end ()
+                                          , line_type ()
+                                          );
           }
 
           inline void
           fill_asterics_with_latest (key_type & key)
           {
             fill_asterics_with_latest (key.begin(), key.end(), line_type());
+          }
+
+          inline void
+          latest_version_is_a_copy ( const key_type & target_key
+                                   , const key_type & source_key
+                                   )
+          {
+            line_type target_line;
+            line_type source_line;
+            tree_node_type::ptr target
+                (get_entry_and_line ( target_key.begin ()
+                                    , target_key.end ()
+                                    , target_line
+                                    )
+                );
+            tree_node_type::ptr source
+                (get_entry_and_line ( source_key.begin ()
+                                    , source_key.end ()
+                                    , source_line
+                                    )
+                );
+
+            source->copy_children ( 0 // copying the current version only.
+                                  , source_line
+                                  , target
+                                  , target_line
+                                  );
           }
 
           inline void
