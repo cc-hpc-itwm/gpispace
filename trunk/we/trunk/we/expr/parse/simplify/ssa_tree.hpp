@@ -299,30 +299,38 @@ namespace expr
           }
 
           void
-          copy_children ( std::size_t versions // actually, the number of zeros searched for before returning
+          copy_children ( std::size_t parent_versions
                         , line_type & starting_at_line
                         , tree_node_type::ptr other
                         , line_type & starting_at_line_other
                         )
           {
-            values_type::iterator value (_values.begin());
-            while (value->second != starting_at_line)
+            values_type::iterator start_of_range (_values.begin());
+            while (start_of_range->second != starting_at_line)
             {
-              ++value;
+              ++start_of_range;
             }
-            ++value;
+            ++start_of_range;
 
-            //! \note \warning \todo This most likely is horribly wrong.
-            std::size_t my_versions (0);
-            values_type::iterator end_of_range (value);
-            while (end_of_range != _values.end() && versions-- != 0)
+            std::size_t my_versions (1);
+            values_type::iterator end_of_range (start_of_range);
+            while (end_of_range != _values.end() && parent_versions)
             {
-              ++end_of_range;
-              ++my_versions;
+              if ((end_of_range + 1)->first == 0)
+              {
+                --parent_versions;
+              }
+              if (parent_versions)
+              {
+                ++end_of_range;
+                ++my_versions;
+              }
             }
-            ++my_versions;
 
-            other->_values.insert (other->_values.end (), value, end_of_range);
+            other->_values.insert ( other->_values.end ()
+                                  , start_of_range
+                                  , end_of_range
+                                  );
 
             for ( childs_type::const_iterator child (_childs.begin())
                 , end (_childs.end())
