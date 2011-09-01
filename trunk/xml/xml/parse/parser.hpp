@@ -1534,14 +1534,16 @@ namespace xml
 
     // ********************************************************************* //
 
+    inline type::function_type
+    just_parse (state::type & state, const std::string & input)
+    {
+      return state.generic_parse<type::function_type> (parse_function, input);
+    }
+
     static type::function_type
     frontend (state::type & state, const std::string & input)
     {
-      type::function_type f
-        (state.generic_parse<type::function_type> (parse_function, input));
-
-      // set all the collected requirements to the top level function
-      f.requirements = state.requirements();
+      type::function_type f (just_parse (state, input));
 
       if (state.dump_xml_file().size() > 0)
         {
@@ -1557,6 +1559,9 @@ namespace xml
 
           xml::parse::type::dump::dump (s, f, state);
         }
+
+      // set all the collected requirements to the top level function
+      f.requirements = state.requirements();
 
       f.specialize (state);
       f.resolve (state, f.forbidden_below());

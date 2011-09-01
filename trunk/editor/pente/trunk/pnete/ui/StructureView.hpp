@@ -33,7 +33,7 @@ namespace fhg
         StructureView (const QString & load, QWidget* parent = 0);
 
         void fromFile (const std::string & input);
-        void from (const ::xml::parse::type::function_type * fun);
+        void from (const ::xml::parse::type::function_type & fun);
 
       private:
         QStandardItemModel* _model;
