@@ -22,6 +22,7 @@
 #include <string>
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/parse/util/get_names.hpp>
+#include <we/expr/parse/simplify/simplify.hpp>
 
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -54,38 +55,14 @@ namespace we { namespace type {
 
     bool simplify (const expr::parse::util::name_set_t & needed_bindings)
     {
-      bool modified (false);
+      ast_ = expr::parse::parser (expr::parse::simplify::simplification_pass
+        (ast_, needed_bindings));
 
-      std::cerr << "SIMPLIFY-EXPRESSION-SEQUENCES: NOT YET IMPLEMENTED"
-                << std::endl
-                << "### Needed bindings"
-                << std::endl
-        ;
-
-      for ( expr::parse::util::name_set_t::const_iterator n (needed_bindings.begin())
-          ; n != needed_bindings.end()
-          ; ++n
-          )
-        {
-          for ( expr::parse::util::name_set_t::value_type::const_iterator f (n->begin())
-              ; f != n->end()
-              ; ++f
-              )
-            {
-              std::cerr << "+"
-                        << ((f != n->begin()) ? "." : " ")
-                        << *f
-                        << std::endl
-                ;
-            }
-        }
-
-      std::cerr << "### Expression sequence: "
-                << std::endl
-                << expression()
-                << std::endl
-        ;
-
+      bool modified (ast_.string() != expr_);
+      if (modified)
+      {
+        expr_ = ast_.string();
+      }
       return modified;
     }
 
