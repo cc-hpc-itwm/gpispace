@@ -3,6 +3,7 @@
 
 #include <map>
 #include <fhg/plugin/capability.hpp>
+#include <string>
 
 namespace wfe
 {
