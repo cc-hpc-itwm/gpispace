@@ -155,7 +155,10 @@ void Worker::addCapabilities(const capabilities_set_t& cpbset)
           // defaults constructs a counter with value 0 ...
           ++capabilities_[*it];
 
-          LOG(TRACE, "worker " << name() << " gained capability: " << *it);
+          LOG( TRACE
+             , "worker " << name() << " gained capability: "
+             << *it << " (" << capabilities_[*it] << ")"
+             );
           /*
 		capabilities_map_t::iterator itw = capabilities_.find(*it);
 		if( itw != capabilities_.end() )
@@ -180,18 +183,22 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 		capabilities_map_t::iterator itw = capabilities_.find(*it);
 		if( itw != capabilities_.end() )
 		{
-			// the subtree headed by this worker has already such capability
-			// -> just decrement the multiplicity
-			if(itw->second-- == 1)
-			{
-				capabilities_.erase(itw);
-			}
+                  LOG( TRACE
+                     , "worker " << name() << " lost capability: "
+                     << *it << " (" << itw->second << ")"
+                     );
+
+                  // the subtree headed by this worker has already such capability
+                  // -> just decrement the multiplicity
+                  if(0 == --itw->second)
+                  {
+                    capabilities_.erase(itw);
+                  }
 		}
 		else
 		{
 			// do nothing
 			LOG(ERROR, "The worker "<<name()<<" doesn't possess such capability!");
 		}
-                LOG(TRACE, "worker " << name() << " lost capability: " << *it);
 	}
 }
