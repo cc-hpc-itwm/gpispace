@@ -37,24 +37,20 @@ public:
           FHG_PLUGIN_FAILED(EADDRNOTAVAIL);
         }
       }
-      FHG_PLUGIN_STARTED();
     }
     else
     {
-      if (try_start())
-      {
-        FHG_PLUGIN_STARTED();
-      }
-      else
+      if (! try_start())
       {
         fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::restart_loop
                                             , this
                                             )
                               , 0
                               );
+        FHG_PLUGIN_INCOMPLETE();
       }
     }
-    FHG_PLUGIN_INCOMPLETE();
+    FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
@@ -180,7 +176,6 @@ private:
     }
   }
 
-  FHG_KERNEL_PTR m_kernel;
   gpi::pc::client::api_t api;
 };
 
