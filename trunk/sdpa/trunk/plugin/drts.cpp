@@ -186,12 +186,22 @@ public:
     if (fhg::plugin::Capability* cap = fhg_kernel()->acquire<fhg::plugin::Capability>(plugin))
     {
       MLOG(INFO, "gained capability: " << cap->capability_name() << " of type " << cap->capability_type());
+
       lock_type cap_lock(m_capabilities_mutex);
       m_capabilities.insert (std::make_pair(cap->capability_name(), cap));
 
-      // TODO:
-      //    for each connected master:
-      //       send_event(CapabilitiesGainedEvent(...));
+      for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
+          ; master_it != m_masters.end()
+          ; ++master_it
+          )
+      {
+        if (master_it->second->is_connected())
+          send_event (new sdpa::events::CapabilitiesGainedEvent( m_my_name
+                                                               , master_it->first
+                                                               , cap->capability_name()
+                                                               )
+                     );
+      }
     }
   }
 
@@ -208,6 +218,19 @@ public:
       MLOG(INFO, "lost capability: " << plugin);
       MLOG(WARN, "TODO: make sure none of jobs make use of this capability");
       m_capabilities.erase(cap);
+
+      for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
+          ; master_it != m_masters.end()
+          ; ++master_it
+          )
+      {
+        if (master_it->second->is_connected())
+          send_event (new sdpa::events::CapabilitiesLostEvent( m_my_name
+                                                             , master_it->first
+                                                             , cap->first
+                                                             )
+                     );
+      }
     }
   }
 
@@ -276,6 +299,27 @@ public:
       MLOG(INFO, "successfully connected to " << master_it->second->name());
       master_it->second->is_connected(true);
       master_it->second->reset_poll_rate();
+
+      {
+        sdpa::capabilities_set_t caps;
+        lock_type capabilities_lock(m_capabilities_mutex);
+        for ( map_of_capabilities_t::const_iterator cap_it(m_capabilities.begin())
+            ; cap_it != m_capabilities.end()
+            ; ++cap_it
+            )
+        {
+          caps.insert (cap_it->first);
+        }
+
+        if (! caps.empty())
+        {
+          send_event(new sdpa::events::CapabilitiesGainedEvent( m_my_name
+                                                              , master_it->first
+                                                              , caps
+                                                              )
+                    );
+        }
+      }
 
       m_connected_event.notify(master_it->second->name());
 
@@ -390,8 +434,6 @@ public:
         m_jobs.insert (std::make_pair(job->id(), job));
 
         job->entered(boost::posix_time::microsec_clock::universal_time());
-
-        emit (std::string("hallo welt"));
 
         m_pending_jobs.put(job);
       }
@@ -720,13 +762,9 @@ private:
         sdpa::events::WorkerRegistrationEvent::Ptr evt
           (new sdpa::events::WorkerRegistrationEvent( m_my_name
                                                     , master->name()
+                                                    , m_backlog_size
                                                     )
           );
-        evt->capacity() = m_backlog_size;
-        sdpa::uuidgen gen;
-
-        // foreach capability:
-        //    add capability to event
 
         send_event(evt);
 
