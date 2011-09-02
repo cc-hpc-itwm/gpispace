@@ -7,6 +7,7 @@ set (hdrs
   place.hpp
   place_map.hpp
   port.hpp
+  require.hpp
   specialize.hpp
   struct.hpp
   token.hpp

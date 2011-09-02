@@ -1,6 +1,8 @@
+
 set (hdrs
   error.hpp
-#  pnetc.hpp
+  headergen.hpp
+  parser.hpp
   state.hpp
   types.hpp
   util.hpp
@@ -46,9 +48,11 @@ if (ENABLE_STATIC_BINARIES)
     COMPONENT applications)
 endif (ENABLE_STATIC_BINARIES)
 
-install (FILES ${hdrs}
+install (FILES ${hdrs} ${headerlist_hpp}
   DESTINATION include/xml/parse
   COMPONENT headers)
 
 add_subdirectory (type)
 add_subdirectory (util)
+add_subdirectory (rapidxml)
+
