@@ -76,11 +76,11 @@ public:
 
       if (search_path.empty())
       {
-        LOG(WARN, "loader has an empty search path, try setting environment variable PC_LIBRARY_PATH or variable plugin.wfe.library_path");
+        MLOG(WARN, "loader has an empty search path, try setting environment variable PC_LIBRARY_PATH or variable plugin.wfe.library_path");
       }
       else
       {
-        LOG(INFO, "initialized loader with search path: " << search_path);
+        MLOG(INFO, "initialized loader with search path: " << search_path);
       }
 
       // TODO: figure out, why this doesn't work as it is supposed to
@@ -137,11 +137,13 @@ public:
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
+      emit(job_id + " entered");
+
       m_tasks.put(&task);
 
       if (walltime > boost::posix_time::seconds(0))
       {
-        LOG(INFO, "task has a walltime of " << walltime);
+        MLOG(INFO, "task has a walltime of " << walltime);
         if (! task.done.timed_wait(ec, boost::get_system_time()+walltime))
         {
           task.state = wfe_task_t::FAILED;
@@ -158,25 +160,33 @@ public:
         MLOG(INFO, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
         result = task.result;
+
+        emit(job_id + " ("+task.activity.transition().name()+") " + "finished");
       }
       else if (ec < 0)
       {
         MLOG(WARN, "task canceled: " << task.id << ": " << strerror(-ec) << ": " << task.result);
         task.state = wfe_task_t::CANCELED;
         result = task.result; //we::util::text_codec::encode(task.activity);
+
+        emit(job_id + " ("+task.activity.transition().name()+") " + "canceled");
       }
       else
       {
         MLOG(WARN, "task failed: " << task.id << ": " << task.result);
         task.state = wfe_task_t::FAILED;
         result = task.result; //we::util::text_codec::encode(task.activity);
+
+        emit(job_id + " ("+task.activity.transition().name()+") " + "failed");
       }
     }
     catch (std::exception const & ex)
     {
-      LOG(ERROR, "could not parse activity: " << ex.what());
+      MLOG(ERROR, "could not parse activity: " << ex.what());
       task.state = wfe_task_t::FAILED;
       ec = EINVAL;
+
+      emit(job_id + " (n/a) " + "failed");
     }
 
     {
@@ -214,9 +224,9 @@ private:
       }
       else
       {
-        wfe_exec_context ctxt (*m_loader, *task);
         try
         {
+          wfe_exec_context ctxt (*m_loader, *task);
           task->activity.execute (ctxt);
           if (task->state == wfe_task_t::FINISHED)
           {

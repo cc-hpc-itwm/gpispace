@@ -3,7 +3,6 @@
 #include "job.hpp"
 #include "wfe.hpp"
 #include "observable.hpp"
-#include "gui_event.hpp"
 
 #include <errno.h>
 
@@ -17,7 +16,6 @@
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
 
-//#include <gpi-space/pc/plugin/gpi.hpp>
 #include <sdpa/uuidgen.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/Codec.hpp>
