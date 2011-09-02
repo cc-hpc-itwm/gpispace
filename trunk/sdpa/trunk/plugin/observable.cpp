@@ -1,3 +1,5 @@
+#include <fhglog/minimal.hpp>
+
 #include "observable.hpp"
 #include "observer.hpp"
 
@@ -5,6 +7,21 @@
 
 namespace observe
 {
+  namespace detail
+  {
+    void deliver_event_to(boost::any const & evt, Observer *o)
+    {
+      try
+      {
+        o->notify(evt);
+      }
+      catch (std::exception const &ex)
+      {
+        LOG(WARN, "could not deliver event to " << o);
+      }
+    }
+  }
+
   void Observable::add_observer (Observer *o)
   {
     lock_type lock(m_mutex);
@@ -29,9 +46,9 @@ namespace observe
     lock_type lock(m_mutex);
     std::for_each( m_observers.begin()
                  , m_observers.end()
-                 , boost::bind( &Observer::notify
+                 , boost::bind( &detail::deliver_event_to
+                              , boost::ref(evt)
                               , _1
-                              , evt
                               )
                 );
   }
