@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
   if (arguments.contains("--load"))
     {
-      if(arguments.size() <= arguments.indexOf("--make-config") + 1)
+      if(arguments.size() <= arguments.indexOf("--load") + 1)
         {
           std::cerr << "--load requires a path" << std::endl;
           return EXIT_FAILURE;
