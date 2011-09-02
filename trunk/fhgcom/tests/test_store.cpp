@@ -12,8 +12,8 @@ BOOST_AUTO_TEST_CASE ( output_test )
   detail::null_backend b;
   store_t store (b, 1);
 
-  BOOST_CHECK_EQUAL( store.cache_size(), 1 );
-  BOOST_CHECK_EQUAL( store.num_cached(), 0 );
+  BOOST_CHECK_EQUAL( store.cache_size(), 1U );
+  BOOST_CHECK_EQUAL( store.num_cached(), 0U );
 
   put (store, "fhgcom.tests.test_store.i", "42");
   BOOST_REQUIRE( store.num_cached() == 1 );
