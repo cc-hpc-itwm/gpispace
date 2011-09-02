@@ -323,8 +323,8 @@ namespace fhg
 
           public:
             from_signature (const std::string & _name, QStandardItem * root)
-              : root_item (root)
-              , name (_name)
+              : name (_name)
+              , root_item (root)
             {}
 
             void operator () (const literal::type_name_t & t) const
