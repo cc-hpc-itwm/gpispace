@@ -7,6 +7,8 @@
 #include <QSettings>
 #include <QPixmap>
 #include <QSplashScreen>
+#include <QLocale>
+#include <QLibraryInfo>
 
 #include <iostream>
 
@@ -34,9 +36,14 @@ int main(int argc, char *argv[])
   a.processEvents();
 #endif
 
-  //! \todo Fix applying the translator if locale is correct only!
+  QTranslator qtTranslator;
+  QString locale (QLocale::system().name());
+
+  qtTranslator.load ("qt_" + locale, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+  a.installTranslator(&qtTranslator);
+
   QTranslator translator;
-  translator.load("german", ":/localization/");
+  translator.load(locale, ":/localization/");
   a.installTranslator(&translator);
 
   QSettings settings;

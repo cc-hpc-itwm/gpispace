@@ -3,6 +3,6 @@
      <file>lock.png</file>
      <file>cogwheel.png</file>
      <file>pente.png</file>
-     <file>localization/german.qm</file>
+     <file>localization/de_DE.qm</file>
  </qresource>
  </RCC>
