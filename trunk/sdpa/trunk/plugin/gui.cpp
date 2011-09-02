@@ -3,6 +3,7 @@
 
 #include "observable.hpp"
 #include "observer.hpp"
+#include "task_event.hpp"
 
 class GuiObserverPlugin : FHG_PLUGIN
                         , public observe::Observer
@@ -45,7 +46,15 @@ public:
 
   void notify(boost::any const &evt)
   {
-    MLOG(INFO, "got notification event: " << boost::any_cast<std::string>(evt));
+    try
+    {
+      task_event_t const & t (boost::any_cast<task_event_t>(evt));
+      MLOG(INFO, "*** TASK EVENT: " << t.id << " (" << t.name << ")" << " state = " << t.state);
+    }
+    catch (boost::bad_any_cast const &ex)
+    {
+      MLOG(WARN, "got bad notification event: " << ex.what());
+    }
   }
 private:
   void stop_to_observe(observe::Observable* o)

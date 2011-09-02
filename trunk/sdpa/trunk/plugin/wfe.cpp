@@ -2,6 +2,7 @@
 #include "wfe_task.hpp"
 #include "wfe_context.hpp"
 #include "observable.hpp"
+#include "task_event.hpp"
 
 #include <errno.h>
 
@@ -137,7 +138,13 @@ public:
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
 
-      emit(job_id + " entered");
+      emit(task_event_t( job_id
+                       , task.activity.transition().name()
+                       , task_event_t::ENQUEUED
+                       )
+          );
+
+      task.enqueue_time = boost::posix_time::microsec_clock::universal_time();
 
       m_tasks.put(&task);
 
@@ -148,6 +155,9 @@ public:
         {
           task.state = wfe_task_t::FAILED;
           ec = ETIMEDOUT;
+          // this is  required to ensure  that the execution thread  is actually
+          // finished with this task
+          task.done.wait(ec);
         }
       }
       else
@@ -155,21 +165,35 @@ public:
         task.done.wait(ec);
       }
 
+      task.finished_time = boost::posix_time::microsec_clock::universal_time();
+
       if (0 == ec)
       {
         MLOG(INFO, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
         result = task.result;
 
-        emit(job_id + " ("+task.activity.transition().name()+") " + "finished");
+        emit(task_event_t( job_id
+                         , task.activity.transition().name()
+                         , task_event_t::FINISHED
+                         , "" // TODO: explicity input along with job description?
+                         , we::util::text_codec::encode(task.activity.output())
+                         )
+            );
       }
       else if (ec < 0)
       {
         MLOG(WARN, "task canceled: " << task.id << ": " << strerror(-ec) << ": " << task.result);
         task.state = wfe_task_t::CANCELED;
-        result = task.result; //we::util::text_codec::encode(task.activity);
+        result = task.result;
 
-        emit(job_id + " ("+task.activity.transition().name()+") " + "canceled");
+        emit(task_event_t( job_id
+                         , task.activity.transition().name()
+                         , task_event_t::CANCELED
+                         , "" // TODO: explicity input along with job description?
+                         , we::util::text_codec::encode(task.activity.output())
+                         )
+            );
       }
       else
       {
@@ -177,7 +201,13 @@ public:
         task.state = wfe_task_t::FAILED;
         result = task.result; //we::util::text_codec::encode(task.activity);
 
-        emit(job_id + " ("+task.activity.transition().name()+") " + "failed");
+        emit(task_event_t( job_id
+                         , task.activity.transition().name()
+                         , task_event_t::FAILED
+                         , "" // TODO: explicity input along with job description?
+                         , we::util::text_codec::encode(task.activity.output())
+                         )
+            );
       }
     }
     catch (std::exception const & ex)
@@ -218,7 +248,17 @@ private:
     for (;;)
     {
       wfe_task_t *task = m_tasks.get();
-      if (task->state == wfe_task_t::CANCELED)
+      task->dequeue_time = boost::posix_time::microsec_clock::universal_time();
+
+      emit(task_event_t( task->id
+                       , task->activity.transition().name()
+                       , task_event_t::DEQUEUED
+                       , we::util::text_codec::encode(task->activity.input())
+                       , ""
+                       )
+          );
+
+      if (task->state != wfe_task_t::PENDING)
       {
         task->done.notify(-ECANCELED);
       }
