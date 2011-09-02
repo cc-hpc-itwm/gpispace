@@ -107,6 +107,8 @@ int main(int ac, char **av)
       MLOG(ERROR, "could not load `" << p << "' : " << ex.what());
       if (! keep_going)
       {
+        kernel->stop();
+        kernel->unload_all();
         return EXIT_FAILURE;
       }
     }
