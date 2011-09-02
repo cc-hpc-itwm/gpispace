@@ -151,6 +151,12 @@ void Worker::addCapabilities(const capabilities_set_t& cpbset)
 {
 	for( capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); it++ )
 	{
+          // i suppose  it's easier to exploit the  fact that capabilities_[*it]
+          // defaults constructs a counter with value 0 ...
+          ++capabilities_[*it];
+
+          LOG(TRACE, "worker " << name() << " gained capability: " << *it);
+          /*
 		capabilities_map_t::iterator itw = capabilities_.find(*it);
 		if( itw != capabilities_.end() )
 		{
@@ -163,6 +169,7 @@ void Worker::addCapabilities(const capabilities_set_t& cpbset)
 			// create new entry
 			capabilities_[*it] = 1;
 		}
+          */
 	}
 }
 
@@ -185,5 +192,6 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 			// do nothing
 			LOG(ERROR, "The worker "<<name()<<" doesn't possess such capability!");
 		}
+                LOG(TRACE, "worker " << name() << " lost capability: " << *it);
 	}
 }
