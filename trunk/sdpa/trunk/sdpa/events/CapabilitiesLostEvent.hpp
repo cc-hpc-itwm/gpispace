@@ -43,6 +43,13 @@ namespace sdpa { namespace events {
           , capabilities_(cpbs)
         {}
 
+          CapabilitiesLostEvent( const address_t& from , const address_t& to, std::string const &cap)
+            : MgmtEvent(from, to)
+            , capabilities_()
+          {
+            capabilities_.insert (cap);
+          }
+
 		virtual ~CapabilitiesLostEvent() { }
 
 		const sdpa::capabilities_set_t& capabilities() const { return capabilities_; }
