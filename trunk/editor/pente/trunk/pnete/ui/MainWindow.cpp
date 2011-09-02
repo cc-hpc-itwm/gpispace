@@ -81,11 +81,14 @@ namespace fhg
         //! \todo icons for toolbar.
         QAction* saveAction = new QAction(tr("Save"), this);
         saveAction->setShortcuts(QKeySequence::Save);
+        QAction* openAction = new QAction(tr("Open"), this);
+        openAction->setShortcuts(QKeySequence::Open);
         QAction* closeAction = new QAction(tr("Close"), this);
         closeAction->setShortcuts(QKeySequence::Close);
 
-        connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
-        connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
+        connect(saveAction, SIGNAL(triggered()), SLOT(save()));
+        connect(openAction, SIGNAL(triggered()), SLOT(open()));
+        connect(closeAction, SIGNAL(triggered()), SLOT(close()));
 
         //! \todo Do not make this a child of MainWindow on OSX for being global across windows.
         QMenuBar* menuBar = new QMenuBar(this);
@@ -96,6 +99,7 @@ namespace fhg
 
         menuBar->addAction(menuFile->menuAction());
         menuFile->addAction(saveAction);
+        menuFile->addAction(openAction);
         menuFile->addAction(closeAction);
 
         QMenu* menuEdit = new QMenu(tr("Edit"), menuBar);
@@ -204,10 +208,19 @@ namespace fhg
           helper::GraphTraverser traverser(_scene);
           helper::TraverserReceiver receiver;
 
-          QFile xmlFile(QFileDialog::getSaveFileName(this, tr("Save net"), QDir::homePath(), tr("XML files (*.xml)")));
+          QString filename(QFileDialog::getSaveFileName(this, tr("Save net"), QDir::homePath(), tr("XML files (*.xml)")));
+
+          if (filename == QString())
+          {
+            return;
+          }
+
+          QFile xmlFile (filename);
 
           if (!xmlFile.open(QIODevice::WriteOnly | QIODevice::Text))
+          {
             return;
+          }
 
           QTextStream out(&xmlFile);
           out << traverser.traverse(&receiver, QFileInfo(xmlFile).baseName()) << "\n";
@@ -215,6 +228,27 @@ namespace fhg
 
           xmlFile.close();
         }
+      }
+
+      void MainWindow::open()
+      {
+        QString filename(QFileDialog::getOpenFileName(this, tr("Load net"), QDir::homePath(), tr("XML files (*.xml)")));
+
+        if (filename == QString())
+        {
+          return;
+        }
+
+        _structureView->fromFile (filename.toStdString());
+
+        _graphicsView->setScene (NULL);
+        delete _scene;
+        _scene = new graph::Scene ( QRectF (-2000.0, -2000.0, 4000.0, 4000.0)   // hardcoded constant
+                                  , this
+                                  );
+        _graphicsView->setScene (_scene);
+
+        //! \todo load new scene from file!
       }
     }
   }

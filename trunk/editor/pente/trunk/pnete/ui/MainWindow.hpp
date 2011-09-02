@@ -41,6 +41,7 @@ namespace fhg
 
       public slots:
         void save();
+        void open();
         void expandTree();
 
       private:
