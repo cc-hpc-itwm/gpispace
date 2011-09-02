@@ -38,8 +38,19 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
                  ${BOOST_ROOT}/lib/libboost_filesystem.so
 )
 
-install(FILES wfe.hpp DESTINATION include/plugins COMPONENT headers)
+install(FILES wfe.hpp observable.hpp DESTINATION include/plugins COMPONENT headers)
 install(TARGETS wfe-plugin LIBRARY
+  DESTINATION libexec/plugins
+  COMPONENT plugins
+  )
+
+fhg_add_plugin(gui gui.cpp
+  LINK_LIBRARIES ${FhgCom_LIBRARY}
+                 ${WE_PRECOMPILE_LIBRARIES}
+)
+
+#install(FILES gui.hpp observer.hpp DESTINATION include/plugins COMPONENT headers)
+install(TARGETS gui-plugin LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins
   )
