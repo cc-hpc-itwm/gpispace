@@ -1,6 +1,7 @@
 #include "wfe.hpp"
 #include "wfe_task.hpp"
 #include "wfe_context.hpp"
+#include "observable.hpp"
 
 #include <errno.h>
 
@@ -48,6 +49,7 @@ struct search_path_appender
 
 class WFEImpl : FHG_PLUGIN
               , public wfe::WFE
+              , public observe::Observable
 {
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;

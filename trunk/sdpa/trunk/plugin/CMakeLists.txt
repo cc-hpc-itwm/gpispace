@@ -31,7 +31,7 @@ install(TARGETS kvs-plugin LIBRARY
   COMPONENT plugins
   )
 
-fhg_add_plugin(wfe wfe.cpp
+fhg_add_plugin(wfe wfe.cpp observable.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${WE_PRECOMPILE_LIBRARIES}
                  ${BOOST_ROOT}/lib/libboost_serialization.so
