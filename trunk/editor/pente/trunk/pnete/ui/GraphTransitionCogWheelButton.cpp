@@ -47,6 +47,8 @@ namespace fhg
 
       void TransitionCogWheelButton::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
       {
+        event->accept();
+
         //! \todo Real content of the popover.
         QWidget* content = new QPushButton("aloha");
         content->setMinimumSize(QSize(100,100));

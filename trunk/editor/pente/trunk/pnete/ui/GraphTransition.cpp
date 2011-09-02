@@ -52,14 +52,18 @@ namespace fhg
         if(_dragging)
         {
           _dragging = false;
-          event->setAccepted(true);
+          event->accept ();
+        }
+        else
+        {
+          event->ignore ();
         }
       }
 
       void Transition::mousePressEvent(QGraphicsSceneMouseEvent * event)
       {
         //! \todo resize grap or move?
-        event->setAccepted(true);
+        event->accept ();
         _dragStart = event->pos();
         _dragging = true;
       }
@@ -68,6 +72,8 @@ namespace fhg
       {
         if(_dragging)
         {
+          event->accept ();
+
           QPointF oldLocation = pos();
           setPos(Style::snapToRaster(oldLocation + event->pos() - _dragStart));
 
@@ -83,6 +89,10 @@ namespace fhg
             }
           }
           scene()->update();
+        }
+        else
+        {
+          event->ignore ();
         }
       }
 

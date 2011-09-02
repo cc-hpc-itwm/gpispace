@@ -68,13 +68,13 @@ namespace fhg
 
       void Scene::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
       {
-        QGraphicsScene::contextMenuEvent(event);
+        QGraphicsScene::contextMenuEvent (event);
 
         if (!event->isAccepted())
-          {
-            _menu_context.popup(event->screenPos());
-            event->accept();
-          }
+        {
+          _menu_context.popup(event->screenPos());
+          event->accept();
+        }
       }
 
       void Scene::slot_add_transition ()
@@ -154,7 +154,7 @@ namespace fhg
             if(portBelow && pendingConnectionCanConnectTo(portBelow))
             {
               pendingConnectionConnectTo(portBelow);
-              event->setAccepted(true);
+              event->accept();
               update();
               return;
             }
@@ -162,6 +162,8 @@ namespace fhg
 
           removePendingConnection();
         }
+
+        event->ignore();
 
         QGraphicsScene::mouseReleaseEvent(event);
       }
@@ -216,6 +218,11 @@ namespace fhg
         if(_pendingConnection && event->key() == Qt::Key_Escape)
         {
           removePendingConnection();
+          event->accept();
+        }
+        else
+        {
+          event->ignore();
         }
       }
     }

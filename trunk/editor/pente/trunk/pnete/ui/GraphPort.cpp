@@ -62,46 +62,54 @@ namespace fhg
 
       void Port::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
       {
-        QGraphicsItem::contextMenuEvent(event);
+        QGraphicsItem::contextMenuEvent (event);
 
-        if (!event->isAccepted())
-          {
-            _menu_context.popup(event->screenPos());
-            event->accept();
-          }
+        if (!event->isAccepted ())
+        {
+          _menu_context.popup (event->screenPos ());
+          event->accept ();
+        }
       }
 
       void Port::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
       {
-        if(_dragging)
+        if (_dragging)
         {
           _dragging = false;
-          event->accept();
+          event->accept ();
+        }
+        else
+        {
+          event->ignore ();
         }
       }
 
       void Port::mousePressEvent(QGraphicsSceneMouseEvent* event)
       {
         if (!(event->buttons() & Qt::RightButton))
+        {
+          switch (Style::portHit (this, event->pos ()))
           {
-            switch(Style::portHit(this, event->pos()))
-              {
-              case Style::MAIN:
-                _dragging = true;
-                _dragStart = event->pos();
-                event->accept();
-                break;
+          case Style::MAIN:
+            _dragging = true;
+            _dragStart = event->pos ();
+            event->accept ();
+            break;
 
-              case Style::TAIL:
-              default:
-                //! \note Maybe not needed and checked somewhere else.
-                if(!notConnectable())
-                  {
-                    event->setAccepted(createPendingConnectionIfPossible());
-                  }
-                break;
-              }
+          case Style::TAIL:
+          default:
+            //! \note Maybe not needed and checked somewhere else.
+            if (!notConnectable ())
+            {
+              event->setAccepted (createPendingConnectionIfPossible ());
+            }
+            else
+            {
+              event->ignore();
+            }
+            break;
           }
+        }
       }
 
       QPointF Port::snapToEdge(const QPointF& position, eOrientation edge) const
@@ -194,8 +202,10 @@ namespace fhg
       {
         if(!_dragging)
         {
+          event->ignore();
           return;
         }
+        event->accept();
 
         QPointF oldLocation = pos();
         eOrientation oldOrientation = _orientation;
