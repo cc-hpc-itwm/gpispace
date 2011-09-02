@@ -39,12 +39,12 @@ namespace fhg
       void Transition::init_menu_context()
       {
         QAction* action_add_port = _menu_context.addAction(tr("Add Port"));
-        connect (action_add_port, SIGNAL(triggered()), this, SLOT(slot_add_port()));
+        connect (action_add_port, SIGNAL(triggered()), SLOT(slot_add_port()));
 
         _menu_context.addSeparator();
 
         QAction* action_delete = _menu_context.addAction(tr("Delete"));
-        connect (action_delete, SIGNAL(triggered()), this, SLOT(slot_delete()));
+        connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
       }
 
       void Transition::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)

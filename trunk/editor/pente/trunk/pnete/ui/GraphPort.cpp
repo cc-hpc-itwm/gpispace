@@ -41,12 +41,12 @@ namespace fhg
       void Port::init_menu_context()
       {
         QAction* action_set_type = _menu_context.addAction(tr("Set type"));
-        connect (action_set_type, SIGNAL(triggered()), this, SLOT(slot_set_type()));
+        connect (action_set_type, SIGNAL(triggered()), SLOT(slot_set_type()));
 
         _menu_context.addSeparator();
 
         QAction* action_delete = _menu_context.addAction(tr("Delete"));
-        connect (action_delete, SIGNAL(triggered()), this, SLOT(slot_delete()));
+        connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
       }
 
       void Port::slot_set_type ()

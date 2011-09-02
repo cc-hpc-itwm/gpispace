@@ -32,7 +32,7 @@ namespace fhg
           createShape();
 
           _hideTimer->setSingleShot(true);
-          connect(_hideTimer, SIGNAL(timeout()), this, SLOT(close()));
+          connect(_hideTimer, SIGNAL(timeout()), SLOT(close()));
         }
 
         QPoint PopoverWidget::arrowAdjustment() const
@@ -51,7 +51,7 @@ namespace fhg
             _closingAnimation->setDirection(QPropertyAnimation::Forward);
             _closingAnimation->start();
             _closingAnimation->setCurrentTime(curTime);
-            connect(_closingAnimation, SIGNAL(finished()), this, SLOT(animationFinished()));
+            connect(_closingAnimation, SIGNAL(finished()), SLOT(animationFinished()));
           }
           QWidget::enterEvent(event);
         }
@@ -81,7 +81,7 @@ namespace fhg
         {
           QPropertyAnimation *animation = createAnimation();
 
-          connect(animation, SIGNAL(finished()), this, SLOT(animationFinished()));
+          connect(animation, SIGNAL(finished()), SLOT(animationFinished()));
 
           animation->start(QPropertyAnimation::DeleteWhenStopped);
 
@@ -103,8 +103,8 @@ namespace fhg
             _closingAnimation = createAnimation();
             _closingAnimation->setDirection(QPropertyAnimation::Backward);
 
-            connect(_closingAnimation, SIGNAL(finished()), this, SLOT(close()));
-            connect(_closingAnimation, SIGNAL(finished()), this, SLOT(animationFinished()));
+            connect(_closingAnimation, SIGNAL(finished()), SLOT(close()));
+            connect(_closingAnimation, SIGNAL(finished()), SLOT(animationFinished()));
 
             _closingAnimation->start(QPropertyAnimation::DeleteWhenStopped);
           }

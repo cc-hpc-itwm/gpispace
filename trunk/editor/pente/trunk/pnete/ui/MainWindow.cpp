@@ -132,11 +132,11 @@ namespace fhg
         zoomSpinBox->setRange(10, 300);                                         // hardcoded constant
         mainToolBar->addWidget(zoomSpinBox);
 
-        connect(zoomSlider, SIGNAL(valueChanged(int)), zoomSpinBox, SLOT(setValue(int)));
-        connect(zoomSpinBox, SIGNAL(valueChanged(int)), zoomSlider, SLOT(setValue(int)));
-        connect(zoomSpinBox, SIGNAL(valueChanged(int)), _graphicsView, SLOT(zoom(int)));
-        connect(_graphicsView, SIGNAL(zoomed(int)), zoomSpinBox, SLOT(setValue(int)));
-        connect(_graphicsView, SIGNAL(zoomed(int)), zoomSlider, SLOT(setValue(int)));
+        zoomSpinBox->connect(zoomSlider, SIGNAL(valueChanged(int)), SLOT(setValue(int)));
+        zoomSlider->connect(zoomSpinBox, SIGNAL(valueChanged(int)), SLOT(setValue(int)));
+        _graphicsView->connect(zoomSpinBox, SIGNAL(valueChanged(int)), SLOT(zoom(int)));
+        zoomSpinBox->connect(_graphicsView, SIGNAL(zoomed(int)), SLOT(setValue(int)));
+        zoomSlider->connect(_graphicsView, SIGNAL(zoomed(int)), SLOT(setValue(int)));
 
         zoomSlider->setValue(100);                                              // hardcoded constant
       }
