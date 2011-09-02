@@ -21,8 +21,6 @@ namespace expr
                                    , propagated_type
                                    > propagation_map_type;
 
-      propagation_map_type _propagation_map;
-
       namespace detail
       {
         class numbering_and_propagation_pass
@@ -32,15 +30,18 @@ namespace expr
           tree_node_type& _ssa_tree;
           const line_type& _line;
           expression_list & _expression_list;
+          propagation_map_type & _propagation_map;
 
         public:
           numbering_and_propagation_pass ( tree_node_type& ssa_tree
                                          , const line_type & line
                                          , expression_list & list
+                                         , propagation_map_type & propagation_map
                                          )
           : _ssa_tree (ssa_tree)
           , _line (line)
           , _expression_list (list)
+          , _propagation_map (propagation_map)
           {}
 
           node::type operator () (const value::type & t) const
@@ -239,13 +240,19 @@ namespace expr
                                      , tree_node_type& ssa_tree
                                      )
       {
+        propagation_map_type propagation_map;
+
         for ( expression_list::nodes_type::iterator it (list.begin())
             , end (list.end())
             ; it != end
             ; ++it )
         {
           *it = boost::apply_visitor
-              ( detail::numbering_and_propagation_pass (ssa_tree, it, list)
+              ( detail::numbering_and_propagation_pass ( ssa_tree
+                                                       , it
+                                                       , list
+                                                       , propagation_map
+                                                       )
               , *it
               );
         }
