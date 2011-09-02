@@ -41,4 +41,4 @@ namespace fhg
   }
 }
 
-#endif _PENTE_HPP
+#endif
