@@ -68,6 +68,14 @@ namespace drts
 
     std::string const & result() const { lock_type lck(m_mutex); return m_result; }
     void result(std::string const &r) { lock_type lck(m_mutex); m_result = r; }
+
+    boost::posix_time::ptime const & entered () const { return m_entered; }
+    boost::posix_time::ptime const & started () const { return m_started; }
+    boost::posix_time::ptime const & completed () const { return m_completed; }
+
+    void entered   (boost::posix_time::ptime const &t) { m_entered = t; }
+    void started   (boost::posix_time::ptime const &t) { m_started = t; }
+    void completed (boost::posix_time::ptime const &t) { m_completed = t; }
   private:
     inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
     mutable mutex_type m_mutex;
