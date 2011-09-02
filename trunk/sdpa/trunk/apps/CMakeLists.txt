@@ -4,7 +4,8 @@ set (daemon_libs
   sdpa-util
   sdpa-com
   sdpa
-  seda
+  ${FhgLog_LIBRARY}
+  ${SEDA_LIBRARY}
   ${WE_LIBRARIES}
   ${Boost_LIBRARIES}
 )
@@ -55,8 +56,9 @@ set ( client_libs
       sdpa-util
       sdpa-com
       sdpa
-      seda
-      ${Boost_LIBRARIES} 
+      ${FhgLog_LIBRARY}
+      ${SEDA_LIBRARY}
+      ${Boost_LIBRARIES}
 )
 
 #

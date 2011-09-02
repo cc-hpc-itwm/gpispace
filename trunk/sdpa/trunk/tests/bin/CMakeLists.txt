@@ -25,7 +25,7 @@ endif (USE_SMC_SC)
     sdpa-events
     sdpa-util
     sdpa
-    seda
+    ${SEDA_LIBRARY}
     ${FhgCom_LIBRARY}
     ${FhgLog_LIBRARY}
     ${Boost_UNIT_TEST_LIBRARIES}

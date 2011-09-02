@@ -102,6 +102,8 @@ else (DISABLE_FHGLOG)
 endif (DISABLE_FHGLOG)
 
 ##########################################################
+set(BUILDING_FROM_MAIN 1)
+
 include(CTest)
 add_subdirectory(modules)
 message(STATUS "=== [ fhglog ] ===")

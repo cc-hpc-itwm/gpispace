@@ -22,18 +22,18 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 
 add_subdirectory(workflows)
 
-if (USE_REAL_WE)
+if (USE_REAL_WE AND BUILDING_FROM_MAIN)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-	DEPENDS ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml
+	DEPENDS ${CMAKE_SOURCE_DIR}/tests/sdpa/workflows/stresstest.xml
 	DEPENDS pnetc
 	COMMAND ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc
 #	COMMAND pnetc
 	ARGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
     COMMENT "Invoke command: ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet" VERBATIM
 )
-else (USE_REAL_WE )
-	configure_file(${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
-endif (USE_REAL_WE)
+else (USE_REAL_WE AND BUILDING_FROM_MAIN)
+	configure_file(${CMAKE_SOURCE_DIR}/tests/sdpa/workflows/stresstest.xml ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
+endif (USE_REAL_WE AND BUILDING_FROM_MAIN)
 
 set (test_srcs
   SchedulerTestImpl.cpp
@@ -47,7 +47,7 @@ target_link_libraries(sdpa-test
 	 sdpa-events
 	 sdpa-util
 	 sdpa
-	 seda
+	 ${SEDA_LIBRARY}
 	 ${Boost_UNIT_TEST_LIBRARIES}
 	 ${Boost_LIBRARIES})
 
@@ -80,7 +80,7 @@ foreach (tc_src ${tc_srcs})
                         sdpa-events
                         sdpa-util
                         sdpa
-			            seda
+			${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
@@ -105,7 +105,7 @@ target_link_libraries(  test_agents_and_act_exec_suite
                         sdpa-events
                         sdpa-util
                         sdpa
-			            seda
+			${SEDA_LIBRARY}
 			            ${FhgLog_LIBRARY}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}

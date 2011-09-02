@@ -1,7 +1,7 @@
 # -*- mode: cmake; -*-
 # Tries to locate a logging framework.
 # This file defines:
-# * SEDA_FOUND if log4cpp was found
+# * SEDA_FOUND if seda was found
 # * SEDA_LIBRARY The lib to link to (currently only a static unix lib, not portable) 
 # * SEDA_INCLUDE_DIR The path to the include directory
 # *  PKG_CHECK_MODULE used to set the following variables
