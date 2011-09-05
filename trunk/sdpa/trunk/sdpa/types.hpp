@@ -43,8 +43,8 @@ namespace sdpa {
 	typedef std::vector<MasterInfo> master_info_list_t;
 
 	typedef std::string capability_t;
-	typedef std::set<capability_t> capabilities_set_t;
-	typedef std::map<capability_t, unsigned int > capabilities_map_t;
+	typedef std::multiset<capability_t> capabilities_set_t;
+	//typedef std::map<capability_t, unsigned int > capabilities_map_t;
 
 }
 
