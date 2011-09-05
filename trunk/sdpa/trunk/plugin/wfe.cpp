@@ -141,6 +141,7 @@ public:
       emit(task_event_t( job_id
                        , task.activity.transition().name()
                        , task_event_t::ENQUEUED
+                       , job_description
                        )
           );
 
@@ -176,8 +177,7 @@ public:
         emit(task_event_t( job_id
                          , task.activity.transition().name()
                          , task_event_t::FINISHED
-                         , "" // TODO: explicity input along with job description?
-                         , we::util::text_codec::encode(task.activity.output())
+                         , we::util::text_codec::encode(task.activity)
                          )
             );
       }
@@ -190,8 +190,7 @@ public:
         emit(task_event_t( job_id
                          , task.activity.transition().name()
                          , task_event_t::CANCELED
-                         , "" // TODO: explicity input along with job description?
-                         , we::util::text_codec::encode(task.activity.output())
+                         , we::util::text_codec::encode(task.activity)
                          )
             );
       }
@@ -204,8 +203,7 @@ public:
         emit(task_event_t( job_id
                          , task.activity.transition().name()
                          , task_event_t::FAILED
-                         , "" // TODO: explicity input along with job description?
-                         , we::util::text_codec::encode(task.activity.output())
+                         , we::util::text_codec::encode(task.activity)
                          )
             );
       }
@@ -216,7 +214,12 @@ public:
       task.state = wfe_task_t::FAILED;
       ec = EINVAL;
 
-      emit(job_id + " (n/a) " + "failed");
+      emit(task_event_t( job_id
+                       , "n/a"
+                       , task_event_t::UNKNOWN
+                       , ex.what()
+                       )
+          );
     }
 
     {
@@ -253,8 +256,7 @@ private:
       emit(task_event_t( task->id
                        , task->activity.transition().name()
                        , task_event_t::DEQUEUED
-                       , we::util::text_codec::encode(task->activity.input())
-                       , ""
+                       , we::util::text_codec::encode(task->activity)
                        )
           );
 

@@ -42,10 +42,6 @@ namespace sdpa { namespace daemon {
       : service_(s)
     {}
 
-    notify_helper &workflow_id(const std::string &id)     { event_.workflow_id() = id; return *this; }
-    notify_helper &workflow_name(const std::string &name) { event_.workflow_name() = name; return *this; }
-    notify_helper &workflow_state(state_t state)          { event_.state() = state; return *this; }
-
     notify_helper &activity_id(const std::string &id)     { event_.activity_id() = id; return *this; }
     notify_helper &activity_name(const std::string &name) { event_.activity_name() = name; return *this; }
     notify_helper &activity_state(state_t state)          { event_.activity_state() = state; return *this; }

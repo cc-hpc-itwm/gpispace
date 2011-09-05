@@ -103,7 +103,7 @@ private:
     sdpa::daemon::NotificationEvent n_evt;
     n_evt.activity_id() = e.id;
     n_evt.activity_name() = e.name;
-    n_evt.activity_result() = e.output;
+    n_evt.activity() = e.activity;
     switch (e.state)
     {
     case task_event_t::ENQUEUED:

@@ -174,19 +174,26 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
     return;
   }
 
-  we::activity_t act;
-  try
+  if (notification.activity_state() != sdpa::daemon::NotificationEvent::STATE_IGNORE)
   {
-    we::util::text_codec::decode(notification.activity_result(), act);
-  }
-  catch (std::exception const &ex)
-  {
-    qDebug() << "could not parse activity: " << ex.what();
-    return;
-  }
+    we::activity_t act;
+    try
+    {
+      we::util::text_codec::decode(notification.activity(), act);
+    }
+    catch (std::exception const &ex)
+    {
+      qDebug() << "could not parse activity: " << ex.what();
+      return;
+    }
 
-  UpdatePortfolioView(notification, act);
-  UpdateExecutionView(evt.logged_on(), notification, act);
+    UpdatePortfolioView(notification, act);
+    UpdateExecutionView(evt.logged_on(), notification, act);
+  }
+  else
+  {
+    qDebug() << "activity " << notification.activity_id().c_str() << " failed!";
+  }
 }
 
 void MonitorWindow::UpdateExecutionView( std::string const & host
