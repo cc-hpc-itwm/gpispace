@@ -268,19 +268,21 @@ private:
         {
           wfe_exec_context ctxt (*m_loader, *task);
           task->activity.execute (ctxt);
-          if (task->state == wfe_task_t::FINISHED)
-          {
-            task->result = we::util::text_codec::encode(task->activity);
-            task->done.notify(0);
-          }
-          else if (task->state == wfe_task_t::CANCELED)
+          if (task->state == wfe_task_t::CANCELED)
           {
             task->result = "cancelled";
             task->done.notify(-ECANCELED);
           }
+          else
+          {
+            task->state = wfe_task_t::FINISHED;
+            task->result = we::util::text_codec::encode(task->activity);
+            task->done.notify(0);
+          }
         }
         catch (std::exception const & ex)
         {
+          task->state = wfe_task_t::FAILED;
           task->result = ex.what();
           task->done.notify(1);
         }

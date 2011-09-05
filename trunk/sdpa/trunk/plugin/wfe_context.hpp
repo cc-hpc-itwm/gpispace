@@ -31,11 +31,6 @@ struct wfe_exec_context : public we::mgmt::context<>
     }
 
     act.collect_output ();
-
-    if (task.state != wfe_task_t::CANCELED)
-    {
-      task.state = wfe_task_t::FINISHED;
-    }
   }
 
   void handle_internally ( we::activity_t & act, const mod_t & mod)
@@ -43,7 +38,7 @@ struct wfe_exec_context : public we::mgmt::context<>
     module::call ( loader, act, mod );
   }
 
-  void handle_internally ( we::activity_t & , const expr_t & )
+  void handle_internally ( we::activity_t & , const expr_t &)
   {
     // nothing to do
   }
