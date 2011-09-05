@@ -914,6 +914,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	// everything is fine, nothing to do
     	break;
     }
+    // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
+    // 'reason' should not be reused for important information
     case ErrorEvent::SDPA_EJOBREJECTED:
     {
     	sdpa::job_id_t jobId(error.reason());
