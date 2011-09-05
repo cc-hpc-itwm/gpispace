@@ -322,9 +322,6 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
     try {
         jobId = ptrWorker->get_next_job(last_job_id);
 
-        // delete the job from the affinity list of the other workers
-        deleteJobFromAllAffinityLists(jobId);
-
         SDPA_LOG_INFO("The worker "<<worker_id<<" has a capacity of "<<ptrWorker->capacity()<<" jobs and has "<<ptrWorker->nbAllocatedJobs()<<" jobs allocated!");
 
         return jobId;
@@ -362,9 +359,6 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
           //SDPA_LOG_INFO("Try to steal work from another worker ...");
           jobId = stealWork(worker_id);
           ptrWorker->submitted().push(jobId);
-
-          // delete the job from the affinity list of the other workers
-          deleteJobFromAllAffinityLists(jobId);
 
           return jobId;
         }
@@ -435,18 +429,6 @@ const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWor
     throw NoWorkerFoundException();
 
   return rank_map().at(rank);
-}
-
-// for any worker in ranks() -> should pass as parameter a ist of workers !
-void WorkerManager::deleteJobFromAllAffinityLists(const sdpa::job_id_t& job_id)
-{
-  lock_type lock(mtx_);
-  owner_map().erase(job_id);
-  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-  {
-    const Worker::ptr_t& ptrWorker = iter->second;
-    ptrWorker->delete_from_affinity_list(job_id);
-  }
 }
 
 void WorkerManager::delWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
@@ -522,6 +504,18 @@ void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 	}
 	else
 		throw WorkerNotFoundException(worker_id);
+}
+
+void WorkerManager::getCapabilities(sdpa::capabilities_set_t& cpbset)
+{
+	lock_type lock(mtx_);
+	for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
+	{
+		sdpa::capabilities_set_t workerCpbSet = it->second->capabilities();
+		for(sdpa::capabilities_set_t::iterator itwcps = workerCpbSet.begin(); itwcps != workerCpbSet.end();  itwcps++  )
+			cpbset.insert(*itwcps);
+	}
+
 }
 
 template <typename T>

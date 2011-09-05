@@ -53,6 +53,7 @@ namespace sdpa { namespace daemon {
 
       virtual void addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
       virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
+      virtual void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
      // void getListOfRegisteredRanks( std::vector<unsigned int>& );
 
@@ -67,7 +68,6 @@ namespace sdpa { namespace daemon {
       void dispatchJob(const sdpa::job_id_t& jobId);
       void delete_job(const sdpa::job_id_t& jobId);
       void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
-      void deleteJobFromAllAffinityLists(const sdpa::job_id_t& job_id);
 
       Worker::worker_id_t getOwnerId(const sdpa::job_id_t& job_id) throw (JobNotAssignedException);
       void make_owner(const sdpa::job_id_t& job_id, const worker_id_t& worker_id );
