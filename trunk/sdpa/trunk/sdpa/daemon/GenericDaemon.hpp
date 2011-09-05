@@ -179,9 +179,6 @@ namespace sdpa { namespace daemon {
       virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
       virtual seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
 
-      // OBSOLETE!!!!!
-      virtual bool is_registered() const { return m_bRegistered;}
-
       sdpa::util::Config& cfg() { return daemon_cfg_;}
 
       const unsigned int& rank() const { return m_nRank; }
@@ -307,7 +304,6 @@ protected:
 
         sdpa::util::Config daemon_cfg_;
 
-        bool m_bRegistered;
         unsigned int m_nRank;
         unsigned int m_nCap; // maximum number of external jobs
         sdpa::worker_id_t m_strAgentUID;
