@@ -416,8 +416,8 @@ public:
         MLOG(WARN, "cannot accept new jobs, backlog is full.");
         send_event (new sdpa::events::ErrorEvent( m_my_name
                                                 , e->from()
-                                                , sdpa::events::ErrorEvent::SDPA_EBUSY
-                                                , "I am busy right now, please try again later"
+                                                , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                                                , e->job_id() // "I am busy right now, please try again later"
                                                 )
                    );
         return;
@@ -589,7 +589,7 @@ private:
     {
       {
         lock_type lock(m_job_computed_mutex);
-        while (m_backlog_size && (m_backlog_size < m_pending_jobs.size()))
+        while (m_backlog_size && (m_pending_jobs.size() >= m_backlog_size))
         {
           MLOG(TRACE, "job requestor waits until job queue frees up some slots");
           m_job_computed.wait(lock);
@@ -620,7 +620,7 @@ private:
 
           if (now >= time_of_next_request)
           {
-            DMLOG(TRACE, "requesting job from " << master->name());
+            MLOG(TRACE, "requesting job from " << master->name());
 
             send_event(new sdpa::events::RequestJobEvent( m_my_name
                                                         , master->name()
@@ -728,15 +728,15 @@ private:
 
 
           }
-
-          {
-            lock_type lock(m_job_computed_mutex);
-            m_job_computed.notify_one();
-          }
         }
         catch (std::exception const & ex)
         {
           // mark job as failed
+        }
+
+        {
+          lock_type lock(m_job_computed_mutex);
+          m_job_computed.notify_one();
         }
       }
       else
