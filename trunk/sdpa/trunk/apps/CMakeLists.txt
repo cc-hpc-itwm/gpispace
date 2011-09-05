@@ -23,15 +23,15 @@ install(TARGETS orchestrator
 #
 # Aggregator
 #
-add_executable(aggregator aggregator.cpp)
-target_link_libraries(aggregator ${daemon_libs})
-install(TARGETS aggregator
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
-  
-  #
-# Aggregator
+#add_executable(aggregator aggregator.cpp)
+#target_link_libraries(aggregator ${daemon_libs})
+#install(TARGETS aggregator
+#  RUNTIME
+#  DESTINATION bin
+#  COMPONENT applications)
+
+#
+# Agent
 #
 add_executable(agent agent.cpp)
 target_link_libraries(agent ${daemon_libs})
@@ -39,16 +39,17 @@ install(TARGETS agent
   RUNTIME
   DESTINATION bin
   COMPONENT applications)
-  
+
 #
 # Nre
 #
-add_executable(nre nre.cpp)
-target_link_libraries(nre ${daemon_libs})
-install(TARGETS nre
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
+#add_executable(nre nre.cpp)
+#target_link_libraries(nre ${daemon_libs})
+#install(TARGETS nre
+#  RUNTIME
+#  DESTINATION bin
+#  COMPONENT applications)
+
 
 set ( client_libs
       sdpa-client
@@ -71,14 +72,12 @@ install(TARGETS sdpac
   DESTINATION bin
   COMPONENT applications)
 
-add_executable(bsdpac blocking_client.cpp)
-target_link_libraries(bsdpac ${client_libs})
-install(TARGETS bsdpac
-  RUNTIME
-  DESTINATION bin
-  COMPONENT applications)
-  
- 
-add_executable(suca submit_and_cancel.cpp)
-target_link_libraries(suca ${client_libs})
-  
+#add_executable(bsdpac blocking_client.cpp)
+#target_link_libraries(bsdpac ${client_libs})
+#install(TARGETS bsdpac
+#  RUNTIME
+#  DESTINATION bin
+#  COMPONENT applications)
+
+#add_executable(suca submit_and_cancel.cpp)
+#target_link_libraries(suca ${client_libs})
