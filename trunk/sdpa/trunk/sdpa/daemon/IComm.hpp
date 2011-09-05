@@ -68,7 +68,7 @@ const std::string USER("user");
 	  virtual void workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& id ) = 0;
 
 	  virtual const std::string& name() const = 0;
-	  virtual bool is_registered() const = 0;
+	  //virtual bool is_registered() const = 0;
 	  virtual sdpa::util::Config& cfg() = 0;
 
 	  virtual unsigned int& rank() = 0;
