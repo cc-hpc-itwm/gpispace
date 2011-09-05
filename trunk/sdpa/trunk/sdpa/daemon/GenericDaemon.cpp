@@ -927,24 +927,23 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
     	// mark the agen as not-registered
 
-        // that's not true -> to be reviewed !
         // check if the message comes from a master
-        BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-        {
-          if( error.from() == masterInfo.name() )
-          {
-            if( !is_orchestrator() )
-            {
-              // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
-              const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-              SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-              boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-              masterInfo.set_registered(false);
-              requestRegistration(masterInfo);
-            }
-          }
-        }
-    	break;
+    	 if( !is_orchestrator() )
+    	 {
+    		 BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+			 {
+    			 if( error.from() == masterInfo.name() )
+    			 {
+					  // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
+					  const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+					  SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+					  boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+					  masterInfo.set_registered(false);
+					  requestRegistration(masterInfo);
+    			 }
+			 }
+    	 }
+    	 break;
     }
     case ErrorEvent::SDPA_ENODE_SHUTDOWN:
     {
@@ -952,35 +951,49 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 
     	try
     	{
-    		findWorker(worker_id);
+    		 Worker::ptr_t ptrWorker = findWorker(worker_id);
 
-    		SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
-    		ptr_scheduler_->reschedule(worker_id);
-    		ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
+    		 SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
 
-                // TODO: notify capability losses...
+    		 // notify capability losses...
+    		 if( !is_orchestrator() )
+    		 {
+    			 BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+				 {
+    				  sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
+    						  new sdpa::events::CapabilitiesLostEvent(  name(),
+    								  	  	  	  	  	  	  	  	  	masterInfo.name(),
+    								  	  	  	  	  	  	  	  	  	ptrWorker->capabilities()
+    				  	  	  	  	  	  	  	  	  	  	  	  	  )
+    				  );
+
+					  sendEventToMaster(shpCpbLostEvt);
+				 }
+    		 }
+
+    		 ptr_scheduler_->reschedule(worker_id);
+    		 ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
     	}
     	catch (WorkerNotFoundException const& /*ignored*/)
     	{
-    		// that's not true -> to be reviewed !
     		// check if the message comes from a master
-    		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-			{
-    			if( error.from() == masterInfo.name() )
-    			{
-    				SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+    		if( !is_orchestrator() )
+    		{
+				BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+				{
+					if( error.from() == masterInfo.name() )
+					{
+						SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
 
-    				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-    				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+						const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+						SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+						boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
-    				if( !is_orchestrator() )
-    				{
-    					masterInfo.set_registered(false);
-    					requestRegistration(masterInfo);
-    				}
-    			}
-			}
+						masterInfo.set_registered(false);
+						requestRegistration(masterInfo);
+					}
+				}
+    		}
     	}
     	catch (std::exception const& ex)
     	{
@@ -1535,6 +1548,9 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 	{
 		SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << masterInfo.name() << "), capacity = "<<capacity());
 		capabilities_set_t capabilities;
+
+		ptr_scheduler_->getCapabilities(capabilities);
+
 		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), capabilities, agent_uuid()));
 		sendEventToMaster(pEvtWorkerReg);
 	}
