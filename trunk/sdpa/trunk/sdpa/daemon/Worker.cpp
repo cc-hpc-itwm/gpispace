@@ -119,22 +119,6 @@ void Worker::print()
 	acknowledged().print();
 }
 
-void Worker::add_to_affinity_list(const pref_deg_t& pref_deg, const sdpa::job_id_t& jobId )
-{
-	// lock it first
-	mi_affinity_list.insert( Worker::scheduling_preference_t( pref_deg, jobId ) );
-}
-
-void Worker::delete_from_affinity_list(const sdpa::job_id_t& job_id)
-{
-	// lock it first
-	Worker::mi_ordered_jobIds& mi_jobIds = get<1>(mi_affinity_list);
-
-	// delete the entry corresponding to job_id in jobs_preferring_this_
-	mi_jobIds.erase(job_id);
-}
-
-
 unsigned int Worker::nbAllocatedJobs()
 {
 	unsigned int nJobs = pending().size() + submitted().size() + acknowledged().size();
@@ -142,7 +126,7 @@ unsigned int Worker::nbAllocatedJobs()
 	return nJobs;
 }
 
-capabilities_map_t Worker::capabilities() const
+const sdpa::capabilities_set_t& Worker::capabilities() const
 {
 	return capabilities_;
 }
@@ -151,28 +135,11 @@ void Worker::addCapabilities(const capabilities_set_t& cpbset)
 {
 	for( capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); it++ )
 	{
-          // i suppose  it's easier to exploit the  fact that capabilities_[*it]
-          // defaults constructs a counter with value 0 ...
-          ++capabilities_[*it];
+		capabilities_.insert(*it);
 
-          LOG( TRACE
+		LOG( TRACE
              , "worker " << name() << " gained capability: "
-             << *it << " (" << capabilities_[*it] << ")"
-             );
-          /*
-		capabilities_map_t::iterator itw = capabilities_.find(*it);
-		if( itw != capabilities_.end() )
-		{
-			// the subtree headed by this worker has already such capability
-			// -> just increment the multiplicity
-			itw->second++;
-		}
-		else
-		{
-			// create new entry
-			capabilities_[*it] = 1;
-		}
-          */
+             << *it  );
 	}
 }
 
@@ -180,20 +147,15 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
 	for(capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); it++ )
 	{
-		capabilities_map_t::iterator itw = capabilities_.find(*it);
-		if( itw != capabilities_.end() )
+		capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
+		if( itwcpb != capabilities_.end() )
 		{
-                  LOG( TRACE
-                     , "worker " << name() << " lost capability: "
-                     << *it << " (" << itw->second << ")"
-                     );
+            capabilities_.erase(itwcpb);
 
-                  // the subtree headed by this worker has already such capability
-                  // -> just decrement the multiplicity
-                  if(0 == --itw->second)
-                  {
-                    capabilities_.erase(itw);
-                  }
+            LOG( TRACE
+				 , "worker " << name() << " lost capability: "
+				 << *itwcpb <<"!"
+				 );
 		}
 		else
 		{
