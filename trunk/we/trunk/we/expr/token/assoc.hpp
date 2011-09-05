@@ -40,7 +40,8 @@ namespace expr
         case token::neg: return right;
         case token::define: return right;
         case token::_endif: return left;
-        default: throw exception::strange ("assoc " + fhg::util::show(token));
+
+        default: return left;
         }
     }
   }
