@@ -142,12 +142,12 @@ namespace expr
             return temp_name;
           }
 
-          static bool
-          is_before (const line_type & first, const line_type & second)
+          inline bool
+          is_before (const line_type & first, const line_type & second) const
           {
-            size_t fs (std::distance (first, second));
-            size_t sf (std::distance (second, first));
-            return fs > sf;
+            size_t bf (std::distance (_expression_list.begin(), first));
+            size_t bs (std::distance (_expression_list.begin(), second));
+            return bf > bs;
           }
 
         public:
