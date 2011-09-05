@@ -54,7 +54,7 @@ namespace sdpa {
 
 	void reschedule(Worker::JobQueue* pQueue );
 	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
-	void reschedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException);
+	void reschedule( const sdpa::job_id_t& job_id );
 
 	virtual bool has_job(const sdpa::job_id_t&);
 	virtual void start_job(const sdpa::job_id_t&);
@@ -78,6 +78,7 @@ namespace sdpa {
 
 	virtual void addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
 	virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
+	virtual void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
 	virtual const sdpa::job_id_t getNextJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException, WorkerNotFoundException);
 	virtual void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);

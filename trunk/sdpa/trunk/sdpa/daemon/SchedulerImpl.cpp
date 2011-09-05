@@ -93,7 +93,7 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
   }
 }
 
-void SchedulerImpl::reschedule( const sdpa::job_id_t& job_id ) throw (JobNotFoundException)
+void SchedulerImpl::reschedule( const sdpa::job_id_t& job_id )
 {
 	// The result was succesfully delivered, so I can delete the job from the job map
 	ostringstream os;
@@ -792,4 +792,9 @@ void SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
 void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
 {
 	ptr_worker_man_->removeCapabilities(worker_id, cpbset);
+}
+
+void SchedulerImpl::getCapabilities(sdpa::capabilities_set_t& cpbset)
+{
+	ptr_worker_man_->getCapabilities(cpbset);
 }
