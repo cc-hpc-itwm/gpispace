@@ -42,41 +42,6 @@ namespace sdpa { namespace daemon {
     // TODO: to be replaced by a real class (synchronization!)
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
-    typedef unsigned int pref_deg_t;
-
-    struct scheduling_preference_t
-    {
-    	scheduling_preference_t ( pref_deg_t pref_deg
-                                , sdpa::job_id_t job_id
-                                )
-          : pref_deg_(pref_deg)
-          , job_id_(job_id)
-      {
-      }
-
-
-      pref_deg_t pref_deg_;
-    	sdpa::job_id_t job_id_;
-
-   		bool operator<(const scheduling_preference_t& pref)const{return job_id_<pref.job_id_;}
-
-    };
-
-    // sorted vector with job preferences and current placement
-    typedef multi_index_container<
-		  scheduling_preference_t,
-          indexed_by<
-            // sort by less<unsigned int> on pref_deg_
-            ordered_non_unique<member<scheduling_preference_t, pref_deg_t, &scheduling_preference_t::pref_deg_> >,
-
-            // sort by less<sdpa::job_id_t> on job_id_
-            ordered_unique<member<scheduling_preference_t, sdpa::job_id_t, &scheduling_preference_t::job_id_> >
-          >
-     > mi_affinity_list_t;
-
-    typedef nth_index<Worker::mi_affinity_list_t, 0>::type mi_ordered_prefs;
-    typedef nth_index<Worker::mi_affinity_list_t, 1>::type mi_ordered_jobIds;
-
     /**
       A worker has a globally unique name and a location.
 
@@ -134,7 +99,7 @@ namespace sdpa { namespace daemon {
     const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_; }
 
     // capabilities
-    capabilities_map_t capabilities() const;
+    const sdpa::capabilities_set_t& capabilities() const;
 
     void addCapabilities(const capabilities_set_t& cpbset);
     void removeCapabilities(const capabilities_set_t& cpbset);
@@ -197,11 +162,6 @@ namespace sdpa { namespace daemon {
 
     unsigned int nbAllocatedJobs();
 
-    // add a method get_next_prefernce and use it sched.. with constr
-    void add_to_affinity_list(const pref_deg_t&, const sdpa::job_id_t& );
-
-    void delete_from_affinity_list(const sdpa::job_id_t& );
-
     template <class Archive>
 	void serialize(Archive& ar, const unsigned int)
 	{
@@ -219,7 +179,6 @@ namespace sdpa { namespace daemon {
 
     void print();
 
-    mi_affinity_list_t mi_affinity_list;
 
   private:
     SDPA_DECLARE_LOGGER();
@@ -227,7 +186,7 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     //unsigned int rank_;
     unsigned int capacity_;
-    sdpa::capabilities_map_t capabilities_;
+    sdpa::capabilities_set_t capabilities_;
 	sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received
