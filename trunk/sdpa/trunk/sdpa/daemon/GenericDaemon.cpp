@@ -51,7 +51,6 @@ GenericDaemon::GenericDaemon( 	const std::string name,
         ptr_job_man_(new JobManager()),
         ptr_scheduler_(),
         ptr_workflow_engine_(pArgSdpa2Gwes),
-        m_bRegistered(false),
         m_nRank(0),
         m_nCap(cap),
         m_strAgentUID(id_generator::instance().next()),
@@ -273,7 +272,7 @@ void GenericDaemon::notifyMasters(const T& ptrNotEvt)
 		return;
 	}
 
-	BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
+	BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
 	{
 		if( masterInfo.is_registered() )
 		{
@@ -367,7 +366,7 @@ void GenericDaemon::configure_network( const std::string& daemonUrl /*, const st
 
 void GenericDaemon::shutdown_network()
 {
-    BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo )
+    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo )
     {
       if( !masterInfo.name().empty() && masterInfo.is_registered() )
     	sendEventToMaster (ErrorEvent::Ptr(new ErrorEvent(name(), masterInfo.name(), ErrorEvent::SDPA_ENODE_SHUTDOWN, "node shutdown")));
@@ -868,6 +867,8 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   {
       if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
       {
+        // TODO: maybe just disallow registration, it is an error, if we have two workers with the same name still active...
+
     	  LOG(TRACE, "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
 
           LOG(TRACE, "Re-schedule the jobs");
@@ -926,13 +927,23 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
     	// mark the agen as not-registered
 
-    	const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-    	SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-    	boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-    	m_bRegistered = false;
-    	requestRegistration();
-
+        // that's not true -> to be reviewed !
+        // check if the message comes from a master
+        BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+        {
+          if( error.from() == masterInfo.name() )
+          {
+            if( !is_orchestrator() )
+            {
+              // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
+              const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+              SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+              boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+              masterInfo.set_registered(false);
+              requestRegistration(masterInfo);
+            }
+          }
+        }
     	break;
     }
     case ErrorEvent::SDPA_ENODE_SHUTDOWN:
@@ -946,12 +957,14 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
     		ptr_scheduler_->reschedule(worker_id);
     		ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
+
+                // TODO: notify capability losses...
     	}
     	catch (WorkerNotFoundException const& /*ignored*/)
     	{
     		// that's not true -> to be reviewed !
     		// check if the message comes from a master
-    		BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
+    		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
 			{
     			if( error.from() == masterInfo.name() )
     			{
@@ -1228,13 +1241,27 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 	try {
 		scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
 
-		// forward this event to the masters
+		// forward  this event  to  the masters
+
+                // TODO: the  orchestrator should just don't  have masters, i.e.
+                // this if should be redundant
 		if( !is_orchestrator() )
 		{
-			sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(*pCpbGainEvt));
-			sendEventToMaster(shpCpbGainEvt);
-		}
-	}
+                  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin()
+                     ; it != m_arrMasterInfo.end()
+                     ; it++
+                     )
+                  {
+                    if (it->is_registered())
+                    {
+                      sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(*pCpbGainEvt));
+                      shpCpbGainEvt->from() = name();
+                      shpCpbGainEvt->to() = it->name();
+                      sendEventToMaster(shpCpbGainEvt);
+                    }
+                  }
+                }
+        }
 	catch( const WorkerNotFoundException& ex)
 	{
 		SDPA_LOG_ERROR("Could not add new capabilities. The worker "<<worker_id<<" was not found!");
@@ -1254,12 +1281,19 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 	try {
 		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
 
-		// forward this event to the masters
-		if( !is_orchestrator() )
-		{
-			sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new sdpa::events::CapabilitiesLostEvent(*pCpbLostEvt));
-			sendEventToMaster(shpCpbLostEvt);
-		}
+                  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin()
+                     ; it != m_arrMasterInfo.end()
+                     ; it++
+                     )
+                  {
+                    if (it->is_registered())
+                    {
+                      sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new sdpa::events::CapabilitiesLostEvent(*pCpbLostEvt));
+                      shpCpbLostEvt->from() = name();
+                      shpCpbLostEvt->to() = it->name();
+                      sendEventToMaster(shpCpbLostEvt);
+                    }
+                  }
 	}
 	catch( const WorkerNotFoundException& ex)
 	{
@@ -1509,7 +1543,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 void GenericDaemon::requestRegistration()
 {
     // try to re-register
-    BOOST_FOREACH(sdpa::MasterInfo masterInfo, m_arrMasterInfo)
+    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
 	{
     	requestRegistration(masterInfo);
 	}
