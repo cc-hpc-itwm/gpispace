@@ -72,7 +72,7 @@ namespace sdpa {
         // the initial state of the JobFSM SM. Must be defined
         typedef Pending initial_state;
 
-        virtual void action_run_job(const sdpa::events::RunJobEvent&) { DLOG(TRACE, "JobFSM_::action_run_job"); }
+        virtual void action_run_job() { DLOG(TRACE, "JobFSM_::action_run_job"); }
         virtual void action_cancel_job(const sdpa::events::CancelJobEvent&) { DLOG(TRACE, "JobFSM_::action_cancel_job"); }
         virtual void action_cancel_job_from_pending(const sdpa::events::CancelJobEvent&){ DLOG(TRACE, "JobFSM_::action_cancel_job_from_pending"); }
         virtual void action_cancel_job_ack(const sdpa::events::CancelJobAckEvent&){ DLOG(TRACE, "JobFSM_::action_cancel_job_ack"); }
