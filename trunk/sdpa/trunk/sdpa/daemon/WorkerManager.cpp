@@ -211,7 +211,6 @@ struct compare_workers
   typedef WorkerManager::worker_map_t::value_type T;
   bool operator()( T const& a, T const& b)
   {
-	  //return a.second->pending().size() < b.second->pending().size();
 	  return a.second->nbAllocatedJobs() < b.second->nbAllocatedJobs();
   }
 };
@@ -229,8 +228,7 @@ sdpa::worker_id_t WorkerManager::getLeastLoadedWorker() throw (NoWorkerFoundExce
   if( worker_map_.empty() )
     throw NoWorkerFoundException();
 
-  worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end()); //, compare_workers());
-  //unsigned int rank_ll = it->second->rank();
+  worker_map_t::iterator it = std::min_element(worker_map_.begin(), worker_map_.end(), compare_workers());
 
   if( it->second->nbAllocatedJobs() >= it->second->capacity() )
 	  throw AllWorkersFullException();
