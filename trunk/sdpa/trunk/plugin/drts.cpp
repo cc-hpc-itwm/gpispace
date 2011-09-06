@@ -15,6 +15,7 @@
 #include <fhg/plugin/capability.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
+#include <fhg/util/read_bool.hpp>
 
 #include <sdpa/uuidgen.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -69,6 +70,16 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
+    try
+    {
+      m_request_mode =
+        fhg::util::read_bool (fhg_kernel()->get("request-mode", "true"));
+    }
+    catch (std::exception const &ex)
+    {
+      LOG(ERROR, "could not parse request-mode (boolean): " << ex.what());
+    }
+
     m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
     if (0 == m_wfe)
     {
@@ -118,7 +129,9 @@ public:
         (std::make_pair(master_name, master_ptr(new drts::Master(master_name))));
     }
 
-    m_request_thread.reset(new boost::thread(&DRTSImpl::job_requestor_thread, this));
+    if (m_request_mode)
+      m_request_thread.reset(new boost::thread(&DRTSImpl::job_requestor_thread, this));
+
     m_execution_thread.reset(new boost::thread(&DRTSImpl::job_execution_thread, this));
 
     start_connect ();
@@ -626,6 +639,7 @@ private:
                                                         , master->name()
                                                         )
                       );
+
             master->job_requested();
             master->update_send();
           }
@@ -909,12 +923,11 @@ private:
   mutable mutex_type m_capabilities_mutex;
   map_of_capabilities_t m_capabilities;
 
+  bool m_request_mode;
   // jobs + their states
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
   job_queue_t m_pending_jobs;
-
-  // module loader
 };
 
 EXPORT_FHG_PLUGIN( drts
