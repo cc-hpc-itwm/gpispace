@@ -368,7 +368,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Push )
 		return;
 	}
 
-
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
