@@ -3,6 +3,7 @@
 #include <sdpa/util/util.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <iostream>
+#include <algorithm>
 
 using namespace sdpa;
 using namespace sdpa::daemon;
@@ -133,34 +134,35 @@ const sdpa::capabilities_set_t& Worker::capabilities() const
 
 void Worker::addCapabilities(const capabilities_set_t& cpbset)
 {
-	for( capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); it++ )
-	{
-		capabilities_.insert(*it);
+  for(capabilities_set_t::const_iterator it = cpbset.begin(); it != cpbset.end(); ++it)
+  {
+    capabilities_.insert(*it);
 
-		LOG( TRACE
-             , "worker " << name() << " gained capability: "
-             << *it  );
-	}
+    LOG( TRACE
+       , "worker " << name() << " gained capability: "
+       << *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")"
+       );
+  }
 }
 
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
-	for(capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); it++ )
-	{
-		capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
-		if( itwcpb != capabilities_.end() )
-		{
-			LOG( TRACE
-				 , "worker " << name() << " lost capability: "
-				 << *itwcpb <<"!"
-				 );
+  for(capabilities_set_t::const_iterator it = cpbset.begin(); it != cpbset.end(); ++it )
+  {
+    capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
+    if (itwcpb != capabilities_.end())
+    {
+      capabilities_.erase(itwcpb);
 
-            capabilities_.erase(itwcpb);
-		}
-		else
-		{
-			// do nothing
-			LOG(ERROR, "The worker "<<name()<<" doesn't possess such capability!");
-		}
-	}
+      LOG( TRACE
+         , "worker " << name() << " lost capability: "
+         << *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")"
+         );
+    }
+    else
+    {
+      // do nothing
+      LOG(ERROR, "The worker "<<name()<<" doesn't possess capability: " <<*it);
+    }
+  }
 }
