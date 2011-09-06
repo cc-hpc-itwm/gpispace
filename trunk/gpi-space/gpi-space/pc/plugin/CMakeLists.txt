@@ -19,7 +19,8 @@ fhg_add_plugin(gpi-compat gpi-compat.cpp
 )
 
 install(FILES gpi.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS gpi-plugin LIBRARY
+install(TARGETS gpi-plugin gpi-compat-plugin
+  LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins
 )
