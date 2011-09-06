@@ -611,10 +611,10 @@ void SchedulerImpl::feed_workers()
 
     }
     catch(const NoWorkerFoundException& ) {
-        // SDPA_LOG_WARN("No worker found!");
+      //SDPA_LOG_WARN("No worker found!");
     }
     catch(const AllWorkersFullException&) {
-    	SDPA_LOG_WARN("All workers are full!");
+	SDPA_LOG_DEBUG("All workers are full!");
     }
     catch (std::exception const& ex) {
     	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
