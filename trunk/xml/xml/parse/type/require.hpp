@@ -43,17 +43,17 @@ namespace xml
             }
         }
 
-        typedef map_type::const_iterator iterator;
+        typedef map_type::const_iterator const_iterator;
 
-        iterator begin () const { return map.begin(); }
-        iterator end () const { return map.end(); }
+        const_iterator begin () const { return map.begin(); }
+        const_iterator end () const { return map.end(); }
       };
 
       namespace dump
       {
         inline void dump (xml_util::xmlstream & s, const requirements_type & cs)
         {
-          for ( requirements_type::iterator cap (cs.begin())
+          for ( requirements_type::const_iterator cap (cs.begin())
               ; cap != cs.end()
               ; ++cap
               )
