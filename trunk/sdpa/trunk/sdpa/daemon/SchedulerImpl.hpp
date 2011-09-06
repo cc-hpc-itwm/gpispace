@@ -54,7 +54,7 @@ namespace sdpa {
 
 	void reschedule(Worker::JobQueue* pQueue );
 	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
-	void reschedule( const sdpa::job_id_t& job_id );
+	void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
 	virtual bool has_job(const sdpa::job_id_t&);
 	virtual void start_job(const sdpa::job_id_t&);

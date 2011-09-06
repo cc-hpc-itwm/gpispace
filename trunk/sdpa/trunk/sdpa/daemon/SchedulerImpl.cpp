@@ -93,16 +93,24 @@ void SchedulerImpl::declare_jobs_failed(const Worker::worker_id_t& worker_id, Wo
   }
 }
 
-void SchedulerImpl::reschedule( const sdpa::job_id_t& job_id )
+void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
 	// The result was succesfully delivered, so I can delete the job from the job map
 	ostringstream os;
 	try {
+		// delete it from the worker's queues
+		Worker::ptr_t pWorker = findWorker(worker_id);
+		pWorker->delete_job(job_id);
+
 		Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(job_id);
 		pJob->Reschedule(); // put the job back into the pending state
-		// delete it from the map when you send the result to the master
 
 		schedule(job_id);
+	}
+	catch (const WorkerNotFoundException& ex)
+	{
+		SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
+		throw ex;
 	}
 	catch(JobNotFoundException const &ex)
 	{
