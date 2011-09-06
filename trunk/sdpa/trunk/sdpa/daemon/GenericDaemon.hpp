@@ -327,10 +327,6 @@ protected:
 
         sdpa::util::time_type m_last_request_time;
         sdpa::master_info_list_t m_arrMasterInfo;
-
-      private:
-        //bool m_bUseRequestModel;
-
   };
 }}
 
