@@ -31,17 +31,19 @@ namespace sdpa {
     class SchedulerNRE : public SchedulerImpl {
     public:
       SchedulerNRE( sdpa::daemon::IComm* pHandler = NULL,
-    		  	  std::string workerUrl = ""
-                  // TODO: fixme, this is ugly
-                  , bool bLaunchNrePcd = false
-                  , const std::string & fvmPCBinary = ""
-                  , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
-                  , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
-                  , bool bUseReqModel = true
+    		  	   std::string workerUrl = ""
+                   // TODO: fixme, this is ugly
+                   , bool bLaunchNrePcd = false
+                   , const std::string & fvmPCBinary = ""
+                   , const std::vector<std::string> & fvmPCSearchPath = std::vector<std::string>()
+                   , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
+                   , bool bUseReqModel = true
+                   , const sdpa::capabilities_set_t& argCpbSet = sdpa::capabilities_set_t()
                   )
         : sdpa::daemon::SchedulerImpl(pHandler, bUseReqModel)
         , SDPA_INIT_LOGGER((pHandler?"Scheduler "+pHandler->name():"Scheduler NRE"))
         , m_worker_(workerUrl, bLaunchNrePcd, fvmPCBinary, fvmPCSearchPath, fvmPCPreLoad)
+        , m_capabilities(argCpbSet)
       {
         m_worker_.set_ping_interval(5);
         m_worker_.set_ping_timeout(10);
@@ -83,6 +85,11 @@ namespace sdpa {
 
             LOG(TRACE, "Stopping nre worker...");
             m_worker_.stop();
+	}
+
+	void getCapabilities(sdpa::capabilities_set_t& cpbset)
+	{
+		cpbset = m_capabilities;
 	}
 
 	 virtual void execute(const sdpa::job_id_t& jobId) throw (std::exception)
@@ -250,6 +257,7 @@ namespace sdpa {
   private:
 	  SDPA_DECLARE_LOGGER();
 	  U m_worker_;
+	  sdpa::capabilities_set_t m_capabilities;
   };
 }}
 
