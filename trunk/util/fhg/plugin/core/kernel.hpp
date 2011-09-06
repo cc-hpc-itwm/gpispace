@@ -124,6 +124,7 @@ namespace fhg
       std::string put(std::string const & key, std::string const &value);
 
       void plugin_start_completed(std::string const & name, int);
+      void plugin_failed(std::string const &name, int);
     private:
       void check_dependencies (fhg::core::plugin_t::ptr_t const &);
       void remove_pending_tasks (std::string const & owner);
