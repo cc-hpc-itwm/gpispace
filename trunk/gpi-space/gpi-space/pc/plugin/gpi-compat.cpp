@@ -24,14 +24,6 @@ class GPICompatPluginImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    api = fhg_kernel()->acquire<gpi::GPI>("gpi");
-
-    if (0 == api)
-    {
-      LOG(ERROR, "could not access required gpi plugin!");
-      FHG_PLUGIN_FAILED(ELIBACC);
-    }
-
     try
     {
       m_shm_size = boost::lexical_cast<fvmSize_t>
@@ -43,31 +35,41 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
-    gpi_info = api->collect_info();
-
-    // register segment
-    m_shm_id = api->register_segment ( "fvm-pc-compat"
-                                     , m_shm_size
-                                     // , gpi::pc::type::segment::F_EXCLUSIVE
-                                     // | gpi::pc::type::segment::F_FORCE_UNLINK
-                                     , gpi::pc::type::segment::F_FORCE_UNLINK
-                                     );
-    m_shm_hdl = api->alloc ( m_shm_id
-                           , m_shm_size
-                           , "fvm-pc-compat"
-                           , gpi::pc::type::handle::F_EXCLUSIVE
-                           );
-    m_shm_ptr = api->ptr(m_shm_hdl);
-
-    gpi_compat = this;
+    if (! try_start())
+    {
+      LOG(WARN, "gpi-compat plugin could not be started, gpi plugin is not (yet) available");
+      LOG(WARN, "There be dragons! (Segfaults are imminent if you execute gpi modules!)");
+      FHG_PLUGIN_INCOMPLETE();
+    }
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
-    api = 0;
-    gpi_compat = 0;
+    if (api)
+    {
+      api->free(m_shm_hdl);
+      api->unregister_segment(m_shm_id);
+      m_shm_ptr = 0;
+      api = 0;
+      gpi_compat = 0;
+    }
     FHG_PLUGIN_STOPPED();
+  }
+
+  FHG_ON_PLUGIN_LOADED(plugin)
+  {
+    if ("gpi" == plugin)
+    {
+      if (try_start())
+      {
+        fhg_kernel()->start_completed(0);
+      }
+      else
+      {
+        fhg_kernel()->start_completed(EINVAL);
+      }
+    }
   }
 
   gpi::pc::type::handle::descriptor_t
@@ -108,6 +110,45 @@ public:
     }
   }
 
+private:
+  bool try_start ()
+  {
+    try
+    {
+      api = fhg_kernel()->acquire<gpi::GPI>("gpi");
+      if (0 == api)
+      {
+        return false;
+      }
+
+      gpi_info = api->collect_info();
+
+    // register segment
+      m_shm_id = api->register_segment ( "fvm-pc-compat"
+                                       , m_shm_size
+                                       // , gpi::pc::type::segment::F_EXCLUSIVE
+                                       // | gpi::pc::type::segment::F_FORCE_UNLINK
+                                       , gpi::pc::type::segment::F_FORCE_UNLINK
+                                       );
+      m_shm_hdl = api->alloc ( m_shm_id
+                             , m_shm_size
+                             , "fvm-pc-compat"
+                             , gpi::pc::type::handle::F_EXCLUSIVE
+                           );
+      m_shm_ptr = api->ptr(m_shm_hdl);
+
+      gpi_compat = this;
+
+      return true;
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "could not initialize gpi structures: " << ex.what());
+      return false;
+    }
+  }
+
+public:
   mutable mutex_type                 m_handle_cache_mtx;
   handle_cache_t                     m_handle_cache;
 
@@ -358,6 +399,6 @@ EXPORT_FHG_PLUGIN( gpi-compat
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "v.0.0.1"
                  , "NA"
-                 , "gpi"
+                 , ""
                  , ""
                  );
