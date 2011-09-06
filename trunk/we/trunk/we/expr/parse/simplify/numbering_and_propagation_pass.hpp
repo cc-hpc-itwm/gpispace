@@ -99,11 +99,13 @@ namespace expr
 
               for (key_type::iterator it (second_part.begin() + 1)
                   , end (second_part.end())
-                  ; it != end && it + 1 != end
+                  ; it != end
                   ; advance (it, 2)
                   )
               {
                 *it = "*";
+                if (it + 1 == end)
+                  break;
               }
 
               std::copy ( second_part.begin(), second_part.end()
