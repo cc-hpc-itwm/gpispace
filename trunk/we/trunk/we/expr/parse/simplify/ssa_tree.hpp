@@ -25,18 +25,6 @@ namespace expr
       typedef key_type::value_type key_part_type;
       typedef expression_list::nodes_type::iterator line_type;
 
-      class variable_not_found : public std::exception
-      {
-        private:
-          const std::string _what;
-        public:
-          variable_not_found() : _what ("variable not found") {}
-          variable_not_found(const std::string & reason)
-            : _what ("variable not found: " + reason) {}
-          virtual ~variable_not_found() throw() {}
-          virtual const char* what() const throw() { return _what.c_str(); }
-      };
-
       class tree_node_type
         : public boost::enable_shared_from_this<tree_node_type>
       {
