@@ -598,24 +598,17 @@ void SchedulerImpl::feed_workers()
     try {
 
     	sdpa::worker_id_t worker_id = ptr_worker_man_->getLeastLoadedWorker();
-
     	Worker::ptr_t pWorker(findWorker(worker_id));
 
-    	if( pWorker->nbAllocatedJobs() < pWorker->capacity() )
-    	{
-    		if(ptr_comm_handler_)
-    		{
-    			ptr_comm_handler_->serve_job(worker_id);
-    		}
-    		else
-    		{
-    			SDPA_LOG_WARN("Invalid communication handler");
-    		}
-    	}
-    	else
-    		SDPA_LOG_WARN("All the workers are fully loaded!");
+		if(ptr_comm_handler_)
+		{
+			ptr_comm_handler_->serve_job(worker_id);
+		}
+		else
+		{
+			SDPA_LOG_WARN("Invalid communication handler");
+		}
 
-    	// pWorker->print();
     }
     catch(const NoWorkerFoundException& ) {
         // SDPA_LOG_WARN("No worker found!");
@@ -646,7 +639,8 @@ void SchedulerImpl::run()
       {
     	  check_post_request(); // eventually, post a request to the master
 
-          feed_workers(); //eventually, feed some workers
+    	  if( numberOfWorkers()>0 )
+    		  feed_workers(); //eventually, feed some workers
 
           sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
           const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
