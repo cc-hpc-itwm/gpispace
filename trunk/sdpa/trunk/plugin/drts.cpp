@@ -779,7 +779,11 @@ private:
       }
       else
       {
-        MLOG(TRACE, "ignoring non-pending job " << job->id());
+        lock_type job_map_lock (m_job_map_mutex);
+        map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
+        assert (job_it != m_jobs.end());
+        MLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
+        m_jobs.erase(job_it);
       }
     }
   }
