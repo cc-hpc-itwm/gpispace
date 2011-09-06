@@ -150,12 +150,12 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 		capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
 		if( itwcpb != capabilities_.end() )
 		{
-            capabilities_.erase(itwcpb);
-
-            LOG( TRACE
+			LOG( TRACE
 				 , "worker " << name() << " lost capability: "
 				 << *itwcpb <<"!"
 				 );
+
+            capabilities_.erase(itwcpb);
 		}
 		else
 		{
