@@ -83,7 +83,9 @@ namespace fhg
 
       check_dependencies(p);
       // create mediator
-      mediator_ptr m(new PluginKernelMediator(p, this));
+      // todo: privileged plugin decision...
+      // todo: write a control plugin that opens a socket or whatever
+      mediator_ptr m(new PluginKernelMediator(p, this, "control" == p->name()));
 
       rc = p->init();
       if (rc)

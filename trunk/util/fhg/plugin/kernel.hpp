@@ -51,6 +51,9 @@ namespace fhg
       }
 
       virtual void start_completed(int) = 0;
+
+      virtual int load_plugin (std::string const &path) = 0;
+      virtual int unload_plugin (std::string const &name) = 0;
     };
   }
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fhglog/minimal.hpp>
 
 #include <fhg/plugin/core/plugin_kernel_mediator.hpp>
 #include <fhg/plugin/core/kernel.hpp>
@@ -9,9 +10,11 @@ namespace fhg
   {
     PluginKernelMediator::PluginKernelMediator ( fhg::core::plugin_t::ptr_t const & p
                                                , kernel_t *k
+                                               , bool privileged
                                                )
       : m_plugin(p)
       , m_kernel(k)
+      , m_privileged(privileged)
     {
       assert (m_plugin);
       assert (m_kernel);
@@ -86,6 +89,46 @@ namespace fhg
     void PluginKernelMediator::start_completed(int ec)
     {
       m_kernel->plugin_start_completed(m_plugin->name(), ec);
+    }
+
+    int PluginKernelMediator::load_plugin (std::string const &path)
+    {
+      if (m_privileged)
+      {
+        try
+        {
+          return m_kernel->load_plugin(path);
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not load plugin from " << path << ": " << ex.what());
+          return -EINVAL;
+        }
+      }
+      else
+      {
+        return -EPERM;
+      }
+    }
+
+    int PluginKernelMediator::unload_plugin (std::string const &name)
+    {
+      if (m_privileged)
+      {
+        try
+        {
+          return m_kernel->unload_plugin(name);
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not unload plugin " << name << ": " << ex.what());
+          return -EINVAL;
+        }
+      }
+      else
+      {
+        return -EPERM;
+      }
     }
   }
 }
