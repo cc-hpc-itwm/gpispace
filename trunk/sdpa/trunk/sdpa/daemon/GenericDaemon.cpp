@@ -854,14 +854,28 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
       addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
 
       SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the capacity "<<evtRegWorker.capacity());
+      SDPA_LOG_INFO( "The worker " << worker_id << " has the following capabilities: ");
+      for(sdpa::capabilities_set_t::iterator it = evtRegWorker.capabilities().begin(); it != evtRegWorker.capabilities().end(); it++ )
+      {
+    	  SDPA_LOG_INFO("     capability: "<<*it);
+      }
 
       // send back an acknowledgment
       SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
       WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
 
-      //pWorkerRegAckEvt->id() = evtRegWorker.id();
-
       sendEventToSlave(pWorkerRegAckEvt);
+
+      // propagate the capabilities upward to the masters
+      for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+		if (it->is_registered())
+		{
+			sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(
+					new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()) );
+
+			sendEventToMaster(shpCpbGainEvt);
+		}
+
   }
   catch(WorkerAlreadyExistException& ex)
   {
@@ -919,9 +933,10 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     case ErrorEvent::SDPA_EJOBREJECTED:
     {
     	sdpa::job_id_t jobId(error.reason());
-    	SDPA_LOG_WARN("The worker "<<error.from()<<" rejected the job "<<jobId.str()<<". Reschedule it now!");
+    	sdpa::worker_id_t worker_id(error.from());
+    	SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<jobId.str()<<". Reschedule it now!");
 
-    	scheduler()->reschedule(jobId);
+    	scheduler()->reschedule(worker_id, jobId);
         break;
     }
     case ErrorEvent::SDPA_EWORKERNOTREG:
@@ -930,21 +945,18 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	// mark the agen as not-registered
 
         // check if the message comes from a master
-    	 if( !is_orchestrator() )
-    	 {
-    		 BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+		 BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+		 {
+			 if( error.from() == masterInfo.name() )
 			 {
-    			 if( error.from() == masterInfo.name() )
-    			 {
-					  // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
-					  const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-					  SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-					  boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-					  masterInfo.set_registered(false);
-					  requestRegistration(masterInfo);
-    			 }
+				  // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
+				  const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+				  SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+				  boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+				  masterInfo.set_registered(false);
+				  requestRegistration(masterInfo);
 			 }
-    	 }
+		 }
     	 break;
     }
     case ErrorEvent::SDPA_ENODE_SHUTDOWN:
@@ -958,20 +970,17 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     		 SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
 
     		 // notify capability losses...
-    		 if( !is_orchestrator() )
-    		 {
-    			 BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-				 {
-    				  sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
-    						  new sdpa::events::CapabilitiesLostEvent(  name(),
-    								  	  	  	  	  	  	  	  	  	masterInfo.name(),
-    								  	  	  	  	  	  	  	  	  	ptrWorker->capabilities()
-    				  	  	  	  	  	  	  	  	  	  	  	  	  )
-    				  );
+			 BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+			 {
+				  sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
+						  new sdpa::events::CapabilitiesLostEvent(  name(),
+																	masterInfo.name(),
+																	ptrWorker->capabilities()
+																  )
+				  );
 
-					  sendEventToMaster(shpCpbLostEvt);
-				 }
-    		 }
+				  sendEventToMaster(shpCpbLostEvt);
+			 }
 
     		 ptr_scheduler_->reschedule(worker_id);
     		 ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
@@ -979,23 +988,20 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	catch (WorkerNotFoundException const& /*ignored*/)
     	{
     		// check if the message comes from a master
-    		if( !is_orchestrator() )
-    		{
-				BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+			BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+			{
+				if( error.from() == masterInfo.name() )
 				{
-					if( error.from() == masterInfo.name() )
-					{
-						SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+					SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
 
-						const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-						SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-						boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+					const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
-						masterInfo.set_registered(false);
-						requestRegistration(masterInfo);
-					}
+					masterInfo.set_registered(false);
+					requestRegistration(masterInfo);
 				}
-    		}
+			}
     	}
     	catch (std::exception const& ex)
     	{
@@ -1256,27 +1262,15 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 	try {
 		scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
 
-		// forward  this event  to  the masters
-
-                // TODO: the  orchestrator should just don't  have masters, i.e.
-                // this if should be redundant
-		if( !is_orchestrator() )
-		{
-                  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin()
-                     ; it != m_arrMasterInfo.end()
-                     ; it++
-                     )
-                  {
-                    if (it->is_registered())
-                    {
-                      sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(*pCpbGainEvt));
-                      shpCpbGainEvt->from() = name();
-                      shpCpbGainEvt->to() = it->name();
-                      sendEventToMaster(shpCpbGainEvt);
-                    }
-                  }
-                }
-        }
+		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+			if (it->is_registered())
+			{
+				sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(*pCpbGainEvt));
+				shpCpbGainEvt->from() = name();
+				shpCpbGainEvt->to()   = it->name();
+				sendEventToMaster(shpCpbGainEvt);
+			}
+	}
 	catch( const WorkerNotFoundException& ex)
 	{
 		SDPA_LOG_ERROR("Could not add new capabilities. The worker "<<worker_id<<" was not found!");
@@ -1296,19 +1290,14 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 	try {
 		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
 
-                  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin()
-                     ; it != m_arrMasterInfo.end()
-                     ; it++
-                     )
-                  {
-                    if (it->is_registered())
-                    {
-                      sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new sdpa::events::CapabilitiesLostEvent(*pCpbLostEvt));
-                      shpCpbLostEvt->from() = name();
-                      shpCpbLostEvt->to() = it->name();
-                      sendEventToMaster(shpCpbLostEvt);
-                    }
-                  }
+		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+			if (it->is_registered())
+			{
+				sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new sdpa::events::CapabilitiesLostEvent(*pCpbLostEvt));
+				shpCpbLostEvt->from() = name();
+				shpCpbLostEvt->to()   = it->name();
+				sendEventToMaster(shpCpbLostEvt);
+			}
 	}
 	catch( const WorkerNotFoundException& ex)
 	{
