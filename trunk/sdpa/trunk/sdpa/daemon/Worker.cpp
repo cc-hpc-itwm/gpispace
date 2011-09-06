@@ -27,13 +27,17 @@ bool Worker::has_job( const sdpa::job_id_t& job_id )
 {
 	if( pending_.find(job_id) != pending_.end() )
 		return true;
-
 	if( submitted_.find(job_id) != submitted_.end() )
 		return true;
-
 	if( acknowledged_.find(job_id) != acknowledged_.end() )
 		return true;
+	return false;
+}
 
+bool Worker::is_job_acknowleged( const sdpa::job_id_t& job_id )
+{
+	if( acknowledged_.find(job_id) != acknowledged_.end() )
+		return true;
 	return false;
 }
 

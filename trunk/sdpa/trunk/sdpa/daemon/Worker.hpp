@@ -108,6 +108,7 @@ namespace sdpa { namespace daemon {
          Checks if the worker has job
     */
     bool has_job( const sdpa::job_id_t& job_id );
+    bool is_job_acknowleged( const sdpa::job_id_t& job_id );
 
 
     /**

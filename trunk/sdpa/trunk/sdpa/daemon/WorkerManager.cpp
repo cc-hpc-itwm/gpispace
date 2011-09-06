@@ -77,6 +77,18 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
   throw NoWorkerFoundException();
 }
 
+const Worker::worker_id_t&
+WorkerManager::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+{
+  lock_type lock(mtx_);
+
+  for (worker_map_t::const_iterator it = worker_map_.begin(); it!= worker_map_.end(); ++it)
+    if( it->second->is_job_acknowleged(job_id))
+      return it->second->name();
+
+  throw NoWorkerFoundException();
+}
+
 /**
  * add new worker
  */

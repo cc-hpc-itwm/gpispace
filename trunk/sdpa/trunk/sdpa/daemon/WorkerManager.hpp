@@ -45,6 +45,7 @@ namespace sdpa { namespace daemon {
 
       Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
       const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+      const Worker::worker_id_t& findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
 
       void addWorker( const Worker::worker_id_t& workerId, unsigned int capacity,
     		          const capabilities_set_t& cpbset = capabilities_set_t(), const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
