@@ -228,6 +228,7 @@ namespace fhg
       if (p_it == m_incomplete_plugins.end())
       {
         MLOG(WARN, "got completion event for illegal plugin: " << name);
+        return;
       }
       else
       {
@@ -246,14 +247,54 @@ namespace fhg
 
         MLOG(TRACE, name << " plugin finished starting");
 
+        schedule( "kernel"
+                , boost::bind( &kernel_t::notify_plugin_load
+                             , this
+                             , name
+                             )
+                );
+      }
+    }
+
+    void kernel_t::notify_plugin_load (std::string const & name)
+    {
+      // inform regular plugins
+      DMLOG(TRACE, "notifying plugins that " << name << " is now available...");
+      {
+        lock_type plugins_lock (m_mtx_plugins);
         for ( plugin_map_t::iterator it (m_plugins.begin())
             ; it != m_plugins.end()
             ; ++it
             )
         {
-          mediator_ptr other = it->second;
-          if (it->first != name)
-            other->plugin()->handle_plugin_loaded(name);
+          it->second->plugin()->handle_plugin_loaded(name);
+        }
+      }
+
+      DMLOG(TRACE, "informing incomplete plugins that " << name << " is available ...");
+
+      // inform incomplete plugins
+      {
+        std::vector<mediator_ptr> to_inform;
+
+        {
+          lock_type lock (m_mtx_incomplete_plugins);
+          for ( plugin_map_t::iterator it (m_incomplete_plugins.begin())
+              ; it != m_incomplete_plugins.end()
+              ; ++it
+              )
+          {
+            to_inform.push_back(it->second);
+          }
+        }
+
+        for ( std::vector<mediator_ptr>::iterator it(to_inform.begin())
+            ; it != to_inform.end()
+            ; ++it
+            )
+        {
+          DMLOG(TRACE, "notifying " << (*it)->plugin()->name());
+          (*it)->plugin()->handle_plugin_loaded(name);
         }
       }
     }
@@ -369,7 +410,7 @@ namespace fhg
 
             try
             {
-              LOG(TRACE, "executing task of plugin " << task.owner);
+              LOG(TRACE, "executing task of: " << task.owner);
               task.execute();
             }
             catch (std::exception const & ex)

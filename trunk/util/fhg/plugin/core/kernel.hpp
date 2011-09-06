@@ -127,6 +127,7 @@ namespace fhg
     private:
       void check_dependencies (fhg::core::plugin_t::ptr_t const &);
       void remove_pending_tasks (std::string const & owner);
+      void notify_plugin_load (std::string const & name);
 
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
