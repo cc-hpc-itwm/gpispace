@@ -131,6 +131,9 @@ namespace sdpa {
             {
               DLOG(TRACE, "creating nre scheduler...");
 
+              sdpa::capabilities_set_t cpbSet;
+              cpbSet.insert("GPI");
+
               return new SchedulerNRE<U>( this
                                           , workerUrl_
                                           , bLaunchNrePcd_
@@ -138,6 +141,7 @@ namespace sdpa {
                                           , nre_pcd_search_path_
                                           , nre_pcd_pre_load_
                                           , bUseReqModel
+                                          , cpbSet
                                         );
             }
 
