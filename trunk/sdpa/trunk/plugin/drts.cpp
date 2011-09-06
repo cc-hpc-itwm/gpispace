@@ -426,7 +426,7 @@ public:
 
       if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
       {
-        MLOG(WARN, "cannot accept new jobs, backlog is full.");
+        MLOG(WARN, "cannot accept new job (" << job->id() << "), backlog is full.");
         send_event (new sdpa::events::ErrorEvent( m_my_name
                                                 , e->from()
                                                 , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
@@ -440,7 +440,7 @@ public:
         send_event (new sdpa::events::SubmitJobAckEvent( m_my_name
                                                        , job->owner()
                                                        , job->id()
-                                                       , "empy-message-id"
+                                                       , "empty-message-id"
                                                        )
                    );
         master->second->reset_poll_rate();
@@ -461,6 +461,9 @@ public:
     // locate the job
     lock_type job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+
+    MLOG(TRACE, "got cancelation request for job: " << e->job_id());
+
     if (job_it == m_jobs.end())
     {
       MLOG(ERROR, "could not cancel job: " << e->job_id() << ": not found");
@@ -470,7 +473,6 @@ public:
                                               , "could not find job " + std::string(e->job_id())
                                               )
                  );
-      return;
     }
     else if (job_it->second->owner() != e->from())
     {
@@ -483,9 +485,31 @@ public:
                  );
       return;
     }
-
-    MLOG(TRACE, "trying to cancel job " << e->job_id());
-    m_wfe->cancel (e->job_id());
+    else
+    {
+      if (drts::Job::PENDING == job_it->second->cmp_and_swp_state( drts::Job::PENDING
+                                                                 , drts::Job::CANCELED
+                                                                 )
+         )
+      {
+        MLOG(TRACE, "cancelling pending job: " << e->job_id());
+        send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
+                                                        , job_it->second->owner()
+                                                        , job_it->second->id()
+                                                        , "canceled"
+                                                        )
+                   );
+      }
+      else if (job_it->second->state() == drts::Job::RUNNING)
+      {
+        MLOG(TRACE, "trying to cancel running job " << e->job_id());
+        m_wfe->cancel (e->job_id());
+      }
+      else
+      {
+        MLOG(WARN, "what shall I do with an already computed job? (" << e->job_id() << ")");
+      }
+    }
   }
 
   virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
@@ -716,7 +740,7 @@ private:
           }
           else if (ec < 0)
           {
-            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::CANCELLED);
+            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::CANCELED);
             send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                             , job->owner()
                                                             , job->id()
@@ -755,7 +779,7 @@ private:
       }
       else
       {
-        MLOG(INFO, "ignoring non-pending job " << job->id());
+        MLOG(TRACE, "ignoring non-pending job " << job->id());
       }
     }
   }

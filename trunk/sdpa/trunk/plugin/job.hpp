@@ -19,7 +19,7 @@ namespace drts
       , RUNNING
       , FINISHED
       , FAILED
-      , CANCELLED
+      , CANCELED
       };
 
     struct ID
