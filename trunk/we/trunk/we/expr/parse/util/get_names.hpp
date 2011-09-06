@@ -120,6 +120,7 @@ namespace expr
       }
     }
 
+    inline
     std::ostream& operator<<(std::ostream &stream, util::name_set_t::value_type ob)
     {
       stream << util::write_key_vec (ob);

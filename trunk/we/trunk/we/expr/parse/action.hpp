@@ -29,7 +29,7 @@ namespace expr
       , error4
       };
 
-      static std::ostream & operator << (std::ostream & s, const type & action)
+      inline std::ostream & operator << (std::ostream & s, const type & action)
       {
         switch (action)
           {
@@ -44,7 +44,7 @@ namespace expr
           }
       }
 
-      static type action (const token::type & top, const token::type & inp)
+      inline type action (const token::type & top, const token::type & inp)
       {
         if (top == token::lpr)
           {
