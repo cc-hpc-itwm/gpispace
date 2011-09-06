@@ -126,7 +126,9 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 	}
 }
 
-void SchedulerImpl::reschedule( Worker::JobQueue* pQueue )
+void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id
+                              , Worker::JobQueue* pQueue
+                              )
 {
 	assert (pQueue);
 
@@ -134,7 +136,7 @@ void SchedulerImpl::reschedule( Worker::JobQueue* pQueue )
 	{
 		sdpa::job_id_t jobId = pQueue->pop_and_wait();
 		SDPA_LOG_INFO("Re-scheduling the job "<<jobId.str()<<" ... ");
-		reschedule(jobId);
+		reschedule(worker_id, jobId);
 	}
 }
 
@@ -157,14 +159,14 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (Wo
 
     // declare the submitted jobs failed
     //declare_jobs_failed( worker_id, &pWorker->submitted() );
-    reschedule( &pWorker->submitted() );
+    reschedule(worker_id, &pWorker->submitted() );
 
     // declare the acknowledged jobs failed
     //declare_jobs_failed( worker_id, &pWorker->acknowledged() );
-    reschedule( &pWorker->acknowledged() );
+    reschedule(worker_id, &pWorker->acknowledged() );
 
     // re-schedule the pending jobs
-    reschedule( &pWorker->pending() );
+    reschedule(worker_id, &pWorker->pending() );
 
     // put the jobs back into the central queue and don't forget
     // to reset the status
@@ -173,7 +175,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (Wo
   }
   catch (const WorkerNotFoundException& ex)
   {
-    SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
+    SDPA_LOG_ERROR("Could not find the worker "<<worker_id);
     throw ex;
   }
 }
