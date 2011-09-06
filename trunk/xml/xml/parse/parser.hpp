@@ -1540,7 +1540,7 @@ namespace xml
       return state.generic_parse<type::function_type> (parse_function, input);
     }
 
-    static type::function_type
+    inline type::function_type
     frontend (state::type & state, const std::string & input)
     {
       type::function_type f (just_parse (state, input));
