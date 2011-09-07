@@ -733,13 +733,13 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
    * send a submitJobAck back
   */
 
-  //if my capacity is reached, refuse to take any job until at least one of my
+  //if my capacity is reached, refuse to take any external job until at least one of my
   //assigned jobs completes
-  if( !scheduler()->useRequestModel() && jobManager()->numberExtJobs() > capacity() )
+  if( e.from() != sdpa::daemon::WE  && jobManager()->numberExtJobs() > capacity() )
   {
 	  //generate a reject event
 	  SDPA_LOG_INFO("Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
-	  //send it upwards
+	  //send job rejected error event back to the master
 	  ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBREJECTED, e.job_id().str()) );
 	  sendEventToMaster(pErrorEvt);
 
