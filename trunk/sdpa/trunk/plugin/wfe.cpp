@@ -119,8 +119,6 @@ public:
   {
     int ec = -EINVAL;
 
-    MLOG(INFO, "executing...");
-
     wfe_task_t task;
     task.state = wfe_task_t::PENDING;
     task.id = job_id;
@@ -170,7 +168,7 @@ public:
 
       if (0 == ec)
       {
-        MLOG(INFO, "task finished: " << task.id);
+        MLOG(TRACE, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
         result = task.result;
 
