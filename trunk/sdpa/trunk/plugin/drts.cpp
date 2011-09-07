@@ -547,7 +547,7 @@ public:
       return;
     }
 
-    MLOG(TRACE, "removing job " << e->job_id());
+    DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
   }
 
@@ -579,7 +579,7 @@ public:
       return;
     }
 
-    MLOG(TRACE, "removing job " << e->job_id());
+    DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
   }
 
@@ -617,7 +617,7 @@ private:
       }
       catch (boost::thread_interrupted const & irq)
       {
-        MLOG(TRACE, "event handler interrupted...");
+        DMLOG(TRACE, "event handler interrupted...");
         throw;
       }
       catch (std::exception const & ex)
@@ -664,7 +664,7 @@ private:
 
           if (now >= time_of_next_request)
           {
-            MLOG(TRACE, "requesting job from " << master->name());
+            DMLOG(TRACE, "requesting job from " << master->name());
 
             send_event(new sdpa::events::RequestJobEvent( m_my_name
                                                         , master->name()
@@ -687,9 +687,9 @@ private:
       if (! at_least_one_connected)
       {
         std::string m;
-        MLOG(TRACE, "no body is connected, going to sleep...");
+        MLOG(INFO, "no body is connected, going to sleep...");
         m_connected_event.wait(m);
-        MLOG(TRACE, "starting to request jobs...");
+        MLOG(INFO, "starting to request jobs...");
       }
       else
       {
@@ -758,7 +758,7 @@ private:
             lock_type job_map_lock (m_job_map_mutex);
             map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
             assert (job_it != m_jobs.end());
-            MLOG(TRACE, "removing job " << job->id());
+            DMLOG(TRACE, "removing job " << job->id());
             m_jobs.erase(job_it);
           }
           else
@@ -789,7 +789,7 @@ private:
         lock_type job_map_lock (m_job_map_mutex);
         map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
         assert (job_it != m_jobs.end());
-        MLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
+        DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
         m_jobs.erase(job_it);
       }
     }
@@ -923,7 +923,7 @@ private:
   {
     if (evt)
     {
-      MLOG(TRACE, "received event: " << evt->str());
+      DMLOG(TRACE, "received event: " << evt->str());
       m_event_queue.put(evt);
     }
     else
