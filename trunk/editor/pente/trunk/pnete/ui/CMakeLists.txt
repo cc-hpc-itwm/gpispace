@@ -33,7 +33,9 @@ set(ui_HDRS
 )
 
 set(ui_UIS
+    PropertiesWidget.ui
 )
+
 set(ui_TOMOC
   GraphConnectableItem.hpp
   GraphPort.hpp
@@ -45,6 +47,7 @@ set(ui_TOMOC
   TransitionLibraryItem.hpp
   PopoverWidget.hpp
   StructureView.hpp
+  PropertiesEditor.hpp
 )
 
 #for moced files to get their includes.

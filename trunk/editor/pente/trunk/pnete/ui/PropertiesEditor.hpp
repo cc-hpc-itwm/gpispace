@@ -34,14 +34,12 @@ void build_property(T item, const we::type::property::path_type& path,  we::type
 
 		std::ostringstream ossPath("");
 		for(we::type::property::path_type::const_iterator it=path.begin(); it != path.end(); it++  )
-		{
 			ossPath<<"."<<*it;
-		}
 
 		ossPath<<"."<<strItemName.toStdString();
 
 		QString qstrPath(ossPath.str().c_str());
-		qDebug()<<"build property of "<<qstrPath;
+		qDebug()<<"current path: "<<qstrPath;
 
 		QString strItemVal = item->text(1);
 		if(!strItemVal.isEmpty())
@@ -59,14 +57,12 @@ void build_property(T item, const we::type::property::path_type& path,  we::type
 
 			std::ostringstream ossPath("");
 			for(we::type::property::path_type::const_iterator it=path.begin(); it != path.end(); it++  )
-			{
 				ossPath<<"."<<*it;
-			}
 
 			ossPath<<"."<<strItemName.toStdString();
 
 			QString qstrPath(ossPath.str().c_str());
-			qDebug()<<"build property of "<<qstrPath;
+			qDebug()<<"current path: "<<qstrPath;
 
 			QString strItemVal = item->text(1);
 			if(!strItemVal.isEmpty())
@@ -239,7 +235,13 @@ public slots:
 			if( listSelectedItems.empty())
 				QMessageBox::critical(NULL, tr("Properties editor"), tr("Please, select a property first!"));
 			else
-				m_treeWidget->expandItem(addItem("New item", listSelectedItems[0]));
+			{
+				QTreeWidgetItem* currItem = listSelectedItems[0];
+				QTreeWidgetItem* newItem = addItem("New item", currItem);
+				currItem->setExpanded(true);
+				newItem->setSelected(true);
+				m_treeWidget->setCurrentItem(newItem);
+			}
 		}
 	}
 
