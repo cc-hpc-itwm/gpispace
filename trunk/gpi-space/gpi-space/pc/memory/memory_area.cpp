@@ -634,7 +634,8 @@ namespace gpi
         handle_descriptor_map_t::const_iterator hdl_it
             (m_handles.find(loc.handle));
         if (hdl_it == m_handles.end())
-          throw std::runtime_error ("pointer_to(): no such handle");
+          throw std::runtime_error
+            ("pointer_to(): no such handle: " + boost::lexical_cast<std::string>(loc.handle));
 
         return reinterpret_cast<char*>(ptr())
           + (hdl_it->second.offset + (loc.offset % hdl_it->second.size));
