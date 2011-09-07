@@ -123,18 +123,19 @@ private:
 
       gpi_info = api->collect_info();
 
-    // register segment
+      // register segment
       m_shm_id = api->register_segment ( "fvm-pc-compat"
                                        , m_shm_size
                                        // , gpi::pc::type::segment::F_EXCLUSIVE
                                        // | gpi::pc::type::segment::F_FORCE_UNLINK
                                        , gpi::pc::type::segment::F_FORCE_UNLINK
+                                       | gpi::pc::type::segment::F_EXCLUSIVE
                                        );
       m_shm_hdl = api->alloc ( m_shm_id
                              , m_shm_size
                              , "fvm-pc-compat"
                              , gpi::pc::type::handle::F_EXCLUSIVE
-                           );
+                             );
       m_shm_ptr = api->ptr(m_shm_hdl);
 
       gpi_compat = this;
@@ -368,9 +369,17 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 // wait on communication between fvm and pc
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
 {
-  gpi::pc::type::size_t num_finished
-    (gpi_compat->api->wait(static_cast<gpi::pc::type::queue_id_t>(handle)));
-  return COMM_HANDLE_OK;
+  try
+  {
+    gpi::pc::type::size_t num_finished
+      (gpi_compat->api->wait(static_cast<gpi::pc::type::queue_id_t>(handle)));
+    return COMM_HANDLE_OK;
+  }
+  catch (std::exception const &ex)
+  {
+    LOG(ERROR, "communication on queue " << handle << " failed: " << ex.what());
+    return COMM_HANDLE_ERROR;
+  }
 }
 
 void *fvmGetShmemPtr()
