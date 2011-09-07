@@ -268,15 +268,15 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
     }
 }
 
-unsigned int JobManager::numberExtJobs()
+unsigned int JobManager::countMasterJobs()
 {
   lock_type lock(mtx_);
-  unsigned int nExtJobs = 0;
+  unsigned int nMasterJobs = 0;
   BOOST_FOREACH(job_map_t::value_type& job_pair, job_map_ )
   {
-	  if( !job_pair.second->is_local() )
-			  nExtJobs++;
+	  if( job_pair.second->is_local() )
+		  nMasterJobs++;
   }
 
-  return nExtJobs;
+  return nMasterJobs;
 }
