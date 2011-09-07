@@ -735,7 +735,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 
   //if my capacity is reached, refuse to take any external job until at least one of my
   //assigned jobs completes
-  if( e.from() != sdpa::daemon::WE  && jobManager()->numberExtJobs() > capacity() )
+  if( e.from() != sdpa::daemon::WE  && jobManager()->countMasterJobs() > capacity() )
   {
 	  //generate a reject event
 	  SDPA_LOG_INFO("Capacity exceeded! Cannot accept further jobs. Reject the job "<<e.job_id().str());
@@ -1444,14 +1444,14 @@ bool GenericDaemon::requestsAllowed()
       return false;
   }
 
-  if( ptr_job_man_->numberExtJobs() == 0 )
+  if( ptr_job_man_->countMasterJobs() == 0 )
     if( m_ullPollingInterval < cfg().get<unsigned int>("upper bound polling interval") )
        m_ullPollingInterval = m_ullPollingInterval + 100 * 1000; //0.1s
 
   sdpa::util::time_type current_time = sdpa::util::now();
   sdpa::util::time_type diff_time    = current_time - m_last_request_time;
 
-  return ( diff_time > m_ullPollingInterval ) && ( ptr_job_man_->numberExtJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
+  return ( diff_time > m_ullPollingInterval ) && ( ptr_job_man_->countMasterJobs() < cfg().get<unsigned int>("nmax_ext_job_req"));
 }
 
 void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const std::string& reason)

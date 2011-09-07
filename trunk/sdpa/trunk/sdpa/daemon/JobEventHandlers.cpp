@@ -39,7 +39,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 	try {
 
 		// Only, now should be state of the job updated to RUNNING
-		// since it was not rejected, no error occured etc ....
+		// since it was not rejected, no error occurred etc ....
 		//find the job ptrJob and call
 		Job::ptr_t ptrJob = ptr_job_man_->findJob(pEvent->job_id());
 		ptrJob->Dispatch();
