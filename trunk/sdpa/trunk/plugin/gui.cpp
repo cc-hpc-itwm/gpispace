@@ -78,7 +78,7 @@ public:
     try
     {
       task_event_t const & t (boost::any_cast<task_event_t>(evt));
-      MLOG(TRACE, "*** TASK EVENT: " << t.id << " (" << t.name << ")" << " state = " << t.state);
+      MLOG(TRACE, "*** TASK EVENT: id := " << t.id << " name := " << t.name << " state := " << t.state << " time := " << t.tstamp);
       m_destination->append(FHGLOG_MKEVENT_HERE(INFO, encode(t)));
     }
     catch (boost::bad_any_cast const &ex)
