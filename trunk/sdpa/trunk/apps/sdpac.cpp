@@ -289,7 +289,10 @@ int main (int argc, char **argv) {
 
   try
   {
-    sdpa::client::ClientApi::ptr_t api(sdpa::client::ClientApi::create(cfg));
+    const std::string client_api_name
+      ("sdpac-"+boost::lexical_cast<std::string>(getpid()));
+    sdpa::client::ClientApi::ptr_t api
+      (sdpa::client::ClientApi::create (cfg, client_api_name));
     if (cfg.is_set("version"))
     {
       const std::size_t maxlen (72);
