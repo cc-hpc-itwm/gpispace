@@ -88,12 +88,12 @@ main (int argc, char ** argv)
      "(${__generate_volume_credits_trigger_when_amount_state.pair.tag} := []);"
      "(${__generate_volume_credits_trigger_when_amount_state.pair.id} := 0L);"
      "(${__generate_volume_credits_trigger_when_amount_state.max} := ${object.VOLUME_CREDITS});"
-     "(${.temp.0.state.0.pair.0.id.0} := ${state.pair.id});"
+     "(${pair} := ${state.pair});"
      "(${state.pair.id} := (${state.pair.id} + 1L));"
-     "(${volume.id} := ${.temp.0.state.0.pair.0.id.0});"
-     "(${b} := ${.temp.0.state.0.pair.0.id.0});"
+     "(${volume.id} := ${pair.id});"
+     "(${b} := ${pair.id});"
      "(${test} := ${state.pair.id});"
-     "(${volume.offset} := ${state.pair.tag});"
+     "(${volume.offset} := ${pair.tag});"
     );
 
   expr::parse::util::name_set_t needed_bindings;
@@ -121,8 +121,8 @@ main (int argc, char ** argv)
 
     if (simplified_parser.string() != expected_output)
     {
-      std::cout << "result: " << simplified_parser.string();
-      std::cout << "expected: " << expected_output;
+      std::cout << "result:\n" << simplified_parser.string() << "\n";
+      std::cout << "expected:\n" << expected_output << "\n";
       --passed;
     }
   }
