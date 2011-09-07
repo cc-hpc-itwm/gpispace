@@ -18,7 +18,7 @@ namespace expr
     namespace simplify
     {
       inline util::name_set_t
-      get_ssa_names (const util::name_set_t & n, tree_node_type & tree)
+      get_ssa_names (const util::name_set_t & n, ssa_tree_type & tree)
       {
         util::name_set_t ssa_names;
 
@@ -37,8 +37,7 @@ namespace expr
       simplification_pass ( const parser & parser
                           , const util::name_set_t & needed_bindings)
       {
-        tree_node_type tree;
-        tree.initialize ();
+        ssa_tree_type tree;
 
         expression_list expressions (parser);
 

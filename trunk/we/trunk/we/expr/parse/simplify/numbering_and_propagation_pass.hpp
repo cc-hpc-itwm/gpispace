@@ -27,13 +27,13 @@ namespace expr
           : public boost::static_visitor<node::type>
         {
         private:
-          tree_node_type& _ssa_tree;
+          ssa_tree_type& _ssa_tree;
           const line_type& _line;
           expression_list & _expression_list;
           propagation_map_type & _propagation_map;
 
         public:
-          numbering_and_propagation_pass ( tree_node_type& ssa_tree
+          numbering_and_propagation_pass ( ssa_tree_type& ssa_tree
                                          , const line_type & line
                                          , expression_list & list
                                          , propagation_map_type & propagation_map
@@ -52,6 +52,7 @@ namespace expr
         private:
           node::type do_propagation (const node::key_vec_t & key) const
           {
+            //! \todo DO NOT PROPAGATE, IF THIS IS A NEEDED BINDING!!!!!!!!!!!!!
             propagation_map_type::const_iterator entry
                 (_propagation_map.find (key));
             if (entry != _propagation_map.end())
@@ -197,7 +198,7 @@ namespace expr
               if (const node::key_vec_t* rhs = boost::get<node::key_vec_t> (&b.r))
               {
                 _propagation_map[lhs] = *rhs;
-                _ssa_tree.latest_version_is_a_copy (lhs, *rhs);
+                _ssa_tree.copy_children (*rhs, lhs);
               }
               else if (const value::type* rhs = boost::get<value::type> (&b.r))
               {
@@ -239,7 +240,7 @@ namespace expr
 
       inline void
       numbering_and_propagation_pass ( expression_list & list
-                                     , tree_node_type& ssa_tree
+                                     , ssa_tree_type& ssa_tree
                                      )
       {
         propagation_map_type propagation_map;

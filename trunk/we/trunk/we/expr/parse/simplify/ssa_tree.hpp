@@ -3,17 +3,34 @@
 #ifndef _EXPR_PARSE_SIMPLIFY_SSA_TREE_HPP
 #define _EXPR_PARSE_SIMPLIFY_SSA_TREE_HPP 1
 
-#include <boost/unordered_set.hpp>
-#include <boost/lexical_cast.hpp>
+/*#include <boost/unordered_set.hpp>
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
 #include <we/expr/parse/node.hpp>
-#include <we/expr/parse/simplify/expression_list.hpp>
 #include <we/type/value.hpp>
 
-#include <fhg/util/xml.hpp>
+#include <fhg/util/xml.hpp>*/
+
+/// new tree
+
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <string>
+
+#include <we/expr/parse/util/get_names.hpp>
+
+#include <we/expr/parse/simplify/expression_list.hpp>
+
+//! \note Use c++0x for having the static_assert below enabled.
+#if __cplusplus > 199711L
+#include <type_traits>
+#endif
 
 namespace expr
 {
@@ -22,8 +39,292 @@ namespace expr
     namespace simplify
     {
       typedef util::name_set_t::value_type key_type;
+      //! \note For readability only. As of now.
+      typedef key_type ssa_key_type;
       typedef key_type::value_type key_part_type;
       typedef expression_list::nodes_type::iterator line_type;
+
+      class ssa_tree_type : public boost::enable_shared_from_this<ssa_tree_type>
+      {
+        public:
+          typedef boost::shared_ptr<ssa_tree_type> ptr;
+
+        private:
+          typedef boost::unordered_map< key_part_type
+                                      , ssa_tree_type::ptr
+                                      > childs_type;
+          typedef boost::shared_ptr<childs_type> childs_ptr;
+          typedef std::vector<childs_ptr> versioned_childs_type;
+          typedef versioned_childs_type::size_type version_type;
+          typedef std::vector<line_type> versioned_lines_type;
+
+#if __cplusplus > 199711L
+          static_assert( std::is_same< versioned_childs_type::size_type
+                                     , versioned_lines_type::size_type
+                                     >::value
+                       , "index type for line and child containers not equal"
+                       );
+#endif
+
+          versioned_childs_type _versioned_childs;
+          versioned_lines_type _versioned_lines;
+
+          inline bool
+          has_child (const version_type& version, const key_part_type & part) const
+          {
+            return _versioned_childs[version]->count (part) != 0;
+          }
+
+          inline ssa_tree_type::ptr
+          insert_child (const version_type & version, const key_part_type & n)
+          {
+            ssa_tree_type::ptr new_child (new ssa_tree_type ());
+            _versioned_childs[version]->insert( childs_type::value_type
+                                                                (n, new_child));
+            return new_child;
+          }
+
+          ssa_tree_type::ptr
+          insert_child_at_last_version ( const key_type::const_iterator & pos
+                                       , const key_type::const_iterator & end
+                                       )
+          {
+            if (pos == end)
+            {
+              return shared_from_this();
+            }
+
+            const version_type last_version (_versioned_childs.size() - 1u);
+
+            if (!has_child (last_version, *pos))
+            {
+              return insert_child (last_version, *pos);
+            }
+
+            return (*_versioned_childs[last_version])[*pos]->
+                      insert_child_at_last_version(pos + 1, end);
+          }
+
+          void
+          get_current_name ( const key_type::const_iterator & pos
+                           , const key_type::const_iterator & end
+                           , key_type & name
+                           )
+          {
+            const version_type last_version (_versioned_childs.size() - 1u);
+            name.push_back (boost::lexical_cast<key_part_type> (last_version));
+
+            if (pos == end)
+            {
+              return;
+            }
+
+            name.push_back (*pos);
+
+            if (!has_child (last_version, *pos))
+            {
+              insert_child_at_last_version (pos, end);
+            }
+
+            (*_versioned_childs[last_version])[*pos]->get_current_name ( pos + 1
+                                                                    , end
+                                                                    , name
+                                                                    );
+          }
+
+          void
+          fill_asterics_with_latest ( const ssa_key_type::iterator & number
+                                    , const ssa_key_type::const_iterator & end
+                                    )
+          {
+            const version_type last_version (_versioned_childs.size() - 1u);
+            const version_type recurse_version
+              (*number == "*" ? last_version
+                              : boost::lexical_cast<version_type> (*number)
+              );
+            *number = boost::lexical_cast<key_part_type> (recurse_version);
+
+            if (number + 1 == end)
+            {
+              return;
+            }
+
+            const key_part_type & name (*(number + 1));
+
+            if (!has_child (recurse_version, name))
+            {
+              throw std::runtime_error
+                  ("fill_asterics_with_latest: trying to get ssa-numbering for an non-existant variable");
+            }
+
+            (*_versioned_childs[recurse_version])[name]->fill_asterics_with_latest
+                                                              (number + 2, end);
+          }
+
+          ssa_tree_type::ptr
+          get_entry_ssa ( const ssa_key_type::const_iterator & number
+                        , const ssa_key_type::const_iterator & end
+                        )
+          {
+            const version_type recurse_version
+                (boost::lexical_cast<version_type> (*number));
+
+            if (number + 1 == end)
+            {
+              if (recurse_version > _versioned_childs.size() - 1u)
+              {
+                throw std::runtime_error
+                    ("get_entry_ssa: trying to get ssa-numbering for an non-existant variable");
+              }
+              return shared_from_this();
+            }
+
+            const key_part_type & name (*(number + 1));
+
+            if (!has_child (recurse_version, name))
+            {
+              throw std::runtime_error
+                  ("get_entry_ssa: trying to get ssa-numbering for an non-existant variable");
+            }
+
+            return (*_versioned_childs[recurse_version])[name]->get_entry_ssa
+                                                              (number + 2, end);
+          }
+
+          inline ssa_tree_type::ptr
+          get_entry_ssa (const ssa_key_type & key)
+          {
+            return get_entry_ssa (key.begin(), key.end());
+          }
+
+          inline ssa_tree_type::ptr
+          get_entry (const key_type & key)
+          {
+            return insert_child_at_last_version (key.begin(), key.end());
+          }
+
+          inline void
+          add_reference (const line_type & line)
+          {
+            _versioned_lines.push_back (line);
+            _versioned_childs.push_back (childs_ptr (new childs_type ()));
+          }
+
+          void
+          dump (fhg::util::xml::xmlstream & stream) const
+          {
+            version_type version (0);
+            for( versioned_childs_type::const_iterator it
+                                                     (_versioned_childs.begin())
+               , end (_versioned_childs.end())
+               ; it != end
+               ; ++it )
+            {
+              stream.open ("version");
+              stream.attr ("number", version++);
+              for ( childs_type::const_iterator child ((*it)->begin())
+                  , end ((*it)->end())
+                  ; child != end
+                  ; ++child
+                  )
+              {
+                stream.open ("child");
+                stream.attr ("name", child->first);
+                child->second->dump (stream);
+                stream.close();
+              }
+              stream.close();
+            }
+          }
+
+        public:
+          explicit ssa_tree_type ()
+          : _versioned_childs (0u)
+          , _versioned_lines (0u)
+          {
+            add_reference (line_type ());
+          }
+
+          inline void
+          fill_asterics_with_latest (ssa_key_type & key)
+          {
+            fill_asterics_with_latest (key.begin(), key.end());
+          }
+
+          inline key_type
+          get_current_name (const key_type & key)
+          {
+            key_type name;
+            get_current_name (key.begin (), key.end (), name);
+            return name;
+          }
+
+          inline void
+          add_reference (const key_type & key, const line_type & line)
+          {
+            insert_child_at_last_version (key.begin(), key.end())->
+                add_reference (line);
+          }
+
+          inline line_type
+          get_line_of_next_write (const ssa_key_type & key)
+          {
+            std::cout << "get_line_of_next_write(" << key << ")\n";
+            ssa_tree_type::ptr child (get_entry_ssa (key.begin(), key.end()));
+
+            const version_type after
+                (boost::lexical_cast<version_type> (key.back()));
+            const version_type last
+                (child->_versioned_lines.size () - 1u);
+
+            if (after == last)
+            {
+              return line_type ();
+            }
+
+            return child->_versioned_lines[after + 1];
+          }
+
+          inline void
+          copy_children (const ssa_key_type & from_k, const ssa_key_type & to_k)
+          {
+            std::cout << "copy_children(" << from_k << " -> " << to_k << ")\n";
+            ssa_tree_type::ptr from
+                (get_entry_ssa (from_k.begin(), from_k.end()));
+            ssa_tree_type::ptr to (get_entry_ssa (to_k.begin(), to_k.end()));
+
+            const version_type from_v
+                (boost::lexical_cast<version_type> (from_k.back()));
+            const version_type to_v
+                (boost::lexical_cast<version_type> (to_k.back()));
+
+            to->_versioned_childs[to_v] = from->_versioned_childs[from_v];
+          }
+
+          inline void
+          dump (std::ostream & s = std::cout) const
+          {
+            fhg::util::xml::xmlstream stream (s);
+            stream.open ("root");
+            dump (stream);
+            stream.close();
+          }
+      };
+    }
+  }
+}
+
+
+/// new tree
+
+/*
+
+namespace expr
+{
+  namespace parse
+  {
+    namespace simplify
+    {
 
       class tree_node_type
         : public boost::enable_shared_from_this<tree_node_type>
@@ -457,5 +758,7 @@ namespace expr
     }
   }
 }
+
+*/
 
 #endif
