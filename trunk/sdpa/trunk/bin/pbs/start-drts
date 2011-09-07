@@ -19,6 +19,7 @@ name_prefix="drts-$(hostname -s)"
 master="aggregator"
 gpi_socket="/var/tmp/gpi-space/GPISpace-$(id -u)/control"
 lib_path="$PC_LIBRARY_PATH"
+kvs_url="${KVS_URL}"
 
 function usage ()
 {
@@ -34,6 +35,7 @@ usage: $(basename "$0") [options]
     -c N (=$capacity): set the capacity
     -S path (=$gpi_socket): gpi socket path
     -l path (=$lib_path): library path
+    -k kvs-url (=$kvs_url): url to the key-value-store
     -D daemonize
     -L logfile (=$logfile)
 EOF
@@ -62,7 +64,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:DL:" opt; do
+while getopts ":hvfg:m:i:c:S:l:k:DL:" opt; do
     case $opt in
 	h)
 	    usage
@@ -92,6 +94,9 @@ while getopts ":hvfg:m:i:DL:" opt; do
 	l)
 	    lib_path=$OPTARG
 	    ;;
+	k)
+	    kvs_url=$OPTARG
+	    ;;
 	D)
 	    daemonize=true
 	    ;;
@@ -106,6 +111,10 @@ while getopts ":hvfg:m:i:DL:" opt; do
     esac
 done
 
+if [ -z "$kvs_url" ] ; then
+    log "E: no kvs-url specified!"
+    exit 1
+fi
 name="${name_prefix}-${identity}"
 
 logfile="$SDPA_LOG_DIR/${name}.log"
@@ -133,6 +142,12 @@ for p in $still_running ; do
 done
 
 # TODO: get those from the .sdpa/configs/sdpa.rc file, at least parts of it
+
+# config values (kvs plugin)
+kvs_host=$(echo "$kvs_url" | cut -d: -f1)
+kvs_port=$(echo "$kvs_url" | cut -d: -f2)
+cfg="$cfg -s plugin.kvs.host=$kvs_host"
+cfg="$cfg -s plugin.kvs.port=$kvs_port"
 
 # config values (drts plugin)
 cfg="$cfg -s plugin.drts.name=$name"
