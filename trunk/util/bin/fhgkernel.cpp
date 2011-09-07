@@ -1,3 +1,5 @@
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <signal.h>
 
 #include <vector>
@@ -24,6 +26,17 @@ static void sig_term(int)
   if (kernel) kernel->stop ();
 }
 
+static void wait_on_child()
+{
+  waitpid(-1, 0, WNOHANG);
+}
+
+static void sig_chld(int)
+{
+  if (kernel)
+    kernel->schedule("kernel", &wait_on_child);
+}
+
 int main(int ac, char **av)
 {
   FHGLOG_SETUP(ac,av);
@@ -32,6 +45,7 @@ int main(int ac, char **av)
 
   signal (SIGINT, sig_term);
   signal (SIGTERM, sig_term);
+  signal (SIGCHLD, sig_chld);
 
   namespace po = boost::program_options;
 
