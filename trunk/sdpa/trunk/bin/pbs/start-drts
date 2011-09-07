@@ -1,0 +1,136 @@
+#!/bin/bash
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+# set some default values
+gui="$SDPA_GUI"
+if [ -z "$gui" ]
+then
+  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)
+fi
+
+debug=false
+verbose=false
+daemonize=false
+capacity=10
+name_prefix="drts-$(hostname -s)"
+name="${name_prefix}-${RANDOM}"
+master="aggregator"
+gpi_socket="/var/tmp/gpi-space/GPISpace-$(id -u)/control"
+lib_path="$PC_LIBRARY_PATH"
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $0 [options]
+
+    -h: print this help
+    -v: verbose
+    -n name (=$name): name of this drts
+    -m master (=$master): master to connect to
+    -g ip:port (=$gui): gui address
+    -c N (=$capacity): set the capacity
+    -S path (=$gpi_socket): gpi socket path
+    -l path (=$lib_path): library path
+    -D daemonize
+    -L logfile (=$logfile)
+EOF
+}
+
+while getopts ":hvg:m:n:DL:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	v)
+	    verbose=true
+	    ;;
+	g)
+	    gui=$OPTARG
+	    ;;
+	m)
+	    parent=$OPTARG
+	    ;;
+	n)
+	    name=$OPTARG
+	    ;;
+	c)
+	    capacity=$OPTARG
+	    ;;
+	S)
+	    gpi_socket=$OPTARG
+	    ;;
+	l)
+	    lib_path=$OPTARG
+	    ;;
+	D)
+	    daemonize=true
+	    ;;
+	L)
+	    logfile="$OPTARG"
+	    ;;
+	\?)
+	    echo "invalid option: -$OPTARG" >&2
+	    echo "try: $0 -h" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+logfile="$SDPA_LOG_DIR/${name}.log"
+
+bin="$(which fhgkernel)"
+if [ ! -x "$bin" ] ; then
+  log "# could not find fhgkernel in the path!"
+  exit 1
+fi
+
+# TODO: get those from the .sdpa/configs/sdpa.rc file, at least parts of it
+
+# config values (drts plugin)
+cfg="$cfg -s plugin.drts.name=$name"
+cfg="$cfg -s plugin.drts.master=$master"
+cfg="$cfg -s plugin.drts.backlog=$capacity"
+
+# config values (gpi plugin)
+cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
+cfg="$cfg -s plugin.gpi.startmode=wait"
+
+# config values (gui plugin)
+cfg="$cfg -s plugin.gui.url=$gui"
+
+# config values (gui plugin)
+cfg="$cfg -s plugin.gui.url=$gui"
+cfg="$cfg -s plugin.gui.url=$gui"
+cfg="$cfg -s plugin.gui.url=$gui"
+cfg="$cfg -s plugin.gui.url=$gui"
+
+-s plugin.wfe.library_path=/u/herc/petry/.sdpa/modules:/p/herc/itwm/hpc/soft/sdpa/ap/gcc/libexec
+
+args="$args --name=$name"
+args="$args --url=$listen"
+args="$args --worker_url=$worker"
+args="$args --master=$parent"
+args="$args --gui_url=$gui"
+args="$args --kvs_url=$KVS_URL"
+
+cmd="$bin $args"
+
+plugins="$plugins -l $SDPA_HOME/libexec/plugins/gui.so"
+plugins="$plugins -l $SDPA_HOME/libexec/plugins/kvs.so"
+plugins="$plugins -l $SDPA_HOME/libexec/plugins/wfe.so"
+plugins="$plugins -l $SDPA_HOME/libexec/plugins/drts.so"
+plugins="$plugins -l $SDPA_HOME/libexec/plugins/gpi.so"
+plugins="$plugins -l $SDPA_HOME/libexec/plugins/gpi-compat.so"
+
+FHGLOG_level=MIN ./util/bin/fhgkernel -v  -k -s plugin.gui.url=login1.hercules:9154
+
+
+log "Running $cmd on node $hostname"
+export FHGLOG_to_file="$logfile"
+if [ "$daemonize" == "true" ] ; then
+    $cmd </dev/null >/dev/null 2>&1 &
+else
+    exec $cmd
+fi
