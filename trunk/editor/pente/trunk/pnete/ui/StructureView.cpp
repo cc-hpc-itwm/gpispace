@@ -574,10 +574,10 @@ namespace fhg
 
           from_structs (transition_item, trans.structs);
 
-          boost::apply_visitor
-            ( visitor::from_function_type<QStandardItem *> (transition_item)
-            , trans.f
-            );
+          {
+            visitor::from_function_type<QStandardItem *> v(transition_item);
+            boost::apply_visitor(v, trans.f);
+          }
 
           from_xs (transition_item, "place-map", trans.place_map(), from_place_map<QStandardItem *>);
 
