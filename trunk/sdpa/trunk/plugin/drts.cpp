@@ -87,6 +87,19 @@ public:
       FHG_PLUGIN_FAILED(ELIBACC);
     }
 
+    // TODO: add
+    //
+    //      acquire_all<T>() -> [(name, T*)]
+    //
+    // to get access to all plugins of a particular type
+    if (fhg::plugin::Capability* cap = fhg_kernel()->acquire<fhg::plugin::Capability>("gpi"))
+    {
+      MLOG(INFO, "gained capability: " << cap->capability_name() << " of type " << cap->capability_type());
+
+      lock_type cap_lock(m_capabilities_mutex);
+      m_capabilities.insert (std::make_pair(cap->capability_name(), cap));
+    }
+
     assert (! m_event_thread);
 
     m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
@@ -135,12 +148,6 @@ public:
     m_execution_thread.reset(new boost::thread(&DRTSImpl::job_execution_thread, this));
 
     start_connect ();
-
-    // initialize statemachine
-    //   not-connected
-    //     schedule registration
-    //   connected
-    //     poll for jobs -> modify submitjob so that more than one job can be sent
 
     FHG_PLUGIN_STARTED();
   }
