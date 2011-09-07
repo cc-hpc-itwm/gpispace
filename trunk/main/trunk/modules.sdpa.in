@@ -12,7 +12,7 @@ set prefix @CMAKE_INSTALL_PREFIX@
 prepend-path    PATH              ${prefix}/bin/
 prepend-path    PATH              ${prefix}/bin/pbs/
 prepend-path    PATH              ${prefix}/bin/parsu/
-prepend-path    LD_LIBRARY_PATH   ${prefix}/lib/
+prepend-path    LD_LIBRARY_PATH   ${prefix}/lib/:${prefix}/libexec/
 prepend-path    PC_LIBRARY_PATH   ${prefix}/libexec/
 setenv          SDPA_LIBEXEC      ${prefix}/libexec/
 setenv          SDPA_HOME         ${prefix}/
