@@ -284,7 +284,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmShmemOffset_t shmemOffset,
 				 const fvmAllocHandle_t scratch)
 {
-  static const gpi::pc::type::queue_id_t queue = 1;
+  static const gpi::pc::type::queue_id_t queue = 0;
 
   gpi::pc::type::handle::descriptor_t
     hdl_info (gpi_compat->get_handle_info(scratch));
@@ -351,7 +351,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  static const gpi::pc::type::queue_id_t queue = 2;
+  static const gpi::pc::type::queue_id_t queue = 0;
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
           , gpi::pc::type::memory_location_t( gpi_compat->m_shm_hdl, shmemOffset)
@@ -366,7 +366,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  static const gpi::pc::type::queue_id_t queue = 3;
+  static const gpi::pc::type::queue_id_t queue = 0;
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)
           , gpi::pc::type::memory_location_t(handle, fvmOffset)
