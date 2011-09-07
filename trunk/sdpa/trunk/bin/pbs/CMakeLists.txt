@@ -8,6 +8,7 @@ set (prgs
   start-nre
   start-orch
   start-pc
+  start-drts
   stop-nre
   stop-pc
   send-signal
