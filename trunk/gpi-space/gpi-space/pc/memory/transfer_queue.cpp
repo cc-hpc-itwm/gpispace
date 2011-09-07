@@ -249,11 +249,12 @@ namespace gpi
           std::size_t sz (std::min(remaining, chunk_size));
           task_list.push_back
             (boost::make_shared<task_t>
-            ( "memcpy", boost::bind( &do_memcpy
-                                   , t
-                                   , sz
-                                   , shift
-                                   )
+            ( "memcpy " + boost::lexical_cast<std::string>(t)
+            , boost::bind( &do_memcpy
+                         , t
+                         , sz
+                         , shift
+                         )
             , sz
             ));
           remaining -= sz;
@@ -369,6 +370,8 @@ namespace gpi
       std::size_t
       transfer_queue_t::wait ()
       {
+        lock_type global_wait_lock (m_global_wait_mutex);
+
         task_ptr wtask (boost::make_shared<task_t>
                        ("wait_on_queue", boost::bind( &do_wait_on_queue
                                                     , m_id
