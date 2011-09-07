@@ -272,10 +272,10 @@ unsigned int JobManager::numberExtJobs()
 {
   lock_type lock(mtx_);
   unsigned int nExtJobs = 0;
-  BOOST_FOREACH(job_map_t::value_type& jp, job_map_ )
+  BOOST_FOREACH(job_map_t::value_type& job_pair, job_map_ )
   {
-    if(!jp.second->owner().empty())
-      nExtJobs++;
+	  if( !job_pair.second->is_local() )
+			  nExtJobs++;
   }
 
   return nExtJobs;
