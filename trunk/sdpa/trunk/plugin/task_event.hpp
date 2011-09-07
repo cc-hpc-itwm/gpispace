@@ -27,20 +27,8 @@ struct task_event_t
     , name(_name)
     , state(_state)
     , activity(_activity)
-  {
-    time_type now = boost::posix_time::microsec_clock::universal_time();
-    switch (state)
-    {
-    case ENQUEUED:
-      enqueue_time = now;
-      break;
-    case DEQUEUED:
-      dequeue_time = now;
-      break;
-    default:
-      completion_time = now;
-    }
-  }
+    , tstamp (boost::posix_time::microsec_clock::universal_time())
+  {}
 
   std::string id;
   std::string name;
@@ -48,9 +36,7 @@ struct task_event_t
 
   std::string activity;
 
-  time_type enqueue_time;    // entered system
-  time_type dequeue_time;    // removed from pending queue
-  time_type completion_time;
+  time_type tstamp;
 };
 
 #endif
