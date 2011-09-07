@@ -190,9 +190,11 @@ set_target_properties(sinc_mod PROPERTIES OUTPUT_NAME sinc)
 
 add_library(kdm_mod SHARED ${KDM_MOD_SRCS})
 set_target_properties(kdm_mod PROPERTIES OUTPUT_NAME kdm)
+target_link_libraries(kdm_mod sinc_mod)
 
 add_library(kdmfull_mod SHARED ${KDM_FULL_MOD_SRCS})
 set_target_properties(kdmfull_mod PROPERTIES OUTPUT_NAME kdmfull)
+target_link_libraries(kdmfull_mod sinc_mod)
 
 add_library(filter_mod SHARED ${FILTER_MOD_SRCS})
 set_target_properties(filter_mod PROPERTIES OUTPUT_NAME filter)
