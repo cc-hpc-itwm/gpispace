@@ -6,15 +6,16 @@ test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 gui="$SDPA_GUI"
 if [ -z "$gui" ]
 then
-  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)
+  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
 fi
 
+force=false
 debug=false
 verbose=false
 daemonize=false
 capacity=10
+identity=0
 name_prefix="drts-$(hostname -s)"
-name="${name_prefix}-${RANDOM}"
 master="aggregator"
 gpi_socket="/var/tmp/gpi-space/GPISpace-$(id -u)/control"
 lib_path="$PC_LIBRARY_PATH"
@@ -22,11 +23,12 @@ lib_path="$PC_LIBRARY_PATH"
 function usage ()
 {
     cat >&2 <<EOF
-usage: $0 [options]
+usage: $(basename "$0") [options]
 
     -h: print this help
     -v: verbose
-    -n name (=$name): name of this drts
+    -f: force: kill still running processes
+    -i ident (=$identiy): identity
     -m master (=$master): master to connect to
     -g ip:port (=$gui): gui address
     -c N (=$capacity): set the capacity
@@ -37,7 +39,30 @@ usage: $0 [options]
 EOF
 }
 
-while getopts ":hvg:m:n:DL:" opt; do
+# sends a given pid after N(=0) seconds to the background
+function to_bg ()
+{
+    local pid="$1"; shift
+    if [ -z "$pid" ] ; then
+	return 1
+    fi
+    if ! kill -0 "$pid" &>/dev/null ; then
+	return 2
+    fi
+    local when="$1"; shift
+    if [ -z "$when" ] ; then
+	when=0
+    fi
+    #echo "to_bg: sleeping $when second(s)"
+    sleep $when
+    #echo "to_bg: stopping $pid"
+    # note: the builtin kill doesn't seem to to work always(?)
+    /bin/kill -STOP "$pid"
+    #echo "to_bg: resuming $pid"
+    /bin/kill -CONT "$pid"
+}
+
+while getopts ":hvfg:m:i:DL:" opt; do
     case $opt in
 	h)
 	    usage
@@ -46,14 +71,17 @@ while getopts ":hvg:m:n:DL:" opt; do
 	v)
 	    verbose=true
 	    ;;
+	f)
+	    force=true
+	    ;;
 	g)
 	    gui=$OPTARG
 	    ;;
 	m)
 	    parent=$OPTARG
 	    ;;
-	n)
-	    name=$OPTARG
+	i)
+	    identity=$OPTARG
 	    ;;
 	c)
 	    capacity=$OPTARG
@@ -78,6 +106,8 @@ while getopts ":hvg:m:n:DL:" opt; do
     esac
 done
 
+name="${name_prefix}-${identity}"
+
 logfile="$SDPA_LOG_DIR/${name}.log"
 
 bin="$(which fhgkernel)"
@@ -85,6 +115,22 @@ if [ ! -x "$bin" ] ; then
   log "# could not find fhgkernel in the path!"
   exit 1
 fi
+
+# check if still running
+still_running=$(ps -C fhgkernel -o pid=)
+for p in $still_running ; do
+    if grep -q -e "plugin.drts.name=$name" /proc/$p/cmdline ; then
+	if [ "$force" == "true" ] ; then
+	    log "W: $name is still running, terminating it"
+	    kill -TERM "$p"
+	    sleep 3
+	    kill -KILL "$p" &>/dev/null
+	else
+	    log "E: $name still running, cannot start"
+	    exit 1
+	fi
+    fi
+done
 
 # TODO: get those from the .sdpa/configs/sdpa.rc file, at least parts of it
 
@@ -100,37 +146,24 @@ cfg="$cfg -s plugin.gpi.startmode=wait"
 # config values (gui plugin)
 cfg="$cfg -s plugin.gui.url=$gui"
 
-# config values (gui plugin)
-cfg="$cfg -s plugin.gui.url=$gui"
-cfg="$cfg -s plugin.gui.url=$gui"
-cfg="$cfg -s plugin.gui.url=$gui"
-cfg="$cfg -s plugin.gui.url=$gui"
+# config values (wfe plugin)
+cfg="$cfg -s plugin.wfe.library_path=${PC_LIBRARY_PATH}"
 
--s plugin.wfe.library_path=/u/herc/petry/.sdpa/modules:/p/herc/itwm/hpc/soft/sdpa/ap/gcc/libexec
+plugins="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g kernel.plugins)"
 
-args="$args --name=$name"
-args="$args --url=$listen"
-args="$args --worker_url=$worker"
-args="$args --master=$parent"
-args="$args --gui_url=$gui"
-args="$args --kvs_url=$KVS_URL"
+plugin_load_flags=""
+for p in $(echo $plugins | tr ',' ' '); do
+    plugin_load_flags="$plugin_load_flags -l $SDPA_HOME/libexec/plugins/$p.so"
+done
 
-cmd="$bin $args"
-
-plugins="$plugins -l $SDPA_HOME/libexec/plugins/gui.so"
-plugins="$plugins -l $SDPA_HOME/libexec/plugins/kvs.so"
-plugins="$plugins -l $SDPA_HOME/libexec/plugins/wfe.so"
-plugins="$plugins -l $SDPA_HOME/libexec/plugins/drts.so"
-plugins="$plugins -l $SDPA_HOME/libexec/plugins/gpi.so"
-plugins="$plugins -l $SDPA_HOME/libexec/plugins/gpi-compat.so"
-
-FHGLOG_level=MIN ./util/bin/fhgkernel -v  -k -s plugin.gui.url=login1.hercules:9154
-
+cmd="${bin} $cfg $plugin_load_flags"
 
 log "Running $cmd on node $hostname"
 export FHGLOG_to_file="$logfile"
+
 if [ "$daemonize" == "true" ] ; then
-    $cmd </dev/null >/dev/null 2>&1 &
+    to_bg $$ 3 </dev/null &>/dev/null &
+    exec $cmd </dev/null &> "${logfile}"
 else
     exec $cmd
 fi
