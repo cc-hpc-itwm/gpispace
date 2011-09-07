@@ -1,10 +1,11 @@
 # -*- mode: cmake; -*-
 set (hdrs
-  dead_code_elimination_pass.hpp
+  constant_propagation.hpp
+  copy_propagation.hpp
+  dead_code_elimination.hpp
   expression_list.hpp
-  numbering_and_propagation_pass.hpp
   simplify.hpp
-  ssa_tree.hpp
+  util.hpp
   )
 
 install(FILES ${hdrs}
