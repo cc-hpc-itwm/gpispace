@@ -11,6 +11,7 @@ set (prgs
   start-drts
   stop-nre
   stop-pc
+  stop-drts
   send-signal
   pidof
 )
