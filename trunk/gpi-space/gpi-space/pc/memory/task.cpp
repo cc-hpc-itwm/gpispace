@@ -23,8 +23,8 @@ namespace gpi
           }
           catch (...)
           {
-            set_state (task_state::failed);
             m_error = boost::current_exception();
+            set_state (task_state::failed);
           }
           break;
         case task_state::cancelled:
