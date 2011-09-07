@@ -73,6 +73,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 fvmCommHandleState_t waitComm(fvmCommHandle_t handle) DEPRECATE_API("please switch to the gpi-space pc api");
 
 void *fvmGetShmemPtr() DEPRECATE_API("please switch to the gpi-space pc api");
+const char *fvmGetShmemName() DEPRECATE_API("please switch to the gpi-space pc api");
 
 #endif
 

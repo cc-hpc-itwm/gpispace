@@ -35,6 +35,12 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
+    const std::string my_pid(boost::lexical_cast<std::string>(getpid()));
+    m_segment_name = "fvm-pc-" + my_pid;
+    m_segment_handle_name = "fvm-pc-segment-" + my_pid;
+    m_global_handle_name = "fvm-pc-global-" + my_pid;
+    m_local_handle_name = "fvm-pc-local-" + my_pid;
+
     if (! try_start())
     {
       LOG(WARN, "gpi-compat plugin could not be started, gpi plugin is not (yet) available");
@@ -124,16 +130,15 @@ private:
       gpi_info = api->collect_info();
 
       // register segment
-      m_shm_id = api->register_segment ( "fvm-pc-compat"
+      m_shm_id = api->register_segment ( m_segment_name
                                        , m_shm_size
                                        // , gpi::pc::type::segment::F_EXCLUSIVE
                                        // | gpi::pc::type::segment::F_FORCE_UNLINK
                                        , gpi::pc::type::segment::F_FORCE_UNLINK
-                                       | gpi::pc::type::segment::F_EXCLUSIVE
                                        );
       m_shm_hdl = api->alloc ( m_shm_id
                              , m_shm_size
-                             , "fvm-pc-compat"
+                             , m_segment_handle_name
                              , gpi::pc::type::handle::F_EXCLUSIVE
                              );
       m_shm_ptr = api->ptr(m_shm_hdl);
@@ -152,6 +157,10 @@ private:
 public:
   mutable mutex_type                 m_handle_cache_mtx;
   handle_cache_t                     m_handle_cache;
+  std::string                        m_segment_name;
+  std::string                        m_segment_handle_name;
+  std::string                        m_global_handle_name;
+  std::string                        m_local_handle_name;
 
   gpi::GPI                          *api;
   gpi::pc::type::info::descriptor_t  gpi_info;
@@ -175,7 +184,7 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 {
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
-                                , "fvm-pc-compat-global-no-name"
+                                , gpi_compat->m_global_handle_name
                                 , gpi::pc::type::handle::F_GLOBAL
                                 | gpi::pc::type::handle::F_PERSISTENT
                                 );
@@ -191,7 +200,7 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
 {
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
-                                , "fvm-pc-compat-local-no-name"
+                                , gpi_compat->m_local_handle_name
                                 , 0
                                 );
 }
@@ -380,6 +389,11 @@ fvmCommHandleState_t waitComm(fvmCommHandle_t handle)
     LOG(ERROR, "communication on queue " << handle << " failed: " << ex.what());
     return COMM_HANDLE_ERROR;
   }
+}
+
+const char *fvmGetShmemName()
+{
+  return gpi_compat->m_segment_name.c_str();
 }
 
 void *fvmGetShmemPtr()
