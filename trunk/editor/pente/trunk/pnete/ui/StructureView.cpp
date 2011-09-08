@@ -270,7 +270,7 @@ namespace fhg
           ( const QString & header
           , IT pos
           , const IT & end
-          , void (*fun) ( const weaver &
+          , void (*fun) ( weaver
                         , const typename std::iterator_traits<IT>::value_type &
                         )
           ) const
@@ -292,7 +292,7 @@ namespace fhg
           void from_xs
           ( const std::string & header
           , const Coll & coll
-          , void (*fun) ( const weaver &
+          , void (*fun) ( weaver
                         , const typename std::iterator_traits<typename Coll::const_iterator>::value_type &
                         )
           ) const
@@ -316,13 +316,13 @@ namespace fhg
           return append (f.str());
         }
 
-#define WNAME(_tag) fhg::pnete::weaver::type::_tag
+#define WNAME(_tag) ::fhg::pnete::weaver::type::_tag
 #define WSIG(_tag,_type,_var) \
         template<> void weaver::weave< WNAME(_tag), _type > (const _type & _var)
 #define WSIGN(_tag,_type,_var) WSIG(_tag,WNAME(_type),_var)
-#define WWEAVE(_tag,_type) w.weave< WNAME(_tag), _type >
+#define WWEAVE(_tag,_type) _state.template weave< WNAME(_tag), _type >
 #define WWEAVEN(_tag,_type) WWEAVE(_tag,WNAME(_type))
-#define WWEAVEE(_tag) w.weave< WNAME(_tag) >
+#define WWEAVEE(_tag) _state.template weave < WNAME(_tag) >
       }
 
       namespace detail
@@ -855,40 +855,37 @@ namespace fhg
       {
         FUN_IT(property, ::we::type::property::map_type, prop)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(property::open, property_type)(prop);
           WWEAVEE(property::close)();
         }
 
         FUN(properties, ::we::type::property::type, props)
         {
+          //! \todo FUCKUP: _state is an QStandardItem* here!
           INIT_WEAVER;;
 
-          WWEAVEN(properties::open, properties_type)(props);
-          WWEAVEE(properties::close)();
+          w.weave< ::fhg::pnete::weaver::type::properties::open
+                 , ::fhg::pnete::weaver::type::properties_type
+                 > (props);
+          w.weave< ::fhg::pnete::weaver::type::properties::close>();
+          //WWEAVEN(properties::open, properties_type)(props);
+          //WWEAVEE(properties::close)();
         }
 
         FUN_IT(structured, ::signature::structured_t, sig)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(sig_structured::open, sig_structured_type)(sig);
           WWEAVEE(sig_structured::close)();
         }
 
         FUN_IT(struct, ::xml::parse::type::structs_type, s)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(_struct::open, struct_type)(s);
           WWEAVEE(_struct::close)();
         }
 
         FUN_IT(port, ::xml::parse::type::ports_type, port)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(port::open, port_type)(port);
           WWEAVE(port::name, std::string)(port.name);
           WWEAVE(port::type, std::string)(port.type);
@@ -899,32 +896,31 @@ namespace fhg
 
         FUN_IT(cinclude, ::xml::parse::type::cincludes_type, cinclude)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(cinclude::open, cinclude_type)(cinclude);
           WWEAVEE(cinclude::close)();
         }
 
         FUN_IT(link, ::xml::parse::type::links_type, link)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(link::open, link_type)(link);
           WWEAVEE(link::close)();
         }
 
         FUN(structs, ::xml::parse::type::structs_type, structs)
         {
+          //! \todo FUCKUP: _state is an QStandardItem* here!
           INIT_WEAVER;;
 
-          WWEAVEN(structs::open, structs_type)(structs);
-          WWEAVEE(structs::close)();
+          w.weave< ::fhg::pnete::weaver::type::structs::open
+                 , ::fhg::pnete::weaver::type::structs_type
+                 > (structs);
+          w.weave< ::fhg::pnete::weaver::type::structs::close>();
+          //WWEAVEN(structs::open, structs_type)(structs);
+          //WWEAVEE(structs::close)();
         }
 
         FUN(expression_sequence, std::string, lines)
         {
-          INIT_WEAVER;;
-
           WWEAVE(expression_sequence::open, std::string)(lines);
 
           const char b (';');
@@ -963,24 +959,18 @@ namespace fhg
 
         FUN_IT(type_get, ::xml::parse::type::type_get_type, tg)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(type_get::open, type_get_type)(tg);
           WWEAVEE(type_get::close)();
         }
 
         FUN_IT(type_map, ::xml::parse::type::type_map_type, tm)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(type_map::open, type_map_type)(tm);
           WWEAVEE(type_map::close)();
         }
 
         FUN_IT(specialize, ::xml::parse::type::net_type::specializes_type, spec)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(specialize::open, specialize_type)(spec);
           WWEAVE(specialize::name, std::string)(spec.name);
           WWEAVE(specialize::use, std::string)(spec.use);
@@ -992,16 +982,12 @@ namespace fhg
 
         FUN(conditions, ::xml::parse::type::conditions_type, cs)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(conditions::open, conditions_type)(cs);
           WWEAVEE(conditions::close)();
         }
 
         FUN_IT(function, ::xml::parse::type::net_type::functions_type, fun)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(function::open, function_type)(fun);
           WWEAVE(function::name, fhg::util::maybe<std::string>)(fun.name);
           WWEAVE(function::internal, fhg::util::maybe<bool>)(fun.internal);
@@ -1020,8 +1006,6 @@ namespace fhg
 
         FUN_IT(place, ::xml::parse::type::places_type, place)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(place::open, place_type)(place);
           WWEAVE(place::name, std::string)(place.name);
           WWEAVE(place::type, std::string)(place.type);
@@ -1044,8 +1028,6 @@ namespace fhg
 
         FUN_IT(place_map, ::xml::parse::type::place_maps_type, pm)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(place_map::open, place_map_type)(pm);
           WWEAVE(place_map::place_virtual, std::string)(pm.place_virtual);
           WWEAVE(place_map::place_real, std::string)(pm.place_real);
@@ -1055,8 +1037,6 @@ namespace fhg
 
         FUN_IT(connection, ::xml::parse::type::connections_type, connection)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(connection::open, connection_type)(connection);
           WWEAVE(connection::port, std::string)(connection.port);
           WWEAVE(connection::place, std::string)(connection.place);
@@ -1065,8 +1045,6 @@ namespace fhg
 
         FUN_IT(require, ::xml::parse::type::requirements_type, req)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(requirement::open, requirement_type)(req);
           WWEAVE(requirement::key, std::string)(req.first);
           WWEAVE(requirement::value, bool)(req.second);
@@ -1075,8 +1053,6 @@ namespace fhg
 
         FUN_IT(transition, ::xml::parse::type::net_type::transitions_type, trans)
         {
-          INIT_WEAVER;;
-
           WWEAVEN(transition::open,transition_type)(trans);
           WWEAVE(transition::name,std::string)(trans.name);
           WWEAVE(transition::priority,fhg::util::maybe<petri_net::prio_t>)
