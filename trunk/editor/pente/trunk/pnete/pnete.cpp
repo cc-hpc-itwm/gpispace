@@ -31,13 +31,8 @@ namespace fhg
     {
       _splash.show ();
       processEvents ();
-    }
-
-    void PetriNetEditor::hideSplashScreen ()
-    {
       _splash.finish (_mainWindow);
     }
-
     PetriNetEditor::PetriNetEditor (int & argc, char *argv[])
     : QApplication (argc, argv)
     , _splash (QPixmap (":/pente.png"))
@@ -60,10 +55,6 @@ namespace fhg
       processCommandLine ();
       createMainWindow ();
       createTransitionLibrary ();
-
-#ifdef BE_PENTE
-      hideSplashScreen();
-#endif
     }
 
     PetriNetEditor::~PetriNetEditor ()

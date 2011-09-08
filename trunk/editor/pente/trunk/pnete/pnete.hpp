@@ -25,7 +25,6 @@ namespace fhg
       ui::MainWindow* _mainWindow;
 
       void showSplashScreen ();
-      void hideSplashScreen ();
 
     public:
       PetriNetEditor (int & argc, char *argv[]);
