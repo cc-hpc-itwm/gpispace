@@ -23,7 +23,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
@@ -56,7 +55,9 @@ static std::string center (std::string const & text, const std::size_t len)
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
 {
-  boost::system_time poll_start = boost::get_system_time();
+  typedef boost::posix_time::ptime time_type;
+  time_type poll_start = boost::posix_time::microsec_clock::local_time();
+
   std::cerr << "starting at: " << poll_start << std::endl;
 
   std::cout << "waiting for job to return..." << std::flush;
@@ -102,11 +103,11 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
 	std::cout << "." << std::flush;
     }
   }
-  boost::system_time poll_end = boost::get_system_time();
-  boost::posix_time::time_period tp(poll_start, poll_end);
+
+  time_type poll_end = boost::posix_time::microsec_clock::local_time();
 
   std::cerr << "stopped at: " << poll_end << std::endl;
-  std::cerr << "execution time: " << tp.length() << std::endl;
+  std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
   return exit_code;
 }
 
