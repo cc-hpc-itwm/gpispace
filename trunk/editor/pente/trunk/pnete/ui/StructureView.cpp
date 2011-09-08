@@ -21,6 +21,11 @@ namespace fhg
 {
   namespace pnete
   {
+// #define INIT_WEAVER tv::weaver w (_state)
+// #define STATE QStandardItem *
+#define INIT_WEAVER tv::weaver w (_state)
+#define STATE ::fhg::pnete::ui::tv::weaver
+
     namespace weaver
     {
       namespace type
@@ -240,81 +245,85 @@ namespace fhg
 
     namespace ui
     {
-      namespace detail
+      namespace tv
       {
-        template<typename State> class from_token;
-      } // namespace detail;
-
-      namespace util
-      {
-        template<typename T>
-        static inline QStandardItem*
-        append (QStandardItem* root, const T & x)
+        class weaver
         {
-          QStandardItem* x_item (new QStandardItem (x));
-          x_item->setEditable (false);
+        public:
+          explicit weaver (QStandardItem * state) : _state (state) {}
 
-          root->appendRow (x_item);
+          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type> void weave () {}
 
-          return x_item;
+          template<typename T> weaver append (const T & x) const
+          {
+            QStandardItem* x_item (new QStandardItem (x));
+            x_item->setEditable (false);
+            _state->appendRow (x_item);
+            return weaver (x_item);
+          }
+
+          QStandardItem * state () const { return _state; }
+
+          template<typename IT>
+          void from_xs
+          ( const QString & header
+          , IT pos
+          , const IT & end
+          , void (*fun) ( const weaver &
+                        , const typename std::iterator_traits<IT>::value_type &
+                        )
+          ) const
+          {
+            if (pos != end)
+              {
+                weaver w (append (header));
+
+                while (pos != end)
+                  {
+                    fun (w, *pos);
+
+                    ++pos;
+                  }
+              }
+          }
+
+          template<typename Coll>
+          void from_xs
+          ( const std::string & header
+          , const Coll & coll
+          , void (*fun) ( const weaver &
+                        , const typename std::iterator_traits<typename Coll::const_iterator>::value_type &
+                        )
+          ) const
+          {
+            from_xs (QString (header.c_str()), coll.begin(), coll.end(), fun);
+          }
+
+        private:
+          QStandardItem* _state;
+        };
+
+        template<>
+        weaver weaver::append<std::string> (const std::string & str) const
+        {
+          return append (QString (str.c_str()));
         }
 
         template<>
-        QStandardItem*
-        append<std::string> (QStandardItem* root, const std::string & str)
+        weaver weaver::append<boost::format> (const boost::format & f) const
         {
-          return append (root, QString (str.c_str()));
+          return append (f.str());
         }
 
-        template<>
-        QStandardItem*
-        append<boost::format> (QStandardItem* root, const boost::format & f)
-        {
-          return append (root, f.str());
-        }
-
-        template<typename State, typename IT>
-        static inline void from_xs
-        ( State root
-        , const QString & header
-        , IT pos
-        , const IT & end
-        , void (*fun) ( State
-                      , const typename std::iterator_traits<IT>::value_type &
-                      )
-        )
-        {
-          if (pos != end)
-            {
-              State item (util::append (root, header));
-
-              while (pos != end)
-                {
-                  fun (item, *pos);
-
-                  ++pos;
-                }
-            }
-        }
-
-        template<typename State, typename Coll>
-        static inline void from_xs
-        ( State root
-        , const std::string & header
-        , const Coll & coll
-        , void (*fun) ( State
-                      , const typename std::iterator_traits<typename Coll::const_iterator>::value_type &
-                      )
-        )
-        {
-          return from_xs ( root
-                         , QString (header.c_str())
-                         , coll.begin()
-                         , coll.end()
-                         , fun
-                         );
-        }
-      } // namespace util
+#define WNAME(_tag) fhg::pnete::weaver::type::_tag
+#define WSIG(_tag,_type,_var) \
+        template<> void weaver::weave< WNAME(_tag), _type > (const _type & _var)
+#define WSIGN(_tag,_type,_var) WSIG(_tag,WNAME(_type),_var)
+#define WWEAVE(_tag,_type) w.weave< WNAME(_tag), _type >
+#define WWEAVEN(_tag,_type) WWEAVE(_tag,WNAME(_type))
+#define WWEAVEE(_tag) w.weave< WNAME(_tag) >
+      }
 
       namespace detail
       {
@@ -328,14 +337,14 @@ namespace fhg
 #error "Macro already defined"
 #endif
 
-#define IT(type) type::const_iterator::value_type
+#define IT(_type) _type::const_iterator::value_type
 
-#define FUN(name,type,var) \
+#define FUN(_name,_type,_var) \
         template<typename State> \
-        static void from_ ## name (State state, const type & var)
-#define FUN_IT(name,type,var) FUN(name,IT(type),var)
-#define SIG(name,type) FUN(name,type,)
-#define SIG_IT(name,type) SIG(name,IT(type))
+        static void from_ ## _name (State _state, const _type & _var)
+#define FUN_IT(_name,_type,_var) FUN(_name,IT(_type),_var)
+#define SIG(_name,_type) FUN(_name,_type,)
+#define SIG_IT(_name,_type) SIG(_name,IT(_type))
 
         SIG_IT(place     , ::xml::parse::type::places_type);
         SIG_IT(function  , ::xml::parse::type::net_type::functions_type);
@@ -375,7 +384,7 @@ namespace fhg
 
             void operator () (const ::literal::type_name_t & t) const
             {
-              util::append (_state, boost::format("%s") % t);
+              _state.append (boost::format("%s") % t);
             }
 
             void operator () (const ::signature::structured_t & map) const
@@ -386,7 +395,7 @@ namespace fhg
                   )
                 {
                   boost::apply_visitor
-                    ( from_token (util::append (_state, field->first))
+                    ( from_token (_state.append (field->first))
                     , field->second
                     );
                 }
@@ -405,44 +414,42 @@ namespace fhg
             void
             operator () (const ::xml::parse::type::expression_type & exp) const
             {
-              util::from_xs ( _state
-                      , "expression"
-                      , exp.expressions
-                      , from_expression_sequence
-                      );
+              _state.from_xs ( "expression"
+                             , exp.expressions
+                             , from_expression_sequence
+                             );
             }
 
             void operator () (const ::xml::parse::type::mod_type & mod) const
             {
-              State mod_item
-                ( util::append
-                  ( util::append (_state, "module")
-                  , boost::format ("%s -> %s")
-                  % mod.name
-                  % ::xml::parse::type::dump::dump_fun (mod)
-                  )
-                );
+              State s1 ( _state
+                       . append ("module")
+                       . append ( boost::format ("%s -> %s")
+                                % mod.name
+                                % ::xml::parse::type::dump::dump_fun (mod)
+                                )
+                       );
 
-              util::from_xs (mod_item, "cinclude", mod.cincludes, from_cinclude);
-              util::from_xs (mod_item, "link", mod.links, from_link);
+              s1.from_xs ("cinclude", mod.cincludes, from_cinclude);
+              s1.from_xs ("link", mod.links, from_link);
 
               if (mod.code)
                 {
-                  util::append (util::append (mod_item, "code"), *mod.code);
+                  s1.append ("code").append(*mod.code);
                 }
             }
 
             void operator () (const ::xml::parse::type::net_type & net) const
             {
-              State net_item (util::append (_state, "net"));
+              State s1 (_state.append ("net"));
 
-              from_properties (net_item, net.prop);
-              from_structs (net_item, net.structs);
-              util::from_xs (net_item, "template", net.templates(), from_function);
-              util::from_xs (net_item, "specialize", net.specializes(), from_specialize);
-              util::from_xs (net_item, "function", net.functions(), from_function);
-              util::from_xs (net_item, "place", net.places(), from_place);
-              util::from_xs (net_item, "transition", net.transitions(), from_transition);
+              from_properties (s1, net.prop);
+              from_structs (s1, net.structs);
+              s1.from_xs ("template", net.templates(), from_function);
+              s1.from_xs ("specialize", net.specializes(), from_specialize);
+              s1.from_xs ("function", net.functions(), from_function);
+              s1.from_xs ("place", net.places(), from_place);
+              s1.from_xs ("transition", net.transitions(), from_transition);
             }
           };
 
@@ -457,7 +464,7 @@ namespace fhg
 
             void operator () (const ::xml::parse::type::use_type & use) const
             {
-              util::append (_state, boost::format("use: %s") % use.name);
+              _state.append (boost::format("use: %s") % use.name);
             }
 
             void operator () (const ::xml::parse::type::function_type & fun) const
@@ -481,12 +488,12 @@ namespace fhg
 
             void operator () (const ::literal::type_name_t & t) const
             {
-              util::append (_state, boost::format("%s :: %s") % _name % t);
+              _state.append (boost::format("%s :: %s") % _name % t);
             }
 
             void operator () (const ::signature::structured_t & map) const
             {
-              util::from_xs (_state, _name, map, from_structured);
+              _state.from_xs (_name, map, from_structured);
             }
           };
 
@@ -507,62 +514,36 @@ namespace fhg
 
             void operator () (const ::we::type::property::value_type & v) const
             {
-              util::append (_state, boost::format("%s: %s") % _key % v);
+              _state.append (boost::format("%s: %s") % _key % v);
             }
 
             void operator () (const ::we::type::property::type & prop) const
             {
-              from_properties (util::append (_state, _key), prop);
+              from_properties (_state.append (_key), prop);
             }
           };
         } // namespace visitor
       } // namespace detail
 
-      namespace tv
-      {
-        class weaver
-        {
-        public:
-          weaver (QStandardItem * state) : _state (state) {}
-
-          template<int Type, typename T> void weave (const T & x) {}
-          template<int Type> void weave () {}
-
-          QStandardItem* state () const { return _state; }
-
-        private:
-          QStandardItem* _state;
-        };
-
-#define WNAME(_tag) fhg::pnete::weaver::type::_tag
-#define WSIG(_tag,_type,_var) \
-        template<> void weaver::weave<WNAME(_tag),_type> (const _type & _var)
-#define WSIGN(_tag,_type,_var) WSIG(_tag,WNAME(_type),_var)
-#define WWEAVE(_tag,_type) w.weave<WNAME(_tag), _type>
-#define WWEAVEN(_tag,_type) WWEAVE(_tag,WNAME(_type))
-#define WWEAVEE(_tag) w.weave<WNAME(_tag)>
-
+      namespace tv {
         WSIG (transition::name, std::string, name)
         {
-          _state = ui::util::append (_state, name);
+          _state = append (name).state();
         }
         WSIG(transition::priority, fhg::util::maybe<petri_net::prio_t>, prio)
         {
           if (prio)
             {
-              ui::util::append ( _state
-                               , boost::format ("priority: %i") % *prio
-                               );
+              append (boost::format ("priority: %i") % *prio);
             }
         }
         WSIG (transition::internal, fhg::util::maybe<bool>, internal)
         {
           if (internal)
             {
-              util::append ( _state
-                           , boost::format ("internal: %i")
-                           % (*internal ? "true" : "false")
-                           );
+              append ( boost::format ("internal: %i")
+                     % (*internal ? "true" : "false")
+                     );
             }
         }
         WSIG(transition::properties, ::we::type::property::type, prop)
@@ -576,34 +557,34 @@ namespace fhg
         WSIG(transition::function, ::xml::parse::type::transition_type::f_type, fun)
         {
           boost::apply_visitor
-            ( ui::detail::visitor::from_function_type<QStandardItem *> (_state)
+            ( ui::detail::visitor::from_function_type<STATE> (*this)
             , fun
             );
         }
         WSIG(transition::place_map, ::xml::parse::type::place_maps_type, pm)
         {
-          util::from_xs (_state, "place-map", pm, ui::detail::from_place_map);
+          from_xs ("place-map", pm, ui::detail::from_place_map);
         }
         WSIG(transition::connect_read, ::xml::parse::type::connections_type, cs)
         {
-          util::from_xs (_state, "connect-read", cs, ui::detail::from_connection);
+          from_xs ("connect-read", cs, ui::detail::from_connection);
         }
         WSIG(transition::connect_in, ::xml::parse::type::connections_type, cs)
         {
-          util::from_xs (_state, "connect-in", cs, ui::detail::from_connection);
+          from_xs ("connect-in", cs, ui::detail::from_connection);
         }
         WSIG(transition::connect_out, ::xml::parse::type::connections_type, cs)
         {
-          util::from_xs (_state, "connect-out", cs, ui::detail::from_connection);
+          from_xs ("connect-out", cs, ui::detail::from_connection);
         }
         WSIG(transition::condition, ::xml::parse::type::conditions_type, cond)
         {
-          ui::detail::from_conditions (_state, cond);
+          ui::detail::from_conditions (*this, cond);
         }
 
         WSIGN(place::open, place_type, place)
         {
-          _state = util::append (_state, "<<place>>");
+          _state = append ("<<place>>").state();
         }
         WSIG(place::name, std::string, name)
         {
@@ -611,66 +592,63 @@ namespace fhg
         }
         WSIG(place::type, std::string, type)
         {
-          _state->setText (_state->text().append(" :: ").append(type.c_str()));
+          _state->setText ( _state->text()
+                          . append(" :: ")
+                          . append(type.c_str())
+                          );
         }
         WSIG(place::is_virtual, fhg::util::maybe<bool>, is_virtual)
         {
           if (is_virtual)
             {
-              util::append ( _state
-                           , boost::format ("virtual: %s")
-                           % (*is_virtual ? "true" : "false")
-                           );
+              append ( boost::format ("virtual: %s")
+                     % (*is_virtual ? "true" : "false")
+                     );
             }
         }
         WSIG(place::capacity, fhg::util::maybe<petri_net::capacity_t>, capacity)
         {
           if (capacity)
             {
-              util::append ( _state
-                           , boost::format ("capacity: %i") % *capacity
-                           );
+              append (boost::format ("capacity: %i") % *capacity);
             }
         }
         WSIGN(place::token, token_type, token)
         {
           boost::apply_visitor
-            ( ui::detail::visitor::from_token<QStandardItem *>
-              ( util::append (_state, "token")
-              )
+            ( ui::detail::visitor::from_token<STATE> (append ("token"))
             , token
             );
         }
         WSIG(place::properties, ::we::type::property::type, prop)
         {
-          ui::detail::from_properties (_state, prop);
+          ui::detail::from_properties (*this, prop);
         }
 
         WSIGN(property::open, property_type, prop)
         {
           boost::apply_visitor
-            ( ui::detail::visitor::from_property<QStandardItem *> ( _state
-                                                                  , prop.first
-                                                                  )
+            ( ui::detail::visitor::from_property<STATE> ( *this
+                                                        , prop.first
+                                                        )
             , prop.second
             );
         }
 
         WSIGN(properties::open, properties_type, props)
         {
-          util::from_xs ( _state
-                        , "property"
-                        , props.get_map()
-                        , ui::detail::from_property
-                        );
+          from_xs ( "property"
+                  , props.get_map()
+                  , ui::detail::from_property
+                  );
         }
 
         WSIGN(sig_structured::open, sig_structured_type, sig)
         {
           boost::apply_visitor
-            ( ui::detail::visitor::from_signature<QStandardItem *> ( sig.first
-                                                                   , _state
-                                                                   )
+            ( ui::detail::visitor::from_signature<STATE> ( sig.first
+                                                         , *this
+                                                         )
             , sig.second
             );
         }
@@ -678,16 +656,16 @@ namespace fhg
         WSIGN(_struct::open, struct_type, s)
         {
           boost::apply_visitor
-            ( ui::detail::visitor::from_signature<QStandardItem *> ( s.name
-                                                                   , _state
-                                                                   )
+            ( ui::detail::visitor::from_signature<STATE> ( s.name
+                                                         , *this
+                                                         )
             , s.sig
             );
         }
 
         WSIGN(port::open, port_type, port)
         {
-          _state = util::append (_state, "<<port>>");
+          _state = append ("<<port>>").state();
         }
         WSIG(port::name, std::string, name)
         {
@@ -701,49 +679,47 @@ namespace fhg
         {
           if (place)
             {
-              util::append (_state, boost::format("place: %s") % *place);
+              append (boost::format("place: %s") % *place);
             }
         }
         WSIG(port::properties, ::we::type::property::type, prop)
         {
-          ui::detail::from_properties (_state, prop);
+          ui::detail::from_properties (*this, prop);
         }
 
         WSIGN(cinclude::open, cinclude_type, cinclude)
         {
-          util::append (_state, cinclude);
+          append (cinclude);
         }
 
         WSIGN(link::open, link_type, link)
         {
-          util::append (_state, link);
+          append (link);
         }
 
         WSIGN(structs::open, structs_type, structs)
         {
-          util::from_xs (_state, "struct", structs, ui::detail::from_struct);
+          from_xs ("struct", structs, ui::detail::from_struct);
         }
 
         WSIG(expression_sequence::line, std::string, line)
         {
-          util::append (_state, line);
+          append (line);
         }
 
         WSIGN(type_get::open, type_get_type, tg)
         {
-          util::append (_state, tg);
+          append (tg);
         }
 
         WSIGN(type_map::open, type_map_type, tm)
         {
-          util::append ( _state
-                       , boost::format("%s => %s") % tm.first % tm.second
-                       );
+          append (boost::format("%s => %s") % tm.first % tm.second);
         }
 
         WSIGN(specialize::open, specialize_type, specialize)
         {
-          _state = util::append (_state, "<<specialize>>");
+          _state = append ("<<specialize>>").state();
         }
         WSIG(specialize::name, std::string, name)
         {
@@ -755,25 +731,24 @@ namespace fhg
         }
         WSIG(specialize::type_map, ::xml::parse::type::type_map_type, tm)
         {
-          util::from_xs (_state, "type_map", tm, ui::detail::from_type_map);
+          from_xs ("type_map", tm, ui::detail::from_type_map);
         }
         WSIG(specialize::type_get, ::xml::parse::type::type_get_type, tg)
         {
-          util::from_xs (_state, "type_get", tg, ui::detail::from_type_get);
+          from_xs ("type_get", tg, ui::detail::from_type_get);
         }
 
         WSIGN(conditions::open, conditions_type, cs)
         {
-          util::from_xs ( _state
-                        , "condition"
-                        , cs
-                        , ui::detail::from_expression_sequence
-                        );
+          from_xs ( "condition"
+                  , cs
+                  , ui::detail::from_expression_sequence
+                  );
         }
 
         WSIGN(function::open, function_type, fun)
         {
-          _state = util::append (_state, "<<function>>");
+          _state = append ("<<function>>").state();
         }
         WSIG(function::name, fhg::util::maybe<std::string>, name)
         {
@@ -786,47 +761,46 @@ namespace fhg
         {
           if (internal)
             {
-              util::append ( _state
-                           , boost::format ("internal: %s")
-                           % (*internal ? "true" : "false")
-                           );
+              append ( boost::format ("internal: %s")
+                     % (*internal ? "true" : "false")
+                     );
             }
         }
         WSIG(function::require, ::xml::parse::type::requirements_type, reqs)
         {
-          util::from_xs (_state, "require", reqs, ui::detail::from_require);
+          from_xs ("require", reqs, ui::detail::from_require);
         }
         WSIG(function::properties, ::we::type::property::type, prop)
         {
-          ui::detail::from_properties (_state, prop);
+          ui::detail::from_properties (*this, prop);
         }
         WSIG(function::structs, ::xml::parse::type::structs_type, structs)
         {
-          ui::detail::from_structs (_state, structs);
+          ui::detail::from_structs (*this, structs);
         }
         WSIG(function::in, ::xml::parse::type::ports_type, ports)
         {
-          util::from_xs (_state, "in", ports, ui::detail::from_port);
+          from_xs ("in", ports, ui::detail::from_port);
         }
         WSIG(function::out, ::xml::parse::type::ports_type, ports)
         {
-          util::from_xs (_state, "out", ports, ui::detail::from_port);
+          from_xs ("out", ports, ui::detail::from_port);
         }
         WSIG(function::fun, ::xml::parse::type::function_type::type, fun)
         {
           boost::apply_visitor
-            ( ui::detail::visitor::from_net_type<QStandardItem *> (_state)
+            ( ui::detail::visitor::from_net_type<STATE> (*this)
             , fun
             );
         }
         WSIG(function::conditions, ::xml::parse::type::conditions_type, cs)
         {
-          ui::detail::from_conditions (_state, cs);
+          ui::detail::from_conditions (*this, cs);
         }
 
         WSIGN(place_map::open, place_map_type, pm)
         {
-          _state = util::append (_state, "<<place_map>>");
+          _state = append ("<<place_map>>").state();
         }
         WSIG(place_map::place_virtual, std::string, name)
         {
@@ -841,12 +815,12 @@ namespace fhg
         }
         WSIG(place_map::properties, ::we::type::property::type, prop)
         {
-          ui::detail::from_properties (_state, prop);
+          ui::detail::from_properties (*this, prop);
         }
 
         WSIGN(connection::open, connection_type, connection)
         {
-          _state = util::append (_state, "<<connection>>");
+          _state = append ("<<connection>>").state();
         }
         WSIG(connection::port, std::string, port)
         {
@@ -862,7 +836,7 @@ namespace fhg
 
         WSIGN(requirement::open, requirement_type, req)
         {
-          _state = util::append (_state, "requirement");
+          _state = append ("requirement").state();
         }
         WSIG(requirement::key, std::string, key)
         {
@@ -881,7 +855,7 @@ namespace fhg
       {
         FUN_IT(property, ::we::type::property::map_type, prop)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(property::open, property_type)(prop);
           WWEAVEE(property::close)();
@@ -889,7 +863,7 @@ namespace fhg
 
         FUN(properties, ::we::type::property::type, props)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(properties::open, properties_type)(props);
           WWEAVEE(properties::close)();
@@ -897,7 +871,7 @@ namespace fhg
 
         FUN_IT(structured, ::signature::structured_t, sig)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(sig_structured::open, sig_structured_type)(sig);
           WWEAVEE(sig_structured::close)();
@@ -905,7 +879,7 @@ namespace fhg
 
         FUN_IT(struct, ::xml::parse::type::structs_type, s)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(_struct::open, struct_type)(s);
           WWEAVEE(_struct::close)();
@@ -913,7 +887,7 @@ namespace fhg
 
         FUN_IT(port, ::xml::parse::type::ports_type, port)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(port::open, port_type)(port);
           WWEAVE(port::name, std::string)(port.name);
@@ -925,7 +899,7 @@ namespace fhg
 
         FUN_IT(cinclude, ::xml::parse::type::cincludes_type, cinclude)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(cinclude::open, cinclude_type)(cinclude);
           WWEAVEE(cinclude::close)();
@@ -933,7 +907,7 @@ namespace fhg
 
         FUN_IT(link, ::xml::parse::type::links_type, link)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(link::open, link_type)(link);
           WWEAVEE(link::close)();
@@ -941,7 +915,7 @@ namespace fhg
 
         FUN(structs, ::xml::parse::type::structs_type, structs)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(structs::open, structs_type)(structs);
           WWEAVEE(structs::close)();
@@ -949,7 +923,7 @@ namespace fhg
 
         FUN(expression_sequence, std::string, lines)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVE(expression_sequence::open, std::string)(lines);
 
@@ -989,7 +963,7 @@ namespace fhg
 
         FUN_IT(type_get, ::xml::parse::type::type_get_type, tg)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(type_get::open, type_get_type)(tg);
           WWEAVEE(type_get::close)();
@@ -997,7 +971,7 @@ namespace fhg
 
         FUN_IT(type_map, ::xml::parse::type::type_map_type, tm)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(type_map::open, type_map_type)(tm);
           WWEAVEE(type_map::close)();
@@ -1005,7 +979,7 @@ namespace fhg
 
         FUN_IT(specialize, ::xml::parse::type::net_type::specializes_type, spec)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(specialize::open, specialize_type)(spec);
           WWEAVE(specialize::name, std::string)(spec.name);
@@ -1018,7 +992,7 @@ namespace fhg
 
         FUN(conditions, ::xml::parse::type::conditions_type, cs)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(conditions::open, conditions_type)(cs);
           WWEAVEE(conditions::close)();
@@ -1026,7 +1000,7 @@ namespace fhg
 
         FUN_IT(function, ::xml::parse::type::net_type::functions_type, fun)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(function::open, function_type)(fun);
           WWEAVE(function::name, fhg::util::maybe<std::string>)(fun.name);
@@ -1046,7 +1020,7 @@ namespace fhg
 
         FUN_IT(place, ::xml::parse::type::places_type, place)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(place::open, place_type)(place);
           WWEAVE(place::name, std::string)(place.name);
@@ -1070,7 +1044,7 @@ namespace fhg
 
         FUN_IT(place_map, ::xml::parse::type::place_maps_type, pm)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(place_map::open, place_map_type)(pm);
           WWEAVE(place_map::place_virtual, std::string)(pm.place_virtual);
@@ -1081,7 +1055,7 @@ namespace fhg
 
         FUN_IT(connection, ::xml::parse::type::connections_type, connection)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(connection::open, connection_type)(connection);
           WWEAVE(connection::port, std::string)(connection.port);
@@ -1091,7 +1065,7 @@ namespace fhg
 
         FUN_IT(require, ::xml::parse::type::requirements_type, req)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(requirement::open, requirement_type)(req);
           WWEAVE(requirement::key, std::string)(req.first);
@@ -1101,7 +1075,7 @@ namespace fhg
 
         FUN_IT(transition, ::xml::parse::type::net_type::transitions_type, trans)
         {
-          tv::weaver w (state);
+          INIT_WEAVER;;
 
           WWEAVEN(transition::open,transition_type)(trans);
           WWEAVE(transition::name,std::string)(trans.name);
@@ -1164,7 +1138,9 @@ namespace fhg
 
       void StructureView::from (const ::xml::parse::type::function_type & fun)
       {
-        detail::from_function<QStandardItem*> (_root, fun);
+        STATE w (_root);
+
+        detail::from_function<STATE> (w, fun);
       }
     }
   }
