@@ -299,6 +299,7 @@ namespace gpi
       void
       manager_t::del_handle (const gpi::pc::type::handle_t hdl)
       {
+        lock_type lock (m_mutex);
         if (m_handle_to_segment.find (hdl) == m_handle_to_segment.end())
         {
           throw std::runtime_error ("handle does not exist");
