@@ -18,9 +18,17 @@ int main (int argc, char *argv[])
 {
   Q_INIT_RESOURCE (resources);
 
-  fhg::pnete::PetriNetEditor pente (argc, argv);
-  pente.startup ();
-  return pente.exec ();
+  try
+  {
+    fhg::pnete::PetriNetEditor pente (argc, argv);
+    pente.startup ();
+    return pente.exec ();
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "EXCEPTION: " << e.what () << std::endl;
+    return -1;
+  }
 }
 
 namespace fhg
@@ -59,7 +67,10 @@ namespace fhg
 
     PetriNetEditor::~PetriNetEditor ()
     {
-      _mainWindow->hide();
+      if (_mainWindow)
+      {
+        _mainWindow->hide();
+      }
       //! \todo This segfaults.
       delete _mainWindow;
       _mainWindow = NULL;
