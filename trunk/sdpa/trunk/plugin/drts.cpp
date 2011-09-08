@@ -73,11 +73,12 @@ public:
     try
     {
       m_request_mode =
-        fhg::util::read_bool (fhg_kernel()->get("request-mode", "true"));
+        fhg::util::read_bool (fhg_kernel()->get("request-mode", "false"));
     }
     catch (std::exception const &ex)
     {
       LOG(ERROR, "could not parse request-mode (boolean): " << ex.what());
+      FHG_PLUGIN_FAILED(EINVAL);
     }
 
     m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
