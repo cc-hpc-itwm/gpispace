@@ -18,6 +18,7 @@
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
+#include <fhg/util/read_bool.hpp>
 
 namespace bfs = boost::filesystem;
 namespace su = sdpa::util;
@@ -39,6 +40,7 @@ int main (int argc, char **argv)
 	bool bDoBackup = false;
 	string backup_file;
 	string backup_folder;
+        string requestMode ("false");
 
 	FHGLOG_SETUP();
 
@@ -53,7 +55,7 @@ int main (int argc, char **argv)
 	   ("backup_file,f", po::value<string>(&backup_file), "Agent's backup file (stored into the backup folder)")
 	   ("app_gui_url,a",  po::value<string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
 	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
-	   ("use-push-model", "use push model instead of request model")
+          ("request-mode", po::value<string>(&requestMode)->default_value("false"), "send periodical job requests to master")
 	   ;
 
 	po::variables_map vm;
@@ -168,7 +170,7 @@ int main (int argc, char **argv)
 	{
             sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, listMasterInfo, MAX_CAP, appGuiUrl ); //, orchUrl );
 
-            bool bUseRequestModel(vm.count("use-push-model") == 0);
+            bool bUseRequestModel(fhg::util::read_bool(requestMode));
 
             if(bDoBackup)
               ptrAgent->start_agent(bUseRequestModel, bkp_path/backup_file);
