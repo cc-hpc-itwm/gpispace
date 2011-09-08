@@ -74,6 +74,13 @@ namespace gpi
           {
             DLOG(TRACE, "transfer done: " << task->get_name());
           }
+          else
+          {
+            LOG( ERROR
+               , "*** STRANGE: task neither finished, nor failed, but did return?"
+               << " task := " << task->get_name()
+               );
+          }
         }
       }
     }
