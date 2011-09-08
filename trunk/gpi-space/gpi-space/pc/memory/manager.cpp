@@ -392,8 +392,8 @@ namespace gpi
 
         assert (area);
 
-        area->free (hdl);
         del_handle (hdl);
+        area->free (hdl);
 
         handle_freed (hdl);
 
