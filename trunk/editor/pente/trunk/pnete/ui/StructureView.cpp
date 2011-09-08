@@ -21,34 +21,229 @@ namespace fhg
 {
   namespace pnete
   {
+    namespace weaver
+    {
+      namespace type
+      {
+        typedef ::xml::parse::type::net_type::transitions_type::const_iterator::value_type transition_type;
+
+        namespace transition
+        {
+          enum
+            { first
+            , open, close, name, priority, internal, properties, structs
+            , function, place_map, connect_read, connect_in, connect_out
+            , condition
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::places_type::const_iterator::value_type place_type;
+        typedef ::xml::parse::type::tokens_type::const_iterator::value_type token_type;
+
+        namespace place
+        {
+          enum
+            { first = transition::last + 1
+            , open, close, name, type, is_virtual, capacity, token, properties
+            , last
+            };
+        }
+
+        typedef ::we::type::property::map_type::const_iterator::value_type property_type;
+
+        namespace property
+        {
+          enum
+            { first = place::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::we::type::property::type properties_type;
+
+        namespace properties
+        {
+          enum
+            { first = property::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::signature::structured_t::const_iterator::value_type sig_structured_type;
+
+        namespace sig_structured
+        {
+          enum
+            { first = properties::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::structs_type::const_iterator::value_type struct_type;
+
+        namespace _struct
+        {
+          enum
+            { first = sig_structured::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::ports_type::const_iterator::value_type port_type;
+
+        namespace port
+        {
+          enum
+            { first = _struct::last + 1
+            , open, close, name, type, place, properties
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::cincludes_type::const_iterator::value_type cinclude_type;
+
+        namespace cinclude
+        {
+          enum
+            { first = port::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::links_type::const_iterator::value_type link_type;
+
+        namespace link
+        {
+          enum
+            { first = cinclude::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::structs_type structs_type;
+
+        namespace structs
+        {
+          enum
+            { first = link::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        namespace expression_sequence
+        {
+          enum
+            { first = structs::last + 1
+            , open, close, line
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::type_get_type::const_iterator::value_type type_get_type;
+
+        namespace type_get
+        {
+          enum
+            { first = expression_sequence::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::type_map_type::const_iterator::value_type type_map_type;
+
+        namespace type_map
+        {
+          enum
+            { first = type_get::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::net_type::specializes_type::const_iterator::value_type specialize_type;
+
+        namespace specialize
+        {
+          enum
+            { first = type_map::last + 1
+            , open, close, name, use, type_map, type_get
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::conditions_type conditions_type;
+
+        namespace conditions
+        {
+          enum
+            { first = specialize::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::net_type::functions_type::const_iterator::value_type function_type;
+
+        namespace function
+        {
+          enum
+            { first = conditions::last + 1
+            , open, close, name, internal, require, properties, structs
+            , in, out, fun, conditions
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::place_maps_type::const_iterator::value_type place_map_type;
+
+        namespace place_map
+        {
+          enum
+            { first = function::last + 1
+            , open, close, place_virtual, place_real, properties
+            , last
+            };
+        }
+
+        typedef ::xml::parse::type::connections_type::const_iterator::value_type connection_type;
+
+        namespace connection
+        {
+          enum
+            { first = place_map::last + 1
+            , open, close, place, port
+            ,  last
+            };
+        }
+
+        typedef ::xml::parse::type::requirements_type::const_iterator::value_type requirement_type;
+
+        namespace requirement
+        {
+          enum
+            { first = connection::last + 1
+            , open, close, key, value
+            , last
+            };
+        }
+      } // namespace type
+    } // namespace weaver
+
     namespace ui
     {
-//       namespace tv
-//       {
-//         class State
-//         {
-//         public:
-//           State (QStandardItem* root) : _root (root) {}
-
-//           template<typename T> State append (const T & x) const
-//           {
-//             QStandardItem* x_item (new QStandardItem (x));
-//             x_item->setEditable (false);
-//             _root->appendRow (x_item);
-//             return State (x_item);
-//           }
-//           template<> State append<std::string> (const std::string & str) const
-//           {
-//             return append (QString (str.c_str()));
-//           }
-//           template<> State append<boost::format> (const boost::format & f) const
-//           {
-//             return append (f.str());
-//           }
-//         private:
-//           QStandardItem* _root;
-//         };
-//       }
+      namespace detail
+      {
+        template<typename State> class from_token;
+      } // namespace detail;
 
       namespace util
       {
@@ -77,10 +272,7 @@ namespace fhg
         {
           return append (root, f.str());
         }
-      } // namespace util
 
-      namespace detail
-      {
         template<typename State, typename IT>
         static inline void from_xs
         ( State root
@@ -122,7 +314,10 @@ namespace fhg
                          , fun
                          );
         }
+      } // namespace util
 
+      namespace detail
+      {
 #if (  defined IT      \
     || defined FUNT    \
     || defined FUN     \
@@ -158,6 +353,7 @@ namespace fhg
         SIG_IT(transition, ::xml::parse::type::net_type::transitions_type);
         SIG_IT(type_get  , ::xml::parse::type::type_get_type);
         SIG_IT(type_map  , ::xml::parse::type::type_map_type);
+        SIG_IT(place_map , ::xml::parse::type::place_maps_type);
 
         SIG(properties, ::we::type::property::type);
         SIG_IT(property, ::we::type::property::map_type);
@@ -209,7 +405,7 @@ namespace fhg
             void
             operator () (const ::xml::parse::type::expression_type & exp) const
             {
-              from_xs ( _state
+              util::from_xs ( _state
                       , "expression"
                       , exp.expressions
                       , from_expression_sequence
@@ -227,8 +423,8 @@ namespace fhg
                   )
                 );
 
-              from_xs (mod_item, "cinclude", mod.cincludes, from_cinclude);
-              from_xs (mod_item, "link", mod.links, from_link);
+              util::from_xs (mod_item, "cinclude", mod.cincludes, from_cinclude);
+              util::from_xs (mod_item, "link", mod.links, from_link);
 
               if (mod.code)
                 {
@@ -242,11 +438,11 @@ namespace fhg
 
               from_properties (net_item, net.prop);
               from_structs (net_item, net.structs);
-              from_xs (net_item, "template", net.templates(), from_function);
-              from_xs (net_item, "specialize", net.specializes(), from_specialize);
-              from_xs (net_item, "function", net.functions(), from_function);
-              from_xs (net_item, "place", net.places(), from_place);
-              from_xs (net_item, "transition", net.transitions(), from_transition);
+              util::from_xs (net_item, "template", net.templates(), from_function);
+              util::from_xs (net_item, "specialize", net.specializes(), from_specialize);
+              util::from_xs (net_item, "function", net.functions(), from_function);
+              util::from_xs (net_item, "place", net.places(), from_place);
+              util::from_xs (net_item, "transition", net.transitions(), from_transition);
             }
           };
 
@@ -290,7 +486,7 @@ namespace fhg
 
             void operator () (const ::signature::structured_t & map) const
             {
-              from_xs (_state, _name, map, from_structured);
+              util::from_xs (_state, _name, map, from_structured);
             }
           };
 
@@ -320,71 +516,443 @@ namespace fhg
             }
           };
         } // namespace visitor
+      } // namespace detail
 
-        FUN_IT(property, ::we::type::property::map_type, p)
+      namespace tv
+      {
+        class weaver
+        {
+        public:
+          weaver (QStandardItem * state) : _state (state) {}
+
+          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type> void weave () {}
+
+          QStandardItem* state () const { return _state; }
+
+        private:
+          QStandardItem* _state;
+        };
+
+#define WNAME(_tag) fhg::pnete::weaver::type::_tag
+#define WSIG(_tag,_type,_var) \
+        template<> void weaver::weave<WNAME(_tag),_type> (const _type & _var)
+#define WSIGN(_tag,_type,_var) WSIG(_tag,WNAME(_type),_var)
+#define WWEAVE(_tag,_type) w.weave<WNAME(_tag), _type>
+#define WWEAVEN(_tag,_type) WWEAVE(_tag,WNAME(_type))
+#define WWEAVEE(_tag) w.weave<WNAME(_tag)>
+
+        WSIG (transition::name, std::string, name)
+        {
+          _state = ui::util::append (_state, name);
+        }
+        WSIG(transition::priority, fhg::util::maybe<petri_net::prio_t>, prio)
+        {
+          if (prio)
+            {
+              ui::util::append ( _state
+                               , boost::format ("priority: %i") % *prio
+                               );
+            }
+        }
+        WSIG (transition::internal, fhg::util::maybe<bool>, internal)
+        {
+          if (internal)
+            {
+              util::append ( _state
+                           , boost::format ("internal: %i")
+                           % (*internal ? "true" : "false")
+                           );
+            }
+        }
+        WSIG(transition::properties, ::we::type::property::type, prop)
+        {
+          ui::detail::from_properties (_state, prop);
+        }
+        WSIG(transition::structs, ::xml::parse::type::structs_type, structs)
+        {
+          ui::detail::from_structs (_state, structs);
+        }
+        WSIG(transition::function, ::xml::parse::type::transition_type::f_type, fun)
         {
           boost::apply_visitor
-            ( visitor::from_property<State> (state, p.first)
-            , p.second
+            ( ui::detail::visitor::from_function_type<QStandardItem *> (_state)
+            , fun
+            );
+        }
+        WSIG(transition::place_map, ::xml::parse::type::place_maps_type, pm)
+        {
+          util::from_xs (_state, "place-map", pm, ui::detail::from_place_map);
+        }
+        WSIG(transition::connect_read, ::xml::parse::type::connections_type, cs)
+        {
+          util::from_xs (_state, "connect-read", cs, ui::detail::from_connection);
+        }
+        WSIG(transition::connect_in, ::xml::parse::type::connections_type, cs)
+        {
+          util::from_xs (_state, "connect-in", cs, ui::detail::from_connection);
+        }
+        WSIG(transition::connect_out, ::xml::parse::type::connections_type, cs)
+        {
+          util::from_xs (_state, "connect-out", cs, ui::detail::from_connection);
+        }
+        WSIG(transition::condition, ::xml::parse::type::conditions_type, cond)
+        {
+          ui::detail::from_conditions (_state, cond);
+        }
+
+        WSIGN(place::open, place_type, place)
+        {
+          _state = util::append (_state, "<<place>>");
+        }
+        WSIG(place::name, std::string, name)
+        {
+          _state->setText (QString (name.c_str()));
+        }
+        WSIG(place::type, std::string, type)
+        {
+          _state->setText (_state->text().append(" :: ").append(type.c_str()));
+        }
+        WSIG(place::is_virtual, fhg::util::maybe<bool>, is_virtual)
+        {
+          if (is_virtual)
+            {
+              util::append ( _state
+                           , boost::format ("virtual: %s")
+                           % (*is_virtual ? "true" : "false")
+                           );
+            }
+        }
+        WSIG(place::capacity, fhg::util::maybe<petri_net::capacity_t>, capacity)
+        {
+          if (capacity)
+            {
+              util::append ( _state
+                           , boost::format ("capacity: %i") % *capacity
+                           );
+            }
+        }
+        WSIGN(place::token, token_type, token)
+        {
+          boost::apply_visitor
+            ( ui::detail::visitor::from_token<QStandardItem *>
+              ( util::append (_state, "token")
+              )
+            , token
+            );
+        }
+        WSIG(place::properties, ::we::type::property::type, prop)
+        {
+          ui::detail::from_properties (_state, prop);
+        }
+
+        WSIGN(property::open, property_type, prop)
+        {
+          boost::apply_visitor
+            ( ui::detail::visitor::from_property<QStandardItem *> ( _state
+                                                                  , prop.first
+                                                                  )
+            , prop.second
             );
         }
 
-        FUN(properties, ::we::type::property::type, prop)
+        WSIGN(properties::open, properties_type, props)
         {
-          from_xs (state, "property", prop.get_map(), from_property);
+          util::from_xs ( _state
+                        , "property"
+                        , props.get_map()
+                        , ui::detail::from_property
+                        );
         }
 
-        FUN_IT(structured, ::signature::structured_t, s)
+        WSIGN(sig_structured::open, sig_structured_type, sig)
         {
           boost::apply_visitor
-            ( visitor::from_signature<State> (s.first, state)
-            , s.second
+            ( ui::detail::visitor::from_signature<QStandardItem *> ( sig.first
+                                                                   , _state
+                                                                   )
+            , sig.second
             );
         }
 
-        FUN_IT(struct, ::xml::parse::type::structs_type, s)
+        WSIGN(_struct::open, struct_type, s)
         {
           boost::apply_visitor
-            ( visitor::from_signature<State> (s.name, state)
+            ( ui::detail::visitor::from_signature<QStandardItem *> ( s.name
+                                                                   , _state
+                                                                   )
             , s.sig
             );
         }
 
-        FUN_IT(port, ::xml::parse::type::ports_type, port)
+        WSIGN(port::open, port_type, port)
         {
-          QStandardItem* port_item
-            ( util::append ( state
-                           , boost::format("%s :: %s") % port.name % port.type
-                           )
-            );
-
-          if (port.place)
+          _state = util::append (_state, "<<port>>");
+        }
+        WSIG(port::name, std::string, name)
+        {
+          _state->setText (QString (name.c_str()));
+        }
+        WSIG(port::type, std::string, type)
+        {
+          _state->setText (_state->text().append(" :: ").append(type.c_str()));
+        }
+        WSIG(port::place, fhg::util::maybe<std::string>, place)
+        {
+          if (place)
             {
-              util::append ( port_item
-                           , boost::format("place: %s") % *port.place
+              util::append (_state, boost::format("place: %s") % *place);
+            }
+        }
+        WSIG(port::properties, ::we::type::property::type, prop)
+        {
+          ui::detail::from_properties (_state, prop);
+        }
+
+        WSIGN(cinclude::open, cinclude_type, cinclude)
+        {
+          util::append (_state, cinclude);
+        }
+
+        WSIGN(link::open, link_type, link)
+        {
+          util::append (_state, link);
+        }
+
+        WSIGN(structs::open, structs_type, structs)
+        {
+          util::from_xs (_state, "struct", structs, ui::detail::from_struct);
+        }
+
+        WSIG(expression_sequence::line, std::string, line)
+        {
+          util::append (_state, line);
+        }
+
+        WSIGN(type_get::open, type_get_type, tg)
+        {
+          util::append (_state, tg);
+        }
+
+        WSIGN(type_map::open, type_map_type, tm)
+        {
+          util::append ( _state
+                       , boost::format("%s => %s") % tm.first % tm.second
+                       );
+        }
+
+        WSIGN(specialize::open, specialize_type, specialize)
+        {
+          _state = util::append (_state, "<<specialize>>");
+        }
+        WSIG(specialize::name, std::string, name)
+        {
+          _state->setText (QString (name.c_str()));
+        }
+        WSIG(specialize::use, std::string, use)
+        {
+          _state->setText (_state->text().append(" use ").append(use.c_str()));
+        }
+        WSIG(specialize::type_map, ::xml::parse::type::type_map_type, tm)
+        {
+          util::from_xs (_state, "type_map", tm, ui::detail::from_type_map);
+        }
+        WSIG(specialize::type_get, ::xml::parse::type::type_get_type, tg)
+        {
+          util::from_xs (_state, "type_get", tg, ui::detail::from_type_get);
+        }
+
+        WSIGN(conditions::open, conditions_type, cs)
+        {
+          util::from_xs ( _state
+                        , "condition"
+                        , cs
+                        , ui::detail::from_expression_sequence
+                        );
+        }
+
+        WSIGN(function::open, function_type, fun)
+        {
+          _state = util::append (_state, "<<function>>");
+        }
+        WSIG(function::name, fhg::util::maybe<std::string>, name)
+        {
+          if (name)
+            {
+              _state->setText (QString ((*name).c_str()));
+            }
+        }
+        WSIG(function::internal, fhg::util::maybe<bool>, internal)
+        {
+          if (internal)
+            {
+              util::append ( _state
+                           , boost::format ("internal: %s")
+                           % (*internal ? "true" : "false")
                            );
             }
+        }
+        WSIG(function::require, ::xml::parse::type::requirements_type, reqs)
+        {
+          util::from_xs (_state, "require", reqs, ui::detail::from_require);
+        }
+        WSIG(function::properties, ::we::type::property::type, prop)
+        {
+          ui::detail::from_properties (_state, prop);
+        }
+        WSIG(function::structs, ::xml::parse::type::structs_type, structs)
+        {
+          ui::detail::from_structs (_state, structs);
+        }
+        WSIG(function::in, ::xml::parse::type::ports_type, ports)
+        {
+          util::from_xs (_state, "in", ports, ui::detail::from_port);
+        }
+        WSIG(function::out, ::xml::parse::type::ports_type, ports)
+        {
+          util::from_xs (_state, "out", ports, ui::detail::from_port);
+        }
+        WSIG(function::fun, ::xml::parse::type::function_type::type, fun)
+        {
+          boost::apply_visitor
+            ( ui::detail::visitor::from_net_type<QStandardItem *> (_state)
+            , fun
+            );
+        }
+        WSIG(function::conditions, ::xml::parse::type::conditions_type, cs)
+        {
+          ui::detail::from_conditions (_state, cs);
+        }
 
-          from_properties (port_item, port.prop);
+        WSIGN(place_map::open, place_map_type, pm)
+        {
+          _state = util::append (_state, "<<place_map>>");
+        }
+        WSIG(place_map::place_virtual, std::string, name)
+        {
+          _state->setText (QString ("virtual: ").append(name.c_str()));
+        }
+        WSIG(place_map::place_real, std::string, name)
+        {
+          _state->setText ( _state->text()
+                          . append (" <-> real: ")
+                          . append (name.c_str())
+                          );
+        }
+        WSIG(place_map::properties, ::we::type::property::type, prop)
+        {
+          ui::detail::from_properties (_state, prop);
+        }
+
+        WSIGN(connection::open, connection_type, connection)
+        {
+          _state = util::append (_state, "<<connection>>");
+        }
+        WSIG(connection::port, std::string, port)
+        {
+          _state->setText (QString ("port: ").append (port.c_str()));
+        }
+        WSIG(connection::place, std::string, place)
+        {
+          _state->setText ( _state->text()
+                          . append (" -> ")
+                          . append (place.c_str())
+                          );
+        }
+
+        WSIGN(requirement::open, requirement_type, req)
+        {
+          _state = util::append (_state, "requirement");
+        }
+        WSIG(requirement::key, std::string, key)
+        {
+          _state->setText (_state->text().append(key.c_str()));
+        }
+        WSIG(requirement::value, bool, val)
+        {
+          _state->setText ( _state->text()
+                          . append (": ")
+                          . append (val ? "true" : "false")
+                          );
+        }
+      } // namespace tv
+
+      namespace detail
+      {
+        FUN_IT(property, ::we::type::property::map_type, prop)
+        {
+          tv::weaver w (state);
+
+          WWEAVEN(property::open, property_type)(prop);
+          WWEAVEE(property::close)();
+        }
+
+        FUN(properties, ::we::type::property::type, props)
+        {
+          tv::weaver w (state);
+
+          WWEAVEN(properties::open, properties_type)(props);
+          WWEAVEE(properties::close)();
+        }
+
+        FUN_IT(structured, ::signature::structured_t, sig)
+        {
+          tv::weaver w (state);
+
+          WWEAVEN(sig_structured::open, sig_structured_type)(sig);
+          WWEAVEE(sig_structured::close)();
+        }
+
+        FUN_IT(struct, ::xml::parse::type::structs_type, s)
+        {
+          tv::weaver w (state);
+
+          WWEAVEN(_struct::open, struct_type)(s);
+          WWEAVEE(_struct::close)();
+        }
+
+        FUN_IT(port, ::xml::parse::type::ports_type, port)
+        {
+          tv::weaver w (state);
+
+          WWEAVEN(port::open, port_type)(port);
+          WWEAVE(port::name, std::string)(port.name);
+          WWEAVE(port::type, std::string)(port.type);
+          WWEAVE(port::place, fhg::util::maybe<std::string>)(port.place);
+          WWEAVE(port::properties, ::we::type::property::type)(port.prop);
+          WWEAVEE(port::close)();
         }
 
         FUN_IT(cinclude, ::xml::parse::type::cincludes_type, cinclude)
         {
-          util::append (state, cinclude);
+          tv::weaver w (state);
+
+          WWEAVEN(cinclude::open, cinclude_type)(cinclude);
+          WWEAVEE(cinclude::close)();
         }
 
         FUN_IT(link, ::xml::parse::type::links_type, link)
         {
-          util::append (state, link);
+          tv::weaver w (state);
+
+          WWEAVEN(link::open, link_type)(link);
+          WWEAVEE(link::close)();
         }
 
         FUN(structs, ::xml::parse::type::structs_type, structs)
         {
-          from_xs (state, "struct", structs, from_struct);
+          tv::weaver w (state);
+
+          WWEAVEN(structs::open, structs_type)(structs);
+          WWEAVEE(structs::close)();
         }
 
         FUN(expression_sequence, std::string, lines)
         {
+          tv::weaver w (state);
+
+          WWEAVE(expression_sequence::open, std::string)(lines);
+
           const char b (';');
           std::string::const_iterator pos (lines.begin());
           const std::string::const_iterator end (lines.end());
@@ -396,7 +964,7 @@ namespace fhg
               switch (*pos)
                 {
                 case b:
-                  util::append (state, line);
+                  WWEAVE(expression_sequence::line, std::string)(line);
                   line.clear();
                   ++pos;
                   while (pos != end && (isspace (*pos) || *pos == b))
@@ -413,98 +981,80 @@ namespace fhg
 
           if (line.size())
             {
-              util::append (state, line);
+              WWEAVE(expression_sequence::line, std::string)(line);
             }
+
+          WWEAVEE(expression_sequence::close)();
         }
 
         FUN_IT(type_get, ::xml::parse::type::type_get_type, tg)
         {
-          util::append (state, tg);
+          tv::weaver w (state);
+
+          WWEAVEN(type_get::open, type_get_type)(tg);
+          WWEAVEE(type_get::close)();
         }
 
         FUN_IT(type_map, ::xml::parse::type::type_map_type, tm)
         {
-          util::append (state, boost::format("%s => %s") % tm.first % tm.second);
+          tv::weaver w (state);
+
+          WWEAVEN(type_map::open, type_map_type)(tm);
+          WWEAVEE(type_map::close)();
         }
 
         FUN_IT(specialize, ::xml::parse::type::net_type::specializes_type, spec)
         {
-          State spec_item
-            ( util::append ( state
-                           , boost::format("%s use %s") % spec.name % spec.use
-                           )
-            );
+          tv::weaver w (state);
 
-          from_xs (spec_item, "type_map", spec.type_map, from_type_map);
-          from_xs (spec_item, "type_get", spec.type_get, from_type_get);
+          WWEAVEN(specialize::open, specialize_type)(spec);
+          WWEAVE(specialize::name, std::string)(spec.name);
+          WWEAVE(specialize::use, std::string)(spec.use);
+          WWEAVE(specialize::type_map, ::xml::parse::type::type_map_type)(spec.type_map);
+          WWEAVE(specialize::type_get, ::xml::parse::type::type_get_type)(spec.type_get);
+          WWEAVEE(specialize::close)();
         }
 
 
         FUN(conditions, ::xml::parse::type::conditions_type, cs)
         {
-          from_xs (state, "condition", cs, from_expression_sequence);
+          tv::weaver w (state);
+
+          WWEAVEN(conditions::open, conditions_type)(cs);
+          WWEAVEE(conditions::close)();
         }
 
         FUN_IT(function, ::xml::parse::type::net_type::functions_type, fun)
         {
-          State fun_item (util::append ( state
-                                       , fun.name
-                                       ? QString ((*fun.name).c_str())
-                                       : "<<function>>"
-                                       )
-                         );
+          tv::weaver w (state);
 
-          if (fun.internal)
-            {
-              util::append ( fun_item
-                           , boost::format ("internal: %s")
-                           % (*fun.internal ? "true" : "false")
-                           );
-            }
-
-          from_xs (fun_item, "require", fun.requirements, from_require);
-
-          from_properties (fun_item, fun.prop);
-          from_structs (fun_item, fun.structs);
-
-          from_xs (fun_item, "in", fun.in(), from_port);
-          from_xs (fun_item, "out", fun.out(), from_port);
-
-          boost::apply_visitor
-            ( visitor::from_net_type<State> (fun_item)
-            , fun.f
-            );
-
-          from_conditions (fun_item, fun.cond);
+          WWEAVEN(function::open, function_type)(fun);
+          WWEAVE(function::name, fhg::util::maybe<std::string>)(fun.name);
+          WWEAVE(function::internal, fhg::util::maybe<bool>)(fun.internal);
+          WWEAVE(function::require, ::xml::parse::type::requirements_type)
+            (fun.requirements);
+          WWEAVE(function::properties, ::we::type::property::type)(fun.prop);
+          WWEAVE(function::structs, ::xml::parse::type::structs_type)
+            (fun.structs);
+          WWEAVE(function::in, ::xml::parse::type::ports_type)(fun.in());
+          WWEAVE(function::out, ::xml::parse::type::ports_type)(fun.out());
+          WWEAVE(function::fun, ::xml::parse::type::function_type::type)(fun.f);
+          WWEAVE(function::conditions, ::xml::parse::type::conditions_type)
+            (fun.cond);
+          WWEAVEE(function::close)();
         }
 
         FUN_IT(place, ::xml::parse::type::places_type, place)
         {
-          State place_item
-            ( util::append
-              ( state
-              , boost::format("%s :: %s") % place.name % place.type
-              )
-            );
+          tv::weaver w (state);
 
-          if (place.is_virtual)
-            {
-              util::append
-                ( place_item
-                , boost::format ("virtual: %s")
-                % (*place.is_virtual ? "true" : "false")
-                );
-            }
-
-          if (place.capacity)
-            {
-              util::append
-                ( place_item
-                , boost::format ("capacity: %i") % *place.capacity
-                );
-            }
-
-          from_properties (place_item, place.prop);
+          WWEAVEN(place::open, place_type)(place);
+          WWEAVE(place::name, std::string)(place.name);
+          WWEAVE(place::type, std::string)(place.type);
+          WWEAVE(place::is_virtual, fhg::util::maybe<bool>)(place.is_virtual);
+          WWEAVE(place::capacity, fhg::util::maybe<petri_net::capacity_t>)
+            (place.capacity);
+          WWEAVE(place::properties, ::we::type::property::type)(place.prop);
 
           for ( ::xml::parse::type::tokens_type::const_iterator
                   tok (place.tokens.begin())
@@ -512,80 +1062,70 @@ namespace fhg
               ; ++tok
               )
             {
-              boost::apply_visitor
-                ( visitor::from_token<State>
-                  (util::append (place_item, "token"))
-                , *tok
-                );
+              WWEAVEN(place::token, token_type)(*tok);
             }
+
+          WWEAVEE(place::close)();
         }
 
         FUN_IT(place_map, ::xml::parse::type::place_maps_type, pm)
         {
-          State pm_item ( util::append
-                          ( state
-                          , boost::format ("virtual: %s <-> real: %s")
-                          % pm.place_virtual
-                          % pm.place_real
-                          )
-                        );
+          tv::weaver w (state);
 
-          from_properties (pm_item, pm.prop);
+          WWEAVEN(place_map::open, place_map_type)(pm);
+          WWEAVE(place_map::place_virtual, std::string)(pm.place_virtual);
+          WWEAVE(place_map::place_real, std::string)(pm.place_real);
+          WWEAVE(place_map::properties, ::we::type::property::type)(pm.prop);
+          WWEAVEE(place_map::close)();
         }
 
-        FUN_IT(connection, ::xml::parse::type::connections_type, connect)
+        FUN_IT(connection, ::xml::parse::type::connections_type, connection)
         {
-          util::append ( state
-                       , boost::format ("port: %s -> place: %s")
-                       % connect.place
-                       % connect.port
-                       );
+          tv::weaver w (state);
+
+          WWEAVEN(connection::open, connection_type)(connection);
+          WWEAVE(connection::port, std::string)(connection.port);
+          WWEAVE(connection::place, std::string)(connection.place);
+          WWEAVEE(connection::close)();
         }
 
         FUN_IT(require, ::xml::parse::type::requirements_type, req)
         {
-          util::append ( state
-                       , boost::format ("%s: %s")
-                       % req.first
-                       % (req.second ? "true" : "false")
-                       );
+          tv::weaver w (state);
+
+          WWEAVEN(requirement::open, requirement_type)(req);
+          WWEAVE(requirement::key, std::string)(req.first);
+          WWEAVE(requirement::value, bool)(req.second);
+          WWEAVEE(requirement::close)();
         }
 
         FUN_IT(transition, ::xml::parse::type::net_type::transitions_type, trans)
         {
-          State transition_item (util::append (state, trans.name));
+          tv::weaver w (state);
 
-          if (trans.priority)
-            {
-              util::append ( transition_item
-                           , boost::format ("priority: %i") % *trans.priority
-                           );
-            }
-
-          if (trans.internal)
-            {
-              util::append ( transition_item
-                           , boost::format ("internal: %i")
-                           % (*trans.internal ? "true" : "false")
-                           );
-            }
-
-          from_properties (transition_item, trans.prop);
-
-          from_structs (transition_item, trans.structs);
-
-          {
-            visitor::from_function_type<QStandardItem *> v(transition_item);
-            boost::apply_visitor(v, trans.f);
-          }
-
-          from_xs (transition_item, "place-map", trans.place_map(), from_place_map<QStandardItem *>);
-
-          from_xs (transition_item, "connect-read", trans.read(), from_connection);
-          from_xs (transition_item, "connect-in", trans.in(), from_connection);
-          from_xs (transition_item, "connect-out", trans.out(), from_connection);
-
-          from_conditions (transition_item, trans.cond);
+          WWEAVEN(transition::open,transition_type)(trans);
+          WWEAVE(transition::name,std::string)(trans.name);
+          WWEAVE(transition::priority,fhg::util::maybe<petri_net::prio_t>)
+            (trans.priority);
+          WWEAVE(transition::internal, fhg::util::maybe<bool>)(trans.internal);
+          WWEAVE(transition::properties, ::we::type::property::type)
+            (trans.prop);
+          WWEAVE(transition::structs, ::xml::parse::type::structs_type)
+            (trans.structs);
+          WWEAVE( transition::function
+                , ::xml::parse::type::transition_type::f_type
+                )(trans.f);
+          WWEAVE(transition::place_map, ::xml::parse::type::place_maps_type)
+            (trans.place_map());
+          WWEAVE(transition::connect_read, ::xml::parse::type::connections_type)
+            (trans.read());
+          WWEAVE(transition::connect_in, ::xml::parse::type::connections_type)
+            (trans.in());
+          WWEAVE(transition::connect_out, ::xml::parse::type::connections_type)
+            (trans.out());
+          WWEAVE(transition::condition, ::xml::parse::type::conditions_type)
+            (trans.cond);
+          WWEAVEE(transition::close) ();
         }
       } // namespace detail
 
