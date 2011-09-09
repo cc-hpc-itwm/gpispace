@@ -38,7 +38,7 @@ public:
     try
     {
       m_scr_size = boost::lexical_cast<fvmSize_t>
-        (fhg_kernel()->get("scratch_size", "8388608")); // 8MB
+        (fhg_kernel()->get("com_size", "16777216")); // 16MB
     }
     catch (std::exception const & ex)
     {
