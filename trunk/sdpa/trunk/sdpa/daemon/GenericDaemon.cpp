@@ -646,7 +646,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
         if( ptrJob.get() && !bTerminal )
         {
-        	SDPA_LOG_INFO("Serve a job to the worker "<<worker_id);
+          MLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
             // put the job into the Running state here
             SDPA_LOG_DEBUG("The job status is "<<ptrJob->getStatus());
@@ -1032,7 +1032,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
   // schedule the new job to some worker
 
   try {
-      SDPA_LOG_INFO("workflow engine submitted "<<activityId);
+    MLOG(TRACE, "workflow engine submitted "<<activityId);
 
       job_id_t job_id(activityId);
       job_id_t parent_id("WE"); // is this really needed?
