@@ -160,6 +160,10 @@ cfg="$cfg -s plugin.drts.request-mode=${request_mode}"
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
 cfg="$cfg -s plugin.gpi.startmode=wait"
 
+# config values (gpi-compat plugin)
+cfg="$cfg -s plugin.gpi-compat.shm_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi-compat.shm_size)
+cfg="$cfg -s plugin.gpi-compat.scratch_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi-compat.com_size)
+
 # config values (gui plugin)
 cfg="$cfg -s plugin.gui.url=$gui"
 
