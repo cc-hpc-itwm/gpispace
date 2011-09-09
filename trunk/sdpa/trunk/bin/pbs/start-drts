@@ -150,7 +150,7 @@ cfg="$cfg -s plugin.kvs.host=$kvs_host"
 cfg="$cfg -s plugin.kvs.port=$kvs_port"
 
 # config values (drts plugin)
-request_mode=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.request-mode -v true)
+request_mode=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.request-mode -v false)
 cfg="$cfg -s plugin.drts.name=$name"
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
