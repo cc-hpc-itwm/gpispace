@@ -294,10 +294,12 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmShmemOffset_t shmemOffset,
 				 const fvmAllocHandle_t)
 {
-  static const gpi::pc::type::queue_id_t queue = 0;
+  static const gpi::pc::type::queue_id_t queue = 1;
 
   gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
   gpi::pc::type::size_t remaining (size);
+
+  LOG_IF(WARN, chunk_size < remaining, "internal communication buffer is too small, need to split up.");
 
   gpi::pc::type::size_t src_offset(shmemOffset);
   gpi::pc::type::size_t dst_offset(fvmOffset);
@@ -349,7 +351,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  static const gpi::pc::type::queue_id_t queue = 0;
+  static const gpi::pc::type::queue_id_t queue = 2;
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
           , gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)
@@ -364,7 +366,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 				const fvmSize_t size,
 				const fvmShmemOffset_t shmemOffset)
 {
-  static const gpi::pc::type::queue_id_t queue = 0;
+  static const gpi::pc::type::queue_id_t queue = 3;
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)
           , gpi::pc::type::memory_location_t(handle, fvmOffset)
