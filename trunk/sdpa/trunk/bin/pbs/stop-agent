@@ -1,0 +1,51 @@
+#!/bin/bash
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+name=
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename "$0") [options]
+
+    -h: print this help
+    -n name (*): name of the agent to kill (if empty all will be killed)
+EOF
+}
+
+while getopts ":hDfdm:g:b:n:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	n)
+	    name=$OPTARG
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    exit 1
+    esac
+done
+
+function agent_status ()
+{
+    local name="$1" ; shift
+    local pids=$(ps aux | grep -v [s]tart-agent | grep "agent.*-n $name" | awk '{print $2;}')
+    if [ -z "$pids" ] ; then
+	return 1
+    else
+	echo $pids
+	return 0
+    fi
+}
+
+if [ -z "$name" ] ; then
+    echo "I: terminating all agents..." >&2
+fi
+
+pids=$(agent_status $name)
+kill -TERM "$pids"
+sleep 2
+kill -KILL "$pids" &>/dev/null
