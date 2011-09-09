@@ -24,9 +24,11 @@ then
 fi
 
 debug=false
+daemonize=false
 bind_addr='0'
-name="aggregator"
-master="orchestrator"
+name=
+master=
+force=false
 logfile="$SDPA_LOG_DIR/${name}.log"
 backlog=1000
 bin=$(which agent 2>/dev/null)
@@ -43,21 +45,24 @@ usage: $(basename "$0") [options]
     -h: print this help
     -f: force: kill still running processes
     -d: debug mode
-    -n name (=$name): name of this agent
-    -m master (=$master): master to connect to
+    -n name (*): name of this agent
+    -m master (*): master to connect to
     -g ip:port (=$gui): gui address
-    -b N (=$backlog): set the backlog
+    -b N (=$backlog): set the backlog size
     -k kvs-url (=$kvs_url): url to the key-value-store
     -D daemonize
     -L logfile (=$logfile)
 EOF
 }
 
-while getopts ":hfdm:g:b:n:-" opt; do
+while getopts ":hDfdm:g:b:n:" opt; do
     case $opt in
 	h)
 	    usage
 	    exit 0
+	    ;;
+	D)
+	    daemonize=true
 	    ;;
 	f)
 	    force=true
@@ -83,6 +88,36 @@ while getopts ":hfdm:g:b:n:-" opt; do
     esac
 done
 
+if [ -z "$name" -o -z "$master" ] ; then
+    echo "E: I need both, a name and a master!" 2>&1
+    usage
+    exit 1
+fi
+
+function agent_status ()
+{
+    local name="$1" ; shift
+    local pids=$(ps aux | grep -v [s]tart-agent | grep "agent.*-n \<$name\>" | awk '{print $2;}')
+    if [ -z "$pids" ] ; then
+	return 1
+    else
+	echo $pids
+	return 0
+    fi
+}
+
+pids=$(agent_status $name)
+if [ $? -eq 0 ] ; then
+    if [ $force == true ] ; then
+	kill -TERM $pids
+	sleep 1.5
+	kill -KILL $pids &>/dev/null
+    else
+	echo "E: agent $name still running with pid(s): $pids" >&2
+	exit 1
+    fi
+fi
+
 opts="$opts -n ${name} "
 opts="$opts -u ${bind_addr}"
 opts="$opts -m ${master}"
@@ -93,8 +128,12 @@ cmd="${bin} $opts"
 log "Running $name on $(hostname -s) with master $master"
 
 if $debug ; then
-  log "running within gdb..."
-  gdb -ex run --args ${cmd}
+    log "running within gdb..."
+    gdb -ex run --args ${cmd}
 else
-  FHGLOG_to_file="$SDPA_LOG_DIR/${name}-$(hostname -s).log" exec ${cmd}
+    if $daemonize ; then
+	FHGLOG_to_file="$SDPA_LOG_DIR/${name}-$(hostname -s).log" ${cmd} >/dev/null </dev/null 2>&1 &
+    else
+	FHGLOG_to_file="$SDPA_LOG_DIR/${name}-$(hostname -s).log" exec ${cmd}
+    fi
 fi
