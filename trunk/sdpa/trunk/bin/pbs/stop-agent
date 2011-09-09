@@ -32,7 +32,7 @@ done
 function agent_status ()
 {
     local name="$1" ; shift
-    local pids=$(ps aux | grep -v [s]tart-agent | grep "agent.*-n $name" | awk '{print $2;}')
+    local pids=$(ps aux | grep -v [s]top-agent | grep "[a]gent.*-n $name" | awk '{print $2;}')
     if [ -z "$pids" ] ; then
 	return 1
     else
@@ -42,10 +42,15 @@ function agent_status ()
 }
 
 if [ -z "$name" ] ; then
-    echo "I: terminating all agents..." >&2
+    echo -n "I: terminating all agents: " >&2
+else
+    echo -n "I: terminating agent $name: "
 fi
 
 pids=$(agent_status $name)
-kill -TERM "$pids"
-sleep 2
-kill -KILL "$pids" &>/dev/null
+echo $pids
+if [ -n "$pids" ] ; then
+    kill -TERM $pids
+    sleep 2
+    kill -KILL $pids &>/dev/null
+fi
