@@ -6,6 +6,7 @@
 # increment this value up to date if anything config related changes!
 CONFIG_VERSION=3
 
+debug_enabled=true
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 
@@ -30,6 +31,13 @@ do_log="eval log_helper \"\$FUNCNAME\" \"\$LINENO\""
 function log ()
 {
     echo "$@" >&2
+}
+
+function debug ()
+{
+    if [ $debug_enabled == "true" ] ; then
+	echo $@ >&2
+    fi
 }
 
 function get ()
@@ -490,15 +498,23 @@ used on each node.
 	return 1
     fi
 
-    local shm_size=$(get "api.compat.shm_size" "1G")
-    get_user_input "shm memory size (per node) [$shm_size]:" shm_size
+    local shm_size=$(get "plugin.gpi-compat.shm_size" "1G")
+    get_user_input "shm memory size (per worker) [$shm_size]:" shm_size
     parse_human_readable_size $shm_size shm_size
     if [ $shm_size -le 0 ] ; then
 	log "E: size must be larger than 0: $shm_size"
 	return 1
     fi
 
-    local mem_size=$(( $gpi_size + $shm_size ))
+    local com_size=$(get "plugin.gpi-compat.com_size" "16M")
+    get_user_input "communication buffer size (per worker) [$com_size]:" com_size
+    parse_human_readable_size $com_size com_size
+    if [ $com_size -le 0 ] ; then
+	log "E: size must be larger than 0: $com_size"
+	return 1
+    fi
+
+    local mem_size=$(( $gpi_size + $shm_size + $com_size ))
 
     # try to get total memory size
     local total_mem=$( grep ^MemTotal: /proc/meminfo | awk '{print $2}')
@@ -508,14 +524,16 @@ used on each node.
 	log "-:     max available: $total_mem"
 	log "-:          gpi size: $gpi_size"
 	log "-:          shm size: $shm_size"
+	log "-:          com size: $com_size"
 	if ! y_n_p "Are you really sure to use these values?" ; then
 	    return 1
 	fi
     fi
 
     put "gpi.memory_size" "$gpi_size"
-    put "api.compat.shm_size" "$shm_size"
     put "gpi.priv_dir" "$gpid_dir"
+    put "plugin.gpi-compat.shm_size" "$shm_size"
+    put "plugin.gpi-compat.com_size" "$com_size"
 
     put "gpi.api" $(get gpi.api "gpi.api.real")
     put "gpi.timeout" $(get gpi.timeout "30")
@@ -826,6 +844,7 @@ function start_proc ()
 	echo "  * $name ($pid)" >&2
     else
 	:> "$pid_file"
+	echo $binary $@
 	$binary $@ </dev/null >"$log_file" 2>&1 &
 	pid=$!
 	sleep 0.5
@@ -872,6 +891,27 @@ function stop_proc ()
     fi
 }
 
+function start_agent ()
+{
+    local name="$1" ; shift
+    local master="$1" ; shift
+
+    if [ -z "$master" ] ; then
+	echo "E: start_agent(): no master given!" >&2
+	return 1
+    fi
+
+    # name format: name[-node]
+    local node="$(echo $name | cut -d- -f 2)"
+    if [ "$node" == "$name" ] ; then
+	node=localhost
+    fi
+
+    local cmd="rexec $node start-agent -D -n $name -m $master -f"
+    debug $cmd
+    $cmd </dev/null >"$SDPA_LOG_DIR/$name.log" 2>&1 &
+}
+
 function start_kvs ()
 {
     if ! start_proc "fhgkvsd" "fhgkvsd" "-C -b 0 -p 2439"; then
@@ -913,7 +953,7 @@ function stop_orch ()
 
 function start_agg ()
 {
-    if ! start_proc "aggregator" "start-agg" ; then
+    if ! start_agent "aggregator" "orchestrator" ; then
 	echo "E: could not start aggregator, giving up!" >&2
 	return 1
     else
@@ -1202,6 +1242,18 @@ function restart ()
     fi
 }
 
+function agent_status ()
+{
+    local name="$1" ; shift
+    local pids=$(ps aux | grep -v '[s]tart-agent' | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
+    if [ -z "$pids" ] ; then
+	return 1
+    else
+#	echo "$name running with pid(s): $pids" >&2
+	return 0
+    fi
+}
+
 function program_status ()
 {
     local p=$1 ; shift
@@ -1223,7 +1275,7 @@ function status_orch ()
 
 function status_agg ()
 {
-    program_status "aggregator"
+    agent_status "aggregator"
 }
 
 function status_nre_on_node ()
