@@ -55,7 +55,7 @@ int main (int argc, char **argv)
 	   ("backup_file,f", po::value<string>(&backup_file), "Agent's backup file (stored into the backup folder)")
 	   ("app_gui_url,a",  po::value<string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
 	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
-          ("request-mode", po::value<string>(&requestMode)->default_value("false"), "send periodical job requests to master")
+          ("request-mode", po::value<string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
 	   ;
 
 	po::variables_map vm;
