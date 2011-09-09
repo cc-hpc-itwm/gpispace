@@ -63,9 +63,10 @@ for p in $still_running ; do
     fi
     if [ -n "$identity" ] ; then
 	if [ x"$name" == x"drts-$(hostname -s)-$identity" ] ; then
-	    kill_drts "$p" "$name"
+	    kill_drts "$p" "$name" &>/dev/null &
 	fi
     else
-	kill_drts "$p" "$name"
+	kill_drts "$p" "$name" &>/dev/null &
     fi
 done
+wait
