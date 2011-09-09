@@ -386,7 +386,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
   if( ptr_worker_man_ )
   {
       // if no preferences are explicitly set for this job
-      LOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
+      DMLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
 
       try
       {
@@ -463,8 +463,8 @@ void SchedulerImpl::start_job(const sdpa::job_id_t &jobId)
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-	SDPA_LOG_DEBUG("Schedule the job " << jobId.str());
-	jobs_to_be_scheduled.push(jobId);
+  DLOG(TRACE, "Schedule the job " << jobId.str());
+  jobs_to_be_scheduled.push(jobId);
 }
 
 const Worker::ptr_t& SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)

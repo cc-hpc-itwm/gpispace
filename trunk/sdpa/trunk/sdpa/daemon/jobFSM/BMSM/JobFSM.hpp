@@ -116,13 +116,13 @@ namespace sdpa {
         template <class FSM, class Event>
         void no_transition(Event const& e, FSM&, int state)
         {
-          LOG(DEBUG, "no transition from state "<< state << " on event " << typeid(e).name());
+          LOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
         }
 
         template <class FSM>
         void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
         {
-          LOG(DEBUG, "process event QueryJobStatusEvent");
+          DLOG(DEBUG, "process event QueryJobStatusEvent");
         }
       };
 
@@ -141,12 +141,12 @@ namespace sdpa {
           : JobImpl(id, desc, pHandler, parent)
           , SDPA_INIT_LOGGER("sdpa.fsm.bmsm.JobFSM")
         {
-          SDPA_LOG_DEBUG("State machine created");
+          DLOG(TRACE, "State machine created: " << id);
         }
 
         ~JobFSM()
         {
-          SDPA_LOG_DEBUG("State machine destroyed");
+          DLOG(TRACE, "State machine destroyed");
         }
 
         void start_fsm() { start(); }
@@ -243,7 +243,7 @@ namespace sdpa {
 
         sdpa::status_t getStatus()
         {
-        	LOG(TRACE, "current state of job " << id() << " is " << *current_state());
+          DLOG(TRACE, "current state of job " << id() << " is " << *current_state());
 
         	if (*current_state() < 0 || *current_state() > (int)(sizeof(state_names)))
         	{

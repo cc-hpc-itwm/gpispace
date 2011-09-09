@@ -350,12 +350,12 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
         /*SDPA_LOG_DEBUG("Popped the job "<<jobId<<"The content of the common queue is now: ");
         common_queue_.print();*/
 
-        MLOG( TRACE
-            , "Putting job "
-            << jobId
-            << " into the submitted queue of the worker "
-            << worker_id
-            );
+        DMLOG( TRACE
+             , "Putting job "
+             << jobId
+             << " into the submitted queue of the worker "
+             << worker_id
+             );
         ptrWorker->submitted().push(jobId);
         ptrWorker->update();
         return jobId;
@@ -389,7 +389,7 @@ const sdpa::job_id_t WorkerManager::getNextJob(const Worker::worker_id_t& worker
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
-  SDPA_LOG_DEBUG( "Dispatch the job " << jobId.str() );
+  DLOG(TRACE, "Dispatch the job " << jobId.str() );
   /*SDPA_LOG_DEBUG( "Content of the common queue before: ");
   common_queue_.print();*/
   common_queue_.push(jobId);

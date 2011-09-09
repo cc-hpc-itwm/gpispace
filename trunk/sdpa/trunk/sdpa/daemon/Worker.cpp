@@ -61,7 +61,7 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   {
 	  acknowledged().push(job_id);
 	  submitted().erase(job_id);
-	  SDPA_LOG_DEBUG("acknowledged job(" << job_id.str() << ")");
+	  DMLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
 	  return true;
   }
   catch (const sdpa::daemon::NotFoundItem& ex)

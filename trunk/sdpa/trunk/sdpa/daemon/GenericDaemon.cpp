@@ -632,7 +632,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
         // you should consume from the  worker's pending list; put the job into the worker's submitted list
         sdpa::job_id_t jobId = ptr_scheduler_->getNextJob(worker_id, last_job_id);
-        SDPA_LOG_DEBUG("Assign the job "<<jobId<<" to the worker '"<<worker_id);
+        DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
         const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
 
@@ -646,15 +646,15 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
         if( ptrJob.get() && !bTerminal )
         {
-          MLOG(TRACE, "Serving a job to the worker "<<worker_id);
+          DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
             // put the job into the Running state here
-            SDPA_LOG_DEBUG("The job status is "<<ptrJob->getStatus());
+            DMLOG(TRACE, "The job status is "<<ptrJob->getStatus());
 
             //ptrJob->Dispatch(); // no event need to be sent
 
             // create a SubmitJobEvent for the job job_id serialize and attach description
-            SDPA_LOG_DEBUG("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
+            DMLOG(TRACE, "sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
             SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), ""));
 
             // Post a SubmitJobEvent to the slave who made the request
@@ -720,7 +720,7 @@ void GenericDaemon::action_request_job(const RequestJobEvent& e)
 
 void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
 {
-  LOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+  DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
   /*
    * job-id (ignored by the orchestrator, see below)
    * contains workflow description and initial tokens
@@ -916,7 +916,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 {
-  SDPA_LOG_INFO("got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
+  DMLOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
 
   // if it'a communication error, inspect all jobs and
   // send results if they are in a terminal state

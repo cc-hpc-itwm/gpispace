@@ -52,7 +52,7 @@ namespace sdpa { namespace daemon {
     {}
 
     JobImpl::~JobImpl() {
-      LOG(TRACE, "Destructor of the job "<<id_.str()<<" called!");
+      DLOG(TRACE, "Destructor of the job "<<id_.str()<<" called!");
     }
 
 
@@ -87,46 +87,46 @@ namespace sdpa { namespace daemon {
 
     void JobImpl::action_run_job()
     {
-    	LOG(TRACE, "Process 'action_run_job'");
+	DLOG(TRACE, "Process 'action_run_job'");
     }
 
     // transition from Pending to Cancelled
 	void JobImpl::action_cancel_job_from_pending(const sdpa::events::CancelJobEvent& evt)
 	{
-		LOG(TRACE, "Process 'action_cancel_job_from_pending'");
+          DLOG(TRACE, "Process 'action_cancel_job_from_pending'");
 	}
 
 	// transition from Cancelling to Cancelled
     void JobImpl::action_cancel_job(const sdpa::events::CancelJobEvent& evt)
     {
-    	LOG(TRACE, "cancelling job " << id());
+	DLOG(TRACE, "cancelling job " << id());
     }
 
     void JobImpl::action_cancel_job_ack(const sdpa::events::CancelJobAckEvent& evt)
     {
-      LOG(TRACE, "acknowledged cancelling job " << id());
+      DLOG(TRACE, "acknowledged cancelling job " << id());
     }
 
     void JobImpl::action_delete_job(const sdpa::events::DeleteJobEvent& e)
     {
-    	LOG(TRACE, "delete job " << id());
+	DLOG(TRACE, "delete job " << id());
     	b_marked_for_del_ = true;
     }
 
     void JobImpl::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
     {
-    	LOG(TRACE, "The job " << id()<<" finished. Set the result now!");
+	DLOG(TRACE, "The job " << id()<<" finished. Set the result now!");
     	setResult(evt.result());
     }
 
     void JobImpl::action_job_failed(const sdpa::events::JobFailedEvent& evt )
     {
-    	LOG(TRACE, "job failed " << id());
+	DLOG(TRACE, "job failed " << id());
     	setResult(evt.result());
     }
 
     void  JobImpl::action_retrieve_job_results(const sdpa::events::RetrieveJobResultsEvent& e)
     {
-    	LOG(TRACE, "retrieving results of job " << id());
+	DLOG(TRACE, "retrieving results of job " << id());
     }
 }}
