@@ -66,7 +66,6 @@ namespace gpi
         task_list_t split (memory_transfer_t const &mt);
 
         mutable mutex_type m_mutex;
-        mutable mutex_type m_global_wait_mutex;
         mutable condition_type m_resume_condition;
         std::size_t m_id;
         bool m_paused;

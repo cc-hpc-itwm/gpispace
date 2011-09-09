@@ -75,13 +75,6 @@ namespace gpi
       {
         static const std::size_t delegate_threshold(0);
 
-        // this  needs to  be atomic,  otherwise (enqueue();  wait();)  would be
-        // broken
-        {
-          lock_type lock (m_mutex);
-          m_dispatched.insert (tasks.begin(), tasks.end());
-        }
-
         BOOST_FOREACH(task_ptr task, tasks)
         {
           if (task->time_estimation() > delegate_threshold)
@@ -92,6 +85,13 @@ namespace gpi
           {
             m_task_queue.push(task);
           }
+        }
+
+        // this  needs to  be atomic,  otherwise (enqueue();  wait();)  would be
+        // broken
+        {
+          lock_type lock (m_mutex);
+          m_dispatched.insert (tasks.begin(), tasks.end());
         }
       }
 
@@ -273,7 +273,7 @@ namespace gpi
                          , sz
                          , shift
                          )
-            , sz
+            , 0 /* estimated time (FIXME: something is broken when we set this to sz) */
             ));
           remaining -= sz;
           shift += sz;
@@ -388,8 +388,6 @@ namespace gpi
       std::size_t
       transfer_queue_t::wait ()
       {
-        lock_type global_wait_lock (m_global_wait_mutex);
-
         task_ptr wtask (boost::make_shared<task_t>
                        ("wait_on_queue", boost::bind( &do_wait_on_queue
                                                     , m_id
