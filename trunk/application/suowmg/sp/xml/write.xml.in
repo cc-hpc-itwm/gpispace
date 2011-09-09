@@ -24,7 +24,7 @@
           <cinclude href="SegYEBCHeader.h"/>
           <cinclude href="fstream"/>
           <cinclude href="stdexcept"/>
-          <cinclude href="error.h"/>
+          <cinclude href="errno.h"/>
           <code><![CDATA[
             LOG (INFO, "WRITE " << ::print::output (output));
 
