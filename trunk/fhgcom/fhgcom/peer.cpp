@@ -660,13 +660,13 @@ namespace fhg
             (m->buf(), m->header.length);
           reverse_lookup_cache_[m->header.src] = remote_name;
 
-          LOG( DEBUG
-             , "connection between "
-             << my_addr_ << " (" << name_ << ")"
-             << " and "
-             << m->header.src << " (" << remote_name << ")"
-             << " successfully established"
-             );
+          DLOG( DEBUG
+              , "connection between "
+              << my_addr_ << " (" << name_ << ")"
+              << " and "
+              << m->header.src << " (" << remote_name << ")"
+              << " successfully established"
+              );
 
           connection_data_t & cd = connections_[m->header.src];
           cd.name = remote_name;
