@@ -27,6 +27,8 @@ namespace comm
         << " (" << config.size.output_per_shot << " bytes)"
         );
 
+    fvmAllocHandle_t scratch (fvmLocalAlloc(config.size.output_per_shot));
+
     try
       {
         waitComm ( fvmPutGlobalData
@@ -34,7 +36,7 @@ namespace comm
                    , output.slot * config.size.output_per_shot
                    , config.size.output_per_shot
                    , shmem_offset
-                   , static_cast<fvmAllocHandle_t> (config.handle.output.scratch)
+                   , scratch
                    )
                  );
       }
@@ -42,8 +44,12 @@ namespace comm
       {
         LOG (ERROR, "PUT FAILED: " << e.what());
 
+        if (scratch) fvmLocalFree(scratch);
+
         throw;
       }
+
+    fvmLocalFree (scratch);
   }
 
   inline void get
@@ -58,6 +64,8 @@ namespace comm
         << " (" << config.size.output_per_shot << " bytes)"
         );
 
+    fvmAllocHandle_t scratch (fvmLocalAlloc(config.size.output_per_shot));
+
     try
       {
         waitComm ( fvmGetGlobalData
@@ -65,7 +73,7 @@ namespace comm
                    , output.slot * config.size.output_per_shot
                    , config.size.output_per_shot
                    , shmem_offset
-                   , static_cast<fvmAllocHandle_t> (config.handle.output.scratch)
+                   , scratch
                    )
                  );
       }
@@ -73,8 +81,12 @@ namespace comm
       {
         LOG (ERROR, "GET FAILED: " << e.what());
 
+        if (scratch) fvmLocalFree(scratch);
+
         throw;
       }
+
+    fvmLocalFree (scratch);
   }
 
   inline void put
@@ -88,6 +100,8 @@ namespace comm
         << " from shmem_offset " << shmem_offset
         << " (" << ::util::size (package) * config.size.trace << " bytes)"
         );
+
+    fvmAllocHandle_t scratch = fvmLocalAlloc(config.size.bunch);
 
     for (::util::interval_iterator i (package); i.has_more(); ++i)
       {
@@ -104,7 +118,7 @@ namespace comm
                        , (*i).offset
                        , (*i).size
                        , shmem_offset
-                       , static_cast<fvmAllocHandle_t> (config.handle.input.scratch)
+                       , scratch
                        )
                      );
 
@@ -114,9 +128,13 @@ namespace comm
           {
             LOG (ERROR, "PUT FAILED: " << e.what());
 
+            if (scratch) fvmLocalFree(scratch);
+
             throw;
           }
       }
+
+    fvmLocalFree(scratch);
   }
 
   inline void get
@@ -130,6 +148,8 @@ namespace comm
         << " to shmem_offset " << shmem_offset
         << " (" << ::util::size (package) * config.size.trace << " bytes)"
         );
+
+    fvmAllocHandle_t scratch = fvmLocalAlloc(config.size.bunch);
 
     for (::util::interval_iterator i (package); i.has_more(); ++i)
       {
@@ -156,9 +176,13 @@ namespace comm
           {
             LOG (ERROR, "PUT FAILED: " << e.what());
 
+            if (scratch) fvmLocalFree(scratch);
+
             throw;
           }
       }
+
+    fvmLocalFree(scratch);
   }
 }
 
