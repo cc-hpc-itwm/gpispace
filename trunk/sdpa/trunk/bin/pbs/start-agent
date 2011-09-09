@@ -1,0 +1,100 @@
+#!/bin/sh
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+#usage: agent [options] ....
+#Allowed options:
+#  -h [ --help ]                         Display this message
+#  -n [ --name ] arg (=agent)            Agent's logical name
+#  -u [ --url ] arg (=localhost)         Agent's url
+#  -m [ --master ] arg                   Agent's master list
+#  -d [ --backup_folder ] arg            Agent's backup folder
+#  -f [ --backup_file ] arg              Agent's backup file (stored into the
+#                                        backup folder)
+#  -a [ --app_gui_url ] arg (=127.0.0.1:9000)
+#                                        application GUI's url
+#  -k [ --kvs_url ] arg                  The kvs daemon's url
+#  --request-mode arg (=false)           send periodical job requests to master
+
+# set some default values
+gui="$SDPA_GUI"
+if [ -z "$gui" ]
+then
+  gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
+fi
+
+debug=false
+bind_addr='0'
+name="aggregator"
+master="orchestrator"
+logfile="$SDPA_LOG_DIR/${name}.log"
+backlog=1000
+bin=$(which agent 2>/dev/null)
+if [ -z "$bin" ] ; then
+    log "# could not find agent binary in the path!"
+    exit 1
+fi
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename "$0") [options]
+
+    -h: print this help
+    -f: force: kill still running processes
+    -d: debug mode
+    -n name (=$name): name of this agent
+    -m master (=$master): master to connect to
+    -g ip:port (=$gui): gui address
+    -b N (=$backlog): set the backlog
+    -k kvs-url (=$kvs_url): url to the key-value-store
+    -D daemonize
+    -L logfile (=$logfile)
+EOF
+}
+
+while getopts ":hfdm:g:b:n:-" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	f)
+	    force=true
+	    ;;
+	d)
+	    debug=true
+	    ;;
+	m)
+	    master=$OPTARG
+	    ;;
+	g)
+	    gui=$OPTARG
+	    ;;
+	b)
+	    backlog=$OPTARG
+	    ;;
+        n)
+            name=$OPTARG
+            ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    exit 1
+    esac
+done
+
+opts="$opts -n ${name} "
+opts="$opts -u ${bind_addr}"
+opts="$opts -m ${master}"
+opts="$opts -k ${KVS_URL}"
+
+cmd="${bin} $opts"
+
+log "Running $name on $(hostname -s) with master $master"
+
+if $debug ; then
+  log "running within gdb..."
+  gdb -ex run --args ${cmd}
+else
+  FHGLOG_to_file="$SDPA_LOG_DIR/${name}-$(hostname -s).log" exec ${cmd}
+fi

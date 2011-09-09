@@ -9,6 +9,7 @@ set (prgs
   start-orch
   start-pc
   start-drts
+  start-agent
   stop-nre
   stop-pc
   stop-drts
