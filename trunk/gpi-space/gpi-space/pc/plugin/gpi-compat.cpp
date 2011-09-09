@@ -35,11 +35,23 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
+    try
+    {
+      m_scr_size = boost::lexical_cast<fvmSize_t>
+        (fhg_kernel()->get("scratch_size", "8388608")); // 8MB
+    }
+    catch (std::exception const & ex)
+    {
+      LOG(ERROR, "could not parse plugin.gpi-compat.scratch_size: " << ex.what());
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
+
     const std::string my_pid(boost::lexical_cast<std::string>(getpid()));
     m_segment_name = "fvm-pc-" + my_pid;
     m_segment_handle_name = "fvm-pc-segment-" + my_pid;
     m_global_handle_name = "fvm-pc-global-" + my_pid;
     m_local_handle_name = "fvm-pc-local-" + my_pid;
+    m_scratch_handle_name = "fvm-pc-scratch-" + my_pid;
 
     if (! try_start())
     {
@@ -54,6 +66,7 @@ public:
   {
     if (api)
     {
+      api->free(m_scr_hdl);
       api->free(m_shm_hdl);
       api->unregister_segment(m_shm_id);
       m_shm_ptr = 0;
@@ -136,6 +149,11 @@ private:
                                        // | gpi::pc::type::segment::F_FORCE_UNLINK
                                        , gpi::pc::type::segment::F_FORCE_UNLINK
                                        );
+      m_scr_hdl = api->alloc ( 1 // GPI
+                             , m_scr_size
+                             , m_scratch_handle_name
+                             , 0
+                             );
       m_shm_hdl = api->alloc ( m_shm_id
                              , m_shm_size
                              , m_segment_handle_name
@@ -161,13 +179,16 @@ public:
   std::string                        m_segment_handle_name;
   std::string                        m_global_handle_name;
   std::string                        m_local_handle_name;
+  std::string                        m_scratch_handle_name;
 
   gpi::GPI                          *api;
   gpi::pc::type::info::descriptor_t  gpi_info;
-  fvmSize_t                          m_shm_size;
   gpi::pc::type::segment_id_t        m_shm_id;
   void                              *m_shm_ptr;
+  fvmSize_t                          m_shm_size;
   gpi::pc::type::handle_t            m_shm_hdl;
+  fvmSize_t                          m_scr_size;
+  gpi::pc::type::handle_t            m_scr_hdl;
 };
 
 int fvmConnect()
@@ -215,24 +236,11 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratch)
+				 const fvmAllocHandle_t)
 {
   static const gpi::pc::type::queue_id_t queue = 0;
 
-  gpi::pc::type::handle::descriptor_t
-    hdl_info (gpi_compat->get_handle_info(scratch));
-  if (hdl_info.id == gpi::pc::type::handle_id_t(0) || hdl_info.segment != 1)
-  {
-    throw std::runtime_error ("STRANGE!!! scratch handle is not a gpi allocation");
-  }
-
-  gpi::pc::type::size_t base (0);
-  if (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
-  {
-    base = hdl_info.size * gpi_compat->gpi_info.rank;
-  }
-
-  gpi::pc::type::size_t chunk_size (hdl_info.size);
+  gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
   gpi::pc::type::size_t remaining (size);
 
   gpi::pc::type::size_t src_offset(fvmOffset);
@@ -251,7 +259,9 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
     // 1. transfer memory to scratch
     gpi_compat->api->wait
-      (gpi_compat->api->memcpy( gpi::pc::type::memory_location_t(scratch, base)
+      (gpi_compat->api->memcpy( gpi::pc::type::memory_location_t( gpi_compat->m_scr_hdl
+                                                                , 0
+                                                                )
                               , gpi::pc::type::memory_location_t(handle, src_offset)
                               , transfer_size
                               , queue
@@ -264,7 +274,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
     gpi_compat->api->memcpy( gpi::pc::type::memory_location_t( gpi_compat->m_shm_hdl
                                                              , dst_offset
                                                              )
-                           , gpi::pc::type::memory_location_t(scratch, base)
+                           , gpi::pc::type::memory_location_t(gpi_compat->m_scr_hdl, 0)
                            , transfer_size
                            , queue
                            );
@@ -282,29 +292,15 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 				 const fvmOffset_t fvmOffset,
 				 const fvmSize_t size,
 				 const fvmShmemOffset_t shmemOffset,
-				 const fvmAllocHandle_t scratch)
+				 const fvmAllocHandle_t)
 {
   static const gpi::pc::type::queue_id_t queue = 0;
 
-  gpi::pc::type::handle::descriptor_t
-    hdl_info (gpi_compat->get_handle_info(scratch));
-  if (hdl_info.id == gpi::pc::type::handle_id_t(0) || hdl_info.segment != 1)
-  {
-    throw std::runtime_error ("STRANGE!!! scratch handle is not a gpi allocation");
-  }
-
-  gpi::pc::type::size_t base (0);
-  if (hdl_info.flags & gpi::pc::type::handle::F_GLOBAL)
-  {
-    base = hdl_info.size * gpi_compat->gpi_info.rank;
-  }
-
-  gpi::pc::type::size_t chunk_size (hdl_info.size);
+  gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
   gpi::pc::type::size_t remaining (size);
 
   gpi::pc::type::size_t src_offset(shmemOffset);
   gpi::pc::type::size_t dst_offset(fvmOffset);
-
 
   bool in_progress (false);
 
@@ -319,7 +315,9 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
     // 1. transfer memory from shm to scratch
     gpi_compat->api->wait
-      (gpi_compat->api->memcpy( gpi::pc::type::memory_location_t(scratch, base)
+      (gpi_compat->api->memcpy( gpi::pc::type::memory_location_t( gpi_compat->m_scr_hdl
+                                                                , 0
+                                                                )
                               , gpi::pc::type::memory_location_t( gpi_compat->m_shm_hdl
                                                                 , src_offset
                                                                 )
@@ -332,7 +330,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
     // 2. transfer memory from scratch to global
     gpi_compat->api->memcpy( gpi::pc::type::memory_location_t(handle, dst_offset)
-                           , gpi::pc::type::memory_location_t(scratch, base)
+                           , gpi::pc::type::memory_location_t(gpi_compat->m_scr_hdl, 0)
                            , transfer_size
                            , queue
                            );
@@ -354,7 +352,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
   static const gpi::pc::type::queue_id_t queue = 0;
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
-          , gpi::pc::type::memory_location_t( gpi_compat->m_shm_hdl, shmemOffset)
+          , gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)
           , size
           , queue
           );
