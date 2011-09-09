@@ -4,7 +4,7 @@
 #
 
 # increment this value up to date if anything config related changes!
-CONFIG_VERSION=2
+CONFIG_VERSION=3
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
@@ -83,9 +83,8 @@ function setup_required ()
       touch "$config_file"
       return 0
     fi
-    local cfg_version=$( get "config.version" )
-    test -n "$cfg_version" || return 0
-    if ! test "$cfg_version" == "$CONFIG_VERSION" ; then
+    local cfg_version=$( get "config.version" "0" )
+    if test "$cfg_version" -lt "$CONFIG_VERSION" ; then
 	log "W: config is outdated"
 	return 0
     fi
@@ -148,12 +147,16 @@ function y_n_p ()
 	    echo
 	    return 0
 	    ;;
-	?)
+	n|N)
 	    echo
 	    return 1
 	    ;;
+	?)
+	    echo
+	    return 2
+	    ;;
 	*)
-	    return 1
+	    return 2
 	    ;;
     esac
 }
@@ -368,6 +371,47 @@ EOF
 	    count=$(( count + 1 ))
 	fi
     done
+
+    log "-: setting up the DRTS"
+    put "kernel.plugins" "gui,kvs,wfe,gpi,gpi-compat,drts"
+
+    log "-: configuring plugins"
+    put "plugin.gpi.startmode" "nowait"
+    put "plugin.drts.backlog" "2"
+    put "plugin.drts.request-mode" "false"
+}
+
+function setup_topology ()
+{
+    local doc='
+
+                 ================================
+                 *    Topology Configuration    *
+                 ================================
+
+This step asks  you some questions about the topology that  will be setup during
+the start routine.
+
+If you decide to run a mediator on each node, I will start a separate process on
+every node that  takes care of the worker processes on  that node. Otherwise all
+workers will be attached to a single master.
+
+The number  of workers on each  node can either be  set to a fixed  number or to
+zero. In case of a zero, I will start as many workers as there are processors.
+'
+
+    local key="topology.with-mediator"
+    local val=$(get "$key" "yes")
+    local prompt="Do you want to use a per-node mediator? [$val]:"
+    get_user_input "$prompt" val "$doc"
+    put "$key" "$val"
+
+    local key="topology.per-node"
+    local val=$(get "$key" "0")
+    local prompt="How many workers shall I start on each node? [$val]:"
+    get_user_input "$prompt" val ""
+    sanity_val=$(( val + 0 ))
+    put "$key" "$sanity_val"
 }
 
 function parse_human_readable_size ()
@@ -533,7 +577,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-	parts="state kvs scratch logging temp gui plugins gpi client"
+	parts="state kvs scratch logging temp gui plugins gpi client topology"
     else
 	shift
     fi
@@ -1103,7 +1147,11 @@ function start ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-	parts="kvs gpi orch agg pc nre"
+	parts="kvs gpi orch agg"
+	local with_mediator=$(get "topology.with-mediator" "true")
+	if [ x"$with_mediator" == "true" ] ; then
+	    parts="$parts nre"
+	fi
     else
 	shift
     fi
