@@ -222,7 +222,7 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
-  SDPA_LOG_DEBUG("Called schedule_local ...");
+  DMLOG(TRACE, "Called schedule_local ...");
 
   id_type wf_id = jobId.str();
 
@@ -237,8 +237,7 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 	  const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 	  // Should set the workflow_id here, or send it together with the workflow description
-	  SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. Workflow description follows: ");
-	  SDPA_LOG_DEBUG(pJob->description());
+	  DMLOG(TRACE, "Submit the workflow attached to the job "<<wf_id<<" to WE. Workflow description follows: ");
 
 	  pJob->Dispatch();
 
@@ -622,7 +621,7 @@ void SchedulerImpl::feed_workers()
       //SDPA_LOG_WARN("No worker found!");
     }
     catch(const AllWorkersFullException&) {
-	SDPA_LOG_DEBUG("All workers are full!");
+      LOG_EVERY_N(WARN, 500, "FIXME: all workers are full -> don't run the scheduler if not needed...");
     }
     catch (std::exception const& ex) {
     	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");

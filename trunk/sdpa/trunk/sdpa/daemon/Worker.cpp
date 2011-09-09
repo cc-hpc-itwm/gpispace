@@ -74,21 +74,21 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
-  LOG(DEBUG, "deleting job " << job_id << " from worker " << name());
+  DLOG(TRACE, "deleting job " << job_id << " from worker " << name());
 
   if (pending().erase(job_id))
   {
-    LOG(TRACE, "removed the job "<<job_id.str()<<" from pending queue");
+    DLOG(TRACE, "removed the job "<<job_id.str()<<" from pending queue");
   }
 
   if (submitted().erase(job_id))
   {
-    LOG(TRACE, "removed the job "<<job_id.str()<<" submitted queue");
+    DLOG(TRACE, "removed the job "<<job_id.str()<<" submitted queue");
   }
 
   if (acknowledged().erase(job_id))
   {
-    LOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
+    DLOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
   }
 }
 

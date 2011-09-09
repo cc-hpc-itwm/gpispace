@@ -752,8 +752,8 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
   try {
       ptr_job_man_->findJob(e.job_id());
       // The job already exists -> generate an error message that the job already exists
-      DLOG(TRACE, "The job with job-id: " << e.job_id()<<" exist already into the JobManager. Reply to "<< e.from()<<" with an error!");
 
+      MLOG(ERROR, "The job with job-id: " << e.job_id()<<" does already exist!");
       if( e.from() != sdpa::daemon::WE ) //e.to())
       {
           ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, "The job already exists!") );
@@ -853,28 +853,38 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
       addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
 
-      SDPA_LOG_INFO( "Registered the worker " << worker_id << ", with the capacity "<<evtRegWorker.capacity());
-      SDPA_LOG_INFO( "The worker " << worker_id << " has the following capabilities: ");
-      for(sdpa::capabilities_set_t::iterator it = evtRegWorker.capabilities().begin(); it != evtRegWorker.capabilities().end(); it++ )
       {
-    	  SDPA_LOG_INFO("     capability: "<<*it);
+        std::map<std::string, size_t> cap_cnt;
+        for(sdpa::capabilities_set_t::const_iterator it = evtRegWorker.capabilities().begin(); it != evtRegWorker.capabilities().end(); it++ )
+        {
+          ++cap_cnt[*it];
+        }
+
+        std::ostringstream ostr;
+        for (std::map<std::string, size_t>::const_iterator s (cap_cnt.begin()), e (cap_cnt.end()); s != e; ++s)
+        {
+          ostr << s->first << " (" << s->second << "x)" << std::endl;
+        }
+        MLOG(DEBUG, "\"" << worker_id << "\" has the following capabilities: " << ostr.str());
       }
 
       // send back an acknowledgment
-      SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
+      DMLOG(TRACE, "Send back to the worker " << worker_id << " a registration acknowledgment!" );
       WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
 
       sendEventToSlave(pWorkerRegAckEvt);
 
-      // propagate the capabilities upward to the masters
-      for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-		if (it->is_registered())
-		{
-			sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(
-					new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()) );
-
-			sendEventToMaster(shpCpbGainEvt);
-		}
+      if (! evtRegWorker.capabilities().empty())
+      {
+        // propagate the capabilities upward to the masters
+        for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+          if (it->is_registered())
+          {
+            sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt
+              (new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
+            sendEventToMaster(shpCpbGainEvt);
+          }
+      }
 
   }
   catch(WorkerAlreadyExistException& ex)
@@ -1032,7 +1042,7 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc/*
   // schedule the new job to some worker
 
   try {
-    MLOG(TRACE, "workflow engine submitted "<<activityId);
+      DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
       job_id_t job_id(activityId);
       job_id_t parent_id("WE"); // is this really needed?
@@ -1256,7 +1266,7 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 
 void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
-	SDPA_LOG_DEBUG("Received CapabilitiesGainedEvent!");
+        DMLOG(TRACE, "Received CapabilitiesGainedEvent!");
 	// tell the scheduler to add the capabilities of the worker pCpbGainEvt->from
 	sdpa::worker_id_t worker_id = pCpbGainEvt->from();
 	try {
@@ -1283,7 +1293,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 
 void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent* pCpbLostEvt)
 {
-	SDPA_LOG_DEBUG("Received CapabilitiesLostEvent!");
+        DMLOG(TRACE, "Received CapabilitiesLostEvent!");
 	// tell the scheduler to remove the capabilities of the worker pCpbLostEvt->from
 
 	sdpa::worker_id_t worker_id = pCpbLostEvt->from();
