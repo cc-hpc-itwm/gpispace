@@ -37,7 +37,7 @@ usage: $(basename "$0") [options]
     -l path (=$lib_path): library path
     -k kvs-url (=$kvs_url): url to the key-value-store
     -D daemonize
-    -L logfile (=$logfile)
+    -L logfile
 EOF
 }
 
