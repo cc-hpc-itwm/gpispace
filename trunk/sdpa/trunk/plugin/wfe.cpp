@@ -196,7 +196,7 @@ public:
       {
         MLOG(WARN, "task failed: " << task.id << ": " << task.result);
         task.state = wfe_task_t::FAILED;
-        result = task.result; //we::util::text_codec::encode(task.activity);
+        result = task.result;
 
         emit(task_event_t( job_id
                          , task.activity.transition().name()
