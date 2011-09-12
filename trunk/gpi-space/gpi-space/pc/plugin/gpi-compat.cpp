@@ -51,7 +51,7 @@ public:
     m_segment_handle_name = "fvm-pc-segment-" + my_pid;
     m_global_handle_name = "fvm-pc-global-" + my_pid;
     m_local_handle_name = "fvm-pc-local-" + my_pid;
-    m_scratch_handle_name = "fvm-pc-scratch-" + my_pid;
+    m_scratch_handle_name = "fvm-pc-com-" + my_pid;
 
     if (! try_start())
     {
