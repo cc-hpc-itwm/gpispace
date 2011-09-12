@@ -14,7 +14,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hDfdm:g:b:n:" opt; do
+while getopts ":hn:" opt; do
     case $opt in
 	h)
 	    usage
