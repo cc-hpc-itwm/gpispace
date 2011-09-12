@@ -24,7 +24,7 @@ LINKS= $(addprefix -l,$(LINK))
 INCS += /p/herc/itwm/hpc/mr/cwp/include
 INCS += /p/herc/itwm/hpc/mr/fftw-3.2.2/include
 INCS += /opt/cluster/GPI/include
-INCS += /p/herc/itwm/hpc/mr/sdpa/trunk/fvm-pc/trunk
+INCS += /p/herc/itwm/hpc/ap/git/SDPA/trunk/fvm-pc/trunk
 INC = $(addprefix -I,$(INCS))
 
 LIBS += /p/herc/itwm/hpc/mr/cwp/lib
@@ -40,7 +40,7 @@ SUBS= 	./suowmg.o	\
 	./rtc.o		\
 	./pfafft.o
 
-all: suowmg libfread.so
+all: suowmg #libfread.so
 
 suowmg: $(SUBS)
 	$(CC) $(FLAGS) $(OPT) $(C99) $(LIB) $(SUBS) -o suowmg ${LINKS}
