@@ -9,6 +9,7 @@ set (prgs
   start-drts
   stop-drts
   stop-agent
+  status-agent
   send-signal
   pidof
 )
