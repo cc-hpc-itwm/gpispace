@@ -1,6 +1,6 @@
 <defun>
 
-  <in name="file_config" type="string" place="file_config"/>
+  <in name="config_file" type="string" place="config_file"/>
   <in name="memsizeGPI" type="long" place="memsizeGPI"/>
 
   <out name="config" type="config" place="config"/>
@@ -9,7 +9,7 @@
 
   <net>
 
-    <place name="file_config" type="string"/>
+    <place name="config_file" type="string"/>
     <place name="memsizeGPI" type="long"/>
     <place name="config" type="config"/>
     <place name="assoc" type="map"/>
@@ -17,13 +17,13 @@
 
     <transition name="init">
       <defun>
-        <in name="file_config" type="string"/>
+        <in name="config_file" type="string"/>
         <in name="memsizeGPI" type="long"/>
         <out name="config" type="config"/>
         <module name="kdmfull"
-                function="config initialize (file_config, memsizeGPI)"/>
+                function="config initialize (config_file, memsizeGPI)"/>
       </defun>
-      <connect-in port="file_config" place="file_config"/>
+      <connect-in port="config_file" place="config_file"/>
       <connect-in port="memsizeGPI" place="memsizeGPI"/>
       <connect-out port="config" place="config_initialized"/>
     </transition>

@@ -69,7 +69,7 @@ function submit_kdm ()
     echo "placing tokens..."
     pnetput --if "$pnet_dir/kdm_${kdm_style}.pnet" \
 	    --of ${temp_wf} \
-	    --put file_config=\""${config}"\"
+	    --put config_file=\""${config}"\"
     echo "submitting job..."
     sdpa submit "$temp_wf"
     sdpa unload-modules >/dev/null 2>&1

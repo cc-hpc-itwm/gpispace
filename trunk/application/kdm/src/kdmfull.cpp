@@ -79,7 +79,7 @@ static fvmAllocHandle_t alloc ( const long & size
 
 static void initialize (void *, const we::loader::input_t & input, we::loader::output_t & output)
 {
-  const std::string & filename (get<std::string> (input, "file_config"));
+  const std::string & filename (get<std::string> (input, "config_file"));
   long memsizeGPI (get<long> (input, "memsizeGPI"));
 
   MLOG (INFO, "initialize: filename " << filename);
