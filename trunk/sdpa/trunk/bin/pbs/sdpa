@@ -6,7 +6,7 @@
 # increment this value up to date if anything config related changes!
 CONFIG_VERSION=3
 
-debug_enabled=true
+#debug_enabled=true
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 
@@ -35,7 +35,7 @@ function log ()
 
 function debug ()
 {
-    if [ $debug_enabled == "true" ] ; then
+    if [ x"$debug_enabled" == x"true" ] ; then
 	echo $@ >&2
     fi
 }
@@ -483,6 +483,11 @@ directory from which user binaries are  allowed to be executed (the -p parameter
 to the  gpid.exe). Additionally I will  ask for the  amount of GPI memory  to be
 used on each node.
 
+On  each   node,  so  called  process-containers  (worker   processes)  will  be
+started.   Those  need   a  bit   of  memory   to  communicate   with   the  GPI
+process. Depending on  how many workers you are planning to  use, you might have
+to adjust the amount.
+
 '
     local gpid_pid=$(ps -C gpid.exe -o pid= | tr -d ' ')
     local gpid_dir=$(cat /proc/$gpid_pid/cmdline 2>/dev/null | tr '\0' ' ' | grep -o -- '-p [^ ]*' | cut -d' ' -f 2)
@@ -844,7 +849,7 @@ function start_proc ()
 	echo "  * $name ($pid)" >&2
     else
 	:> "$pid_file"
-	echo $binary $@
+	debug $binary $@
 	$binary $@ </dev/null >"$log_file" 2>&1 &
 	pid=$!
 	sleep 0.5
@@ -909,7 +914,40 @@ function start_agent ()
 
     local cmd="rexec $node start-agent -D -n $name -m $master -f"
     debug $cmd
-    $cmd </dev/null >"$SDPA_LOG_DIR/$name.log" 2>&1 &
+    $cmd </dev/null >"$SDPA_LOG_DIR/$name.log" 2>&1
+    if [ $? -eq 0 ] ; then
+	echo "  + $name" >&2
+    else
+	echo "  - $name" >&2
+    fi
+}
+
+function stop_agent ()
+{
+    local name="$1" ; shift
+
+    # name format: name[-node[-id]]
+    local node="$(echo $name | cut -d- -f 2)"
+    if [ "$node" == "$name" ] ; then
+	node=localhost # maybe we should use the master node?
+    fi
+    local cmd="rexec $node stop-agent -n $name"
+    debug $cmd
+    $cmd </dev/null >/dev/null 2>&1 &
+}
+
+function status_agent ()
+{
+    local name="$1" ; shift
+
+    local node="$(echo $name | cut -d- -f 2)"
+    if [ "$node" == "$name" ] ; then
+	node=localhost # maybe we should use the master node?
+    fi
+
+    local cmd="rexec $node status-agent -n $name"
+    debug $cmd
+    $cmd </dev/null >/dev/null 2>&1
 }
 
 function start_kvs ()
@@ -964,7 +1002,7 @@ function start_agg ()
 function stop_agg ()
 {
     echo "  * aggregator"
-    if ! stop_proc "aggregator" "start-agg" ; then
+    if ! stop_agent "aggregator" ; then
 	echo "E: could not stop aggregator" >&2
 	return 1
     fi
@@ -1001,8 +1039,7 @@ function node_loop ()
 	local node_name=$( uniq $SDPA_NODEFILE | tail -n +$node_num | head -n 1 )
 
 	echo "    * executing $body $@ on $node_name" >&2
-	local rank=$(( $node_num - 1 ))
-	$body $node_name $rank $@ &
+	$body $node_name $@ &
 	procs="$procs $!"
 	if [ $count -ge $bunch_size ] ; then
 	    for p in $procs ; do
@@ -1032,7 +1069,6 @@ function kill_pc ()
 function send_signal_to_pc ()
 {
     local node=$1 ; shift
-    local rank=$1 ; shift
     local sig=$1 ; shift
     local err=$(rexec "$node" "$SDPA_HOME/bin/send-signal" -n "nre-pcd" -s "$sig")
     ec=$?
@@ -1044,20 +1080,109 @@ function send_signal_to_pc ()
     fi
 }
 
-function start_pc ()
+function start_nre ()
 {
-    sleep 1
-    echo "  * process container" >&2
-    node_loop start_pc_on_node $@
+    log "  * nres" >&2
+    local with_mediator=$(get "topology.with-mediator" "true")
+    if [ x"$with_mediator" == x"true" ] ; then
+	node_loop start_nre_on_node $@
+    else
+	log "      * deactivated" >&2
+    fi
 }
 
-function start_pc_on_node ()
+function stop_nre ()
+{
+    log "  * nres" >&2
+    local with_mediator=$(get "topology.with-mediator" "true")
+    if [ x"$with_mediator" == x"true" ] ; then
+	node_loop stop_nre_on_node $@
+    else
+	log "      * deactivated" >&2
+    fi
+}
+
+function status_nre ()
+{
+    local err
+    local ec
+
+    local with_mediator=$(get "topology.with-mediator" "true")
+    if [ x"$with_mediator" == x"true" ] ; then
+	err=$(node_loop status_nre_on_node $@ 2>&1)
+	ec=$?
+    else
+	ec=2
+    fi
+    return $ec
+}
+
+function start_nre_on_node ()
 {
     local node=$1 ; shift
-    local rank=$1 ; shift
 
-    rm -f "$SDPA_LOG_DIR/pc.$node.log"
-    local err=$(rexec "$node" "$SDPA_HOME/bin/start-pc" -D -r $rank $@)
+    if ! start_agent "nre-$node" "aggregator" $@ ; then
+	log "E: could not start nre on $node!" >&2
+	return 1
+    else
+	return 0
+    fi
+}
+
+function stop_nre_on_node ()
+{
+    local node=$1 ; shift
+    local err
+    local ec
+    err=$(rexec "$node" "$SDPA_HOME/bin/stop-agent" -n "nre-$node")
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+	log "W: stop-nre on node $node failed: $ec: $err"
+    fi
+    return $ec
+}
+
+function status_nre_on_node ()
+{
+    local node=$1; shift
+    local pid
+    status_agent "nre-$node"
+    return $?
+}
+
+function start_drts ()
+{
+    echo "  * process container" >&2
+    node_loop start_drts_on_node $@
+}
+
+function stop_drts ()
+{
+    log "  * process container" >&2
+    node_loop stop_drts_on_node $@
+}
+
+function status_drts ()
+{
+    local err
+    local ec
+    err=$(node_loop status_drts_on_node $@ 2>&1)
+    ec=$?
+    return $ec
+}
+
+function start_drts_on_node ()
+{
+    local node=$1 ; shift
+
+    local master="aggregator"
+    local with_mediator=$(get "topology.with-mediator" "true")
+    if [ x"$with_mediator" == x"true" ] ; then
+	master="nre-$node"
+    fi
+
+    local per_node=$(get "topology.per-node" "0")
+    local err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -m "$master" -c "$per_node" $@)
     if [ $? -ne 0 ] ; then
 	log "E: pc did not startup on node $node: $err" >&2
 	return 1
@@ -1066,66 +1191,25 @@ function start_pc_on_node ()
     fi
 }
 
-function start_nre ()
-{
-    sleep 1
-    log "  * nres" >&2
-    node_loop start_nre_on_node $@
-}
-
-function start_nre_on_node ()
+function stop_drts_on_node ()
 {
     local node=$1 ; shift
-    local rank=$1 ; shift
-
-    rm -f "$SDPA_LOG_DIR/nre.$node.log"
-    local err=$(rexec "$node" "$SDPA_HOME/bin/start-nre" -D $@)
-    if [ $? -ne 0 ] ; then
-	log "E: nre did not startup on node $node: $err" >&2
-	return 1
-    else
-	return 0
-    fi
-}
-
-function stop_pc_on_node ()
-{
-    local node=$1 ; shift
-    local rank=$1 ; shift
     local err
     local ec
-    err=$(rexec "$node" "$SDPA_HOME/bin/stop-pc")
+    err=$(rexec "$node" "$SDPA_HOME/bin/stop-drts")
     ec=$?
     if [ $ec -ne 0 ] ; then
-	log "W: stop-pc on node $node failed: $ec: $err"
+	log "W: stop-drts on node $node failed: $ec: $err"
     fi
     return $ec
 }
 
-function stop_pc ()
+function status_drts_on_node ()
 {
-    log "  * process container" >&2
-    node_loop stop_pc_on_node $@
-}
-
-function stop_nre_on_node ()
-{
-    local node=$1 ; shift
-    local rank=$1 ; shift
-    local err
-    local ec
-    err=$(rexec "$node" "$SDPA_HOME/bin/stop-nre")
-    ec=$?
-    if [ $ec -ne 0 ] ; then
-	log "W: stop-nre on node $node failed: $ec: $err"
-    fi
-    return $ec
-}
-
-function stop_nre ()
-{
-    log "  * nres" >&2
-    node_loop stop_nre_on_node $@
+    local node=$1; shift
+    local pid
+    pid=$(rexec $node "$SDPA_HOME/bin/pidof" fhgkernel )
+    return $?
 }
 
 function start_gui ()
@@ -1187,11 +1271,7 @@ function start ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-	parts="kvs gpi orch agg"
-	local with_mediator=$(get "topology.with-mediator" "true")
-	if [ x"$with_mediator" == "true" ] ; then
-	    parts="$parts nre"
-	fi
+	parts="kvs gpi orch agg nre drts"
     else
 	shift
     fi
@@ -1217,7 +1297,7 @@ function stop ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-	parts="nre pc agg orch gpi kvs"
+	parts="drts nre agg orch gpi kvs"
     else
 	shift
     fi
@@ -1242,18 +1322,6 @@ function restart ()
     fi
 }
 
-function agent_status ()
-{
-    local name="$1" ; shift
-    local pids=$(ps aux | grep -v '[s]tart-agent' | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
-    if [ -z "$pids" ] ; then
-	return 1
-    else
-#	echo "$name running with pid(s): $pids" >&2
-	return 0
-    fi
-}
-
 function program_status ()
 {
     local p=$1 ; shift
@@ -1275,44 +1343,7 @@ function status_orch ()
 
 function status_agg ()
 {
-    agent_status "aggregator"
-}
-
-function status_nre_on_node ()
-{
-    local node=$1; shift
-    local rank=$1; shift
-    local pid
-    pid=$(rexec $node "$SDPA_HOME/bin/pidof" nre)
-    return $?
-}
-
-function status_pc_on_node ()
-{
-    local node=$1; shift
-    local rank=$1; shift
-    local pid
-    pid=$(rexec $node "$SDPA_HOME/bin/pidof" nre-pcd)
-    return $?
-}
-
-function status_nre ()
-{
-    local err
-    local ec
-
-    err=$(node_loop status_nre_on_node $@ 2>&1)
-    ec=$?
-    return $ec
-}
-
-function status_pc ()
-{
-    local err
-    local ec
-    err=$(node_loop status_pc_on_node $@ 2>&1)
-    ec=$?
-    return $ec
+    status_agent "aggregator"
 }
 
 function status_kvs ()
@@ -1329,7 +1360,7 @@ function status ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-      parts="kvs orch agg gpi nre pc"
+      parts="kvs orch agg gpi nre drts"
     else
       shift
     fi
@@ -1343,15 +1374,18 @@ function status ()
 	cmd="status_$p"
 	if type "$cmd" >/dev/null 2>&1 ; then
 	    err=$(status_$p $@)
-	    if [ $? -ne 0 ] ; then
+	    ec=$?
+	    if [ $ec -eq 0 ] ; then
+		log "$p is alive"
+	    elif [ $ec -eq 2 ] ; then
+		log "$p is deactivated"
+	    else
 		if [ -z "$err" ] ; then
 		    log "$p is dead"
 		else
 		    log "$p is dead: $err"
 		fi
 		rc=$(( rc + 1 ))
-	    else
-		log "$p is alive"
 	    fi
 	else
 	    sdpac status $p
