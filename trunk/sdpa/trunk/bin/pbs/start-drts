@@ -20,6 +20,7 @@ master="aggregator"
 gpi_socket="/var/tmp/gpi-space/GPISpace-$(id -u)/control"
 lib_path="$PC_LIBRARY_PATH"
 kvs_url="${KVS_URL}"
+count=
 
 function usage ()
 {
@@ -36,6 +37,7 @@ usage: $(basename "$0") [options]
     -S path (=$gpi_socket): gpi socket path
     -l path (=$lib_path): library path
     -k kvs-url (=$kvs_url): url to the key-value-store
+    -c count: start this many processes (0==#cores)
     -D daemonize
     -L logfile
 EOF
@@ -64,7 +66,7 @@ function to_bg ()
     /bin/kill -CONT "$pid"
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:DL:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:L:M:" opt; do
     case $opt in
 	h)
 	    usage
@@ -103,6 +105,9 @@ while getopts ":hvfg:m:i:b:S:l:k:DL:" opt; do
 	L)
 	    logfile="$OPTARG"
 	    ;;
+	c)
+	    count="$OPTARG"
+	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
 	    echo "try: $0 -h" >&2
@@ -115,6 +120,19 @@ if [ -z "$kvs_url" ] ; then
     log "E: no kvs-url specified!"
     exit 1
 fi
+
+# quick hack to easily start multiple instances
+if [ -n "$count" ] ; then
+    if [ $count -eq 0 ] ; then
+	count=$(grep ^processor /proc/cpuinfo | wc -l)
+    fi
+    stop-drts
+    for i in $(seq 1 $count) ; do
+	$0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D -f &
+    done
+    exit 0
+fi
+
 name="${name_prefix}-${identity}"
 
 logfile="$SDPA_LOG_DIR/${name}.log"
@@ -161,8 +179,8 @@ cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
 cfg="$cfg -s plugin.gpi.startmode=wait"
 
 # config values (gpi-compat plugin)
-cfg="$cfg -s plugin.gpi-compat.shm_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi-compat.shm_size)
-cfg="$cfg -s plugin.gpi-compat.scratch_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi-compat.com_size)
+cfg="$cfg -s plugin.gpi-compat.shm_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi-compat.shm_size -v 536870912)"
+cfg="$cfg -s plugin.gpi-compat.com_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi-compat.com_size -v 16777216)"
 
 # config values (gui plugin)
 cfg="$cfg -s plugin.gui.url=$gui"
