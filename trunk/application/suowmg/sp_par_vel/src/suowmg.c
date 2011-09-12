@@ -58,17 +58,19 @@ main (int argc, char **argv)
     void * shmem_ptr = 0;
 
     {
-    	long shmem_size;
+        long  shmem_size = 0;
+        char *shmem_name = 0;
 
     	if (!getparlong ("shmem_size", &shmem_size))
     	    err ("must specify shmem_size=");
 
-    	const char * segname = "/fvm-pc-compat";
+	if (!getparstring ("shmem_name", &shmem_name))
+	    err ("must specify shmem_name=");
 
         int err = 0;
         int fd = -1;
 
-    	fd = shm_open (segname, O_RDWR, 0);
+	fd = shm_open (shmem_name, O_RDWR, 0);
 
     	if (fd < 0)
     	{
@@ -91,7 +93,7 @@ main (int argc, char **argv)
 
     	close (fd);
 
-    	fprintf(stderr,"attached to a segment of size %ld\n", shmem_size);
+	fprintf(stderr,"attached to segment %s of size %ld\n", shmem_name, shmem_size);
     }
 
 

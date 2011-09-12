@@ -248,6 +248,7 @@ LOG(INFO,"DONE READ MODEL");
             cmd << " eFile=" << config.param.eFile;
             cmd << " dFile=" << config.param.dFile;
             cmd << " shmem_size=" << fvmGetShmemSize();
+            cmd << " shmem_name=" << "/" << fvmGetShmemName();
 
             process::circular_buffer buf_stderr;
 
