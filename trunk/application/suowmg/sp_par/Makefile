@@ -56,7 +56,7 @@ SUOWMG           = $(PATH_MAIN)/src/suowmg
 FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
 TYPE_INPUT       = su
 #FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
-FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
+FILE_OUTPUT      = /fhgfs/HPC/petry/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
 SHMEM_PER_NODE   = 6  * 1824 +     167233040
 GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640
@@ -69,8 +69,8 @@ NZ = 751
 DX = 20.0
 DY = 20.0
 DZ = 20.0
-#VPFILE = /fhgfs/HPC/rahn/suowmg/model.bin
-VPFILE = /p/herc/itwm/hpc/mr/suowmg/model/model.bin
+VPFILE = /fhgfs/HPC/rahn/suowmg/model.bin
+#VPFILE = /p/herc/itwm/hpc/mr/suowmg/model/model.bin
 EFILE = none
 DFILE = none
 ZMAX = 4000.0
@@ -85,6 +85,7 @@ LATSAMPLESPERWAVE = 3.5
 VERTSAMPLESPERWAVE = 3.5
 MEDIUM = ISO
 PROPAGATOR = FFD3
+NTHREAD = 1
 
 %.xml: %.xml.in $(filter-out %.xml,$(DEP))
 	$(CAT) $< | $(MK_XML) "$(SUOWMG)" \
@@ -114,6 +115,7 @@ PROPAGATOR = FFD3
                               "$(PAD)" \
                               "$(LATSAMPLESPERWAVE)" \
                               "$(VERTSAMPLESPERWAVE)" \
+                              "$(NTHREAD)" \
                               "$(MEDIUM)" \
                               "$(PROPAGATOR)" \
                               > $@

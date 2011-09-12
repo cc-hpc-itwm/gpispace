@@ -32,6 +32,10 @@ fftwf_complex *trace;
 fftwf_plan plan_trace;
 float f1, f2, f3, f4, fPeak, df, dw;
 
+#ifndef NTHREAD
+#define NTHREAD 4
+#endif
+
 int
 main (int argc, char **argv)
 {
@@ -45,8 +49,7 @@ main (int argc, char **argv)
   float zmax, pad, latSamplesPerWave, vertSamplesPerWave;
   char *medium, *propagator, *vPFile, *dFile, *eFile;
   modsFILE *mvP, *mE, *mD;
-
-
+  int nThread;                  /* number of threads */
 
   /* Initialize */
   initargs (argc, argv);
@@ -68,6 +71,9 @@ main (int argc, char **argv)
     err ("must specify dz=");
   if (!getparfloat ("zmax", &zmax))
     zmax = 0.0f;
+
+  if (!getparint ("nthread", &nThread))
+    nThread = NTHREAD;
 
   if (!getparfloat ("lx", &lx))
     lx = 6000;
@@ -276,12 +282,6 @@ main (int argc, char **argv)
                    data->nwH);
 
           double t = -current_time ();
-
-#ifndef NTHREAD
-#define NTHREAD 4
-#endif
-
-          const int nThread = NTHREAD;
 
           pthread_attr_t attr;
           pthread_attr_init (&attr);

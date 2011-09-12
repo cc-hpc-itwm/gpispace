@@ -86,6 +86,7 @@
             cmd << " vPFile=" << config.param.vPFile;
             cmd << " eFile=" << config.param.eFile;
             cmd << " dFile=" << config.param.dFile;
+	    cmd << " nthread=" << config.param.nThread;
 
             process::circular_buffer buf_stderr;
 

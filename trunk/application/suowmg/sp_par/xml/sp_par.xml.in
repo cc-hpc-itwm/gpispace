@@ -144,6 +144,8 @@
     <field name="vPFile" type="string"/>
     <field name="eFile" type="string"/>
     <field name="dFile" type="string"/>
+
+    <field name="nThread" type="long"/>
   </struct>
 
   <in name="file_input" type="string" place="file_input"/>
@@ -175,6 +177,8 @@
   <in name="vPFile" type="string" place="vPFile"/>
   <in name="eFile" type="string" place="eFile"/>
   <in name="dFile" type="string" place="dFile"/>
+
+  <in name="nThread" type="long" place="nThread"/>
 
   <in name="suowmg" type="string" place="suowmg"/>
 
@@ -251,6 +255,8 @@
     <place name="eFile" type="string"><token><value>"@EFILE@"</value></token></place>
     <place name="dFile" type="string"><token><value>"@DFILE@"</value></token></place>
 
+    <place name="nThread" type="long"><token><value>@NTHREAD@</value></token></place>
+
     <place name="done" type="control"/>
 
     <transition name="init">
@@ -283,6 +289,7 @@
         <in name="eFile" type="string"/>
         <in name="dFile" type="string"/>
         <in name="suowmg" type="string"/>
+	<in name="nThread" type="long" />
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
         <out name="size_wanted" type="long"/>
@@ -326,6 +333,7 @@
                                , eFile
                                , dFile
                                , suowmg
+			       , nThread
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -350,6 +358,7 @@
 
             config.suowmg = suowmg;
 
+	    config.param.nThread = nThread;
             config.param.Vnx = Vnx;
             config.param.Vny = Vny;
             config.param.Vnz = Vnz;
@@ -537,6 +546,7 @@
       <connect-in port="eFile" place="eFile"/>
       <connect-in port="dFile" place="dFile"/>
       <connect-in port="suowmg" place="suowmg"/>
+      <connect-in port="nThread" place="nThread"/>
       <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
       <connect-out port="size_wanted" place="size_wanted"/>

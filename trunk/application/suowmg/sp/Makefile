@@ -55,8 +55,8 @@ SUOWMG           = $(PATH_MAIN)/src/suowmg
 FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
 #FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
 TYPE_INPUT       = su
-FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
-#FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/shot64.out.su
+FILE_OUTPUT      = /fhgfs/HPC/petry/suowmg/out.shot8.su
+#FILE_OUTPUT      = /fhgfs/HPC/petry/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
 SHMEM_PER_NODE   = 6  * 1824 +     167233040
 GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640
