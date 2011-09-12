@@ -299,7 +299,12 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
   gpi::pc::type::size_t chunk_size (gpi_compat->m_scr_size);
   gpi::pc::type::size_t remaining (size);
 
-  LOG_IF(WARN, chunk_size < remaining, "internal communication buffer is too small, need to split up.");
+  LOG_IF( WARN
+        , chunk_size < remaining
+        , "internal communication buffer is too small, need to split up: "
+        << "requested := " << size << " "
+        << "com-buffer := " << chunk_size
+        );
 
   gpi::pc::type::size_t src_offset(shmemOffset);
   gpi::pc::type::size_t dst_offset(fvmOffset);
