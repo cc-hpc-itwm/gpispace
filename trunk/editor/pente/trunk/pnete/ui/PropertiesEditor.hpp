@@ -8,13 +8,14 @@
 #ifndef PROPERTIESEDITOR_HPP_
 #define PROPERTIESEDITOR_HPP_
 
-#include "ui/ui_PropertiesWidget.h"
 #include <QDebug>
 #include <QObject>
+#include <QtGui>
 #include <QMessageBox>
 #include <we/type/property.hpp>
 #include <fhg/util/join.hpp>
 #include <sstream>
+#include "ui/ui_PropertiesEditorForm.h"
 
 namespace prop = we::type::property;
 
@@ -23,58 +24,43 @@ typedef std::string value_type;
 
 // build property from QWidgetTree
 template <typename T>
-void build_property(T item, const we::type::property::path_type& path,  we::type::property::type& prop )
+void build_property(T itemK, const we::type::property::path_type& path,  we::type::property::type& prop )
 {
-	if(item->childCount() == 0)
+	for( int k=0; k<itemK->rowCount(); k++ )
 	{
+		T childItem = itemK->child(k);
 		we::type::property::path_type pathChild(path);
 
-		QString strItemName = item->text(0);
+		QString strItemName = childItem->text();
 		pathChild.push_back(strItemName.toStdString());
 
 		std::ostringstream ossPath("");
-		for(we::type::property::path_type::const_iterator it=path.begin(); it != path.end(); it++  )
-			ossPath<<"."<<*it;
-
-		ossPath<<"."<<strItemName.toStdString();
+		for( we::type::property::path_type::const_iterator it=pathChild.begin(); it != pathChild.end(); it++  )
+		{
+			ossPath<<*it;
+			if( it != path.end()-1)
+				ossPath<<".";
+		}
 
 		QString qstrPath(ossPath.str().c_str());
 		qDebug()<<"current path: "<<qstrPath;
 
-		QString strItemVal = item->text(1);
-		if(!strItemVal.isEmpty())
-			prop.set(pathChild, strItemVal.toStdString());
+		T itemV = itemK->child(k, 1);
 
-	}
-	else
-		for( int k=0; k<item->childCount(); k++ )
+		if(itemV)
 		{
-			T childItem = item->child(k);
-			we::type::property::path_type pathChild(path);
-
-			QString strItemName = item->text(0);
-			pathChild.push_back(strItemName.toStdString());
-
-			std::ostringstream ossPath("");
-			for(we::type::property::path_type::const_iterator it=path.begin(); it != path.end(); it++  )
-				ossPath<<"."<<*it;
-
-			ossPath<<"."<<strItemName.toStdString();
-
-			QString qstrPath(ossPath.str().c_str());
-			qDebug()<<"current path: "<<qstrPath;
-
-			QString strItemVal = item->text(1);
+			QString strItemVal = itemV->text();
 			if(!strItemVal.isEmpty())
 				prop.set(pathChild, strItemVal.toStdString());
-
-			build_property(childItem, pathChild, prop);
 		}
+
+		build_property(childItem, pathChild, prop);
+	}
 }
 
 // build QWidgetTree from property
 template <typename E, typename T>
-void build_tree(E* editor, QTreeWidgetItem* item, const we::type::property::type& p )
+void build_tree(E* editor, QStandardItem* item, const we::type::property::type& p )
 {
 	for( we::type::property::map_type::const_iterator pos (p.get_map().begin()); pos != p.get_map().end() ; ++pos)
 		 boost::apply_visitor( T(editor, item, pos->first), pos->second);
@@ -85,11 +71,11 @@ class tree_builder : public boost::static_visitor<void>
 {
 private:
 	E* editor;
-	QTreeWidgetItem* item;
+	QStandardItem* item;
 	const key_type& key;
 
 public:
-	tree_builder (E* _editor, QTreeWidgetItem* _item, const key_type & _key)
+	tree_builder (E* _editor, QStandardItem* _item, const key_type & _key)
 	: editor(_editor)
 	, item (_item)
 	, key (_key)
@@ -97,46 +83,47 @@ public:
 
 	void operator () (const value_type & v) const
 	{
-		QTreeWidgetItem *currItem = editor->addItem(QString::fromStdString(key), item);
-		currItem->setText(1,  QString::fromStdString(v));
+		editor->addItem(QString::fromStdString(key),  QString::fromStdString(v), item);
 	}
 
 	template<typename T>
 	void operator () (const T& x) const
 	{
-		QTreeWidgetItem *currItem = editor->addItem(QString::fromStdString(key), item);
+		QStandardItem *currItem = editor->addItem(QString::fromStdString(key), "", item);
 		build_tree<E, tree_builder>(editor, currItem, x);
 	}
 };
 
-class PropertiesEditor : public QObject, public Ui::PropertiesEditorWidget
+class PropertiesEditor : public QObject, public Ui::PropertiesEditorWidgetMCV
 {
 	Q_OBJECT
 public:
-	PropertiesEditor()
+	PropertiesEditor() : model(0,2)
 	{
 		m_widgetPropEdit = new QWidget();
 		setupUi(m_widgetPropEdit);
 
-		m_treeWidget->setColumnCount(2);
-		m_treeWidget->setVisible(true);
-
 		QStringList headerLabels;
 		headerLabels << "Properties"<<"Values";
 
-		m_treeWidget->setHeaderLabels(headerLabels);
-		m_treeWidget->header()->resizeSection(0, 200);
-		m_treeWidget->header()->resizeSection(1, 300);
+		model.setHorizontalHeaderLabels(headerLabels);
+		m_treeView->setModel(&model);
+
+		m_treeView->setColumnWidth(0, 300);
+		m_treeView->setColumnWidth(1, 200);
+
+		//ComboBoxItemDelegate deleg;
+		//view.setItemDelegateForColumn(1, &deleg);
 	}
 
 	virtual ~PropertiesEditor()
 	{
-		for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i)
+		/*for (int i = 0; i < m_treeView->topLevelItemCount(); ++i)
 	    {
-			qDeleteAll(m_treeWidget->topLevelItem(i)->takeChildren());
-	    }
+			qDeleteAll(m_treeView->topLevelItem(i)->takeChildren());
+	    }*/
 
-		delete m_treeWidget;
+		delete m_treeView;
 		delete m_widgetPropEdit;
 	}
 
@@ -149,98 +136,73 @@ public:
 		QObject::connect(m_buttonClose,  SIGNAL(clicked()), this, SLOT(closeEditor()));
 	}
 
-	void addItem(QString itemName, QString parentName)
-	{
-		// first find parent name parentName
-		Qt::MatchFlags flags = static_cast<Qt::MatchFlags> ( Qt::MatchExactly | Qt::MatchCaseSensitive | Qt::MatchRecursive );
-		QList<QTreeWidgetItem *> arrItems = m_treeWidget->findItems( parentName, flags, 0 );
-
-		if(arrItems.size() == 0)
-		{
-			qDebug()<<"No item named "<<parentName<<" was found!";
-
-			if( m_treeWidget->topLevelItemCount () == 0)
-			{
-				QTreeWidgetItem* newItem = addItem(itemName);
-				m_treeWidget->insertTopLevelItem(0,newItem);
-				m_treeWidget->setCurrentItem(newItem);
-				m_treeWidget->expandItem(newItem);
-			}
-		}
-		else
-			if(arrItems.size()>1)
-				qDebug()<<"Several items named "<<parentName<<" were found!";
-			else
-			{
-				QTreeWidgetItem* newItem = addItem(itemName, arrItems[0]);
-				//m_treeWidget->expandItem(arrItems[0]);
-				//m_treeWidget->scrollToItem(newItem);
-			}
-
-	}
-
-	void deleteItem(QString itemName)
-	{
-		// first find parent name parentName
-		Qt::MatchFlags flags = static_cast<Qt::MatchFlags> ( Qt::MatchExactly | Qt::MatchCaseSensitive | Qt::MatchRecursive );
-		QList<QTreeWidgetItem *> arrItems = m_treeWidget->findItems( itemName, flags, 0 );
-
-		if(arrItems.size() == 0)
-			qDebug()<<"No item named "<<itemName<<" was found!";
-		else
-			if(arrItems.size()>1)
-				qDebug()<<"Several items named "<<itemName<<" were found!";
-			else
-			{
-				QTreeWidgetItem* item = arrItems[0];
-
-				int i = m_treeWidget->indexOfTopLevelItem(item);
-				m_treeWidget->takeTopLevelItem(i);
-				delete item; // do not forget to delete the item if it is not owned by any other widget.
-
-			}
-	}
-
 	void show() { m_widgetPropEdit->show(); }
 
 	// save/serialize the content into a we::type::property
 public slots:
 	void deleteItem()
 	{
-		QList<QTreeWidgetItem *>  listSelectedItems = m_treeWidget->selectedItems ();
+		QModelIndexList listSelectedItems = m_treeView->selectionModel()->selectedIndexes();
+
 		if(listSelectedItems.empty())
 			QMessageBox::critical(NULL, tr("Properties editor"),tr("Please, select a property to delete first!"));
 		else
 		{
-			//QTreeWidgetItem* item = m_treeWidget->currentItem();
-			int i = m_treeWidget->indexOfTopLevelItem(listSelectedItems[0]);
-			m_treeWidget->takeTopLevelItem(i);
-			delete listSelectedItems[0];
+			QModelIndex currModelIdx = listSelectedItems.at(0);
+     		QStandardItem* currItem = model.itemFromIndex(currModelIdx);
+
+     		if( QStandardItem* parent = currItem->parent() )
+     		{
+     			parent->removeRow(currItem->row());
+
+     			if( !parent->hasChildren() )
+     			{
+					QStandardItem* itemV = new QStandardItem();
+					itemV->setText("");
+
+					int row = parent->row();
+					parent->parent()->setChild( row, 1, itemV );
+     			}
+
+     			m_treeView->scrollTo(model.indexFromItem(parent));
+     			m_treeView->setCurrentIndex(model.indexFromItem(parent));
+     		}
+     		else
+     			model.removeRow(currItem->row());
 		}
 	}
 
 	void addItem()
 	{
-		//QTreeWidgetItem* currItem = m_treeWidget->currentItem();
-		if( m_treeWidget->topLevelItemCount () == 0)
+		// or use	hasChildren ( const QModelIndex & parent = QModelIndex() ) const
+		if( model.invisibleRootItem()->rowCount() == 0)
 		{
-			QTreeWidgetItem* newItem = addItem("New Item");
-			m_treeWidget->insertTopLevelItem(0,newItem);
-			m_treeWidget->setCurrentItem(newItem);
-			m_treeWidget->expandItem(newItem);
+			QStandardItem* newItem = addItem("New Item", "", model.invisibleRootItem() );
+
+			QStandardItem* currItem = model.invisibleRootItem();
+			m_treeView->expand(model.indexFromItem(currItem));
+			m_treeView->scrollTo(model.indexFromItem(newItem));
+			m_treeView->setCurrentIndex(model.indexFromItem(newItem));
+			newItem->setFocus();
+
 		}
 		else
 		{
-			QList<QTreeWidgetItem *>  listSelectedItems = m_treeWidget->selectedItems ();
-			if( listSelectedItems.empty())
+			// check first if is empty
+			QModelIndexList listSelectedItems = m_treeView->selectionModel()->selectedIndexes();
+
+			if(listSelectedItems.empty())
 				QMessageBox::critical(NULL, tr("Properties editor"), tr("Please, select a property first!"));
 			else
 			{
-				QTreeWidgetItem* currItem = listSelectedItems[0];
-				QTreeWidgetItem* newItem = addItem("New item", currItem);
-				currItem->setExpanded(true);
-				newItem->setSelected(true);
-				m_treeWidget->setCurrentItem(newItem);
+				QModelIndex currModelIdx = listSelectedItems.at(0);
+				QStandardItem* currItem  = model.itemFromIndex(currModelIdx);
+				QStandardItem* newItem   = addItem("New item", "", currItem);
+
+				m_treeView->expand(model.indexFromItem(currItem));
+				m_treeView->scrollTo(model.indexFromItem(newItem));
+				m_treeView->setCurrentIndex(model.indexFromItem(newItem));
+				newItem->setFocus();
 			}
 		}
 	}
@@ -249,11 +211,11 @@ public slots:
 	{
 		we::type::property::type propOut;
 		we::type::property::path_type rootPath;
-		QTreeWidgetItem* rootItem = m_treeWidget->topLevelItem(0);
 
+		QStandardItem* rootItem = model.invisibleRootItem();
 		build_property(rootItem, rootPath, propOut);
-		print_property(propOut);
 
+		print_property(propOut);
 		m_widgetPropEdit->close();
 	}
 
@@ -277,7 +239,7 @@ public:
 
 	void loadFromWeProp(const we::type::property::type& prop)
 	{
-		build_tree<PropertiesEditor, tree_builder<PropertiesEditor> >(this, NULL, prop);
+		build_tree<PropertiesEditor, tree_builder<PropertiesEditor> >(this,  model.invisibleRootItem(), prop);
 	}
 
 	void print_property(const we::type::property::type& prop)
@@ -304,31 +266,48 @@ public:
 
 		initEditor();
 		initProp(propIn);
-
 		loadFromWeProp(propIn);
 
 		show();
 	}
 
-	QTreeWidgetItem *addItem(QString name, QTreeWidgetItem* parent=0)
+	QStandardItem *addItem(QString key, QString value, QStandardItem* parent)
 	{
-		QTreeWidgetItem *retval = new QTreeWidgetItem(parent);
-		retval->setFlags( Qt::ItemIsSelectable
-						| Qt::ItemIsEditable
-						| Qt::ItemIsDragEnabled
-						| Qt::ItemIsDropEnabled
-						| Qt::ItemIsEnabled );
+		QStandardItem* itemK = new QStandardItem();
+		itemK->setText(key);
 
-		retval->setText(0, name);
+		QStandardItem* itemV = new QStandardItem();
+		itemV->setText(value);
+		// equivalent to setData("value", Qt::DisplayRole);
+		// parent->setChild(0,1,itemV);
 
-		if(!parent)
-			m_treeWidget->addTopLevelItem(retval);
+		QStandardItem* itemP;
+		if( parent == model.invisibleRootItem() && value.isEmpty() )
+		{
+			itemV->setText("");
+			itemV->setEnabled(false);
+			itemV->setEditable(false);
+			itemV->setSelectable(false);
+		}
+		else
+		if( parent->parent() && (itemP = parent->parent()->child(parent->row(),1)) )
+		{
+			itemP->setText("");
+			itemP->setEnabled(false);
+			itemP->setEditable(false);
+			itemP->setSelectable(false);
+		}
 
-		return retval;
+		QList<QStandardItem *> qListItems;
+		qListItems<<itemK<<itemV;
+		parent->appendRow(qListItems);
+
+		return itemK;
 	}
 
 private:
 
+	QStandardItemModel model;
 	QWidget *m_widgetPropEdit;
 };
 
