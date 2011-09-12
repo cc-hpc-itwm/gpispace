@@ -1094,12 +1094,12 @@ function start_nre ()
 function stop_nre ()
 {
     log "  * nres" >&2
-    local with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
-	node_loop stop_nre_on_node $@
-    else
-	log "      * deactivated" >&2
-    fi
+#    local with_mediator=$(get "topology.with-mediator" "true")
+#    if [ x"$with_mediator" == x"true" ] ; then
+    node_loop stop_nre_on_node $@
+#    else
+#	log "      * deactivated" >&2
+#    fi
 }
 
 function status_nre ()
@@ -1755,7 +1755,7 @@ case "$1" in
 	    exit 1
 	fi
 	shift
-	kill_pc HUP
+	restart drts
 	;;
     selftest)
 	if ! on_master_node ; then
