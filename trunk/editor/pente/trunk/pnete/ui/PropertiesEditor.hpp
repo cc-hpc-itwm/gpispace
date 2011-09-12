@@ -15,6 +15,7 @@
 #include <we/type/property.hpp>
 #include <fhg/util/join.hpp>
 #include <sstream>
+#include <QAction>
 #include "ui/ui_PropertiesEditorForm.h"
 
 namespace prop = we::type::property;
@@ -114,6 +115,8 @@ public:
 
 		//ComboBoxItemDelegate deleg;
 		//view.setItemDelegateForColumn(1, &deleg);
+
+		m_treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	}
 
 	virtual ~PropertiesEditor()
@@ -134,9 +137,19 @@ public:
 		QObject::connect(m_buttonDelete, SIGNAL(clicked()), this, SLOT(deleteItem()));
 		QObject::connect(m_buttonAdd, 	 SIGNAL(clicked()), this, SLOT(addItem()));
 		QObject::connect(m_buttonClose,  SIGNAL(clicked()), this, SLOT(closeEditor()));
+
+		m_addAction = new QAction(tr("Add"), this );
+		connect(m_addAction, SIGNAL(triggered()), this, SLOT(addItem()));
+
+		m_delAction = new QAction(tr("Delete"), this );
+		connect(m_delAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
+
+		// connect custom context menu
+		connect(m_treeView, SIGNAL(customContextMenuRequested( const QPoint& )), this, SLOT(showContextMenu(const QPoint &)));
 	}
 
 	void show() { m_widgetPropEdit->show(); }
+
 
 	// save/serialize the content into a we::type::property
 public slots:
@@ -183,8 +196,6 @@ public slots:
 			m_treeView->expand(model.indexFromItem(currItem));
 			m_treeView->scrollTo(model.indexFromItem(newItem));
 			m_treeView->setCurrentIndex(model.indexFromItem(newItem));
-			newItem->setFocus();
-
 		}
 		else
 		{
@@ -202,7 +213,6 @@ public slots:
 				m_treeView->expand(model.indexFromItem(currItem));
 				m_treeView->scrollTo(model.indexFromItem(newItem));
 				m_treeView->setCurrentIndex(model.indexFromItem(newItem));
-				newItem->setFocus();
 			}
 		}
 	}
@@ -217,6 +227,19 @@ public slots:
 
 		print_property(propOut);
 		m_widgetPropEdit->close();
+	}
+
+	void showContextMenu(const QPoint& pnt)
+	{
+		QList<QAction *> actions;
+		if (m_treeView->indexAt(pnt).isValid())
+		{
+			actions.append(m_addAction);
+			actions.append(m_delAction);
+		}
+
+		if (actions.count() > 0)
+			QMenu::exec(actions, m_treeView->mapToGlobal(pnt));
 	}
 
 public:
@@ -306,6 +329,10 @@ public:
 	}
 
 private:
+
+	//actions
+	QAction* m_addAction;
+	QAction* m_delAction;
 
 	QStandardItemModel model;
 	QWidget *m_widgetPropEdit;
