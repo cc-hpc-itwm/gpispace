@@ -132,8 +132,8 @@ if $debug ; then
     gdb -ex run --args ${cmd}
 else
     if $daemonize ; then
-	FHGLOG_to_file="$SDPA_LOG_DIR/${name}-$(hostname -s).log" ${cmd} >/dev/null </dev/null 2>&1 &
+	FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" ${cmd} >/dev/null </dev/null 2>&1 &
     else
-	FHGLOG_to_file="$SDPA_LOG_DIR/${name}-$(hostname -s).log" exec ${cmd}
+	FHGLOG_to_file="$SDPA_LOG_DIR/${name}.log" exec ${cmd}
     fi
 fi
