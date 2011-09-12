@@ -1,0 +1,65 @@
+#!/bin/bash
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+name=
+long=false
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename "$0") [options]
+
+    -h: print this help
+    -n name (*): name of the agent to check
+                 if empty a list of all currently
+                 running agents will be printed
+    -l: print the whole command of the agent
+EOF
+}
+
+while getopts ":hn:" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	n)
+	    name=$OPTARG
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    exit 1
+    esac
+done
+
+function agent_status ()
+{
+    local name="$1" ; shift
+    local pids=$(ps aux | grep -v [s]top-agent | grep "[a]gent.*-n $name" | awk '{print $2;}')
+    if [ -z "$pids" ] ; then
+	return 1
+    else
+	echo $pids
+	return 0
+    fi
+}
+
+pids=$(agent_status $name)
+if [ -n "$pids" ] ; then
+    if [ -n "$name" ] ; then
+	echo "ok"
+	exit 0
+    else
+	for p in $pids ; do
+	    cmd="$(ps -p $p -o cmd=)"
+	    if [ $long == false ] ; then
+		cmd=$(echo $cmd | sed -e 's/.*-n \([^ ]\+\).*/\1/')
+	    fi
+	    echo "pid $p := $cmd"
+	done
+	exit 0
+    fi
+else
+    exit 1
+fi
