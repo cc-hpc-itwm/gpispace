@@ -82,7 +82,7 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:L:M:" opt; do
 	    gui=$OPTARG
 	    ;;
 	m)
-	    parent=$OPTARG
+	    master=$OPTARG
 	    ;;
 	i)
 	    identity=$OPTARG
