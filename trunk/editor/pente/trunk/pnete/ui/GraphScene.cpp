@@ -18,7 +18,7 @@ namespace fhg
     namespace graph
     {
       Scene::Scene (QObject* parent)
-      : QGraphicsScene (QRectF (-2000.0, -2000.0, 4000.0, 4000.0), parent)
+      : QGraphicsScene (parent)
       , _pendingConnection (NULL)
       , _mousePosition (QPointF (0.0, 0.0))
       , _menu_context()
@@ -28,7 +28,7 @@ namespace fhg
       }
 
       Scene::Scene (const QString& filename, QObject* parent)
-      : QGraphicsScene (QRectF (-2000.0, -2000.0, 4000.0, 4000.0), parent)
+      : QGraphicsScene (parent)
       , _pendingConnection (NULL)
       , _mousePosition (QPointF (0.0, 0.0))
       , _menu_context()
