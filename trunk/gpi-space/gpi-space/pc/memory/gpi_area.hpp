@@ -29,7 +29,7 @@ namespace gpi
 
         void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                           , const gpi::pc::type::offset_t start
-                          , const gpi::pc::type::offset_t end
+                          , const gpi::pc::type::size_t   amount
                           ) const;
 
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;

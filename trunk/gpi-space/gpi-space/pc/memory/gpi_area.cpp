@@ -81,7 +81,7 @@ namespace gpi
       void
       gpi_area_t::check_bounds ( const gpi::pc::type::handle::descriptor_t &hdl
                                , const gpi::pc::type::offset_t start
-                               , const gpi::pc::type::offset_t end
+                               , const gpi::pc::type::size_t   amount
                                ) const
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::type::handle::F_GLOBAL))
@@ -91,7 +91,7 @@ namespace gpi
               ( gpi::api::gpi_api_t::get().number_of_nodes ()
               * hdl.size
               );
-          if (! (start < global_size && end < global_size))
+          if (! (start < global_size && (start + amount ) <= global_size))
           {
             CLOG( ERROR
                , "gpi.memory"
@@ -99,7 +99,7 @@ namespace gpi
                << " hdl=" << hdl
                << " size=" << hdl.size
                << " globalsize=" << global_size
-               << " range=["<<start << ", " << end << "]"
+               << " range=["<<start << ", " << start+amount << "]"
                );
             throw std::invalid_argument
                 ("out-of-bounds: access to global handle outside boundaries");
@@ -107,14 +107,14 @@ namespace gpi
         }
         else
         {
-          if (! (start < hdl.size && end < hdl.size))
+          if (! (start < hdl.size && (start + amount) <= hdl.size))
           {
             CLOG( ERROR
                , "gpi.memory"
                , "out-of-bounds access:"
                << " hdl=" << hdl
                << " size=" << hdl.size
-               << " range=["<<start << ", " << end << "]"
+               << " range=["<<start << ", " << start + amount << "]"
                );
             throw std::invalid_argument
                 ("out-of-bounds: access to local handle outside boundaries");

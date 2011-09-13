@@ -187,7 +187,7 @@ namespace gpi
             hdl_it (m_handles.find(loc.handle));
         if (hdl_it == m_handles.end())
           throw std::invalid_argument("check_bounds: no such handle");
-        check_bounds (hdl_it->second, loc.offset, loc.offset+size-1);
+        check_bounds (hdl_it->second, loc.offset, size);
       }
 
       int
