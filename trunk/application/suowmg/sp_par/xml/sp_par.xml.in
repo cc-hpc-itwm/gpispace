@@ -463,33 +463,35 @@
 
             config.handle.input.data = static_cast<long>
               (fvmGlobalAlloc ((slot_per_node - 1) * config.size.bunch));
-            config.handle.input.scratch = static_cast<long>
-              (fvmGlobalAlloc (                 1  * config.size.bunch));
+            //config.handle.input.scratch = static_cast<long>
+            //  (fvmGlobalAlloc (                 1  * config.size.bunch));
+	    config.handle.input.scratch = 0;
 
             config.handle.output.data = static_cast<long>
               (fvmGlobalAlloc (config.size.output_per_shot));
-            config.handle.output.scratch = static_cast<long>
-              (fvmGlobalAlloc (config.size.output_per_shot));
+            //config.handle.output.scratch = static_cast<long>
+            //  (fvmGlobalAlloc (config.size.output_per_shot));
+	    config.handle.output.scratch = 0;
 
             if (config.handle.input.data == 0)
               {
                 throw std::runtime_error ("BUMMER! handle.input.data == 0");
               }
 
-            if (config.handle.input.scratch == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.input.scratch == 0");
-              }
+            //if (config.handle.input.scratch == 0)
+            //  {
+            //    throw std::runtime_error ("BUMMER! handle.input.scratch == 0");
+            //  }
 
             if (config.handle.output.data == 0)
               {
                 throw std::runtime_error ("BUMMER! handle.output.data == 0");
               }
 
-            if (config.handle.output.scratch == 0)
-              {
-                throw std::runtime_error ("BUMMER! handle.output.scratch == 0");
-              }
+            //if (config.handle.output.scratch == 0)
+            //  {
+            //    throw std::runtime_error ("BUMMER! handle.output.scratch == 0");
+            //  }
 
             config.file.input.name = file_input;
             config.file.input.type = type_input;
@@ -732,9 +734,9 @@
             LOG (INFO, "FINALIZE");
 
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.data));
-            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.scratch));
+            //fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.scratch));
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.data));
-            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.scratch));
+            //fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.scratch));
 
             return control();
           ]]></code>
