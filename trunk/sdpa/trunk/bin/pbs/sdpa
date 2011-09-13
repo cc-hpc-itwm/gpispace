@@ -61,7 +61,9 @@ function rexec ()
     local node="$1"; shift
     local err
     local ssh_opts="-q -x -T -n -o CheckHostIP=no -o Ciphers=arcfour -o StrictHostKeyChecking=no"
-    err=$(ssh $ssh_opts "$node" $@ 2>&1)
+    local cmd="ssh $ssh_opts $node $@"
+    debug $cmd
+    err=$($cmd 2>&1)
     local rc=$?
     if [ $rc -ne 0 ] ; then
 	echo $err
@@ -109,14 +111,16 @@ function setup_state ()
 	fi
     fi
 
-    local sdpa_home=$(get "sdpa.home" "$SDPA_HOME")
+    local sdpa_home="$SDPA_HOME"
     if [ -z "$sdpa_home" ] ; then
 	mydir=$(cd $(dirname $( which $0 )) && pwd)
 	sdpa_home=$(dirname "$mydir")
     fi
     get_user_input "SDPA installation directory [$sdpa_home]:" sdpa_home
 
-    put "sdpa.home" "$sdpa_home"
+    export SDPA_HOME="$sdpa_home"
+
+    #put "sdpa.home" "$sdpa_home"
 
     local node_file="$state_dir/nodefile"
 
@@ -358,9 +362,9 @@ EOF
 	fi
     fi
 
-    local prefix=$(get "sdpa.home" "$SDPA_HOME")
+    local prefix="$SDPA_HOME"
     if [ -z "$prefix" ] ; then
-	log "E: sdpa.home is not defined!"
+	log "E: SDPA_HOME is not defined!"
 	return 1
     fi
 
@@ -649,6 +653,8 @@ function generate_environment ()
     # read variables from config and write them to an environment file
     #     replacing init-screen.env in principle
 
+
+
     fhgcfg -f "$config_file" -l | while read key dummy val ; do
 	case "$key" in
 	    log.server.level)
@@ -685,22 +691,26 @@ function generate_environment ()
 		echo export SDPA_NODEFILE="$val"
 		;;
 	    sdpa.home)
-		local sdpa_home="$val"
-
-		echo export SDPA_HOME="$sdpa_home"
-		echo export SDPA_LIBEXEC="$sdpa_home/libexec"
-
-		prepend_to_path PATH "$SDPA_HOME/bin"
-		prepend_to_path PATH "$SDPA_HOME/bin/pbs"
-		prepend_to_path PATH "$SDPA_HOME/bin/parsu"
-		prepend_to_path LD_LIBRARY_PATH "$sdpa_home/lib"
-		prepend_to_path LD_LIBRARY_PATH "$sdpa_home/libexec"
-		prepend_to_path PC_LIBRARY_PATH "$sdpa_home/libexec"
 		;;
 	    *)
 		;;
 	esac
     done
+
+    if [ -z "$SDPA_HOME" ] ; then
+	mydir="$(cd $(dirname $( which $0 )) && pwd)"
+	export SDPA_HOME="$(dirname "$mydir")"
+    fi
+
+    echo export SDPA_HOME="$SDPA_HOME"
+    echo export SDPA_LIBEXEC="$SDPA_HOME/libexec"
+
+    prepend_to_path PATH "$SDPA_HOME/bin"
+    prepend_to_path PATH "$SDPA_HOME/bin/pbs"
+    prepend_to_path PATH "$SDPA_HOME/bin/parsu"
+    prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
+    prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec"
+    prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
 
     prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
     prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
@@ -745,9 +755,9 @@ EOF
     echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$tmp_file"
     echo ":" >> "$tmp_file"
 
-    local sdpa_home=$(get "sdpa.home" "$SDPA_HOME")
+    local sdpa_home="$SDPA_HOME"
     if [ -z "$sdpa_home" ] ; then
-	log "W: sdpa.home is not defined!"
+	log "E: SDPA_HOME is not defined!"
     fi
     mv "$tmp_file" "$state_dir/sdpa.env"
 }
@@ -1182,6 +1192,7 @@ function start_drts_on_node ()
     fi
 
     local per_node=$(get "topology.per-node" "0")
+    log "I: starting drts"
     local err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -m "$master" -c "$per_node" $@)
     if [ $? -ne 0 ] ; then
 	log "E: pc did not startup on node $node: $err" >&2
