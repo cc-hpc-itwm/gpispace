@@ -94,9 +94,10 @@ namespace gpi
           {
             m_info = _collect_info ();
           }
-          catch (std::exception const &ex)
+          catch (...)
           {
             stop();
+            throw;
           }
         }
       }
