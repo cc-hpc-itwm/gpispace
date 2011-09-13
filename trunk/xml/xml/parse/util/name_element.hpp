@@ -16,7 +16,7 @@ namespace xml
 {
   namespace parse
   {
-    std::string
+    inline std::string
     name_element ( xml_node_type * & node
                  , const boost::filesystem::path & path
                  )

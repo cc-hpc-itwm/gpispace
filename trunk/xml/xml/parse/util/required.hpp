@@ -14,7 +14,7 @@ namespace xml
 {
   namespace parse
   {
-    static std::string
+    inline std::string
     required ( const std::string & pre
              , const xml_node_type * node
              , const Ch * attr

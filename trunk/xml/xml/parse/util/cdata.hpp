@@ -16,7 +16,7 @@ namespace xml
 {
   namespace parse
   {
-    void
+    inline void
     cdata ( xml_node_type * & node
           , const boost::filesystem::path & path
           )

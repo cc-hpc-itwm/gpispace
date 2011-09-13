@@ -16,10 +16,10 @@ namespace xml
 {
   namespace parse
   {
-    void expect ( xml_node_type * & node
-                , const rapidxml::node_type t
-                , const boost::filesystem::path & path
-                )
+    inline void expect ( xml_node_type * & node
+                       , const rapidxml::node_type t
+                       , const boost::filesystem::path & path
+                       )
     {
       skip (node, rapidxml::node_comment);
 
@@ -34,11 +34,11 @@ namespace xml
         }
     }
 
-    void expect ( xml_node_type * & node
-                , const rapidxml::node_type t1
-                , const rapidxml::node_type t2
-                , const boost::filesystem::path & path
-                )
+    inline void expect ( xml_node_type * & node
+                       , const rapidxml::node_type t1
+                       , const rapidxml::node_type t2
+                       , const boost::filesystem::path & path
+                       )
     {
       skip (node, rapidxml::node_comment);
 

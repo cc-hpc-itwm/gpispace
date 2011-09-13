@@ -408,7 +408,8 @@ namespace xml
 
       // ******************************************************************* //
 
-      net_type set_prefix (const net_type & net_old, const std::string & prefix)
+      inline net_type
+      set_prefix (const net_type & net_old, const std::string & prefix)
       {
         net_type net_new (net_old);
 

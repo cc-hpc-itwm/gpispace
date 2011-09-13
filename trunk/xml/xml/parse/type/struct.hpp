@@ -69,7 +69,8 @@ namespace xml
 
       // ******************************************************************* //
 
-      set_type make (const type::structs_type & structs)
+      inline set_type
+      make (const type::structs_type & structs)
       {
         set_type set;
 

@@ -9,7 +9,8 @@ namespace xml
 {
   namespace parse
   {
-    void skip (xml_node_type * & node, const rapidxml::node_type t)
+    inline void
+    skip (xml_node_type * & node, const rapidxml::node_type t)
     {
       while (node && (node->type() == t))
         {
