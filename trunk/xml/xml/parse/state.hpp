@@ -310,6 +310,13 @@ namespace xml
 
         // ***************************************************************** //
 
+        const key_values_t & key_values (void) const
+        {
+          return _key_values;
+        }
+
+        // ***************************************************************** //
+
         bool interpret_context_property ( const property::path_type & path
                                         , const property::value_type & value
                                         )
