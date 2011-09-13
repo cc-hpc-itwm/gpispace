@@ -30,6 +30,7 @@
 #endif
 
 #define WNAME(_tag) ::fhg::pnete::weaver::type::_tag
+#define WSIGE(_tag) template<> void weaver::weave< WNAME(_tag) > () const
 #define WSIG(_tag,_type,_var) \
         template<> \
         void weaver::weave< WNAME(_tag), _type > (const _type & _var) const
@@ -59,13 +60,40 @@ namespace fhg
     {
       namespace type
       {
-        namespace transition
+        struct function_state_type
+        {
+        private:
+          const XMLTYPE(function_type) & _fun;
+          const XMLPARSE(state::type) & _state;
+
+        public:
+          function_state_type ( const XMLTYPE(function_type) & fun
+                              , const XMLPARSE(state::type) & state
+                              )
+            : _fun (fun)
+            , _state (state)
+          {}
+
+          const XMLTYPE(function_type) & fun () const { return _fun; }
+          const XMLPARSE(state::type) & state () const { return _state; }
+        };
+
+        namespace context
         {
           enum
             { first
-            , open, close, name, priority, internal, properties, structs
-            , function, place_map, connect_read, connect_in, connect_out
-            , condition
+            , open, close, key_value
+            , last
+            };
+        }
+
+        namespace transition
+        {
+          enum
+            { first = context::first + 1
+            , open, close, name, priority, internal, _inline, properties
+            , structs, function, place_map, connect_read, connect_in
+            , connect_out, condition
             , last
             };
         }
@@ -719,10 +747,43 @@ namespace fhg
           WEAVE(function::open, ITVAL(XMLTYPE(net_type::functions_type)))(fun);
           WEAVE(function::name, MAYBE(std::string))(fun.name);
           WEAVE(function::internal, MAYBE(bool))(fun.internal);
-          WEAVE(function::require, XMLTYPE(requirements_type))
-            (fun.requirements);
           WEAVE(function::properties, WETYPE(property::type))(fun.prop);
           WEAVE(function::structs, XMLTYPE(structs_type))(fun.structs);
+          WEAVE(function::require, XMLTYPE(requirements_type))
+            (fun.requirements);
+          WEAVE(function::in, XMLTYPE(ports_type))(fun.in());
+          WEAVE(function::out, XMLTYPE(ports_type))(fun.out());
+          WEAVE(function::fun, XMLTYPE(function_type::type))(fun.f);
+          WEAVE(function::conditions, XMLTYPE(conditions_type))
+            (fun.cond);
+          WEAVEE(function::close)();
+        }
+
+        FUN(function_state, WNAME(function_state_type), fs)
+        {
+          const XMLTYPE(function_type) & fun (fs.fun());
+          const XMLPARSE(state::type) & state (fs.state());
+
+          WEAVE(function::open, ITVAL(XMLTYPE(net_type::functions_type)))(fun);
+          WEAVE(function::name, MAYBE(std::string))(fun.name);
+          WEAVE(function::internal, MAYBE(bool))(fun.internal);
+
+          WEAVE(context::open, XMLPARSE(state::type))(state);
+
+          for ( XMLPARSE(state::key_values_t::const_iterator)
+                  kv (state.key_values().begin()), end (state.key_values().end())
+              ; kv != end
+              ; ++kv
+              )
+            {
+              WEAVE(context::key_value, ITVAL(XMLPARSE(state::key_values_t)))(*kv);
+            }
+          WEAVEE(context::close)();
+
+          WEAVE(function::properties, WETYPE(property::type))(fun.prop);
+          WEAVE(function::structs, XMLTYPE(structs_type))(fun.structs);
+          WEAVE(function::require, XMLTYPE(requirements_type))
+            (fun.requirements);
           WEAVE(function::in, XMLTYPE(ports_type))(fun.in());
           WEAVE(function::out, XMLTYPE(ports_type))(fun.out());
           WEAVE(function::fun, XMLTYPE(function_type::type))(fun.f);

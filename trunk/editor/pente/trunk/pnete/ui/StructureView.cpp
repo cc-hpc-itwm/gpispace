@@ -12,6 +12,8 @@
 
 #include <boost/format.hpp>
 
+#include <stack>
+
 namespace fhg
 {
   namespace pnete
@@ -21,13 +23,17 @@ namespace fhg
       class weaver
       {
       public:
-        explicit weaver (QStandardItem * state) : _state (state) {}
+        explicit weaver (QStandardItem * root)
+          : _stack ()
+        {
+          _stack.push (root);
+        }
 
         template<int Type, typename T> void weave (const T & x) const {}
         template<int Type> void weave () const {}
 
       private:
-        mutable QStandardItem* _state;
+        mutable std::stack<QStandardItem *> _stack;
 
         static std::string boolString (const bool & v)
         {
@@ -36,21 +42,22 @@ namespace fhg
 
         void add_type (const std::string & type) const
         {
-          _state->setText ( _state->text()
-                          . append (" :: ")
-                          . append (type.c_str())
-                          );
+          _stack.top()->setText ( _stack.top()->text()
+                                . append (" :: ")
+                                . append (type.c_str())
+                                );
         }
 
-        template<typename T> weaver append (const T & x) const
+        template<typename T> QStandardItem * append (const T & x) const
         {
           QStandardItem* x_item (new QStandardItem (x));
           x_item->setEditable (false);
-          _state->appendRow (x_item);
-          return weaver (x_item);
+          _stack.top()->appendRow (x_item);
+          return x_item;
         }
 
-        void set (const weaver & w) const { _state = w._state; }
+        void push (QStandardItem * x) const { _stack.push (x); }
+        void pop () const { _stack.pop(); }
 
         template<typename IT>
         void xs
@@ -89,21 +96,22 @@ namespace fhg
       };
 
       template<>
-      weaver weaver::append<std::string> (const std::string & str) const
+      QStandardItem * weaver::append<std::string> (const std::string & str) const
       {
         return append (QString (str.c_str()));
       }
 
       template<>
-      weaver weaver::append<boost::format> (const boost::format & f) const
+      QStandardItem * weaver::append<boost::format> (const boost::format & f) const
       {
         return append (f.str());
       }
 
       WSIG (transition::name, std::string, name)
       {
-        set (append (name));
+        push (append (name));
       }
+      WSIGE (transition::close) { pop(); }
       WSIG(transition::priority, MAYBE(petri_net::prio_t), prio)
       {
         if (prio)
@@ -116,6 +124,13 @@ namespace fhg
         if (internal)
           {
             append (boost::format ("internal: %s") % boolString (*internal));
+          }
+      }
+      WSIG (transition::_inline, MAYBE(bool), _inline)
+      {
+        if (_inline)
+          {
+            append (boost::format ("inline: %s") % boolString (*_inline));
           }
       }
       WSIG(transition::properties, WETYPE(property::type), prop)
@@ -154,11 +169,12 @@ namespace fhg
 
       WSIG(place::open, ITVAL(XMLTYPE(places_type)), place)
       {
-        set (append ("<<place>>"));
+        push (append ("<<place>>"));
       }
+      WSIGE(place::close) { pop(); }
       WSIG(place::name, std::string, name)
       {
-        _state->setText (name.c_str());
+        _stack.top()->setText (name.c_str());
       }
       WSIG(place::type, std::string, type)
       {
@@ -180,8 +196,11 @@ namespace fhg
       }
       WSIG(place::token, ITVAL(XMLTYPE(tokens_type)), token)
       {
-        boost::apply_visitor
-          (FROM(visitor::token<weaver>) (append ("token")), token);
+        push (append ("token"));
+
+        boost::apply_visitor (FROM(visitor::token<weaver>) (*this), token);
+
+        pop ();
       }
       WSIG(place::properties, WETYPE(property::type), prop)
       {
@@ -213,11 +232,12 @@ namespace fhg
 
       WSIG(port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        set (append ("<<port>>"));
+        push (append ("<<port>>"));
       }
+      WSIGE(port::close) { pop(); }
       WSIG(port::name, std::string, name)
       {
-        _state->setText (name.c_str());
+        _stack.top()->setText (name.c_str());
       }
       WSIG(port::type, std::string, type)
       {
@@ -267,17 +287,19 @@ namespace fhg
 
       WSIG( specialize::open
           , ITVAL(XMLTYPE(net_type::specializes_type))
-          , specialize)
+          , specialize
+          )
       {
-        set (append ("<<specialize>>"));
+        push (append ("<<specialize>>"));
       }
+      WSIGE(specialize::close) { pop(); }
       WSIG(specialize::name, std::string, name)
       {
-        _state->setText (name.c_str());
+        _stack.top()->setText (name.c_str());
       }
       WSIG(specialize::use, std::string, use)
       {
-        _state->setText ( _state->text()
+        _stack.top()->setText ( _stack.top()->text()
                         . append(" use ")
                         . append(use.c_str())
                         );
@@ -298,13 +320,14 @@ namespace fhg
 
       WSIG(function::open, ITVAL(XMLTYPE(net_type::functions_type)), fun)
       {
-        set (append ("<<function>>"));
+        push (append ("<<function>>"));
       }
+      WSIGE(function::close) { pop(); }
       WSIG(function::name, MAYBE(std::string), name)
       {
         if (name)
           {
-            _state->setText ((*name).c_str());
+            _stack.top()->setText ((*name).c_str());
           }
       }
       WSIG(function::internal, MAYBE(bool), internal)
@@ -345,17 +368,18 @@ namespace fhg
 
       WSIG(place_map::open, ITVAL(XMLTYPE(place_maps_type)), pm)
       {
-        set (append ("<<place_map>>"));
+        push (append ("<<place_map>>"));
       }
+      WSIGE(place_map::close) { pop(); }
       WSIG(place_map::place_virtual, std::string, name)
       {
-        _state->setText ( QString ("virtual: ")
+        _stack.top()->setText ( QString ("virtual: ")
                         . append(name.c_str())
                         );
       }
       WSIG(place_map::place_real, std::string, name)
       {
-        _state->setText ( _state->text()
+        _stack.top()->setText ( _stack.top()->text()
                         . append (" <-> real: ")
                         . append (name.c_str())
                         );
@@ -367,17 +391,18 @@ namespace fhg
 
       WSIG(connection::open, ITVAL(XMLTYPE(connections_type)), connection)
       {
-        set (append ("<<connection>>"));
+        push (append ("<<connection>>"));
       }
+      WSIGE(connection::close) { pop(); }
       WSIG(connection::port, std::string, port)
       {
-        _state->setText ( QString ("port: ")
+        _stack.top()->setText ( QString ("port: ")
                         . append (port.c_str())
                         );
       }
       WSIG(connection::place, std::string, place)
       {
-        _state->setText ( _state->text()
+        _stack.top()->setText ( _stack.top()->text()
                         . append (" -> ")
                         . append (place.c_str())
                         );
@@ -385,17 +410,18 @@ namespace fhg
 
       WSIG(requirement::open, ITVAL(XMLTYPE(requirements_type)), req)
       {
-        set (append ("requirement"));
+        push (append ("requirement"));
       }
+      WSIGE(requirement::close) { pop(); }
       WSIG(requirement::key, std::string, key)
       {
-        _state->setText ( _state->text()
+        _stack.top()->setText ( _stack.top()->text()
                         . append(key.c_str())
                         );
       }
       WSIG(requirement::value, bool, val)
       {
-        _state->setText ( _state->text()
+        _stack.top()->setText ( _stack.top()->text()
                         . append (": ")
                         . append (boolString (val).c_str())
                         );
@@ -408,15 +434,16 @@ namespace fhg
 
       WSIG(mod::open, XMLTYPE(mod_type), mod)
       {
-        set (append ("module"));
+        push (append ("module"));
       }
+      WSIGE(mod::close) { pop(); pop(); }
       WSIG(mod::name, std::string, name)
       {
-        set (append (name));
+        push (append (name));
       }
       WSIG (mod::fun, std::string, fun)
       {
-        _state->setText ( _state->text()
+        _stack.top()->setText ( _stack.top()->text()
                         . append (" -> ")
                         . append (fun.c_str())
                         );
@@ -433,8 +460,9 @@ namespace fhg
       {
         if (code)
           {
-            set (append ("code"));
+            push (append ("code"));
             append (*code);
+            pop();
           }
       }
 
@@ -445,14 +473,17 @@ namespace fhg
 
       WSIG(token::structured::field, ::signature::structured_t::const_iterator::value_type, field)
       {
+        append (field.first);
+
         boost::apply_visitor
-          (FROM(visitor::token<weaver>) (append (field.first)), field.second);
+          (FROM(visitor::token<weaver>) (*this), field.second);
       }
 
       WSIG(net::open, XMLTYPE(net_type), net)
       {
-        set (append ("net"));
+        push (append ("net"));
       }
+      WSIGE(net::close) { pop(); }
       WSIG(net::properties, WETYPE(property::type), prop)
       {
         FROM(properties) (*this, prop);
@@ -489,7 +520,7 @@ namespace fhg
 
       WSIG(signature::literal::name, std::string, name)
       {
-        _state->setText (name.c_str());
+        _stack.top()->setText (name.c_str());
       }
       WSIG(signature::literal::type, ::literal::type_name_t, type)
       {
@@ -516,7 +547,19 @@ namespace fhg
           , kp
           )
       {
-        FROM(properties) (append (kp.key()), kp.property());
+        append (kp.key());
+
+        FROM(properties) (*this, kp.property());
+      }
+
+      WSIG(context::open, XMLPARSE(state::type), state)
+      {
+        push (append ("context"));
+      }
+      WSIGE(context::close) { pop(); }
+      WSIG(context::key_value, XMLPARSE(state::key_value_t), kv)
+      {
+        append (boost::format("%s => %s") % kv.key() % kv.value());
       }
     } // namespace tv
 
@@ -549,7 +592,18 @@ namespace fhg
 
         const XMLTYPE(function_type) fun (XMLPARSE(just_parse) (state, input));
 
-        from (fun);
+        from (fun, state);
+      }
+
+      void StructureView::from ( const XMLTYPE(function_type) & fun
+                               , const XMLPARSE(state::type) & state
+                               )
+      {
+        FROM( function_state<tv::weaver>
+              ( tv::weaver (_root)
+              , WNAME(function_state_type) (fun, state)
+              )
+            );
       }
 
       void StructureView::from (const XMLTYPE(function_type) & fun)

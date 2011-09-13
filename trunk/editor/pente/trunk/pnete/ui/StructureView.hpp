@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include <pnete/traverse/weaver.hpp>
+
 class QStandardItem;
 class QStandardItemModel;
 class QWidget;
@@ -33,7 +35,10 @@ namespace fhg
         StructureView (const QString & load, QWidget* parent = 0);
 
         void fromFile (const std::string & input);
-        void from (const ::xml::parse::type::function_type & fun);
+        void from (const XMLTYPE(function_type) & fun);
+        void from ( const XMLTYPE(function_type) & fun
+                  , const XMLPARSE(state::type) & state
+                  );
 
       private:
         QStandardItemModel* _model;
