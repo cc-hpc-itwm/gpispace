@@ -36,7 +36,7 @@ done
 function agent_status ()
 {
     local name="$1" ; shift
-    local pids=$(ps aux | grep -v [s]top-agent | grep "[a]gent.*-n $name" | awk '{print $2;}')
+    local pids=$(ps aux | grep -v [s]tatus-agent | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
     if [ -z "$pids" ] ; then
 	return 1
     else
