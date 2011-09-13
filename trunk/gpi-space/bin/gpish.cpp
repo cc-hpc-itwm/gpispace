@@ -1164,6 +1164,16 @@ int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
+void adjust_global_handle_sizes ( shell_t & sh
+                                , gpi::pc::type::handle::descriptor_t & desc
+                                )
+{
+  if (gpi::flag::is_set (desc.flags, gpi::pc::type::handle::F_GLOBAL))
+  {
+    desc.size *= sh.state().capi.collect_info().nodes;
+  }
+}
+
 int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
 {
   // TODO: add sort criteria (created, accessed, name, size, etc.)
@@ -1179,6 +1189,9 @@ int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh)
     std::cout << gpi::pc::type::handle::ostream_header() << std::endl;
     gpi::pc::type::handle::list_t handles (sh.state().capi.list_allocations());
     std::sort (handles.begin(), handles.end());
+    std::for_each ( handles.begin(), handles.end()
+                  , boost::bind(adjust_global_handle_sizes, sh, _1)
+                  );
     std::cout << handles;
   }
   else
