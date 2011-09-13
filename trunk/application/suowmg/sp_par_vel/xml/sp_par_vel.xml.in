@@ -575,11 +575,11 @@
             LOG (INFO, "FINALIZE");
 
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.data));
-            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.scratch));
+            //fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.input.scratch));
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.data));
-            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.scratch));
+            //fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.output.scratch));
             fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.vpfile.data));
-            fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.vpfile.scratch));
+            //fvmGlobalFree (static_cast<fvmAllocHandle_t> (config.handle.vpfile.scratch));
 
             return control();
           ]]></code>

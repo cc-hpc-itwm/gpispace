@@ -60,12 +60,12 @@
 
             const long buf_size (1 << 25);
 
-            const fvmAllocHandle_t scratch (fvmLocalAlloc (buf_size));
+            //const fvmAllocHandle_t scratch (fvmLocalAlloc (buf_size));
 
-            if (scratch == 0)
-              {
-                throw std::runtime_error ("failed to allocate scratch");
-              }
+            //if (scratch == 0)
+            //  {
+            //    throw std::runtime_error ("failed to allocate scratch");
+            //  }
 
             std::ifstream stream (config.param.vPFile.c_str(), std::ios::binary);
 
@@ -97,14 +97,14 @@
                                          , last - left
                                          , size
                                          , 0
-                                         , scratch
+                                         , 0 // scratch
                                          )
                        );
 
               left -= size;
             }
 
-            fvmLocalFree (scratch);
+            //fvmLocalFree (scratch);
           ]]></code>
         </module>
       </defun>

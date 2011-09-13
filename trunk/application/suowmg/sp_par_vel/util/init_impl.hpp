@@ -90,8 +90,9 @@ const long size_vpfile_per_node
 
 config.handle.vpfile.data
   = ::sp_par_vel::alloc (size_vpfile_per_node, "vpfile.data");
-config.handle.vpfile.scratch
-= ::sp_par_vel::alloc (sizeof (float) * config.param.nxf * config.param.Vnz, "vpfile.scratch");
+//config.handle.vpfile.scratch
+//= ::sp_par_vel::alloc (sizeof (float) * config.param.nxf * config.param.Vnz, "vpfile.scratch");
+config.handle.vpfile.scratch = 0;
 
 config.per.node.mem.gpi -= size_vpfile_per_node;
 config.per.node.mem.gpi -= sizeof(float) * config.param.nxf * config.param.Vnz;
@@ -153,12 +154,14 @@ LOG (TRACE, "num.slot = " << config.num.slot);
 
 config.handle.input.data =
   ::sp_par_vel::alloc ((slot_per_node - 1) * config.size.bunch, "input.data");
-config.handle.input.scratch =
-  ::sp_par_vel::alloc (                 1  * config.size.bunch, "input.scratch");
+//config.handle.input.scratch =
+//  ::sp_par_vel::alloc (                 1  * config.size.bunch, "input.scratch");
+config.handle.input.scratch = 0;
 config.handle.output.data =
   ::sp_par_vel::alloc (config.size.output_per_shot, "output.data");
-config.handle.output.scratch =
-  ::sp_par_vel::alloc (config.size.output_per_shot, "output.scratch");
+//config.handle.output.scratch =
+//  ::sp_par_vel::alloc (config.size.output_per_shot, "output.scratch");
+config.handle.output.scratch = 0;
 
 config.file.input.name = file_input;
 config.file.input.type = type_input;
