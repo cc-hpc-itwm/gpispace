@@ -17,7 +17,9 @@ backlog=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.backlog -v 3)
 identity=0
 name_prefix="drts-$(hostname -s)"
 master="aggregator"
-gpi_socket="/var/tmp/gpi-space/GPISpace-$(id -u)/control"
+gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp/gpi-space)"
+gpi_socket="$gpi_socket/GPISpace-$(id -u)"
+gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -v control)"
 lib_path="$PC_LIBRARY_PATH"
 kvs_url="${KVS_URL}"
 count=
@@ -128,7 +130,7 @@ if [ -n "$count" ] ; then
     fi
     stop-drts
     for i in $(seq 1 $count) ; do
-	$0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D -f &
+	$0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D -f </dev/null &>/dev/null &
     done
     exit 0
 fi
@@ -203,6 +205,7 @@ export FHGLOG_to_file="$logfile"
 if [ "$daemonize" == "true" ] ; then
     to_bg $$ 3 </dev/null &>/dev/null &
     exec $cmd </dev/null &> "${logfile}"
+    echo "exec failed: $?"
 else
     exec $cmd
 fi
