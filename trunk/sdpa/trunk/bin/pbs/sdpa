@@ -1192,7 +1192,6 @@ function start_drts_on_node ()
     fi
 
     local per_node=$(get "topology.per-node" "0")
-    log "I: starting drts"
     local err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -m "$master" -c "$per_node" $@)
     if [ $? -ne 0 ] ; then
 	log "E: pc did not startup on node $node: $err" >&2
