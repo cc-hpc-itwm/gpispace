@@ -86,8 +86,8 @@ LATSAMPLESPERWAVE = 3.5
 VERTSAMPLESPERWAVE = 3.5
 MEDIUM = ISO
 PROPAGATOR = FFD3
-NTHREAD = 1
-NPC = 24
+NTHREAD = 6
+NPC = 4
 
 %.xml: %.xml.in $(filter-out %.xml,$(DEP))
 	$(CAT) $< | $(MK_XML) "$(SUOWMG)" \
