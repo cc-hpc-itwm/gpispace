@@ -39,7 +39,6 @@ namespace fhg
     {
       _splash.show ();
       processEvents ();
-      _splash.finish (_editor_windows.at (0));
     }
     PetriNetEditor::PetriNetEditor (int & argc, char *argv[])
     : QApplication (argc, argv)
@@ -138,6 +137,7 @@ namespace fhg
 
       int window_id (_editor_windows.count());
       _editor_windows.append (new ui::editor_window (load));
+      _splash.close();
       _editor_windows.at (window_id)->show ();
       return window_id;
     }

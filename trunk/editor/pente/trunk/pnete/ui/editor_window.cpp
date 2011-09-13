@@ -38,12 +38,12 @@ namespace fhg
         setupStructureView (load);
 
         connect (_view_manager
-                , SIGNAL (view_changed (view_type*))
-                , SLOT (view_changed (view_type*))
+                , SIGNAL (view_changed (GraphView*))
+                , SLOT (view_changed (GraphView*))
                 );
         connect (_view_manager
-                , SIGNAL (scene_changed (scene_type*))
-                , SLOT (scene_changed (scene_type*))
+                , SIGNAL (scene_changed (graph::Scene*))
+                , SLOT (scene_changed (graph::Scene*))
                 );
       }
 
@@ -51,7 +51,7 @@ namespace fhg
       {
       }
 
-      void editor_window::view_changed (ui::GraphView* view)
+      void editor_window::view_changed (GraphView* view)
       {
         view->emit_current_zoom_level();
       }
@@ -161,7 +161,7 @@ namespace fhg
         mainToolBar->addWidget (spacer);
 
         //! \note These constants are not only hardcoded but also duplicate.
-        //! \todo Use the same constants as in view_type.
+        //! \todo Use the same constants as in GraphView.
         const int min_zoom_value (30);                                          // hardcoded constant
         const int max_zoom_value (300);                                         // hardcoded constant
         const int default_zoom_value (100);                                     // hardcoded constant

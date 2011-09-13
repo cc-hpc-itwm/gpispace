@@ -47,7 +47,7 @@ namespace fhg
           void expandTree();
 
           void scene_changed (graph::Scene*);
-          void view_changed (ui::GraphView*);
+          void view_changed (GraphView*);
 
         private:
           QTreeView* _transitionLibrary;
