@@ -23,7 +23,7 @@ namespace prop = we::type::property;
 typedef std::string key_type;
 typedef std::string value_type;
 
-// build property from QWidgetTree
+// build property from QTreeView
 template <typename T>
 void build_property(T itemK, const we::type::property::path_type& path,  we::type::property::type& prop )
 {
@@ -59,7 +59,7 @@ void build_property(T itemK, const we::type::property::path_type& path,  we::typ
 	}
 }
 
-// build QWidgetTree from property
+// build QTreeView from property
 template <typename E, typename T>
 void build_tree(E* editor, QStandardItem* item, const we::type::property::type& p )
 {
@@ -113,19 +113,11 @@ public:
 		m_treeView->setColumnWidth(0, 300);
 		m_treeView->setColumnWidth(1, 200);
 
-		//ComboBoxItemDelegate deleg;
-		//view.setItemDelegateForColumn(1, &deleg);
-
 		m_treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	}
 
 	virtual ~PropertiesEditor()
 	{
-		/*for (int i = 0; i < m_treeView->topLevelItemCount(); ++i)
-	    {
-			qDeleteAll(m_treeView->topLevelItem(i)->takeChildren());
-	    }*/
-
 		delete m_treeView;
 		delete m_widgetPropEdit;
 	}
@@ -150,8 +142,6 @@ public:
 
 	void show() { m_widgetPropEdit->show(); }
 
-
-	// save/serialize the content into a we::type::property
 public slots:
 	void deleteItem()
 	{
@@ -187,7 +177,6 @@ public slots:
 
 	void addItem()
 	{
-		// or use	hasChildren ( const QModelIndex & parent = QModelIndex() ) const
 		if( model.invisibleRootItem()->rowCount() == 0)
 		{
 			QStandardItem* newItem = addItem("New Item", "", model.invisibleRootItem() );
@@ -260,7 +249,7 @@ public:
 		prop.set ("A.A.B.A", "value_of (A.A.B.A)");
 	}
 
-	void loadFromWeProp(const we::type::property::type& prop)
+	void loadFromProp(const we::type::property::type& prop)
 	{
 		build_tree<PropertiesEditor, tree_builder<PropertiesEditor> >(this,  model.invisibleRootItem(), prop);
 	}
@@ -283,13 +272,13 @@ public:
 		}
 	}
 
-	void testWidget()
+	void testEditor()
 	{
 		we::type::property::type propIn;
 
 		initEditor();
 		initProp(propIn);
-		loadFromWeProp(propIn);
+		loadFromProp(propIn);
 
 		show();
 	}
