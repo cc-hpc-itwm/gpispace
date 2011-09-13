@@ -1,11 +1,15 @@
 #include "GraphScene.hpp"
 #include "GraphConnection.hpp"
 #include "GraphConnectableItem.hpp"
+#include "helper/GraphTraverser.hpp"
+#include "helper/TraverserReceiver.hpp"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 #include <QRectF>
 #include <QDebug>
+#include <QFile>
+#include <QFileInfo>
 
 namespace fhg
 {
@@ -13,57 +17,54 @@ namespace fhg
   {
     namespace graph
     {
-      Scene::Scene(QObject* parent)
-        : QGraphicsScene(parent)
-        , _pendingConnection(NULL)
-        , _mousePosition(QPointF(0.0, 0.0))
-        , _menu_new ("New")
-        , _menu_context ()
+      Scene::Scene (QObject* parent)
+      : QGraphicsScene (QRectF (-2000.0, -2000.0, 4000.0, 4000.0), parent)
+      , _pendingConnection (NULL)
+      , _mousePosition (QPointF (0.0, 0.0))
+      , _menu_context()
+      , _name (tr ("(untitled)"))
       {
-        init_menu_new();
         init_menu_context();
       }
 
-      Scene::Scene(const QRectF& sceneRect, QObject* parent)
-        : QGraphicsScene(sceneRect, parent)
-        , _pendingConnection(NULL)
-        , _mousePosition(QPointF(0.0, 0.0))
-        , _menu_new ("New")
-        , _menu_context()
+      Scene::Scene (const QString& filename, QObject* parent)
+      : QGraphicsScene (QRectF (-2000.0, -2000.0, 4000.0, 4000.0), parent)
+      , _pendingConnection (NULL)
+      , _mousePosition (QPointF (0.0, 0.0))
+      , _menu_context()
+      , _name (filename.section ('/', -1))
       {
-        init_menu_new();
         init_menu_context();
+
+        //! \todo load data from file.
       }
 
-      void Scene::init_menu_new ()
+      //! \todo This is duplicate code, also available in main window.
+      void Scene::init_menu_context ()
       {
-        QAction* action_add_transition (_menu_new.addAction (tr("transition")));
+        //! \todo This QMenu most likely is leaked.
+        QMenu* menu_new (new QMenu (tr ("new"), NULL));
+        QAction* action_add_transition (menu_new->addAction (tr ("transition")));
         connect ( action_add_transition
-                , SIGNAL(triggered())
-                , this
-                , SLOT(slot_add_transition())
+                , SIGNAL (triggered())
+                , SLOT (slot_add_transition())
                 );
 
-        QAction* action_add_place (_menu_new.addAction (tr("place")));
+        QAction* action_add_place (menu_new->addAction (tr ("place")));
         connect ( action_add_place
-                , SIGNAL(triggered())
-                , this
-                , SLOT(slot_add_place())
+                , SIGNAL (triggered())
+                , SLOT (slot_add_place())
                 );
 
-        _menu_new.addSeparator();
+        menu_new->addSeparator();
 
-        QAction* action_add_struct (_menu_new.addAction (tr("struct")));
+        QAction* action_add_struct (menu_new->addAction (tr ("struct")));
         connect ( action_add_struct
-                , SIGNAL(triggered())
-                , this
-                , SLOT(slot_add_struct())
+                , SIGNAL (triggered())
+                , SLOT (slot_add_struct())
                 );
-      }
 
-      void Scene::init_menu_context()
-      {
-        _menu_context.addMenu (&_menu_new);
+        _menu_context.addMenu (menu_new);
       }
 
       void Scene::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
@@ -126,11 +127,6 @@ namespace fhg
           return true;
         }
         return false;
-      }
-
-      QMenu * Scene::menu_new ()
-      {
-        return &_menu_new;
       }
 
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
@@ -224,6 +220,34 @@ namespace fhg
         {
           event->ignore();
         }
+      }
+
+      void Scene::save (const QString& filename)
+      {
+        _name = (filename.section ('/', -1));
+
+        //! \todo dump _internal_data via we::*.
+        QFile xmlFile (filename);
+
+        if (!xmlFile.open (QIODevice::WriteOnly | QIODevice::Text))
+        {
+          return;
+        }
+
+        helper::GraphTraverser traverser (this);
+        helper::TraverserReceiver receiver;
+
+        QTextStream out (&xmlFile);
+        out << traverser.traverse (&receiver, QFileInfo (xmlFile).baseName())
+            << "\n";
+        out.flush();
+
+        xmlFile.close();
+      }
+
+      const QString& Scene::name() const
+      {
+        return _name;
       }
     }
   }

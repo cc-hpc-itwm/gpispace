@@ -1,18 +1,14 @@
-#ifndef UIMAINWINDOW_HPP
-#define UIMAINWINDOW_HPP
+// bernd.loerwald@itwm.fraunhofer.de
+
+#ifndef UI_MAINWINDOW_HPP
+#define UI_MAINWINDOW_HPP 1
 
 #include <QMainWindow>
+#include <QObject>
 
-class QAction;
-class QDockWiget;
-class QMenu;
-class QMenuBar;
-class QStatusBar;
-class QToolBar;
-class QTreeView;
-class QVBoxLayout;
-class QWidget;
 class QString;
+class QTreeView;
+class QWidget;
 
 namespace fhg
 {
@@ -24,39 +20,42 @@ namespace fhg
     }
     namespace ui
     {
-      class GraphView;
+      class view_manager;
       class StructureView;
+      class GraphView;
 
       class MainWindow : public QMainWindow
       {
         Q_OBJECT
 
-      public:
-        explicit MainWindow(const QString & load = "", QWidget *parent = NULL);
+        public:
+          explicit MainWindow (const QString& load = "", QWidget *parent = NULL);
 
-        void setTransitionLibraryPath(const QString& path);
-        void addTransitionLibraryUserPath(const QString& path, bool trusted = false);
+          void setTransitionLibraryPath (const QString& path);
+          void addTransitionLibraryUserPath ( const QString& path
+                                            , bool trusted = false
+                                            );
 
-        graph::Scene * scene ();
+        public slots:
+          void create();
+          void save();
+          void open();
+          void close_tab();
+          void quit();
+          void expandTree();
 
-      public slots:
-        void save();
-        void open();
-        void expandTree();
+          void scene_changed (graph::Scene*);
+          void view_changed (ui::GraphView*);
 
-      private:
-        QTreeView* _transitionLibrary;
-        GraphView* _graphicsView;
+        private:
+          QTreeView* _transitionLibrary;
+          view_manager* _view_manager;
 
-        graph::Scene* _scene;
+          void setupMenuAndToolbar();
+          void setupTransitionLibrary();
 
-        void setupMenuAndToolbar();
-        //! \todo This should be a complete class producing views for the same scene?
-        void setupCentralWidget();
-        void setupTransitionLibrary();
-
-        StructureView* _structureView;
-        void setupStructureView(const QString & load);
+          StructureView* _structureView;
+          void setupStructureView (const QString& load);
       };
     }
   }

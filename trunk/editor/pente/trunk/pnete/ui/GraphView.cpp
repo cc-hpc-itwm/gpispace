@@ -89,6 +89,7 @@ namespace fhg
       {
         if(event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical)
         {
+          setFocus();
           //! \note magic number taken from QWheelEvent::delta() documentation.
           //! \note for the love of god, don't remove the +0.005.
           int current = static_cast<int>((_currentScale + 0.005) * 100.0);      // hardcoded constant
@@ -103,6 +104,13 @@ namespace fhg
         }
       }
 
+      void
+      GraphView::focusInEvent (QFocusEvent* event)
+      {
+        emit focus_gained (this);
+        QGraphicsView::focusInEvent (event);
+      }
+
       void GraphView::zoom(int to)
       {
         qreal target = (to / 100.0);                                            // hardcoded constant
@@ -111,6 +119,11 @@ namespace fhg
         _currentScale = target;
 
         emit zoomed(to);
+      }
+
+      void GraphView::emit_current_zoom_level()
+      {
+        emit zoomed (_currentScale * 100.0);
       }
     }
   }

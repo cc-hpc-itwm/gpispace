@@ -25,8 +25,8 @@ namespace fhg
         Q_OBJECT
 
         public:
-          Scene(QObject* parent = NULL);
-          Scene(const QRectF& sceneRect, QObject* parent = NULL);
+          explicit Scene (QObject* parent = NULL);
+          explicit Scene (const QString& filename, QObject* parent = NULL);
 
           const QPointF& mousePosition() const;
 
@@ -38,15 +38,17 @@ namespace fhg
           void pendingConnectionConnectTo(ConnectableItem* item);
           bool createPendingConnectionWith(ConnectableItem* item);
 
-        QMenu * menu_new ();
+          void save(const QString& filename);
 
-      public slots:
-        void slot_add_transition ();
-        void slot_add_place ();
-        void slot_add_struct ();
+          const QString& name() const;
+
+        public slots:
+          void slot_add_transition ();
+          void slot_add_place ();
+          void slot_add_struct ();
 
         protected:
-         virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+          virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
           virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
           virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
           virtual void keyPressEvent(QKeyEvent* event);
@@ -55,11 +57,12 @@ namespace fhg
           Connection* _pendingConnection;
           QPointF _mousePosition;
 
-        QMenu _menu_new;
-        QMenu _menu_context;
+          QMenu _menu_new;
+          QMenu _menu_context;
 
-        void init_menu_new();
-        void init_menu_context();
+          QString _name;
+
+          void init_menu_context();
       };
     }
   }

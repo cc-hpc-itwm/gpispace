@@ -14,6 +14,11 @@ set(ui_SRCS
   PopoverWidget.cpp
   GraphTransitionCogWheelButton.cpp
   StructureView.cpp
+  undo_group_manager.cpp
+
+  convenience_splitter.cpp
+  view_manager.cpp
+  splittable_tab_widget.cpp
 )
 
 set(ui_HDRS
@@ -30,6 +35,11 @@ set(ui_HDRS
   PopoverWidget.hpp
   GraphTransitionCogWheelButton.hpp
   StructureView.hpp
+  undo_group_manager.hpp
+
+  convenience_splitter.hpp
+  view_manager.hpp
+  splittable_tab_widget.hpp
 )
 
 set(ui_UIS
@@ -49,6 +59,11 @@ set(ui_TOMOC
   PopoverWidget.hpp
   StructureView.hpp
   PropertiesEditor.hpp
+  undo_group_manager.hpp
+
+  convenience_splitter.hpp
+  view_manager.hpp
+  splittable_tab_widget.hpp
 )
 
 #for moced files to get their includes.

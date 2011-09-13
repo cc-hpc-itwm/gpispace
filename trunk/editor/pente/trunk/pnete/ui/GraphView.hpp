@@ -10,6 +10,7 @@ class QDragMoveEvent;
 class QDropEvent;
 class QGraphicsScene;
 class QWheelEvent;
+class QFocusEvent;
 
 namespace fhg
 {
@@ -24,17 +25,21 @@ namespace fhg
         public:
           GraphView(QGraphicsScene* scene, QWidget* parent = NULL);
 
+          void emit_current_zoom_level();
+
         public slots:
           void zoom(int to);
 
         signals:
           void zoomed(int to);
+          void focus_gained (QWidget* me);
 
         protected:
           virtual void dragEnterEvent(QDragEnterEvent* event);
           virtual void dragMoveEvent(QDragMoveEvent* event);
           virtual void dropEvent(QDropEvent* event);
           virtual void wheelEvent(QWheelEvent* event);
+          virtual void focusInEvent (QFocusEvent* event);
 
         private:
           qreal _currentScale;
