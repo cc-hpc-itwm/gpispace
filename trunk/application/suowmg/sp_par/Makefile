@@ -53,15 +53,16 @@ LIB = $(PATH_LIB)/lib$(MAIN).so
 
 SUOWMG           = $(PATH_MAIN)/src/suowmg
 #FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/spike6.tmax=5.0.shot8.su
-FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
+#FILE_INPUT       = /fhgfs/HPC/rahn/suowmg/shot64.su
+FILE_INPUT       = /fhgfs/HPC/petry/suowmg/shot72.su
 TYPE_INPUT       = su
 #FILE_OUTPUT      = /fhgfs/HPC/rahn/suowmg/out.shot8.su
 FILE_OUTPUT      = /fhgfs/HPC/petry/suowmg/shot64.out.su
 TYPE_OUTPUT      = su
-SHMEM_PER_NODE   = 6  * 1824 +     167233040
-GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640
-#SHMEM_PER_NODE   = 1073741824
-#GPI_MEM_PER_NODE = 2 * 1073741824
+#SHMEM_PER_NODE   = 6  * 1824 +     167233040
+#GPI_MEM_PER_NODE = 18 * 1824 + 2 * 167236640
+SHMEM_PER_NODE   = 1073741824
+GPI_MEM_PER_NODE = 21474836480 - 24*16777216
 
 NX = 1751
 NY = 2001
@@ -86,6 +87,7 @@ VERTSAMPLESPERWAVE = 3.5
 MEDIUM = ISO
 PROPAGATOR = FFD3
 NTHREAD = 1
+NPC = 24
 
 %.xml: %.xml.in $(filter-out %.xml,$(DEP))
 	$(CAT) $< | $(MK_XML) "$(SUOWMG)" \
@@ -116,6 +118,7 @@ NTHREAD = 1
                               "$(LATSAMPLESPERWAVE)" \
                               "$(VERTSAMPLESPERWAVE)" \
                               "$(NTHREAD)" \
+                              "$(NPC)" \
                               "$(MEDIUM)" \
                               "$(PROPAGATOR)" \
                               > $@

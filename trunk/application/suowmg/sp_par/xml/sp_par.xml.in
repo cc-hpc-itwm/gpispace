@@ -180,6 +180,8 @@
 
   <in name="nThread" type="long" place="nThread"/>
 
+  <in name="nPC" type="long" place="nPC"/>
+
   <in name="suowmg" type="string" place="suowmg"/>
 
   <out name="done" type="control" place="done"/>
@@ -257,6 +259,8 @@
 
     <place name="nThread" type="long"><token><value>@NTHREAD@</value></token></place>
 
+    <place name="nPC" type="long"><token><value>@NPC@</value></token></place>
+
     <place name="done" type="control"/>
 
     <transition name="init">
@@ -290,6 +294,7 @@
         <in name="dFile" type="string"/>
         <in name="suowmg" type="string"/>
 	<in name="nThread" type="long" />
+	<in name="nPC" type="long" />
         <out name="give_back_trace" type="long"/>
         <out name="config" type="config"/>
         <out name="size_wanted" type="long"/>
@@ -334,6 +339,7 @@
                                , dFile
                                , suowmg
 			       , nThread
+			       , nPC
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
@@ -355,6 +361,7 @@
 
             LOG (TRACE, "num.trace = " << config.num.trace);
             LOG (TRACE, "size.trace = " << config.size.trace);
+	    LOG (TRACE, "gpi_mem_per_node = " << gpi_mem_per_node);
 
             config.suowmg = suowmg;
 
@@ -414,7 +421,7 @@
                       << config.size.output_per_shot
                 );
 
-            if (gpi_mem_per_node < 2 * config.size.output_per_shot)
+            if (gpi_mem_per_node < nPC * config.size.output_per_shot)
               {
                 throw std::runtime_error ("not enough memory for output (gpi)");
               }
@@ -425,11 +432,11 @@
               }
 
             const long gpi_mem_for_traces
-              (gpi_mem_per_node - 2 * config.size.output_per_shot);
+              (gpi_mem_per_node - nPC * config.size.output_per_shot);
             const long shmem_for_traces
               (shmem_per_node - config.size.output_per_shot);
 
-            const long mem_for_trace_bunch (std::min ( gpi_mem_for_traces / 2
+            const long mem_for_trace_bunch (std::min ( gpi_mem_for_traces / 1
                                                      , shmem_for_traces
                                                      )
                                            );
@@ -447,14 +454,14 @@
 
             const long slot_per_node (gpi_mem_for_traces / config.size.bunch);
 
-            if (slot_per_node < 2)
+            if (slot_per_node < 1)
               {
                 throw std::runtime_error ("not enough memory for traces (gpi)");
               }
 
-            config.num.slot = (slot_per_node - 1) * fvmGetNodeCount();
+            config.num.slot = (slot_per_node - 0) * fvmGetNodeCount();
 
-            if (config.num.slot * fvmGetNodeCount() < 2)
+            if (config.num.slot * fvmGetNodeCount() < 1)
               {
                 throw std::runtime_error ("not enough memory (total)");
               }
@@ -462,13 +469,13 @@
             LOG (TRACE, "num.slot = " << config.num.slot);
 
             config.handle.input.data = static_cast<long>
-              (fvmGlobalAlloc ((slot_per_node - 1) * config.size.bunch));
+              (fvmGlobalAlloc ((slot_per_node - 0) * config.size.bunch));
             //config.handle.input.scratch = static_cast<long>
             //  (fvmGlobalAlloc (                 1  * config.size.bunch));
 	    config.handle.input.scratch = 0;
 
             config.handle.output.data = static_cast<long>
-              (fvmGlobalAlloc (config.size.output_per_shot));
+              (fvmGlobalAlloc (nPC * config.size.output_per_shot));
             //config.handle.output.scratch = static_cast<long>
             //  (fvmGlobalAlloc (config.size.output_per_shot));
 	    config.handle.output.scratch = 0;
@@ -506,7 +513,7 @@
             size_wanted = config.size.trace * config.per.bunch.trace;
             num_trace = config.num.trace;
 
-            num_output_slot = fvmGetNodeCount();
+            num_output_slot = fvmGetNodeCount() * nPC;
 
             shot_num = shot_trace = 0;
 
@@ -549,6 +556,7 @@
       <connect-in port="dFile" place="dFile"/>
       <connect-in port="suowmg" place="suowmg"/>
       <connect-in port="nThread" place="nThread"/>
+      <connect-in port="nPC" place="nPC"/>
       <connect-out port="give_back_trace" place="give_back_trace"/>
       <connect-out port="config" place="config_generated"/>
       <connect-out port="size_wanted" place="size_wanted"/>

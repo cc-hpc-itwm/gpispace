@@ -37,6 +37,7 @@ LATSAMPLESPERWAVE=${1:?}; shift
 VERTSAMPLESPERWAVE=${1:?}; shift
 
 NTHREAD=${1:?}; shift
+NPC=${1:?}; shift
 
 MEDIUM=${1:ISO}; shift
 PROPAGATOR=${1:PS}; shift
@@ -71,4 +72,5 @@ PROPAGATOR=${1:PS}; shift
   ;s|@VERTSAMPLESPERWAVE@|${VERTSAMPLESPERWAVE}|g \
   ;s|@MEDIUM@|${MEDIUM}|g \
   ;s|@NTHREAD@|${NTHREAD}|g \
+  ;s|@NPC@|${NPC}|g \
   ;s|@PROPAGATOR@|${PROPAGATOR}|g"
