@@ -33,7 +33,8 @@ set(ui_HDRS
 )
 
 set(ui_UIS
-    PropertiesWidget.ui
+#    PropertiesWidget.ui
+    PropertiesEditorForm.ui
 )
 
 set(ui_TOMOC
