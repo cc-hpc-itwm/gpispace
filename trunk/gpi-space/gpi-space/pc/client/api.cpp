@@ -89,6 +89,15 @@ namespace gpi
         else
         {
           m_connected = true;
+
+          try
+          {
+            m_info = _collect_info ();
+          }
+          catch (std::exception const &ex)
+          {
+            stop();
+          }
         }
       }
 
@@ -710,7 +719,12 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::info::descriptor_t api_t::collect_info ()
+      gpi::pc::type::info::descriptor_t api_t::collect_info () const
+      {
+        return m_info;
+      }
+
+      gpi::pc::type::info::descriptor_t api_t::_collect_info ()
       {
         gpi::pc::proto::control::info_t msg;
         try

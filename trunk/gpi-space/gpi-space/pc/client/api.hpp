@@ -79,7 +79,7 @@ namespace gpi
         void detach_segment(const gpi::pc::type::segment_id_t id);
         gpi::pc::type::segment::list_t list_segments ();
 
-        gpi::pc::type::info::descriptor_t collect_info ();
+        gpi::pc::type::info::descriptor_t collect_info () const;
         bool ping ();
 
         bool is_attached (const gpi::pc::type::segment_id_t id);
@@ -95,6 +95,7 @@ namespace gpi
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
         int write (const void * buf, size_t sz);
         int read (void * buf, size_t sz);
+        gpi::pc::type::info::descriptor_t _collect_info ();
 
         mutable mutex_type m_mutex;
         std::string m_path;
@@ -102,6 +103,7 @@ namespace gpi
         bool m_connected;
         segment_map_t m_segments;
         segment_set_t m_garbage_segments;
+        gpi::pc::type::info::descriptor_t m_info;
       };
     }
   }
