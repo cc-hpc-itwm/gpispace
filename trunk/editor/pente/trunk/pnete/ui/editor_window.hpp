@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef UI_MAINWINDOW_HPP
-#define UI_MAINWINDOW_HPP 1
+#ifndef UI_EDITOR_WINDOW_HPP
+#define UI_EDITOR_WINDOW_HPP 1
 
 #include <QMainWindow>
 #include <QObject>
@@ -24,12 +24,14 @@ namespace fhg
       class StructureView;
       class GraphView;
 
-      class MainWindow : public QMainWindow
+      class editor_window : public QMainWindow
       {
         Q_OBJECT
 
         public:
-          explicit MainWindow (const QString& load = "", QWidget *parent = NULL);
+          explicit editor_window ( const QString& load = ""
+                                 , QWidget *parent = NULL
+                                 );
 
           void setTransitionLibraryPath (const QString& path);
           void addTransitionLibraryUserPath ( const QString& path

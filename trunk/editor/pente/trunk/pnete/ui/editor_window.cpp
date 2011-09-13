@@ -1,4 +1,4 @@
-#include "MainWindow.hpp"
+#include "editor_window.hpp"
 
 #include <QAction>
 #include <QDir>
@@ -27,7 +27,7 @@ namespace fhg
   {
     namespace ui
     {
-      MainWindow::MainWindow (const QString& load, QWidget* parent)
+      editor_window::editor_window (const QString& load, QWidget* parent)
       : QMainWindow (parent)
       , _transitionLibrary (NULL)
       , _view_manager (new view_manager (this))
@@ -47,21 +47,21 @@ namespace fhg
                 );
       }
 
-      void MainWindow::scene_changed (graph::Scene*)
+      void editor_window::scene_changed (graph::Scene*)
       {
       }
 
-      void MainWindow::view_changed (ui::GraphView* view)
+      void editor_window::view_changed (ui::GraphView* view)
       {
         view->emit_current_zoom_level();
       }
 
-      void MainWindow::expandTree()
+      void editor_window::expandTree()
       {
         _transitionLibrary->expandAll();
       }
 
-      void MainWindow::setTransitionLibraryPath (const QString& path)
+      void editor_window::setTransitionLibraryPath (const QString& path)
       {
         TransitionLibraryModel* fsmodel
             (new TransitionLibraryModel(QDir (path), this));
@@ -73,7 +73,7 @@ namespace fhg
         connect (fsmodel, SIGNAL (layoutChanged()), SLOT (expandTree()));
       }
 
-      void MainWindow::addTransitionLibraryUserPath ( const QString& path
+      void editor_window::addTransitionLibraryUserPath ( const QString& path
                                                     , bool trusted
                                                     )
       {
@@ -82,7 +82,7 @@ namespace fhg
         _transitionLibrary->expandAll();
       }
 
-      void MainWindow::setupMenuAndToolbar()
+      void editor_window::setupMenuAndToolbar()
       {
         setWindowTitle (tr ("SDPA editor"));
         resize (1000, 800);                                                     // hardcoded constant
@@ -209,7 +209,7 @@ namespace fhg
         zoomSlider->setValue (default_zoom_value);
       }
 
-      void MainWindow::setupTransitionLibrary()
+      void editor_window::setupTransitionLibrary()
       {
         QDockWidget* transitionLibraryDockWidget
             (new QDockWidget (tr ("Library"), this));
@@ -238,7 +238,7 @@ namespace fhg
         addDockWidget (Qt::RightDockWidgetArea, transitionLibraryDockWidget);
       }
 
-      void MainWindow::setupStructureView (const QString& load)
+      void editor_window::setupStructureView (const QString& load)
       {
         QDockWidget* dockWidget (new QDockWidget (tr ("Structure"), this));
         dockWidget->setMinimumSize (QSize (254, 304));                          // hardcoded constant
@@ -258,12 +258,12 @@ namespace fhg
         addDockWidget (Qt::LeftDockWidgetArea, dockWidget);
       }
 
-      void MainWindow::create()
+      void editor_window::create()
       {
         _view_manager->create_new_scene_and_view();
       }
 
-      void MainWindow::save()
+      void editor_window::save()
       {
         QString filename (QFileDialog::getSaveFileName
             (this, tr ("Save net"), QDir::homePath(), tr ("XML files (*.xml)")));
@@ -281,7 +281,7 @@ namespace fhg
         _view_manager->save_current_scene (filename);
       }
 
-      void MainWindow::open()
+      void editor_window::open()
       {
         QString filename (QFileDialog::getOpenFileName
             (this, tr ("Load net"), QDir::homePath(), tr ("XML files (*.xml)")));
@@ -296,12 +296,12 @@ namespace fhg
         _view_manager->create_view_for_file (filename);
       }
 
-      void MainWindow::close_tab()
+      void editor_window::close_tab()
       {
         _view_manager->current_tab_widget()->close_current_tab();
       }
 
-      void MainWindow::quit()
+      void editor_window::quit()
       {
         //! \todo Warn, if unsaved documents open.
         close();

@@ -10,7 +10,7 @@
 #include <QLocale>
 #include <QLibraryInfo>
 
-#include "ui/MainWindow.hpp"
+#include "ui/editor_window.hpp"
 
 #define BE_PENTE 1
 
@@ -39,12 +39,12 @@ namespace fhg
     {
       _splash.show ();
       processEvents ();
-      _splash.finish (_mainWindow);
+      _splash.finish (_editor_windows.at (0));
     }
     PetriNetEditor::PetriNetEditor (int & argc, char *argv[])
     : QApplication (argc, argv)
     , _splash (QPixmap (":/pente.png"))
-    , _mainWindow (NULL)
+    , _editor_windows ()
     {
       setApplicationName ("pnete");
       //! \todo Get SVN revision.
@@ -61,19 +61,18 @@ namespace fhg
 
       setupLocalization ();
       processCommandLine ();
-      createMainWindow ();
-      createTransitionLibrary ();
+      int window_id (create_editor_window ());
+      createTransitionLibrary (window_id);
     }
 
     PetriNetEditor::~PetriNetEditor ()
     {
-      if (_mainWindow)
+      foreach (ui::editor_window* w, _editor_windows)
       {
-        _mainWindow->hide();
+        w->hide();
+        delete w;
       }
-      //! \todo This segfaults.
-      delete _mainWindow;
-      _mainWindow = NULL;
+      _editor_windows.clear();
     }
 
     void PetriNetEditor::setupLocalization ()
@@ -121,7 +120,7 @@ namespace fhg
       }
     }
 
-    void PetriNetEditor::createMainWindow ()
+    int PetriNetEditor::create_editor_window ()
     {
       QString load;
 
@@ -137,11 +136,13 @@ namespace fhg
         load = args.at (args.indexOf ("--load") + 1);
       }
 
-      _mainWindow = new ui::MainWindow (load);
-      _mainWindow->show ();
+      int window_id (_editor_windows.count());
+      _editor_windows.append (new ui::editor_window (load));
+      _editor_windows.at (window_id)->show ();
+      return window_id;
     }
 
-    void PetriNetEditor::createTransitionLibrary ()
+    void PetriNetEditor::createTransitionLibrary (int window_id)
     {
       QSettings settings;
 
@@ -150,18 +151,21 @@ namespace fhg
       if (!settings.contains ("basePath"))
       {
         //! \todo error message.
-        std::cerr << "There is no base path set for the transition library." << std::endl;
-        std::cerr << "Please run \"" << qPrintable (arguments ().at (0)) << " --make-config <path>\", where path contains lib." << std::endl;
+        std::cerr << "There is no base path set for the transition library.\n"
+                  << "Please run \"" << qPrintable (arguments ().at (0))
+                  << " --make-config <path>\", where path contains lib.\n";
         throw std::runtime_error ("Please configure first.");
       }
 
-      _mainWindow->setTransitionLibraryPath (settings.value ("basePath").toString ());
+      _editor_windows.at (window_id)->setTransitionLibraryPath
+          (settings.value ("basePath").toString ());
 
       const int numTrusted (settings.beginReadArray ("trustedPaths"));
       for (int i (0); i < numTrusted; ++i)
       {
         settings.setArrayIndex (i);
-        _mainWindow->addTransitionLibraryUserPath (settings.value ("path").toString (), true);
+        _editor_windows.at (window_id)->addTransitionLibraryUserPath
+            (settings.value ("path").toString (), true);
       }
       settings.endArray();
 
@@ -169,7 +173,8 @@ namespace fhg
       for (int i (0); i < numUser; ++i)
       {
         settings.setArrayIndex (i);
-        _mainWindow->addTransitionLibraryUserPath (settings.value ("path").toString (), false);
+        _editor_windows.at (window_id)->addTransitionLibraryUserPath
+            (settings.value ("path").toString (), false);
       }
       settings.endArray ();
 

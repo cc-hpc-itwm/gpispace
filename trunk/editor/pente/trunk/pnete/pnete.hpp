@@ -4,6 +4,7 @@
 #define _PENTE_HPP 1
 
 #include <QApplication>
+#include <QList>
 #include <QTranslator>
 #include <QSplashScreen>
 
@@ -13,7 +14,7 @@ namespace fhg
   {
     namespace ui
     {
-      class MainWindow;
+      class editor_window;
     }
 
     class PetriNetEditor : public QApplication
@@ -22,7 +23,7 @@ namespace fhg
       QSplashScreen _splash;
       QTranslator _qtTranslator;
       QTranslator _penteTranslator;
-      ui::MainWindow* _mainWindow;
+      QList<ui::editor_window*> _editor_windows;
 
       void showSplashScreen ();
 
@@ -34,8 +35,8 @@ namespace fhg
 
       void setupLocalization ();
       void processCommandLine ();
-      void createMainWindow ();
-      void createTransitionLibrary ();
+      int create_editor_window ();
+      void createTransitionLibrary (int window_id);
     };
   }
 }

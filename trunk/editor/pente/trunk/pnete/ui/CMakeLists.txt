@@ -7,14 +7,14 @@ set(ui_SRCS
   GraphPort.cpp
   GraphScene.cpp
   GraphTransition.cpp
-  MainWindow.cpp
+  editor_window.cpp
   GraphView.cpp
   TransitionLibraryModel.cpp
   TransitionLibraryItem.cpp
   PopoverWidget.cpp
   GraphTransitionCogWheelButton.cpp
   StructureView.cpp
-  undo_group_manager.cpp
+# undo_group_manager.cpp
 
   convenience_splitter.cpp
   view_manager.cpp
@@ -28,14 +28,14 @@ set(ui_HDRS
   GraphPort.hpp
   GraphScene.hpp
   GraphTransition.hpp
-  MainWindow.hpp
+  editor_window.hpp
   GraphView.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
   PopoverWidget.hpp
   GraphTransitionCogWheelButton.hpp
   StructureView.hpp
-  undo_group_manager.hpp
+# undo_group_manager.hpp
 
   convenience_splitter.hpp
   view_manager.hpp
@@ -52,14 +52,14 @@ set(ui_TOMOC
   GraphPort.hpp
   GraphScene.hpp
   GraphTransition.hpp
-  MainWindow.hpp
+  editor_window.hpp
   GraphView.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
   PopoverWidget.hpp
   StructureView.hpp
   PropertiesEditor.hpp
-  undo_group_manager.hpp
+# undo_group_manager.hpp
 
   convenience_splitter.hpp
   view_manager.hpp
