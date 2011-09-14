@@ -7,6 +7,7 @@ find_package (XML REQUIRED)
 find_package (WE REQUIRED)
 find_package (UTIL REQUIRED)
 find_package (FhgLog REQUIRED)
+find_package (Graphviz REQUIRED)
 
 set(pnete_SRCS
   pnete.cpp
@@ -27,6 +28,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}
                     ${UTIL_INCLUDE_DIR}
                     ${FhgLog_INCLUDE_DIR}
                     ${Boost_INCLUDE_DIR}
+                    ${GRAPHVIZ_INCLUDE_DIR}
                    )
 
 add_subdirectory(helper)
@@ -40,9 +42,8 @@ target_link_libraries (pnete
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
   ${QT_LIBRARIES}
+  ${GRAPHVIZ_LIBRARIES}
 )
-
-
 
 install(TARGETS pnete
   RUNTIME
