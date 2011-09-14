@@ -13,7 +13,8 @@ check_host() {
     dummy=`rpm -qf /etc/issue`
     case "$dummy" in
       sles-release*)
-        export QTDIR=/opt/qt/4.4.3
+        #export QTDIR=/opt/qt/4.4.3
+        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
 	export PATH=${QTDIR}/bin:$PATH
         echo "Is SLES"
         ;;
