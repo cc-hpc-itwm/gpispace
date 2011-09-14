@@ -35,9 +35,10 @@ namespace fhg
         StructureView (QWidget* parent = 0);
 
         void from_file (const QString & input);
-        void from (const XMLTYPE(function_type) & fun);
+
         void from ( const XMLTYPE(function_type) & fun
-                  , const XMLPARSE(state::type) & state
+                  , const XMLPARSE(state::key_values_t) & context
+                  = XMLPARSE(state::key_values_t) ()
                   );
 
       private:

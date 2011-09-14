@@ -30,12 +30,12 @@
 #endif
 
 #define WNAME(_tag) ::fhg::pnete::weaver::type::_tag
-#define WSIGE(_tag) template<> void weaver::weave< WNAME(_tag) > () const
+#define WSIGE(_tag) template<> void weaver::weave< WNAME(_tag) > ()
 #define WSIG(_tag,_type,_var) \
         template<> \
-        void weaver::weave< WNAME(_tag), _type > (const _type & _var) const
-#define WEAVE(_tag,_type) _state.template weave< WNAME(_tag), _type >
-#define WEAVEE(_tag) _state.template weave < WNAME(_tag) >
+        void weaver::weave< WNAME(_tag), _type > (const _type & _var)
+#define WEAVE(_tag,_type) _state->template weave< WNAME(_tag), _type >
+#define WEAVEE(_tag) _state->template weave < WNAME(_tag) >
 
 #define XMLPARSE(_x) ::xml::parse::_x
 #define XMLTYPE(_type) XMLPARSE(type::_type)
@@ -46,7 +46,7 @@
 
 #define GENFUN(_name,_type,_state,_var) \
         template<typename State> \
-        static void _name (State _state, const _type & _var)
+        static void _name (State * _state, const _type & _var)
 #define FUN(_name,_type,_var) GENFUN(_name,_type,_state,_var)
 #define SIG(_name,_type) GENFUN(_name,_type,,)
 
@@ -60,22 +60,22 @@ namespace fhg
     {
       namespace type
       {
-        struct function_state_type
+        struct function_context_type
         {
         private:
           const XMLTYPE(function_type) & _fun;
-          const XMLPARSE(state::type) & _state;
+          const XMLPARSE(state::key_values_t) & _context;
 
         public:
-          function_state_type ( const XMLTYPE(function_type) & fun
-                              , const XMLPARSE(state::type) & state
-                              )
+          function_context_type ( const XMLTYPE(function_type) & fun
+                                , const XMLPARSE(state::key_values_t) & context
+                                )
             : _fun (fun)
-            , _state (state)
+            , _context (context)
           {}
 
           const XMLTYPE(function_type) & fun () const { return _fun; }
-          const XMLPARSE(state::type) & state () const { return _state; }
+          const XMLPARSE(state::key_values_t) & context () const { return _context; }
         };
 
         namespace context
@@ -111,91 +111,15 @@ namespace fhg
         {
           enum
             { first = place::last + 1
-            , open, close
+            , open, close, value
             , last
             };
-
-          namespace value
-          {
-            struct key_value_type
-            {
-            private:
-              const WETYPE(property::key_type) & _key;
-              const WETYPE(property::value_type) & _value;
-
-            public:
-              explicit key_value_type
-              ( const WETYPE(property::key_type) & key
-              , const WETYPE(property::value_type) & value
-              )
-                : _key (key)
-                , _value (value)
-              {}
-
-              const WETYPE(property::key_type) & key () const
-              {
-                return _key;
-              }
-              const WETYPE(property::value_type) & value () const
-              {
-                return _value;
-              }
-            };
-
-            enum
-              { first = property::last + 1
-              , open, close, key_value
-              , last
-              };
-          }
-
-          namespace type
-          {
-            struct key_prop_type
-            {
-            private:
-              const WETYPE(property::key_type) & _key;
-              const WETYPE(property::type) & _property;
-
-            public:
-              explicit key_prop_type ( const WETYPE(property::key_type) & key
-                                     , const WETYPE(property::type) & property
-                                     )
-                : _key (key)
-                , _property (property)
-              {}
-
-              const WETYPE(property::key_type) & key () const
-              {
-                return _key;
-              }
-              const WETYPE(property::type) & property () const
-              {
-                return _property;
-              }
-            };
-
-            enum
-              { first = value::last + 1
-              , open, close, key_prop
-              , last
-              };
-          }
         }
 
         namespace properties
         {
           enum
-            { first = property::type::last + 1
-            , open, close
-            , last
-            };
-        }
-
-        namespace sig_structured
-        {
-          enum
-            { first = properties::last + 1
+            { first = property::last + 1
             , open, close
             , last
             };
@@ -204,8 +128,8 @@ namespace fhg
         namespace _struct
         {
           enum
-            { first = sig_structured::last + 1
-            , open, close
+            { first = properties::last + 1
+            , open, close, name, type
             , last
             };
         }
@@ -385,45 +309,6 @@ namespace fhg
             , last
             };
         }
-
-        namespace signature
-        {
-          namespace literal
-          {
-            enum
-              { first = use::last + 1
-              , open, close, name, type
-              , last
-              };
-          }
-
-          namespace structured
-          {
-            struct named_map_type
-            {
-            private:
-              const std::string & _name;
-              const ::signature::structured_t & _map;
-
-            public:
-              explicit named_map_type ( const std::string & name
-                                      , const ::signature::structured_t & map
-                                      )
-                : _name (name)
-                , _map (map)
-              {}
-
-              const std::string & name () const { return _name; }
-              const ::signature::structured_t & map () const { return _map; }
-            };
-
-            enum
-              { first = literal::last + 1
-              , open, close, named_map
-              , last
-              };
-          }
-        }
       } // namespace type
 
       namespace from
@@ -459,10 +344,10 @@ namespace fhg
           class token : public boost::static_visitor<void>
           {
           private:
-            State _state;
+            State * _state;
 
           public:
-            explicit token (State state) : _state (state) {}
+            explicit token (State * state) : _state (state) {}
 
             void operator () (const ::literal::type_name_t & t) const
             {
@@ -493,10 +378,10 @@ namespace fhg
           class net_type : public boost::static_visitor<void>
           {
           private:
-            State _state;
+            State * _state;
 
           public:
-            explicit net_type (State state) : _state (state) {}
+            explicit net_type (State * state) : _state (state) {}
 
             void
             operator () (const XMLTYPE(expression_type) & exp) const
@@ -530,6 +415,7 @@ namespace fhg
               WEAVE(net::places, XMLTYPE(net_type::places_type))(net.places());
               WEAVE(net::transitions, XMLTYPE(net_type::transitions_type))
                 (net.transitions());
+              WEAVEE(net::close)();
             }
           };
 
@@ -537,10 +423,10 @@ namespace fhg
           class function_type : public boost::static_visitor<void>
           {
           private:
-            State _state;
+            State * _state;
 
           public:
-            explicit function_type (State state) : _state (state) {}
+            explicit function_type (State * state) : _state (state) {}
 
             void operator () (const XMLTYPE(use_type) & use) const
             {
@@ -551,41 +437,36 @@ namespace fhg
 
             void operator () (const XMLTYPE(function_type) & fun) const
             {
-              ::fhg::pnete::weaver::from::function (_state, fun);
+              FROM(function) (_state, fun);
             }
           };
 
           template<typename State>
-          class signature : public boost::static_visitor<void>
+          class _struct : public boost::static_visitor<void>
           {
           private:
-            const std::string & _name;
-            State _state;
+            State * _state;
 
           public:
-            explicit signature (const std::string & name, State state)
-              : _name (name)
-              , _state (state)
-            {}
+            explicit _struct (State * state) : _state (state) {}
 
             void operator () (const ::literal::type_name_t & t) const
             {
-              WEAVE(signature::literal::open, ::literal::type_name_t)(t);
-              WEAVE(signature::literal::name, std::string)(_name);
-              WEAVE(signature::literal::type, ::literal::type_name_t)(t);
-              WEAVEE(signature::literal::close)();
+              WEAVE(_struct::type, ::literal::type_name_t)(t);
             }
 
             void operator () (const ::signature::structured_t & m) const
             {
-              WEAVE(signature::structured::open, ::signature::structured_t)(m);
-              WEAVE( signature::structured::named_map
-                   , WNAME(signature::structured::named_map_type)
-                   ) (WNAME(signature::structured::named_map_type) ( _name
-                                                                   , m
-                                                                   )
-                     );
-              WEAVEE(signature::structured::close)();
+              for ( ::signature::structured_t::const_iterator
+                      field (m.begin()), end (m.end())
+                  ; field != end
+                  ; ++field
+                  )
+                {
+                  WEAVE(_struct::open, std::string)(field->first);
+                  boost::apply_visitor (*this, field->second);
+                  WEAVEE(_struct::close) ();
+                }
             }
           };
 
@@ -593,59 +474,56 @@ namespace fhg
           class property : public boost::static_visitor<void>
           {
           private:
-            State _state;
-            const WETYPE(property::key_type) & _key;
+            State * _state;
 
           public:
-            explicit property ( State state
-                                   , const WETYPE(property::key_type) & key
-                                   )
-              : _state (state)
-              , _key (key)
-            {}
+            explicit property (State * state) : _state (state) {}
 
             void operator () (const WETYPE(property::value_type) & v) const
             {
-              WEAVE(property::value::open, WETYPE(property::value_type))(v);
-              WEAVE( property::value::key_value
-                   , WNAME(property::value::key_value_type)
-                   ) (WNAME(property::value::key_value_type)(_key, v));
-              WEAVEE(property::value::close)();
+              WEAVE(property::value, WETYPE(property::value_type))(v);
             }
 
-            void operator () (const WETYPE(property::type) & prop) const
+            void operator () (const WETYPE(property::type) & props) const
             {
-              WEAVE(property::type::open, WETYPE(property::type))(prop);
-              WEAVE( property::type::key_prop
-                   , WNAME(property::type::key_prop_type)
-                   ) (WNAME(property::type::key_prop_type) (_key, prop));
-              WEAVEE(property::type::close)();
+              for ( WETYPE(property::map_type::const_iterator)
+                      p (props.get_map().begin()), end (props.get_map().end())
+                  ; p != end
+                  ; ++p
+                  )
+                {
+                  WEAVE(property::open, WETYPE(property::key_type))(p->first);
+                  boost::apply_visitor(*this, p->second);
+                  WEAVEE(property::close) ();
+                }
             }
           };
         } // namespace visitor
 
         FUN(property, ITVAL(WETYPE(property::map_type)), prop)
         {
-          WEAVE(property::open, ITVAL(WETYPE(property::map_type)))(prop);
-          WEAVEE(property::close)();
+          WEAVE(property::open, WETYPE(property::key_type))(prop.first);
+          boost::apply_visitor(visitor::property<State>(_state),prop.second);
+          WEAVEE(property::close) ();
         }
 
         FUN(properties, WETYPE(property::type), props)
         {
           WEAVE(properties::open, WETYPE(property::type))(props);
-          WEAVEE(properties::close)();
-        }
-
-        FUN(structured, ITVAL(::signature::structured_t), sig)
-        {
-          WEAVE(sig_structured::open, ITVAL(::signature::structured_t))(sig);
-          WEAVEE(sig_structured::close)();
+          WEAVEE(properties::close) ();
         }
 
         FUN(_struct, ITVAL(XMLTYPE(structs_type)), s)
         {
-          WEAVE(_struct::open, ITVAL(XMLTYPE(structs_type)))(s);
-          WEAVEE(_struct::close)();
+          WEAVE(_struct::open, std::string)(s.name);
+          boost::apply_visitor(visitor::_struct<State>(_state),s.sig);
+          WEAVEE(_struct::close) ();
+        }
+
+        FUN(structs, XMLTYPE(structs_type), structs)
+        {
+          WEAVE(structs::open, XMLTYPE(structs_type))(structs);
+          WEAVEE(structs::close)();
         }
 
         FUN(port, ITVAL(XMLTYPE(ports_type)), port)
@@ -668,12 +546,6 @@ namespace fhg
         {
           WEAVE(link::open, ITVAL(XMLTYPE(links_type)))(link);
           WEAVEE(link::close)();
-        }
-
-        FUN(structs, XMLTYPE(structs_type), structs)
-        {
-          WEAVE(structs::open, XMLTYPE(structs_type))(structs);
-          WEAVEE(structs::close)();
         }
 
         FUN(expression_sequence, std::string, lines)
@@ -742,11 +614,15 @@ namespace fhg
           WEAVEE(conditions::close)();
         }
 
-        FUN(function, ITVAL(XMLTYPE(net_type::functions_type)), fun)
+        FUN(function_head, ITVAL(XMLTYPE(net_type::functions_type)), fun)
         {
           WEAVE(function::open, ITVAL(XMLTYPE(net_type::functions_type)))(fun);
           WEAVE(function::name, MAYBE(std::string))(fun.name);
           WEAVE(function::internal, MAYBE(bool))(fun.internal);
+        }
+
+        FUN(function_tail, ITVAL(XMLTYPE(net_type::functions_type)), fun)
+        {
           WEAVE(function::properties, WETYPE(property::type))(fun.prop);
           WEAVE(function::structs, XMLTYPE(structs_type))(fun.structs);
           WEAVE(function::require, XMLTYPE(requirements_type))
@@ -759,37 +635,28 @@ namespace fhg
           WEAVEE(function::close)();
         }
 
-        FUN(function_state, WNAME(function_state_type), fs)
+        FUN(function, ITVAL(XMLTYPE(net_type::functions_type)), fun)
         {
-          const XMLTYPE(function_type) & fun (fs.fun());
-          const XMLPARSE(state::type) & state (fs.state());
+          FROM(function_head) (_state, fun);
+          FROM(function_tail) (_state, fun);
+        }
 
-          WEAVE(function::open, ITVAL(XMLTYPE(net_type::functions_type)))(fun);
-          WEAVE(function::name, MAYBE(std::string))(fun.name);
-          WEAVE(function::internal, MAYBE(bool))(fun.internal);
+        FUN(context_key_value, ITVAL(XMLPARSE(state::key_values_t)), kv)
+        {
+          WEAVE(context::key_value, ITVAL(XMLPARSE(state::key_values_t)))(kv);
+        }
 
-          WEAVE(context::open, XMLPARSE(state::type))(state);
-
-          for ( XMLPARSE(state::key_values_t::const_iterator)
-                  kv (state.key_values().begin()), end (state.key_values().end())
-              ; kv != end
-              ; ++kv
-              )
-            {
-              WEAVE(context::key_value, ITVAL(XMLPARSE(state::key_values_t)))(*kv);
-            }
+        FUN(context, XMLPARSE(state::key_values_t), context)
+        {
+          WEAVE(context::open, XMLPARSE(state::key_values_t))(context);
           WEAVEE(context::close)();
+        }
 
-          WEAVE(function::properties, WETYPE(property::type))(fun.prop);
-          WEAVE(function::structs, XMLTYPE(structs_type))(fun.structs);
-          WEAVE(function::require, XMLTYPE(requirements_type))
-            (fun.requirements);
-          WEAVE(function::in, XMLTYPE(ports_type))(fun.in());
-          WEAVE(function::out, XMLTYPE(ports_type))(fun.out());
-          WEAVE(function::fun, XMLTYPE(function_type::type))(fun.f);
-          WEAVE(function::conditions, XMLTYPE(conditions_type))
-            (fun.cond);
-          WEAVEE(function::close)();
+        FUN(function_context, WNAME(function_context_type), fs)
+        {
+          FROM(function_head) (_state, fs.fun());
+          FROM(context) (_state, fs.context());
+          FROM(function_tail) (_state, fs.fun());
         }
 
         FUN(place, ITVAL(XMLTYPE(places_type)), place)
