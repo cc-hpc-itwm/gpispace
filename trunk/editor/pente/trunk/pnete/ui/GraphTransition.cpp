@@ -22,7 +22,7 @@ namespace fhg
     namespace graph
     {
       Transition::Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent)
-      : QGraphicsItem(parent)
+      : graph_item(parent)
       , _dragStart(0, 0)
       , _size(160, 100) // hardcoded constant
       , _highlighted(false)
@@ -34,6 +34,29 @@ namespace fhg
         new TransitionCogWheelButton(this);
         setAcceptHoverEvents(true);
         init_menu_context();
+      }
+
+      //! \todo This is ugly and bad. Baaaaaaad.
+      Transition* Transition::create_from_library_data (const QByteArray& data)
+      {
+        QByteArray byteArray(data);
+        data::Transition transitionData;
+        QDataStream stream(byteArray);
+        stream >> transitionData;
+
+        Transition* transition
+            (new Transition (transitionData.name(), transitionData));
+        foreach (data::Port port, transitionData.inPorts())
+        {
+          new Port (transition, Port::IN, port.name(), port.type(), port.notConnectable());
+        }
+        foreach (data::Port port, transitionData.outPorts())
+        {
+          new Port (transition, Port::OUT, port.name(), port.type(), false);
+        }
+        transition->repositionChildrenAndResize();
+
+        return transition;
       }
 
       void Transition::init_menu_context()

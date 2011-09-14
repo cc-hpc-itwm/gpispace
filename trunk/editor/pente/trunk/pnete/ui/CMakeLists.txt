@@ -16,9 +16,8 @@ set(ui_SRCS
   StructureView.cpp
 # undo_group_manager.cpp
 
-  convenience_splitter.cpp
+  dockable_graph_view.cpp
   view_manager.cpp
-  splittable_tab_widget.cpp
 )
 
 set(ui_HDRS
@@ -37,9 +36,10 @@ set(ui_HDRS
   StructureView.hpp
 # undo_group_manager.hpp
 
-  convenience_splitter.hpp
+  dockable_graph_view.hpp
   view_manager.hpp
-  splittable_tab_widget.hpp
+
+  graph_item.hpp
 )
 
 set(ui_UIS
@@ -61,9 +61,10 @@ set(ui_TOMOC
   PropertiesEditor.hpp
 # undo_group_manager.hpp
 
-  convenience_splitter.hpp
+  dockable_graph_view.hpp
   view_manager.hpp
-  splittable_tab_widget.hpp
+
+  graph_item.hpp
 )
 
 #for moced files to get their includes.

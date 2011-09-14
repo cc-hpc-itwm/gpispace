@@ -1,8 +1,11 @@
 #ifndef GRAPHCONNECTABLEITEM_HPP
 #define GRAPHCONNECTABLEITEM_HPP 1
 
-#include <QGraphicsItem>
 #include <QObject>
+
+#include "graph_item.hpp"
+
+class QGraphicsItem;
 
 namespace fhg
 {
@@ -12,10 +15,9 @@ namespace fhg
     {
       class Connection;
 
-      class ConnectableItem : public QObject, public QGraphicsItem
+      class ConnectableItem : public graph_item
       {
         Q_OBJECT
-        Q_INTERFACES(QGraphicsItem)
 
         public:
           enum eOrientation

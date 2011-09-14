@@ -9,6 +9,7 @@
 class QString;
 class QTreeView;
 class QWidget;
+class QMenuBar;
 
 namespace fhg
 {
@@ -33,31 +34,37 @@ namespace fhg
                                  , QWidget *parent = NULL
                                  );
 
-          void setTransitionLibraryPath (const QString& path);
-          void addTransitionLibraryUserPath ( const QString& path
-                                            , bool trusted = false
-                                            );
+          void set_transition_library_path (const QString& path);
+          void add_transition_library_user_path ( const QString& path
+                                                , bool trusted = false
+                                                );
 
         public slots:
           void create();
           void save();
+          void save (const QString& filename);
           void open();
-          void close_tab();
+          void open (const QString& filename);
+          void close_document();
           void quit();
-          void expandTree();
+          void expand_library();
 
           void scene_changed (graph::Scene*);
           void view_changed (GraphView*);
 
         private:
-          QTreeView* _transitionLibrary;
+          QTreeView* _transition_library;
           view_manager* _view_manager;
+          StructureView* _structure_view;
 
-          void setupMenuAndToolbar();
-          void setupTransitionLibrary();
-
-          StructureView* _structureView;
-          void setupStructureView (const QString& load);
+          void setup(const QString& load);
+          void setup_menu_and_toolbar();
+          void setup_transition_library();
+          void setup_structure_view();
+          void setup_initial_document (const QString& load);
+          void setup_zoom_actions (QMenuBar* menu_bar);
+          void setup_edit_actions (QMenuBar* menu_bar);
+          void setup_file_actions (QMenuBar* menu_bar);
       };
     }
   }

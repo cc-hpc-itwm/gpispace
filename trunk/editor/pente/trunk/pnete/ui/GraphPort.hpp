@@ -4,12 +4,12 @@
 #include <QObject>
 #include <QMenu>
 
+#include "GraphConnectableItem.hpp"
+#include "graph_item.hpp"
+
 class QAction;
 class QMenu;
 class QGraphicsSceneContextMenuEvent;
-
-#include "GraphConnectableItem.hpp"
-#include "GraphItemTypes.hpp"
 
 namespace fhg
 {
@@ -24,7 +24,12 @@ namespace fhg
         Q_OBJECT
 
         public:
-          Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType, bool notConnectable = false);
+          Port ( Transition* parent
+               , eDirection direction
+               , const QString& title
+               , const QString& dataType
+               , bool notConnectable = false
+               );
 
           const bool& highlighted() const;
           const qreal& length() const;
@@ -38,12 +43,12 @@ namespace fhg
 
           void deleteConnection();
 
-          virtual bool canConnectTo(ConnectableItem* other) const;
-          virtual bool canConnectIn(eDirection thatDirection) const;
+          virtual bool canConnectTo (ConnectableItem* other) const;
+          virtual bool canConnectIn (eDirection thatDirection) const;
 
-          QPointF snapToEdge(const QPointF& position, eOrientation edge) const;
-          eOrientation getNearestEdge(const QPointF& position) const;
-          QPointF checkForMinimumDistance(const QPointF& position) const;
+          QPointF snapToEdge (const QPointF& position, eOrientation edge) const;
+          eOrientation getNearestEdge (const QPointF& position) const;
+          QPointF checkForMinimumDistance (const QPointF& position) const;
 
           enum
           {
@@ -55,19 +60,22 @@ namespace fhg
           }
 
         public slots:
-        void slot_set_type();
-        void slot_delete();
+          void slot_set_type();
+          void slot_delete();
 
         protected:
           virtual QPainterPath shape() const;
-          virtual void paint(QPainter*painter, const QStyleOptionGraphicsItem*option, QWidget*widget);
+          virtual void paint ( QPainter* painter
+                             , const QStyleOptionGraphicsItem* option
+                             , QWidget* widget
+                             );
 
-        virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
-          virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
-          virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
-          virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
-          virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
-          virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+          virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
+          virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
+          virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event);
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
         private:
           QString _title;
@@ -81,9 +89,9 @@ namespace fhg
 
           qreal _length;
 
-        QMenu _menu_context;
+          QMenu _menu_context;
 
-        void init_menu_context();
+          void init_menu_context();
       };
     }
   }

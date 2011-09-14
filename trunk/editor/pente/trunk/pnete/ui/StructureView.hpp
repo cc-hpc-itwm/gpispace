@@ -32,9 +32,9 @@ namespace fhg
       class StructureView : public QTreeView
       {
       public:
-        StructureView (const QString & load, QWidget* parent = 0);
+        StructureView (QWidget* parent = 0);
 
-        void fromFile (const std::string & input);
+        void from_file (const QString & input);
         void from (const XMLTYPE(function_type) & fun);
         void from ( const XMLTYPE(function_type) & fun
                   , const XMLPARSE(state::type) & state

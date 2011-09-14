@@ -1,17 +1,17 @@
+// bernd.loerwald@itwm.fraunhofer.de
+
 #include "GraphView.hpp"
-#include "TransitionLibraryModel.hpp"
-#include "GraphTransition.hpp"
-#include "GraphPort.hpp"
-#include "GraphStyle.hpp"
-#include "data/Transition.hpp"
-#include "data/Port.hpp"
 
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
-#include <QPainter>
 #include <QWheelEvent>
+
+#include "TransitionLibraryModel.hpp"
+#include "GraphTransition.hpp"
+#include "GraphStyle.hpp"
+#include "GraphScene.hpp"
 
 namespace fhg
 {
@@ -19,111 +19,140 @@ namespace fhg
   {
     namespace ui
     {
-      GraphView::GraphView(QGraphicsScene* scene, QWidget* parent)
-      : QGraphicsView(scene, parent),
-      _currentScale(1.0)
+      //! \todo Make configurable. Also: duplicate in editor_window.
+      static const int min_zoom_value (30);                                     // hardcoded constant
+      static const int max_zoom_value (300);                                    // hardcoded constant
+      static const int per_click_zoom_difference (10);                          // hardcoded constant
+      static const int default_zoom_value (100);                                // hardcoded constant
+
+      GraphView::GraphView (graph::Scene* scene, QWidget* parent)
+      : QGraphicsView (scene, parent)
+      , _currentScale (default_zoom_value)
       {
-        setDragMode(QGraphicsView::ScrollHandDrag);
-        setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+        setDragMode (QGraphicsView::ScrollHandDrag);
+        setRenderHints ( QPainter::Antialiasing
+                       | QPainter::TextAntialiasing
+                       | QPainter::SmoothPixmapTransform
+                       );
       }
 
-      void GraphView::dragEnterEvent(QDragEnterEvent *event)
+      graph::Scene* GraphView::scene() const
       {
-        //! \todo Paint a ghost transition.
-        const QMimeData *mimeData = event->mimeData();
-        if(mimeData->hasFormat(TransitionLibraryModel::mimeType))
-        {
-          event->acceptProposedAction();
-        }
+        return qobject_cast<graph::Scene*> (QGraphicsView::scene());
+      }
+      void GraphView::setScene(graph::Scene* scene)
+      {
+        QGraphicsView::setScene (scene);
       }
 
-      void GraphView::dragMoveEvent(QDragMoveEvent *event)
-      {
-        //! \todo Paint a ghost transition.
-        const QMimeData *mimeData = event->mimeData();
-        if(mimeData->hasFormat(TransitionLibraryModel::mimeType))
-        {
-          event->acceptProposedAction();
-        }
-      }
-
-      //! \todo Move somewhere else.
-      graph::Transition* createTransitionFromMimeData(const QByteArray& data)
-      {
-        QByteArray byteArray(data);
-        data::Transition transitionData;
-        QDataStream stream(byteArray);
-        stream >> transitionData;
-
-        graph::Transition* transition = new graph::Transition(transitionData.name(), transitionData);
-        foreach(data::Port port, transitionData.inPorts())
-        {
-          new graph::Port(transition, graph::Port::IN, port.name(), port.type(), port.notConnectable());
-        }
-        foreach(data::Port port, transitionData.outPorts())
-        {
-          new graph::Port(transition, graph::Port::OUT, port.name(), port.type(), false);
-        }
-        transition->repositionChildrenAndResize();
-
-        return transition;
-      }
-
-      void GraphView::dropEvent(QDropEvent *event)
-      {
-        const QMimeData *mimeData = event->mimeData();
-        if(mimeData->hasFormat(TransitionLibraryModel::mimeType))
-        {
-          graph::Transition* transition = createTransitionFromMimeData(mimeData->data(TransitionLibraryModel::mimeType));
-          scene()->addItem(transition);
-          transition->setPos(graph::Style::snapToRaster(mapToScene(event->pos()) - transition->boundingRect().bottomRight() / 2.0));
-          event->acceptProposedAction();
-        }
-      }
-
-      //! \todo Make configurable.
-      static const int maximumZoomLevel = 300;                                  // hardcoded constant
-      static const int minimumZoomLevel = 30;                                   // hardcoded constant
-
-      void GraphView::wheelEvent(QWheelEvent* event)
-      {
-        if(event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical)
-        {
-          setFocus();
-          //! \note magic number taken from QWheelEvent::delta() documentation.
-          //! \note for the love of god, don't remove the +0.005.
-          int current = static_cast<int>((_currentScale + 0.005) * 100.0);      // hardcoded constant
-          int plus = event->delta() > 0 ? 5 : -5;
-          //! \todo max and min zoom level from somewhere, not hardcoded?
-          int to = std::max(minimumZoomLevel, std::min(maximumZoomLevel, current + plus));
-          zoom(to);
-        }
-        else
-        {
-          QGraphicsView::wheelEvent(event);
-        }
-      }
-
-      void
-      GraphView::focusInEvent (QFocusEvent* event)
+      void GraphView::focusInEvent (QFocusEvent* event)
       {
         emit focus_gained (this);
         QGraphicsView::focusInEvent (event);
       }
 
-      void GraphView::zoom(int to)
+      void GraphView::dragEnterEvent (QDragEnterEvent* event)
       {
-        qreal target = (to / 100.0);                                            // hardcoded constant
-        qreal factor = target / _currentScale;
-        scale(factor, factor);
+        //! \todo Paint a ghost transition.
+        const QMimeData* mimeData (event->mimeData());
+        if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+        {
+          event->acceptProposedAction();
+          return;
+        }
+        else
+        {
+          QGraphicsView::dragEnterEvent (event);
+        }
+      }
+
+      void GraphView::dragMoveEvent (QDragMoveEvent* event)
+      {
+        //! \todo Paint a ghost transition.
+        const QMimeData* mimeData (event->mimeData());
+        if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+        {
+          event->acceptProposedAction();
+        }
+        else
+        {
+          QGraphicsView::dragMoveEvent (event);
+        }
+      }
+
+      void GraphView::dropEvent (QDropEvent* event)
+      {
+        const QMimeData* mimeData (event->mimeData());
+        if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+        {
+          graph::Transition* transition
+              (graph::Transition::create_from_library_data
+                  (mimeData->data (TransitionLibraryModel::mimeType))
+              );
+          scene()->addItem (transition);
+          transition->setPos
+              (graph::Style::snapToRaster ( mapToScene(event->pos())
+                                          - transition->boundingRect()
+                                                  .bottomRight() / 2.0
+                                          )
+              );
+
+          event->acceptProposedAction();
+        }
+        else
+        {
+          QGraphicsView::dropEvent (event);
+        }
+      }
+
+      void GraphView::wheelEvent (QWheelEvent* event)
+      {
+        if ( event->modifiers() & Qt::ControlModifier
+          && event->orientation() == Qt::Vertical
+           )
+        {
+          setFocus();
+          if (event->delta() > 0)
+          {
+            zoom_in();
+          }
+          else
+          {
+            zoom_out();
+          }
+        }
+        else
+        {
+          QGraphicsView::wheelEvent (event);
+        }
+      }
+
+      void GraphView::zoom (int to)
+      {
+        const int target (qBound (min_zoom_value, to, max_zoom_value));
+        const qreal factor (target / static_cast<qreal> (_currentScale));
+        scale (factor, factor);
         _currentScale = target;
 
-        emit zoomed(to);
+        emit_current_zoom_level();
+      }
+
+      void GraphView::zoom_in()
+      {
+        zoom (_currentScale + per_click_zoom_difference);
+      }
+      void GraphView::zoom_out()
+      {
+        zoom (_currentScale - per_click_zoom_difference);
+      }
+      void GraphView::reset_zoom()
+      {
+        zoom (default_zoom_value);
       }
 
       void GraphView::emit_current_zoom_level()
       {
-        emit zoomed (_currentScale * 100.0);
+        emit zoomed (_currentScale);
       }
     }
   }

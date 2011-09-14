@@ -11,6 +11,8 @@
 #include <QFile>
 #include <QFileInfo>
 
+#include <gvc.h>
+
 namespace fhg
 {
   namespace pnete
@@ -248,6 +250,88 @@ namespace fhg
       const QString& Scene::name() const
       {
         return _name;
+      }
+
+      namespace GraphViz
+      {
+        class Graph
+        {
+          private:
+            Agraph_t* _internal;
+            std::vector<Agnode_t*> _nodes;
+            std::vector<Agedge_t*> _edges;
+          public:
+            typedef std::vector<Agnode_t*>::size_type node_type;
+            typedef std::vector<Agedge_t*>::size_type edge_type;
+
+            Graph()
+            : _internal (agopen ("___G", AGDIGRAPH))
+            {
+            }
+
+            node_type add_node (const std::string& name)
+            {
+              _nodes.push_back (agnode (_internal, const_cast<char*> (name.c_str())));
+              return _nodes.size() - 1;
+            }
+            edge_type add_edge (node_type from, node_type to)
+            {
+              _edges.push_back (agedge (_internal, _nodes[from], _nodes[to]));
+              return _edges.size() - 1;
+            }
+
+            ~Graph()
+            {
+              agclose (_internal);
+            }
+
+            friend class Context;
+        };
+        class Context
+        {
+          private:
+            GVC_t* _internal;
+          public:
+            Context ()
+            : _internal (gvContext())
+            {
+            }
+
+            ~Context()
+            {
+              gvFreeContext (_internal);
+            }
+
+            void layout (Graph& g)
+            {
+              gvLayout (_internal, g._internal, "dot");
+              gvRender (_internal, g._internal, "dot", stderr);
+              gvRender (_internal, g._internal, "ps", stdout);
+              gvFreeLayout (_internal, g._internal);
+            }
+        };
+      }
+
+      void Scene::auto_layout()
+      {
+        //! \todo Init graphviz graph and context.
+        //! \todo Iterate over all items, calling add_to_graphviz_graph on all.
+        //! \todo Tell graphviz to autolayout.
+        //! \todo Iterate over graphviz data and relayout graph.
+        //! \todo Free graphviz stuff.
+
+        GraphViz::Context gv_context;
+        GraphViz::Graph g;
+
+        GraphViz::Graph::node_type a (g.add_node ("a"));
+        GraphViz::Graph::node_type b (g.add_node ("b"));
+        GraphViz::Graph::node_type c (g.add_node ("c"));
+
+        GraphViz::Graph::edge_type edge_ab (g.add_edge (a, b));
+        GraphViz::Graph::edge_type edge_bc (g.add_edge (b, c));
+        GraphViz::Graph::edge_type edge_ca (g.add_edge (c, a));
+
+        gv_context.layout (g);
       }
     }
   }

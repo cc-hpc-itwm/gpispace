@@ -5,11 +5,13 @@
 #include <QPointF>
 #include <QList>
 
-#include "GraphItemTypes.hpp"
+#include "graph_item.hpp"
 
 class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
+class QPainterPath;
+class QRectF;
 
 namespace fhg
 {
@@ -19,7 +21,7 @@ namespace fhg
     {
       class ConnectableItem;
 
-      class Connection : public QGraphicsItem
+      class Connection : public graph_item
       {
         public:
           Connection(ConnectableItem* start = NULL, ConnectableItem* end = NULL);

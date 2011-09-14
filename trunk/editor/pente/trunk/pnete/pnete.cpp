@@ -157,14 +157,14 @@ namespace fhg
         throw std::runtime_error ("Please configure first.");
       }
 
-      _editor_windows.at (window_id)->setTransitionLibraryPath
+      _editor_windows.at (window_id)->set_transition_library_path
           (settings.value ("basePath").toString ());
 
       const int numTrusted (settings.beginReadArray ("trustedPaths"));
       for (int i (0); i < numTrusted; ++i)
       {
         settings.setArrayIndex (i);
-        _editor_windows.at (window_id)->addTransitionLibraryUserPath
+        _editor_windows.at (window_id)->add_transition_library_user_path
             (settings.value ("path").toString (), true);
       }
       settings.endArray();
@@ -173,7 +173,7 @@ namespace fhg
       for (int i (0); i < numUser; ++i)
       {
         settings.setArrayIndex (i);
-        _editor_windows.at (window_id)->addTransitionLibraryUserPath
+        _editor_windows.at (window_id)->add_transition_library_user_path
             (settings.value ("path").toString (), false);
       }
       settings.endArray ();

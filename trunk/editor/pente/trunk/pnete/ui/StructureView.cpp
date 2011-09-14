@@ -565,27 +565,25 @@ namespace fhg
 
     namespace ui
     {
-      StructureView::StructureView (const QString & load, QWidget* parent)
-        : QTreeView (parent)
-        , _model (new QStandardItemModel(this))
-        , _root (_model->invisibleRootItem())
+      StructureView::StructureView (QWidget* parent)
+      : QTreeView (parent)
+      , _model (new QStandardItemModel (this))
+      , _root (_model->invisibleRootItem())
       {
         setModel (_model);
 
-        setFrameShape(QFrame::StyledPanel);
-        setFrameShadow(QFrame::Sunken);
-        setDragDropMode(QAbstractItemView::DragOnly);
+        setFrameShape (QFrame::StyledPanel);
+        setFrameShadow (QFrame::Sunken);
+        setDragDropMode (QAbstractItemView::NoDragDrop);
+        //! \todo As soon as we can actually edit stuff in here, remove.
+        setEditTriggers (QAbstractItemView::NoEditTriggers);
 
-        header()->setVisible(false);
-
-        if (load.length() > 0)
-          {
-            fromFile (load.toStdString());
-          }
+        header()->setVisible (false);
       }
 
-      void StructureView::fromFile (const std::string & input)
+      void StructureView::from_file (const QString & input_q)
       {
+        const std::string input (input_q.toStdString());
         XMLPARSE(state::type) state;
 
         state.set_input (input);

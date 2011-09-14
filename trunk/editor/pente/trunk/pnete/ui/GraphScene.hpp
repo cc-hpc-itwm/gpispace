@@ -47,6 +47,8 @@ namespace fhg
           void slot_add_place ();
           void slot_add_struct ();
 
+          void auto_layout();
+
         protected:
           virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
           virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);

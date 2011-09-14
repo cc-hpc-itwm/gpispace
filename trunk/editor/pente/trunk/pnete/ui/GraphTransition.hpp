@@ -17,7 +17,7 @@ class QAction;
 class QMenu;
 
 #include "data/Transition.hpp"
-#include "GraphItemTypes.hpp"
+#include "graph_item.hpp"
 
 namespace fhg
 {
@@ -25,7 +25,7 @@ namespace fhg
   {
     namespace graph
     {
-      class Transition : public QObject, public QGraphicsItem
+      class Transition : public graph_item
       {
         Q_OBJECT
         Q_INTERFACES(QGraphicsItem)
@@ -51,6 +51,8 @@ namespace fhg
           {
             return Type;
           }
+
+          static Transition* create_from_library_data (const QByteArray& data);
 
         public slots:
           void slot_delete(void);

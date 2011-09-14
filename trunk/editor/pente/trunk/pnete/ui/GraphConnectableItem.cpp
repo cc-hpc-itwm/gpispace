@@ -8,15 +8,18 @@ namespace fhg
   {
     namespace graph
     {
-      ConnectableItem::ConnectableItem(eOrientation orientation, eDirection direction, QGraphicsItem* parent)
-      : QGraphicsItem(parent),
-      _connection(NULL),
-      _direction(direction),
-      _orientation(orientation)
+      ConnectableItem::ConnectableItem ( eOrientation orientation
+                                       , eDirection direction
+                                       , QGraphicsItem* parent
+                                       )
+      : graph_item (parent)
+      , _connection (NULL)
+      , _direction (direction)
+      , _orientation (orientation)
       {
       }
 
-      void ConnectableItem::connectMe(Connection* connection)
+      void ConnectableItem::connectMe (Connection* connection)
       {
         _connection = connection;
       }
@@ -34,38 +37,37 @@ namespace fhg
         return _direction;
       }
 
-      bool ConnectableItem::canConnectTo(ConnectableItem* other) const
+      bool ConnectableItem::canConnectTo (ConnectableItem* other) const
       {
         return true;
       }
-
-      bool ConnectableItem::canConnectIn(eDirection thatDirection) const
+      bool ConnectableItem::canConnectIn (eDirection thatDirection) const
       {
         return true;
       }
 
       bool ConnectableItem::createPendingConnectionIfPossible()
       {
-        Scene* sceneObject = qobject_cast<Scene*>(scene());
+        Scene* sceneObject = qobject_cast<Scene*> (scene());
 
-        if(sceneObject->pendingConnection())
+        if (sceneObject->pendingConnection())
         {
           return false;
         }
 
-        if(_connection)
+        if (_connection)
         {
-          sceneObject->setPendingConnection(_connection);
-          _connection->removeMe(this);
+          sceneObject->setPendingConnection (_connection);
+          _connection->removeMe (this);
           return true;
         }
         else
         {
-          return sceneObject->createPendingConnectionWith(this);
+          return sceneObject->createPendingConnectionWith (this);
         }
       }
 
-      void ConnectableItem::setOrientation(const eOrientation& orientation)
+      void ConnectableItem::setOrientation (const eOrientation& orientation)
       {
         _orientation = orientation;
       }

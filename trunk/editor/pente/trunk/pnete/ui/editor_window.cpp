@@ -14,9 +14,8 @@
 #include <QTreeView>
 #include <QWidget>
 
-#include "convenience_splitter.hpp"
+#include "GraphScene.hpp"
 #include "GraphView.hpp"
-#include "splittable_tab_widget.hpp"
 #include "StructureView.hpp"
 #include "TransitionLibraryModel.hpp"
 #include "view_manager.hpp"
@@ -27,15 +26,36 @@ namespace fhg
   {
     namespace ui
     {
+      const Qt::DockWidgetArea dock_position (Qt::LeftDockWidgetArea);
+
+      //! \note These constants are not only hardcoded but also duplicate.
+      //! \todo Use the same constants as in GraphView.
+      static const int min_zoom_value (30);                                     // hardcoded constant
+      static const int max_zoom_value (300);                                    // hardcoded constant
+      static const int default_zoom_value (100);                                // hardcoded constant
+      static const int maximum_slider_length (200);                             // hardcoded constant
+
       editor_window::editor_window (const QString& load, QWidget* parent)
       : QMainWindow (parent)
-      , _transitionLibrary (NULL)
+      , _transition_library (NULL)
       , _view_manager (new view_manager (this))
       {
-        setCentralWidget (_view_manager->splitter());
-        setupMenuAndToolbar();
-        setupTransitionLibrary();
-        setupStructureView (load);
+        setup (load);
+      }
+
+      void editor_window::setup(const QString& load)
+      {
+        setWindowTitle (tr ("editor_window_title"));
+        resize (1000, 800);                                                     // hardcoded constant
+
+        setup_structure_view();
+        setup_initial_document (load);
+        setup_transition_library();
+        setup_menu_and_toolbar();
+
+        setDocumentMode (true);
+        setDockNestingEnabled (true);
+        setTabPosition (Qt::AllDockWidgetAreas, QTabWidget::North);
 
         connect (_view_manager
                 , SIGNAL (view_changed (GraphView*))
@@ -47,6 +67,22 @@ namespace fhg
                 );
       }
 
+      void editor_window::setup_initial_document (const QString& load)
+      {
+        //! \note this is a dummy only.
+        setCentralWidget (new QWidget());
+        centralWidget()->hide();
+
+        if (!load.isEmpty())
+        {
+          open (load);
+        }
+        else
+        {
+          create();
+        }
+      }
+
       void editor_window::scene_changed (graph::Scene*)
       {
       }
@@ -56,206 +92,233 @@ namespace fhg
         view->emit_current_zoom_level();
       }
 
-      void editor_window::expandTree()
+      void editor_window::expand_library()
       {
-        _transitionLibrary->expandAll();
+        _transition_library->expandAll();
       }
 
-      void editor_window::setTransitionLibraryPath (const QString& path)
+      void editor_window::set_transition_library_path (const QString& path)
       {
-        TransitionLibraryModel* fsmodel
-            (new TransitionLibraryModel(QDir (path), this));
-        _transitionLibrary->setModel (fsmodel);
-        _transitionLibrary->expandAll();
-        _transitionLibrary->setColumnWidth (0, 230);                            // hardcoded constant
-        _transitionLibrary->setColumnWidth (1, 20);                             // hardcoded constant
+        TransitionLibraryModel* model
+            (new TransitionLibraryModel (QDir (path), this));
+        _transition_library->setModel (model);
+        _transition_library->expandAll();
+        _transition_library->setColumnWidth (0, 230);                           // hardcoded constant
+        _transition_library->setColumnWidth (1, 20);                            // hardcoded constant
 
-        connect (fsmodel, SIGNAL (layoutChanged()), SLOT (expandTree()));
+        connect (model, SIGNAL (layoutChanged()), SLOT (expand_library()));
       }
 
-      void editor_window::addTransitionLibraryUserPath ( const QString& path
-                                                    , bool trusted
-                                                    )
+      void editor_window::add_transition_library_user_path ( const QString& path
+                                                           , bool trusted
+                                                           )
       {
-        qobject_cast<TransitionLibraryModel*> (_transitionLibrary->model())->
+        qobject_cast<TransitionLibraryModel*> (_transition_library->model())->
             addContentFromDirectory (path, trusted);
-        _transitionLibrary->expandAll();
+        expand_library();
       }
 
-      void editor_window::setupMenuAndToolbar()
+      void editor_window::setup_menu_and_toolbar()
       {
-        setWindowTitle (tr ("SDPA editor"));
-        resize (1000, 800);                                                     // hardcoded constant
+        QMenuBar* menu_bar (new QMenuBar (this));
+        setMenuBar (menu_bar);
+
+        setUnifiedTitleAndToolBarOnMac (true);
 
         //! \todo icons for toolbar.
-        QAction* createAction (new QAction (tr ("Create"), this));
-        QAction* openAction (new QAction (tr ("Open"), this));
-        QAction* saveAction (new QAction (tr ("Save"), this));
-        QAction* closeAction (new QAction (tr ("Close"), this));
-        QAction* quitAction (new QAction (tr ("Quit"), this));
+        setup_file_actions (menu_bar);
+        setup_edit_actions (menu_bar);
+        setup_zoom_actions (menu_bar);
+      }
 
-        createAction->setShortcuts (QKeySequence::New);
-        openAction->setShortcuts (QKeySequence::Open);
-        saveAction->setShortcuts (QKeySequence::Save);
-        closeAction->setShortcuts (QKeySequence::Close);
-        quitAction->setShortcuts (QKeySequence::Quit);
+      void editor_window::setup_file_actions (QMenuBar* menu_bar)
+      {
+        QMenu* file_menu (new QMenu (tr ("file_menu"), menu_bar));
+        menu_bar->addAction (file_menu->menuAction());
 
-        connect (createAction, SIGNAL (triggered()), SLOT (create()));
-        connect (openAction, SIGNAL (triggered()), SLOT (open()));
-        connect (saveAction, SIGNAL (triggered()), SLOT (save()));
-        connect (closeAction, SIGNAL (triggered()), SLOT (close_tab()));
-        connect (quitAction, SIGNAL (triggered()), SLOT (quit()));
+        QToolBar* file_tool_bar (new QToolBar (tr ("file_tool_bar"), this));
+        addToolBar (Qt::TopToolBarArea, file_tool_bar);
 
-        QMenuBar* menuBar (new QMenuBar (this));
-        menuBar->setSizePolicy
-            (QSizePolicy (QSizePolicy::Ignored, QSizePolicy::Preferred));
-        QMenu* menuFile (new QMenu (tr ("File"), menuBar));
+        QAction* create_action (new QAction (tr ("Create"), this));
+        QAction* open_action (new QAction (tr ("Open"), this));
+        QAction* save_action (new QAction (tr ("Save"), this));
+        QAction* close_action (new QAction (tr ("Close"), this));
+        QAction* quit_action (new QAction (tr ("Quit"), this));
 
-        menuBar->addAction (menuFile->menuAction());
-        menuFile->addAction (createAction);
-        menuFile->addAction (openAction);
-        menuFile->addAction (saveAction);
-        menuFile->addAction (closeAction);
-        menuFile->addAction (quitAction);
+        create_action->setShortcuts (QKeySequence::New);
+        open_action->setShortcuts (QKeySequence::Open);
+        save_action->setShortcuts (QKeySequence::Save);
+        close_action->setShortcuts (QKeySequence::Close);
+        quit_action->setShortcuts (QKeySequence::Quit);
 
-        QMenu* menuEdit (new QMenu (tr ("Edit"), menuBar));
+        connect (create_action, SIGNAL (triggered()), SLOT (create()));
+        connect (open_action, SIGNAL (triggered()), SLOT (open()));
+        connect (save_action, SIGNAL (triggered()), SLOT (save()));
+        connect (close_action, SIGNAL (triggered()), SLOT (close_document()));
+        connect (quit_action, SIGNAL (triggered()), SLOT (quit()));
 
-        menuBar->addAction (menuEdit->menuAction());
+        file_menu->addAction (create_action);
+        file_menu->addAction (open_action);
+        file_menu->addAction (save_action);
+        file_menu->addAction (close_action);
+        file_menu->addAction (quit_action);
 
-        //! \todo This is nearly duplicate code, also available in graph::scene.
-        QMenu* menu_new (new QMenu (tr ("new"), this));
-        QAction* action_add_transition (menu_new->addAction (tr ("transition")));
-        _view_manager->connect ( action_add_transition
+        file_tool_bar->addAction (create_action);
+        file_tool_bar->addAction (open_action);
+        file_tool_bar->addAction (save_action);
+      }
+
+      void editor_window::setup_edit_actions (QMenuBar* menu_bar)
+      {
+        QMenu* edit_menu (new QMenu (tr ("edit_menu"), menu_bar));
+        menu_bar->addAction (edit_menu->menuAction());
+
+        QAction* auto_layout_action (new QAction (tr ("auto_layout"), this));
+        QAction* add_transition_action (new QAction (tr ("add_transition"), this));
+        QAction* add_place_action (new QAction (tr ("add_place"), this));
+        QAction* add_struct_action (new QAction (tr ("add_struct"), this));
+
+        _view_manager->connect ( auto_layout_action
+                               , SIGNAL (triggered())
+                               , SLOT (current_scene_auto_layout())
+                               );
+        _view_manager->connect ( add_transition_action
                                , SIGNAL (triggered())
                                , SLOT (current_scene_add_transition())
                                );
-
-        QAction* action_add_place (menu_new->addAction (tr ("place")));
-        _view_manager->connect ( action_add_place
+        _view_manager->connect ( add_place_action
                                , SIGNAL (triggered())
                                , SLOT (current_scene_add_place())
                                );
-
-        menu_new->addSeparator();
-
-        QAction* action_add_struct (menu_new->addAction (tr ("struct")));
-        _view_manager->connect ( action_add_struct
+        _view_manager->connect ( add_struct_action
                                , SIGNAL (triggered())
                                , SLOT (current_scene_add_struct())
                                );
 
-        menuEdit->addMenu (menu_new);
+        edit_menu->addAction (auto_layout_action);
+        edit_menu->addSeparator();
+        edit_menu->addAction (add_transition_action);
+        edit_menu->addAction (add_place_action);
+        edit_menu->addSeparator();
+        edit_menu->addAction (add_struct_action);
+      }
 
-        setMenuBar (menuBar);
+      void editor_window::setup_zoom_actions (QMenuBar* menu_bar)
+      {
+        QMenu* edit_menu (new QMenu (tr ("zoom_menu"), menu_bar));
+        menu_bar->addAction (edit_menu->menuAction());
 
-        QToolBar* mainToolBar (new QToolBar (this));
-        addToolBar (Qt::TopToolBarArea, mainToolBar);
-        setUnifiedTitleAndToolBarOnMac (true);
+        QToolBar* zoom_tool_bar (new QToolBar (tr ("zoom_tool_bar"), this));
+        addToolBar (Qt::TopToolBarArea, zoom_tool_bar);
+        zoom_tool_bar->setAllowedAreas ( Qt::TopToolBarArea
+                                       | Qt::BottomToolBarArea
+                                       );
 
-        mainToolBar->addAction (createAction);
-        mainToolBar->addAction (openAction);
-        mainToolBar->addAction (saveAction);
+        QAction* zoom_in_action (new QAction (tr ("zoom_in"), this));
+        QAction* zoom_out_action (new QAction (tr ("zoom_out"), this));
+        QAction* zoom_default_action (new QAction (tr ("zoom_default"), this));
 
-        QWidget* spacer (new QWidget (this));
-        spacer->setSizePolicy (QSizePolicy::Expanding, QSizePolicy::Expanding);
-        mainToolBar->addWidget (spacer);
+        zoom_in_action->setShortcuts (QKeySequence::ZoomIn);
+        zoom_out_action->setShortcuts (QKeySequence::ZoomOut);
+        zoom_default_action->setShortcut (QKeySequence ("Ctrl+*"));
 
-        //! \note These constants are not only hardcoded but also duplicate.
-        //! \todo Use the same constants as in GraphView.
-        const int min_zoom_value (30);                                          // hardcoded constant
-        const int max_zoom_value (300);                                         // hardcoded constant
-        const int default_zoom_value (100);                                     // hardcoded constant
-        const int maximum_slider_length (200);                                  // hardcoded constant
-
-        QSlider* zoomSlider (new QSlider(Qt::Horizontal, this));
-        zoomSlider->setMaximumSize
-            (QSize (maximum_slider_length, maximum_slider_length));
-        zoomSlider->setRange (min_zoom_value, max_zoom_value);
-        mainToolBar->addWidget (zoomSlider);
-
-        //! \todo Horizontal, it looks a bit weird on my window manager.
-        zoomSlider->connect ( mainToolBar
-                            , SIGNAL (orientationChanged (Qt::Orientation))
-                            , SLOT (setOrientation (Qt::Orientation))
-                            );
-
-        //! \todo icon. ._.
-        QSpinBox* zoomSpinBox (new QSpinBox (this));
-        zoomSpinBox->setSuffix ("%");
-        zoomSpinBox->setRange (min_zoom_value, max_zoom_value);
-        mainToolBar->addWidget (zoomSpinBox);
-
-        zoomSpinBox->connect ( zoomSlider
-                             , SIGNAL (valueChanged (int))
-                             , SLOT (setValue (int))
-                             );
-        zoomSlider->connect ( zoomSpinBox
-                            , SIGNAL (valueChanged (int))
-                            , SLOT (setValue (int))
-                            );
-        _view_manager->connect ( zoomSpinBox
-                               , SIGNAL (valueChanged (int))
-                               , SLOT (zoom_current_view (int))
+        _view_manager->connect ( zoom_in_action
+                               , SIGNAL (triggered())
+                               , SLOT (current_view_zoom_in())
                                );
-        zoomSpinBox->connect ( _view_manager
-                             , SIGNAL (zoomed (int))
-                             , SLOT (setValue (int))
-                             );
-        zoomSlider->connect ( _view_manager
-                            , SIGNAL (zoomed (int))
-                            , SLOT (setValue (int))
-                            );
+        _view_manager->connect ( zoom_out_action
+                               , SIGNAL (triggered())
+                               , SLOT (current_view_zoom_out())
+                               );
+        _view_manager->connect ( zoom_default_action
+                               , SIGNAL (triggered())
+                               , SLOT (current_view_reset_zoom())
+                               );
 
-        zoomSlider->setValue (default_zoom_value);
+        edit_menu->addAction (zoom_in_action);
+        edit_menu->addAction (zoom_out_action);
+        edit_menu->addAction (zoom_default_action);
+
+        zoom_tool_bar->addAction (zoom_in_action);
+        zoom_tool_bar->addAction (zoom_out_action);
+        zoom_tool_bar->addAction (zoom_default_action);
+
+        QSlider* zoom_slider (new QSlider (Qt::Horizontal, this));
+        zoom_slider->setMaximumWidth (maximum_slider_length);
+        zoom_slider->setRange (min_zoom_value, max_zoom_value);
+        zoom_tool_bar->addWidget (zoom_slider);
+
+        QSpinBox* zoom_spin_box (new QSpinBox (this));
+        zoom_spin_box->setSuffix ("%");
+        zoom_spin_box->setRange (min_zoom_value, max_zoom_value);
+        zoom_tool_bar->addWidget (zoom_spin_box);
+
+        zoom_slider->connect ( zoom_spin_box
+                              , SIGNAL (valueChanged (int))
+                              , SLOT (setValue (int))
+                              );
+        _view_manager->connect ( zoom_spin_box
+                               , SIGNAL (valueChanged (int))
+                               , SLOT (current_view_zoom (int))
+                               );
+
+        _view_manager->connect ( zoom_slider
+                               , SIGNAL (valueChanged (int))
+                               , SLOT (current_view_zoom (int))
+                               );
+        zoom_spin_box->connect ( zoom_slider
+                               , SIGNAL (valueChanged (int))
+                               , SLOT (setValue (int))
+                               );
+
+        zoom_spin_box->connect ( _view_manager
+                               , SIGNAL (zoomed (int))
+                               , SLOT (setValue (int))
+                               );
+        zoom_slider->connect ( _view_manager
+                              , SIGNAL (zoomed (int))
+                              , SLOT (setValue (int))
+                              );
+
+        _view_manager->current_view_zoom (default_zoom_value);
       }
 
-      void editor_window::setupTransitionLibrary()
+      void editor_window::setup_transition_library()
       {
-        QDockWidget* transitionLibraryDockWidget
-            (new QDockWidget (tr ("Library"), this));
-        transitionLibraryDockWidget->setMinimumSize (QSize (254, 304));         // hardcoded constant
-        transitionLibraryDockWidget->setAllowedAreas
-            (Qt::RightDockWidgetArea | Qt::LeftDockWidgetArea);
-
-        QWidget* transitionLibraryDockWidgetContents (new QWidget);
-
-        QGridLayout* transitionLibraryDockWidgetLayout
-            (new QGridLayout (transitionLibraryDockWidgetContents));
-        transitionLibraryDockWidgetLayout->setContentsMargins (2, 2, 2, 2);
-
-        _transitionLibrary = new QTreeView (transitionLibraryDockWidgetContents);
-        _transitionLibrary->setFrameShape (QFrame::StyledPanel);
-        _transitionLibrary->setFrameShadow (QFrame::Sunken);
-        _transitionLibrary->setDragDropMode (QAbstractItemView::DragOnly);
-        _transitionLibrary->header()->hide();
-        //! \todo Not resizable?
-        //_transitionLibrary->header()->setCascadingSectionResizes(true);
-
-        transitionLibraryDockWidgetLayout->addWidget (_transitionLibrary);
-        transitionLibraryDockWidget->setWidget
-            (transitionLibraryDockWidgetContents);
-
-        addDockWidget (Qt::RightDockWidgetArea, transitionLibraryDockWidget);
-      }
-
-      void editor_window::setupStructureView (const QString& load)
-      {
-        QDockWidget* dockWidget (new QDockWidget (tr ("Structure"), this));
+        QDockWidget* dockWidget (new QDockWidget (tr ("library_window"), this));
         dockWidget->setMinimumSize (QSize (254, 304));                          // hardcoded constant
-        dockWidget->setAllowedAreas ( Qt::LeftDockWidgetArea
-                                    | Qt::RightDockWidgetArea
-                                    );
+        dockWidget->setAllowedAreas (dock_position);
+        dockWidget->setFeatures ( QDockWidget::DockWidgetClosable
+                                | QDockWidget::DockWidgetMovable
+                                );
 
-        QWidget* dockWidgetContents (new QWidget());
-        QGridLayout* dockWidgetLayout (new QGridLayout (dockWidgetContents));
-        dockWidgetLayout->setContentsMargins (2, 2, 2, 2);
+        _transition_library = new QTreeView (this);
+        _transition_library->setFrameShape (QFrame::StyledPanel);
+        _transition_library->setFrameShadow (QFrame::Sunken);
+        _transition_library->setDragDropMode (QAbstractItemView::DragOnly);
+        _transition_library->header()->hide();
+        //! \todo Not resizable?
+        //_transition_library->header()->setCascadingSectionResizes(true);
 
-        _structureView = new StructureView(load, dockWidgetContents);
+        dockWidget->setWidget (_transition_library);
 
-        dockWidgetLayout->addWidget (_structureView);
-        dockWidget->setWidget (dockWidgetContents);
+        addDockWidget (dock_position, dockWidget, Qt::Horizontal);
+      }
 
-        addDockWidget (Qt::LeftDockWidgetArea, dockWidget);
+      void editor_window::setup_structure_view ()
+      {
+        QDockWidget* dockWidget (new QDockWidget (tr ("structure_window"), this));
+        dockWidget->setMinimumSize (QSize (254, 304));                          // hardcoded constant
+        dockWidget->setAllowedAreas (dock_position);
+        dockWidget->setFeatures ( QDockWidget::DockWidgetClosable
+                                | QDockWidget::DockWidgetMovable
+                                );
+
+        _structure_view = new StructureView (this);
+
+        dockWidget->setWidget (_structure_view);
+
+        addDockWidget (dock_position, dockWidget, Qt::Horizontal);
       }
 
       void editor_window::create()
@@ -266,7 +329,7 @@ namespace fhg
       void editor_window::save()
       {
         QString filename (QFileDialog::getSaveFileName
-            (this, tr ("Save net"), QDir::homePath(), tr ("XML files (*.xml)")));
+           (this, tr ("Save net"), QDir::homePath(), tr ("XML files (*.xml)")));
 
         if (filename.isEmpty())
         {
@@ -278,27 +341,35 @@ namespace fhg
           filename.append (".xml");
         }
 
-        _view_manager->save_current_scene (filename);
+        save (filename);
       }
 
       void editor_window::open()
       {
         QString filename (QFileDialog::getOpenFileName
-            (this, tr ("Load net"), QDir::homePath(), tr ("XML files (*.xml)")));
+           (this, tr ("Load net"), QDir::homePath(), tr ("XML files (*.xml)")));
 
         if (filename.isEmpty())
         {
           return;
         }
 
-        _structureView->fromFile (filename.toStdString());
+        open (filename);
+      }
 
+      void editor_window::save (const QString& filename)
+      {
+        _view_manager->save_current_scene (filename);
+      }
+      void editor_window::open (const QString& filename)
+      {
+        _structure_view->from_file (filename);
         _view_manager->create_view_for_file (filename);
       }
 
-      void editor_window::close_tab()
+      void editor_window::close_document()
       {
-        _view_manager->current_tab_widget()->close_current_tab();
+        _view_manager->current_document_close();
       }
 
       void editor_window::quit()
