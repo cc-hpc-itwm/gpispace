@@ -18,18 +18,23 @@ namespace fhg
   {
     namespace graph
     {
-      Port::Port(Transition* parent, eDirection direction, const QString& title, const QString& dataType, bool notConnectable)
-      : ConnectableItem(direction == OUT ? EAST : WEST, direction, parent)
-      , _title(title)
-      , _dataType(dataType)
-      , _dragStart(0.0, 0.0)
-      , _dragging(false)
-      , _highlighted(false)
-      , _notConnectable(notConnectable)
-      , _length(Style::portDefaultWidth())
+      Port::Port ( Transition* parent
+                 , eDirection direction
+                 , const QString& title
+                 , const QString& dataType
+                 , bool notConnectable
+                 )
+      : ConnectableItem (direction == OUT ? EAST : WEST, direction, parent)
+      , _title (title)
+      , _dataType (dataType)
+      , _dragStart (0.0, 0.0)
+      , _dragging (false)
+      , _highlighted (false)
+      , _notConnectable (notConnectable)
+      , _length (Style::portDefaultWidth())
       , _menu_context()
       {
-        setAcceptHoverEvents(true);
+        setAcceptHoverEvents (true);
         //! \todo verbose name
         setToolTip(dataType);
 

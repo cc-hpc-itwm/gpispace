@@ -18,15 +18,15 @@ namespace fhg
     namespace graph
     {
       Connection::Connection(ConnectableItem* start, ConnectableItem* end)
-      : QGraphicsItem(NULL),
-      _start(NULL),
-      _end(NULL),
-      _highlighted(false)
+      : graph_item()
+      , _start (NULL)
+      , _end (NULL)
+      , _highlighted (false)
       {
-        setStart(start);
-        setEnd(end);
+        setStart (start);
+        setEnd (end);
 
-        setZValue(-1);                                                          // hardcoded constant
+        setZValue (-1);                                                          // hardcoded constant
       }
 
       void Connection::setStart(ConnectableItem* start)
