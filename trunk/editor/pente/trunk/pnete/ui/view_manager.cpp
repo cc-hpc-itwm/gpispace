@@ -23,7 +23,7 @@ namespace fhg
       : QObject (NULL)
       , _editor_window (parent)
       , _open_files()
-      , _current_widget (NULL)
+      , _accessed_widgets()
       , _current_view (NULL)
       , _current_scene (NULL)
       {
@@ -31,18 +31,21 @@ namespace fhg
 
       void view_manager::focus_changed (QWidget* widget)
       {
-        _current_widget
-            = util::first_parent_being_a<dockable_graph_view>(widget);
+        dockable_graph_view* current_widget
+              (util::first_parent_being_a<dockable_graph_view> (widget));
 
-        if (!_current_widget)
+        if (!current_widget)
         {
           throw std::runtime_error ("a view not being on a d_g_v got focused.");
         }
 
-        _current_widget->setFocus();
+        _accessed_widgets.append (current_widget);
+
+        current_widget->setFocus();
+        current_widget->raise();
 
         GraphView* old_view (_current_view);
-        _current_view = _current_widget->graph_view();
+        _current_view = current_widget->graph_view();
         if (old_view != _current_view)
         {
           emit view_changed (_current_view);
@@ -66,13 +69,12 @@ namespace fhg
 
       void view_manager::add_on_top_of_current_widget (dockable_graph_view* w)
       {
-        if (_current_widget)
+        if (!_accessed_widgets.isEmpty())
         {
-          _editor_window->tabifyDockWidget (_current_widget, w);
+          _editor_window->tabifyDockWidget (_accessed_widgets.back(), w);
         }
         else
         {
-          //! \note This is only the case on the first document.
           _editor_window->
               addDockWidget (Qt::LeftDockWidgetArea, w, Qt::Horizontal);
         }
@@ -84,7 +86,9 @@ namespace fhg
                 , SIGNAL (zoomed (int))
                 , SIGNAL (zoomed (int))
                 );
-        //! \note or call setFocus() on it and process events.
+
+        //! \todo For some reason, my window manager does not raise the tab.
+        w->graph_view()->setFocus();
         focus_changed (w->graph_view());
       }
 
@@ -99,7 +103,18 @@ namespace fhg
       }
       void view_manager::current_document_close()
       {
-        _current_widget->close();
+        if (_accessed_widgets.isEmpty())
+        {
+          return;
+        }
+        dockable_graph_view* current (_accessed_widgets.back());
+        _accessed_widgets.removeAll (current);
+        _editor_window->removeDockWidget (current);
+        delete current;
+        if (!_accessed_widgets.isEmpty())
+        {
+          _accessed_widgets.back()->graph_view()->setFocus();
+        }
       }
       void view_manager::create_view_for_file (const QString& filename)
       {
@@ -121,7 +136,7 @@ namespace fhg
         }
         _open_files[filename] = _current_scene;
         _open_files[filename]->save (filename);
-        _current_widget->setWindowTitle
+        _accessed_widgets.back()->setWindowTitle
             (QString (_open_files[filename]->name()).append("[*]"));
       }
 

@@ -18,8 +18,10 @@ namespace fhg
       , _graph_view (new GraphView(scene, this))
       {
         setWidget (_graph_view);
-        //! \todo Do better. This is only a hacky workaround.
-        setMinimumWidth (800);                                                  // hardcoded constant
+        setFeatures ( QDockWidget::DockWidgetClosable
+                    | QDockWidget::DockWidgetMovable
+                    );
+        setAllowedAreas (Qt::LeftDockWidgetArea);
       }
 
       GraphView* dockable_graph_view::graph_view() const

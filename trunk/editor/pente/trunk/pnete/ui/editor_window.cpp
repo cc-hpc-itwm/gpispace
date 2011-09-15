@@ -46,7 +46,6 @@ namespace fhg
       void editor_window::setup(const QString& load)
       {
         setWindowTitle (tr ("editor_window_title"));
-        resize (1000, 800);                                                     // hardcoded constant
 
         setup_structure_view();
         setup_initial_document (load);
@@ -129,6 +128,7 @@ namespace fhg
         setup_file_actions (menu_bar);
         setup_edit_actions (menu_bar);
         setup_zoom_actions (menu_bar);
+        setup_window_actions (menu_bar);
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)
@@ -139,11 +139,11 @@ namespace fhg
         QToolBar* file_tool_bar (new QToolBar (tr ("file_tool_bar"), this));
         addToolBar (Qt::TopToolBarArea, file_tool_bar);
 
-        QAction* create_action (new QAction (tr ("Create"), this));
-        QAction* open_action (new QAction (tr ("Open"), this));
-        QAction* save_action (new QAction (tr ("Save"), this));
-        QAction* close_action (new QAction (tr ("Close"), this));
-        QAction* quit_action (new QAction (tr ("Quit"), this));
+        QAction* create_action (new QAction (tr ("new_net"), this));
+        QAction* open_action (new QAction (tr ("open_net"), this));
+        QAction* save_action (new QAction (tr ("save_net"), this));
+        QAction* close_action (new QAction (tr ("close_current_window"), this));
+        QAction* quit_action (new QAction (tr ("quit_application"), this));
 
         create_action->setShortcuts (QKeySequence::New);
         open_action->setShortcuts (QKeySequence::Open);
@@ -283,42 +283,81 @@ namespace fhg
         _view_manager->current_view_zoom (default_zoom_value);
       }
 
+      QMenu* editor_window::createPopupMenu()
+      {
+        QMenu* menu (QMainWindow::createPopupMenu());
+
+        QAction* duplicate_view_action (new QAction (tr ("duplicate_view"), menu));
+        QAction* close_action (new QAction (tr ("close_current_window"), menu));
+
+        _view_manager->connect ( duplicate_view_action
+                               , SIGNAL (triggered())
+                               , SLOT (create_new_view_for_current_scene())
+                               );
+        _view_manager->connect ( close_action
+                               , SIGNAL (triggered())
+                               , SLOT (current_document_close())
+                               );
+
+        //! \todo Add them BEFORE, not after the existing actions.
+        menu->addSeparator();
+        menu->addAction (duplicate_view_action);
+        menu->addAction (close_action);
+
+        return menu;
+      }
+
+      void editor_window::setup_window_actions (QMenuBar* menu_bar)
+      {
+        //QAction* menu_action (new QAction (tr ("window_menu"), menu_bar));
+        //menu_bar->addAction (menu_action);
+        menu_bar->addAction(createPopupMenu()->menuAction());
+
+        //! \todo Open createPopupMenu() on menu_action::triggered().
+        //! \todo Actually differ between documents and library / structure there.
+      }
+
+      class dock_widget : public QDockWidget
+      {
+        public:
+          dock_widget (const QString& n, QWidget* child, QWidget* parent = NULL)
+          : QDockWidget (n, parent)
+          {
+            setAllowedAreas (dock_position);
+            setFeatures ( QDockWidget::DockWidgetClosable
+                        | QDockWidget::DockWidgetMovable
+                        );
+
+            setWidget (child);
+          }
+      };
+
       void editor_window::setup_transition_library()
       {
-        QDockWidget* dockWidget (new QDockWidget (tr ("library_window"), this));
-        dockWidget->setMinimumSize (QSize (254, 304));                          // hardcoded constant
-        dockWidget->setAllowedAreas (dock_position);
-        dockWidget->setFeatures ( QDockWidget::DockWidgetClosable
-                                | QDockWidget::DockWidgetMovable
-                                );
-
         _transition_library = new QTreeView (this);
-        _transition_library->setFrameShape (QFrame::StyledPanel);
-        _transition_library->setFrameShadow (QFrame::Sunken);
         _transition_library->setDragDropMode (QAbstractItemView::DragOnly);
         _transition_library->header()->hide();
-        //! \todo Not resizable?
-        //_transition_library->header()->setCascadingSectionResizes(true);
 
-        dockWidget->setWidget (_transition_library);
-
-        addDockWidget (dock_position, dockWidget, Qt::Horizontal);
+        addDockWidget ( dock_position
+                      , new dock_widget ( tr ("library_window")
+                                        , _transition_library
+                                        , this
+                                        )
+                      , Qt::Horizontal
+                      );
       }
 
       void editor_window::setup_structure_view ()
       {
-        QDockWidget* dockWidget (new QDockWidget (tr ("structure_window"), this));
-        dockWidget->setMinimumSize (QSize (254, 304));                          // hardcoded constant
-        dockWidget->setAllowedAreas (dock_position);
-        dockWidget->setFeatures ( QDockWidget::DockWidgetClosable
-                                | QDockWidget::DockWidgetMovable
-                                );
-
         _structure_view = new StructureView (this);
 
-        dockWidget->setWidget (_structure_view);
-
-        addDockWidget (dock_position, dockWidget, Qt::Horizontal);
+        addDockWidget ( dock_position
+                      , new dock_widget ( tr ("structure_window")
+                                        , _structure_view
+                                        , this
+                                        )
+                      , Qt::Horizontal
+                      );
       }
 
       void editor_window::create()

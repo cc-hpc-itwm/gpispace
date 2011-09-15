@@ -59,7 +59,7 @@ namespace fhg
 
           QHash<QString, graph::Scene*> _open_files;
 
-          dockable_graph_view* _current_widget;
+          QList<dockable_graph_view*> _accessed_widgets;
           GraphView* _current_view;
           graph::Scene* _current_scene;
 

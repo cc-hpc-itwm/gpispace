@@ -39,6 +39,8 @@ namespace fhg
                                                 , bool trusted = false
                                                 );
 
+          virtual QMenu* createPopupMenu();
+
         public slots:
           void create();
           void save();
@@ -65,6 +67,7 @@ namespace fhg
           void setup_zoom_actions (QMenuBar* menu_bar);
           void setup_edit_actions (QMenuBar* menu_bar);
           void setup_file_actions (QMenuBar* menu_bar);
+          void setup_window_actions (QMenuBar* menu_bar);
       };
     }
   }

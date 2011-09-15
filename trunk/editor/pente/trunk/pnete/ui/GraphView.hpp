@@ -53,6 +53,8 @@ namespace fhg
           virtual void wheelEvent (QWheelEvent* event);
           virtual void focusInEvent (QFocusEvent* event);
 
+          virtual QSize sizeHint() const;
+
         private:
           int _currentScale;
       };

@@ -36,6 +36,11 @@ namespace fhg
                        );
       }
 
+      QSize GraphView::sizeHint() const
+      {
+        return QSize (window()->width() * 0.8, window()->height());
+      }
+
       graph::Scene* GraphView::scene() const
       {
         return qobject_cast<graph::Scene*> (QGraphicsView::scene());

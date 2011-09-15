@@ -567,13 +567,11 @@ namespace fhg
       {
         setModel (_model);
 
-        setFrameShape (QFrame::StyledPanel);
-        setFrameShadow (QFrame::Sunken);
-        setDragDropMode (QAbstractItemView::NoDragDrop);
         //! \todo As soon as we can actually edit stuff in here, remove.
+        setDragDropMode (QAbstractItemView::NoDragDrop);
         setEditTriggers (QAbstractItemView::NoEditTriggers);
 
-        header()->setVisible (false);
+        header()->hide();
       }
 
       void StructureView::from_file (const QString & input_q)
