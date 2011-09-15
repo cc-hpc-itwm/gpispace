@@ -4,5 +4,6 @@
      <file>cogwheel.png</file>
      <file>pente.png</file>
      <file>localization/de_DE.qm</file>
+     <file>localization/en_US.qm</file>
  </qresource>
  </RCC>

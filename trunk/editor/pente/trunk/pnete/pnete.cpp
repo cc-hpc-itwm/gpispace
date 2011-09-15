@@ -82,6 +82,10 @@ namespace fhg
                         , QLibraryInfo::location(QLibraryInfo::TranslationsPath));
       installTranslator (&_qtTranslator);
 
+      //! \note Fallback.
+      _penteTranslator.load ("en_US", ":/localization/");
+      installTranslator (&_penteTranslator);
+
       _penteTranslator.load (locale, ":/localization/");
       installTranslator (&_penteTranslator);
     }
