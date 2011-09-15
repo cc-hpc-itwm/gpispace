@@ -40,11 +40,15 @@ set(ui_HDRS
   view_manager.hpp
 
   graph_item.hpp
+  ComboItemDelegate.hpp
+  PropertiesEditor.hpp
+  StructureEditor.hpp
 )
 
 set(ui_UIS
 #    PropertiesWidget.ui
-    PropertiesEditorForm.ui
+     PropertiesEditorForm.ui
+     StructureEditorForm.ui
 )
 
 set(ui_TOMOC
@@ -59,6 +63,7 @@ set(ui_TOMOC
   PopoverWidget.hpp
   StructureView.hpp
   PropertiesEditor.hpp
+  StructureEditor.hpp
 # undo_group_manager.hpp
 
   dockable_graph_view.hpp
