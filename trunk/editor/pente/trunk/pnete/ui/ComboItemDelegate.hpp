@@ -30,11 +30,13 @@ public:
 	virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 	{
 		QComboBox *comboBox = new QComboBox(parent);
-		//comboBox->setEditable(true);
+
 		comboBox->setInsertPolicy(QComboBox::NoInsert);
 
-		connect(comboBox, SIGNAL(activated(int)), this, SLOT(emitCommitData()));
-		connect(comboBox->lineEdit(), SIGNAL(editingFinished()), this, SLOT(emitCommitData()));
+		// only if it is editable!
+		//comboBox->setEditable(true);
+		//connect(comboBox, SIGNAL(activated(int)), this, SLOT(emitCommitData()));
+		//connect(comboBox->lineEdit(), SIGNAL(editingFinished()), this, SLOT(emitCommitData()));
 
 		QString currentText = index.model()->data(index, Qt::DisplayRole).toString();
 

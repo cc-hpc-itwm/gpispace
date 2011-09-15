@@ -175,14 +175,7 @@ public slots:
 					int row = parent->row();
 					if(parent->parent())
 					{
-						/*if( parent->parent() == model.invisibleRootItem() )
-						{
-							QList<QStandardItem *> listItems;
-							listItems<<itemV;
-							model.insertColumn(1, listItems);
-						}
-						else*/
-							parent->parent()->setChild( row, 1, itemV );
+						parent->parent()->setChild( row, 1, itemV );
 					}
      			}
 

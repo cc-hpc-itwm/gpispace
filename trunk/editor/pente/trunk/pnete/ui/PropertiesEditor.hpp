@@ -23,6 +23,7 @@ namespace prop = we::type::property;
 typedef std::string key_type;
 typedef std::string value_type;
 
+namespace propedit {
 // build property from QTreeView
 template <typename T>
 void build_property(T itemK, const we::type::property::path_type& path,  we::type::property::type& prop )
@@ -164,7 +165,8 @@ public slots:
 					itemV->setText("");
 
 					int row = parent->row();
-					parent->parent()->setChild( row, 1, itemV );
+					if(parent->parent())
+						parent->parent()->setChild( row, 1, itemV );
      			}
 
      			m_treeView->scrollTo(model.indexFromItem(parent));
@@ -290,8 +292,6 @@ public:
 
 		QStandardItem* itemV = new QStandardItem();
 		itemV->setText(value);
-		// equivalent to setData("value", Qt::DisplayRole);
-		// parent->setChild(0,1,itemV);
 
 		QStandardItem* itemP;
 		if( parent == model.invisibleRootItem() && value.isEmpty() )
@@ -326,6 +326,6 @@ private:
 	QStandardItemModel model;
 	QWidget *m_widgetPropEdit;
 };
-
+}
 
 #endif /* PROPERTIESEDITOR_HPP_ */
