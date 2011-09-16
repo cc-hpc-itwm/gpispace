@@ -83,6 +83,10 @@ namespace fhg
                 , SIGNAL (focus_gained (QWidget*))
                 , SLOT (focus_changed (QWidget*))
                 );
+        connect ( w
+                , SIGNAL (focus_gained (QWidget*))
+                , SLOT (focus_changed (QWidget*))
+                );
         connect ( w->graph_view()
                 , SIGNAL (zoomed (int))
                 , SIGNAL (zoomed (int))

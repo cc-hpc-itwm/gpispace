@@ -1,11 +1,11 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include "dockable_graph_view.hpp"
+#include <pnete/ui/dockable_graph_view.hpp>
 
 #include <QWidget>
 
-#include "GraphView.hpp"
-#include "GraphScene.hpp"
+#include <pnete/ui/GraphView.hpp>
+#include <pnete/ui/GraphScene.hpp>
 
 namespace fhg
 {
@@ -22,6 +22,13 @@ namespace fhg
                     | QDockWidget::DockWidgetMovable
                     );
         setAllowedAreas (Qt::LeftDockWidgetArea);
+      }
+
+      //! \todo Its raise being called or something, not focusIn.
+      void dockable_graph_view::focusInEvent (QFocusEvent* event)
+      {
+        emit focus_gained (this);
+        QDockWidget::focusInEvent (event);
       }
 
       GraphView* dockable_graph_view::graph_view() const

@@ -7,6 +7,7 @@
 #include <QDockWidget>
 
 class QObject;
+class QFocusEvent;
 
 namespace fhg
 {
@@ -27,6 +28,12 @@ namespace fhg
           dockable_graph_view (graph::Scene* scene);
 
           GraphView* graph_view() const;
+
+        protected:
+          virtual void focusInEvent (QFocusEvent*);
+
+        signals:
+          void focus_gained(QWidget*);
 
         private:
           GraphView* _graph_view;
