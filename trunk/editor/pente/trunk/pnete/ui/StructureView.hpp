@@ -4,8 +4,10 @@
 #include <QTreeView>
 
 #include <string>
+#include <list>
 
 #include <pnete/traverse/weaver.hpp>
+#include <pnete/data/internal.hpp>
 
 class QStandardItem;
 class QStandardItemModel;
@@ -31,19 +33,19 @@ namespace fhg
     {
       class StructureView : public QTreeView
       {
-      public:
-        StructureView (QWidget* parent = 0);
-
-        void from_file (const QString & input);
-
-        void from ( const XMLTYPE(function_type) & fun
-                  , const XMLPARSE(state::key_values_t) & context
-                  = XMLPARSE(state::key_values_t) ()
-                  );
-
       private:
         QStandardItemModel* _model;
         QStandardItem* _root;
+
+        typedef std::list<data::internal::ptr> datas_type;
+
+        datas_type _datas;
+
+      public:
+        StructureView (QWidget* parent = 0);
+
+        void append (data::internal::ptr data);
+        void clear();
       };
     }
   }

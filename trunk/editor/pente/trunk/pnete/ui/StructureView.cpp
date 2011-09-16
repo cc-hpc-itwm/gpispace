@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include "StructureView.hpp"
+#include <pnete/ui/StructureView.hpp>
 
 #include <pnete/traverse/weaver.hpp>
 
@@ -574,31 +574,27 @@ namespace fhg
         header()->hide();
       }
 
-      void StructureView::from_file (const QString & input_q)
+      void StructureView::append (data::internal::ptr data)
       {
-        const std::string input (input_q.toStdString());
-        XMLPARSE(state::type) state;
+        _datas.push_back (data);
 
-        state.set_input (input);
-
-        const XMLTYPE(function_type) fun (XMLPARSE(just_parse) (state, input));
-
-        from (fun, state.key_values());
-      }
-
-      void StructureView::from ( const XMLTYPE(function_type) & fun
-                               , const XMLPARSE(state::key_values_t) & context
-                               )
-      {
         tv::weaver * w (new tv::weaver (_root));
 
         FROM( function_context<tv::weaver>
               ( w
-              , WNAME(function_context_type) (fun, context)
+              , WNAME(function_context_type) ( data->function()
+                                             , data->context()
+                                             )
               )
             );
-
       }
-     }
+
+      void StructureView::clear()
+      {
+        setModel (_model = new QStandardItemModel (this));
+        _root = _model->invisibleRootItem();
+        _datas.clear();
+      }
+    }
   }
 }

@@ -1,8 +1,10 @@
-#include "GraphScene.hpp"
-#include "GraphConnection.hpp"
-#include "GraphConnectableItem.hpp"
-#include "helper/GraphTraverser.hpp"
-#include "helper/TraverserReceiver.hpp"
+
+#include <pnete/ui/GraphConnectableItem.hpp>
+#include <pnete/ui/GraphConnection.hpp>
+#include <pnete/ui/GraphScene.hpp>
+
+#include <pnete/data/internal.hpp>
+#include <pnete/data/manager.hpp>
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
@@ -19,22 +21,12 @@ namespace fhg
   {
     namespace graph
     {
-      Scene::Scene (QObject* parent)
+      Scene::Scene (data::internal::ptr data, QObject* parent)
       : QGraphicsScene (parent)
       , _pendingConnection (NULL)
       , _mousePosition (QPointF (0.0, 0.0))
       , _menu_context()
-      , _name (tr ("(untitled)"))
-      {
-        init_menu_context();
-      }
-
-      Scene::Scene (const QString& filename, QObject* parent)
-      : QGraphicsScene (parent)
-      , _pendingConnection (NULL)
-      , _mousePosition (QPointF (0.0, 0.0))
-      , _menu_context()
-      , _name (filename.section ('/', -1))
+      , _data (data)
       {
         init_menu_context();
 
@@ -224,32 +216,14 @@ namespace fhg
         }
       }
 
-      void Scene::save (const QString& filename)
+      void Scene::save (const QString& filename) const
       {
-        _name = (filename.section ('/', -1));
-
-        //! \todo dump _internal_data via we::*.
-        QFile xmlFile (filename);
-
-        if (!xmlFile.open (QIODevice::WriteOnly | QIODevice::Text))
-        {
-          return;
-        }
-
-        helper::GraphTraverser traverser (this);
-        helper::TraverserReceiver receiver;
-
-        QTextStream out (&xmlFile);
-        out << traverser.traverse (&receiver, QFileInfo (xmlFile).baseName())
-            << "\n";
-        out.flush();
-
-        xmlFile.close();
+        data::manager::instance().save (_data, filename);
       }
 
-      const QString& Scene::name() const
+      QString Scene::name() const
       {
-        return _name;
+        return _data->name();
       }
 
       namespace GraphViz

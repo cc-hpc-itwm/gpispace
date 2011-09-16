@@ -10,7 +10,7 @@
 #include <QLocale>
 #include <QLibraryInfo>
 
-#include "ui/editor_window.hpp"
+#include <pnete/ui/editor_window.hpp>
 
 #define BE_PENTE 1
 
@@ -125,24 +125,10 @@ namespace fhg
 
     int PetriNetEditor::create_editor_window ()
     {
-      QString load;
-
-      const QStringList& args (arguments ());
-      if (args.contains ("--load"))
-      {
-        if(args.size () <= args.indexOf ("--load") + 1)
-        {
-          std::cerr << "--load requires a path" << std::endl;
-          throw std::runtime_error ("Please specify filename.");
-        }
-
-        load = args.at (args.indexOf ("--load") + 1);
-      }
-
-      int window_id (_editor_windows.count());
-      _editor_windows.append (new ui::editor_window (load));
+      const int window_id (_editor_windows.count());
+      _editor_windows.append (new ui::editor_window());
       _splash.close();
-      _editor_windows.at (window_id)->showMaximized ();
+      _editor_windows.at (window_id)->show();
       return window_id;
     }
 

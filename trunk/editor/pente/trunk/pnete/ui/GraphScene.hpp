@@ -1,6 +1,8 @@
 #ifndef GRAPHSCENE_HPP
 #define GRAPHSCENE_HPP 1
 
+#include <pnete/data/internal.hpp>
+
 #include <QGraphicsScene>
 #include <QPointF>
 #include <QObject>
@@ -25,8 +27,7 @@ namespace fhg
         Q_OBJECT
 
         public:
-          explicit Scene (QObject* parent = NULL);
-          explicit Scene (const QString& filename, QObject* parent = NULL);
+          explicit Scene (data::internal::ptr data, QObject* parent = NULL);
 
           const QPointF& mousePosition() const;
 
@@ -38,9 +39,9 @@ namespace fhg
           void pendingConnectionConnectTo(ConnectableItem* item);
           bool createPendingConnectionWith(ConnectableItem* item);
 
-          void save(const QString& filename);
+          void save (const QString& filename) const;
 
-          const QString& name() const;
+          QString name() const;
 
         public slots:
           void slot_add_transition ();
@@ -62,7 +63,7 @@ namespace fhg
           QMenu _menu_new;
           QMenu _menu_context;
 
-          QString _name;
+          data::internal::ptr _data;
 
           void init_menu_context();
       };

@@ -14,11 +14,13 @@
 #include <QTreeView>
 #include <QWidget>
 
-#include "GraphScene.hpp"
-#include "GraphView.hpp"
-#include "StructureView.hpp"
-#include "TransitionLibraryModel.hpp"
-#include "view_manager.hpp"
+#include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/GraphView.hpp>
+#include <pnete/ui/StructureView.hpp>
+#include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/view_manager.hpp>
+
+#include <pnete/data/manager.hpp>
 
 namespace fhg
 {
@@ -35,20 +37,20 @@ namespace fhg
       static const int default_zoom_value (100);                                // hardcoded constant
       static const int maximum_slider_length (200);                             // hardcoded constant
 
-      editor_window::editor_window (const QString& load, QWidget* parent)
-      : QMainWindow (parent)
-      , _transition_library (NULL)
-      , _view_manager (new view_manager (this))
+      editor_window::editor_window (QWidget* parent)
+        : QMainWindow (parent)
+        , _transition_library (NULL)
+        , _view_manager (new view_manager (this))
       {
-        setup (load);
+        setup();
       }
 
-      void editor_window::setup(const QString& load)
+      void editor_window::setup()
       {
         setWindowTitle (tr ("editor_window_title"));
 
         setup_structure_view();
-        setup_initial_document (load);
+        setup_initial_document ();
         setup_transition_library();
         setup_menu_and_toolbar();
 
@@ -66,20 +68,12 @@ namespace fhg
                 );
       }
 
-      void editor_window::setup_initial_document (const QString& load)
+      void editor_window::setup_initial_document ()
       {
         //! \note this is a dummy only.
         setCentralWidget (new QWidget());
         centralWidget()->hide();
-
-        if (!load.isEmpty())
-        {
-          open (load);
-        }
-        else
-        {
-          create();
-        }
+        create();
       }
 
       void editor_window::scene_changed (graph::Scene*)
@@ -362,7 +356,7 @@ namespace fhg
 
       void editor_window::create()
       {
-        _view_manager->create_new_scene_and_view();
+        _view_manager->create_view(data::manager::instance().create());
       }
 
       void editor_window::save()
@@ -402,8 +396,9 @@ namespace fhg
       }
       void editor_window::open (const QString& filename)
       {
-        _structure_view->from_file (filename);
-        _view_manager->create_view_for_file (filename);
+        data::internal::ptr data(data::manager::instance().load (filename));
+        _structure_view->append (data);
+        _view_manager->create_view (data);
       }
 
       void editor_window::close_document()

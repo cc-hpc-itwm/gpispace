@@ -1,17 +1,18 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include "view_manager.hpp"
+#include <pnete/ui/view_manager.hpp>
 
 #include <stdexcept>
 
 #include <QString>
 #include <QWidget>
 
-#include "editor_window.hpp"
-#include "dockable_graph_view.hpp"
-#include "GraphScene.hpp"
-#include "GraphView.hpp"
-#include "util.hpp"
+#include <pnete/ui/editor_window.hpp>
+#include <pnete/ui/dockable_graph_view.hpp>
+#include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/GraphView.hpp>
+
+#include <pnete/util.hpp>
 
 namespace fhg
 {
@@ -22,7 +23,7 @@ namespace fhg
       view_manager::view_manager (editor_window* parent)
       : QObject (NULL)
       , _editor_window (parent)
-      , _open_files()
+      , _scenes()
       , _accessed_widgets()
       , _current_view (NULL)
       , _current_scene (NULL)
@@ -96,11 +97,6 @@ namespace fhg
       {
         add_on_top_of_current_widget (new dockable_graph_view (_current_scene));
       }
-      void view_manager::create_new_scene_and_view()
-      {
-        add_on_top_of_current_widget
-            (new dockable_graph_view (new graph::Scene (this)));
-      }
       void view_manager::current_document_close()
       {
         if (_accessed_widgets.isEmpty())
@@ -116,28 +112,24 @@ namespace fhg
           _accessed_widgets.back()->graph_view()->setFocus();
         }
       }
-      void view_manager::create_view_for_file (const QString& filename)
+      void view_manager::create_view (data::internal::ptr data)
       {
-        graph::Scene* scene (NULL);
-        if (!_open_files.contains (filename))
+        scenes_type::iterator pos (_scenes.find (data));
+
+        if (pos == _scenes.end())
         {
-          _open_files[filename] = new graph::Scene (filename);
+          pos = _scenes.insert
+            (scenes_type::value_type (data, new graph::Scene (data))).first;
         }
 
-        add_on_top_of_current_widget
-            (new dockable_graph_view (_open_files[filename]));
+        add_on_top_of_current_widget (new dockable_graph_view (pos->second));
       }
       void view_manager::save_current_scene (const QString& filename)
       {
-        if (_open_files.contains (filename))
-        {
-          throw std::runtime_error
-              ("there already is a file open with this name.");
-        }
-        _open_files[filename] = _current_scene;
-        _open_files[filename]->save (filename);
+        _current_scene->save (filename);
+
         _accessed_widgets.back()->setWindowTitle
-            (QString (_open_files[filename]->name()).append("[*]"));
+            (QString (_current_scene->name()).append("[*]"));
       }
 
       // -- current scene --

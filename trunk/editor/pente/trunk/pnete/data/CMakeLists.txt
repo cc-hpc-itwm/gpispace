@@ -4,12 +4,18 @@ set(data_SRCS
   Transition.cpp
   Port.cpp
   Connection.cpp
+  undo_redo_manager.cpp
+  internal.cpp
+  manager.cpp
 )
 
 set(data_HDRS
   Transition.hpp
   Port.hpp
   Connection.hpp
+  undo_redo_manager.hpp
+  internal.hpp
+  manager.hpp
 )
 
 set(data_UIS

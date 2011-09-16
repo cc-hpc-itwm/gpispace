@@ -3,8 +3,12 @@
 #ifndef UI_VIEW_MANAGER_HPP
 #define UI_VIEW_MANAGER_HPP 1
 
-#include <QHash>
 #include <QObject>
+
+#include <pnete/data/internal.hpp>
+#include <pnete/util.hpp>
+
+#include <boost/unordered_map.hpp>
 
 class QString;
 class QWidget;
@@ -44,8 +48,7 @@ namespace fhg
           void current_scene_auto_layout();
 
           void create_new_view_for_current_scene();
-          void create_new_scene_and_view();
-          void create_view_for_file (const QString& filename);
+          void create_view (data::internal::ptr data);
           void save_current_scene (const QString& filename);
           void current_document_close();
 
@@ -57,7 +60,13 @@ namespace fhg
         private:
           editor_window* _editor_window;
 
-          QHash<QString, graph::Scene*> _open_files;
+          typedef boost::unordered_map
+                  < data::internal::ptr
+                  , graph::Scene*
+                  , util::ptr_hasher<data::internal::ptr::value_type>
+                  > scenes_type;
+
+          scenes_type _scenes;
 
           QList<dockable_graph_view*> _accessed_widgets;
           GraphView* _current_view;
