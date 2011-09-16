@@ -68,8 +68,6 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
-  state->set_input (input);
-
   xml::parse::type::function_type f (xml::parse::frontend (*state, input));
 
   we::transition_t trans (f.synthesize<we::activity_t> (*state));

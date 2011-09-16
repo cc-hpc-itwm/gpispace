@@ -1537,6 +1537,8 @@ namespace xml
     inline type::function_type
     just_parse (state::type & state, const std::string & input)
     {
+      state.set_input (input);
+
       return state.generic_parse<type::function_type> (parse_function, input);
     }
 
