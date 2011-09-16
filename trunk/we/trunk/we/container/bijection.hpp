@@ -25,7 +25,7 @@ namespace bijection
     class already_there : public std::runtime_error
     {
     public:
-      explicit already_there (const std::string & msg) 
+      explicit already_there (const std::string & msg)
         : std::runtime_error(msg)
       {}
       ~already_there() throw() {}
@@ -73,7 +73,7 @@ namespace bijection
     const const_iterator begin (void) const { return bimap.begin(); }
     const const_iterator end (void) const { return bimap.end(); }
 
-    const I & get_id (const T & x) const throw (exception::no_such)
+    const I & get_id (const T & x) const
     {
       const typename bimap_t::left_map::const_iterator it (bimap.left.find (x));
 
@@ -83,7 +83,7 @@ namespace bijection
       return it->second;
     }
 
-    const T & get_elem (const I & i) const throw (exception::no_such)
+    const T & get_elem (const I & i) const
     {
       const typename bimap_t::right_map::const_iterator it
         (bimap.right.find (i));
@@ -94,7 +94,7 @@ namespace bijection
       return it->second;
     }
 
-    const I add (const T & x) throw (exception::already_there)
+    const I add (const T & x)
     {
       if (bimap.left.find (x) != bimap.left.end())
         throw exception::already_there (description);
@@ -112,7 +112,6 @@ namespace bijection
     }
 
     I modify (const I & i, const T & x)
-      throw (exception::no_such, exception::already_there)
     {
       const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
@@ -126,7 +125,6 @@ namespace bijection
     }
 
     I replace (const I & i, const T & x)
-      throw (exception::no_such, exception::already_there)
     {
       const typename bimap_t::right_map::iterator it (bimap.right.find (i));
 
@@ -144,7 +142,7 @@ namespace bijection
   struct const_it : public it::it<typename bijection<T, I>::const_iterator>
   {
   public:
-    explicit const_it (const bijection<T,I> & b) 
+    explicit const_it (const bijection<T,I> & b)
       : const_it::super (b.begin(), b.end()) {}
 
     const I & operator * (void) const { return const_it::super::pos->right; }
