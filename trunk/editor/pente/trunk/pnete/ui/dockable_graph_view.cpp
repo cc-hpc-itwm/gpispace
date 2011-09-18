@@ -22,13 +22,19 @@ namespace fhg
                     | QDockWidget::DockWidgetMovable
                     );
         setAllowedAreas (Qt::LeftDockWidgetArea);
+
+        connect ( this
+                , SIGNAL (visibilityChanged (bool))
+                , SLOT (visibility_changed (bool))
+                );
       }
 
-      //! \todo Its raise being called or something, not focusIn.
-      void dockable_graph_view::focusInEvent (QFocusEvent* event)
+      void dockable_graph_view::visibility_changed (bool visible)
       {
-        emit focus_gained (this);
-        QDockWidget::focusInEvent (event);
+        if (visible)
+        {
+          graph_view()->setFocus();
+        }
       }
 
       GraphView* dockable_graph_view::graph_view() const

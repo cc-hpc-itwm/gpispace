@@ -3,6 +3,7 @@
 #include <pnete/ui/view_manager.hpp>
 
 #include <stdexcept>
+#include <iostream>
 
 #include <QString>
 #include <QWidget>
@@ -42,9 +43,6 @@ namespace fhg
 
         _accessed_widgets.append (current_widget);
 
-        current_widget->setFocus();
-        current_widget->raise();
-
         GraphView* old_view (_current_view);
         _current_view = current_widget->graph_view();
         if (old_view != _current_view)
@@ -83,17 +81,13 @@ namespace fhg
                 , SIGNAL (focus_gained (QWidget*))
                 , SLOT (focus_changed (QWidget*))
                 );
-        connect ( w
-                , SIGNAL (focus_gained (QWidget*))
-                , SLOT (focus_changed (QWidget*))
-                );
         connect ( w->graph_view()
                 , SIGNAL (zoomed (int))
                 , SIGNAL (zoomed (int))
                 );
 
-        //! \todo For some reason, my window manager does not raise the tab.
-        w->graph_view()->setFocus();
+        w->show();
+        w->raise();
         focus_changed (w->graph_view());
       }
 

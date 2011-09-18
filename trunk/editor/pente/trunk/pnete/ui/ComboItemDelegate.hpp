@@ -1,5 +1,5 @@
 /*
- * ComoItemDelegate.hpp
+ * ComboItemDelegate.hpp
  *
  *  Created on: Sep 14, 2011
  *      Author: tiberiu rotaru
