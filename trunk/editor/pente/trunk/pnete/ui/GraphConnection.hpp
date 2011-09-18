@@ -49,9 +49,9 @@ namespace fhg
             return Type;
           }
 
+          virtual QRectF boundingRect() const;
         protected:
           virtual QPainterPath shape() const;
-          virtual QRectF boundingRect() const;
           virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
         private:

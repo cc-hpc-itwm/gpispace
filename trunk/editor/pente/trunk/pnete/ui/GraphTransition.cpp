@@ -14,6 +14,7 @@
 #include "GraphPort.hpp"
 #include "GraphStyle.hpp"
 #include "GraphTransitionCogWheelButton.hpp"
+#include <pnete/ui/GraphConnection.hpp>
 
 namespace fhg
 {
@@ -33,6 +34,7 @@ namespace fhg
       {
         new TransitionCogWheelButton(this);
         setAcceptHoverEvents(true);
+        setFlag (QGraphicsItem::ItemIsSelectable);
         init_menu_context();
       }
 
@@ -95,9 +97,18 @@ namespace fhg
       {
         if(_dragging)
         {
-          event->accept ();
+          //! \note Hackadiddyhack.
+          QHash<Connection*, QRectF> connections;
+          foreach (QGraphicsItem* item, scene()->items())
+          {
+            Connection* conn (qgraphicsitem_cast<Connection*> (item));
+            if (conn)
+            {
+              connections.insert (conn, conn->boundingRect());
+            }
+          }
 
-          QPointF oldLocation = pos();
+          const QPointF oldLocation (pos());
           setPos(Style::snapToRaster(oldLocation + event->pos() - _dragStart));
 
           // do not move, when now colliding with a different transition
@@ -108,10 +119,36 @@ namespace fhg
             if(qgraphicsitem_cast<Transition*>(collidingItem))
             {
               setPos(oldLocation);
-              break;
+              event->ignore();
+              return;
             }
           }
-          scene()->update();
+          event->accept();
+          QRectF bounding_with_childs (boundingRect());
+          foreach (QGraphicsItem* child, childItems())
+          {
+            bounding_with_childs =
+                bounding_with_childs.united ( child->boundingRect()
+                                            .translated (child->pos())
+                                            );
+          }
+          scene()->update (bounding_with_childs.translated (oldLocation));
+          scene()->update (bounding_with_childs.translated (pos()));
+
+          //! \note Hackadilicous.
+          for ( QHash<Connection*, QRectF>::const_iterator
+                it (connections.constBegin())
+              , end (connections.constEnd())
+              ; it != end
+              ; ++it
+              )
+          {
+            if (it.value() != it.key()->boundingRect())
+            {
+              scene()->update (it.value());
+              scene()->update (it.key()->boundingRect());
+            }
+          }
         }
         else
         {
@@ -122,13 +159,13 @@ namespace fhg
       void Transition::hoverLeaveEvent(QGraphicsSceneHoverEvent*)
       {
         _highlighted = false;
-        update(boundingRect());
+        update (boundingRect());
       }
 
       void Transition::hoverEnterEvent(QGraphicsSceneHoverEvent*)
       {
         _highlighted = true;
-        update(boundingRect());
+        update (boundingRect());
       }
 
       QPainterPath Transition::shape() const

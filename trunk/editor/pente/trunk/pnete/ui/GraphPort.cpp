@@ -210,12 +210,11 @@ namespace fhg
           event->ignore();
           return;
         }
-        event->accept();
 
-        QPointF oldLocation = pos();
-        eOrientation oldOrientation = _orientation;
+        const QPointF oldLocation (pos());
+        const eOrientation oldOrientation (_orientation);
 
-        QPointF newLocation = pos() + event->pos() - _dragStart;
+        QPointF newLocation (pos() + event->pos() - _dragStart);
 
         _orientation = getNearestEdge(newLocation);
         newLocation = snapToEdge(newLocation, _orientation);
@@ -230,21 +229,24 @@ namespace fhg
           {
             _orientation = oldOrientation;
             setPos(oldLocation);
-            break;
+            event->ignore();
+            return;
           }
         }
-        scene()->update();
+        event->accept();
+        scene()->update (boundingRect().translated (oldLocation));
+        scene()->update (boundingRect().translated (pos()));
       }
 
       void Port::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
       {
         _highlighted = false;
-        update(boundingRect());
+        update (boundingRect());
       }
       void Port::hoverEnterEvent(QGraphicsSceneHoverEvent *)
       {
         _highlighted = true;
-        update(boundingRect());
+        update (boundingRect());
       }
 
       QPainterPath Port::shape() const
@@ -290,11 +292,12 @@ namespace fhg
       {
         if(_connection)
         {
-          Connection* backup = _connection;
-          backup->setStart(NULL);
-          backup->setEnd(NULL);
+          Connection* const backup (_connection);
+          const QRectF area (backup->boundingRect());
+          backup->setStart (NULL);
+          backup->setEnd (NULL);
           delete backup;
-          scene()->update();
+          scene()->update (area);
         }
       }
 

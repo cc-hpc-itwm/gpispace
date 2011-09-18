@@ -101,7 +101,7 @@ namespace fhg
           addItem(_pendingConnection);
           _pendingConnection->setPos(0.0, 0.0);
         }
-        update();
+        update (_pendingConnection->boundingRect());
       }
 
       bool Scene::createPendingConnectionWith(ConnectableItem* item)
@@ -125,10 +125,15 @@ namespace fhg
 
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
       {
+        QRectF old_area ( _pendingConnection
+                        ? _pendingConnection->boundingRect()
+                        : QRectF()
+                        );
         _mousePosition = mouseEvent->scenePos();
         if(_pendingConnection)
         {
-          update();
+          update (old_area);
+          update (QRectF (QPointF (0.0, 0.0), _mousePosition));
         }
 
         QGraphicsScene::mouseMoveEvent(mouseEvent);
@@ -145,6 +150,7 @@ namespace fhg
             {
               pendingConnectionConnectTo(portBelow);
               event->accept();
+              //! \todo No idea what to update here? The old connection should be updated in removePendingConnection(). 
               update();
               return;
             }
@@ -162,13 +168,14 @@ namespace fhg
       {
         if(_pendingConnection)
         {
+          QRectF area (_pendingConnection->boundingRect());
           _pendingConnection->setEnd(NULL);
           _pendingConnection->setStart(NULL);
           //! \todo which one?
           delete _pendingConnection;
           //removeItem(_pendingConnection);
           _pendingConnection = NULL;
-          update();
+          update (area);
         }
       }
 
