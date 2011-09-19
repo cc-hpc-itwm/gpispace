@@ -163,7 +163,7 @@ MACRO (_Boost_ADJUST_LIB_VARS basename)
       SET(Boost_${basename}_SHARED_LIBRARY ${Boost_${basename}_SHARED_LIBRARY} CACHE FILEPATH "The Boost ${basename} shared library")
       #GET_FILENAME_COMPONENT(Boost_LIBRARY_DIRS "${Boost_${basename}_LIBRARY}" PATH)
       #SET(Boost_${basename}_FOUND ON CACHE BOOL "Was the boost boost ${basename} library found")
-    ENDIF (Boost_${basename}_LIBRARY)
+    ENDIF (Boost_${basename}_SHARED_LIBRARY)
 
   ENDIF (Boost_INCLUDE_DIR )
   # Make variables changeble to the advanced user
