@@ -132,6 +132,13 @@ MACRO (_Boost_ADJUST_LIB_VARS basename)
       SET(Boost_${basename}_LIBRARIES optimized ${Boost_${basename}_LIBRARY_RELEASE} debug ${Boost_${basename}_LIBRARY_DEBUG})
     ENDIF (Boost_${basename}_LIBRARY_DEBUG AND Boost_${basename}_LIBRARY_RELEASE)
 
+    # if found shared library
+    IF (Boost_${basename}_SHARED_LIBRARY_RELEASE)
+      message(STATUS "=======>>>>> ${Boost_${basename}_SHARED_LIBRARY_RELEASE}")
+      SET(Boost_${basename}_SHARED_LIBRARY    ${Boost_${basename}_SHARED_LIBRARY_RELEASE})
+      SET(Boost_${basename}_SHARED_LIBRARIES  ${Boost_${basename}_SHARED_LIBRARY_RELEASE})
+    ENDIF (Boost_${basename}_SHARED_LIBRARY_RELEASE)
+
     # if only the release version was found, set the debug variable also to the release version
     IF (Boost_${basename}_LIBRARY_RELEASE AND NOT Boost_${basename}_LIBRARY_DEBUG)
       SET(Boost_${basename}_LIBRARY_DEBUG ${Boost_${basename}_LIBRARY_RELEASE})
@@ -152,12 +159,21 @@ MACRO (_Boost_ADJUST_LIB_VARS basename)
       SET(Boost_${basename}_FOUND ON CACHE BOOL "Was the boost boost ${basename} library found")
     ENDIF (Boost_${basename}_LIBRARY)
 
+    IF (Boost_${basename}_SHARED_LIBRARY)
+      SET(Boost_${basename}_SHARED_LIBRARY ${Boost_${basename}_SHARED_LIBRARY} CACHE FILEPATH "The Boost ${basename} shared library")
+      #GET_FILENAME_COMPONENT(Boost_LIBRARY_DIRS "${Boost_${basename}_LIBRARY}" PATH)
+      #SET(Boost_${basename}_FOUND ON CACHE BOOL "Was the boost boost ${basename} library found")
+    ENDIF (Boost_${basename}_LIBRARY)
+
   ENDIF (Boost_INCLUDE_DIR )
   # Make variables changeble to the advanced user
   MARK_AS_ADVANCED(
       Boost_${basename}_LIBRARY
+      Boost_${basename}_LIBRARY
       Boost_${basename}_LIBRARY_RELEASE
       Boost_${basename}_LIBRARY_DEBUG
+      Boost_${basename}_SHARED_LIBRARY
+      Boost_${basename}_SHARED_LIBRARY_RELEASE
   )
 ENDMACRO (_Boost_ADJUST_LIB_VARS)
 
@@ -440,10 +456,75 @@ ELSE (_boost_IN_CACHE)
       )
     ENDIF( NOT ${Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG} )
 
-    _Boost_ADJUST_LIB_VARS(${UPPERCOMPONENT})
+    #_Boost_ADJUST_LIB_VARS(${UPPERCOMPONENT})
     IF( Boost_USE_STATIC_LIBS )
       SET(CMAKE_FIND_LIBRARY_SUFFIXES ${_boost_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
     ENDIF( Boost_USE_STATIC_LIBS )
+  ENDFOREACH(COMPONENT)
+
+  # ------------------------------------------------------------------------
+  #  Begin finding boost shared libraries
+  # ------------------------------------------------------------------------
+  FOREACH(COMPONENT ${Boost_FIND_COMPONENTS})
+    STRING(TOUPPER ${COMPONENT} UPPERCOMPONENT)
+    SET( Boost_${UPPERCOMPONENT}_SHARED_LIBRARY "Boost_${UPPERCOMPONENT}_LIBRARY-NOTFOUND" )
+    SET( Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_RELEASE "Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE-NOTFOUND" )
+    SET( Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_DEBUG "Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG-NOTFOUND")
+
+    # Support preference of static libs by adjusting CMAKE_FIND_LIBRARY_SUFFIXES
+    #IF( Boost_USE_STATIC_LIBS )
+    #  SET( _boost_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    #  IF(WIN32)
+    #    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    #  ELSE(WIN32)
+    #    SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    #  ENDIF(WIN32)
+    #ENDIF( Boost_USE_STATIC_LIBS )
+
+    FIND_LIBRARY(Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_RELEASE
+        NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}
+        PATHS  ${_boost_LIBRARIES_SEARCH_DIRS}
+	NO_DEFAULT_PATH
+    )
+
+    IF( NOT ${Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_RELEASE} )
+      FIND_LIBRARY(Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE
+          NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${Boost_LIB_VERSION}
+                 ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}-${Boost_LIB_VERSION}
+                 ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}
+                 ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}
+                 ${Boost_LIB_PREFIX}boost_${COMPONENT}
+      )
+    ENDIF( NOT ${Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_RELEASE} )
+
+    FIND_LIBRARY(Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_DEBUG
+        NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_boost_ABI_TAG}
+        PATHS  ${_boost_LIBRARIES_SEARCH_DIRS}
+	NO_DEFAULT_PATH
+    )
+
+    IF( NOT ${Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_DEBUG} )
+      FIND_LIBRARY(Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG
+          NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_boost_ABI_TAG}
+      )
+    ENDIF( NOT ${Boost_${UPPERCOMPONENT}_SHARED_LIBRARY_DEBUG} )
+
+    _Boost_ADJUST_LIB_VARS(${UPPERCOMPONENT})
+    #IF( Boost_USE_STATIC_LIBS )
+    #  SET(CMAKE_FIND_LIBRARY_SUFFIXES ${_boost_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
+    #ENDIF( Boost_USE_STATIC_LIBS )
   ENDFOREACH(COMPONENT)
   # ------------------------------------------------------------------------
   #  End finding boost libraries
@@ -531,6 +612,17 @@ ELSE (_boost_IN_CACHE)
         ENDIF ( Boost_${UPPERCOMPONENT}_FOUND )
       ENDFOREACH(COMPONENT)
 
+      # --- copy Shared libraries
+      FOREACH ( COMPONENT  ${Boost_FIND_COMPONENTS} )
+        STRING( TOUPPER ${COMPONENT} UPPERCOMPONENT )
+        IF ( Boost_${UPPERCOMPONENT}_FOUND )
+	  IF (NOT Boost_FIND_QUIETLY)
+            MESSAGE (STATUS "  ${COMPONENT}")
+	  ENDIF(NOT Boost_FIND_QUIETLY)
+	  SET(Boost_SHARED_LIBRARIES ${Boost_SHARED_LIBRARIES} ${Boost_${UPPERCOMPONENT}_SHARED_LIBRARY})
+        ENDIF ( Boost_${UPPERCOMPONENT}_FOUND )
+      ENDFOREACH(COMPONENT)
+
       IF (NOT Boost_FIND_QUIETLY)
 	MESSAGE(STATUS "Boost Version: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
       ENDIF(NOT Boost_FIND_QUIETLY)
@@ -552,6 +644,7 @@ ELSE (_boost_IN_CACHE)
     Boost_INCLUDE_DIRS
     Boost_LIBRARIES
     Boost_LIBRARY_DIRS
+    Boost_SHARED_LIBRARIES
   )
 ENDIF(_boost_IN_CACHE)
 

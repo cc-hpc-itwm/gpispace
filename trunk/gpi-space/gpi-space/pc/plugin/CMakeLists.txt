@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 find_package (FVM REQUIRED)
 include_directories(${FVM_INCLUDE_DIR})
 
@@ -9,13 +10,13 @@ fhg_add_plugin(gpi gpi.cpp
     gpi-space-pc-client-static
     gpi-space-pc-segment
     gpi-space-static
-    $ENV{BOOST_ROOT}/lib/libboost_serialization.so
+    ${Boost_SERIALIZATION_SHARED_LIBRARY}
 )
 
 fhg_add_plugin(gpi-compat gpi-compat.cpp
   EXPORTS GPI
   LINK_LIBRARIES
-    $ENV{BOOST_ROOT}/lib/libboost_serialization.so
+  ${Boost_SERIALIZATION_SHARED_LIBRARY}
 )
 
 install(FILES gpi.hpp DESTINATION include/plugins COMPONENT headers)
