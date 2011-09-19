@@ -28,6 +28,7 @@ execute_process(COMMAND uname -n OUTPUT_VARIABLE CMAKE_HOST_NAME)
 # generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
 get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include( "${_currentDir}/KDECTestNightly.cmake")
+include( "${_currentDir}/SDPAConfig.cmake")
 
 kde_ctest_setup()
 
@@ -45,11 +46,6 @@ include("${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 # if CMAKE_INSTALL_PREFIX and BUILD_experimental were defined on the command line, put them
 # in the initial cache, so cmake gets them
 #set(QT_QMAKE_EXECUTABLE /p/hpc/psp/Qt/Qt-4.6.2-icc64-fileenginewatcher/bin/qmake )
-set(BOOST_ROOT /opt/boost/1.45/gcc)
-set(SMC_HOME /opt/smc/5.0.0/)
-set(ENABLE_SDPA_GPI No)
-set(ENABLE_GPI_SPACE Yes)
-set(GPI_PRIV_DIR /tmp/)
 set(CMAKE_BUILD_TYPE Release)
 set(WE_PRECOMPILE Off)
 

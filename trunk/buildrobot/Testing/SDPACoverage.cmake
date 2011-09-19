@@ -29,6 +29,7 @@ set(CTEST_TEST_TIMEOUT 1800)
 # generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
 get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include( "${_currentDir}/KDECTestNightly.cmake")
+include( "${_currentDir}/SDPAConfig.cmake")
 
 find_program(CTEST_COVERAGE_COMMAND NAMES gcov)
 find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)
@@ -49,11 +50,11 @@ include("${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
 # if CMAKE_INSTALL_PREFIX and BUILD_experimental were defined on the command line, put them
 # in the initial cache, so cmake gets them
-set(BOOST_ROOT /opt/boost/1.45/gcc)
-set(SMC_HOME /opt/smc/5.0.0/)
-set(ENABLE_SDPA_GPI No)
-set(ENABLE_GPI_SPACE Yes)
-set(GPI_PRIV_DIR /tmp/)
+# set(BOOST_ROOT /opt/boost/1.45/gcc)
+# set(SMC_HOME /opt/smc/5.0.0/)
+# set(ENABLE_SDPA_GPI No)
+# set(ENABLE_GPI_SPACE Yes)
+# set(GPI_PRIV_DIR /tmp/)
 set(CMAKE_BUILD_TYPE Profile)
 set(ENABLE_CODECOVERAGE 1)
 

@@ -30,6 +30,7 @@ set(KDE_CTEST_PARALLEL_LEVEL 8)
 # generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
 get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include( "${_currentDir}/KDECTestNightly.cmake")
+include( "${_currentDir}/SDPAConfig.cmake")
 
 kde_ctest_setup()
 
@@ -40,16 +41,8 @@ ctest_empty_binary_directory("${CTEST_BINARY_DIRECTORY}")
 #set(QT_QMAKE_EXECUTABLE /p/hpc/psp/QT-4.5.2-icc64/bin/qmake )
 #set(SQUISH_INSTALL_DIR /p/hpc/psp/squish-20100224-qt45x-linux64 )
 #set(PSP_ENABLE_SQUISH_TESTS TRUE)
-set(BOOST_ROOT /opt/boost/1.45/gcc)
-set(SMC_HOME /opt/smc/5.0.0/)
-set(ENABLE_SDPA_GPI No)
-set(ENABLE_GPI_SPACE Yes)
-set(GPI_PRIV_DIR /tmp)
 set(WE_PRECOMPILE OFF)
 set(CMAKE_BUILD_TYPE Release)
-kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
-        BOOST_ROOT SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE GPI_PRIV_DIR
-        CMAKE_BUILD_TYPE WE_PRECOMPILE)
 
 set(SDPA_TOPSRCDIR "${CTEST_SOURCE_DIRECTORY}")
 
@@ -61,6 +54,7 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
 
   ctest_start(Continuous)
   ctest_update(SOURCE "${SDPA_TOPSRCDIR}" RETURN_VALUE updatedFiles)
+
   set(CTEST_SOURCE_DIRECTORY "${SDPA_TOPSRCDIR}/main/trunk")
   message("====> Update: ${updatedFiles}")
    
@@ -71,6 +65,12 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
     include("${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
     # configure, build, test, submit
+    file(REMOVE "${CTEST_BINARY_DIRECTORY}/CMakeCache.txt")
+    kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
+        BOOST_ROOT BOOST_FILESYSTEM_VERSION
+        SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE GPI_PRIV_DIR
+        CMAKE_BUILD_TYPE WE_PRECOMPILE)
+
     ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE resultConfigure)
     message("====> Configure: ${resultConfigure}")
 
