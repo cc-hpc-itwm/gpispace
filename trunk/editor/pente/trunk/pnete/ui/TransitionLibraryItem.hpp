@@ -1,9 +1,10 @@
-#ifndef UITRANSITIONLIBRARYITEM_HPP
-#define UITRANSITIONLIBRARYITEM_HPP 1
+// bernd.loerwald@itwm.fraunhofer.de
+
+#ifndef _PNETE_UI_TRANSITION_LIBRARY_ITEM_HPP
+#define _PNETE_UI_TRANSITION_LIBRARY_ITEM_HPP 1
 
 #include <QList>
 #include <QObject>
-#include <QVariant>
 
 namespace fhg
 {
@@ -20,15 +21,20 @@ namespace fhg
         Q_OBJECT
 
         public:
-          TransitionLibraryItem(data::Transition* data, bool trusted = false, QObject* parent = NULL);
-          TransitionLibraryItem(const QString& name, bool trusted = false, QObject* parent = NULL);
+          TransitionLibraryItem ( const QString& name
+                                , bool is_folder
+                                , bool trusted = false
+                                , QObject* parent = NULL
+                                );
 
-          void appendChild(TransitionLibraryItem* child);
+          void appendChild (TransitionLibraryItem* child);
 
-          TransitionLibraryItem* child(int row) const;
-          int childCount() const;
-          data::Transition* data() const;
+          bool is_folder() const;
           const QString& name() const;
+          const bool& trusted() const;
+
+          TransitionLibraryItem* child (int row) const;
+          int childCount() const;
           int row() const;
           TransitionLibraryItem* parent() const;
 
@@ -36,14 +42,11 @@ namespace fhg
 
           void clearChildren();
 
-          void sortChildren(bool descending = false);
-
-          const bool& trusted() const;
+          void sortChildren (bool descending = false);
 
         private:
-          data::Transition* _data;
+          bool _is_folder;
           QString _name;
-
           bool _trusted;
 
           QList<TransitionLibraryItem*> _children;

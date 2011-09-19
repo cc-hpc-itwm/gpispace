@@ -20,25 +20,21 @@ namespace fhg
     {
       Port::Port ( Transition* parent
                  , eDirection direction
-                 , const QString& title
-                 , const QString& dataType
-                 , bool notConnectable
                  )
       : ConnectableItem (direction == OUT ? EAST : WEST, direction, parent)
-      , _title (title)
-      , _dataType (dataType)
+      , _name ("<<port>>")
+      , _we_type ("<<we_type>>")
       , _dragStart (0.0, 0.0)
       , _dragging (false)
       , _highlighted (false)
-      , _notConnectable (notConnectable)
       , _length (Style::portDefaultWidth())
       , _menu_context()
       {
         setAcceptHoverEvents (true);
         //! \todo verbose name
-        setToolTip(dataType);
+        setToolTip(_we_type);
 
-        _length = std::max(_length, QStaticText(_title).size().width() + Style::portCapLength() + 5.0);
+        _length = std::max(_length, QStaticText(_name).size().width() + Style::portCapLength() + 5.0);
 
         init_menu_context();
       }
@@ -104,14 +100,7 @@ namespace fhg
           case Style::TAIL:
           default:
             //! \note Maybe not needed and checked somewhere else.
-            if (!notConnectable ())
-            {
-              event->setAccepted (createPendingConnectionIfPossible ());
-            }
-            else
-            {
-              event->ignore();
-            }
+            event->setAccepted (createPendingConnectionIfPossible ());
             break;
           }
         }
@@ -274,18 +263,22 @@ namespace fhg
         return _length;
       }
 
-      const bool& Port::notConnectable() const
+      const QString& Port::name() const
       {
-        return _notConnectable;
+        return _name;
       }
-
-      const QString& Port::title() const
+      const QString& Port::we_type() const
       {
-        return _title;
+        return _we_type;
       }
-      const QString& Port::dataType() const
+      const QString& Port::name(const QString& name_)
       {
-        return _dataType;
+        return _name = name_;
+      }
+      const QString& Port::we_type(const QString& we_type_)
+      {
+        setToolTip (we_type_);
+        return _we_type = we_type_;
       }
 
       void Port::deleteConnection()
@@ -304,15 +297,15 @@ namespace fhg
       bool Port::canConnectTo(ConnectableItem* other) const
       {
         Port* otherPort = qgraphicsitem_cast<Port*>(other);
-        return !notConnectable() && otherPort
-               && otherPort->dataType() == dataType()
+        return otherPort
+               && otherPort->we_type() == we_type()
                && otherPort->direction() != direction()
                && otherPort->parentItem() != parentItem();
       }
 
       bool Port::canConnectIn(eDirection thatDirection) const
       {
-        return !notConnectable() && thatDirection == direction();
+        return thatDirection == direction();
       }
     }
   }

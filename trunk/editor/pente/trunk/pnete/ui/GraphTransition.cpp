@@ -1,4 +1,4 @@
-#include "GraphTransition.hpp"
+#include <pnete/ui/GraphTransition.hpp>
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -11,9 +11,9 @@
 #include <QGraphicsProxyWidget>
 #include <QPushButton>
 
-#include "GraphPort.hpp"
-#include "GraphStyle.hpp"
-#include "GraphTransitionCogWheelButton.hpp"
+#include <pnete/ui/GraphPort.hpp>
+#include <pnete/ui/GraphStyle.hpp>
+#include <pnete/ui/GraphTransitionCogWheelButton.hpp>
 #include <pnete/ui/GraphConnection.hpp>
 
 namespace fhg
@@ -22,15 +22,18 @@ namespace fhg
   {
     namespace graph
     {
-      Transition::Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent)
-      : graph_item(parent)
-      , _dragStart(0, 0)
-      , _size(160, 100) // hardcoded constant
-      , _highlighted(false)
-      , _dragging(false)
-      , _producedFrom(producedFrom)
-      , _menu_context()
-      , _title(title)
+      Transition::Transition( transition_type & data
+                            , QGraphicsItem* parent
+                            )
+        : graph_item(parent)
+        , _dragStart(0, 0)
+        , _size(160, 100) // hardcoded constant
+        , _highlighted(false)
+        , _dragging(false)
+        , _data (data)
+        , _menu_context()
+        , _name()
+        , _proxy (NULL)
       {
         new TransitionCogWheelButton(this);
         setAcceptHoverEvents(true);
@@ -38,27 +41,21 @@ namespace fhg
         init_menu_context();
       }
 
-      //! \todo This is ugly and bad. Baaaaaaad.
-      Transition* Transition::create_from_library_data (const QByteArray& data)
+      Transition::Transition ( const QString& filename
+                             , QGraphicsItem* parent
+                             )
+        : graph_item (parent)
+        , _dragStart (0, 0)
+        , _size (160, 100) // hardcoded constant
+        , _highlighted (false)
+        , _dragging (false)
+          //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
+        , _data(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
+        , _menu_context()
+        , _name()
+        , _proxy (NULL)
       {
-        QByteArray byteArray(data);
-        data::Transition transitionData;
-        QDataStream stream(byteArray);
-        stream >> transitionData;
-
-        Transition* transition
-            (new Transition (transitionData.name(), transitionData));
-        foreach (data::Port port, transitionData.inPorts())
-        {
-          new Port (transition, Port::IN, port.name(), port.type(), port.notConnectable());
-        }
-        foreach (data::Port port, transitionData.outPorts())
-        {
-          new Port (transition, Port::OUT, port.name(), port.type(), false);
-        }
-        transition->repositionChildrenAndResize();
-
-        return transition;
+        //! \todo WORK HERE, everything is missing
       }
 
       void Transition::init_menu_context()
@@ -183,9 +180,14 @@ namespace fhg
         Style::transitionPaint(painter, this);
       }
 
-      const QString& Transition::title() const
+      const QString& Transition::name() const
       {
-        return _title;
+        return _name;
+      }
+
+      const QString& Transition::name(const QString& name_)
+      {
+        return _name = name_;
       }
 
       bool Transition::highlighted() const
@@ -235,13 +237,13 @@ namespace fhg
           Port* port = qgraphicsitem_cast<Port*>(child);
           if(port)
           {
-            if(port->notConnectable())
-            {
-              port->setOrientation(ConnectableItem::SOUTH);
-              port->setPos(Style::snapToRaster(QPointF(positionParam, boundingRect().height())));
-              positionParam -= Style::portDefaultHeight() + padding;
-            }
-            else if(port->direction() == ConnectableItem::IN)
+//             if(port->notConnectable())
+//             {
+//               port->setOrientation(ConnectableItem::SOUTH);
+//               port->setPos(Style::snapToRaster(QPointF(positionParam, boundingRect().height())));
+//               positionParam -= Style::portDefaultHeight() + padding;
+//             }
+            if(port->direction() == ConnectableItem::IN)
             {
               port->setOrientation(ConnectableItem::WEST);
               port->setPos(Style::snapToRaster(QPointF(0.0, positionIn)));
@@ -276,9 +278,13 @@ namespace fhg
         }
       }
 
-      const data::Transition& Transition::producedFrom() const
+      data::proxy::type* Transition::proxy (data::proxy::type* proxy_)
       {
-        return _producedFrom;
+        return _proxy = proxy_;
+      }
+      data::proxy::type* Transition::proxy () const
+      {
+        return _proxy;
       }
     }
   }

@@ -16,8 +16,13 @@ class QWidget;
 class QAction;
 class QMenu;
 
-#include "data/Transition.hpp"
-#include "graph_item.hpp"
+#include <pnete/ui/graph_item.hpp>
+#include <pnete/data/proxy.hpp>
+
+#include <pnete/traverse/weaver.hpp>
+
+#include <xml/parse/types.hpp>
+
 
 namespace fhg
 {
@@ -31,17 +36,29 @@ namespace fhg
         Q_INTERFACES(QGraphicsItem)
 
         public:
-          explicit Transition(const QString& title, const data::Transition& producedFrom, QGraphicsItem* parent = NULL);
+          typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
+          typedef XMLTYPE(expression_type) expression_type;
+          typedef XMLTYPE(mod_type) mod_type;
+
+          explicit Transition( transition_type & data
+                             , QGraphicsItem* parent = NULL
+                             );
+          explicit Transition ( const QString& filename
+                              , QGraphicsItem* parent = NULL
+                              );
 
           virtual QRectF boundingRect() const;
           virtual QPainterPath shape() const;
 
-          const QString& title() const;
+          const QString& name (const QString& name_);
+          const QString& name() const;
+
           bool highlighted() const;
 
           void repositionChildrenAndResize();
 
-          const data::Transition& producedFrom() const;
+        data::proxy::type* proxy (data::proxy::type*);
+        data::proxy::type* proxy () const;
 
           enum
           {
@@ -52,40 +69,40 @@ namespace fhg
             return Type;
           }
 
-          static Transition* create_from_library_data (const QByteArray& data);
+         public slots:
+           void slot_delete(void);
+           void slot_add_port(void);
 
-        public slots:
-          void slot_delete(void);
-          void slot_add_port(void);
+         protected:
+           virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-        protected:
-          virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+           virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+           virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
+           virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
+           virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
+           virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+           virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
-          virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
-          virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
-          virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
-          virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
-          virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
-          virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+           //! \todo size verstellbar
 
-          //! \todo size verstellbar
+           QPointF _dragStart;
+           QSizeF _size;
 
-          QPointF _dragStart;
-          QSizeF _size;
+           bool _highlighted;
+           bool _dragging;
 
-          bool _highlighted;
-          bool _dragging;
+           transition_type & _data;
 
-          data::Transition _producedFrom;
+       private:
+         QMenu _menu_context;
 
-      private:
-        QMenu _menu_context;
+         void init_menu_context();
 
-        void init_menu_context();
+         QString _name;
 
-        QString _title;
-      };
-    }
+        data::proxy::type * _proxy;
+       };
+     }
   }
 }
 

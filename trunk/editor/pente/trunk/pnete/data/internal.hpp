@@ -32,6 +32,7 @@ namespace fhg
         explicit internal (const QString& filename);
 
         QString name () const;
+        ::xml::parse::type::function_type & function ();
         const ::xml::parse::type::function_type & function () const;
         const ::xml::parse::state::key_values_t & context () const;
         const ::xml::parse::state::type & state () const;

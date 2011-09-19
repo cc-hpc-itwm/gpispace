@@ -1,8 +1,7 @@
-#include "TransitionLibraryItem.hpp"
+// bernd.loerwald@itwm.fraunhofer.de
 
-#include "data/Transition.hpp"
+#include <pnete/ui/TransitionLibraryItem.hpp>
 
-#include <QDebug>
 #include <QtAlgorithms>
 
 namespace fhg
@@ -11,23 +10,17 @@ namespace fhg
   {
     namespace ui
     {
-      TransitionLibraryItem::TransitionLibraryItem(data::Transition* data, bool trusted, QObject* parent)
-      : QObject(parent),
-      _data(data),
-      _name("SHOULD NEVER DISPLAY"),
-      _trusted(trusted),
-      _parent(qobject_cast<TransitionLibraryItem*>(parent))
-      {
-      }
-
-      TransitionLibraryItem::TransitionLibraryItem(const QString& name, bool trusted, QObject* parent)
-      : QObject(parent),
-      _data(NULL),
-      _name(name),
-      _trusted(trusted),
-      _parent(qobject_cast<TransitionLibraryItem*>(parent))
-      {
-      }
+      TransitionLibraryItem::TransitionLibraryItem( const QString& name
+                                                  , bool is_folder
+                                                  , bool trusted
+                                                  , QObject* parent
+                                                  )
+        : QObject(parent)
+        , _is_folder(is_folder)
+        , _name(name)
+        , _trusted(trusted)
+        , _parent(qobject_cast<TransitionLibraryItem*>(parent))
+      {}
 
       void TransitionLibraryItem::appendChild(TransitionLibraryItem* child)
       {
@@ -44,28 +37,27 @@ namespace fhg
         return _children.count();
       }
 
-      data::Transition* TransitionLibraryItem::data() const
+      bool TransitionLibraryItem::is_folder() const
       {
-        return _data;
+        return _is_folder;
       }
 
       const QString& TransitionLibraryItem::name() const
       {
-        if(data())
-        {
-          return data()->name();
-        }
-        else
-        {
-          return _name;
-        }
+        return _name;
+      }
+
+      const bool& TransitionLibraryItem::trusted() const
+      {
+        return _trusted;
       }
 
       int TransitionLibraryItem::row() const
       {
         if(_parent)
         {
-          return _parent->_children.indexOf(const_cast<TransitionLibraryItem*>(this));
+          return _parent->_children.indexOf
+            (const_cast<TransitionLibraryItem*>(this));
         }
         else
         {
@@ -94,11 +86,11 @@ namespace fhg
 
       bool sortAscending(const TransitionLibraryItem* l, const TransitionLibraryItem* r)
       {
-        if(l->data() && !r->data())
+        if(!l->is_folder() && r->is_folder())
         {
           return false;
         }
-        else if(!l->data() && r->data())
+        else if(l->is_folder() && !r->is_folder())
         {
           return true;
         }
@@ -110,11 +102,11 @@ namespace fhg
 
       bool sortDescending(const TransitionLibraryItem* l, const TransitionLibraryItem* r)
       {
-        if(l->data() && !r->data())
+        if(!l->is_folder() && r->is_folder())
         {
           return true;
         }
-        else if(!l->data() && r->data())
+        else if(l->is_folder() && !r->is_folder())
         {
           return false;
         }
@@ -138,11 +130,6 @@ namespace fhg
         {
           child->sortChildren();
         }
-      }
-
-      const bool& TransitionLibraryItem::trusted() const
-      {
-        return _trusted;
       }
     }
   }

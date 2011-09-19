@@ -1,4 +1,4 @@
-#include "editor_window.hpp"
+#include <pnete/ui/editor_window.hpp>
 
 #include <QAction>
 #include <QDir>
@@ -21,6 +21,8 @@
 #include <pnete/ui/view_manager.hpp>
 
 #include <pnete/data/manager.hpp>
+
+#include <pnete/traverse/display.hpp>
 
 namespace fhg
 {
@@ -132,6 +134,7 @@ namespace fhg
 
         QToolBar* file_tool_bar (new QToolBar (tr ("file_tool_bar"), this));
         addToolBar (Qt::TopToolBarArea, file_tool_bar);
+        file_tool_bar->setFloatable (false);
 
         QAction* create_action (new QAction (tr ("new_net"), this));
         QAction* open_action (new QAction (tr ("open_net"), this));
@@ -199,14 +202,15 @@ namespace fhg
 
       void editor_window::setup_zoom_actions (QMenuBar* menu_bar)
       {
-        QMenu* edit_menu (new QMenu (tr ("zoom_menu"), menu_bar));
-        menu_bar->addAction (edit_menu->menuAction());
+        QMenu* zoom_menu (new QMenu (tr ("zoom_menu"), menu_bar));
+        menu_bar->addAction (zoom_menu->menuAction());
 
         QToolBar* zoom_tool_bar (new QToolBar (tr ("zoom_tool_bar"), this));
         addToolBar (Qt::TopToolBarArea, zoom_tool_bar);
         zoom_tool_bar->setAllowedAreas ( Qt::TopToolBarArea
                                        | Qt::BottomToolBarArea
                                        );
+        zoom_tool_bar->setFloatable (false);
 
         QAction* zoom_in_action (new QAction (tr ("zoom_in"), this));
         QAction* zoom_out_action (new QAction (tr ("zoom_out"), this));
@@ -229,9 +233,9 @@ namespace fhg
                                , SLOT (current_view_reset_zoom())
                                );
 
-        edit_menu->addAction (zoom_in_action);
-        edit_menu->addAction (zoom_out_action);
-        edit_menu->addAction (zoom_default_action);
+        zoom_menu->addAction (zoom_in_action);
+        zoom_menu->addAction (zoom_out_action);
+        zoom_menu->addAction (zoom_default_action);
 
         zoom_tool_bar->addAction (zoom_in_action);
         zoom_tool_bar->addAction (zoom_out_action);
@@ -242,10 +246,14 @@ namespace fhg
         zoom_slider->setRange (min_zoom_value, max_zoom_value);
         zoom_tool_bar->addWidget (zoom_slider);
 
+        zoom_slider->setValue (default_zoom_value);
+
         QSpinBox* zoom_spin_box (new QSpinBox (this));
         zoom_spin_box->setSuffix ("%");
         zoom_spin_box->setRange (min_zoom_value, max_zoom_value);
         zoom_tool_bar->addWidget (zoom_spin_box);
+
+        zoom_spin_box->setValue (default_zoom_value);
 
         zoom_slider->connect ( zoom_spin_box
                               , SIGNAL (valueChanged (int))
@@ -274,7 +282,8 @@ namespace fhg
                               , SLOT (setValue (int))
                               );
 
-        _view_manager->current_view_zoom (default_zoom_value);
+        //! \todo This be segfault without view.
+        //_view_manager->current_view_zoom (default_zoom_value);
       }
 
       QMenu* editor_window::createPopupMenu()
@@ -286,11 +295,11 @@ namespace fhg
 
         _view_manager->connect ( duplicate_view_action
                                , SIGNAL (triggered())
-                               , SLOT (create_new_view_for_current_scene())
+                               , SLOT (duplicate_active_widget())
                                );
         _view_manager->connect ( close_action
                                , SIGNAL (triggered())
-                               , SLOT (current_document_close())
+                               , SLOT (current_widget_close())
                                );
 
         //! \todo Add them BEFORE, not after the existing actions.
@@ -356,7 +365,7 @@ namespace fhg
 
       void editor_window::create()
       {
-        _view_manager->create_view(data::manager::instance().create());
+        create_windows (data::manager::instance().create());
       }
 
       void editor_window::save()
@@ -390,20 +399,25 @@ namespace fhg
         open (filename);
       }
 
+      void editor_window::create_windows (data::internal::ptr data)
+      {
+        _view_manager->create_widget
+          (*weaver::display::weaver(data->function()).proxy());
+        _structure_view->append (data);
+      }
+
       void editor_window::save (const QString& filename)
       {
-        _view_manager->save_current_scene (filename);
+        //        _view_manager->_scene (filename);
       }
       void editor_window::open (const QString& filename)
       {
-        data::internal::ptr data(data::manager::instance().load (filename));
-        _structure_view->append (data);
-        _view_manager->create_view (data);
+        create_windows (data::manager::instance().load (filename));
       }
 
       void editor_window::close_document()
       {
-        _view_manager->current_document_close();
+        _view_manager->current_widget_close();
       }
 
       void editor_window::quit()

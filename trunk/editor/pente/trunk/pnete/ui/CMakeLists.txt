@@ -16,8 +16,13 @@ set(ui_SRCS
   StructureView.cpp
 # undo_group_manager.cpp
 
-  dockable_graph_view.cpp
+  dock_widget.cpp
+  base_editor_widget.cpp
+  document_widget.cpp
   view_manager.cpp
+  net_widget.cpp
+  module_call_widget.cpp
+  expression_widget.cpp
 )
 
 set(ui_HDRS
@@ -36,13 +41,18 @@ set(ui_HDRS
   StructureView.hpp
 # undo_group_manager.hpp
 
-  dockable_graph_view.hpp
+  dock_widget.hpp
+  base_editor_widget.hpp
+  document_widget.hpp
   view_manager.hpp
 
   graph_item.hpp
   ComboItemDelegate.hpp
   PropertiesEditor.hpp
   StructureEditor.hpp
+  net_widget.hpp
+  module_call_widget.hpp
+  expression_widget.hpp
 )
 
 set(ui_UIS
@@ -66,10 +76,15 @@ set(ui_TOMOC
   StructureEditor.hpp
 # undo_group_manager.hpp
 
-  dockable_graph_view.hpp
+  dock_widget.hpp
+  base_editor_widget.hpp
+  document_widget.hpp
   view_manager.hpp
 
   graph_item.hpp
+  net_widget.hpp
+  module_call_widget.hpp
+  expression_widget.hpp
 )
 
 #for moced files to get their includes.

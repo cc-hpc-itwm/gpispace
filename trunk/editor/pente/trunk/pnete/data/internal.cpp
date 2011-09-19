@@ -33,6 +33,11 @@ namespace fhg
           ;
       }
 
+      ::xml::parse::type::function_type & internal::function ()
+      {
+        return const_cast< ::xml::parse::type::function_type &> (_function);
+      }
+
       const ::xml::parse::type::function_type & internal::function () const
       {
         return _function;

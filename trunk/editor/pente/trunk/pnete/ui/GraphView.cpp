@@ -30,8 +30,8 @@ namespace fhg
       , _currentScale (default_zoom_value)
       {
         setDragMode (QGraphicsView::ScrollHandDrag);
-        setRenderHints ( QPainter::Antialiasing
-                       | QPainter::TextAntialiasing
+        setRenderHints ( //QPainter::Antialiasing
+                        QPainter::TextAntialiasing
                        | QPainter::SmoothPixmapTransform
                        );
       }
@@ -90,17 +90,20 @@ namespace fhg
         const QMimeData* mimeData (event->mimeData());
         if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
         {
-          graph::Transition* transition
-              (graph::Transition::create_from_library_data
-                  (mimeData->data (TransitionLibraryModel::mimeType))
-              );
+          //! \todo get path.
+          const QString filename/* (magic)*/;
+          // mimeData->data(TransitionLibraryModel::mimeType) === filepath as ..)
+
+          graph::Transition* transition (new graph::Transition (filename));
+
           scene()->addItem (transition);
+
           transition->setPos
-              (graph::Style::snapToRaster ( mapToScene(event->pos())
-                                          - transition->boundingRect()
-                                                  .bottomRight() / 2.0
-                                          )
-              );
+            ( graph::Style::snapToRaster
+              ( mapToScene (event->pos())
+              - transition->boundingRect().bottomRight() / 2.0
+              )
+            );
 
           event->acceptProposedAction();
         }

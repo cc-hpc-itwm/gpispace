@@ -1,7 +1,6 @@
-#include "TransitionLibraryModel.hpp"
-#include "TransitionLibraryItem.hpp"
+// bernd.loerwald@itwm.fraunhofer.de
 
-#include "data/Transition.hpp"
+#include <pnete/ui/TransitionLibraryModel.hpp>
 
 #include <QWidget>
 #include <QModelIndex>
@@ -12,13 +11,15 @@
 #include <QCoreApplication>
 #include <QDebug>
 
+#include <pnete/ui/TransitionLibraryItem.hpp>
+
 namespace fhg
 {
   namespace pnete
   {
     namespace ui
     {
-      const QString TransitionLibraryModel::mimeType = "pnete/transition";      // hardcoded constant
+      const QString TransitionLibraryModel::mimeType ("pnete/transition");      // hardcoded constant
 
       TransitionLibraryModel::TransitionLibraryModel(const QDir& path, QWidget* parent)
       : QAbstractItemModel(parent),
@@ -53,35 +54,59 @@ namespace fhg
 
       void TransitionLibraryModel::readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const bool& trusted, const QString& path)
       {
-        setFileSystemWatcher(path);
+        setFileSystemWatcher (path);
 
-        QDir directory(path);
+        QDir directory (path);
 
-        foreach(QFileInfo fileInfo, directory.entryInfoList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot))
+        foreach ( QFileInfo fileInfo
+                , directory.entryInfoList( QDir::Dirs
+                                         | QDir::NoSymLinks
+                                         | QDir::NoDotAndDotDot
+                                         )
+                )
         {
-          const QString newName = fileInfo.fileName();
+          const QString newName (fileInfo.fileName());
 
-          TransitionLibraryItem* newRoot = NULL;
-          foreach(TransitionLibraryItem* child, currentRoot->children())
+          TransitionLibraryItem* newRoot (NULL);
+          foreach (TransitionLibraryItem* child, currentRoot->children())
           {
-            if(!child->data() && child->name() == newName)
+            if (child->is_folder() && child->name() == newName)
             {
               newRoot = child;
               break;
             }
           }
-          if(!newRoot)
+          if (!newRoot)
           {
-            newRoot = new TransitionLibraryItem(newName, trusted, currentRoot);
-            currentRoot->appendChild(newRoot);
+            currentRoot->appendChild
+              ( newRoot = new TransitionLibraryItem ( newName
+                                                    , true
+                                                    , trusted
+                                                    , currentRoot
+                                                    )
+              );
           }
-          readContentFromDirectoryRecursive(newRoot, trusted, fileInfo.absoluteFilePath());
+          readContentFromDirectoryRecursive ( newRoot
+                                            , trusted
+                                            , fileInfo.absoluteFilePath()
+                                            );
         }
 
-        foreach(QFileInfo fileInfo, directory.entryInfoList(QStringList("*.xml"), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot))
+        foreach ( QFileInfo fileInfo
+                , directory.entryInfoList( QStringList("*.xml")
+                                         , QDir::Files
+                                         | QDir::NoSymLinks
+                                         | QDir::NoDotAndDotDot
+                                         )
+                )
         {
-          data::Transition* transition = new data::Transition(fileInfo.absoluteFilePath());     // memory is leaked.
-          currentRoot->appendChild(new TransitionLibraryItem(transition, trusted, currentRoot));
+          currentRoot->appendChild
+            ( new TransitionLibraryItem ( fileInfo.absoluteFilePath()
+                                        , false
+                                        , trusted
+                                        , currentRoot
+                                        )
+            );
         }
       }
 
@@ -153,14 +178,14 @@ namespace fhg
 
             case Qt::DecorationRole:
             //! \todo folder icon?
-              if(index.column() == 1 && item->data() && item->trusted())
+              if(index.column() == 1 && !item->is_folder() && item->trusted())
               {
                 return QIcon(":/lock.png");                                     // hardcoded constant
               }
               break;
 
             case Qt::ToolTipRole:
-              if(index.column() == 1 && item->data() && item->trusted())
+              if(index.column() == 1 && !item->is_folder() && item->trusted())
               {
                 return tr("Trusted Transition");
               }
@@ -190,16 +215,18 @@ namespace fhg
         //! \todo multiple at once!
 
         TransitionLibraryItem* item = static_cast<TransitionLibraryItem*>(indexes.first().internalPointer());
-        if(item->data())
+        if(!item->is_folder())
         {
+          //! \todo This is outdated shit.
+          /*
           QMimeData* mimeData = new QMimeData;
           QByteArray byteArray;
           // Thanks Qt for providing a "toByteArray()" method.
           QDataStream stream(&byteArray, QIODevice::WriteOnly);
-          stream << *item->data();
+          stream << item->name();
           mimeData->setData(mimeType, byteArray);
-
-          return mimeData;
+          */
+          return NULL;
         }
         else
         {

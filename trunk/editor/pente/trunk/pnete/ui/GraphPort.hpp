@@ -1,11 +1,13 @@
-#ifndef GRAPHPORT_HPP
-#define GRAPHPORT_HPP 1
+// bernd.loerwald@itwm.fraunhofer.de
+
+#ifndef _PNETE_GRAPH_PORT_HPP
+#define _PNETE_GRAPH_PORT_HPP 1
 
 #include <QObject>
 #include <QMenu>
 
-#include "GraphConnectableItem.hpp"
-#include "graph_item.hpp"
+#include <pnete/ui/GraphConnectableItem.hpp>
+#include <pnete/ui/graph_item.hpp>
 
 class QAction;
 class QMenu;
@@ -24,20 +26,15 @@ namespace fhg
         Q_OBJECT
 
         public:
-          Port ( Transition* parent
-               , eDirection direction
-               , const QString& title
-               , const QString& dataType
-               , bool notConnectable = false
-               );
+          Port (Transition* parent, eDirection direction);
 
           const bool& highlighted() const;
           const qreal& length() const;
 
-          const QString& title() const;
-          const QString& dataType() const;
-
-          const bool& notConnectable() const;
+          const QString& name() const;
+          const QString& we_type() const;
+          const QString& name(const QString&);
+          const QString& we_type(const QString&);
 
           virtual QRectF boundingRect() const;
 
@@ -78,14 +75,13 @@ namespace fhg
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
         private:
-          QString _title;
-          QString _dataType;
+          QString _name;
+          QString _we_type;
 
           QPointF _dragStart;
 
           bool _dragging;
           bool _highlighted;
-          bool _notConnectable;
 
           qreal _length;
 

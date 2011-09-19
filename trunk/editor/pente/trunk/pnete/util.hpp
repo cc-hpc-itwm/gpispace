@@ -8,6 +8,8 @@
 #include <QWidget>
 #include <QObject>
 
+#include <stdexcept>
+
 namespace fhg
 {
   namespace util
@@ -41,6 +43,22 @@ namespace fhg
         return reinterpret_cast<std::size_t> (key.get());
       }
     };
+    template<typename T> T throwing_qobject_cast (QObject* from)
+    {
+      T x (qobject_cast<T> (from));
+
+      if (!x)
+        {
+          throw std::runtime_error
+            ( std::string ("throwing_qobject_cast failed from ")
+//             + qPrintable(from->metaObject()->className())
+//             + " to "
+//             + qPrintable(typename T::staticMetaObject.className())
+            );
+        }
+
+      return x;
+    }
   }
 }
 

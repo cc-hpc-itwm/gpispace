@@ -31,14 +31,14 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}
                     ${GRAPHVIZ_INCLUDE_DIR}
                    )
 
-add_subdirectory(helper)
 add_subdirectory(data)
 add_subdirectory(ui)
+add_subdirectory(traverse)
 
 target_link_libraries (pnete
   ui
   data
-  helper
+  traverse
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
   ${QT_LIBRARIES}

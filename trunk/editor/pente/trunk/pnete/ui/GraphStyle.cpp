@@ -87,13 +87,13 @@ namespace fhg
 
         QPainterPath path;
 
-        if(port->notConnectable())
-        {
-          path.addRoundRect(QRectF(-lengthHalf, -portHeightHalf, length, portHeight), 45);  // hardcoded constant
+//         if(port->notConnectable())
+//         {
+//           path.addRoundRect(QRectF(-lengthHalf, -portHeightHalf, length, portHeight), 45);  // hardcoded constant
 
-          path = rotation.map(path);
-        }
-        else
+//           path = rotation.map(path);
+//         }
+//         else
         {
           QPolygonF poly;
           poly << QPointF(lengthHalf - portCapLength(), portHeightHalf)
@@ -169,7 +169,7 @@ namespace fhg
                                                                                 // hardcoded constants
         painter->setPen(QPen(QBrush(port->highlighted() ? Qt::red : Qt::black), 2.0));
         painter->setBackgroundMode(Qt::OpaqueMode);
-        painter->setBrush(QBrush(queryColorForType(port->dataType()), Qt::SolidPattern));
+        painter->setBrush(QBrush(queryColorForType(port->we_type()), Qt::SolidPattern));
         painter->drawPath(portShape(port));
 
         painter->setPen(QPen(QBrush(Qt::black), 1.0));
@@ -186,22 +186,22 @@ namespace fhg
 
           painter->save();
           painter->rotate(degrees);
-          painter->drawText(antirotation.mapRect(area), Qt::AlignCenter, port->title());
+          painter->drawText(antirotation.mapRect(area), Qt::AlignCenter, port->name());
           painter->restore();
         }
         else
         {
-          painter->drawText(area, Qt::AlignCenter, port->title());
+          painter->drawText(area, Qt::AlignCenter, port->name());
         }
       }
 
       Style::ePortArea Style::portHit(const Port* port, const QPointF& point)
       {
-        if(port->notConnectable())
-        {
-          return MAIN;
-        }
-        else
+//         if(port->notConnectable())
+//         {
+//           return MAIN;
+//         }
+//        else
         {
           const qreal& length = port->length();
           const qreal lengthHalf = length / 2.0;                                // hardcoded constant
@@ -343,7 +343,7 @@ namespace fhg
         boundingRect.setHeight(boundingRect.height() - portDefaultWidth());
         boundingRect.translate(portDefaultWidth() / 2.0, portDefaultWidth() / 2.0);
 
-        painter->drawText(boundingRect, Qt::AlignCenter | Qt::TextWordWrap, transition->title());
+        painter->drawText(boundingRect, Qt::AlignCenter | Qt::TextWordWrap, transition->name());
       }
 
       qreal Style::raster()

@@ -32,7 +32,7 @@ namespace fhg
         }
 
         template<int Type, typename T> void weave (const T & x) {}
-        template<int Type> void weave () {}
+        template<int Type> void weave (){}
 
       private:
         std::stack<QStandardItem *> _stack;

@@ -3,6 +3,8 @@
 
 #include <pnete/data/internal.hpp>
 
+#include <xml/parse/types.hpp>
+
 #include <QGraphicsScene>
 #include <QPointF>
 #include <QObject>
@@ -27,7 +29,9 @@ namespace fhg
         Q_OBJECT
 
         public:
-          explicit Scene (data::internal::ptr data, QObject* parent = NULL);
+          typedef ::xml::parse::type::net_type net_type;
+
+          explicit Scene (net_type & net,  QObject* parent = NULL);
 
           const QPointF& mousePosition() const;
 
@@ -38,8 +42,6 @@ namespace fhg
           bool pendingConnectionCanConnectTo(ConnectableItem* item) const;
           void pendingConnectionConnectTo(ConnectableItem* item);
           bool createPendingConnectionWith(ConnectableItem* item);
-
-          void save (const QString& filename) const;
 
           QString name() const;
 
@@ -63,7 +65,7 @@ namespace fhg
           QMenu _menu_new;
           QMenu _menu_context;
 
-          data::internal::ptr _data;
+          net_type & _net;
 
           void init_menu_context();
       };

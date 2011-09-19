@@ -2,9 +2,15 @@
 #include <pnete/ui/GraphConnectableItem.hpp>
 #include <pnete/ui/GraphConnection.hpp>
 #include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/GraphTransition.hpp>
+#include <pnete/ui/GraphPort.hpp>
 
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
+
+#include <pnete/traverse/weaver.hpp>
+
+#include <pnete/util.hpp>
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
@@ -15,22 +21,27 @@
 
 #include <gvc.h>
 
+#include <stack>
+#include <stdexcept>
+
+#include <iostream>
+
+#include <boost/variant.hpp>
+
 namespace fhg
 {
   namespace pnete
   {
     namespace graph
     {
-      Scene::Scene (data::internal::ptr data, QObject* parent)
+      Scene::Scene (net_type & net, QObject* parent)
       : QGraphicsScene (parent)
       , _pendingConnection (NULL)
       , _mousePosition (QPointF (0.0, 0.0))
       , _menu_context()
-      , _data (data)
+      , _net (net)
       {
         init_menu_context();
-
-        //! \todo load data from file.
       }
 
       //! \todo This is duplicate code, also available in main window.
@@ -223,14 +234,9 @@ namespace fhg
         }
       }
 
-      void Scene::save (const QString& filename) const
-      {
-        data::manager::instance().save (_data, filename);
-      }
-
       QString Scene::name() const
       {
-        return _data->name();
+        return "<<a scene>>";
       }
 
       namespace GraphViz
@@ -246,7 +252,7 @@ namespace fhg
             typedef std::vector<Agedge_t*>::size_type edge_type;
 
             Graph()
-            : _internal (agopen ("___G", AGDIGRAPH))
+              : _internal (agopen (const_cast<char*> ("___G"), AGDIGRAPH))
             {
             }
 
@@ -285,9 +291,9 @@ namespace fhg
 
             void layout (Graph& g)
             {
-              gvLayout (_internal, g._internal, "dot");
-              gvRender (_internal, g._internal, "dot", stderr);
-              gvRender (_internal, g._internal, "ps", stdout);
+              gvLayout (_internal, g._internal, const_cast<char*> ("dot"));
+              gvRender (_internal, g._internal, const_cast<char*> ("dot"), stderr);
+              gvRender (_internal, g._internal, const_cast<char*> ("ps"), stdout);
               gvFreeLayout (_internal, g._internal);
             }
         };
