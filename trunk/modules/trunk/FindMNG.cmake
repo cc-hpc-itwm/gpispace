@@ -41,7 +41,7 @@ FIND_LIBRARY(LCMS_LIBRARY
 # handle the QUIETLY and REQUIRED arguments and set JPEG_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(MNG DEFAULT_MSG MNG_LIBRARY LCMS_LIBRARY MNG_INCLUDE_DIR)
+find_package_handle_standard_args(MNG DEFAULT_MSG MNG_LIBRARY MNG_INCLUDE_DIR)
 
 MARK_AS_ADVANCED(
   MNG_LIBRARY
