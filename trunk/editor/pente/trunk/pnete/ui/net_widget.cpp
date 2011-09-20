@@ -3,6 +3,7 @@
 #include <pnete/ui/net_widget.hpp>
 
 #include <QWidget>
+#include <QHBoxLayout>
 
 #include <pnete/ui/GraphScene.hpp>
 #include <pnete/ui/GraphView.hpp>
@@ -21,9 +22,12 @@ namespace fhg
         )
           : base_editor_widget (proxy, parent)
           , _net (net)
-          , _view (new ui::GraphView (scene, this))
+          , _view (new ui::GraphView (scene))
       {
-        //! \todo Size policy or whatever to have graph view filling the widget.
+        QHBoxLayout* layout (new QHBoxLayout());
+        layout->addWidget (_view);
+        layout->setContentsMargins (0, 0, 0, 0);
+        setLayout (layout);
         _view->setScene (scene);
       }
     }
