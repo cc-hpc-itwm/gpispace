@@ -241,6 +241,7 @@ public:
     map_of_tasks_t::iterator task_it (m_task_map.find(job_id));
     if (task_it == m_task_map.end())
     {
+      MLOG(WARN, "could not find task " << job_id);
       return -ESRCH;
     }
     else
