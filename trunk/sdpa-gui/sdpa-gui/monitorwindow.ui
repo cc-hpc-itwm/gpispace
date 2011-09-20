@@ -755,9 +755,6 @@
                 <property name="styleSheet">
                  <string notr="true">background-color: rgb(0, 255, 0);</string>
                 </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
                 <property name="text">
                  <string>Finished</string>
                 </property>
