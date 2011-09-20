@@ -807,7 +807,7 @@
                    <item>
                     <widget class="QSlider" name="m_task_view_zoom_slider">
                      <property name="minimum">
-                      <number>30</number>
+                      <number>1</number>
                      </property>
                      <property name="maximum">
                       <number>800</number>
@@ -822,7 +822,7 @@
                       <enum>QSlider::TicksAbove</enum>
                      </property>
                      <property name="tickInterval">
-                      <number>10</number>
+                      <number>100</number>
                      </property>
                     </widget>
                    </item>
