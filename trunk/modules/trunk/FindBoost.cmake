@@ -134,7 +134,6 @@ MACRO (_Boost_ADJUST_LIB_VARS basename)
 
     # if found shared library
     IF (Boost_${basename}_SHARED_LIBRARY_RELEASE)
-      message(STATUS "=======>>>>> ${Boost_${basename}_SHARED_LIBRARY_RELEASE}")
       SET(Boost_${basename}_SHARED_LIBRARY    ${Boost_${basename}_SHARED_LIBRARY_RELEASE})
       SET(Boost_${basename}_SHARED_LIBRARIES  ${Boost_${basename}_SHARED_LIBRARY_RELEASE})
     ENDIF (Boost_${basename}_SHARED_LIBRARY_RELEASE)
