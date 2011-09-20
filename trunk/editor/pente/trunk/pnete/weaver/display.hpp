@@ -21,6 +21,13 @@ namespace fhg
       class Transition;
       class Port;
     }
+    namespace ui
+    {
+      namespace graph
+      {
+        class place;
+      }
+    }
     namespace weaver
     {
       class display
@@ -81,6 +88,18 @@ namespace fhg
       private:
         graph::Scene* const _scene;
         const graph::Port::eDirection& _current_direction;
+      };
+
+      class place
+      {
+      public:
+        explicit place (ui::graph::place* place) : _place (place) {}
+
+        template<int Type, typename T> void weave (const T & x) {}
+        template<int Type> void weave () {}
+
+      private:
+        ui::graph::place* _place;
       };
 
       namespace visitor

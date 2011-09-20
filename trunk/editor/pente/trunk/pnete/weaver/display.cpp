@@ -7,6 +7,8 @@
 #include <pnete/ui/GraphTransition.hpp>
 #include <pnete/ui/GraphPort.hpp>
 
+#include <pnete/ui/graph/place.hpp>
+
 #include <xml/parse/types.hpp>
 
 #include <iostream>
@@ -80,6 +82,26 @@ namespace fhg
           {
             FROM(transition) (this, *trans);
           }
+      }
+      WSIG(display, net::places, XMLTYPE(net_type::places_type), places)
+      {
+        from::many (this, places, FROM(place));
+      }
+
+      WSIG(display, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
+      {
+        ui::graph::place* place_item (new ui::graph::place());
+        weaver::place wp (place_item);
+        _scene->addItem (place_item);
+        FROM(place) (&wp, place);
+      }
+      WSIG(place, place::name, std::string, name)
+      {
+        _place->name (QString (name.c_str()));
+      }
+      WSIG(place, place::type, std::string, type)
+      {
+        _place->we_type (QString (type.c_str()));
       }
 
       WSIG(display,  transition::open
