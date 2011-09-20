@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 include(${QT_USE_FILE})
 
 set(sdpa-gui_SRCS
@@ -36,6 +37,8 @@ target_link_libraries (sdpa-gui
 	${FhgLog_LIBRARY}
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
+	${JPEG_LIBRARY}
+	${MNG_LIBRARY}
 )
 
 install(FILES ${sdpa-gui_HDRS}

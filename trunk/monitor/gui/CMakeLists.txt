@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 include(${QT_USE_FILE})
 
 set(sdpa-mon_SRCS
@@ -17,6 +18,8 @@ target_link_libraries (sdpa-mon
 	${FhgLog_LIBRARY}
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
+	${JPEG_LIBRARY}
+	${MNG_LIBRARY}
 )
 
 install(TARGETS sdpa-mon

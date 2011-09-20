@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 # - Find MNG
 # Find the MNG library and include files
 # This module defines
@@ -6,6 +7,13 @@
 #  MNG_FOUND, If false, do not try to use MNG.
 # also defined, but not for general use are
 #  MNG_LIBRARY, where to find the MNG library.
+
+set( _mng_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+if(WIN32)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+else(WIN32)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+endif(WIN32)
 
 FIND_PATH(MNG_INCLUDE_DIR
   NAMES libmng.h
@@ -30,15 +38,10 @@ FIND_LIBRARY(LCMS_LIBRARY
   PATH_SUFFIXES lib lib64
 )
 
-IF (MNG_LIBRARY)
-  IF (MNG_INCLUDE_DIR)
-    SET(MNG_LIBRARIES ${MNG_LIBRARY})
-    if (LCMS_LIBRARY)
-      set (MNG_LIBRARIES ${MNG_LIBRARIES} ${LCMS_LIBRARY})
-    endif (LCMS_LIBRARY)
-    SET(MNG_FOUND "YES")
-  ENDIF (MNG_INCLUDE_DIR)
-ENDIF (MNG_LIBRARY)
+# handle the QUIETLY and REQUIRED arguments and set JPEG_FOUND to TRUE if
+# all listed variables are TRUE
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(MNG DEFAULT_MSG MNG_LIBRARY LCMS_LIBRARY MNG_INCLUDE_DIR)
 
 MARK_AS_ADVANCED(
   MNG_LIBRARY

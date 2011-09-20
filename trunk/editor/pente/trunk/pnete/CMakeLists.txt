@@ -1,3 +1,4 @@
+# -*- mode: cmake; -*-
 set(QT_USE_QTXML on)
 set(QT_USE_QTXMLPATTERNS on)
 include(${QT_USE_FILE})
@@ -43,6 +44,8 @@ target_link_libraries (pnete
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
   ${QT_LIBRARIES}
+  ${JPEG_LIBRARY}
+  ${MNG_LIBRARY}
   ${GRAPHVIZ_LIBRARIES}
 )
 
