@@ -32,7 +32,7 @@ namespace fhg
       {
         setAcceptHoverEvents (true);
         //! \todo verbose name
-        setToolTip(_we_type);
+        set_tool_tip();
 
         _length = std::max(_length, QStaticText(_name).size().width() + Style::portCapLength() + 5.0);
 
@@ -108,6 +108,11 @@ namespace fhg
 
       QPointF Port::snapToEdge(const QPointF& position, eOrientation edge) const
       {
+        if (!parentItem())
+          {
+            return position;
+          }
+
         QSizeF parentSize = parentItem()->boundingRect().size();
 
         QPointF newPosition = position;
@@ -136,6 +141,11 @@ namespace fhg
 
       ConnectableItem::eOrientation Port::getNearestEdge(const QPointF& position) const
       {
+        if (!parentItem())
+          {
+            return _orientation;
+          }
+
         QSizeF parentSize = parentItem()->boundingRect().size();
         QPointF parentBottomRightPoint = parentItem()->boundingRect().bottomRight();
 
@@ -172,7 +182,12 @@ namespace fhg
 
       QPointF Port::checkForMinimumDistance(const QPointF& position) const
       {
-        QSizeF parentSize = parentItem()->boundingRect().size();
+        if (!parentItem())
+          {
+            return position;
+          }
+
+        const QSizeF parentSize (parentItem()->boundingRect().size());
 
         QPointF newPosition = position;
 
@@ -277,8 +292,9 @@ namespace fhg
       }
       const QString& Port::we_type(const QString& we_type_)
       {
-        setToolTip (we_type_);
-        return _we_type = we_type_;
+        _we_type = we_type_;
+        set_tool_tip ();
+        return _we_type;
       }
 
       void Port::deleteConnection()
@@ -306,6 +322,11 @@ namespace fhg
       bool Port::canConnectIn(eDirection thatDirection) const
       {
         return thatDirection == direction();
+      }
+
+      void Port::set_tool_tip ()
+      {
+        setToolTip(_name + " :: " + _we_type);
       }
     }
   }

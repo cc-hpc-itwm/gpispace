@@ -89,6 +89,7 @@ namespace fhg
           QMenu _menu_context;
 
           void init_menu_context();
+        void set_tool_tip();
       };
     }
   }

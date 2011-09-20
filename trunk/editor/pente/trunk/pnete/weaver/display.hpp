@@ -9,6 +9,8 @@
 
 #include <pnete/weaver/weaver.hpp>
 
+#include <pnete/ui/GraphPort.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -46,18 +48,39 @@ namespace fhg
 
         graph::Scene* _scene;
         graph::Transition* _current;
+
+        graph::Port::eDirection _current_port_direction;
       };
 
       class port
       {
       public:
-        explicit port (graph::Port *);
+        explicit port (graph::Port* port) : _port (port) {}
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
         graph::Port* _port;
+      };
+
+      class port_toplevel
+      {
+      public:
+        explicit port_toplevel
+        ( graph::Scene* const scene
+        , const graph::Port::eDirection& current_direction
+        )
+          : _scene (scene)
+          , _current_direction (current_direction)
+        {}
+
+        template<int Type, typename T> void weave (const T & x) {}
+        template<int Type> void weave () {}
+
+      private:
+        graph::Scene* const _scene;
+        const graph::Port::eDirection& _current_direction;
       };
 
       namespace visitor

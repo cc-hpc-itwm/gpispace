@@ -22,6 +22,7 @@ namespace fhg
         , _fun (fun)
         , _scene (NULL)
         , _current (NULL)
+        , _current_port_direction ()
       {
         FROM (function<display> (this, fun));
       }
@@ -105,29 +106,27 @@ namespace fhg
 
         _current->proxy (sub.proxy());
 
-        typedef XMLTYPE(ports_type)::const_iterator iterator;
+        _current_port_direction = graph::Port::IN;
+        from::many (this, sub._function_state.in, FROM(port));
 
-        //! \todo references to port inside graph::Port
-        for ( iterator port (sub._function_state.in.begin())
-                , end (sub._function_state.in.end())
-                ; port != end
-                ; ++port
-            )
-          {
-            graph::Port* p (new graph::Port (_current, graph::Port::IN));
+        _current_port_direction = graph::Port::OUT;
+        from::many (this, sub._function_state.out, FROM(port));
+      }
 
-            p->name (QString (port->name.c_str()));
-            p->we_type (QString (port->type.c_str()));
-          }
+      WSIG(display, port::open, ITVAL(XMLTYPE(ports_type)), port)
+      {
+        weaver::port wp (new graph::Port (_current, _current_port_direction));
 
-        for ( iterator port (sub._function_state.out.begin())
-                , end (sub._function_state.out.end())
-                ; port != end
-                ; ++port
-            )
-          {
-            new graph::Port (_current, graph::Port::OUT);
-          }
+        FROM(port) (&wp, port);
+      }
+
+      WSIG(port, port::name, std::string, name)
+      {
+        _port->name (QString (name.c_str()));
+      }
+      WSIG(port, port::type, std::string, type)
+      {
+        _port->we_type (QString (type.c_str()));
       }
 
       WSIG(display, function::in, XMLTYPE(ports_type), in)
@@ -141,6 +140,30 @@ namespace fhg
       WSIG(display, function::fun, XMLTYPE(function_type::type), fun)
       {
         boost::apply_visitor (FROM(visitor::net_type<display>) (this), fun);
+      }
+      WSIGE(display, function::close)
+      {
+        if (!_scene)
+          return;
+
+        {
+          weaver::port_toplevel wptl (_scene, graph::Port::OUT);
+          from::many (&wptl, _function_state.in, FROM(port));
+        }
+
+        {
+          weaver::port_toplevel wptl (_scene, graph::Port::IN);
+          from::many (&wptl, _function_state.out, FROM(port));
+        }
+      }
+
+      WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
+      {
+        graph::Port* p (new graph::Port (NULL, _current_direction));
+        _scene->addItem (p);
+        weaver::port wp (p);
+
+        FROM(port) (&wp, port);
       }
     }
   }
