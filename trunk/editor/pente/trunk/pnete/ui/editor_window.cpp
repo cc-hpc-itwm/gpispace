@@ -78,7 +78,7 @@ namespace fhg
         create();
       }
 
-      void editor_window::scene_changed (graph::Scene*)
+      void editor_window::scene_changed (::fhg::pnete::graph::Scene*)
       {
       }
 
@@ -353,26 +353,26 @@ namespace fhg
         _transition_library->setDragDropMode (QAbstractItemView::DragOnly);
         _transition_library->header()->hide();
 
-        addDockWidget ( dock_position
-                      , new dock_widget ( tr ("library_window")
-                                        , _transition_library
-                                        , this
-                                        )
-                      , Qt::Horizontal
-                      );
+        dock_widget* dw ( new dock_widget ( tr ("library_window")
+                                          , _transition_library
+                                          , this
+                                          )
+                        );
+        addDockWidget (dock_position, dw, Qt::Horizontal);
+        dw->hide();
       }
 
       void editor_window::setup_structure_view ()
       {
         _structure_view = new StructureView (this);
 
-        addDockWidget ( dock_position
-                      , new dock_widget ( tr ("structure_window")
-                                        , _structure_view
-                                        , this
-                                        )
-                      , Qt::Horizontal
-                      );
+        dock_widget* dw ( new dock_widget ( tr ("structure_window")
+                                          , _structure_view
+                                          , this
+                                          )
+                        );
+        addDockWidget (dock_position, dw, Qt::Horizontal);
+        dw->hide();
       }
 
       void editor_window::create()

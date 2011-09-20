@@ -17,15 +17,12 @@ namespace fhg
   {
     namespace graph
     {
-      Connection::Connection(ConnectableItem* start, ConnectableItem* end)
+      Connection::Connection()
       : graph_item()
       , _start (NULL)
       , _end (NULL)
       , _highlighted (false)
       {
-        setStart (start);
-        setEnd (end);
-
         setZValue (-1);                                                          // hardcoded constant
       }
 
@@ -110,13 +107,13 @@ namespace fhg
       const QPointF Connection::startPosition() const
       {
         QPointF position;
-        if(qobject_cast<Scene*>(scene()))
+        if (scene())
         {
-          if(start())
+          if (start())
           {
             position = start()->scenePos();
             const Port* port = qgraphicsitem_cast<const Port*>(start());
-            if(port)
+            if (port)
             {
               qreal lengthHalf = port->length() / 2.0;                          // hardcoded constant
               position = addInOrientationDirection(position, port->orientation(), lengthHalf);
@@ -124,7 +121,7 @@ namespace fhg
           }
           else
           {
-            position = qobject_cast<Scene*>(scene())->mousePosition();
+            position = scene()->mousePosition();
           }
           position -= scenePos();
         }
@@ -133,9 +130,9 @@ namespace fhg
       const QPointF Connection::endPosition() const
       {
         QPointF position;
-        if(qobject_cast<Scene*>(scene()))
+        if (scene())
         {
-          if(end())
+          if (end())
           {
             position = end()->scenePos();
             const Port* port = qgraphicsitem_cast<const Port*>(end());
@@ -147,7 +144,7 @@ namespace fhg
           }
           else
           {
-            position = qobject_cast<Scene*>(scene())->mousePosition();
+            position = scene()->mousePosition();
           }
           position -= scenePos();
         }

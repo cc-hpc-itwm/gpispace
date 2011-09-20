@@ -23,7 +23,6 @@ namespace fhg
                  )
       : ConnectableItem (direction == OUT ? EAST : WEST, direction, parent)
       , _name ("<<port>>")
-      , _we_type ("<<we_type>>")
       , _dragStart (0.0, 0.0)
       , _dragging (false)
       , _highlighted (false)
@@ -32,7 +31,9 @@ namespace fhg
       {
         setAcceptHoverEvents (true);
         //! \todo verbose name
-        set_tool_tip();
+
+        refresh_tooltip();
+        connect (this, SIGNAL (we_type_changed()), SLOT (refresh_tooltip()));
 
         _length = std::max(_length, QStaticText(_name).size().width() + Style::portCapLength() + 5.0);
 
@@ -77,33 +78,37 @@ namespace fhg
         if (_dragging)
         {
           _dragging = false;
-          event->accept ();
+          event->accept();
         }
         else
         {
-          event->ignore ();
+          event->ignore();
         }
       }
 
-      void Port::mousePressEvent(QGraphicsSceneMouseEvent* event)
+      void Port::mousePressEvent (QGraphicsSceneMouseEvent* event)
       {
         if (!(event->buttons() & Qt::RightButton))
-        {
-          switch (Style::portHit (this, event->pos ()))
           {
-          case Style::MAIN:
-            _dragging = true;
-            _dragStart = event->pos ();
-            event->accept ();
-            break;
+            switch (Style::portHit (this, event->pos ()))
+              {
+              case Style::MAIN:
+                _dragging = true;
+                _dragStart = event->pos();
+                event->accept();
+                break;
 
-          case Style::TAIL:
-          default:
-            //! \note Maybe not needed and checked somewhere else.
-            event->setAccepted (createPendingConnectionIfPossible ());
-            break;
+              case Style::TAIL:
+              default:
+                //! \note Maybe not needed and checked somewhere else.
+                event->setAccepted (createPendingConnectionIfPossible ());
+                break;
+              }
           }
-        }
+        else
+          {
+            event->ignore();
+          }
       }
 
       QPointF Port::snapToEdge(const QPointF& position, eOrientation edge) const
@@ -282,19 +287,9 @@ namespace fhg
       {
         return _name;
       }
-      const QString& Port::we_type() const
-      {
-        return _we_type;
-      }
       const QString& Port::name(const QString& name_)
       {
         return _name = name_;
-      }
-      const QString& Port::we_type(const QString& we_type_)
-      {
-        _we_type = we_type_;
-        set_tool_tip ();
-        return _we_type;
       }
 
       void Port::deleteConnection()
@@ -310,23 +305,9 @@ namespace fhg
         }
       }
 
-      bool Port::canConnectTo(ConnectableItem* other) const
+      void Port::refresh_tooltip()
       {
-        Port* otherPort = qgraphicsitem_cast<Port*>(other);
-        return otherPort
-               && otherPort->we_type() == we_type()
-               && otherPort->direction() != direction()
-               && otherPort->parentItem() != parentItem();
-      }
-
-      bool Port::canConnectIn(eDirection thatDirection) const
-      {
-        return thatDirection == direction();
-      }
-
-      void Port::set_tool_tip ()
-      {
-        setToolTip(_name + " :: " + _we_type);
+        setToolTip (_name + " :: " + we_type());
       }
     }
   }

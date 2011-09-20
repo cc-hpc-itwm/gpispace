@@ -33,16 +33,11 @@ namespace fhg
           const qreal& length() const;
 
           const QString& name() const;
-          const QString& we_type() const;
           const QString& name(const QString&);
-          const QString& we_type(const QString&);
 
           virtual QRectF boundingRect() const;
 
           void deleteConnection();
-
-          virtual bool canConnectTo (ConnectableItem* other) const;
-          virtual bool canConnectIn (eDirection thatDirection) const;
 
           QPointF snapToEdge (const QPointF& position, eOrientation edge) const;
           eOrientation getNearestEdge (const QPointF& position) const;
@@ -60,6 +55,7 @@ namespace fhg
         public slots:
           void slot_set_type();
           void slot_delete();
+          void refresh_tooltip();
 
         protected:
           virtual QPainterPath shape() const;
@@ -77,7 +73,6 @@ namespace fhg
 
         private:
           QString _name;
-          QString _we_type;
 
           QPointF _dragStart;
 
@@ -89,7 +84,6 @@ namespace fhg
           QMenu _menu_context;
 
           void init_menu_context();
-        void set_tool_tip();
       };
     }
   }

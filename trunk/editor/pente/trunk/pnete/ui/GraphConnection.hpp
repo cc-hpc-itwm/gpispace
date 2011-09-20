@@ -23,46 +23,46 @@ namespace fhg
 
       class Connection : public graph_item
       {
-        public:
-          Connection(ConnectableItem* start = NULL, ConnectableItem* end = NULL);
+      public:
+        Connection();
 
-          void setStart(ConnectableItem* start);
-          void setEnd(ConnectableItem* end);
+        void setStart(ConnectableItem* start);
+        void setEnd(ConnectableItem* end);
 
-          void removeMe(ConnectableItem* item);
+        void removeMe(ConnectableItem* item);
 
-          const ConnectableItem* start() const;
-          const ConnectableItem* end() const;
+        const ConnectableItem* start() const;
+        const ConnectableItem* end() const;
 
-          const QPointF startPosition() const;
-          const QPointF endPosition() const;
+        const QPointF startPosition() const;
+        const QPointF endPosition() const;
 
-          const QList<QPointF>& midpoints() const;
-          const bool& highlighted() const;
+        const QList<QPointF>& midpoints() const;
+        const bool& highlighted() const;
 
-          enum
+        enum
           {
             Type = ConnectionType,
           };
-          virtual int type() const
-          {
-            return Type;
-          }
+        virtual int type() const
+        {
+          return Type;
+        }
 
-          virtual QRectF boundingRect() const;
-        protected:
-          virtual QPainterPath shape() const;
-          virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        virtual QRectF boundingRect() const;
+      protected:
+        virtual QPainterPath shape() const;
+        virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-        private:
-          void recalcMidpoints();
+      private:
+        void recalcMidpoints();
 
-          ConnectableItem* _start;
-          ConnectableItem* _end;
+        ConnectableItem* _start;
+        ConnectableItem* _end;
 
-          QList<QPointF> _midpoints;
+        QList<QPointF> _midpoints;
 
-          bool _highlighted;
+        bool _highlighted;
       };
     }
   }

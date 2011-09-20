@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "graph_item.hpp"
+#include <pnete/ui/graph_item.hpp>
 
 class QGraphicsItem;
 
@@ -22,17 +22,17 @@ namespace fhg
         public:
           enum eOrientation
           {
-            NORTH = 0,
-            EAST = 1,
-            SOUTH = 2,
-            WEST = 3,
-            ANYORIENTATION = 4,
+            NORTH = 1 << 0,
+            EAST = 1 << 1,
+            SOUTH = 1 << 2,
+            WEST = 1 << 3,
+            ANYORIENTATION = NORTH | EAST | SOUTH | WEST,
           };
           enum eDirection
           {
-            IN = 0,
-            OUT = 1,
-            ANYDIRECTION = 2,
+            IN = 1 << 0,
+            OUT = 1 << 1,
+            ANYDIRECTION = IN | OUT,
           };
 
           ConnectableItem(eOrientation orientation, eDirection direction, QGraphicsItem* parent = NULL);
@@ -45,18 +45,26 @@ namespace fhg
 
           void setOrientation(const eOrientation& orientation);
 
-          virtual bool canConnectTo(ConnectableItem* other) const;
-          virtual bool canConnectIn(eDirection thatDirection) const;
+          bool canConnectTo(ConnectableItem* other) const;
+          bool canConnectIn(eDirection thatDirection) const;
 
           bool createPendingConnectionIfPossible();
 
           const Connection* connection() const;
+
+          const QString& we_type() const;
+          const QString& we_type(const QString&);
+
+        signals:
+          void we_type_changed();
 
         protected:
           Connection* _connection;
 
           eDirection _direction;
           eOrientation _orientation;
+
+          QString _we_type;
       };
     }
   }

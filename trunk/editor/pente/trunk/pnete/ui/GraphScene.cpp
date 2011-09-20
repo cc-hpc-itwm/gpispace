@@ -107,31 +107,33 @@ namespace fhg
       {
         removePendingConnection();
         _pendingConnection = connection;
-        if(_pendingConnection->scene() != this)
-        {
+//         if(_pendingConnection->scene() != this)
+//         {
           addItem(_pendingConnection);
           _pendingConnection->setPos(0.0, 0.0);
-        }
+//         }
         update (_pendingConnection->boundingRect());
       }
 
-      bool Scene::createPendingConnectionWith(ConnectableItem* item)
+      bool Scene::createPendingConnectionWith (ConnectableItem* item)
       {
-        if(item->canConnectIn(ConnectableItem::ANYDIRECTION))
-        {
-          ;//! \note Aaaaaargh.
-        }
-        else if(item->canConnectIn(ConnectableItem::IN))
-        {
-          setPendingConnection(new Connection(NULL, item));
-          return true;
-        }
-        else if(item->canConnectIn(ConnectableItem::OUT))
-        {
-          setPendingConnection(new Connection(item, NULL));
-          return true;
-        }
-        return false;
+        Connection* connection (new Connection());
+        setPendingConnection (connection);
+
+        if (item->direction() == ConnectableItem::IN)
+          {
+            connection->setEnd (item);
+          }
+        else if (item->direction() == ConnectableItem::OUT)
+          {
+            connection->setStart (item);
+          }
+        else
+          {
+            connection->setStart (item);
+          }
+
+        return true;
       }
 
       void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
