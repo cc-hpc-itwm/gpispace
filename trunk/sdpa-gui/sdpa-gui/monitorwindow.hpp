@@ -11,7 +11,7 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
-//#include "portfolioeval.hpp"
+#include "portfolioeval.hpp"
 #include "task.h"
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -47,8 +47,8 @@ public slots:
     void levelFilterChanged (int lvl);
     // portfolio related slots
   void ClearTable() { } //m_portfolio_.ClearTable(); }
-  void SubmitPortfolio() { } //m_portfolio_.SubmitPortfolio(); }
-  void resizePortfolio(int k) { } //m_portfolio_.Resize(k); }
+  void SubmitPortfolio() { }// m_portfolio_.SubmitPortfolio(); }
+  void resizePortfolio(int k) {}// m_portfolio_.Resize(k); }
 
   // execution view
   void clearActivityLog();
@@ -64,7 +64,6 @@ private:
                           , we::activity_t const & act
                           );
   */
-
   void UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
                           , we::activity_t const & act
                           );
@@ -83,7 +82,7 @@ private:
     bool m_follow_execution;
     std::vector<fhg::log::LogEvent> m_log_events;
 
-  //  Portfolio m_portfolio_;
+  //Portfolio m_portfolio_;
   QGraphicsScene *m_scene;
   QGraphicsView *m_view;
 

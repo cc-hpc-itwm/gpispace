@@ -48,13 +48,13 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
 
+    //    m_portfolio_.Init();
+
     m_scene = new QGraphicsScene();
     m_view = new QGraphicsView ();
 
     m_component_scene = new QGraphicsScene();
     m_component_view = new QGraphicsView();
-
-    //    m_portfolio_.Init();
 
     m_scene->setSceneRect(0,0,0,0);
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -176,6 +176,8 @@ void MonitorWindow::advance()
   QRectF scene_rect = m_scene->sceneRect();
   scene_rect.setWidth(scene_rect.width() + 1.0);
   m_scene->setSceneRect(scene_rect);
+  // TODO: do not call scene::advance but just advance all 'active' elements
+  //       i.e. keep a list of currently active elements
   m_scene->advance();
 
   if (m_follow_execution)
@@ -223,7 +225,7 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
 
   we::activity_t::output_t output (act.output());
 
-  qDebug() << evt.activity_name().c_str() << " produced " << output.size() << " token(s):";
+  //  qDebug() << evt.activity_name().c_str() << " produced " << output.size() << " token(s):";
 
   for ( we::activity_t::output_t::const_iterator it(output.begin())
       ; it != output.end()
@@ -233,7 +235,7 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
     using namespace we::loader;
     we::token_t token (it->first);
 
-    qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
+    //    qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
 
     if (evt.activity_name () == "done")
     {
@@ -247,6 +249,21 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
       simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
       m_portfolio_.ShowResult(sim_res);
     }
+  }
+
+  try
+  {
+    we::type::module_call_t mod_call
+      (boost::get<we::type::module_call_t>(act.transition().data()));
+    if (mod_call.module() == "asian")
+    {
+      int val = ui->m_progressBar->value()+1;
+      ui->m_progressBar->setValue(val);
+    }
+  }
+  catch (std::exception const &ex)
+  {
+    std::cerr << ex.what() << std::endl;
   }
 
   int val = ui->m_progressBar->value()+1;
@@ -294,9 +311,18 @@ void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const &
   static const int task_height (8);
 
   std::string const & component (evt.component());
-  std::string const & activity_name (evt.activity_name());
+  std::string         activity_name (evt.activity_name());
   std::string const & activity_id (evt.activity_id());
   sdpa::daemon::NotificationEvent::state_t activity_state (evt.activity_state());
+
+  try
+  {
+    we::type::module_call_t mod_call
+      (boost::get<we::type::module_call_t>(act.transition().data()));
+    activity_name = mod_call.module() + ":" + mod_call.function();
+  }
+  catch (boost::bad_get const &)
+  {}
 
   lock_type lock(m_task_struct_mutex);
 
