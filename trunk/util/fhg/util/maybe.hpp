@@ -96,6 +96,11 @@ namespace fhg
         return boost::apply_visitor (detail::get<const_reference>(), m);
       }
 
+      const T * const operator -> (void) const
+      {
+        return &(operator * ());
+      }
+
       const_reference get_with_default (const_reference dflt) const
       {
         return boost::apply_visitor
