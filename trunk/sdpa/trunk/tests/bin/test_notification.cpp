@@ -27,21 +27,27 @@ using namespace sdpa::daemon;
 class TestObservable : public sdpa::daemon::Observable
 {
   public:
+  TestObservable ()
+    : m_name ("test-observable")
+  {}
+
     virtual ~TestObservable() {}
 
     void activityStateUpdate(const std::string &id, const std::string &name, NotificationEvent::state_t s)
     {
-      notifyObservers(NotificationEvent(id, name, s));
+      notifyObservers(NotificationEvent(m_name, id, name, s));
     }
 
     void activityStarted(const std::string &id, const std::string &name)
     {
-      notifyObservers(NotificationEvent(id, name, NotificationEvent::STATE_STARTED));
+      notifyObservers(NotificationEvent(m_name, id, name, NotificationEvent::STATE_STARTED));
     }
     void activityCreated(const std::string &id, const std::string &name)
     {
-      notifyObservers(NotificationEvent(id, name, NotificationEvent::STATE_CREATED));
+      notifyObservers(NotificationEvent(m_name, id, name, NotificationEvent::STATE_CREATED));
     }
+private:
+  std::string m_name;
 };
 
 int main(int ac, char **av)

@@ -44,16 +44,21 @@ namespace sdpa { namespace daemon {
       : a_state_(STATE_IGNORE)
     {}
 
-    NotificationEvent( const std::string &activity_id
+    NotificationEvent( const std::string &source
+                     , const std::string &activity_id
                      , const std::string &activity_name
                      , const state_t &activity_state
                      , const std::string &activity_encoded = ""
                      )
-      : a_id_(activity_id)
+      : m_component (source)
+      , a_id_(activity_id)
       , a_name_(activity_name)
       , a_state_(activity_state)
       , a_activity_(activity_encoded)
     {}
+
+    const std::string &component() const { return m_component; }
+    std::string &component() { return m_component; }
 
     const std::string &activity_id() const   { return a_id_; }
     std::string &activity_id()               { return a_id_; }
@@ -64,6 +69,7 @@ namespace sdpa { namespace daemon {
     const std::string &activity() const { return a_activity_; }
     std::string &activity()             { return a_activity_; }
   private:
+    std::string m_component;
     std::string a_id_;
     std::string a_name_;
     state_t     a_state_;
@@ -75,6 +81,7 @@ namespace boost { namespace serialization {
   template <class Archive>
   void serialize(Archive &ar, sdpa::daemon::NotificationEvent &e, const unsigned int)
   {
+    ar & e.component();
     ar & e.activity_id();
     ar & e.activity_name();
     ar & e.activity_state();
