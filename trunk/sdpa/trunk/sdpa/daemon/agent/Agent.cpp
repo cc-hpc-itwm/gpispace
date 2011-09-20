@@ -520,8 +520,10 @@ void Agent::recover( std::istream& ifs )
 
 void Agent::notifyAppGui(const result_type & result)
 {
+  /*
     NotificationEvent evtGui("", "", NotificationEvent::STATE_FINISHED, result);
     m_guiService.update(evtGui);
     SDPA_LOG_INFO("Sent notification to the application gui! (result ="<<result<<")");
+  */
 }
 
