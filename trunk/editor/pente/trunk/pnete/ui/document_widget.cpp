@@ -17,8 +17,14 @@ namespace fhg
   {
     namespace ui
     {
-      document_widget::document_widget (const QString& title)
-        : dock_widget(title)
+      document_widget::document_widget ( const data::proxy::type& proxy
+                                       , const QString& fallback_title
+                                       )
+          : dock_widget
+            ( data::proxy::function (proxy).name
+            ? QString (data::proxy::function (proxy).name->c_str())
+            : fallback_title
+            )
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
@@ -49,7 +55,7 @@ namespace fhg
                          , data::proxy::net_proxy::data_type& net
                          , graph::Scene* scene
                          )
-        : document_widget (scene->name())
+          : document_widget (proxy, tr ("<<anonymous net>>"))
       {
         setWidget (new net_widget (proxy, net, scene, this));
       }
@@ -58,7 +64,7 @@ namespace fhg
         ( data::proxy::type& proxy
         , data::proxy::expression_proxy::data_type & expression
         )
-          : document_widget ("<<an expression>>")
+          : document_widget (proxy, tr ("<<anonymous expression>>"))
       {
         setWidget (new expression_widget (proxy, expression, this));
       }
@@ -67,7 +73,7 @@ namespace fhg
         ( data::proxy::type& proxy
         , data::proxy::mod_proxy::data_type & mod
         )
-          : document_widget ("<<a module call>>")
+          : document_widget (proxy, tr ("<<anonymous module call>>"))
       {
         setWidget (new module_call_widget (proxy, mod, this));
       }

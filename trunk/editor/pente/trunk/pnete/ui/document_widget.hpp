@@ -24,7 +24,9 @@ namespace fhg
         Q_OBJECT
 
       public:
-        document_widget (const QString& title);
+        document_widget ( const data::proxy::type& proxy
+                        , const QString& fallback_title
+                        );
 
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
