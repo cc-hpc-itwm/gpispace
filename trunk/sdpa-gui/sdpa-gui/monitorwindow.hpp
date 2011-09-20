@@ -84,11 +84,11 @@ private:
     std::vector<fhg::log::LogEvent> m_log_events;
 
   //  Portfolio m_portfolio_;
-  QGraphicsScene m_scene;
-  QGraphicsView m_view;
+  QGraphicsScene *m_scene;
+  QGraphicsView *m_view;
 
-  QGraphicsScene m_component_scene;
-  QGraphicsView m_component_view;
+  QGraphicsScene *m_component_scene;
+  QGraphicsView *m_component_view;
 
   QTimer m_timer;
 
