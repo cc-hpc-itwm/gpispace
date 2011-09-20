@@ -6,6 +6,7 @@ set(sdpa-gui_SRCS
   monitorwindow.cpp
   logeventwrapper.cpp
   portfolioeval.cpp
+  task.cpp
 )
 
 set(sdpa-gui_UIS
@@ -16,7 +17,6 @@ set(sdpa-gui_HDRS
   monitorwindow.hpp
   logeventwrapper.hpp
   windowappender.hpp
-#  parameters.hpp
   portfolioeval.hpp
 )
 
