@@ -312,10 +312,22 @@ namespace fhg
 
       void editor_window::setup_window_actions (QMenuBar* menu_bar)
       {
-        //QAction* menu_action (new QAction (tr ("window_menu"), menu_bar));
-        //menu_bar->addAction (menu_action);
-        menu_bar->addAction(createPopupMenu()->menuAction());
+        QMenu* windows_menu (new QMenu (tr ("windos_menu"), menu_bar));
+        menu_bar->addAction (windows_menu->menuAction());
 
+        QAction* duplicate_current_action
+          (new QAction (tr ("duplicate_current_window"), this));
+
+        duplicate_current_action->setShortcuts (QKeySequence::AddTab);
+
+        windows_menu->addAction (duplicate_current_action);
+
+        _view_manager->connect ( duplicate_current_action
+                               , SIGNAL (triggered())
+                               , SLOT (duplicate_active_widget())
+                               );
+
+        //menu_bar->addAction(createPopupMenu()->menuAction());
         //! \todo Open createPopupMenu() on menu_action::triggered().
         //! \todo Actually differ between documents and library / structure there.
       }
