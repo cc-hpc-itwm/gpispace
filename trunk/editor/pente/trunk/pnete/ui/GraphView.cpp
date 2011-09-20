@@ -30,8 +30,8 @@ namespace fhg
       , _currentScale (default_zoom_value)
       {
         setDragMode (QGraphicsView::ScrollHandDrag);
-        setRenderHints ( //QPainter::Antialiasing
-                        QPainter::TextAntialiasing
+        setRenderHints ( QPainter::Antialiasing
+                       | QPainter::TextAntialiasing
                        | QPainter::SmoothPixmapTransform
                        );
       }
