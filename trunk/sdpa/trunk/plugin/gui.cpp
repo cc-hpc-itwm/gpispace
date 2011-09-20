@@ -104,6 +104,14 @@ private:
     n_evt.activity_id() = e.id;
     n_evt.activity_name() = e.name;
     n_evt.activity() = e.activity;
+    if (e.meta.find("agent.name") != e.meta.end())
+    {
+      n_evt.component() = e.meta.find("agent.name")->second;
+    }
+    else
+    {
+      n_evt.component() = "unknown";
+    }
     switch (e.state)
     {
     case task_event_t::ENQUEUED:
