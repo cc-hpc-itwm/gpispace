@@ -387,7 +387,7 @@ void MonitorWindow::clearActivityLog()
 {
   lock_type struct_lock(m_task_struct_mutex);
   m_scene.clear();
-  m_scene.setSceneRect(00,00,1,1);
+  //  m_scene.setSceneRect(00,00,1,1); // TODO: figure out how to do that correctly
   m_component_scene.clear();
   m_tasks_grid.clear();
   m_tasks_list.clear();
