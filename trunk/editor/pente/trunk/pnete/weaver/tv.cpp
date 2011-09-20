@@ -123,12 +123,7 @@ namespace fhg
           {
             push (append (header));
 
-            while (pos != end)
-              {
-                fun (this, *pos);
-
-                ++pos;
-              }
+            from::many (this, pos, end, fun);
 
             pop ();
           }

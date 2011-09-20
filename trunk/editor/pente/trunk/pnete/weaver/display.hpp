@@ -17,6 +17,7 @@ namespace fhg
     {
       class Scene;
       class Transition;
+      class Port;
     }
     namespace weaver
     {
@@ -45,6 +46,18 @@ namespace fhg
 
         graph::Scene* _scene;
         graph::Transition* _current;
+      };
+
+      class port
+      {
+      public:
+        explicit port (graph::Port *);
+
+        template<int Type, typename T> void weave (const T & x) {}
+        template<int Type> void weave () {}
+
+      private:
+        graph::Port* _port;
       };
 
       namespace visitor

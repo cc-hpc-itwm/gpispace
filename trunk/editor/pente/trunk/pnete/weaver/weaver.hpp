@@ -726,6 +726,36 @@ namespace fhg
           WEAVE(transition::condition, XMLTYPE(conditions_type))(trans.cond);
           WEAVEE(transition::close)();
         }
+
+        template<typename WEAVER, typename IT>
+        void many ( WEAVER * weaver
+                  , IT pos
+                  , const IT & end
+                  , void (*fun)
+                    ( WEAVER *
+                    , const typename std::iterator_traits<IT>::value_type &
+                    )
+                  )
+        {
+          while (pos != end)
+            {
+              fun (weaver, *pos);
+
+              ++pos;
+            }
+        }
+
+        template<typename WEAVER, typename COLLECTION>
+        void many ( WEAVER * weaver
+                  ,  const COLLECTION & collection
+                  , void (*fun)
+                    ( WEAVER *
+                    , const typename std::iterator_traits<typename COLLECTION::const_iterator>::value_type &
+                    )
+                  )
+        {
+          many (weaver, collection.begin(), collection.end(), fun);
+        }
       } // namespace from
     } // namespace weaver
   }
