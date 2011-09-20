@@ -306,7 +306,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 {
 
 	QString qstrBackend = m_pUi->m_editBackendFile->text();
-	qDebug()<<"Use the backend: "<<m_pUi->m_editBackendFile->text();
+        //	qDebug()<<"Use the backend: "<<m_pUi->m_editBackendFile->text();
 
 
 	QFile wfFile(qstrBackend);
@@ -320,7 +320,7 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
 		return "";
 	}
 
-	qDebug()<<"Submit the workflow contained in the file "<<m_pUi->m_editWorkflowFile->text();
+        //	qDebug()<<"Submit the workflow contained in the file "<<m_pUi->m_editWorkflowFile->text();
 
 	std::ifstream ifs(m_pUi->m_editWorkflowFile->text().toStdString().c_str()); // TODO: make this configurable: file open dialog
 
@@ -351,9 +351,13 @@ std::string Portfolio::BuildWorkflow(portfolio_data_t& job_data)
                              );
 
 	ifs.close();
-	std::ostringstream sstr;
-	sstr << act;
-	qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
+        /*
+        {
+          std::ostringstream sstr;
+          sstr << act;
+          //	qDebug()<<"The workflow to be submitted is: " << QString(sstr.str().c_str());
+        }
+        */
 
 	return we::util::text_codec::encode(act);
 }
@@ -373,7 +377,7 @@ void Portfolio::StopClient()
   }
   catch (std::exception const & ex)
   {
-    qDebug () << "Could not stop client: " << ex.what();
+    //    qDebug () << "Could not stop client: " << ex.what();
     m_bClientStarted = false;
   }
 }
@@ -404,24 +408,25 @@ void Portfolio::StartClient()
 	{
 	    //check first if the fhgkvsd can be reached
 		qDebug()<<"The kvs daemon is assumed to run at "<<vec[0].c_str()<<":"<<vec[1].c_str();
-		fhg::com::kvs::global::get_kvs_info().init( vec[0],
-													vec[1],
-													boost::posix_time::seconds(10),
-													3);
 		try
 		{
-			fhg::com::kvs::put("test_val", 42);
-			fhg::com::kvs::del("test_val");
+                  fhg::com::kvs::global::get_kvs_info().init( vec[0]
+                                                            , vec[1]
+                                                            , boost::posix_time::seconds(10)
+                                                            , 3
+                                                            );
+                  fhg::com::kvs::put("test_val", 42);
+                  fhg::com::kvs::del("test_val");
 		}
-		catch(...)
+		catch(std::exception const & ex)
 		{
-			QMessageBox::critical( 	m_pUi->SDPAGUI,
-									QString("Error!"),
-									QString("Invalid url. The kvs daemon could not be contacted!")
-			 					 );
+                  QMessageBox::critical( m_pUi->SDPAGUI
+                                       , "Error!"
+                                       , QString("Invalid url. The kvs daemon could not be contacted at ") + strKvsUrl.c_str() + ": " + ex.what()
+                                       );
 
-			m_bClientStarted = false;
-			return;
+                  m_bClientStarted = false;
+                  return;
 		}
 	}
 
@@ -555,23 +560,21 @@ void Portfolio::SubmitPortfolio()
 
 		int nTrials = 0;
 		try {
-			qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
+                  //			qDebug()<<"Submitting the workflow "<<strWorkflow.c_str();
 			ClearTable();
 			DisableControls();
 			m_currentJobId = m_ptrCli->submitJob(strWorkflow);
-			qDebug()<<"Got the job id "<<m_currentJobId.str().c_str();
+                        //	qDebug()<<"Got the job id "<<m_currentJobId.str().c_str();
 		}
 		catch(const std::exception& cliExc)
 		{
-			qDebug()<<"Exception occurred: "<<QString(cliExc.what());
-
-			//m_ptrCli.reset();
-			QMessageBox::critical( m_pUi->SDPAGUI,
-											QString("Exception!"),
-											QString(cliExc.what())
-										);
-			EnableControls();
-			return;
+                  //m_ptrCli.reset();
+                  QMessageBox::critical( m_pUi->SDPAGUI,
+                                       QString("Exception!"),
+                                       QString(cliExc.what())
+                                       );
+                  EnableControls();
+                  return;
 
 		}
 
