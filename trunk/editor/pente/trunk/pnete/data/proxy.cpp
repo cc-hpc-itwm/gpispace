@@ -13,6 +13,11 @@ namespace fhg
     {
       namespace proxy
       {
+        const function_type& function (const type & p)
+        {
+          return boost::apply_visitor (visitor::function(), p);
+        }
+
         namespace visitor
         {
           document_widget_factory::document_widget_factory (type & proxy)

@@ -43,6 +43,7 @@ namespace fhg
           {}
           data_type& data() { return _data; }
           function_type& function() { return _function; }
+          const function_type& function() const { return _function; }
           display_type* display() { return _display; }
 
         private:
@@ -59,8 +60,20 @@ namespace fhg
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
+        const function_type& function (const type &);
+
         namespace visitor
         {
+          class function : public boost::static_visitor<const function_type&>
+          {
+          public:
+            template<typename T>
+            const function_type& operator () (const T & x) const
+            {
+              return x.function();
+            }
+          };
+
           class document_widget_factory
             : public boost::static_visitor<ui::document_widget *>
           {
