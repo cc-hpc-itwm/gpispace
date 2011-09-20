@@ -19,6 +19,7 @@
 #ifndef SDPA_UTIL_NOTIFICATION_SERVICE_HPP
 #define SDPA_UTIL_NOTIFICATION_SERVICE_HPP 1
 
+#include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <sdpa/memory.hpp>
 
@@ -102,11 +103,12 @@ namespace sdpa { namespace daemon {
 
     void open ()
     {
-      destination_ = fhg::log::Appender::ptr_t
-        (new fhg::log::remote::RemoteAppender ( service_
-                                              , m_destination_location
-                                              )
-        );
+      destination_.reset (new fhg::log::ThreadedAppender
+                         (fhg::log::Appender::ptr_t
+                         (new fhg::log::remote::RemoteAppender( service_
+                                                              , m_destination_location
+                                                              )
+                         )));
     }
 
     ~BasicNotificationService() {}

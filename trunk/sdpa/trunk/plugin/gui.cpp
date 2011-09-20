@@ -1,6 +1,7 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+#include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -26,11 +27,12 @@ public:
 
     try
     {
-      m_destination = fhg::log::Appender::ptr_t
-        (new fhg::log::remote::RemoteAppender ( "gui"
-                                              , m_url
-                                              )
-        );
+      m_destination.reset (new fhg::log::ThreadedAppender
+                          (fhg::log::Appender::ptr_t
+                          (new fhg::log::remote::RemoteAppender( "gui"
+                                                               , m_url
+                                                               )
+                          )));
     }
     catch (std::exception const &ex)
     {
@@ -47,6 +49,7 @@ public:
   {
     while (!m_observed.empty())
       stop_to_observe(*m_observed.begin());
+    m_destination.reset();
     FHG_PLUGIN_STOPPED();
   }
 
