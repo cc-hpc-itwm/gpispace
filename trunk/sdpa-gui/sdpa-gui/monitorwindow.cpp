@@ -92,7 +92,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     m_component_view->setRenderHint(QPainter::Antialiasing);
     m_component_view->setTransformationAnchor(QGraphicsView::NoAnchor);
 
-    m_view->setTransformationAnchor(QGraphicsView::NoAnchor);
+    m_view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     m_view->setAlignment(Qt::AlignRight | Qt::AlignTop);
     m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     m_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -175,6 +175,7 @@ void MonitorWindow::advance()
 
   QRectF scene_rect = m_scene->sceneRect();
   scene_rect.setWidth(scene_rect.width() + 1.0);
+  scene_rect.setHeight(m_components.size() * 8);
   m_scene->setSceneRect(scene_rect);
   // TODO: do not call scene::advance but just advance all 'active' elements
   //       i.e. keep a list of currently active elements
