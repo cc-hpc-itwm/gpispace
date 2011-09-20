@@ -20,7 +20,7 @@ set(pnete_RCCS
 QT4_ADD_RESOURCES(pnete_RCC_SRCS ${pnete_RCCS})
 
 add_executable(pnete ${pnete_SRCS} ${pnete_RCC_SRCS})
-add_dependencies(pnete pnetc)
+add_dependencies(pnete gen-includes)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -34,12 +34,12 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}
 
 add_subdirectory(data)
 add_subdirectory(ui)
-add_subdirectory(traverse)
+add_subdirectory(weaver)
 
 target_link_libraries (pnete
   ui
   data
-  traverse
+  weaver
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
   ${QT_LIBRARIES}
