@@ -22,22 +22,20 @@ Task::Task( QString const & _c
   , m_id (_id)
   , text(0)
   , color(128, 128, 128)
-  , length (50)
+  , length (1)
   , m_state (0)
 {
+  /*
   text = new QGraphicsSimpleTextItem(m_name, this);
   QFont font = text->font();
   font.setPointSize(7);
   text->setFont (font);
+  */
 
   setToolTip(m_name+" on "+m_component+" (id = "+m_id+")");
 
   update_task_state(sdpa::daemon::NotificationEvent::STATE_CREATED);
 }
-
-//! [0]
-
-//! [1]
 
 QRectF Task::boundingRect() const
 {
@@ -75,7 +73,7 @@ void Task::update_task_state(int state)
 void Task::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setBrush(color);
-    painter->drawRect(0, 0, length, 8);
+    painter->drawRect(0, 0, std::floor(length+0.5), 8);
 }
 
 void Task::advance(int step)
@@ -86,7 +84,10 @@ void Task::advance(int step)
   if (m_state < sdpa::daemon::NotificationEvent::STATE_FINISHED)
   {
     prepareGeometryChange();
-    length += velocity;
+    //    length += velocity;
+    length = std::max( scene()->width() - pos().x()
+                     , length + velocity
+                     );
   }
 }
 //! [11]

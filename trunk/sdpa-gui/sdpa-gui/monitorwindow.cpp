@@ -43,6 +43,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   , m_current_scale (1.0)
 {
     ui->setupUi(this);
+    ui->m_log_table->verticalHeader ()->setVisible (false);
     ui->m_log_table->horizontalHeader ()->setVisible (true);
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
@@ -82,6 +83,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     m_component_view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     m_component_view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    /*
     {
       for (int i = 0 ; i < 100; ++i)
       {
@@ -92,12 +94,8 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
         m_component_scene.addItem(component);
         component->setPos(0, (i * 10));
       }
-      QRectF sceneRect = m_component_scene.sceneRect();
-      QSize  view_size = m_component_view.size();
-      //      view_size.setWidth(sceneRect.width());
-      //      m_component_view.resize (view_size);
-      //      m_component_view.setMaximumWidth(view_size.width());
     }
+    */
 
     m_view.setAlignment(Qt::AlignRight | Qt::AlignTop);
     m_view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -151,7 +149,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                     , m_component_view.verticalScrollBar(), SLOT(setValue(int))
                     );
 
-    m_timer.start(1000 / 26.);
+    m_timer.start((int)(std::floor (1000 / 26. + 0.5)));
     //    m_portfolio_.InitTable();
 }
 
@@ -323,124 +321,87 @@ void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const &
                                        , we::activity_t const & act
                                        )
 {
+  static const int task_height (10);
+
   std::string const & component (evt.component());
   std::string const & activity_name (evt.activity_name());
   std::string const & activity_id (evt.activity_id());
   sdpa::daemon::NotificationEvent::state_t activity_state (evt.activity_state());
 
-  static int counter (0);
+  lock_type lock(m_task_struct_mutex);
 
-  const int w = m_scene.width();
+  // look for component
+  qreal       y_coord = -1;
+  const qreal x_coord = m_scene.width();
 
-  Task *task = new Task(component.c_str(), activity_name.c_str(), activity_id.c_str());
-  task->setPos(w, counter*10); // get y coordinate from worker map
-  ++counter;
+  for ( std::vector<std::string>::iterator comp = m_components.begin()
+      ; comp != m_components.end()
+      ; ++comp
+      )
+  {
+    if (*comp == component)
+    {
+      y_coord = (comp - m_components.begin()) * task_height;
+      break;
+    }
+  }
 
-  std::cerr << "added task: " << activity_name << std::endl;
-
-  lock_type lock (m_task_view_mutex);
-  m_scene_updates.push_back (std::make_pair(task, &m_scene));
+  if (y_coord < 0)
+  {
+    m_components.push_back (component);
+    y_coord = 0;
+  }
 
   // look for activity in activity-id map
-  //   if found -> ok, modify found task item
-  //   else:
-  //     look for component in component list
-  //        if found -> ok, use found offset
-  //        else     -> add component take last offset + delta
-  //                    add graphics-item to list of new items + target scene
-  //     add new task with found offset at the end of the scene
-  //     make sure to 'close' last task on the same if there is one
+  id_to_task_map_t & id_to_task = m_tasks_grid[component];
+  id_to_task_map_t::iterator task_it = id_to_task.find(activity_id);
 
-  /*
-  QTableWidgetItem *i(new QTableWidgetItem (evt.activity_name().c_str()));
+  Task *task = 0;
+
+  if (task_it == id_to_task.end())
   {
-    std::ostringstream sstr;
-    sstr << evt.activity_name() << std::endl;
-    sstr << "Input: ";
-    sstr << std::endl;
-    for ( we::activity_t::output_t::const_iterator it(act.input().begin())
-        ; it != act.input().end()
-        ; ++it
-        )
-    {
-      sstr
-        << "   "
-        << act.transition().get_port(it->second).name()
-        << " = "
-        << it->first
-        << std::endl;
-    }
+    task = new Task(component.c_str(), activity_name.c_str(), activity_id.c_str());
+    task->setPos(x_coord, y_coord);
+    id_to_task[activity_id] = task;
 
-    if (act.output().size())
+    // new task, make sure to close previous task -> asume finished
+    if (! m_tasks_list[component].empty())
     {
-      sstr << std::endl;
-      sstr << "Output: ";
-      sstr << std::endl;
-      for ( we::activity_t::output_t::const_iterator it(act.output().begin())
-          ; it != act.output().end()
-          ; ++it
-          )
-      {
-      sstr
-        << "   "
-        << act.transition().get_port(it->second).name()
-        << " = "
-        << it->first
-        << std::endl;
-      }
+      m_tasks_list[component].back()->update_task_state(sdpa::daemon::NotificationEvent::STATE_FINISHED);
     }
-    i->setToolTip(sstr.str().c_str());
+    m_tasks_list[component].push_back(task);
+
+    lock_type lock (m_task_view_mutex);
+    m_scene_updates.push_back (std::make_pair(task, &m_scene));
   }
-
-  switch (evt.activity_state())
+  else
   {
-  case sdpa::daemon::NotificationEvent::STATE_CREATED:
-    i->setBackground(QBrush(QColor(128,128,128)));
-    break;
-  case sdpa::daemon::NotificationEvent::STATE_STARTED:
-    i->setBackground(QBrush(QColor(255,255,0)));
-    break;
-  case sdpa::daemon::NotificationEvent::STATE_FINISHED:
-    i->setBackground(QBrush(QColor(0,200,0)));
-    if ((col+1) == ui->m_execution_log->columnCount())
-    {
-      m_current_col = ui->m_execution_log->columnCount();
-    }
-    break;
-  case sdpa::daemon::NotificationEvent::STATE_FAILED:
-    i->setBackground(QBrush(QColor(255,0,0)));
-    if ((col+1) == ui->m_execution_log->columnCount())
-    {
-      m_current_col = ui->m_execution_log->columnCount();
-    }
-    break;
-  case sdpa::daemon::NotificationEvent::STATE_CANCELLED:
-    i->setBackground(QBrush(QColor(165,42,42)));
-    if ((col+1) == ui->m_execution_log->columnCount())
-    {
-      m_current_col = ui->m_execution_log->columnCount();
-    }
-    break;
-  default:
-    return;
+    task = task_it->second;
   }
+  task->update_task_state(activity_state);
 
-  if (true)
-    ui->m_execution_log->scrollToItem (i);
-  */
+  std::cerr << "added task: " << activity_name << std::endl;
 }
 
 void MonitorWindow::clearActivityLog()
 {
-  /*
-  ui->m_execution_log->setRowCount (0);
-  ui->m_execution_log->setColumnCount (0);
-  ui->m_execution_log->clear ();
+  lock_type struct_lock(m_task_struct_mutex);
+  m_scene.clear();
+  m_scene.setSceneRect(00,00,1,1);
+  m_component_scene.clear();
+  m_tasks_grid.clear();
+  m_tasks_list.clear();
+  m_components.clear();
 
-  m_node_to_row.clear ();
-  m_activity_to_cell.clear ();
-  m_current_col = 0;
-  */
+  {
+    lock_type update_lock(m_task_view_mutex);
+    while (!m_scene_updates.empty())
+    {
+      QGraphicsItem *t = m_scene_updates.front().first;
+      delete t;
+      m_scene_updates.pop_front();
+    }
+  }
 }
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
@@ -489,6 +450,8 @@ void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
   if (m_follow_logging)
     ui->m_log_table->scrollToBottom ();
   ui->m_log_table->resizeRowToContents (row);
+  ui->m_log_table->resizeColumnsToContents();
+  ui->m_log_table->resizeColumnToContents(2);
 
   if (evt.severity() < ui->m_level_filter_selector->currentIndex())
     ui->m_log_table->setRowHidden (row, true);
