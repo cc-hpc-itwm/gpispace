@@ -75,15 +75,26 @@ namespace fhg
         *poly = poly->united(path.toFillPolygon());
       }
 
+      static qreal angle (Port::eOrientation o)
+      {
+        switch (o)
+          {
+          case Port::NORTH: return -90.0;
+          case Port::EAST: return 0.0;
+          case Port::SOUTH: return 90.0;
+          case Port::WEST: return 180.0;
+          default:
+            throw std::runtime_error ("angle (NON_ORIENTATION)!?");
+          }
+      }
+
       QPainterPath Style::portShape(const Port* port)
       {
         const qreal& length = port->length();
         const qreal lengthHalf = length / 2.0;                                  // hardcoded constant
 
-        static const qreal angles[] = { -90.0, 0.0, 90.0, 180.0 };              // hardcoded constants
-
         QTransform rotation;
-        rotation.rotate(angles[port->orientation()]);
+        rotation.rotate (angle (port->orientation()));
 
         QPainterPath path;
 
