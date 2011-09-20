@@ -115,6 +115,7 @@ public:
               , std::string const &job_description
               , wfe::capabilities_t const & capabilities
               , std::string & result
+              , wfe::meta_data_t const & meta_data
               )
   {
     int ec = -EINVAL;
@@ -123,6 +124,7 @@ public:
     task.state = wfe_task_t::PENDING;
     task.id = job_id;
     task.capabilities = capabilities;
+    task.meta = meta_data;
 
     {
       lock_type task_map_lock(m_mutex);
@@ -140,7 +142,8 @@ public:
                        , task.activity.transition().name()
                        , task_event_t::ENQUEUED
                        , job_description
-                       )
+                       , task.meta
+             )
           );
 
       task.enqueue_time = boost::posix_time::microsec_clock::universal_time();
@@ -176,6 +179,7 @@ public:
                          , task.activity.transition().name()
                          , task_event_t::FINISHED
                          , we::util::text_codec::encode(task.activity)
+                         , task.meta
                          )
             );
       }
@@ -189,6 +193,7 @@ public:
                          , task.activity.transition().name()
                          , task_event_t::CANCELED
                          , we::util::text_codec::encode(task.activity)
+                         , task.meta
                          )
             );
       }
@@ -202,6 +207,7 @@ public:
                          , task.activity.transition().name()
                          , task_event_t::FAILED
                          , we::util::text_codec::encode(task.activity)
+                         , task.meta
                          )
             );
       }
@@ -216,6 +222,7 @@ public:
                        , "n/a"
                        , task_event_t::UNKNOWN
                        , ex.what()
+                       , task.meta
                        )
           );
     }
@@ -255,6 +262,7 @@ private:
                        , task->activity.transition().name()
                        , task_event_t::DEQUEUED
                        , we::util::text_codec::encode(task->activity)
+                       , task->meta
                        )
           );
 

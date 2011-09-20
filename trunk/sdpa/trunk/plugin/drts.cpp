@@ -706,6 +706,11 @@ private:
 
   void job_execution_thread ()
   {
+    wfe::meta_data_t meta_data;
+    meta_data["agent.name"] = m_my_name;
+    meta_data["agent.pid"]  = boost::lexical_cast<std::string>(getpid());
+    meta_data["agent.host"] = boost::asio::ip::host_name();
+
     for (;;)
     {
       job_ptr_t job = m_pending_jobs.get();
@@ -726,6 +731,7 @@ private:
                                   , job->description()
                                   , m_capabilities
                                   , result
+                                  , meta_data
                                   );
 
           job->completed(boost::posix_time::microsec_clock::universal_time());

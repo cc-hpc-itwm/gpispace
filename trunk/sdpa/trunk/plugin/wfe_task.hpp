@@ -14,6 +14,7 @@ struct wfe_task_t
 {
   typedef boost::posix_time::ptime time_type;
   typedef std::map<std::string, fhg::plugin::Capability*> capabilities_t;
+  typedef std::map<std::string, std::string> meta_data_t;
 
   enum state_t
     {
@@ -30,6 +31,7 @@ struct wfe_task_t
   capabilities_t capabilities;
   std::string result;
   fhg::util::thread::event<int> done;
+  meta_data_t meta;
 
   time_type enqueue_time;
   time_type dequeue_time;
