@@ -321,7 +321,7 @@ void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const &
                                        , we::activity_t const & act
                                        )
 {
-  static const int task_height (10);
+  static const int task_height (8);
 
   std::string const & component (evt.component());
   std::string const & activity_name (evt.activity_name());

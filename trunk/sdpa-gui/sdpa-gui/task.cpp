@@ -73,6 +73,7 @@ void Task::update_task_state(int state)
 void Task::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setBrush(color);
+    painter->setPen(Qt::NoPen);
     painter->drawRect(0, 0, std::floor(length+0.5), 8);
 }
 
