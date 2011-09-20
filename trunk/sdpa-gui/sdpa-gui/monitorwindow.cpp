@@ -2,13 +2,19 @@
 #include "logeventwrapper.hpp"
 #include "ui_monitorwindow.h"
 #include "windowappender.hpp"
+#include "task.h"
 #include <QHeaderView>
 #include <QApplication>
 #include <QDebug>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QDoubleSpinBox>
+#include <QSlider>
 
 #include <boost/lexical_cast.hpp>
 #include <list>
 #include <sstream>
+#include <cmath>
 
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
@@ -32,24 +38,85 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   : QMainWindow(parent)
   , ui(new Ui::MonitorWindow)
   , m_follow_logging (true)
-  , m_portfolio_(ui)
-  , m_current_col(0)
+  , m_follow_execution (true)
+    //  , m_portfolio_(ui)
+  , m_current_scale (1.0)
 {
     ui->setupUi(this);
     ui->m_log_table->horizontalHeader ()->setVisible (true);
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
 
-    m_portfolio_.Init();
+    //    m_portfolio_.Init();
+
+    m_scene.setSceneRect(0,0,0,0);
+    m_scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    m_view.setScene (&m_scene);
+    m_view.setAttribute (Qt::WA_AlwaysShowToolTips);
+
+    m_component_view.setScene(&m_component_scene);
+    {
+      QSplitter *splitter = new QSplitter (Qt::Horizontal);
+      QHBoxLayout *l = new QHBoxLayout;
+      l->setSpacing(0);
+      l->setContentsMargins(0,0,0,0);
+      m_component_view.setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      m_view.setSizePolicy(QSizePolicy( QSizePolicy::Maximum
+                                      , QSizePolicy::Maximum)
+                          );
+      //      m_component_view.setMinimumWidth(100);
+      m_view.setMinimumWidth(300);
+      splitter->addWidget(&m_component_view);
+      splitter->addWidget(&m_view);
+      //      ui->task_view_widget->setLayout(l);
+      splitter->setCollapsible(0, false);
+      splitter->setCollapsible(1, false);
+      splitter->setLayout(l);
+
+      l = new QHBoxLayout;
+      l->addWidget(splitter);
+      ui->task_view_widget->setLayout(l);
+    }
+
+    m_component_view.setAlignment(Qt::AlignRight | Qt::AlignTop);
+    m_component_view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_component_view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    {
+      for (int i = 0 ; i < 100; ++i)
+      {
+        QGraphicsSimpleTextItem *component = new QGraphicsSimpleTextItem(QString("component"));
+        QFont font = component->font();
+        font.setPointSize(6);
+        component->setFont (font);
+        m_component_scene.addItem(component);
+        component->setPos(0, (i * 10));
+      }
+      QRectF sceneRect = m_component_scene.sceneRect();
+      QSize  view_size = m_component_view.size();
+      //      view_size.setWidth(sceneRect.width());
+      //      m_component_view.resize (view_size);
+      //      m_component_view.setMaximumWidth(view_size.width());
+    }
+
+    m_view.setAlignment(Qt::AlignRight | Qt::AlignTop);
+    m_view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    //m_view.setRenderHint(QPainter::Antialiasing);
+
+    m_view.setCacheMode(QGraphicsView::CacheNone);
+    m_view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    //m_view.setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    m_view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    m_view.setDragMode(QGraphicsView::ScrollHandDrag);
 
     m_exe_server = logserver_t
         (new fhg::log::remote::LogServer
             (fhg::log::Appender::ptr_t
                 (new WindowAppender
                     (boost::bind
-                        ( &MonitorWindow::handle_external_event
+                        ( &MonitorWindow::append_exe
                         , this
-                        , EXTERNAL_EVENT_EXECUTION
                         , _1
                         )
                     )
@@ -79,7 +146,13 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
          (boost::bind
           (&boost::asio::io_service::run, &m_io_service)));
 
-    m_portfolio_.InitTable();
+    QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(advance()));
+    QObject::connect( m_view.verticalScrollBar(), SIGNAL(valueChanged(int))
+                    , m_component_view.verticalScrollBar(), SLOT(setValue(int))
+                    );
+
+    m_timer.start(1000 / 26.);
+    //    m_portfolio_.InitTable();
 }
 
 MonitorWindow::~MonitorWindow()
@@ -89,6 +162,52 @@ MonitorWindow::~MonitorWindow()
   m_io_thread.reset ();
   m_log_server.reset ();
   delete ui;
+}
+
+void MonitorWindow::advance()
+{
+  static int counter = 0;
+
+  QRectF old_scene_rect = m_scene.sceneRect();
+  m_scene.advance();
+  QRectF new_scene_rect = m_scene.sceneRect();
+
+  if (old_scene_rect.width() < new_scene_rect.width())
+  {
+    if (m_follow_execution)
+      m_view.horizontalScrollBar()->setValue(m_view.horizontalScrollBar()->maximum());
+  }
+
+  scene_update_list_t updates;
+  {
+    lock_type lock (m_task_view_mutex);
+    updates.swap(m_scene_updates);
+  }
+
+  for ( scene_update_list_t::iterator update (updates.begin())
+      ; update != updates.end()
+      ; ++update
+      )
+  {
+    update->second->addItem (update->first);
+  }
+
+  // switch update list with empty list
+  // add all items to designated scene
+
+  /*
+  else if (++counter < 10)
+  {
+    const int num_new_tasks = qrand() % 1000;
+    const int w = m_scene.width();
+    for (int i = 0; i < num_new_tasks; ++i)
+    {
+      Task *task = new Task;
+      m_scene.addItem(task);
+      task->setPos(w, ( (i+counter)%num_new_tasks*10)); // get y coordinate from worker map
+    }
+  }
+  */
 }
 
 static QColor severityToColor (const fhg::log::LogLevel lvl)
@@ -115,11 +234,12 @@ static QColor severityToColor (const fhg::log::LogLevel lvl)
 template <typename T>
 void decode (const std::string& strMsg, T& t)
 {
-	std::stringstream sstr(strMsg);
-	boost::archive::text_iarchive ar(sstr);
-	ar >> t;
+  std::stringstream sstr(strMsg);
+  boost::archive::text_iarchive ar(sstr);
+  ar >> t;
 }
 
+/*
 void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
                                        , we::activity_t const & act
                                        )
@@ -160,9 +280,12 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
   int val = ui->m_progressBar->value()+1;
   ui->m_progressBar->setValue(val);
 }
+*/
 
 void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 {
+  std::cerr << "BEEP!" << std::endl;
+
   sdpa::daemon::NotificationEvent notification;
   try
   {
@@ -170,7 +293,7 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
   }
   catch (const std::exception &ex)
   {
-    qDebug() << "ignoring invalid event!";
+    //    qDebug() << "ignoring invalid event!";
     return;
   }
 
@@ -187,59 +310,49 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
       return;
     }
 
-    UpdatePortfolioView(notification, act);
-    UpdateExecutionView(evt.logged_on(), notification, act);
+    //    UpdatePortfolioView(notification, act);
+    UpdateExecutionView(notification, act);
   }
   else
   {
-    qDebug() << "activity " << notification.activity_id().c_str() << " failed!";
+    //    qDebug() << "activity " << notification.activity_id().c_str() << " failed!";
   }
 }
 
-void MonitorWindow::UpdateExecutionView( std::string const & host
-                                       , sdpa::daemon::NotificationEvent const & evt
+void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
                                        , we::activity_t const & act
                                        )
 {
-  size_t row (ui->m_execution_log->rowCount());
-  if (m_node_to_row.find(host) != m_node_to_row.end())
-  {
-    row = m_node_to_row[host];
-  }
-  else
-  {
-    ui->m_execution_log->setRowCount (row+1);
-    ui->m_execution_log->setVerticalHeaderItem( row
-                                              , new QTableWidgetItem(host.c_str())
-                                              );
-    m_node_to_row[host] = row;
-  }
+  std::string const & component (evt.component());
+  std::string const & activity_name (evt.activity_name());
+  std::string const & activity_id (evt.activity_id());
+  sdpa::daemon::NotificationEvent::state_t activity_state (evt.activity_state());
 
-  size_t col (m_current_col);
-  if (m_activity_to_cell.find (evt.activity_id()) != m_activity_to_cell.end())
-  {
-    std::pair<size_t, size_t> cell (m_activity_to_cell[evt.activity_id()]);
-    if (cell.first != row)
-    {
-      qDebug() << "activity to cell mismatch: first event from different node?";
-      return;
-    }
-    else
-    {
-      col = cell.second;
-    }
-  }
-  else
-  {
-    m_activity_to_cell[evt.activity_id()] = std::make_pair(row, col);
-  }
+  static int counter (0);
 
-  if (col == ui->m_execution_log->columnCount())
-    ui->m_execution_log->setColumnCount (col+1);
+  const int w = m_scene.width();
 
+  Task *task = new Task(component.c_str(), activity_name.c_str(), activity_id.c_str());
+  task->setPos(w, counter*10); // get y coordinate from worker map
+  ++counter;
+
+  std::cerr << "added task: " << activity_name << std::endl;
+
+  lock_type lock (m_task_view_mutex);
+  m_scene_updates.push_back (std::make_pair(task, &m_scene));
+
+  // look for activity in activity-id map
+  //   if found -> ok, modify found task item
+  //   else:
+  //     look for component in component list
+  //        if found -> ok, use found offset
+  //        else     -> add component take last offset + delta
+  //                    add graphics-item to list of new items + target scene
+  //     add new task with found offset at the end of the scene
+  //     make sure to 'close' last task on the same if there is one
+
+  /*
   QTableWidgetItem *i(new QTableWidgetItem (evt.activity_name().c_str()));
-  ui->m_execution_log->setItem(row, col, i);
-
   {
     std::ostringstream sstr;
     sstr << evt.activity_name() << std::endl;
@@ -314,10 +427,12 @@ void MonitorWindow::UpdateExecutionView( std::string const & host
 
   if (true)
     ui->m_execution_log->scrollToItem (i);
+  */
 }
 
 void MonitorWindow::clearActivityLog()
 {
+  /*
   ui->m_execution_log->setRowCount (0);
   ui->m_execution_log->setColumnCount (0);
   ui->m_execution_log->clear ();
@@ -325,6 +440,7 @@ void MonitorWindow::clearActivityLog()
   m_node_to_row.clear ();
   m_activity_to_cell.clear ();
   m_current_col = 0;
+  */
 }
 
 void MonitorWindow::append_log (fhg::log::LogEvent const &evt)
@@ -420,7 +536,12 @@ void MonitorWindow::clearLogging ()
 
 void MonitorWindow::toggleFollowLogging (bool follow)
 {
-	m_follow_logging = follow;
+  m_follow_logging = follow;
+}
+
+void MonitorWindow::toggleFollowTaskView (bool follow)
+{
+  m_follow_execution = follow;
 }
 
 void MonitorWindow::levelFilterChanged (int lvl)
@@ -430,4 +551,15 @@ void MonitorWindow::levelFilterChanged (int lvl)
       ui->m_log_table->setRowHidden (i, true);
     else
       ui->m_log_table->setRowHidden (i, false);
+}
+
+void MonitorWindow::changeTaskViewZoom(int to)
+{
+  qreal target = (to / 100.0);
+  qreal factor = target / m_current_scale;
+
+  m_view.scale (factor, factor);
+  m_component_view.scale (factor, factor);
+
+  m_current_scale = target;
 }
