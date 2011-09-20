@@ -19,7 +19,7 @@ class QMenu;
 #include <pnete/ui/graph_item.hpp>
 #include <pnete/data/proxy.hpp>
 
-#include <pnete/traverse/weaver.hpp>
+#include <pnete/weaver/weaver.hpp>
 
 #include <xml/parse/types.hpp>
 

@@ -8,7 +8,7 @@
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
 
-#include <pnete/traverse/weaver.hpp>
+#include <pnete/weaver/weaver.hpp>
 
 #include <pnete/util.hpp>
 
@@ -161,7 +161,7 @@ namespace fhg
             {
               pendingConnectionConnectTo(portBelow);
               event->accept();
-              //! \todo No idea what to update here? The old connection should be updated in removePendingConnection(). 
+              //! \todo No idea what to update here? The old connection should be updated in removePendingConnection().
               update();
               return;
             }

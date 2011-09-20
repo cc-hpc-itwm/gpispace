@@ -26,6 +26,7 @@ namespace fhg
         Q_OBJECT
 
         public:
+        //        explicit Port ( internal& port, Transition* parent)
           Port (Transition* parent, eDirection direction);
 
           const bool& highlighted() const;

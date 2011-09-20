@@ -30,10 +30,10 @@
 #endif
 
 #define WNAME(_tag) ::fhg::pnete::weaver::type::_tag
-#define WSIGE(_tag) template<> void weaver::weave< WNAME(_tag) > ()
-#define WSIG(_tag,_type,_var) \
+#define WSIGE(_class,_tag) template<> void _class::weave< WNAME(_tag) > ()
+#define WSIG(_class,_tag,_type,_var) \
         template<> \
-        void weaver::weave< WNAME(_tag), _type > (const _type & _var)
+        void _class::weave< WNAME(_tag), _type > (const _type & _var)
 #define WEAVE(_tag,_type) _state->template weave< WNAME(_tag), _type >
 #define WEAVEE(_tag) _state->template weave < WNAME(_tag) >
 

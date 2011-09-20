@@ -22,7 +22,7 @@
 
 #include <pnete/data/manager.hpp>
 
-#include <pnete/traverse/display.hpp>
+#include <pnete/weaver/display.hpp>
 
 namespace fhg
 {
@@ -414,7 +414,7 @@ namespace fhg
       void editor_window::create_windows (data::internal::ptr data)
       {
         _view_manager->create_widget
-          (*weaver::display::weaver(data->function()).proxy());
+          (*weaver::display(data->function()).proxy());
         _structure_view->append (data);
       }
 

@@ -6,7 +6,7 @@
 #include <string>
 #include <list>
 
-#include <pnete/traverse/weaver.hpp>
+#include <pnete/weaver/weaver.hpp>
 #include <pnete/data/internal.hpp>
 
 class QStandardItem;
