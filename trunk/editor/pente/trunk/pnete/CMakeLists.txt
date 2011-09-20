@@ -20,6 +20,7 @@ set(pnete_RCCS
 QT4_ADD_RESOURCES(pnete_RCC_SRCS ${pnete_RCCS})
 
 add_executable(pnete ${pnete_SRCS} ${pnete_RCC_SRCS})
+add_dependencies(pnete pnetc)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}
