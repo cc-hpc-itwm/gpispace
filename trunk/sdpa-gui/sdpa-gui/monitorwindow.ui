@@ -740,7 +740,7 @@
                  <bool>false</bool>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color: rgb(128, 128, 128)</string>
+                 <string notr="true">background-color: rgb(255, 255, 0)</string>
                 </property>
                 <property name="text">
                  <string>Running</string>
