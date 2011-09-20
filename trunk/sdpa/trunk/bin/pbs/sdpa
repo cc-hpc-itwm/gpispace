@@ -1289,7 +1289,7 @@ function start ()
     local p
     local rc=0
     for p in $parts ; do
-	status $@ >/dev/null 2>&1
+	status $p >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
 	    log "W: $p still running!"
 	fi
