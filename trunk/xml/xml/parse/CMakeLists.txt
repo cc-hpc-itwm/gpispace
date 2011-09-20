@@ -23,12 +23,15 @@ set (headerlist_hpp
 set (headerlist_gen
      gen-includes
     )
-add_custom_command(OUTPUT ${headerlist_hpp}
-                   COMMAND ${headerlist_gen} > ${headerlist_hpp}
-                   DEPENDS ${headerlist_gen}
-                  )
+add_custom_command(TARGET gen-includes
+  POST_BUILD
+  COMMAND ${headerlist_gen} > ${headerlist_hpp}
+  DEPENDS ${headerlist_gen}
+  COMMENT "generating internal pnetc headerlist"
+  )
 
-add_executable(pnetc pnetc.cpp ${headerlist_hpp})
+add_executable(pnetc pnetc.cpp)
+add_dependencies(pnetc gen-includes)
 target_link_libraries(pnetc ${Boost_LIBRARIES})
 target_link_libraries(pnetc ${WE_PRECOMPILE_LIBRARIES})
 install (TARGETS pnetc
