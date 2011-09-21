@@ -139,6 +139,13 @@ namespace fhg
           return true;
         }
 
+        void scene::create_connection ( connectable_item* from
+                                      , connectable_item* to
+                                      , bool only_reading
+                                      )
+        {
+        }
+
         void scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
         {
           QRectF old_area ( _pendingConnection

@@ -47,6 +47,11 @@ namespace fhg
 
           QString name() const;
 
+          void create_connection ( connectable_item* from
+                                 , connectable_item* to
+                                 , bool only_reading
+                                 );
+
         public slots:
           void slot_add_transition ();
           void slot_add_place ();
