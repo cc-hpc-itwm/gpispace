@@ -59,10 +59,7 @@ namespace fhg
       class transition
       {
       public:
-        explicit transition (graph::Transition* transition)
-          : _transition (transition)
-          , _current_port_direction ()
-        {}
+        explicit transition (graph::Transition*);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
@@ -78,7 +75,7 @@ namespace fhg
       class port
       {
       public:
-        explicit port (graph::Port* port) : _port (port) {}
+        explicit port (graph::Port*);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
@@ -90,13 +87,9 @@ namespace fhg
       class port_toplevel
       {
       public:
-        explicit port_toplevel
-        ( graph::Scene* const scene
-        , const graph::Port::eDirection& current_direction
-        )
-          : _scene (scene)
-          , _current_direction (current_direction)
-        {}
+        explicit port_toplevel ( graph::Scene* const
+                               , const graph::Port::eDirection&
+                               );
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
@@ -109,7 +102,7 @@ namespace fhg
       class place
       {
       public:
-        explicit place (ui::graph::place* place) : _place (place) {}
+        explicit place (ui::graph::place*);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}

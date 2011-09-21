@@ -30,11 +30,27 @@ namespace fhg
       XMLTYPE(ports_type)& display::in () { return _function_state.in; }
       XMLTYPE(ports_type)& display::out () { return _function_state.out; }
 
+      transition::transition (graph::Transition* transition)
+        : _transition (transition)
+        , _current_port_direction ()
+      {}
       XMLTYPE(function_type)& transition::get_function
       (const XMLTYPE(transition_type::f_type) & f)
       {
         return boost::apply_visitor (visitor::get_function(), f);
       }
+
+      port::port (graph::Port* port) : _port (port) {}
+
+      port_toplevel::port_toplevel
+        ( graph::Scene* const scene
+        , const graph::Port::eDirection& current_direction
+        )
+          : _scene (scene)
+          , _current_direction (current_direction)
+      {}
+
+      place::place (ui::graph::place* place) : _place (place) {}
 
       namespace visitor
       {
