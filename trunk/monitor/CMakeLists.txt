@@ -51,6 +51,7 @@ include_directories(${SDPA_INCLUDE_DIR})
 
 ## check for qt
 find_package(Qt4 4.4.3 COMPONENTS QtCore QtGui QtXml REQUIRED)
+find_package(TIFF REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(MNG REQUIRED)
 
