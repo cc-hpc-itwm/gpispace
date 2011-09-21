@@ -30,10 +30,10 @@ namespace fhg
     }
     namespace weaver
     {
-      class display
+      class function
       {
       public:
-        explicit display (data::proxy::function_type &);
+        explicit function (data::proxy::function_type &);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}

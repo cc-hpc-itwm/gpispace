@@ -19,16 +19,16 @@ namespace fhg
   {
     namespace weaver
     {
-      display::display (XMLTYPE(function_type) & fun)
+      function::function (XMLTYPE(function_type) & fun)
         : _proxy (NULL)
         , _fun (fun)
         , _scene (NULL)
       {
-        FROM (function<display> (this, fun));
+        FROM (function<function> (this, fun));
       }
-      data::proxy::type* display::proxy () const { return _proxy; }
-      XMLTYPE(ports_type)& display::in () { return _function_state.in; }
-      XMLTYPE(ports_type)& display::out () { return _function_state.out; }
+      data::proxy::type* function::proxy () const { return _proxy; }
+      XMLTYPE(ports_type)& function::in () { return _function_state.in; }
+      XMLTYPE(ports_type)& function::out () { return _function_state.out; }
 
       transition::transition (graph::Transition* transition)
         : _transition (transition)
@@ -62,7 +62,7 @@ namespace fhg
         }
       }
 
-      WSIG(display, expression::open, XMLTYPE(expression_type), exp)
+      WSIG(function, expression::open, XMLTYPE(expression_type), exp)
       {
         _proxy = new data::proxy::type
           (data::proxy::expression_proxy
@@ -70,7 +70,7 @@ namespace fhg
           );
       }
 
-      WSIG(display, mod::open, XMLTYPE(mod_type), mod)
+      WSIG(function, mod::open, XMLTYPE(mod_type), mod)
       {
         _proxy = new data::proxy::type
           (data::proxy::mod_proxy
@@ -78,7 +78,7 @@ namespace fhg
           );
       }
 
-      WSIG(display, net::open, XMLTYPE(net_type), net)
+      WSIG(function, net::open, XMLTYPE(net_type), net)
       {
         _scene = new graph::Scene(const_cast< XMLTYPE(net_type) &> (net));
         _proxy = new data::proxy::type
@@ -86,7 +86,7 @@ namespace fhg
           (const_cast< XMLTYPE(net_type) &> (net), _fun, _scene)
           );
       }
-      WSIG(display, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
+      WSIG(function, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
         typedef XMLTYPE(net_type::transitions_type)::const_iterator iterator;
 
@@ -98,12 +98,12 @@ namespace fhg
             FROM(transition) (this, *trans);
           }
       }
-      WSIG(display, net::places, XMLTYPE(net_type::places_type), places)
+      WSIG(function, net::places, XMLTYPE(net_type::places_type), places)
       {
         from::many (this, places, FROM(place));
       }
 
-      WSIG(display, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
+      WSIG(function, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
       {
         ui::graph::place* place_item (new ui::graph::place());
         weaver::place wp (place_item);
@@ -119,7 +119,7 @@ namespace fhg
         _place->we_type (QString (type.c_str()));
       }
 
-      WSIG(display,  transition::open
+      WSIG(function,  transition::open
           , ITVAL(XMLTYPE(net_type::transitions_type))
           , transition
           )
@@ -142,7 +142,7 @@ namespace fhg
       }
       WSIG(transition, transition::function, XMLTYPE(transition_type::f_type), fun)
       {
-        display sub (get_function (fun));
+        function sub (get_function (fun));
 
         _transition->proxy (sub.proxy());
 
@@ -169,19 +169,19 @@ namespace fhg
         _port->we_type (QString (type.c_str()));
       }
 
-      WSIG(display, function::in, XMLTYPE(ports_type), in)
+      WSIG(function, function::in, XMLTYPE(ports_type), in)
       {
         _function_state.in = in;
       }
-      WSIG(display, function::out, XMLTYPE(ports_type), out)
+      WSIG(function, function::out, XMLTYPE(ports_type), out)
       {
         _function_state.out = out;
       }
-      WSIG(display, function::fun, XMLTYPE(function_type::type), fun)
+      WSIG(function, function::fun, XMLTYPE(function_type::type), fun)
       {
-        boost::apply_visitor (FROM(visitor::net_type<display>) (this), fun);
+        boost::apply_visitor (FROM(visitor::net_type<function>) (this), fun);
       }
-      WSIGE(display, function::close)
+      WSIGE(function, function::close)
       {
         if (!_scene)
           return;

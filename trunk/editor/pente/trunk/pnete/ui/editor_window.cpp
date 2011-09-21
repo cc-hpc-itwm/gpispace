@@ -414,7 +414,7 @@ namespace fhg
       void editor_window::create_windows (data::internal::ptr data)
       {
         _view_manager->create_widget
-          (*weaver::display(data->function()).proxy());
+          (*weaver::function(data->function()).proxy());
         _structure_view->append (data);
       }
 
