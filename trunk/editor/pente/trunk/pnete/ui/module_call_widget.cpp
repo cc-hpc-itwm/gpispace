@@ -17,6 +17,7 @@ namespace fhg
         )
           : base_editor_widget (proxy, parent)
           , _mod (mod)
+          , _port_list (mod.in(), mod.out(), this)
       {}
     }
   }

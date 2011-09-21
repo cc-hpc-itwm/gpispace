@@ -8,6 +8,7 @@
 #include <pnete/data/proxy.hpp>
 
 #include <pnete/ui/base_editor_widget.hpp>
+#include <pnete/ui/port_list_widget.hpp>
 
 class QWidget;
 
@@ -29,6 +30,7 @@ namespace fhg
 
       private:
         data::proxy::mod_proxy::data_type& _mod;
+        port_list_widget _port_list;
       };
     }
   }

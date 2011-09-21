@@ -17,6 +17,7 @@ namespace fhg
         )
           : base_editor_widget (proxy, parent)
           , _expression (expression)
+          , _port_list (expression.in(), expression.out(), this)
       {}
     }
   }
