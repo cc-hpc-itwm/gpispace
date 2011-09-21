@@ -12,9 +12,14 @@ namespace fhg
     {
       namespace proxy
       {
-        const function_type& function (const type & p)
+        const function_type& function (const type& proxy)
         {
-          return boost::apply_visitor (visitor::function(), p);
+          return boost::apply_visitor (visitor::function(), proxy);
+        }
+
+        QString name (const type& proxy, const QString& fallback)
+        {
+          return boost::apply_visitor (visitor::name (fallback), proxy);
         }
 
         namespace data

@@ -25,7 +25,7 @@ namespace fhg
 
       class document_widget : public dock_widget
       {
-        Q_OBJECT
+        Q_OBJECT;
 
       public:
         document_widget ( const data::proxy::type& proxy
@@ -35,8 +35,13 @@ namespace fhg
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
 
+        QString name () const;
+
       private slots:
         void visibility_changed (bool);
+
+      private:
+        const QString _fallback_title;
       };
 
       class expression_view : public document_widget

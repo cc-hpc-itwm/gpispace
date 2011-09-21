@@ -1,10 +1,13 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#include <QWidget>
-#include <QHBoxLayout>
-#include <QTextEdit>
-#include <QSplitter>
+#include <QFormLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QSplitter>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QWidget>
 
 #include <pnete/ui/expression_widget.hpp>
 #include <pnete/ui/ports_list_widget.hpp>
@@ -34,9 +37,26 @@ namespace fhg
         QSplitter* splitter (new QSplitter ());
         splitter->addWidget (_ports_list);
 
+        QWidget* exp_widget (new QWidget ());
+        QVBoxLayout* vbox (new QVBoxLayout ());
+        exp_widget->setLayout (vbox);
+
+        QLineEdit* name_line_edit (new QLineEdit ("<<name>>"));
+
+        QWidget* name_widget (new QWidget ());
+        QFormLayout* name_layout (new QFormLayout ());
+        name_layout->addRow (tr ("&Name"), name_line_edit);
+        name_widget->setLayout (name_layout);
+        name_layout->setContentsMargins (0, 0, 0, 0);
+
+        vbox->addWidget (name_widget);
+
         QTextEdit* edit (new QTextEdit ());
         edit->setText (QString (expression.expression().expression().c_str()));
-        splitter->addWidget (edit);
+        vbox->addWidget (edit);
+        vbox->setContentsMargins (0, 0, 0, 0);
+
+        splitter->addWidget (exp_widget);
 
         group_box_layout->addWidget (splitter);
 

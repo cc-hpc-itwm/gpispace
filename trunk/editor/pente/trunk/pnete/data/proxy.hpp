@@ -7,6 +7,8 @@
 
 #include <xml/parse/types.hpp>
 
+#include <QString>
+
 namespace fhg
 {
   namespace pnete
@@ -45,6 +47,14 @@ namespace fhg
           function_type& function() { return _function; }
           const function_type& function() const { return _function; }
           display_type* display() { return _display; }
+
+          QString name (const QString& fallback) const
+          {
+            return _function.name
+              ? QString (_function.name->c_str())
+              : fallback
+              ;
+          }
 
         private:
           data_type _data;
@@ -112,6 +122,7 @@ namespace fhg
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
         const function_type& function (const type &);
+        QString name (const type&, const QString&);
 
         namespace visitor
         {
@@ -122,6 +133,21 @@ namespace fhg
             const function_type& operator () (const T & x) const
             {
               return x.function();
+            }
+          };
+
+          class name : public boost::static_visitor<QString>
+          {
+          private:
+            const QString& _fallback;
+
+          public:
+            name (const QString& fallback) : _fallback (fallback) {}
+
+            template<typename T>
+            QString operator () (const T & x) const
+            {
+              return x.name(_fallback);
             }
           };
 

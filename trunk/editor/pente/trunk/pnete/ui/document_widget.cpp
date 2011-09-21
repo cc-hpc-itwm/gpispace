@@ -18,11 +18,8 @@ namespace fhg
       document_widget::document_widget ( const data::proxy::type& proxy
                                        , const QString& fallback_title
                                        )
-        : dock_widget
-          ( data::proxy::function (proxy).name
-          ? QString (data::proxy::function (proxy).name->c_str())
-          : fallback_title
-          )
+        : dock_widget (data::proxy::name (proxy, fallback_title))
+        , _fallback_title (fallback_title)
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
