@@ -55,7 +55,7 @@ namespace fhg
 
           bool createPendingConnectionIfPossible();
 
-          const connection* connection() const;
+          const class connection* connection() const;
 
           const QString& we_type() const;
           const QString& we_type (const QString&);
