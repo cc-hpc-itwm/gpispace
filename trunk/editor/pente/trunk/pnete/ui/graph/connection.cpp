@@ -20,11 +20,12 @@ namespace fhg
     {
       namespace graph
       {
-        connection::connection()
+        connection::connection (bool reading_only)
           : item()
           , _start (NULL)
           , _end (NULL)
           , _highlighted (false)
+          , _reading_only (reading_only)
         {
           setZValue (-1);                                                          // hardcoded constant
         }

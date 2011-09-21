@@ -26,7 +26,7 @@ namespace fhg
         class connection : public item
         {
         public:
-          connection();
+          connection (bool reading_only = false);
 
           void setStart(connectable_item* start);
           void setEnd(connectable_item* end);
@@ -65,6 +65,7 @@ namespace fhg
           QList<QPointF> _midpoints;
 
           bool _highlighted;
+          bool _reading_only;
         };
       }
     }

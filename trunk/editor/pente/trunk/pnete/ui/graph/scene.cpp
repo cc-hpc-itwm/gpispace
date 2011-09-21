@@ -120,20 +120,20 @@ namespace fhg
 
         bool scene::createPendingConnectionWith (connectable_item* item)
         {
-          class connection* connection (new class connection());
-          setPendingConnection (connection);
+          connection* c (new connection());
+          setPendingConnection (c);
 
           if (item->direction() == connectable_item::IN)
           {
-            connection->setEnd (item);
+            c->setEnd (item);
           }
           else if (item->direction() == connectable_item::OUT)
           {
-            connection->setStart (item);
+            c->setStart (item);
           }
           else
           {
-            connection->setStart (item);
+            c->setStart (item);
           }
 
           return true;
@@ -144,6 +144,12 @@ namespace fhg
                                       , bool only_reading
                                       )
         {
+          connection* c (new connection (only_reading));
+          addItem (c);
+          c->setPos (0.0, 0.0);
+          c->setStart (from);
+          c->setEnd (to);
+          update (c->boundingRect());
         }
 
         void scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
