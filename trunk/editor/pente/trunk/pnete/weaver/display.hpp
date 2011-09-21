@@ -40,8 +40,8 @@ namespace fhg
 
         data::proxy::type* proxy () const;
 
-        XMLTYPE(function_type)& get_function
-        (const XMLTYPE(transition_type::f_type) &);
+        XMLTYPE(ports_type)& in ();
+        XMLTYPE(ports_type)& out ();
 
       private:
         data::proxy::type* _proxy;
@@ -54,8 +54,24 @@ namespace fhg
         } _function_state;
 
         graph::Scene* _scene;
-        graph::Transition* _current;
+      };
 
+      class transition
+      {
+      public:
+        explicit transition (graph::Transition* transition)
+          : _transition (transition)
+          , _current_port_direction ()
+        {}
+
+        template<int Type, typename T> void weave (const T & x) {}
+        template<int Type> void weave () {}
+
+        XMLTYPE(function_type)& get_function
+        (const XMLTYPE(transition_type::f_type) &);
+
+      private:
+        graph::Transition* _transition;
         graph::Port::eDirection _current_port_direction;
       };
 

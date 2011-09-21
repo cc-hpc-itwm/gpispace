@@ -23,15 +23,14 @@ namespace fhg
         : _proxy (NULL)
         , _fun (fun)
         , _scene (NULL)
-        , _current (NULL)
-        , _current_port_direction ()
       {
         FROM (function<display> (this, fun));
       }
-
       data::proxy::type* display::proxy () const { return _proxy; }
+      XMLTYPE(ports_type)& display::in () { return _function_state.in; }
+      XMLTYPE(ports_type)& display::out () { return _function_state.out; }
 
-      XMLTYPE(function_type)& display::get_function
+      XMLTYPE(function_type)& transition::get_function
       (const XMLTYPE(transition_type::f_type) & f)
       {
         return boost::apply_visitor (visitor::get_function(), f);
@@ -109,35 +108,38 @@ namespace fhg
           , transition
           )
       {
-        _current = new graph::Transition
-          (const_cast<graph::Transition::transition_type &> (transition));
-
-        _scene->addItem (_current);
+        graph::Transition* trans
+          ( new graph::Transition
+            (const_cast<graph::Transition::transition_type &> (transition))
+          );
+        _scene->addItem (trans);
+        weaver::transition wt (trans);
+        FROM(transition) (&wt, transition);
       }
-      WSIGE(display, transition::close)
+      WSIGE(transition, transition::close)
       {
-        _current->repositionChildrenAndResize();
+        _transition->repositionChildrenAndResize();
       }
-      WSIG(display, transition::name, std::string, name)
+      WSIG(transition, transition::name, std::string, name)
       {
-        _current->name (QString(name.c_str()));
+        _transition->name (QString(name.c_str()));
       }
-      WSIG(display, transition::function, XMLTYPE(transition_type::f_type), fun)
+      WSIG(transition, transition::function, XMLTYPE(transition_type::f_type), fun)
       {
         display sub (get_function (fun));
 
-        _current->proxy (sub.proxy());
+        _transition->proxy (sub.proxy());
 
         _current_port_direction = graph::Port::IN;
-        from::many (this, sub._function_state.in, FROM(port));
+        from::many (this, sub.in(), FROM(port));
 
         _current_port_direction = graph::Port::OUT;
-        from::many (this, sub._function_state.out, FROM(port));
+        from::many (this, sub.out(), FROM(port));
       }
 
-      WSIG(display, port::open, ITVAL(XMLTYPE(ports_type)), port)
+      WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        weaver::port wp (new graph::Port (_current, _current_port_direction));
+        weaver::port wp (new graph::Port (_transition, _current_port_direction));
 
         FROM(port) (&wp, port);
       }
