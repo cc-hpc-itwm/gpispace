@@ -33,7 +33,7 @@ namespace fhg
           typedef DATA data_type;
           typedef DISPLAY display_type;
 
-          proxy_base ( data_type& data
+          proxy_base ( data_type data
                      , function_type& function
                      , display_type* display = NULL
                      )
@@ -47,16 +47,67 @@ namespace fhg
           display_type* display() { return _display; }
 
         private:
-          data_type& _data;
+          data_type _data;
           function_type& _function;
           display_type* _display;
         };
 
         namespace xml_type = ::xml::parse::type;
 
-        typedef proxy_base<xml_type::expression_type> expression_proxy;
-        typedef proxy_base<xml_type::mod_type> mod_proxy;
-        typedef proxy_base<xml_type::net_type, graph::Scene> net_proxy;
+        namespace data
+        {
+          class expression_type
+          {
+          private:
+            xml_type::expression_type& _expression;
+            xml_type::ports_type& _in;
+            xml_type::ports_type& _out;
+
+          public:
+            explicit expression_type ( xml_type::expression_type& expression
+                                     , xml_type::ports_type& in
+                                     , xml_type::ports_type& out
+                                     );
+
+            xml_type::expression_type& expression ();
+            xml_type::ports_type& in ();
+            xml_type::ports_type& out ();
+          };
+
+          class mod_type
+          {
+          private:
+            xml_type::mod_type& _mod;
+            xml_type::ports_type& _in;
+            xml_type::ports_type& _out;
+
+          public:
+            explicit mod_type ( xml_type::mod_type& mod
+                              , xml_type::ports_type& in
+                              , xml_type::ports_type& out
+                              );
+
+            xml_type::mod_type& mod ();
+            xml_type::ports_type& in ();
+            xml_type::ports_type& out ();
+          };
+
+          class net_type
+          {
+          private:
+            xml_type:: net_type& _net;
+
+          public:
+            explicit net_type ( xml_type::net_type& net
+                              );
+
+            xml_type::net_type& net ();
+          };
+        }
+
+        typedef proxy_base<data::expression_type> expression_proxy;
+        typedef proxy_base<data::mod_type> mod_proxy;
+        typedef proxy_base<data::net_type, graph::Scene> net_proxy;
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 

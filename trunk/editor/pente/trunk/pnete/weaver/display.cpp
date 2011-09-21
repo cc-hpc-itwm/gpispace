@@ -54,8 +54,8 @@ namespace fhg
 
       net::net ( graph::Scene* scene
                , XMLTYPE(net_type)& net
-               , XMLTYPE(ports_type) in
-               , XMLTYPE(ports_type) out
+               , XMLTYPE(ports_type)& in
+               , XMLTYPE(ports_type)& out
                )
         : _scene (scene)
       {
@@ -83,16 +83,28 @@ namespace fhg
       WSIG(function, expression::open, XMLTYPE(expression_type), exp)
       {
         _proxy = new data::proxy::type
-          (data::proxy::expression_proxy
-          (const_cast< XMLTYPE(expression_type) &> (exp), _fun)
+          ( data::proxy::expression_proxy
+            ( data::proxy::data::expression_type
+              ( const_cast< XMLTYPE(expression_type) &> (exp)
+              , in()
+              , out()
+              )
+            , _fun
+            )
           );
       }
 
       WSIG(function, mod::open, XMLTYPE(mod_type), mod)
       {
         _proxy = new data::proxy::type
-          (data::proxy::mod_proxy
-          (const_cast< XMLTYPE(mod_type) &> (mod), _fun)
+          ( data::proxy::mod_proxy
+            ( data::proxy::data::mod_type
+              ( const_cast< XMLTYPE(mod_type) &> (mod)
+              , in()
+              , out()
+              )
+            , _fun
+            )
           );
       }
 
@@ -101,7 +113,12 @@ namespace fhg
         _scene = new graph::Scene(const_cast< XMLTYPE(net_type) &> (net));
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
-            (const_cast< XMLTYPE(net_type) &> (net), _fun, _scene)
+            ( data::proxy::data::net_type
+              ( const_cast< XMLTYPE(net_type) &> (net)
+              )
+            , _fun
+            , _scene
+            )
           );
 
         weaver::net wn ( _scene
