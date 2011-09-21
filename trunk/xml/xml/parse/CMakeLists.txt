@@ -29,6 +29,7 @@ add_custom_command(TARGET gen-includes
   DEPENDS ${headerlist_gen}
   COMMENT "generating internal pnetc headerlist"
   )
+set_source_files_properties(${headerlist_hpp} PROPERTIES GENERATED true)
 
 add_executable(pnetc pnetc.cpp)
 add_dependencies(pnetc gen-includes)
