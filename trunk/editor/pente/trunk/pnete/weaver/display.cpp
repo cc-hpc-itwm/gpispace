@@ -52,6 +52,24 @@ namespace fhg
 
       place::place (ui::graph::place* place) : _place (place) {}
 
+      net::net ( graph::Scene* scene
+               , XMLTYPE(net_type)& net
+               , XMLTYPE(ports_type) in
+               , XMLTYPE(ports_type) out
+               )
+        : _scene (scene)
+      {
+        {
+          weaver::port_toplevel wptl (_scene, graph::Port::OUT);
+          from::many (&wptl, in, FROM(port));
+        }
+
+        {
+          weaver::port_toplevel wptl (_scene, graph::Port::IN);
+          from::many (&wptl, out, FROM(port));
+        }
+      }
+
       namespace visitor
       {
         function_type& default_fun()
@@ -82,11 +100,19 @@ namespace fhg
       {
         _scene = new graph::Scene(const_cast< XMLTYPE(net_type) &> (net));
         _proxy = new data::proxy::type
-          (data::proxy::net_proxy
-          (const_cast< XMLTYPE(net_type) &> (net), _fun, _scene)
+          ( data::proxy::net_proxy
+            (const_cast< XMLTYPE(net_type) &> (net), _fun, _scene)
           );
+
+        weaver::net wn ( _scene
+                       , const_cast< XMLTYPE(net_type) &> (net)
+                       , in()
+                       , out()
+                       );
+
+        FROM(net) (&wn, net);
       }
-      WSIG(function, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
+      WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
         typedef XMLTYPE(net_type::transitions_type)::const_iterator iterator;
 
@@ -98,12 +124,12 @@ namespace fhg
             FROM(transition) (this, *trans);
           }
       }
-      WSIG(function, net::places, XMLTYPE(net_type::places_type), places)
+      WSIG(net, net::places, XMLTYPE(net_type::places_type), places)
       {
         from::many (this, places, FROM(place));
       }
 
-      WSIG(function, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
+      WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
       {
         ui::graph::place* place_item (new ui::graph::place());
         weaver::place wp (place_item);
@@ -119,7 +145,7 @@ namespace fhg
         _place->we_type (QString (type.c_str()));
       }
 
-      WSIG( function
+      WSIG( net
           , transition::open
           , ITVAL(XMLTYPE(net_type::transitions_type))
           , transition
@@ -172,30 +198,15 @@ namespace fhg
 
       WSIG(function, function::in, XMLTYPE(ports_type), in)
       {
-        _function_state.in = in;
+        _ports.in = in;
       }
       WSIG(function, function::out, XMLTYPE(ports_type), out)
       {
-        _function_state.out = out;
+        _ports.out = out;
       }
       WSIG(function, function::fun, XMLTYPE(function_type::type), fun)
       {
         boost::apply_visitor (FROM(visitor::net_type<function>) (this), fun);
-      }
-      WSIGE(function, function::close)
-      {
-        if (!_scene)
-          return;
-
-        {
-          weaver::port_toplevel wptl (_scene, graph::Port::OUT);
-          from::many (&wptl, _function_state.in, FROM(port));
-        }
-
-        {
-          weaver::port_toplevel wptl (_scene, graph::Port::IN);
-          from::many (&wptl, _function_state.out, FROM(port));
-        }
       }
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)

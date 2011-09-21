@@ -319,6 +319,7 @@ namespace fhg
 
         SIG(conditions, XMLTYPE(conditions_type));
         SIG(structs   , XMLTYPE(structs_type));
+        SIG(net       , XMLTYPE(net_type));
 
         SIG(cinclude  , ITVAL(XMLTYPE(cincludes_type)));
         SIG(connection, ITVAL(XMLTYPE(connections_type)));
@@ -403,19 +404,7 @@ namespace fhg
 
             void operator () (const XMLTYPE(net_type) & net) const
             {
-              WEAVE(net::open, XMLTYPE(net_type))(net);
-              WEAVE(net::properties, WETYPE(property::type))(net.prop);
-              WEAVE(net::structs, XMLTYPE(structs_type))(net.structs);
-              WEAVE(net::templates, XMLTYPE(net_type::templates_type))
-                (net.templates());
-              WEAVE(net::specializes, XMLTYPE(net_type::specializes_type))
-                (net.specializes());
-              WEAVE(net::functions, XMLTYPE(net_type::functions_type))
-                (net.functions());
-              WEAVE(net::places, XMLTYPE(net_type::places_type))(net.places());
-              WEAVE(net::transitions, XMLTYPE(net_type::transitions_type))
-                (net.transitions());
-              WEAVEE(net::close)();
+              FROM(net) (_state, net);
             }
           };
 
@@ -725,6 +714,23 @@ namespace fhg
             (trans.out());
           WEAVE(transition::condition, XMLTYPE(conditions_type))(trans.cond);
           WEAVEE(transition::close)();
+        }
+
+        FUN(net, XMLTYPE(net_type), net)
+        {
+          WEAVE(net::open, XMLTYPE(net_type))(net);
+          WEAVE(net::properties, WETYPE(property::type))(net.prop);
+          WEAVE(net::structs, XMLTYPE(structs_type))(net.structs);
+          WEAVE(net::templates, XMLTYPE(net_type::templates_type))
+            (net.templates());
+          WEAVE(net::specializes, XMLTYPE(net_type::specializes_type))
+            (net.specializes());
+          WEAVE(net::functions, XMLTYPE(net_type::functions_type))
+            (net.functions());
+          WEAVE(net::places, XMLTYPE(net_type::places_type))(net.places());
+          WEAVE(net::transitions, XMLTYPE(net_type::transitions_type))
+            (net.transitions());
+          WEAVEE(net::close)();
         }
 
         template<typename WEAVER, typename IT>

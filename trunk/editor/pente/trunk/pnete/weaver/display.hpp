@@ -56,6 +56,22 @@ namespace fhg
         graph::Scene* _scene;
       };
 
+      class net
+      {
+      public:
+        explicit net ( graph::Scene* scene
+                     , XMLTYPE(net_type)& net
+                     , XMLTYPE(ports_type) in
+                     , XMLTYPE(ports_type) out
+                     );
+
+        template<int Type, typename T> void weave (const T & x) {}
+        template<int Type> void weave () {}
+
+      private:
+        graph::Scene* _scene;
+      };
+
       class transition
       {
       public:
