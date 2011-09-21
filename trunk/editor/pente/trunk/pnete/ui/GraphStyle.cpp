@@ -1,7 +1,7 @@
-#include "GraphStyle.hpp"
-#include "GraphConnection.hpp"
-#include "GraphPort.hpp"
-#include "GraphTransition.hpp"
+#include <pnete/ui/GraphStyle.hpp>
+#include <pnete/ui/GraphConnection.hpp>
+#include <pnete/ui/GraphPort.hpp>
+#include <pnete/ui/GraphTransition.hpp>
 
 #include <QPainter>
 #include <QPen>

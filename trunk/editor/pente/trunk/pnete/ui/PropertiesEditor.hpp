@@ -16,7 +16,7 @@
 #include <fhg/util/join.hpp>
 #include <sstream>
 #include <QAction>
-#include "ui/ui_PropertiesEditorForm.h"
+#include <pnete/ui/ui_PropertiesEditorForm.h>
 
 namespace prop = we::type::property;
 

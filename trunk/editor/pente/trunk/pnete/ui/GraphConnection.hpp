@@ -5,7 +5,7 @@
 #include <QPointF>
 #include <QList>
 
-#include "graph_item.hpp"
+#include <pnete/ui/graph_item.hpp>
 
 class QPainter;
 class QStyleOptionGraphicsItem;

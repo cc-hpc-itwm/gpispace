@@ -1,8 +1,8 @@
-#include "GraphPort.hpp"
-#include "GraphTransition.hpp"
-#include "GraphScene.hpp"
-#include "GraphConnection.hpp"
-#include "GraphStyle.hpp"
+#include <pnete/ui/GraphPort.hpp>
+#include <pnete/ui/GraphTransition.hpp>
+#include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/GraphConnection.hpp>
+#include <pnete/ui/GraphStyle.hpp>
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>

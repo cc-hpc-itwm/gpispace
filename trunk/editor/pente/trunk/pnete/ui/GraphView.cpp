@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include "GraphView.hpp"
+#include <pnete/ui/GraphView.hpp>
 
 #include <QMimeData>
 #include <QDragEnterEvent>
@@ -8,10 +8,10 @@
 #include <QDropEvent>
 #include <QWheelEvent>
 
-#include "TransitionLibraryModel.hpp"
-#include "GraphTransition.hpp"
-#include "GraphStyle.hpp"
-#include "GraphScene.hpp"
+#include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/GraphTransition.hpp>
+#include <pnete/ui/GraphStyle.hpp>
+#include <pnete/ui/GraphScene.hpp>
 
 namespace fhg
 {

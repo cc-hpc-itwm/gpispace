@@ -16,8 +16,8 @@
 #include <fhg/util/join.hpp>
 #include <sstream>
 #include <QAction>
-#include "ui/ui_StructureEditorForm.h"
-#include "ui/ComboItemDelegate.hpp"
+#include <pnete/ui/ui_StructureEditorForm.h>
+#include <pnete/ui/ComboItemDelegate.hpp>
 
 
 namespace prop = we::type::property;

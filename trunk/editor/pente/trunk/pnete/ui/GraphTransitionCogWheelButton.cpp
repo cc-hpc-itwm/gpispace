@@ -1,4 +1,4 @@
-#include "GraphTransitionCogWheelButton.hpp"
+#include <pnete/ui/GraphTransitionCogWheelButton.hpp>
 
 #include <QSizeF>
 #include <QPointF>
@@ -11,8 +11,8 @@
 #include <QWidget>
 #include <QPushButton>
 
-#include "GraphTransition.hpp"
-#include "PopoverWidget.hpp"
+#include <pnete/ui/GraphTransition.hpp>
+#include <pnete/ui/PopoverWidget.hpp>
 
 namespace fhg
 {

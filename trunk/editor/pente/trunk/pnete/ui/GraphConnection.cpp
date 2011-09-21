@@ -1,9 +1,9 @@
 
-#include "GraphConnection.hpp"
-#include "GraphConnectableItem.hpp"
-#include "GraphStyle.hpp"
-#include "GraphPort.hpp"
-#include "GraphScene.hpp"
+#include <pnete/ui/GraphConnection.hpp>
+#include <pnete/ui/GraphConnectableItem.hpp>
+#include <pnete/ui/GraphStyle.hpp>
+#include <pnete/ui/GraphPort.hpp>
+#include <pnete/ui/GraphScene.hpp>
 
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>

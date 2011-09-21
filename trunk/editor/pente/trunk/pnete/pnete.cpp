@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include "pnete.hpp"
+#include <pnete/pnete.hpp>
 
 #include <iostream>
 #include <stdexcept>

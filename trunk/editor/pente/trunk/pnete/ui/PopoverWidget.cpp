@@ -1,4 +1,4 @@
-#include "PopoverWidget.hpp"
+#include <pnete/ui/PopoverWidget.hpp>
 
 #include <QPen>
 #include <QBrush>
