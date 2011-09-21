@@ -22,7 +22,6 @@ namespace fhg
       {
         QGroupBox* group_box (new QGroupBox (label));
         QVBoxLayout* vbox (new QVBoxLayout (group_box));
-        vbox->setSpacing (0);
         vbox->addWidget (new port_list_widget (ports));
         group_box->setLayout (vbox);
         return group_box;
@@ -43,6 +42,7 @@ namespace fhg
 
         QVBoxLayout* vbox (new QVBoxLayout());
         vbox->addWidget (splitter);
+        vbox->setContentsMargins (0, 0, 0, 0);
         setLayout(vbox);
       }
     }
