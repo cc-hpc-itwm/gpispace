@@ -3,10 +3,9 @@
 #include <pnete/weaver/display.hpp>
 #include <pnete/weaver/weaver.hpp>
 
-#include <pnete/ui/GraphScene.hpp>
-#include <pnete/ui/GraphTransition.hpp>
-#include <pnete/ui/GraphPort.hpp>
-
+#include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/graph/transition.hpp>
+#include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
 
 #include <xml/parse/types.hpp>
@@ -30,7 +29,7 @@ namespace fhg
       XMLTYPE(ports_type)& function::in () { return _ports.in; }
       XMLTYPE(ports_type)& function::out () { return _ports.out; }
 
-      transition::transition (graph::Transition* transition)
+      transition::transition (ui::graph::transition* transition)
         : _transition (transition)
         , _current_port_direction ()
       {}
@@ -40,11 +39,11 @@ namespace fhg
         return boost::apply_visitor (visitor::get_function(), f);
       }
 
-      port::port (graph::Port* port) : _port (port) {}
+      port::port (ui::graph::port* port) : _port (port) {}
 
       port_toplevel::port_toplevel
-        ( graph::Scene* const scene
-        , const graph::Port::eDirection& current_direction
+        ( ui::graph::scene* const scene
+        , const ui::graph::port::eDirection& current_direction
         )
           : _scene (scene)
           , _current_direction (current_direction)
@@ -52,7 +51,7 @@ namespace fhg
 
       place::place (ui::graph::place* place) : _place (place) {}
 
-      net::net ( graph::Scene* scene
+      net::net ( ui::graph::scene* scene
                , XMLTYPE(net_type)& net
                , XMLTYPE(ports_type)& in
                , XMLTYPE(ports_type)& out
@@ -60,12 +59,12 @@ namespace fhg
         : _scene (scene)
       {
         {
-          weaver::port_toplevel wptl (_scene, graph::Port::OUT);
+          weaver::port_toplevel wptl (_scene, ui::graph::port::OUT);
           from::many (&wptl, in, FROM(port));
         }
 
         {
-          weaver::port_toplevel wptl (_scene, graph::Port::IN);
+          weaver::port_toplevel wptl (_scene, ui::graph::port::IN);
           from::many (&wptl, out, FROM(port));
         }
       }
@@ -110,7 +109,7 @@ namespace fhg
 
       WSIG(function, net::open, XMLTYPE(net_type), net)
       {
-        _scene = new graph::Scene(const_cast< XMLTYPE(net_type) &> (net));
+        _scene = new ui::graph::scene(const_cast< XMLTYPE(net_type) &> (net));
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
             ( data::proxy::data::net_type
@@ -129,6 +128,7 @@ namespace fhg
 
         FROM(net) (&wn, net);
       }
+
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
         typedef XMLTYPE(net_type::transitions_type)::const_iterator iterator;
@@ -168,9 +168,9 @@ namespace fhg
           , transition
           )
       {
-        graph::Transition* trans
-          ( new graph::Transition
-            (const_cast<graph::Transition::transition_type &> (transition))
+        ui::graph::transition* trans
+          ( new ui::graph::transition
+            (const_cast<ui::graph::transition::transition_type &> (transition))
           );
         _scene->addItem (trans);
         weaver::transition wt (trans);
@@ -184,22 +184,27 @@ namespace fhg
       {
         _transition->name (QString(name.c_str()));
       }
-      WSIG(transition, transition::function, XMLTYPE(transition_type::f_type), fun)
+      WSIG( transition
+          , transition::function
+          , XMLTYPE(transition_type::f_type)
+          , fun
+          )
       {
         function sub (get_function (fun));
 
         _transition->proxy (sub.proxy());
 
-        _current_port_direction = graph::Port::IN;
+        _current_port_direction = ui::graph::port::IN;
         from::many (this, sub.in(), FROM(port));
 
-        _current_port_direction = graph::Port::OUT;
+        _current_port_direction = ui::graph::port::OUT;
         from::many (this, sub.out(), FROM(port));
       }
 
       WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        weaver::port wp (new graph::Port (_transition, _current_port_direction));
+        weaver::port wp
+          (new ui::graph::port (_transition, _current_port_direction));
 
         FROM(port) (&wp, port);
       }
@@ -228,7 +233,7 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        graph::Port* p (new graph::Port (NULL, _current_direction));
+        ui::graph::port* p (new ui::graph::port (NULL, _current_direction));
         _scene->addItem (p);
         weaver::port wp (p);
 

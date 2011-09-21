@@ -5,8 +5,6 @@
 
 #include <pnete/util.hpp>
 
-#include <pnete/ui/GraphScene.hpp>
-
 #include <pnete/ui/net_widget.hpp>
 #include <pnete/ui/module_call_widget.hpp>
 #include <pnete/ui/expression_widget.hpp>
@@ -20,11 +18,11 @@ namespace fhg
       document_widget::document_widget ( const data::proxy::type& proxy
                                        , const QString& fallback_title
                                        )
-          : dock_widget
-            ( data::proxy::function (proxy).name
-            ? QString (data::proxy::function (proxy).name->c_str())
-            : fallback_title
-            )
+        : dock_widget
+          ( data::proxy::function (proxy).name
+          ? QString (data::proxy::function (proxy).name->c_str())
+          : fallback_title
+          )
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
@@ -53,9 +51,9 @@ namespace fhg
 
       net_view::net_view ( data::proxy::type& proxy
                          , data::proxy::net_proxy::data_type& net
-                         , graph::Scene* scene
+                         , graph::scene* scene
                          )
-          : document_widget (proxy, tr ("<<anonymous net>>"))
+        : document_widget (proxy, tr ("<<anonymous net>>"))
       {
         setWidget (new net_widget (proxy, net, scene, this));
       }

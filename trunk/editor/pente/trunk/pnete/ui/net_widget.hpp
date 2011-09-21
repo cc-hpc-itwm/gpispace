@@ -19,10 +19,11 @@ namespace fhg
     namespace ui
     {
       class GraphView;
-    }
-    namespace graph
-    {
-      class Scene;
+
+      namespace graph
+      {
+        class scene;
+      }
     }
 
     namespace ui
@@ -34,7 +35,7 @@ namespace fhg
       public:
         net_widget ( data::proxy::type& proxy
                    , data::proxy::net_proxy::data_type& net
-                   , graph::Scene* scene
+                   , graph::scene* scene
                    , QWidget* parent = NULL
                    );
 

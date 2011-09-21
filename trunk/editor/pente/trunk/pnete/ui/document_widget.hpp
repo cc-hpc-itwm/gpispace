@@ -18,6 +18,10 @@ namespace fhg
     namespace ui
     {
       class base_editor_widget;
+      namespace graph
+      {
+        class scene;
+      }
 
       class document_widget : public dock_widget
       {
@@ -62,7 +66,7 @@ namespace fhg
       public:
         net_view ( data::proxy::type&
                  , data::proxy::net_proxy::data_type&
-                 , graph::Scene*
+                 , graph::scene*
                  );
       };
     }

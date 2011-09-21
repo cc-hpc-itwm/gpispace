@@ -10,7 +10,7 @@
 
 #include <pnete/ui/editor_window.hpp>
 #include <pnete/ui/document_widget.hpp>
-#include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/base_editor_widget.hpp>
 #include <pnete/ui/GraphView.hpp>
 
 #include <pnete/util.hpp>
@@ -50,7 +50,7 @@ namespace fhg
 //           emit view_changed (_current_view);
 //         }
 
-//         graph::Scene* old_scene (_current_scene);
+//         graph::scene* old_scene (_current_scene);
 //         _current_scene = _current_view->scene();
 
 //         if (!_current_scene)

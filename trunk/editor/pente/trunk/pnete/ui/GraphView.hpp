@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef UI_GRAPHVIEW_HPP
-#define UI_GRAPHVIEW_HPP 1
+#ifndef _PNETE_UI_GRAPH_VIEW_HPP
+#define _PNETE_UI_GRAPH_VIEW_HPP 1
 
 #include <QGraphicsView>
 #include <QObject>
@@ -18,23 +18,23 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace graph
-    {
-      class Scene;
-    }
     namespace ui
     {
+      namespace graph
+      {
+        class scene;
+      }
       class GraphView : public QGraphicsView
       {
         Q_OBJECT
 
         public:
-          GraphView (graph::Scene* scene, QWidget* parent = NULL);
+          GraphView (graph::scene* scene, QWidget* parent = NULL);
 
           void emit_current_zoom_level();
 
-          graph::Scene* scene() const;
-          void setScene(graph::Scene* scene);
+          graph::scene* scene() const;
+          void setScene(graph::scene* scene);
 
         public slots:
           void zoom (int to);

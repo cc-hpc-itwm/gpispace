@@ -19,29 +19,31 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace graph
+    namespace ui
     {
-      class Connection;
-      class ConnectableItem;
-
-      class Scene : public QGraphicsScene
+      namespace graph
       {
-        Q_OBJECT
+        class connection;
+        class connectable_item;
+
+        class scene : public QGraphicsScene
+        {
+          Q_OBJECT;
 
         public:
           typedef ::xml::parse::type::net_type net_type;
 
-          explicit Scene (net_type & net,  QObject* parent = NULL);
+          explicit scene (net_type & net,  QObject* parent = NULL);
 
           const QPointF& mousePosition() const;
 
-          void setPendingConnection(Connection* connection);
+          void setPendingConnection (connection* connection);
           void removePendingConnection();
 
-          const Connection* pendingConnection() const;
-          bool pendingConnectionCanConnectTo(ConnectableItem* item) const;
-          void pendingConnectionConnectTo(ConnectableItem* item);
-          bool createPendingConnectionWith(ConnectableItem* item);
+          const connection* pendingConnection() const;
+          bool pendingConnectionCanConnectTo (connectable_item* item) const;
+          void pendingConnectionConnectTo (connectable_item* item);
+          bool createPendingConnectionWith (connectable_item* item);
 
           QString name() const;
 
@@ -53,13 +55,13 @@ namespace fhg
           void auto_layout();
 
         protected:
-          virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
-          virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
-          virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+          virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
           virtual void keyPressEvent(QKeyEvent* event);
 
         private:
-          Connection* _pendingConnection;
+          connection* _pendingConnection;
           QPointF _mousePosition;
 
           QMenu _menu_new;
@@ -68,7 +70,8 @@ namespace fhg
           net_type & _net;
 
           void init_menu_context();
-      };
+        };
+      }
     }
   }
 }

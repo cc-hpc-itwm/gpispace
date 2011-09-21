@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QHBoxLayout>
 
-#include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/GraphView.hpp>
 
 namespace fhg
@@ -17,7 +17,7 @@ namespace fhg
       net_widget::net_widget
         ( data::proxy::type& proxy
         , data::proxy::net_proxy::data_type& net
-        , graph::Scene* scene
+        , graph::scene* scene
         , QWidget* parent
         )
           : base_editor_widget (proxy, parent)

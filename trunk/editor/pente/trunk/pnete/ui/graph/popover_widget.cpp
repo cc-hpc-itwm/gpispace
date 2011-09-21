@@ -1,4 +1,4 @@
-#include <pnete/ui/PopoverWidget.hpp>
+#include <pnete/ui/graph/popover_widget.hpp>
 
 #include <QPen>
 #include <QBrush>
@@ -15,7 +15,7 @@ namespace fhg
   {
     namespace ui
     {
-      PopoverWidget::PopoverWidget(QWidget* content)
+      popover_widget::popover_widget(QWidget* content)
         : QWidget( NULL, Qt::FramelessWindowHint | Qt::Popup )
         , _arrowOffset( 20 )
         , _arrowLength( 20 )
@@ -35,13 +35,13 @@ namespace fhg
           connect(_hideTimer, SIGNAL(timeout()), SLOT(close()));
         }
 
-        QPoint PopoverWidget::arrowAdjustment() const
+        QPoint popover_widget::arrowAdjustment() const
         {
           //! \todo other side?
           return QPoint(0.0, -_arrowOffset);
         }
 
-        void PopoverWidget::enterEvent(QEvent* event)
+        void popover_widget::enterEvent(QEvent* event)
         {
           _hideTimer->stop();
           if(_closingAnimation)
@@ -56,18 +56,18 @@ namespace fhg
           QWidget::enterEvent(event);
         }
 
-        void PopoverWidget::leaveEvent(QEvent* event)
+        void popover_widget::leaveEvent(QEvent* event)
         {
           _hideTimer->start(_hideTimeout);
           QWidget::leaveEvent(event);
         }
 
-        void PopoverWidget::animationFinished()
+        void popover_widget::animationFinished()
         {
           _closingAnimation = NULL;
         }
 
-        QPropertyAnimation* PopoverWidget::createAnimation()
+        QPropertyAnimation* popover_widget::createAnimation()
         {
           QPropertyAnimation *animation = new QPropertyAnimation(this, "geometry");
           animation->setDuration(500);
@@ -77,7 +77,7 @@ namespace fhg
           return animation;
         }
 
-        void PopoverWidget::showEvent(QShowEvent* event)
+        void popover_widget::showEvent(QShowEvent* event)
         {
           QPropertyAnimation *animation = createAnimation();
 
@@ -88,7 +88,7 @@ namespace fhg
           QWidget::showEvent(event);
         }
 
-        void PopoverWidget::closeEvent(QCloseEvent* event)
+        void popover_widget::closeEvent(QCloseEvent* event)
         {
           if(_closingAnimation)
           {
@@ -110,7 +110,7 @@ namespace fhg
           }
         }
 
-        void PopoverWidget::createShape()
+        void popover_widget::createShape()
         {
           QPainterPath arrowPath;
           QPainterPath areaPath;
@@ -141,7 +141,7 @@ namespace fhg
           setMask( _widgetShape );
         }
 
-        void PopoverWidget::paintEvent(QPaintEvent *)
+        void popover_widget::paintEvent(QPaintEvent *)
         {
           //QPixmap QPixmap::grabWidget ( QWidget * widget, const QRect & rectangle )
           static const QPen border( QBrush( Qt::black ), 4 );
@@ -151,13 +151,13 @@ namespace fhg
           painter.strokePath( _shapePath, border );
         }
 
-        void PopoverWidget::resizeEvent( QResizeEvent* event )
+        void popover_widget::resizeEvent( QResizeEvent* event )
         {
           _wantedSize = event->size() -  QSize(_arrowLength, 0);
           createShape();
         }
 
-        QSize PopoverWidget::sizeHint() const
+        QSize popover_widget::sizeHint() const
         {
           return _widgetShape.boundingRect().size() + QSize(_arrowLength,0);
         }

@@ -11,13 +11,13 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace graph
-    {
-      class Scene;
-    }
     namespace ui
     {
       class document_widget;
+      namespace graph
+      {
+        class scene;
+      }
     }
 
     namespace data
@@ -107,7 +107,7 @@ namespace fhg
 
         typedef proxy_base<data::expression_type> expression_proxy;
         typedef proxy_base<data::mod_type> mod_proxy;
-        typedef proxy_base<data::net_type, graph::Scene> net_proxy;
+        typedef proxy_base<data::net_type, ui::graph::scene> net_proxy;
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 

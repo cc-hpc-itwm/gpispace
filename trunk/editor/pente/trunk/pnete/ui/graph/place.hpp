@@ -10,7 +10,7 @@
 class QWidget;
 class QStyleOptionGraphicsItem;
 
-#include <pnete/ui/graph_item.hpp>
+#include <pnete/ui/graph/connectable_item.hpp>
 
 namespace fhg
 {
@@ -20,12 +20,11 @@ namespace fhg
     {
       namespace graph
       {
-        class place : public ::fhg::pnete::graph::ConnectableItem
+        class place : public connectable_item
         {
         public:
-          place(::fhg::pnete::graph::graph_item* parent = NULL)
-            : ::fhg::pnete::graph::ConnectableItem
-                (ANYORIENTATION, ANYDIRECTION, parent)
+          place(item* parent = NULL)
+            : connectable_item (ANYORIENTATION, ANYDIRECTION, parent)
             , _content()
             , _name (tr("<<a place>>"))
             , _we_type (tr("<<the type of a place>>"))
@@ -77,7 +76,7 @@ namespace fhg
 
           enum
           {
-            Type = place_type,
+            Type = place_graph_type,
           };
           virtual int type() const
           {

@@ -9,23 +9,20 @@
 
 #include <pnete/weaver/weaver.hpp>
 
-#include <pnete/ui/GraphPort.hpp>
+#include <pnete/ui/graph/port.hpp>
 
 namespace fhg
 {
   namespace pnete
   {
-    namespace graph
-    {
-      class Scene;
-      class Transition;
-      class Port;
-    }
     namespace ui
     {
       namespace graph
       {
         class place;
+        class scene;
+        class transition;
+        class connection;
       }
     }
     namespace weaver
@@ -53,13 +50,13 @@ namespace fhg
           XMLTYPE(ports_type) out;
         } _ports;
 
-        graph::Scene* _scene;
+        ui::graph::scene* _scene;
       };
 
       class net
       {
       public:
-        explicit net ( graph::Scene* scene
+        explicit net ( ui::graph::scene* scene
                      , XMLTYPE(net_type)& net
                      , XMLTYPE(ports_type)& in
                      , XMLTYPE(ports_type)& out
@@ -69,7 +66,7 @@ namespace fhg
         template<int Type> void weave () {}
 
       private:
-        graph::Scene* _scene;
+        ui::graph::scene* _scene;
       };
 
       class expression
@@ -87,7 +84,7 @@ namespace fhg
       class transition
       {
       public:
-        explicit transition (graph::Transition*);
+        explicit transition (ui::graph::transition*);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
@@ -96,35 +93,35 @@ namespace fhg
         (const XMLTYPE(transition_type::f_type) &);
 
       private:
-        graph::Transition* _transition;
-        graph::Port::eDirection _current_port_direction;
+        ui::graph::transition* _transition;
+        ui::graph::port::eDirection _current_port_direction;
       };
 
       class port
       {
       public:
-        explicit port (graph::Port*);
+        explicit port (ui::graph::port*);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        graph::Port* _port;
+        ui::graph::port* _port;
       };
 
       class port_toplevel
       {
       public:
-        explicit port_toplevel ( graph::Scene* const
-                               , const graph::Port::eDirection&
+        explicit port_toplevel ( ui::graph::scene* const
+                               , const ui::graph::port::eDirection&
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        graph::Scene* const _scene;
-        const graph::Port::eDirection& _current_direction;
+        ui::graph::scene* const _scene;
+        const ui::graph::port::eDirection& _current_direction;
       };
 
       class place

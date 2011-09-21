@@ -14,7 +14,7 @@
 #include <QTreeView>
 #include <QWidget>
 
-#include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/GraphView.hpp>
 #include <pnete/ui/StructureView.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
@@ -65,8 +65,8 @@ namespace fhg
                 , SLOT (view_changed (GraphView*))
                 );
         connect (_view_manager
-                , SIGNAL (scene_changed (graph::Scene*))
-                , SLOT (scene_changed (graph::Scene*))
+                , SIGNAL (scene_changed (graph::scene*))
+                , SLOT (scene_changed (graph::scene*))
                 );
       }
 
@@ -78,7 +78,7 @@ namespace fhg
         create();
       }
 
-      void editor_window::scene_changed (::fhg::pnete::graph::Scene*)
+      void editor_window::scene_changed (graph::scene*)
       {
       }
 

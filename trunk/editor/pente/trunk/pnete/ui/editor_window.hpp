@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef UI_EDITOR_WINDOW_HPP
-#define UI_EDITOR_WINDOW_HPP 1
+#ifndef _PNETE_UI_EDITOR_WINDOW_HPP
+#define _PNETE_UI_EDITOR_WINDOW_HPP 1
 
 #include <QMainWindow>
 #include <QObject>
@@ -17,15 +17,15 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace graph
-    {
-      class Scene;
-    }
     namespace ui
     {
       class view_manager;
       class StructureView;
       class GraphView;
+      namespace graph
+      {
+        class scene;
+      }
 
       class editor_window : public QMainWindow
       {
@@ -51,7 +51,7 @@ namespace fhg
         void quit();
         void expand_library();
 
-        void scene_changed (graph::Scene*);
+        void scene_changed (ui::graph::scene*);
         void view_changed (GraphView*);
 
       private:

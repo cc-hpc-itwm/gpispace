@@ -2,7 +2,6 @@
 
 #include <boost/variant.hpp>
 
-#include <pnete/ui/GraphScene.hpp>
 #include <pnete/ui/document_widget.hpp>
 
 namespace fhg

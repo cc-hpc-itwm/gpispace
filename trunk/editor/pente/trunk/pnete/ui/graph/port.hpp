@@ -1,13 +1,13 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_GRAPH_PORT_HPP
-#define _PNETE_GRAPH_PORT_HPP 1
+#ifndef _PNETE_UI_GRAPH_PORT_HPP
+#define _PNETE_UI_GRAPH_PORT_HPP 1
 
 #include <QObject>
 #include <QMenu>
 
-#include <pnete/ui/GraphConnectableItem.hpp>
-#include <pnete/ui/graph_item.hpp>
+#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/item.hpp>
 
 class QAction;
 class QMenu;
@@ -17,35 +17,37 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace graph
+    namespace ui
     {
-      class Transition;
-
-      class Port : public ConnectableItem
+      namespace graph
       {
-        Q_OBJECT
+        class transition;
+
+        class port : public connectable_item
+        {
+          Q_OBJECT;
 
         public:
-        //        explicit Port ( internal& port, Transition* parent)
-          Port (Transition* parent, eDirection direction);
+          //        explicit port ( internal& port, Transition* parent)
+          port (transition* parent, eDirection direction);
 
           const bool& highlighted() const;
           const qreal& length() const;
 
           const QString& name() const;
-          const QString& name(const QString&);
+          const QString& name (const QString&);
 
           virtual QRectF boundingRect() const;
 
-          void deleteConnection();
+          void delete_connection();
 
-          QPointF snapToEdge (const QPointF& position, eOrientation edge) const;
-          eOrientation getNearestEdge (const QPointF& position) const;
-          QPointF checkForMinimumDistance (const QPointF& position) const;
+          QPointF snap_to_edge (QPointF position, eOrientation edge) const;
+          eOrientation get_nearest_edge (const QPointF& position) const;
+          QPointF check_for_minimum_distance (const QPointF& position) const;
 
           enum
           {
-            Type = PortType,
+            Type = port_graph_type,
           };
           virtual int type() const
           {
@@ -84,7 +86,8 @@ namespace fhg
           QMenu _menu_context;
 
           void init_menu_context();
-      };
+        };
+      }
     }
   }
 }

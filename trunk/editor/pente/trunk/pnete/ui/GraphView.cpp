@@ -9,9 +9,9 @@
 #include <QWheelEvent>
 
 #include <pnete/ui/TransitionLibraryModel.hpp>
-#include <pnete/ui/GraphTransition.hpp>
-#include <pnete/ui/GraphStyle.hpp>
-#include <pnete/ui/GraphScene.hpp>
+#include <pnete/ui/graph/transition.hpp>
+#include <pnete/ui/graph/style.hpp>
+#include <pnete/ui/graph/scene.hpp>
 
 namespace fhg
 {
@@ -25,7 +25,7 @@ namespace fhg
       static const int per_click_zoom_difference (10);                          // hardcoded constant
       static const int default_zoom_value (100);                                // hardcoded constant
 
-      GraphView::GraphView (graph::Scene* scene, QWidget* parent)
+      GraphView::GraphView (graph::scene* scene, QWidget* parent)
       : QGraphicsView (scene, parent)
       , _currentScale (default_zoom_value)
       {
@@ -41,11 +41,11 @@ namespace fhg
         return QSize (window()->width() * 0.8, window()->height());
       }
 
-      graph::Scene* GraphView::scene() const
+      graph::scene* GraphView::scene() const
       {
-        return qobject_cast<graph::Scene*> (QGraphicsView::scene());
+        return qobject_cast<graph::scene*> (QGraphicsView::scene());
       }
-      void GraphView::setScene(graph::Scene* scene)
+      void GraphView::setScene(graph::scene* scene)
       {
         QGraphicsView::setScene (scene);
       }
@@ -94,12 +94,12 @@ namespace fhg
           const QString filename/* (magic)*/;
           // mimeData->data(TransitionLibraryModel::mimeType) === filepath as ..)
 
-          graph::Transition* transition (new graph::Transition (filename));
+          graph::transition* transition (new graph::transition (filename));
 
           scene()->addItem (transition);
 
           transition->setPos
-            ( graph::Style::snapToRaster
+            ( graph::style::snapToRaster
               ( mapToScene (event->pos())
               - transition->boundingRect().bottomRight() / 2.0
               )

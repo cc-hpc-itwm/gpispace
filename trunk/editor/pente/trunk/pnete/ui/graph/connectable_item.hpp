@@ -1,9 +1,9 @@
-#ifndef GRAPHCONNECTABLEITEM_HPP
-#define GRAPHCONNECTABLEITEM_HPP 1
+#ifndef _PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
+#define _PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP 1
 
 #include <QObject>
 
-#include <pnete/ui/graph_item.hpp>
+#include <pnete/ui/graph/item.hpp>
 
 class QGraphicsItem;
 
@@ -11,13 +11,15 @@ namespace fhg
 {
   namespace pnete
   {
-    namespace graph
+    namespace ui
     {
-      class Connection;
-
-      class ConnectableItem : public graph_item
+      namespace graph
       {
-        Q_OBJECT
+        class connection;
+
+        class connectable_item : public item
+        {
+          Q_OBJECT;
 
         public:
           enum eOrientation
@@ -35,37 +37,41 @@ namespace fhg
             ANYDIRECTION = IN | OUT,
           };
 
-          ConnectableItem(eOrientation orientation, eDirection direction, QGraphicsItem* parent = NULL);
+          connectable_item ( eOrientation orientation
+                           , eDirection direction
+                           , QGraphicsItem* parent = NULL
+                           );
 
-          void connectMe(Connection* connection);
+          void connectMe (connection* connection);
           void disconnectMe();
 
           const eOrientation& orientation() const;
           const eDirection& direction() const;
 
-          void setOrientation(const eOrientation& orientation);
+          void setOrientation (const eOrientation& orientation);
 
-          bool canConnectTo(ConnectableItem* other) const;
-          bool canConnectIn(eDirection thatDirection) const;
+          bool canConnectTo (connectable_item* other) const;
+          bool canConnectIn (eDirection thatDirection) const;
 
           bool createPendingConnectionIfPossible();
 
-          const Connection* connection() const;
+          const connection* connection() const;
 
           const QString& we_type() const;
-          const QString& we_type(const QString&);
+          const QString& we_type (const QString&);
 
         signals:
           void we_type_changed();
 
         protected:
-          Connection* _connection;
+          class connection* _connection;
 
           eDirection _direction;
           eOrientation _orientation;
 
           QString _we_type;
-      };
+        };
+      }
     }
   }
 }

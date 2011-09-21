@@ -1,5 +1,5 @@
-#ifndef UIPOPOVERWIDGET_HPP
-#define UIPOPOVERWIDGET_HPP 1
+#ifndef _PNETE_UI_GRAPH_POPOVER_WIDGET_HPP
+#define _PNETE_UI_GRAPH_POPOVER_WIDGET_HPP 1
 
 #include <QWidget>
 #include <QPropertyAnimation>
@@ -12,14 +12,13 @@ namespace fhg
   {
     namespace ui
     {
-      class PopoverWidgetButton;
-      class PopoverWidget : public QWidget
+      class popover_widget : public QWidget
       {
         Q_OBJECT
 
         public:
-          //! \note the PopoverWidget takes ownership of content!
-          PopoverWidget(QWidget* content);
+          //! \note the popover_widget takes ownership of content!
+          popover_widget(QWidget* content);
           QSize sizeHint() const;
 
           QPoint arrowAdjustment() const;
