@@ -23,7 +23,7 @@ namespace fhg
         , data::proxy::expression_proxy::data_type& expression
         , QWidget* parent
         )
-          : base_editor_widget (proxy, parent)
+          : base_editor_widget (proxy, tr("<<anonymous expression>>"), parent)
           , _expression (expression)
           , _ports_list (new ports_list_widget ( expression.in()
                                                , expression.out()
@@ -41,7 +41,7 @@ namespace fhg
         QVBoxLayout* vbox (new QVBoxLayout ());
         exp_widget->setLayout (vbox);
 
-        QLineEdit* name_line_edit (new QLineEdit ("<<name>>"));
+        QLineEdit* name_line_edit (new QLineEdit (name()));
 
         QWidget* name_widget (new QWidget ());
         QFormLayout* name_layout (new QFormLayout ());

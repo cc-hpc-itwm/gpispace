@@ -3,8 +3,8 @@
 #include <pnete/ui/port_list_widget.hpp>
 
 #include <QStringList>
-
 #include <QTableWidgetItem>
+#include <QHeaderView>
 
 namespace fhg
 {
@@ -28,6 +28,7 @@ namespace fhg
         headers.push_back ("type");
 
         setHorizontalHeaderLabels (headers);
+        verticalHeader()->hide();
 
         int row (0);
 

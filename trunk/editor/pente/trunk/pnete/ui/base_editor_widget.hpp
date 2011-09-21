@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QWidget>
 
+#include <QString>
+
 #include <pnete/data/proxy.hpp>
 
 namespace fhg
@@ -19,16 +21,21 @@ namespace fhg
         Q_OBJECT;
       public:
         base_editor_widget ( data::proxy::type& proxy
+                           , const QString& fallback_title
                            , QWidget* parent = NULL
                            );
 
         data::proxy::type& proxy () const;
+
+        QString name () const;
 
       signals:
         void focus_gained (QWidget*);
 
       private:
         data::proxy::type& _proxy;
+
+        const QString _fallback_title;
       };
     }
   }
