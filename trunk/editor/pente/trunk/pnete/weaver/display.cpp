@@ -27,8 +27,8 @@ namespace fhg
         FROM (function<function> (this, fun));
       }
       data::proxy::type* function::proxy () const { return _proxy; }
-      XMLTYPE(ports_type)& function::in () { return _function_state.in; }
-      XMLTYPE(ports_type)& function::out () { return _function_state.out; }
+      XMLTYPE(ports_type)& function::in () { return _ports.in; }
+      XMLTYPE(ports_type)& function::out () { return _ports.out; }
 
       transition::transition (graph::Transition* transition)
         : _transition (transition)
@@ -119,7 +119,8 @@ namespace fhg
         _place->we_type (QString (type.c_str()));
       }
 
-      WSIG(function,  transition::open
+      WSIG( function
+          , transition::open
           , ITVAL(XMLTYPE(net_type::transitions_type))
           , transition
           )

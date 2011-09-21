@@ -51,7 +51,7 @@ namespace fhg
         {
           XMLTYPE(ports_type) in;
           XMLTYPE(ports_type) out;
-        } _function_state;
+        } _ports;
 
         graph::Scene* _scene;
       };
