@@ -25,24 +25,12 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit port_list_widget ( data::proxy::xml_type::ports_type& in
-                                  , data::proxy::xml_type::ports_type& out
+        explicit port_list_widget ( data::proxy::xml_type::ports_type& ports
                                   , QWidget* parent = NULL
                                   );
 
       private:
-        data::proxy::xml_type::ports_type& _in;
-        data::proxy::xml_type::ports_type& _out;
-
-        void set_row ( const int row
-                     , const QString& direction
-                     , data::proxy::xml_type::port_type & port
-                     );
-
-        void set_rows ( int* row
-                      , const QString& direction
-                      , data::proxy::xml_type::ports_type& ports
-                      );
+        data::proxy::xml_type::ports_type& _ports;
       };
     }
   }

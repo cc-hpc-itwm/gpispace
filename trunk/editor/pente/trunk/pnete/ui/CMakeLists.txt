@@ -24,6 +24,7 @@ set(ui_SRCS
   module_call_widget.cpp
   expression_widget.cpp
   port_list_widget.cpp
+  ports_list_widget.cpp
 )
 
 set(ui_HDRS
@@ -55,6 +56,7 @@ set(ui_HDRS
   module_call_widget.hpp
   expression_widget.hpp
   port_list_widget.hpp
+  ports_list_widget.hpp
 )
 
 set(ui_UIS
@@ -88,6 +90,7 @@ set(ui_TOMOC
   module_call_widget.hpp
   expression_widget.hpp
   port_list_widget.hpp
+  ports_list_widget.hpp
 )
 
 #for moced files to get their includes.
