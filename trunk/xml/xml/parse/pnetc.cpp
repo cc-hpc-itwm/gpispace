@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -38,7 +39,7 @@ main (int argc, char ** argv)
     )
     ;
 
-  xml::parse::state::type * state = new xml::parse::state::type;
+  boost::shared_ptr<xml::parse::state::type> state (new xml::parse::state::type);
 
   state->add_options (desc);
 
@@ -46,11 +47,20 @@ main (int argc, char ** argv)
   p.add("input", -1);
 
   po::variables_map vm;
-  po::store( po::command_line_parser(argc, argv)
-           . options(desc).positional(p).run()
-           , vm
-           );
-  po::notify(vm);
+
+  try
+  {
+    po::store( po::command_line_parser(argc, argv)
+             . options(desc).positional(p).run()
+             , vm
+             );
+    po::notify(vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    return EXIT_FAILURE;
+  }
 
   if (vm.count("help"))
     {
@@ -68,34 +78,41 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
-  xml::parse::type::function_type f (xml::parse::frontend (*state, input));
-
-  we::transition_t trans (f.synthesize<we::activity_t> (*state));
-
-  we::type::optimize::optimize (trans, state->options_optimize());
-
-  // WORK HERE: The xml dump from the transition
-#if 0
+  try
   {
-    std::ofstream stream ("/dev/stderr");
-    fhg::util::xml::xmlstream s (stream);
+    xml::parse::type::function_type f (xml::parse::frontend (*state, input));
 
-    we::type::dump::dump (s, trans);
-  }
+    we::transition_t trans (f.synthesize<we::activity_t> (*state));
+
+    we::type::optimize::optimize (trans, state->options_optimize());
+
+    // WORK HERE: The xml dump from the transition
+#if 0
+    {
+      std::ofstream stream ("/dev/stderr");
+      fhg::util::xml::xmlstream s (stream);
+
+      we::type::dump::dump (s, trans);
+    }
 #endif
 
-  delete state;
-
-  const we::activity_t act (trans);
+    const we::activity_t act (trans);
 
 
-  std::ofstream out (output.c_str());
+    std::ofstream out (output.c_str());
 
-  out << ( xml
-         ? we::util::xml_codec::encode (act)
-         : we::util::text_codec::encode (act)
-         )
-    ;
+    out << ( xml
+           ? we::util::xml_codec::encode (act)
+           : we::util::text_codec::encode (act)
+           )
+      ;
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "failed: " << ex.what() << std::endl;
+
+    return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }
