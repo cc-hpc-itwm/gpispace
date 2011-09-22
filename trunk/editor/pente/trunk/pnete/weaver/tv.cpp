@@ -6,6 +6,7 @@
 #include <QStandardItem>
 
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace fhg
 {
@@ -13,11 +14,6 @@ namespace fhg
   {
     namespace weaver
     {
-      static std::string boolString (const bool & v)
-      {
-        return v ? "true" : "false";
-      }
-
       tv::tv (QStandardItem * root)
         : _stack ()
       {
@@ -97,7 +93,10 @@ namespace fhg
       {
         if (val)
           {
-            append_key_value (key, "%s", boolString (*val));
+            append_key_value ( key
+                             , "%s"
+                             , boost::lexical_cast<std::string> (*val)
+                             );
           }
       }
 
@@ -440,7 +439,7 @@ namespace fhg
       }
       WSIG(tv, requirement::value, bool, val)
       {
-        add_something(": ", boolString(val));
+        add_something(": ", boost::lexical_cast<std::string> (val));
       }
 
       WSIG(tv, expression::open, XMLTYPE(expression_type), exp)
