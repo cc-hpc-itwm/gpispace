@@ -27,24 +27,45 @@ if [ -z "$SDPACC_CXX" ] ; then
     SDPACC_CXX="g++"
 fi
 
+prog_name=$(basename $0)
+args="$@"
+pnet="/p/herc/itwm/hpc/ap/git/SDPA/trunk/application/cc/compile.pnet"
+
+pnet_tmp=$(mktemp)
+
 function cc_mode ()
 {
     echo "behaving like gcc" >&2
-    $SDPACC_CC $@
+    prepare
+    submit
 }
 
 function cplusplus_mode ()
 {
     echo "behaving like g++" >&2
-    $SDPACC_CXX $@
+    prepare
+    submit
 }
 
-prog_name=$(basename $0)
+function prepare ()
+{
+    pnetput --if ${pnet} --of ${pnet_tmp} \
+              -p compiler=\"$prog_name\" \
+              -p params=\""$args"\" \
+              -p working_directory=\""$PWD"\" \
+              -p build_environment=\"\"
+}
+
+function submit ()
+{
+    sdpac submit -w ${pnet_tmp}
+}
+
 case "$prog_name" in
     *cc)
 	cc_mode $@
 	;;
-    *c++)
+    *++)
 	cplusplus_mode $@
 	;;
     *)
@@ -53,3 +74,4 @@ case "$prog_name" in
 	;;
 esac
 
+test -e "${pnet_tmp}" && rm -f "${pnet_tmp}"

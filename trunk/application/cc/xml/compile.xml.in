@@ -1,0 +1,60 @@
+<defun name="compile">
+  <in name="compiler" type="string" />
+  <in name="params" type="string" />
+  <in name="working_directory" type="string" />
+  <in name="build_environment" type="string" />
+
+  <out name="exit_code" type="long" />
+  <out name="std_out" type="string" />
+  <out name="std_err" type="string" />
+
+  <module name="sdpacc" function="compile ( compiler
+                                          , params
+                                          , working_directory
+                                          , build_environment
+                                          , exit_code
+                                          , std_out
+                                          , std_err
+                                          )">
+    <cinclude href="fhglog/fhglog.hpp"/>
+    <cinclude href="unistd.h"/>
+    <cinclude href="errno.h"/>
+    <cinclude href="stdexcept"/>
+    <cinclude href="fstream"/>
+    <cinclude href="process.hpp"/>
+    <link href="@CMAKE_INSTALL_PREFIX@/libexec/libprocess.so"/>
+    <code><![CDATA[
+        LOG (INFO, "SDPACC compile");
+
+        LOG (INFO, "===> compiler := " << compiler);
+        LOG (INFO, "===> params   := " << params);
+	LOG (INFO, "===> working directory := " << working_directory);
+	LOG (INFO, "===> build environment := " << build_environment);
+
+	char buf[PATH_MAX];
+	getcwd(buf, sizeof(buf));
+
+	if (chdir(working_directory.c_str()) < 0)
+	{
+	  int ec = errno;
+	  LOG(ERROR, "could not change directory to " << working_directory << ": " << strerror(ec));
+	  throw std::runtime_error("change directory failed: " + working_directory);
+	}
+
+	std::string cmd (compiler + " " + params + " >> /fhgfs/HPC/petry/compile.log");
+
+	LOG (INFO,"====> comand := " << cmd);
+
+	int ec (system(cmd.c_str()));
+	if (ec != 0)
+	{
+          LOG(ERROR, "command failed: " << ec);
+        }
+
+	exit_code = ec;
+	chdir(buf);
+
+	LOG (INFO, "SDPACC done");
+    ]]></code>
+  </module>
+</defun>
