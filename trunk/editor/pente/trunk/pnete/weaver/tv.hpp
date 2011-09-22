@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _PNETE_WEAVER_TV_HPP
-#define _PNETE_WEAVER_TV_HPP 1
+#ifndef _FHG_PNETE_WEAVER_TV_HPP
+#define _FHG_PNETE_WEAVER_TV_HPP 1
 
 class QStandardItem;
 class QString;

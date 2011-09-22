@@ -1,5 +1,7 @@
-#ifndef UI_STRUCTURE_VIEW_HPP
-#define UI_STRUCTURE_VIEW_HPP 1
+// mirko.rahn@itwm.fraunhofer.de
+
+#ifndef _FHG_PNETE_UI_STRUCTURE_VIEW_HPP
+#define _FHG_PNETE_UI_STRUCTURE_VIEW_HPP 1
 
 #include <QTreeView>
 

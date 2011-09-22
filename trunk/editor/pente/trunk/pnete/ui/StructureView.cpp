@@ -41,10 +41,10 @@ namespace fhg
       {
         _datas.push_back (data);
 
-        weaver::tv * w (new weaver::tv (_root));
+        weaver::tv w (_root);
 
         FROM( function_context<weaver::tv>
-              ( w
+              ( &w
               , WNAME(function_context_type) ( data->function()
                                              , data->context()
                                              )
