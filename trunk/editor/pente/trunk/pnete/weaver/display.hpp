@@ -103,7 +103,7 @@ namespace fhg
 
       private:
         ui::graph::transition* _transition;
-        ui::graph::port::eDirection _current_port_direction;
+        ui::graph::port::DIRECTION _current_port_direction;
         XMLTYPE(net_type)& _net;
       };
 
@@ -123,7 +123,7 @@ namespace fhg
       {
       public:
         explicit port_toplevel ( ui::graph::scene* const
-                               , const ui::graph::port::eDirection&
+                               , const ui::graph::port::DIRECTION&
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
@@ -131,7 +131,7 @@ namespace fhg
 
       private:
         ui::graph::scene* const _scene;
-        const ui::graph::port::eDirection& _current_direction;
+        const ui::graph::port::DIRECTION& _current_direction;
       };
 
       class place

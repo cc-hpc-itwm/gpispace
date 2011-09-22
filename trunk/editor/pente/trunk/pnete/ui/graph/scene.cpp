@@ -5,6 +5,7 @@
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/place.hpp>
 
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
@@ -39,8 +40,8 @@ namespace fhg
       {
         scene::scene (net_type & net, QObject* parent)
           : QGraphicsScene (parent)
-          , _pendingConnection (NULL)
-          , _mousePosition (QPointF (0.0, 0.0))
+          , _pending_connection (NULL)
+          , _mouse_position (QPointF (0.0, 0.0))
           , _menu_context()
           , _net (net)
         {
@@ -101,42 +102,39 @@ namespace fhg
           qDebug() << "scene::add_struct";
         }
 
-        const QPointF& scene::mousePosition() const
+        const QPointF& scene::mouse_position() const
         {
-          return _mousePosition;
+          return _mouse_position;
         }
 
-        void scene::setPendingConnection (connection* connection)
+        connection* scene::create_connection (bool only_reading)
         {
-          removePendingConnection();
-          _pendingConnection = connection;
-//         if(_pendingConnection->scene() != this)
-//         {
-          addItem(_pendingConnection);
-          _pendingConnection->setPos(0.0, 0.0);
-//         }
-          update (_pendingConnection->boundingRect());
+          connection* c (new connection(only_reading));
+          addItem (c);
+          c->setPos (0.0, 0.0);
+          return c;
         }
 
-        bool scene::createPendingConnectionWith (connectable_item* item)
+        void scene::create_connection (connectable_item* item)
         {
-          connection* c (new connection());
-          setPendingConnection (c);
+          if (_pending_connection)
+          {
+            throw std::runtime_error ( "connection created while a different "
+                                       "connection is still pending. Oo"
+                                     );
+          }
 
+          _pending_connection = create_connection();
           if (item->direction() == connectable_item::IN)
           {
-            c->setEnd (item);
-          }
-          else if (item->direction() == connectable_item::OUT)
-          {
-            c->setStart (item);
+            _pending_connection->end (item);
           }
           else
           {
-            c->setStart (item);
+            _pending_connection->start (item);
           }
 
-          return true;
+          update (_pending_connection->boundingRect());
         }
 
         void scene::create_connection ( connectable_item* from
@@ -144,117 +142,99 @@ namespace fhg
                                       , bool only_reading
                                       )
         {
-          connection* c (new connection (only_reading));
-          addItem (c);
-          c->setPos (0.0, 0.0);
-          c->setStart (from);
-          c->setEnd (to);
+          connection* c (create_connection (only_reading));
+          c->start (from);
+          c->end (to);
           update (c->boundingRect());
         }
 
-        void scene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
+        void scene::remove_pending_connection()
         {
-          QRectF old_area ( _pendingConnection
-                          ? _pendingConnection->boundingRect()
-                          : QRectF()
-                          );
-          _mousePosition = mouseEvent->scenePos();
-          if(_pendingConnection)
+          if (!_pending_connection)
           {
+            return;
+          }
+
+          const QRectF area (_pending_connection->boundingRect());
+          delete _pending_connection;
+          _pending_connection = NULL;
+          update(area);
+        }
+
+        void scene::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
+        {
+          if (_pending_connection)
+          {
+            const QRectF old_area (_pending_connection->boundingRect());
+            _mouse_position = mouseEvent->scenePos();
             update (old_area);
-            update (QRectF (QPointF (0.0, 0.0), _mousePosition));
-          }
 
-          QGraphicsScene::mouseMoveEvent(mouseEvent);
-        }
-
-        void scene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
-        {
-          if(_pendingConnection)
-          {
-            foreach(QGraphicsItem* itemBelow, items(event->scenePos()))
-            {
-              connectable_item* portBelow = qgraphicsitem_cast<connectable_item*>(itemBelow);
-              if(portBelow && pendingConnectionCanConnectTo(portBelow))
-              {
-                pendingConnectionConnectTo(portBelow);
-                event->accept();
-                //! \todo No idea what to update here? The old connection should be updated in removePendingConnection().
-                update();
-                return;
-              }
-            }
-
-            removePendingConnection();
-          }
-
-          event->ignore();
-
-          QGraphicsScene::mouseReleaseEvent(event);
-        }
-
-        void scene::removePendingConnection()
-        {
-          if(_pendingConnection)
-          {
-            QRectF area (_pendingConnection->boundingRect());
-            _pendingConnection->setEnd(NULL);
-            _pendingConnection->setStart(NULL);
-            //! \todo which one?
-            delete _pendingConnection;
-            //removeItem(_pendingConnection);
-            _pendingConnection = NULL;
-            update (area);
-          }
-        }
-
-        const connection* scene::pendingConnection() const
-        {
-          return _pendingConnection;
-        }
-
-        bool scene::pendingConnectionCanConnectTo(connectable_item* item) const
-        {
-          //! \note ugly enough?
-          return _pendingConnection
-            && !(_pendingConnection->start() && _pendingConnection->end())
-            && (  (_pendingConnection->start() && _pendingConnection->start()->canConnectTo(item))
-               || (_pendingConnection->end() && _pendingConnection->end()->canConnectTo(item))
-               );
-        }
-
-        void scene::pendingConnectionConnectTo(connectable_item* item)
-        {
-          if(pendingConnectionCanConnectTo(item))
-          {
-            if(_pendingConnection->start())
-            {
-              _pendingConnection->setEnd(item);
-            }
-            else
-            {
-              _pendingConnection->setStart(item);
-            }
-            _pendingConnection = NULL;
-          }
-        }
-
-        void scene::keyPressEvent(QKeyEvent* event)
-        {
-          if(_pendingConnection && event->key() == Qt::Key_Escape)
-          {
-            removePendingConnection();
-            event->accept();
+            update ( QRectF ( QPointF ( qMin (0.0, _mouse_position.x())
+                                      , qMin (0.0, _mouse_position.y())
+                                      )
+                            , QPointF ( qMax (0.0, _mouse_position.x())
+                                      , qMax (0.0, _mouse_position.y())
+                                      )
+                            )
+                   );
           }
           else
           {
-            event->ignore();
+            _mouse_position = mouseEvent->scenePos();
+            update();
           }
+
+          QGraphicsScene::mouseMoveEvent (mouseEvent);
         }
 
-        QString scene::name() const
+        void scene::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
         {
-          return "<<a scene>>";
+          if (!_pending_connection)
+          {
+            QGraphicsScene::mouseReleaseEvent (event);
+            return;
+          }
+
+          foreach (QGraphicsItem* item, items(event->scenePos()))
+          {
+            //! \note No, just casting to connectable_item* does NOT work. Qt!
+            port* as_port (qgraphicsitem_cast<port*> (item));
+            place* as_place (qgraphicsitem_cast<place*> (item));
+
+            connectable_item* ci (as_port);
+            if (!ci)
+            {
+              ci = as_place;
+            }
+            if (!ci)
+            {
+              continue;
+            }
+
+            if (ci->is_connectable_with (_pending_connection->non_free_side()))
+            {
+              _pending_connection->free_side (ci);
+              update (_pending_connection->boundingRect());
+              _pending_connection = NULL;
+              event->accept();
+              break;
+            }
+          }
+
+          remove_pending_connection();
+
+          QGraphicsScene::mouseReleaseEvent (event);
+        }
+
+        void scene::keyPressEvent (QKeyEvent* event)
+        {
+          if (_pending_connection && event->key() == Qt::Key_Escape)
+          {
+             remove_pending_connection();
+             event->accept();
+             return;
+          }
+          QGraphicsScene::keyPressEvent (event);
         }
 
         namespace GraphViz

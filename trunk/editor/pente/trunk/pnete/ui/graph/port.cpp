@@ -21,13 +21,12 @@ namespace fhg
     {
       namespace graph
       {
-        port::port ( transition* parent
-                   , eDirection direction
-                   )
-          : connectable_item (direction == OUT ? EAST : WEST, direction, parent)
+        port::port (DIRECTION direction, transition* parent)
+          : connectable_item (direction, parent)
           , _name ("<<port>>")
-          , _dragStart (0.0, 0.0)
+          , _orientation (direction == OUT ? EAST : WEST)
           , _dragging (false)
+          , _drag_start (0.0, 0.0)
           , _highlighted (false)
           , _length (style::portDefaultWidth())
           , _menu_context()
@@ -38,19 +37,23 @@ namespace fhg
           refresh_tooltip();
           connect (this, SIGNAL (we_type_changed()), SLOT (refresh_tooltip()));
 
-          _length = std::max(_length, QStaticText(_name).size().width() + style::portCapLength() + 5.0);
+          _length = qMax( _length
+                        , QStaticText(_name).size().width()
+                        + style::portCapLength()
+                        + 5.0
+                        );
 
           init_menu_context();
         }
 
         void port::init_menu_context()
         {
-          QAction* action_set_type = _menu_context.addAction(tr("Set type"));
+          QAction* action_set_type (_menu_context.addAction(tr("Set type")));
           connect (action_set_type, SIGNAL(triggered()), SLOT(slot_set_type()));
 
           _menu_context.addSeparator();
 
-          QAction* action_delete = _menu_context.addAction(tr("Delete"));
+          QAction* action_delete (_menu_context.addAction(tr("Delete")));
           connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
         }
 
@@ -61,68 +64,75 @@ namespace fhg
 
         void port::slot_delete ()
         {
-          delete_connection();
-          scene()->removeItem(this);
+          //delete_connection();
+          //scene()->removeItem (this);
         }
 
-        void port::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
+        void port::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
           QGraphicsItem::contextMenuEvent (event);
 
-          if (!event->isAccepted ())
+          if (!event->isAccepted())
           {
-            _menu_context.popup (event->screenPos ());
-            event->accept ();
+            _menu_context.popup (event->screenPos());
+            event->accept();
           }
         }
 
-        void port::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+        void port::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
         {
-          if (_dragging)
+          if (!_dragging)
           {
-            _dragging = false;
-            event->accept();
+            connectable_item::mouseReleaseEvent (event);
+            return;
           }
-          else
-          {
-            event->ignore();
-          }
+
+          _dragging = false;
+          event->accept();
         }
 
         void port::mousePressEvent (QGraphicsSceneMouseEvent* event)
         {
-          if (!(event->buttons() & Qt::RightButton))
-          {
-            switch (style::portHit (this, event->pos ()))
-            {
-            case style::MAIN:
-              _dragging = true;
-              _dragStart = event->pos();
-              event->accept();
-              break;
-
-            case style::TAIL:
-            default:
-              //! \note Maybe not needed and checked somewhere else.
-              event->setAccepted (createPendingConnectionIfPossible ());
-              break;
-            }
-          }
-          else
+          if (event->buttons() & Qt::RightButton)
           {
             event->ignore();
+            return;
           }
+
+          if (event->modifiers() == Qt::ControlModifier)
+          {
+            _dragging = true;
+            _drag_start = event->pos();
+            event->accept();
+            return;
+          }
+
+          //! \note Only allow one connection on ports.
+          if (!_connections.isEmpty())
+          {
+            event->ignore();
+            return;
+          }
+
+          connectable_item::mousePressEvent (event);
+        }
+
+        bool port::is_connectable_with (const connectable_item* item) const
+        {
+          //! \note Only allow one connection on ports.
+          return _connections.isEmpty()
+              && connectable_item::is_connectable_with (item);
         }
 
         QPointF
-        port::snap_to_edge (QPointF position, eOrientation edge) const
+        port::snap_to_edge (QPointF position, ORIENTATION edge) const
         {
           if (!parentItem())
           {
             return position;
           }
 
-          switch (_orientation)
+          switch (edge)
           {
           case WEST:
             position.setX (0.0);
@@ -136,16 +146,12 @@ namespace fhg
           case SOUTH:
             position.setY (parentItem()->boundingRect().height());
             break;
-          case ANYORIENTATION:
-            // you're fucked.
-            break;
           }
 
           return position;
         }
 
-        connectable_item::eOrientation
-        port::get_nearest_edge (const QPointF& position) const
+        port::ORIENTATION port::get_nearest_edge (const QPointF& position) const
         {
           if (!parentItem())
           {
@@ -234,13 +240,13 @@ namespace fhg
         {
           if(!_dragging)
           {
-            event->ignore();
+            connectable_item::mouseMoveEvent (event);
             return;
           }
 
           const QPointF old_location (pos());
-          const eOrientation old_orientation (_orientation);
-          const QPointF new_location (pos() + event->pos() - _dragStart);
+          const ORIENTATION old_orientation (_orientation);
+          const QPointF new_location (pos() + event->pos() - _drag_start);
 
           _orientation = get_nearest_edge (new_location);
 
@@ -281,17 +287,20 @@ namespace fhg
 
         QPainterPath port::shape() const
         {
-          return style::portShape(this);
+          return style::portShape (this);
         }
 
         QRectF port::boundingRect() const
         {
-          return style::portBoundingRect(this);
+          return style::portBoundingRect (this);
         }
 
-        void port::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+        void port::paint ( QPainter *painter
+                         , const QStyleOptionGraphicsItem *
+                         , QWidget *
+                         )
         {
-          style::portPaint(painter, this);
+          style::portPaint (painter, this);
         }
 
         const bool& port::highlighted() const
@@ -308,23 +317,33 @@ namespace fhg
         {
           return _name;
         }
-        const QString& port::name(const QString& name_)
+        const QString& port::name (const QString& name_)
         {
           return _name = name_;
         }
 
-        void port::delete_connection()
+        const port::ORIENTATION& port::orientation() const
         {
-          if(_connection)
-          {
-            class connection* const backup (_connection);
-            const QRectF area (backup->boundingRect());
-            backup->setStart (NULL);
-            backup->setEnd (NULL);
-            delete backup;
-            scene()->update (area);
-          }
+          return _orientation;
         }
+        const port::ORIENTATION&
+        port::orientation (const ORIENTATION& orientation_)
+        {
+          return _orientation = orientation_;
+        }
+
+        // void port::delete_connection()
+        // {
+        //   if(_connection)
+        //   {
+        //     class connection* const backup (_connection);
+        //     const QRectF area (backup->boundingRect());
+        //     backup->start (NULL);
+        //     backup->end (NULL);
+        //     delete backup;
+        //     scene()->update (area);
+        //   }
+        // }
 
         void port::refresh_tooltip()
         {

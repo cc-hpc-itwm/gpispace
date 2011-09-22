@@ -46,7 +46,7 @@ namespace fhg
 
       port_toplevel::port_toplevel
         ( ui::graph::scene* const scene
-        , const ui::graph::port::eDirection& current_direction
+        , const ui::graph::port::DIRECTION& current_direction
         )
           : _scene (scene)
           , _current_direction (current_direction)
@@ -206,7 +206,7 @@ namespace fhg
       WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
         weaver::port wp
-          (new ui::graph::port (_transition, _current_port_direction));
+          (new ui::graph::port (_current_port_direction, _transition));
 
         FROM(port) (&wp, port);
       }
@@ -235,7 +235,7 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        ui::graph::port* p (new ui::graph::port (NULL, _current_direction));
+        ui::graph::port* p (new ui::graph::port (_current_direction, NULL));
         _scene->addItem (p);
         weaver::port wp (p);
 

@@ -22,72 +22,35 @@ namespace fhg
       {
         class place : public connectable_item
         {
+          Q_OBJECT;
+
         public:
-          place(item* parent = NULL)
-            : connectable_item (ANYORIENTATION, ANYDIRECTION, parent)
-            , _content()
-            , _name (tr("<<a place>>"))
-            , _we_type (tr("<<the type of a place>>"))
-          {
-            setFlag (QGraphicsItem::ItemIsMovable);
+          place (item* parent = NULL);
+          const QString& name (const QString& name_);
 
-            refresh_content();
-          }
+        public slots:
+          void refresh_content();
 
-          const QString& name (const QString& name_)
-          {
-            _name = name_;
-            refresh_content();
-            return _name;
-          }
-          const QString& we_type (const QString& we_type_)
-          {
-            _we_type = we_type_;
-            refresh_content();
-            return _we_type;
-          }
-          void refresh_content()
-          {
-            _content.setText (_name + " :: " + _we_type);
-          }
-
-          virtual QRectF boundingRect() const
-          {
-            const QSizeF half_size (_content.size() / 2.0);
-            const QPointF pos (-half_size.width(), -half_size.height());
-            return QRectF (pos, _content.size());
-          }
+        public:
+          virtual QRectF boundingRect() const;
           virtual void paint ( QPainter* painter
                              , const QStyleOptionGraphicsItem* option
                              , QWidget* widget = NULL
-                             )
-          {
-            const QSizeF half_size (_content.size() / 2.0);
-            const QPointF pos (-half_size.width(), -half_size.height());
-            painter->drawStaticText (pos, _content);
-            painter->drawRoundedRect( QRectF
-                                      ( pos - QPointF (2.0, 2.0)
-                                      , _content.size() + QSizeF (4.0, 4.0)
-                                      )
-                                    , 5.0
-                                    , 5.0
-                                    );
-          }
+                             );
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
-          enum
-          {
-            Type = place_graph_type,
-          };
-          virtual int type() const
-          {
-            return Type;
-          }
+          enum { Type = place_graph_type };
+          virtual int type() const { return Type; }
 
         private:
           QStaticText _content;
 
+          bool _dragging;
+          QPointF _drag_start;
+
           QString _name;
-          QString _we_type;
         };
       }
     }

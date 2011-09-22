@@ -1,9 +1,11 @@
-#ifndef GRAPHCONNECTION_H
-#define GRAPHCONNECTION_H 1
+// bernd.loerwald@itwm.fraunhofer.de
 
-#include <QGraphicsItem>
-#include <QPointF>
+#ifndef _PNETE_UI_GRAPH_CONNECTION_HPP
+#define _PNETE_UI_GRAPH_CONNECTION_HPP 1
+
 #include <QList>
+#include <QPointF>
+#include <QRectF>
 
 #include <pnete/ui/graph/item.hpp>
 
@@ -11,7 +13,6 @@ class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
 class QPainterPath;
-class QRectF;
 
 namespace fhg
 {
@@ -27,44 +28,34 @@ namespace fhg
         {
         public:
           connection (bool reading_only = false);
+          ~connection();
 
-          void setStart(connectable_item* start);
-          void setEnd(connectable_item* end);
+          connectable_item* start() const;
+          connectable_item* start (connectable_item*);
+          connectable_item* end() const;
+          connectable_item* end (connectable_item*);
 
-          void removeMe(connectable_item* item);
+          connectable_item* non_free_side() const;
+          connectable_item* free_side(connectable_item*);
 
-          const connectable_item* start() const;
-          const connectable_item* end() const;
+          const QList<QPointF>& fixed_points() const;
 
-          const QPointF startPosition() const;
-          const QPointF endPosition() const;
-
-          const QList<QPointF>& midpoints() const;
-          const bool& highlighted() const;
-
-          enum
-          {
-            Type = connection_graph_type,
-          };
-          virtual int type() const
-          {
-            return Type;
-          }
+          const bool& reading_only() const;
+          const bool& reading_only (const bool&);
 
           virtual QRectF boundingRect() const;
-        protected:
           virtual QPainterPath shape() const;
           virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-        private:
-          void recalcMidpoints();
+          enum { Type = connection_graph_type };
+          virtual int type() const { return Type; }
 
+        private:
           connectable_item* _start;
           connectable_item* _end;
 
-          QList<QPointF> _midpoints;
+          QList<QPointF> _fixed_points;
 
-          bool _highlighted;
           bool _reading_only;
         };
       }

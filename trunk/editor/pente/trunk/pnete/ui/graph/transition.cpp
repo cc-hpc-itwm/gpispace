@@ -27,18 +27,18 @@ namespace fhg
         transition::transition( transition_type & data
                               , QGraphicsItem* parent
                               )
-          : item(parent)
-          , _dragStart(0, 0)
-          , _size(160, 100) // hardcoded constant
-          , _highlighted(false)
-          , _dragging(false)
+          : item (parent)
+          , _dragStart (0, 0)
+          , _size (160, 100) // hardcoded constant
+          , _highlighted (false)
+          , _dragging (false)
           , _data (data)
           , _menu_context()
           , _name()
           , _proxy (NULL)
         {
-          new cogwheel_button(this);
-          setAcceptHoverEvents(true);
+          new cogwheel_button (this);
+          setAcceptHoverEvents (true);
           setFlag (QGraphicsItem::ItemIsSelectable);
           init_menu_context();
         }
@@ -62,39 +62,39 @@ namespace fhg
 
         void transition::init_menu_context()
         {
-          QAction* action_add_port = _menu_context.addAction(tr("Add Port"));
+          QAction* action_add_port (_menu_context.addAction(tr("Add Port")));
           connect (action_add_port, SIGNAL(triggered()), SLOT(slot_add_port()));
 
           _menu_context.addSeparator();
 
-          QAction* action_delete = _menu_context.addAction(tr("Delete"));
+          QAction* action_delete (_menu_context.addAction(tr("Delete")));
           connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
         }
 
-        void transition::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
+        void transition::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
         {
           if(_dragging)
           {
             _dragging = false;
-            event->accept ();
+            event->accept();
           }
           else
           {
-            event->ignore ();
+            event->ignore();
           }
         }
 
-        void transition::mousePressEvent(QGraphicsSceneMouseEvent * event)
+        void transition::mousePressEvent (QGraphicsSceneMouseEvent* event)
         {
           //! \todo resize grap or move?
-          event->accept ();
+          event->accept();
           _dragStart = event->pos();
           _dragging = true;
         }
 
-        void transition::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
+        void transition::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
         {
-          if(_dragging)
+          if (_dragging)
           {
             //! \note Hackadiddyhack.
             QHash<connection*, QRectF> connections;
@@ -108,16 +108,18 @@ namespace fhg
             }
 
             const QPointF oldLocation (pos());
-            setPos(style::snapToRaster(oldLocation + event->pos() - _dragStart));
+            setPos (style::snapToRaster
+                     (oldLocation + event->pos() - _dragStart)
+                   );
 
             // do not move, when now colliding with a different transition
             //! \todo move this elsewhere? make this nicer, allow movement to left and right, if collision on bottom.
             //! \todo move to the nearest possible position.
-            foreach(QGraphicsItem* collidingItem, collidingItems())
+            foreach (QGraphicsItem* collidingItem, collidingItems())
             {
-              if(qgraphicsitem_cast<transition*>(collidingItem))
+              if (qgraphicsitem_cast<transition*> (collidingItem))
               {
-                setPos(oldLocation);
+                setPos (oldLocation);
                 event->ignore();
                 return;
               }
@@ -128,7 +130,7 @@ namespace fhg
             {
               bounding_with_childs =
                 bounding_with_childs.united ( child->boundingRect()
-                                            .translated (child->pos())
+                                              .translated (child->pos())
                                             );
             }
             scene()->update (bounding_with_childs.translated (oldLocation));
@@ -136,10 +138,10 @@ namespace fhg
 
             //! \note Hackadilicous.
             for ( QHash<connection*, QRectF>::const_iterator
-                    it (connections.constBegin())
-                    , end (connections.constEnd())
-                    ; it != end
-                    ; ++it
+                  it (connections.constBegin())
+                , end (connections.constEnd())
+                ; it != end
+                ; ++it
                 )
             {
               if (it.value() != it.key()->boundingRect())
@@ -151,17 +153,17 @@ namespace fhg
           }
           else
           {
-            event->ignore ();
+            event->ignore();
           }
         }
 
-        void transition::hoverLeaveEvent(QGraphicsSceneHoverEvent*)
+        void transition::hoverLeaveEvent (QGraphicsSceneHoverEvent*)
         {
           _highlighted = false;
           update (boundingRect());
         }
 
-        void transition::hoverEnterEvent(QGraphicsSceneHoverEvent*)
+        void transition::hoverEnterEvent (QGraphicsSceneHoverEvent*)
         {
           _highlighted = true;
           update (boundingRect());
@@ -169,17 +171,20 @@ namespace fhg
 
         QPainterPath transition::shape() const
         {
-          return style::transitionShape(_size);
+          return style::transitionShape (_size);
         }
 
         QRectF transition::boundingRect() const
         {
-          return style::transitionBoundingRect(_size);
+          return style::transitionBoundingRect (_size);
         }
 
-        void transition::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+        void transition::paint ( QPainter *painter
+                               , const QStyleOptionGraphicsItem *
+                               , QWidget *
+                               )
         {
-          style::transitionPaint(painter, this);
+          style::transitionPaint (painter, this);
         }
 
         const QString& transition::name() const
@@ -187,7 +192,7 @@ namespace fhg
           return _name;
         }
 
-        const QString& transition::name(const QString& name_)
+        const QString& transition::name (const QString& name_)
         {
           return _name = name_;
         }
@@ -197,28 +202,30 @@ namespace fhg
           return _highlighted;
         }
 
-        void transition::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
+        void transition::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
-          QGraphicsItem::contextMenuEvent(event);
+          QGraphicsItem::contextMenuEvent (event);
 
           if (!event->isAccepted())
           {
-            _menu_context.popup(event->screenPos());
+            _menu_context.popup (event->screenPos());
             event->accept();
           }
         }
 
         void transition::slot_delete()
         {
-          foreach(QGraphicsItem* child, childItems())
-          {
-            port* p (qgraphicsitem_cast<port*>(child));
-            if (p)
-            {
-              p->delete_connection();
-            }
-          }
-          scene()->removeItem(this);
+          //! \ŧodo Actually delete this item.
+          //! \todo disconnect ports.
+          // foreach (QGraphicsItem* child, childItems())
+          // {
+          //   port* p (qgraphicsitem_cast<port*> (child));
+          //   if (p)
+          //   {
+          //     p->disconnect_all();
+          //   }
+          // }
+          scene()->removeItem (this);
         }
 
         void transition::slot_add_port()
@@ -228,39 +235,36 @@ namespace fhg
 
         void transition::repositionChildrenAndResize()
         {
-          qreal positionIn, positionOut, positionAny, positionParam;
+          qreal positionIn, positionOut, positionAny;
           positionIn = positionOut = positionAny = style::portDefaultHeight();
-          positionParam = boundingRect().width() - style::portDefaultHeight();
 
-          const qreal padding = 10.0;                                             // hardcoded constant
+          const qreal padding (10.0);                                             // hardcoded constant
 
-          foreach(QGraphicsItem* child, childItems())
+          foreach (QGraphicsItem* child, childItems())
           {
-            port* p = qgraphicsitem_cast<port*>(child);
-            if(p)
+            port* p (qgraphicsitem_cast<port*>(child));
+            if (p)
             {
-//             if(p->notConnectable())
-//             {
-//               p->setOrientation(connectable_item::SOUTH);
-//               p->setPos(style::snapToRaster(QPointF(positionParam, boundingRect().height())));
-//               positionParam -= style::portDefaultHeight() + padding;
-//             }
-              if(p->direction() == connectable_item::IN)
+              if (p->direction() == connectable_item::IN)
               {
-                p->setOrientation(connectable_item::WEST);
-                p->setPos(style::snapToRaster(QPointF(0.0, positionIn)));
+                p->orientation (port::WEST);
+                p->setPos (style::snapToRaster (QPointF (0.0, positionIn)));
                 positionIn += style::portDefaultHeight() + padding;
               }
-              else if(p->direction() == connectable_item::OUT)
+              else if (p->direction() == connectable_item::OUT)
               {
-                p->setOrientation(connectable_item::EAST);
-                p->setPos(style::snapToRaster(QPointF(boundingRect().width(), positionOut)));
+                p->orientation (port::EAST);
+                p->setPos (style::snapToRaster (QPointF ( boundingRect().width()
+                                                        , positionOut
+                                                        )
+                                               )
+                          );
                 positionOut += style::portDefaultHeight() + padding;
               }
               else
               {
-                p->setOrientation(connectable_item::NORTH);
-                p->setPos(style::snapToRaster(QPointF(positionAny, 0.0)));
+                p->orientation (port::NORTH);
+                p->setPos (style::snapToRaster (QPointF (positionAny, 0.0)));
                 positionAny += style::portDefaultHeight() + padding;
               }
             }
@@ -268,16 +272,13 @@ namespace fhg
           positionIn -= padding;
           positionOut -= padding;
           positionAny -= padding;
-          positionParam += padding;
 
-          _size = QSizeF(std::max(_size.width(), positionAny), std::max(_size.height(), std::max(positionOut, positionIn)));
-
-          // is this correct?
-          if(positionParam < 0.0)
-          {
-            _size.setWidth(_size.width() - positionParam);
-            repositionChildrenAndResize();
-          }
+          _size = QSizeF ( qMax (_size.width(), positionAny)
+                         , qMax (_size.height(), qMax ( positionOut
+                                                      , positionIn
+                                                      )
+                                )
+                         );
         }
 
         data::proxy::type* transition::proxy (data::proxy::type* proxy_)

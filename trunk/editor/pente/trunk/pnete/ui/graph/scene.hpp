@@ -35,18 +35,18 @@ namespace fhg
 
           explicit scene (net_type & net,  QObject* parent = NULL);
 
-          const QPointF& mousePosition() const;
+          const QPointF& mouse_position() const;
 
-          void setPendingConnection (connection* connection);
-          void removePendingConnection();
 
-          const connection* pendingConnection() const;
-          bool pendingConnectionCanConnectTo (connectable_item* item) const;
-          void pendingConnectionConnectTo (connectable_item* item);
-          bool createPendingConnectionWith (connectable_item* item);
+          // void setPendingConnection (connection* connection);
+          // void removePendingConnection();
 
-          QString name() const;
+          // const connection* pendingConnection() const;
+          // bool pendingConnectionCanConnectTo (connectable_item* item) const;
+          // void pendingConnectionConnectTo (connectable_item* item);
+          // bool createPendingConnectionWith (connectable_item* item);
 
+          void create_connection (connectable_item* item);
           void create_connection ( connectable_item* from
                                  , connectable_item* to
                                  , bool only_reading
@@ -63,18 +63,21 @@ namespace fhg
           virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
           virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
-          virtual void keyPressEvent(QKeyEvent* event);
+          virtual void keyPressEvent (QKeyEvent* event);
 
         private:
-          connection* _pendingConnection;
-          QPointF _mousePosition;
+          connection* create_connection (bool only_reading = false);
+          void remove_pending_connection();
+
+          void init_menu_context();
+
+          connection* _pending_connection;
+          QPointF _mouse_position;
 
           QMenu _menu_new;
           QMenu _menu_context;
 
           net_type & _net;
-
-          void init_menu_context();
         };
       }
     }

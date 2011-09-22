@@ -1,5 +1,7 @@
 #include <pnete/ui/graph/connectable_item.hpp>
-#include <pnete/ui/graph/scene.hpp>
+
+#include <QDebug>
+
 #include <pnete/ui/graph/connection.hpp>
 
 namespace fhg
@@ -10,88 +12,68 @@ namespace fhg
     {
       namespace graph
       {
-        connectable_item::connectable_item ( eOrientation orientation
-                                           , eDirection direction
-                                           , QGraphicsItem* parent
-                                           )
+        connectable_item::connectable_item (DIRECTION direction, item* parent)
           : item (parent)
-          , _connection (NULL)
+          , _connections ()
           , _direction (direction)
-          , _orientation (orientation)
           , _we_type (tr ("<<we_type>>"))
         {}
 
-        void connectable_item::connectMe (connection* c)
+        void connectable_item::add_connection (connection* c)
         {
-          _connection = c;
+          if (_connections.contains (c))
+          {
+            throw std::runtime_error ("tried adding the same connection twice.");
+          }
+          _connections.insert (c);
         }
-        void connectable_item::disconnectMe()
+        void connectable_item::remove_connection (connection* c)
         {
-          _connection = NULL;
+          if (!_connections.contains (c))
+          {
+            throw std::runtime_error ("item did not have that connection.");
+          }
+          _connections.remove (c);
         }
 
-        const connectable_item::eOrientation&
-        connectable_item::orientation() const
+        bool
+        connectable_item::is_connectable_with (const connectable_item* i) const
         {
-          return _orientation;
+          return i->we_type() == we_type() && i->direction() != direction();
         }
-        const connectable_item::eDirection& connectable_item::direction() const
+
+        const QSet<connection*>& connectable_item::connections() const
+        {
+          return _connections;
+        }
+
+        const connectable_item::DIRECTION&
+        connectable_item::direction() const
         {
           return _direction;
         }
-
-        bool connectable_item::canConnectTo (connectable_item* other) const
+        const connectable_item::DIRECTION&
+        connectable_item::direction (const DIRECTION& direction_)
         {
-          return we_type() == other->we_type()
-            && canConnectIn (other->direction());
-        }
-        bool connectable_item::canConnectIn (eDirection thatDirection) const
-        {
-          return thatDirection != direction();
-        }
-
-        bool connectable_item::createPendingConnectionIfPossible()
-        {
-          class scene* sceneObject (scene());
-
-          if (sceneObject->pendingConnection())
-            {
-              return false;
-            }
-
-          //         if (_connection)
-          //         {
-          //           sceneObject->setPendingConnection (_connection);
-          //           _connection->removeMe (this);
-          //           return true;
-          //         }
-          //        else
-          {
-            return sceneObject->createPendingConnectionWith (this);
-          }
-        }
-
-        //! \todo mousehandler
-
-        void connectable_item::setOrientation (const eOrientation& orientation)
-        {
-          _orientation = orientation;
-        }
-
-        const connection* connectable_item::get_connection() const
-        {
-          return _connection;
+          return _direction = direction_;
         }
 
         const QString& connectable_item::we_type() const
         {
           return _we_type;
         }
-        const QString& connectable_item::we_type(const QString& we_type_)
+        const QString& connectable_item::we_type (const QString& we_type_)
         {
           _we_type = we_type_;
           emit we_type_changed();
+          //! \todo check, if connections to this item are still valid!
           return _we_type;
+        }
+
+        void connectable_item::mousePressEvent (QGraphicsSceneMouseEvent* event)
+        {
+          scene()->create_connection (this);
+          //! \todo Start a new connection!
         }
       }
     }

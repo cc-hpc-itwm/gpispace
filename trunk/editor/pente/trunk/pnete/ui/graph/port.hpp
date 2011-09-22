@@ -28,8 +28,15 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          //        explicit port ( internal& port, Transition* parent)
-          port (transition* parent, eDirection direction);
+          enum ORIENTATION
+          {
+            NORTH,
+            EAST,
+            SOUTH,
+            WEST,
+          };
+
+          port (DIRECTION direction, transition* parent);
 
           const bool& highlighted() const;
           const qreal& length() const;
@@ -37,22 +44,23 @@ namespace fhg
           const QString& name() const;
           const QString& name (const QString&);
 
-          virtual QRectF boundingRect() const;
+          const ORIENTATION& orientation() const;
+          const ORIENTATION& orientation(const ORIENTATION&);
 
-          void delete_connection();
+          virtual bool is_connectable_with (const connectable_item*) const;
 
-          QPointF snap_to_edge (QPointF position, eOrientation edge) const;
-          eOrientation get_nearest_edge (const QPointF& position) const;
+          QPointF snap_to_edge (QPointF position, ORIENTATION edge) const;
+          ORIENTATION get_nearest_edge (const QPointF& position) const;
           QPointF check_for_minimum_distance (const QPointF& position) const;
 
-          enum
-          {
-            Type = port_graph_type,
-          };
-          virtual int type() const
-          {
-            return Type;
-          }
+          enum { Type = port_graph_type };
+          virtual int type() const { return Type; }
+
+          virtual QRectF boundingRect() const;
+          virtual QPainterPath shape() const;
+          virtual void
+          paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+
 
         public slots:
           void slot_set_type();
@@ -60,11 +68,6 @@ namespace fhg
           void refresh_tooltip();
 
         protected:
-          virtual QPainterPath shape() const;
-          virtual void paint ( QPainter* painter
-                             , const QStyleOptionGraphicsItem* option
-                             , QWidget* widget
-                             );
 
           virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
           virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
@@ -76,9 +79,11 @@ namespace fhg
         private:
           QString _name;
 
-          QPointF _dragStart;
+          ORIENTATION _orientation;
 
           bool _dragging;
+          QPointF _drag_start;
+
           bool _highlighted;
 
           qreal _length;

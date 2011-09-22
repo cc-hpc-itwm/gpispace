@@ -29,11 +29,10 @@ namespace fhg
         public:
           enum ItemTypes
           {
-            connection_graph_type    = QGraphicsItem::UserType + 1,
-            port_graph_type          = QGraphicsItem::UserType + 2,
-            transition_graph_type    = QGraphicsItem::UserType + 3,
-            //parameter_port_graph_type = QGraphicsItem::UserType + 4,
-            place_graph_type         = QGraphicsItem::UserType + 5,
+            connection_graph_type       = QGraphicsItem::UserType + 1,
+            port_graph_type             = QGraphicsItem::UserType + 2,
+            transition_graph_type       = QGraphicsItem::UserType + 3,
+            place_graph_type            = QGraphicsItem::UserType + 4,
             /* ... */
           };
 
