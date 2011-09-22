@@ -25,6 +25,9 @@
 #include <we/util/codec.hpp>
 #include <we/loader/putget.hpp>
 
+#include <sdpa-gui/taskview/taskscene.hpp>
+#include <sdpa-gui/taskview/taskview.hpp>
+
 using namespace std;
 using namespace boost;
 
@@ -50,15 +53,15 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
 
     //    m_portfolio_.Init();
 
-    m_scene = new QGraphicsScene();
-    m_view = new QGraphicsView ();
+    m_scene = new fhg::taskview::TaskScene (this);
+    m_view = new fhg::taskview::TaskView(m_scene);
 
     m_component_scene = new QGraphicsScene();
     m_component_view = new QGraphicsView();
 
     m_scene->setSceneRect(0,0,0,0);
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    m_view->setScene (m_scene);
+    //    m_view->setScene (m_scene);
     m_view->setAttribute (Qt::WA_AlwaysShowToolTips);
 
     m_component_view->setScene(m_component_scene);
@@ -390,7 +393,7 @@ void MonitorWindow::clearActivityLog()
 {
   lock_type struct_lock(m_task_struct_mutex);
 
-  m_scene = new QGraphicsScene();
+  m_scene = new fhg::taskview::TaskScene(this);
   m_component_scene = new QGraphicsScene();
 
   m_view->setScene(m_scene);

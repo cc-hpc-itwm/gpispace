@@ -21,6 +21,12 @@ namespace Ui {
     class MonitorWindow;
 }
 
+namespace fhg { namespace taskview {
+    class TaskView;
+    class TaskScene;
+  }
+}
+
 class MonitorWindow : public QMainWindow
 {
     Q_OBJECT
@@ -83,8 +89,8 @@ private:
     std::vector<fhg::log::LogEvent> m_log_events;
 
   //Portfolio m_portfolio_;
-  QGraphicsScene *m_scene;
-  QGraphicsView *m_view;
+  fhg::taskview::TaskScene *m_scene;
+  fhg::taskview::TaskView *m_view;
 
   QGraphicsScene *m_component_scene;
   QGraphicsView *m_component_view;
