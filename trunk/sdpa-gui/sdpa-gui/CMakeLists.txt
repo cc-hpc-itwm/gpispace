@@ -1,4 +1,6 @@
 # -*- mode: cmake; -*-
+add_subdirectory(taskview)
+
 include(${QT_USE_FILE})
 
 set(sdpa-gui_SRCS
