@@ -48,6 +48,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     ui->setupUi(this);
     ui->m_log_table->verticalHeader ()->setVisible (false);
     ui->m_log_table->horizontalHeader ()->setVisible (true);
+    ui->m_log_table->horizontalHeader ()->setStretchLastSection(true);
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
 
