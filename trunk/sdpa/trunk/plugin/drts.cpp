@@ -976,7 +976,7 @@ EXPORT_FHG_PLUGIN( drts
                  , DRTSImpl
                  , "provides access to the distributed runtime-system"
                  , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "v.0.0.1"
+                 , "0.0.1"
                  , "NA"
                  , "kvs,wfe"
                  , ""

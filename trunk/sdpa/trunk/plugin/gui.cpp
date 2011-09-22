@@ -152,7 +152,7 @@ EXPORT_FHG_PLUGIN( gui
                  , GuiObserverPlugin
                  , "provides an gui-observer"
                  , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "v.0.0.1"
+                 , "0.0.1"
                  , "NA"
                  , ""
                  , ""

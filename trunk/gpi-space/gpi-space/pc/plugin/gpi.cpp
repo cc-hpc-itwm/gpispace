@@ -183,7 +183,7 @@ EXPORT_FHG_PLUGIN( gpi
                  , GpiPluginImpl
                  , "Plugin to access the gpi-space"
                  , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "v.0.0.1"
+                 , "0.0.1"
                  , "NA"
                  , ""
                  , ""

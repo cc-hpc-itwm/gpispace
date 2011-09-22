@@ -310,7 +310,7 @@ EXPORT_FHG_PLUGIN( wfe
                  , WFEImpl
                  , "provides access to a workflow-engine"
                  , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "v.0.0.1"
+                 , "0.0.1"
                  , "NA"
                  , ""
                  , ""

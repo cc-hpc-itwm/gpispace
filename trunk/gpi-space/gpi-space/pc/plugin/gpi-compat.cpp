@@ -432,7 +432,7 @@ EXPORT_FHG_PLUGIN( gpi-compat
                  , GPICompatPluginImpl
                  , "Plugin to access the gpi-space (compatibility)"
                  , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "v.0.0.1"
+                 , "0.0.1"
                  , "NA"
                  , ""
                  , ""

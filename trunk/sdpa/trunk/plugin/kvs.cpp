@@ -67,7 +67,7 @@ EXPORT_FHG_PLUGIN( kvs
                  , KeyValueStorePlugin
                  , "provides access to a key value store"
                  , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "v.0.0.1"
+                 , "0.0.1"
                  , "NA"
                  , ""
                  , ""
