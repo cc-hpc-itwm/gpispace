@@ -51,7 +51,7 @@ namespace fhg
           QString name (const QString& fallback) const
           {
             return _function.name
-              ? QString (_function.name->c_str())
+              ? QString ((*_function.name).c_str())
               : fallback
               ;
           }
