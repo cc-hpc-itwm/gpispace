@@ -1043,8 +1043,14 @@ int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh)
         gpi::flag::unset (flags, gpi::pc::type::handle::F_GLOBAL);
         break;
       case 'g':
-        gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
-        // TODO: divide size by number of nodes and round up
+        {
+          gpi::flag::set (flags, gpi::pc::type::handle::F_GLOBAL);
+          size_t nodes = sh.state().capi.collect_info().nodes;
+          size_t per_node = (size / nodes);
+          per_node       += (size - per_node*nodes);
+          size = per_node;
+          //          size = (size / num_nodes) + (size - (size/num_nodes)*num_nodes);
+        }
         break;
       case 'p':
         gpi::flag::set (flags, gpi::pc::type::handle::F_PERSISTENT);
