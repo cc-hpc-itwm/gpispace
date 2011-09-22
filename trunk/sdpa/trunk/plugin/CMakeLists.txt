@@ -11,7 +11,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
                  sdpa-util
 		 sdpa
 		 ${FhgCom_LIBRARY}
-		 ${BOOST_ROOT}/lib/libboost_serialization.so
+		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 )
 
 install(FILES drts.hpp DESTINATION include/plugins COMPONENT headers)
@@ -22,7 +22,7 @@ install(TARGETS drts-plugin LIBRARY
 
 fhg_add_plugin(kvs kvs.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 ${BOOST_ROOT}/lib/libboost_serialization.so
+		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 )
 
 install(FILES kvs.hpp DESTINATION include/plugins COMPONENT headers)
@@ -34,8 +34,8 @@ install(TARGETS kvs-plugin LIBRARY
 fhg_add_plugin(wfe wfe.cpp observable.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${WE_PRECOMPILE_LIBRARIES}
-                 ${BOOST_ROOT}/lib/libboost_serialization.so
-                 ${BOOST_ROOT}/lib/libboost_filesystem.so
+		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_FILESYSTEM_SHARED_LIBRARY}
 )
 
 install(FILES wfe.hpp observable.hpp DESTINATION include/plugins COMPONENT headers)
@@ -47,6 +47,7 @@ install(TARGETS wfe-plugin LIBRARY
 fhg_add_plugin(gui gui.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${WE_PRECOMPILE_LIBRARIES}
+		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 )
 
 #install(FILES gui.hpp observer.hpp DESTINATION include/plugins COMPONENT headers)
