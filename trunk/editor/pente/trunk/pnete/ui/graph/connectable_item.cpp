@@ -21,7 +21,7 @@ namespace fhg
           , _we_type (tr ("<<we_type>>"))
         {}
 
-        void connectable_item::connectMe (class connection* c)
+        void connectable_item::connectMe (connection* c)
         {
           _connection = c;
         }
@@ -78,7 +78,7 @@ namespace fhg
           _orientation = orientation;
         }
 
-        const class connection* connectable_item::connection() const
+        const connection* connectable_item::get_connection() const
         {
           return _connection;
         }

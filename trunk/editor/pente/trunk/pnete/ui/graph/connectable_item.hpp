@@ -55,7 +55,7 @@ namespace fhg
 
           bool createPendingConnectionIfPossible();
 
-          const class connection* connection() const;
+          const connection* get_connection() const;
 
           const QString& we_type() const;
           const QString& we_type (const QString&);
@@ -64,7 +64,7 @@ namespace fhg
           void we_type_changed();
 
         protected:
-          class connection* _connection;
+          connection* _connection;
 
           eDirection _direction;
           eOrientation _orientation;
