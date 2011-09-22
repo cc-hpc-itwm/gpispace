@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 #include <boost/unordered_map.hpp>
+#include <boost/optional.hpp>
 
 namespace xml
 {
@@ -102,6 +103,20 @@ namespace xml
           }
 
         return true;
+      }
+
+      boost::optional<T&> by_key (const Key & key)
+      {
+        typename names_type::iterator found (_names.find (key));
+
+        if (found == _names.end())
+          {
+            return boost::none;
+          }
+        else
+          {
+            return *(found->second);
+          }
       }
 
       void clear (void) { _elements.clear(); _names.clear(); }

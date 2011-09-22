@@ -29,14 +29,17 @@ namespace fhg
       XMLTYPE(ports_type)& function::in () { return _ports.in; }
       XMLTYPE(ports_type)& function::out () { return _ports.out; }
 
-      transition::transition (ui::graph::transition* transition)
+      transition::transition ( ui::graph::transition* transition
+                             , XMLTYPE(net_type)& net
+                             )
         : _transition (transition)
         , _current_port_direction ()
+        , _net (net)
       {}
-      XMLTYPE(function_type)& transition::get_function
-      (const XMLTYPE(transition_type::f_type) & f)
+      XMLTYPE(function_type)&
+      transition::get_function (const XMLTYPE(transition_type::f_type) & f)
       {
-        return boost::apply_visitor (visitor::get_function(), f);
+        return boost::apply_visitor (visitor::get_function(_net), f);
       }
 
       port::port (ui::graph::port* port) : _port (port) {}
@@ -57,6 +60,7 @@ namespace fhg
                , XMLTYPE(ports_type)& out
                )
         : _scene (scene)
+        , _net (net)
       {
         {
           weaver::port_toplevel wptl (_scene, ui::graph::port::OUT);
@@ -67,6 +71,12 @@ namespace fhg
           weaver::port_toplevel wptl (_scene, ui::graph::port::IN);
           from::many (&wptl, out, FROM(port));
         }
+      }
+
+      boost::optional< XMLTYPE(function_type) &>
+      net::get_function (const std::string& name)
+      {
+        return _net.get_function (name);
       }
 
       namespace visitor
@@ -131,15 +141,7 @@ namespace fhg
 
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
-        typedef XMLTYPE(net_type::transitions_type)::const_iterator iterator;
-
-        for ( iterator trans (transitions.begin()), end (transitions.end())
-                ; trans != end
-                ; ++trans
-            )
-          {
-            FROM(transition) (this, *trans);
-          }
+        from::many (this, transitions, FROM(transition));
       }
       WSIG(net, net::places, XMLTYPE(net_type::places_type), places)
       {
@@ -173,7 +175,7 @@ namespace fhg
             (const_cast<ui::graph::transition::transition_type &> (transition))
           );
         _scene->addItem (trans);
-        weaver::transition wt (trans);
+        weaver::transition wt (trans, _net);
         FROM(transition) (&wt, transition);
       }
       WSIGE(transition, transition::close)
