@@ -22,3 +22,4 @@ done > sc.xosview
 sh sc.xosview > pids.xosview
 echo "wrote pids to pids.xosview" >&2
 echo "# xargs kill < pids.xosview" >&2
+rm sc.xosview
