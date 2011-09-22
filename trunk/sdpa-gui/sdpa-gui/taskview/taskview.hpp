@@ -22,6 +22,8 @@ namespace fhg
 
       TaskScene *scene () const;
       void setScene(TaskScene *scene);
+    private:
+      void initialize();
     };
   }
 }

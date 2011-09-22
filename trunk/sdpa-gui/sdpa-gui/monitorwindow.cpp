@@ -59,10 +59,10 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     m_component_scene = new QGraphicsScene();
     m_component_view = new QGraphicsView();
 
-    m_scene->setSceneRect(0,0,0,0);
-    m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+    //    m_scene->setSceneRect(0,0,0,0);
+    //    m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     //    m_view->setScene (m_scene);
-    m_view->setAttribute (Qt::WA_AlwaysShowToolTips);
+    //    m_view->setAttribute (Qt::WA_AlwaysShowToolTips);
 
     m_component_view->setScene(m_component_scene);
     {
@@ -70,6 +70,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
       QHBoxLayout *l = new QHBoxLayout;
       l->setSpacing(0);
       l->setContentsMargins(0,0,0,0);
+      /*
       m_component_view->setSizePolicy( QSizePolicy( QSizePolicy::Minimum
                                                   , QSizePolicy::Minimum
                                                   )
@@ -78,10 +79,11 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                                       , QSizePolicy::Maximum)
                           );
       m_view->setMinimumWidth(300);
+      */
       splitter->addWidget(m_component_view);
       splitter->addWidget(m_view);
-      splitter->setCollapsible(0, false);
-      splitter->setCollapsible(1, false);
+      //      splitter->setCollapsible(0, false);
+      //      splitter->setCollapsible(1, false);
       splitter->setLayout(l);
 
       l = new QHBoxLayout;
@@ -95,17 +97,17 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     m_component_view->setRenderHint(QPainter::Antialiasing);
     m_component_view->setTransformationAnchor(QGraphicsView::NoAnchor);
 
-    m_view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    m_view->setAlignment(Qt::AlignRight | Qt::AlignTop);
-    m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    //    m_view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    //    m_view->setAlignment(Qt::AlignRight | Qt::AlignTop);
+    //    m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    //    m_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     //m_view->setRenderHint(QPainter::Antialiasing);
 
-    m_view->setCacheMode(QGraphicsView::CacheNone);
+    //    m_view->setCacheMode(QGraphicsView::CacheNone);
     //m_view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     //m_view->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
-    m_view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    m_view->setDragMode(QGraphicsView::ScrollHandDrag);
+    //    m_view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    //    m_view->setDragMode(QGraphicsView::ScrollHandDrag);
 
     m_exe_server = logserver_t
         (new fhg::log::remote::LogServer
