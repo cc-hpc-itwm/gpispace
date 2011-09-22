@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# wrapper around a compiler similar to icecream
+#
+#
+# 1. prepare job description
+#
+#      take prepared pnet (or compile if not present)
+#
+# 2. place tokens
+#      working directory
+#      parameters
+#      compiler to use (name)
+#      build-environment + md5sum
+#
+# 3. submit
+#
+#      wait until finished
+#      check exit code token
+#      print stdout
+#      print stderr
+
+if [ -z "$SDPACC_CC" ] ; then
+    SDPACC_CC="gcc"
+fi
+if [ -z "$SDPACC_CXX" ] ; then
+    SDPACC_CXX="g++"
+fi
+
+function cc_mode ()
+{
+    echo "behaving like gcc" >&2
+    $SDPACC_CC $@
+}
+
+function cplusplus_mode ()
+{
+    echo "behaving like g++" >&2
+    $SDPACC_CXX $@
+}
+
+prog_name=$(basename $0)
+case "$prog_name" in
+    *cc)
+	cc_mode $@
+	;;
+    *c++)
+	cplusplus_mode $@
+	;;
+    *)
+	echo "E: dunno how to behave as $prog_name" >&2
+	exit 1
+	;;
+esac
+
