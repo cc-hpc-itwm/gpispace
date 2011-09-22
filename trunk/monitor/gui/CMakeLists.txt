@@ -18,7 +18,7 @@ target_link_libraries (sdpa-mon
 	${FhgLog_LIBRARY}
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
-	gobject-2.0
+#	gobject-2.0
 	${TIFF_LIBRARY}
 	${JPEG_LIBRARY}
 	${MNG_LIBRARY}

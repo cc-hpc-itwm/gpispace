@@ -46,6 +46,7 @@ target_link_libraries (pnete
   ${JPEG_LIBRARY}
   ${MNG_LIBRARY}
   ${GRAPHVIZ_LIBRARIES}
+#  gobject-2.0
 )
 
 install(TARGETS pnete
