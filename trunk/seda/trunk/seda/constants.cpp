@@ -24,7 +24,7 @@
 
 #include <limits>
 namespace seda {
-    std::size_t SEDA_MAX_QUEUE_SIZE = 16;
+    std::size_t SEDA_MAX_QUEUE_SIZE = 1024;
     unsigned long SEDA_DEFAULT_TIMEOUT = 500;
     const std::string SEDA_SYSTEM_STAGE_NAME = "seda.system.stage";
 }
