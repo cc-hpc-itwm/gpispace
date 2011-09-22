@@ -1,7 +1,7 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_TRAVERSE_DISPLAY_HPP
-#define _FHG_PNETE_TRAVERSE_DISPLAY_HPP 1
+#ifndef _FHG_PNETE_WEAVER_DISPLAY_HPP
+#define _FHG_PNETE_WEAVER_DISPLAY_HPP 1
 
 #include <xml/parse/types.hpp>
 
@@ -161,5 +161,7 @@ namespace fhg
     }
   }
 }
+
+#include <pnete/weaver/display.cpp>
 
 #endif

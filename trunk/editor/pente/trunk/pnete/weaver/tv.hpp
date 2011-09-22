@@ -11,6 +11,8 @@ class QString;
 
 #include <fhg/util/maybe.hpp>
 
+#include <pnete/weaver/weaver.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -23,7 +25,7 @@ namespace fhg
         explicit tv (QStandardItem * root);
 
         template<int Type, typename T> void weave (const T & x) {}
-        template<int Type> void weave (){}
+        template<int Type> void weave () {}
 
       private:
         std::stack<QStandardItem *> _stack;
@@ -78,5 +80,7 @@ namespace fhg
     }
   }
 }
+
+#include <pnete/weaver/tv.cpp>
 
 #endif
