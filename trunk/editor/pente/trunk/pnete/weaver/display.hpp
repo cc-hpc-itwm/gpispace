@@ -55,6 +55,13 @@ namespace fhg
         ui::graph::scene* _scene;
       };
 
+      WSIG(function, expression::open, XMLTYPE(expression_type), exp);
+      WSIG(function, mod::open, XMLTYPE(mod_type), mod);
+      WSIG(function, net::open, XMLTYPE(net_type), net);
+      WSIG(function, function::in, XMLTYPE(ports_type), in);
+      WSIG(function, function::out, XMLTYPE(ports_type), out);
+      WSIG(function, function::fun, XMLTYPE(function_type::type), fun);
+
       class net
       {
       public:
@@ -76,17 +83,18 @@ namespace fhg
         XMLTYPE(net_type)& _net;
       };
 
-      class expression
-      {
-      public:
-        explicit expression ( XMLTYPE(expressions_type)& exp
-                            , XMLTYPE(ports_type)& in
-                            , XMLTYPE(ports_type)& out
-                            );
-
-        template<int Type, typename T> void weave (const T & x) {}
-        template<int Type> void weave () {}
-      };
+      WSIG( net
+          , net::transitions
+          , XMLTYPE(net_type::transitions_type)
+          , transitions
+          );
+      WSIG(net, net::places, XMLTYPE(net_type::places_type), places);
+      WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_type)), place);
+      WSIG( net
+          , transition::open
+          , ITVAL(XMLTYPE(net_type::transitions_type))
+          , transition
+          );
 
       class transition
       {
@@ -107,6 +115,15 @@ namespace fhg
         XMLTYPE(net_type)& _net;
       };
 
+      WSIGE(transition, transition::close);
+      WSIG(transition, transition::name, std::string, name);
+      WSIG( transition
+          , transition::function
+          , XMLTYPE(transition_type::f_type)
+          , fun
+          );
+      WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port);
+
       class port
       {
       public:
@@ -118,6 +135,9 @@ namespace fhg
       private:
         ui::graph::port* _port;
       };
+
+      WSIG(port, port::name, std::string, name);
+      WSIG(port, port::type, std::string, type);
 
       class port_toplevel
       {
@@ -134,6 +154,8 @@ namespace fhg
         const ui::graph::port::DIRECTION& _current_direction;
       };
 
+      WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);
+
       class place
       {
       public:
@@ -145,6 +167,9 @@ namespace fhg
       private:
         ui::graph::place* _place;
       };
+
+      WSIG(place, place::name, std::string, name);
+      WSIG(place, place::type, std::string, type);
 
       namespace visitor
       {
@@ -185,7 +210,5 @@ namespace fhg
     }
   }
 }
-
-#include <pnete/weaver/display.cpp>
 
 #endif

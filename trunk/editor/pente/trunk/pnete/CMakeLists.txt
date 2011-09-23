@@ -35,10 +35,12 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}
 
 add_subdirectory(data)
 add_subdirectory(ui)
+add_subdirectory(weaver)
 
 target_link_libraries (pnete
   ui
   data
+  weaver
   ${FhgLog_LIBRARY}
   ${Boost_LIBRARIES}
   ${QT_LIBRARIES}
