@@ -104,6 +104,11 @@ namespace fhg
           );
       }
 
+      void clear()
+      {
+        m = maybe_type(detail::Nothing());
+      }
+
       void operator = (const_reference x)
       {
         m = x;
