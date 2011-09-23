@@ -204,6 +204,8 @@ namespace fhg
                           , length
                           , portHeight
                           );
+          default:
+            throw std::runtime_error("invalid port direction!");
           }
         }
 
