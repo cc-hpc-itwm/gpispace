@@ -401,7 +401,7 @@ namespace fhg
       void editor_window::open()
       {
         QString filename (QFileDialog::getOpenFileName
-           (this, tr ("Load net"), QDir::homePath(), tr ("XML files (*.xml)")));
+           (this, tr ("Load net"), QDir::homePath(), tr ("XML files (*.xml);;All (*)")));
 
         if (filename.isEmpty())
         {
