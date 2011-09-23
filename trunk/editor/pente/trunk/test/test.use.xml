@@ -1,0 +1,25 @@
+<defun name="test.use">
+  <net>
+
+    <defun name="fun">
+      <in name="i1" type="long"/>
+      <in name="i2" type="double"/>
+      <out name="sz" type="string"/>
+      <out name="oeh" type="bitset"/>
+    </defun>
+
+    <transition name="t0">
+      <use name="fun"/>
+    </transition>
+
+    <transition name="t1">
+      <defun>
+        <net>
+          <transition name="trans">
+            <use name="fun"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+  </net>
+</defun>

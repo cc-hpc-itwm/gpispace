@@ -1,0 +1,11 @@
+<defun name="double">
+ <in name="in" type="long"/>
+ <out name="out" type="long"/>
+ <module name="module" function="out fun (in)">
+   <cinclude href="iostream"/>
+   <code><![CDATA[
+     std::cout << "WAAAAAAAAAAAAHHHHHHHHNSINN" << std::endl;
+     return 2 * in;
+   ]]></code>
+ </module>
+</defun>

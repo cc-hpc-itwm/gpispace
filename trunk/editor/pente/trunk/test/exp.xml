@@ -1,0 +1,9 @@
+<defun name="double">
+ <in name="in" type="long"/>
+ <in name="phi" type="double"/>
+ <out name="out" type="long"/>
+ <expression>
+   ${tmp} := long (pi * ${phi});
+   ${out} := ${in} * ${tmp};
+ </expression>
+</defun>
