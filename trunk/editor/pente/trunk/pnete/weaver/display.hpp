@@ -83,6 +83,8 @@ namespace fhg
         ui::graph::scene* _scene;
 
         XMLTYPE(net_type)& _net;
+        XMLTYPE(ports_type)& _in;
+        XMLTYPE(ports_type)& _out;
 
         item_by_name_type _place_item_by_name;
       };
@@ -99,6 +101,7 @@ namespace fhg
           , ITVAL(XMLTYPE(net_type::transitions_type))
           , transition
           );
+      WSIGE(net, net::close);
 
       class transition
       {
@@ -154,13 +157,15 @@ namespace fhg
         ui::graph::scene* _scene;
         item_by_name_type& _place_item_by_name;
         item_by_name_type& _port_item_by_name;
-        std::string _port;
         const ui::graph::port::DIRECTION _direction;
         const bool _read;
+        std::string _port;
+        std::string _place;
       };
 
       WSIG(connection, connection::port, std::string, port);
       WSIG(connection, connection::place, std::string, place);
+      WSIGE(connection, connection::close);
 
       class port
       {
@@ -182,19 +187,25 @@ namespace fhg
       class port_toplevel
       {
       public:
-        explicit port_toplevel ( ui::graph::scene* const
+        explicit port_toplevel ( ui::graph::scene*
                                , const ui::graph::port::DIRECTION&
+                               , item_by_name_type& place_item_by_name
                                );
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::scene* const _scene;
-        const ui::graph::port::DIRECTION& _current_direction;
+        ui::graph::scene* _scene;
+        item_by_name_type& _place_item_by_name;
+        std::string _name;
+        const ui::graph::port::DIRECTION _direction;
+        ui::graph::port* _port_item;
       };
 
-      WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);
+      WSIG(port_toplevel, port::name, std::string, name);
+      WSIG(port_toplevel, port::type, std::string, type);
+      WSIG(port_toplevel, port::place, MAYBE(std::string), place);
 
       class place
       {

@@ -182,9 +182,10 @@ namespace fhg
         : _scene (scene)
         , _place_item_by_name (place_item_by_name)
         , _port_item_by_name (port_item_by_name)
-        , _port ()
         , _direction (direction)
         , _read (read)
+        , _port ()
+        , _place ()
       {}
 
       WSIG(connection, connection::port, std::string, port)
@@ -193,17 +194,37 @@ namespace fhg
       }
       WSIG(connection, connection::place, std::string, place)
       {
+        _place = place;
+      }
+      WSIGE(connection, connection::close)
+      {
+        typedef item_by_name_type::iterator iterator_type;
+
+        const iterator_type port_pos (_port_item_by_name.find (_port));
+        const iterator_type place_pos (_place_item_by_name.find (_place));
+
+        if (port_pos == _port_item_by_name.end())
+          {
+            throw
+              std::runtime_error ("connection: port " + _port + " not found");
+          }
+        if (place_pos == _place_item_by_name.end())
+          {
+            throw
+              std::runtime_error ("connection: place " + _place + " not found");
+          }
+
         if (_direction == ui::graph::port::IN)
           {
-            _scene->create_connection ( _place_item_by_name[place]
-                                      , _port_item_by_name[_port]
+            _scene->create_connection ( place_pos->second
+                                      , port_pos->second
                                       , _read
                                       );
           }
         else
           {
-            _scene->create_connection ( _port_item_by_name[_port]
-                                      , _place_item_by_name[place]
+            _scene->create_connection ( port_pos->second
+                                      , place_pos->second
                                       , _read
                                       );
           }
@@ -216,19 +237,28 @@ namespace fhg
                )
         : _scene (scene)
         , _net (net)
+        , _in (in)
+        , _out (out)
         , _place_item_by_name ()
+      {}
+      WSIGE(net, net::close)
       {
         {
-          weaver::port_toplevel wptl (_scene, ui::graph::port::OUT);
-          from::many (&wptl, in, FROM(port));
+          weaver::port_toplevel wptl ( _scene
+                                     , ui::graph::port::OUT
+                                     , _place_item_by_name
+                                     );
+          from::many (&wptl, _in, FROM(port));
         }
 
         {
-          weaver::port_toplevel wptl (_scene, ui::graph::port::IN);
-          from::many (&wptl, out, FROM(port));
+          weaver::port_toplevel wptl ( _scene
+                                     , ui::graph::port::IN
+                                     , _place_item_by_name
+                                     );
+          from::many (&wptl, _out, FROM(port));
         }
       }
-
       WSIG(net, net::transitions, XMLTYPE(net_type::transitions_type), transitions)
       {
         from::many (this, transitions, FROM(transition));
@@ -297,23 +327,44 @@ namespace fhg
 
 
       port_toplevel::port_toplevel
-        ( ui::graph::scene* const scene
-        , const ui::graph::port::DIRECTION& current_direction
+        ( ui::graph::scene* scene
+        , const ui::graph::port::DIRECTION& direction
+        , item_by_name_type& place_item_by_name
         )
           : _scene (scene)
-          , _current_direction (current_direction)
-      {}
-
-      WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
+          , _place_item_by_name (place_item_by_name)
+          , _name ()
+          , _direction (direction)
+          , _port_item (new ui::graph::port (_direction, NULL))
       {
-        ui::graph::port* p (new ui::graph::port (_current_direction, NULL));
-        _scene->addItem (p);
+        _scene->addItem (_port_item);
+      }
 
-        item_by_name_type port_item_by_name;
+      WSIG(port_toplevel, port::name, std::string, name)
+      {
+        _name = name;
+        _port_item->name (QString (name.c_str()));
+      }
+      WSIG(port_toplevel, port::type, std::string, type)
+      {
+        _port_item->we_type (QString (type.c_str()));
+      }
+      WSIG(port_toplevel, port::place, MAYBE(std::string), place)
+      {
+        if (place)
+          {
+            item_by_name_type _port_item_by_name;
 
-        weaver::port wp (p, port_item_by_name);
+            _port_item_by_name[_name] = _port_item;
 
-        FROM(port) (&wp, port);
+            weaver::connection wc ( _scene
+                                  , _place_item_by_name
+                                  , _port_item_by_name
+                                  , _direction
+                                  );
+
+            FROM(connection) (&wc, XMLTYPE(connect_type) (*place, _name));
+          }
       }
     }
   }
