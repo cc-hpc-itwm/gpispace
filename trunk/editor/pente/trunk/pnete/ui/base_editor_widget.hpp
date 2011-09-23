@@ -21,7 +21,6 @@ namespace fhg
         Q_OBJECT;
       public:
         base_editor_widget ( data::proxy::type& proxy
-                           , const QString& fallback_title
                            , QWidget* parent = NULL
                            );
 
@@ -34,8 +33,6 @@ namespace fhg
 
       private:
         data::proxy::type& _proxy;
-
-        const QString _fallback_title;
       };
     }
   }

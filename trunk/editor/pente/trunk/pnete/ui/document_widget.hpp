@@ -33,6 +33,9 @@ namespace fhg
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
 
+      signals:
+        void focus_gained (QWidget*);
+
       private slots:
         void visibility_changed (bool);
       };

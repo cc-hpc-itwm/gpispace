@@ -16,7 +16,7 @@ namespace fhg
     namespace ui
     {
       document_widget::document_widget (const data::proxy::type& proxy)
-        : dock_widget (data::proxy::name (proxy, "<<anonymous widget>>"))
+        : dock_widget (data::proxy::name (proxy))
       {
         connect ( this
                 , SIGNAL (visibilityChanged (bool))
@@ -28,7 +28,7 @@ namespace fhg
       {
         if (visible)
         {
-          widget()->setFocus();
+          emit focus_gained (this);
         }
       }
 

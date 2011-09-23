@@ -22,7 +22,7 @@ namespace fhg
         , data::proxy::mod_proxy::data_type& mod
         , QWidget* parent
         )
-          : base_editor_widget (proxy, tr("<<anonymous module call>>"), parent)
+          : base_editor_widget (proxy, parent)
           , _mod (mod)
           , _ports_list (new ports_list_widget (mod.in(), mod.out()))
       {

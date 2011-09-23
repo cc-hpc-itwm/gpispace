@@ -29,6 +29,9 @@ namespace fhg
                           , QWidget* parent = NULL
                           );
 
+      private slots:
+        void name_changed (const QString& name_);
+
       private:
         data::proxy::expression_proxy::data_type& _expression;
         ports_list_widget* _ports_list;

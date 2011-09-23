@@ -23,7 +23,7 @@ namespace fhg
         , data::proxy::expression_proxy::data_type& expression
         , QWidget* parent
         )
-          : base_editor_widget (proxy, tr("<<anonymous expression>>"), parent)
+          : base_editor_widget (proxy, parent)
           , _expression (expression)
           , _ports_list (new ports_list_widget ( expression.in()
                                                , expression.out()
@@ -42,6 +42,10 @@ namespace fhg
         exp_widget->setLayout (vbox);
 
         QLineEdit* name_line_edit (new QLineEdit (name()));
+        connect ( name_line_edit
+                , SIGNAL (textEdited (const QString&))
+                , SLOT (name_changed (const QString&))
+                );
 
         QWidget* name_widget (new QWidget ());
         QFormLayout* name_layout (new QFormLayout ());
@@ -63,6 +67,12 @@ namespace fhg
         QHBoxLayout* hbox (new QHBoxLayout ());
         hbox->addWidget (group_box);
         setLayout (hbox);
+      }
+
+      void expression_widget::name_changed (const QString& name_)
+      {
+        //! \todo should be: undo_redo::instance().expression_name (proxy(), name)
+        data::proxy::name (proxy(), name_);
       }
     }
   }

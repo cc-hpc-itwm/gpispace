@@ -20,7 +20,7 @@ namespace fhg
         , graph::scene* scene
         , QWidget* parent
         )
-          : base_editor_widget (proxy, tr("<<anonymous net>>"), parent)
+          : base_editor_widget (proxy, parent)
           , _net (net)
           , _view (new ui::GraphView (scene))
       {

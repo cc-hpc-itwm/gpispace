@@ -48,12 +48,26 @@ namespace fhg
           const function_type& function() const { return _function; }
           display_type* display() { return _display; }
 
-          QString name (const QString& fallback) const
+          QString name () const
           {
             return _function.name
               ? QString ((*_function.name).c_str())
-              : fallback
+              : QString ()
               ;
+          }
+
+          const QString& name (const QString& name_)
+          {
+            if (!name_.isEmpty())
+            {
+              _function.name = name_.toStdString();
+            }
+            else
+            {
+              _function.name.clear();
+            }
+
+            return name_;
           }
 
         private:
@@ -122,7 +136,8 @@ namespace fhg
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
         const function_type& function (const type &);
-        QString name (const type&, const QString&);
+        QString name (const type&);
+        const QString& name (type&, const QString&);
 
         namespace visitor
         {
@@ -138,16 +153,23 @@ namespace fhg
 
           class name : public boost::static_visitor<QString>
           {
+          public:
+            template<typename T>
+            QString operator () (const T & x) const { return x.name(); }
+          };
+
+          class set_name : public boost::static_visitor<const QString&>
+          {
           private:
-            const QString& _fallback;
+            const QString& _name;
 
           public:
-            name (const QString& fallback) : _fallback (fallback) {}
+            set_name (const QString& name_) : _name (name_) {}
 
             template<typename T>
-            QString operator () (const T & x) const
+            const QString& operator () (T& x) const
             {
-              return x.name(_fallback);
+              return x.name(_name);
             }
           };
 

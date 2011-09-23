@@ -1,5 +1,9 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
+#include <pnete/data/proxy.hpp>
+
+#include <QObject>
+
 #include <boost/variant.hpp>
 
 #include <pnete/ui/document_widget.hpp>
@@ -17,9 +21,14 @@ namespace fhg
           return boost::apply_visitor (visitor::function(), proxy);
         }
 
-        QString name (const type& proxy, const QString& fallback)
+        QString name (const type& proxy)
         {
-          return boost::apply_visitor (visitor::name (fallback), proxy);
+          return boost::apply_visitor (visitor::name (), proxy);
+        }
+
+        const QString& name (type& proxy, const QString& name_)
+        {
+          return boost::apply_visitor (visitor::set_name (name_), proxy);
         }
 
         namespace data
