@@ -632,6 +632,7 @@ namespace process
 
             if (ec != 0)
               {
+                // TODO: do not throw, rather set the exit code
                 detail::put_error ("child exited with exitcode", ec);
               }
           }
@@ -639,16 +640,19 @@ namespace process
           {
             const int ec (WTERMSIG(status));
 
+            // TODO: do not throw, rather set the exit code
             detail::put_error ("child exited due to signal", ec);
           }
         else
           {
+            // TODO: do not throw, rather set the exit code
             detail::put_error ("strange child status", status);
           }
 
         DMLOG (TRACE, "finished command: " << command);
       }
 
+    // FIXME: memory leak if we did throw before!
     {
       std::size_t idx (0);
 

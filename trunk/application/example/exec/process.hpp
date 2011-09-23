@@ -75,11 +75,13 @@ namespace process
     size_type bytes_read_stdout;
     size_type bytes_read_stderr;
     size_list_type bytes_read_files_output;
+    int exit_code;
 
     execute_return_type ()
       : bytes_read_stdout (0)
       , bytes_read_stderr (0)
       , bytes_read_files_output (0)
+      , exit_code (0)
     {}
   };
 
