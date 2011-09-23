@@ -42,7 +42,7 @@ namespace fhg
           void create_connection (connectable_item* item);
           void create_connection ( connectable_item* from
                                  , connectable_item* to
-                                 , bool only_reading = false
+                                 , bool only_reading
                                  );
 
         public slots:
