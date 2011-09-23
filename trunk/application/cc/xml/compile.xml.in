@@ -41,20 +41,54 @@
 	  throw std::runtime_error("change directory failed: " + working_directory);
 	}
 
-	std::string cmd (compiler + " " + params + " >> /fhgfs/HPC/petry/compile.log");
+	const std::string cmd (compiler + " " + params);
 
 	LOG (INFO,"====> comand := " << cmd);
 
-	int ec (system(cmd.c_str()));
-	if (ec != 0)
-	{
-          LOG(ERROR, "command failed: " << ec);
+        process::circular_buffer buf_stderr;
+	char std_out_buf[1 << 16];
+	memset (std_out_buf, 0, sizeof(std_out_buf));
+
+	process::execute_return_type exec_result;
+        try
+        {
+	  exec_result =
+	    process::execute ( cmd
+                             , process::const_buffer (0, 0)
+                             , process::buffer(&std_out_buf[0], sizeof(std_out_buf))
+                             , buf_stderr
+                             , process::file_const_buffer_list ()
+                             , process::file_buffer_list ()
+                             );
+          exit_code = 0;
+        }
+        catch (std::exception const &ex)
+        {
+          LOG(ERROR, "compilation failed: " << ex.what());
+	  exit_code = 1;
         }
 
-	exit_code = ec;
-	chdir(buf);
+        std_out_buf[sizeof(std_out_buf)-1] = '\0';
+        std_out = std_out_buf;
+	MLOG(INFO, "stdout = " << std_out);
 
-	LOG (INFO, "SDPACC done");
+	if (! buf_stderr.empty())
+	{
+	  buf_stderr[buf_stderr.size()-1] = '\0';
+	  std_err = std::string(&buf_stderr[0], &buf_stderr[buf_stderr.size()-1]);
+	  MLOG(WARN, "stderr = " << std_err);
+        }
+
+        if (exit_code != 0)
+        {
+          LOG(ERROR, "SDPACC failed: " << exit_code);
+        }
+	else
+	{
+          LOG (INFO, "SDPACC done");
+        }
+
+	chdir(buf);
     ]]></code>
   </module>
 </defun>
