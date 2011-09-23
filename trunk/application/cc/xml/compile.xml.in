@@ -46,7 +46,7 @@
 	LOG (INFO,"====> comand := " << cmd);
 
         process::circular_buffer buf_stderr;
-	char std_out_buf[1 << 16];
+	char std_out_buf[1 << 20];
 	memset (std_out_buf, 0, sizeof(std_out_buf));
 
 	process::execute_return_type exec_result;
