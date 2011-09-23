@@ -5,7 +5,7 @@ configure_file(compile.xml.in compile.xml @ONLY)
 #        see: target_property_path
 #    write macro to generate the code + building it
 #    let pnetc generate cmake files...
-add_custom_command(COMMAND pnetc ${CMAKE_CURRENT_BUILD_DIR}/compile.xml -g ${CMAKE_CURRENT_BUILD_DIR}/gen -o compile.pnet
+add_custom_command(COMMAND pnetc ${CMAKE_CURRENT_BINARY_DIR}/compile.xml -g ${CMAKE_CURRENT_BINARY_DIR}/gen -o ${CMAKE_CURRENT_BINARY_DIR}/compile.pnet
   OUTPUT compile.pnet
   DEPENDS pnetc
   COMMENT "generating sdpacc module"
@@ -13,7 +13,7 @@ add_custom_command(COMMAND pnetc ${CMAKE_CURRENT_BUILD_DIR}/compile.xml -g ${CMA
 set_source_files_properties(compile.pnet PROPERTIES GENERATED true)
 
 install (FILES
-  compile.xml
-  compile.pnet
+  ${CMAKE_CURRENT_BINARY_DIR}/compile.xml
+#  ${CMAKE_CURRENT_BINARY_DIR}/compile.pnet
   DESTINATION share/sdpa/cc
 )
