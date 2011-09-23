@@ -544,6 +544,7 @@ to adjust the amount.
     put "plugin.gpi-compat.shm_size" "$shm_size"
     put "plugin.gpi-compat.com_size" "$com_size"
 
+    put "gpi.enabled" $(get gpi.enabled "true")
     put "gpi.api" $(get gpi.api "gpi.api.real")
     put "gpi.timeout" $(get gpi.timeout "30")
     put "gpi.socket_mode" $(get gpi.socket_mode "0700")
@@ -1257,12 +1258,17 @@ function start_gui ()
 
 function start_gpi ()
 {
-    if ! start_proc "gpi-space" "start-gpi" "-f" ; then
-	log "E: could not start GPI, giving up!"
-	return 1
+    local gpi_enabled=$(get "gpi.enabled" "true")
+    if [ x"$gpi_enabled" == x"true" ] ; then
+	if ! start_proc "gpi-space" "start-gpi" "-f" ; then
+	    log "E: could not start GPI, giving up!"
+	    return 1
+	else
+	    sleep 5
+	    return 0
+	fi
     else
-	sleep 5
-	return 0
+	log "      * deactivated" >&2
     fi
 }
 

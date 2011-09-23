@@ -17,6 +17,7 @@ backlog=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.drts.backlog -v 3)
 identity=0
 name_prefix="drts-$(hostname -s)"
 master="aggregator"
+gpi_enabled="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.enabled -v true)"
 gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp/gpi-space)"
 gpi_socket="$gpi_socket/GPISpace-$(id -u)"
 gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -v control)"
@@ -194,6 +195,11 @@ plugins="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g kernel.plugins)"
 
 plugin_load_flags=""
 for p in $(echo $plugins | tr ',' ' '); do
+    if [ x"$gpi_enabled" == x"false" ] ; then
+	if echo $p | grep -q 'gpi' ; then
+	    continue
+	fi
+    fi
     plugin_load_flags="$plugin_load_flags -l $SDPA_HOME/libexec/plugins/$p.so"
 done
 
