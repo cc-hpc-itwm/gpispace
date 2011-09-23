@@ -53,7 +53,10 @@ static std::string center (std::string const & text, const std::size_t len)
 }
 
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
-int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t &api, int poll_interval)
+int command_wait ( const std::string &job_id
+                 , const sdpa::client::ClientApi::ptr_t &api
+                 , boost::posix_time::time_duration poll_interval
+                 )
 {
   typedef boost::posix_time::ptime time_type;
   time_type poll_start = boost::posix_time::microsec_clock::local_time();
@@ -99,7 +102,7 @@ int command_wait(const std::string &job_id, const sdpa::client::ClientApi::ptr_t
     }
     else
     {
-	boost::this_thread::sleep(boost::posix_time::seconds(poll_interval));
+	boost::this_thread::sleep(poll_interval);
 	std::cout << "." << std::flush;
     }
   }
@@ -131,7 +134,7 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("poll-interval,t", su::po::value<int>()->default_value(1), "sets the poll interval")
+    ("poll-interval,t", su::po::value<int>()->default_value(250), "sets the poll interval")
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
@@ -408,7 +411,10 @@ int main (int argc, char **argv) {
       if (cfg.is_set("wait"))
       {
         const int poll_interval = cfg.get<int>("poll-interval");
-        int wait_code = command_wait(job_id, api, poll_interval);
+        int wait_code = command_wait( job_id
+                                    , api
+                                    , boost::posix_time::milliseconds(poll_interval)
+                                    );
 
         switch (wait_code)
         {
@@ -439,7 +445,10 @@ int main (int argc, char **argv) {
 
       const std::string job_id (args.front());
       const int poll_interval = cfg.get<int>("poll-interval");
-      int wait_code = command_wait(job_id, api, poll_interval);
+      int wait_code = command_wait( job_id
+                                  , api
+                                  , boost::posix_time::milliseconds(poll_interval)
+                                  );
 
       switch (wait_code)
       {
@@ -525,7 +534,10 @@ int main (int argc, char **argv) {
       }
       const std::string &job_id(args.front());
       const int poll_interval = cfg.get<int>("wait");
-      int wait_code = command_wait(job_id, api, poll_interval);
+      int wait_code = command_wait( job_id
+                                  , api
+                                  , boost::posix_time::milliseconds(poll_interval)
+                                  );
 
       switch (wait_code)
       {
