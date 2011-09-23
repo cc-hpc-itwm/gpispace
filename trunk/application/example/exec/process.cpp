@@ -192,16 +192,9 @@ namespace process
 
               std::copy (buf, buf + r, std::back_inserter (circ_buf));
 
-              {
-                std::ostringstream str;
-
-                for (int i (0); i < r; ++i)
-                  {
-                    str << buf[i];
-                  }
-
-                DLOG (TRACE, "circ read: \"" << str.str() << "\"");
-              }
+              DLOG ( TRACE
+                   , "circ read: \"" << std::string (buf, buf + r) << "\""
+                   );
             }
         }
 
