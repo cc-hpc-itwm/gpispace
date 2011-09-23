@@ -20,53 +20,83 @@
 #      print stdout
 #      print stderr
 
-if [ -z "$SDPACC_CC" ] ; then
-    SDPACC_CC="gcc"
+prog_name=$(basename $0)
+compiler="$prog_name"
+c_compiler="gcc"
+cxx_compiler="g++"
+
+if [ -n "$SDPACC_CC" ] ; then
+    c_compiler="$SDPACC_CC"
 fi
-if [ -z "$SDPACC_CXX" ] ; then
-    SDPACC_CXX="g++"
+if [ -n "$SDPACC_CXX" ] ; then
+    cxx_compiler="$SDPACC_CXX"
 fi
 
-prog_name=$(basename $0)
 args="$@"
 pnet="/p/herc/itwm/hpc/ap/git/SDPA/trunk/application/cc/compile.pnet"
 
 pnet_tmp=$(mktemp)
+jobid=
 
-function cc_mode ()
+function compile ()
 {
-    echo "behaving like gcc" >&2
     prepare
-    submit
-}
-
-function cplusplus_mode ()
-{
-    echo "behaving like g++" >&2
-    prepare
-    submit
+    execute
 }
 
 function prepare ()
 {
-    pnetput --if ${pnet} --of ${pnet_tmp} \
-              -p compiler=\"$prog_name\" \
+    pnetput --if "${pnet}" --of "${pnet_tmp}" \
+              -p compiler=\""$compiler"\" \
               -p params=\""$args"\" \
               -p working_directory=\""$PWD"\" \
               -p build_environment=\"\"
 }
 
-function submit ()
+function execute ()
 {
-    sdpac submit -w ${pnet_tmp}
+    jobid=$(sdpac submit ${pnet_tmp} 2>&1)
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+	echo "submission failed: $jobid" >&2
+	return $ec
+    fi
+    test -e "${pnet_tmp}" && rm -f "${pnet_tmp}"
+    sdpac wait "$jobid" &>/dev/null
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+	return $ec
+    fi
+    sdpac results "${jobid}" &>/dev/null
+    sdpac delete "${jobid}" &>/dev/null
+
+    # FIXME: pnetget should be able to use port names!
+    std_out=$(pnetget -i "sdpa.${jobid}.out" | grep 'on 5: ' | sed -e 's/^on 5: //g')
+    std_out=$(echo $std_out | sed -e 's/\"\(.*\)/\1/')
+    std_out=$(echo $std_out | sed -e 's/\(.*\)\"/\1/')
+    std_err=$(pnetget -i "sdpa.${jobid}.out" | grep 'on 6:' | sed -e 's/on 6: //g')
+    std_err=$(echo -n $std_err | sed -e 's/\"\(.*\)/\1/')
+    std_err=$(echo -n $std_err | sed -e 's/\(.*\)\"/\1/')
+    ec=$(pnetget -i "sdpa.${jobid}.out" | grep 'on 4:' | sed -e 's/on 4: //g')
+    ec=$(echo $ec | tr -d L)
+
+    test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
+
+    if [ -n "$std_out" ] ; then
+	echo -e "$std_out"
+    fi
+    if [ -n "$std_err" ] ; then
+	echo -e "$std_err" >&2
+    fi
+    return $ec
 }
 
 case "$prog_name" in
     *cc)
-	cc_mode $@
+	compiler="$c_compiler"
 	;;
     *++)
-	cplusplus_mode $@
+	compiler="$cxx_compiler"
 	;;
     *)
 	echo "E: dunno how to behave as $prog_name" >&2
@@ -74,4 +104,4 @@ case "$prog_name" in
 	;;
 esac
 
-test -e "${pnet_tmp}" && rm -f "${pnet_tmp}"
+compile $@
