@@ -37,15 +37,6 @@ namespace fhg
 
           const QPointF& mouse_position() const;
 
-
-          // void setPendingConnection (connection* connection);
-          // void removePendingConnection();
-
-          // const connection* pendingConnection() const;
-          // bool pendingConnectionCanConnectTo (connectable_item* item) const;
-          // void pendingConnectionConnectTo (connectable_item* item);
-          // bool createPendingConnectionWith (connectable_item* item);
-
           void create_connection (connectable_item* item);
           void create_connection ( connectable_item* from
                                  , connectable_item* to
