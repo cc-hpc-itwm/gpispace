@@ -142,6 +142,11 @@ namespace fhg
                                       , bool only_reading
                                       )
         {
+          if (!to->is_connectable_with (from))
+          {
+            throw std::runtime_error
+              ("tried hard-connecting non-connectable items.");
+          }
           connection* c (create_connection (only_reading));
           c->start (from);
           c->end (to);
@@ -213,6 +218,11 @@ namespace fhg
 
             if (ci->is_connectable_with (_pending_connection->non_free_side()))
             {
+              if (qobject_cast<port*> (ci) && as_port)
+              {
+                //! \todo insert place and connect with that place in between.
+              }
+
               _pending_connection->free_side (ci);
               update (_pending_connection->boundingRect());
               _pending_connection = NULL;
