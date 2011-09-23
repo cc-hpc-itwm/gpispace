@@ -73,22 +73,6 @@ namespace fhg
         }
       }
 
-      boost::optional< XMLTYPE(function_type) &>
-      net::get_function (const std::string& name)
-      {
-        return _net.get_function (name);
-      }
-
-      namespace visitor
-      {
-        function_type& default_fun()
-        {
-          static function_type f;
-
-          return f;
-        }
-      }
-
       WSIG(function, expression::open, XMLTYPE(expression_type), exp)
       {
         _proxy = new data::proxy::type

@@ -70,12 +70,12 @@ namespace xml
           return _templates.by_key (maybe_string_type(name), tmpl);
         }
 
-        boost::optional<function_type&> get_function (const std::string & name)
+        function_type& get_function (const std::string & name)
         {
           return _functions.by_key (maybe_string_type (name));
         }
 
-        boost::optional<function_type&> get_template (const std::string & name)
+        function_type& get_template (const std::string & name)
         {
           return _templates.by_key (maybe_string_type (name));
         }

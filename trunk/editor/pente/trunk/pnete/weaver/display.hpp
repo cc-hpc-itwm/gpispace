@@ -11,8 +11,6 @@
 
 #include <pnete/ui/graph/port.hpp>
 
-#include <boost/optional.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -73,9 +71,6 @@ namespace fhg
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
-
-        boost::optional< XMLTYPE(function_type)&>
-        get_function (const std::string&);
 
       private:
         ui::graph::scene* _scene;
@@ -175,8 +170,6 @@ namespace fhg
       {
         typedef XMLTYPE(function_type) function_type;
 
-        function_type& default_fun();
-
         class get_function : public boost::static_visitor<function_type&>
         {
         private:
@@ -192,18 +185,7 @@ namespace fhg
 
           function_type& operator () (const XMLTYPE(use_type)& use) const
           {
-            boost::optional<function_type&> f (_net.get_function (use.name));
-
-            if (f)
-              {
-                return *f;
-              }
-            else
-              {
-                //! \todo do something more clever, generate error message!?
-
-                return default_fun();
-              };
+            return _net.get_function (use.name);
           }
         };
       }
