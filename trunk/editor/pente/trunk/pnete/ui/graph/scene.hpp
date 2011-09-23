@@ -1,5 +1,7 @@
-#ifndef GRAPHSCENE_HPP
-#define GRAPHSCENE_HPP 1
+// bernd.loerwald@itwm.fraunhofer.de
+
+#ifndef _FHG_PNETE_UI_GRAPH_SCENE_HPP
+#define _FHG_PNETE_UI_GRAPH_SCENE_HPP 1
 
 #include <pnete/data/internal.hpp>
 
