@@ -122,8 +122,7 @@ namespace fhg
             xml_type:: net_type& _net;
 
           public:
-            explicit net_type ( xml_type::net_type& net
-                              );
+            explicit net_type (xml_type::net_type& net);
 
             xml_type::net_type& net ();
           };
@@ -135,9 +134,11 @@ namespace fhg
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
-        const function_type& function (const type &);
+        const function_type& function (const type&);
         QString name (const type&);
         const QString& name (type&, const QString&);
+
+        ui::document_widget* document_widget_factory (type&);
 
         namespace visitor
         {
@@ -178,6 +179,7 @@ namespace fhg
           {
           private:
             type& _proxy;
+
           public:
             document_widget_factory (type& proxy);
             ui::document_widget * operator () (expression_proxy &) const;

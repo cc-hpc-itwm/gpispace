@@ -7,6 +7,9 @@
 #include <QObject>
 #include <QString>
 
+#include <pnete/weaver/display.hpp>
+#include <pnete/data/proxy.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -16,22 +19,14 @@ namespace fhg
       internal::internal ()
         : _state ()
         , _function ()
-        , _undo_redo_manager (*this)
+        , _change_manager (*this)
       {}
 
       internal::internal (const QString& filename)
         : _state ()
         , _function (::xml::parse::just_parse (_state, filename.toStdString()))
-        , _undo_redo_manager (*this)
+        , _change_manager (*this)
       {}
-
-      QString internal::name () const
-      {
-        return _function.name
-          ? QString ((*_function.name).c_str())
-          : QObject::tr ("noname")
-          ;
-      }
 
       ::xml::parse::type::function_type & internal::function ()
       {

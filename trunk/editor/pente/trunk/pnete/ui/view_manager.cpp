@@ -118,9 +118,7 @@ namespace fhg
       void view_manager::create_widget (data::proxy::type& proxy)
       {
         add_on_top_of_current_widget
-          ( boost::apply_visitor
-             (data::proxy::visitor::document_widget_factory (proxy), proxy)
-          );
+          (data::proxy::document_widget_factory (proxy));
       }
 
       // net_view, ACTIONS!

@@ -8,7 +8,7 @@
 #include <xml/parse/types.hpp>
 #include <xml/parse/state.hpp>
 
-#include <pnete/data/undo_redo_manager.hpp>
+#include <pnete/data/change_manager.hpp>
 
 class QString;
 
@@ -23,7 +23,7 @@ namespace fhg
       private:
         ::xml::parse::state::type _state;
         ::xml::parse::type::function_type _function;
-        undo_redo_manager _undo_redo_manager;
+        change_manager _change_manager;
 
       public:
         typedef boost::shared_ptr<internal> ptr;
@@ -31,7 +31,6 @@ namespace fhg
         explicit internal ();
         explicit internal (const QString& filename);
 
-        QString name () const;
         ::xml::parse::type::function_type & function ();
         const ::xml::parse::type::function_type & function () const;
         const ::xml::parse::state::key_values_t & context () const;
