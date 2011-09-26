@@ -312,7 +312,7 @@ namespace fhg
 
       void editor_window::setup_window_actions (QMenuBar* menu_bar)
       {
-        QMenu* windows_menu (new QMenu (tr ("windos_menu"), menu_bar));
+        QMenu* windows_menu (new QMenu (tr ("windows_menu"), menu_bar));
         menu_bar->addAction (windows_menu->menuAction());
 
         QAction* duplicate_current_action
