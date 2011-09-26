@@ -25,7 +25,7 @@ namespace fhg
       namespace graph
       {
         transition::transition( transition_type & data
-                              , QGraphicsItem* parent
+                              , item* parent
                               )
           : item (parent)
           , _dragStart (0, 0)
@@ -39,12 +39,12 @@ namespace fhg
         {
           new cogwheel_button (this);
           setAcceptHoverEvents (true);
-          setFlag (QGraphicsItem::ItemIsSelectable);
+          setFlag (ItemIsSelectable);
           init_menu_context();
         }
 
         transition::transition ( const QString& filename
-                               , QGraphicsItem* parent
+                               , item* parent
                                )
           : item (parent)
           , _dragStart (0, 0)
@@ -204,7 +204,7 @@ namespace fhg
 
         void transition::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
-          QGraphicsItem::contextMenuEvent (event);
+          item::contextMenuEvent (event);
 
           if (!event->isAccepted())
           {

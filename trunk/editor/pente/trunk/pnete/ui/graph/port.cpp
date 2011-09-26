@@ -70,7 +70,7 @@ namespace fhg
 
         void port::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
-          QGraphicsItem::contextMenuEvent (event);
+          item::contextMenuEvent (event);
 
           if (!event->isAccepted())
           {

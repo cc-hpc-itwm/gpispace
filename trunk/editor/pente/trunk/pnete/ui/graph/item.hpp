@@ -42,7 +42,7 @@ namespace fhg
               util::throwing_qobject_cast<class scene*>(QGraphicsItem::scene());
           }
 
-          item (QGraphicsItem* parent = NULL) : QGraphicsItem (parent) { }
+          item (item* parent = NULL) : QGraphicsItem (parent) { }
 
           //virtual void add_to_graphviz_graph (GraphViz::Graph & graph) const { }
         };

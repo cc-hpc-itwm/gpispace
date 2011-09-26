@@ -23,7 +23,7 @@ namespace fhg
       namespace graph
       {
         cogwheel_button::cogwheel_button (transition* linked_transition)
-          : QGraphicsItem (linked_transition)
+          : item (linked_transition)
           , _linked_transition (linked_transition)
         {
           const QPointF padding (5.0, 5.0);                                        // hardcoded constant

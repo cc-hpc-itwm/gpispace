@@ -1,7 +1,6 @@
 #ifndef GRAPHTRANSITION_HPP
 #define GRAPHTRANSITION_HPP 1
 
-#include <QGraphicsItem>
 #include <QPainterPath>
 #include <QRectF>
 #include <QPointF>
@@ -36,7 +35,6 @@ namespace fhg
         class transition : public item
         {
           Q_OBJECT;
-          Q_INTERFACES(QGraphicsItem);
 
         public:
           typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
@@ -44,10 +42,10 @@ namespace fhg
           typedef XMLTYPE(mod_type) mod_type;
 
           explicit transition( transition_type & data
-                             , QGraphicsItem* parent = NULL
+                             , item* parent = NULL
                              );
           explicit transition ( const QString& filename
-                              , QGraphicsItem* parent = NULL
+                              , item* parent = NULL
                               );
 
           virtual QRectF boundingRect() const;

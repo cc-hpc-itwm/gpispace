@@ -1,11 +1,12 @@
 #ifndef _PNETE_UI_GRAPH_COGWHEEL_BUTTON_HPP
 #define _PNETE_UI_GRAPH_COGWHEEL_BUTTON_HPP 1
 
-#include <QGraphicsItem>
 #include <QRectF>
 
 class QPainter;
 class QGraphicsSceneMouseEvent;
+
+#include <pnete/ui/graph/item.hpp>
 
 namespace fhg
 {
@@ -17,7 +18,7 @@ namespace fhg
       {
         class transition;
 
-        class cogwheel_button : public QGraphicsItem
+        class cogwheel_button : public item
         {
         public:
           cogwheel_button (transition* linked_transition);
