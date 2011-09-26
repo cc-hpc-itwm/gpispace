@@ -10,8 +10,6 @@
 
 #include <xml/parse/types.hpp>
 
-#include <iostream>
-
 namespace fhg
 {
   namespace pnete
@@ -172,6 +170,55 @@ namespace fhg
 
         from::many (&wc, cs, FROM(connection));
       }
+      WSIG(transition, transition::properties, WETYPE(property::type), props)
+      {
+        weaver::property wp (_transition);
+
+        FROM (properties) (&wp, props);
+      }
+
+      property::property (ui::graph::item* item)
+        : _item (item)
+        , _path ()
+      {}
+      WSIG(property, properties::open, WETYPE(property::type), props)
+      {
+        from::many (this, props.get_map(), FROM(property));
+      }
+      WSIG(property, property::open, WETYPE(property::key_type), key)
+      {
+        _path.push_back (key);
+      }
+      WSIGE(property, property::close)
+      {
+        _path.pop_back();
+      }
+      WSIG(property, property::value, WETYPE(property::value_type), value)
+      {
+        if (_path.size() > 1 && _path[0] == "fhg" && _path[1] == "pnete")
+          {
+            if (_path.size() > 2 && _path[2] == "position")
+              {
+                if (_path.size() > 3)
+                  {
+                    if (_path[3] == "x")
+                      {
+                        _item->setPos
+                          ( boost::lexical_cast<float>(value)
+                          , _item->pos().y()
+                          );
+                      }
+                    else if (_path[3] == "y")
+                      {
+                        _item->setPos
+                          ( _item->pos().x()
+                          , boost::lexical_cast<float>(value)
+                          );
+                      }
+                  }
+              }
+          }
+      }
 
       connection::connection ( ui::graph::scene* scene
                              , item_by_name_type& place_item_by_name
@@ -324,7 +371,12 @@ namespace fhg
       {
         _place->we_type (QString (type.c_str()));
       }
+      WSIG(place, place::properties, WETYPE(property::type), props)
+      {
+        weaver::property wp (_place);
 
+        FROM(properties) (&wp, props);
+      }
 
       port_toplevel::port_toplevel
         ( ui::graph::scene* scene

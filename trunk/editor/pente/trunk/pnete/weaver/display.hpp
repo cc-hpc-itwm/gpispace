@@ -139,6 +139,24 @@ namespace fhg
       WSIG(transition, transition::connect_read, XMLTYPE(connections_type), cs);
       WSIG(transition, transition::connect_in, XMLTYPE(connections_type), cs);
       WSIG(transition, transition::connect_out, XMLTYPE(connections_type), cs);
+      WSIG(transition, transition::properties, WETYPE(property::type), prop);
+
+      class property
+      {
+      public:
+        explicit property (ui::graph::item*);
+        template<int Type, typename T> void weave (const T & x) {}
+        template<int Type> void weave () {}
+
+      private:
+        ui::graph::item* _item;
+        WETYPE(property::path_type) _path;
+      };
+
+      WSIG(property, properties::open, WETYPE(property::type), prop);
+      WSIG(property, property::open, WETYPE(property::key_type), key);
+      WSIG(property, property::value, WETYPE(property::value_type), value);
+      WSIGE(property, property::close);
 
       class connection
       {
@@ -223,6 +241,7 @@ namespace fhg
 
       WSIG(place, place::name, std::string, name);
       WSIG(place, place::type, std::string, type);
+      WSIG(place, place::properties, WETYPE(property::type), props);
 
       namespace visitor
       {

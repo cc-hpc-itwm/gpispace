@@ -2,10 +2,27 @@
   <in name="in" type="long" place="in"/>
   <out name="done" type="control" place="done"/>
   <net>
-    <place name="in" type="long"/>
+    <place name="in" type="long">
+      <properties name="fhg">
+        <properties name="pnete">
+          <properties name="position">
+            <property key="x" value="100"/>
+            <property key="y" value="100"/>
+          </properties>
+        </properties>
+      </properties>
+    </place>
     <place name="d" type="long"/>
     <place name="done" type="control"/>
     <transition name="double">
+      <properties name="fhg">
+        <properties name="pnete">
+          <properties name="position">
+            <property key="x" value="314.1"/>
+            <property key="y" value="271.8"/>
+          </properties>
+        </properties>
+      </properties>
       <defun>
         <in name="in" type="long"/>
         <out name="out" type="long"/>
@@ -18,6 +35,14 @@
     </transition>
 
     <transition name="eat">
+      <properties name="fhg">
+        <properties name="pnete">
+          <properties name="position">
+            <property key="x" value="200"/>
+            <property key="y" value="-100"/>
+          </properties>
+        </properties>
+      </properties>
       <defun>
         <in name="in" type="long"/>
         <out name="done" type="control"/>
