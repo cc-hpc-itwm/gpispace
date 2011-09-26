@@ -26,7 +26,9 @@ namespace fhg
 
         public:
           place (item* parent = NULL);
+
           const QString& name (const QString& name_);
+          const QString& name() const;
 
         public slots:
           void refresh_content();

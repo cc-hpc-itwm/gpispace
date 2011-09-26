@@ -34,6 +34,10 @@ namespace fhg
           refresh_content();
           return _name;
         }
+        const QString& place::name() const
+        {
+          return _name;
+        }
 
         void place::refresh_content()
         {
