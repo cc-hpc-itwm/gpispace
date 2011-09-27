@@ -16,10 +16,13 @@ namespace fhg
   {
     namespace weaver
     {
-      function::function (XMLTYPE(function_type) & fun)
+      function::function ( XMLTYPE(function_type) & fun
+                         , data::internal::ptr internal
+                         )
         : _proxy (NULL)
         , _fun (fun)
         , _scene (NULL)
+        , _internal (internal)
       {
         FROM (function<function> (this, fun));
       }
@@ -31,7 +34,8 @@ namespace fhg
       {
         _proxy = new data::proxy::type
           ( data::proxy::expression_proxy
-            ( data::proxy::data::expression_type
+            ( _internal
+            , data::proxy::data::expression_type
               ( const_cast< XMLTYPE(expression_type) &> (exp)
               , in()
               , out()
@@ -44,7 +48,8 @@ namespace fhg
       {
         _proxy = new data::proxy::type
           ( data::proxy::mod_proxy
-            ( data::proxy::data::mod_type
+            ( _internal
+            , data::proxy::data::mod_type
               ( const_cast< XMLTYPE(mod_type) &> (mod)
               , in()
               , out()
@@ -58,7 +63,8 @@ namespace fhg
         _scene = new ui::graph::scene(const_cast< XMLTYPE(net_type) &> (net));
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
-            ( data::proxy::data::net_type
+            ( _internal
+            , data::proxy::data::net_type
               ( const_cast< XMLTYPE(net_type) &> (net)
               )
             , _fun
@@ -66,7 +72,8 @@ namespace fhg
             )
           );
 
-        weaver::net wn ( _scene
+        weaver::net wn ( _internal
+                       , _scene
                        , const_cast< XMLTYPE(net_type) &> (net)
                        , in()
                        , out()
@@ -88,7 +95,8 @@ namespace fhg
       }
 
 
-      transition::transition ( ui::graph::scene* scene
+      transition::transition ( data::internal::ptr internal
+                             , ui::graph::scene* scene
                              , ui::graph::transition* transition
                              , XMLTYPE(net_type)& net
                              , item_by_name_type& place_item_by_name
@@ -99,6 +107,7 @@ namespace fhg
         , _net (net)
         , _place_item_by_name (place_item_by_name)
         , _port_item_by_name ()
+        , _internal (internal)
       {}
       XMLTYPE(function_type)&
       transition::get_function (const XMLTYPE(transition_type::f_type) & f)
@@ -116,7 +125,7 @@ namespace fhg
           , fun
           )
       {
-        function sub (get_function (fun));
+        function sub (get_function (fun), _internal);
 
         _transition->proxy (sub.proxy());
 
@@ -277,7 +286,8 @@ namespace fhg
           }
       }
 
-      net::net ( ui::graph::scene* scene
+      net::net ( data::internal::ptr internal
+               , ui::graph::scene* scene
                , XMLTYPE(net_type)& net
                , XMLTYPE(ports_type)& in
                , XMLTYPE(ports_type)& out
@@ -287,6 +297,7 @@ namespace fhg
         , _in (in)
         , _out (out)
         , _place_item_by_name ()
+        , _internal ()
       {}
       WSIGE(net, net::close)
       {
@@ -332,7 +343,12 @@ namespace fhg
             (const_cast<ui::graph::transition::transition_type &> (transition))
           );
         _scene->addItem (trans);
-        weaver::transition wt (_scene, trans, _net, _place_item_by_name);
+        weaver::transition wt ( _internal
+                              , _scene
+                              , trans
+                              , _net
+                              , _place_item_by_name
+                              );
         FROM(transition) (&wt, transition);
       }
 

@@ -12,6 +12,23 @@ namespace fhg
       change_manager::change_manager (internal & i)
         : _internal (i)
       {}
+
+      void change_manager::set_function_name
+      ( ::xml::parse::type::function_type& fun
+      , const QString& name
+      )
+      {
+        if (!name.isEmpty())
+        {
+          fun.name = name.toStdString();
+        }
+        else
+        {
+          fun.name.clear();
+        }
+
+        emit signal_set_function_name (fun, name);
+      }
     }
   }
 }

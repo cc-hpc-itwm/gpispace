@@ -45,6 +45,10 @@ namespace fhg
       {
         return _state;
       }
+      change_manager& internal::change_manager ()
+      {
+        return _change_manager;
+      }
     }
   }
 }

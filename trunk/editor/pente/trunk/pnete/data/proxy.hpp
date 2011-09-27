@@ -9,6 +9,8 @@
 
 #include <QString>
 
+#include <pnete/data/internal.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -35,45 +37,32 @@ namespace fhg
           typedef DATA data_type;
           typedef DISPLAY display_type;
 
-          proxy_base ( data_type data
+          proxy_base ( internal::ptr internal
+                     , data_type data
                      , function_type& function
                      , display_type* display = NULL
                      )
             : _data (data)
             , _function (function)
             , _display (display)
+            , _internal (internal)
           {}
           data_type& data() { return _data; }
           function_type& function() { return _function; }
           const function_type& function() const { return _function; }
           display_type* display() { return _display; }
 
-          QString name () const
+          internal::ptr internal() const
           {
-            return _function.name
-              ? QString ((*_function.name).c_str())
-              : QString ()
-              ;
-          }
-
-          const QString& name (const QString& name_)
-          {
-            if (!name_.isEmpty())
-            {
-              _function.name = name_.toStdString();
-            }
-            else
-            {
-              _function.name.clear();
-            }
-
-            return name_;
+            return _internal;
           }
 
         private:
           data_type _data;
           function_type& _function;
           display_type* _display;
+
+          internal::ptr _internal;
         };
 
         namespace xml_type = ::xml::parse::type;
@@ -135,42 +124,41 @@ namespace fhg
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
         const function_type& function (const type&);
-        QString name (const type&);
-        const QString& name (type&, const QString&);
+        function_type& function (type&);
+        ::fhg::pnete::data::internal::ptr internal (const type&);
 
         ui::document_widget* document_widget_factory (type&);
 
         namespace visitor
         {
-          class function : public boost::static_visitor<const function_type&>
+          // template<typename RESULT, void (proxy_base::* FUN) ()>
+          // class get : public boost::static_visitor<RESULT>
+          // {
+          // public:
+          //   template<typename T> RESULT operator () (T& x) const
+          //     {
+          //       return x->*FUN();
+          //     }
+          // };
+
+          class internal
+            : public boost::static_visitor< ::fhg::pnete::data::internal::ptr>
           {
           public:
             template<typename T>
-            const function_type& operator () (const T & x) const
+            ::fhg::pnete::data::internal::ptr operator () (const T& x) const
+              {
+                return x.internal();
+              }
+          };
+
+          template<typename RES>
+          class function : public boost::static_visitor<RES>
+          {
+          public:
+            template<typename T> RES operator () (T& x) const
             {
               return x.function();
-            }
-          };
-
-          class name : public boost::static_visitor<QString>
-          {
-          public:
-            template<typename T>
-            QString operator () (const T & x) const { return x.name(); }
-          };
-
-          class set_name : public boost::static_visitor<const QString&>
-          {
-          private:
-            const QString& _name;
-
-          public:
-            set_name (const QString& name_) : _name (name_) {}
-
-            template<typename T>
-            const QString& operator () (T& x) const
-            {
-              return x.name(_name);
             }
           };
 

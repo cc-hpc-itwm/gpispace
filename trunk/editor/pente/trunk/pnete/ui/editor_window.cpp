@@ -413,8 +413,8 @@ namespace fhg
 
       void editor_window::create_windows (data::internal::ptr data)
       {
-        _view_manager->create_widget
-          (*weaver::function(data->function()).proxy());
+        weaver::function wf (weaver::function(data->function(), data));
+        _view_manager->create_widget (*wf.proxy());
         _structure_view->append (data);
       }
 

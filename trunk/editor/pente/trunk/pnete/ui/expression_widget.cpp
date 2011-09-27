@@ -41,7 +41,11 @@ namespace fhg
         QVBoxLayout* vbox (new QVBoxLayout ());
         exp_widget->setLayout (vbox);
 
-        QLineEdit* name_line_edit (new QLineEdit (name()));
+        const fhg::util::maybe<std::string> & name
+          (data::proxy::function (proxy).name);
+
+        QLineEdit* name_line_edit
+          (new QLineEdit (name ? QString((*name).c_str()) : ""));
         connect ( name_line_edit
                 , SIGNAL (textEdited (const QString&))
                 , SLOT (name_changed (const QString&))
@@ -71,8 +75,11 @@ namespace fhg
 
       void expression_widget::name_changed (const QString& name_)
       {
-        //! \todo should be: undo_redo::instance().expression_name (proxy(), name)
-        data::proxy::name (proxy(), name_);
+        data::proxy::internal (proxy())->
+          change_manager().set_function_name ( data::proxy::function (proxy())
+                                             , name_
+                                             )
+          ;
       }
     }
   }

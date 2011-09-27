@@ -35,6 +35,7 @@ namespace fhg
         const ::xml::parse::type::function_type & function () const;
         const ::xml::parse::state::key_values_t & context () const;
         const ::xml::parse::state::type & state () const;
+        change_manager& change_manager();
       };
     }
   }

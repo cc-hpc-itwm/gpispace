@@ -17,6 +17,7 @@ set(data_HDRS
 set(data_UIS
 )
 set(data_TOMOC
+  change_manager.hpp
 )
 
 #for moced files to get their includes.

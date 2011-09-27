@@ -18,17 +18,16 @@ namespace fhg
       {
         const function_type& function (const type& proxy)
         {
-          return boost::apply_visitor (visitor::function(), proxy);
+          return boost::apply_visitor (visitor::function<const function_type&>(), proxy);
+        }
+        function_type& function (type& proxy)
+        {
+          return boost::apply_visitor (visitor::function<function_type&> (), proxy);
         }
 
-        QString name (const type& proxy)
+        ::fhg::pnete::data::internal::ptr internal (const type& proxy)
         {
-          return boost::apply_visitor (visitor::name(), proxy);
-        }
-
-        const QString& name (type& proxy, const QString& name_)
-        {
-          return boost::apply_visitor (visitor::set_name (name_), proxy);
+          return boost::apply_visitor (visitor::internal (), proxy);
         }
 
         namespace data

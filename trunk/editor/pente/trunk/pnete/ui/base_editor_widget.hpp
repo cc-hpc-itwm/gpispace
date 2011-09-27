@@ -26,8 +26,6 @@ namespace fhg
 
         data::proxy::type& proxy () const;
 
-        QString name () const;
-
       signals:
         void focus_gained (QWidget*);
 

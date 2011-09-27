@@ -202,6 +202,11 @@ namespace fhg
           return _highlighted;
         }
 
+        // void slot_change_name (QString name)
+        // {
+        //   internal()->change_manager().set_transition_name (reference(), name);
+        // }
+
         void transition::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
         {
           item::contextMenuEvent (event);

@@ -19,11 +19,6 @@ namespace fhg
       {}
 
       data::proxy::type& base_editor_widget::proxy () const { return _proxy; }
-
-      QString base_editor_widget::name () const
-      {
-        return data::proxy::name (proxy());
-      }
     }
   }
 }

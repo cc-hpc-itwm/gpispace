@@ -19,7 +19,7 @@ namespace fhg
         Q_OBJECT
 
       public:
-        dock_widget (const QString& title);
+        dock_widget (const QString& title = "");
       };
     }
   }
