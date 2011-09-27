@@ -556,7 +556,8 @@ namespace process
 
     if ((pid = fork()) < 0)
       {
-        detail::do_error ("fork failed");
+        ret.exit_code = -errno;
+        LOG(ERROR, "fork failed: " << strerror(errno));
       }
     else if (pid == pid_t (0))
       {
@@ -565,9 +566,13 @@ namespace process
 
         if (execvp(av[0], av) < 0)
           {
-            detail::do_error ("exec failed");
+            int ec = errno;
 
-            _exit (-errno);
+            close (0);
+            close (1);
+            close (2);
+
+            _exit (-ec);
           }
       }
     else
@@ -629,30 +634,22 @@ namespace process
         if (WIFEXITED (status))
           {
             const int ec (WEXITSTATUS(status));
-
-            if (ec != 0)
-              {
-                // TODO: do not throw, rather set the exit code
-                detail::put_error ("child exited with exitcode", ec);
-              }
+            ret.exit_code = ec;
           }
         else if (WIFSIGNALED (status))
           {
             const int ec (WTERMSIG(status));
-
-            // TODO: do not throw, rather set the exit code
-            detail::put_error ("child exited due to signal", ec);
+            ret.exit_code = -ec;
           }
         else
           {
-            // TODO: do not throw, rather set the exit code
-            detail::put_error ("strange child status", status);
+            ret.exit_code = status;
+            LOG(ERROR, "strange child status: " << status);
           }
 
         DMLOG (TRACE, "finished command: " << command);
       }
 
-    // FIXME: memory leak if we did throw before!
     {
       std::size_t idx (0);
 
