@@ -857,7 +857,7 @@ function start_proc ()
     local log_file="$SDPA_LOG_DIR/$name.log"
     local pid=$( cat "$pid_file" 2>/dev/null )
     if is_proc_alive "$name" "$pid" ; then
-	echo "  * $name ($pid)" >&2
+	echo "* $name ($pid)" >&2
     else
 	:> "$pid_file"
 	debug $binary $@
@@ -865,12 +865,12 @@ function start_proc ()
 	pid=$!
 	sleep 0.5
 	if is_proc_alive "$name" "$pid" ; then
-	    echo "  + $name ($pid)" >&2
+	    echo "+ $name ($pid)" >&2
 	    echo "$pid" > "$pid_file"
 	    disown -a
 	    return 0
 	else
-	    echo "  - $name (dead)" >&2
+	    echo "- $name (dead)" >&2
 	    return 1
 	fi
     fi
@@ -927,9 +927,9 @@ function start_agent ()
     debug $cmd
     $cmd </dev/null >"$SDPA_LOG_DIR/$name.log" 2>&1
     if [ $? -eq 0 ] ; then
-	echo "  + $name" >&2
+	echo "+ $name" >&2
     else
-	echo "  - $name" >&2
+	echo "- $name" >&2
     fi
 }
 
@@ -974,7 +974,7 @@ function start_kvs ()
 
 function stop_kvs ()
 {
-    echo "  * fhgkvsd"
+    echo "* fhgkvsd"
     if ! stop_proc "fhgkvsd" "fhgkvsd" ; then
 	echo "E: could not stop kvs!" >&2
 	return 1
@@ -993,7 +993,7 @@ function start_orch ()
 
 function stop_orch ()
 {
-    echo "  * orchestrator"
+    echo "* orchestrator"
     if ! stop_proc "orchestrator" "start-orch" ; then
 	echo "E: could not stop orchestrator" >&2
 	return 1
@@ -1012,7 +1012,7 @@ function start_agg ()
 
 function stop_agg ()
 {
-    echo "  * aggregator"
+    echo "* aggregator"
     if ! stop_agent "aggregator" ; then
 	echo "E: could not stop aggregator" >&2
 	return 1
@@ -1093,18 +1093,18 @@ function send_signal_to_pc ()
 
 function start_nre ()
 {
-    log "  * nres" >&2
     local with_mediator=$(get "topology.with-mediator" "true")
     if [ x"$with_mediator" == x"true" ] ; then
+	log "* nres" >&2
 	node_loop start_nre_on_node $@
     else
-	log "      * deactivated" >&2
+	log "* nres (deactivated)" >&2
     fi
 }
 
 function stop_nre ()
 {
-    log "  * nres" >&2
+    log "* nres" >&2
 #    local with_mediator=$(get "topology.with-mediator" "true")
 #    if [ x"$with_mediator" == x"true" ] ; then
     node_loop stop_nre_on_node $@
@@ -1123,7 +1123,7 @@ function status_nre ()
 	err=$(node_loop status_nre_on_node $@ 2>&1)
 	ec=$?
     else
-	ec=2
+	ec=255
     fi
     return $ec
 }
@@ -1163,13 +1163,13 @@ function status_nre_on_node ()
 
 function start_drts ()
 {
-    echo "  * process container" >&2
+    echo "* process container" >&2
     node_loop start_drts_on_node $@
 }
 
 function stop_drts ()
 {
-    log "  * process container" >&2
+    log "* process container" >&2
     node_loop stop_drts_on_node $@
 }
 
@@ -1268,13 +1268,13 @@ function start_gpi ()
 	    return 0
 	fi
     else
-	log "      * deactivated" >&2
+	log "* gpi (deactivated)" >&2
     fi
 }
 
 function stop_gpi ()
 {
-    log "  * gpi"
+    log "* gpi"
     if ! stop_proc "gpi-space" "gpi-space" ; then
 	log "E: could not stop gpi"
 	return 1
@@ -1295,9 +1295,10 @@ function start ()
     local p
     local rc=0
     for p in $parts ; do
-	status $p >/dev/null 2>&1
+	status_$p >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
-	    log "W: $p still running!"
+	    log "* $p"
+	    continue
 	fi
 
 	if ! start_$p $@ ; then
@@ -1369,7 +1370,15 @@ function status_kvs ()
 
 function status_gpi ()
 {
-    program_status "gpi-space"
+    local ec=0
+    local gpi_enabled=$(get "gpi.enabled" "true")
+    if [ x"$gpi_enabled" == x"true" ] ; then
+	program_status "gpi-space"
+	ec=$?
+    else
+	ec=255
+    fi
+    return $ec
 }
 
 function status ()
@@ -1393,7 +1402,7 @@ function status ()
 	    ec=$?
 	    if [ $ec -eq 0 ] ; then
 		log "$p is alive"
-	    elif [ $ec -eq 2 ] ; then
+	    elif [ $ec -eq 255 ] ; then
 		log "$p is deactivated"
 	    else
 		if [ -z "$err" ] ; then
