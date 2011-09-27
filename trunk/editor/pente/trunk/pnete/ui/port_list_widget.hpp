@@ -7,6 +7,9 @@
 #include <QTableWidget>
 
 #include <pnete/data/proxy.hpp>
+#include <pnete/ui/ComboItemDelegate.hpp>
+#include <QStandardItem>
+#include <QStandardItemModel>
 
 class QWidget;
 
@@ -20,17 +23,21 @@ namespace fhg
       //! \todo implies to use QTableView
       //! \todo make this nicer
       //! \todo add edit facilities
-      class port_list_widget : public QTableWidget
+      class port_list_widget : public QTableView
       {
         Q_OBJECT;
 
       public:
         explicit port_list_widget ( data::proxy::xml_type::ports_type& ports
+        		  	  	  	  	  , const QStringList& list_types
                                   , QWidget* parent = NULL
                                   );
 
       private:
         data::proxy::xml_type::ports_type& _ports;
+
+        QStandardItemModel model;
+        ComboBoxItemDelegate* delegate;
       };
     }
   }

@@ -12,36 +12,51 @@ namespace fhg
   {
     namespace ui
     {
-      port_list_widget::port_list_widget
-        ( data::proxy::xml_type::ports_type& ports
-        , QWidget* parent
+      port_list_widget::port_list_widget( data::proxy::xml_type::ports_type& ports
+    		  	  	  	  	  	  	  	  , const QStringList& list_types
+    		  	  	  	  	  	  	  	  , QWidget* parent
         )
-          : QTableWidget (parent)
+          : QTableView (parent)
+      	  , model(0,2)
           , _ports (ports)
       {
-        setColumnCount (2);
-        setRowCount (_ports.size());
+        model.setColumnCount(2);
 
         QStringList headers;
 
-        headers.push_back ("name");
-        headers.push_back ("type");
+        headers.push_back ("Name");
+        headers.push_back ("Type");
 
-        setHorizontalHeaderLabels (headers);
-        verticalHeader()->hide();
+        model.setHorizontalHeaderLabels (headers);
 
-        int row (0);
+    	setModel(&model);
 
-        typedef data::proxy::xml_type::ports_type::iterator iterator;
+		ComboBoxItemDelegate* delegate = new ComboBoxItemDelegate(list_types, this);
+		setItemDelegateForColumn(1, delegate);
 
+		verticalHeader()->hide();
+
+		resizeRowsToContents(); // Adjust the row height.
+		resizeColumnsToContents(); // Adjust the column width.
+		setColumnWidth( 0, 130 );
+		setColumnWidth( 1, 140 );
+
+        QList<QStandardItem *> arrItems;
+		QStandardItem *itemName, *itemType;
+
+		typedef data::proxy::xml_type::ports_type::iterator iterator;
+	    int row (0);
         for ( iterator port (_ports.begin()), end (_ports.end())
             ; port != end
             ; ++port, ++row
             )
-          {
-            setItem (row, 0, new QTableWidgetItem (QString(port->name.c_str())));
-            setItem (row, 1, new QTableWidgetItem (QString(port->type.c_str())));
-          }
+        {
+        	itemName = new QStandardItem(QString::fromStdString(port->name));
+            itemType = new QStandardItem(QString::fromStdString(port->type));
+            arrItems<<itemName<<itemType;
+            model.appendRow(arrItems);
+            arrItems.clear();
+        }
       }
     }
   }

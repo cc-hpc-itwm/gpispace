@@ -65,7 +65,7 @@ void buildProp(T itemK, const we::type::property::path_type& path,  we::type::pr
 
 // build QTreeView from property
 template <typename E, typename T>
-void buildTreeView(E* editor, QStandardItem* item, const we::type::property::type& p )
+void buildTreeView( E* editor, QStandardItem* item, const we::type::property::type& p )
 {
 	for( we::type::property::map_type::const_iterator pos (p.get_map().begin()); pos != p.get_map().end() ; ++pos)
 		 boost::apply_visitor( T(editor, item, pos->first), pos->second);

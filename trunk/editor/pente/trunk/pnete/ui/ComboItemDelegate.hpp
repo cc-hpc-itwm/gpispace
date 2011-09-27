@@ -32,6 +32,7 @@ public:
 		QComboBox *comboBox = new QComboBox(parent);
 
 		comboBox->setInsertPolicy(QComboBox::NoInsert);
+		comboBox->setAutoCompletion(true);
 
 		// only if it is editable!
 		//comboBox->setEditable(true);

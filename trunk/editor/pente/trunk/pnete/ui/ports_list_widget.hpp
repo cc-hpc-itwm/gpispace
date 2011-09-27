@@ -28,6 +28,9 @@ namespace fhg
                                    );
 
       private:
+        QStringList list_combo_types();
+        void init_test_data(data::proxy::xml_type::ports_type&);
+
         data::proxy::xml_type::ports_type& _in;
         data::proxy::xml_type::ports_type& _out;
       };
