@@ -17,10 +17,6 @@ namespace fhg
     {
       namespace graph
       {
-        namespace GraphViz
-        {
-          class Graph;
-        }
         class item : public QObject, public QGraphicsItem
         {
           Q_OBJECT;
@@ -36,6 +32,7 @@ namespace fhg
             /* ... */
           };
 
+
           class scene* scene() const
           {
             return
@@ -43,8 +40,6 @@ namespace fhg
           }
 
           item (item* parent = NULL) : QGraphicsItem (parent) { }
-
-          //virtual void add_to_graphviz_graph (GraphViz::Graph & graph) const { }
         };
       }
     }
