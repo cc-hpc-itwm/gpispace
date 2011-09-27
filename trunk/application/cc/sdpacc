@@ -31,9 +31,13 @@ fi
 if [ -n "$SDPACC_CXX" ] ; then
     cxx_compiler="$SDPACC_CXX"
 fi
+if [ -z "$SDPA_HOME" ] ; then
+    echo "SDPA must be be loaded and started! (SDPA_HOME is empty)" >&2
+    exit 1
+fi
 
 args="$@"
-pnet="/p/herc/itwm/hpc/ap/git/SDPA/trunk/application/cc/compile.pnet"
+pnet="$SDPA_HOME/share/sdpa/cc/compile.pnet"
 
 pnet_tmp=$(mktemp)
 jobid=
