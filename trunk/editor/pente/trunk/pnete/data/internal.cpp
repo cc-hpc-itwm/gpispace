@@ -45,7 +45,7 @@ namespace fhg
       {
         return _state;
       }
-      change_manager& internal::change_manager ()
+      change_manager_t& internal::change_manager ()
       {
         return _change_manager;
       }

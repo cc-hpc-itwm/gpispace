@@ -15,12 +15,12 @@ namespace fhg
     {
       class internal;
 
-      class change_manager : public QObject
+      class change_manager_t : public QObject
       {
         Q_OBJECT;
 
       public:
-        change_manager (internal &);
+        change_manager_t (internal &);
 
         void set_transition_name
         ( ::xml::parse::type::transition_type&

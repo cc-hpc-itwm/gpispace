@@ -9,11 +9,11 @@ namespace fhg
   {
     namespace data
     {
-      change_manager::change_manager (internal & i)
+      change_manager_t::change_manager_t (internal & i)
         : _internal (i)
       {}
 
-      void change_manager::set_function_name
+      void change_manager_t::set_function_name
       ( ::xml::parse::type::function_type& fun
       , const QString& name
       )

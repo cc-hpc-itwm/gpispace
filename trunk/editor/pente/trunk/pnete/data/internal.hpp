@@ -23,7 +23,7 @@ namespace fhg
       private:
         ::xml::parse::state::type _state;
         ::xml::parse::type::function_type _function;
-        change_manager _change_manager;
+        change_manager_t _change_manager;
 
       public:
         typedef boost::shared_ptr<internal> ptr;
@@ -35,7 +35,7 @@ namespace fhg
         const ::xml::parse::type::function_type & function () const;
         const ::xml::parse::state::key_values_t & context () const;
         const ::xml::parse::state::type & state () const;
-        change_manager& change_manager();
+        change_manager_t& change_manager();
       };
     }
   }
