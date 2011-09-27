@@ -8,12 +8,7 @@ set (srcs
 add_executable (gpi-space ${srcs})
 target_link_libraries (gpi-space
   gpi-space-gpiapi
-  gpi-space-pc-container
-  gpi-space-static
-  ${MMGR_LIBRARY}
-  ${FhgCom_LIBRARY}
-  ${FhgLog_LIBRARY}
-  ${Boost_LIBRARIES}
+  gpi-space-pc-server
   ${CMAKE_THREAD_LIBS_INIT}
 )
 

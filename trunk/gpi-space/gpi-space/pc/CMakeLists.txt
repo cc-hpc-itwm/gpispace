@@ -17,6 +17,10 @@ find_library (LIBRT_LIBRARY
   PATH_SUFFIXES lib
   )
 merge_static_libs(gpi-space-pc gpi-space-pc "gpi-space-pc-client-static;gpi-space-pc-segment;gpi-space-static;${FhgLog_LIBRARY};${Boost_LIBRARIES};${LIBRT_LIBRARY}")
+merge_static_libs(gpi-space-pc-server
+  gpi-space-pc-server
+  "gpi-space-pc-container;gpi-space-pc-global;gpi-space-pc-memory;gpi-space-pc-segment;gpi-space-static;${MMGR_LIBRARY};${FhgCom_LIBRARY};${FhgLog_LIBRARY};${Boost_LIBRARIES};${LIBRT_LIBRARY}"
+)
 
 install(TARGETS gpi-space-pc
   ARCHIVE
