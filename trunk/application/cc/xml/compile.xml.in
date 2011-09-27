@@ -60,13 +60,14 @@
                              , process::file_const_buffer_list ()
                              , process::file_buffer_list ()
                              );
-          exit_code = 0;
         }
         catch (std::exception const &ex)
         {
           LOG(ERROR, "compilation failed: " << ex.what());
-	  exit_code = 1;
+	  exec_result.exit_code = -EFAULT;
         }
+
+	exit_code = exec_result.exit_code;
 
         std_out_buf[sizeof(std_out_buf)-1] = '\0';
         std_out = std_out_buf;
