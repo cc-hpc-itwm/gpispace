@@ -33,14 +33,14 @@ if(ENABLE_REAL_GPI)
   # check if we can actually use the GPI version in ext
   set(CMAKE_REQUIRED_INCLUDES ${GPI_INCLUDE_DIR})
   set(CMAKE_REQUIRED_LIBRARIES ${GPI_LIBRARIES})
-  include(CheckCXXSourceRuns)
-  CHECK_CXX_SOURCE_RUNS(
+  include(CheckCSourceRuns)
+  CHECK_C_SOURCE_RUNS(
 "
-#include <iostream>
+#include <stdio.h>
 #include <GPI/GPI.h>
 int main ()
 {
-   std::cout << getVersionGPI() << std::endl;
+   printf(\"%f\", getVersionGPI());
    return 0;
 }"
   REAL_GPI_CHECK)
