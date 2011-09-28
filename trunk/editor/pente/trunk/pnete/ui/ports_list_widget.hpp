@@ -24,15 +24,15 @@ namespace fhg
       public:
         explicit ports_list_widget ( data::proxy::xml_type::ports_type& in
                                    , data::proxy::xml_type::ports_type& out
+                                   , const QStringList& types
                                    , QWidget* parent = NULL
                                    );
 
       private:
-        QStringList list_combo_types();
-        void init_test_data(data::proxy::xml_type::ports_type&);
-
         data::proxy::xml_type::ports_type& _in;
         data::proxy::xml_type::ports_type& _out;
+
+        const QStringList& _types;
       };
     }
   }

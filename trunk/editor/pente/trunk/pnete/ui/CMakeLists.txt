@@ -16,6 +16,7 @@ set(ui_SRCS
   expression_widget.cpp
   port_list_widget.cpp
   ports_list_widget.cpp
+  ComboItemDelegate.cpp
 )
 
 set(ui_HDRS

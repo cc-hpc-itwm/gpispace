@@ -21,12 +21,14 @@ namespace fhg
       expression_widget::expression_widget
         ( data::proxy::type& proxy
         , data::proxy::expression_proxy::data_type& expression
+        , const QStringList& types
         , QWidget* parent
         )
           : base_editor_widget (proxy, parent)
           , _expression (expression)
           , _ports_list (new ports_list_widget ( expression.in()
                                                , expression.out()
+                                               , types
                                                )
                         )
       {

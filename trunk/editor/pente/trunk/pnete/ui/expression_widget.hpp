@@ -26,6 +26,7 @@ namespace fhg
       public:
         expression_widget ( data::proxy::type& proxy
                           , data::proxy::expression_proxy::data_type& expression
+                          , const QStringList& types
                           , QWidget* parent = NULL
                           );
 

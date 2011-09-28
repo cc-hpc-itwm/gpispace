@@ -80,7 +80,8 @@ namespace fhg
                          )
         : document_widget (proxy)
       {
-        setWidget (new net_widget (proxy, net, scene, this));
+        //! \todo submit known types
+        setWidget (new net_widget (proxy, net, scene, QStringList(), this));
         set_title (data::proxy::function (proxy).name);
       }
       QString net_view::fallback_title () const
@@ -94,7 +95,13 @@ namespace fhg
         )
           : document_widget (proxy)
       {
-        setWidget (new expression_widget (proxy, expression, this));
+        //! \todo submit known types
+        setWidget (new expression_widget ( proxy
+                                         , expression
+                                         , QStringList()
+                                         , this
+                                         )
+                  );
         set_title (data::proxy::function (proxy).name);
       }
       QString expression_view::fallback_title () const
@@ -108,7 +115,8 @@ namespace fhg
         )
           : document_widget (proxy)
       {
-        setWidget (new module_call_widget (proxy, mod, this));
+        //! \todo submit known types
+        setWidget (new module_call_widget (proxy, mod, QStringList(), this));
         set_title (data::proxy::function (proxy).name);
       }
       QString mod_view::fallback_title () const

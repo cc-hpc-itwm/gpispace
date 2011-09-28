@@ -18,6 +18,7 @@ namespace fhg
         ( data::proxy::type& proxy
         , data::proxy::net_proxy::data_type& net
         , graph::scene* scene
+        , const QStringList& types
         , QWidget* parent
         )
           : base_editor_widget (proxy, parent)

@@ -20,11 +20,12 @@ namespace fhg
       module_call_widget::module_call_widget
         ( data::proxy::type& proxy
         , data::proxy::mod_proxy::data_type& mod
+        , const QStringList& types
         , QWidget* parent
         )
           : base_editor_widget (proxy, parent)
           , _mod (mod)
-          , _ports_list (new ports_list_widget (mod.in(), mod.out()))
+          , _ports_list (new ports_list_widget (mod.in(), mod.out(), types))
       {
         QGroupBox* group_box (new QGroupBox (tr ("module call")));
         QHBoxLayout* group_box_layout (new QHBoxLayout());

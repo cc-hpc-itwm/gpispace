@@ -144,7 +144,10 @@ public:
 		// connect custom context menu
 		connect(m_treeView, SIGNAL(customContextMenuRequested( const QPoint& )), this, SLOT(showContextMenu(const QPoint &)));
 
-		delegate = new ComboBoxItemDelegate(qarrPredefTypes,this);
+		delegate =
+                  new fhg::pnete::ui::ComboBoxItemDelegate ( qarrPredefTypes
+                                                           , this
+                                                           );
 		m_treeView->setItemDelegateForColumn(1, delegate);
 	}
 
@@ -337,7 +340,7 @@ private:
 	QStandardItemModel model;
 	QWidget *m_widgetPropEdit;
 
-	ComboBoxItemDelegate* delegate;
+  fhg::pnete::ui::ComboBoxItemDelegate* delegate;
 };
 }
 

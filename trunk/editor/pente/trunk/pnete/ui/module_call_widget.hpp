@@ -26,6 +26,7 @@ namespace fhg
       public:
         module_call_widget ( data::proxy::type& proxy
                            , data::proxy::mod_proxy::data_type& mod
+                           , const QStringList& types
                            , QWidget* parent = NULL
                            );
 
