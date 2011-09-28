@@ -51,11 +51,7 @@ namespace fhg
           function_type& function() { return _function; }
           const function_type& function() const { return _function; }
           display_type* display() { return _display; }
-
-          internal::ptr internal() const
-          {
-            return _internal;
-          }
+          internal::ptr internal() const { return _internal; }
 
         private:
           data_type _data;
