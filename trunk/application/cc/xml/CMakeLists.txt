@@ -1,4 +1,4 @@
-configure_file(compile.xml.in compile.xml @ONLY)
+configure_file(compile.xml.in ${CMAKE_CURRENT_BINARY_DIR}/compile.xml @ONLY)
 
 # TODO:
 #    find pnetc (installation or within build-tree)
