@@ -1,4 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
+// alexander.petry@itwm.fraunhofer.de
+
+#include <sysexits.h>
 
 #include <we/we.hpp>
 
@@ -6,6 +9,7 @@
 #include <fstream>
 
 #include <boost/program_options.hpp>
+#include <boost/foreach.hpp>
 
 // ************************************************************************* //
 
@@ -22,17 +26,98 @@ static inline void dump (std::ostream & os, const T & v)
 
 namespace po = boost::program_options;
 
+typedef we::activity_t::transition_type::port_id_t port_id_t;
+
+namespace detail
+{
+  template <typename In, typename Out, typename Pred>
+  Out copy_if ( In first
+              , In last
+              , Out res
+              , Pred pred
+              )
+  {
+    while (first != last)
+    {
+      if (pred(*first))
+        *res++ = *first;
+      ++first;
+    }
+    return res;
+  }
+}
+
+struct match_every_port
+{
+  bool operator() (const we::activity_t::token_on_place_t)
+  {
+    return true;
+  }
+};
+
+struct match_equal_port
+{
+  match_equal_port(port_id_t p)
+    : port(p)
+  {}
+
+  bool operator() (const we::activity_t::token_on_place_t & subject)
+  {
+    return subject.second == port;
+  }
+  const port_id_t port;
+};
+
+struct output_token
+{
+  output_token (std::ostream &os, std::string const & d="")
+    : out (os)
+    , delim(d)
+  {}
+  output_token const & operator *() const { return *this; }
+  output_token const & operator++(int) const { return *this; }
+  output_token const & operator=(const we::activity_t::token_on_place_t & subject) const
+  {
+    out << subject.first << delim;
+    return *this;
+  }
+
+  std::ostream & out;
+  std::string delim;
+};
+
+struct output_port_and_token
+{
+  output_port_and_token (std::ostream &os, std::string const & d="")
+    : out (os)
+    , delim(d)
+  {}
+  output_port_and_token const & operator *() const { return *this; }
+  output_port_and_token const & operator++(int) const { return *this; }
+  output_port_and_token const & operator=(const we::activity_t::token_on_place_t & subject) const
+  {
+    out << "on " << subject.second << ": " << subject.first << delim;
+    return *this;
+  }
+
+  std::ostream & out;
+  std::string delim;
+};
+
 int
 main (int argc, char ** argv)
 {
   std::string input ("-");
   std::string output ("-");
-  std::string key ("output");
+  std::vector<std::string> ports;
+  std::string type("output");
 
   po::options_description desc("options");
 
   desc.add_options()
     ( "help,h", "this message")
+    ( "port,p", po::value<std::vector<std::string> >(&ports), "port to retrieve tokens from" )
+    ( "type,t", po::value<std::string>(&type)->default_value(type), "input/output port")
     ( "input,i"
     , po::value<std::string>(&input)->default_value(input)
     , "input file name, - for stdin"
@@ -41,27 +126,32 @@ main (int argc, char ** argv)
     , po::value<std::string>(&output)->default_value(input)
     , "output file name, - for stdout"
     )
-    ( "key,k"
-    , po::value<std::string>(&key)->default_value(key)
-    , "key to extract: output, input, pending"
-    )
     ;
 
   po::positional_options_description p;
-  p.add("key", -1);
+  p.add("port", -1);
 
   po::variables_map vm;
-  po::store( po::command_line_parser(argc, argv)
-           . options(desc).positional(p).run()
-           , vm
-           );
-  po::notify (vm);
+  try
+  {
+    po::store( po::command_line_parser(argc, argv)
+             . options(desc).positional(p).run()
+             , vm
+             );
+    po::notify (vm);
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "invalid argument: " << ex.what() << std::endl;
+    std::cerr << "use " << argv[0] << " -h for help" << std::endl;
+    return EX_USAGE;
+  }
 
   if (vm.count("help"))
     {
       std::cout << desc << std::endl;
 
-      return EXIT_SUCCESS;
+      return EX_OK;
     }
 
   if (input == "-")
@@ -74,6 +164,12 @@ main (int argc, char ** argv)
       output = "/dev/stdout";
     }
 
+  if (type != "input" && type != "output")
+  {
+    std::cerr << "invalid type specified: " << type << std::endl;
+    return EX_USAGE;
+  }
+
   we::activity_t act;
 
   {
@@ -81,11 +177,20 @@ main (int argc, char ** argv)
 
     if (!stream)
       {
-        throw std::runtime_error
-          ("could not open file " + input + " for reading");
+        std::cerr << "could not open file " + input + " for reading" << std::endl;
+        return EX_NOINPUT;
       }
 
-    we::util::text_codec::decode (stream, act);
+    try
+    {
+      we::util::text_codec::decode (stream, act);
+      act.collect_output();
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "could not parse input: " << ex.what() << std::endl;
+      return EX_DATAERR;
+    }
   }
 
   {
@@ -93,25 +198,85 @@ main (int argc, char ** argv)
 
     if (!stream)
       {
-        throw std::runtime_error
-          ("could not open file " + input + " for writing");
+        std::cerr << "could not open file " + output + " for writing";
+        return EX_CANTCREAT;
       }
 
-    switch (tolower (key[0]))
+    if (type == "input")
+    {
+      if (ports.size())
       {
-      case 'o': stream << "output:" << std::endl;
-        dump (stream, act.output());
-        break;
-      case 'i': stream << "input:" << std::endl;
-        dump (stream, act.input());
-        break;
-      case 'p': stream << "pending input:" << std::endl;
-        dump (stream, act.pending_input());
-        break;
-      default:
-        throw std::runtime_error ("unknown key: " + key);
+        BOOST_FOREACH(std::string const &port, ports)
+        {
+          port_id_t port_id (0);
+          try
+          {
+            port_id = act.transition().input_port_by_name(port);
+          }
+          catch (std::exception const &ex)
+          {
+            std::cerr << "no such input port: " << port << std::endl;
+            return EX_USAGE;
+          }
+          detail::copy_if( act.input().begin()
+                         , act.input().end()
+                         , output_token(stream, "\n")
+                         , match_equal_port(port_id)
+                         );
+          detail::copy_if( act.pending_input().begin()
+                         , act.pending_input().end()
+                         , output_token(stream, "\n")
+                         , match_equal_port(port_id)
+                         );
+        }
       }
+      else
+      {
+        detail::copy_if( act.input().begin()
+                       , act.input().end()
+                       , output_port_and_token(stream, "\n")
+                       , match_every_port()
+                       );
+        detail::copy_if( act.pending_input().begin()
+                       , act.pending_input().end()
+                       , output_port_and_token(stream, "\n")
+                       , match_every_port()
+                       );
+      }
+    }
+    else
+    {
+      if (ports.size())
+      {
+        BOOST_FOREACH(std::string const &port, ports)
+        {
+          port_id_t port_id (0);
+          try
+          {
+            port_id = act.transition().output_port_by_name(port);
+          }
+          catch (std::exception const &ex)
+          {
+            std::cerr << "no such output port: " << port << std::endl;
+            return EX_USAGE;
+          }
+          detail::copy_if( act.output().begin()
+                         , act.output().end()
+                         , output_token(stream, "\n")
+                         , match_equal_port(port_id)
+                         );
+        }
+      }
+      else
+      {
+        detail::copy_if( act.output().begin()
+                       , act.output().end()
+                       , output_port_and_token(stream, "\n")
+                       , match_every_port()
+                       );
+      }
+    }
   }
 
-  return EXIT_SUCCESS;
+  return EX_OK;
 }
