@@ -2,9 +2,13 @@
 
 #include <pnete/ui/port_list_widget.hpp>
 
+#include <QStandardItem>
+#include <QStandardItemModel>
+#include <QList>
 #include <QStringList>
-#include <QTableWidgetItem>
 #include <QHeaderView>
+
+#include <pnete/ui/ComboItemDelegate.hpp>
 
 namespace fhg
 {
@@ -12,51 +16,43 @@ namespace fhg
   {
     namespace ui
     {
-      port_list_widget::port_list_widget( data::proxy::xml_type::ports_type& ports
-    		  	  	  	  	  	  	  	  , const QStringList& list_types
-    		  	  	  	  	  	  	  	  , QWidget* parent
-        )
-          : QTableView (parent)
-      	  , model(0,2)
-          , _ports (ports)
+      port_list_widget::port_list_widget ( data::proxy::xml_type::ports_type& ps
+                                         , const QStringList& list_types
+                                         , QWidget* parent
+                                         )
+        : QTableView (parent)
+        , _ports (ps)
       {
-        model.setColumnCount(2);
+        QStandardItemModel* model (new QStandardItemModel (0, 2, this));
 
         QStringList headers;
-
         headers.push_back ("Name");
         headers.push_back ("Type");
+        model->setHorizontalHeaderLabels (headers);
 
-        model.setHorizontalHeaderLabels (headers);
+        setItemDelegateForColumn
+          (1, (new ComboBoxItemDelegate (list_types, this)));
 
-    	setModel(&model);
+        verticalHeader()->hide();
 
-		ComboBoxItemDelegate* delegate = new ComboBoxItemDelegate(list_types, this);
-		setItemDelegateForColumn(1, delegate);
+        QList<QStandardItem *> row_items;
 
-		verticalHeader()->hide();
-
-		resizeRowsToContents(); // Adjust the row height.
-		resizeColumnsToContents(); // Adjust the column width.
-		setColumnWidth( 0, 130 );
-		setColumnWidth( 1, 140 );
-
-        QList<QStandardItem *> arrItems;
-		QStandardItem *itemName, *itemType;
-
-		typedef data::proxy::xml_type::ports_type::iterator iterator;
-	    int row (0);
+        typedef data::proxy::xml_type::ports_type::iterator iterator;
         for ( iterator port (_ports.begin()), end (_ports.end())
             ; port != end
-            ; ++port, ++row
+            ; ++port
             )
         {
-        	itemName = new QStandardItem(QString::fromStdString(port->name));
-            itemType = new QStandardItem(QString::fromStdString(port->type));
-            arrItems<<itemName<<itemType;
-            model.appendRow(arrItems);
-            arrItems.clear();
+          row_items << new QStandardItem (QString::fromStdString (port->name))
+                    << new QStandardItem (QString::fromStdString (port->type));
+          model->appendRow (row_items);
+          row_items.clear();
         }
+
+        resizeRowsToContents();
+        resizeColumnsToContents();
+
+    	setModel (model);
       }
     }
   }

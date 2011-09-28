@@ -4,14 +4,12 @@
 #define _FHG_PNETE_UI_PORT_LIST_WIDGET_HPP 1
 
 #include <QObject>
-#include <QTableWidget>
+#include <QTableView>
 
 #include <pnete/data/proxy.hpp>
-#include <pnete/ui/ComboItemDelegate.hpp>
-#include <QStandardItem>
-#include <QStandardItemModel>
 
 class QWidget;
+class QStringList;
 
 namespace fhg
 {
@@ -20,7 +18,6 @@ namespace fhg
     namespace ui
     {
       //! \todo use tiberiu's type selections combobox
-      //! \todo implies to use QTableView
       //! \todo make this nicer
       //! \todo add edit facilities
       class port_list_widget : public QTableView
@@ -29,15 +26,12 @@ namespace fhg
 
       public:
         explicit port_list_widget ( data::proxy::xml_type::ports_type& ports
-        		  	  	  	  	  , const QStringList& list_types
+                                  , const QStringList& list_types
                                   , QWidget* parent = NULL
                                   );
 
       private:
         data::proxy::xml_type::ports_type& _ports;
-
-        QStandardItemModel model;
-        ComboBoxItemDelegate* delegate;
       };
     }
   }
