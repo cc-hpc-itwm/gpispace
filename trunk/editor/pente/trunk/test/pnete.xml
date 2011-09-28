@@ -1,7 +1,11 @@
 <defun name="pnete">
+  <in name="x" type="string" place="x"/>
   <in name="in" type="long" place="in"/>
   <out name="done" type="control" place="done"/>
+  <out name="x" type="string" place="x"/>
   <net>
+    <place name="x" type="string"/>
+
     <place name="in" type="long">
       <properties name="fhg">
         <properties name="pnete">

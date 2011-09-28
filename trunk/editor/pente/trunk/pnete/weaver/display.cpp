@@ -118,7 +118,7 @@ namespace fhg
 
       WSIG(transition, transition::name, std::string, name)
       {
-        _transition->name (QString(name.c_str()));
+        _transition->name (QString::fromStdString (name));
       }
       WSIG( transition
           , transition::function
@@ -367,12 +367,12 @@ namespace fhg
 
       WSIG(port, port::name, std::string, name)
       {
-        _port->name (QString (name.c_str()));
+        _port->name (QString::fromStdString (name));
         _port_item_by_name[name] = _port;
       }
       WSIG(port, port::type, std::string, type)
       {
-        _port->we_type (QString (type.c_str()));
+        _port->we_type (QString::fromStdString (type));
       }
 
 
@@ -385,12 +385,12 @@ namespace fhg
 
       WSIG(place, place::name, std::string, name)
       {
-        _place->name (QString (name.c_str()));
+        _place->name (QString::fromStdString (name));
         _place_item_by_name[name] = _place;
       }
       WSIG(place, place::type, std::string, type)
       {
-        _place->we_type (QString (type.c_str()));
+        _place->we_type (QString::fromStdString (type));
       }
       WSIG(place, place::properties, WETYPE(property::type), props)
       {
@@ -408,19 +408,22 @@ namespace fhg
           , _place_item_by_name (place_item_by_name)
           , _name ()
           , _direction (direction)
-          , _port_item (new ui::graph::port (_direction, NULL))
+          , _port_item ()
+      {}
+
+      WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
+        _port_item = new ui::graph::port (_direction, NULL);
         _scene->addItem (_port_item);
       }
-
       WSIG(port_toplevel, port::name, std::string, name)
       {
         _name = name;
-        _port_item->name (QString (name.c_str()));
+        _port_item->name (QString::fromStdString (name));
       }
       WSIG(port_toplevel, port::type, std::string, type)
       {
-        _port_item->we_type (QString (type.c_str()));
+        _port_item->we_type (QString::fromStdString (type));
       }
       WSIG(port_toplevel, port::place, MAYBE(std::string), place)
       {

@@ -229,6 +229,7 @@ namespace fhg
         ui::graph::port* _port_item;
       };
 
+      WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);
       WSIG(port_toplevel, port::name, std::string, name);
       WSIG(port_toplevel, port::type, std::string, type);
       WSIG(port_toplevel, port::place, MAYBE(std::string), place);
