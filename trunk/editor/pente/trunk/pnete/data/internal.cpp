@@ -16,36 +16,36 @@ namespace fhg
   {
     namespace data
     {
-      internal::internal ()
+      internal_type::internal_type ()
         : _state ()
         , _function ()
         , _change_manager (*this)
       {}
 
-      internal::internal (const QString& filename)
+      internal_type::internal_type (const QString& filename)
         : _state ()
         , _function (::xml::parse::just_parse (_state, filename.toStdString()))
         , _change_manager (*this)
       {}
 
-      ::xml::parse::type::function_type & internal::function ()
+      ::xml::parse::type::function_type & internal_type::function ()
       {
         return const_cast< ::xml::parse::type::function_type &> (_function);
       }
 
-      const ::xml::parse::type::function_type & internal::function () const
+      const ::xml::parse::type::function_type & internal_type::function () const
       {
         return _function;
       }
-      const ::xml::parse::state::key_values_t & internal::context () const
+      const ::xml::parse::state::key_values_t & internal_type::context () const
       {
         return _state.key_values();
       }
-      const ::xml::parse::state::type & internal::state () const
+      const ::xml::parse::state::type & internal_type::state () const
       {
         return _state;
       }
-      change_manager_t& internal::change_manager ()
+      change_manager_t& internal_type::change_manager ()
       {
         return _change_manager;
       }

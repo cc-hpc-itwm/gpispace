@@ -24,7 +24,7 @@ namespace fhg
 
         typedef QString id_type;
         typedef boost::bimaps::set_of<id_type> ids_type;
-        typedef boost::bimaps::set_of<internal::ptr> datas_type;
+        typedef boost::bimaps::set_of<internal_type::ptr> datas_type;
         typedef boost::bimap<ids_type, datas_type> bimap_type;
 
         bimap_type _files;
@@ -34,9 +34,9 @@ namespace fhg
       public:
         static manager& instance();
 
-        internal::ptr load (const QString& filename);
-        internal::ptr create();
-        void save ( const internal::ptr & data
+        internal_type::ptr load (const QString& filename);
+        internal_type::ptr create();
+        void save ( const internal_type::ptr & data
                   , const boost::optional<const QString&> filename = boost::none
                   ) const;
       };

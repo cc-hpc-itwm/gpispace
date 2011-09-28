@@ -13,14 +13,14 @@ namespace fhg
   {
     namespace data
     {
-      class internal;
+      class internal_type;
 
       class change_manager_t : public QObject
       {
         Q_OBJECT;
 
       public:
-        change_manager_t (internal &);
+        change_manager_t (internal_type &);
 
         void set_transition_name
         ( ::xml::parse::type::transition_type&
@@ -42,7 +42,7 @@ namespace fhg
         );
 
       private:
-        internal & _internal;
+        internal_type & _internal;
       };
     }
   }

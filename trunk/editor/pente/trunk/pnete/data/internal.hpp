@@ -18,7 +18,7 @@ namespace fhg
   {
     namespace data
     {
-      class internal
+      class internal_type
       {
       private:
         ::xml::parse::state::type _state;
@@ -26,10 +26,10 @@ namespace fhg
         change_manager_t _change_manager;
 
       public:
-        typedef boost::shared_ptr<internal> ptr;
+        typedef boost::shared_ptr<internal_type> ptr;
 
-        explicit internal ();
-        explicit internal (const QString& filename);
+        explicit internal_type ();
+        explicit internal_type (const QString& filename);
 
         ::xml::parse::type::function_type & function ();
         const ::xml::parse::type::function_type & function () const;

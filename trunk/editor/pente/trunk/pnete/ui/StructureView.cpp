@@ -37,7 +37,7 @@ namespace fhg
         header()->hide();
       }
 
-      void StructureView::append (data::internal::ptr data)
+      void StructureView::append (data::internal_type::ptr data)
       {
         _datas.push_back (data);
 

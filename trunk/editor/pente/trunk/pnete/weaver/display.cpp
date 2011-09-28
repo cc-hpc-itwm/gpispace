@@ -17,7 +17,7 @@ namespace fhg
     namespace weaver
     {
       function::function ( XMLTYPE(function_type) & fun
-                         , data::internal::ptr internal
+                         , data::internal_type::ptr internal
                          )
         : _proxy (NULL)
         , _fun (fun)
@@ -95,7 +95,7 @@ namespace fhg
       }
 
 
-      transition::transition ( data::internal::ptr internal
+      transition::transition ( data::internal_type::ptr internal
                              , ui::graph::scene* scene
                              , ui::graph::transition* transition
                              , XMLTYPE(net_type)& net
@@ -291,7 +291,7 @@ namespace fhg
           }
       }
 
-      net::net ( data::internal::ptr internal
+      net::net ( data::internal_type::ptr internal
                , ui::graph::scene* scene
                , XMLTYPE(net_type)& net
                , XMLTYPE(ports_type)& in

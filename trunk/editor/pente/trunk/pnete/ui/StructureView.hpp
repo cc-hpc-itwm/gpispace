@@ -39,14 +39,14 @@ namespace fhg
         QStandardItemModel* _model;
         QStandardItem* _root;
 
-        typedef std::list<data::internal::ptr> datas_type;
+        typedef std::list<data::internal_type::ptr> datas_type;
 
         datas_type _datas;
 
       public:
         StructureView (QWidget* parent = 0);
 
-        void append (data::internal::ptr data);
+        void append (data::internal_type::ptr data);
         void clear();
       };
     }
