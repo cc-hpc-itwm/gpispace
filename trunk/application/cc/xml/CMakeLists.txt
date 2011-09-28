@@ -5,8 +5,13 @@ configure_file(compile.xml.in compile.xml @ONLY)
 #        see: target_property_path
 #    write macro to generate the code + building it
 #    let pnetc generate cmake files...
+get_target_property(PNETC_LOCATION pnetc LOCATION)
+if (PNETC_LOCATION)
+else()
+  set(PNETC_LOCATION pnetc)
+endif()
 add_custom_target(gen-sdpacc ALL
-  COMMAND pnetc ${CMAKE_CURRENT_BINARY_DIR}/compile.xml -g ${CMAKE_CURRENT_BINARY_DIR}/gen -o ${CMAKE_CURRENT_BINARY_DIR}/compile.pnet
+  COMMAND ${PNETC_LOCATION} ${CMAKE_CURRENT_BINARY_DIR}/compile.xml -g ${CMAKE_CURRENT_BINARY_DIR}/gen -o ${CMAKE_CURRENT_BINARY_DIR}/compile.pnet
   DEPENDS pnetc
   COMMENT "generating sdpacc module"
   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/compile.xml
