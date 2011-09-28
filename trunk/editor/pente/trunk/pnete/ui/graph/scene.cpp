@@ -14,14 +14,14 @@
 
 #include <pnete/util.hpp>
 
+#include <util/graphviz.hpp>
+
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 #include <QRectF>
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
-
-#include <gvc.h>
 
 #include <stack>
 #include <stdexcept>
@@ -73,7 +73,14 @@ namespace fhg
                   , SLOT (slot_add_struct())
                   );
 
+          QAction* auto_layout_action (new QAction (tr ("auto_layout"), this));
+          connect ( auto_layout_action
+                  , SIGNAL (triggered())
+                  , SLOT (auto_layout())
+                  );
+
           _menu_context.addMenu (menu_new);
+          _menu_context.addAction (auto_layout_action);
         }
 
         void scene::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
@@ -247,86 +254,53 @@ namespace fhg
           QGraphicsScene::keyPressEvent (event);
         }
 
-        namespace GraphViz
-        {
-          class Graph
-          {
-          private:
-            Agraph_t* _internal;
-            std::vector<Agnode_t*> _nodes;
-            std::vector<Agedge_t*> _edges;
-          public:
-            typedef std::vector<Agnode_t*>::size_type node_type;
-            typedef std::vector<Agedge_t*>::size_type edge_type;
-
-            Graph()
-              : _internal (agopen (const_cast<char*> ("___G"), AGDIGRAPH))
-              {
-              }
-
-            node_type add_node (const std::string& name)
-              {
-                _nodes.push_back (agnode (_internal, const_cast<char*> (name.c_str())));
-                return _nodes.size() - 1;
-              }
-            edge_type add_edge (node_type from, node_type to)
-              {
-                _edges.push_back (agedge (_internal, _nodes[from], _nodes[to]));
-                return _edges.size() - 1;
-              }
-
-            ~Graph()
-              {
-                agclose (_internal);
-              }
-
-            friend class Context;
-          };
-          class Context
-          {
-          private:
-            GVC_t* _internal;
-          public:
-            Context ()
-              : _internal (gvContext())
-              {
-              }
-
-            ~Context()
-              {
-                gvFreeContext (_internal);
-              }
-
-            void layout (Graph& g)
-              {
-                gvLayout (_internal, g._internal, const_cast<char*> ("dot"));
-                gvRender (_internal, g._internal, const_cast<char*> ("dot"), stderr);
-                gvRender (_internal, g._internal, const_cast<char*> ("ps"), stdout);
-                gvFreeLayout (_internal, g._internal);
-              }
-          };
-        }
-
         void scene::auto_layout()
         {
-          //! \todo Init graphviz graph and context.
-          //! \todo Iterate over all items, calling add_to_graphviz_graph on all.
-          //! \todo Tell graphviz to autolayout.
-          //! \todo Iterate over graphviz data and relayout graph.
-          //! \todo Free graphviz stuff.
+          typedef QHash<QGraphicsItem*, graphviz::node_type> nodes_type;
+          nodes_type nodes;
 
-          GraphViz::Context gv_context;
-          GraphViz::Graph g;
+          graphviz::context_type context;
+          graphviz::graph_type graph (context);
+          graph.rankdir ("LR");
 
-          GraphViz::Graph::node_type a (g.add_node ("a"));
-          GraphViz::Graph::node_type b (g.add_node ("b"));
-          GraphViz::Graph::node_type c (g.add_node ("c"));
+          const QList<QGraphicsItem*> is (items());
 
-          GraphViz::Graph::edge_type edge_ab (g.add_edge (a, b));
-          GraphViz::Graph::edge_type edge_bc (g.add_edge (b, c));
-          GraphViz::Graph::edge_type edge_ca (g.add_edge (c, a));
+          foreach (QGraphicsItem* i, is)
+          {
+            if ( ( i->type() == item::port_graph_type
+                || i->type() == item::transition_graph_type
+                || i->type() == item::place_graph_type
+                 )
+              && i->parentItem() == NULL)
+            {
+              nodes.insert (i, graph.add_node (i));
+            }
+          }
+          foreach (QGraphicsItem* i, is)
+          {
+            if (connection* c = qgraphicsitem_cast<connection*> (i))
+            {
+              QGraphicsItem* start (c->start());
+              QGraphicsItem* end (c->end());
 
-          gv_context.layout (g);
+              start = start->parentItem() ? start->parentItem() : start;
+              end = end->parentItem() ? end->parentItem() : end;
+
+              nodes_type::iterator start_node (nodes.find (start));
+              nodes_type::iterator end_node (nodes.find (end));
+              graph.add_edge (*start_node, *end_node);
+            }
+          }
+
+          graph.layout ("dot");
+
+          for ( nodes_type::const_iterator it (nodes.begin()), end (nodes.end())
+              ; it != end
+              ; ++it
+              )
+          {
+            it.key()->setPos (it.value().position());
+          }
         }
       }
     }
