@@ -131,7 +131,8 @@ namespace fhg
         XMLTYPE(net_type)& _net;
 
         item_by_name_type& _place_item_by_name;
-        item_by_name_type _port_item_by_name;
+        item_by_name_type _port_in_item_by_name;
+        item_by_name_type _port_out_item_by_name;
         data::internal::ptr _internal;
       };
 

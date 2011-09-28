@@ -106,7 +106,8 @@ namespace fhg
         , _current_port_direction ()
         , _net (net)
         , _place_item_by_name (place_item_by_name)
-        , _port_item_by_name ()
+        , _port_in_item_by_name ()
+        , _port_out_item_by_name ()
         , _internal (internal)
       {}
       XMLTYPE(function_type)&
@@ -140,7 +141,11 @@ namespace fhg
         ui::graph::port* port_item
           (new ui::graph::port (_current_port_direction, _transition));
 
-        weaver::port wp (port_item, _port_item_by_name);
+        weaver::port wp ( port_item
+                        , _current_port_direction == ui::graph::port::IN
+                        ? _port_in_item_by_name
+                        : _port_out_item_by_name
+                        );
 
         FROM(port) (&wp, port);
       }
@@ -152,7 +157,7 @@ namespace fhg
       {
         weaver::connection wc ( _scene
                               , _place_item_by_name
-                              , _port_item_by_name
+                              , _port_in_item_by_name
                               , ui::graph::port::IN
                               , true
                               );
@@ -163,7 +168,7 @@ namespace fhg
       {
         weaver::connection wc ( _scene
                               , _place_item_by_name
-                              , _port_item_by_name
+                              , _port_in_item_by_name
                               , ui::graph::port::IN
                               );
 
@@ -173,7 +178,7 @@ namespace fhg
       {
         weaver::connection wc ( _scene
                               , _place_item_by_name
-                              , _port_item_by_name
+                              , _port_out_item_by_name
                               , ui::graph::port::OUT
                               );
 
