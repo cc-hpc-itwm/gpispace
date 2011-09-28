@@ -43,11 +43,36 @@ self="$mydir/$(basename $0)"
 c_compiler=$(which -a "$c_compiler" | grep -v $mydir | head -n 1)
 cxx_compiler=$(which -a "$cxx_compiler" | grep -v $mydir | head -n 1)
 
+if [ -z "$c_compiler" ] ; then
+    echo "sdpacc: could not locate real c compiler" >&2
+    exit 2
+fi
+
+if [ -z "$cxx_compiler" ] ; then
+    echo "sdpacc: could not locate real cxx compiler" >&2
+    exit 2
+fi
+
 args="$@"
 pnet="$SDPA_HOME/share/sdpa/cc/compile.pnet"
 
 pnet_tmp=$(mktemp)
 jobid=
+
+trap 'cancel' EXIT
+
+function cancel()
+{
+    if [ -z "$jobid" ] ; then
+	return 0
+    fi
+    sdpac cancel "$jobid" &>/dev/null
+    sdpac wait "$jobid" &>/dev/null
+    ec=$?
+    sdpac delete "$jobid" &>/dev/null
+    test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
+    return $ec
+}
 
 function compile ()
 {
@@ -91,14 +116,15 @@ function execute ()
     ec=$(pnetget -i "sdpa.${jobid}.out" | grep 'on 4:' | sed -e 's/^on 4: //g')
     ec=$(echo $ec | tr -d L)
 
-    test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
-
     if [ -n "$std_out" ] ; then
 	echo -e "$std_out"
     fi
     if [ -n "$std_err" ] ; then
 	echo -e "$std_err" >&2
     fi
+
+    test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
+    unset jobid
     return $ec
 }
 
