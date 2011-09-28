@@ -36,6 +36,13 @@ if [ -z "$SDPA_HOME" ] ; then
     exit 1
 fi
 
+# try to avoid cyclic execution of $self
+mydir=$(cd $(dirname $(which $0)) && pwd)
+self="$mydir/$(basename $0)"
+
+c_compiler=$(which -a "$c_compiler" | grep -v $mydir | head -n 1)
+cxx_compiler=$(which -a "$cxx_compiler" | grep -v $mydir | head -n 1)
+
 args="$@"
 pnet="$SDPA_HOME/share/sdpa/cc/compile.pnet"
 
