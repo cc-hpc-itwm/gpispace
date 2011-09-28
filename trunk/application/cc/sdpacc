@@ -106,15 +106,9 @@ function execute ()
     sdpac results "${jobid}" &>/dev/null
     sdpac delete "${jobid}" &>/dev/null
 
-    # FIXME: pnetget should be able to use port names!
-    std_out=$(pnetget -i "sdpa.${jobid}.out" | grep 'on 5: ' | sed -e 's/^on 5: //g')
-    std_out=$(echo $std_out | sed -e 's/^\"\(.*\)/\1/')
-    std_out=$(echo $std_out | sed -e 's/\(.*\)\"$/\1/')
-    std_err=$(pnetget -i "sdpa.${jobid}.out" | grep 'on 6:' | sed -e 's/^on 6: //g')
-    std_err=$(echo -n $std_err | sed -e 's/^\"\(.*\)/\1/')
-    std_err=$(echo -n $std_err | sed -e 's/\(.*\)\"$/\1/')
-    ec=$(pnetget -i "sdpa.${jobid}.out" | grep 'on 4:' | sed -e 's/^on 4: //g')
-    ec=$(echo $ec | tr -d L)
+    std_out=$(pnetget < "sdpa.${jobid}.out" --type=output std_out | sed -e 's/^"//g' -e 's/"$//g')
+    std_err=$(pnetget < "sdpa.${jobid}.out" --type=output std_err | sed -e 's/^"//g' -e 's/"$//g')
+    ec=$(pnetget < "sdpa.${jobid}.out" --type=output exit_code | tr -d L)
 
     if [ -n "$std_out" ] ; then
 	echo -e "$std_out"
