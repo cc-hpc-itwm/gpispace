@@ -35,13 +35,18 @@ find_library (CppUnit_LIBRARY_SHARED
   PATH_SUFFIXES lib lib64
   )
 
-if (CppUnit_INCLUDE_DIR AND CppUnit_LIBRARY)
+    message (STATUS "Found CppUnit headers in ${CppUnit_INCLUDE_DIR} and libraries ${CppUnit_LIBRARY} ${CppUnit_LIBRARY_SHARED}")
+if (CppUnit_INCLUDE_DIR AND ( CppUnit_LIBRARY OR CppUnit_LIBRARY_SHARED))
+  if( NOT CppUnit_LIBRARY)
+    set(CppUnit_LIBRARY ${CppUnit_LIBRARY_SHARED})
+  endif( NOT CppUnit_LIBRARY)
+  
   set (CppUnit_FOUND TRUE)
   if (NOT CppUnit_FIND_QUIETLY)
     message (STATUS "Found CppUnit headers in ${CppUnit_INCLUDE_DIR} and libraries ${CppUnit_LIBRARY} ${CppUnit_LIBRARY_SHARED}")
   endif (NOT CppUnit_FIND_QUIETLY)
-else (CppUnit_INCLUDE_DIR AND CppUnit_LIBRARY)
+else (CppUnit_INCLUDE_DIR AND ( CppUnit_LIBRARY OR CppUnit_LIBRARY_SHARED))
   if (CppUnit_FIND_REQUIRED)
     message (FATAL_ERROR "CppUnit could not be found!")
   endif (CppUnit_FIND_REQUIRED)
-endif (CppUnit_INCLUDE_DIR AND CppUnit_LIBRARY)
+endif (CppUnit_INCLUDE_DIR AND ( CppUnit_LIBRARY OR CppUnit_LIBRARY_SHARED))
