@@ -22,6 +22,7 @@ target_link_libraries (sdpa-mon
 	${TIFF_LIBRARY}
 	${JPEG_LIBRARY}
 	${MNG_LIBRARY}
+	${LCMS_LIBRARY}
 )
 
 install(TARGETS sdpa-mon

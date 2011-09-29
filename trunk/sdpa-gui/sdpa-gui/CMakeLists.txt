@@ -52,6 +52,7 @@ target_link_libraries (sdpa-gui
 	${TIFF_LIBRARY}
 	${JPEG_LIBRARY}
 	${MNG_LIBRARY}
+	${LCMS_LIBRARY}
 )
 
 install(FILES ${sdpa-gui_HDRS}
