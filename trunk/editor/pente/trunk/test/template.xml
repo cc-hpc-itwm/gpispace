@@ -1,0 +1,28 @@
+<defun name="test_template">
+  <in name="x" type="long" place="x"/>
+  <out name="y" type="long" place="y"/>
+  <out name="z" type="long" place="z"/>
+  <net>
+    <place name="x" type="long"/>
+    <place name="y" type="long"/>
+    <place name="z" type="long"/>
+
+    <template name="dup">
+      <in name="x" type="T"/>
+      <out name="one" type="T"/>
+      <out name="two" type="T"/>
+      <expression>
+        ${one} := ${x}; ${two} := ${x}
+      </expression>
+    </template>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <transition name="dup_long">
+      <use name="dup_long"/>
+      <connect-in port="x" place="x"/>
+      <connect-out port="one" place="y"/>
+      <connect-out port="two" place="z"/>
+    </transition>
+  </net>
+</defun>
