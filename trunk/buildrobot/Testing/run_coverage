@@ -10,7 +10,7 @@
 # only do something on dell02 (and not on dell01, 03 and 04)
 
 have_intel=no
-host=`hostname | sed -e 's%build_.*%build%'`
+host=`hostname | sed -e 's%build_.*%build%' -e 's%build-.*%build%'`
 
 check_host() {
   which rpm > /dev/null 2>&1
@@ -24,18 +24,27 @@ check_host() {
 #        export QTDIR=/opt/qt/4.4.3
         export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
         export PATH=${QTDIR}/bin:$PATH
+        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 	have_intel=yes
         echo "Is SLES"
         ;;
       openSUSE-release*)
         export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
         export PATH=${QTDIR}/bin:$PATH
+        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 	have_intel=yes
         echo "Is SUSE"
       ;;
-      centos-release*)
-        export QTDIR=/opt/qt/4.4.3
+      centos-release-5*)
+        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
         export PATH=${QTDIR}/bin:$PATH
+        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
+        echo "Is CentOS"
+      ;;
+      centos-release-6*)
+        export QTDIR=/home/projects/sdpa/external_software/qt/4.7.1/
+        export PATH=${QTDIR}/bin:$PATH
+        export PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
         echo "Is CentOS"
       ;;
     esac
