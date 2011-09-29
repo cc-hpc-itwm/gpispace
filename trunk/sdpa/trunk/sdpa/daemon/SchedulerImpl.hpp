@@ -87,6 +87,7 @@ namespace sdpa {
 
 	virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
+	virtual void execute(const sdpa::job_id_t& jobId); //just for testing
 	virtual void check_post_request();
 	virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
 	virtual void feed_workers();
