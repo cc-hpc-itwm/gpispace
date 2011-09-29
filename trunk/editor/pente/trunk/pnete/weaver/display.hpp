@@ -39,7 +39,9 @@ namespace fhg
       class function
       {
       public:
-        explicit function (data::proxy::function_type &, data::internal_type::ptr);
+        explicit function ( data::proxy::function_type &
+                          , data::internal_type::ptr
+                          );
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
@@ -60,7 +62,7 @@ namespace fhg
         } _ports;
 
         ui::graph::scene* _scene;
-        data::internal_type::ptr _internal;
+        data::internal_type::ptr _root;
       };
 
       WSIG(function, expression::open, XMLTYPE(expression_type), exp);
@@ -91,7 +93,7 @@ namespace fhg
         XMLTYPE(ports_type)& _out;
 
         item_by_name_type _place_item_by_name;
-        data::internal_type::ptr _internal;
+        data::internal_type::ptr _root;
       };
 
       WSIG( net
@@ -133,7 +135,7 @@ namespace fhg
         item_by_name_type& _place_item_by_name;
         item_by_name_type _port_in_item_by_name;
         item_by_name_type _port_out_item_by_name;
-        data::internal_type::ptr _internal;
+        data::internal_type::ptr _root;
       };
 
       WSIGE(transition, transition::close);
