@@ -222,7 +222,7 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
-  DMLOG(TRACE, "Called schedule_local ...");
+  SDPA_LOG_DEBUG("Called schedule_local ...");
 
   id_type wf_id = jobId.str();
 
@@ -237,7 +237,9 @@ void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 	  const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
 	  // Should set the workflow_id here, or send it together with the workflow description
-	  DMLOG(TRACE, "Submit the workflow attached to the job "<<wf_id<<" to WE. Workflow description follows: ");
+	  SDPA_LOG_DEBUG("Submit the workflow attached to the job "<<wf_id<<" to WE. ");
+	  //SDPA_LOG_DEBUG("Workflow description follows: ");
+	  //SDPA_LOG_DEBUG(pJob->description());
 
 	  pJob->Dispatch();
 
@@ -385,7 +387,7 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
   if( ptr_worker_man_ )
   {
       // if no preferences are explicitly set for this job
-      DMLOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
+      LOG(TRACE, "Check if there are requirements specified for the job "<<jobId.str()<<"  ... ");
 
       try
       {
@@ -462,8 +464,8 @@ void SchedulerImpl::start_job(const sdpa::job_id_t &jobId)
 
 void SchedulerImpl::schedule(const sdpa::job_id_t& jobId)
 {
-  DLOG(TRACE, "Schedule the job " << jobId.str());
-  jobs_to_be_scheduled.push(jobId);
+	SDPA_LOG_DEBUG("Schedule the job " << jobId.str());
+	jobs_to_be_scheduled.push(jobId);
 }
 
 const Worker::ptr_t& SchedulerImpl::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
@@ -540,7 +542,7 @@ bool SchedulerImpl::post_request(const MasterInfo& masterInfo, bool force)
 
   bool bReqPosted = false;
 
-  if(force || ( !ptr_comm_handler_->is_orchestrator()  &&  masterInfo.is_registered() ) )
+  if(force || ( !ptr_comm_handler_->isTop()  &&  masterInfo.is_registered() ) )
   {
       bool bReqAllowed = ptr_comm_handler_->requestsAllowed();
       if(!bReqAllowed)
@@ -621,12 +623,80 @@ void SchedulerImpl::feed_workers()
       //SDPA_LOG_WARN("No worker found!");
     }
     catch(const AllWorkersFullException&) {
-      LOG_EVERY_N(WARN, 500, "FIXME: all workers are full -> don't run the scheduler if not needed...");
+	SDPA_LOG_DEBUG("All workers are full!");
     }
     catch (std::exception const& ex) {
     	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
     }
 
+}
+
+void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
+{
+	MLOG(TRACE, "executing activity: "<< jobId);
+	const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+	id_type act_id = pJob->id().str();
+
+	execution_result_t result;
+	encoded_type enc_act = pJob->description(); // assume that the NRE's workflow engine encodes the activity!!!
+
+	if( !ptr_comm_handler_ )
+	{
+		LOG(ERROR, "nre scheduler does not have a comm-handler!");
+		result_type output_fail;
+		ptr_comm_handler_->workerJobFailed("", jobId, output_fail);
+		return;
+	}
+
+	try
+	{
+		pJob->Dispatch();
+		//result = m_worker_.execute(enc_act, pJob->walltime());
+		boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+		result = std::make_pair(ACTIVITY_FINISHED, enc_act);
+	}
+	catch( const boost::thread_interrupted &)
+	{
+		std::string errmsg("could not execute activity: interrupted");
+		SDPA_LOG_ERROR(errmsg);
+		result = std::make_pair(ACTIVITY_FAILED, enc_act);
+	}
+	catch (const std::exception &ex)
+	{
+		std::string errmsg("could not execute activity: ");
+		errmsg += std::string(ex.what());
+		SDPA_LOG_ERROR(errmsg);
+		result = std::make_pair(ACTIVITY_FAILED, enc_act);
+	}
+
+	// check the result state and invoke the NRE's callbacks
+	if( result.first == ACTIVITY_FINISHED )
+	{
+		DLOG(TRACE, "activity finished: " << act_id);
+		// notify the gui
+		// and then, the workflow engine
+		ptr_comm_handler_->workerJobFinished("", jobId, result.second);
+	}
+	else if( result.first == ACTIVITY_FAILED )
+	{
+		DLOG(TRACE, "activity failed: " << act_id);
+		// notify the gui
+		// and then, the workflow engine
+		ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+	}
+	else if( result.first == ACTIVITY_CANCELLED )
+	{
+		DLOG(TRACE, "activity cancelled: " << act_id);
+
+		// notify the gui
+		// and then, the workflow engine
+		ptr_comm_handler_->workerJobCancelled("", jobId);
+	}
+	else
+	{
+		SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
+		ptr_comm_handler_->workerJobFailed("", jobId, result.second);
+	}
 }
 
 void SchedulerImpl::run()
@@ -649,30 +719,37 @@ void SchedulerImpl::run()
     	  if( numberOfWorkers()>0 )
     		  feed_workers(); //eventually, feed some workers
 
-          sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+          sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
           const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-          if( pJob->is_local() )
-            schedule_local(jobId);
-          else
+          if( !pJob->is_local() )
           {
               // if it's an NRE just execute it!
               // Attention!: an NRE has no WorkerManager!!!!
               // or has an Worker Manager and the workers are threads
+        	  if( numberOfWorkers()>0 ) //
+        	  {
+				  try
+				  {
+					  schedule_remote(jobId);
+				  }
+				  catch( const NoWorkerFoundException& ex)
+				  {
+					  SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
+					  // do so as when no preferences were set, just ignore them right now
+					  //schedule_anywhere(jobId);
 
-              try
-              {
-            	  schedule_remote(jobId);
-              }
-              catch( const NoWorkerFoundException& ex)
-              {
-                  SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
-                  // do so as when no preferences were set, just ignore them right now
-                  //schedule_anywhere(jobId);
-
-                  ptr_worker_man_->dispatchJob(jobId);
-              }
+					  ptr_worker_man_->dispatchJob(jobId);
+				  }
+        	  }
+        	  else //  if has backends try to execute it
+        	  {
+				  DLOG(TRACE, "Try to execute myself the job "<<jobId.str()<<" ...");
+				  execute(jobId);
+        	  } // else fail
           }
+          else
+        	  schedule_local(jobId);
       }
       catch(const JobNotFoundException& ex)
       {
