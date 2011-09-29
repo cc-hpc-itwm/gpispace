@@ -82,7 +82,7 @@ const std::string USER("user");
 	  virtual void schedule(const sdpa::job_id_t& job) = 0;
 
 	  virtual bool hasWorkflowEngine() = 0;
-	  virtual bool is_orchestrator() = 0;
+	  virtual bool isTop() = 0;
 
 	  virtual void backup( std::ostream& ) { throw std::runtime_error("not supported at this level"); }
 	  virtual void recover( std::istream& ) { throw std::runtime_error("not supported at this level"); }
