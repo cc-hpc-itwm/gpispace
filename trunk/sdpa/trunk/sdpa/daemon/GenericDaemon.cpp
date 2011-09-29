@@ -100,7 +100,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
 
         ptr_job_man_->updateJobInfo(this);
 
-        //if( is_orchestrator() )
+        //if( isTop() )
         {
           SDPA_LOG_WARN( "JobManager after recovering:" );
           ptr_job_man_->print();
@@ -131,7 +131,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         m_threadBkpService.start(bkp_file);
 
         SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
-        if( !is_orchestrator() )
+        if( !isTop() )
           requestRegistration();
 
         SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
@@ -163,7 +163,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
         ptr_job_man_->updateJobInfo(this);
 
-        //if( is_orchestrator() )
+        //if( isTop() )
         {
             SDPA_LOG_WARN( "JobManager after recovering:" );
             ptr_job_man_->print();
@@ -192,7 +192,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
         m_threadBkpService.start();
 
         SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
-        if( !is_orchestrator() )
+        if( !isTop() )
                 requestRegistration();
 
         SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
@@ -233,7 +233,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
     // m_threadBkpService.start();
 
     SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
-    if( !is_orchestrator() )
+    if( !isTop() )
     	requestRegistration();
 
     SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");

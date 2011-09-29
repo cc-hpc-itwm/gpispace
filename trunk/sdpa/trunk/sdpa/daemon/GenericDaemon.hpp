@@ -237,7 +237,7 @@ namespace sdpa { namespace daemon {
       void create_workflow_engine( IWorkflowEngine* pWfEArg ) { ptr_workflow_engine_ = pWfEArg; }
       virtual IWorkflowEngine* workflowEngine() const { return ptr_workflow_engine_; }
       virtual bool hasWorkflowEngine() { return ptr_workflow_engine_?true:false;}
-      virtual bool is_orchestrator() { return false; }
+      virtual bool isTop() { return false; }
 
       virtual const std::string url() const {return std::string();}
       //virtual const std::string masterName() const { return  std::string(); }
