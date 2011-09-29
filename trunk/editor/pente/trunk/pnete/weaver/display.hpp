@@ -36,10 +36,12 @@ namespace fhg
                                   , ui::graph::connectable_item*
                                   > item_by_name_type;
 
+      typedef XMLTYPE(function_with_mapping_type) function_with_mapping_type;
+
       class function
       {
       public:
-        explicit function ( data::proxy::function_type &
+        explicit function ( function_with_mapping_type
                           , data::internal_type::ptr
                           );
 
@@ -53,7 +55,7 @@ namespace fhg
 
       private:
         data::proxy::type* _proxy;
-        data::proxy::function_type& _fun;
+        function_with_mapping_type _function_with_mapping;
 
         struct
         {
@@ -123,9 +125,6 @@ namespace fhg
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
-        XMLTYPE(function_type)&
-        get_function (const XMLTYPE(transition_type::f_type) &);
-
       private:
         ui::graph::scene* _scene;
         ui::graph::transition* _transition;
@@ -136,6 +135,11 @@ namespace fhg
         item_by_name_type _port_in_item_by_name;
         item_by_name_type _port_out_item_by_name;
         data::internal_type::ptr _root;
+
+        boost::optional< ::xml::parse::type::type_map_type&> _type_map;
+
+        function_with_mapping_type
+        get_function (XMLTYPE(transition_type::f_type)& f);
       };
 
       WSIGE(transition, transition::close);
@@ -256,9 +260,8 @@ namespace fhg
 
       namespace visitor
       {
-        typedef XMLTYPE(function_type) function_type;
-
-        class get_function : public boost::static_visitor<function_type&>
+        class get_function
+          : public boost::static_visitor<function_with_mapping_type>
         {
         private:
           XMLTYPE(net_type)& _net;
@@ -266,12 +269,15 @@ namespace fhg
         public:
           get_function (XMLTYPE(net_type)& net) : _net (net) {}
 
-          function_type& operator () (const function_type& fun) const
+          function_with_mapping_type
+          operator() (const XMLTYPE(function_type)& fun) const
           {
-            return const_cast<function_type &> (fun);
+            return function_with_mapping_type
+              (const_cast< ::xml::parse::type::function_type &> (fun));
           }
 
-          function_type& operator () (const XMLTYPE(use_type)& use) const
+          function_with_mapping_type
+          operator() (const XMLTYPE(use_type)& use) const
           {
             return _net.get_function (use.name);
           }

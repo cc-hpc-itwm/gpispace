@@ -15,11 +15,14 @@ namespace fhg
     {
       namespace graph
       {
-        place::place (item* parent)
-          : connectable_item (BOTH, parent)
-          , _content()
-          , _dragging (false)
-          , _name (tr ("<<a place>>"))
+        place::place
+          ( boost::optional< ::xml::parse::type::type_map_type&> type_map
+          , item* parent
+          )
+            : connectable_item (BOTH, type_map, parent)
+            , _content()
+            , _dragging (false)
+            , _name (tr ("<<a place>>"))
         {
           refresh_content();
           connect ( this

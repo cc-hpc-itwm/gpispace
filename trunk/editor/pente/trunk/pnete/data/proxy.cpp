@@ -16,13 +16,19 @@ namespace fhg
     {
       namespace proxy
       {
-        const function_type& function (const type& proxy)
+        const ::xml::parse::type::function_type& function (const type& proxy)
         {
-          return boost::apply_visitor (visitor::function<const function_type&>(), proxy);
+          return boost::apply_visitor
+            ( visitor::function<const ::xml::parse::type::function_type&>()
+            , proxy
+            );
         }
-        function_type& function (type& proxy)
+        ::xml::parse::type::function_type& function (type& proxy)
         {
-          return boost::apply_visitor (visitor::function<function_type&> (), proxy);
+          return boost::apply_visitor
+            ( visitor::function< ::xml::parse::type::function_type&> ()
+            , proxy
+            );
         }
 
         ::fhg::pnete::data::internal_type::ptr root (const type& proxy)

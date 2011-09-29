@@ -10,6 +10,7 @@
 
 #include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 #include <fhg/util/maybe.hpp>
 
@@ -26,6 +27,25 @@ namespace xml
   {
     namespace type
     {
+      class function_with_mapping_type
+      {
+      private:
+        function_type& _function;
+        boost::optional<type_map_type&> _type_map;
+
+      public:
+        explicit function_with_mapping_type
+        ( function_type& function
+        , boost::optional<type_map_type&> type_map = boost::none
+        )
+          : _function (function)
+          , _type_map (type_map)
+        {}
+
+        function_type& function() { return _function; }
+        boost::optional<type_map_type&> type_map() { return _type_map; }
+      };
+
       struct net_type
       {
       private:
@@ -70,14 +90,32 @@ namespace xml
           return _templates.by_key (maybe_string_type(name), tmpl);
         }
 
-        function_type& get_function (const std::string & name)
-        {
-          return _functions.by_key (maybe_string_type (name));
-        }
+        // ***************************************************************** //
 
-        function_type& get_template (const std::string & name)
+        function_with_mapping_type get_function (const std::string & name)
         {
-          return _templates.by_key (maybe_string_type (name));
+          boost::optional<function_type&>
+            fun (_functions.by_key (maybe_string_type (name)));
+
+          if (fun)
+            {
+              return function_with_mapping_type (*fun);
+            }
+
+          boost::optional<specialize_type &> spec (_specializes.by_key (name));
+
+          if (spec)
+            {
+              boost::optional<function_type&>
+                spec_fun (_templates.by_key (maybe_string_type (spec->use)));
+
+              if (spec_fun)
+                {
+                  return function_with_mapping_type (*spec_fun, spec->type_map);
+                }
+            }
+
+          throw std::runtime_error ("function " + name + " unknown");
         }
 
         // ***************************************************************** //

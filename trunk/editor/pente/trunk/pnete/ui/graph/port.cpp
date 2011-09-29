@@ -21,15 +21,19 @@ namespace fhg
     {
       namespace graph
       {
-        port::port (DIRECTION direction, transition* parent)
-          : connectable_item (direction, parent)
-          , _name ("<<port>>")
-          , _orientation (direction == OUT ? EAST : WEST)
-          , _dragging (false)
-          , _drag_start (0.0, 0.0)
-          , _highlighted (false)
-          , _length (style::portDefaultWidth())
-          , _menu_context()
+        port::port
+          ( DIRECTION direction
+          , boost::optional< ::xml::parse::type::type_map_type&> type_map
+          , transition* parent
+          )
+            : connectable_item (direction, type_map, parent)
+            , _name ("<<port>>")
+            , _orientation (direction == OUT ? EAST : WEST)
+            , _dragging (false)
+            , _drag_start (0.0, 0.0)
+            , _highlighted (false)
+            , _length (style::portDefaultWidth())
+            , _menu_context()
         {
           setAcceptHoverEvents (true);
           //! \todo verbose name

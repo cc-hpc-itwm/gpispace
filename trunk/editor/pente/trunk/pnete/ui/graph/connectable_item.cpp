@@ -12,11 +12,16 @@ namespace fhg
     {
       namespace graph
       {
-        connectable_item::connectable_item (DIRECTION direction, item* parent)
-          : item (parent)
-          , _connections ()
-          , _direction (direction)
-          , _we_type (tr ("<<we_type>>"))
+        connectable_item::connectable_item
+          ( DIRECTION direction
+          , boost::optional< ::xml::parse::type::type_map_type&> type_map
+          , item* parent
+          )
+            : item (parent)
+            , _connections ()
+            , _direction (direction)
+            , _we_type (tr ("<<we_type>>"))
+            , _type_map (type_map)
         {}
 
         void connectable_item::add_connection (connection* c)
@@ -58,8 +63,19 @@ namespace fhg
           return _direction = direction_;
         }
 
-        const QString& connectable_item::we_type() const
+        QString connectable_item::we_type() const
         {
+          if (_type_map)
+            {
+              ::xml::parse::type::type_map_type::const_iterator type_mapping
+                (_type_map->find (_we_type.toStdString()));
+
+              if (type_mapping != _type_map->end())
+                {
+                  return QString::fromStdString (type_mapping->second);
+                }
+            }
+
           return _we_type;
         }
         const QString& connectable_item::we_type (const QString& we_type_)

@@ -9,6 +9,10 @@
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/item.hpp>
 
+#include <boost/optional.hpp>
+
+#include <xml/parse/types.hpp>
+
 class QAction;
 class QMenu;
 class QGraphicsSceneContextMenuEvent;
@@ -36,7 +40,11 @@ namespace fhg
             WEST,
           };
 
-          port (DIRECTION direction, transition* parent);
+          port ( DIRECTION direction
+               , boost::optional< ::xml::parse::type::type_map_type&> type_map
+               = boost::none
+               , transition* parent = NULL
+               );
 
           const bool& highlighted() const;
           const qreal& length() const;

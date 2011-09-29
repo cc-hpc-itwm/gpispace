@@ -8,6 +8,10 @@
 
 #include <pnete/ui/graph/item.hpp>
 
+#include <boost/optional.hpp>
+
+#include <xml/parse/types.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -30,7 +34,12 @@ namespace fhg
             BOTH = IN | OUT,
           };
 
-          connectable_item (DIRECTION direction, item* parent = NULL);
+          connectable_item
+            ( DIRECTION direction
+            , boost::optional< ::xml::parse::type::type_map_type&>
+            = boost::none
+            , item* parent = NULL
+            );
 
           void add_connection (connection* c);
           void remove_connection (connection* c);
@@ -40,7 +49,7 @@ namespace fhg
           const QSet<connection*>& connections() const;
           const DIRECTION& direction() const;
           const DIRECTION& direction (const DIRECTION&);
-          const QString& we_type() const;
+          QString we_type() const;
           const QString& we_type (const QString&);
 
           virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
@@ -52,6 +61,7 @@ namespace fhg
           QSet<connection*> _connections;
           DIRECTION _direction;
           QString _we_type;
+          boost::optional< ::xml::parse::type::type_map_type&> _type_map;
         };
       }
     }

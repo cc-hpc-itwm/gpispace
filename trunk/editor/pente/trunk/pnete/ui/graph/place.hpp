@@ -7,6 +7,10 @@
 #include <QRectF>
 #include <QStaticText>
 
+#include <boost/optional.hpp>
+
+#include <xml/parse/types.hpp>
+
 class QWidget;
 class QStyleOptionGraphicsItem;
 
@@ -25,7 +29,10 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          place (item* parent = NULL);
+          place ( boost::optional< ::xml::parse::type::type_map_type&> type_map
+                = boost::none
+                , item* parent = NULL
+                );
 
           const QString& name (const QString& name_);
           const QString& name() const;

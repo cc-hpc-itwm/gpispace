@@ -28,7 +28,8 @@ namespace fhg
     {
       namespace proxy
       {
-        typedef ::xml::parse::type::function_type function_type;
+        typedef ::xml::parse::type::function_with_mapping_type
+                function_with_mapping_type;
 
         template<typename DATA, typename DISPLAY = void>
         class proxy_base
@@ -39,23 +40,47 @@ namespace fhg
 
           proxy_base ( internal_type::ptr root
                      , data_type data
-                     , function_type& function
+                     , function_with_mapping_type& function_with_mapping
                      , display_type* display = NULL
                      )
             : _data (data)
-            , _function (function)
+            , _function_with_mapping (function_with_mapping)
             , _display (display)
             , _root (root)
           {}
-          data_type& data() { return _data; }
-          function_type& function() { return _function; }
-          const function_type& function() const { return _function; }
-          display_type* display() { return _display; }
-          internal_type::ptr root() const { return _root; }
+          data_type& data()
+          {
+            return _data;
+          }
+          ::xml::parse::type::function_type& function()
+          {
+            return _function_with_mapping.function();
+          }
+          const ::xml::parse::type::function_type& function() const
+          {
+            return _function_with_mapping.function();
+          }
+          ::xml::parse::type::type_map_type& type_map()
+          {
+            return _function_with_mapping.type_map();
+          }
+          const ::xml::parse::type::type_map_type& type_map() const
+          {
+            return _function_with_mapping.type_map();
+          }
+
+          display_type* display()
+          {
+            return _display;
+          }
+          internal_type::ptr root() const
+          {
+            return _root;
+          }
 
         private:
           data_type _data;
-          function_type& _function;
+          function_with_mapping_type& _function_with_mapping;
           display_type* _display;
 
           internal_type::ptr _root;
@@ -119,8 +144,8 @@ namespace fhg
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
-        const function_type& function (const type&);
-        function_type& function (type&);
+        const ::xml::parse::type::function_type& function (const type&);
+        ::xml::parse::type::function_type& function (type&);
         ::fhg::pnete::data::internal_type::ptr root (const type&);
 
         ui::document_widget* document_widget_factory (type&);
@@ -157,6 +182,16 @@ namespace fhg
             template<typename T> RES operator () (T& x) const
             {
               return x.function();
+            }
+          };
+
+          template<typename RES>
+          class type_map : public boost::static_visitor<RES>
+          {
+          public:
+            template<typename T> RES operator () (T& x) const
+            {
+              return x.type_map();
             }
           };
 

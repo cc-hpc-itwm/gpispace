@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 #include <boost/unordered_map.hpp>
+#include <boost/optional.hpp>
 
 #include <stdexcept>
 
@@ -106,7 +107,7 @@ namespace xml
         return true;
       }
 
-      T& by_key (const Key & key)
+      boost::optional<T&> by_key (const Key & key)
       {
         typename names_type::iterator found (_names.find (key));
 
@@ -115,9 +116,8 @@ namespace xml
             return *(found->second);
           }
 
-        throw std::runtime_error ("unique.by_key: key not found.");
+        return boost::none;
       }
-
 
       void clear (void) { _elements.clear(); _names.clear(); }
 

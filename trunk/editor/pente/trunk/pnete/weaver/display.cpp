@@ -16,15 +16,15 @@ namespace fhg
   {
     namespace weaver
     {
-      function::function ( XMLTYPE(function_type) & fun
+      function::function ( function_with_mapping_type function_with_mapping
                          , data::internal_type::ptr root
                          )
         : _proxy (NULL)
-        , _fun (fun)
+        , _function_with_mapping (function_with_mapping)
         , _scene (NULL)
         , _root (root)
       {
-        FROM (function<function> (this, fun));
+        FROM (function<function> (this, _function_with_mapping.function()));
       }
       data::proxy::type* function::proxy () const { return _proxy; }
       XMLTYPE(ports_type)& function::in () { return _ports.in; }
@@ -40,7 +40,7 @@ namespace fhg
               , in()
               , out()
               )
-            , _fun
+            , _function_with_mapping
             )
           );
       }
@@ -54,7 +54,7 @@ namespace fhg
               , in()
               , out()
               )
-            , _fun
+            , _function_with_mapping
             )
           );
       }
@@ -67,7 +67,7 @@ namespace fhg
             , data::proxy::data::net_type
               ( const_cast< XMLTYPE(net_type) &> (net)
               )
-            , _fun
+            , _function_with_mapping
             , _scene
             )
           );
@@ -109,9 +109,10 @@ namespace fhg
         , _port_in_item_by_name ()
         , _port_out_item_by_name ()
         , _root (root)
+        , _type_map (boost::none)
       {}
-      XMLTYPE(function_type)&
-      transition::get_function (const XMLTYPE(transition_type::f_type) & f)
+      function_with_mapping_type
+      transition::get_function (XMLTYPE(transition_type::f_type)& f)
       {
         return boost::apply_visitor (visitor::get_function(_net), f);
       }
@@ -126,7 +127,12 @@ namespace fhg
           , fun
           )
       {
-        function sub (get_function (fun), _root);
+        function_with_mapping_type function_with_mapping
+          (get_function (const_cast<XMLTYPE(transition_type::f_type)&>(fun)));
+
+        weaver::function sub (function_with_mapping, _root);
+
+        _type_map = function_with_mapping.type_map();
 
         _transition->proxy (sub.proxy());
 
@@ -139,7 +145,11 @@ namespace fhg
       WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
         ui::graph::port* port_item
-          (new ui::graph::port (_current_port_direction, _transition));
+          (new ui::graph::port ( _current_port_direction
+                               , _type_map
+                               , _transition
+                               )
+          );
 
         weaver::port wp ( port_item
                         , _current_port_direction == ui::graph::port::IN
@@ -413,7 +423,7 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        _port_item = new ui::graph::port (_direction, NULL);
+        _port_item = new ui::graph::port (_direction);
         _scene->addItem (_port_item);
       }
       WSIG(port_toplevel, port::name, std::string, name)
