@@ -77,7 +77,7 @@ namespace fhg
 
       void expression_widget::name_changed (const QString& name_)
       {
-        data::proxy::internal (proxy())->
+        data::proxy::root (proxy())->
           change_manager().set_function_name ( data::proxy::function (proxy())
                                              , name_
                                              )

@@ -37,7 +37,7 @@ namespace fhg
           typedef DATA data_type;
           typedef DISPLAY display_type;
 
-          proxy_base ( internal_type::ptr internal
+          proxy_base ( internal_type::ptr root
                      , data_type data
                      , function_type& function
                      , display_type* display = NULL
@@ -45,20 +45,20 @@ namespace fhg
             : _data (data)
             , _function (function)
             , _display (display)
-            , _internal (internal)
+            , _root (root)
           {}
           data_type& data() { return _data; }
           function_type& function() { return _function; }
           const function_type& function() const { return _function; }
           display_type* display() { return _display; }
-          internal_type::ptr internal() const { return _internal; }
+          internal_type::ptr root() const { return _root; }
 
         private:
           data_type _data;
           function_type& _function;
           display_type* _display;
 
-          internal_type::ptr _internal;
+          internal_type::ptr _root;
         };
 
         namespace xml_type = ::xml::parse::type;
@@ -121,7 +121,7 @@ namespace fhg
 
         const function_type& function (const type&);
         function_type& function (type&);
-        ::fhg::pnete::data::internal_type::ptr internal (const type&);
+        ::fhg::pnete::data::internal_type::ptr root (const type&);
 
         ui::document_widget* document_widget_factory (type&);
 
@@ -139,14 +139,14 @@ namespace fhg
 
           typedef ::fhg::pnete::data::internal_type::ptr internal_type_ptr_type;
 
-          class internal
+          class root
             : public boost::static_visitor<internal_type_ptr_type>
           {
           public:
             template<typename T>
             internal_type_ptr_type operator () (const T& x) const
               {
-                return x.internal();
+                return x.root();
               }
           };
 

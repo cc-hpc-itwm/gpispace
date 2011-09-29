@@ -25,9 +25,9 @@ namespace fhg
           return boost::apply_visitor (visitor::function<function_type&> (), proxy);
         }
 
-        ::fhg::pnete::data::internal_type::ptr internal (const type& proxy)
+        ::fhg::pnete::data::internal_type::ptr root (const type& proxy)
         {
-          return boost::apply_visitor (visitor::internal (), proxy);
+          return boost::apply_visitor (visitor::root (), proxy);
         }
 
         namespace data
