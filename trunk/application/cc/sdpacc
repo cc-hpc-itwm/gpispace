@@ -61,6 +61,12 @@ jobid=
 
 trap 'cancel' EXIT
 
+function isatty()
+{
+    local f="$1" ; shift
+    tty -s < "$f"
+}
+
 function cancel()
 {
     if [ -z "$jobid" ] ; then
@@ -114,7 +120,13 @@ function execute ()
 	echo -e "$std_out"
     fi
     if [ -n "$std_err" ] ; then
-	echo -e "$std_err" >&2
+        co=
+        nc=
+        if isatty /dev/stderr ; then
+            co="\033[35;40m"
+            nc="\033[0m"
+        fi
+	echo -e "${co}$std_err${nc}" >&2
     fi
 
     test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
