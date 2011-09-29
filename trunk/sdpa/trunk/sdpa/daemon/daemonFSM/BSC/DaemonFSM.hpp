@@ -100,7 +100,6 @@ struct DaemonFSM : public sdpa::daemon::GenericDaemon, public sc::state_machine<
 	void print_states();
 private:
 	SDPA_DECLARE_LOGGER();
-	//mutex_type mtx_;
 };
 
 struct Down : sc::simple_state<Down, DaemonFSM>

@@ -29,35 +29,9 @@ namespace sdpa {
     namespace smc {
             class DaemonFSM : public sdpa::daemon::GenericDaemon
             {
-                public:
-                        typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
-                //typedef boost::recursive_mutex mutex_type;
-                //typedef boost::unique_lock<mutex_type> lock_type;
+            	typedef  sdpa::shared_ptr<DaemonFSM> ptr_t;
 
-                // obsolete
-                /*DaemonFSM( const std::string &name,
-                           seda::Stage* ptrToMasterStage,
-                           seda::Stage* ptrToSlaveStage,
-                           IWorkflowEngine*  pArgSdpa2Gwes)
-                : GenericDaemon(name, ptrToMasterStage, ptrToSlaveStage, pArgSdpa2Gwes),
-                  SDPA_INIT_LOGGER(name+"FSM"),
-                  m_fsmContext(*this)
-                {
-                  DLOG(TRACE, "Daemon state machine created");
-                }
-
-                // obsolete
-                DaemonFSM( const std::string &name,
-                           IWorkflowEngine*  pArgSdpa2Gwes,
-                           const std::string& toMasterStageName,
-                           const std::string& toSlaveStageName = std::string(""))
-                : GenericDaemon(name, toMasterStageName, toSlaveStageName, pArgSdpa2Gwes),
-                  SDPA_INIT_LOGGER(name+"FSM"),
-                  m_fsmContext(*this)
-                {
-                  DLOG(TRACE, "Daemon state machine created");
-                }*/
-
+            public:
                 DaemonFSM(  const std::string &name = "",
                             const sdpa::master_info_list_t& arrMasterNames = sdpa::master_info_list_t(),
                             unsigned int cap = 10000,
@@ -82,7 +56,6 @@ namespace sdpa {
                 virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pEvent);
                 virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* pEvent);
                 virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* pEvent);
-                //virtual void handleLifeSignEvent(const sdpa::events::LifeSignEvent* pEvent);
                 virtual void handleRequestJobEvent(const sdpa::events::RequestJobEvent* pEvent);
                 virtual void handleConfigRequestEvent(const sdpa::events::ConfigRequestEvent* pEvent);
                 virtual void handleErrorEvent(const sdpa::events::ErrorEvent* pEvent);
