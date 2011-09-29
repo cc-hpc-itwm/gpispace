@@ -310,8 +310,10 @@ void Agent::cancelNotRunning (sdpa::job_id_t const & job)
 
     try
     {
-      ptr_workflow_engine_->cancelled(job);
-      ptr_job_man_->deleteJob(job);
+    	if(hasWorkflowEngine())
+    		ptr_workflow_engine_->cancelled(job);
+
+    	ptr_job_man_->deleteJob(job);
     }
     catch (std::exception const & ex)
     {
@@ -338,7 +340,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     pJob->CancelJob(pEvt);
     SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
 
-    if(is_orchestrator())
+    if(isTop())
     {
         // send immediately an acknowledgment to the component that requested the cancellation
         CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
@@ -410,7 +412,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
         // just send an acknowledgment to the master
         // send an acknowledgment to the component that requested the cancellation
-        if(!is_orchestrator())
+        if(!isTop())
         {
             CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
             // only if the job was already submitted
