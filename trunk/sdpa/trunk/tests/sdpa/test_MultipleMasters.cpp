@@ -262,7 +262,7 @@ void MyFixture::run_client(int i)
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials++ > NMAXTRIALS)
+			//if(nTrials++ > NMAXTRIALS)
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
@@ -283,7 +283,7 @@ void MyFixture::run_client(int i)
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials++ > NMAXTRIALS)
+			//if(nTrials++ > NMAXTRIALS)
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 

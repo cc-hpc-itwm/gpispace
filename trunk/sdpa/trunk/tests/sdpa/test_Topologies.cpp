@@ -59,7 +59,7 @@
 
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
-const int NAGENTS = 2;
+const int NAGENTS = 1;
 
 namespace po = boost::program_options;
 
@@ -200,7 +200,6 @@ void MyFixture::run_client()
 	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
 	ptrCli->configure_network( config );
 
-
 	for( int k=0; k<m_nITER; k++ )
 	{
 		int nTrials = 0;
@@ -263,7 +262,7 @@ void MyFixture::run_client()
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials++ > NMAXTRIALS)
+			//if(nTrials++ > NMAXTRIALS)
 			{
 				LOG( DEBUG, "The maximum number of trials was exceeded. Giving-up now!");
 
@@ -284,7 +283,7 @@ void MyFixture::run_client()
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			if(nTrials++ > NMAXTRIALS)
+			//if(nTrials++ > NMAXTRIALS)
 			{
 				LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
 
@@ -307,24 +306,25 @@ BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 BOOST_AUTO_TEST_CASE( testPath )
 {
 
-	 //              O
-	 // 			 |
-	 // 			 |
-	 // 		     A
-	 //              |
-	 //              |   : -> variable agents #
-	 //              A
-	 //              |
-	 //              |
-	 //              N
-	 //
+	//              O
+	// 			    |
+	// 			    |
+	// 		        A
+	//              |
+	//              |   : -> variable agents #
+	//              A
+	//              |
+	//              |
+	//              N
+	//
+
 	LOG( DEBUG, "////////// testPath //////////");
 
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
-	string addrAgent 		= "127.0.0.1";
+	string addrAgent 	= "127.0.0.1";
 	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE( testPath )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-
+/*
 BOOST_AUTO_TEST_CASE( testMultipleMastersOneNre )
 {
 	 //               O
@@ -498,6 +498,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneNre )
 
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
-
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

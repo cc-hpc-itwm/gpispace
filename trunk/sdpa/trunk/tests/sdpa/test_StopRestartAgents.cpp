@@ -135,12 +135,8 @@ struct MyFixture
 		delete m_kvsd;
 		delete m_pool;
 
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
-
 		seda::StageRegistry::instance().stopAll();
 		seda::StageRegistry::instance().clear();
-
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
 
 	void run_client();
@@ -257,6 +253,10 @@ void MyFixture::run_client()
 		catch(const sdpa::client::ClientException& cliExc)
 		{
 			LOG( DEBUG, "Exception occurred when trying to retrieve the result of the job "<<job_id_user.str()<<": "<<cliExc.what());
+			ptrCli->shutdown_network();
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+		    ptrCli.reset();
+		    return;
 		}
 
 		nTrials = 0;
@@ -268,6 +268,10 @@ void MyFixture::run_client()
 		catch(const sdpa::client::ClientException& cliExc)
 		{
 			LOG( DEBUG, "Exception occurred when trying to delete the job "<<job_id_user.str()<<": "<<cliExc.what());
+			ptrCli->shutdown_network();
+			boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
+		    ptrCli.reset();
+		    return;
 		}
 	}
 
@@ -358,72 +362,6 @@ BOOST_AUTO_TEST_CASE( testBackupRecoverAllToFile )
 }
 */
 
-BOOST_AUTO_TEST_CASE( testStopRestartNre_Push )
-{
-	LOG( INFO, "***** testBackupRecoverOrchEmptyWfeWithClient_Push *****"<<std::endl);
-
-	//string strAppGuiUrl  = "";	= "";
-	string guiUrl   = "";
-	string workerUrl = "127.0.0.1:5500";
-	string addrOrch = "127.0.0.1";
-	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
-
-#ifdef USE_REAL_WE
-	bool bLaunchNrePcd = true;
-#else
-	bool bLaunchNrePcd = false;
-#endif
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(false, strBackupOrch);
-
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<EmptyWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
-	ptrAgg->start_agent(false, strBackupAgg);
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<EmptyWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE, m_arrNreMasterInfo,
-											 2,
-											 workerUrl,
-											 guiUrl,
-											 bLaunchNrePcd,
-											 TESTS_NRE_PCD_BIN_PATH,
-											 v_fake_PC_search_path,
-											 v_module_preload );
-
-	try {
-		ptrNRE->start_agent(false, strBackupNRE);
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
-
-	m_threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	boost::this_thread::sleep(boost::posix_time::seconds(1));
-
-	LOG( INFO, "Shutdown the Nre");
-
-	boost::this_thread::sleep(boost::posix_time::seconds(3));
-
-	// now try to recover the system
-	ptrNRE->shutdown(strBackupNRE);
-
-	ptrAgg->shutdown(strBackupAgg);
-	ptrOrch->shutdown(strBackupOrch);
-
-	LOG( INFO, "The test case testBackupRecoverOrchEmptyWfeWithClient_Push terminated!" );
-}
 
 BOOST_AUTO_TEST_CASE( testBackupRecoverOrchEmptyWfeWithClient_Req )
 {
