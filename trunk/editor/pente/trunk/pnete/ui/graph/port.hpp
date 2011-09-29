@@ -49,10 +49,6 @@ namespace fhg
 
           virtual bool is_connectable_with (const connectable_item*) const;
 
-          QPointF snap_to_edge (QPointF position, ORIENTATION edge) const;
-          ORIENTATION get_nearest_edge (const QPointF& position) const;
-          QPointF check_for_minimum_distance (const QPointF& position) const;
-
           enum { Type = port_graph_type };
           virtual int type() const { return Type; }
 
@@ -77,6 +73,8 @@ namespace fhg
           virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
         private:
+          QPointF fitting_position (QPointF position);
+
           QString _name;
 
           ORIENTATION _orientation;

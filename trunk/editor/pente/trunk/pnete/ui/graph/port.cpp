@@ -124,116 +124,65 @@ namespace fhg
               && connectable_item::is_connectable_with (item);
         }
 
-        QPointF
-        port::snap_to_edge (QPointF position, ORIENTATION edge) const
+        QPointF port::fitting_position (QPointF position)
         {
           if (!parentItem())
           {
-            return position;
+            return style::snapToRaster (position);
           }
 
-          switch (edge)
-          {
-          case WEST:
-            position.setX (0.0);
-            break;
-          case EAST:
-            position.setX (parentItem()->boundingRect().width());
-            break;
-          case NORTH:
-            position.setY (0.0);
-            break;
-          case SOUTH:
-            position.setY (parentItem()->boundingRect().height());
-            break;
-          }
+          const QPointF minimum_distance ( boundingRect().width() / 2.0 + 1.0    // hardcoded constants
+                                         , boundingRect().height() / 2.0 + 1.0   // hardcoded constants
+                                         );
 
-          return position;
-        }
+          const QRectF bounding (parentItem()->boundingRect());
 
-        port::ORIENTATION port::get_nearest_edge (const QPointF& position) const
-        {
-          if (!parentItem())
-          {
-            return _orientation;
-          }
+          qreal to_left (position.x() - bounding.left());
+          qreal to_right (position.x() - bounding.right());
+          qreal to_top (position.y() - bounding.top());
+          qreal to_bottom (position.y() - bounding.bottom());
+          to_left *= to_left;
+          to_right *= to_right;
+          to_top *= to_top;
+          to_bottom *= to_bottom;
 
-          if (position.x() <= 0.0)
-          {
-            return WEST;
-          }
-          else if (position.x() > parentItem()->boundingRect().width())
-          {
-            return EAST;
-          }
-          else if (position.y() <= 0.0)
-          {
-            return NORTH;
-          }
-          else if (position.y() > parentItem()->boundingRect().height())
-          {
-            return SOUTH;
-          }
-          else
-          {
-            const QPointF parent_bottom_right
-              (parentItem()->boundingRect().bottomRight());
-
-            const qreal to_top (position.y());
-            const qreal to_left (position.x());
-            const qreal to_bottom (position.y() - parent_bottom_right.y());
-            const qreal to_right (position.x() - parent_bottom_right.x());
-
-            return ( qMin (to_top, to_left) < qMin (to_left, to_right)
-                   ? ( to_top < to_bottom
-                     ? NORTH
-                     : SOUTH
-                     )
-                   : ( to_left < to_right
-                     ? WEST
-                     : EAST
-                     )
-                   );
-          }
-        }
-
-        QPointF port::check_for_minimum_distance (const QPointF& position) const
-        {
-          if (!parentItem())
-          {
-            return position;
-          }
-
-          const QSizeF parentSize (parentItem()->boundingRect().size());
+          _orientation = ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
+                         ? ( to_top < to_bottom
+                           ? NORTH
+                           : SOUTH
+                           )
+                         : ( to_left < to_right
+                           ? WEST
+                           : EAST
+                           )
+                         );
 
           if(_orientation == WEST || _orientation == EAST)
           {
-            const qreal minimumDistance (boundingRect().height() / 2.0 + 1.0);    // hardcoded constant
-
-            return QPointF ( qBound ( 0.0
-                                    , position.x()
-                                    , parentSize.width()
-                                    )
-                           , qBound ( minimumDistance
-                                    , position.y()
-                                    , parentSize.height() - minimumDistance
-                                    )
-                           );
+            position.setX ( _orientation == WEST
+                          ? bounding.left()
+                          : bounding.right()
+                          );
+            position.setY ( qBound ( bounding.top() + minimum_distance.y()
+                                   , position.y()
+                                   , bounding.bottom() - minimum_distance.y()
+                                   )
+                          );
           }
           else
           {
-            const qreal minimumDistance (boundingRect().width() / 2.0 + 1.0);     // hardcoded constant
-
-            return QPointF ( qBound ( minimumDistance
-                                    , position.x()
-                                    , parentSize.width() - minimumDistance
-                                    )
-                           , qBound ( 0.0
-                                    , position.y()
-                                    , parentSize.height()
-                                    )
-                           );
+            position.setX ( qBound ( bounding.left() + minimum_distance.x()
+                                   , position.x()
+                                   , bounding.right() - minimum_distance.x()
+                                   )
+                          );
+            position.setY ( _orientation == NORTH
+                          ? bounding.top()
+                          : bounding.bottom()
+                          );
           }
+
+          return style::snapToRaster (position);
         }
 
         void port::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
@@ -248,13 +197,7 @@ namespace fhg
           const ORIENTATION old_orientation (_orientation);
           const QPointF new_location (pos() + event->pos() - _drag_start);
 
-          _orientation = get_nearest_edge (new_location);
-
-          setPos ( style::snapToRaster
-                   ( check_for_minimum_distance
-                     (snap_to_edge (new_location, _orientation))
-                   )
-                 );
+          setPos (fitting_position (new_location));
 
           // do not move, when now colliding with a different port
           foreach (QGraphicsItem* collidingItem, collidingItems())
@@ -264,7 +207,7 @@ namespace fhg
                )
             {
               _orientation = old_orientation;
-              setPos(old_location);
+              setPos (old_location);
               event->ignore();
               return;
             }
