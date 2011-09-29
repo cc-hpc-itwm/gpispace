@@ -435,7 +435,12 @@ namespace fhg
         }
         QRectF style::transitionBoundingRect (const QSizeF& size)
         {
-          return QRectF (0.0, 0.0, size.width(), size.height());
+          const QSizeF half_size (size / 2.0);
+          return QRectF ( -half_size.width()
+                        , -half_size.height()
+                        , size.width()
+                        , size.height()
+                        );
         }
         void style::transitionPaint ( QPainter* painter
                                     , const transition* transition

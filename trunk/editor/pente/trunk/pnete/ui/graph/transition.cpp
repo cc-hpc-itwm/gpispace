@@ -240,50 +240,44 @@ namespace fhg
 
         void transition::repositionChildrenAndResize()
         {
-          qreal positionIn, positionOut, positionAny;
-          positionIn = positionOut = positionAny = style::portDefaultHeight();
-
           const qreal padding (10.0);                                             // hardcoded constant
+          const qreal step (style::portDefaultHeight());
+
+          const QRectF bound (boundingRect());
+          const qreal top (bound.top());
+          const qreal left (bound.left());
+          const qreal right (bound.right());
+
+          QPointF positionIn (left, top + padding);
+          QPointF positionOut (right, top + padding);
 
           foreach (QGraphicsItem* child, childItems())
           {
-            port* p (qgraphicsitem_cast<port*>(child));
-            if (p)
+            if (port* p = qgraphicsitem_cast<port*> (child))
             {
-              if (p->direction() == connectable_item::IN)
+              if (p->direction() == port::IN)
               {
                 p->orientation (port::WEST);
-                p->setPos (style::snapToRaster (QPointF (0.0, positionIn)));
-                positionIn += style::portDefaultHeight() + padding;
-              }
-              else if (p->direction() == connectable_item::OUT)
-              {
-                p->orientation (port::EAST);
-                p->setPos (style::snapToRaster (QPointF ( boundingRect().width()
-                                                        , positionOut
-                                                        )
-                                               )
-                          );
-                positionOut += style::portDefaultHeight() + padding;
+                p->setPos (style::snapToRaster (positionIn));
+                positionIn.ry() += step + padding;
               }
               else
               {
-                p->orientation (port::NORTH);
-                p->setPos (style::snapToRaster (QPointF (positionAny, 0.0)));
-                positionAny += style::portDefaultHeight() + padding;
+                p->orientation (port::EAST);
+                p->setPos (style::snapToRaster (positionOut));
+                positionOut.ry() += step + padding;
               }
             }
           }
-          positionIn -= padding;
-          positionOut -= padding;
-          positionAny -= padding;
 
-          _size = QSizeF ( qMax (_size.width(), positionAny)
-                         , qMax (_size.height(), qMax ( positionOut
-                                                      , positionIn
-                                                      )
-                                )
-                         );
+          qreal& height (_size.rheight());
+          height = qMax ( height
+                        , qMax ( positionIn.y() - top
+                               , positionOut.y() - top
+                               )
+                        );
+          const qreal raster (style::raster());
+          height = raster * (static_cast<int> ((height + raster) / raster));
         }
 
         data::proxy::type* transition::proxy (data::proxy::type* proxy_)

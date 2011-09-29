@@ -1,34 +1,18 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <pnete/ui/graph/connectable_item.hpp>
-#include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/scene.hpp>
-#include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/port.hpp>
-#include <pnete/ui/graph/place.hpp>
-
-#include <pnete/data/internal.hpp>
-#include <pnete/data/manager.hpp>
-
-#include <pnete/weaver/weaver.hpp>
-
-#include <pnete/util.hpp>
-
-#include <util/graphviz.hpp>
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
-#include <QRectF>
 #include <QDebug>
-#include <QFile>
-#include <QFileInfo>
 
-#include <stack>
-#include <stdexcept>
+#include <pnete/ui/graph/connectable_item.hpp>
+#include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/place.hpp>
+#include <pnete/ui/graph/style.hpp>
 
-#include <iostream>
-
-#include <boost/variant.hpp>
+#include <util/graphviz.hpp>
 
 namespace fhg
 {
@@ -299,7 +283,7 @@ namespace fhg
               ; ++it
               )
           {
-            it.key()->setPos (it.value().position());
+            it.key()->setPos (style::snapToRaster (it.value().position()));
           }
         }
       }
