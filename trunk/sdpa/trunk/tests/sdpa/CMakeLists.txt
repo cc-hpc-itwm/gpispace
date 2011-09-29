@@ -95,27 +95,3 @@ foreach (tc_src ${tc_srcs})
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
 endforeach(tc_src ${tc_srcs})
-
-if (USE_REAL_WE)
-  set( test_agents_and_act_exec_srcs
-    test_AgentsAndActExec.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../sdpa/daemon/nre/nre-worker/nre-worker/ActivityExecutor.cpp
-    )
-
-add_executable(test_agents_and_act_exec_suite ${test_agents_and_act_exec_srcs} )
-target_link_libraries(  test_agents_and_act_exec_suite
-                        sdpa-daemon
-			            sdpa-com
-                        sdpa-client
-                        sdpa-events
-                        sdpa-util
-                        sdpa
-			${SEDA_LIBRARY}
-			            ${FhgLog_LIBRARY}
-                        ${Boost_UNIT_TEST_LIBRARIES}
-                        ${Boost_LIBRARIES}
-                        ${WE_PRECOMPILE_LIBRARIES}
-			            dl
-			)
-  add_test(test_agents_and_act_exec_suite test_agents_and_act_exec_suite)
-endif (USE_REAL_WE)
