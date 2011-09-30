@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include <gvc.h>
+
 namespace fhg
 {
   namespace pnete
@@ -65,7 +67,9 @@ namespace fhg
 
       node_type::node_type (graph_type& graph, const QString& name)
         : _node (agnode (graph._graph, internal::unsafe (name)))
-      {}
+      {
+        internal::set_attribute (_node, "label", "");
+      }
 
       void node_type::size (const QSizeF& size)
       {
@@ -124,6 +128,11 @@ namespace fhg
         internal::set_attribute (_graph, "rankdir", dir);
       }
 
+      void graph_type::splines (const QString& mode)
+      {
+        internal::set_attribute (_graph, "splines", mode);
+      }
+
       node_type graph_type::add_node (const QString& name)
       {
         return node_type (*this, name);
@@ -146,7 +155,6 @@ namespace fhg
       void graph_type::layout (const QString& engine)
       {
         gvLayout (_context._context, _graph, internal::unsafe (engine));
-        //! \todo get better destination.
         gvRender (_context._context, _graph, internal::unsafe (engine), NULL);
       }
     }

@@ -246,6 +246,7 @@ namespace fhg
           graphviz::context_type context;
           graphviz::graph_type graph (context);
           graph.rankdir ("LR");
+          graph.splines ("ortho");
 
           const QList<QGraphicsItem*> is (items());
 

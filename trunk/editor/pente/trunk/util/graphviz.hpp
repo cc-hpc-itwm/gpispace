@@ -3,14 +3,17 @@
 #ifndef _FHG_UTIL_GRAPHVIZ_HPP
 #define _FHG_UTIL_GRAPHVIZ_HPP 1
 
-//! \todo Only forward-declarate? There was some problem with GVC_t.
-#include <gvc.h>
-
 class QSizeF;
 class QGraphicsItem;
 
 #include <QString>
 #include <QPointF>
+
+// Yes, I know the typedef is ugly, but I prefer this to having an include here.
+struct Agraph_t;
+struct Agnode_t;
+struct GVC_s;
+typedef struct GVC_s GVC_t;
 
 namespace fhg
 {
@@ -57,6 +60,7 @@ namespace fhg
         ~graph_type();
 
         void rankdir (const QString& dir);
+        void splines (const QString& mode);
 
         node_type add_node (const QString& name);
         node_type add_node (const QGraphicsItem* const item);
