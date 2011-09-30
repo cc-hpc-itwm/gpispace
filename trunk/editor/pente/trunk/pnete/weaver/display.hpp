@@ -60,10 +60,12 @@ namespace fhg
         data::proxy::type* _proxy;
         function_with_mapping_type _function_with_mapping;
 
-        struct
+        struct ports_type
         {
-          XMLTYPE(ports_type) in;
-          XMLTYPE(ports_type) out;
+          XMLTYPE(ports_type)* in;
+          XMLTYPE(ports_type)* out;
+
+          ports_type() : in (NULL), out (NULL) {}
         } _ports;
 
         ui::graph::scene* _scene;

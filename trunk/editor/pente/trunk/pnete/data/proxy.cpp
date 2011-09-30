@@ -16,13 +16,6 @@ namespace fhg
     {
       namespace proxy
       {
-        const ::xml::parse::type::function_type& function (const type& proxy)
-        {
-          return boost::apply_visitor
-            ( visitor::function<const ::xml::parse::type::function_type&>()
-            , proxy
-            );
-        }
         ::xml::parse::type::function_type& function (type& proxy)
         {
           return boost::apply_visitor

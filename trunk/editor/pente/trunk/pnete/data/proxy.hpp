@@ -56,15 +56,7 @@ namespace fhg
           {
             return _function_with_mapping.function();
           }
-          const ::xml::parse::type::function_type& function() const
-          {
-            return _function_with_mapping.function();
-          }
           ::xml::parse::type::type_map_type& type_map()
-          {
-            return _function_with_mapping.type_map();
-          }
-          const ::xml::parse::type::type_map_type& type_map() const
           {
             return _function_with_mapping.type_map();
           }
@@ -80,7 +72,7 @@ namespace fhg
 
         private:
           data_type _data;
-          function_with_mapping_type& _function_with_mapping;
+          function_with_mapping_type _function_with_mapping;
           display_type* _display;
 
           internal_type* _root;
@@ -144,7 +136,6 @@ namespace fhg
 
         typedef boost::variant<expression_proxy, mod_proxy, net_proxy> type;
 
-        const ::xml::parse::type::function_type& function (const type&);
         ::xml::parse::type::function_type& function (type&);
         ::fhg::pnete::data::internal_type* root (const type&);
 

@@ -21,14 +21,33 @@ namespace fhg
                          )
         : _proxy (NULL)
         , _function_with_mapping (function_with_mapping)
+        , _ports ()
         , _scene (NULL)
         , _root (root)
       {
         FROM (function<function> (this, _function_with_mapping.function()));
       }
       data::proxy::type* function::proxy () const { return _proxy; }
-      XMLTYPE(ports_type)& function::in () { return _ports.in; }
-      XMLTYPE(ports_type)& function::out () { return _ports.out; }
+      XMLTYPE(ports_type)& function::in ()
+      {
+        if (!_ports.in)
+          {
+            throw std::runtime_error
+              ("STRANGE! function without an portlist!?");
+          }
+
+        return *_ports.in;
+      }
+      XMLTYPE(ports_type)& function::out ()
+      {
+        if (!_ports.out)
+          {
+            throw std::runtime_error
+              ("STRANGE! function without an portlist!?");
+          }
+
+        return *_ports.out;
+      }
 
       WSIG(function, expression::open, XMLTYPE(expression_type), exp)
       {
@@ -83,11 +102,11 @@ namespace fhg
       }
       WSIG(function, function::in, XMLTYPE(ports_type), in)
       {
-        _ports.in = in;
+        _ports.in = const_cast<XMLTYPE(ports_type)*> (&in);
       }
       WSIG(function, function::out, XMLTYPE(ports_type), out)
       {
-        _ports.out = out;
+        _ports.out = const_cast<XMLTYPE(ports_type)*> (&out);
       }
       WSIG(function, function::fun, XMLTYPE(function_type::type), fun)
       {
