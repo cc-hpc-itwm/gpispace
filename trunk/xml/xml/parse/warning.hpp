@@ -40,7 +40,7 @@ namespace xml
           std::ostringstream s;
 
           s << pre
-            << ": unexpected element with name " << util::quote(name)
+            << ": unexpected element with name " << name
             << " in " << path
             ;
 
