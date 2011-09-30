@@ -71,7 +71,10 @@ namespace fhg
       void
       document_widget::set_title (const fhg::util::maybe<std::string>& name)
       {
-        setWindowTitle (name ? QString((*name).c_str()) : fallback_title());
+        setWindowTitle ( name
+                       ? QString::fromStdString (*name)
+                       : fallback_title()
+                       );
       }
 
       net_view::net_view ( data::proxy::type& proxy

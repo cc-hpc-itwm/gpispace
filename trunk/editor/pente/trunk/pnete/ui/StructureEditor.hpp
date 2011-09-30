@@ -47,7 +47,7 @@ void buildProp(T itemK, const we::type::property::path_type& path,  we::type::pr
 				ossPath<<".";
 		}
 
-		QString qstrPath(ossPath.str().c_str());
+		QString qstrPath(QString::fromStdString (ossPath.str()));
 		qDebug()<<"current path: "<<qstrPath;
 
 		T itemV = itemK->child(k, 1);

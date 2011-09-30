@@ -47,7 +47,7 @@ namespace fhg
           (data::proxy::function (proxy).name);
 
         QLineEdit* name_line_edit
-          (new QLineEdit (name ? QString((*name).c_str()) : ""));
+          (new QLineEdit (name ? QString::fromStdString(*name) : ""));
         connect ( name_line_edit
                 , SIGNAL (textEdited (const QString&))
                 , SLOT (name_changed (const QString&))
@@ -62,7 +62,8 @@ namespace fhg
         vbox->addWidget (name_widget);
 
         QTextEdit* edit (new QTextEdit ());
-        edit->setText (QString (expression.expression().expression().c_str()));
+        edit->setText
+          (QString::fromStdString (expression.expression().expression()));
         vbox->addWidget (edit);
         vbox->setContentsMargins (0, 0, 0, 0);
 
@@ -77,6 +78,7 @@ namespace fhg
 
       void expression_widget::name_changed (const QString& name_)
       {
+        //! \todo implement in base_editor_widget convenience for access to change_manager, function
         data::proxy::root (proxy())->
           change_manager().set_function_name ( data::proxy::function (proxy())
                                              , name_

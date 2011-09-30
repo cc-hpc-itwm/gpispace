@@ -46,13 +46,13 @@ namespace fhg
       }
       void tv::set_text (const std::string & str)
       {
-        set_text (QString (str.c_str()));
+        set_text (QString::fromStdString (str));
       }
       void tv::add_something (const std::string & sep, const std::string & what)
       {
         set_text ( top()->text()
-                 . append(sep.c_str())
-                 . append(what.c_str())
+                 . append (QString::fromStdString (sep))
+                 . append (QString::fromStdString (what))
                  );
       }
 
@@ -137,13 +137,13 @@ namespace fhg
                     )
       )
       {
-        xs (QString (header.c_str()), coll.begin(), coll.end(), fun);
+        xs (QString::fromStdString (header), coll.begin(), coll.end(), fun);
       }
 
       template<>
       QStandardItem * tv::append<std::string> (const std::string & str)
       {
-        return append (QString (str.c_str()));
+        return append (QString::fromStdString (str));
       }
 
       template<>
@@ -399,7 +399,7 @@ namespace fhg
       WSIGE(tv, place_map::close) { pop(); }
       WSIG(tv, place_map::place_virtual, std::string, name)
       {
-        set_text (QString ("virtual: ").append(name.c_str()));
+        set_text (QString ("virtual: ").append(QString::fromStdString (name)));
       }
       WSIG(tv, place_map::place_real, std::string, name)
       {
@@ -421,7 +421,7 @@ namespace fhg
       WSIGE(tv, connection::close) { pop(); }
       WSIG(tv, connection::port, std::string, port)
       {
-        set_text (QString ("port: ").append (port.c_str()));
+        set_text (QString ("port: ").append (QString::fromStdString (port)));
       }
       WSIG(tv, connection::place, std::string, place)
       {
