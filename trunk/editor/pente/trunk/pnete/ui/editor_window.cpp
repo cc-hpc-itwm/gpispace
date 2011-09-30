@@ -137,19 +137,17 @@ namespace fhg
 
         QAction* create_action (new QAction (tr ("new_net"), this));
         QAction* open_action (new QAction (tr ("open_net"), this));
-        QAction* save_action (new QAction (tr ("save_net"), this));
+        QAction* save_action (_view_manager->save_current_file_action());
         QAction* close_action (new QAction (tr ("close_current_window"), this));
         QAction* quit_action (new QAction (tr ("quit_application"), this));
 
         create_action->setShortcuts (QKeySequence::New);
         open_action->setShortcuts (QKeySequence::Open);
-        save_action->setShortcuts (QKeySequence::Save);
         close_action->setShortcuts (QKeySequence::Close);
         quit_action->setShortcuts (QKeySequence::Quit);
 
         connect (create_action, SIGNAL (triggered()), SLOT (create()));
         connect (open_action, SIGNAL (triggered()), SLOT (open()));
-        connect (save_action, SIGNAL (triggered()), SLOT (save()));
         connect (close_action, SIGNAL (triggered()), SLOT (close_document()));
         connect (quit_action, SIGNAL (triggered()), SLOT (quit()));
 
@@ -379,24 +377,6 @@ namespace fhg
         create_windows (data::manager::instance().create());
       }
 
-      void editor_window::save()
-      {
-        QString filename (QFileDialog::getSaveFileName
-           (this, tr ("Save net"), QDir::homePath(), tr ("XML files (*.xml)")));
-
-        if (filename.isEmpty())
-        {
-          return;
-        }
-
-        if (!filename.endsWith (".xml"))
-        {
-          filename.append (".xml");
-        }
-
-        save (filename);
-      }
-
       void editor_window::open()
       {
         QString filename (QFileDialog::getOpenFileName
@@ -416,10 +396,6 @@ namespace fhg
         _structure_view->append (data);
       }
 
-      void editor_window::save (const QString& filename)
-      {
-        //        _view_manager->_scene (filename);
-      }
       void editor_window::open (const QString& filename)
       {
         create_windows (data::manager::instance().load (filename));

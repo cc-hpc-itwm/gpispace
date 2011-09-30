@@ -46,8 +46,6 @@ namespace fhg
 
       public slots:
         void create();
-        void save();
-        void save (const QString& filename);
         void open();
         void open (const QString& filename);
         void close_document();

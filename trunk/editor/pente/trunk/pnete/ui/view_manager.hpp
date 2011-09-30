@@ -7,6 +7,7 @@
 
 #include <pnete/data/proxy.hpp>
 
+class QAction;
 class QWidget;
 
 namespace fhg
@@ -44,11 +45,15 @@ namespace fhg
           void duplicate_active_widget();
           void create_widget (data::proxy::type &);
           void current_widget_close();
+        void save_file();
 
         signals:
         // net_view
           void zoomed (int);
         //void data_changed (function_type*);
+
+      public:
+        QAction* save_current_file_action();
 
         private:
           editor_window* _editor_window;
@@ -56,6 +61,12 @@ namespace fhg
           QList<document_widget*> _accessed_widgets;
 
           void add_on_top_of_current_widget (document_widget* w);
+
+        QAction* _save_current_file;
+        void initialize_actions();
+
+        void disable_file_actions();
+        void enable_file_actions();
       };
     }
   }
