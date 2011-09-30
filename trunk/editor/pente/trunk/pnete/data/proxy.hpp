@@ -143,16 +143,6 @@ namespace fhg
 
         namespace visitor
         {
-          // template<typename RESULT, void (proxy_base::* FUN) ()>
-          // class get : public boost::static_visitor<RESULT>
-          // {
-          // public:
-          //   template<typename T> RESULT operator () (T& x) const
-          //     {
-          //       return x->*FUN();
-          //     }
-          // };
-
           typedef ::fhg::pnete::data::internal_type* internal_type_ptr_type;
 
           class root
