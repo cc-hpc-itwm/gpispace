@@ -9,13 +9,12 @@
 
 #include <QString>
 #include <QObject>
+#include <QFile>
+#include <QTextStream>
 
 #include <stdexcept>
 
 #include <pnete/data/internal.hpp>
-
-// remove me
-#include <iostream>
 
 namespace fhg
 {
@@ -33,9 +32,9 @@ namespace fhg
         static manager* _instance_ptr (0);
 
         if (!_instance_ptr)
-          {
-            _instance_ptr = new manager();
-          }
+        {
+          _instance_ptr = new manager();
+        }
         return *_instance_ptr;
       }
 
@@ -44,17 +43,17 @@ namespace fhg
         bimap_type::left_map::iterator pos (_files.left.find (filename));
 
         if (pos != _files.left.end())
-          {
-            return pos->second;
-          }
+        {
+          return pos->second;
+        }
         else
-          {
-            internal_type* ret (new internal_type (filename));
+        {
+          internal_type* ret (new internal_type (filename));
 
-            _files.insert (bimap_type::value_type (filename, ret));
+          _files.insert (bimap_type::value_type (filename, ret));
 
-            return ret;
-          }
+          return ret;
+        }
       }
 
       internal_type* manager::create()
@@ -78,25 +77,22 @@ namespace fhg
           pos (_files.right.find (data));
 
         if (pos == _files.right.end())
-          {
-            throw std::runtime_error ("save unmanaged data!?");
-          }
+        {
+          throw std::runtime_error ("save unmanaged data!?");
+        }
 
-        fhg::util::xml::xmlstream s (std::cout);
+        QFile file (filename ? *filename : pos->second);
+        if (!file.open (QFile::WriteOnly | QFile::Truncate))
+        {
+          throw std::runtime_error("could not open file for writing.");
+        }
+
+        std::stringstream ss;
+
+        fhg::util::xml::xmlstream s (ss);
         xml::parse::type::dump::dump (s, data->function(), data->state());
 
-        if (filename)
-          {
-            //! \todo look if filename already present.
-
-            // TODO
-            // dump (data, *filename)
-          }
-        else
-          {
-            // TODO
-            // dump (data, pos->second);
-          }
+        file.write (ss.str().c_str(), ss.str().size());
       }
     }
   }
