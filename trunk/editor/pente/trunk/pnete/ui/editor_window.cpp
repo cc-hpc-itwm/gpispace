@@ -418,6 +418,7 @@ namespace fhg
           , data
           );
         _view_manager->create_widget (*wf.proxy());
+        //! \todo should be something like data->proxy()
         _structure_view->append (data);
       }
 
