@@ -1,7 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-
 #include <pnete/ui/ports_list_widget.hpp>
+
+#include <xml/parse/types.hpp>
 
 #include <QWidget>
 #include <QVBoxLayout>
@@ -18,7 +19,7 @@ namespace fhg
     {
       static QGroupBox* port_list_box
         ( const QString & label
-        , data::proxy::xml_type::ports_type & ports
+        , ::xml::parse::type::ports_type & ports
         , const QStringList& types
         )
       {
@@ -30,8 +31,8 @@ namespace fhg
       }
 
       ports_list_widget::ports_list_widget
-        ( data::proxy::xml_type::ports_type& in
-        , data::proxy::xml_type::ports_type& out
+        ( ::xml::parse::type::ports_type& in
+        , ::xml::parse::type::ports_type& out
         , const QStringList& types
         , QWidget* parent
         )

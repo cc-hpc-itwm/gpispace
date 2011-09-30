@@ -9,7 +9,6 @@
 #include <list>
 
 #include <pnete/weaver/weaver.hpp>
-#include <pnete/data/internal.hpp>
 
 class QStandardItem;
 class QStandardItemModel;
@@ -31,6 +30,11 @@ namespace fhg
 {
   namespace pnete
   {
+    namespace data
+    {
+      class internal_type;
+    }
+
     namespace ui
     {
       class StructureView : public QTreeView
@@ -39,14 +43,14 @@ namespace fhg
         QStandardItemModel* _model;
         QStandardItem* _root;
 
-        typedef std::list<data::internal_type::ptr> datas_type;
+        typedef std::list<data::internal_type*> datas_type;
 
         datas_type _datas;
 
       public:
         StructureView (QWidget* parent = 0);
 
-        void append (data::internal_type::ptr data);
+        void append (data::internal_type* data);
         void clear();
       };
     }

@@ -17,6 +17,8 @@
 
 #include <stdexcept>
 
+#include <pnete/data/internal.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -37,7 +39,7 @@ namespace fhg
         header()->hide();
       }
 
-      void StructureView::append (data::internal_type::ptr data)
+      void StructureView::append (data::internal_type* data)
       {
         _datas.push_back (data);
 

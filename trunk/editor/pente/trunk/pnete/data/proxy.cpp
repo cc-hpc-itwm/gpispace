@@ -31,7 +31,7 @@ namespace fhg
             );
         }
 
-        ::fhg::pnete::data::internal_type::ptr root (const type& proxy)
+        ::fhg::pnete::data::internal_type* root (const type& proxy)
         {
           return boost::apply_visitor (visitor::root (), proxy);
         }

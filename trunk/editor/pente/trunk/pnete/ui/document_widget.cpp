@@ -9,6 +9,8 @@
 #include <pnete/ui/module_call_widget.hpp>
 #include <pnete/ui/expression_widget.hpp>
 
+#include <pnete/data/internal.hpp>
+
 namespace fhg
 {
   namespace pnete

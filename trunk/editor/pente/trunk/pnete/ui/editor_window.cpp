@@ -21,8 +21,7 @@
 #include <pnete/ui/view_manager.hpp>
 
 #include <pnete/data/manager.hpp>
-
-#include <pnete/weaver/display.hpp>
+#include <pnete/data/internal.hpp>
 
 namespace fhg
 {
@@ -411,14 +410,9 @@ namespace fhg
         open (filename);
       }
 
-      void editor_window::create_windows (data::internal_type::ptr data)
+      void editor_window::create_windows (data::internal_type* data)
       {
-        weaver::function wf
-          ( weaver::function_with_mapping_type (data->function())
-          , data
-          );
-        _view_manager->create_widget (*wf.proxy());
-        //! \todo should be something like data->proxy()
+        _view_manager->create_widget (data->root_proxy());
         _structure_view->append (data);
       }
 

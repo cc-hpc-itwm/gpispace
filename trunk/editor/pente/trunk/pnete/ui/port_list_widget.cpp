@@ -2,9 +2,13 @@
 
 #include <pnete/ui/port_list_widget.hpp>
 
+#include <xml/parse/types.hpp>
+
 #include <QHeaderView>
 #include <QStandardItem>
 #include <QStandardItemModel>
+
+#include <pnete/ui/ComboItemDelegate.hpp>
 
 namespace fhg
 {
@@ -13,7 +17,7 @@ namespace fhg
     namespace ui
     {
       port_list_widget::port_list_widget
-        ( data::proxy::xml_type::ports_type& ports
+        ( ::xml::parse::type::ports_type& ports
         , const QStringList& types
         , QWidget* parent
         )
@@ -31,7 +35,7 @@ namespace fhg
 
         verticalHeader()->hide();
 
-        typedef data::proxy::xml_type::ports_type::iterator iterator;
+        typedef ::xml::parse::type::ports_type::iterator iterator;
 
         int row (0);
 

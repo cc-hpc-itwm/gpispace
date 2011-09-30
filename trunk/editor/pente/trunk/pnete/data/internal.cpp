@@ -16,17 +16,25 @@ namespace fhg
   {
     namespace data
     {
-      internal_type::internal_type ()
+      internal_type::internal_type()
         : _state ()
         , _function ()
         , _change_manager (*this)
+        , _root_proxy (*create_proxy())
       {}
 
       internal_type::internal_type (const QString& filename)
         : _state ()
         , _function (::xml::parse::just_parse (_state, filename.toStdString()))
         , _change_manager (*this)
+        , _root_proxy (*create_proxy())
       {}
+
+      proxy::type* internal_type::create_proxy()
+      {
+        return weaver::function
+          (weaver::function_with_mapping_type (function()), this).proxy();
+      }
 
       ::xml::parse::type::function_type & internal_type::function ()
       {
@@ -48,6 +56,14 @@ namespace fhg
       change_manager_t& internal_type::change_manager ()
       {
         return _change_manager;
+      }
+      const proxy::type& internal_type::root_proxy() const
+      {
+        return _root_proxy;
+      }
+      proxy::type& internal_type::root_proxy()
+      {
+        return _root_proxy;
       }
     }
   }

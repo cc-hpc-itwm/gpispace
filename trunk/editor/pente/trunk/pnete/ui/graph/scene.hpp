@@ -3,8 +3,6 @@
 #ifndef _FHG_PNETE_UI_GRAPH_SCENE_HPP
 #define _FHG_PNETE_UI_GRAPH_SCENE_HPP 1
 
-#include <pnete/data/internal.hpp>
-
 #include <xml/parse/types.hpp>
 
 #include <QGraphicsScene>

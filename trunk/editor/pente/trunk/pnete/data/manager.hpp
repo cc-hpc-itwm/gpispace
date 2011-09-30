@@ -3,8 +3,6 @@
 #ifndef _PNETE_DATA_MANAGER_HPP
 #define _PNETE_DATA_MANAGER_HPP 1
 
-#include <pnete/data/internal.hpp>
-
 #include <QString>
 
 #include <boost/bimap.hpp>
@@ -17,6 +15,8 @@ namespace fhg
   {
     namespace data
     {
+      class internal_type;
+
       class manager
       {
       private:
@@ -24,7 +24,7 @@ namespace fhg
 
         typedef QString id_type;
         typedef boost::bimaps::set_of<id_type> ids_type;
-        typedef boost::bimaps::set_of<internal_type::ptr> datas_type;
+        typedef boost::bimaps::set_of<internal_type*> datas_type;
         typedef boost::bimap<ids_type, datas_type> bimap_type;
 
         bimap_type _files;
@@ -34,11 +34,12 @@ namespace fhg
       public:
         static manager& instance();
 
-        internal_type::ptr load (const QString& filename);
-        internal_type::ptr create();
-        void save ( const internal_type::ptr & data
+        internal_type* load (const QString& filename);
+        internal_type* create();
+        void save ( internal_type* data
                   , const boost::optional<const QString&> filename = boost::none
                   ) const;
+        //! \todo add close!
       };
     }
   }

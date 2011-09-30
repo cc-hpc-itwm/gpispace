@@ -12,6 +12,8 @@
 #include <pnete/ui/expression_widget.hpp>
 #include <pnete/ui/ports_list_widget.hpp>
 
+#include <pnete/data/internal.hpp>
+
 namespace fhg
 {
   namespace pnete

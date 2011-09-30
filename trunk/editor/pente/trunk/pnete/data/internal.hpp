@@ -9,6 +9,7 @@
 #include <xml/parse/state.hpp>
 
 #include <pnete/data/change_manager.hpp>
+#include <pnete/data/proxy.hpp>
 
 class QString;
 
@@ -24,10 +25,11 @@ namespace fhg
         ::xml::parse::state::type _state;
         ::xml::parse::type::function_type _function;
         change_manager_t _change_manager;
+        proxy::type _root_proxy;
+
+        proxy::type* create_proxy();
 
       public:
-        typedef boost::shared_ptr<internal_type> ptr;
-
         explicit internal_type ();
         explicit internal_type (const QString& filename);
 
@@ -36,6 +38,8 @@ namespace fhg
         const ::xml::parse::state::key_values_t & context () const;
         const ::xml::parse::state::type & state () const;
         change_manager_t& change_manager();
+        const proxy::type& root_proxy() const;
+        proxy::type& root_proxy();
       };
     }
   }

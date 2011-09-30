@@ -12,6 +12,8 @@
 
 #include <stdexcept>
 
+#include <pnete/data/internal.hpp>
+
 // remove me
 #include <iostream>
 
@@ -37,7 +39,7 @@ namespace fhg
         return *_instance_ptr;
       }
 
-      internal_type::ptr manager::load (const QString& filename)
+      internal_type* manager::load (const QString& filename)
       {
         bimap_type::left_map::iterator pos (_files.left.find (filename));
 
@@ -47,7 +49,7 @@ namespace fhg
           }
         else
           {
-            internal_type::ptr ret (new internal_type (filename));
+            internal_type* ret (new internal_type (filename));
 
             _files.insert (bimap_type::value_type (filename, ret));
 
@@ -55,20 +57,20 @@ namespace fhg
           }
       }
 
-      internal_type::ptr manager::create()
+      internal_type* manager::create()
       {
         const QString filename ( QObject::tr ("unnamed-%1.xml")
                                . arg (++_unnamed_current)
                                );
 
-        internal_type::ptr ret (internal_type::ptr (new internal_type ()));
+        internal_type* ret (new internal_type ());
 
         _files.insert (bimap_type::value_type (filename, ret));
 
         return ret;
       }
 
-      void manager::save ( const internal_type::ptr & data
+      void manager::save ( internal_type* data
                          , const boost::optional<const QString &> filename
                          ) const
       {

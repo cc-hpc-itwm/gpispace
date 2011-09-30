@@ -9,8 +9,6 @@
 
 #include <QString>
 
-#include <pnete/data/internal.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -26,6 +24,8 @@ namespace fhg
 
     namespace data
     {
+      class internal_type;
+
       namespace proxy
       {
         typedef ::xml::parse::type::function_with_mapping_type
@@ -38,7 +38,7 @@ namespace fhg
           typedef DATA data_type;
           typedef DISPLAY display_type;
 
-          proxy_base ( internal_type::ptr root
+          proxy_base ( internal_type* root
                      , data_type data
                      , function_with_mapping_type& function_with_mapping
                      , display_type* display = NULL
@@ -73,7 +73,7 @@ namespace fhg
           {
             return _display;
           }
-          internal_type::ptr root() const
+          internal_type* root() const
           {
             return _root;
           }
@@ -83,13 +83,13 @@ namespace fhg
           function_with_mapping_type& _function_with_mapping;
           display_type* _display;
 
-          internal_type::ptr _root;
+          internal_type* _root;
         };
-
-        namespace xml_type = ::xml::parse::type;
 
         namespace data
         {
+          namespace xml_type = ::xml::parse::type;
+
           class expression_type
           {
           private:
@@ -146,7 +146,7 @@ namespace fhg
 
         const ::xml::parse::type::function_type& function (const type&);
         ::xml::parse::type::function_type& function (type&);
-        ::fhg::pnete::data::internal_type::ptr root (const type&);
+        ::fhg::pnete::data::internal_type* root (const type&);
 
         ui::document_widget* document_widget_factory (type&);
 
@@ -162,7 +162,7 @@ namespace fhg
           //     }
           // };
 
-          typedef ::fhg::pnete::data::internal_type::ptr internal_type_ptr_type;
+          typedef ::fhg::pnete::data::internal_type* internal_type_ptr_type;
 
           class root
             : public boost::static_visitor<internal_type_ptr_type>

@@ -6,10 +6,10 @@
 #include <QObject>
 #include <QWidget>
 
-#include <pnete/data/proxy.hpp>
-#include <pnete/ui/port_list_widget.hpp>
-
+class QStringList;
 class QWidget;
+
+#include <xml/parse/types.hpp>
 
 namespace fhg
 {
@@ -22,15 +22,15 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit ports_list_widget ( data::proxy::xml_type::ports_type& in
-                                   , data::proxy::xml_type::ports_type& out
+        explicit ports_list_widget ( ::xml::parse::type::ports_type& in
+                                   , ::xml::parse::type::ports_type& out
                                    , const QStringList& types
                                    , QWidget* parent = NULL
                                    );
 
       private:
-        data::proxy::xml_type::ports_type& _in;
-        data::proxy::xml_type::ports_type& _out;
+        ::xml::parse::type::ports_type& _in;
+        ::xml::parse::type::ports_type& _out;
 
         const QStringList& _types;
       };

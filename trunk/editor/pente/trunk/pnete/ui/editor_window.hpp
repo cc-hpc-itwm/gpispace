@@ -11,12 +11,15 @@ class QTreeView;
 class QWidget;
 class QMenuBar;
 
-#include <pnete/data/internal.hpp>
-
 namespace fhg
 {
   namespace pnete
   {
+    namespace data
+    {
+      class internal_type;
+    }
+
     namespace ui
     {
       class view_manager;
@@ -69,7 +72,7 @@ namespace fhg
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);
 
-        void create_windows (data::internal_type::ptr data);
+        void create_windows (data::internal_type* data);
       };
     }
   }
