@@ -14,40 +14,34 @@ namespace value
   namespace container
   {
     template<typename Path>
-    inline value::type bind ( type & container
-                            , const std::string & key
-                            , const Path & path
-                            , const value::type & value
-                            )
+    inline void bind ( type & container
+                     , const std::string & key
+                     , const Path & path
+                     , const value::type & value
+                     )
     {
-      container[key]
-        =  boost::apply_visitor ( value::visitor::mk_structured()
-                                , container[key]
-                                );
+      value::visitor::mk_structured_or_keep (container[key]);
 
-      return value::put (path, container[key], value);
+      value::put (path, container[key], value);
     }
 
-    inline value::type bind ( type & container
-                            , const key_vec_t & key_vec
-                            , const value::type & value
-                            )
+    inline void bind ( type & container
+                     , const key_vec_t & key_vec
+                     , const value::type & value
+                     )
     {
       if (key_vec.size() == 0)
         {
           throw std::runtime_error ("value::container::bind []");
         }
 
-      container[key_vec[0]] =
-        boost::apply_visitor ( value::visitor::mk_structured()
-                             , container[key_vec[0]]
-                             );
+      value::visitor::mk_structured_or_keep (container[key_vec[0]]);
 
-      return value::put ( key_vec.begin() + 1
-                        , key_vec.end()
-                        , container[key_vec[0]]
-                        , value
-                        );
+      value::put ( key_vec.begin() + 1
+                 , key_vec.end()
+                 , container[key_vec[0]]
+                 , value
+                 );
     }
   }
 }

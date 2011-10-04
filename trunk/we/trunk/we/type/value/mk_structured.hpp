@@ -11,12 +11,23 @@ namespace value
 {
   namespace visitor
   {
-    class mk_structured : public boost::static_visitor<type>
+    class mk_structured : public boost::static_visitor<void>
     {
+    private:
+      type& _x;
+
     public:
-      type operator () (const literal::type &) const { return structured_t(); }
-      type operator () (const structured_t & s) const { return s; }
+      mk_structured (type& x) : _x (x) {}
+
+      void operator () (const literal::type &) const { _x = structured_t(); }
+
+      template<typename T> void operator () (const T&) const {}
     };
+
+    inline void mk_structured_or_keep (type& x)
+    {
+      boost::apply_visitor (value::visitor::mk_structured (x), x);
+    }
   }
 }
 

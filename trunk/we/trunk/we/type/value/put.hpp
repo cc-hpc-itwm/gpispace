@@ -11,7 +11,7 @@
 
 namespace value
 {
-  inline type put ( path_type::const_iterator pos
+  inline void put ( path_type::const_iterator pos
                   , const path_type::const_iterator end
                   , type & store
                   , const type & value
@@ -23,7 +23,7 @@ namespace value
       }
     else
       {
-        store = boost::apply_visitor (visitor::mk_structured(), store);
+        value::visitor::mk_structured_or_keep (store);
 
         put ( pos + 1
             , end
@@ -31,27 +31,25 @@ namespace value
             , value
             );
       }
-
-    return value;
   }
 
-  inline type put ( const path_type & path
+  inline void put ( const path_type & path
                   , type & store
                   , const type & value
                   )
   {
-    return put (path.begin(), path.end(), store, value);
+    put (path.begin(), path.end(), store, value);
   }
 
-  inline type put ( const std::string & path
-                  , type & store
-                  , const type & value
-                  )
+  inline void put ( const std::string & path
+                         , type & store
+                         , const type & value
+                         )
   {
-    return put ( fhg::util::split<path_type::value_type, path_type> (path, '.')
-               , store
-               , value
-               );
+    put ( fhg::util::split<path_type::value_type, path_type> (path, '.')
+        , store
+        , value
+        );
   }
 }
 

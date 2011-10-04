@@ -30,16 +30,14 @@ namespace expr
       typedef container_t::const_iterator const_iterator;
       typedef container_t::iterator iterator;
 
-      inline value::type
-      bind (const key_vec_t & key_vec, const value::type & value)
+      inline void bind (const key_vec_t & key_vec, const value::type & value)
       {
-        return value::container::bind (container, key_vec, value);
+        value::container::bind (container, key_vec, value);
       }
 
-      inline value::type
-      bind (const std::string & key, const value::type & value)
+      inline void bind (const std::string & key, const value::type & value)
       {
-        return value::container::bind (container, key, value);
+        value::container::bind (container, key, value);
       }
 
       inline const value::type &
