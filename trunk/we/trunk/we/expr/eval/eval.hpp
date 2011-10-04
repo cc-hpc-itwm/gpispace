@@ -52,7 +52,9 @@ namespace expr
             {
               value::type c1 (boost::apply_visitor (*this, b.r));
 
-              return c.bind (boost::get<node::key_vec_t>(b.l), c1);
+              c.bind (boost::get<node::key_vec_t>(b.l), c1);
+
+              return c1;
             }
           else if (is_or (b.token))
             {
@@ -92,13 +94,22 @@ namespace expr
             }
           else
             {
-              value::type c0 (boost::apply_visitor (*this, b.l));
-              value::type c1 (boost::apply_visitor (*this, b.r));
+              if (associativity::associativity (b.token) == associativity::left)
+                {
+                  value::type c0 (boost::apply_visitor (*this, b.l));
+                  value::type c1 (boost::apply_visitor (*this, b.r));
 
-              return boost::apply_visitor ( value::function::binary (b.token)
-                                          , c0
-                                          , c1
-                                          );
+                  return boost::apply_visitor
+                    (value::function::binary (b.token), c0, c1);
+                }
+              else
+                {
+                  value::type c1 (boost::apply_visitor (*this, b.r));
+                  value::type c0 (boost::apply_visitor (*this, b.l));
+
+                  return boost::apply_visitor
+                    (value::function::binary (b.token), c0, c1);
+                }
             }
 
         }
