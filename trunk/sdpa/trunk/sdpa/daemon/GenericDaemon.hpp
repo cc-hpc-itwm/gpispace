@@ -66,10 +66,10 @@ namespace sdpa { namespace daemon {
 
 	  typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
 
-	  GenericDaemon( const std::string name = "orchestrator_0",
-					   const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
-					   unsigned int cap = 10000,
-					   IWorkflowEngine* pArgSdpa2Gwes = NULL);
+	  GenericDaemon(  const std::string name = "orchestrator_0",
+			  	  	  const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
+					  unsigned int cap = 10000,
+					  IWorkflowEngine* pArgSdpa2Gwes = NULL);
 
 	  virtual ~GenericDaemon();
 
@@ -93,9 +93,9 @@ namespace sdpa { namespace daemon {
 	  virtual void perform(const seda::IEvent::Ptr&);
 	  virtual void schedule(const sdpa::job_id_t& job);
 
-	  bool is_configured()  { return m_bConfigOk; }
-	  bool is_stopped()     { return m_bStopped; }
-	  bool is_started()     { return m_bStarted; }
+	  bool is_configured(){ return m_bConfigOk; }
+	  bool is_stopped()   { return m_bStopped;  }
+	  bool is_started()   { return m_bStarted;  }
 
 	  void setDefaultConfiguration();
 
@@ -247,6 +247,10 @@ namespace sdpa { namespace daemon {
 
       template <typename T>
       void notifyWorkers(const T& ptrNotEvt);
+
+      void addMaster(const agent_id_t& );
+      void addMasters(const worker_id_list_t& );
+      void removeMasters(const worker_id_list_t& );
 
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
 

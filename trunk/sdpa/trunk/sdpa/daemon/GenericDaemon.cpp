@@ -787,7 +787,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() ) //e.to())
       {
           LOG(INFO, "got new job from " << e.from() << " = " << job_id);
-          pJob->set_local(true);
+          pJob->setType(Job::MASTER);
       }
 
       schedule(job_id);
@@ -1581,4 +1581,39 @@ void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
 void GenericDaemon::start_fsm()
 {
   // to be overriden in DaemonFSM
+}
+
+void GenericDaemon::addMaster(const agent_id_t& newMasterId )
+{
+	MasterInfo mInfo(newMasterId);
+	m_arrMasterInfo.push_back(mInfo);
+	requestRegistration(mInfo);
+}
+
+void GenericDaemon::addMasters(const agent_id_list_t& listMasters )
+{
+	for( sdpa::agent_id_list_t::const_iterator it = listMasters.begin(); it != listMasters.end(); it ++ )
+	{
+		MasterInfo mInfo(*it);
+		m_arrMasterInfo.push_back(mInfo);
+		requestRegistration(mInfo);
+	}
+}
+
+bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
+{
+	if( info.name() == agId )
+		return true;
+	else
+		return false;
+}
+
+void GenericDaemon::removeMasters(const worker_id_list_t& listMasters)
+{
+	BOOST_FOREACH(const sdpa::agent_id_t& id, listMasters)
+	{
+		master_info_list_t::iterator it = find_if( m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasId, _1, id) );
+		if( it != m_arrMasterInfo.end() )
+			m_arrMasterInfo.erase(it);
+	}
 }

@@ -66,9 +66,9 @@ namespace sdpa { namespace events {
       if(this != &regEvt)
       {
         *((MgmtEvent*)(this)) = (MgmtEvent&)(regEvt);
-        capacity_ 	 = regEvt.capacity_;
-        cpbset_ 		 = regEvt.cpbset_;
-        agent_uuid_ 	 = regEvt.agent_uuid_;
+        capacity_ 	 		  = regEvt.capacity_;
+        cpbset_ 			  = regEvt.cpbset_;
+        agent_uuid_ 		  = regEvt.agent_uuid_;
       }
 
       return *this;

@@ -241,7 +241,7 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
         SDPA_LOG_DEBUG("The status of the job "<<pJob->id()<<" is "<<job_status<<"!!!!!!!!");
 
 
-        if( pJob->is_local() && job_status.find("Finished") != std::string::npos )
+        if( pJob->isMasterJob() && job_status.find("Finished") != std::string::npos )
         {
           // create jobFinishedEvent
           sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(), pJob->owner(), pJob->id(), pJob->result() ));
@@ -249,7 +249,7 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
           // send it to the master
           pComm->sendEventToMaster(pEvtJobFinished);
         }
-        else if( pJob->is_local() && job_status.find("Failed") != std::string::npos )
+        else if( pJob->isMasterJob() && job_status.find("Failed") != std::string::npos )
         {
           // create jobFailedEvent
           sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent( pComm->name(), pJob->owner(), pJob->id(), pJob->result() ));
@@ -257,7 +257,7 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
           // send it to the master
           pComm->sendEventToMaster(pEvtJobFailed);
         }
-        else if( pJob->is_local() && job_status.find("Cancelled") != std::string::npos)
+        else if( pJob->isMasterJob() && job_status.find("Cancelled") != std::string::npos)
         {
           // create jobCancelledEvent
           sdpa::events::CancelJobAckEvent::Ptr pEvtJobCancelled( new sdpa::events::CancelJobAckEvent( pComm->name(), pJob->owner(), pJob->id(), sdpa::events::SDPAEvent::message_id_type() ));
@@ -274,7 +274,7 @@ unsigned int JobManager::countMasterJobs()
   unsigned int nMasterJobs = 0;
   BOOST_FOREACH(job_map_t::value_type& job_pair, job_map_ )
   {
-	  if( job_pair.second->is_local() )
+	  if( job_pair.second->isMasterJob() )
 		  nMasterJobs++;
   }
 

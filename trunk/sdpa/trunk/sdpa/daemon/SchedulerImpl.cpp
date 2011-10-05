@@ -722,7 +722,7 @@ void SchedulerImpl::run()
           sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
           const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-          if( !pJob->is_local() )
+          if( !pJob->isMasterJob() ) //it's a we job
           {
               // if it's an NRE just execute it!
               // Attention!: an NRE has no WorkerManager!!!!
@@ -748,7 +748,7 @@ void SchedulerImpl::run()
 				  execute(jobId);
         	  } // else fail
           }
-          else
+          else // it's a master job
         	  schedule_local(jobId);
       }
       catch(const JobNotFoundException& ex)
