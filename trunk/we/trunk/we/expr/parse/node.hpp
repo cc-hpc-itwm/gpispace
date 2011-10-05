@@ -77,6 +77,24 @@ namespace expr
 
       // ******************************************************************* //
 
+#if 0
+      //! \todo use c++0x to write a function with local visitor
+      bool is_value (const type& node)
+      {
+        class visitor_is_value : public boost::static_visitor<bool>
+        {
+        public:
+          bool operator () (const value::type &) const { return true; }
+          bool operator () (const key_vec_t &) const { return false; }
+          bool operator () (const unary_t &) const { return false; }
+          bool operator () (const binary_t &) const { return false; }
+          bool operator () (const ternary_t &) const { return false; }
+        };
+
+        return boost::apply_visitor (visitor_is_value(), node);
+      }
+#endif
+
       namespace visitor
       {
         class is_value : public boost::static_visitor<bool>

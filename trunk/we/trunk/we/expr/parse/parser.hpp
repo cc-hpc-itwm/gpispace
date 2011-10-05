@@ -80,12 +80,16 @@ namespace expr
         nd_t c (nd_stack.back()); nd_stack.pop_back();
 
         if (boost::apply_visitor (node::visitor::is_value(), c))
-          nd_stack.push_back
-            (nd_t (boost::apply_visitor ( value::function::unary (token)
-                                        , boost::get<value::type> (c)
-                                        )
-                  )
-            );
+        //! \todo use c++0x to write this as
+        // if (node::is_value(c))
+          {
+            nd_stack.push_back
+              (nd_t (boost::apply_visitor ( value::function::unary (token)
+                                          , boost::get<value::type> (c)
+                                          )
+                    )
+              );
+          }
         else
           {
             nd_stack.push_back (node::unary_t (token, c));
