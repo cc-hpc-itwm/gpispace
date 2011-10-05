@@ -38,6 +38,8 @@ namespace sdpa { namespace daemon {
     public:
         typedef sdpa::shared_ptr<Job> ptr_t;
 
+        enum job_type {MASTER, LOCAL, WORKER};
+
         virtual ~Job() {}
 
         virtual const job_id_t & id() const = 0;
@@ -53,8 +55,8 @@ namespace sdpa { namespace daemon {
         virtual bool is_marked_for_deletion() = 0;
         virtual bool mark_for_deletion() = 0;
 
-        virtual bool is_local()=0;
-        virtual void set_local(bool)=0;
+        virtual bool isMasterJob()=0;
+        virtual void setType(const job_type& )=0;
 
         virtual std::string print_info() = 0;
 
