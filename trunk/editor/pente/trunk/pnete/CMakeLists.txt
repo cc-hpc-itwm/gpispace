@@ -12,7 +12,7 @@ set ( pnete_RCCS
 QT4_ADD_RESOURCES (pnete_RCC_SRCS ${pnete_RCCS})
 
 add_executable (pnete ${pnete_SRCS} ${pnete_RCC_SRCS})
-add_dependencies (pnete gen-includes)
+add_dependencies(pnete gen_headerlist)
 
 add_subdirectory (data)
 add_subdirectory (ui)

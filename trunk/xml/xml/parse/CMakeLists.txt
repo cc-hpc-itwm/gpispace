@@ -16,23 +16,25 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/includes.hpp.in
 
 add_executable(gen-includes includes.cpp)
 target_link_libraries(gen-includes ${Boost_LIBRARIES})
+get_target_property(GEN_INCLUDE_EXE gen-includes LOCATION)
 
 set (headerlist_hpp
     ${CMAKE_CURRENT_BINARY_DIR}/headerlist.hpp
     )
-set (headerlist_gen
-     gen-includes
-    )
-add_custom_command(TARGET gen-includes
-  POST_BUILD
-  COMMAND ${headerlist_gen} > ${headerlist_hpp}
-  DEPENDS ${headerlist_gen}
+add_custom_command(OUTPUT ${headerlist_hpp}
+  COMMAND ${GEN_INCLUDE_EXE} > ${headerlist_hpp}
+  DEPENDS gen-includes
   COMMENT "generating internal pnetc headerlist"
   )
-set_source_files_properties(${headerlist_hpp} PROPERTIES GENERATED true)
+
+add_custom_target(gen_headerlist ALL
+  DEPENDS ${headerlist_hpp}
+  COMMENT "generating internal pnetc/pnete headerlist"
+  )
+set_source_files_properties(pnetc.cpp OBJECT_DEPENDS ${headerlist_hpp})
 
 add_executable(pnetc pnetc.cpp)
-add_dependencies(pnetc gen-includes)
+#add_dependencies(pnetc gen-includes)
 target_link_libraries(pnetc ${Boost_LIBRARIES})
 target_link_libraries(pnetc ${WE_PRECOMPILE_LIBRARIES})
 install (TARGETS pnetc
