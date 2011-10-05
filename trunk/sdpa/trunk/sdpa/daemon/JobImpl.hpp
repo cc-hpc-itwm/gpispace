@@ -57,8 +57,8 @@ namespace sdpa { namespace daemon {
         virtual bool is_marked_for_deletion();
         virtual bool mark_for_deletion();
 
-        virtual bool is_local();
-        virtual void set_local(bool);
+        bool isMasterJob();
+        void setType(const job_type& );
 
         virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
         virtual sdpa::worker_id_t owner() { return m_owner; }
@@ -83,7 +83,7 @@ namespace sdpa { namespace daemon {
                 std::ostringstream os;
                 os<<std::endl;
                 os<<"id: "<<id_<<std::endl;
-                os<<"type: "<<(b_local_?"local job":"remote job")<<std::endl;
+                os<<"type: "<<type_<<std::endl;
                 os<<"status: "<<getStatus()<<std::endl;
                 os<<"parent: "<<parent_<<std::endl;
                 //os<<"description: "<<desc_<<std::endl;
@@ -99,7 +99,7 @@ namespace sdpa { namespace daemon {
                 ar & parent_;
                 ar & result_;
                 ar & walltime_;
-                ar & b_local_;
+                ar & type_;
         }
 
     protected:
@@ -111,7 +111,7 @@ namespace sdpa { namespace daemon {
         sdpa::job_id_t parent_;
 
         bool b_marked_for_del_;
-        bool b_local_;
+        job_type type_;
         sdpa::job_result_t result_;
 
         friend class boost::serialization::access;

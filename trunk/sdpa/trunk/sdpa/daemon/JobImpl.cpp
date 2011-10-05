@@ -46,7 +46,7 @@ namespace sdpa { namespace daemon {
 		, desc_(desc)
 		, parent_(parent)
 		, b_marked_for_del_(false)
-		, b_local_(false)
+    	, type_(Job::WORKER)
 		, walltime_(2592000) // walltime in seconds: one month by default
 		//, pComm(const_cast<IComm*>(pHandler))
     {}
@@ -77,12 +77,12 @@ namespace sdpa { namespace daemon {
     	return b_marked_for_del_ = true;
     }
 
-    bool JobImpl::is_local() {
-      	return b_local_;
+    bool JobImpl::isMasterJob() {
+      	return type_ == Job::MASTER;
     }
 
-    void JobImpl::set_local(bool b_val) {
-    	b_local_ = b_val;
+    void JobImpl::setType(const job_type& type) {
+    	type_ = type;
     }
 
     void JobImpl::action_run_job()
