@@ -15,6 +15,12 @@ message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
 set(TESTS_NRE_PCD_BIN "${CMAKE_BINARY_DIR}/sdpa/sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd")
 message(STATUS "nre-pcd binary path set to: ${TESTS_NRE_PCD_BIN}")
 
+get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
+get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
+#get_target_property(TESTS_WFE_PLUGIN_PATH wfe-plugin LOCATION)
+#set(TESTS_WFE_PLUGIN_PATH "${CMAKE_BINARY_DIR}/sdpa/sdpa/engine/plugin/wfe_test.so")
+get_target_property(TESTS_WFE_PLUGIN_PATH wfe_test-plugin LOCATION)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -66,6 +72,7 @@ set (tc_srcs
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
   test_Agents.cpp
+  test_AgentsAndDrts.cpp
   test_StopRestartAgents.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
@@ -85,12 +92,13 @@ foreach (tc_src ${tc_srcs})
                         sdpa-events
                         sdpa-util
                         sdpa
-			${SEDA_LIBRARY}
+			            ${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
                         ${WE_PRECOMPILE_LIBRARIES}
                         dl
+                        fhg-plugin
                         )
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})

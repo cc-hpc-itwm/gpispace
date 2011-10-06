@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_Components.cpp
+ *       Filename:  test_Agents.cpp
  *
  *    Description:  test all components, each with a real gwes, using a real user client
  *
@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-#define BOOST_TEST_MODULE TestOrchestratorEmptyWe
+#define BOOST_TEST_MODULE TestAgents
 #include "sdpa/daemon/jobFSM/JobFSM.hpp"
 #include <boost/test/unit_test.hpp>
 
@@ -483,10 +483,10 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Req )
 	ptrOrch->start_agent();
 
 	//LOG( DEBUG, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create(	"aggregator_0",
+	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create(  "aggregator_0",
 																											addrAgg,
 																											m_arrAggMasterInfo,
-																											MAX_CAP);
+																											MAX_CAP );
 	ptrAgg->start_agent();
 
 	std::vector<std::string> v_fake_PC_search_path;
@@ -537,6 +537,7 @@ BOOST_AUTO_TEST_CASE( testOrchestratorWithNoWe_Req )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe_Req )
 {
 	LOG( DEBUG, "***** testOrchestratorEmptyWe *****"<<std::endl);
@@ -603,6 +604,6 @@ BOOST_AUTO_TEST_CASE( testOrchestratorEmptyWe_Req )
 	ptrOrch->shutdown();
 
 	LOG( DEBUG, "The test case testOrchestratorEmptyWe terminated!");
-}
+}*/
 
 BOOST_AUTO_TEST_SUITE_END()

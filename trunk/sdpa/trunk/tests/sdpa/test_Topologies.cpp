@@ -303,6 +303,26 @@ void MyFixture::run_client()
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
+BOOST_AUTO_TEST_CASE( testDualRoles )
+{
+	LOG( DEBUG, "////////// testDual //////////");
+
+	sdpa::master_info_list_t arrMatersAg0;
+	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", "127.0.0.1", arrMatersAg0, MAX_CAP );
+	ptrAg0->start_agent(false);
+
+	sdpa::master_info_list_t arrMatersAg1(1, MasterInfo("agent_0"));
+	sdpa::daemon::Agent::ptr_t ptrAg1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_1", "127.0.0.1", arrMatersAg1, MAX_CAP );
+    ptrAg1->start_agent(false);
+
+    ptrAg0->addMaster("agent_1");
+
+
+    boost::this_thread::sleep(boost::posix_time::seconds(10));
+	LOG( DEBUG, "The test case testDualRoles terminated!");
+}
+
+/*
 BOOST_AUTO_TEST_CASE( testPath )
 {
 
@@ -403,7 +423,6 @@ BOOST_AUTO_TEST_CASE( testPath )
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testMultipleMastersOneNre )
 {
 	 //               O

@@ -180,7 +180,7 @@ public:
 				const sdpa::job_id_t jobId = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 				Job::ptr_t pJob = ptr_comm_handler_->jobManager()->findJob(jobId);
 
-				if(pJob->is_local())
+				if(pJob->isMasterJob())
 					schedule_local(jobId);
 				else
 				{
