@@ -18,7 +18,7 @@
 #ifndef EMPTY_WORKFLOW_ENGINE_HPP
 #define EMPTY_WORKFLOW_ENGINE_HPP 1
 
-#include "sdpa/logging.hpp"
+#include "sdpa/common.hpp"
 
 // for job_desc_t
 #include <sdpa/types.hpp>
@@ -49,6 +49,53 @@ typedef map_t::value_type id_pair;
 typedef boost::function<id_type()> Function_t;
 static std::string id_gen() { return id_generator::instance().next(); }
 
+enum we_status {
+    		FINISHED,
+    		FAILED,
+    		CANCELLED
+    	};
+
+class EmptyWorkflowEngine;
+
+class we_result_t
+{
+public:
+	we_result_t(const sdpa::job_id_t& jid, const result_type& res, const we_status& st  )
+   	{
+   		jobId = jid;
+   		status = st;
+   		result = res;
+
+   	}
+
+	we_result_t(const we_result_t& res  )
+	{
+		jobId  = res.jobId;
+		status = res.status;
+		result = res.result;
+
+	}
+
+	we_result_t& operator=(const we_result_t& res  )
+	{
+   		if( &res != this)
+   		{
+			jobId  = res.jobId;
+			status = res.status;
+			result = res.result;
+   		}
+
+   		return *this;
+	}
+
+   	friend class EmptyWorkflowEngine;
+
+   private:
+   	sdpa::job_id_t jobId;
+   	we_status status;
+   	result_type result;
+};
+
 class EmptyWorkflowEngine : public IWorkflowEngine {
   private:
     SDPA_DECLARE_LOGGER();
@@ -57,13 +104,23 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef std::string internal_id_type;
 
+    //typedef std::pair<sdpa::job_id_t, result_type>
+    typedef SynchronizedQueue<std::list<we_result_t> > ResQueue;
 
-    EmptyWorkflowEngine( IAgent* pIAgent = NULL, Function_t f = id_gen ) : SDPA_INIT_LOGGER("sdpa.tests.EmptyGwes")
+    EmptyWorkflowEngine( IAgent* pIAgent = NULL, Function_t f = id_gen )
+    	: SDPA_INIT_LOGGER("sdpa.tests.EmptyWE")
+    	, bStopRequested(false)
 	{
     	pIAgent_ = pIAgent;
     	fct_id_gen_ = f;
+    	start();
     	SDPA_LOG_DEBUG("Empty workflow engine created ...");
     }
+
+    ~EmptyWorkflowEngine()
+   	{
+       stop();
+   	}
 
     virtual bool is_real() { return false; }
 
@@ -91,8 +148,11 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
-			id_type workflowId = map_Act2Wf_Ids_[activityId];
-			pIAgent_->failed(workflowId, result);
+			const id_type workflowId = map_Act2Wf_Ids_[activityId];
+
+			//pIAgent_->failed(workflowId, result);
+			we_result_t resP(workflowId, result, FAILED);
+			qResults.push(resP);
 
 			lock_type lock(mtx_);
 			map_Act2Wf_Ids_.erase(activityId);
@@ -117,8 +177,11 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
-			id_type workflowId = map_Act2Wf_Ids_[activityId];
-			pIAgent_->finished(workflowId, result);
+			const id_type workflowId = map_Act2Wf_Ids_[activityId];
+
+			//pIAgent_->finished(workflowId, result);
+			we_result_t resP(workflowId, result, FINISHED);
+			qResults.push(resP);
 
 			//delete the entry corresp to activityId;
 			lock_type lock(mtx_);
@@ -149,7 +212,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		if(pIAgent_)
 		{
 			// find the corresponding workflow_id
-			id_type workflowId = map_Act2Wf_Ids_[activityId];
+			const id_type workflowId = map_Act2Wf_Ids_[activityId];
 			lock_type lock(mtx_);
 			map_Act2Wf_Ids_.erase(activityId);
 
@@ -161,7 +224,12 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 
 			// if no activity left, declare the workflow cancelled
 			if(bAllActFinished)
-				pIAgent_->cancelled(workflowId);
+			{
+				//pIAgent_->cancelled(workflowId);
+				result_type result;
+				const we_result_t resP(workflowId, result, CANCELLED);
+				qResults.push(resP);
+			}
 
 			return true;
 		}
@@ -243,6 +311,53 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     	  return false;
       }
 
+      // thread related functions
+      void start()
+      {
+    	   bStopRequested = false;
+			if(!pIAgent_)
+			{
+				SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
+				return;
+			}
+
+			m_thread = boost::thread(boost::bind(&EmptyWorkflowEngine::run, this));
+
+			SDPA_LOG_DEBUG("EmptyWE thread started ...");
+      }
+
+      void stop()
+      {
+			bStopRequested = true;
+			m_thread.interrupt();
+			DLOG(TRACE, "EmptyWE thread before join ...");
+			m_thread.join();
+
+			DLOG(TRACE, "EmptyWE thread joined ...");
+      }
+
+      void run()
+      {
+    	  lock_type lock(mtx_stop);
+    	  while(!bStopRequested)
+    	  {
+    		  //cond_stop.wait(lock);
+    		  we_result_t we_result = qResults.pop_and_wait();
+
+    		  if(we_result.status == FINISHED)
+    			  pIAgent_->finished(we_result.jobId, we_result.result);
+    		  else
+    			  if(we_result.status == FAILED)
+    				  pIAgent_->failed(we_result.jobId, we_result.result);
+    			  else
+    				  if(we_result.status == CANCELLED)
+    					  pIAgent_->cancelled(we_result.jobId);
+    				  else
+    					  DLOG(ERROR, "Invalid job status!!!!");
+    	  }
+      }
+
+
   public:
     mutable IAgent *pIAgent_;
 
@@ -250,6 +365,13 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     map_t map_Act2Wf_Ids_;
     mutex_type mtx_;
     Function_t fct_id_gen_;
+    bool bStopRequested;
+    boost::thread m_thread;
+
+    ResQueue qResults;
+
+    mutable mutex_type mtx_stop;
+    boost::condition_variable_any cond_stop;
 };
 
 
