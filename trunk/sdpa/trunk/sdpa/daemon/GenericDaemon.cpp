@@ -1489,24 +1489,24 @@ void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const 
 
 void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, const job_id_t& jobId, const result_type & result)
 {
-  if( hasWorkflowEngine() )
-  {
-      DLOG(TRACE, "external job finished: " << jobId);
-      workflowEngine()->finished( jobId.str(), result );
-      try {
-    	  jobManager()->deleteJob(jobId);
-	   }
-	   catch(const JobNotDeletedException& ex)
-	   {
+	if( hasWorkflowEngine() )
+	{
+		DLOG(TRACE, "external job finished: " << jobId);
+		workflowEngine()->finished( jobId.str(), result );
+		try {
+		  jobManager()->deleteJob(jobId);
+		}
+		catch(const JobNotDeletedException& ex)
+		{
 		  SDPA_LOG_WARN("Could not find the job "<<jobId.str()<<" ...");
-	   }
-  }
-  else
-  {
-      SDPA_LOG_INFO("Sent self a jobFinishedEvent for the job"<<jobId);
-      JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(worker_id, name(), jobId, result));
-      sendEventToSelf(pEvtJobFinished);
-  }
+		}
+	}
+	else
+	{
+		SDPA_LOG_INFO("Sent self a jobFinishedEvent for the job"<<jobId);
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent(worker_id, name(), jobId, result));
+		sendEventToSelf(pEvtJobFinished);
+	}
 }
 
 void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, const job_id_t& jobId)
