@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <pnete/ui/document_widget.hpp>
+#include <pnete/ui/document_view.hpp>
 #include <pnete/ui/base_editor_widget.hpp>
 
 #include <pnete/util.hpp>
@@ -17,7 +17,7 @@ namespace fhg
   {
     namespace ui
     {
-      document_widget::document_widget (const data::proxy::type& proxy)
+      document_view::document_view (const data::proxy::type& proxy)
         : dock_widget ()
       {
         connect ( this
@@ -39,7 +39,7 @@ namespace fhg
                 );
       }
       void
-      document_widget::slot_set_function_name
+      document_view::slot_set_function_name
       ( ::xml::parse::type::function_type& function
       , const QString& name
       )
@@ -54,24 +54,24 @@ namespace fhg
                   : fhg::util::Just<std::string> (name.toStdString())
                   );
       }
-      void document_widget::visibility_changed (bool visible)
+      void document_view::visibility_changed (bool visible)
       {
         if (visible)
         {
           emit focus_gained (this);
         }
       }
-      base_editor_widget* document_widget::widget() const
+      base_editor_widget* document_view::widget() const
       {
         return util::throwing_qobject_cast<base_editor_widget*>
           (dock_widget::widget());
       }
-      void document_widget::setWidget (base_editor_widget* widget)
+      void document_view::setWidget (base_editor_widget* widget)
       {
         dock_widget::setWidget (widget);
       }
       void
-      document_widget::set_title (const fhg::util::maybe<std::string>& name)
+      document_view::set_title (const fhg::util::maybe<std::string>& name)
       {
         setWindowTitle ( name
                        ? QString::fromStdString (*name)
@@ -83,7 +83,7 @@ namespace fhg
                          , data::proxy::net_proxy::data_type& net
                          , graph::scene* scene
                          )
-        : document_widget (proxy)
+        : document_view (proxy)
       {
         //! \todo submit known types
         setWidget (new net_widget (proxy, net, scene, QStringList(), this));
@@ -98,7 +98,7 @@ namespace fhg
         ( data::proxy::type& proxy
         , data::proxy::expression_proxy::data_type & expression
         )
-          : document_widget (proxy)
+          : document_view (proxy)
       {
         //! \todo submit known types
         setWidget (new expression_widget ( proxy
@@ -118,7 +118,7 @@ namespace fhg
         ( data::proxy::type& proxy
         , data::proxy::mod_proxy::data_type & mod
         )
-          : document_widget (proxy)
+          : document_view (proxy)
       {
         //! \todo submit known types
         setWidget (new module_call_widget (proxy, mod, QStringList(), this));

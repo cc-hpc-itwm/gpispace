@@ -9,7 +9,7 @@ set(ui_SRCS
 # undo_group_manager.cpp
   dock_widget.cpp
   base_editor_widget.cpp
-  document_widget.cpp
+  document_view.cpp
   view_manager.cpp
   net_widget.cpp
   module_call_widget.cpp
@@ -29,7 +29,7 @@ set(ui_HDRS
 
   dock_widget.hpp
   base_editor_widget.hpp
-  document_widget.hpp
+  document_view.hpp
   view_manager.hpp
 
   ComboItemDelegate.hpp
@@ -60,7 +60,7 @@ set(ui_TOMOC
 
   dock_widget.hpp
   base_editor_widget.hpp
-  document_widget.hpp
+  document_view.hpp
   view_manager.hpp
 
   net_widget.hpp

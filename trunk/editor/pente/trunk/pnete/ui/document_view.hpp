@@ -1,7 +1,7 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_DOCUMENT_WIDGET_HPP
-#define _PNETE_UI_DOCUMENT_WIDGET_HPP 1
+#ifndef _PNETE_UI_DOCUMENT_VIEW_HPP
+#define _PNETE_UI_DOCUMENT_VIEW_HPP 1
 
 #include <QObject>
 
@@ -25,12 +25,12 @@ namespace fhg
         class scene;
       }
 
-      class document_widget : public dock_widget
+      class document_view : public dock_widget
       {
         Q_OBJECT;
 
       public:
-        document_widget (const data::proxy::type& proxy);
+        document_view (const data::proxy::type& proxy);
 
         base_editor_widget* widget() const;
         void setWidget (base_editor_widget* widget);
@@ -52,7 +52,7 @@ namespace fhg
         virtual QString fallback_title() const = 0;
       };
 
-      class expression_view : public document_widget
+      class expression_view : public document_view
       {
         Q_OBJECT;
 
@@ -64,7 +64,7 @@ namespace fhg
         virtual QString fallback_title() const;
       };
 
-      class mod_view : public document_widget
+      class mod_view : public document_view
       {
         Q_OBJECT;
 
@@ -77,7 +77,7 @@ namespace fhg
         virtual QString fallback_title() const;
       };
 
-      class net_view : public document_widget
+      class net_view : public document_view
       {
         Q_OBJECT;
 

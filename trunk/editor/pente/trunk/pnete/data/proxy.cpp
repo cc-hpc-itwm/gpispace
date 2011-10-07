@@ -6,7 +6,7 @@
 
 #include <boost/variant.hpp>
 
-#include <pnete/ui/document_widget.hpp>
+#include <pnete/ui/document_view.hpp>
 
 namespace fhg
 {
@@ -66,36 +66,36 @@ namespace fhg
           xml_type::net_type& net_type::net () { return _net; }
         }
 
-        ui::document_widget* document_widget_factory (type& proxy)
+        ui::document_view* document_view_factory (type& proxy)
         {
           return boost::apply_visitor
-            (visitor::document_widget_factory (proxy), proxy);
+            (visitor::document_view_factory (proxy), proxy);
         }
 
         namespace visitor
         {
-          document_widget_factory::document_widget_factory (type & proxy)
+          document_view_factory::document_view_factory (type & proxy)
             : _proxy (proxy)
           {}
 
-          ui::document_widget*
-          document_widget_factory::operator () (expression_proxy & proxy) const
+          ui::document_view*
+          document_view_factory::operator () (expression_proxy & proxy) const
           {
             return new ui::expression_view ( _proxy
                                            , proxy.data()
                                            );
           }
 
-          ui::document_widget*
-          document_widget_factory::operator () (mod_proxy & proxy) const
+          ui::document_view*
+          document_view_factory::operator () (mod_proxy & proxy) const
           {
             return new ui::mod_view ( _proxy
                                     , proxy.data()
                                     );
           }
 
-          ui::document_widget*
-          document_widget_factory::operator () (net_proxy & proxy) const
+          ui::document_view*
+          document_view_factory::operator () (net_proxy & proxy) const
           {
             return new ui::net_view ( _proxy
                                     , proxy.data()

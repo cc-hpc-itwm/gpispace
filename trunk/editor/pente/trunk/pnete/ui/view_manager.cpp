@@ -12,7 +12,7 @@
 #include <QWidget>
 
 #include <pnete/ui/editor_window.hpp>
-#include <pnete/ui/document_widget.hpp>
+#include <pnete/ui/document_view.hpp>
 #include <pnete/ui/base_editor_widget.hpp>
 #include <pnete/ui/GraphView.hpp>
 
@@ -86,17 +86,17 @@ namespace fhg
 
       void view_manager::focus_changed (QWidget* widget)
       {
-        document_widget* current_widget
-              (util::first_parent_being_a<document_widget> (widget));
+        document_view* current_view
+              (util::first_parent_being_a<document_view> (widget));
 
-        if (!current_widget)
+        if (!current_view)
         {
           throw std::runtime_error ( "focus changed on a widget not "
                                      "on a document_widget."
                                    );
         }
 
-        _accessed_widgets.append (current_widget);
+        _accessed_widgets.append (current_view);
 
         //! \todo enable and disable actions
 
@@ -123,7 +123,7 @@ namespace fhg
 
       // -- document, general --
 
-      void view_manager::add_on_top_of_current_widget (document_widget* w)
+      void view_manager::add_on_top_of_current_widget (document_view* w)
       {
         if (!_accessed_widgets.isEmpty())
         {
@@ -163,7 +163,7 @@ namespace fhg
         {
           return;
         }
-        document_widget* current (_accessed_widgets.back());
+        document_view* current (_accessed_widgets.back());
         _accessed_widgets.removeAll (current);
         _editor_window->removeDockWidget (current);
         delete current;
@@ -181,7 +181,7 @@ namespace fhg
         enable_file_actions();
 
         add_on_top_of_current_widget
-          (data::proxy::document_widget_factory (proxy));
+          (data::proxy::document_view_factory (proxy));
       }
 
       // net_view, ACTIONS!

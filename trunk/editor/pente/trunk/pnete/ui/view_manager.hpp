@@ -16,7 +16,7 @@ namespace fhg
   {
     namespace ui
     {
-      class document_widget;
+      class document_view;
       class editor_window;
 
       class view_manager : public QObject
@@ -58,9 +58,9 @@ namespace fhg
         private:
           editor_window* _editor_window;
 
-          QList<document_widget*> _accessed_widgets;
+          QList<document_view*> _accessed_widgets;
 
-          void add_on_top_of_current_widget (document_widget* w);
+          void add_on_top_of_current_widget (document_view* w);
 
         QAction* _save_current_file;
         void initialize_actions();

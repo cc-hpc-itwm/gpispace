@@ -15,7 +15,7 @@ namespace fhg
   {
     namespace ui
     {
-      class document_widget;
+      class document_view;
       namespace graph
       {
         class scene;
@@ -139,7 +139,7 @@ namespace fhg
         ::xml::parse::type::function_type& function (type&);
         ::fhg::pnete::data::internal_type* root (const type&);
 
-        ui::document_widget* document_widget_factory (type&);
+        ui::document_view* document_view_factory (type&);
 
         namespace visitor
         {
@@ -176,17 +176,17 @@ namespace fhg
             }
           };
 
-          class document_widget_factory
-            : public boost::static_visitor<ui::document_widget *>
+          class document_view_factory
+            : public boost::static_visitor<ui::document_view*>
           {
           private:
             type& _proxy;
 
           public:
-            document_widget_factory (type& proxy);
-            ui::document_widget * operator () (expression_proxy &) const;
-            ui::document_widget * operator () (mod_proxy &) const;
-            ui::document_widget * operator () (net_proxy &) const;
+            document_view_factory (type& proxy);
+            ui::document_view * operator () (expression_proxy &) const;
+            ui::document_view * operator () (mod_proxy &) const;
+            ui::document_view * operator () (net_proxy &) const;
           };
         }
       }
