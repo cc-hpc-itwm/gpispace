@@ -85,10 +85,10 @@ namespace signature
     {
     private:
       const std::string & name;
-      xml_util::xmlstream & s;
+      const xml_util::xmlstream & s;
 
     public:
-      dump (const std::string & _name, xml_util::xmlstream & _s)
+      dump (const std::string & _name, const xml_util::xmlstream & _s)
         : name (_name)
         , s (_s)
       {}
@@ -122,7 +122,7 @@ namespace signature
     {
     private:
       const std::string & name;
-      xml_util::xmlstream & s;
+      const xml_util::xmlstream & s;
 
       void open () const
       {
@@ -138,7 +138,7 @@ namespace signature
       }
 
     public:
-      dump_token (const std::string & _name, xml_util::xmlstream & _s)
+      dump_token (const std::string & _name, const xml_util::xmlstream & _s)
         : name (_name)
         , s (_s)
       {}

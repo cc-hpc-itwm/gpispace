@@ -64,7 +64,7 @@ namespace fhg
                            ( _editor_window
                            , tr ("Save net")
                            , QDir::homePath()
-                           , tr ("XML files (*.xml)")
+                           , tr ("XML files (*.xml);; All files (*)")
                            )
                          );
 

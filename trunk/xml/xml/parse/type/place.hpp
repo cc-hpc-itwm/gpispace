@@ -282,7 +282,7 @@ namespace xml
 
       namespace dump
       {
-        inline void dump (xml_util::xmlstream & s, const place_type & p)
+        inline void dump (const xml_util::xmlstream & s, const place_type & p)
         {
           s.open ("place");
           s.attr ("name", p.name);

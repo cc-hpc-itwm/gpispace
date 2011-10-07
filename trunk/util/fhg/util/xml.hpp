@@ -44,7 +44,7 @@ namespace fhg
         xmlstream (std::ostream & s) : _s (s), _tag() {}
         ~xmlstream () { endl(); }
 
-        void open (const std::string & tag)
+        void open (const std::string & tag) const
         {
           if (!_tag.empty())
             {
@@ -56,7 +56,7 @@ namespace fhg
           _tag.push (detail::tag (tag));
         }
 
-        void close ()
+        void close () const
         {
           assert_nonempty ("close");
 
@@ -77,7 +77,7 @@ namespace fhg
         }
 
         template<typename Key, typename Val>
-        void attr (const Key & key, const Val & val)
+        void attr (const Key & key, const Val & val) const
         {
           assert_nonempty ("attr");
 
@@ -87,7 +87,7 @@ namespace fhg
         }
 
         template<typename Key, typename Val>
-        void attr (const Key & key, const fhg::util::maybe<Val> & val)
+        void attr (const Key & key, const fhg::util::maybe<Val> & val) const
         {
           if (val.isJust())
             {
@@ -96,7 +96,7 @@ namespace fhg
         }
 
         template<typename T>
-        void content (T x)
+        void content (T x) const
         {
           assert_nonempty ("content");
 
@@ -107,9 +107,9 @@ namespace fhg
 
       private:
         std::ostream & _s;
-        detail::tag_stack _tag;
+        mutable detail::tag_stack _tag;
 
-        void level ()
+        void level () const
         {
           for (detail::tag_stack::size_type i (0); i < _tag.size(); ++i)
             {
@@ -117,8 +117,8 @@ namespace fhg
             }
         }
 
-        void endl () { _s << std::endl; }
-        void newline () { endl(); level(); }
+        void endl () const { _s << std::endl; }
+        void newline () const { endl(); level(); }
 
         void assert_nonempty (const std::string & msg) const
         {
@@ -128,7 +128,7 @@ namespace fhg
             }
         }
 
-        void set_content ()
+        void set_content () const
         {
           if (!_tag.top().has_content())
             {
@@ -138,7 +138,7 @@ namespace fhg
             }
         }
 
-        void add_content ()
+        void add_content () const
         {
           set_content ();
 

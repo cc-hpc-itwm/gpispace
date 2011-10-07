@@ -51,7 +51,9 @@ namespace xml
 
       namespace dump
       {
-        inline void dump (xml_util::xmlstream & s, const requirements_type & cs)
+        inline void dump ( const xml_util::xmlstream & s
+                         , const requirements_type & cs
+                         )
         {
           for ( requirements_type::const_iterator cap (cs.begin())
               ; cap != cs.end()

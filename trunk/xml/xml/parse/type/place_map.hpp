@@ -45,7 +45,9 @@ namespace xml
 
       namespace dump
       {
-        inline void dump (xml_util::xmlstream & s, const place_map_type & p)
+        inline void dump ( const xml_util::xmlstream & s
+                         , const place_map_type & p
+                         )
         {
           s.open ("place-map");
           s.attr ("virtual", p.place_virtual);

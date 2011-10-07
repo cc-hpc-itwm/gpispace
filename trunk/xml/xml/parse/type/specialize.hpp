@@ -102,7 +102,9 @@ namespace xml
 
       namespace dump
       {
-        inline void dump (xml_util::xmlstream & s, const specialize_type & sp)
+        inline void dump ( const xml_util::xmlstream & s
+                         , const specialize_type & sp
+                         )
         {
           s.open ("specialize");
           s.attr ("name", sp.name);

@@ -39,7 +39,7 @@ namespace xml
 
       namespace dump
       {
-        inline void dump ( xml_util::xmlstream & s
+        inline void dump ( const xml_util::xmlstream & s
                          , const connect_type & c
                          , const std::string & type
                          )

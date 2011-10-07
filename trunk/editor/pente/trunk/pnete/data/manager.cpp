@@ -9,12 +9,12 @@
 
 #include <QString>
 #include <QObject>
-#include <QFile>
-#include <QTextStream>
 
 #include <stdexcept>
 
 #include <pnete/data/internal.hpp>
+
+#include <fstream>
 
 namespace fhg
 {
@@ -81,18 +81,19 @@ namespace fhg
           throw std::runtime_error ("save unmanaged data!?");
         }
 
-        QFile file (filename ? *filename : pos->second);
-        if (!file.open (QFile::WriteOnly | QFile::Truncate))
+        const std::string file
+          ((filename ? *filename : pos->second).toStdString());
+        std::ofstream fs (file.c_str());
+
+        if (!fs.good())
         {
-          throw std::runtime_error("could not open file for writing.");
+          throw std::runtime_error("could not open file " + file);
         }
 
-        std::stringstream ss;
-
-        fhg::util::xml::xmlstream s (ss);
-        xml::parse::type::dump::dump (s, data->function(), data->state());
-
-        file.write (ss.str().c_str(), ss.str().size());
+        xml::parse::type::dump::dump ( fhg::util::xml::xmlstream (fs)
+                                     , data->function()
+                                     , data->state()
+                                     );
       }
     }
   }

@@ -47,7 +47,9 @@ namespace xml
 
       namespace dump
       {
-        inline void dump (xml_util::xmlstream & s, const struct_t & st)
+        inline void dump ( const xml_util::xmlstream & s
+                         , const struct_t & st
+                         )
         {
           boost::apply_visitor ( signature::visitor::dump (st.name, s)
                                , st.sig

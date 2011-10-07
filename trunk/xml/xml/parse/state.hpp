@@ -1,3 +1,4 @@
+
 // mirko.rahn@itwm.fraunhofer.de
 
 #ifndef _XML_PARSE_STATE_HPP
@@ -416,7 +417,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        void dump_context (xml_util::xmlstream & s) const
+        void dump_context (const xml_util::xmlstream & s) const
         {
           typedef key_values_t::const_iterator it_t;
 
