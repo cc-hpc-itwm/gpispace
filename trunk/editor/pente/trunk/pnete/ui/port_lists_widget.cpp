@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <pnete/ui/ports_list_widget.hpp>
+#include <pnete/ui/port_lists_widget.hpp>
 
 #include <xml/parse/types.hpp>
 
@@ -30,7 +30,7 @@ namespace fhg
         return group_box;
       }
 
-      ports_list_widget::ports_list_widget
+      port_lists_widget::port_lists_widget
         ( ::xml::parse::type::ports_type& in
         , ::xml::parse::type::ports_type& out
         , const QStringList& types

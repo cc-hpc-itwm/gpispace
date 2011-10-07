@@ -17,7 +17,7 @@ namespace fhg
   {
     namespace ui
     {
-      class ports_list_widget;
+      class port_lists_widget;
 
       class expression_widget : public base_editor_widget
       {
@@ -35,7 +35,7 @@ namespace fhg
 
       private:
         data::proxy::expression_proxy::data_type& _expression;
-        ports_list_widget* _ports_list;
+        port_lists_widget* _port_lists;
       };
     }
   }

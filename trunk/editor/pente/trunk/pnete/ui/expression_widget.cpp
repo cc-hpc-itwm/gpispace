@@ -10,7 +10,7 @@
 #include <QWidget>
 
 #include <pnete/ui/expression_widget.hpp>
-#include <pnete/ui/ports_list_widget.hpp>
+#include <pnete/ui/port_lists_widget.hpp>
 
 #include <pnete/data/internal.hpp>
 
@@ -28,7 +28,7 @@ namespace fhg
         )
           : base_editor_widget (proxy, parent)
           , _expression (expression)
-          , _ports_list (new ports_list_widget ( expression.in()
+          , _port_lists (new port_lists_widget ( expression.in()
                                                , expression.out()
                                                , types
                                                )
@@ -39,7 +39,7 @@ namespace fhg
         group_box->setLayout (group_box_layout);
 
         QSplitter* splitter (new QSplitter ());
-        splitter->addWidget (_ports_list);
+        splitter->addWidget (_port_lists);
 
         QWidget* exp_widget (new QWidget ());
         QVBoxLayout* vbox (new QVBoxLayout ());

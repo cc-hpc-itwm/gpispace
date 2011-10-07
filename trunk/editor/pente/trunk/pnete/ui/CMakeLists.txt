@@ -15,7 +15,7 @@ set(ui_SRCS
   module_call_widget.cpp
   expression_widget.cpp
   port_list_widget.cpp
-  ports_list_widget.cpp
+  port_lists_widget.cpp
   ComboItemDelegate.cpp
 )
 
@@ -39,7 +39,7 @@ set(ui_HDRS
   module_call_widget.hpp
   expression_widget.hpp
   port_list_widget.hpp
-  ports_list_widget.hpp
+  port_lists_widget.hpp
 )
 
 set(ui_UIS
@@ -67,7 +67,7 @@ set(ui_TOMOC
   module_call_widget.hpp
   expression_widget.hpp
   port_list_widget.hpp
-  ports_list_widget.hpp
+  port_lists_widget.hpp
 )
 
 add_subdirectory (graph)
