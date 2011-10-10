@@ -15,6 +15,7 @@
 #include <pnete/ui/graph/style.hpp>
 #include <pnete/ui/graph/cogwheel_button.hpp>
 #include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/size.hpp>
 
 namespace fhg
 {
@@ -29,7 +30,7 @@ namespace fhg
                               )
           : item (parent)
           , _dragStart (0, 0)
-          , _size (160, 100) // hardcoded constant
+          , _size (size::transition::width(), size::transition::height())
           , _highlighted (false)
           , _dragging (false)
           , _data (data)
@@ -48,7 +49,7 @@ namespace fhg
                                )
           : item (parent)
           , _dragStart (0, 0)
-          , _size (160, 100) // hardcoded constant
+          , _size (size::transition::width(), size::transition::height())
           , _highlighted (false)
           , _dragging (false)
             //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE

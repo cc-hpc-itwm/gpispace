@@ -2,6 +2,7 @@
 #include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/transition.hpp>
+#include <pnete/ui/graph/size.hpp>
 
 #include <QPainter>
 #include <QPen>
@@ -16,37 +17,42 @@ namespace fhg
     {
       namespace graph
       {
-        static const qreal rasterSize (10.0);                                     // hardcoded constant
+        namespace cap
+        {
+          template<typename IT>
+          void add ( QPainterPath* path
+                   , const bool& middle
+                   , const QPointF& offset
+                   , const qreal& rotation
+                   , IT pos
+                   , const IT& end
+                   )
+          {
+            QTransform transformation;
+            transformation.translate (offset.x(), offset.y());
+            transformation.rotate (rotation);
 
-        static const qreal portHeight (20.0);                                     // hardcoded constant
-        static const qreal portHeightHalf (portHeight / 2.0);                     // hardcoded constant
-        static const qreal defaultPortWidth (60.0);                               // hardcoded constant
+            const qreal shift (middle ? (size::port::height() / 2.0) : 0.0);
 
-        static const qreal capLength (10.0);                                      // hardcoded constant
-
-        // defined from the center of the end of the line to attach to. clockwise
-        static const QPointF outgoingCap[] = { QPointF(0.0, -portHeightHalf)
-                                             , QPointF(capLength, 0.0)
-                                             , QPointF(0.0, portHeightHalf)
-                                             };
-        static const QPointF ingoingCap[] = { QPointF(0.0, -portHeightHalf)
-                                            , QPointF(capLength, -portHeightHalf)
-                                            , QPointF(0.0, 0.0)
-                                            , QPointF(capLength, portHeightHalf)
-                                            , QPointF(0.0, portHeightHalf)
-                                            };
+            for (; pos != end; ++pos)
+              {
+                path->lineTo
+                  (transformation.map (QPointF (pos->x(), pos->y() + shift)));
+              }
+          }
+        }
 
         qreal style::portCapLength()
         {
-          return capLength;
+          return size::cap::length();
         }
         qreal style::portDefaultWidth()
         {
-          return defaultPortWidth;
+          return size::port::width();
         }
         qreal style::portDefaultHeight()
         {
-          return portHeight;
+          return size::port::height();
         }
 
         void addOutgoingCap ( QPainterPath* path
@@ -55,22 +61,15 @@ namespace fhg
                             , qreal rotation = 0.0
                             )
         {
-          QTransform transformation;
-          transformation.rotate(rotation);
+          static const QPointF out[] =
+            { QPointF (0.0                , -(size::port::height() / 2.0))
+            , QPointF (size::cap::length(),                          0.0 )
+            , QPointF (0.0                ,  (size::port::height() / 2.0))
+            };
 
-          for(size_t i (0); i < sizeof(outgoingCap) / sizeof(QPointF); ++i)
-          {
-            path->lineTo ( transformation.map (QPointF ( outgoingCap[i].x()
-                                                       , outgoingCap[i].y()
-                                                       + ( middle
-                                                         ? portHeightHalf
-                                                         : 0.0
-                                                         )
-                                                       )
-                                              )
-                         + offset
-                         );
-          }
+          static const std::size_t size (sizeof (out) / sizeof (QPointF));
+
+          cap::add (path, middle, offset, rotation, out, out + size);
         }
 
         void addOutgoingCap ( QPolygonF* poly
@@ -89,22 +88,17 @@ namespace fhg
                            , qreal rotation = 0.0
                            )
         {
-          QTransform transformation;
-          transformation.rotate(rotation);
+          static const QPointF in[] =
+            { QPointF(0.0                , -(size::port::height() / 2.0))
+            , QPointF(size::cap::length(), -(size::port::height() / 2.0))
+            , QPointF(0.0                ,                          0.0 )
+            , QPointF(size::cap::length(),  (size::port::height() / 2.0))
+            , QPointF(0.0                ,  (size::port::height() / 2.0))
+            };
 
-          for(size_t i (0); i < sizeof(ingoingCap) / sizeof(QPointF); ++i)
-          {
-            path->lineTo ( transformation.map ( QPointF ( ingoingCap[i].x()
-                                                        , ingoingCap[i].y()
-                                                        + ( middle
-                                                          ? portHeightHalf
-                                                          : 0.0
-                                                          )
-                                                        )
-                                              )
-                         + offset
-                         );
-          }
+          static const std::size_t size (sizeof (in) / sizeof (QPointF));
+
+          cap::add (path, middle, offset, rotation, in, in + size);
         }
 
         void addIngoingCap ( QPolygonF* poly
@@ -141,10 +135,10 @@ namespace fhg
           QPainterPath path;
 
           QPolygonF poly;
-          poly << QPointF (lengthHalf - portCapLength(), portHeightHalf)
-               << QPointF (-lengthHalf, portHeightHalf)
-               << QPointF (-lengthHalf, -portHeightHalf)
-               << QPointF (lengthHalf - portCapLength(), -portHeightHalf);
+          poly << QPointF (lengthHalf - portCapLength(), (size::port::height() / 2.0))
+               << QPointF (-lengthHalf, (size::port::height() / 2.0))
+               << QPointF (-lengthHalf, -(size::port::height() / 2.0))
+               << QPointF (lengthHalf - portCapLength(), -(size::port::height() / 2.0));
 
           if (port->direction() == connectable_item::IN)
           {
@@ -178,31 +172,31 @@ namespace fhg
           switch (port->orientation())
           {
           case port::NORTH:
-            return QRectF ( -portHeightHalf
+            return QRectF ( -(size::port::height() / 2.0)
                           , -lengthHalf + addition
-                          , portHeight
+                          , size::port::height()
                           , length
                           );
 
           case port::SOUTH:
-            return QRectF ( -portHeightHalf
+            return QRectF ( -(size::port::height() / 2.0)
                           , -lengthHalf
-                          , portHeight
+                          , size::port::height()
                           , length
                           );
 
           case port::EAST:
             return QRectF ( -lengthHalf
-                          , -portHeightHalf
+                          , -(size::port::height() / 2.0)
                           , length
-                          , portHeight
+                          , size::port::height()
                           );
 
           case port::WEST:
             return QRectF ( -lengthHalf + addition
-                          , -portHeightHalf
+                          , -(size::port::height() / 2.0)
                           , length
-                          , portHeight
+                          , size::port::height()
                           );
           default:
             throw std::runtime_error("invalid port direction!");
@@ -326,20 +320,20 @@ namespace fhg
 
             linesForward.push_back
               ( transformation.map ( QLineF ( QPointF ( 0.0
-                                                      , -portHeightHalf
+                                                      , -(size::port::height() / 2.0)
                                                       )
                                             , QPointF ( dummyLength
-                                                      , -portHeightHalf
+                                                      , -(size::port::height() / 2.0)
                                                       )
                                             )
                                    )
               );
             linesBackward.push_front
               ( transformation.map ( QLineF ( QPointF ( 0.0
-                                                      , portHeightHalf
+                                                      , (size::port::height() / 2.0)
                                                       )
                                             , QPointF ( dummyLength
-                                                      , portHeightHalf
+                                                      , (size::port::height() / 2.0)
                                                       )
                                             )
                                    )
@@ -476,7 +470,7 @@ namespace fhg
 
         qreal style::raster()
         {
-          return rasterSize;
+          return size::raster();
         }
         QPointF style::snapToRaster (const QPointF& pos)
         {
