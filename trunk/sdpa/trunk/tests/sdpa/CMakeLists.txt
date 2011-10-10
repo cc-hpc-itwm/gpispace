@@ -63,6 +63,7 @@ target_link_libraries(sdpa-test
 	 ${Boost_LIBRARIES})
 
 set (tc_srcs
+  test_CancelJob.cpp
   test_Config.cpp
   test_Worker.cpp
   test_JobId.cpp
