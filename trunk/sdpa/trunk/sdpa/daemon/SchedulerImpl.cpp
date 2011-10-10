@@ -109,20 +109,18 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 	}
 	catch (const WorkerNotFoundException& ex)
 	{
-		SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
-		throw ex;
+		SDPA_LOG_WARN("Cannot delete the worker "<<worker_id<<". Worker not found!");
 	}
 	catch(JobNotFoundException const &ex)
 	{
-		SDPA_LOG_ERROR("Cannot re-schedule the job " << job_id << ". The job could not be found!");
-		throw ex;
+		SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
 	}
 	catch(JobNotDeletedException const & ex)
 	{
-		SDPA_LOG_ERROR("The job " << job_id << " could not be deleted: " << ex.what());
+		SDPA_LOG_WARN("The job " << job_id << " could not be deleted: " << ex.what());
 	}
 	catch(const std::exception& ex) {
-		SDPA_LOG_ERROR( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+		SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
 	}
 }
 
@@ -744,8 +742,9 @@ void SchedulerImpl::run()
         	  }
         	  else //  if has backends try to execute it
         	  {
-				  DLOG(TRACE, "Try to execute myself the job "<<jobId.str()<<" ...");
-				  execute(jobId);
+				  //DLOG(TRACE, "Try to execute myself the job "<<jobId.str()<<" ...");
+				  //execute(jobId);
+
         	  } // else fail
           }
           else // it's a master job
