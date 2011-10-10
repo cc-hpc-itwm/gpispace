@@ -37,17 +37,19 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
 
 	Worker::worker_id_t worker_id = pEvent->from();
 	try {
-
 		// Only, now should be state of the job updated to RUNNING
 		// since it was not rejected, no error occurred etc ....
 		//find the job ptrJob and call
 		Job::ptr_t ptrJob = ptr_job_man_->findJob(pEvent->job_id());
 		ptrJob->Dispatch();
 		ptr_scheduler_->acknowledgeJob(worker_id, pEvent->job_id());
-	} catch(WorkerNotFoundException const &) {
+	} catch(WorkerNotFoundException const &)
+	{
 		SDPA_LOG_ERROR("job submission could not be acknowledged: worker " << worker_id << " not found!!");
-	} catch(std::exception const &ex) {
-          SDPA_LOG_ERROR("Unexpected exception occurred during submitJobAck: " << ex.what());
+	}
+	catch(std::exception const &ex)
+	{
+		SDPA_LOG_ERROR("Unexpected exception occurred during submitJobAck: " << ex.what());
 	}
 }
 

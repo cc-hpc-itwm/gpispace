@@ -154,6 +154,7 @@ struct MyFixture
 	}
 
 	void run_client();
+	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
 	string read_workflow(string strFileName)
 	{
@@ -302,9 +303,31 @@ void MyFixture::run_client()
     ptrCli.reset();
 }
 
+
+sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
+{
+	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
+
+	kernel->put("plugin.kvs.host", kvs_host());
+	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
+
+	kernel->put("plugin.drts.name", drtsName);
+	kernel->put("plugin.drts.master", masterName);
+	kernel->put("plugin.drts.backlog", "2");
+	kernel->put("plugin.drts.request-mode", "false");
+
+	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
+
+	return kernel;
+}
+
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
-BOOST_AUTO_TEST_CASE( testAgentsAndDrts )
+BOOST_AUTO_TEST_CASE( testAgentsAndDrts1 )
 {
 	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
 	//guiUrl
@@ -326,33 +349,116 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts )
 	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAgent->start_agent(false);
 
-
-	// launch the plugin kernel
-	fhg::core::kernel_t *kernel = new fhg::core::kernel_t;
-	kernel->put("plugin.kvs.host", kvs_host());
-	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
-
-	kernel->put("plugin.drts.name", "drts-test");
-	kernel->put("plugin.drts.master", "agent_0");
-	kernel->put("plugin.drts.backlog", "2");
-	kernel->put("plugin.drts.request-mode", "false");
-
-	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-
-	boost::thread kernelThread = boost::thread(&fhg::core::kernel_t::run, kernel);
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
-	boost::this_thread::sleep(boost::posix_time::seconds(1));
 
 	threadClient.join();
 	LOG( INFO, "The client thread joined the main thread°!" );
 
-	kernel->stop();
-	kernelThread.join();
+	drts_0->stop();
+	drts_0_thread.join();
+
+	ptrAgent->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testAgentsAndDrts2 )
+{
+	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	//guiUrl
+	string guiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgent 	= "127.0.0.1";
+	string addrNRE 		= "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+	ptrOrch->start_agent(false);
+
+	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	ptrAgent->start_agent(false);
+
+	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
+	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_00", addrAgent, arrAgMaster, MAX_CAP );
+	ptrAg00->start_agent(false);
+
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( create_drts("drts_00", "agent_00") );
+	boost::thread drts_00_thread = boost::thread( &fhg::core::kernel_t::run, drts_00 );
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	drts_00->stop();
+	drts_00_thread.join();
+
+	ptrAg00->shutdown();
+
+	ptrAgent->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testAgentsAndDrts3 )
+{
+	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	//guiUrl
+	string guiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgent 	= "127.0.0.1";
+	string addrNRE 		= "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
+	ptrOrch->start_agent(false);
+
+	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	ptrAgent->start_agent(false);
+
+	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
+	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgent, arrAgMaster, MAX_CAP );
+	ptrAg00->start_agent(false);
+
+	sdpa::daemon::Agent::ptr_t ptrAg01 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_01", addrAgent, arrAgMaster, MAX_CAP );
+	ptrAg01->start_agent(false);
+
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( create_drts("drts_00", "agent_00") );
+	boost::thread drts_00_thread = boost::thread(&fhg::core::kernel_t::run, drts_00);
+
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_01( create_drts("drts_01", "agent_01") );
+	boost::thread drts_01_thread = boost::thread(&fhg::core::kernel_t::run, drts_01);
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	drts_00->stop();
+	drts_00_thread.join();
+
+	drts_01->stop();
+	drts_01_thread.join();
+
+	ptrAg00->shutdown();
+	ptrAg01->shutdown();
 
 	ptrAgent->shutdown();
 	ptrOrch->shutdown();

@@ -46,6 +46,7 @@ public:
   {
     int ec = 0; //FINISHED
 
+    //boost::this_thread::sleep(boost::posix_time::seconds(1));
     result = std::string("****************abcdefghijklmnopqrst************");
 
     return ec;
