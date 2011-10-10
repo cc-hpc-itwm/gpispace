@@ -88,7 +88,7 @@ namespace sdpa {
         //      Start       Event         		      Next        Action                Guard
         //      +-----------+--------------------- -+-----------+---------------------+-----
         _row<   Pending,    MSMDispatchEvent, 		Running >,
-        a_row<  Pending,    sdpa::events::CancelJobEvent, 	 	Cancelled,  &sm::action_cancel_job_from_pending >,
+        a_row<  Pending,    sdpa::events::CancelJobEvent, Cancelled,  &sm::action_cancel_job_from_pending >,
         //      +-----------+-----------------------+-----------+---------------------+-----
         a_row<  Running,    sdpa::events::JobFinishedEvent,	 	Finished, 	&sm::action_job_finished>,
         a_row<  Running,    sdpa::events::JobFailedEvent, 	 	Failed, 	&sm::action_job_failed >,
@@ -113,7 +113,7 @@ namespace sdpa {
         a_irow< Cancelled,  sdpa::events::RetrieveJobResultsEvent,			&sm::action_retrieve_job_results >
         >{};
 
-        template <class FSM, class Event>
+        /*template <class FSM, class Event>
         void no_transition(Event const& e, FSM&, int state)
         {
           LOG(WARN, "no transition from state "<< state << " on event " << typeid(e).name());
@@ -123,7 +123,7 @@ namespace sdpa {
         void no_transition(sdpa::events::QueryJobStatusEvent const& e, FSM&, int state)
         {
           DLOG(DEBUG, "process event QueryJobStatusEvent");
-        }
+        }*/
       };
 
       // Pick a back-end
