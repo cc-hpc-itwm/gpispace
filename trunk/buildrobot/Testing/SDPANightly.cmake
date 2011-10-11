@@ -50,7 +50,9 @@ set(CMAKE_BUILD_TYPE Release)
 set(WE_PRECOMPILE Off)
 
 kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
-	BOOST_ROOT SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE GPI_PRIV_DIR
+	BOOST_ROOT SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE
+	GPI_PRIV_DIR
+	GRAPHVIZ_HOME
 	WE_PRECOMPILE
 	CMAKE_BUILD_TYPE)
 
@@ -93,6 +95,8 @@ if ( NOT ${resultConfigure} )
  message("====> ctest_test: res='${resultTest}'")
 
  if( NOT ${resultTest} )
+   include (${CTEST_BINARY_DIRECTORY}/CPackConfig.cmake)
+
    # can package software
    execute_process(COMMAND make package
          WORKING_DIRECTORY "${CTEST_BINARY_DIRECTORY}"
@@ -106,7 +110,7 @@ if ( NOT ${resultConfigure} )
    # upload package
    execute_process(COMMAND ssh ${UPLOAD_HOST} mkdir -p ${UPLOAD_DIR}
          )
-   execute_process(COMMAND scp -p *bz2 ${UPLOAD_HOST}:${UPLOAD_DIR}
+   execute_process(COMMAND scp -p ${CPACK_PACKAGE_FILE_NAME}.tar.bz2 ${UPLOAD_HOST}:${UPLOAD_DIR}
          WORKING_DIRECTORY "${CTEST_BINARY_DIRECTORY}"
          RESULT_VARIABLE resultUpload
          )

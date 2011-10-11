@@ -1,5 +1,7 @@
 # -*- mode: cmake; -*-
 
+set(EXTERNAL_SOFTWARE /home/projects/sdpa/external_software)
+
 set(ENABLE_SDPA_GPI No)
 set(ENABLE_GPI_SPACE Yes)
 set(GPI_PRIV_DIR /tmp)
@@ -39,6 +41,10 @@ set(SEDA_LATEST        /home/projects/sdpa/external_software/latest/seda)
 set(UTIL_LATEST        /home/projects/sdpa/external_software/latest/util)
 set(WE_LATEST          /home/projects/sdpa/external_software/latest/we)
 set(XML_LATEST         /home/projects/sdpa/external_software/latest/xml)
+
+if( EXISTS ${EXTERNAL_SOFTWARE}/graphviz/2.24 )
+  set(GRAPHVIZ_HOME      /home/projects/sdpa/external_software/graphviz/2.24)
+endif( EXISTS ${EXTERNAL_SOFTWARE}/graphviz/2.24 )
 
 set(CTEST_UPDATE_OPTIONS "--username SVN_hpc_bitter --password nuphFan0")
 

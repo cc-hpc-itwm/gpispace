@@ -52,6 +52,7 @@ set(WE_PRECOMPILE Off)
 kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
 	BOOST_ROOT SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE GPI_PRIV_DIR
 	WE_PRECOMPILE
+	GRAPHVIZ_HOME
 	CMAKE_BUILD_TYPE)
 
 # configure, build, test, submit
@@ -121,16 +122,3 @@ endif ( NOT ${resultConfigure} )
 
 # submit the build and test results to cdash:
 #ctest_submit()
-
-
-#return()
-
-## now build the doxygen docs
-#execute_process(COMMAND make -C "${CTEST_BINARY_DIRECTORY}" alldocs -j2)
-#
-## ...and copy them to the pubdoc directory:
-#execute_process(COMMAND cp -R "${CTEST_SOURCE_DIRECTORY}/BackEnd/html-apidocs/" /p/hpc/public_html/pspro/dox/BackEnd/ )
-#execute_process(COMMAND cp -R "${CTEST_SOURCE_DIRECTORY}/BackEnd/html-details/" /p/hpc/public_html/pspro/dox/BackEnd/ )
-#
-#execute_process(COMMAND cp -R "${CTEST_SOURCE_DIRECTORY}/RemoteView/html-apidocs/" /p/hpc/public_html/pspro/dox/RemoteView/ )
-#execute_process(COMMAND cp -R "${CTEST_SOURCE_DIRECTORY}/RemoteView/html-details/" /p/hpc/public_html/pspro/dox/RemoteView/ )
