@@ -24,7 +24,7 @@ set(KDE_CTEST_PARALLEL_LEVEL 8)
 
 
 # for now hardcode the generator to "Unix Makefiles"
-#set(CTEST_CMAKE_GENERATOR "Unix Makefiles" )
+# set(CTEST_CMAKE_GENERATOR "Unix Makefiles" )
 #set(CTEST_USE_LAUNCHERS 1)
 
 # generic support code, provides the kde_ctest_setup() macro, which sets up everything required:
@@ -34,6 +34,7 @@ include( "${_currentDir}/SDPAConfig.cmake")
 
 kde_ctest_setup()
 
+message("====> ${CTEST_BUILD_FLAGS}")
 
 ctest_empty_binary_directory("${CTEST_BINARY_DIRECTORY}")
 # if CMAKE_INSTALL_PREFIX and BUILD_experimental were defined on the command line, put them
@@ -66,7 +67,8 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
 
     # configure, build, test, submit
     file(REMOVE "${CTEST_BINARY_DIRECTORY}/CMakeCache.txt")
-    kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}" QT_QMAKE_EXECUTABLE
+    kde_ctest_write_initial_cache("${CTEST_BINARY_DIRECTORY}"
+	QT_QMAKE_EXECUTABLE
         BOOST_ROOT BOOST_FILESYSTEM_VERSION
         SMC_HOME ENABLE_SDPA_GPI ENABLE_GPI_SPACE GPI_PRIV_DIR
 	GRAPHVIZ_HOME
@@ -78,6 +80,7 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
     if ( NOT ${resultConfigure} )
       include("${CTEST_BINARY_DIRECTORY}/CTestCustom.cmake" OPTIONAL)
 
+message("====> ${CTEST_BUILD_FLAGS}")
       ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE res)
       message("====> BUILD: ${res}")
 

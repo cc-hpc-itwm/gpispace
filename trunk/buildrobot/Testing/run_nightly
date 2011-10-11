@@ -76,3 +76,10 @@ fi
 . /home/toolsLinux/compiler/config.icc1181
 $CTEST -S ${HOME}/Dashboards/SDPANightly_intel.cmake -V -VV
 
+EXTERNAL_SOFTWARE=$HOME/external_software/
+CLANG_BIN=${EXTERNAL_SOFTWARE}/clang/2.9/bin
+if [ -x ${CLANG_BIN}/clang ]; then
+  export CC=${CLANG_BIN}/clang
+  export CXX=${CLANG_BIN}/clang++
+  $CTEST -S ${HOME}/Dashboards/SDPANightly_clang.cmake -V -VV
+fi
