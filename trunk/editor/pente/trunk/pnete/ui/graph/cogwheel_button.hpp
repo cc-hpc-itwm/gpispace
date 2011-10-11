@@ -16,12 +16,12 @@ namespace fhg
     {
       namespace graph
       {
-        class transition;
+        namespace transition { class item; }
 
         class cogwheel_button : public item
         {
         public:
-          cogwheel_button (transition* linked_transition);
+          cogwheel_button (transition::item* linked_transition);
           virtual QRectF boundingRect() const;
           virtual void paint (QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*);
 
@@ -30,7 +30,7 @@ namespace fhg
           virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
         private:
-          transition* _linked_transition;
+          transition::item* _linked_transition;
         };
       }
     }

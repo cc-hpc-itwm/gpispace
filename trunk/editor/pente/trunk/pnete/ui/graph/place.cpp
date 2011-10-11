@@ -78,7 +78,7 @@ namespace fhg
             return;
           }
 
-          setPos (style::snapToRaster (pos() + event->pos() - _drag_start));
+          setPos (style::raster::snap (pos() + event->pos() - _drag_start));
           event->accept();
           scene()->update();
         }

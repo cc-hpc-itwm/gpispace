@@ -25,79 +25,85 @@ namespace fhg
     {
       namespace graph
       {
-        class transition;
+        namespace transition { class item; }
 
-        class port : public connectable_item
+        namespace port
         {
-          Q_OBJECT;
-
-        public:
-          enum ORIENTATION
+          namespace orientation
           {
-            NORTH,
-            EAST,
-            SOUTH,
-            WEST,
+            enum type
+              { NORTH
+              , EAST
+              , SOUTH
+              , WEST
+              };
+          }
+
+          class item : public connectable_item
+          {
+            Q_OBJECT;
+
+          public:
+            item ( DIRECTION direction
+                 , boost::optional< ::xml::parse::type::type_map_type&> type_map
+                 = boost::none
+                 , transition::item* parent = NULL
+                 );
+
+            const bool& highlighted() const;
+            const qreal& length() const;
+
+            const QString& name() const;
+            const QString& name (const QString&);
+
+            const orientation::type& orientation() const;
+            const orientation::type& orientation(const orientation::type&);
+
+            virtual bool is_connectable_with (const connectable_item*) const;
+
+            enum { Type = port_graph_type };
+            virtual int type() const { return Type; }
+
+            QRectF bounding_rect(bool cap = true, int cap_factor = 0) const;
+            virtual QRectF boundingRect() const;
+            virtual QPainterPath shape() const;
+            virtual void
+            paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+
+
+          public slots:
+            void slot_set_type();
+            void slot_delete();
+            void refresh_tooltip();
+
+          protected:
+
+            virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
+            virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
+            virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event);
+            virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
+            virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+            virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+
+          private:
+            QPointF fitting_position (QPointF position);
+
+            QString _name;
+
+            orientation::type _orientation;
+
+            bool _dragging;
+            QPointF _drag_start;
+
+            bool _highlighted;
+
+            qreal _length;
+
+            QMenu _menu_context;
+
+            void init_menu_context();
           };
-
-          port ( DIRECTION direction
-               , boost::optional< ::xml::parse::type::type_map_type&> type_map
-               = boost::none
-               , transition* parent = NULL
-               );
-
-          const bool& highlighted() const;
-          const qreal& length() const;
-
-          const QString& name() const;
-          const QString& name (const QString&);
-
-          const ORIENTATION& orientation() const;
-          const ORIENTATION& orientation(const ORIENTATION&);
-
-          virtual bool is_connectable_with (const connectable_item*) const;
-
-          enum { Type = port_graph_type };
-          virtual int type() const { return Type; }
-
-          virtual QRectF boundingRect() const;
-          virtual QPainterPath shape() const;
-          virtual void
-          paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
-
-
-        public slots:
-          void slot_set_type();
-          void slot_delete();
-          void refresh_tooltip();
-
-        protected:
-
-          virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
-          virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
-          virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event);
-          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
-          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
-
-        private:
-          QPointF fitting_position (QPointF position);
-
-          QString _name;
-
-          ORIENTATION _orientation;
-
-          bool _dragging;
-          QPointF _drag_start;
-
-          bool _highlighted;
-
-          qreal _length;
-
-          QMenu _menu_context;
-
-          void init_menu_context();
-        };
+        }
       }
     }
   }

@@ -15,117 +15,102 @@ namespace fhg
     {
       namespace graph
       {
-        connection::connection (bool reading_only)
-          : item()
-          , _start (NULL)
-          , _end (NULL)
-          , _fixed_points()
-          , _reading_only (reading_only)
+        namespace connection
         {
-          setZValue (-1);                                                          // hardcoded constant
-        }
-        connection::~connection()
-        {
-          start (NULL);
-          end (NULL);
-        }
+          item::item (bool reading_only)
+            : graph::item()
+            , _start (NULL)
+            , _end (NULL)
+            , _fixed_points()
+            , _reading_only (reading_only)
+          {
+            setZValue (-1);                                                          // hardcoded constant
+          }
+          item::~item()
+          {
+            start (NULL);
+            end (NULL);
+          }
 
-        connectable_item* connection::start() const
-        {
-          return _start;
-        }
-        connectable_item* connection::start (connectable_item* start_)
-        {
-          if (_start)
+          connectable_item* item::start() const
           {
-            _start->remove_connection (this);
+            return _start;
           }
-          _start = start_;
-          if (_start)
+          connectable_item* item::start (connectable_item* start_)
           {
-            _start->add_connection (this);
+            if (_start)
+              {
+                _start->remove_connection (this);
+              }
+            _start = start_;
+            if (_start)
+              {
+                _start->add_connection (this);
+              }
+            return _start;
           }
-          return _start;
-        }
-        connectable_item* connection::end() const
-        {
-          return _end;
-        }
-        connectable_item* connection::end (connectable_item* end_)
-        {
-          if (_end)
+          connectable_item* item::end() const
           {
-            _end->remove_connection (this);
+            return _end;
           }
-          _end = end_;
-          if (_end)
+          connectable_item* item::end (connectable_item* end_)
           {
-            _end->add_connection (this);
+            if (_end)
+              {
+                _end->remove_connection (this);
+              }
+            _end = end_;
+            if (_end)
+              {
+                _end->add_connection (this);
+              }
+            return _end;
           }
-          return _end;
-        }
 
-        connectable_item* connection::non_free_side() const
-        {
-          if (_start && _end)
+          connectable_item* item::non_free_side() const
           {
-            throw std::runtime_error ( "can't get a non_free side as both "
-                                       "sides are connected."
-                                     );
+            if (_start && _end)
+              {
+                throw std::runtime_error ( "can't get a non_free side as both "
+                                         "sides are connected."
+                                         );
+              }
+            if (!_start && !_end)
+              {
+                throw std::runtime_error ( "can't get a non_free side as both "
+                                         "sides are not connected."
+                                         );
+              }
+            return _start ? _start : _end;
           }
-          if (!_start && !_end)
+          connectable_item* item::free_side(connectable_item* item)
           {
-            throw std::runtime_error ( "can't get a non_free side as both "
-                                       "sides are not connected."
-                                     );
+            if (_start && _end)
+              {
+                throw std::runtime_error ( "can't connect free side, as there "
+                                         "is none."
+                                         );
+              }
+            if (!_start && !_end)
+              {
+                throw std::runtime_error ("can't connect free side, as both are.");
+              }
+            return _end ? start (item) : end (item);
           }
-          return _start ? _start : _end;
-        }
-        connectable_item* connection::free_side(connectable_item* item)
-        {
-          if (_start && _end)
+
+          const QList<QPointF>& item::fixed_points() const
           {
-            throw std::runtime_error ( "can't connect free side, as there "
-                                       "is none."
-                                     );
+            return _fixed_points;
           }
-          if (!_start && !_end)
+
+          const bool& item::reading_only() const
           {
-            throw std::runtime_error ("can't connect free side, as both are.");
+            return _reading_only;
           }
-          return _end ? start (item) : end (item);
-        }
-
-        const QList<QPointF>& connection::fixed_points() const
-        {
-          return _fixed_points;
-        }
-
-        const bool& connection::reading_only() const
-        {
-          return _reading_only;
-        }
-        const bool& connection::reading_only (const bool& reading_only_)
-        {
-          return _reading_only = reading_only_;
-        }
-
-        QPainterPath connection::shape() const
-        {
-          return style::connectionShape (this);
-        }
-
-        QRectF connection::boundingRect() const
-        {
-          return style::connectionBoundingRect (this);
-        }
-
-        void connection::paint( QPainter* painter
-                              , const QStyleOptionGraphicsItem*
-                              , QWidget*
-                              )
-        {
-          style::connectionPaint (painter, this);
+          const bool& item::reading_only (const bool& reading_only_)
+          {
+            return _reading_only = reading_only_;
+          }
         }
       }
     }

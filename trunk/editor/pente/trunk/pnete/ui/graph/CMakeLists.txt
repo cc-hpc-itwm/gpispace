@@ -33,13 +33,11 @@ set(graph_UIS
 )
 
 set(graph_TOMOC
-  style.hpp
   connection.hpp
   connectable_item.hpp
   port.hpp
   scene.hpp
   transition.hpp
-  cogwheel_button.hpp
   item.hpp
   place.hpp
 

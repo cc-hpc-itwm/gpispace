@@ -23,7 +23,7 @@ namespace fhg
     {
       namespace graph
       {
-        class connection;
+        namespace connection { class item; }
         class connectable_item;
 
         class scene : public QGraphicsScene
@@ -57,12 +57,12 @@ namespace fhg
           virtual void keyPressEvent (QKeyEvent* event);
 
         private:
-          connection* create_connection (bool only_reading = false);
+          connection::item* create_connection (bool only_reading = false);
           void remove_pending_connection();
 
           void init_menu_context();
 
-          connection* _pending_connection;
+          connection::item* _pending_connection;
           QPointF _mouse_position;
 
           QMenu _menu_new;

@@ -98,9 +98,9 @@ namespace fhg
           return _mouse_position;
         }
 
-        connection* scene::create_connection (bool only_reading)
+        connection::item* scene::create_connection (bool only_reading)
         {
-          connection* c (new connection(only_reading));
+          connection::item * c (new connection::item (only_reading));
           addItem (c);
           c->setPos (0.0, 0.0);
           return c;
@@ -138,7 +138,7 @@ namespace fhg
             throw std::runtime_error
               ("tried hard-connecting non-connectable items.");
           }
-          connection* c (create_connection (only_reading));
+          connection::item* c (create_connection (only_reading));
           c->start (from);
           c->end (to);
           update (c->boundingRect());
@@ -194,7 +194,7 @@ namespace fhg
           foreach (QGraphicsItem* item, items(event->scenePos()))
           {
             //! \note No, just casting to connectable_item* does NOT work. Qt!
-            port* as_port (qgraphicsitem_cast<port*> (item));
+            port::item* as_port (qgraphicsitem_cast<port::item*> (item));
             place* as_place (qgraphicsitem_cast<place*> (item));
 
             connectable_item* ci (as_port);
@@ -209,7 +209,7 @@ namespace fhg
 
             if (ci->is_connectable_with (_pending_connection->non_free_side()))
             {
-              if (qobject_cast<port*> (ci) && as_port)
+              if (qobject_cast<port::item*> (ci) && as_port)
               {
                 //! \todo insert place and connect with that place in between.
               }
@@ -263,7 +263,7 @@ namespace fhg
           }
           foreach (QGraphicsItem* i, is)
           {
-            if (connection* c = qgraphicsitem_cast<connection*> (i))
+            if (connection::item* c = qgraphicsitem_cast<connection::item*> (i))
             {
               QGraphicsItem* start (c->start());
               QGraphicsItem* end (c->end());
@@ -284,7 +284,7 @@ namespace fhg
               ; ++it
               )
           {
-            it.key()->setPos (style::snapToRaster (it.value().position()));
+            it.key()->setPos (style::raster::snap (it.value().position()));
           }
         }
       }

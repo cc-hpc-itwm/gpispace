@@ -24,7 +24,7 @@ namespace fhg
             , _type_map (type_map)
         {}
 
-        void connectable_item::add_connection (connection* c)
+        void connectable_item::add_connection (connection::item* c)
         {
           if (_connections.contains (c))
           {
@@ -32,7 +32,7 @@ namespace fhg
           }
           _connections.insert (c);
         }
-        void connectable_item::remove_connection (connection* c)
+        void connectable_item::remove_connection (connection::item* c)
         {
           if (!_connections.contains (c))
           {
@@ -47,7 +47,7 @@ namespace fhg
           return i->we_type() == we_type() && i->direction() != direction();
         }
 
-        const QSet<connection*>& connectable_item::connections() const
+        const QSet<connection::item*>& connectable_item::connections() const
         {
           return _connections;
         }

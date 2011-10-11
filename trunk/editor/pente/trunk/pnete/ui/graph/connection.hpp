@@ -6,6 +6,7 @@
 #include <QList>
 #include <QPointF>
 #include <QRectF>
+#include <QObject>
 
 #include <pnete/ui/graph/item.hpp>
 
@@ -24,40 +25,45 @@ namespace fhg
       {
         class connectable_item;
 
-        class connection : public item
+        namespace connection
         {
-        public:
-          connection (bool reading_only = false);
-          ~connection();
+          class item : public graph::item
+          {
+            Q_OBJECT;
 
-          connectable_item* start() const;
-          connectable_item* start (connectable_item*);
-          connectable_item* end() const;
-          connectable_item* end (connectable_item*);
+          public:
+            item (bool reading_only = false);
+            ~item();
 
-          connectable_item* non_free_side() const;
-          connectable_item* free_side(connectable_item*);
+            connectable_item* start() const;
+            connectable_item* start (connectable_item*);
+            connectable_item* end() const;
+            connectable_item* end (connectable_item*);
 
-          const QList<QPointF>& fixed_points() const;
+            connectable_item* non_free_side() const;
+            connectable_item* free_side(connectable_item*);
 
-          const bool& reading_only() const;
-          const bool& reading_only (const bool&);
+            const QList<QPointF>& fixed_points() const;
 
-          virtual QRectF boundingRect() const;
-          virtual QPainterPath shape() const;
-          virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+            const bool& reading_only() const;
+            const bool& reading_only (const bool&);
 
-          enum { Type = connection_graph_type };
-          virtual int type() const { return Type; }
+            virtual QRectF boundingRect() const;
+            virtual QPainterPath shape() const;
+            virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-        private:
-          connectable_item* _start;
-          connectable_item* _end;
+            enum { Type = connection_graph_type };
+            virtual int type() const { return Type; }
 
-          QList<QPointF> _fixed_points;
+          private:
+            connectable_item* _start;
+            connectable_item* _end;
 
-          bool _reading_only;
-        };
+            QList<QPointF> _fixed_points;
+
+            bool _reading_only;
+          };
+        }
       }
     }
   }

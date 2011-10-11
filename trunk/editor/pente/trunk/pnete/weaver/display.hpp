@@ -29,8 +29,8 @@ namespace fhg
       {
         class place;
         class scene;
-        class transition;
-        class connection;
+        namespace transition { class item; }
+        //        namespace connection { class item; }
       }
     }
     namespace weaver
@@ -122,7 +122,7 @@ namespace fhg
       public:
         explicit transition ( data::internal_type*
                             , ui::graph::scene*
-                            , ui::graph::transition*
+                            , ui::graph::transition::item*
                             , XMLTYPE(net_type)&
                             , item_by_name_type&
                             );
@@ -132,8 +132,8 @@ namespace fhg
 
       private:
         ui::graph::scene* _scene;
-        ui::graph::transition* _transition;
-        ui::graph::port::DIRECTION _current_port_direction;
+        ui::graph::transition::item* _transition;
+        ui::graph::port::item::DIRECTION _current_port_direction;
         XMLTYPE(net_type)& _net;
 
         item_by_name_type& _place_item_by_name;
@@ -183,7 +183,7 @@ namespace fhg
         explicit connection ( ui::graph::scene*
                             , item_by_name_type& place_item_by_name
                             , item_by_name_type& port_item_by_name
-                            , const ui::graph::port::DIRECTION& direction
+                            , const ui::graph::port::item::DIRECTION& direction
                             , const bool& read = false
                             );
 
@@ -194,7 +194,7 @@ namespace fhg
         ui::graph::scene* _scene;
         item_by_name_type& _place_item_by_name;
         item_by_name_type& _port_item_by_name;
-        const ui::graph::port::DIRECTION _direction;
+        const ui::graph::port::item::DIRECTION _direction;
         const bool _read;
         std::string _port;
         std::string _place;
@@ -207,13 +207,13 @@ namespace fhg
       class port
       {
       public:
-        explicit port (ui::graph::port*, item_by_name_type&);
+        explicit port (ui::graph::port::item*, item_by_name_type&);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::port* _port;
+        ui::graph::port::item* _port;
 
         item_by_name_type& _port_item_by_name;
       };
@@ -225,7 +225,7 @@ namespace fhg
       {
       public:
         explicit port_toplevel ( ui::graph::scene*
-                               , const ui::graph::port::DIRECTION&
+                               , const ui::graph::port::item::DIRECTION&
                                , item_by_name_type& place_item_by_name
                                );
 
@@ -236,8 +236,8 @@ namespace fhg
         ui::graph::scene* _scene;
         item_by_name_type& _place_item_by_name;
         std::string _name;
-        const ui::graph::port::DIRECTION _direction;
-        ui::graph::port* _port_item;
+        const ui::graph::port::item::DIRECTION _direction;
+        ui::graph::port::item* _port_item;
       };
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);

@@ -53,9 +53,9 @@ set(ui_TOMOC
   GraphView.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
-  StructureView.hpp
-  PropertiesEditor.hpp
-  StructureEditor.hpp
+#  StructureView.hpp
+#  PropertiesEditor.hpp
+#  StructureEditor.hpp
 # undo_group_manager.hpp
 
   dock_widget.hpp

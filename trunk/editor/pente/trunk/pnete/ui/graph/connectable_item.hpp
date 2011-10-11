@@ -20,7 +20,7 @@ namespace fhg
     {
       namespace graph
       {
-        class connection;
+        namespace connection { class item; }
 
         class connectable_item : public item
         {
@@ -41,12 +41,12 @@ namespace fhg
             , item* parent = NULL
             );
 
-          void add_connection (connection* c);
-          void remove_connection (connection* c);
+          void add_connection (connection::item* c);
+          void remove_connection (connection::item * c);
 
           virtual bool is_connectable_with (const connectable_item*) const;
 
-          const QSet<connection*>& connections() const;
+          const QSet<connection::item*>& connections() const;
           const DIRECTION& direction() const;
           const DIRECTION& direction (const DIRECTION&);
           QString we_type() const;
@@ -58,7 +58,7 @@ namespace fhg
           void we_type_changed();
 
         protected:
-          QSet<connection*> _connections;
+          QSet<connection::item*> _connections;
           DIRECTION _direction;
           QString _we_type;
           boost::optional< ::xml::parse::type::type_map_type&> _type_map;

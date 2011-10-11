@@ -94,12 +94,13 @@ namespace fhg
           const QString filename/* (magic)*/;
           // mimeData->data(TransitionLibraryModel::mimeType) === filepath as ..)
 
-          graph::transition* transition (new graph::transition (filename));
+          graph::transition::item* transition
+            (new graph::transition::item (filename));
 
           scene()->addItem (transition);
 
           transition->setPos
-            ( graph::style::snapToRaster
+            ( graph::style::raster::snap
               ( mapToScene (event->pos())
               - transition->boundingRect().bottomRight() / 2.0
               )

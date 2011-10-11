@@ -32,77 +32,83 @@ namespace fhg
     {
       namespace graph
       {
-        class transition : public item
+        namespace transition
         {
-          Q_OBJECT;
-
-        public:
-          typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
-          typedef XMLTYPE(expression_type) expression_type;
-          typedef XMLTYPE(mod_type) mod_type;
-
-          explicit transition( transition_type & data
-                             , item* parent = NULL
-                             );
-          explicit transition ( const QString& filename
-                              , item* parent = NULL
-                              );
-
-          virtual QRectF boundingRect() const;
-          virtual QPainterPath shape() const;
-
-          const QString& name (const QString& name_);
-          const QString& name() const;
-
-          bool highlighted() const;
-
-          void repositionChildrenAndResize();
-
-          data::proxy::type* proxy (data::proxy::type*);
-          data::proxy::type* proxy () const;
-
-          enum
+          class item : public graph::item
           {
-            Type = transition_graph_type,
-          };
-          virtual int type() const
+            Q_OBJECT;
+
+          public:
+            typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
+            typedef XMLTYPE(expression_type) expression_type;
+            typedef XMLTYPE(mod_type) mod_type;
+
+            explicit item ( transition_type & data
+                          , graph::item* parent = NULL
+                          );
+            explicit item ( const QString& filename
+                          , graph::item* parent = NULL
+                          );
+
+            virtual QRectF boundingRect() const;
+            virtual QPainterPath shape() const;
+
+            QRectF bounding_rect (const QSizeF&) const;
+            QPainterPath shape (const QSizeF&) const;
+
+            const QString& name (const QString& name_);
+            const QString& name() const;
+
+            bool highlighted() const;
+
+            void repositionChildrenAndResize();
+
+            data::proxy::type* proxy (data::proxy::type*);
+            data::proxy::type* proxy () const;
+
+            enum
+              {
+                Type = transition_graph_type,
+              };
+            virtual int type() const
             {
               return Type;
             }
 
-        public slots:
-          void slot_delete(void);
-          void slot_add_port(void);
+          public slots:
+            void slot_delete(void);
+            void slot_add_port(void);
 
-        protected:
-          virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+          protected:
+            virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-          virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
-          virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
-          virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
-          virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
-          virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
-          virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+            virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+            virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
+            virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
+            virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
+            virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+            virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
-          //! \todo size verstellbar
+            //! \todo size verstellbar
 
-          QPointF _dragStart;
-          QSizeF _size;
+            QPointF _dragStart;
+            QSizeF _size;
 
-          bool _highlighted;
-          bool _dragging;
+            bool _highlighted;
+            bool _dragging;
 
-          transition_type & _data;
+            transition_type & _data;
 
-        private:
-          QMenu _menu_context;
+          private:
+            QMenu _menu_context;
 
-          void init_menu_context();
+            void init_menu_context();
 
-          QString _name;
+            QString _name;
 
-          data::proxy::type * _proxy;
-        };
+            data::proxy::type * _proxy;
+          };
+        }
       }
     }
   }
