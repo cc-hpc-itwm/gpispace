@@ -36,6 +36,7 @@ int main (int argc, char **argv)
 	string arrMasterUrls;
 	string appGuiUrl;
 	string kvsUrl;
+	unsigned int agentRank;
 
 	bool bDoBackup = false;
 	string backup_file;
@@ -46,20 +47,21 @@ int main (int argc, char **argv)
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
-	   ("help,h", "Display this message")
-	   ("name,n", po::value<string>(&agentName)->default_value("agent"), "Agent's logical name")
-	   ("url,u",  po::value<string>(&agentUrl)->default_value("localhost"), "Agent's url")
+	   ("help, h", "Display this message")
+	   ("name, n", po::value<string>(&agentName)->default_value("agent"), "Agent's logical name")
+	   ("url, u",  po::value<string>(&agentUrl)->default_value("localhost"), "Agent's url")
 	   //("orch_name,m",  po::value<string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-	   ("master,m", po::value<vector<string> >(&arrMasterNames)->multitoken(), "Agent's master list")
-	   ("backup_folder,d", po::value<string>(&backup_folder), "Agent's backup folder")
-	   ("backup_file,f", po::value<string>(&backup_file), "Agent's backup file (stored into the backup folder)")
-	   ("app_gui_url,a",  po::value<string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
-	   ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
-          ("request-mode", po::value<string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
+	   ("master, m", po::value<vector<string> >(&arrMasterNames)->multitoken(), "Agent's master list")
+	   ("rank, r", po::value<unsigned int>(&agentRank)->default_value(0), "Agent's rank")
+	   ("backup_folder, d", po::value<string>(&backup_folder), "Agent's backup folder")
+	   ("backup_file, f", po::value<string>(&backup_file), "Agent's backup file (stored into the backup folder)")
+	   ("app_gui_url, a", po::value<string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
+	   ("kvs_url, k",  po::value<string>(), "The kvs daemon's url")
+	   ("request-mode", po::value<string>(&requestMode)->default_value(requestMode), "send periodical job requests to master")
 	   ;
 
 	po::variables_map vm;
-	po::store( po::command_line_parser(argc, argv).options(desc).run(), vm );
+	po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
 	po::notify(vm);
 
 	if( vm.count("help") )
@@ -168,7 +170,7 @@ int main (int argc, char **argv)
 
 	try
 	{
-            sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, listMasterInfo, MAX_CAP, appGuiUrl ); //, orchUrl );
+            sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, listMasterInfo, MAX_CAP, agentRank, appGuiUrl ); //, orchUrl );
 
             bool bUseRequestModel(fhg::util::read_bool(requestMode));
 
