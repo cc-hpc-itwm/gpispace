@@ -35,10 +35,11 @@ namespace daemon {
                                 const std::string& url,
                                 const sdpa::master_info_list_t& arrMasterNames,
                                 const unsigned int capacity,
+                                const unsigned int rank = 0,
                                 const std::string& appGuiUrl = "" )
     {
       LOG( DEBUG, "Create agent \""<<name<<"\" with an workflow engine of type "<<typeid(T).name() );
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, rank, appGuiUrl ) );
       pAgent->create_workflow_engine<T>();
       seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgent, 1) );
       pAgent->setStage(daemon_stage);
@@ -55,10 +56,11 @@ namespace daemon {
                                 const std::string& url,
                                 const sdpa::master_info_list_t& arrMasterNames,
                                 const unsigned int capacity,
+                                const unsigned int rank = 0,
                                 const std::string& appGuiUrl = "" )
     {
       LOG( DEBUG, "Create Agent "<<name<<" with no workflow engine" );
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, appGuiUrl ) );
+      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, capacity, rank, appGuiUrl ) );
       seda::Stage::Ptr daemon_stage( new seda::Stage(name, pAgent, 1) );
       pAgent->setStage(daemon_stage);
       seda::StageRegistry::instance().insert(daemon_stage);

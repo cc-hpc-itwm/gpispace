@@ -69,7 +69,7 @@ namespace sdpa { namespace daemon {
 	  GenericDaemon(  const std::string name = "orchestrator_0",
 			  	  	  const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
 					  unsigned int cap = 10000,
-					  IWorkflowEngine* pArgSdpa2Gwes = NULL);
+					  unsigned int rank = 0);
 
 	  virtual ~GenericDaemon();
 
@@ -162,6 +162,7 @@ namespace sdpa { namespace daemon {
       virtual void addWorker( const Worker::worker_id_t& workerId,
     		  	  	  	  	  unsigned int cap,
     		                  const capabilities_set_t& cpbset,
+    		                  const unsigned int& rank = 0,
     		                  const sdpa::worker_id_t& agent_uuid  = "");
 
       const std::string& name() const { return Strategy::name(); }

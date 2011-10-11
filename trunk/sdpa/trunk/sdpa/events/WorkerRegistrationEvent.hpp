@@ -46,10 +46,12 @@ namespace sdpa { namespace events {
     		  	  	  	  	  	const address_t& a_to,
     		            		const unsigned int capacity = 2,
     		            		const capabilities_set_t& cpbset = capabilities_set_t(),
+    		            		const unsigned int& agent_rank = 0,
     		            		const sdpa::worker_id_t& agent_uuid = "" )
 		  : MgmtEvent(a_from, a_to),
 		    capacity_(capacity),
 		    cpbset_(cpbset),
+		    rank_(agent_rank),
 		    agent_uuid_(agent_uuid)
       { }
 
@@ -58,43 +60,49 @@ namespace sdpa { namespace events {
       {
     	  capacity_ 	 = regEvt.capacity_;
     	  cpbset_ 		 = regEvt.cpbset_;
+    	  rank_			 = regEvt.rank_,
     	  agent_uuid_ 	 = regEvt.agent_uuid_;
 	  }
 
     WorkerRegistrationEvent& operator=( const WorkerRegistrationEvent& regEvt )
     {
-      if(this != &regEvt)
-      {
-        *((MgmtEvent*)(this)) = (MgmtEvent&)(regEvt);
-        capacity_ 	 		  = regEvt.capacity_;
-        cpbset_ 			  = regEvt.cpbset_;
-        agent_uuid_ 		  = regEvt.agent_uuid_;
-      }
+    	if(this != &regEvt)
+    	{
+    		*((MgmtEvent*)(this)) = (MgmtEvent&)(regEvt);
+    		capacity_ 	 		  = regEvt.capacity_;
+    		cpbset_ 			  = regEvt.cpbset_;
+    		rank_			 	  = regEvt.rank_,
+    		agent_uuid_ 		  = regEvt.agent_uuid_;
+    	}
 
-      return *this;
+    	return *this;
     }
 
-      virtual ~WorkerRegistrationEvent() { }
+    virtual ~WorkerRegistrationEvent() { }
 
-      std::string str() const { return "WorkerRegistrationEvent"; }
+    std::string str() const { return "WorkerRegistrationEvent"; }
 
-      const unsigned int& capacity() const { return capacity_; }
-      unsigned int& capacity() { return capacity_; }
+    const unsigned int& capacity() const { return capacity_; }
+    unsigned int& capacity() { return capacity_; }
 
-      const capabilities_set_t& capabilities() const { return cpbset_; }
-      capabilities_set_t& capabilities() { return cpbset_; }
+    const unsigned int& rank() const { return rank_; }
+    unsigned int& rank() { return rank_; }
 
-      const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_;}
-      sdpa::worker_id_t& agent_uuid() { return agent_uuid_;}
+    const capabilities_set_t& capabilities() const { return cpbset_; }
+    capabilities_set_t& capabilities() { return cpbset_; }
 
-      virtual void handleBy(EventHandler *handler)
-      {
-    	  handler->handleWorkerRegistrationEvent(this);
-      }
+    const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_;}
+    sdpa::worker_id_t& agent_uuid() { return agent_uuid_;}
+
+    virtual void handleBy(EventHandler *handler)
+    {
+    	handler->handleWorkerRegistrationEvent(this);
+    }
 
     private:
       unsigned int capacity_;
       capabilities_set_t cpbset_;
+      unsigned int rank_;
       sdpa::worker_id_t agent_uuid_;
   };
 }}

@@ -37,7 +37,7 @@ namespace sdpa {
                               const sdpa::master_info_list_t& m_arrMasterInfo = sdpa::master_info_list_t(),
                               unsigned int cap = 10000,
                               const std::string& guiUrl = "" )
-                  : DaemonFSM( name, m_arrMasterInfo, cap, NULL ),
+                  : DaemonFSM( name, m_arrMasterInfo, cap /*, NULL*/ ),
                     SDPA_INIT_LOGGER(name),
                     url_(url),
                     //masterName_(masterName),

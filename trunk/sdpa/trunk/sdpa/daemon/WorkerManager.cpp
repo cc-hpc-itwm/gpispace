@@ -95,6 +95,7 @@ WorkerManager::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWork
 void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 								unsigned int capacity,
 								const capabilities_set_t& TCpbSet,
+								const unsigned int& agent_rank,
 								const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
 	lock_type lock(mtx_);
@@ -119,12 +120,12 @@ void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 	}
 
 	// add TCpbSet HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_uuid ) );
+	Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_rank, agent_uuid ) );
 	pWorker->addCapabilities(TCpbSet);
 
 	worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
-	SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<" with capacity = "<<pWorker->capacity() );
+	SDPA_LOG_INFO( "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<pWorker->capacity() );
 
 	if(worker_map_.size() == 1)
 		iter_last_worker_ = worker_map_.begin();
@@ -570,10 +571,9 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 
 	sdpa::map_degs_t mapDegs;
 
-	BOOST_FOREACH( worker_map_t::value_type pair, worker_map_ )
+	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
-		unsigned int matchingDeg = matchRequirements( pair.second->capabilities(), listJobReq );
-		mapDegs[pair.first] = matchingDeg;
+		mapDegs[pair.first] =  matchRequirements( pair.second->capabilities(), listJobReq );
 	}
 
 	sdpa::map_degs_t::iterator iter = std::max_element( mapDegs.begin(), mapDegs.end(), compare );

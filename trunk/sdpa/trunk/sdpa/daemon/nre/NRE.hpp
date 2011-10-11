@@ -48,7 +48,7 @@ namespace sdpa {
                  , const std::vector<std::string> & fvmPCPreLoad = std::vector<std::string>()
                )
 
-            : dsm::DaemonFSM( name, arrMasterNames, cap, NULL )
+            : dsm::DaemonFSM( name, arrMasterNames, cap /*, NULL*/ )
               , SDPA_INIT_LOGGER(name)
               , url_(url)
               , workerUrl_(workerUrl)

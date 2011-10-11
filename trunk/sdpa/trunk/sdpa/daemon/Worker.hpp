@@ -53,7 +53,8 @@ namespace sdpa { namespace daemon {
       @param location how to reach that worker (might be the same as the former)
       */
     explicit Worker( 	const worker_id_t& name = "",
-    					const unsigned int cap = 10000,
+    					const unsigned int& cap = 10000,
+    					const unsigned int& rank = 0,
     					const sdpa::worker_id_t& agent_uuid = "",
     					const location_t &location = "" );
 
@@ -96,6 +97,7 @@ namespace sdpa { namespace daemon {
          Return the rank of the worker.
      */
     unsigned int capacity() const { return capacity_; }
+    unsigned int rank() const { return rank_; }
     const sdpa::worker_id_t& agent_uuid() const { return agent_uuid_; }
 
     // capabilities
@@ -188,6 +190,7 @@ namespace sdpa { namespace daemon {
     //unsigned int rank_;
     unsigned int capacity_;
     sdpa::capabilities_set_t capabilities_;
+    unsigned int rank_;
 	sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
     sdpa::util::time_type tstamp_; //! time of last message received

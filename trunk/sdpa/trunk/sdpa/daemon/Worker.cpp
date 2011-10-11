@@ -9,12 +9,14 @@ using namespace sdpa;
 using namespace sdpa::daemon;
 
 Worker::Worker(	const worker_id_t& name,
-				const unsigned int cap,
+				const unsigned int& cap,
+				const unsigned int& rank,
 				const sdpa::worker_id_t& agent_uuid,
 				const location_t &location)
   : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
     name_(name),
     capacity_(cap),
+    rank_(rank),
     agent_uuid_(agent_uuid),
     location_(location),
     tstamp_(sdpa::util::now()),

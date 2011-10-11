@@ -45,13 +45,13 @@ using namespace sdpa::events;
 GenericDaemon::GenericDaemon( 	const std::string name,
 								const master_info_list_t arrMasterInfo,
 								unsigned int cap,
-								IWorkflowEngine*  pArgSdpa2Gwes	 )
+								unsigned int rank )
       : Strategy(name),
         SDPA_INIT_LOGGER(name),
         ptr_job_man_(new JobManager()),
         ptr_scheduler_(),
-        ptr_workflow_engine_(pArgSdpa2Gwes),
-        m_nRank(0),
+        ptr_workflow_engine_(NULL),
+        m_nRank(rank),
         m_nCap(cap),
         m_strAgentUID(id_generator::instance().next()),
         m_nExternalJobs(0),
@@ -79,7 +79,7 @@ GenericDaemon::GenericDaemon( 	const std::string name,
 
 GenericDaemon::~GenericDaemon()
 {
-  SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
+	SDPA_LOG_DEBUG("GenericDaemon destructor called ...");
 }
 
 void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, const std::string& cfgFile )
@@ -851,7 +851,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   {
       SDPA_LOG_INFO("****************Register new worker, " << worker_id << ", with the capacity "<<evtRegWorker.capacity()<<"***********");
 
-      addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
+      addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.rank(), evtRegWorker.agent_uuid() );
 
       {
         std::map<std::string, size_t> cap_cnt;
@@ -901,7 +901,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
           scheduler()->delWorker(worker_id);
           LOG(TRACE, "Add worker"<<worker_id );
-          addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.agent_uuid() );
+          addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(),  evtRegWorker.rank(), evtRegWorker.agent_uuid() );
       }
 
       SDPA_LOG_INFO("The worker " << worker_id << " is already registered!");
@@ -1424,14 +1424,15 @@ const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_i
 void GenericDaemon::addWorker( const Worker::worker_id_t& workerId,
 							   unsigned int cap,
 		                       const capabilities_set_t& cpbset,
+		                       const unsigned int& agent_rank,
 		                       const sdpa::worker_id_t& agent_uuid )
 {
-  try {
-      ptr_scheduler_->addWorker(workerId, cap, cpbset, agent_uuid);
-  }catch( const WorkerAlreadyExistException& ex )
-  {
-      throw ex;
-  }
+	  try {
+		  ptr_scheduler_->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
+	  }catch( const WorkerAlreadyExistException& ex )
+	  {
+		  throw ex;
+	  }
 }
 
 void GenericDaemon::update_last_request_time()
@@ -1552,7 +1553,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
 		ptr_scheduler_->getCapabilities(capabilities);
 
-		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), capabilities, agent_uuid()));
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), capabilities,  rank(), agent_uuid()));
 		sendEventToMaster(pEvtWorkerReg);
 	}
 }

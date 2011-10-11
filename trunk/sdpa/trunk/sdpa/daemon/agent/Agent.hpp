@@ -34,8 +34,9 @@ namespace sdpa {
               const std::string& url = "",
               const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
               unsigned int cap = 10000,
+              unsigned int rank = 0,
               const std::string& guiUrl = "")
-        : DaemonFSM( name, arrMasterNames, cap, NULL ),
+        : DaemonFSM( name, arrMasterNames, cap, rank ),
           SDPA_INIT_LOGGER(name),
           url_(url),
           m_guiService("SDPA", guiUrl)
