@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath2 )
 	// drts
 
 
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	LOG( DEBUG, "***** testCancelJobPath2 *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsAndDrtsPath3 )
 	//    |
 	//   drts
 
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	LOG( DEBUG, "***** testCancelJobPath3 *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsAndDrtsPath3 )
 
 BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	LOG( DEBUG, "***** testCancelAgentsNoDrtsTree *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
@@ -488,7 +488,7 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
 {
-	LOG( DEBUG, "***** testOrchestratorNoWe *****"<<std::endl);
+	LOG( DEBUG, "***** testAgentsAndDrtsTree *****"<<std::endl);
 	//guiUrl
 	string guiUrl   	= "";
 	string workerUrl 	= "127.0.0.1:5500";
