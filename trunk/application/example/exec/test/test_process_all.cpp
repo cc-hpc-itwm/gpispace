@@ -46,7 +46,7 @@ main (int argc, char ** argv)
   files_output.push_back (file3);
   files_output.push_back (file4);
 
-  process::circular_buffer buf_stderr (1 << 10);
+  process::circular_buffer buf_stderr;
 
   process::execute_return_type ret
     ( process::execute ( command
