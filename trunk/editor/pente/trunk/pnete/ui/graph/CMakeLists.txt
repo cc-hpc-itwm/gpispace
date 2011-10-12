@@ -8,7 +8,6 @@ set(graph_SRCS
   transition.cpp
   cogwheel_button.cpp
   place.cpp
-  size.cpp
 
   popover_widget.cpp
 )
@@ -22,7 +21,6 @@ set(graph_HDRS
   cogwheel_button.hpp
   item.hpp
   place.hpp
-  size.hpp
 
   popover_widget.hpp
 )

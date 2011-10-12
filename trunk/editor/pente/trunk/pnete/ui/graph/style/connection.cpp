@@ -3,9 +3,8 @@
 #include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/connectable_item.hpp>
 
-#include <pnete/ui/graph/size.hpp>
-
 #include <pnete/ui/graph/style/cap.hpp>
+#include <pnete/ui/graph/style/size.hpp>
 
 #include <QPainter>
 #include <QPen>

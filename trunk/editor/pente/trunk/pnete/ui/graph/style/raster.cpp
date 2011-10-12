@@ -1,7 +1,7 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/style/raster.hpp>
-#include <pnete/ui/graph/size.hpp>
+#include <pnete/ui/graph/style/size.hpp>
 
 #include <cmath>
 

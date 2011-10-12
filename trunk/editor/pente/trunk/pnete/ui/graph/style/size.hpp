@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_SIZE_HPP
-#define _FHG_PNETE_UI_GRAPH_SIZE_HPP 1
+#ifndef _FHG_PNETE_UI_GRAPH_STYLE_SIZE_HPP
+#define _FHG_PNETE_UI_GRAPH_STYLE_SIZE_HPP 1
 
 #include <QtGlobal>
 
@@ -16,12 +16,6 @@ namespace fhg
         namespace size
         {
           const qreal& raster();
-
-          namespace detail
-          {
-            qreal ratio_shorter (const qreal&);
-            qreal ratio_longer (const qreal&);
-          }
 
           namespace port
           {

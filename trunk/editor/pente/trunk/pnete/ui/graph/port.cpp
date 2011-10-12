@@ -13,9 +13,9 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/graph/connection.hpp>
-#include <pnete/ui/graph/size.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
+#include <pnete/ui/graph/style/size.hpp>
 
 namespace fhg
 {

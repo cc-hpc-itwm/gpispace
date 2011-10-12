@@ -1,8 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/style/cap.hpp>
-
-#include <pnete/ui/graph/size.hpp>
+#include <pnete/ui/graph/style/size.hpp>
 
 #include <QPainterPath>
 #include <QPolygon>

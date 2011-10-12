@@ -1,7 +1,8 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/size.hpp>
+
+#include <pnete/ui/graph/style/size.hpp>
 
 #include <QPainter>
 #include <QPen>

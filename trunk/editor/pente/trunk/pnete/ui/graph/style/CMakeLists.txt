@@ -6,11 +6,13 @@ set(style_SRCS
   transition.cpp
   cap.cpp
   raster.cpp
+  size.cpp
 )
 
 set(style_HDRS
   cap.hpp
   raster.hpp
+  size.hpp
 )
 
 set(style_UIS

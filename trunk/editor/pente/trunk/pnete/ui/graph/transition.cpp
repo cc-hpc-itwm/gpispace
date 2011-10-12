@@ -14,9 +14,9 @@
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/cogwheel_button.hpp>
 #include <pnete/ui/graph/connection.hpp>
-#include <pnete/ui/graph/size.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
+#include <pnete/ui/graph/style/size.hpp>
 
 namespace fhg
 {
