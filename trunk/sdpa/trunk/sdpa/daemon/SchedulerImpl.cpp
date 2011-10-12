@@ -125,9 +125,7 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id, const sdpa
 	}
 }
 
-void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id
-                              , Worker::JobQueue* pQueue
-                              )
+void SchedulerImpl::reschedule( const Worker::worker_id_t & worker_id, Worker::JobQueue* pQueue )
 {
 	assert (pQueue);
 

@@ -52,7 +52,7 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       @param location how to reach that worker (might be the same as the former)
       */
-    explicit Worker( 	const worker_id_t& name = "",
+    explicit Worker( 	const worker_id_t& name = worker_id_t(""),
     					const unsigned int& cap = 10000,
     					const unsigned int& rank = 0,
     					const sdpa::worker_id_t& agent_uuid = "",

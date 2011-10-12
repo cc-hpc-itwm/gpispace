@@ -63,7 +63,7 @@ namespace sdpa { namespace daemon {
 
 	  unsigned int countMasterJobs();
 
-	  void addJobRequirement( const sdpa::job_id_t&, const requirement_t& ) throw (JobNotFoundException);
+	  void addJobRequirements( const sdpa::job_id_t&, const requirement_list_t& ) throw (JobNotFoundException);
 	  const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
 
 	  std::string print() const;

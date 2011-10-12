@@ -170,14 +170,15 @@ const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
     return it_req->second;;
 }
 
-void JobManager::addJobRequirement(const sdpa::job_id_t& job_id, const requirement_t& req) throw (JobNotFoundException)
+void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirement_list_t& job_req_list) throw (JobNotFoundException)
 {
     lock_type lock(mtx_);
     if( job_map_.find( job_id ) == job_map_.end() )
           throw JobNotFoundException( job_id );
 
     // eventually, re-write the existing preferences
-    job_requirements_[job_id].push_back(req);
+    BOOST_FOREACH(const requirement_t& req, job_req_list)
+    	job_requirements_[job_id].push_back(req);
 }
 
 static const std::size_t MAX_PARALLEL_JOBS = 1024;

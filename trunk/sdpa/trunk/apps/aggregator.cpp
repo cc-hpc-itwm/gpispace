@@ -169,6 +169,7 @@ int main (int argc, char **argv)
 		                                                                                                      aggUrl,
 		                                                                                                      listMasterInfo,
 		                                                                                                      MAX_CAP,
+		                                                                                                      0,
 		                                                                                                      appGuiUrl ); //, orchUrl );
 		 bool bUseRequestModel(vm.count("use-push-model") == 0);
 

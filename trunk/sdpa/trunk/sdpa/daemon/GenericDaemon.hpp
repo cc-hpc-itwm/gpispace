@@ -139,7 +139,7 @@ namespace sdpa { namespace daemon {
 	  virtual bool is_scheduled(const sdpa::job_id_t& job_id) { return ptr_scheduler_->has_job(job_id); }
 
       // WE interface
-      virtual void submit(const id_type & id, const encoded_type & );
+	  virtual void submit(const id_type & id, const encoded_type &, const requirement_list_t& = empty_req_list() );
       virtual bool cancel(const id_type & id, const reason_type & reason);
       virtual bool finished(const id_type & id, const result_type & result);
       virtual bool failed(const id_type & id, const result_type & result);

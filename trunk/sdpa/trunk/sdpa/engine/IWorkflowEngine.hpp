@@ -129,65 +129,7 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 	      return requirement_t<T> (val, false);
 	    }
 
-		//typedef int preference_t;
-		struct preference_t
-		{
-			typedef int rank_type;
-			typedef rank_type value_type;
-			typedef rank_type argument_type;
-
-			typedef boost::unordered_set<value_type> exclude_set_type;
-			typedef std::vector<value_type> rank_list_type;
-
-			preference_t (const bool _mandatory = false) : mandatory_(_mandatory)  { }
-
-			bool is_mandatory (void) const { return mandatory_; }
-			bool is_wanted (const rank_type rank) const { return false;}
-			bool is_excluded (rank_type rank) const { return false;}
-
-			rank_list_type & ranks(void)
-			{
-				return ranks_;
-			}
-
-			rank_list_type const & ranks(void) const
-			{
-				return ranks_;
-			}
-
-			exclude_set_type & exclusion (void)
-			{
-				return excluded_ranks_;
-			}
-
-			exclude_set_type const & exclusion (void) const
-			{
-				return excluded_ranks_;
-			}
-
-			bool empty (void) const
-			{
-				return ranks_.empty();
-			}
-
-		   preference_t & want (const rank_type rank)
-		   {
-			   ranks_.push_back (rank);
-			   return *this;
-		   }
-
-		private:
-		   bool mandatory_;
-		   rank_list_type ranks_;
-		   exclude_set_type excluded_ranks_;
-		};
-
-		inline std::ostream & operator << (std::ostream & os, const preference_t & p)
-		{
-			os << "not implementd!";
-			return os;
-		}
-
+	    /*
 		struct activity_information_t
 		{
 			enum status_t
@@ -208,6 +150,7 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 			typedef boost::unordered_map<std::string, std::string> data_t;
 			data_t data;
 		};
+		*/
 
 		struct IWorkflowEngine
 		{

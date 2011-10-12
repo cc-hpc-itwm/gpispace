@@ -274,7 +274,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		if(pIAgent_)
 		{
 			SDPA_LOG_DEBUG("Submit new activity ...");
-			pIAgent_->submit(act_id, wf_desc);
+			pIAgent_->submit(act_id, wf_desc, empty_req_list());
 		}
     }
 
