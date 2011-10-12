@@ -3,10 +3,14 @@
 
 #include <we/we.hpp>
 #include <we/mgmt/layer.hpp>
+#include <we/mgmt/type/requirement.hpp>
+#include <list>
 
 typedef uint64_t id_type;
 
 typedef we::mgmt::layer<id_type, we::activity_t> layer_t;
+
+typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
 
 static inline id_type generate_id ()
 {
@@ -21,7 +25,7 @@ struct daemon_t
     : layer (this, &generate_id)
   {}
 
-  void submit (const id_type & id, const std::string &enc)
+  void submit (const id_type & id, const std::string &enc, requirement_list_t req_list = requirement_list_t())
   {
     layer.print_statistics (std::cerr);
     layer.finished (id, enc);

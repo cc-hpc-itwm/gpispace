@@ -32,6 +32,8 @@
 #include <we/mgmt/context.hpp>
 
 #include <we/loader/module.hpp>
+#include <we/mgmt/type/requirement.hpp>
+#include <list>
 
 namespace test {
   namespace detail
@@ -219,7 +221,8 @@ namespace test {
       id_map_.erase (id);
     }
 
-    void submit(const id_type & id, const std::string & desc)
+    typedef std::list<we::mgmt::requirement_t<std::string> > requirement_list_t;
+    void submit(const id_type & id, const std::string & desc, requirement_list_t req_list = requirement_list_t())
     {
       job_type job (id, desc);
       jobs_[next_worker_] .put(job);

@@ -48,6 +48,8 @@
 #include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
 
+#include <we/mgmt/type/requirement.hpp>
+
 namespace we { namespace mgmt {
     template < typename IdType
              , typename Activity
@@ -433,7 +435,7 @@ namespace we { namespace mgmt {
       }
     private:
       // handle execution layer
-      boost::function<void (external_id_type const &, encoded_type const &)> ext_submit;
+      boost::function<void (external_id_type const &, encoded_type const &, const std::list<requirement_t<std::string> >& )> ext_submit;
       boost::function<bool (external_id_type const &, reason_type const &)>  ext_cancel;
       boost::function<bool (external_id_type const &, result_type const &)>  ext_finished;
       boost::function<bool (external_id_type const &, result_type const &)>  ext_failed;
@@ -549,7 +551,7 @@ namespace we { namespace mgmt {
       template <typename T>
       void connect ( T * t )
       {
-        ext_submit = (boost::bind (& T::submit, t, _1, _2));
+        ext_submit = (boost::bind (& T::submit, t, _1, _2, _3));
         ext_cancel = (boost::bind (& T::cancel, t, _1, _2));
         ext_finished = (boost::bind (& T::finished, t, _1, _2));
         ext_failed = (boost::bind (& T::failed, t, _1, _2));
@@ -796,7 +798,10 @@ namespace we { namespace mgmt {
         ext_act.transition().set_internal(true);
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
-        ext_submit ( ext_id, policy::codec::encode (ext_act));
+
+        // TO DO: set here the requirements !!!!
+        std::list<requirement_t<std::string> > req_list;
+        ext_submit ( ext_id, policy::codec::encode (ext_act), req_list);
       }
 
       // WORK HERE: rewrite!
