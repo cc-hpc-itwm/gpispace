@@ -10,7 +10,8 @@
 #include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
-#include <pnete/ui/graph/style.hpp>
+
+#include <pnete/ui/graph/style/raster.hpp>
 
 #include <util/graphviz.hpp>
 

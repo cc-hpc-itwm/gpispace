@@ -10,8 +10,9 @@
 
 #include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/graph/transition.hpp>
-#include <pnete/ui/graph/style.hpp>
 #include <pnete/ui/graph/scene.hpp>
+
+#include <pnete/ui/graph/style/raster.hpp>
 
 namespace fhg
 {

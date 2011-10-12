@@ -1,3 +1,5 @@
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
+
 #include <pnete/ui/graph/port.hpp>
 
 #include <QGraphicsScene>
@@ -11,8 +13,9 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/graph/connection.hpp>
-#include <pnete/ui/graph/style.hpp>
 #include <pnete/ui/graph/size.hpp>
+
+#include <pnete/ui/graph/style/raster.hpp>
 
 namespace fhg
 {

@@ -5,10 +5,12 @@ set(style_SRCS
   connection.cpp
   transition.cpp
   cap.cpp
+  raster.cpp
 )
 
 set(style_HDRS
   cap.hpp
+  raster.hpp
 )
 
 set(style_UIS

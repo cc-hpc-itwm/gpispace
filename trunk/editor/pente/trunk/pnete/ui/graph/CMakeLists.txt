@@ -1,7 +1,6 @@
 include(${QT_USE_FILE})
 
 set(graph_SRCS
-  style.cpp
   connection.cpp
   connectable_item.cpp
   port.cpp
@@ -15,7 +14,6 @@ set(graph_SRCS
 )
 
 set(graph_HDRS
-  style.hpp
   connection.hpp
   connectable_item.hpp
   port.hpp

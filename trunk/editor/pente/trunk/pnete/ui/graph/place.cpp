@@ -5,7 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSceneContextMenuEvent>
 
-#include <pnete/ui/graph/style.hpp>
+#include <pnete/ui/graph/style/raster.hpp>
 
 namespace fhg
 {

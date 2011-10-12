@@ -5,7 +5,8 @@
 #include <QPainter>
 
 #include <pnete/ui/graph/connectable_item.hpp>
-#include <pnete/ui/graph/style.hpp>
+
+#include <pnete/ui/graph/style/raster.hpp>
 
 namespace fhg
 {
