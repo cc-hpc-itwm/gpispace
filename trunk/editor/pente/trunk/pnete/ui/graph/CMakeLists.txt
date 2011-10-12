@@ -44,6 +44,7 @@ set(graph_TOMOC
   popover_widget.hpp
 )
 
+add_subdirectory (style)
 
 #for moced files to get their includes.
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -53,3 +54,4 @@ QT4_WRAP_CPP(graph_SRCS_MOC ${graph_TOMOC} ${graph_UIS_H})
 qt4_automoc(${graph_SRCS_MOC})
 add_library(graph ${graph_SRCS} ${graph_SRCS_MOC})
 target_link_libraries (graph graphviz-wrapper)
+target_link_libraries (graph style)
