@@ -9,6 +9,8 @@
 
 #include <pnete/ui/base_editor_widget.hpp>
 
+#include <fhg/util/maybe.hpp>
+
 class QWidget;
 class QTextEdit;
 class QLineEdit;
@@ -32,7 +34,11 @@ namespace fhg
                           , QWidget* parent = NULL
                           );
         void set_expression (const QString&);
+        void set_expression (const std::string&);
+
+        void set_name (const fhg::util::maybe<std::string>&);
         void set_name (const QString&);
+        void set_name (const std::string&);
 
       private slots:
         void name_changed (const QString& name_);
