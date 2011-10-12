@@ -10,6 +10,8 @@
 #include <pnete/ui/base_editor_widget.hpp>
 
 class QWidget;
+class QTextEdit;
+class QLineEdit;
 
 namespace fhg
 {
@@ -29,13 +31,28 @@ namespace fhg
                           , const QStringList& types
                           , QWidget* parent = NULL
                           );
+        void set_expression (const QString&);
+        void set_name (const QString&);
 
       private slots:
         void name_changed (const QString& name_);
+        void expression_changed ();
+
+        void slot_set_function_name ( const QObject*
+                                    , const ::xml::parse::type::function_type&
+                                    , const QString&
+                                    );
+        void slot_set_expression ( const QObject*
+                                 , const ::xml::parse::type::expression_type&
+                                 , const QString&
+                                 );
 
       private:
+
         data::proxy::expression_proxy::data_type& _expression;
         port_lists_widget* _port_lists;
+        QTextEdit* _expression_edit;
+        QLineEdit* _name_edit;
       };
     }
   }

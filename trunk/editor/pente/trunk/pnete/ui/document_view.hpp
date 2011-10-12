@@ -42,7 +42,8 @@ namespace fhg
         void focus_gained (QWidget*);
 
       public slots:
-        void slot_set_function_name ( ::xml::parse::type::function_type&
+        void slot_set_function_name ( const QObject*
+                                    , const ::xml::parse::type::function_type&
                                     , const QString&
                                     );
       private slots:

@@ -27,12 +27,14 @@ namespace fhg
 
         connect ( &data::proxy::root (proxy)->change_manager()
                 , SIGNAL ( signal_set_function_name
-                           ( ::xml::parse::type::function_type&
+                           ( const QObject*
+                           , const ::xml::parse::type::function_type&
                            , const QString&
                            )
                          )
                 , SLOT ( slot_set_function_name
-                         ( ::xml::parse::type::function_type&
+                         ( const QObject*
+                         , const ::xml::parse::type::function_type&
                          , const QString&
                          )
                        )
@@ -40,7 +42,8 @@ namespace fhg
       }
       void
       document_view::slot_set_function_name
-      ( ::xml::parse::type::function_type& function
+      ( const QObject*
+      , const ::xml::parse::type::function_type& function
       , const QString& name
       )
       {

@@ -14,7 +14,8 @@ namespace fhg
       {}
 
       void change_manager_t::set_function_name
-      ( ::xml::parse::type::function_type& fun
+      ( const QObject* origin
+      , ::xml::parse::type::function_type& fun
       , const QString& name
       )
       {
@@ -27,7 +28,19 @@ namespace fhg
           fun.name.clear();
         }
 
-        emit signal_set_function_name (fun, name);
+        emit signal_set_function_name (origin, fun, name);
+      }
+
+      void change_manager_t::set_expression
+      ( const QObject* origin
+      , ::xml::parse::type::expression_type& expression
+      , const QString& text
+      )
+      {
+        expression.expressions.clear();
+        expression.expressions.push_back (text.toStdString());
+
+        emit signal_set_expression (origin, expression, text);
       }
     }
   }

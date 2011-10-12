@@ -22,24 +22,26 @@ namespace fhg
       public:
         change_manager_t (internal_type &);
 
-        void set_transition_name
-        ( ::xml::parse::type::transition_type&
-        , const QString&
-        );
-        void set_function_name
-        ( ::xml::parse::type::function_type&
-        , const QString&
-        );
+      public:
+
+        void set_function_name ( const QObject*
+                               , ::xml::parse::type::function_type&
+                               , const QString&
+                               );
+        void set_expression ( const QObject*
+                            , ::xml::parse::type::expression_type&
+                            , const QString&
+                            );
 
       signals:
-        void signal_set_transition_name
-        ( ::xml::parse::type::transition_type&
-        , const QString&
-        );
-        void signal_set_function_name
-        ( ::xml::parse::type::function_type&
-        , const QString&
-        );
+        void signal_set_expression ( const QObject*
+                                   , const ::xml::parse::type::expression_type&
+                                   , const QString&
+                                   );
+        void signal_set_function_name ( const QObject*
+                                      , const ::xml::parse::type::function_type&
+                                      , const QString&
+                                      );
 
       private:
         internal_type & _internal;
