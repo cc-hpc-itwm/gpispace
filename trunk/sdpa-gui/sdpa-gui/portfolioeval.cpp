@@ -139,7 +139,10 @@ void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_param
 	QString qstrVolatility = QString("%1").arg(common_params.Volatility());
 	m_pUi->m_editVolatility->setText(qstrVolatility);
 
-	for(int row_idx =0; row_idx <v_row_params.size(); row_idx++)
+	for( arr_row_parameters_t::size_type row_idx (0)
+           ; row_idx < v_row_params.size()
+           ; ++row_idx
+           )
 	{
 		QTableWidgetItem *pWItem(new QTableWidgetItem( QString("Option %1").arg(row_idx) ));
 		m_pUi->m_calcSpreadSheet->setVerticalHeaderItem( row_idx, pWItem );
