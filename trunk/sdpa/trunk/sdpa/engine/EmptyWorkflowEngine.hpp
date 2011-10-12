@@ -345,15 +345,23 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     		  we_result_t we_result = qResults.pop_and_wait();
 
     		  if(we_result.status == FINISHED)
-    			  pIAgent_->finished(we_result.jobId, we_result.result);
+                    {
+                      pIAgent_->finished(we_result.jobId, we_result.result);
+                    }
     		  else
     			  if(we_result.status == FAILED)
-    				  pIAgent_->failed(we_result.jobId, we_result.result);
+                            {
+                              pIAgent_->failed(we_result.jobId, we_result.result);
+                            }
     			  else
     				  if(we_result.status == CANCELLED)
-    					  pIAgent_->cancelled(we_result.jobId);
+                                    {
+                                      pIAgent_->cancelled(we_result.jobId);
+                                    }
     				  else
-    					  DLOG(ERROR, "Invalid job status!!!!");
+                                    { // consider debug==off
+                                      DLOG(ERROR, "Invalid job status!!!!");
+                                    }
     	  }
       }
 
