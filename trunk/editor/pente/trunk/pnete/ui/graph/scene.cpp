@@ -117,7 +117,7 @@ namespace fhg
           }
 
           _pending_connection = create_connection();
-          if (item->direction() == connectable::item::IN)
+          if (item->direction() == connectable::direction::IN)
           {
             _pending_connection->end (item);
           }

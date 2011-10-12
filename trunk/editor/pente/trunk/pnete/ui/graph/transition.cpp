@@ -226,7 +226,7 @@ namespace fhg
 
           void item::repositionChildrenAndResize()
           {
-            const qreal padding (10.0);                                             // hardcoded constant
+            const qreal padding (10.0); // hardcoded constant
             const qreal step (size::port::height());
 
             const QRectF bound (boundingRect());
@@ -241,7 +241,7 @@ namespace fhg
               {
                 if (port::item* p = qgraphicsitem_cast<port::item*> (child))
                   {
-                    if (p->direction() == port::item::IN)
+                    if (p->direction() == connectable::direction::IN)
                       {
                         p->orientation (port::orientation::WEST);
                         p->setPos (style::raster::snap (positionIn));

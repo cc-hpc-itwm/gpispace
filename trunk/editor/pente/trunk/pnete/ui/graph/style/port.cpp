@@ -48,7 +48,7 @@ namespace fhg
                  << QPointF ( lengthHalf - size::cap::length(), -y)
               ;
 
-            if (direction() == connectable::item::IN)
+            if (direction() == connectable::direction::IN)
               {
                 cap::add_incoming (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));   // hardcoded constant
               }

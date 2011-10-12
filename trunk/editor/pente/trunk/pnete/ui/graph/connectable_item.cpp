@@ -15,7 +15,7 @@ namespace fhg
         namespace connectable
         {
           item::item
-          ( DIRECTION direction
+          ( direction::type direction
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , graph::item* parent
           )
@@ -53,11 +53,11 @@ namespace fhg
             return _connections;
           }
 
-          const item::DIRECTION& item::direction() const
+          const direction::type& item::direction() const
           {
             return _direction;
           }
-          const item::DIRECTION& item::direction (const DIRECTION& direction_)
+          const direction::type& item::direction (const direction::type& direction_)
           {
             return _direction = direction_;
           }

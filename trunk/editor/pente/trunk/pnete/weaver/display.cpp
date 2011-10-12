@@ -155,10 +155,10 @@ namespace fhg
 
         _transition->proxy (sub.proxy());
 
-        _current_port_direction = ui::graph::port::item::IN;
+        _current_port_direction = ui::graph::connectable::direction::IN;
         from::many (this, sub.in(), FROM(port));
 
-        _current_port_direction = ui::graph::port::item::OUT;
+        _current_port_direction = ui::graph::connectable::direction::OUT;
         from::many (this, sub.out(), FROM(port));
       }
       WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port)
@@ -171,7 +171,7 @@ namespace fhg
           );
 
         weaver::port wp ( port_item
-                        , _current_port_direction == ui::graph::port::item::IN
+                        , _current_port_direction == ui::graph::connectable::direction::IN
                         ? _port_in_item_by_name
                         : _port_out_item_by_name
                         );
@@ -187,7 +187,7 @@ namespace fhg
         weaver::connection wc ( _scene
                               , _place_item_by_name
                               , _port_in_item_by_name
-                              , ui::graph::port::item::IN
+                              , ui::graph::connectable::direction::IN
                               , true
                               );
 
@@ -198,7 +198,7 @@ namespace fhg
         weaver::connection wc ( _scene
                               , _place_item_by_name
                               , _port_in_item_by_name
-                              , ui::graph::port::item::IN
+                              , ui::graph::connectable::direction::IN
                               );
 
         from::many (&wc, cs, FROM(connection));
@@ -208,7 +208,7 @@ namespace fhg
         weaver::connection wc ( _scene
                               , _place_item_by_name
                               , _port_out_item_by_name
-                              , ui::graph::port::item::OUT
+                              , ui::graph::connectable::direction::OUT
                               );
 
         from::many (&wc, cs, FROM(connection));
@@ -266,7 +266,7 @@ namespace fhg
       connection::connection ( ui::graph::scene* scene
                              , item_by_name_type& place_item_by_name
                              , item_by_name_type& port_item_by_name
-                             , const ui::graph::port::item::DIRECTION& direction
+                             , const ui::graph::connectable::direction::type& direction
                              , const bool& read
                              )
         : _scene (scene)
@@ -304,7 +304,7 @@ namespace fhg
               std::runtime_error ("connection: place " + _place + " not found");
           }
 
-        if (_direction == ui::graph::port::item::IN)
+        if (_direction == ui::graph::connectable::direction::IN)
           {
             _scene->create_connection ( place_pos->second
                                       , port_pos->second
@@ -337,7 +337,7 @@ namespace fhg
       {
         {
           weaver::port_toplevel wptl ( _scene
-                                     , ui::graph::port::item::OUT
+                                     , ui::graph::connectable::direction::OUT
                                      , _place_item_by_name
                                      );
           from::many (&wptl, _in, FROM(port));
@@ -345,7 +345,7 @@ namespace fhg
 
         {
           weaver::port_toplevel wptl ( _scene
-                                     , ui::graph::port::item::IN
+                                     , ui::graph::connectable::direction::IN
                                      , _place_item_by_name
                                      );
           from::many (&wptl, _out, FROM(port));
@@ -430,7 +430,7 @@ namespace fhg
 
       port_toplevel::port_toplevel
         ( ui::graph::scene* scene
-        , const ui::graph::port::item::DIRECTION& direction
+        , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         )
           : _scene (scene)

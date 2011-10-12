@@ -44,7 +44,7 @@ namespace fhg
             Q_OBJECT;
 
           public:
-            item ( DIRECTION direction
+            item ( connectable::direction::type direction
                  , boost::optional< ::xml::parse::type::type_map_type&> type_map
                  = boost::none
                  , transition::item* parent = NULL

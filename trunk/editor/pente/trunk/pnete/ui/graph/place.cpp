@@ -19,7 +19,7 @@ namespace fhg
           ( boost::optional< ::xml::parse::type::type_map_type&> type_map
           , item* parent
           )
-            : connectable::item (BOTH, type_map, parent)
+            : connectable::item (connectable::direction::BOTH, type_map, parent)
             , _content()
             , _dragging (false)
             , _name (tr ("<<a place>>"))

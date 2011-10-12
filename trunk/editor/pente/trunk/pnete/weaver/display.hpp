@@ -133,7 +133,7 @@ namespace fhg
       private:
         ui::graph::scene* _scene;
         ui::graph::transition::item* _transition;
-        ui::graph::port::item::DIRECTION _current_port_direction;
+        ui::graph::connectable::direction::type _current_port_direction;
         XMLTYPE(net_type)& _net;
 
         item_by_name_type& _place_item_by_name;
@@ -183,7 +183,7 @@ namespace fhg
         explicit connection ( ui::graph::scene*
                             , item_by_name_type& place_item_by_name
                             , item_by_name_type& port_item_by_name
-                            , const ui::graph::port::item::DIRECTION& direction
+                            , const ui::graph::connectable::direction::type& direction
                             , const bool& read = false
                             );
 
@@ -194,7 +194,7 @@ namespace fhg
         ui::graph::scene* _scene;
         item_by_name_type& _place_item_by_name;
         item_by_name_type& _port_item_by_name;
-        const ui::graph::port::item::DIRECTION _direction;
+        const ui::graph::connectable::direction::type _direction;
         const bool _read;
         std::string _port;
         std::string _place;
@@ -225,7 +225,7 @@ namespace fhg
       {
       public:
         explicit port_toplevel ( ui::graph::scene*
-                               , const ui::graph::port::item::DIRECTION&
+                               , const ui::graph::connectable::direction::type&
                                , item_by_name_type& place_item_by_name
                                );
 
@@ -236,7 +236,7 @@ namespace fhg
         ui::graph::scene* _scene;
         item_by_name_type& _place_item_by_name;
         std::string _name;
-        const ui::graph::port::item::DIRECTION _direction;
+        const ui::graph::connectable::direction::type _direction;
         ui::graph::port::item* _port_item;
       };
 
