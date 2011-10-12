@@ -44,8 +44,8 @@ main (int argc, char ** argv)
       c = getchar();
     }
 
-  close (file[0]);
-  close (file[1]);
+  fclose (file[0]);
+  fclose (file[1]);
 
   return EXIT_SUCCESS;
 }
