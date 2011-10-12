@@ -19,7 +19,7 @@ namespace fhg
           ( boost::optional< ::xml::parse::type::type_map_type&> type_map
           , item* parent
           )
-            : connectable_item (BOTH, type_map, parent)
+            : connectable::item (BOTH, type_map, parent)
             , _content()
             , _dragging (false)
             , _name (tr ("<<a place>>"))
@@ -74,7 +74,7 @@ namespace fhg
         {
           if (!_dragging)
           {
-            connectable_item::mouseMoveEvent (event);
+            connectable::item::mouseMoveEvent (event);
             return;
           }
 
@@ -92,14 +92,14 @@ namespace fhg
             return;
           }
 
-          connectable_item::mousePressEvent (event);
+          connectable::item::mousePressEvent (event);
         }
 
         void place::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
         {
           if (!_dragging)
           {
-            connectable_item::mouseReleaseEvent (event);
+            connectable::item::mouseReleaseEvent (event);
             return;
           }
 

@@ -24,7 +24,7 @@ namespace fhg
     {
       namespace graph
       {
-        class place : public connectable_item
+        class place : public connectable::item
         {
           Q_OBJECT;
 

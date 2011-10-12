@@ -32,7 +32,7 @@ namespace fhg
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , transition::item* parent
           )
-            : connectable_item (direction, type_map, parent)
+            : connectable::item (direction, type_map, parent)
             , _name ("<<port>>")
             , _orientation ( direction == OUT
                            ? orientation::EAST
@@ -96,7 +96,7 @@ namespace fhg
           {
             if (!_dragging)
               {
-                connectable_item::mouseReleaseEvent (event);
+                connectable::item::mouseReleaseEvent (event);
                 return;
               }
 
@@ -127,14 +127,14 @@ namespace fhg
                 return;
               }
 
-            connectable_item::mousePressEvent (event);
+            connectable::item::mousePressEvent (event);
           }
 
-          bool item::is_connectable_with (const connectable_item* item) const
+          bool item::is_connectable_with (const connectable::item* item) const
           {
             //! \note Only allow one connection on ports.
             return _connections.isEmpty()
-              && connectable_item::is_connectable_with (item);
+              && connectable::item::is_connectable_with (item);
           }
 
           QPointF item::fitting_position (QPointF position)
@@ -204,7 +204,7 @@ namespace fhg
           {
             if(!_dragging)
               {
-                connectable_item::mouseMoveEvent (event);
+                connectable::item::mouseMoveEvent (event);
                 return;
               }
 
