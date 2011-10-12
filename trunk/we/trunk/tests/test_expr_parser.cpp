@@ -86,10 +86,6 @@ int main (int ac, char **)
                     parser.pop_front();
                   }
               }
-            catch (expr::exception::eval::not_integral e)
-              {
-                cout << "EXCEPTION: " << e.what() << endl;
-              }
             catch (expr::exception::eval::divide_by_zero e)
               {
                 cout << "EXCEPTION: " << e.what() << endl;
