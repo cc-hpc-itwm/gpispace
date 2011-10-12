@@ -53,8 +53,8 @@ main (int argc, char ** argv)
 
  DONE:
 
-  close (file1);
-  close (file2);
+  fclose (file1);
+  fclose (file2);
 
   return EXIT_SUCCESS;
 }
