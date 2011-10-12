@@ -433,7 +433,7 @@ struct portfolio_data_t
 
 	std::vector<std::string> operator[]( size_t row_idx )
 	{
-		if( row_idx < 0 || row_idx >= arr_row_params.size() )
+		if( row_idx >= arr_row_params.size() )
 			throw ;
 
 		std::vector<std::string> arrCfgs;
