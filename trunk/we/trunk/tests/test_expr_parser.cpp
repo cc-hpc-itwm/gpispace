@@ -109,6 +109,8 @@ int main (int ac, char **)
           }
       }
 
+    cout << endl;
+
     return EXIT_SUCCESS;
   }
 
