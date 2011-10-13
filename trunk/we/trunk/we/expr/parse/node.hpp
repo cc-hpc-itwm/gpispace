@@ -182,6 +182,7 @@ namespace expr
                          << token::_endif
                   << ")"
                   ;
+                break;
               case token::_map_assign:
                 s << token::_map_assign
                   << "(" << t.child0
