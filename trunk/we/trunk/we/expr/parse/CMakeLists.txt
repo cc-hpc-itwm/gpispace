@@ -5,6 +5,12 @@ set (hdrs
   parser.hpp
   )
 
+set (srcs
+  parser.cpp
+)
+
+add_library(we_expr_parser ${srcs})
+
 install(FILES ${hdrs}
   DESTINATION include/we/expr/parse
   COMPONENT headers)

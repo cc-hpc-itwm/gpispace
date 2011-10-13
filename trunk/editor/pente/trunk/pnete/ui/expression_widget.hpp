@@ -40,6 +40,8 @@ namespace fhg
         void set_name (const QString&);
         void set_name (const std::string&);
 
+        void set_expression_parse_result (const QString&);
+
       private slots:
         void name_changed (const QString& name_);
         void expression_changed ();
@@ -52,13 +54,18 @@ namespace fhg
                                  , const ::xml::parse::type::expression_type&
                                  , const QString&
                                  );
+        void slot_set_expression_parse_result
+             ( const QObject*
+             , const ::xml::parse::type::expression_type&
+             , const QString&
+             );
 
       private:
-
         data::proxy::expression_proxy::data_type& _expression;
         port_lists_widget* _port_lists;
         QTextEdit* _expression_edit;
         QLineEdit* _name_edit;
+        QTextEdit* _parse_result;
       };
     }
   }

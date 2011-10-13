@@ -22,6 +22,7 @@ target_link_libraries ( pnete
                         ui
                         data
                         weaver
+                        ${WE_LIBRARIES}
                         ${FhgLog_LIBRARY}
                         ${Boost_LIBRARIES}
                         ${QT_LIBRARIES}

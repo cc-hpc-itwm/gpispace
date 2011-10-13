@@ -16,8 +16,6 @@
 
 #include <pnete/util.hpp>
 
-#include <we/expr/parse/parser.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -39,29 +37,36 @@ namespace fhg
                         )
           , _expression_edit (new QTextEdit())
           , _name_edit (new QLineEdit())
+          , _parse_result (new QTextEdit())
       {
-        QGroupBox* group_box (new QGroupBox (tr ("expression")));
-        QHBoxLayout* group_box_layout (new QHBoxLayout());
-        group_box->setLayout (group_box_layout);
-
-        QSplitter* splitter (new QSplitter ());
-        splitter->addWidget (_port_lists);
-
-        QWidget* exp_widget (new QWidget ());
-        QVBoxLayout* vbox (new QVBoxLayout ());
-        exp_widget->setLayout (vbox);
-
         QWidget* name_widget (new QWidget ());
         QFormLayout* name_layout (new QFormLayout ());
         name_layout->addRow (tr ("&Name"), _name_edit);
-        name_widget->setLayout (name_layout);
         name_layout->setContentsMargins (0, 0, 0, 0);
+        name_widget->setLayout (name_layout);
+
+        QWidget* exp_widget (new QWidget ());
+        QVBoxLayout* vbox (new QVBoxLayout ());
+        vbox->setContentsMargins (0, 0, 0, 0);
+        exp_widget->setLayout (vbox);
 
         vbox->addWidget (name_widget);
         vbox->addWidget (_expression_edit);
-        vbox->setContentsMargins (0, 0, 0, 0);
 
-        splitter->addWidget (exp_widget);
+        _parse_result->setReadOnly (true);
+        _parse_result->setFont (QFont ("Courier"));
+
+        QSplitter* exp_splitter (new QSplitter (Qt::Vertical));
+        exp_splitter->addWidget (exp_widget);
+        exp_splitter->addWidget (_parse_result);
+
+        QSplitter* splitter (new QSplitter ());
+        splitter->addWidget (_port_lists);
+        splitter->addWidget (exp_splitter);
+
+        QGroupBox* group_box (new QGroupBox (tr ("expression")));
+        QHBoxLayout* group_box_layout (new QHBoxLayout());
+        group_box->setLayout (group_box_layout);
         group_box_layout->addWidget (splitter);
 
         QHBoxLayout* hbox (new QHBoxLayout ());
@@ -93,6 +98,20 @@ namespace fhg
                            )
                          )
                 , SLOT ( slot_set_expression
+                         ( const QObject*
+                         , const ::xml::parse::type::expression_type&
+                         , const QString&
+                         )
+                       )
+                );
+        connect ( &data::proxy::root (proxy)->change_manager()
+                , SIGNAL ( signal_set_expression_parse_result
+                           ( const QObject*
+                           , const ::xml::parse::type::expression_type&
+                           , const QString&
+                           )
+                         )
+                , SLOT ( slot_set_expression_parse_result
                          ( const QObject*
                          , const ::xml::parse::type::expression_type&
                          , const QString&
@@ -139,6 +158,23 @@ namespace fhg
           }
       }
 
+      void expression_widget::slot_set_expression_parse_result
+      ( const QObject*
+      , const ::xml::parse::type::expression_type& expression
+      , const QString& text
+      )
+      {
+        if (&expression == &_expression.expression())
+          {
+            set_expression_parse_result (text);
+          }
+      }
+
+      void
+      expression_widget::set_expression_parse_result (const QString& result)
+      {
+        _parse_result->setPlainText (result);
+      }
       void
       expression_widget::set_name (const fhg::util::maybe<std::string>& name)
       {
@@ -175,37 +211,6 @@ namespace fhg
 
       void expression_widget::expression_changed ()
       {
-        {
-          const std::string text (_expression_edit->toPlainText().toStdString());
-
-          try
-            {
-              expr::parse::parser parser (text);
-
-              std::cout << text << std::endl;
-            }
-          catch (const expr::exception::parse::exception& e)
-            {
-              std::cout << text << std::endl;
-
-              for (unsigned int k (0); k < e.eaten; ++k)
-                {
-                  std::cout << " ";
-                }
-              std::cout << "^" << std::endl;
-
-              std::cout << "parse error: " << e.what() << std::endl;
-            }
-          catch (const expr::exception::eval::type_error& e)
-            {
-              std::cout << "type error: " << e.what() << std::endl;
-            }
-          catch (const expr::exception::eval::divide_by_zero& e)
-            {
-              std::cout << "divide by zero: " << e.what() << std::endl;
-            }
-        }
-
         data::proxy::root (proxy())->
           change_manager().set_expression ( this
                                           , _expression.expression()

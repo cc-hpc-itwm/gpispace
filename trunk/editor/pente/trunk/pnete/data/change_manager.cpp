@@ -3,6 +3,8 @@
 #include <pnete/data/change_manager.hpp>
 #include <pnete/data/internal.hpp>
 
+#include <we/expr/parse/parser.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -41,6 +43,13 @@ namespace fhg
         expression.expressions.push_back (text.toStdString());
 
         emit signal_set_expression (origin, expression, text);
+
+        emit signal_set_expression_parse_result
+          ( origin
+          , expression
+          , QString::fromStdString
+            (expr::parse::parse_result (text.toStdString()))
+          );
       }
     }
   }

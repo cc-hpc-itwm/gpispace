@@ -28,6 +28,7 @@
 #include <boost/bind.hpp>
 
 #include <iostream>
+#include <sstream>
 
 namespace expr
 {
@@ -411,9 +412,13 @@ namespace expr
     inline std::ostream & operator << (std::ostream & s, const parser & p)
     {
       for (parser::nd_const_it_t it (p.begin()); it != p.end(); ++it)
-        s << *it << std::endl;
+        {
+          s << *it << ";" << std::endl;
+        }
       return s << std::endl;
     }
+
+    std::string parse_result (const std::string&);
   }
 }
 

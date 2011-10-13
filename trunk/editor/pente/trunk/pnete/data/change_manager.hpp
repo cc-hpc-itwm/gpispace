@@ -38,6 +38,11 @@ namespace fhg
                                    , const ::xml::parse::type::expression_type&
                                    , const QString&
                                    );
+        void signal_set_expression_parse_result
+             ( const QObject*
+             , const ::xml::parse::type::expression_type&
+             , const QString&
+             );
         void signal_set_function_name ( const QObject*
                                       , const ::xml::parse::type::function_type&
                                       , const QString&
