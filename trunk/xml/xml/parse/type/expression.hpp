@@ -25,17 +25,31 @@ namespace xml
 
       struct expression_type
       {
-        expressions_type expressions;
+      private:
+        expressions_type _expressions;
 
-        expression_type () : expressions () {}
+      public:
+        expression_type () : _expressions () {}
 
-        expression_type (const expressions_type & _expressions)
-          : expressions (_expressions)
+        expression_type (const expressions_type & exps)
+          : _expressions (exps)
         {}
 
         std::string expression (void) const
         {
-          return fhg::util::join (expressions.begin(), expressions.end(), "; ");
+          return fhg::util::join ( expressions().begin()
+                                 , expressions().end()
+                                 , "; "
+                                 );
+        }
+
+        const expressions_type& expressions (void) const
+        {
+          return _expressions;
+        }
+        expressions_type& expressions (void)
+        {
+          return _expressions;
         }
       };
 
@@ -68,10 +82,10 @@ namespace xml
 
           void operator () (expression_type & x) const
           {
-            x.expressions.insert ( x.expressions.end()
-                                 , e.expressions.begin()
-                                 , e.expressions.end()
-                                 );
+            x.expressions().insert ( x.expressions().end()
+                                   , e.expressions().begin()
+                                   , e.expressions().end()
+                                   );
           }
 
           template<typename T>

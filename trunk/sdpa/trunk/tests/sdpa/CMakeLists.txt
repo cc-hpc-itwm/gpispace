@@ -95,9 +95,9 @@ foreach (tc_src ${tc_srcs})
                         sdpa
 			            ${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
+                        ${WE_LIBRARIES}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
-                        ${WE_PRECOMPILE_LIBRARIES}
                         dl
                         fhg-plugin
                         )

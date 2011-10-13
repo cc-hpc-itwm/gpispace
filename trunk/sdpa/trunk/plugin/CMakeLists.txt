@@ -37,7 +37,7 @@ install(TARGETS kvs-plugin LIBRARY
 
 fhg_add_plugin(wfe wfe.cpp observable.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 ${WE_PRECOMPILE_LIBRARIES}
+                 ${WE_LIBRARIES}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_FILESYSTEM_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
@@ -52,7 +52,7 @@ install(TARGETS wfe-plugin LIBRARY
 
 fhg_add_plugin(gui gui.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 ${WE_PRECOMPILE_LIBRARIES}
+                 ${WE_LIBRARIES}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}

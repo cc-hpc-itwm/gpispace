@@ -444,7 +444,7 @@ namespace fhg
 
       WSIG(tv, expression::open, XMLTYPE(expression_type), exp)
       {
-        xs ("expression", exp.expressions, FROM(expression_sequence));
+        xs ("expression", exp.expressions(), FROM(expression_sequence));
       }
 
       WSIG(tv, mod::open, XMLTYPE(mod_type), mod)

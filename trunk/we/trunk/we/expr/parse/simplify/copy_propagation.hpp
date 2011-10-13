@@ -6,6 +6,8 @@
 #include <we/expr/parse/simplify/util.hpp>
 #include <we/expr/parse/simplify/expression_list.hpp>
 
+#include <we/expr/token/assoc.hpp>
+
 #include <boost/unordered_map.hpp>
 #include <boost/variant.hpp>
 

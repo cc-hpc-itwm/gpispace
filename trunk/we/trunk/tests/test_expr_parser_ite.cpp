@@ -1,7 +1,9 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/expr/parse/parser.hpp>
+#include <we/expr/eval/context.hpp>
 #include <we/type/literal/function.hpp>
+#include <we/type/value/function.hpp>
 
 #include <iostream>
 #include <string>

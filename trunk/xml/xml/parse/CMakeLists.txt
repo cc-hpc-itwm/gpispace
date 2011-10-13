@@ -36,7 +36,7 @@ set_source_files_properties(pnetc.cpp OBJECT_DEPENDS ${headerlist_hpp})
 add_executable(pnetc pnetc.cpp)
 #add_dependencies(pnetc gen-includes)
 target_link_libraries(pnetc ${Boost_LIBRARIES})
-target_link_libraries(pnetc ${WE_PRECOMPILE_LIBRARIES})
+target_link_libraries(pnetc ${WE_LIBRARIES})
 install (TARGETS pnetc
   RUNTIME
   DESTINATION bin
@@ -45,7 +45,7 @@ install (TARGETS pnetc
 if (ENABLE_STATIC_BINARIES)
   add_executable(pnetc.static pnetc.cpp ${headerlist_hpp})
   target_link_libraries(pnetc.static ${Boost_LIBRARIES})
-  target_link_libraries(pnetc.static ${WE_PRECOMPILE_LIBRARIES})
+  target_link_libraries(pnetc.static ${WE_LIBRARIES})
   set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
 
   install (TARGETS pnetc.static

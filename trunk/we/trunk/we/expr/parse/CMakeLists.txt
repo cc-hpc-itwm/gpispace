@@ -10,6 +10,7 @@ set (srcs
 )
 
 add_library(we_expr_parser ${srcs})
+add_we_library (we_expr_parser)
 
 install(FILES ${hdrs}
   DESTINATION include/we/expr/parse

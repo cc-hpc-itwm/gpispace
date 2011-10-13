@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/classification.hpp>
 
 #include <we/expr/parse/parser.hpp>
+#include <we/expr/eval/context.hpp>
 #include <we/expr/parse/util/get_names.hpp>
 
 #include <we/expr/parse/simplify/simplify.hpp>

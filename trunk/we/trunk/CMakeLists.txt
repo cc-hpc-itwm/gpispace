@@ -39,6 +39,14 @@ if (WE_PRECOMPILE)
   add_definitions (-DWE_PRECOMPILE)
 endif (WE_PRECOMPILE)
 
+set (WE_LIBRARIES CACHE INTERNAL "we_libraries" FORCE)
+
+function(add_we_library libname)
+  set (WE_LIBRARIES ${WE_LIBRARIES}
+    ${libname}
+    CACHE INTERNAL "we_libraries" FORCE
+  )
+endfunction(add_we_library)
 
 project(libwe)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)

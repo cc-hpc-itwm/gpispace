@@ -70,7 +70,7 @@ function(construct_tests )
     message(STATUS "adding test case ${tc_name} (using ${tc_src})")
 
     add_executable(${tc_name} ${tc_src})
-    target_link_libraries(${tc_name} ${WE_PRECOMPILE_LIBRARIES})
+    target_link_libraries(${tc_name} ${WE_LIBRARIES})
     target_link_libraries(${tc_name} ${FhgLog_LIBRARY})
     target_link_libraries(${tc_name} ${Boost_UNIT_TEST_LIBRARIES})
     target_link_libraries(${tc_name} ${Boost_LIBRARIES})

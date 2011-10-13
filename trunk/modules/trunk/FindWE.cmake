@@ -22,10 +22,6 @@
 # *   <XPREFIX> = <PREFIX>  when |MODULES| == 1, else
 # *   <XPREFIX> = <PREFIX>_<MODNAME>
 
-set (libs
-  we_expr_parser
-)
-
 if (NOT WE_FIND_QUIETLY)
   message(STATUS "FindWE check")
 endif (NOT WE_FIND_QUIETLY)
@@ -64,9 +60,9 @@ else(NOT TARGET we-exec)
   set(WE_INCLUDE_SRC_DIR "${CMAKE_SOURCE_DIR}/we")
   set(WE_LIBRARY_DIR "")
   if (WE_PRECOMPILE)
-    set(WE_LIBRARIES ${WE_PRECOMPILE_LIBRARIES} ${libs})
+    set(WE_LIBRARIES ${WE_PRECOMPILE_LIBRARIES} ${WE_LIBRARIES})
   else (WE_PRECOMPILE)
-    set(WE_LIBRARIES ${libs})
+    set(WE_LIBRARIES ${WE_LIBRARIES})
   endif (WE_PRECOMPILE)
 endif(NOT TARGET we-exec)
 # endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})

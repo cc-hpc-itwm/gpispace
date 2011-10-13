@@ -14,6 +14,7 @@
 #include <we/type/place.hpp>
 #include <we/type/condition.hpp>
 #include <we/type/literal/name.hpp>
+#include <we/type/value/function.hpp>
 
 #include <we/util/stat.hpp>
 
