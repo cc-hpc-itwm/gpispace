@@ -39,8 +39,7 @@ namespace fhg
       , const QString& text
       )
       {
-        expression.expressions().clear();
-        expression.expressions().push_back (text.toStdString());
+        expression.set (text.toStdString());
 
         emit signal_set_expression (origin, expression, text);
 

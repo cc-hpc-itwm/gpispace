@@ -8,6 +8,7 @@
 #include <list>
 
 #include <fhg/util/join.hpp>
+#include <fhg/util/split.hpp>
 
 #include <boost/variant.hpp>
 
@@ -23,6 +24,21 @@ namespace xml
     {
       typedef std::list<std::string> expressions_type;
 
+      inline expressions_type split (const expressions_type& exps)
+      {
+        expressions_type list;
+
+        for ( expressions_type::const_iterator exp (exps.begin())
+            ; exp != exps.end()
+            ; ++exp
+            )
+          {
+            fhg::util::lines (*exp, ';', list);
+          }
+
+        return list;
+      }
+
       struct expression_type
       {
       private:
@@ -32,14 +48,20 @@ namespace xml
         expression_type () : _expressions () {}
 
         expression_type (const expressions_type & exps)
-          : _expressions (exps)
+          : _expressions (split (exps))
         {}
 
-        std::string expression (void) const
+        void set (const std::string& exps)
+        {
+          _expressions.clear();
+          fhg::util::lines (exps, ';', _expressions);
+        }
+
+        std::string expression (const std::string& sep = " ") const
         {
           return fhg::util::join ( expressions().begin()
                                  , expressions().end()
-                                 , "; "
+                                 , ";" + sep
                                  );
         }
 
@@ -61,9 +83,11 @@ namespace xml
         {
           s.open ("expression");
 
-          if (e.expression().size() > 0)
+          const std::string exp (e.expression ());
+
+          if (exp.size() > 0)
             {
-              s.content (e.expression());
+              s.content (exp);
             }
 
           s.close ();

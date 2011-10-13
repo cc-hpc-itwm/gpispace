@@ -6,10 +6,45 @@
 #include <iterator>
 #include <string>
 
+#include <boost/function.hpp>
+
 namespace fhg
 {
   namespace util
   {
+    template<typename List>
+    void lines (const std::string& s, const char sep, List& v)
+    {
+      std::string::const_iterator pos (s.begin());
+      std::string::const_iterator item_begin (s.begin());
+      std::string::const_iterator item_end (s.begin());
+      const std::string::const_iterator& end (s.end());
+
+      while (pos != end)
+        {
+          if (*pos == sep)
+            {
+              v.push_back (std::string (item_begin, item_end));
+              ++pos;
+              while (pos != end && (*pos == sep || isspace (*pos)))
+                {
+                  ++pos;
+                }
+              item_begin = item_end = pos;
+            }
+          else
+            {
+              ++item_end;
+              ++pos;
+            }
+        }
+
+      if (item_begin != item_end)
+        {
+          v.push_back (std::string (item_begin, item_end));
+        }
+    }
+
     template<typename T, typename VEC>
     inline VEC
     split ( const T & x
