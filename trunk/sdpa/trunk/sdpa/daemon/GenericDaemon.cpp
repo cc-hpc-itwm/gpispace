@@ -1047,7 +1047,6 @@ void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc, 
       job_id_t job_id(activityId);
       job_id_t parent_id("WE"); // is this really needed?
 
-      // TO DO: modify the prototype of the submit function
       ptr_job_man_->addJobRequirements(job_id, job_req_list);
 
       // WORK HERE: limit number of maximum parallel jobs
