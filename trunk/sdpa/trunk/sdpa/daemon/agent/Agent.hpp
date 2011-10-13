@@ -66,6 +66,10 @@ namespace sdpa {
 
         void cancelNotRunning (sdpa::job_id_t const & job);
 
+        bool finished(const id_type & id, const result_type & result);
+        bool finished(const id_type & id, const result_type & result, const id_type& );
+        bool failed(const id_type & id, const result_type & result);
+
         const std::string url() const {return url_;}
 
         template <class Archive>

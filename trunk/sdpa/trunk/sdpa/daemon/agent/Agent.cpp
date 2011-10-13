@@ -56,17 +56,13 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
   DLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
 
-  // TODO: WORK HERE refactor all this
-  if (pEvt->from() != sdpa::daemon::WE)
-  {
-      // send a JobFinishedAckEvent back to the worker/slave
-      JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()
-								              , pEvt->from()
-								              , pEvt->job_id()
-								              , pEvt->id() ) );
-      // send the event to the slave
-      sendEventToSlave(pEvtJobFinishedAckEvt);
-  }
+  // send a JobFinishedAckEvent back to the worker/slave
+  JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()
+								              	  	  	  	  	  	  	  , pEvt->from()
+								              	  	  	  	  	  	  	  , pEvt->job_id()
+								              	  	  	  	  	  	  	  , pEvt->id() ) );
+  // send the event to the slave
+  sendEventToSlave(pEvtJobFinishedAckEvt);
 
   //put the job into the state Finished
   Job::ptr_t pJob;
@@ -80,8 +76,114 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       return;
   }
 
-  if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
-    {
+  if( !hasWorkflowEngine() )
+  {
+		try {
+			// forward it up
+			JobFinishedEvent::Ptr pEvtJobFinished
+							  (new JobFinishedEvent( name()
+												   , pJob->owner()
+												   , pEvt->job_id()
+												   , pEvt->result()
+												   )
+							  );
+
+			// send the event to the master
+			sendEventToMaster(pEvtJobFinished);
+		}
+		catch(QueueFull const &)
+		{
+			SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+		}
+		catch(seda::StageNotFound const &)
+		{
+			SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+		}
+		catch(std::exception const & ex)
+		{
+			SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+			throw;
+		}
+		catch(...)
+		{
+			SDPA_LOG_FATAL("Unexpected exception occurred!");
+			throw;
+		}
+  }
+  else
+  {
+	  Worker::worker_id_t worker_id = pEvt->from();
+
+	  try {
+		  id_type actId = pEvt->job_id();
+
+		  result_type output = pEvt->result();
+
+		  // this  should only  be called  once, therefore
+		  // the state machine when we switch the job from
+		  // one state  to another, the  code belonging to
+		  // exactly    that    transition    should    be
+		  // executed. I.e. all this code should go to the
+		  // FSM callback routine.
+		  if( hasWorkflowEngine() )
+		  {
+			  DMLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
+			  ptr_workflow_engine_->finished(actId, output);
+		  }
+
+		  try {
+			  DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
+			  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
+		  }
+		  catch(WorkerNotFoundException const &)
+		  {
+			  SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+			  throw;
+		  }
+		  catch(const JobNotDeletedException&)
+		  {
+			  SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+		  }
+
+		  if( hasWorkflowEngine() )
+		  {
+			  try {
+				  //delete it also from job_map_
+				  DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+				  ptr_job_man_->deleteJob(pEvt->job_id());
+			  }
+			  catch(JobNotDeletedException const &)
+			  {
+				  SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+				  throw;
+			  }
+		  }
+	  }
+	  catch(std::exception const & ex)
+	  {
+		  SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+	  }
+	  catch(...)
+	  {
+		  SDPA_LOG_FATAL("Unexpected exception occurred!");
+		  throw;
+	  }
+  }
+}
+
+bool Agent::finished(const id_type & wfid, const result_type & result)
+{
+	//put the job into the state Finished
+	JobId id(wfid);
+	Job::ptr_t pJob;
+	try {
+		pJob = ptr_job_man_->findJob(id);
+	}
+	catch(JobNotFoundException const &)
+	{
+		SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
+		return false;
+	}
 
 #ifdef USE_REAL_WE
 	statistics::dump_maps();
@@ -93,93 +195,87 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 	    JobFinishedEvent::Ptr pEvtJobFinished
                           (new JobFinishedEvent( name()
                                                , pJob->owner()
-                                               , pEvt->job_id()
-                                               , pEvt->result()
+                                               , id
+                                               , result
                                                )
                           );
 
 	    // send the event to the master
 	    sendEventToMaster(pEvtJobFinished);
-          }
-          catch(QueueFull const &)
-          {
-              SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
-          }
-          catch(seda::StageNotFound const &)
-          {
-              SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
-          }
-          catch(std::exception const & ex)
-          {
-              SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-              throw;
-          }
-          catch(...) {
-              SDPA_LOG_FATAL("Unexpected exception occurred!");
-              throw;
-          }
-  }
-  else //event sent by a worker
-  {
-    Worker::worker_id_t worker_id = pEvt->from();
-
-    try {
-        id_type actId = pEvt->job_id();
-
-        result_type output = pEvt->result();
-
-        // this  should only  be called  once, therefore
-        // the state machine when we switch the job from
-        // one state  to another, the  code belonging to
-        // exactly    that    transition    should    be
-        // executed. I.e. all this code should go to the
-        // FSM callback routine.
-        if( hasWorkflowEngine() )
-        {
-            DMLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
-            ptr_workflow_engine_->finished(actId, output);
-        }
-
-        try {
-            DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
-            ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
-        }
-        catch(WorkerNotFoundException const &)
-        {
-            SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
-            throw;
-        }
-        catch(const JobNotDeletedException&)
-        {
-            SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
-        }
-
-        if( hasWorkflowEngine() )
-        {
-            try {
-                //delete it also from job_map_
-                DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-                ptr_job_man_->deleteJob(pEvt->job_id());
-            }
-            catch(JobNotDeletedException const &)
-            {
-                SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
-                throw;
-            }
-        }
-    }
-    catch(std::exception const & ex)
-    {
-        SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-    }
-    catch(...)
-    {
-        SDPA_LOG_FATAL("Unexpected exception occurred!");
-        throw;
-    }
-  }
+	    pJob->JobFinished(pEvtJobFinished.get());
+	}
+	catch(QueueFull const &)
+	{
+		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+	}
+	catch(seda::StageNotFound const &)
+	{
+		SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+	}
+	catch(std::exception const & ex)
+	{
+		SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+		throw;
+	}
+	catch(...)
+	{
+		SDPA_LOG_FATAL("Unexpected exception occurred!");
+		throw;
+	}
 }
 
+bool Agent::finished(const id_type& wfid, const result_type& result, const id_type& forward_to)
+{
+	//put the job into the state Finished
+	JobId id(wfid);
+	Job::ptr_t pJob;
+	try {
+		pJob = ptr_job_man_->findJob(id);
+	}
+	catch(JobNotFoundException const &)
+	{
+		SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
+		return false;
+	}
+
+#ifdef USE_REAL_WE
+	statistics::dump_maps();
+	statistics::reset_maps();
+#endif
+
+	try {
+	    // forward it up
+	    JobFinishedEvent::Ptr pEvtJobFinished
+                          (new JobFinishedEvent( name()
+                                               , forward_to
+                                               , id
+                                               , result
+                                               )
+                          );
+
+	    // send the event to the master
+	    sendEventToMaster(pEvtJobFinished);
+	    pJob->JobFinished(pEvtJobFinished.get());
+	}
+	catch(QueueFull const &)
+	{
+		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+	}
+	catch(seda::StageNotFound const &)
+	{
+		SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+	}
+	catch(std::exception const & ex)
+	{
+		SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+		throw;
+	}
+	catch(...)
+	{
+		SDPA_LOG_FATAL("Unexpected exception occurred!");
+		throw;
+	}
+}
 
 void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 {
@@ -189,22 +285,17 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  DMLOG(TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
+  DLOG(TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
 
-  // TODO: WORK HERE refactor all this
-  if (pEvt->from() != sdpa::daemon::WE)
-  {
-      // send a JobFinishedAckEvent back to the worker/slave
-      JobFailedAckEvent::Ptr evt(new JobFailedAckEvent( name()
-                                                    , pEvt->from()
-                                                    , pEvt->job_id()
-                                                    , pEvt->id()
-                                                    ));
-      // send the event to the slave
-      sendEventToSlave(evt);
-  }
+  // send a JobFailedAckEvent back to the worker/slave
+  JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent( name()
+								              	  	  	  	  	  	  	  , pEvt->from()
+								              	  	  	  	  	  	  	  , pEvt->job_id()
+								              	  	  	  	  	  	  	  , pEvt->id() ) );
+  // send the event to the slave
+  sendEventToSlave(pEvtJobFailedAckEvt);
 
-  //put the job into the state Finished
+  //put the job into the state Failed
   Job::ptr_t pJob;
   try {
       pJob = ptr_job_man_->findJob(pEvt->job_id());
@@ -212,88 +303,156 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
   catch(JobNotFoundException const &)
   {
-      SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+      SDPA_LOG_WARN( "got failed message for old/unknown Job "<< pEvt->job_id());
       return;
   }
 
-  if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() ) // use a predefined variable here of type enum or use typeid
+  if( !hasWorkflowEngine() )
   {
-      // the message comes from GWES
-      try {
-          // forward it up
-          JobFailedEvent::Ptr pEvtJobFailedEvent(new JobFailedEvent(name(), pJob->owner(), pEvt->job_id(), pEvt->result()));
+		try {
+			// forward it up
+			JobFailedEvent::Ptr pEvtJobFailed
+							  (new JobFailedEvent( name()
+												   , pJob->owner()
+												   , pEvt->job_id()
+												   , pEvt->result()
+												   )
+							  );
 
-          // send the event to the master
-          sendEventToMaster(pEvtJobFailedEvent);
-      }
-      catch(QueueFull const &)
-      {
-          SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
-      }
-      catch(seda::StageNotFound const &)
-      {
-          SDPA_LOG_ERROR("Stage not found when trying to submit JobFailedEvent");
-      }
-      catch(std::exception const & ex)
-      {
-          SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-          throw;
-      }
-      catch(...)
-      {
-          SDPA_LOG_ERROR("Unexpected exception occurred!");
-          throw;
-      }
+			// send the event to the master
+			sendEventToMaster(pEvtJobFailed);
+		}
+		catch(QueueFull const &)
+		{
+			SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
+		}
+		catch(seda::StageNotFound const &)
+		{
+			SDPA_LOG_ERROR("Stage not found when trying to submit JobFailedEvent");
+		}
+		catch(std::exception const & ex)
+		{
+			SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+			throw;
+		}
+		catch(...)
+		{
+			SDPA_LOG_FATAL("Unexpected exception occurred!");
+			throw;
+		}
   }
-  else //event sent by a worker
+  else
   {
-       Worker::worker_id_t worker_id = pEvt->from();
+	  Worker::worker_id_t worker_id = pEvt->from();
 
-       try {
-           id_type actId = pJob->id().str();
+	  try {
+		  id_type actId = pEvt->job_id();
 
-           result_type output = pEvt->result();
+		  result_type output = pEvt->result();
 
-           if( hasWorkflowEngine() )
-           {
-               SDPA_LOG_DEBUG("Inform WE that the activity "<<actId<<" failed");
-               ptr_workflow_engine_->failed(actId, output);
-           }
+		  // this  should only  be called  once, therefore
+		  // the state machine when we switch the job from
+		  // one state  to another, the  code belonging to
+		  // exactly    that    transition    should    be
+		  // executed. I.e. all this code should go to the
+		  // FSM callback routine.
+		  if( hasWorkflowEngine() )
+		  {
+			  DMLOG(TRACE, "Inform WE that the activity "<<actId<<" failed");
+			  ptr_workflow_engine_->failed(actId, output);
+		  }
 
-            try {
-                SDPA_LOG_DEBUG("Remove the job "<< pJob->id()<<" from the worker"<<worker_id);
-                ptr_scheduler_->deleteWorkerJob(worker_id, pJob->id());
-            }
-            catch(WorkerNotFoundException const &)
-            {
-                SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
-            }
-            catch(const JobNotDeletedException&)
-            {
-                SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
-            }
+		  try {
+			  DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
+			  ptr_scheduler_->deleteWorkerJob( worker_id, pJob->id() );
+		  }
+		  catch(WorkerNotFoundException const &)
+		  {
+			  SDPA_LOG_WARN("Worker "<<worker_id<<" not found!");
+			  throw;
+		  }
+		  catch(const JobNotDeletedException&)
+		  {
+			  SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+		  }
 
-            if( hasWorkflowEngine() )
-            {
-              try {
-                  //delete it also from job_map_
-                  ptr_job_man_->deleteJob(pEvt->job_id());
-              }catch(JobNotDeletedException const &){
-                  SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
-              }
-            }
-       }
-       catch(std::exception const & ex)
-       {
-           SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-           throw;
-       }
-       catch(...)
-       {
-           SDPA_LOG_ERROR("Unexpected exception occurred!");
-           throw;
-       }
-    }
+		  if( hasWorkflowEngine() )
+		  {
+			  try {
+				  //delete it also from job_map_
+				  DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+				  ptr_job_man_->deleteJob(pEvt->job_id());
+			  }
+			  catch(JobNotDeletedException const &)
+			  {
+				  SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+				  throw;
+			  }
+		  }
+	  }
+	  catch(std::exception const & ex)
+	  {
+		  SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+	  }
+	  catch(...)
+	  {
+		  SDPA_LOG_FATAL("Unexpected exception occurred!");
+		  throw;
+	  }
+  }
+}
+
+bool Agent::failed(const id_type & wfid, const result_type & result)
+{
+	//put the job into the state Failed
+	JobId id(wfid);
+	Job::ptr_t pJob;
+	try {
+		pJob = ptr_job_man_->findJob(id);
+	}
+	catch(JobNotFoundException const &)
+	{
+		SDPA_LOG_WARN( "got failed message for old/unknown Job "<<id.str());
+		return false;
+	}
+
+#ifdef USE_REAL_WE
+	statistics::dump_maps();
+	statistics::reset_maps();
+#endif
+
+	try {
+	    // forward it up
+	    JobFailedEvent::Ptr pEvtJobFailed
+                          (new JobFailedEvent( name()
+                                               , pJob->owner()
+                                               , id
+                                               , result
+                                               )
+                          );
+
+	    // send the event to the master
+	    sendEventToMaster(pEvtJobFailed);
+	    pJob->JobFailed(pEvtJobFailed.get());
+	}
+	catch(QueueFull const &)
+	{
+		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
+	}
+	catch(seda::StageNotFound const &)
+	{
+		SDPA_LOG_ERROR("Stage not found when trying to submit JobFailedEvent");
+	}
+	catch(std::exception const & ex)
+	{
+		SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
+		throw;
+	}
+	catch(...)
+	{
+		SDPA_LOG_FATAL("Unexpected exception occurred!");
+		throw;
+	}
 }
 
 
@@ -432,8 +591,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
         LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was cancelled");
 
-        try
-        {
+        try {
             ptr_workflow_engine_->cancelled(pEvt->job_id());
         }
         catch (std::exception const & ex)
@@ -443,8 +601,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
         // delete the worker job
         Worker::worker_id_t worker_id = pEvt->from();
-        try
-        {
+        try {
             LOG(TRACE, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
             ptr_scheduler_->deleteWorkerJob(worker_id, pEvt->job_id());
         }
@@ -492,8 +649,7 @@ void Agent::backup( std::ostream& ofs )
         oa.register_type(static_cast<SchedulerImpl*>(NULL));
         oa<<ptr_scheduler_;
     }
-    catch(exception &e)
-    {
+    catch(exception &e) {
         cout <<"Exception occurred: "<< e.what() << endl;
         return;
     }
@@ -501,31 +657,28 @@ void Agent::backup( std::ostream& ofs )
 
 void Agent::recover( std::istream& ifs )
 {
-  try {
+	try {
+		boost::archive::text_iarchive ia(ifs);
+		ia.register_type(static_cast<JobManager*>(NULL));
+		ia.register_type(static_cast<JobImpl*>(NULL));
+		ia.register_type(static_cast<JobFSM*>(NULL));
+		ia >> ptr_job_man_;
 
-      boost::archive::text_iarchive ia(ifs);
-      ia.register_type(static_cast<JobManager*>(NULL));
-      ia.register_type(static_cast<JobImpl*>(NULL));
-      ia.register_type(static_cast<JobFSM*>(NULL));
-      // restore the schedule from the archive
-      ia >> ptr_job_man_;
-
-      ia.register_type(static_cast<AgentScheduler*>(NULL));
-      ia.register_type(static_cast<SchedulerImpl*>(NULL));
-      ia>> ptr_scheduler_;
-  }
-  catch(exception &e)
-  {
-      cout <<"Exception occurred: " << e.what() << endl;
-  }
+		ia.register_type(static_cast<AgentScheduler*>(NULL));
+		ia.register_type(static_cast<SchedulerImpl*>(NULL));
+		ia>> ptr_scheduler_;
+	}
+	catch(exception &e) {
+		cout <<"Exception occurred: " << e.what() << endl;
+	}
 }
 
 void Agent::notifyAppGui(const result_type & result)
 {
-  /*
-    NotificationEvent evtGui("", "", NotificationEvent::STATE_FINISHED, result);
-    m_guiService.update(evtGui);
-    SDPA_LOG_INFO("Sent notification to the application gui! (result ="<<result<<")");
-  */
+	/*
+    	NotificationEvent evtGui("", "", NotificationEvent::STATE_FINISHED, result);
+    	m_guiService.update(evtGui);
+    	SDPA_LOG_INFO("Sent notification to the application gui! (result ="<<result<<")");
+	 */
 }
 

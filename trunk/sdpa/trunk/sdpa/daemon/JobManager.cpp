@@ -165,7 +165,6 @@ const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
     if( it_req == job_requirements_.end() )
             throw NoJobRequirements(jobId);
 
-    //SDPA_LOG_DEBUG("The preferences of the job "<<jobId.str()<<" are: "<<job_pref);
 
     return it_req->second;;
 }
@@ -173,9 +172,6 @@ const requirement_list_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
 void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const requirement_list_t& job_req_list) throw (JobNotFoundException)
 {
     lock_type lock(mtx_);
-    /*if( job_map_.find( job_id ) == job_map_.end() )
-          throw JobNotFoundException( job_id );*/
-
     job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 

@@ -48,6 +48,8 @@ struct IAgent
     virtual bool failed(const id_type & id, const result_type & result) = 0;
     virtual bool cancelled(const id_type & id) = 0;
 
+    virtual bool finished(const id_type & id, const result_type & result, const id_type& ) { return false; }
+
     virtual ~IAgent () {}
 
     friend class boost::serialization::access;
