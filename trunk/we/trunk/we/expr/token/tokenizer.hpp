@@ -52,15 +52,7 @@ namespace expr
 
       inline bool is_eof (void)
       {
-        if (pos.end())
-          return true;
-
-        if (*pos == ';')
-          {
-            ++pos; return true;
-          }
-
-        return false;
+        return pos.end() || *pos == ';';
       }
 
       inline void require (const std::string & what)
@@ -126,10 +118,19 @@ namespace expr
       void get (void)
       {
         while (!pos.end() && isspace(*pos))
-          ++pos;
+          {
+            ++pos;
+          }
 
         if (is_eof())
-          token = eof;
+          {
+            if (!pos.end())
+              {
+                ++pos;
+              }
+
+            token = eof;
+          }
         else
           switch (*pos)
             {
