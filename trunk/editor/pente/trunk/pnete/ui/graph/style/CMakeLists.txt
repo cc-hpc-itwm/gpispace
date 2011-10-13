@@ -28,3 +28,4 @@ QT4_WRAP_CPP(style_SRCS_MOC ${style_TOMOC} ${style_UIS_H})
 
 qt4_automoc(${style_SRCS_MOC})
 add_library(style ${style_SRCS} ${style_SRCS_MOC})
+add_dependencies(style gen_headerlist)
