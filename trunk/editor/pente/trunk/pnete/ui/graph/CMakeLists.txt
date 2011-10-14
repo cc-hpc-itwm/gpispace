@@ -7,6 +7,7 @@ set(graph_SRCS
   scene.cpp
   transition.cpp
   cogwheel_button.cpp
+  item.cpp
   place.cpp
 
   popover_widget.cpp

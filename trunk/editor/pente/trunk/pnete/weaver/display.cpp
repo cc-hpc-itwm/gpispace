@@ -10,6 +10,8 @@
 
 #include <xml/parse/types.hpp>
 
+#include <QtGlobal>
+
 namespace fhg
 {
   namespace pnete
@@ -246,16 +248,16 @@ namespace fhg
                   {
                     if (_path[3] == "x")
                       {
-                        _item->setPos
-                          ( boost::lexical_cast<float>(value)
+                        _item->set_just_pos_but_not_in_property
+                          ( boost::lexical_cast<qreal>(value)
                           , _item->pos().y()
                           );
                       }
                     else if (_path[3] == "y")
                       {
-                        _item->setPos
+                        _item->set_just_pos_but_not_in_property
                           ( _item->pos().x()
-                          , boost::lexical_cast<float>(value)
+                          , boost::lexical_cast<qreal>(value)
                           );
                       }
                   }

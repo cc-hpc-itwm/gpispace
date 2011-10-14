@@ -7,7 +7,6 @@
 #include <QGraphicsItem>
 
 #include <pnete/ui/graph/scene.hpp>
-#include <pnete/util.hpp>
 
 namespace fhg
 {
@@ -15,6 +14,8 @@ namespace fhg
   {
     namespace ui
     {
+      class scene;
+
       namespace graph
       {
         class item : public QObject, public QGraphicsItem
@@ -32,14 +33,20 @@ namespace fhg
             /* ... */
           };
 
+          item ( item* parent = NULL
+               , ::we::type::property::type* property = NULL
+               );
 
-          class scene* scene() const
-          {
-            return
-              util::throwing_qobject_cast<class scene*>(QGraphicsItem::scene());
-          }
+          class scene* scene() const;
 
-          item (item* parent = NULL) : QGraphicsItem (parent) { }
+          void setPos (const QPointF&);
+          void setPos (qreal, qreal);
+
+          void set_just_pos_but_not_in_property (const QPointF&);
+          void set_just_pos_but_not_in_property (qreal, qreal);
+
+        private:
+          ::we::type::property::type* _property;
         };
       }
     }

@@ -31,7 +31,7 @@ namespace fhg
           item::item ( transition_type & data
                      , graph::item* parent
                      )
-            : graph::item (parent)
+            : graph::item (parent, &data.prop)
             , _dragStart (0, 0)
             , _size (size::transition::width(), size::transition::height())
             , _highlighted (false)
