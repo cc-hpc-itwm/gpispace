@@ -27,7 +27,7 @@ namespace fhg
     {
       namespace graph
       {
-        class place;
+        namespace place { class item; }
         class scene;
         namespace transition { class item; }
         //        namespace connection { class item; }
@@ -248,13 +248,13 @@ namespace fhg
       class place
       {
       public:
-        explicit place (ui::graph::place*, item_by_name_type&);
+        explicit place (ui::graph::place::item*, item_by_name_type&);
 
         template<int Type, typename T> void weave (const T & x) {}
         template<int Type> void weave () {}
 
       private:
-        ui::graph::place* _place;
+        ui::graph::place::item* _place;
 
         item_by_name_type& _place_item_by_name;
       };

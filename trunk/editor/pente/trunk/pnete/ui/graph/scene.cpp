@@ -197,7 +197,7 @@ namespace fhg
           {
             //! \note No, just casting to connectable::item* does NOT work. Qt!
             port::item* as_port (qgraphicsitem_cast<port::item*> (item));
-            place* as_place (qgraphicsitem_cast<place*> (item));
+            place::item* as_place (qgraphicsitem_cast<place::item*> (item));
 
             connectable::item* ci (as_port);
             if (!ci)

@@ -363,7 +363,7 @@ namespace fhg
       }
       WSIG(net, place::open, ITVAL(XMLTYPE(net_type::places_type)), place)
       {
-        ui::graph::place* place_item (new ui::graph::place());
+        ui::graph::place::item* place_item (new ui::graph::place::item());
         weaver::place wp (place_item, _place_item_by_name);
         _scene->addItem (place_item);
         FROM(place) (&wp, place);
@@ -407,7 +407,7 @@ namespace fhg
       }
 
 
-      place::place ( ui::graph::place* place
+      place::place ( ui::graph::place::item* place
                    , item_by_name_type& place_item_by_name
                    )
         : _place (place)

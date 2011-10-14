@@ -24,43 +24,47 @@ namespace fhg
     {
       namespace graph
       {
-        class place : public connectable::item
+        namespace place
         {
-          Q_OBJECT;
+          class item : public graph::connectable::item
+          {
+            Q_OBJECT;
 
-        public:
-          place ( boost::optional< ::xml::parse::type::type_map_type&> type_map
-                = boost::none
-                , item* parent = NULL
-                );
+          public:
+            item
+            ( boost::optional< ::xml::parse::type::type_map_type&> type_map
+            = boost::none
+            , item* parent = NULL
+            );
 
-          const QString& name (const QString& name_);
-          const QString& name() const;
+            const QString& name (const QString& name_);
+            const QString& name() const;
 
-        public slots:
-          void refresh_content();
+          public slots:
+            void refresh_content();
 
-        public:
-          virtual QRectF boundingRect() const;
-          virtual void paint ( QPainter* painter
-                             , const QStyleOptionGraphicsItem* option
-                             , QWidget* widget = NULL
-                             );
-          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
-          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+          public:
+            virtual QRectF boundingRect() const;
+            virtual void paint ( QPainter* painter
+                               , const QStyleOptionGraphicsItem* option
+                               , QWidget* widget = NULL
+                               );
+            virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
+            virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+            virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
-          enum { Type = place_graph_type };
-          virtual int type() const { return Type; }
+            enum { Type = place_graph_type };
+            virtual int type() const { return Type; }
 
-        private:
-          QStaticText _content;
+          private:
+            QStaticText _content;
 
-          bool _dragging;
-          QPointF _drag_start;
+            bool _dragging;
+            QPointF _drag_start;
 
-          QString _name;
-        };
+            QString _name;
+          };
+        }
       }
     }
   }
