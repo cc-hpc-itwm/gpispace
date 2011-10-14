@@ -283,12 +283,12 @@ namespace expr
       const std::string::const_iterator end (input.end());
       std::size_t k (0);
 
+      op_stack.push (token::eof);
+
+      token::tokenizer token (k, pos, end);
+
       while (pos != end)
         {
-          op_stack.push (token::eof);
-
-          token::tokenizer token (k, pos, end);
-
           do
             {
               ++token;
