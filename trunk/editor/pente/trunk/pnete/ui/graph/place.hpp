@@ -11,6 +11,8 @@
 
 #include <xml/parse/types.hpp>
 
+#include <pnete/weaver/weaver.hpp>
+
 class QWidget;
 class QStyleOptionGraphicsItem;
 
@@ -31,8 +33,11 @@ namespace fhg
             Q_OBJECT;
 
           public:
+            typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
+
             item
-            ( boost::optional< ::xml::parse::type::type_map_type&> type_map
+            ( place_type& place
+            , boost::optional< ::xml::parse::type::type_map_type&> type_map
             = boost::none
             , item* parent = NULL
             );
@@ -57,6 +62,8 @@ namespace fhg
             virtual int type() const { return Type; }
 
           private:
+            place_type& _place;
+
             QStaticText _content;
 
             bool _dragging;

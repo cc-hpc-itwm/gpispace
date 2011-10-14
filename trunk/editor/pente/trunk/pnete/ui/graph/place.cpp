@@ -18,10 +18,16 @@ namespace fhg
         namespace place
         {
           item::item
-          ( boost::optional< ::xml::parse::type::type_map_type&> type_map
+          ( place_type& place
+          , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , item* parent
           )
-            : connectable::item (connectable::direction::BOTH, type_map, parent)
+            : connectable::item ( connectable::direction::BOTH
+                                , type_map
+                                , parent
+                                , &place.prop
+                                )
+            , _place (place)
             , _content()
             , _dragging (false)
             , _name (tr ("<<a place>>"))

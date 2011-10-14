@@ -18,8 +18,9 @@ namespace fhg
           ( direction::type direction
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , graph::item* parent
+          , ::we::type::property::type* property
           )
-            : graph::item (parent)
+            : graph::item (parent, property)
             , _connections ()
             , _direction (direction)
             , _we_type (tr ("<<we_type>>"))
