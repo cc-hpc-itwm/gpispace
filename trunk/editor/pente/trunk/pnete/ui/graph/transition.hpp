@@ -23,7 +23,6 @@ class QMenu;
 
 #include <xml/parse/types.hpp>
 
-
 namespace fhg
 {
   namespace pnete
@@ -40,8 +39,6 @@ namespace fhg
 
           public:
             typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
-            typedef XMLTYPE(expression_type) expression_type;
-            typedef XMLTYPE(mod_type) mod_type;
 
             explicit item ( transition_type & data
                           , graph::item* parent = NULL
