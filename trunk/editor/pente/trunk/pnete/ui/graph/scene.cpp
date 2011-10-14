@@ -10,6 +10,7 @@
 #include <pnete/ui/graph/connection.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
+#include <pnete/ui/graph/item.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
 
@@ -241,7 +242,7 @@ namespace fhg
 
         void scene::auto_layout()
         {
-          typedef QHash<QGraphicsItem*, graphviz::node_type> nodes_type;
+          typedef QHash<item*, graphviz::node_type> nodes_type;
           nodes_type nodes;
 
           graphviz::context_type context;
@@ -249,9 +250,7 @@ namespace fhg
           graph.rankdir ("LR");
           graph.splines ("ortho");
 
-          const QList<QGraphicsItem*> is (items());
-
-          foreach (QGraphicsItem* i, is)
+          foreach (QGraphicsItem* i, items())
           {
             if ( ( i->type() == item::port_graph_type
                 || i->type() == item::transition_graph_type
@@ -259,10 +258,10 @@ namespace fhg
                  )
               && i->parentItem() == NULL)
             {
-              nodes.insert (i, graph.add_node (i));
+              nodes.insert (qgraphicsitem_cast<item*> (i), graph.add_node (i));
             }
           }
-          foreach (QGraphicsItem* i, is)
+          foreach (QGraphicsItem* i, items())
           {
             if (connection::item* c = qgraphicsitem_cast<connection::item*> (i))
             {
@@ -272,8 +271,11 @@ namespace fhg
               start = start->parentItem() ? start->parentItem() : start;
               end = end->parentItem() ? end->parentItem() : end;
 
-              nodes_type::iterator start_node (nodes.find (start));
-              nodes_type::iterator end_node (nodes.find (end));
+              nodes_type::iterator start_node
+                (nodes.find (qgraphicsitem_cast<item*> (start)));
+              nodes_type::iterator end_node
+                (nodes.find (qgraphicsitem_cast<item*> (end)));
+
               graph.add_edge (*start_node, *end_node);
             }
           }
