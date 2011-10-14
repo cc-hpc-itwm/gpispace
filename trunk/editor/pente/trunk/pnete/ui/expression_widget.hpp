@@ -61,6 +61,9 @@ namespace fhg
              );
 
       private:
+        bool is_my_function (const ::xml::parse::type::function_type&);
+        bool is_my_expression (const ::xml::parse::type::expression_type&);
+
         data::proxy::expression_proxy::data_type& _expression;
         port_lists_widget* _port_lists;
         QTextEdit* _expression_edit;

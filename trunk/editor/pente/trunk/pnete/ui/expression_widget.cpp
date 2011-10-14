@@ -73,10 +73,7 @@ namespace fhg
         hbox->addWidget (group_box);
         setLayout (hbox);
 
-        set_name (data::proxy::function (proxy).name);
-        set_expression (expression.expression().expression("\n"));
-
-        connect ( &data::proxy::root (proxy)->change_manager()
+        connect ( &change_manager()
                 , SIGNAL ( signal_set_function_name
                            ( const QObject*
                            , const ::xml::parse::type::function_type&
@@ -90,7 +87,7 @@ namespace fhg
                          )
                        )
                 );
-        connect ( &data::proxy::root (proxy)->change_manager()
+        connect ( &change_manager()
                 , SIGNAL ( signal_set_expression
                            ( const QObject*
                            , const ::xml::parse::type::expression_type&
@@ -104,7 +101,7 @@ namespace fhg
                          )
                        )
                 );
-        connect ( &data::proxy::root (proxy)->change_manager()
+        connect ( &change_manager()
                 , SIGNAL ( signal_set_expression_parse_result
                            ( const QObject*
                            , const ::xml::parse::type::expression_type&
@@ -128,17 +125,19 @@ namespace fhg
                 , SIGNAL (textChanged ())
                 , SLOT (expression_changed ())
                 );
+
+        set_name (function().name);
+        set_expression (expression.expression().expression("\n"));
+        expression_changed();
       }
 
       void expression_widget::slot_set_function_name
       ( const QObject* origin
-      , const ::xml::parse::type::function_type& function
+      , const ::xml::parse::type::function_type& fun
       , const QString& name
       )
       {
-        if (  origin != this
-           && &function == &data::proxy::function (proxy())
-           )
+        if (origin != this && is_my_function (fun))
           {
             set_name (name);
           }
@@ -150,9 +149,7 @@ namespace fhg
       , const QString& text
       )
       {
-        if (  origin != this
-           && &expression == &_expression.expression()
-           )
+        if (origin != this && is_my_expression (expression))
           {
             set_expression (text);
           }
@@ -164,7 +161,7 @@ namespace fhg
       , const QString& text
       )
       {
-        if (&expression == &_expression.expression())
+        if (is_my_expression (expression))
           {
             set_expression_parse_result (text);
           }
@@ -200,23 +197,31 @@ namespace fhg
       }
       void expression_widget::name_changed (const QString& name_)
       {
-        //! \todo implement in base_editor_widget convenience for access to change_manager, function
-        data::proxy::root (proxy())->
-          change_manager().set_function_name ( this
-                                             , data::proxy::function (proxy())
-                                             , name_
-                                             )
+        change_manager().set_function_name ( this
+                                           , function()
+                                           , name_
+                                           )
           ;
       }
 
       void expression_widget::expression_changed ()
       {
-        data::proxy::root (proxy())->
-          change_manager().set_expression ( this
-                                          , _expression.expression()
-                                          , _expression_edit->toPlainText()
-                                          )
+        change_manager().set_expression ( this
+                                        , _expression.expression()
+                                        , _expression_edit->toPlainText()
+                                        )
           ;
+      }
+
+      bool expression_widget::is_my_function
+      (const ::xml::parse::type::function_type& f)
+      {
+        return &f == &function();
+      }
+      bool expression_widget::is_my_expression
+      (const ::xml::parse::type::expression_type& e)
+      {
+        return &e == &_expression.expression();
       }
     }
   }
