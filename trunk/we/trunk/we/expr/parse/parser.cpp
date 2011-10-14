@@ -27,6 +27,7 @@ namespace expr
     parser::parser (const std::string & input, eval::context & context)
       : op_stack ()
       , nd_stack ()
+      , tmp_stack ()
     {
       parse (input, boost::bind ( eval::refnode_value
                                 , boost::ref(context)
@@ -37,17 +38,19 @@ namespace expr
     parser::parser (const std::string & input)
       : op_stack ()
       , nd_stack ()
+      , tmp_stack ()
     {
       parse (input, eval::refnode_name);
     }
     parser::parser (const nd_stack_t & seq)
       : op_stack ()
       , nd_stack (seq)
+      , tmp_stack ()
     {}
 
     void parser::add (const parser & other)
     {
-      std::copy (other.begin(), other.end(), std::back_inserter(nd_stack));
+      std::copy (other.begin(), other.end(), std::back_inserter(tmp_stack));
     }
 
     value::type parser::eval_front (eval::context & context) const
@@ -109,16 +112,16 @@ namespace expr
 
     void parser::unary (const token::type & token, const std::size_t k)
     {
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k);
 
-      nd_t c (nd_stack.back()); nd_stack.pop_back();
+      nd_t c (tmp_stack.back()); tmp_stack.pop_back();
 
       if (boost::apply_visitor (node::visitor::is_value(), c))
         //! \todo use c++0x to write this as
         // if (node::is_value(c))
         {
-          nd_stack.push_back
+          tmp_stack.push_back
             (nd_t (boost::apply_visitor ( value::function::unary (token)
                                         , boost::get<value::type> (c)
                                         )
@@ -127,26 +130,26 @@ namespace expr
         }
       else
         {
-          nd_stack.push_back (node::unary_t (token, c));
+          tmp_stack.push_back (node::unary_t (token, c));
         }
     }
 
     void parser::binary (const token::type & token, const std::size_t k)
     {
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "left");
 
-      nd_t r (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t r (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "right");
 
-      nd_t l (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t l (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
       if (  boost::apply_visitor (node::visitor::is_value(), l)
          && boost::apply_visitor (node::visitor::is_value(), r)
          )
-        nd_stack.push_back
+        tmp_stack.push_back
           (nd_t (boost::apply_visitor ( value::function::binary (token)
                                       , boost::get<value::type> (l)
                                       , boost::get<value::type> (r)
@@ -155,57 +158,57 @@ namespace expr
           );
       else
         {
-          nd_stack.push_back (node::binary_t (token, l, r));
+          tmp_stack.push_back (node::binary_t (token, l, r));
         }
     }
 
     void parser::ternary (const token::type & token, const std::size_t k)
     {
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "first");
 
-      nd_t t (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t t (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "second");
 
-      nd_t s (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t s (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "third");
 
-      nd_t f (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t f (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      nd_stack.push_back (node::ternary_t (token, f, s, t));
+      tmp_stack.push_back (node::ternary_t (token, f, s, t));
     }
 
     void parser::ite (const std::size_t k)
     {
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "else expression");
 
-      nd_t f (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t f (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "then expression");
 
-      nd_t t (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t t (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
-      if (nd_stack.empty())
+      if (tmp_stack.empty())
         throw exception::parse::missing_operand (k, "condition");
 
-      nd_t c (nd_t(nd_stack.back())); nd_stack.pop_back();
+      nd_t c (nd_t(tmp_stack.back())); tmp_stack.pop_back();
 
       if (boost::apply_visitor (node::visitor::is_value(), c))
         {
           if (value::function::is_true(boost::get<value::type> (c)))
-            nd_stack.push_back (t);
+            tmp_stack.push_back (t);
           else
-            nd_stack.push_back (f);
+            tmp_stack.push_back (f);
         }
       else
         {
-          nd_stack.push_back (node::ternary_t (token::_ite,  c, t, f));
+          tmp_stack.push_back (node::ternary_t (token::_ite,  c, t, f));
         }
     }
 
@@ -296,15 +299,15 @@ namespace expr
               switch (*token)
                 {
                 case token::val:
-                  nd_stack.push_back (token());
+                  tmp_stack.push_back (token());
                   break;
                 case token::ref:
-                  nd_stack.push_back (refnode(token.get_ref()));
+                  tmp_stack.push_back (refnode(token.get_ref()));
                   break;
                 case token::define:
-                  if (  nd_stack.empty()
+                  if (  tmp_stack.empty()
                      || (! boost::apply_visitor
-                        (node::visitor::is_ref (), nd_stack.back())
+                        (node::visitor::is_ref (), tmp_stack.back())
                         )
                      )
                     throw exception::parse::exception
@@ -329,6 +332,11 @@ namespace expr
                         op_stack.push (*token);
                         break;
                       case action::accept:
+                        std::copy ( tmp_stack.begin()
+                                  , tmp_stack.end()
+                                  , std::back_inserter (nd_stack)
+                                  );
+                        tmp_stack.clear();
                         break;
                       default:
                         throw exception::parse::exception (fhg::util::show(action), k);

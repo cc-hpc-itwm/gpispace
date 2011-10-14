@@ -57,6 +57,7 @@ namespace expr
       typedef std::stack<token::type> op_stack_t;
       op_stack_t op_stack;
       nd_stack_t nd_stack;
+      nd_stack_t tmp_stack;
 
       nd_it_t begin () { return nd_stack.begin(); }
       nd_it_t end () { return nd_stack.end(); }
