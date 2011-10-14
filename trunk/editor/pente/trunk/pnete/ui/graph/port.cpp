@@ -28,11 +28,13 @@ namespace fhg
         namespace port
         {
           item::item
-          ( connectable::direction::type direction
+          ( port_type& port
+          , connectable::direction::type direction
           , boost::optional< ::xml::parse::type::type_map_type&> type_map
           , transition::item* parent
           )
-            : connectable::item (direction, type_map, parent)
+            : connectable::item (direction, type_map, parent, &port.prop)
+            , _port (port)
             , _name ("<<port>>")
             , _orientation ( direction == connectable::direction::OUT
                            ? orientation::EAST

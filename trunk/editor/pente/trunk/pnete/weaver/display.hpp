@@ -30,7 +30,6 @@ namespace fhg
         namespace place { class item; }
         class scene;
         namespace transition { class item; }
-        //        namespace connection { class item; }
       }
     }
     namespace weaver
@@ -147,7 +146,6 @@ namespace fhg
         get_function (XMLTYPE(transition_type::f_type)& f);
       };
 
-      WSIGE(transition, transition::close);
       WSIG(transition, transition::name, std::string, name);
       WSIG( transition
           , transition::function
@@ -220,6 +218,7 @@ namespace fhg
 
       WSIG(port, port::name, std::string, name);
       WSIG(port, port::type, std::string, type);
+      WSIG(port, port::properties, WETYPE(property::type), props);
 
       class port_toplevel
       {
@@ -244,6 +243,7 @@ namespace fhg
       WSIG(port_toplevel, port::name, std::string, name);
       WSIG(port_toplevel, port::type, std::string, type);
       WSIG(port_toplevel, port::place, MAYBE(std::string), place);
+      WSIG(port_toplevel, port::properties, WETYPE(property::type), props);
 
       class place
       {

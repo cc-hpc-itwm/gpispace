@@ -13,6 +13,8 @@
 
 #include <xml/parse/types.hpp>
 
+#include <pnete/weaver/weaver.hpp>
+
 class QAction;
 class QMenu;
 class QGraphicsSceneContextMenuEvent;
@@ -44,7 +46,10 @@ namespace fhg
             Q_OBJECT;
 
           public:
-            item ( connectable::direction::type direction
+            typedef ITVAL(XMLTYPE(ports_type)) port_type;
+
+            item ( port_type& port
+                 , connectable::direction::type direction
                  , boost::optional< ::xml::parse::type::type_map_type&> type_map
                  = boost::none
                  , transition::item* parent = NULL
@@ -86,6 +91,8 @@ namespace fhg
             virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
           private:
+            port_type& _port;
+
             QPointF fitting_position (QPointF position);
 
             QString _name;

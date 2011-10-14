@@ -166,10 +166,12 @@ namespace fhg
       WSIG(transition, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
         ui::graph::port::item* port_item
-          (new ui::graph::port::item ( _current_port_direction
-                                    , _type_map
-                                    , _transition
-                                    )
+          ( new ui::graph::port::item
+          ( const_cast<ITVAL(XMLTYPE(ports_type))&> (port)
+            , _current_port_direction
+            , _type_map
+            , _transition
+            )
           );
 
         weaver::port wp ( port_item
@@ -179,10 +181,6 @@ namespace fhg
                         );
 
         FROM(port) (&wp, port);
-      }
-      WSIGE(transition, transition::close)
-      {
-        _transition->repositionChildrenAndResize();
       }
       WSIG(transition, transition::connect_read, XMLTYPE(connections_type), cs)
       {
@@ -410,7 +408,12 @@ namespace fhg
       {
         _port->we_type (QString::fromStdString (type));
       }
+      WSIG(port, port::properties, WETYPE(property::type), props)
+      {
+        weaver::property wp (_port);
 
+        FROM (properties) (&wp, props);
+      }
 
       place::place ( ui::graph::place::item* place
                    , item_by_name_type& place_item_by_name
@@ -449,7 +452,10 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        _port_item = new ui::graph::port::item (_direction);
+        _port_item = new ui::graph::port::item
+          ( const_cast<ITVAL(XMLTYPE(ports_type))&> (port)
+          , _direction
+          );
         _scene->addItem (_port_item);
       }
       WSIG(port_toplevel, port::name, std::string, name)
@@ -477,6 +483,12 @@ namespace fhg
 
             FROM(connection) (&wc, XMLTYPE(connect_type) (*place, _name));
           }
+      }
+      WSIG(port_toplevel, port::properties, WETYPE(property::type), props)
+      {
+        weaver::property wp (_port_item);
+
+        FROM (properties) (&wp, props);
       }
     }
   }
