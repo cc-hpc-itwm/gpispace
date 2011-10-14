@@ -8,6 +8,8 @@
 
 #include <pnete/ui/graph/scene.hpp>
 
+#include <pnete/ui/graph/orientation.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -44,6 +46,9 @@ namespace fhg
 
           void set_just_pos_but_not_in_property (const QPointF&);
           void set_just_pos_but_not_in_property (qreal, qreal);
+
+          virtual void set_just_orientation_but_not_in_property
+          (const port::orientation::type&) {}
 
         private:
           ::we::type::property::type* _property;

@@ -3,6 +3,7 @@
 #include <pnete/ui/graph/item.hpp>
 
 #include <pnete/util.hpp>
+#include <util/property.hpp>
 
 #include <we/type/property.hpp>
 
@@ -18,41 +19,17 @@ namespace fhg
       {
         namespace detail
         {
-          class property_setter
-          {
-          private:
-            ::we::type::property::path_type _path;
-
-          public:
-            explicit property_setter (const ::we::type::property::key_type& p)
-              : _path (::we::type::property::util::split (p))
-            {}
-
-            template<typename T>
-            void set (::we::type::property::type* prop, T x)
-            {
-              if (prop)
-                {
-                  prop->set
-                    ( _path.begin()
-                    , _path.end()
-                    , boost::lexical_cast< ::we::type::property::value_type> (x)
-                    );
-                }
-            }
-          };
-
           static void set_position_x ( ::we::type::property::type* prop
                                      , const qreal& x
                                      )
           {
-            static property_setter p ("fhg.pnete.position.x"); p.set (prop, x);
+            static util::property::setter s ("position.x"); s.set (prop, x);
           }
           static void set_position_y ( ::we::type::property::type* prop
                                      , const qreal& x
                                      )
           {
-            static property_setter p ("fhg.pnete.position.y"); p.set (prop, x);
+            static util::property::setter s ("position.y"); s.set (prop, x);
           }
         }
 
@@ -66,7 +43,7 @@ namespace fhg
         class scene* item::scene() const
         {
           return
-            util::throwing_qobject_cast<class scene*>(QGraphicsItem::scene());
+            fhg::util::throwing_qobject_cast<class scene*>(QGraphicsItem::scene());
         }
 
 

@@ -9,6 +9,7 @@ set(graph_SRCS
   cogwheel_button.cpp
   item.cpp
   place.cpp
+  orientation.cpp
 
   popover_widget.cpp
 )
@@ -22,6 +23,7 @@ set(graph_HDRS
   cogwheel_button.hpp
   item.hpp
   place.hpp
+  orientation.hpp
 
   popover_widget.hpp
 )

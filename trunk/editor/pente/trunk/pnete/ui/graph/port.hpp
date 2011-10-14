@@ -8,6 +8,7 @@
 
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/item.hpp>
+#include <pnete/ui/graph/orientation.hpp>
 
 #include <boost/optional.hpp>
 
@@ -31,16 +32,6 @@ namespace fhg
 
         namespace port
         {
-          namespace orientation
-          {
-            enum type
-              { NORTH
-              , EAST
-              , SOUTH
-              , WEST
-              };
-          }
-
           class item : public connectable::item
           {
             Q_OBJECT;
@@ -75,6 +66,8 @@ namespace fhg
             virtual void
             paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
 
+            void
+            set_just_orientation_but_not_in_property (const orientation::type&);
 
           public slots:
             void slot_set_type();

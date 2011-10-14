@@ -182,6 +182,11 @@ namespace fhg
 
         FROM(port) (&wp, port);
       }
+      WSIGE(transition, transition::close)
+      {
+        //! \todo do something if not already set
+        //        _transition->repositionChildrenAndResize();
+      }
       WSIG(transition, transition::connect_read, XMLTYPE(connections_type), cs)
       {
         weaver::connection wc ( _scene
@@ -240,6 +245,11 @@ namespace fhg
       {
         if (_path.size() > 1 && _path[0] == "fhg" && _path[1] == "pnete")
           {
+            if (_path.size() > 2 && _path[2] == "orientation")
+              {
+                _item->set_just_orientation_but_not_in_property
+                  (ui::graph::port::orientation::read (value));
+              }
             if (_path.size() > 2 && _path[2] == "position")
               {
                 if (_path.size() > 3)

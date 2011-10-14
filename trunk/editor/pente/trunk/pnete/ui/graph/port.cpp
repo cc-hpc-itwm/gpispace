@@ -17,6 +17,8 @@
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/style/size.hpp>
 
+#include <util/property.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -27,6 +29,17 @@ namespace fhg
       {
         namespace port
         {
+          namespace detail
+          {
+            static void set_orientation ( ::we::type::property::type* prop
+                                        , const orientation::type& o
+                                        )
+            {
+              static util::property::setter s ("orientation");
+              s.set (prop, orientation::show (o));
+            }
+          }
+
           item::item
           ( port_type& port
           , connectable::direction::type direction
@@ -36,16 +49,19 @@ namespace fhg
             : connectable::item (direction, type_map, parent, &port.prop)
             , _port (port)
             , _name ("<<port>>")
-            , _orientation ( direction == connectable::direction::OUT
-                           ? orientation::EAST
-                           : orientation::WEST
-                           )
+            , _orientation ()
             , _dragging (false)
             , _drag_start (0.0, 0.0)
             , _highlighted (false)
             , _length (size::port::width())
             , _menu_context()
           {
+            set_just_orientation_but_not_in_property
+              ( direction == connectable::direction::OUT
+              ? orientation::EAST
+              : orientation::WEST
+              );
+
             setAcceptHoverEvents (true);
             //! \todo verbose name
 
@@ -161,22 +177,22 @@ namespace fhg
             to_top *= to_top;
             to_bottom *= to_bottom;
 
-            _orientation = ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
-                           ? ( to_top < to_bottom
-                             ? orientation::NORTH
-                             : orientation::SOUTH
-                             )
-                           : ( to_left < to_right
-                             ? orientation::WEST
-                             : orientation::EAST
-                             )
-                           );
+            orientation ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
+                        ? ( to_top < to_bottom
+                          ? orientation::NORTH
+                          : orientation::SOUTH
+                          )
+                        : ( to_left < to_right
+                          ? orientation::WEST
+                          : orientation::EAST
+                          )
+                        );
 
-            if(  _orientation == orientation::WEST
-              || _orientation == orientation::EAST
+            if(  orientation() == orientation::WEST
+              || orientation() == orientation::EAST
               )
               {
-                position.setX ( _orientation == orientation::WEST
+                position.setX ( orientation() == orientation::WEST
                               ? bounding.left()
                               : bounding.right()
                               );
@@ -193,7 +209,7 @@ namespace fhg
                                        , bounding.right() - minimum_distance.x()
                                        )
                               );
-                position.setY ( _orientation == orientation::NORTH
+                position.setY ( orientation() == orientation::NORTH
                               ? bounding.top()
                               : bounding.bottom()
                               );
@@ -211,7 +227,7 @@ namespace fhg
               }
 
             const QPointF old_location (pos());
-            const orientation::type old_orientation (_orientation);
+            const orientation::type old_orientation (orientation());
             const QPointF new_location (pos() + event->pos() - _drag_start);
 
             setPos (fitting_position (new_location));
@@ -223,7 +239,7 @@ namespace fhg
                    && collidingItem->parentItem() == parentItem()
                    )
                   {
-                    _orientation = old_orientation;
+                    orientation (old_orientation);
                     setPos (old_location);
                     event->ignore();
                     return;
@@ -272,7 +288,17 @@ namespace fhg
           const orientation::type&
           item::orientation (const orientation::type& orientation_)
           {
-            return _orientation = orientation_;
+            _orientation = orientation_;
+
+            detail::set_orientation (&_port.prop, orientation());
+
+            return orientation();
+          }
+
+          void item::set_just_orientation_but_not_in_property
+          (const orientation::type& orientation_)
+          {
+            _orientation = orientation_;
           }
 
           // void item::delete_connection()
