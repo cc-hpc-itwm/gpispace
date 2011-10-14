@@ -44,7 +44,7 @@ namespace fhg
 
           namespace cap
           {
-            CONST (qreal, length, detail::ratio_shorter (port::height()));
+            CONST (qreal, length, detail::ratio_shorter (port::height() / 2.0));
           }
 
 #undef CONST
