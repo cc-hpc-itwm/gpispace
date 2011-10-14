@@ -44,6 +44,8 @@ namespace expr
           }
       }
 
+      //! \todo change behavior of parser here
+      //! \todo make a real table, avoid any conditional
       inline type action (const token::type & top, const token::type & inp)
       {
         if (top == token::lpr)
