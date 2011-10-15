@@ -209,7 +209,7 @@ namespace xml
           return s.str();
         }
 
-        inline void dump (const xml_util::xmlstream & s, const mod_type & m)
+        inline void dump (xml_util::xmlstream & s, const mod_type & m)
         {
           s.open ("module");
           s.attr ("name", m.name);

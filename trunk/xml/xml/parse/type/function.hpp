@@ -1791,17 +1791,17 @@ namespace xml
 
       namespace dump
       {
-        void dump ( const xml_util::xmlstream &
+        void dump ( xml_util::xmlstream &
                   , const function_type &
                   , const bool
                   );
 
-        void dump ( const xml_util::xmlstream &
+        void dump ( xml_util::xmlstream &
                   , const transition_type &
                   );
 
         template<typename IT>
-        inline void dumps ( const xml_util::xmlstream & s
+        inline void dumps ( xml_util::xmlstream & s
                           , IT pos
                           , const IT & end
                           )
@@ -1813,7 +1813,7 @@ namespace xml
         }
 
         template<typename IT, typename T>
-        inline void dumps ( const xml_util::xmlstream & s
+        inline void dumps ( xml_util::xmlstream & s
                           , IT pos
                           , const IT & end
                           , const T & x
@@ -1831,10 +1831,10 @@ namespace xml
           class function_dump : public boost::static_visitor<void>
           {
           private:
-            const xml_util::xmlstream & s;
+            xml_util::xmlstream & s;
 
           public:
-            function_dump (const xml_util::xmlstream & _s) : s (_s) {}
+            function_dump (xml_util::xmlstream & _s) : s (_s) {}
 
             template<typename T>
             void operator () (const T & x) const
@@ -1860,7 +1860,7 @@ namespace xml
           };
         } // namespace visitor
 
-        inline void dump_before_property ( const xml_util::xmlstream & s
+        inline void dump_before_property ( xml_util::xmlstream & s
                                          , const function_type & f
                                          , const bool is_template = false
                                          )
@@ -1870,7 +1870,7 @@ namespace xml
           s.attr ("internal", f.internal);
         }
 
-        inline void dump_after_property ( const xml_util::xmlstream & s
+        inline void dump_after_property ( xml_util::xmlstream & s
                                         , const function_type & f
                                         )
         {
@@ -1896,7 +1896,7 @@ namespace xml
           s.close ();
         }
 
-        inline void dump ( const xml_util::xmlstream & s
+        inline void dump ( xml_util::xmlstream & s
                          , const function_type & f
                          , const state::type & state
                          )
@@ -1910,7 +1910,7 @@ namespace xml
           dump_after_property (s, f);
         }
 
-        inline void dump ( const xml_util::xmlstream & s
+        inline void dump ( xml_util::xmlstream & s
                          , const function_type & f
                          , const bool is_template = false
                          )

@@ -30,7 +30,7 @@ namespace xml
 
       namespace dump
       {
-        void inline dump (const xml_util::xmlstream & s, const use_type & u)
+        void inline dump (xml_util::xmlstream & s, const use_type & u)
         {
           s.open ("use");
           s.attr ("name", u.name);

@@ -130,7 +130,7 @@ namespace xml
 
       namespace dump
       {
-        inline void dump ( const xml_util::xmlstream & s
+        inline void dump ( xml_util::xmlstream & s
                          , const port_type & p
                          , const std::string & direction
                          )

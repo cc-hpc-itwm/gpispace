@@ -431,7 +431,7 @@ namespace we
 
       namespace dump
       {
-        inline void dump ( const xml_util::xmlstream &
+        inline void dump ( xml_util::xmlstream &
                          , const type &
                          );
 
@@ -440,11 +440,11 @@ namespace we
           class dump : public boost::static_visitor<void>
           {
           private:
-            const xml_util::xmlstream & s;
+            xml_util::xmlstream & s;
             const key_type & key;
 
           public:
-            dump (const xml_util::xmlstream & _s, const key_type & _key)
+            dump (xml_util::xmlstream & _s, const key_type & _key)
               : s (_s)
               , key (_key)
             {}
@@ -470,7 +470,7 @@ namespace we
           };
         }
 
-        inline void dump ( const xml_util::xmlstream & s
+        inline void dump ( xml_util::xmlstream & s
                          , const type & p
                          )
         {
@@ -488,7 +488,9 @@ namespace we
 
       inline std::ostream & operator << (std::ostream & s, const type & t)
       {
-        dump::dump (xml_util::xmlstream (s), t);
+        xml_util::xmlstream xs (s);
+
+        dump::dump (xs, t);
 
         return s;
       }

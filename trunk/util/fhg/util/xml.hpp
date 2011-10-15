@@ -28,7 +28,7 @@ namespace fhg
 
           const std::string & string () const { return _tag; }
           const bool & has_content () const { return _has_content; }
-          bool & has_content () { return _has_content; }
+          void has_content (bool x) { _has_content = x; }
 
         private:
           const std::string _tag;
@@ -44,7 +44,7 @@ namespace fhg
         xmlstream (std::ostream & s) : _s (s), _tag() {}
         ~xmlstream () { endl(); }
 
-        void open (const std::string & tag) const
+        void open (const std::string & tag)
         {
           if (!_tag.empty())
             {
@@ -56,7 +56,7 @@ namespace fhg
           _tag.push (detail::tag (tag));
         }
 
-        void close () const
+        void close ()
         {
           assert_nonempty ("close");
 
@@ -96,7 +96,7 @@ namespace fhg
         }
 
         template<typename T>
-        void content (T x) const
+        void content (T x)
         {
           assert_nonempty ("content");
 
@@ -107,7 +107,7 @@ namespace fhg
 
       private:
         std::ostream & _s;
-        mutable detail::tag_stack _tag;
+        detail::tag_stack _tag;
 
         void level () const
         {
@@ -128,17 +128,17 @@ namespace fhg
             }
         }
 
-        void set_content () const
+        void set_content ()
         {
           if (!_tag.top().has_content())
             {
               _s << ">";
 
-              _tag.top().has_content() = true;
+              _tag.top().has_content(true);
             }
         }
 
-        void add_content () const
+        void add_content ()
         {
           set_content ();
 

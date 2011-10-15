@@ -90,10 +90,9 @@ namespace fhg
           throw std::runtime_error("could not open file " + file);
         }
 
-        xml::parse::type::dump::dump ( fhg::util::xml::xmlstream (fs)
-                                     , data->function()
-                                     , data->state()
-                                     );
+        fhg::util::xml::xmlstream s (fs);
+
+        xml::parse::type::dump::dump (s, data->function(), data->state());
       }
     }
   }

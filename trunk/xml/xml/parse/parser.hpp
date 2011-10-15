@@ -1557,10 +1557,9 @@ namespace xml
               throw error::could_not_open_file (file);
             }
 
-          xml::parse::type::dump::dump ( fhg::util::xml::xmlstream (stream)
-                                       , f
-                                       , state
-                                       );
+          fhg::util::xml::xmlstream s (stream);
+
+          xml::parse::type::dump::dump (s, f, state);
         }
 
       // set all the collected requirements to the top level function

@@ -920,10 +920,10 @@ namespace xml
           class transition_dump : public boost::static_visitor<void>
           {
           private:
-            const xml_util::xmlstream & s;
+            xml_util::xmlstream & s;
 
           public:
-            transition_dump (const xml_util::xmlstream & _s) : s (_s) {}
+            transition_dump (xml_util::xmlstream & _s) : s (_s) {}
 
             template<typename T>
             void operator () (const T & x) const
@@ -933,7 +933,7 @@ namespace xml
           };
         } // namespace visitor
 
-        inline void dump ( const xml_util::xmlstream & s
+        inline void dump ( xml_util::xmlstream & s
                          , const transition_type & t
                          )
         {
