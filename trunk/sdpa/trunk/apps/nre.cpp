@@ -67,7 +67,7 @@ int main (int argc, char **argv)
      ("backup_folder,d", po::value<std::string>(&backup_folder), "NRE's backup folder")
      ("backup_file,f", po::value<std::string>(&backup_file), "NRE's backup file")
      ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
-    ("use-push-model", "use push model instead of request model")
+     ("use-push-model", "use push model instead of request model")
      ;
 
   po::variables_map vm;
@@ -77,15 +77,15 @@ int main (int argc, char **argv)
 
   if (vm.count("help"))
   {
-  std::cerr << "usage: nre [options] ...." << std::endl;
-  std::cerr << desc << std::endl;
-  return 0;
+	  std::cerr << "usage: nre [options] ...." << std::endl;
+	  std::cerr << desc << std::endl;
+	  return 0;
   }
 
   if( !vm.count("kvs_url") )
   {
-          LOG(ERROR, "The url of the kvs daemon was not specified!");
-          return -1;
+	  LOG(ERROR, "The url of the kvs daemon was not specified!");
+      return -1;
   }
   else
   {
