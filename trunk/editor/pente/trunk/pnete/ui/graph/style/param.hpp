@@ -9,8 +9,6 @@
 
 #include <list>
 
-#include <iostream>
-
 namespace fhg
 {
   namespace pnete
@@ -23,74 +21,86 @@ namespace fhg
         {
           namespace param
           {
-            template<typename Key, typename Value>
-            class traits
+            namespace detail
             {
-            public:
-              typedef boost::function< boost::optional<Value> (Key)
-                                     > predicate_type;
-              typedef boost::unordered_map<Key, boost::optional<Value>
-                                          > cache_type;
-              typedef std::list<predicate_type> predicates_type;
-            };
+              template<typename Key, typename Value>
+              class traits
+              {
+              public:
+                typedef boost::function< boost::optional<Value> (Key)
+                                       > predicate_type;
+                typedef boost::unordered_map<Key, boost::optional<Value>
+                                            > cache_type;
+                typedef std::list<predicate_type> predicates_type;
+              };
+            }
 
             template<typename Key, typename Value>
             class store
             {
             private:
-              typedef traits<Key, Value> super;
+              typedef detail::traits<Key, Value> traits;
+              typedef typename traits::predicate_type predicate_type;
+              typedef typename traits::predicates_type predicates_type;
+              typedef typename traits::cache_type cache_type;
+              typedef typename cache_type::const_iterator cache_iterator;
+              typedef typename cache_type::value_type cache_entry_type;
+              typedef typename predicates_type::const_iterator
+                               predicates_iterator;
+              typedef boost::optional<Value> optional_value_type;
 
             public:
-              void push (typename super::predicate_type const& predicate)
+              void clear_cache ()
               {
                 _cache.clear();
-                _predicates.push_back (predicate);
               }
 
-              boost::optional<Value> get (const Key& key)
+              void push (const predicate_type& predicate)
               {
-                const typename super::cache_type::const_iterator
-                  cache_pos (_cache.find (key));
+                _predicates.push_back (predicate);
+                clear_cache();
+              }
+
+              optional_value_type get (const Key& key)
+              {
+                const cache_iterator cache_pos (_cache.find (key));
 
                 if (cache_pos != _cache.end())
                   {
-                    std::cerr << "CACHE: " << key << " -> " << cache_pos->second << std::endl;
-
                     return cache_pos->second;
                   }
 
-                typename super::predicates_type::const_iterator
-                  predicate (_predicates.begin());
+                predicates_iterator predicate (_predicates.begin());
+                const predicates_iterator no_predicate (_predicates.end());
 
-                while (predicate != _predicates.end())
+                while (predicate != no_predicate)
                   {
-                    boost::optional<Value> value ((*predicate) (key));
+                    optional_value_type value ((*predicate) (key));
 
                     if (value)
                       {
-                        _cache.insert
-                          ( typename super::cache_type::value_type ( key
-                                                                   , value
-                                                                   )
-                          );
-
-                        std::cerr << "RESULT: " << key << " -> " << *value << std::endl;
-
-                        return value;
+                        return cache (key, value);
                       }
 
                     ++predicate;
                   }
 
-                _cache.insert
-                  (typename super::cache_type::value_type (key, boost::none));
-
-                return boost::none;
+                return cache (key, boost::none);
               }
 
             private:
-              typename super::cache_type _cache;
-              typename super::predicates_type _predicates;
+              cache_type _cache;
+              predicates_type _predicates;
+
+              const optional_value_type& cache
+              ( const Key& key
+              , const optional_value_type& value
+              )
+              {
+                _cache.insert (cache_entry_type (key, value));
+
+                return value;
+              }
             };
           }
         }
