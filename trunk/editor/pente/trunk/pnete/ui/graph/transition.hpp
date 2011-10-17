@@ -63,14 +63,8 @@ namespace fhg
             data::proxy::type* proxy (data::proxy::type*);
             data::proxy::type* proxy () const;
 
-            enum
-              {
-                Type = transition_graph_type,
-              };
-            virtual int type() const
-            {
-              return Type;
-            }
+            enum { Type = transition_graph_type };
+            virtual int type() const { return Type; }
 
           public slots:
             void slot_delete(void);

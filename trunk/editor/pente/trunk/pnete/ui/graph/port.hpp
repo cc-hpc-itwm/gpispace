@@ -103,6 +103,25 @@ namespace fhg
 
             void init_menu_context();
           };
+
+          namespace top_level
+          {
+            class item : public port::item
+            {
+            public:
+              item ( port_type& port
+                   , connectable::direction::type direction
+                   , boost::optional< ::xml::parse::type::type_map_type&> type_map
+                   = boost::none
+                   , transition::item* parent = NULL
+                   )
+                : port::item (port, direction, type_map, parent)
+              {}
+
+              enum { Type = top_level_port_graph_type };
+              virtual int type() const { return Type; }
+            };
+          }
         }
       }
     }

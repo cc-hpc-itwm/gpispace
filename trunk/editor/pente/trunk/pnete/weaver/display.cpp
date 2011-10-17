@@ -462,7 +462,7 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port)
       {
-        _port_item = new ui::graph::port::item
+        _port_item = new ui::graph::port::top_level::item
           ( const_cast<ITVAL(XMLTYPE(ports_type))&> (port)
           , _direction
           );

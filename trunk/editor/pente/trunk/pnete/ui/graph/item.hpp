@@ -32,6 +32,7 @@ namespace fhg
             port_graph_type             = QGraphicsItem::UserType + 2,
             transition_graph_type       = QGraphicsItem::UserType + 3,
             place_graph_type            = QGraphicsItem::UserType + 4,
+            top_level_port_graph_type   = QGraphicsItem::UserType + 5,
             /* ... */
           };
 

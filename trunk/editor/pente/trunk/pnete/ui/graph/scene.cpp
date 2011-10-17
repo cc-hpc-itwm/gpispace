@@ -255,6 +255,7 @@ namespace fhg
             if ( ( i->type() == item::port_graph_type
                 || i->type() == item::transition_graph_type
                 || i->type() == item::place_graph_type
+                || i->type() == item::top_level_port_graph_type
                  )
               && i->parentItem() == NULL)
             {
