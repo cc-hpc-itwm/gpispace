@@ -101,14 +101,14 @@ namespace sdpa { namespace daemon {
       {
           if(!common_queue_.empty())
           {
-            SDPA_LOG_DEBUG("The content of the common queue is: ");
-            common_queue_.print();
+        	  SDPA_LOG_DEBUG("The content of the common queue is: ");
+        	  common_queue_.print();
           }
           else
-            SDPA_LOG_DEBUG("No job without preferences available!");
+        	  SDPA_LOG_DEBUG("No job without preferences available!");
 
           if( worker_map_.begin() == worker_map_.end() )
-            SDPA_LOG_DEBUG("The worker manager has NO worker! ");
+        	  SDPA_LOG_DEBUG("The worker manager has NO worker! ");
           else
           {
               SDPA_LOG_DEBUG("The worker manager has workers! ");
