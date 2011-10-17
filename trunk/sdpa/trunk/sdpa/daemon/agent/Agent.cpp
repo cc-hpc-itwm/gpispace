@@ -227,14 +227,14 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 bool Agent::finished(const id_type& wfid, const result_type& result, const id_type& forward_to)
 {
 	//put the job into the state Finished
-	JobId id(wfid);
+	JobId job_id(wfid);
 	Job::ptr_t pJob;
 	try {
-		pJob = ptr_job_man_->findJob(id);
+		pJob = ptr_job_man_->findJob(job_id);
 	}
 	catch(JobNotFoundException const &)
 	{
-		SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
+		SDPA_LOG_WARN( "got finished message for old/unknown Job "<<job_id.str());
 		return false;
 	}
 
@@ -245,17 +245,24 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 
 	try {
 	    // forward it up
-	    JobFinishedEvent::Ptr pEvtJobFinished
+		JobFinishedEvent::Ptr pEvtJobFinished
                           (new JobFinishedEvent( name()
                                                , forward_to
-                                               , id
+                                               , job_id
                                                , result
                                                )
                           );
 
 	    // send the event to the master
-	    sendEventToMaster(pEvtJobFinished);
+	    //sendEventToMaster(pEvtJobFinished);
 	    pJob->JobFinished(pEvtJobFinished.get());
+	    // delete the job here -> send self a FinishedJobAck
+	    JobFinishedAckEvent::Ptr pEvtJobFinishedAck(new JobFinishedAckEvent( name(), name(), job_id, result));
+	    sendEventToSelf(pEvtJobFinishedAck);
+
+	    // catch exceptions in the case when forward_to does not exist
+	    SubmitJobEvent::Ptr pSubJobEvt(new SubmitJobEvent(name(), forward_to, job_id, result, ""));
+	    sendEventToSlave(pSubJobEvt);
 	}
 	catch(QueueFull const &)
 	{
