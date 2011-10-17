@@ -27,6 +27,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
+#include <sdpa/types.hpp>
 
 class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS
@@ -217,11 +218,14 @@ public:
           )
       {
         if (master_it->second->is_connected())
-          send_event (new sdpa::events::CapabilitiesGainedEvent( m_my_name
+        {
+        	sdpa::capability_t sdpa_cap(cap->capability_name(), cap->capability_type());
+        	send_event (new sdpa::events::CapabilitiesGainedEvent( m_my_name
                                                                , master_it->first
-                                                               , cap->capability_name()
+                                                               , sdpa_cap
                                                                )
                      );
+        }
       }
     }
   }
@@ -334,6 +338,7 @@ public:
 
         if (! caps.empty())
         {
+
           send_event(new sdpa::events::CapabilitiesGainedEvent( m_my_name
                                                               , master_it->first
                                                               , caps
