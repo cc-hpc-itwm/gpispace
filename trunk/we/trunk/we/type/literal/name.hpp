@@ -28,6 +28,8 @@ namespace literal
   CONST (MAP, "map");
   CONST (SET, "set");
   CONST (BYTEARRAY, "bytearray");
+
+#undef CONST
 }
 
 #endif
