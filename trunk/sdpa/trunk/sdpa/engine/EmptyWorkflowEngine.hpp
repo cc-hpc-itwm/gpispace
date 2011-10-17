@@ -90,7 +90,7 @@ public:
 
    	friend class EmptyWorkflowEngine;
 
-   private:
+   public:
    	sdpa::job_id_t jobId;
    	we_status status;
    	result_type result;

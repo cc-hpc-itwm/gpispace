@@ -161,6 +161,8 @@ typedef std::pair<ExecutionState, result_type> execution_result_t;
 			virtual bool failed(const id_type & id, const result_type & result) = 0;
 			virtual bool cancelled(const id_type & id) = 0;
 
+			virtual void set_rank(const unsigned int& rank ){ //to be overridden! }
+
 			virtual bool fill_in_info (const id_type & id, activity_information_t & info) const = 0;
 			virtual ~IWorkflowEngine() {}
 
