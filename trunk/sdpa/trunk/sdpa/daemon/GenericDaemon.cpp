@@ -857,7 +857,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
         std::map<std::string, size_t> cap_cnt;
         for(sdpa::capabilities_set_t::const_iterator it = evtRegWorker.capabilities().begin(); it != evtRegWorker.capabilities().end(); it++ )
         {
-          ++cap_cnt[*it];
+          ++cap_cnt[it->name()];
         }
 
         std::ostringstream ostr;
