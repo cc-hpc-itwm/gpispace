@@ -38,31 +38,31 @@ namespace sdpa { namespace events {
 
         CapabilitiesGainedEvent() : MgmtEvent() {}
 
-		CapabilitiesGainedEvent( const address_t& from , const address_t& to, const sdpa::capabilities_set_t& cpbs = capabilities_set_t() )
+		CapabilitiesGainedEvent( const address_t& from, const address_t& to, const sdpa::capabilities_set_t& cpbs = capabilities_set_t() )
           : MgmtEvent(from, to)
           , capabilities_(cpbs)
         {}
 
-          CapabilitiesGainedEvent( const address_t& from , const address_t& to, const std::string & cap)
+          CapabilitiesGainedEvent( const address_t& from, const address_t& to, const sdpa::capability_t& cap )
           : MgmtEvent(from, to)
           , capabilities_()
-        {
-          capabilities_.insert (cap);
-        }
+          {
+        	  capabilities_.insert (cap);
+          }
 
-		virtual ~CapabilitiesGainedEvent() { }
+          virtual ~CapabilitiesGainedEvent() { }
 
-		const sdpa::capabilities_set_t& capabilities() const { return capabilities_; }
-		sdpa::capabilities_set_t& capabilities() { return capabilities_; }
+          const sdpa::capabilities_set_t& capabilities() const { return capabilities_; }
+          sdpa::capabilities_set_t& capabilities() { return capabilities_; }
 
-		std::string str() const { return "CapabilitiesGainedEvent"; }
+          std::string str() const { return "CapabilitiesGainedEvent"; }
 
-        virtual void handleBy(EventHandler *handler)
-        {
-          handler->handleCapabilitiesGainedEvent(this);
-        }
+          virtual void handleBy(EventHandler *handler)
+          {
+        	  handler->handleCapabilitiesGainedEvent(this);
+          }
 	private:
-		sdpa::capabilities_set_t capabilities_;
+          sdpa::capabilities_set_t capabilities_;
 	};
 }}
 

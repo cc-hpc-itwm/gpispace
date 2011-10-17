@@ -43,7 +43,7 @@ namespace sdpa { namespace events {
           , capabilities_(cpbs)
         {}
 
-          CapabilitiesLostEvent( const address_t& from , const address_t& to, std::string const &cap)
+          CapabilitiesLostEvent( const address_t& from , const address_t& to, const sdpa::capability_t &cap)
             : MgmtEvent(from, to)
             , capabilities_()
           {
