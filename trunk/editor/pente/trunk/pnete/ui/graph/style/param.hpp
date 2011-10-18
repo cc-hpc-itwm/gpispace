@@ -27,9 +27,11 @@ namespace fhg
               class traits
               {
               public:
-                typedef boost::function< boost::optional<Value> (Key)
+                typedef boost::optional<const Value&> optional_value_type;
+                typedef boost::function< optional_value_type (Key)
                                        > predicate_type;
-                typedef boost::unordered_map<Key, boost::optional<Value>
+                typedef boost::unordered_map< Key
+                                            , optional_value_type
                                             > cache_type;
                 typedef std::list<predicate_type> predicates_type;
               };
@@ -47,9 +49,10 @@ namespace fhg
               typedef typename cache_type::value_type cache_entry_type;
               typedef typename predicates_type::const_iterator
                                predicates_iterator;
-              typedef boost::optional<Value> optional_value_type;
 
             public:
+              typedef typename traits::optional_value_type optional_value_type;
+
               void clear_cache ()
               {
                 _cache.clear();
