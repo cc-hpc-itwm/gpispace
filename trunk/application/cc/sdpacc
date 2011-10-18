@@ -24,7 +24,7 @@ prog_name=$(basename $0)
 compiler="$prog_name"
 c_compiler="gcc"
 cxx_compiler="g++"
-SDPACFLAGS="--network.timeout=10000 -t 1"
+SDPACFLAGS="--network.timeout=10000 -t 500"
 
 if [ -n "$SDPACC_CC" ] ; then
     c_compiler="$SDPACC_CC"
