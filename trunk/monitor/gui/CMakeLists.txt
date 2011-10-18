@@ -19,10 +19,10 @@ target_link_libraries (sdpa-mon
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
 #	gobject-2.0
-	${TIFF_LIBRARY}
-	${JPEG_LIBRARY}
-	${MNG_LIBRARY}
-	${LCMS_LIBRARY}
+#	${TIFF_LIBRARY}
+#	${JPEG_LIBRARY}
+#	${MNG_LIBRARY}
+#	${LCMS_LIBRARY}
 )
 
 install(TARGETS sdpa-mon

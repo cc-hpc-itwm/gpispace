@@ -49,10 +49,10 @@ target_link_libraries (sdpa-gui
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
 #        gobject-2.0
-	${TIFF_LIBRARY}
-	${JPEG_LIBRARY}
-	${MNG_LIBRARY}
-	${LCMS_LIBRARY}
+#	${TIFF_LIBRARY}
+#	${JPEG_LIBRARY}
+#	${MNG_LIBRARY}
+#	${LCMS_LIBRARY}
 )
 
 install(FILES ${sdpa-gui_HDRS}

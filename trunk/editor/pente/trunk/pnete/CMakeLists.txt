@@ -26,9 +26,9 @@ target_link_libraries ( pnete
                         ${FhgLog_LIBRARY}
                         ${Boost_LIBRARIES}
                         ${QT_LIBRARIES}
-                        ${TIFF_LIBRARY}
-                        ${JPEG_LIBRARY}
-                        ${MNG_LIBRARY}
+#                        ${TIFF_LIBRARY}
+#                        ${JPEG_LIBRARY}
+#                        ${MNG_LIBRARY}
                       )
 
 install ( TARGETS pnete
