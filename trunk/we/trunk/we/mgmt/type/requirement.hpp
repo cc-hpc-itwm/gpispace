@@ -1,11 +1,6 @@
 #ifndef WE_MGMT_TYPE_REQUIREMENT_HPP
 #define WE_MGMT_TYPE_REQUIREMENT_HPP 1
 
-#include <vector>
-#include <ostream>
-#include <boost/unordered_set.hpp>
-#include <fhg/util/show.hpp>
-
 namespace we
 {
   namespace mgmt
