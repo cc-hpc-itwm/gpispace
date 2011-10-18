@@ -24,6 +24,7 @@ prog_name=$(basename $0)
 compiler="$prog_name"
 c_compiler="gcc"
 cxx_compiler="g++"
+SDPACFLAGS="--network.timeout=10000 -t 1"
 
 if [ -n "$SDPACC_CC" ] ; then
     c_compiler="$SDPACC_CC"
@@ -78,10 +79,10 @@ function cancel()
     if [ -z "$jobid" ] ; then
 	return 0
     fi
-    sdpac cancel "$jobid" &>/dev/null
-    sdpac wait "$jobid" &>/dev/null
+    sdpac $SDPACFLAGS cancel "$jobid" &>/dev/null
+    sdpac $SDPACFLAGS -t 1 wait "$jobid" &>/dev/null
     ec=$?
-    sdpac delete "$jobid" &>/dev/null
+    sdpac $SDPACFLAGS delete "$jobid" &>/dev/null
     test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
     return $ec
 }
@@ -103,20 +104,20 @@ function prepare ()
 
 function execute ()
 {
-    jobid=$(sdpac submit ${pnet_tmp} 2>&1)
+    jobid=$(sdpac $SDPACFLAGS submit ${pnet_tmp} 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
 	echo "submission failed: $jobid" >&2
 	return $ec
     fi
     test -e "${pnet_tmp}" && rm -f "${pnet_tmp}"
-    sdpac wait "$jobid" &>/dev/null
+    sdpac $SDPACFLAGS wait "$jobid" &>/dev/null
     ec=$?
     if [ $ec -ne 0 ] ; then
 	return $ec
     fi
-    sdpac results "${jobid}" &>/dev/null
-    sdpac delete "${jobid}" &>/dev/null
+    sdpac $SDPACFLAGS results "${jobid}" &>/dev/null
+    sdpac $SDPACFLAGS delete "${jobid}" &>/dev/null
 
     std_out=$(pnetget < "sdpa.${jobid}.out" --type=output std_out | sed -e 's/^"//g' -e 's/"$//g')
     std_err=$(pnetget < "sdpa.${jobid}.out" --type=output std_err | sed -e 's/^"//g' -e 's/"$//g')
