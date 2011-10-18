@@ -52,10 +52,10 @@ include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
 
 ## check for qt
 find_package (Qt4 4.7.1 COMPONENTS QtCore QtGui QtXml REQUIRED)
-#find_package (TIFF REQUIRED)
-#find_package (JPEG REQUIRED)
+find_package (TIFF REQUIRED)
+find_package (JPEG REQUIRED)
 #find_package (PNG REQUIRED)
-#find_package (MNG REQUIRED)
+find_package (MNG REQUIRED)
 
 add_subdirectory (util)
 add_subdirectory (pnete)

@@ -13,7 +13,7 @@ add_subdirectory (plugin)
 include(libutils)
 
 find_library (LIBRT_LIBRARY
-  NAMES rt
+  NAMES librt.a
   PATH_SUFFIXES lib
   )
 merge_static_libs(gpi-space-pc gpi-space-pc "gpi-space-pc-client-static;gpi-space-pc-segment;gpi-space-static;${FhgLog_LIBRARY};${Boost_LIBRARIES};${LIBRT_LIBRARY}")

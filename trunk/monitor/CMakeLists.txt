@@ -51,10 +51,10 @@ include_directories(${SDPA_INCLUDE_DIR})
 
 ## check for qt
 find_package(Qt4 4.4.3 COMPONENTS QtCore QtGui QtXml REQUIRED)
-#find_package(TIFF REQUIRED)
-#find_package(JPEG REQUIRED)
-#find_package(MNG REQUIRED)
-#find_package(LCMS REQUIRED)
+find_package(TIFF REQUIRED)
+find_package(JPEG REQUIRED)
+find_package(MNG REQUIRED)
+find_package(LCMS REQUIRED)
 
 link_directories(${CMAKE_LIBRARY_PATH})
 link_directories(${${PROJECT_NAME}_BINARY_DIR})

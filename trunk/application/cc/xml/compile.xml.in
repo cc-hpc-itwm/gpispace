@@ -17,14 +17,11 @@
                                           , std_err
                                           )">
     <cinclude href="fhglog/fhglog.hpp"/>
-    <cinclude href="errno.h"/>
-    <cinclude href="limits.h"/>
-    <cinclude href="stdlib.h"/>
     <cinclude href="unistd.h"/>
-    <cinclude href="string.h"/>
+    <cinclude href="errno.h"/>
     <cinclude href="stdexcept"/>
     <cinclude href="fstream"/>
-    <cinclude href="process/process.hpp"/>
+    <cinclude href="process.hpp"/>
     <link href="@CMAKE_INSTALL_PREFIX@/libexec/libprocess.so"/>
     <code><![CDATA[
         LOG (INFO, "SDPACC compile");
