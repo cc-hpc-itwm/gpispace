@@ -64,7 +64,13 @@ trap 'cancel' EXIT
 function isatty()
 {
     local f="$1" ; shift
-    tty -s < "$f"
+    f=$(readlink -f "$f")
+    if [ -e "$f" ] ; then
+	tty -s < "$f" >/dev/null 2>&1
+	return $?
+    else
+	return 1
+    fi
 }
 
 function cancel()
