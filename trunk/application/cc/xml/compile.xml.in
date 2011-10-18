@@ -17,8 +17,11 @@
                                           , std_err
                                           )">
     <cinclude href="fhglog/fhglog.hpp"/>
-    <cinclude href="unistd.h"/>
     <cinclude href="errno.h"/>
+    <cinclude href="unistd.h"/>
+    <cinclude href="limits.h"/>
+    <cinclude href="stdlib.h"/>
+    <cinclude href="string.h"/>
     <cinclude href="stdexcept"/>
     <cinclude href="fstream"/>
     <cinclude href="process.hpp"/>
