@@ -20,9 +20,10 @@ namespace value
                      , const value::type & value
                      )
     {
-      value::visitor::mk_structured_or_keep (container[key]);
-
-      value::put (path, container[key], value);
+      value::put ( path
+                 , value::visitor::mk_structured_or_keep (container[key])
+                 , value
+                 );
     }
 
     inline void bind ( type & container
@@ -35,13 +36,12 @@ namespace value
           throw std::runtime_error ("value::container::bind []");
         }
 
-      value::visitor::mk_structured_or_keep (container[key_vec[0]]);
-
-      value::put ( key_vec.begin() + 1
-                 , key_vec.end()
-                 , container[key_vec[0]]
-                 , value
-                 );
+      value::put
+        ( key_vec.begin() + 1
+        , key_vec.end()
+        , value::visitor::mk_structured_or_keep (container[key_vec[0]])
+        , value
+        );
     }
   }
 }
