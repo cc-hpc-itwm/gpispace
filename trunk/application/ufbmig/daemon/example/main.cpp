@@ -3,46 +3,50 @@
  *
  *  @author Benedikt Lehnertz (ITWM Fraunhofer)
  *  Created on: Mar 23, 2010
+ *  Modified: Alexander Petry (ITWM), 11.10.2011
  *  */
 
-#include "centralDefines.h"
-#include "centralDefinesKeywords.h"
 #include <cstdio>
 #include <cstring>
 #include <string>
 
 #include "PSProLogging.h"
-#include "PSProMigVersion.h"
-#include "ServerCommunication.h"
 #include "ExternalServerInterfaceLogging.h"
+#include "ServerCommunication.h"
 #include "Server.h"
 #include "Message.h"
-#include "SignalHandler.h"
 #include "ServerSettings.hpp"
-
-#include <QString>
 
 int main(int _nArgc, char* _pcArgv[])
 {
+  const std::string server_app_name("UfBMig (SDPA)");
+  const std::string server_app_version("0.0.1");
+
   // init server logging
   initializeBackendFileLogging();
 
-  signal(SIGSEGV, SignalHandler::signal_handler_segfault);
-  signal(SIGBUS, SignalHandler::signal_handler_segfault);
-  signal(SIGABRT, SignalHandler::signal_handler_segfault);
-
-  // Welcome
-  INFO_PRINTF(PSPRO_LOGGER, "This is " PROJECT_NAME " " BACKEND " %s", PSPROMIG_VERSION_STRING);
-
   // start server communication
-  PSProMigIF::StartServer::registerInstance("Interactive Migration", new PSProMigIF::ServerHelper(std::string("0.7.1")));
+  PSProMigIF::StartServer::registerInstance
+    ( server_app_name
+    , new PSProMigIF::ServerHelper(server_app_version)
+    );
 
-  PSProMigIF::StartServer* pStartServer = PSProMigIF::StartServer::getInstance("Interactive Migration");
+  PSProMigIF::StartServer* pStartServer
+    (PSProMigIF::StartServer::getInstance(server_app_name));
 
-  pStartServer->addCommunication(new PSProMigIF::ServerCommunicationListen());
+  pStartServer->addCommunication
+    (new PSProMigIF::ServerCommunicationListen());
 
-  // start server control object
-  pStartServer->start();
+  try
+  {
+    // start server control object
+    pStartServer->start();
+  }
+  catch (std::exception const & ex)
+  {
+    std::cerr << "error starting server: " << ex.what();
+    return EXIT_FAILURE;
+  }
 
   pStartServer->idle();
 
@@ -76,10 +80,11 @@ int main(int _nArgc, char* _pcArgv[])
   {
     // waiting for data for calculations
     PSProMigIF::Message* pMessage2 = PSProMigIF::Message::recvMsg(pStartServer->communication());
-    sleep(1);
 
     // doing calculations
     pStartServer->busy();
+
+    sleep(1);
 
     pMessage = PSProMigIF::Message::generateMsg(0);
     pMessage->m_nCommand = 4;
