@@ -64,6 +64,14 @@ install(TARGETS gui-plugin LIBRARY
   COMPONENT plugins
   )
 
+fhg_add_plugin(sdpac sdpac.cpp
+  LINK_LIBRARIES ${FhgCom_LIBRARY}
+                 ${WE_PRECOMPILE_LIBRARIES}
+		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_SYSTEM_SHARED_LIBRARY}
+)
+
 fhg_add_plugin(net net.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
