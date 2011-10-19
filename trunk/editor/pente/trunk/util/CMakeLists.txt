@@ -5,5 +5,5 @@ set ( graphviz_wrapper_SRCS
       graphviz.cpp
     )
 
-add_library (graphviz-wrapper ${graphviz_wrapper_SRCS})
-target_link_libraries (graphviz-wrapper ${GRAPHVIZ_LIBRARIES})
+add_library ("${LIB_PREFIX}graphviz-wrapper" ${graphviz_wrapper_SRCS})
+target_link_libraries ("${LIB_PREFIX}graphviz-wrapper" ${GRAPHVIZ_LIBRARIES})

@@ -22,5 +22,5 @@ QT4_WRAP_UI(weaver_UIS_H ${weaver_UIS})
 QT4_WRAP_CPP(weaver_SRCS_MOC ${weaver_TOMOC} ${weaver_UIS_H})
 
 qt4_automoc(${weaver_SRCS_MOC})
-add_library (weaver ${weaver_SRCS} ${weaver_SRCS_MOC})
-add_dependencies(weaver gen_headerlist)
+add_library ("${LIB_PREFIX}weaver" ${weaver_SRCS} ${weaver_SRCS_MOC})
+add_dependencies("${LIB_PREFIX}weaver" gen_headerlist)

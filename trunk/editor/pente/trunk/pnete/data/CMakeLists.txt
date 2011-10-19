@@ -26,5 +26,5 @@ QT4_WRAP_UI(data_UIS_H ${data_UIS})
 QT4_WRAP_CPP(data_SRCS_MOC ${data_TOMOC} ${data_UIS_H})
 
 qt4_automoc(${data_SRCS_MOC})
-add_library (data ${data_SRCS} ${data_SRCS_MOC})
-add_dependencies(data gen_headerlist)
+add_library ("${LIB_PREFIX}data" ${data_SRCS} ${data_SRCS_MOC})
+add_dependencies("${LIB_PREFIX}data" gen_headerlist)

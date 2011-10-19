@@ -57,6 +57,8 @@ find_package (Qt4 4.7.1 COMPONENTS QtCore QtGui QtXml REQUIRED)
 #find_package (PNG REQUIRED)
 #find_package (MNG REQUIRED)
 
+set (LIB_PREFIX "fhg_pnete_")
+
 add_subdirectory (util)
 add_subdirectory (pnete)
 
