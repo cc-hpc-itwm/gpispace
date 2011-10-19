@@ -9,6 +9,7 @@ namespace sdpac
   {
     enum code
       {
+        UNKNOWN,
         PENDING,
         RUNNING,
         SUSPENDED,
