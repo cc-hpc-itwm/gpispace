@@ -13,7 +13,6 @@ class ControlImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    restart ();
     FHG_PLUGIN_STARTED();
   }
 
@@ -24,17 +23,31 @@ public:
 
   int start ()
   {
-    return system("sdpa start");
+    int ec = 0;
+    ec += system("sdpa start gpi");
+    ec += system("sdpa start orch");
+    ec += system("sdpa start agg");
+    ec += system("sdpa start nre");
+    ec += system("sdpa start drts");
+    return ec;
   }
 
   int restart ()
   {
-    return system("sdpa restart");
+    int ec = 0;
+    ec += stop ();
+    ec += start ();
+    return ec;
   }
 
   int stop ()
   {
-    return system("sdpa stop");
+    int ec = 0;
+    ec += system("sdpa stop drts");
+    ec += system("sdpa stop nre");
+    ec += system("sdpa stop agg");
+    ec += system("sdpa stop orch");
+    return ec;
   }
 };
 
