@@ -1,0 +1,86 @@
+#!/bin/bash
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+node_file=
+force=false
+verbose=false
+daemonize=false
+name=ufbmigd
+orchestrator=orchestrator
+
+if [ -n "$PBS_NODEFILE" ] ; then
+   node_file="$PBS_NODEFILE"
+fi
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename $0) [options]
+
+  -h: this help
+  -f: node file to use
+  -o: orchestrator to use
+  -n: name of the daemon
+  -v: be verbose
+  -F: kills still running daemon
+EOF
+}
+
+EX_OK=0
+EX_USAGE=64
+EX_NOINPUT=66      # cannot open input
+EX_NOUSER=67       # addressee unknown
+EX_NOHOST=68       # host name unknown
+EX_UNAVAILABLE=69  # service unavailable
+EX_SOFTWARE=70     # internal software error
+EX_OSERR=71        # system error (e.g., can't fork)
+EX_OSFILE=72       # critical OS file missing
+EX_CANTCREAT=73    # can't create (user) output file
+EX_IOERR=74        # input/output error
+EX_TEMPFAIL=75     # temp failure; user is invited to retry
+EX_PROTOCOL=76     # remote error in protocol
+EX_NOPERM=77       # permission denied
+EX_CONFIG=78       # configuration error
+
+while getopts ":hf:o:n:vF" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	f)
+	    node_file="$OPTARG"
+	    ;;
+	o)
+	    orchestrator="$OPTARG"
+	    ;;
+	n)
+	    name="$OPTARG"
+	    ;;
+	v)
+	    verbose=true
+	    ;;
+	F)
+	    force=true
+	    ;;
+	\?)
+	    echo "invalid option: -$OPTARG" >&2
+	    echo "try: $0 -h" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+if [ -z "$node_file" ] ; then
+    node_file=$( ls -t "/var/spool/torque/aux" | head -n 1)
+    if [ ! -r "$node_file" ] ; then
+	echo "Cannot read nodefile @ $node_file" >&2
+	exit $EX_IOERR
+    fi
+fi
+
+export PBS_NODEFILE="$node_file"
+sdpa init
+sdpa start kvs
+echo "Starting ufmigd..."
