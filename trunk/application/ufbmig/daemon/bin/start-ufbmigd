@@ -1,5 +1,7 @@
 #!/bin/bash
 
+: >/scratch/petry/foo
+
 # cleanup for startup via gpid.exe...
 if [ x"$HOME" == x"/" ] ; then
    echo "I guess, I am running under gpid.exe..." >&2
@@ -8,8 +10,6 @@ if [ x"$HOME" == x"/" ] ; then
    export HOME=$(echo ~)
 fi
 
-test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
-
 node_file=
 force=false
 verbose=false
@@ -17,6 +17,7 @@ daemonize=false
 name=ufbmigd
 orchestrator=orchestrator
 timeout=5 # in seconds
+port=55555 # application port expected by the gui
 
 if [ -n "$PBS_NODEFILE" ] ; then
    node_file="$PBS_NODEFILE"
@@ -31,6 +32,7 @@ usage: $(basename $0) [options]
   -f: node file to use
   -o: orchestrator to use
   -n: name of the daemon
+  -p: application port to use
   -v: be verbose
   -F: kills still running daemon
 EOF
@@ -52,7 +54,7 @@ EX_PROTOCOL=76     # remote error in protocol
 EX_NOPERM=77       # permission denied
 EX_CONFIG=78       # configuration error
 
-while getopts ":hf:o:n:vF" opt; do
+while getopts ":hf:o:n:p:vF" opt; do
     case $opt in
 	h)
 	    usage
@@ -70,6 +72,10 @@ while getopts ":hf:o:n:vF" opt; do
 	    name="$OPTARG"
 	    shift 2
 	    ;;
+	p)
+	    port="$OPTARG"
+	    shift 2
+	    ;;
 	v)
 	    verbose=true
 	    shift 1
@@ -84,12 +90,17 @@ while getopts ":hf:o:n:vF" opt; do
 done
 
 if [ -z "$node_file" ] ; then
-    node_file=$( /bin/ls -t "/var/spool/torque/aux" | /usr/bin/head -n 1)
+    aux="$HOME/.sdpa/data/aux"
+    if [ -z "$aux" ] ; then
+        echo "Could not locate torque spool directory!" >&2
+        exit $EX_OSFILE
+    fi
+    node_file=$( /bin/ls -t "$aux" | /usr/bin/head -n 1)
     if [ -z "$node_file" ] ; then
         echo "No nodefile available!" >&2
         exit $EX_OSFILE
     fi
-    node_file="/var/spool/torque/aux/$node_file"
+    node_file="$aux/$node_file"
     if [ ! -r "$node_file" ] ; then
 	echo "Cannot read nodefile @ $node_file" >&2
 	exit $EX_IOERR
@@ -97,14 +108,20 @@ if [ -z "$node_file" ] ; then
 fi
 
 export PBS_NODEFILE="$node_file"
+
 sdpa init
+eval $(sdpa load)
+
+log "starting kvs..."
 sdpa start kvs
+
 log "starting ufbmigd..."
-prefix=/fhgfs/HPC/petry/build/sdpacc
+prefix=/scratch/petry/build/sdpacc
 FHGLOG_level=MIN $prefix/util/bin/fhgkernel \
     -s plugin.net.name="${name}" \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \
+    -s plugin.ufbmig_front.port_server=${port} \
     $prefix/sdpa/plugin/kvs.so \
     $prefix/sdpa/plugin/net.so \
     $prefix/sdpa/plugin/sdpac.so \
