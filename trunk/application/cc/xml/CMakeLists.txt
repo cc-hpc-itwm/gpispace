@@ -11,8 +11,8 @@ else()
   set(PNETC_LOCATION pnetc)
 endif()
 add_custom_target(gen-sdpacc ALL
-  COMMAND ${PNETC_LOCATION} ${CMAKE_CURRENT_BINARY_DIR}/compile.xml -g ${CMAKE_CURRENT_BINARY_DIR}/gen -o ${CMAKE_CURRENT_BINARY_DIR}/compile.pnet
-  DEPENDS pnetc
+  COMMAND ${PNETC_LOCATION} --Woverwrite-file=false ${CMAKE_CURRENT_BINARY_DIR}/compile.xml -g ${CMAKE_CURRENT_BINARY_DIR}/gen -o ${CMAKE_CURRENT_BINARY_DIR}/compile.pnet
+  DEPENDS ${PNETC_LOCATION}
   COMMENT "generating sdpacc module"
   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/compile.xml
   )
