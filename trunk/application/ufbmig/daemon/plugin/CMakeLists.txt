@@ -21,7 +21,10 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
 
 fhg_add_plugin(ufbmig_front ufbmig_front.cpp
   EXPORTS UFBMIG_FRONT
-  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+  LINK_LIBRARIES #${PSPROMIGIF_LIBRARY}
+                 ${HWLOC_LIBRARY}
+                 ${LIBIRC_LIBRARY}
+                 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
 )
