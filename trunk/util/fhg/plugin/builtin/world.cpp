@@ -15,6 +15,7 @@ public:
 
   FHG_PLUGIN_START()
   {
+    m_text = fhg_kernel()->get("text", "World");
     FHG_PLUGIN_STARTED();
   }
 
@@ -25,8 +26,10 @@ public:
 
   std::string text () const
   {
-    return "World!";
+    return m_text;
   }
+private:
+  std::string m_text;
 };
 
 EXPORT_FHG_PLUGIN( world
