@@ -56,6 +56,7 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    m_server->stop();
     FHG_PLUGIN_STOPPED();
   }
 
