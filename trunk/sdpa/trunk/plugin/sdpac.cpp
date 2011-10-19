@@ -11,16 +11,31 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
 
+namespace detail
+{
+  int translate_job_status_from_string_to_enum(std::string const &s)
+  {
+    if (s == "SDPA::Pending")   return sdpac::status::PENDING;
+    if (s == "SDPA::Running")   return sdpac::status::RUNNING;
+    if (s == "SDPA::Finished")  return sdpac::status::FINISHED;
+    if (s == "SDPA::Failed")    return sdpac::status::FAILED;
+    if (s == "SDPA::Cancelled") return sdpac::status::CANCELED;
+    if (s == "SDPA::Suspended") return sdpac::status::SUSPENDED;
+    else                        return sdpac::status::UNKNOWN;
+  }
+}
+
 class SDPACImpl : FHG_PLUGIN
                 , public sdpac::SDPAC
 {
 public:
   FHG_PLUGIN_START()
   {
+    m_orchestrator = fhg_kernel()->get("orchestrator", "orchestrator");
     m_peer = fhg_kernel()->acquire<net::Peer>("net");
     if (!m_peer)
     {
-      LOG(ERROR, "dependency \"net\" is not available or not of type net::Peer!");
+      MLOG(ERROR, "dependency \"net\" is not available or not of type net::Peer!");
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -34,35 +49,155 @@ public:
 
   int submit (std::string const &wf, std::string & job_id)
   {
-    // make request
+    using namespace sdpa::events;
+
+    SDPAEvent::Ptr req;
+    SDPAEvent::Ptr rep;
+
+    req.reset (new SubmitJobEvent( m_peer->name()
+                                 , m_orchestrator
+                                 , "" // job id not known
+                                 , wf
+                                 , "" // parent job id
+                                 )
+              );
+    if (request(req, rep) == 0)
+    {
+      if (SubmitJobAckEvent* ack = dynamic_cast<SubmitJobAckEvent*>(rep.get()))
+      {
+        job_id = ack->job_id();
+        return 0;
+      }
+      else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
+      {
+        MLOG( WARN
+            , "could not query job: " << error->reason() << ": " << error->error_code()
+            );
+        return -EINVAL;
+      }
+    }
+
     return -EFAULT;
   }
 
   int status (std::string const &id)
   {
-    sdpa::events::SDPAEvent::Ptr req;
-    sdpa::events::SDPAEvent::Ptr rep;
+    using namespace sdpa::events;
 
-    req.reset (new sdpa::events::QueryJobStatusEvent( m_peer->name()
-                                                    , "orchestrator"
-                                                    , id
-                                                    )
+    SDPAEvent::Ptr req;
+    SDPAEvent::Ptr rep;
+
+    req.reset (new QueryJobStatusEvent( m_peer->name()
+                                      , m_orchestrator
+                                      , id
+                                      )
               );
-    return request (req, rep);
+    if (request(req, rep) == 0)
+    {
+      if (JobStatusReplyEvent* job_status = dynamic_cast<JobStatusReplyEvent*>(rep.get()))
+      {
+        return detail::translate_job_status_from_string_to_enum(job_status->status());
+      }
+      else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
+      {
+        MLOG( WARN
+            , "could not query job: " << error->reason() << ": " << error->error_code()
+            );
+        return -ESRCH;
+      }
+    }
+
+    return -EFAULT;
   }
 
   int cancel (std::string const &id)
   {
+    using namespace sdpa::events;
+
+    SDPAEvent::Ptr req;
+    SDPAEvent::Ptr rep;
+
+    req.reset (new CancelJobEvent( m_peer->name()
+                                 , m_orchestrator
+                                 , id
+                                 , "ufbmig requested cancel"
+                                 )
+              );
+    if (request(req, rep) == 0)
+    {
+      if (CancelJobAckEvent* ack = dynamic_cast<CancelJobAckEvent*>(rep.get()))
+      {
+        return 0;
+      }
+      else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
+      {
+        MLOG( WARN
+            , "could not cancel job: " << error->reason() << ": " << error->error_code()
+            );
+        return -ESRCH;
+      }
+    }
+
     return -EFAULT;
   }
 
   int result (std::string const &id, std::string &out)
   {
+    using namespace sdpa::events;
+
+    SDPAEvent::Ptr req;
+    SDPAEvent::Ptr rep;
+
+    req.reset (new RetrieveJobResultsEvent( m_peer->name()
+                                          , m_orchestrator
+                                          , id
+                                          )
+              );
+    if (request(req, rep) == 0)
+    {
+      if (JobResultsReplyEvent* ack = dynamic_cast<JobResultsReplyEvent*>(rep.get()))
+      {
+        return 0;
+      }
+      else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
+      {
+        MLOG( WARN
+            , "could not get results: " << error->reason() << ": " << error->error_code()
+            );
+        return -ESRCH;
+      }
+    }
+
     return -EFAULT;
   }
 
   int remove (std::string const &id)
   {
+    using namespace sdpa::events;
+
+    SDPAEvent::Ptr req;
+    SDPAEvent::Ptr rep;
+
+    req.reset (new DeleteJobEvent( m_peer->name()
+                                 , m_orchestrator
+                                 , id
+                                 )
+              );
+    if (request(req, rep) == 0)
+    {
+      if (DeleteJobAckEvent* ack = dynamic_cast<DeleteJobAckEvent*>(rep.get()))
+      {
+        return 0;
+      }
+      else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
+      {
+        MLOG( WARN
+            , "could not delete job: " << error->reason() << ": " << error->error_code()
+            );
+        return -ESRCH;
+      }
+    }
+
     return -EFAULT;
   }
 private:
@@ -139,6 +274,7 @@ private:
   }
 
   net::Peer *m_peer;
+  std::string m_orchestrator;
 };
 
 EXPORT_FHG_PLUGIN( sdpac
