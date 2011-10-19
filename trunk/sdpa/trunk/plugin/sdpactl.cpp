@@ -36,7 +36,6 @@ public:
   {
     int ec = 0;
     ec += stop ();
-    sleep(3);
     ec += start ();
     return ec;
   }
@@ -48,6 +47,7 @@ public:
     ec += system("sdpa stop nre");
     ec += system("sdpa stop agg");
     ec += system("sdpa stop orch");
+    sleep(3);
     return ec;
   }
 };
