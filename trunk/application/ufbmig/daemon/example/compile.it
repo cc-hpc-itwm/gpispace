@@ -1,0 +1,1 @@
+g++ main.cpp -I ../ext/include/PSProMigIF/ ../ext/lib64/libPSProMigIF.a ../ext/lib64/libhwloc.a /m/soft/Intel/cce/11.1.064/lib/intel64/libirc.a -pthread
