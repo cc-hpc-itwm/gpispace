@@ -114,6 +114,7 @@ namespace fhg
       }
       else
       {
+        in_message_->resize(0);
         if (callback_handler_) callback_handler_->handle_error (get_this(), ec);
       }
     }
@@ -162,6 +163,7 @@ namespace fhg
       }
       else
       {
+        in_message_->resize(0);
         if (callback_handler_)
         {
           try
