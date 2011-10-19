@@ -572,7 +572,7 @@ namespace fhg
            )
         {
           const std::string h(boost::asio::ip::host_name());
-          LOG( WARN
+          LOG( INFO
              , "endpoint is any address, changing registration host to: " << h
              );
           values[prefix + "." + "location" + "." + "host"] = h;
