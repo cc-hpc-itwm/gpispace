@@ -17,6 +17,7 @@
 
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/style/size.hpp>
+#include <pnete/ui/graph/style/predicate.hpp>
 
 namespace fhg
 {
@@ -28,6 +29,26 @@ namespace fhg
       {
         namespace transition
         {
+          static boost::optional<const QColor&>
+          color_if_name ( const QString& name
+                        , const QColor& color
+                        , const graph::item* i
+                        )
+          {
+            if (style::predicate::is_transition (i))
+              {
+                const fhg::util::maybe<std::string>& n
+                  (qgraphicsitem_cast<const item*>(i)->data().name);
+
+                if (n && *n == name.toStdString())
+                  {
+                    return boost::optional<const QColor&> (color);
+                  }
+              }
+
+            return boost::none;
+          }
+
           item::item ( transition_type & data
                      , graph::item* parent
                      )
@@ -45,24 +66,33 @@ namespace fhg
             setAcceptHoverEvents (true);
             setFlag (ItemIsSelectable);
             init_menu_context();
+
+            static const QColor border_color_normal (Qt::yellow);
+
+            style().push<QColor>
+              ( "border_color_normal"
+              , boost::bind (&color_if_name, "eat", border_color_normal, _1)
+              );
           }
 
-          item::item ( const QString& filename
-                     , graph::item* parent
-                     )
-            : graph::item (parent)
-            , _dragStart (0, 0)
-            , _size (size::transition::width(), size::transition::height())
-            , _highlighted (false)
-            , _dragging (false)
-              //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
-            , _data(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
-            , _menu_context()
-            , _name()
-            , _proxy (NULL)
-          {
-            //! \todo WORK HERE, everything is missing
-          }
+//           item::item ( const QString& filename
+//                      , graph::item* parent
+//                      )
+//             : graph::item (parent)
+//             , _dragStart (0, 0)
+//             , _size (size::transition::width(), size::transition::height())
+//             , _highlighted (false)
+//             , _dragging (false)
+//               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
+//             , _data(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
+//             , _menu_context()
+//             , _name()
+//             , _proxy (NULL)
+//           {
+//             //! \todo WORK HERE, everything is missing
+//           }
+
+          const transition_type& item::data () const { return _data; }
 
           void item::init_menu_context()
           {
@@ -272,6 +302,63 @@ namespace fhg
           data::proxy::type* item::proxy () const
           {
             return _proxy;
+          }
+
+          QPainterPath item::shape (const QSizeF& size) const
+          {
+            QPainterPath path;
+            path.addRoundRect (bounding_rect (size), 20); // hardcoded constant
+            return path;
+          }
+          QPainterPath item::shape () const
+          {
+            return shape (_size);
+          }
+          QRectF item::bounding_rect (const QSizeF& size) const
+          {
+            const QSizeF half_size (size / 2.0);
+            return QRectF ( -half_size.width()
+                          , -half_size.height()
+                          , size.width()
+                          , size.height()
+                          );
+          }
+          QRectF item::boundingRect () const
+          {
+            return bounding_rect (_size);
+          }
+
+          void item::paint ( QPainter* painter
+                           , const QStyleOptionGraphicsItem *option
+                           , QWidget *widget
+                           )
+          {
+            // hardcoded constants
+            painter->setPen (QPen (QBrush ( highlighted()
+                                          ? Qt::red
+                                          : Qt::black
+                                          )
+                                  , 2.0
+                                  )
+                            );
+            painter->setBackgroundMode (Qt::OpaqueMode);
+            painter->setBrush (QBrush (Qt::white, Qt::SolidPattern));
+            painter->drawPath (shape());
+
+            painter->setPen (QPen (QBrush (Qt::black), 1.0));
+            painter->setBackgroundMode (Qt::TransparentMode);
+
+            QRectF rect (boundingRect());
+            rect.setWidth (rect.width() - size::port::width());
+            rect.setHeight (rect.height() - size::port::width());
+            rect.translate ( size::port::height() / 2.0
+                           , size::port::height() / 2.0
+                           );
+
+            painter->drawText ( rect
+                              , Qt::AlignCenter | Qt::TextWordWrap
+                              , name()
+                              );
           }
         }
       }

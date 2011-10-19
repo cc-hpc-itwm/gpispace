@@ -2,6 +2,8 @@
 
 #include <pnete/ui/graph/item.hpp>
 
+#include <QGraphicsSceneHoverEvent>
+
 #include <pnete/util.hpp>
 #include <util/property.hpp>
 
@@ -37,8 +39,12 @@ namespace fhg
                    , ::we::type::property::type* property
                    )
           : QGraphicsItem (parent)
+          , _highlighted (false)
           , _property (property)
-        {}
+          , _style ()
+        {
+          setAcceptHoverEvents (true);
+        }
 
         class scene* item::scene() const
         {
@@ -69,6 +75,22 @@ namespace fhg
         void item::set_just_pos_but_not_in_property (const QPointF& pos)
         {
           QGraphicsItem::setPos (pos);
+        }
+
+        const bool& item::highlighted() const { return _highlighted; }
+
+        const style::type& item::style () const { return _style; }
+        style::type& item::style () { return _style; }
+
+        void item::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
+        {
+          _highlighted = false;
+          update (boundingRect());
+        }
+        void item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
+        {
+          _highlighted = true;
+          update (boundingRect());
         }
       }
     }

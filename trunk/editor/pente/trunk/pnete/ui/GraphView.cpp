@@ -88,31 +88,31 @@ namespace fhg
 
       void GraphView::dropEvent (QDropEvent* event)
       {
-        const QMimeData* mimeData (event->mimeData());
-        if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
-        {
-          //! \todo get path.
-          const QString filename/* (magic)*/;
-          // mimeData->data(TransitionLibraryModel::mimeType) === filepath as ..)
+//         const QMimeData* mimeData (event->mimeData());
+//         if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+//         {
+//           //! \todo get path.
+//           const QString filename/* (magic)*/;
+//           // mimeData->data(TransitionLibraryModel::mimeType) === filepath as ..)
 
-          graph::transition::item* transition
-            (new graph::transition::item (filename));
+//           graph::transition::item* transition
+//             (new graph::transition::item (filename));
 
-          scene()->addItem (transition);
+//           scene()->addItem (transition);
 
-          transition->setPos
-            ( graph::style::raster::snap
-              ( mapToScene (event->pos())
-              - transition->boundingRect().bottomRight() / 2.0
-              )
-            );
+//           transition->setPos
+//             ( graph::style::raster::snap
+//               ( mapToScene (event->pos())
+//               - transition->boundingRect().bottomRight() / 2.0
+//               )
+//             );
 
-          event->acceptProposedAction();
-        }
-        else
-        {
-          QGraphicsView::dropEvent (event);
-        }
+//           event->acceptProposedAction();
+//         }
+//         else
+//         {
+//           QGraphicsView::dropEvent (event);
+//         }
       }
 
       void GraphView::wheelEvent (QWheelEvent* event)

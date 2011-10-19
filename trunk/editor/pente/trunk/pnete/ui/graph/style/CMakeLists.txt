@@ -1,9 +1,6 @@
 include(${QT_USE_FILE})
 
 set(style_SRCS
-  port.cpp
-  connection.cpp
-  transition.cpp
   cap.cpp
   raster.cpp
   size.cpp

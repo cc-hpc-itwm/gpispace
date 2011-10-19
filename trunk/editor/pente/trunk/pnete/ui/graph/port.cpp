@@ -16,6 +16,7 @@
 
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/style/size.hpp>
+#include <pnete/ui/graph/style/cap.hpp>
 #include <pnete/ui/graph/style/predicate.hpp>
 
 #include <util/property.hpp>
@@ -86,36 +87,40 @@ namespace fhg
             , _orientation ()
             , _dragging (false)
             , _drag_start (0.0, 0.0)
-            , _highlighted (false)
             , _length (size::port::width())
             , _menu_context()
           {
-            _style.push<qreal> ( "border_thickness"
-                               , boost::bind (&thicker_if_type, "long", _1)
-                               );
+            style().push<qreal> ( "border_thickness"
+                                , boost::bind (&thicker_if_type, "long", _1)
+                                );
 
-            static QColor background_color_long (Qt::darkBlue);
-            static QColor background_color_string (Qt::yellow);
-            static QColor background_color_control (Qt::red);
+            static const QColor background_color_long (Qt::darkBlue);
+            static const QColor background_color_string (Qt::yellow);
+            static const QColor background_color_control (Qt::red);
 
-            _style.push<QColor>
+            style().push<QColor>
               ( "background_color"
               , boost::bind (&color_if_type, "long", background_color_long, _1)
               );
-            _style.push<QColor>
+            style().push<QColor>
               ( "background_color"
               , boost::bind (&color_if_type, "string", background_color_string, _1)
               );
-            _style.push<QColor>
+            style().push<QColor>
               ( "background_color"
               , boost::bind (&color_if_type, "control", background_color_control, _1)
               );
 
-            static QColor text_color_long (Qt::white);
+            static const QColor text_color_long (Qt::white);
+            static const QColor text_color_string (Qt::gray);
 
-            _style.push<QColor>
+            style().push<QColor>
               ( "text_color"
               , boost::bind (&color_if_type, "long", text_color_long, _1)
+              );
+            style().push<QColor>
+              ( "text_color"
+              , boost::bind (&color_if_type, "string", text_color_string, _1)
               );
 
             set_just_orientation_but_not_in_property
@@ -124,7 +129,7 @@ namespace fhg
               : orientation::WEST
               );
 
-            setAcceptHoverEvents (true);
+            //            setAcceptHoverEvents (true);
             //! \todo verbose name
 
             refresh_tooltip();
@@ -312,22 +317,6 @@ namespace fhg
             scene()->update (boundingRect().translated (pos()));
           }
 
-          void item::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
-          {
-            _highlighted = false;
-            update (boundingRect());
-          }
-          void item::hoverEnterEvent(QGraphicsSceneHoverEvent *)
-          {
-            _highlighted = true;
-            update (boundingRect());
-          }
-
-          const bool& item::highlighted() const
-          {
-            return _highlighted;
-          }
-
           const qreal& item::length() const
           {
             return _length;
@@ -379,6 +368,162 @@ namespace fhg
           void item::refresh_tooltip()
           {
             setToolTip (_name + " :: " + we_type());
+          }
+
+                    static qreal angle (const orientation::type& o)
+          {
+            switch (o)
+              {
+              case orientation::NORTH: return -90.0;
+              case orientation::EAST: return 0.0;
+              case orientation::SOUTH: return 90.0;
+              case orientation::WEST: return 180.0;
+              default:
+                throw std::runtime_error ("angle (NON_ORIENTATION)!?");
+              }
+          }
+
+          QPainterPath item::shape () const
+          {
+            const qreal lengthHalf (length() / 2.0); // hardcoded constant
+
+            QPolygonF poly;
+            const qreal y (size::port::height() / 2.0);
+            poly << QPointF ( lengthHalf - size::cap::length(),  y)
+                 << QPointF (-lengthHalf                      ,  y)
+                 << QPointF (-lengthHalf                      , -y)
+                 << QPointF ( lengthHalf - size::cap::length(), -y)
+              ;
+
+            if (direction() == connectable::direction::IN)
+              {
+                cap::add_incoming (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));   // hardcoded constant
+              }
+            else
+              {
+                cap::add_outgoing (&poly, QPointF (lengthHalf - size::cap::length(), 0.0));
+              }
+
+            poly = QTransform().rotate (angle (orientation())).map (poly);
+
+            QPainterPath path;
+            path.addPolygon (poly);
+            path.closeSubpath();
+
+            return path;
+          }
+
+          QRectF item::bounding_rect (bool cap, int cap_factor) const
+          {
+            const qreal addition ( cap
+                                 ? 0.0
+                                 : size::cap::length() * cap_factor
+                                 );
+            const qreal lengthHalf ((length() - addition) / 2.0);                                  // hardcoded constant
+
+            switch (orientation())
+              {
+              case orientation::NORTH:
+                return QRectF ( -(size::port::height() / 2.0)
+                              , -lengthHalf + addition
+                              , size::port::height()
+                              , length() - addition
+                              );
+
+              case orientation::SOUTH:
+                return QRectF ( -(size::port::height() / 2.0)
+                              , -lengthHalf
+                              , size::port::height()
+                              , length() - addition
+                              );
+
+              case orientation::EAST:
+                return QRectF ( -lengthHalf
+                              , -(size::port::height() / 2.0)
+                              , length() - addition
+                              , size::port::height()
+                              );
+
+              case orientation::WEST:
+                return QRectF ( -lengthHalf + addition
+                              , -(size::port::height() / 2.0)
+                              , length() - addition
+                              , size::port::height()
+                              );
+              default:
+                throw std::runtime_error("invalid port direction!");
+              }
+          }
+
+          QRectF item::boundingRect () const
+          {
+            return bounding_rect ();
+          }
+
+          QColor queryColorForType (const QString& type)
+          {
+            //! \note Colors shamelessly stolen from PSPro.
+            //! \todo Maybe also do a gradient? Maybe looks awesome.
+            if (type.startsWith ("seismic"))
+              {
+                return QColor (0, 130, 250);                                           // hardcoded constant
+              }
+            else if (type.startsWith ("velocity"))
+              {
+                return QColor (248, 248, 6);                                           // hardcoded constant
+              }
+            else
+              {
+                return QColor (255, 255, 255);                                         // hardcoded constant
+              }
+          }
+
+          void item::paint ( QPainter *painter
+                           , const QStyleOptionGraphicsItem *
+                           , QWidget *
+                           )
+          {
+            painter->setPen (QPen ( QBrush
+                                    ( highlighted()
+                                    ? style().get<QColor> (this, "border_color_highlighted")
+                                    : style().get<QColor> (this, "border_color_normal")
+                                    )
+                                  , style().get<qreal> (this, "border_thickness")
+                                  )
+                            );
+            painter->setBackgroundMode (Qt::OpaqueMode);
+            painter->setBrush (QBrush ( style().get<QColor> (this, "background_color")
+                                      , Qt::SolidPattern
+                                      )
+                              );
+            painter->drawPath (shape());
+
+            painter->setPen (QPen ( QBrush (style().get<QColor> (this, "text_color"))
+                                  , style().get<qreal> (this, "text_line_thickness")
+                                  )
+                            );
+            painter->setBackgroundMode (Qt::TransparentMode);
+
+            const QRectF area (bounding_rect (false, 1));
+
+            if ( orientation() == orientation::NORTH
+               || orientation() == orientation::SOUTH
+               )
+              {
+                const qreal degrees (90.0);                                                 // hardcoded constant
+
+                painter->save();
+                painter->rotate (degrees);
+                painter->drawText ( QTransform().rotate(-degrees).mapRect (area)
+                                  , Qt::AlignCenter
+                                  , name()
+                                  );
+                painter->restore();
+              }
+            else
+              {
+                painter->drawText(area, Qt::AlignCenter, name());
+              }
           }
         }
       }

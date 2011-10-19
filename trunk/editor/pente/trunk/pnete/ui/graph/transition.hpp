@@ -33,19 +33,21 @@ namespace fhg
       {
         namespace transition
         {
+          typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
+
           class item : public graph::item
           {
             Q_OBJECT;
 
           public:
-            typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
-
             explicit item ( transition_type & data
                           , graph::item* parent = NULL
                           );
-            explicit item ( const QString& filename
-                          , graph::item* parent = NULL
-                          );
+//             explicit item ( const QString& filename
+//                           , graph::item* parent = NULL
+//                           );
+
+            const transition_type& data () const;
 
             virtual QRectF boundingRect() const;
             virtual QPainterPath shape() const;

@@ -46,7 +46,6 @@ namespace fhg
                  , transition::item* parent = NULL
                  );
 
-            const bool& highlighted() const;
             const qreal& length() const;
 
             const QString& name() const;
@@ -77,8 +76,6 @@ namespace fhg
           protected:
 
             virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
-            virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
-            virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event);
             virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
             virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
             virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
@@ -94,8 +91,6 @@ namespace fhg
 
             bool _dragging;
             QPointF _drag_start;
-
-            bool _highlighted;
 
             qreal _length;
 

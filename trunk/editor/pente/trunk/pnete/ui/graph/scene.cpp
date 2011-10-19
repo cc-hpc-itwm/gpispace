@@ -179,7 +179,7 @@ namespace fhg
           else
           {
             _mouse_position = mouseEvent->scenePos();
-            update();
+            //            update();
           }
 
           QGraphicsScene::mouseMoveEvent (mouseEvent);

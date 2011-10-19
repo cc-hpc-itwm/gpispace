@@ -2,6 +2,8 @@
 
 #include <pnete/ui/graph/style/fallback.hpp>
 
+#include <boost/ref.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -14,22 +16,46 @@ namespace fhg
         {
           namespace fallback
           {
-            qreal type::border_thickness = 2.0;
-            QColor type::border_color_normal = Qt::black;
-            QColor type::border_color_highlighted = Qt::red;
-            QColor type::background_color = Qt::gray;
-            qreal type::text_line_thickness = 1.0;
-            QColor type::text_color = Qt::black;
+#define IMPL(_t, _n, _d)                                        \
+            _t& _n() { static _t x(_d); return x; }             \
+            namespace detail                                    \
+            {                                                   \
+              static map_type::value_type _n ## _map_value()    \
+              {                                                 \
+                return map_type::value_type (#_n, _n());        \
+              }                                                 \
+            }
 
-            type::type ()
-              : _map()
+            IMPL (qreal, border_thickness, 2.0)
+            IMPL (QColor, border_color_normal, Qt::black)
+            IMPL (QColor, border_color_highlighted, Qt::red)
+            IMPL (QColor, background_color, Qt::white)
+            IMPL (qreal, text_line_thickness, 1.0)
+            IMPL (QColor, text_color, Qt::black)
+#undef IMPL
+
+            namespace detail
             {
-              _map["border_thickness"] = border_thickness;
-              _map["border_color_normal"] = border_color_normal;
-              _map["border_color_highlighted"] = border_color_highlighted;
-              _map["background_color"] = background_color;
-              _map["text_line_thickness"] = text_line_thickness;
-              _map["text_color"] = text_color;
+              static map_type create_map ()
+              {
+                map_type map;
+
+                map.insert (border_thickness_map_value());
+                map.insert (border_color_normal_map_value());
+                map.insert (border_color_highlighted_map_value());
+                map.insert (background_color_map_value());
+                map.insert (text_line_thickness_map_value());
+                map.insert (text_color_map_value());
+
+                return map;
+              }
+
+              const map_type& get_map ()
+              {
+                static map_type map (create_map());
+
+                return map;
+              }
             }
           }
         }

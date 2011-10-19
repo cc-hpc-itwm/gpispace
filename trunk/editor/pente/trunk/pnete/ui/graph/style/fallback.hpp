@@ -3,7 +3,7 @@
 #ifndef _FHG_PNETE_UI_GRAPH_STYLE_FALLBACK_HPP
 #define _FHG_PNETE_UI_GRAPH_STYLE_FALLBACK_HPP 1
 
-#include <pnete/ui/graph/style/style.fwd.hpp>
+#include <pnete/ui/graph/style/type.fwd.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
@@ -22,43 +22,39 @@ namespace fhg
         {
           namespace fallback
           {
+#define DECL(_t, _n) _t& _n ();
+              DECL (qreal, border_thickness)
+              DECL (QColor, border_color_normal)
+              DECL (QColor, border_color_highlighted)
+              DECL (QColor, background_color)
+              DECL (qreal, text_line_thickness)
+              DECL (QColor, text_color)
+#undef DECL
+
             namespace detail
             {
-              typedef boost::variant < qreal
-                                     , QColor
+              typedef boost::variant < const qreal&
+                                     , const QColor&
                                      > type;
+              typedef boost::unordered_map<key_type, type> map_type;
+
+              const map_type& get_map ();
             }
 
-            class type
+            template<typename T>
+            const T& get (const style::key_type& key)
             {
-            private:
-              typedef boost::unordered_map<key_type, detail::type> map_type;
+              const detail::map_type& map (detail::get_map());
 
-              map_type _map;
+              const detail::map_type::const_iterator pos (map.find (key));
 
-              static qreal border_thickness;
-              static QColor border_color_normal;
-              static QColor border_color_highlighted;
-              static QColor background_color;
-              static qreal text_line_thickness;
-              static QColor text_color;
+              if (pos == map.end())
+                {
+                  throw std::runtime_error
+                    ("STRANGE: No default value for " + key);
+                }
 
-            public:
-              type();
-
-              template<typename T>
-              const T& get (const style::key_type& key) const
-              {
-                const map_type::const_iterator pos (_map.find (key));
-
-                if (pos == _map.end())
-                  {
-                    throw std::runtime_error
-                      ("STRANGE: No default value for " + key);
-                  }
-
-                return boost::get<T> (pos->second);
-              }
+              return boost::get<T> (pos->second);
             };
           }
         }

@@ -3,7 +3,7 @@
 #ifndef _FHG_PNETE_UI_GRAPH_STYLE_HPP
 #define _FHG_PNETE_UI_GRAPH_STYLE_HPP 1
 
-#include <pnete/ui/graph/style/style.fwd.hpp>
+#include <pnete/ui/graph/style/type.fwd.hpp>
 #include <pnete/ui/graph/style/fallback.hpp>
 #include <pnete/ui/graph/style/store.hpp>
 
@@ -21,6 +21,22 @@ namespace fhg
 
         namespace style
         {
+          namespace detail
+          {
+            template<typename T, typename Item>
+            const T& fallback (const Item* item, const key_type& key)
+            {
+              if ( const Item* parent
+                 = qgraphicsitem_cast<const Item*> (item->parentItem())
+                 )
+                {
+                  return parent->style().template get<T> (parent, key);
+                }
+
+              return fallback::get<T> (key);
+            }
+          }
+
           class type
           {
           private:
@@ -42,7 +58,7 @@ namespace fhg
             }
 
             template<typename T>
-            typename store::of<T>::type::optional_value_type
+            const T&
             get (const graph::item* item, const key_type& key) const
             {
               typedef typename store::of<T>::type store_type;
@@ -51,23 +67,18 @@ namespace fhg
 
               if (pos == _store_for.end())
                 {
-                  return boost::none;
+                  return detail::fallback<T, graph::item> (item, key);
                 }
 
-              return boost::get<const store_type&> (pos->second).get (item);
-            }
+              typename store::of<T>::type::optional_value_type value
+                (boost::get<const store_type&> (pos->second).get (item));
 
-            template<typename T>
-            const T&
-            get ( const graph::item* item
-                , const key_type& key
-                , const fallback::type& fallback
-                ) const
-            {
-              const typename store::of<T>::type::optional_value_type value
-                (get<T> (item, key));
+              if (value)
+                {
+                  return *value;
+                }
 
-              return value ? *value : fallback.get<T> (key);
+              return detail::fallback<T, graph::item> (item, key);
             }
           };
         }
