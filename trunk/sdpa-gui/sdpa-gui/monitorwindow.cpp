@@ -83,9 +83,11 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
       */
       splitter->addWidget(m_component_view);
       splitter->addWidget(m_view);
-      //      splitter->setCollapsible(0, false);
-      //      splitter->setCollapsible(1, false);
       splitter->setLayout(l);
+
+      QList<int> sizes;
+      sizes << 0 << 1;
+      splitter->setSizes(sizes);
 
       l = new QHBoxLayout;
       l->addWidget(splitter);
