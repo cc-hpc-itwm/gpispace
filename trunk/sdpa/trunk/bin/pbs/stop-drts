@@ -9,12 +9,14 @@ usage: $(basename "$0") [options]
 
     -h: print this help
     -i ident (=$identiy): identity
+    -n: dry run
 EOF
 }
 
 identity=
+dry_run=false
 
-while getopts ":hi:" opt; do
+while getopts ":hi:n" opt; do
     case $opt in
 	h)
 	    usage
@@ -22,6 +24,9 @@ while getopts ":hi:" opt; do
 	    ;;
 	i)
 	    identity=$OPTARG
+	    ;;
+	n)
+	    dry_run=true
 	    ;;
 	\?)
 	    echo "invalid option: -$OPTARG" >&2
@@ -57,16 +62,24 @@ function kill_drts ()
 
 still_running=$(ps -C fhgkernel -o pid=)
 for p in $still_running ; do
-    name=$(cat /proc/$p/cmdline | tr '\0' ' ' | sed -e 's/.*plugin.drts.name=\([^ ]\+\).*/\1/')
+    name=$(cat /proc/$p/cmdline | tr '\0' ' ' |  grep -o 'plugin.drts.name=[^ ]\+' | cut -d= -f2)
     if [ -z "$name" ] ; then
 	continue
     fi
     if [ -n "$identity" ] ; then
 	if [ x"$name" == x"drts-$(hostname -s)-$identity" ] ; then
-	    kill_drts "$p" "$name" &>/dev/null &
+	    if $dry_run ; then
+		echo kill_drts "$p" "$name"
+	    else
+		kill_drts "$p" "$name" >/dev/null 2>&1
+	    fi
 	fi
     else
-	kill_drts "$p" "$name" &>/dev/null &
+	if $dry_run ; then
+	    echo kill_drts "$p" "$name"
+	else
+	    kill_drts "$p" "$name" >/dev/null 2>&1
+	fi
     fi
 done
 wait
