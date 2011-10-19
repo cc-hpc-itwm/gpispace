@@ -10,6 +10,8 @@ namespace net
   public:
     virtual ~Peer () {}
 
+    virtual std::string const & name () const = 0;
+
     virtual int send ( std::string const & to
                      , std::string const & data
                      ) = 0;

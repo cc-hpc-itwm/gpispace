@@ -63,6 +63,11 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
+  std::string const & name () const
+  {
+    return m_name;
+  }
+
   int send (std::string const & to, std::string const & data)
   {
     if (! m_peer)
