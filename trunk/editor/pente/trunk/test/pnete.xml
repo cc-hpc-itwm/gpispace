@@ -1,35 +1,165 @@
 <defun name="pnete">
-  <in name="x" type="string" place="x"/>
-  <in name="in" type="long" place="in"/>
-  <out name="done" type="control" place="done"/>
-  <out name="x" type="string" place="x"/>
+  <in name="x" type="string" place="x">
+    <properties name="fhg">
+      <properties name="pnete">
+        <properties name="position">
+          <property key="y">
+            20
+          </property>
+          <property key="x">
+            50
+          </property>
+        </properties>
+      </properties>
+    </properties>
+  </in>
+  <in name="in" type="long" place="in">
+    <properties name="fhg">
+      <properties name="pnete">
+        <properties name="position">
+          <property key="y">
+            130
+          </property>
+          <property key="x">
+            50
+          </property>
+        </properties>
+      </properties>
+    </properties>
+  </in>
+  <out name="done" type="control" place="done">
+    <properties name="fhg">
+      <properties name="pnete">
+        <properties name="position">
+          <property key="y">
+            130
+          </property>
+          <property key="x">
+            1100
+          </property>
+        </properties>
+      </properties>
+    </properties>
+  </out>
+  <out name="x" type="string" place="x">
+    <properties name="fhg">
+      <properties name="pnete">
+        <properties name="position">
+          <property key="y">
+            20
+          </property>
+          <property key="x">
+            370
+          </property>
+        </properties>
+      </properties>
+    </properties>
+  </out>
   <net>
-    <place name="x" type="string"/>
-
-    <place name="in" type="long">
+    <place name="x" type="string">
       <properties name="fhg">
         <properties name="pnete">
           <properties name="position">
-            <property key="x" value="100"/>
-            <property key="y" value="100"/>
+            <property key="y">
+              20
+            </property>
+            <property key="x">
+              180
+            </property>
           </properties>
         </properties>
       </properties>
     </place>
-    <place name="d" type="long"/>
-    <place name="done" type="control"/>
+    <place name="in" type="long">
+      <properties name="fhg">
+        <properties name="pnete">
+          <properties name="position">
+            <property key="y">
+              130
+            </property>
+            <property key="x">
+              180
+            </property>
+          </properties>
+        </properties>
+      </properties>
+    </place>
+    <place name="d" type="long">
+      <properties name="fhg">
+        <properties name="pnete">
+          <properties name="position">
+            <property key="y">
+              130
+            </property>
+            <property key="x">
+              560
+            </property>
+          </properties>
+        </properties>
+      </properties>
+    </place>
+    <place name="done" type="control">
+      <properties name="fhg">
+        <properties name="pnete">
+          <properties name="position">
+            <property key="y">
+              130
+            </property>
+            <property key="x">
+              960
+            </property>
+          </properties>
+        </properties>
+      </properties>
+    </place>
     <transition name="double">
       <properties name="fhg">
         <properties name="pnete">
           <properties name="position">
-            <property key="x" value="314.1"/>
-            <property key="y" value="271.8"/>
+            <property key="y">
+              130
+            </property>
+            <property key="x">
+              370
+            </property>
           </properties>
         </properties>
       </properties>
       <defun>
-        <in name="in" type="long"/>
-        <out name="out" type="long"/>
+        <in name="in" type="long">
+          <properties name="fhg">
+            <properties name="pnete">
+              <properties name="position">
+                <property key="y">
+                  -0
+                </property>
+                <property key="x">
+                  -80
+                </property>
+              </properties>
+              <property key="orientation">
+                WEST
+              </property>
+            </properties>
+          </properties>
+        </in>
+        <out name="out" type="long">
+          <properties name="fhg">
+            <properties name="pnete">
+              <properties name="position">
+                <property key="y">
+                  -0
+                </property>
+                <property key="x">
+                  90
+                </property>
+              </properties>
+              <property key="orientation">
+                EAST
+              </property>
+            </properties>
+          </properties>
+        </out>
         <expression>
           ${out} := 2 * ${in}
         </expression>
@@ -37,19 +167,54 @@
       <connect-in port="in" place="in"/>
       <connect-out port="out" place="d"/>
     </transition>
-
     <transition name="eat">
       <properties name="fhg">
         <properties name="pnete">
           <properties name="position">
-            <property key="x" value="200"/>
-            <property key="y" value="-100"/>
+            <property key="y">
+              130
+            </property>
+            <property key="x">
+              740
+            </property>
           </properties>
         </properties>
       </properties>
       <defun>
-        <in name="in" type="long"/>
-        <out name="done" type="control"/>
+        <in name="in" type="long">
+          <properties name="fhg">
+            <properties name="pnete">
+              <properties name="position">
+                <property key="y">
+                  -0
+                </property>
+                <property key="x">
+                  -80
+                </property>
+              </properties>
+              <property key="orientation">
+                WEST
+              </property>
+            </properties>
+          </properties>
+        </in>
+        <out name="done" type="control">
+          <properties name="fhg">
+            <properties name="pnete">
+              <properties name="position">
+                <property key="y">
+                  -0
+                </property>
+                <property key="x">
+                  90
+                </property>
+              </properties>
+              <property key="orientation">
+                EAST
+              </property>
+            </properties>
+          </properties>
+        </out>
         <expression>
           ${done} := []
         </expression>
