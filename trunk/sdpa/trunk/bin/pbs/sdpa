@@ -129,6 +129,22 @@ function setup_state ()
 
     put "sdpa.state_dir" "$state_dir"
     log "I: state directory configured to be in $state_dir"
+
+    local data_dir="$HOME/.sdpa/data"
+    if ! test -d "$data_dir" ; then
+	if ! mkdir -p "$data_dir" ; then
+	    log "E: failed to create data directory: $data_dir"
+	    return 1
+	fi
+    fi
+
+    if [ -n "$PBS_NODEFILE" ] ; then
+        test -e ~/.sdpa/data/aux && rm -f ~/.sdpa/data/aux
+        /bin/ln -sf $(dirname $PBS_NODEFILE) ~/.sdpa/data/aux
+    else
+        log "E: PBS_NODEFILE is empty, could not figure out where the aux directory should be!"
+    fi
+
     return 0
 }
 
