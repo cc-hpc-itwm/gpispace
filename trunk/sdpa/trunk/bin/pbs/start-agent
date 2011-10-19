@@ -23,6 +23,7 @@ then
   gui="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.gui)"
 fi
 
+kvs_url="$KVS_URL"
 debug=false
 daemonize=false
 bind_addr='0'
@@ -55,14 +56,11 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hDfdm:g:b:n:" opt; do
+while getopts ":hDfdm:g:b:n:k:L:" opt; do
     case $opt in
 	h)
 	    usage
 	    exit 0
-	    ;;
-	D)
-	    daemonize=true
 	    ;;
 	f)
 	    force=true
@@ -70,6 +68,9 @@ while getopts ":hDfdm:g:b:n:" opt; do
 	d)
 	    debug=true
 	    ;;
+        n)
+            name=$OPTARG
+            ;;
 	m)
 	    master=$OPTARG
 	    ;;
@@ -79,9 +80,15 @@ while getopts ":hDfdm:g:b:n:" opt; do
 	b)
 	    backlog=$OPTARG
 	    ;;
-        n)
-            name=$OPTARG
-            ;;
+	k)
+	    kvs_url=$OPTARG
+	    ;;
+	D)
+	    daemonize=true
+	    ;;
+	L)
+	    logfile=$OPTARG
+	    ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
 	    exit 1
@@ -121,7 +128,7 @@ fi
 opts="$opts -n ${name} "
 opts="$opts -u ${bind_addr}"
 opts="$opts -m ${master}"
-opts="$opts -k ${KVS_URL}"
+opts="$opts -k ${kvs_url}"
 
 cmd="${bin} $opts"
 
