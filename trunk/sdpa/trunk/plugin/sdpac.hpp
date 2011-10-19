@@ -9,10 +9,12 @@ namespace sdpa
   {
     enum code
       {
+        // non-terminal states
         UNKNOWN,
         PENDING,
-        RUNNING,
         SUSPENDED,
+        RUNNING,
+        // terminal states
         FINISHED,
         FAILED,
         CANCELED,
