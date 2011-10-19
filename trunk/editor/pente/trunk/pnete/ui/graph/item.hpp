@@ -11,8 +11,11 @@
 #include <pnete/ui/graph/orientation.hpp>
 
 #include <pnete/ui/graph/style/type.hpp>
+#include <pnete/ui/graph/style/mode.hpp>
 
 class QGraphicsSceneHoverEvent;
+
+#include <stack>
 
 namespace fhg
 {
@@ -55,16 +58,23 @@ namespace fhg
           virtual void set_just_orientation_but_not_in_property
           (const port::orientation::type&) {}
 
-          const bool& highlighted () const;
-
-          const style::type& style() const;
           //! \todo eliminate write acces to _style
-          style::type& style();
+          style::type& access_style();
+
+          void clear_style_cache();
+
+          template<typename T>
+          const T& style (const style::key_type& key) const
+          {
+            return _style.get<T> (this, mode(), key);
+          }
+
+          const style::mode::type& mode() const;
 
         private:
-          bool _highlighted;
           ::we::type::property::type* _property;
           style::type _style;
+          std::stack<style::mode::type> _mode;
 
         protected:
           virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);

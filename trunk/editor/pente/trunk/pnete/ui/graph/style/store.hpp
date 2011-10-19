@@ -59,11 +59,23 @@ namespace fhg
               typedef typename traits::predicate_type predicate_type;
               typedef typename traits::optional_value_type optional_value_type;
 
-              void clear_cache ()
+              cached_predicates ()
+                : _cache ()
+                , _predicates ()
+              {}
+              explicit cached_predicates (const predicate_type& predicate)
+                : _cache ()
+                , _predicates ()
+              {
+                _predicates.push_back (predicate);
+              }
+
+              void clear_cache () const
               {
                 _cache.clear();
               }
 
+              //! \todo implement other accessors
               void push (const predicate_type& predicate)
               {
                 _predicates.push_back (predicate);

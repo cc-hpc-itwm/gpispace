@@ -152,8 +152,8 @@ namespace fhg
 
             for ( QList<QPointF>::const_iterator first (allPoints.begin())
                     , second (allPoints.begin() + 1)
-                    ; second != allPoints.end()
-                    ; ++first, ++second
+                ; second != allPoints.end()
+                ; ++first, ++second
                 )
               {
                 const qreal dummyLength (QLineF (*first, *second).length());
@@ -247,26 +247,15 @@ namespace fhg
 
           QRectF item::boundingRect () const
           {
-            return shape ().boundingRect();
+            return shape().boundingRect();
           }
           void item::paint ( QPainter* painter
                            , const QStyleOptionGraphicsItem*
                            , QWidget*
                            )
           {
-            // hardcoded constants
-            painter->setPen (QPen (QBrush ( highlighted()
-                                          ? Qt::red
-                                          : Qt::black
-                                          )
-                                  , 2.0
-                                  )
-                            );
-            painter->setBackgroundMode (Qt::OpaqueMode);
-            painter->setBrush (QBrush (Qt::white, Qt::SolidPattern));
-            painter->drawPath (shape ());
+            style::draw_shape (this, painter);
           }
-
         }
       }
     }

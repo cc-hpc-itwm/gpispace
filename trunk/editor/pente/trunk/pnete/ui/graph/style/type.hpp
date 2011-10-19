@@ -6,6 +6,7 @@
 #include <pnete/ui/graph/style/type.fwd.hpp>
 #include <pnete/ui/graph/style/fallback.hpp>
 #include <pnete/ui/graph/style/store.hpp>
+#include <pnete/ui/graph/style/mode.hpp>
 
 #include <boost/unordered_map.hpp>
 
@@ -34,10 +35,10 @@ namespace fhg
                  = qgraphicsitem_cast<const Item*> (item->parentItem())
                  )
                 {
-                  return parent->style().template get<T> (parent, key);
+                  return parent->template style<T> (key);
                 }
 
-              return fallback::get<T> (key);
+              return fallback::get<T> (key, item->mode());
             }
           }
 
@@ -76,43 +77,97 @@ namespace fhg
             {
               return boost::apply_visitor (visitor::mk<T> (x), x);
             }
+
+            void clear_cache (const type& x);
           }
 
           class type
           {
           private:
-            typedef boost::unordered_map<key_type, store::type> map_type;
+            typedef boost::unordered_map<mode::type, store::type> by_mode_type;
+            typedef boost::unordered_map< key_type
+                                        , by_mode_type
+                                        > by_mode_by_key_type;
 
-            map_type _store_for;
+            by_mode_by_key_type _by_mode_by_key;
 
           public:
+            void clear_cache();
+
+            //! \todo implement other accessors
             template<typename T>
             void
             push ( const key_type& key
+                 , const mode::type& mode
                  , const typename store::of<T>::type::predicate_type& pred
                  )
             {
               typedef typename store::of<T>::type store_type;
 
-              boost::get<store_type&>
-                (store::mk_or_keep<store_type> (_store_for[key])).push (pred);
+              by_mode_by_key_type::iterator by_mode
+                (_by_mode_by_key.find (key));
+
+              if (by_mode == _by_mode_by_key.end())
+                {
+                  by_mode_type bm;
+                  bm.insert ( by_mode_type::value_type ( mode
+                                                       , store_type (pred)
+                                                       )
+                            );
+
+                  _by_mode_by_key.insert
+                    (by_mode_by_key_type::value_type (key, bm));
+                }
+              else
+                {
+                  by_mode_type::iterator store (by_mode->second.find (mode));
+
+                  if (store == by_mode->second.end())
+                    {
+                      by_mode->second.insert
+                        ( by_mode_type::value_type ( mode
+                                                   , store_type (pred)
+                                                   )
+                        );
+                    }
+                  else
+                    {
+                      boost::get<store_type&> ( store::mk_or_keep<store_type>
+                                                (store->second)
+                                              )
+                        .push (pred)
+                        ;
+                    }
+                }
             }
 
             template<typename T>
             const T&
-            get (const graph::item* item, const key_type& key) const
+            get ( const graph::item* item
+                , const mode::type& mode
+                , const key_type& key
+                ) const
             {
               typedef typename store::of<T>::type store_type;
 
-              const map_type::const_iterator pos (_store_for.find (key));
+              const by_mode_by_key_type::const_iterator by_mode
+                (_by_mode_by_key.find (key));
 
-              if (pos == _store_for.end())
+              if (by_mode == _by_mode_by_key.end())
+                {
+                  return detail::fallback<T, graph::item> (item, key);
+                }
+
+              const by_mode_type::const_iterator store
+                (by_mode->second.find (mode));
+
+              if (store == by_mode->second.end())
                 {
                   return detail::fallback<T, graph::item> (item, key);
                 }
 
               typename store::of<T>::type::optional_value_type value
-                (boost::get<const store_type&> (pos->second).get (item));
+                (boost::get<const store_type&> (store->second).get (item));
 
               if (value)
                 {
@@ -123,7 +178,7 @@ namespace fhg
             }
           };
 
-          void draw_shape (const type&, const graph::item*, QPainter* painter);
+          void draw_shape (const graph::item*, QPainter* painter);
         }
       }
     }

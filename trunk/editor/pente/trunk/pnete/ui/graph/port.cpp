@@ -90,36 +90,48 @@ namespace fhg
             , _length (size::port::width())
             , _menu_context()
           {
-            style().push<qreal> ( "border_thickness"
+            access_style().push<qreal> ( "border_thickness"
+                                , style::mode::NORMAL
                                 , boost::bind (&thicker_if_type, "long", _1)
                                 );
 
             static const QColor background_color_long (Qt::darkBlue);
             static const QColor background_color_string (Qt::yellow);
             static const QColor background_color_control (Qt::red);
+            static const QColor backgr (Qt::green);
 
-            style().push<QColor>
+            access_style().push<QColor>
               ( "background_color"
+              , style::mode::NORMAL
               , boost::bind (&color_if_type, "long", background_color_long, _1)
               );
-            style().push<QColor>
+            access_style().push<QColor>
               ( "background_color"
+              , style::mode::HIGHLIGHT
+              , boost::bind (&color_if_type, "long", backgr, _1)
+              );
+            access_style().push<QColor>
+              ( "background_color"
+              , style::mode::NORMAL
               , boost::bind (&color_if_type, "string", background_color_string, _1)
               );
-            style().push<QColor>
-              ( "background_color"
-              , boost::bind (&color_if_type, "control", background_color_control, _1)
-              );
+//             access_style().push<QColor>
+//               ( "background_color"
+//               , style::mode::NORMAL
+//               , boost::bind (&color_if_type, "control", background_color_control, _1)
+//               );
 
             static const QColor text_color_long (Qt::white);
             static const QColor text_color_string (Qt::gray);
 
-            style().push<QColor>
+            access_style().push<QColor>
               ( "text_color"
+              , style::mode::NORMAL
               , boost::bind (&color_if_type, "long", text_color_long, _1)
               );
-            style().push<QColor>
+            access_style().push<QColor>
               ( "text_color"
+              , style::mode::NORMAL
               , boost::bind (&color_if_type, "string", text_color_string, _1)
               );
 
@@ -483,10 +495,10 @@ namespace fhg
                            , QWidget *
                            )
           {
-            style::draw_shape (style(), this, painter);
+            style::draw_shape (this, painter);
 
-            painter->setPen (QPen ( QBrush (style().get<QColor> (this, "text_color"))
-                                  , style().get<qreal> (this, "text_line_thickness")
+            painter->setPen (QPen ( QBrush (style<QColor> ("text_color"))
+                                  , style<qreal> ("text_line_thickness")
                                   )
                             );
             painter->setBackgroundMode (Qt::TransparentMode);

@@ -8,6 +8,8 @@
 #include <QPen>
 #include <QBrush>
 
+#include <boost/foreach.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -18,21 +20,51 @@ namespace fhg
       {
         namespace style
         {
-          void draw_shape ( const type& style
-                          , const graph::item* item
+          void draw_shape ( const graph::item* item
                           , QPainter* painter
                           )
           {
-            painter->setPen (QPen ( QBrush ( item->highlighted()
-                                           ? style.get<QColor> (item, "border_color_highlighted")
-                                           : style.get<QColor> (item, "border_color_normal")
-                                           )
-                                  , style.get<qreal> (item, "border_thickness")
-                                  )
-                            );
+            painter->setPen
+              (QPen ( QBrush (item->style<QColor> ("border_color"))
+                    , item->style<qreal> ("border_thickness")
+                    )
+              );
             painter->setBackgroundMode (Qt::OpaqueMode);
-            painter->setBrush (QBrush (style.get<QColor> (item, "background_color")));
+            painter->setBrush (QBrush (item->style<QColor> ("background_color")));
             painter->drawPath (item->shape());
+          }
+
+          namespace store
+          {
+            namespace visitor
+            {
+              class clear_cache : public boost::static_visitor<void>
+              {
+              public:
+                template<typename T>
+                void operator () (const T& x) const { x.clear_cache(); }
+              };
+            }
+
+            void clear_cache (const type& x)
+            {
+              boost::apply_visitor (visitor::clear_cache(), x);
+            }
+          }
+
+          void type::clear_cache ()
+          {
+            BOOST_FOREACH( const by_mode_by_key_type::value_type& by_mode
+                         , _by_mode_by_key
+                         )
+              {
+                BOOST_FOREACH( const by_mode_type::value_type& store
+                             , by_mode.second
+                             )
+                  {
+                    store::clear_cache (store.second);
+                  }
+              }
           }
         }
       }

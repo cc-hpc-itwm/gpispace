@@ -4,9 +4,11 @@
 #define _FHG_PNETE_UI_GRAPH_STYLE_FALLBACK_HPP 1
 
 #include <pnete/ui/graph/style/type.fwd.hpp>
+#include <pnete/ui/graph/style/mode.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/function.hpp>
 
 #include <QColor>
 
@@ -22,39 +24,49 @@ namespace fhg
         {
           namespace fallback
           {
-#define DECL(_t, _n) _t& _n ();
-              DECL (qreal, border_thickness)
-              DECL (QColor, border_color_normal)
-              DECL (QColor, border_color_highlighted)
-              DECL (QColor, background_color)
-              DECL (qreal, text_line_thickness)
-              DECL (QColor, text_color)
-#undef DECL
+#define DECL(_t, _n) _t& _n (const mode::type&)
 
+            DECL (qreal, border_thickness);
+            DECL (QColor, border_color);
+            DECL (QColor, background_color);
+            DECL (qreal, text_line_thickness);
+            DECL (QColor, text_color);
+
+#undef DECL
             namespace detail
             {
               typedef boost::variant < const qreal&
                                      , const QColor&
                                      > type;
-              typedef boost::unordered_map<key_type, type> map_type;
 
-              const map_type& get_map ();
+              typedef boost::function< type (const style::mode::type&)
+                                     > by_mode_type;
+
+              typedef boost::unordered_map< key_type
+                                          , by_mode_type
+                                          > by_mode_by_key_type;
+
+              const by_mode_by_key_type& get_by_mode_by_key();
             }
 
             template<typename T>
-            const T& get (const style::key_type& key)
+            const T& get ( const style::key_type& key
+                         , const style::mode::type& mode
+                         )
             {
-              const detail::map_type& map (detail::get_map());
+              const detail::by_mode_by_key_type& by_mode_by_key
+                (detail::get_by_mode_by_key());
 
-              const detail::map_type::const_iterator pos (map.find (key));
+              const detail::by_mode_by_key_type::const_iterator by_mode
+                (by_mode_by_key.find (key));
 
-              if (pos == map.end())
+              if (by_mode == by_mode_by_key.end())
                 {
                   throw std::runtime_error
-                    ("STRANGE: No default value for " + key);
+                    ("STRANGE: No default values for " + key);
                 }
 
-              return boost::get<T> (pos->second);
+              return boost::get<T> (by_mode->second (mode));
             };
           }
         }

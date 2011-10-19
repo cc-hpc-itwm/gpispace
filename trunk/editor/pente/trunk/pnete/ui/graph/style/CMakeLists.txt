@@ -19,6 +19,7 @@ set(style_HDRS
   store.hpp
   predicate.hpp
   type.hpp
+  mode.hpp
 )
 
 set(style_UIS

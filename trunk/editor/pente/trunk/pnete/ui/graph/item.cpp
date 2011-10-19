@@ -39,10 +39,11 @@ namespace fhg
                    , ::we::type::property::type* property
                    )
           : QGraphicsItem (parent)
-          , _highlighted (false)
           , _property (property)
           , _style ()
+          , _mode ()
         {
+          _mode.push (style::mode::NORMAL);
           setAcceptHoverEvents (true);
         }
 
@@ -77,19 +78,39 @@ namespace fhg
           QGraphicsItem::setPos (pos);
         }
 
-        const bool& item::highlighted() const { return _highlighted; }
+        style::type& item::access_style () { return _style; }
 
-        const style::type& item::style () const { return _style; }
-        style::type& item::style () { return _style; }
+        void item::clear_style_cache ()
+        {
+          _style.clear_cache();
+
+          foreach (QGraphicsItem* child, childItems())
+            {
+              if (item* child_item = qgraphicsitem_cast<item*> (child))
+                {
+                  child_item->clear_style_cache();
+                }
+            }
+        }
+
+        const style::mode::type& item::mode() const
+        {
+          if (_mode.empty())
+            {
+              throw std::runtime_error ("STRANGE: No style mode!?");
+            }
+
+          return _mode.top();
+        }
 
         void item::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
         {
-          _highlighted = false;
+          _mode.pop();
           update (boundingRect());
         }
         void item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
         {
-          _highlighted = true;
+          _mode.push (style::mode::HIGHLIGHT);
           update (boundingRect());
         }
       }

@@ -68,9 +68,18 @@ namespace fhg
 
             static const QColor border_color_normal (Qt::yellow);
 
-            style().push<QColor>
+            access_style().push<QColor>
               ( "border_color_normal"
-              , boost::bind (&color_if_name, "eat", border_color_normal, _1)
+              , style::mode::NORMAL
+              , boost::bind (&color_if_name, "t", border_color_normal, _1)
+              );
+
+            static const QColor background_color (Qt::blue);
+
+            access_style().push<QColor>
+              ( "background_color"
+              , style::mode::NORMAL
+              , boost::bind (&color_if_name, "double", background_color, _1)
               );
           }
 
@@ -320,7 +329,7 @@ namespace fhg
                            , QWidget *widget
                            )
           {
-            style::draw_shape (style(), this, painter);
+            style::draw_shape (this, painter);
 
             painter->setPen (QPen (QBrush (Qt::black), 1.0));
             painter->setBackgroundMode (Qt::TransparentMode);
