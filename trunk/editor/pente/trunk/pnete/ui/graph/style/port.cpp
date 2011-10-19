@@ -136,22 +136,25 @@ namespace fhg
                            , QWidget *
                            )
           {
-            // hardcoded constants
-            painter->setPen (QPen (QBrush ( isSelected()
-                                          ? Qt::red
-                                          : Qt::black
-                                          )
-                                  , 2.0
+            painter->setPen (QPen ( QBrush
+                                    ( isSelected() || highlighted()
+                                    ? get<QColor> ("border_color_highlighted")
+                                    : get<QColor> ("border_color_normal")
+                                    )
+                                  , get<qreal> ("border_thickness")
                                   )
                             );
             painter->setBackgroundMode (Qt::OpaqueMode);
-            painter->setBrush (QBrush ( queryColorForType (we_type())
+            painter->setBrush (QBrush ( get<QColor> ("background_color")
                                       , Qt::SolidPattern
                                       )
                               );
             painter->drawPath (shape());
 
-            painter->setPen (QPen (QBrush (Qt::black), 1.0));
+            painter->setPen (QPen ( QBrush (get<QColor> ("text_color"))
+                                  , get<qreal> ("text_line_thickness")
+                                  )
+                            );
             painter->setBackgroundMode (Qt::TransparentMode);
 
             const QRectF area (bounding_rect (false, 1));

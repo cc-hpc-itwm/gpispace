@@ -1,13 +1,17 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_STYLE_PARAM_HPP
-#define _FHG_PNETE_UI_GRAPH_STYLE_PARAM_HPP 1
+#ifndef _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP
+#define _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP 1
 
 #include <boost/function.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <list>
+
+#include <QColor>
 
 namespace fhg
 {
@@ -17,9 +21,11 @@ namespace fhg
     {
       namespace graph
       {
+        class item;
+
         namespace style
         {
-          namespace param
+          namespace store
           {
             namespace detail
             {
@@ -38,11 +44,10 @@ namespace fhg
             }
 
             template<typename Key, typename Value>
-            class store
+            class cached_predicates
             {
             private:
               typedef detail::traits<Key, Value> traits;
-              typedef typename traits::predicate_type predicate_type;
               typedef typename traits::predicates_type predicates_type;
               typedef typename traits::cache_type cache_type;
               typedef typename cache_type::const_iterator cache_iterator;
@@ -51,6 +56,7 @@ namespace fhg
                                predicates_iterator;
 
             public:
+              typedef typename traits::predicate_type predicate_type;
               typedef typename traits::optional_value_type optional_value_type;
 
               void clear_cache ()
@@ -64,7 +70,7 @@ namespace fhg
                 clear_cache();
               }
 
-              optional_value_type get (const Key& key)
+              optional_value_type get (Key key) const
               {
                 const cache_iterator cache_pos (_cache.find (key));
 
@@ -92,19 +98,53 @@ namespace fhg
               }
 
             private:
-              cache_type _cache;
+              mutable cache_type _cache;
               predicates_type _predicates;
 
-              const optional_value_type& cache
-              ( const Key& key
-              , const optional_value_type& value
-              )
+              const optional_value_type&
+              cache ( Key key
+                    , const optional_value_type& value
+                    ) const
               {
                 _cache.insert (cache_entry_type (key, value));
 
                 return value;
               }
             };
+
+            template<typename T>
+            class of
+            {
+            public:
+              typedef cached_predicates<const graph::item*, T> type;
+            };
+
+            typedef boost::variant < of<qreal>::type
+                                   , of<QColor>::type
+                                   > type;
+
+            namespace visitor
+            {
+              template<typename T>
+              class mk : public boost::static_visitor<type&>
+              {
+              private:
+                type& _x;
+
+              public:
+                mk (type& x) : _x (x) {}
+
+                type& operator () (T&) const { return _x; }
+
+                template<typename U>
+                type& operator () (const U&) const { return _x = T(); }
+              };
+            }
+
+            template<typename T> type& mk_or_keep (type& x)
+            {
+              return boost::apply_visitor (visitor::mk<T> (x), x);
+            }
           }
         }
       }

@@ -16,6 +16,7 @@
 
 #include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/ui/graph/style/size.hpp>
+#include <pnete/ui/graph/style/predicate.hpp>
 
 #include <util/property.hpp>
 
@@ -40,6 +41,39 @@ namespace fhg
             }
           }
 
+          static boost::optional<const qreal&>
+          thicker_if_type (const QString& type, const graph::item* i)
+          {
+            if (style::predicate::is_port (i))
+              {
+                if (qgraphicsitem_cast<const item*>(i)->we_type() == type)
+                  {
+                    static const qreal v (4.0);
+
+                    return boost::optional<const qreal&> (boost::ref (v));
+                  }
+              }
+
+            return boost::none;
+          }
+
+          static boost::optional<const QColor&>
+          color_if_type ( const QString& type
+                        , const QColor& color
+                        , const graph::item* i
+                        )
+          {
+            if (style::predicate::is_port (i))
+              {
+                if (qgraphicsitem_cast<const item*>(i)->we_type() == type)
+                  {
+                    return boost::optional<const QColor&> (color);
+                  }
+              }
+
+            return boost::none;
+          }
+
           item::item
           ( port_type& port
           , connectable::direction::type direction
@@ -56,6 +90,34 @@ namespace fhg
             , _length (size::port::width())
             , _menu_context()
           {
+            _style.push<qreal> ( "border_thickness"
+                               , boost::bind (&thicker_if_type, "long", _1)
+                               );
+
+            static QColor background_color_long (Qt::darkBlue);
+            static QColor background_color_string (Qt::yellow);
+            static QColor background_color_control (Qt::red);
+
+            _style.push<QColor>
+              ( "background_color"
+              , boost::bind (&color_if_type, "long", background_color_long, _1)
+              );
+            _style.push<QColor>
+              ( "background_color"
+              , boost::bind (&color_if_type, "string", background_color_string, _1)
+              );
+            _style.push<QColor>
+              ( "background_color"
+              , boost::bind (&color_if_type, "control", background_color_control, _1)
+              );
+
+            static QColor text_color_long (Qt::white);
+
+            _style.push<QColor>
+              ( "text_color"
+              , boost::bind (&color_if_type, "long", text_color_long, _1)
+              );
+
             set_just_orientation_but_not_in_property
               ( direction == connectable::direction::OUT
               ? orientation::EAST

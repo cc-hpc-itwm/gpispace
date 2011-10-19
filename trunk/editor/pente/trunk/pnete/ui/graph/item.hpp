@@ -10,6 +10,9 @@
 
 #include <pnete/ui/graph/orientation.hpp>
 
+#include <pnete/ui/graph/style/style.hpp>
+#include <pnete/ui/graph/style/fallback.hpp>
+
 namespace fhg
 {
   namespace pnete
@@ -51,8 +54,19 @@ namespace fhg
           virtual void set_just_orientation_but_not_in_property
           (const port::orientation::type&) {}
 
+          template<typename T>
+          const T& get (const style::key_type& key) const
+          {
+            return _style.get<T> (this, key, _fallback);
+          }
+
         private:
           ::we::type::property::type* _property;
+
+          //! \todo make this private
+        protected:
+          style::type _style;
+          style::fallback::type _fallback;
         };
       }
     }

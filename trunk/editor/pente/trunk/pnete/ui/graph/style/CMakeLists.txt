@@ -7,12 +7,19 @@ set(style_SRCS
   cap.cpp
   raster.cpp
   size.cpp
+  fallback.cpp
+  predicate.cpp
 )
 
 set(style_HDRS
   cap.hpp
   raster.hpp
   size.hpp
+  style.hpp
+  style.fwd.hpp
+  fallback.hpp
+  store.hpp
+  predicate.hpp
 )
 
 set(style_UIS
@@ -30,4 +37,5 @@ qt4_automoc(${style_SRCS_MOC})
 add_library(style ${style_SRCS} ${style_SRCS_MOC})
 add_dependencies(style gen_headerlist)
 
-add_executable (test_param test.cpp)
+add_executable (test_pnete_cached_predicates test_cached_predicates.cpp)
+add_test ("test_pnete_cached_predicates" test_pnete_cached_predicates)
