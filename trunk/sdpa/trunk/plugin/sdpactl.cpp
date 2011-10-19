@@ -36,6 +36,7 @@ public:
   {
     int ec = 0;
     ec += stop ();
+    sleep(3);
     ec += start ();
     return ec;
   }
