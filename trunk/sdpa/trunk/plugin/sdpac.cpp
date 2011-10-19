@@ -2,6 +2,7 @@
 #include "net.hpp"
 
 #include <errno.h>
+#include <unistd.h>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -45,6 +46,35 @@ public:
   FHG_PLUGIN_STOP()
   {
     FHG_PLUGIN_STOPPED();
+  }
+
+  int execute (std::string const &wf, std::string & out)
+  {
+    int ec = 0;
+    std::string id;
+    ec = submit(wf, id);
+    if (ec != 0) return ec;
+
+    int state (0);
+    for (;;)
+    {
+      state = status(id);
+      if (state < 0)
+      {
+        break;
+      }
+      else if (state < sdpa::status::FINISHED)
+      {
+        usleep (250);
+      }
+      else
+      {
+        break;
+      }
+    }
+    result (id, out);
+    remove (id);
+    return state;
   }
 
   int submit (std::string const &wf, std::string & job_id)
