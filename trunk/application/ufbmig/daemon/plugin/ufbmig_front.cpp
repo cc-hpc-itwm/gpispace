@@ -23,16 +23,35 @@
 static const std::string SERVER_APP_NAME("ISIM(at)SDPA");
 static const std::string SERVER_APP_VERS("0.0.1");
 
-namespace command
-{
-  enum code
-    {
-      INITIALIZE = 0,
-      MIGRATE = 1,
-      MIGRATE_WITH_SALT_MASK = 2,
-      ABORT = 3,
-      FINALIZE = 4,
-    };
+namespace client { namespace command {
+    // sent by the GUI to us
+    enum code
+      {
+        INITIALIZE = 0,
+        MIGRATE = 1,
+        MIGRATE_WITH_SALT_MASK = 2,
+        ABORT = 3,
+        FINALIZE = 4,
+      };
+  }
+}
+
+namespace server { namespace command {
+    // we might send those
+    enum code
+      {
+        WAITING_FOR_INITIALIZE = 0,
+        INITIALIZING = 1,
+        INITIALIZE_SUCCESS = 2,
+        INITIALIZE_FAILURE = 3,
+        MIGRATING = 4,
+        MIGRATE_SUCCESS = 5,
+        MIGRATE_FAILURE = 6,
+
+        PROGRESS = 1000,
+        LOGOUTPUT = 1001,
+      };
+  }
 }
 
 class UfBMigFrontImpl : FHG_PLUGIN
@@ -60,6 +79,12 @@ public:
     m_recv_timeout =
       boost::lexical_cast<int>(fhg_kernel()->get("timeout_recv", def_timeout));
 
+    MLOG( TRACE
+        ,  "timeouts: connect = " << m_conn_timeout
+        << " send = " << m_send_timeout
+        << " recv = " << m_recv_timeout
+        );
+
     PSProMigIF::StartupInfo info;
     info.m_nConnectToTimeout = m_conn_timeout;
     info.m_nWaitForConnectionTimeout = m_conn_timeout;
@@ -79,7 +104,7 @@ public:
 
     try
     {
-      MLOG(INFO, "UfBMig frontend starting on port " << info.m_uPort);
+      MLOG(TRACE, "UfBMig frontend starting on port " << info.m_uPort);
 
       // start server control object
       m_server->start(false); // false == do not kill running apps
@@ -94,50 +119,79 @@ public:
       //   mark plugin as incomplete, try to start connection again...
     }
 
+    m_backend = fhg_kernel()->acquire<ufbmig::Backend>("ufbmig_back");
+    assert (m_backend);
+    m_backend->registerFrontend(this);
+
+    m_stop_requested = false;
     m_message_thread = boost::thread (&UfBMigFrontImpl::message_thread, this);
 
-    fhg_kernel()->acquire<ufbmig::Backend>("ufbmig_back")->registerFrontend(this);
+    send_waiting_for_initialize();
 
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
-    m_server->stop(); // FIXME: deadlock!
+    //m_server->stop(); // FIXME: deadlock!
+    m_stop_requested = true;
     m_message_thread.interrupt();
     m_message_thread.join ();
 
     FHG_PLUGIN_STOPPED();
   }
 
-  int initialize(std::string const &)
+  int initialize(std::string const &s)
   {
-    return 0;
+    assert (m_backend);
+    return m_backend->initialize (s);
+  }
+
+  int update_salt_mask(const char *data, size_t len)
+  {
+    return m_backend->update_salt_mask(data, len);
   }
 
   int calculate()
   {
-    return 0;
+    assert (m_backend);
+    return m_backend->calculate ();
   }
 
   int finalize()
   {
-    return 0;
+    assert (m_backend);
+    return m_backend->finalize ();
   }
 
   int cancel()
   {
-    return 0;
+    assert (m_backend);
+    return m_backend->cancel();
   }
 
-  void initialize_done (int)
+  void initialize_done (int ec)
   {
-    return;
+    if (! ec)
+    {
+      send_initialize_success();
+    }
+    else
+    {
+      send_initialize_failure(ec);
+    }
   }
 
-  void calculate_done (int)
+  void calculate_done (int ec)
   {
-    return;
+    if (! ec)
+    {
+      send_migrate_success(0, 0);
+    }
+    else
+    {
+      send_migrate_failure(ec);
+    }
   }
 
   void finalize_done (int)
@@ -150,78 +204,165 @@ public:
     return;
   }
 private:
+  boost::shared_ptr<PSProMigIF::Message> create_pspro_message( int cmd
+                                                             , const void *data = 0
+                                                             , size_t len = 0
+                                                             )
+  {
+    assert ((len && data != NULL) || !len);
+
+    boost::shared_ptr<PSProMigIF::Message> msg
+      (PSProMigIF::Message::generateMsg(len));
+    msg->m_nCommand = cmd;
+    memcpy( msg->getCostumPtr(), data, len);
+    return msg;
+  }
+
+  void send_waiting_for_initialize()
+  {
+    create_pspro_message(server::command::WAITING_FOR_INITIALIZE)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_initializing()
+  {
+    create_pspro_message(server::command::INITIALIZING)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_initialize_success()
+  {
+    create_pspro_message(server::command::INITIALIZE_SUCCESS)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_initialize_failure(int ec)
+  {
+    create_pspro_message(server::command::INITIALIZE_FAILURE, &ec, sizeof(ec))
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_migrating()
+  {
+    create_pspro_message(server::command::MIGRATING)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_migrate_success(const void *data, size_t len)
+  {
+    create_pspro_message(server::command::MIGRATE_SUCCESS, data, len)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_migrate_failure(int ec)
+  {
+    create_pspro_message(server::command::MIGRATE_FAILURE, &ec, sizeof(ec))
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_progress(int p)
+  {
+    create_pspro_message(server::command::PROGRESS, &p, sizeof(p))
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_logoutput(std::string const &msg)
+  {
+    create_pspro_message(server::command::LOGOUTPUT, msg.c_str(), msg.size())
+      ->sendMsg(m_server->communication());
+  }
+
   void message_thread ()
   {
-    PSProMigIF::Message* msg = 0;
+    typedef boost::shared_ptr<PSProMigIF::Message> message_ptr;
 
-    for (;;)
+    MLOG(TRACE, "waiting for messages...");
+
+    while (!m_stop_requested)
     {
-
       try
       {
-        boost::this_thread::interruption_point();
+        int ec;
 
-        msg = PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout);
+        message_ptr msg
+          (PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout));
+        if (! msg)
+        {
+          continue;
+        }
 
-        boost::this_thread::interruption_point();
+        const std::string payload (msg->getCostumPtr(), msg->m_ulCustomDataSize);
 
         MLOG(INFO, "got command: " << msg->m_nCommand);
-        MLOG(INFO, "custom size: " << msg->m_ulCustomDataSize);
-        MLOG(INFO, "custom data: " << std::string(msg->getCostumPtr(), msg->m_ulCustomDataSize));
+        MLOG(INFO, "custom size: " << payload.size());
+        MLOG(INFO, "custom data: " << payload);
 
         switch (msg->m_nCommand)
         {
-        case command::INITIALIZE:
+        case client::command::INITIALIZE:
           // take user data and write file to disk...
           // initialize with path to that file
-          initialize("");
+          ec = initialize(payload);
+          if (0 == ec)
+          {
+            send_initializing();
+          }
+          else
+          {
+            send_initialize_failure(ec);
+          }
           break;
-        case command::MIGRATE:
+        case client::command::MIGRATE:
           // take xml file, write to disk...
-          calculate();
+          ec = calculate();
+          if (0 == ec)
+          {
+            send_migrating();
+          }
+          else
+          {
+            send_migrate_failure(ec);
+          }
           break;
-        case command::MIGRATE_WITH_SALT_MASK:
+        case client::command::MIGRATE_WITH_SALT_MASK:
           // take xml file, write to disk...
           // receive salt mask message
-          // call calculate
-          calculate();
+          {
+            message_ptr msg2
+              (PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout));
+            update_salt_mask(0, 0);
+            // call calculate
+            calculate_done(calculate());
+          }
           break;
-        case command::ABORT:
+        case client::command::ABORT:
           // abort
-          cancel();
+          cancel_done(cancel());
           break;
-        case command::FINALIZE:
-          finalize();
+        case client::command::FINALIZE:
+          finalize_done(finalize());
           break;
         default:
           break;
         }
-
-        delete msg; msg = 0;
-      }
-      catch (boost::thread_interrupted const &)
-      {
-        MLOG(TRACE, "message thread interrupted");
-        break;
       }
       catch (PSProMigIF::StartServer::StartServerException const &ex)
       {
         LOG(ERROR, "could not receive message: " << ex.what());
-        if (msg) delete msg;
       }
       catch (...)
       {
         MLOG(ERROR, "error during message receive!");
       }
     }
-
-    if (msg) delete msg;
   }
 
+  bool m_stop_requested;
   int m_conn_timeout;
   int m_send_timeout;
   int m_recv_timeout;
   PSProMigIF::StartServer* m_server;
+  ufbmig::Backend *m_backend;
   boost::thread m_message_thread;
 };
 
