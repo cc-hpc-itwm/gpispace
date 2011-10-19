@@ -15,18 +15,18 @@ namespace detail
 {
   int translate_job_status_from_string_to_enum(std::string const &s)
   {
-    if (s == "SDPA::Pending")   return sdpac::status::PENDING;
-    if (s == "SDPA::Running")   return sdpac::status::RUNNING;
-    if (s == "SDPA::Finished")  return sdpac::status::FINISHED;
-    if (s == "SDPA::Failed")    return sdpac::status::FAILED;
-    if (s == "SDPA::Cancelled") return sdpac::status::CANCELED;
-    if (s == "SDPA::Suspended") return sdpac::status::SUSPENDED;
-    else                        return sdpac::status::UNKNOWN;
+    if (s == "SDPA::Pending")   return sdpa::status::PENDING;
+    if (s == "SDPA::Running")   return sdpa::status::RUNNING;
+    if (s == "SDPA::Finished")  return sdpa::status::FINISHED;
+    if (s == "SDPA::Failed")    return sdpa::status::FAILED;
+    if (s == "SDPA::Cancelled") return sdpa::status::CANCELED;
+    if (s == "SDPA::Suspended") return sdpa::status::SUSPENDED;
+    else                        return sdpa::status::UNKNOWN;
   }
 }
 
 class SDPACImpl : FHG_PLUGIN
-                , public sdpac::SDPAC
+                , public sdpa::Client
 {
 public:
   FHG_PLUGIN_START()

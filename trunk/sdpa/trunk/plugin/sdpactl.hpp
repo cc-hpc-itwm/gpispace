@@ -1,9 +1,7 @@
 #ifndef SDPA_PLUGIN_SDPACTL_HPP
 #define SDPA_PLUGIN_SDPACTL_HPP 1
 
-#include <string>
-
-namespace sdpactl
+namespace sdpa
 {
   class Control
   {

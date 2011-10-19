@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace sdpac
+namespace sdpa
 {
   namespace status
   {
@@ -19,10 +19,10 @@ namespace sdpac
       };
   }
 
-  class SDPAC
+  class Client
   {
   public:
-    virtual ~SDPAC() {}
+    virtual ~Client() {}
 
     virtual int submit (std::string const &wf, std::string & job) = 0;
     virtual int status (std::string const &id) = 0;

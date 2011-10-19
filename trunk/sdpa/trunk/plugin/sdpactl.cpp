@@ -8,7 +8,7 @@
 #include <fhg/plugin/plugin.hpp>
 
 class ControlImpl : FHG_PLUGIN
-                  , public sdpactl::Control
+                  , public sdpa::Control
 {
 public:
   FHG_PLUGIN_START()
