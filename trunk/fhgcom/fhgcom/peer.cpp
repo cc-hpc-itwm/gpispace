@@ -50,6 +50,11 @@ namespace fhg
       }
     }
 
+    std::string peer_t::hostname()
+    {
+      return boost::asio::ip::host_name();
+    }
+
     void peer_t::run ()
     {
       io_service_.run();

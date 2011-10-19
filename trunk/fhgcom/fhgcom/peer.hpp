@@ -44,6 +44,8 @@ namespace fhg
 
       virtual ~peer_t ();
 
+      static std::string hostname ();
+
       std::string const & name () const { return name_; }
       std::string const & host () const { return host_; }
       std::string const & port () const { return port_; }
