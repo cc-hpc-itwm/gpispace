@@ -130,7 +130,7 @@ int main(int ac, char **av)
 
   atexit(&at_exit);
   int rc = kernel->run();
-  MLOG(INFO, "shutting down... (" << rc << ")");
+  MLOG(TRACE, "shutting down... (" << rc << ")");
   kernel->unload_all();
 
   delete kernel;
