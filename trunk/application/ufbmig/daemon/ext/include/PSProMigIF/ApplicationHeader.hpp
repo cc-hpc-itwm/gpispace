@@ -19,8 +19,23 @@ namespace PSProMigIF
     Applications_IM = 0,
     Applications_SlantStack = 2,
     Applications_VisibilityAnalysis = 1,
+#if SHOW_CURRENT_DEVELOPEMENT_FEATURES
     Applications_Applicationtest = 3,
+#endif
+
+#if defined ISIM_AT_SDPA_SUPPORT && SHOW_CURRENT_DEVELOPEMENT_FEATURES
+    Applications_IMatSDPA = 4,
+#else
+    Applications_IMatSDPA = 3,
+#endif
+
+#if defined SHOW_CURRENT_DEVELOPEMENT_FEATURES && defined ISIM_AT_SDPA_SUPPORT
+    Applications_Max = 5,
+#elif defined SHOW_CURRENT_DEVELOPEMENT_FEATURES || defined ISIM_AT_SDPA_SUPPORT
     Applications_Max = 4,
+#else
+    Applications_Max = 3,
+#endif
 
     Applications_ServerHelper1 = 100,
     Applications_ServerHelper2 = 101,

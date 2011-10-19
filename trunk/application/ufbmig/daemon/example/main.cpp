@@ -10,9 +10,10 @@
 #include <cstring>
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
-#include "PSProLogging.h"
-#include "ExternalServerInterfaceLogging.h"
+//#include "PSProLogging.h"
+//#include "ExternalServerInterfaceLogging.h"
 #include "ServerCommunication.h"
 #include "Server.h"
 #include "Message.h"
@@ -24,7 +25,7 @@ int main(int _nArgc, char* _pcArgv[])
   const std::string server_app_version("0.0.1");
 
   // init server logging
-  initializeBackendFileLogging();
+//  initializeBackendFileLogging();
 
   // start server communication
   PSProMigIF::StartServer::registerInstance
