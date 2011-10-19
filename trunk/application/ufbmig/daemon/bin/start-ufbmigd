@@ -2,6 +2,8 @@
 
 test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
+echo 1 > /scratch/petry/foo
+
 node_file=
 force=false
 verbose=false
@@ -73,7 +75,12 @@ while getopts ":hf:o:n:vF" opt; do
 done
 
 if [ -z "$node_file" ] ; then
-    node_file=$( ls -t "/var/spool/torque/aux" | head -n 1)
+    node_file=$( /bin/ls -t "/var/spool/torque/aux" | /usr/bin/head -n 1)
+    if [ -z "$node_file" ] ; then
+        echo "No nodefile available!" >&2
+        exit $EX_OSFILE
+    fi
+    node_file="/var/spool/torque/aux/$node_file"
     if [ ! -r "$node_file" ] ; then
 	echo "Cannot read nodefile @ $node_file" >&2
 	exit $EX_IOERR
@@ -81,6 +88,10 @@ if [ -z "$node_file" ] ; then
 fi
 
 export PBS_NODEFILE="$node_file"
+echo 2 > /scratch/petry/foo
 sdpa init
+echo 3 > /scratch/petry/foo
 sdpa start kvs
 echo "Starting ufmigd..."
+prefix=/fhgfs/HPC/petry/build/sdpacc
+FHGLOG_level=MIN $prefix/util/bin/fhgkernel -s plugin.net.name=ufbmig $prefix/sdpa/plugin/kvs.so $prefix/sdpa/plugin/net.so $prefix/sdpa/plugin/sdpac.so $prefix/sdpa/plugin/sdpactl.so $prefix/application/ufbmig/daemon/plugin/ufbmig_back.so
