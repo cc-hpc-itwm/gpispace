@@ -65,7 +65,10 @@ install(TARGETS gui-plugin LIBRARY
   )
 
 fhg_add_plugin(sdpac sdpac.cpp
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
+  LINK_LIBRARIES sdpa-events
+                 sdpa-util
+		 sdpa
+		 ${FhgCom_LIBRARY}
                  ${WE_PRECOMPILE_LIBRARIES}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}

@@ -20,7 +20,7 @@ public:
     m_peer = fhg_kernel()->acquire<net::Peer>("net");
     if (!m_peer)
     {
-      LOG(ERROR, "dependency \"net\" is not of type net::Peer!");
+      LOG(ERROR, "dependency \"net\" is not available or not of type net::Peer!");
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -40,7 +40,15 @@ public:
 
   int status (std::string const &id)
   {
-    return -EFAULT;
+    sdpa::events::SDPAEvent::Ptr req;
+    sdpa::events::SDPAEvent::Ptr rep;
+
+    req.reset (new sdpa::events::QueryJobStatusEvent( m_peer->name()
+                                                    , "orchestrator"
+                                                    , id
+                                                    )
+              );
+    return request (req, rep);
   }
 
   int cancel (std::string const &id)
@@ -58,6 +66,78 @@ public:
     return -EFAULT;
   }
 private:
+  int request ( sdpa::events::SDPAEvent::Ptr const &req
+              , sdpa::events::SDPAEvent::Ptr & rep
+              )
+  {
+    int rc = send_event (req);
+    if (0 == rc)
+    {
+      return recv_event (rep);
+    }
+    else
+    {
+      return rc;
+    }
+  }
+
+  int send_event (sdpa::events::SDPAEvent::Ptr const & evt)
+  {
+    static sdpa::events::Codec codec;
+    int ec = m_peer->send ( evt->to()
+                          , codec.encode(evt.get())
+                          );
+
+    if (ec)
+    {
+      MLOG(WARN, "could not send " << evt->str() << " to " << evt->to());
+      return -ESRCH;
+    }
+
+    return 0;
+  }
+
+  int recv_event (sdpa::events::SDPAEvent::Ptr & evt)
+  {
+    static sdpa::events::Codec codec;
+
+    std::string from;
+    std::string data;
+
+    int ec = -EAGAIN;
+
+    do
+    {
+      ec = m_peer->recv (from, data);
+      if (ec)
+      {
+        evt.reset
+          (new sdpa::events::ErrorEvent ( from
+                                        , m_peer->name()
+                                        , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+                                        , strerror(-ec)
+                                        )
+          );
+        ec = 0;
+      }
+      else
+      {
+        try
+        {
+          evt.reset (codec.decode(data));
+          ec = 0;
+        }
+        catch (std::exception const &ex)
+        {
+          LOG(ERROR, "invalid message from: " << from << ": " << ex.what());
+          ec = -EAGAIN;
+        }
+      }
+    } while (ec == -EAGAIN);
+
+    return 0;
+  }
+
   net::Peer *m_peer;
 };
 
