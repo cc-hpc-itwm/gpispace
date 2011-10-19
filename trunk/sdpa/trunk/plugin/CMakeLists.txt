@@ -63,3 +63,10 @@ install(TARGETS gui-plugin LIBRARY
   DESTINATION libexec/plugins
   COMPONENT plugins
   )
+
+fhg_add_plugin(net net.cpp
+  LINK_LIBRARIES ${FhgCom_LIBRARY}
+		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_SYSTEM_SHARED_LIBRARY}
+)
