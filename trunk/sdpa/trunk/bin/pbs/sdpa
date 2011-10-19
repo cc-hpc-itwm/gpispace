@@ -963,7 +963,7 @@ function status_agent ()
 
 function start_kvs ()
 {
-    if ! start_proc "fhgkvsd" "fhgkvsd" "-C -b 0 -p 2439"; then
+    if ! start_proc "fhgkvsd" "fhgkvsd" "-b 0 -p 2439"; then
 	echo "E: could not start kvs, giving up!" >&2
 	return 1
     else
