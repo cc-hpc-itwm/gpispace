@@ -63,7 +63,6 @@ namespace fhg
             , _proxy (NULL)
           {
             new cogwheel_button (this);
-            setAcceptHoverEvents (true);
             setFlag (ItemIsSelectable);
             init_menu_context();
 
@@ -189,18 +188,6 @@ namespace fhg
               {
                 event->ignore();
               }
-          }
-
-          void item::hoverLeaveEvent (QGraphicsSceneHoverEvent*)
-          {
-            _highlighted = false;
-            update (boundingRect());
-          }
-
-          void item::hoverEnterEvent (QGraphicsSceneHoverEvent*)
-          {
-            _highlighted = true;
-            update (boundingRect());
           }
 
           const QString& item::name() const
@@ -333,17 +320,7 @@ namespace fhg
                            , QWidget *widget
                            )
           {
-            // hardcoded constants
-            painter->setPen (QPen (QBrush ( highlighted()
-                                          ? Qt::red
-                                          : Qt::black
-                                          )
-                                  , 2.0
-                                  )
-                            );
-            painter->setBackgroundMode (Qt::OpaqueMode);
-            painter->setBrush (QBrush (Qt::white, Qt::SolidPattern));
-            painter->drawPath (shape());
+            style::draw_shape (style(), this, painter);
 
             painter->setPen (QPen (QBrush (Qt::black), 1.0));
             painter->setBackgroundMode (Qt::TransparentMode);

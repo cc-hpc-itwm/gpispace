@@ -6,6 +6,7 @@ set(style_SRCS
   size.cpp
   fallback.cpp
   predicate.cpp
+  type.cpp
 )
 
 set(style_HDRS
@@ -17,6 +18,7 @@ set(style_HDRS
   fallback.hpp
   store.hpp
   predicate.hpp
+  type.hpp
 )
 
 set(style_UIS

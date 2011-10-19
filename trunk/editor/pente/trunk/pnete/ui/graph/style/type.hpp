@@ -9,6 +9,10 @@
 
 #include <boost/unordered_map.hpp>
 
+#include <QGraphicsItem>
+
+class QPainter;
+
 namespace fhg
 {
   namespace pnete
@@ -81,6 +85,8 @@ namespace fhg
               return detail::fallback<T, graph::item> (item, key);
             }
           };
+
+          void draw_shape (const type&, const graph::item*, QPainter* painter);
         }
       }
     }

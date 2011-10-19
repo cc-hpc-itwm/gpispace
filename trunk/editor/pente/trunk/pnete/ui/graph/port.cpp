@@ -483,20 +483,7 @@ namespace fhg
                            , QWidget *
                            )
           {
-            painter->setPen (QPen ( QBrush
-                                    ( highlighted()
-                                    ? style().get<QColor> (this, "border_color_highlighted")
-                                    : style().get<QColor> (this, "border_color_normal")
-                                    )
-                                  , style().get<qreal> (this, "border_thickness")
-                                  )
-                            );
-            painter->setBackgroundMode (Qt::OpaqueMode);
-            painter->setBrush (QBrush ( style().get<QColor> (this, "background_color")
-                                      , Qt::SolidPattern
-                                      )
-                              );
-            painter->drawPath (shape());
+            style::draw_shape (style(), this, painter);
 
             painter->setPen (QPen ( QBrush (style().get<QColor> (this, "text_color"))
                                   , style().get<qreal> (this, "text_line_thickness")
