@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <cstdlib>
 
 #include "PSProLogging.h"
 #include "ExternalServerInterfaceLogging.h"
@@ -34,6 +35,8 @@ int main(int _nArgc, char* _pcArgv[])
   PSProMigIF::StartServer* pStartServer
     (PSProMigIF::StartServer::getInstance(server_app_name));
 
+  pStartServer->handleExceptionsByLibrary(false);
+
   pStartServer->addCommunication
     (new PSProMigIF::ServerCommunicationListen());
 
@@ -42,7 +45,7 @@ int main(int _nArgc, char* _pcArgv[])
     // start server control object
     pStartServer->start();
   }
-  catch (std::exception const & ex)
+  catch (PSProMigIF::StartServer::StartServerException const &ex)
   {
     std::cerr << "error starting server: " << ex.what();
     return EXIT_FAILURE;
