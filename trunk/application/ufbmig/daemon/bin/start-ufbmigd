@@ -1,8 +1,14 @@
 #!/bin/bash
 
-test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+# cleanup for startup via gpid.exe...
+if [ x"$HOME" == x"/" ] ; then
+   echo "I guess, I am running under gpid.exe..." >&2
+   echo "fixing some environment variables..." >&2
+   unset HOME
+   export HOME=$(echo ~)
+fi
 
-echo 1 > /scratch/petry/foo
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
 node_file=
 force=false
@@ -10,6 +16,7 @@ verbose=false
 daemonize=false
 name=ufbmigd
 orchestrator=orchestrator
+timeout=5 # in seconds
 
 if [ -n "$PBS_NODEFILE" ] ; then
    node_file="$PBS_NODEFILE"
@@ -53,23 +60,25 @@ while getopts ":hf:o:n:vF" opt; do
 	    ;;
 	f)
 	    node_file="$OPTARG"
+	    shift 2
 	    ;;
 	o)
 	    orchestrator="$OPTARG"
+	    shift 2
 	    ;;
 	n)
 	    name="$OPTARG"
+	    shift 2
 	    ;;
 	v)
 	    verbose=true
+	    shift 1
 	    ;;
 	F)
 	    force=true
+	    shift 2
 	    ;;
 	\?)
-	    echo "invalid option: -$OPTARG" >&2
-	    echo "try: $0 -h" >&2
-	    exit 1
 	    ;;
     esac
 done
@@ -88,10 +97,18 @@ if [ -z "$node_file" ] ; then
 fi
 
 export PBS_NODEFILE="$node_file"
-echo 2 > /scratch/petry/foo
 sdpa init
-echo 3 > /scratch/petry/foo
 sdpa start kvs
-echo "Starting ufmigd..."
+log "starting ufbmigd..."
 prefix=/fhgfs/HPC/petry/build/sdpacc
-FHGLOG_level=MIN $prefix/util/bin/fhgkernel -s plugin.net.name=ufbmig $prefix/sdpa/plugin/kvs.so $prefix/sdpa/plugin/net.so $prefix/sdpa/plugin/sdpac.so $prefix/sdpa/plugin/sdpactl.so $prefix/application/ufbmig/daemon/plugin/ufbmig_back.so
+FHGLOG_level=MIN $prefix/util/bin/fhgkernel \
+    -s plugin.net.name="${name}" \
+    -s plugin.sdpac.orchestrator="${orchestrator}" \
+    -s plugin.ufbmig_front.timeout_default=${timeout} \
+    $prefix/sdpa/plugin/kvs.so \
+    $prefix/sdpa/plugin/net.so \
+    $prefix/sdpa/plugin/sdpac.so \
+    $prefix/sdpa/plugin/sdpactl.so \
+    $prefix/application/ufbmig/daemon/plugin/ufbmig_back.so \
+    $prefix/application/ufbmig/daemon/plugin/ufbmig_front.so \
+    $@
