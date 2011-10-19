@@ -1,6 +1,8 @@
 #ifndef UFBMIG_FRONTEND_HPP
 #define UFBMIG_FRONTEND_HPP 1
 
+#include <string>
+
 namespace ufbmig
 {
   class Frontend
@@ -8,7 +10,7 @@ namespace ufbmig
   public:
     virtual ~Frontend() {}
 
-    virtual int initialize() = 0;
+    virtual int initialize(std::string const &) = 0;
     virtual int calculate() = 0;
     virtual int finalize() = 0;
     virtual int cancel() = 0;
