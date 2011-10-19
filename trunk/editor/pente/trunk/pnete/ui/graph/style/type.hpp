@@ -41,6 +41,43 @@ namespace fhg
             }
           }
 
+          namespace store
+          {
+            template<typename T>
+            class of
+            {
+            public:
+              typedef cached_predicates<const graph::item*, T> type;
+            };
+
+            typedef boost::variant < of<qreal>::type
+                                   , of<QColor>::type
+                                   > type;
+
+            namespace visitor
+            {
+              template<typename T>
+              class mk : public boost::static_visitor<type&>
+              {
+              private:
+                type& _x;
+
+              public:
+                mk (type& x) : _x (x) {}
+
+                type& operator () (T&) const { return _x; }
+
+                template<typename U>
+                type& operator () (const U&) const { return _x = T(); }
+              };
+            }
+
+            template<typename T> type& mk_or_keep (type& x)
+            {
+              return boost::apply_visitor (visitor::mk<T> (x), x);
+            }
+          }
+
           class type
           {
           private:
