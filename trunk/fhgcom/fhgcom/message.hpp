@@ -52,6 +52,7 @@ namespace fhg
       void resize (const std::size_t n)
       {
         data.resize (n);
+        header.length = n;
       }
 
       void resize ()
