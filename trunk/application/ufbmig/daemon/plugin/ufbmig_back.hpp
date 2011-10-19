@@ -12,6 +12,7 @@ namespace ufbmig
     virtual ~Backend() {}
 
     virtual int initialize(std::string const &) = 0;
+    virtual int update_salt_mask(const char *data, size_t len) = 0;
     virtual int calculate() = 0;
     virtual int finalize() = 0;
     virtual int cancel() = 0;
