@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include <iostream>
 
 #include <fhglog/minimal.hpp>
@@ -67,7 +69,7 @@ public:
     fhg_kernel()->release("world");
     fhg_kernel()->release("hello");
     fhg_kernel()->release("stats");
-    MLOG(INFO, "helloworld plugin stopped");
+    MLOG(TRACE, "helloworld plugin stopped");
     FHG_PLUGIN_STOPPED();
   }
 
@@ -77,17 +79,13 @@ public:
     say (std::cout);
     stop_timer("helloworld.say");
 
-    fhg_kernel()->schedule( boost::bind( &HelloWorldImpl::do_it
-                                       , this
-                                       )
-                          , 5
-                          );
+    kill (0, 15);
   }
 
   void say (std::ostream &os) const
   {
     count("helloworld.say");
-    os << m_hello->text() << ", " << m_world->text() << std::endl;
+    os << m_hello->text() << ", " << m_world->text() << "!" << std::endl;
   }
 
 private:
