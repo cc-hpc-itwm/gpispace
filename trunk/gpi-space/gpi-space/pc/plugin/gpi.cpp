@@ -34,6 +34,8 @@ public:
       {
         if (usleep (2 * 1000 * 1000) < 0)
         {
+          int ec = errno;
+          LOG(ERROR, "usleep failed: " << strerror(ec));
           FHG_PLUGIN_FAILED(EADDRNOTAVAIL);
         }
       }
