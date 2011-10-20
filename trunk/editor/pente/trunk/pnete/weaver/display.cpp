@@ -411,7 +411,7 @@ namespace fhg
 
       WSIG(port, port::name, std::string, name)
       {
-        _port->name (QString::fromStdString (name));
+        //        _port->name (QString::fromStdString (name));
         _port_item_by_name[name] = _port;
       }
       WSIG(port, port::type, std::string, type)
@@ -471,7 +471,7 @@ namespace fhg
       WSIG(port_toplevel, port::name, std::string, name)
       {
         _name = name;
-        _port_item->name (QString::fromStdString (name));
+        //        _port_item->name (QString::fromStdString (name));
       }
       WSIG(port_toplevel, port::type, std::string, type)
       {

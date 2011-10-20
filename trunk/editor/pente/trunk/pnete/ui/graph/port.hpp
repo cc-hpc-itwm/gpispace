@@ -48,8 +48,7 @@ namespace fhg
 
             const qreal& length() const;
 
-            const QString& name() const;
-            const QString& name (const QString&);
+            const std::string& name() const;
 
             const orientation::type& orientation() const;
             const orientation::type& orientation(const orientation::type&);
@@ -68,6 +67,8 @@ namespace fhg
             void
             set_just_orientation_but_not_in_property (const orientation::type&);
 
+            const port_type& port () const { return _port; }
+
           public slots:
             void slot_set_type();
             void slot_delete();
@@ -84,8 +85,6 @@ namespace fhg
             port_type& _port;
 
             QPointF fitting_position (QPointF position);
-
-            QString _name;
 
             orientation::type _orientation;
 

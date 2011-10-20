@@ -43,25 +43,27 @@ namespace fhg
           }
 
           static boost::optional<const qreal&>
-          thicker_if_type (const QString& type, const graph::item* i)
+          thicker_if_name (const std::string type, const graph::item* gi)
           {
-            if (style::predicate::is_port (i))
-              {
-                if (qgraphicsitem_cast<const item*>(i)->we_type() == type)
-                  {
-                    static const qreal v (4.0);
+            static const qreal v (4.0);
 
-                    return boost::optional<const qreal&> (boost::ref (v));
-                  }
-              }
-
-            return boost::none;
+            return style::predicate::generic_if<qreal>
+              ( style::predicate::_and
+                ( style::predicate::predicate (&style::predicate::is_port)
+                , style::predicate::on<std::string>
+                  ( &style::predicate::port::name
+                  , boost::bind (&style::predicate::equals, type, _1)
+                  )
+                )
+              , v
+              , gi
+              );
           }
 
           static boost::optional<const QColor&>
           color_if_type ( const QString& type
                         , const QColor& color
-                        , const graph::item* i
+                        , const graph::item* gi
                         )
           {
             if (style::predicate::is_port (i))
@@ -83,17 +85,17 @@ namespace fhg
           )
             : connectable::item (direction, type_map, parent, &port.prop)
             , _port (port)
-            , _name ("<<port>>")
             , _orientation ()
             , _dragging (false)
             , _drag_start (0.0, 0.0)
             , _length (size::port::width())
             , _menu_context()
           {
-            access_style().push<qreal> ( "border_thickness"
-                                , style::mode::NORMAL
-                                , boost::bind (&thicker_if_type, "long", _1)
-                                );
+            access_style().push<qreal>
+              ( "border_thickness"
+              , style::mode::NORMAL
+              , boost::bind (&thicker_if_name, "in", _1)
+              );
 
             static const QColor background_color_long (Qt::darkBlue);
             static const QColor background_color_string (Qt::yellow);
@@ -148,9 +150,8 @@ namespace fhg
             connect (this, SIGNAL (we_type_changed()), SLOT (refresh_tooltip()));
 
             _length = qMax( _length
-                          , QStaticText(_name).size().width()
-                          + size::cap::length()
-                          + 5.0 // hardcoded constant
+                          , QStaticText(QString::fromStdString (name())).size().width()
+                          + 2 * size::cap::length()
                           );
 
             init_menu_context();
@@ -334,13 +335,9 @@ namespace fhg
             return _length;
           }
 
-          const QString& item::name() const
+          const std::string& item::name() const
           {
-            return _name;
-          }
-          const QString& item::name (const QString& name_)
-          {
-            return _name = name_;
+            return port().name;
           }
 
           const orientation::type&
@@ -379,7 +376,7 @@ namespace fhg
 
           void item::refresh_tooltip()
           {
-            setToolTip (_name + " :: " + we_type());
+            setToolTip (QString::fromStdString (name()) + " :: " + we_type());
           }
 
                     static qreal angle (const orientation::type& o)
@@ -515,13 +512,13 @@ namespace fhg
                 painter->rotate (degrees);
                 painter->drawText ( QTransform().rotate(-degrees).mapRect (area)
                                   , Qt::AlignCenter
-                                  , name()
+                                  , QString::fromStdString (name())
                                   );
                 painter->restore();
               }
             else
               {
-                painter->drawText(area, Qt::AlignCenter, name());
+                painter->drawText(area, Qt::AlignCenter, QString::fromStdString (name()));
               }
           }
         }
