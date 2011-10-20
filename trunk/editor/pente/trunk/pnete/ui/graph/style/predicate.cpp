@@ -74,7 +74,7 @@ namespace fhg
               const std::string& type (const graph::item * gi)
               {
                 return
-                  qgraphicsitem_cast<const graph::port::item*> (gi)->port().type;
+                  qgraphicsitem_cast<const graph::port::item*> (gi)->we_type();
               }
             }
 
@@ -82,7 +82,8 @@ namespace fhg
             {
               const std::string& name (const graph::item * gi)
               {
-                return qgraphicsitem_cast<const graph::transition::item*> (gi)->name().toStdString();
+                return
+                  qgraphicsitem_cast<const graph::transition::item*> (gi)->name();
               }
 //               const bool internal (const graph::item *);
 //               const bool inline (const graph::item *);

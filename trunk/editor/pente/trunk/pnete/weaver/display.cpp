@@ -138,10 +138,6 @@ namespace fhg
         return boost::apply_visitor (visitor::get_function(_net), f);
       }
 
-      WSIG(transition, transition::name, std::string, name)
-      {
-        _transition->name (QString::fromStdString (name));
-      }
       WSIG( transition
           , transition::function
           , XMLTYPE(transition_type::f_type)

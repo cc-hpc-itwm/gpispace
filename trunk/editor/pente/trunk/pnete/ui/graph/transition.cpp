@@ -58,7 +58,6 @@ namespace fhg
             , _dragging (false)
             , _transition (transition)
             , _menu_context()
-            , _name()
             , _proxy (NULL)
           {
             new cogwheel_button (this);
@@ -92,7 +91,6 @@ namespace fhg
 //               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
 //             , _transition(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
 //             , _menu_context()
-//             , _name()
 //             , _proxy (NULL)
 //           {
 //             //! \todo WORK HERE, everything is missing
@@ -200,14 +198,9 @@ namespace fhg
               }
           }
 
-          const QString& item::name() const
+          const std::string& item::name() const
           {
-            return _name;
-          }
-
-          const QString& item::name (const QString& name_)
-          {
-            return _name = name_;
+            return transition().name;
           }
 
           // void slot_change_name (QString name)
@@ -339,7 +332,7 @@ namespace fhg
 
             painter->drawText ( rect
                               , Qt::AlignCenter | Qt::TextWordWrap
-                              , name()
+                              , QString::fromStdString (name())
                               );
           }
         }

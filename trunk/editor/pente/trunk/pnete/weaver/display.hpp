@@ -147,7 +147,6 @@ namespace fhg
       };
 
       WSIGE(transition, transition::close);
-      WSIG(transition, transition::name, std::string, name);
       WSIG( transition
           , transition::function
           , XMLTYPE(transition_type::f_type)

@@ -55,8 +55,7 @@ namespace fhg
             QRectF bounding_rect (const QSizeF&) const;
             QPainterPath shape (const QSizeF&) const;
 
-            const QString& name (const QString& name_);
-            const QString& name() const;
+            const std::string& name() const;
 
             void repositionChildrenAndResize();
 
@@ -91,8 +90,6 @@ namespace fhg
             QMenu _menu_context;
 
             void init_menu_context();
-
-            QString _name;
 
             data::proxy::type * _proxy;
           };
