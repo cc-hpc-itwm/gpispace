@@ -93,6 +93,16 @@ namespace fhg
             }
         }
 
+        void item::mode_push (const style::mode::type& mode)
+        {
+          _mode.push (mode);
+          update();
+        }
+        void item::mode_pop ()
+        {
+          _mode.pop();
+          update();
+        }
         const style::mode::type& item::mode() const
         {
           if (_mode.empty())
@@ -105,12 +115,12 @@ namespace fhg
 
         void item::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
         {
-          _mode.pop();
+          mode_pop();
           update (boundingRect());
         }
         void item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
         {
-          _mode.push (style::mode::HIGHLIGHT);
+          mode_push (style::mode::HIGHLIGHT);
           update (boundingRect());
         }
       }

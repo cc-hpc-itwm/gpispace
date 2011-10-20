@@ -70,6 +70,8 @@ namespace fhg
           }
 
           const style::mode::type& mode() const;
+          void mode_push (const style::mode::type&);
+          void mode_pop();
 
         private:
           ::we::type::property::type* _property;

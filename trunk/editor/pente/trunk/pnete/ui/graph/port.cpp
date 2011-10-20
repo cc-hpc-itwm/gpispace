@@ -86,7 +86,6 @@ namespace fhg
             : connectable::item (direction, type_map, parent, &port.prop)
             , _port (port)
             , _orientation ()
-            , _dragging (false)
             , _drag_start (0.0, 0.0)
             , _length (size::port::width())
             , _menu_context()
@@ -191,14 +190,14 @@ namespace fhg
 
           void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
           {
-            if (!_dragging)
+            if (mode() == style::mode::DRAG)
+              {
+                event->accept();
+              }
+            else
               {
                 connectable::item::mouseReleaseEvent (event);
-                return;
               }
-
-            _dragging = false;
-            event->accept();
           }
 
           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
@@ -211,7 +210,7 @@ namespace fhg
 
             if (event->modifiers() == Qt::ControlModifier)
               {
-                _dragging = true;
+                mode_push (style::mode::DRAG);
                 _drag_start = event->pos();
                 event->accept();
                 return;
@@ -299,34 +298,35 @@ namespace fhg
 
           void item::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
           {
-            if(!_dragging)
+            if (mode() == style::mode::DRAG)
+              {
+                const QPointF old_location (pos());
+                const orientation::type old_orientation (orientation());
+                const QPointF new_location (pos() + event->pos() - _drag_start);
+
+                setPos (fitting_position (new_location));
+
+                // do not move, when now colliding with a different port
+                foreach (QGraphicsItem* collidingItem, collidingItems())
+                  {
+                    if ( qgraphicsitem_cast<item*>(collidingItem)
+                       && collidingItem->parentItem() == parentItem()
+                       )
+                      {
+                        orientation (old_orientation);
+                        setPos (old_location);
+                        event->ignore();
+                        return;
+                      }
+                  }
+                event->accept();
+                scene()->update (boundingRect().translated (old_location));
+                scene()->update (boundingRect().translated (pos()));
+              }
+            else
               {
                 connectable::item::mouseMoveEvent (event);
-                return;
               }
-
-            const QPointF old_location (pos());
-            const orientation::type old_orientation (orientation());
-            const QPointF new_location (pos() + event->pos() - _drag_start);
-
-            setPos (fitting_position (new_location));
-
-            // do not move, when now colliding with a different port
-            foreach (QGraphicsItem* collidingItem, collidingItems())
-              {
-                if ( qgraphicsitem_cast<item*>(collidingItem)
-                   && collidingItem->parentItem() == parentItem()
-                   )
-                  {
-                    orientation (old_orientation);
-                    setPos (old_location);
-                    event->ignore();
-                    return;
-                  }
-              }
-            event->accept();
-            scene()->update (boundingRect().translated (old_location));
-            scene()->update (boundingRect().translated (pos()));
           }
 
           const qreal& item::length() const

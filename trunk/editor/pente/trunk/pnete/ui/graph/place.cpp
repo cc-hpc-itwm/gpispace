@@ -29,7 +29,6 @@ namespace fhg
                                 )
             , _place (place)
             , _content()
-            , _dragging (false)
             , _name (tr ("<<a place>>"))
           {
             refresh_content();
@@ -86,21 +85,22 @@ namespace fhg
 
           void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
           {
-            if (!_dragging)
+            if (mode() == style::mode::DRAG)
+              {
+                setPos (style::raster::snap (pos() + event->pos() - _drag_start));
+                event->accept();
+                scene()->update();
+              }
+            else
               {
                 connectable::item::mouseMoveEvent (event);
-                return;
               }
-
-            setPos (style::raster::snap (pos() + event->pos() - _drag_start));
-            event->accept();
-            scene()->update();
           }
           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
           {
             if (event->modifiers() == Qt::ControlModifier)
               {
-                _dragging = true;
+                mode_push (style::mode::DRAG);
                 _drag_start = event->pos();
                 event->accept();
                 return;
@@ -111,14 +111,15 @@ namespace fhg
 
           void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
           {
-            if (!_dragging)
+            if (mode() == style::mode::DRAG)
+              {
+                mode_pop();
+                event->accept();
+              }
+            else
               {
                 connectable::item::mouseReleaseEvent (event);
-                return;
               }
-
-            _dragging = false;
-            event->accept();
           }
         }
       }

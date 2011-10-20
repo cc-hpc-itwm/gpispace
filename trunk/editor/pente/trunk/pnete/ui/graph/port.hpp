@@ -89,7 +89,6 @@ namespace fhg
 
             orientation::type _orientation;
 
-            bool _dragging;
             QPointF _drag_start;
 
             qreal _length;

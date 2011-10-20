@@ -73,6 +73,7 @@ namespace fhg
             virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
             virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+
             virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
             virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
             virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
@@ -81,8 +82,6 @@ namespace fhg
 
             QPointF _dragStart;
             QSizeF _size;
-
-            bool _dragging;
 
             transition_type & _transition;
 

@@ -70,7 +70,6 @@ namespace fhg
 
             QStaticText _content;
 
-            bool _dragging;
             QPointF _drag_start;
 
             QString _name;

@@ -55,7 +55,6 @@ namespace fhg
             : graph::item (parent, &transition.prop)
             , _dragStart (0, 0)
             , _size (size::transition::width(), size::transition::height())
-            , _dragging (false)
             , _transition (transition)
             , _menu_context()
             , _proxy (NULL)
@@ -87,7 +86,6 @@ namespace fhg
 //             : graph::item (parent)
 //             , _dragStart (0, 0)
 //             , _size (size::transition::width(), size::transition::height())
-//             , _dragging (false)
 //               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
 //             , _transition(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
 //             , _menu_context()
@@ -114,14 +112,14 @@ namespace fhg
 
           void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
           {
-            if(_dragging)
+            if(mode() == style::mode::DRAG)
               {
-                _dragging = false;
+                mode_pop();
                 event->accept();
               }
             else
               {
-                event->ignore();
+                graph::item::mouseReleaseEvent (event);
               }
           }
 
@@ -130,12 +128,12 @@ namespace fhg
             //! \todo resize grap or move?
             event->accept();
             _dragStart = event->pos();
-            _dragging = true;
+            mode_push (style::mode::DRAG);
           }
 
           void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
           {
-            if (_dragging)
+            if (mode() == style::mode::DRAG)
               {
                 //! \note Hackadiddyhack.
                 QHash<connection::item*, QRectF> connections;
@@ -194,7 +192,7 @@ namespace fhg
               }
             else
               {
-                event->ignore();
+                graph::item::mouseMoveEvent (event);
               }
           }
 
