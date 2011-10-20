@@ -33,10 +33,6 @@ namespace fhg
             , _name (tr ("<<a place>>"))
           {
             refresh_content();
-            connect ( this
-                    , SIGNAL (we_type_changed())
-                    , SLOT (refresh_content())
-                    );
           }
 
           const place_type& item::place () const
