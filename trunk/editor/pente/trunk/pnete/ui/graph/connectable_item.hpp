@@ -54,19 +54,17 @@ namespace fhg
             const QSet<connection::item*>& connections() const;
             const direction::type& direction() const;
             const direction::type& direction (const direction::type&);
-            QString we_type() const;
-            const QString& we_type (const QString&);
+
+            virtual const std::string& we_type() const = 0;
 
             virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
-
-          signals:
-            void we_type_changed();
 
           protected:
             QSet<connection::item*> _connections;
             direction::type _direction;
-            QString _we_type;
             boost::optional< ::xml::parse::type::type_map_type&> _type_map;
+
+            const std::string& we_type (const std::string&) const;
           };
         }
       }

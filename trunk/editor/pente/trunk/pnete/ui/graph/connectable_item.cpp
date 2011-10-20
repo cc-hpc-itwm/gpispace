@@ -23,7 +23,6 @@ namespace fhg
             : graph::item (parent, property)
             , _connections ()
             , _direction (direction)
-            , _we_type (tr ("<<we_type>>"))
             , _type_map (type_map)
           {}
 
@@ -63,27 +62,20 @@ namespace fhg
             return _direction = direction_;
           }
 
-          QString item::we_type() const
+          const std::string& item::we_type (const std::string& unmapped) const
           {
             if (_type_map)
               {
                 ::xml::parse::type::type_map_type::const_iterator type_mapping
-                  (_type_map->find (_we_type.toStdString()));
+                  (_type_map->find (unmapped));
 
                 if (type_mapping != _type_map->end())
                   {
-                    return QString::fromStdString (type_mapping->second);
+                    return type_mapping->second;
                   }
               }
 
-            return _we_type;
-          }
-          const QString& item::we_type (const QString& we_type_)
-          {
-            _we_type = we_type_;
-            emit we_type_changed();
-            //! \todo check, if connections to this item are still valid!
-            return _we_type;
+            return unmapped;
           }
 
           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)

@@ -38,7 +38,7 @@ namespace fhg
             if (style::predicate::is_transition (i))
               {
                 const fhg::util::maybe<std::string>& n
-                  (qgraphicsitem_cast<const item*>(i)->data().name);
+                  (qgraphicsitem_cast<const item*>(i)->transition().name);
 
                 if (n && *n == name.toStdString())
                   {
@@ -49,15 +49,15 @@ namespace fhg
             return boost::none;
           }
 
-          item::item ( transition_type & data
+          item::item ( transition_type & transition
                      , graph::item* parent
                      )
-            : graph::item (parent, &data.prop)
+            : graph::item (parent, &transition.prop)
             , _dragStart (0, 0)
             , _size (size::transition::width(), size::transition::height())
             , _highlighted (false)
             , _dragging (false)
-            , _data (data)
+            , _transition (transition)
             , _menu_context()
             , _name()
             , _proxy (NULL)
@@ -92,7 +92,7 @@ namespace fhg
 //             , _highlighted (false)
 //             , _dragging (false)
 //               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
-//             , _data(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
+//             , _transition(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
 //             , _menu_context()
 //             , _name()
 //             , _proxy (NULL)
@@ -100,7 +100,10 @@ namespace fhg
 //             //! \todo WORK HERE, everything is missing
 //           }
 
-          const transition_type& item::data () const { return _data; }
+          const transition_type& item::transition () const
+          {
+            return _transition;
+          }
 
           void item::init_menu_context()
           {

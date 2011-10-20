@@ -28,13 +28,13 @@ namespace fhg
       {
         namespace place
         {
+          typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
+
           class item : public graph::connectable::item
           {
             Q_OBJECT;
 
           public:
-            typedef ITVAL(XMLTYPE(net_type::places_type)) place_type;
-
             item
             ( place_type& place
             , boost::optional< ::xml::parse::type::type_map_type&> type_map
@@ -42,8 +42,12 @@ namespace fhg
             , item* parent = NULL
             );
 
+            const place_type& place () const;
+
             const QString& name (const QString& name_);
             const QString& name() const;
+
+            const std::string& we_type() const;
 
           public slots:
             void refresh_content();

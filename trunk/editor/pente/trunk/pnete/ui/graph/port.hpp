@@ -48,7 +48,10 @@ namespace fhg
 
             const qreal& length() const;
 
+            const port_type& port () const { return _port; }
+
             const std::string& name() const;
+            const std::string& we_type () const;
 
             const orientation::type& orientation() const;
             const orientation::type& orientation(const orientation::type&);
@@ -66,8 +69,6 @@ namespace fhg
 
             void
             set_just_orientation_but_not_in_property (const orientation::type&);
-
-            const port_type& port () const { return _port; }
 
           public slots:
             void slot_set_type();

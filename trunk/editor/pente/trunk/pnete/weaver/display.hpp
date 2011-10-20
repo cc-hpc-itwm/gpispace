@@ -218,7 +218,6 @@ namespace fhg
       };
 
       WSIG(port, port::name, std::string, name);
-      WSIG(port, port::type, std::string, type);
       WSIG(port, port::properties, WETYPE(property::type), props);
 
       class port_toplevel
@@ -242,7 +241,6 @@ namespace fhg
 
       WSIG(port_toplevel, port::open, ITVAL(XMLTYPE(ports_type)), port);
       WSIG(port_toplevel, port::name, std::string, name);
-      WSIG(port_toplevel, port::type, std::string, type);
       WSIG(port_toplevel, port::place, MAYBE(std::string), place);
       WSIG(port_toplevel, port::properties, WETYPE(property::type), props);
 
@@ -261,7 +259,6 @@ namespace fhg
       };
 
       WSIG(place, place::name, std::string, name);
-      WSIG(place, place::type, std::string, type);
       WSIG(place, place::properties, WETYPE(property::type), props);
 
       namespace visitor

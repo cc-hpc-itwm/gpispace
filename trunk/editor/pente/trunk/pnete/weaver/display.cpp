@@ -411,12 +411,7 @@ namespace fhg
 
       WSIG(port, port::name, std::string, name)
       {
-        //        _port->name (QString::fromStdString (name));
         _port_item_by_name[name] = _port;
-      }
-      WSIG(port, port::type, std::string, type)
-      {
-        _port->we_type (QString::fromStdString (type));
       }
       WSIG(port, port::properties, WETYPE(property::type), props)
       {
@@ -436,10 +431,6 @@ namespace fhg
       {
         _place->name (QString::fromStdString (name));
         _place_item_by_name[name] = _place;
-      }
-      WSIG(place, place::type, std::string, type)
-      {
-        _place->we_type (QString::fromStdString (type));
       }
       WSIG(place, place::properties, WETYPE(property::type), props)
       {
@@ -471,11 +462,6 @@ namespace fhg
       WSIG(port_toplevel, port::name, std::string, name)
       {
         _name = name;
-        //        _port_item->name (QString::fromStdString (name));
-      }
-      WSIG(port_toplevel, port::type, std::string, type)
-      {
-        _port_item->we_type (QString::fromStdString (type));
       }
       WSIG(port_toplevel, port::place, MAYBE(std::string), place)
       {

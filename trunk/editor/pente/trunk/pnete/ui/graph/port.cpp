@@ -61,14 +61,14 @@ namespace fhg
           }
 
           static boost::optional<const QColor&>
-          color_if_type ( const QString& type
+          color_if_type ( const std::string& type
                         , const QColor& color
                         , const graph::item* gi
                         )
           {
-            if (style::predicate::is_port (i))
+            if (style::predicate::is_port (gi))
               {
-                if (qgraphicsitem_cast<const item*>(i)->we_type() == type)
+                if (qgraphicsitem_cast<const item*>(gi)->we_type() == type)
                   {
                     return boost::optional<const QColor&> (color);
                   }
@@ -147,7 +147,6 @@ namespace fhg
             //! \todo verbose name
 
             refresh_tooltip();
-            connect (this, SIGNAL (we_type_changed()), SLOT (refresh_tooltip()));
 
             _length = qMax( _length
                           , QStaticText(QString::fromStdString (name())).size().width()
@@ -339,6 +338,10 @@ namespace fhg
           {
             return port().name;
           }
+          const std::string& item::we_type() const
+          {
+            return connectable::item::we_type (port().type);
+          }
 
           const orientation::type&
           item::orientation() const
@@ -376,10 +379,10 @@ namespace fhg
 
           void item::refresh_tooltip()
           {
-            setToolTip (QString::fromStdString (name()) + " :: " + we_type());
+            setToolTip (QString::fromStdString (name()) + " :: " + QString::fromStdString (we_type()));
           }
 
-                    static qreal angle (const orientation::type& o)
+          static qreal angle (const orientation::type& o)
           {
             switch (o)
               {

@@ -47,7 +47,7 @@ namespace fhg
 //                           , graph::item* parent = NULL
 //                           );
 
-            const transition_type& data () const;
+            const transition_type& transition () const;
 
             virtual QRectF boundingRect() const;
             virtual QPainterPath shape() const;
@@ -88,7 +88,7 @@ namespace fhg
             bool _highlighted;
             bool _dragging;
 
-            transition_type & _data;
+            transition_type & _transition;
 
           private:
             QMenu _menu_context;

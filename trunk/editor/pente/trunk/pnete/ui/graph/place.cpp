@@ -39,6 +39,16 @@ namespace fhg
                     );
           }
 
+          const place_type& item::place () const
+          {
+            return _place;
+          }
+
+          const std::string& item::we_type() const
+          {
+            return connectable::item::we_type (place().type);
+          }
+
           const QString& item::name (const QString& name_)
           {
             _name = name_;
@@ -52,7 +62,7 @@ namespace fhg
 
           void item::refresh_content()
           {
-            _content.setText (_name + " :: " + we_type());
+            _content.setText (_name + " :: " + QString::fromStdString (we_type()));
           }
 
           QRectF item::boundingRect() const
