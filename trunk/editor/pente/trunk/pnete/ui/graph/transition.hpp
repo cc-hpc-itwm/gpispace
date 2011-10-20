@@ -58,8 +58,6 @@ namespace fhg
             const QString& name (const QString& name_);
             const QString& name() const;
 
-            bool highlighted() const;
-
             void repositionChildrenAndResize();
 
             data::proxy::type* proxy (data::proxy::type*);
@@ -85,7 +83,6 @@ namespace fhg
             QPointF _dragStart;
             QSizeF _size;
 
-            bool _highlighted;
             bool _dragging;
 
             transition_type & _transition;

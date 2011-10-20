@@ -55,7 +55,6 @@ namespace fhg
             : graph::item (parent, &transition.prop)
             , _dragStart (0, 0)
             , _size (size::transition::width(), size::transition::height())
-            , _highlighted (false)
             , _dragging (false)
             , _transition (transition)
             , _menu_context()
@@ -89,7 +88,6 @@ namespace fhg
 //             : graph::item (parent)
 //             , _dragStart (0, 0)
 //             , _size (size::transition::width(), size::transition::height())
-//             , _highlighted (false)
 //             , _dragging (false)
 //               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
 //             , _transition(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
@@ -210,11 +208,6 @@ namespace fhg
           const QString& item::name (const QString& name_)
           {
             return _name = name_;
-          }
-
-          bool item::highlighted() const
-          {
-            return _highlighted;
           }
 
           // void slot_change_name (QString name)
