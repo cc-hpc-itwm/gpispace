@@ -2,8 +2,6 @@
 
 #include <pnete/ui/graph/style/fallback.hpp>
 
-#include <vector>
-
 namespace fhg
 {
   namespace pnete
@@ -16,20 +14,10 @@ namespace fhg
         {
           namespace fallback
           {
-            template<typename T>
-            std::vector<T> init (const T& value)
-            {
-              std::vector<T> x;
-
-              for (int i (0); i < 5; ++i) { x.push_back (value); }
-
-              return x;
-            }
-
-#define IMPL(_t, _n, _d)                                                \
+#define IMPL(_t, _n, _d0, _d1, _d2, _d3, _d4)                           \
             _t& _n (const mode::type& m)                                \
             {                                                           \
-              static std::vector<_t> x (init<_t> (_d));                 \
+              static _t x[5] = {_d0,_d1,_d2,_d3,_d4};                   \
                                                                         \
               return x[m];                                              \
             }                                                           \
@@ -42,11 +30,11 @@ namespace fhg
               }                                                         \
             }
 
-            IMPL (qreal, border_thickness, 2.0)
-            IMPL (QColor, border_color, Qt::black)
-            IMPL (QColor, background_color, Qt::white)
-            IMPL (qreal, text_line_thickness, 1.0)
-            IMPL (QColor, text_color, Qt::black)
+            IMPL (qreal, border_thickness, 2.0, 4.0, 1.0, 1.0, 1.0)
+            IMPL (QColor, border_color, Qt::black, Qt::red, Qt::gray, Qt::gray, Qt::gray)
+            IMPL (QColor, background_color, Qt::white, Qt::white, Qt::gray, Qt::gray, Qt::gray)
+            IMPL (qreal, text_line_thickness, 1.0, 1.0, 1.0, 1.0, 1.0)
+            IMPL (QColor, text_color, Qt::black, Qt::red, Qt::gray, Qt::gray, Qt::gray)
 #undef IMPL
 
             namespace detail
