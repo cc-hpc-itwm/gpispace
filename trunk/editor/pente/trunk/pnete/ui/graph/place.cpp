@@ -29,7 +29,6 @@ namespace fhg
                                 )
             , _place (place)
             , _content()
-            , _name (tr ("<<a place>>"))
           {
             refresh_content();
           }
@@ -44,20 +43,17 @@ namespace fhg
             return connectable::item::we_type (place().type);
           }
 
-          const QString& item::name (const QString& name_)
+          const std::string& item::name() const
           {
-            _name = name_;
-            refresh_content();
-            return _name;
-          }
-          const QString& item::name() const
-          {
-            return _name;
+            return place().name;
           }
 
           void item::refresh_content()
           {
-            _content.setText (_name + " :: " + QString::fromStdString (we_type()));
+            _content.setText ( QString::fromStdString (name())
+                             + " :: "
+                             + QString::fromStdString (we_type())
+                             );
           }
 
           QRectF item::boundingRect() const

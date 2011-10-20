@@ -425,7 +425,6 @@ namespace fhg
 
       WSIG(place, place::name, std::string, name)
       {
-        _place->name (QString::fromStdString (name));
         _place_item_by_name[name] = _place;
       }
       WSIG(place, place::properties, WETYPE(property::type), props)

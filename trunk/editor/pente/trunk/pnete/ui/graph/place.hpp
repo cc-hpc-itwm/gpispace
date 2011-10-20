@@ -44,9 +44,7 @@ namespace fhg
 
             const place_type& place () const;
 
-            const QString& name (const QString& name_);
-            const QString& name() const;
-
+            const std::string& name() const;
             const std::string& we_type() const;
 
           public slots:
@@ -71,8 +69,6 @@ namespace fhg
             QStaticText _content;
 
             QPointF _drag_start;
-
-            QString _name;
           };
         }
       }
