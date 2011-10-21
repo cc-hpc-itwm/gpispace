@@ -122,6 +122,9 @@ FHGLOG_level=MIN $prefix/bin/fhgkernel \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \
     -s plugin.ufbmig_front.port_server=${port} \
+    -s plugin.ufbmig_back.wf_init="${HOME}/pnet/ufbmig/init.pnet" \
+    -s plugin.ufbmig_back.wf_calc="${HOME}/pnet/ufbmig/calc.pnet" \
+    -s plugin.ufbmig_back.wf_done="${HOME}/pnet/ufbmig/done.pnet" \
     $prefix/libexec/plugins/kvs.so \
     $prefix/libexec/plugins/net.so \
     $prefix/libexec/plugins/sdpac.so \
