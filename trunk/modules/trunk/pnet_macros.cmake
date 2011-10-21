@@ -24,7 +24,11 @@ macro(PNET_COMPILE)
 
   if (PNET_INCLUDES)
     foreach(p ${PNET_INCLUDES})
-      set (${PNET_FLAGS} "${PNET_FLAGS} -I ${p}")
+      if (IS_ABSOLUTE ${p})
+      else()
+	set(p ${CMAKE_CURRENT_SOURCE_DIR}/${p})
+      endif()
+      set (PNET_FLAGS ${PNET_FLAGS} -I ${p})
     endforeach()
   endif()
 
@@ -33,7 +37,20 @@ macro(PNET_COMPILE)
     set(PNET_OUTPUT ${PNET_NAME}.pnet)
   endif()
 
-  set(PNETC_ARGS ${PNET__default_flags} ${PNET_FLAGS} ${PNET_SOURCES} -o ${PNET_OUTPUT})
+  set(__pnet_sources)
+  if (PNET_SOURCES)
+    foreach (s ${PNET_SOURCES})
+      if (IS_ABSOLUTE ${s})
+	set(__pnet_sources ${__pnet_sources} ${s})
+      else()
+	set(__pnet_sources ${__pnet_sources} ${CMAKE_CURRENT_SOURCE_DIR}/${s})
+      endif()
+    endforeach()
+  else()
+    message(FATAL_ERROR "** pnet_compile: at least one source file is required")
+  endif()
+
+  set(PNETC_ARGS ${PNET__default_flags} ${PNET_FLAGS} ${__pnet_sources} -o ${PNET_OUTPUT})
 
   if (PNET_GENERATE)
     set(PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
@@ -42,7 +59,7 @@ macro(PNET_COMPILE)
   add_custom_target(pnet-${PNET_NAME} ALL
     COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
     DEPENDS ${PNETC_LOCATION} ${PNET_DEPENDS}
-    COMMENT "compiling petri-net: ${PNET_NAME}"
+    COMMENT "Compiling petri-net: ${PNET_NAME}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES ${PNET_SOURCES}
     )
@@ -61,6 +78,6 @@ macro(PNET_COMPILE)
   endif()
 
   if (PNET_INSTALL)
-    install (FILES ${PNET_SOURCES} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL})
+    install (FILES ${__pnet_sources} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL})
   endif()
 endmacro()
