@@ -37,6 +37,10 @@ macro(PNET_COMPILE)
     set(PNET_OUTPUT ${PNET_NAME}.pnet)
   endif()
 
+  if (NOT IS_ABSOLUTE ${PNET_OUTPUT})
+    set(PNET_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PNET_OUTPUT})
+  endif()
+
   set(__pnet_sources)
   if (PNET_SOURCES)
     foreach (s ${PNET_SOURCES})
