@@ -13,6 +13,7 @@
 // plugin interfaces
 #include "sdpactl.hpp"
 #include "sdpac.hpp"
+#include "gpi.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
@@ -62,7 +63,13 @@ class UfBMigBackImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
-    m_wf_path_initialize = fhg_kernel()->get("path.initialize", "/u/herc/petry/pnet/fail.pnet");
+    m_wf_path_initialize =
+      fhg_kernel()->get("wf_init", "/u/herc/petry/pnet/ufbmig/init.pnet");
+    m_wf_path_calculate =
+      fhg_kernel()->get("wf_calc", "/u/herc/petry/pnet/ufbmig/calc.pnet");
+    m_wf_path_finalize =
+      fhg_kernel()->get("wf_done", "/u/herc/petry/pnet/ufbmig/done.pnet");
+
     m_frontend = 0;
     sdpa_ctl = fhg_kernel()->acquire<sdpa::Control>("sdpactl");
     if (0 == sdpa_ctl)
@@ -129,7 +136,7 @@ public:
   {
     MLOG(INFO, "submitting CALCULATE workflow");
 
-    const std::string wf(read_workflow_from_file(m_wf_path_initialize));
+    const std::string wf(read_workflow_from_file(m_wf_path_calculate));
 
     // place tokens
 
@@ -148,7 +155,7 @@ public:
   {
     MLOG(INFO, "submitting FINALIZE workflow");
 
-    const std::string wf(read_workflow_from_file(m_wf_path_initialize));
+    const std::string wf(read_workflow_from_file(m_wf_path_finalize));
     return submit_job(wf, job::type::CALCULATE);
   }
 
@@ -282,6 +289,8 @@ private:
 
   // workflow paths
   std::string m_wf_path_initialize;
+  std::string m_wf_path_calculate;
+  std::string m_wf_path_finalize;
 };
 
 EXPORT_FHG_PLUGIN( ufbmig_back
