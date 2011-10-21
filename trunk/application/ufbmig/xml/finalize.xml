@@ -20,7 +20,7 @@
       <defun>
         <in name="config" type="config"/>
         <out name="done" type="control"/>
-        <module name="ufbmig" function="done finalize_ufbmig (config)">
+        <module name="ufbmig_done" function="done finalize_ufbmig (config)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <code><![CDATA[

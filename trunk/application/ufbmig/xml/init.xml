@@ -16,7 +16,7 @@
       <defun>
         <in name="description" type="string"/>
         <out name="config" type="config"/>
-        <module name="ufbmig" function="config init (description)">
+        <module name="ufbmig_init" function="config init (description)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <code><![CDATA[
