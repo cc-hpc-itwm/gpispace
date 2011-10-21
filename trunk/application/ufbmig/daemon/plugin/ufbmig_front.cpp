@@ -358,6 +358,7 @@ private:
       if (! m_migrate_xml_buffer.empty())
       {
         ec = handle_ISIM_command (client::command::MIGRATE, m_migrate_xml_buffer);
+        m_migrate_xml_buffer.clear();
       }
       break;
     case client::command::ABORT:
