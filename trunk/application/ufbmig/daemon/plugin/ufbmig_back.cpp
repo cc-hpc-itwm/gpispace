@@ -14,27 +14,51 @@
 #include "sdpactl.hpp"
 #include "sdpac.hpp"
 
-namespace job_type
-{
-  enum code
-    {
-      INITIALIZE,
-      CALCULATE,
-      FINALIZE,
-    };
-}
+#include <boost/thread.hpp>
+#include <boost/foreach.hpp>
 
-struct job_info_t
+namespace job
 {
-  int         type;     // INIT, CALC, FINAL, ...
-  std::string id;
-  int         state;
-  std::string result;
-};
+  namespace type
+  {
+    enum code
+      {
+        INITIALIZE,
+        CALCULATE,
+        FINALIZE,
+      };
+  }
+
+  struct info_t
+  {
+    int         type;     // INIT, CALC, FINAL, ...
+    std::string id;
+    int         state;
+    std::string result;
+  };
+
+  static bool is_done(info_t const &info)
+  {
+    return info.state > sdpa::status::RUNNING;
+  }
+
+  static int state_to_result_code (int state)
+  {
+    if (sdpa::status::FINISHED == state) return 0;
+    if (sdpa::status::CANCELED == state) return -ECANCELED;
+    if (sdpa::status::FAILED   == state) return -EFAULT;
+    else                                 return -EFAULT;
+  }
+}
 
 class UfBMigBackImpl : FHG_PLUGIN
                      , public ufbmig::Backend
 {
+  typedef boost::recursive_mutex mutex_type;
+  typedef boost::unique_lock<mutex_type> lock_type;
+  typedef boost::condition_variable_any condition_type;
+  typedef std::list<job::info_t> job_list_t;
+
 public:
   FHG_PLUGIN_START()
   {
@@ -53,6 +77,15 @@ public:
       MLOG(ERROR, "could not acquire sdpa::Client plugin");
       FHG_PLUGIN_FAILED(EINVAL);
     }
+
+    // TODO: lazy acquire gpi
+    // gpi = fhg_kernel()->acquire<gpi::GPI>("gpi");
+
+    fhg_kernel()->schedule ( boost::bind( &UfBMigBackImpl::update_job_states
+                                        , this
+                                        )
+                           , 1
+                           );
 
     FHG_PLUGIN_STARTED();
   }
@@ -75,34 +108,15 @@ public:
     m_frontend = f;
   }
 
-  int initialize(std::string const &desc)
+  int initialize(std::string const &xml)
   {
     MLOG(INFO, "submitting INITIALIZE workflow");
 
-    job_info_t job_info;
-    int ec;
+    const std::string wf(read_workflow_from_file(m_wf_path_initialize));
 
-    job_info.type = job_type::INITIALIZE;
-
-    // write xml desc to file
-
-    // read workflow from file
-    //    use wfe plugin?
-    //        Workflow wfe->parse(string);
-    //        Workflow.put("port", value);
-    //        Workflow.get<>("port");
     // place tokens
-    // submit job
-    ec = sdpa_c->submit( read_workflow_from_file(m_wf_path_initialize)
-                       , job_info.id
-                       );
 
-    // append job_info_t
-    // start kernel task to query job state
-    //    std::string res;
-    //    sdpa_c->execute(read_workflow_from_file("/u/herc/petry/pnet/fail.pnet"), res);
-
-    return ec;
+    return submit_job(wf, job::type::INITIALIZE);
   }
 
   int update_salt_mask (const char *data, size_t len)
@@ -115,12 +129,9 @@ public:
   {
     MLOG(INFO, "submitting CALCULATE workflow");
 
-    job_info_t job_info;
-    int ec;
+    const std::string wf(read_workflow_from_file(m_wf_path_initialize));
 
-    job_info.type = job_type::CALCULATE;
-
-    // write xml desc to file
+    // place tokens
 
     // read workflow from file
     //    use wfe plugin?
@@ -129,46 +140,16 @@ public:
     //        Workflow.get<>("port");
     // place tokens
     // submit job
-    ec = sdpa_c->submit( read_workflow_from_file(m_wf_path_initialize)
-                       , job_info.id
-                       );
 
-    // append job_info_t
-    // start kernel task to query job state
-    //    std::string res;
-    //    sdpa_c->execute(read_workflow_from_file("/u/herc/petry/pnet/fail.pnet"), res);
-
-    return ec;
+    return submit_job(wf, job::type::CALCULATE);
   }
 
   int finalize()
   {
     MLOG(INFO, "submitting FINALIZE workflow");
 
-    job_info_t job_info;
-    int ec;
-
-    job_info.type = job_type::FINALIZE;
-
-    // write xml desc to file
-
-    // read workflow from file
-    //    use wfe plugin?
-    //        Workflow wfe->parse(string);
-    //        Workflow.put("port", value);
-    //        Workflow.get<>("port");
-    // place tokens
-    // submit job
-    ec = sdpa_c->submit( read_workflow_from_file(m_wf_path_initialize)
-                       , job_info.id
-                       );
-
-    // append job_info_t
-    // start kernel task to query job state
-    //    std::string res;
-    //    sdpa_c->execute(read_workflow_from_file("/u/herc/petry/pnet/fail.pnet"), res);
-
-    return ec;
+    const std::string wf(read_workflow_from_file(m_wf_path_initialize));
+    return submit_job(wf, job::type::CALCULATE);
   }
 
   int cancel()
@@ -210,10 +191,82 @@ private:
     return sstr.str();
   }
 
+  int submit_job (std::string const &wf, int type)
+  {
+    int ec;
+    job::info_t job_info;
+
+    // append job_info_t
+    // start kernel task to query job state
+    //    std::string res;
+    //    sdpa_c->execute(read_workflow_from_file("/u/herc/petry/pnet/fail.pnet"), res);
+
+    job_info.type = type;
+    ec = sdpa_c->submit( wf
+                       , job_info.id
+                       );
+    if (0 == ec)
+    {
+      lock_type lock (m_job_list_mutex);
+      m_job_list.push_back(job_info);
+    }
+
+    return ec;
+  }
+
+  void notify_frontend_about_job (job::info_t const &j)
+  {
+    if (! m_frontend) return;
+
+    int ec = job::state_to_result_code(j.state);
+
+    switch (j.type)
+    {
+    case job::type::INITIALIZE:
+      m_frontend->initialize_done(ec);
+      break;
+    case job::type::CALCULATE:
+      m_frontend->calculate_done(ec);
+      break;
+    case job::type::FINALIZE:
+      m_frontend->finalize_done(ec);
+      break;
+    }
+  }
+
+  void update_job_states ()
+  {
+    lock_type lock (m_job_list_mutex);
+
+    for ( job_list_t::iterator j(m_job_list.begin())
+        ; j != m_job_list.end()
+        ; ++j
+        )
+    {
+      j->state = sdpa_c->status(j->id);
+      if (job::is_done(*j))
+      {
+        notify_frontend_about_job(*j);
+
+        j = m_job_list.erase(j);
+        if (j == m_job_list.end()) break;
+      }
+    }
+
+    fhg_kernel()->schedule ( boost::bind( &UfBMigBackImpl::update_job_states
+                                        , this
+                                        )
+                           , 1
+                           );
+  }
+
+  mutex_type m_job_list_mutex;
+  condition_type m_job_list_changed;
+  job_list_t m_job_list;
   sdpa::Control * sdpa_ctl;
   sdpa::Client * sdpa_c;
   ufbmig::Frontend *m_frontend;
-  std::list<job_info_t> m_job_info_list;
+  std::list<job::info_t> m_job_info_list;
 
   // workflow paths
   std::string m_wf_path_initialize;
