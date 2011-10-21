@@ -28,10 +28,11 @@ namespace client { namespace command {
     enum code
       {
         INITIALIZE = 0,
-        MIGRATE = 1,
-        MIGRATE_WITH_SALT_MASK = 2,
-        ABORT = 3,
-        FINALIZE = 4,
+        MIGRATE,
+        MIGRATE_WITH_SALT_MASK,
+        SALT_MASK,
+        ABORT,
+        FINALIZE,
       };
   }
 }
@@ -71,6 +72,8 @@ public:
 
   FHG_PLUGIN_START()
   {
+    m_migrate_xml_buffer.clear();
+
     std::string def_timeout = fhg_kernel()->get("timeout_default", "-1");
     m_conn_timeout =
       boost::lexical_cast<int>(fhg_kernel()->get("timeout_connect", def_timeout));
@@ -118,6 +121,11 @@ public:
       // TODO:
       //   mark plugin as incomplete, try to start connection again...
     }
+    catch (...)
+    {
+      LOG(ERROR, "could not start server connection due to an unknown reason");
+      FHG_PLUGIN_FAILED(EFAULT);
+    }
 
     m_backend = fhg_kernel()->acquire<ufbmig::Backend>("ufbmig_back");
     assert (m_backend);
@@ -152,10 +160,10 @@ public:
     return m_backend->update_salt_mask(data, len);
   }
 
-  int calculate()
+  int calculate(std::string const &xml)
   {
     assert (m_backend);
-    return m_backend->calculate ();
+    return m_backend->calculate (xml);
   }
 
   int finalize()
@@ -283,6 +291,7 @@ private:
       try
       {
         int ec;
+        std::string payload;
 
         message_ptr msg
           (PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout));
@@ -291,60 +300,12 @@ private:
           continue;
         }
 
-        const std::string payload (msg->getCostumPtr(), msg->m_ulCustomDataSize);
-
-        MLOG(INFO, "got command: " << msg->m_nCommand);
-        MLOG(INFO, "custom size: " << payload.size());
-        MLOG(INFO, "custom data: " << payload);
-
-        switch (msg->m_nCommand)
+        if (msg->m_ulCustomDataSize)
         {
-        case client::command::INITIALIZE:
-          // take user data and write file to disk...
-          // initialize with path to that file
-          ec = initialize(payload);
-          if (0 == ec)
-          {
-            send_initializing();
-          }
-          else
-          {
-            send_initialize_failure(ec);
-          }
-          break;
-        case client::command::MIGRATE:
-          // take xml file, write to disk...
-          ec = calculate();
-          if (0 == ec)
-          {
-            send_migrating();
-          }
-          else
-          {
-            send_migrate_failure(ec);
-          }
-          break;
-        case client::command::MIGRATE_WITH_SALT_MASK:
-          // take xml file, write to disk...
-          // receive salt mask message
-          {
-            message_ptr msg2
-              (PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout));
-            update_salt_mask(0, 0);
-            // call calculate
-            calculate_done(calculate());
-          }
-          break;
-        case client::command::ABORT:
-          // abort
-          cancel_done(cancel());
-          break;
-        case client::command::FINALIZE:
-          finalize_done(finalize());
-          break;
-        default:
-          break;
+          payload = std::string(msg->getCostumPtr(), msg->m_ulCustomDataSize);
         }
+
+        ec = handle_ISIM_command(msg->m_nCommand, payload);
       }
       catch (PSProMigIF::StartServer::StartServerException const &ex)
       {
@@ -357,6 +318,68 @@ private:
     }
   }
 
+  int handle_ISIM_command(int cmd, std::string const & payload)
+  {
+    int ec = 0;
+
+    MLOG(INFO, "got command: " << cmd);
+    MLOG(INFO, "custom size: " << payload.size());
+    MLOG(INFO, "custom data: " << payload);
+
+    switch (cmd)
+    {
+    case client::command::INITIALIZE:
+      // take user data and write file to disk...
+      // initialize with path to that file
+      ec = initialize(payload);
+      if (0 == ec)
+      {
+        send_initializing();
+      }
+      else
+      {
+        send_initialize_failure(ec);
+      }
+      break;
+    case client::command::MIGRATE:
+      ec = calculate(payload);
+      if (0 == ec)
+      {
+        send_migrating();
+      }
+      else
+      {
+        send_migrate_failure(ec);
+      }
+      break;
+    case client::command::MIGRATE_WITH_SALT_MASK:
+      // just remember xml data, asume we get the salt mask afterwards
+      m_migrate_xml_buffer = payload;
+      break;
+    case client::command::SALT_MASK:
+      ec = update_salt_mask(0, 0);
+      // work around strange protocol
+      if (! m_migrate_xml_buffer.empty())
+      {
+        ec = handle_ISIM_command (client::command::MIGRATE, m_migrate_xml_buffer);
+        // simulate callback
+        calculate_done(ec);
+      }
+      break;
+    case client::command::ABORT:
+      // abort
+      cancel_done(cancel());
+      break;
+    case client::command::FINALIZE:
+      finalize_done(finalize());
+      break;
+    default:
+      break;
+    }
+
+    return ec;
+  }
+
   bool m_stop_requested;
   int m_conn_timeout;
   int m_send_timeout;
@@ -364,6 +387,8 @@ private:
   PSProMigIF::StartServer* m_server;
   ufbmig::Backend *m_backend;
   boost::thread m_message_thread;
+
+  std::string m_migrate_xml_buffer;
 };
 
 EXPORT_FHG_PLUGIN( ufbmig_front
