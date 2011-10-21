@@ -1,7 +1,5 @@
 #!/bin/bash
 
-: >/scratch/petry/foo
-
 # cleanup for startup via gpid.exe...
 if [ x"$HOME" == x"/" ] ; then
    echo "I guess, I am running under gpid.exe..." >&2
@@ -16,7 +14,7 @@ verbose=false
 daemonize=false
 name=ufbmigd
 orchestrator=orchestrator
-timeout=5 # in seconds
+timeout=-1 # in seconds
 port=55555 # application port expected by the gui
 
 if [ -n "$PBS_NODEFILE" ] ; then
@@ -107,25 +105,27 @@ if [ -z "$node_file" ] ; then
     fi
 fi
 
+echo "using nodefile: $node_file" >&2
+
 export PBS_NODEFILE="$node_file"
 
 sdpa init
-eval $(sdpa load)
+source $HOME/.sdpa/state/sdpa.env
 
 log "starting kvs..."
 sdpa start kvs
 
 log "starting ufbmigd..."
-prefix=/scratch/petry/build/sdpacc
-FHGLOG_level=MIN $prefix/util/bin/fhgkernel \
+prefix=${SDPA_HOME}
+FHGLOG_level=MIN $prefix/bin/fhgkernel \
     -s plugin.net.name="${name}" \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \
     -s plugin.ufbmig_front.port_server=${port} \
-    $prefix/sdpa/plugin/kvs.so \
-    $prefix/sdpa/plugin/net.so \
-    $prefix/sdpa/plugin/sdpac.so \
-    $prefix/sdpa/plugin/sdpactl.so \
-    $prefix/application/ufbmig/daemon/plugin/ufbmig_back.so \
-    $prefix/application/ufbmig/daemon/plugin/ufbmig_front.so \
-    $@
+    $prefix/libexec/plugins/kvs.so \
+    $prefix/libexec/plugins/net.so \
+    $prefix/libexec/plugins/sdpac.so \
+    $prefix/libexec/plugins/sdpactl.so \
+    $prefix/libexec/plugins/ufbmig_back.so \
+    $prefix/libexec/plugins/ufbmig_front.so \
+    $@ >$SDPA_LOG_DIR/ufbmigd.log 2>&1
