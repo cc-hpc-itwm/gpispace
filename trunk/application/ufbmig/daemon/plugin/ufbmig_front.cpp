@@ -42,12 +42,18 @@ namespace server { namespace command {
     enum code
       {
         WAITING_FOR_INITIALIZE = 0,
+
         INITIALIZING = 1,
         INITIALIZE_SUCCESS = 2,
         INITIALIZE_FAILURE = 3,
+
         MIGRATING = 4,
         MIGRATE_SUCCESS = 5,
         MIGRATE_FAILURE = 6,
+
+        FINALIZING = 7,
+        FINALIZE_SUCCESS = 8,
+        FINALIZE_FAILURE = 9,
 
         PROGRESS = 1000,
         LOGOUTPUT = 1001,
@@ -196,7 +202,11 @@ public:
     LOG(TRACE, "calculate done: " << ec);
     if (! ec)
     {
-      send_migrate_success(0, 0);
+      // get current output from backend
+      const char *data = 0;
+      const size_t len = 0;
+
+      send_migrate_success(data, len);
     }
     else
     {
@@ -207,7 +217,14 @@ public:
   void finalize_done (int ec)
   {
     LOG(TRACE, "finalize done: " << ec);
-    return;
+    if (! ec)
+    {
+      send_finalize_success();
+    }
+    else
+    {
+      send_finalize_failure(ec);
+    }
   }
 private:
   boost::shared_ptr<PSProMigIF::Message> create_pspro_message( int cmd
@@ -226,43 +243,71 @@ private:
 
   void send_waiting_for_initialize()
   {
+    m_server->idle();
     create_pspro_message(server::command::WAITING_FOR_INITIALIZE)
       ->sendMsg(m_server->communication());
   }
 
   void send_initializing()
   {
+    m_server->busy();
     create_pspro_message(server::command::INITIALIZING)
       ->sendMsg(m_server->communication());
   }
 
   void send_initialize_success()
   {
+    m_server->idle();
     create_pspro_message(server::command::INITIALIZE_SUCCESS)
       ->sendMsg(m_server->communication());
   }
 
   void send_initialize_failure(int ec)
   {
+    m_server->idle();
     create_pspro_message(server::command::INITIALIZE_FAILURE, &ec, sizeof(ec))
       ->sendMsg(m_server->communication());
   }
 
   void send_migrating()
   {
+    m_server->busy();
     create_pspro_message(server::command::MIGRATING)
       ->sendMsg(m_server->communication());
   }
 
   void send_migrate_success(const void *data, size_t len)
   {
+    m_server->idle();
     create_pspro_message(server::command::MIGRATE_SUCCESS, data, len)
       ->sendMsg(m_server->communication());
   }
 
   void send_migrate_failure(int ec)
   {
+    m_server->idle();
     create_pspro_message(server::command::MIGRATE_FAILURE, &ec, sizeof(ec))
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_finalizing()
+  {
+    m_server->busy();
+    create_pspro_message(server::command::FINALIZING)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_finalize_success()
+  {
+    m_server->idle();
+    create_pspro_message(server::command::FINALIZE_SUCCESS)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_finalize_failure(int ec)
+  {
+    m_server->idle();
+    create_pspro_message(server::command::FINALIZE_FAILURE, &ec, sizeof(ec))
       ->sendMsg(m_server->communication());
   }
 
@@ -366,7 +411,15 @@ private:
       cancel();
       break;
     case client::command::FINALIZE:
-      finalize();
+      ec = finalize();
+      if (0 == ec)
+      {
+        send_finalizing();
+      }
+      else
+      {
+        send_finalize_failure(ec);
+      }
       break;
     default:
       break;
