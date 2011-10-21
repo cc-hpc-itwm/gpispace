@@ -1,0 +1,82 @@
+#!/bin/bash
+
+test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
+
+name=
+long=false
+short=false
+
+function usage ()
+{
+    cat >&2 <<EOF
+usage: $(basename "$0") [options]
+
+    -h: print this help
+    -n name (*): name of the drts to check
+                 if empty a list of all currently
+                 running drts will be printed
+    -l: print the whole command of the drts
+    -s: just print the pids
+EOF
+}
+
+while getopts ":hn:ls" opt; do
+    case $opt in
+	h)
+	    usage
+	    exit 0
+	    ;;
+	n)
+	    name=$OPTARG
+	    ;;
+	l)
+	    long=true
+	    ;;
+	s)
+	    short=true
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    exit 1
+    esac
+done
+
+function status ()
+{
+    local name="$1" ; shift
+    local pids=
+    if [ -z "$name" ] ; then
+	pids=$(ps aux | grep -v [s]tatus-drts | grep "[f]hgkernel.*-s plugin.drts.name=" | awk '{print $2;}')
+    else
+	pids=$(ps aux | grep -v [s]tatus-drts | grep "[f]hgkernel.*-s plugin.drts.name=\<$name\>" | awk '{print $2;}')
+    fi
+    if [ -z "$pids" ] ; then
+	return 1
+    else
+	echo $pids
+	return 0
+    fi
+}
+
+pids=$(status $name)
+if [ -n "$pids" ] ; then
+    if [ -n "$name" ] ; then
+	echo "ok"
+	exit 0
+    else
+	for p in $pids ; do
+	    if $short ; then
+		echo $p
+	    else
+		cmd="$(ps -p $p -o cmd=)"
+		if [ $long == false ] ; then
+		    cmd=$(echo $cmd | sed -e 's/.*-s plugin.drts.name=\([^ ]\+\).*/\1/')
+		fi
+		echo "pid $p := $cmd"
+	    fi
+	done
+	exit 0
+    fi
+else
+    exit 1
+fi

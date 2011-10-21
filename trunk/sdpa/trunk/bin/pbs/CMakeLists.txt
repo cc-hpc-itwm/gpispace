@@ -10,6 +10,7 @@ set (prgs
   stop-drts
   stop-agent
   status-agent
+  status-drts
   send-signal
   pidof
 )
