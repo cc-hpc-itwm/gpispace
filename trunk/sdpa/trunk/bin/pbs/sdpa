@@ -1234,8 +1234,8 @@ function stop_drts_on_node ()
 function status_drts_on_node ()
 {
     local node=$1; shift
-    local pid
-    pid=$(rexec $node "$SDPA_HOME/bin/pidof" fhgkernel )
+    local pids
+    pids=$(rexec $node "$SDPA_HOME/bin/status-drts -s")
     return $?
 }
 
