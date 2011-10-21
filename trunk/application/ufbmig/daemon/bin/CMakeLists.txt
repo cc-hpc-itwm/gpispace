@@ -1,4 +1,4 @@
 install(PROGRAMS
-  start-ufbmigd
+  ufbmigd
   DESTINATION bin
   COMPONENT applications)
