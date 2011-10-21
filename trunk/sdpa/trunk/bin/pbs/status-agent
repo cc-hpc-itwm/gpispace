@@ -18,7 +18,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hn:" opt; do
+while getopts ":hn:l" opt; do
     case $opt in
 	h)
 	    usage
@@ -26,6 +26,9 @@ while getopts ":hn:" opt; do
 	    ;;
 	n)
 	    name=$OPTARG
+	    ;;
+	l)
+	    long=true
 	    ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -36,7 +39,12 @@ done
 function agent_status ()
 {
     local name="$1" ; shift
-    local pids=$(ps aux | grep -v [s]tatus-agent | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
+    local pids=
+    if [ -z "$name" ] ; then
+	pids=$(ps aux | grep -v [s]tatus-agent | grep "[a]gent.*-n" | awk '{print $2;}')
+    else
+	pids=$(ps aux | grep -v [s]tatus-agent | grep "[a]gent.*-n \<$name\>" | awk '{print $2;}')
+    fi
     if [ -z "$pids" ] ; then
 	return 1
     else
