@@ -19,7 +19,6 @@ namespace ufbmig
     virtual void initialize_done (int) = 0;
     virtual void calculate_done (int) = 0;
     virtual void finalize_done (int) = 0;
-    virtual void cancel_done (int) = 0;
   };
 }
 

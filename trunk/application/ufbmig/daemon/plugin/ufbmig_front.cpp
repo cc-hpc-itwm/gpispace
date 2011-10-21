@@ -180,6 +180,7 @@ public:
 
   void initialize_done (int ec)
   {
+    LOG(TRACE, "initialize done: " << ec);
     if (! ec)
     {
       send_initialize_success();
@@ -192,6 +193,7 @@ public:
 
   void calculate_done (int ec)
   {
+    LOG(TRACE, "calculate done: " << ec);
     if (! ec)
     {
       send_migrate_success(0, 0);
@@ -202,13 +204,9 @@ public:
     }
   }
 
-  void finalize_done (int)
+  void finalize_done (int ec)
   {
-    return;
-  }
-
-  void cancel_done (int)
-  {
+    LOG(TRACE, "finalize done: " << ec);
     return;
   }
 private:
@@ -324,13 +322,11 @@ private:
 
     MLOG(INFO, "got command: " << cmd);
     MLOG(INFO, "custom size: " << payload.size());
-    MLOG(INFO, "custom data: " << payload);
+    //    MLOG(INFO, "custom data: " << payload);
 
     switch (cmd)
     {
     case client::command::INITIALIZE:
-      // take user data and write file to disk...
-      // initialize with path to that file
       ec = initialize(payload);
       if (0 == ec)
       {
@@ -362,16 +358,14 @@ private:
       if (! m_migrate_xml_buffer.empty())
       {
         ec = handle_ISIM_command (client::command::MIGRATE, m_migrate_xml_buffer);
-        // simulate callback
-        calculate_done(ec);
       }
       break;
     case client::command::ABORT:
       // abort
-      cancel_done(cancel());
+      cancel();
       break;
     case client::command::FINALIZE:
-      finalize_done(finalize());
+      finalize();
       break;
     default:
       break;
