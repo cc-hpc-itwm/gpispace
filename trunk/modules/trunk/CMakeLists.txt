@@ -17,6 +17,12 @@ set (mods
   FindXML.cmake
   SMCMacros.cmake
   TargetDoc.cmake
+  car_cdr_macros.cmake
+  cmake_parse_arguments.cmake
+  libutils.cmake
+  merge_archives_unix.cmake.in
+  pnet_macros.cmake
+  fhg_plugin_macros.cmake
   )
 
 install(FILES ${mods}
