@@ -15,6 +15,9 @@
 #include "sdpac.hpp"
 #include "gpi.hpp"
 
+// ufbmig types
+#include <pnetc/type/config.hpp>
+
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
 

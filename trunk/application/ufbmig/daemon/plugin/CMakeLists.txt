@@ -16,6 +16,9 @@ include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugin)
 include_directories(${CMAKE_SOURCE_DIR}/gpi-space)
 include_directories(${CMAKE_SOURCE_DIR}/gpi-space/gpi-space/pc/plugin)
 
+get_target_property(UFBMIG_INIT_INC pnet-ufbmig_init PNET_GENERATE_DIR)
+include_directories(${UFBMIG_INIT_INC})
+
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   EXPORTS UFBMIG_BACK
   LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
