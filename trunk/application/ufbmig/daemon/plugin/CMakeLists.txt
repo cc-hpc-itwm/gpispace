@@ -28,3 +28,9 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
 )
+
+install(FILES ufbmig_front.hpp ufbmig_back.hpp DESTINATION include/plugins COMPONENT headers)
+install(TARGETS ufbmig_front-plugin ufbmig_back-plugin LIBRARY
+  DESTINATION libexec/plugins
+  COMPONENT plugins
+  )

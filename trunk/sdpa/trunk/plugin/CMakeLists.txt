@@ -79,6 +79,11 @@ fhg_add_plugin(sdpac sdpac.cpp
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
 #  HEADER sdpac.hpp
 )
+install(FILES sdpac.hpp DESTINATION include/plugins COMPONENT headers)
+install(TARGETS sdpac-plugin LIBRARY
+  DESTINATION libexec/plugins
+  COMPONENT plugins
+  )
 
 fhg_add_plugin(net net.cpp
   EXPORTS Peer
@@ -87,6 +92,11 @@ fhg_add_plugin(net net.cpp
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
 )
+install(FILES net.hpp DESTINATION include/plugins COMPONENT headers)
+install(TARGETS net-plugin LIBRARY
+  DESTINATION libexec/plugins
+  COMPONENT plugins
+  )
 
 fhg_add_plugin(sdpactl sdpactl.cpp
   EXPORTS Control
@@ -94,3 +104,8 @@ fhg_add_plugin(sdpactl sdpactl.cpp
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
 )
+install(FILES sdpactl.hpp DESTINATION include/plugins COMPONENT headers)
+install(TARGETS sdpactl-plugin LIBRARY
+  DESTINATION libexec/plugins
+  COMPONENT plugins
+  )
