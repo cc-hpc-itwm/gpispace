@@ -12,6 +12,10 @@ include_directories(${UTIL_INCLUDE_DIR})
 # add include directory to sdpa-plugin directory
 include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugin)
 
+# add include directory to gpi-plugin directory
+include_directories(${CMAKE_SOURCE_DIR}/gpi-space)
+include_directories(${CMAKE_SOURCE_DIR}/gpi-space/gpi-space/pc/plugin)
+
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   EXPORTS UFBMIG_BACK
   LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
