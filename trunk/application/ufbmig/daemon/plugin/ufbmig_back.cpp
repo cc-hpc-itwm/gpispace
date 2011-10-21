@@ -234,6 +234,19 @@ private:
     }
   }
 
+  void close_job (job::info_t const &j)
+  {
+    // parse and handle result
+
+    std::string result;
+    sdpa_c->result(j.id, result);
+
+    LOG(INFO, "job finished: " << result);
+
+    sdpa_c->remove(j.id);
+    notify_frontend_about_job(j);
+  }
+
   void update_job_states ()
   {
     lock_type lock (m_job_list_mutex);
@@ -246,8 +259,7 @@ private:
       j->state = sdpa_c->status(j->id);
       if (job::is_done(*j))
       {
-        notify_frontend_about_job(*j);
-
+        close_job (*j);
         j = m_job_list.erase(j);
         if (j == m_job_list.end()) break;
       }
