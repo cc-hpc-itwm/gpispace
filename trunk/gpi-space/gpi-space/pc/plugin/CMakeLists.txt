@@ -11,17 +11,18 @@ fhg_add_plugin(gpi gpi.cpp
     gpi-space-pc-segment
     gpi-space-static
     ${Boost_SERIALIZATION_SHARED_LIBRARY}
+  INSTALL
+  HEADERS gpi.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
+  COMPONENT plugins
 )
 
 fhg_add_plugin(gpi-compat gpi-compat.cpp
   EXPORTS GPI
   LINK_LIBRARIES
-  ${Boost_SERIALIZATION_SHARED_LIBRARY}
-)
-
-install(FILES gpi.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS gpi-plugin gpi-compat-plugin
-  LIBRARY
-  DESTINATION libexec/plugins
+    ${Boost_SERIALIZATION_SHARED_LIBRARY}
+  INSTALL
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
 )

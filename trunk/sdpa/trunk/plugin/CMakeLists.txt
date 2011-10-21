@@ -1,9 +1,5 @@
 include(fhg_plugin_macros)
 
-#
-#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#
-
 # distributed runtime system plugin, aka interface to SDPA agent
 fhg_add_plugin(drts drts.cpp master.cpp job.cpp
   EXPORTS DRTS
@@ -14,13 +10,12 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-)
-
-install(FILES drts.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS drts-plugin LIBRARY
-  DESTINATION libexec/plugins
+  INSTALL
+  HEADERS drts.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)
 
 fhg_add_plugin(kvs kvs.cpp
   EXPORTS KVS
@@ -28,13 +23,12 @@ fhg_add_plugin(kvs kvs.cpp
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-)
-
-install(FILES kvs.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS kvs-plugin LIBRARY
-  DESTINATION libexec/plugins
+  INSTALL
+  HEADERS kvs.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)
 
 fhg_add_plugin(wfe wfe.cpp observable.cpp
   EXPORTS WFE
@@ -44,13 +38,12 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
 		 ${Boost_FILESYSTEM_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-)
-
-install(FILES wfe.hpp observable.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS wfe-plugin LIBRARY
-  DESTINATION libexec/plugins
+  INSTALL
+  HEADERS wfe.hpp observable.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)
 
 fhg_add_plugin(gui gui.cpp
   EXPORTS GUI
@@ -59,13 +52,10 @@ fhg_add_plugin(gui gui.cpp
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-)
-
-#install(FILES gui.hpp observer.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS gui-plugin LIBRARY
-  DESTINATION libexec/plugins
+  INSTALL
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)
 
 fhg_add_plugin(sdpac sdpac.cpp
   EXPORTS SDPAC
@@ -77,13 +67,12 @@ fhg_add_plugin(sdpac sdpac.cpp
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-#  HEADER sdpac.hpp
-)
-install(FILES sdpac.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS sdpac-plugin LIBRARY
-  DESTINATION libexec/plugins
+  INSTALL
+  HEADERS sdpac.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)
 
 fhg_add_plugin(net net.cpp
   EXPORTS Peer
@@ -91,21 +80,21 @@ fhg_add_plugin(net net.cpp
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-)
-install(FILES net.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS net-plugin LIBRARY
-  DESTINATION libexec/plugins
+  INSTALL
+  HEADERS net.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)
 
 fhg_add_plugin(sdpactl sdpactl.cpp
   EXPORTS Control
   LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-)
-install(FILES sdpactl.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS sdpactl-plugin LIBRARY
-  DESTINATION libexec/plugins
+  INSTALL
+  HEADERS sdpactl.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)

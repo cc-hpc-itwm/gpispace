@@ -21,6 +21,10 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
+  HEADERS ufbmig_back.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
+  COMPONENT plugins
 )
 
 fhg_add_plugin(ufbmig_front ufbmig_front.cpp
@@ -31,10 +35,8 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp
                  ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
-)
-
-install(FILES ufbmig_front.hpp ufbmig_back.hpp DESTINATION include/plugins COMPONENT headers)
-install(TARGETS ufbmig_front-plugin ufbmig_back-plugin LIBRARY
-  DESTINATION libexec/plugins
+  HEADERS ufbmig_front.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
-  )
+)

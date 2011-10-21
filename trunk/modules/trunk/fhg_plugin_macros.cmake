@@ -3,14 +3,14 @@ include(car_cdr_macros)
 
 macro(FHG_ADD_PLUGIN)
   PARSE_ARGUMENTS(PLUGIN
-    "EXPORTS;LINK_LIBRARIES"
-    "BUILTIN;QUIET"
+    "EXPORTS;LINK_LIBRARIES;HEADERS;HEADER_DESTINATION;PLUGIN_DESTINATION;COMPONENT"
+    "BUILTIN;QUIET;INSTALL"
     ${ARGN}
     )
   CAR(PLUGIN_NAME ${PLUGIN_DEFAULT_ARGS})
   CDR(PLUGIN_SOURCES ${PLUGIN_DEFAULT_ARGS})
 
-  if (QUIET)
+  if (PLUGIN_QUIET)
   else()
     message(STATUS "**** Adding plugin ${PLUGIN_NAME} with sources ${PLUGIN_SOURCES}")
   endif()
@@ -20,6 +20,13 @@ macro(FHG_ADD_PLUGIN)
   set_target_properties(${PLUGIN_NAME}-plugin PROPERTIES PREFIX "")
   target_link_libraries(${PLUGIN_NAME}-plugin ${PLUGIN_LINK_LIBRARIES})
 
+  if(PLUGIN_INSTALL)
+    install(TARGETS ${PLUGIN_NAME}-plugin LIBRARY DESTINATION ${PLUGIN_PLUGIN_DESTINATION} COMPONENT ${PLUGIN_COMPONENT})
+    if (PLUGIN_HEADERS)
+      install(FILES ${PLUGIN_HEADERS} DESTINATION ${PLUGIN_HEADER_DESTINATION} COMPONENT ${PLUGIN_COMPONENT})
+    endif()
+  endif()
+
   string(TOUPPER ${PLUGIN_NAME} upper_name)
   if (PLUGIN_BUILTIN OR BUILTIN_${upper_name}_PLUGIN)
     add_library(${PLUGIN_NAME}-plugin.static ${PLUGIN_SOURCES})
@@ -27,5 +34,8 @@ macro(FHG_ADD_PLUGIN)
     set_target_properties(${PLUGIN_NAME}-plugin.static PROPERTIES COMPILE_FLAGS "-DFHG_STATIC_PLUGIN=1")
     target_link_libraries(${PLUGIN_NAME}-plugin.static ${PLUGIN_LINK_LIBRARIES})
     list(APPEND builtin-plugins "${PLUGIN_NAME}-plugin.static")
+    if (PLUGIN_INSTALL)
+      install(TARGETS ${PLUGIN_NAME}-plugin.static ARCHIVE DESTINATION ${PLUGIN_PLUGIN_DESTINATION} COMPONENT ${PLUGIN_COMPONENT})
+    endif()
   endif()
 endmacro()
