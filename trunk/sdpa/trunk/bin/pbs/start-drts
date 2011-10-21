@@ -179,7 +179,7 @@ cfg="$cfg -s plugin.drts.request-mode=${request_mode}"
 
 # config values (gpi plugin)
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
-cfg="$cfg -s plugin.gpi.startmode=wait"
+cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi.startmode -v wait)"
 
 # config values (gpi-compat plugin)
 cfg="$cfg -s plugin.gpi-compat.shm_size=$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g plugin.gpi-compat.shm_size -v 536870912)"

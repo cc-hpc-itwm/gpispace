@@ -404,7 +404,7 @@ EOF
     put "kernel.plugins" "gui,kvs,wfe,gpi,gpi-compat,drts"
 
     log "-: configuring plugins"
-    put "plugin.gpi.startmode" "nowait"
+    put "plugin.gpi.startmode" "wait"
     put "plugin.drts.backlog" "2"
     put "plugin.drts.request-mode" "false"
 }
