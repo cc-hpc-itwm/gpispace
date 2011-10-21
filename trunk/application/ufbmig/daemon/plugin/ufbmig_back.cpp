@@ -280,7 +280,6 @@ private:
   }
 
   mutex_type m_job_list_mutex;
-  condition_type m_job_list_changed;
   job_list_t m_job_list;
   sdpa::Control * sdpa_ctl;
   sdpa::Client * sdpa_c;
