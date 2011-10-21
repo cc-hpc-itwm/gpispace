@@ -111,7 +111,7 @@ public:
     return 0;
   }
 
-  int calculate()
+  int calculate(std::string const &xml)
   {
     MLOG(INFO, "submitting CALCULATE workflow");
 
