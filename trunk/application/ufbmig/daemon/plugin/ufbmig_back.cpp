@@ -156,7 +156,7 @@ public:
     MLOG(INFO, "submitting FINALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_finalize));
-    return submit_job(wf, job::type::CALCULATE);
+    return submit_job(wf, job::type::FINALIZE);
   }
 
   int cancel()
