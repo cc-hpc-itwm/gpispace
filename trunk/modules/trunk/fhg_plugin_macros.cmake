@@ -3,7 +3,7 @@ include(car_cdr_macros)
 
 macro(FHG_ADD_PLUGIN)
   PARSE_ARGUMENTS(PLUGIN
-    "EXPORTS;LINK_LIBRARIES;HEADERS;HEADER_DESTINATION;PLUGIN_DESTINATION;COMPONENT"
+    "EXPORTS;LINK_LIBRARIES;HEADERS;HEADER_DESTINATION;PLUGIN_DESTINATION;COMPONENT;DEPENDS"
     "BUILTIN;QUIET;INSTALL"
     ${ARGN}
     )
@@ -19,6 +19,9 @@ macro(FHG_ADD_PLUGIN)
   set_target_properties(${PLUGIN_NAME}-plugin PROPERTIES OUTPUT_NAME ${PLUGIN_NAME})
   set_target_properties(${PLUGIN_NAME}-plugin PROPERTIES PREFIX "")
   target_link_libraries(${PLUGIN_NAME}-plugin ${PLUGIN_LINK_LIBRARIES})
+  foreach (d ${PLUGIN_DEPENDS})
+    add_dependencies(${PLUGIN_NAME}-plugin ${d})
+  endforeach()
 
   if(PLUGIN_INSTALL)
     install(TARGETS ${PLUGIN_NAME}-plugin LIBRARY DESTINATION ${PLUGIN_PLUGIN_DESTINATION} COMPONENT ${PLUGIN_COMPONENT})
@@ -33,6 +36,9 @@ macro(FHG_ADD_PLUGIN)
     set_target_properties(${PLUGIN_NAME}-plugin.static PROPERTIES OUTPUT_NAME ${PLUGIN_NAME})
     set_target_properties(${PLUGIN_NAME}-plugin.static PROPERTIES COMPILE_FLAGS "-DFHG_STATIC_PLUGIN=1")
     target_link_libraries(${PLUGIN_NAME}-plugin.static ${PLUGIN_LINK_LIBRARIES})
+    foreach (d ${PLUGIN_DEPENDS})
+      add_dependencies(${PLUGIN_NAME}-plugin.static ${d})
+    endforeach()
     list(APPEND builtin-plugins "${PLUGIN_NAME}-plugin.static")
     if (PLUGIN_INSTALL)
       install(TARGETS ${PLUGIN_NAME}-plugin.static ARCHIVE DESTINATION ${PLUGIN_PLUGIN_DESTINATION} COMPONENT ${PLUGIN_COMPONENT})
