@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <sdpa/types.hpp>
 #include <boost/foreach.hpp>
+#include "boost/bind.hpp"
+
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -94,7 +96,7 @@ WorkerManager::findAcknowlegedWorker(const sdpa::job_id_t& job_id) throw (NoWork
  */
 void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 								unsigned int capacity,
-								const capabilities_set_t& TCpbSet,
+								const capabilities_set_t& cpbSet,
 								const unsigned int& agent_rank,
 								const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
@@ -121,7 +123,7 @@ void WorkerManager::addWorker( 	const Worker::worker_id_t& workerId,
 
 	// add TCpbSet HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_rank, agent_uuid ) );
-	pWorker->addCapabilities(TCpbSet);
+	pWorker->addCapabilities(cpbSet);
 
 	worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
@@ -227,7 +229,6 @@ struct compare_workers
 	  return a.second->nbAllocatedJobs() < b.second->nbAllocatedJobs();
   }
 };
-
 
 /**
  * get the least loaded worker
@@ -418,19 +419,19 @@ void WorkerManager::delete_job (sdpa::job_id_t const & job)
 
 void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
 {
-  try {
-    Worker::ptr_t ptrWorker = findWorker(worker_id);
-    // delete job from worker's queues
+	try {
+		Worker::ptr_t ptrWorker = findWorker(worker_id);
+		// delete job from worker's queues
 
-    DLOG(TRACE, "Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
-    ptrWorker->delete_job(job_id);
-  }
-  catch(JobNotDeletedException const &) {
-      SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<"!");
-  }
-  catch(WorkerNotFoundException const &) {
-      SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
-  }
+		DLOG(TRACE, "Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
+		ptrWorker->delete_job(job_id);
+	}
+	catch(JobNotDeletedException const &) {
+		SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<"!");
+	}
+	catch(WorkerNotFoundException const &) {
+		SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
+	}
 }
 
 const Worker::worker_id_t& WorkerManager::worker(unsigned int rank) throw (NoWorkerFoundException)
@@ -493,13 +494,13 @@ void WorkerManager::getWorkerList(std::list<std::string>& workerList)
     workerList.push_back(iter->second->name());
 }
 
-void WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& TCpbSet)  throw (WorkerNotFoundException)
+bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)
 {
 	lock_type lock(mtx_);
 	worker_map_t::iterator it = worker_map_.find(worker_id);
 	if( it != worker_map_.end() )
 	{
-		it->second->addCapabilities(TCpbSet);
+		return it->second->addCapabilities(cpbSet);
 	}
 	else
 		throw WorkerNotFoundException(worker_id);
@@ -517,16 +518,32 @@ void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 		throw WorkerNotFoundException(worker_id);
 }
 
-void WorkerManager::getCapabilities(sdpa::capabilities_set_t& cpbset)
+bool hasSameName(sdpa::capability_t& cpb1, sdpa::capability_t& cpb2)
+{
+	return (cpb1.name() == cpb2.name()) && (cpb1.type() == cpb2.type());
+}
+
+
+void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
 {
 	lock_type lock(mtx_);
+
 	for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
 	{
-		sdpa::capabilities_set_t workerCpbSet = it->second->capabilities();
-		for(sdpa::capabilities_set_t::iterator itwcps = workerCpbSet.begin(); itwcps != workerCpbSet.end();  itwcps++  )
-			cpbset.insert(*itwcps);
-	}
+		const sdpa::capabilities_set_t& workerCpbSet = it->second->capabilities();
 
+		for(sdpa::capabilities_set_t::iterator itwcpbs = workerCpbSet.begin(); itwcpbs != workerCpbSet.end();  itwcpbs++  )
+		{
+			capability_t cpb(*itwcpbs);
+
+			// see if there is already an entry into agentCpbSet
+			sdpa::capabilities_set_t::iterator itCpb = find_if( agentCpbSet.begin(), agentCpbSet.end(), boost::bind(&sdpa::capability_t::operator==, _1, cpb ));
+			if( itCpb == agentCpbSet.end() ) //SDPA_LOG_INFO( "There is already capability "<<cpb );
+			{
+				agentCpbSet.insert(cpb);
+			}
+		}
+	}
 }
 
 template <typename T>

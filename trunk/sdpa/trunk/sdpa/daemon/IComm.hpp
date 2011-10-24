@@ -97,6 +97,8 @@ const std::string USER("user");
 	  virtual void notifyActivityCancelled(const id_type&, const std::string& ) { throw std::runtime_error("not supported by this component"); }
 
 	  virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
+	  virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
+	  virtual void addCapability(const capability_t&) = 0;
   };
 }}
 

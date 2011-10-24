@@ -39,6 +39,9 @@ namespace sdpa { namespace daemon {
     typedef sdpa::worker_id_t worker_id_t;
     typedef sdpa::capabilities_set_t capabilities_set_t;
 
+    typedef boost::recursive_mutex mutex_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
+
     // TODO: to be replaced by a real class (synchronization!)
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
@@ -103,7 +106,7 @@ namespace sdpa { namespace daemon {
     // capabilities
     const sdpa::capabilities_set_t& capabilities() const;
 
-    void addCapabilities(const capabilities_set_t& cpbset);
+    bool addCapabilities(const capabilities_set_t& cpbset);
     void removeCapabilities(const capabilities_set_t& cpbset);
 
     /**
@@ -200,6 +203,8 @@ namespace sdpa { namespace daemon {
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
     bool timedout_;
+
+    mutable mutex_type mtx_;
   };
 }}
 

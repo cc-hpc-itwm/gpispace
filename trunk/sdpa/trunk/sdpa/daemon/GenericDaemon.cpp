@@ -185,7 +185,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
     lock_type lock(mtx_);
     while(!m_bStarted)
-            cond_can_start_.wait(lock);
+    	cond_can_start_.wait(lock);
 
     if( is_configured() )
     {
@@ -193,7 +193,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
         SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
         if( !isTop() )
-                requestRegistration();
+        	requestRegistration();
 
         SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
 
@@ -853,20 +853,8 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
       addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.rank(), evtRegWorker.agent_uuid() );
 
-      {
-        std::map<std::string, size_t> cap_cnt;
-        for(sdpa::capabilities_set_t::const_iterator it = evtRegWorker.capabilities().begin(); it != evtRegWorker.capabilities().end(); it++ )
-        {
-          ++cap_cnt[it->name()];
-        }
 
-        std::ostringstream ostr;
-        for (std::map<std::string, size_t>::const_iterator s (cap_cnt.begin()), e (cap_cnt.end()); s != e; ++s)
-        {
-          ostr << s->first << " (" << s->second << "x)" << std::endl;
-        }
-        MLOG(DEBUG, "\"" << worker_id << "\" has the following capabilities: " << ostr.str());
-      }
+      SDPA_LOG_INFO("The worker \"" << worker_id << "\" has the following capabilities: " << evtRegWorker.capabilities());
 
       // send back an acknowledgment
       DMLOG(TRACE, "Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -876,14 +864,13 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
       if (! evtRegWorker.capabilities().empty())
       {
-        // propagate the capabilities upward to the masters
-        for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-          if (it->is_registered())
-          {
-            sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt
-              (new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
-            sendEventToMaster(shpCpbGainEvt);
-          }
+    	  // propagate the capabilities upward to the masters
+    	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+    		  if (it->is_registered() && it->name() != worker_id )
+    		  {
+    			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
+    			  sendEventToMaster(shpCpbGainEvt);
+    		  }
       }
 
   }
@@ -1265,24 +1252,36 @@ void GenericDaemon::handleConfigReplyEvent(const sdpa::events::ConfigReplyEvent*
 
 void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
-        DMLOG(TRACE, "Received CapabilitiesGainedEvent!");
+	DMLOG(TRACE, "Received CapabilitiesGainedEvent!");
 	// tell the scheduler to add the capabilities of the worker pCpbGainEvt->from
 	sdpa::worker_id_t worker_id = pCpbGainEvt->from();
-	try {
-		scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
 
-		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-			if (it->is_registered())
-			{
-				sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(*pCpbGainEvt));
-				shpCpbGainEvt->from() = name();
-				shpCpbGainEvt->to()   = it->name();
-				sendEventToMaster(shpCpbGainEvt);
-			}
+	if( pCpbGainEvt->capabilities().empty() )
+	{
+		SDPA_LOG_ERROR("Received empty set of capabilities from agent "<<worker_id);
+		return;
+	}
+
+	try {
+		bool bIsSubset = scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
+
+		if(!bIsSubset)
+			for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+				if (it->is_registered() && it->name() != worker_id  )
+				{
+					sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent( name(),
+																														it->name(),
+																														pCpbGainEvt->capabilities() ));
+					sendEventToMaster(shpCpbGainEvt);
+				}
 	}
 	catch( const WorkerNotFoundException& ex)
 	{
 		SDPA_LOG_ERROR("Could not add new capabilities. The worker "<<worker_id<<" was not found!");
+	}
+	catch( const AlreadyHasCpbException& ex)
+	{
+		//SDPA_LOG_ERROR("The agent "<<name()<<" already has the capability "<<ex.capability());
 	}
 	catch( const std::exception& ex)
 	{
@@ -1300,7 +1299,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 		scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
 
 		for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-			if (it->is_registered())
+			if (it->is_registered() && it->name() != worker_id )
 			{
 				sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new sdpa::events::CapabilitiesLostEvent(*pCpbLostEvt));
 				shpCpbLostEvt->from() = name();
@@ -1548,11 +1547,11 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
     if( !masterInfo.is_registered() )
 	{
 		SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << masterInfo.name() << "), capacity = "<<capacity());
-		capabilities_set_t capabilities;
 
-		ptr_scheduler_->getCapabilities(capabilities);
+		capabilities_set_t cpbSet;
+		getCapabilities(cpbSet);
 
-		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), capabilities,  rank(), agent_uuid()));
+		WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), capacity(), cpbSet,  rank(), agent_uuid()));
 		sendEventToMaster(pEvtWorkerReg);
 	}
 }
@@ -1616,4 +1615,18 @@ void GenericDaemon::removeMasters(const worker_id_list_t& listMasters)
 		if( it != m_arrMasterInfo.end() )
 			m_arrMasterInfo.erase(it);
 	}
+}
+
+void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
+{
+	for(sdpa::capabilities_set_t::iterator it = m_capabilities.begin(); it!= m_capabilities.end(); it++ )
+		cpbset.insert(*it);
+
+	ptr_scheduler_->getWorkerCapabilities(cpbset);
+}
+
+
+void GenericDaemon::addCapability(const capability_t& cpb)
+{
+	m_capabilities.insert(cpb);
 }

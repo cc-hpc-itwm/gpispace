@@ -2,6 +2,7 @@
 #define SDPA_DAEMON_EXCEPTIONS_HPP 1
 
 #include <sdpa/SDPAException.hpp>
+#include <sdpa/types.hpp>
 
 namespace sdpa {
 namespace daemon {
@@ -84,6 +85,22 @@ namespace daemon {
 		const sdpa::worker_id_t& agent_uuid() { return agent_uuid_; }
 		private:
 		sdpa::worker_id_t agent_uuid_;
+	};
+
+	class AlreadyHasCpbException : public WorkerException
+	{
+		public:
+		AlreadyHasCpbException( const sdpa::capability_t& cpb,
+								const sdpa::worker_id_t& worker_id )
+		: WorkerException("A worker with either the same name or the same uuid has already registerd!", worker_id)
+		, capability_(cpb) {}
+
+		virtual ~AlreadyHasCpbException() throw() {}
+
+		const sdpa::capability_t& capability() const { return capability_; }
+
+		private:
+		sdpa::capability_t capability_;
 	};
 
 	class JobNotAddedException : public JobException {

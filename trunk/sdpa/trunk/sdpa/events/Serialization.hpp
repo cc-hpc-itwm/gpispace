@@ -105,6 +105,7 @@ namespace boost { namespace serialization {
 	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
 	  ar & e.capacity();
 	  ar & e.capabilities();
+	  ar & e.rank();
 	  ar & e.agent_uuid();
   }
 

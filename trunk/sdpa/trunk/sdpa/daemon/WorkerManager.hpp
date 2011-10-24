@@ -54,9 +54,9 @@ namespace sdpa { namespace daemon {
 
       void delWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
 
-      virtual void addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
+      bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
       virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
-      virtual void getCapabilities(sdpa::capabilities_set_t& cpbset);
+      virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
      // void getListOfRegisteredRanks( std::vector<unsigned int>& );
 

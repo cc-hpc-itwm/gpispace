@@ -165,6 +165,8 @@ namespace sdpa { namespace daemon {
     		                  const unsigned int& rank = 0,
     		                  const sdpa::worker_id_t& agent_uuid  = "");
 
+      void getCapabilities(sdpa::capabilities_set_t& cpbset);
+
       const std::string& name() const { return Strategy::name(); }
 
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
@@ -195,6 +197,7 @@ namespace sdpa { namespace daemon {
 
       void jobFailed(const job_id_t&, const std::string& reason);
       const requirement_list_t getJobRequirements(const sdpa::job_id_t& jobId) const;
+      void addCapability(const capability_t& cpb);
 
       virtual void update_last_request_time();
       virtual bool requestsAllowed();
@@ -332,6 +335,7 @@ protected:
 
         sdpa::util::time_type m_last_request_time;
         sdpa::master_info_list_t m_arrMasterInfo;
+        sdpa::capabilities_set_t m_capabilities;
   };
 }}
 

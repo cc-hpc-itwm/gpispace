@@ -76,22 +76,22 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
-  DLOG(TRACE, "deleting job " << job_id << " from worker " << name());
+	DLOG(TRACE, "deleting job " << job_id << " from worker " << name());
 
-  if (pending().erase(job_id))
-  {
-    DLOG(TRACE, "removed the job "<<job_id.str()<<" from pending queue");
-  }
+	if( pending().erase(job_id) )
+	{
+		DLOG(TRACE, "removed the job "<<job_id.str()<<" from pending queue");
+	}
 
-  if (submitted().erase(job_id))
-  {
-    DLOG(TRACE, "removed the job "<<job_id.str()<<" submitted queue");
-  }
+	if( submitted().erase(job_id) )
+	{
+		DLOG(TRACE, "removed the job "<<job_id.str()<<" submitted queue");
+	}
 
-  if (acknowledged().erase(job_id))
-  {
-    DLOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
-  }
+	if( acknowledged().erase(job_id) )
+	{
+		DLOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
+	}
 }
 
 sdpa::job_id_t Worker::get_next_job(const sdpa::job_id_t &last_job_id) throw (NoJobScheduledException)
@@ -135,40 +135,48 @@ unsigned int Worker::nbAllocatedJobs()
 
 const sdpa::capabilities_set_t& Worker::capabilities() const
 {
+	lock_type lock(mtx_);
 	return capabilities_;
 }
 
-void Worker::addCapabilities(const capabilities_set_t& cpbset)
+bool Worker::addCapabilities( const capabilities_set_t& cpbset )
 {
-  for(capabilities_set_t::const_iterator it = cpbset.begin(); it != cpbset.end(); ++it)
-  {
-    capabilities_.insert(*it);
+	lock_type lock(mtx_);
+	if(cpbset.empty())
+		return true;
 
-    LOG( TRACE
-       , "worker " << name() << " gained capability: "
-       << *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")"
-       );
-  }
+	bool bIsSubset = true;
+	for(sdpa::capabilities_set_t::iterator it = cpbset.begin(); it != cpbset.end(); ++it)
+	{
+		sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
+		if( itwcpb == capabilities_.end() )
+		{
+			capabilities_.insert(*it);
+			//LOG( TRACE, "The worker " << name() << " gained capability: "<< *it );
+			bIsSubset = false;
+		}
+	}
+
+	return bIsSubset;
 }
 
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
-  for(capabilities_set_t::const_iterator it = cpbset.begin(); it != cpbset.end(); ++it )
-  {
-    capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
-    if (itwcpb != capabilities_.end())
-    {
-      capabilities_.erase(itwcpb);
+	 lock_type lock(mtx_);
+	for(capabilities_set_t::const_iterator it = cpbset.begin(); it != cpbset.end(); ++it )
+	{
+		capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
+		if( itwcpb != capabilities_.end() )
+		{
+			capabilities_.erase(itwcpb);
 
-      LOG( TRACE
-         , "worker " << name() << " lost capability: "
-         << *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")"
-         );
-    }
-    else
-    {
-      // do nothing
-      LOG(ERROR, "The worker "<<name()<<" doesn't possess capability: " <<*it);
-    }
-  }
+			//LOG( TRACE, "worker " << name() << " lost capability: "
+    			//<< *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")");
+		}
+		/*else
+		{
+			// do nothing
+			LOG(WARN, "The worker "<<name()<<" doesn't possess capability: " <<*it);
+		}*/
+	}
 }

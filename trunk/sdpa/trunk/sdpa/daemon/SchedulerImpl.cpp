@@ -868,9 +868,17 @@ void SchedulerImpl::getWorkerList(std::list<std::string>& workerList)
 	ptr_worker_man_->getWorkerList(workerList);
 }
 
-void SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
+bool SchedulerImpl::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
-	ptr_worker_man_->addCapabilities(worker_id, cpbset);
+	try
+	{
+		return ptr_worker_man_->addCapabilities(worker_id, cpbset);
+	}
+	catch(const std::exception& exc)
+	{
+		SDPA_LOG_ERROR("Exception occured when trying to add new capabilities to the worker "<<worker_id<<": "<<exc.what());
+		throw exc;
+	}
 }
 
 void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
@@ -878,7 +886,7 @@ void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 	ptr_worker_man_->removeCapabilities(worker_id, cpbset);
 }
 
-void SchedulerImpl::getCapabilities(sdpa::capabilities_set_t& cpbset)
+void SchedulerImpl::getWorkerCapabilities(sdpa::capabilities_set_t& cpbset)
 {
-	ptr_worker_man_->getCapabilities(cpbset);
+	ptr_worker_man_->getCapabilities(ptr_comm_handler_->name(), cpbset);
 }
