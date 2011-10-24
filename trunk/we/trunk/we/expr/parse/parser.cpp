@@ -50,7 +50,7 @@ namespace expr
 
     void parser::add (const parser & other)
     {
-      std::copy (other.begin(), other.end(), std::back_inserter(tmp_stack));
+      std::copy (other.begin(), other.end(), std::back_inserter(nd_stack));
     }
 
     value::type parser::eval_front (eval::context & context) const
