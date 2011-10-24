@@ -13,6 +13,7 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/assume_abstract.hpp>
 #include <iostream>
+#include <boost/foreach.hpp>
 
 namespace sdpa {
 	typedef sdpa::JobId job_id_t;
@@ -54,10 +55,30 @@ namespace sdpa {
 	class Capability
 	{
 	    public:
-			Capability(const std::string& name = "", const std::string& type = "")
+			Capability(const std::string& name = "", const std::string& type = "", const std::string& owner = "" )
 			: name_(name)
 			, type_(type)
+			, owner_(owner)
 			{}
+
+			Capability(const Capability& cpb)
+			{
+				name_  = cpb.name();
+				type_  = cpb.type();
+				owner_ = cpb.owner();
+			}
+
+			Capability& operator=(const Capability& cpb)
+			{
+				if(this!=&cpb)
+				{
+					name_  = cpb.name();
+					type_  = cpb.type();
+					owner_ = cpb.owner();
+				}
+
+				return *this;
+			}
 
 			virtual ~Capability () {}
 
@@ -66,44 +87,80 @@ namespace sdpa {
 			std::string type() const { return type_;}
 			void setType(const std::string& type) { type_ = type;}
 
+
+			std::string owner() const { return owner_; }
+			void setOwner(const std::string& owner) { owner_ = owner; }
+
 			template <class Archive>
 			void serialize(Archive& ar, const unsigned int)
 			{
 				ar & name_;
 				ar & type_;
+				ar & owner_;
 			}
 
 			bool operator<(const Capability& b) const
 			{
-				if( type() != b.type() )
+				if( type() != b.type() ) {
 					return type() < b.type();
-				else
+				}
+				else if( name() != b.name() ) {
 					return name() < b.name();
+				}
+				else {
+					return owner() < b.owner();
+				}
+
+				return false;
 			}
 
 			bool operator==(const Capability& b) const
 			{
-				return ( type() != b.type() && name() == b.name());
+				return ( (type() == b.type()) && (name() == b.name()) && (owner() == b.owner()));
 			}
+
+
 	    private:
 			std::string name_;
 			std::string type_;
+			std::string owner_;
 	};
 
 	typedef Capability capability_t;
 
+	/**
+	 * compare the workers
+	 */
+	struct Compare
+	{
+		bool operator()(const  capability_t& a, const capability_t& b)
+		{
+			return a<b;
+		}
+	};
 
 
-	typedef std::multiset<capability_t> capabilities_set_t;
+	typedef std::set<capability_t /*,Compare*/ > capabilities_set_t;
 	//typedef std::map<capability_t, unsigned int > capabilities_map_t;
-
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
 {
-	os<<"name: "<<cpb.name()<<", type: "<<cpb.type();
+	os<<"name: "<<cpb.name()<<", type: "<<cpb.type()<</*", depth: "<<cpb.depth()<<*/", owner = "<<cpb.owner();
 	return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const sdpa::capabilities_set_t& cpbSet)
+{
+	os<<std::endl<<"--------------------------------------------------------"<<std::endl;
+
+	BOOST_FOREACH(const sdpa::capability_t& cpb, cpbSet)
+	{
+		os<<cpb<<std::endl;
+	}
+
+	os<<"--------------------------------------------------------"<<std::endl;
+	return os;
+}
 
 #endif
