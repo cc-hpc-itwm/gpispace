@@ -69,9 +69,9 @@
         <out name="n" type="long"/>
         <module name="n_of_m" function="run (cmd, n, m)">
           <cinclude href="sstream"/>
-          <cinclude href="process.hpp"/>
+          <cinclude href="process/process.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
-          <ld flag="/u/herc/rahn/.sdpa/modules/libprocess.so"/>
+          <ld flag="-lprocess"/>
           <code><![CDATA[
             std::ostringstream cmdline;
 

@@ -176,6 +176,16 @@ PNET2DOT = $(SDPA_HOME)/bin/pnet2dot
 ###############################################################################
 
 PNETC += $(addprefix -I ,$(SDPA_XML_LIB))
+PNETC += --gen-ldflags=-L$(SDPA_HOME)/libexec
+PNETC += --gen-ldflags=-L$(SDPA_HOME)/lib
+PNETC += --gen-cxxflags=-O3
+PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
+PNETC += --gen-cxxflags=-I../../../kdm/src
+PNETC += --gen-cxxflags=-I../util
+PNETC += --gen-cxxflags=-I../seislib
+PNETC += --force-overwrite-file=true
+PNETC += --Woverwrite-file=false
+PNETC += --Wbackup-file=false
 
 WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L ,$(WE_EXEC_LIBPATHS))

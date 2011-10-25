@@ -346,8 +346,8 @@
           <cinclude href="pfafft.h"/>
           <cinclude href="alloc.hpp"/>
           <cinclude href="boost/filesystem/operations.hpp"/>
-          <ld flag="@SDPA_LIBEXEC@/libdetermine_size.so"/>
-          <ld flag="@BOOST_ROOT@/lib/libboost_filesystem.so"/>
+          <ld flag="-ldetermine_size"/>
+          <ld flag="-lboost_filesystem"/>
           <code><![CDATA[#include "init_impl.hpp"]]></code>
         </module>
       </defun>

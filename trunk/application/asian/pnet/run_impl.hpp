@@ -2,7 +2,7 @@
 
 #include <pnetc/op/asian/run.hpp>
 #include <sstream>
-#include <process.hpp>
+#include <process/process.hpp>
 
 #include <boost/thread.hpp>
 

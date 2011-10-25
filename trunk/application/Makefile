@@ -1,4 +1,11 @@
-SUBDIRS = parsu suowmg asian/pnet example/pi
+SUBDIRS += parsu
+SUBDIRS += suowmg
+SUBDIRS += asian/pnet
+SUBDIRS += example/pi
+SUBDIRS += ufbmig
+SUBDIRS += ufbmig_oldschool
+SUBDIRS += example/n_of_m
+
 TBZ = applications.tar.bz2
 
 ifeq ($(MAKECMDGOALS),)

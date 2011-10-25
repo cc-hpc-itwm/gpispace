@@ -32,8 +32,8 @@
           <cinclude href="print.hpp"/>
           <cinclude href="util.hpp"/>
           <cinclude href="comm.hpp"/>
-          <cinclude href="process.hpp"/>
-          <ld flag="@SDPA_LIBEXEC@/libprocess.so"/>
+          <cinclude href="process/process.hpp"/>
+          <ld flag="-lprocess"/>
           <code><![CDATA[
             LOG (INFO, "RUN " << ::print::shot (shot));
 

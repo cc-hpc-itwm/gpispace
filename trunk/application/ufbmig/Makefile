@@ -93,6 +93,14 @@ PNETPUT  = $(SDPA_HOME)/bin/pnetput
 ###############################################################################
 
 PNETC += $(addprefix -I ,$(SDPA_XML_LIB))
+PNETC += --gen-ldflags=-L$(SDPA_HOME)/libexec
+PNETC += --gen-ldflags=-L$(SDPA_HOME)/lib
+PNETC += --gen-cxxflags=-O3
+PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
+PNETC += --gen-cxxflags=-I..
+
+PNETC += --force-overwrite-file=true
+PNETC += --Wbackup-file=false
 
 WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L ,$(WE_EXEC_LIBPATHS))
@@ -180,7 +188,6 @@ PNETC_GEN  = $(PNETC)
 PNETC_GEN += -o /dev/null
 PNETC_GEN += -g $(PATH_GEN)
 PNETC_GEN += --Windependent-transition false
-PNETC_GEN += --Woverwrite-file false
 
 GEN_HEADER = '<defun name="all"><net>'
 GEN_FOOTER = '</net></defun>'
