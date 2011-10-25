@@ -40,11 +40,6 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
-    fvm_pc_config_t cfg ( "/dummy"
-                        , "/dummy"
-                        , shm_size
-                        , fvm_size
-                        );
     int ec = fvmConnect(fvm_pc_config_t("/dummy", "/dummy", shm_size, fvm_size));
 
     if (0 != ec)

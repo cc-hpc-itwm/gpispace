@@ -63,7 +63,7 @@
 
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
-
+static int testNb = 0;
 
 namespace po = boost::program_options;
 
@@ -204,7 +204,10 @@ void MyFixture::run_client()
 	cav.push_back("--orchestrator=orchestrator_0");
 	config.parse_command_line(cav);
 
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	std::ostringstream osstr;
+	osstr<<"sdpac_"<<testNb++;
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
 	ptrCli->configure_network( config );
 
 	for( int k=0; k<m_nITER; k++ )
@@ -320,7 +323,9 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
+//	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 
 	return kernel;
 }
@@ -355,7 +360,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts1 )
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
+	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_0->stop();
 	drts_0_thread.join();
@@ -398,7 +403,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts2 )
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
+	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_00->stop();
 	drts_00_thread.join();
@@ -449,7 +454,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts3 )
 	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
 
 	threadClient.join();
-	LOG( INFO, "The client thread joined the main thread°!" );
+	LOG( INFO, "The client thread joined the main thread!" );
 
 	drts_00->stop();
 	drts_00_thread.join();

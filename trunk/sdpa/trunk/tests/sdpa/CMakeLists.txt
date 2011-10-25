@@ -15,7 +15,7 @@ fhg_add_plugin (fvm-fake fvm-fake.cpp
   LINK_LIBRARIES ${TESTS_FVM_PC_FAKE_MODULE}
   )
 
-set(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
+get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
@@ -23,10 +23,10 @@ message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
 set(TESTS_NRE_PCD_BIN_PATH "/todo/remove/dummy/nre/pcd/path")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
+get_target_property(TESTS_GUI_PLUGIN_PATH gui-plugin LOCATION)
 get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
-#get_target_property(TESTS_WFE_PLUGIN_PATH wfe-plugin LOCATION)
-#set(TESTS_WFE_PLUGIN_PATH "${CMAKE_BINARY_DIR}/sdpa/sdpa/engine/plugin/wfe_test.so")
-get_target_property(TESTS_WFE_PLUGIN_PATH wfe_test-plugin LOCATION)
+get_target_property(TESTS_WFE_PLUGIN_PATH wfe-plugin LOCATION)
+get_target_property(TESTS_WFE_TEST_PLUGIN_PATH wfe_test-plugin LOCATION)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -79,7 +79,7 @@ set (tc_srcs
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
-  test_Agents.cpp
+#  test_Agents.cpp
   test_AgentsAndDrts.cpp
   test_StopRestartAgents.cpp
   test_ConcurrentClients.cpp
@@ -110,4 +110,5 @@ foreach (tc_src ${tc_srcs})
                         )
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
+  add_dependencies(${tc_name} fvm-fake-plugin)
 endforeach(tc_src ${tc_srcs})
