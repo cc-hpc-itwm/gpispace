@@ -1,19 +1,26 @@
 # -*- mode: cmake; -*-
+include (fhg_plugin_macros)
 
 set(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH "${CMAKE_BINARY_DIR}/application/example/stresstest")
 message(STATUS "example modules are in: ${TESTS_EXAMPLE_STRESSTEST_MODULES_PATH}")
 
-set(TESTS_FVM_PC_MODULE "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/libfvm-pc.so")
+get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
 message(STATUS "fvm module is in: ${TESTS_FVM_PC_MODULE}")
 
-set(TESTS_FVM_PC_FAKE_MODULE "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake/libfvm-pc.so")
+get_target_property(TESTS_FVM_PC_FAKE_MODULE fvm-pc-fake.shared LOCATION)
 message(STATUS "fvm fake module is in: ${TESTS_FVM_PC_FAKE_MODULE}")
+
+fhg_add_plugin (fvm-fake fvm-fake.cpp
+  EXPORTS FVM
+  LINK_LIBRARIES ${TESTS_FVM_PC_FAKE_MODULE}
+  )
+
+set(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 message(STATUS "workflows are in: ${TESTS_WORKFLOWS_PATH}")
 
-set(TESTS_NRE_PCD_BIN "${CMAKE_BINARY_DIR}/sdpa/sdpa/daemon/nre/nre-worker/nre-worker/nre-pcd")
-message(STATUS "nre-pcd binary path set to: ${TESTS_NRE_PCD_BIN}")
+set(TESTS_NRE_PCD_BIN_PATH "/todo/remove/dummy/nre/pcd/path")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
 get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
@@ -88,18 +95,18 @@ foreach (tc_src ${tc_srcs})
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name}
                         sdpa-daemon
-			            sdpa-com
+			sdpa-com
                         sdpa-client
                         sdpa-events
                         sdpa-util
                         sdpa
-			            ${SEDA_LIBRARY}
+                        fhg-plugin
+			${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
                         ${WE_LIBRARIES}
                         ${Boost_UNIT_TEST_LIBRARIES}
                         ${Boost_LIBRARIES}
                         dl
-                        fhg-plugin
                         )
   get_target_property(LOC ${tc_name} LOCATION_)
   add_test(${tc_name} ${LOC})
