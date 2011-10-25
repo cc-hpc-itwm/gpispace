@@ -21,10 +21,10 @@
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="util.hpp"/>
-          <cinclude href="process.hpp"/>
+          <cinclude href="process/process.hpp"/>
           <cinclude href="tracebunch.hpp"/>
           <cinclude href="deque"/>
-          <link href="@SDPA_LIBEXEC@/libdo_load.so"/>
+          <link href="-ldo_load"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::assigned_package (assigned_package));
 
