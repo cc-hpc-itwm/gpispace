@@ -519,14 +519,14 @@ BOOST_AUTO_TEST_CASE( testPath )
 
 BOOST_AUTO_TEST_CASE( testMultipleMastersOneNre )
 {
-	 //               O
-	 // 			 /|\
-	 // 		    / | \
-	 // 		   A  A  A    -> variable agents #
-	 //             \ | /
-	 //              \|/
-	 //               N
-	 //
+  //     O
+  //     |
+  //     +
+  //  ./ | \.
+  //  A  A  A    -> variable agents #
+  //   \ | /
+  //    \|/
+  //     N
 
 	LOG( DEBUG, "////////// testPipeline_Push //////////");
 
