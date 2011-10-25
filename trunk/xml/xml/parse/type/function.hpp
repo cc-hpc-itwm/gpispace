@@ -825,36 +825,34 @@ namespace xml
           }
 
         stream                                                     << std::endl;
-        stream << "### CONFIGURE SECTION"                          << std::endl;
+        stream << "CXXFLAGS += -fPIC"                              << std::endl;
         stream                                                     << std::endl;
-        //! \todo make path/options a user configuration
-        // only CXXFLAGS, CPPFLAGS, LDFLAGS
-        // - list of include paths (in CPPFLAGS)
-        // - list of flags
-        // - list of absolute libraries (in LDFLAGS)
-        stream << "CXXINCLUDEPATHS += . $(BOOST_ROOT)/include"     << std::endl;
-        // raus, parameter
-        stream << "CXXINCLUDEPATHS += $(SDPA_HOME)/include"        << std::endl;
-        // raus, parameter
-        stream << "CXXFLAGS += -O3"                                << std::endl;
+        stream << "ifndef BOOST_ROOT"                              << std::endl;
+        stream << "  $(warning !!!)"                               << std::endl;
+        stream << "  $(warning !!! BOOST_ROOT EMPTY, ASSUMING /usr)"
+                                                                   << std::endl;
+        stream << "\t$(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
+                                                                   << std::endl;
+        stream << "  $(warning !!!)"                               << std::endl;
+        stream << "  BOOST_ROOT = /usr"                            << std::endl;
+        stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
-        stream << "CXXLIBPATHS += $(BOOST_ROOT)/lib"               << std::endl;
-        // parameter
-        stream << "CXXLIBPATHS += $(SDPA_HOME)/lib"                << std::endl;
-        stream << "CXXLIBS += boost_serialization"                 << std::endl;
+        stream << "CXXFLAGS += -I."                                << std::endl;
+        stream << "CXXFLAGS += -I$(BOOST_ROOT)/include"            << std::endl;
+        stream                                                     << std::endl;
+        stream << "LDFLAGS += -L$(BOOST_ROOT)/lib"                 << std::endl;
+        stream << "LDFLAGS += -lboost_serialization"               << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
         stream << "  CP = cp"                                      << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
-        stream << "### NO NEED TO CONFIGURE BELOW THIS LINE"       << std::endl;
-        stream                                                     << std::endl;
-        stream << "CXXFLAGS += -fPIC"                              << std::endl;
-        stream                                                     << std::endl;
-        stream << "CPPFLAGS += $(addprefix -I ,$(CXXINCLUDEPATHS))"<< std::endl;
-        stream                                                     << std::endl;
-        stream << "LDFLAGS += $(addprefix -L,$(CXXLIBPATHS))"      << std::endl;
-        stream << "LDFLAGS += $(addprefix -l,$(CXXLIBS))"          << std::endl;
+
+        BOOST_FOREACH (std::string const& flag, state.gen_cxxflags())
+          {
+            stream << "CXXFLAGS += " << flag << std::endl;
+          }
+
         stream                                                     << std::endl;
 
         BOOST_FOREACH (std::string const& flag, state.gen_ldflags())
@@ -869,7 +867,7 @@ namespace xml
         stream << "modules: $(MODULES) objcleandep"                << std::endl;
         stream                                                     << std::endl;
         stream << "%.o: %.cpp"                                     << std::endl;
-        stream << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^ -o $@"   << std::endl;
+        stream << "\t$(CXX) $(CXXFLAGS) -c $^ -o $@"               << std::endl;
         stream                                                     << std::endl;
         stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
@@ -915,7 +913,7 @@ namespace xml
 
             stream << std::endl;
 
-            stream << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS)"
+            stream << "\t$(CXX) $(CXXFLAGS)"
                    << " -shared $^ -o $@"
                    << " $(LDFLAGS)"
                    << " $(" << links << ")"                        << std::endl;

@@ -3,7 +3,7 @@ include(car_cdr_macros)
 
 macro(PNET_COMPILE)
   PARSE_ARGUMENTS(PNET
-    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS"
+    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS;CXXFLAGS"
     "QUIET;BUILD"
     ${ARGN}
     )
@@ -58,11 +58,13 @@ macro(PNET_COMPILE)
     message(FATAL_ERROR "** pnet_compile: at least one source file is required")
   endif()
 
-  if (PNET_LDFLAGS)
-    foreach(flag ${PNET_LDFLAGS})
-      set (PNET_FLAGS ${PNET_FLAGS} --gen-ldflags=${flag})
-    endforeach()
-  endif()
+  foreach(flag ${PNET_LDFLAGS})
+    set (PNET_FLAGS ${PNET_FLAGS} --gen-ldflags=${flag})
+  endforeach()
+
+  foreach(flag ${PNET_CXXFLAGS})
+    set (PNET_FLAGS ${PNET_FLAGS} --gen-cxxflags=${flag})
+  endforeach()
 
   set(PNETC_ARGS ${PNET__default_flags}
                  ${PNET_FLAGS}

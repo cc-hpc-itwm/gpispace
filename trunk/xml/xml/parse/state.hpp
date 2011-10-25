@@ -83,6 +83,7 @@ namespace xml
         ::xml::parse::type::requirements_type _requirements;
         search_path_type _search_path;
         gen_param_type _gen_ldflags;
+        gen_param_type _gen_cxxflags;
         in_progress_type _in_progress;
         property::path_type _prop_path;
         context_t _context;
@@ -126,6 +127,7 @@ namespace xml
 
         std::string _Osearch_path;
         std::string _Ogen_ldflags;
+        std::string _Ogen_cxxflags;
         std::string _Oignore_properties;
         std::string _OWerror;
         std::string _OWall;
@@ -219,6 +221,7 @@ namespace xml
         type (void)
           : _search_path ()
           , _gen_ldflags ()
+          , _gen_cxxflags ()
           , _in_progress ()
           , _ignore_properties (false)
           , _Werror (false)
@@ -257,6 +260,7 @@ namespace xml
 
           , _Osearch_path ("search-path,I")
           , _Ogen_ldflags ("gen-ldflags")
+          , _Ogen_cxxflags ("gen-cxxflags")
           , _Oignore_properties ("ignore-properties")
           , _OWerror ("Werror")
           , _OWall ("Wall")
@@ -300,6 +304,11 @@ namespace xml
         const gen_param_type& gen_ldflags (void) const
         {
           return _gen_ldflags;
+        }
+
+        const gen_param_type& gen_cxxflags (void) const
+        {
+          return _gen_cxxflags;
         }
 
         // ***************************************************************** //
@@ -635,6 +644,10 @@ namespace xml
             ( _Ogen_ldflags.c_str()
             , po::value<gen_param_type>(&_gen_ldflags)
             , "ldflags for generated makefile"
+            )
+            ( _Ogen_cxxflags.c_str()
+            , po::value<gen_param_type>(&_gen_cxxflags)
+            , "cxxflags for generated makefile"
             )
             ( _Overbose_file.c_str()
             , STRINGVAL(verbose_file)
