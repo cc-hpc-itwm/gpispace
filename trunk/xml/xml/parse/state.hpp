@@ -105,12 +105,16 @@ namespace xml
         bool _Windependent_transition;
         bool _Wconflicting_port_types;
         bool _Woverwrite_file;
+        bool _Wbackup_file;
         bool _Wduplicate_external_function;
         bool _Wproperty_unknown;
 
         std::string _dump_xml_file;
         bool _no_inline;
         bool _synthesize_virtual_places;
+        bool _force_overwrite_file;
+        std::string _backup_extension;
+        bool _do_file_backup;
 
         std::string _verbose_file;
         mutable bool _verbose_file_opened;
@@ -138,12 +142,16 @@ namespace xml
         std::string _OWindependent_transition;
         std::string _OWconflicting_port_types;
         std::string _OWoverwrite_file;
+        std::string _OWbackup_file;
         std::string _OWduplicate_external_function;
         std::string _OWproperty_unknown;
 
         std::string _Odump_xml_file;
         std::string _Ono_inline;
         std::string _Osynthesize_virtual_places;
+        std::string _Oforce_overwrite_file;
+        std::string _Obackup_extension;
+        std::string _Odo_file_backup;
 
         std::string _Overbose_file;
         std::string _Opath_to_cpp;
@@ -227,12 +235,16 @@ namespace xml
           , _Windependent_transition (true)
           , _Wconflicting_port_types (true)
           , _Woverwrite_file (true)
+          , _Wbackup_file (true)
           , _Wduplicate_external_function (true)
           , _Wproperty_unknown (true)
 
           , _dump_xml_file ("")
           , _no_inline (false)
           , _synthesize_virtual_places (false)
+          , _force_overwrite_file (false)
+          , _backup_extension ("~")
+          , _do_file_backup (true)
 
           , _verbose_file ("")
           , _verbose_file_opened (false)
@@ -259,12 +271,16 @@ namespace xml
           , _OWindependent_transition ("Windependent-transition")
           , _OWconflicting_port_types ("Wconflicting-port-types")
           , _OWoverwrite_file ("Woverwrite-file")
+          , _OWbackup_file ("Wbackup-file")
           , _OWduplicate_external_function ("Wduplicate-external-function")
           , _OWproperty_unknown ("Wproperty-unknown")
 
           , _Odump_xml_file ("dump-xml-file,d")
           , _Ono_inline ("no-inline")
           , _Osynthesize_virtual_places ("synthesize-virtual-places")
+          , _Oforce_overwrite_file ("force-overwrite-file")
+          , _Obackup_extension ("backup-extension")
+          , _Odo_file_backup ("do-backup")
 
           , _Overbose_file ("verbose-file,v")
           , _Opath_to_cpp ("path-to-cpp,g")
@@ -415,6 +431,11 @@ namespace xml
           return _dump_xml_file;
         }
 
+        const std::string& backup_extension (void) const
+        {
+          return _backup_extension;
+        }
+
         // ***************************************************************** //
 
         void dump_context (xml_util::xmlstream & s) const
@@ -469,9 +490,10 @@ namespace xml
 
         // ***************************************************************** //
 
-#define ACCESS(x)                                       \
-        const bool & x (void) const { return _ ## x; }  \
-        bool & x (void){ return _ ## x; }
+#define ACCESST(_t,_x)                                  \
+        const _t & _x (void) const { return _ ## _x; }  \
+        _t & _x (void){ return _ ## _x; }
+#define ACCESS(x) ACCESST(bool,x)
 
         ACCESS(ignore_properties)
 
@@ -494,13 +516,17 @@ namespace xml
         ACCESS(Windependent_transition)
         ACCESS(Wconflicting_port_types)
         ACCESS(Woverwrite_file)
+        ACCESS(Wbackup_file)
         ACCESS(Wduplicate_external_function)
         ACCESS(Wproperty_unknown)
 
         ACCESS(no_inline)
         ACCESS(synthesize_virtual_places)
+        ACCESS(force_overwrite_file)
+        ACCESS(do_file_backup)
 
 #undef ACCESS
+#undef ACCESST
 
         // ***************************************************************** //
 
@@ -528,6 +554,7 @@ namespace xml
         WARN(independent_transition)
         WARN(conflicting_port_types)
         WARN(overwrite_file)
+        WARN(backup_file)
         WARN(duplicate_external_function)
         WARN(property_unknown)
 
@@ -686,6 +713,10 @@ namespace xml
             , BOOLVAL(Woverwrite_file)
             , "warn when a file is overwritten"
             )
+            ( _OWbackup_file.c_str()
+            , BOOLVAL(Wbackup_file)
+            , "warn when make a backup"
+            )
             ( _OWduplicate_external_function.c_str()
             , BOOLVAL(Wduplicate_external_function)
             , "warn when an external function has multiple occurrences"
@@ -701,6 +732,18 @@ namespace xml
             ( _Osynthesize_virtual_places.c_str()
             , BOOLVAL(synthesize_virtual_places)
             , "if set, synthesize virtual places"
+            )
+            ( _Oforce_overwrite_file.c_str()
+            , BOOLVAL(force_overwrite_file)
+            , "force overwrite files"
+            )
+            ( _Obackup_extension.c_str()
+            , STRINGVAL(backup_extension)
+            , "backup extension"
+            )
+            ( _Odo_file_backup.c_str()
+            , BOOLVAL(do_file_backup)
+            , "make backup copies of files before overwriting"
             )
             ;
 #undef TYPEDVAL

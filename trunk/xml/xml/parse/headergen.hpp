@@ -42,13 +42,11 @@ namespace xml
             ; ++d
             )
           {
-            const boost::filesystem::path file (prefix / d->name);
-
-            std::ofstream stream; util::mk_fstream (stream, state, file);
+            util::check_no_change_fstream stream (state, prefix / d->name);
 
             stream << d->content;
 
-            stream.close();
+            stream.commit();
           }
       }
     }

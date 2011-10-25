@@ -4,10 +4,12 @@
 #define _XML_PARSE_UTIL_MKFSTREAM_HPP 1
 
 #include <fstream>
+#include <sstream>
+
+#include <xml/parse/state.hpp>
 
 #include <boost/filesystem.hpp>
 
-#include <xml/parse/state.hpp>
 #include <xml/parse/error.hpp>
 
 #include <fhg/util/filesystem.hpp>
@@ -18,34 +20,32 @@ namespace xml
   {
     namespace util
     {
-      inline std::ofstream & mk_fstream ( std::ofstream & stream
-                                        , const state::type & state
-                                        , const boost::filesystem::path & file
-                                        )
+      std::ofstream & mk_fstream ( std::ofstream & stream
+                                 , const state::type & state
+                                 , const boost::filesystem::path & file
+                                 );
+
+      class check_no_change_fstream
       {
-        boost::filesystem::path path (file);
+      public:
+        explicit check_no_change_fstream ( const state::type&
+                                         , const boost::filesystem::path&
+                                         );
+        void commit() const;
 
-        path.remove_filename();
+        template<typename T> check_no_change_fstream& operator << (const T& x)
+        {
+          _oss << x; return *this;
+        }
+        check_no_change_fstream& operator << (std::ostream& (*)(std::ostream&));
 
-        if (!fhg::util::mkdirs (path))
-          {
-            throw error::could_not_create_directory (path);
-          }
+      private:
+        const state::type& _state;
+        const boost::filesystem::path _file;
+        std::ostringstream _oss;
 
-        if (boost::filesystem::exists (file))
-          {
-            state.warn (warning::overwrite_file (file));
-          }
-
-        stream.open (file.string().c_str());
-
-        if (!stream.good())
-          {
-            throw error::could_not_open_file (file);
-          }
-
-        return stream;
-      }
+        void write () const;
+      };
     }
   }
 }

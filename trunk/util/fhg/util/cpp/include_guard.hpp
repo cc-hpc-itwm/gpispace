@@ -12,24 +12,20 @@ namespace fhg
   {
     namespace cpp
     {
-      inline std::ostream & include_guard_begin ( std::ostream & os
-                                                , const std::string & what
-                                                )
+      template<typename Stream>
+      Stream& include_guard_begin (Stream& s, const std::string& what)
       {
-        os << "#ifndef _" << what         << std::endl;
-        os << "#define _" << what << " 1" << std::endl;
-        os                                << std::endl;
+        s << "#ifndef _" << what         << std::endl;
+        s << "#define _" << what << " 1" << std::endl;
+        s                                << std::endl;
 
-        return os;
+        return s;
       }
 
-      inline std::ostream & include_guard_end ( std::ostream & os
-                                              , const std::string & what
-                                              )
+      template<typename Stream>
+      Stream& include_guard_end (Stream& s, const std::string & what)
       {
-        os << "#endif // _" << what << std::endl;
-
-        return os;
+        return s << "#endif // _" << what << std::endl;
       }
     }
   }

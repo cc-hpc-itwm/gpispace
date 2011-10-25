@@ -24,7 +24,8 @@ namespace signature
 {
   namespace cpp
   {
-    inline void level (std::ostream & s, const unsigned int & j)
+    template<typename Stream>
+    void level (Stream& s, const unsigned int& j)
     {
       for (unsigned int i (0); i < j; ++i)
         {
@@ -38,31 +39,36 @@ namespace signature
     {
       // ****************************************************************** //
 
-      class cpp_generic : public boost::static_visitor<std::ostream &>
+      //! \todo refactor this to avoid these this-> stuff
+
+      template<typename Stream>
+      class cpp_generic : public boost::static_visitor<Stream&>
       {
       protected:
-        std::ostream & s;
+        Stream& s;
         unsigned int l;
 
-        void level (const unsigned int & j) const
+        void level (const unsigned int& j) const
         {
           for (unsigned int i (0); i < j; ++i)
             {
               s << "  ";
             }
         }
-
       public:
-        cpp_generic (std::ostream & _s, const unsigned int & _l = 0)
-          : s(_s), l (_l)
+        cpp_generic (Stream& _s, const unsigned int& _l = 0)
+          : s(_s), l(_l)
         {}
       };
 
       // ****************************************************************** //
 
-      class cpp_from_value : public cpp_generic
+      template<typename Stream>
+      class cpp_from_value : public cpp_generic<Stream>
       {
       private:
+        typedef cpp_generic<Stream> super;
+
         signature::field_name_t fieldname;
 
         signature::field_name_t
@@ -72,76 +78,78 @@ namespace signature
         }
 
       public:
-        cpp_from_value (std::ostream & _s, const unsigned int _l = 1)
-          : cpp_generic (_s, _l), fieldname ()
+        cpp_from_value (Stream& _s, const unsigned int _l = 1)
+          : super (_s, _l), fieldname ()
         {}
 
         cpp_from_value ( const signature::field_name_t & _fieldname
-                       , std::ostream & _s
+                       , Stream& _s
                        , const unsigned int _l = 0
                        )
-          : cpp_generic (_s, _l), fieldname (_fieldname)
+          : super (_s, _l), fieldname (_fieldname)
         {}
 
-        std::ostream & operator () (const literal::type_name_t & t) const
+        Stream& operator () (const literal::type_name_t & t) const
         {
-          level (l+1);
-          s << "x." << fieldname << " = ";
-
-
+          this->level (this->l+1);
+          this->s << "x." << fieldname << " = ";
 
           if (literal::cpp::known (t))
             {
-              s << cpp_util::access::make ("", "value", "get")
-                << "< "
-                << literal::cpp::translate (t)
-                << " >";
+              this->s << cpp_util::access::make ("", "value", "get")
+                      << "< "
+                      << literal::cpp::translate (t)
+                      << " >";
             }
           else
             {
-              s << cpp_util::access::make ( cpp_util::access::type()
-                                          , t
-                                          , "from_value"
-                                          );
+              this->s << cpp_util::access::make ( cpp_util::access::type()
+                                                , t
+                                                , "from_value"
+                                                );
             }
 
-          s << " (v_" << (l-1) << ");" << std::endl;
+          this->s << " (v_" << (this->l-1) << ");" << std::endl;
 
-          return s;
+          return this->s;
         }
 
-        std::ostream & operator () (const structured_t & map) const
+        Stream& operator () (const structured_t & map) const
         {
           for ( structured_t::const_iterator field (map.begin())
               ; field != map.end()
               ; ++field
               )
             {
-              level (l+1); s << "{" << std::endl;
+              this->level (this->l+1); this->s << "{" << std::endl;
 
-              level (l+2);
-              s << "const " << cpp_util::access::value_type()
-                << " & v_" << l << " "
+              this->level (this->l+2);
+              this->s
+                << "const " << cpp_util::access::value_type()
+                << " & v_" << this->l << " "
                 << "(" << cpp_util::access::make ("", "value", "get_level")
-                <<  "(\"" << field->first << "\"" << ", v_" << (l-1) << ")"
+                <<  "(\"" << field->first << "\"" << ", v_" << (this->l-1) << ")"
                 << ");"
                 << std::endl;
 
               boost::apply_visitor
-                ( cpp_from_value (longer (field->first), s, l+1)
+                ( cpp_from_value (longer (field->first), this->s, this->l+1)
                 , field->second
                 );
 
-              level (l+1); s << "}" << std::endl;
+              this->level (this->l+1); this->s << "}" << std::endl;
             }
 
-          return s;
+          return this->s;
         }
       };
 
-      class cpp_serialize : public cpp_generic
+      template<typename Stream>
+      class cpp_serialize : public cpp_generic<Stream>
       {
       private:
+        typedef cpp_generic<Stream> super;
+
         signature::field_name_t fieldname;
 
         signature::field_name_t
@@ -151,29 +159,30 @@ namespace signature
         }
 
       public:
-        cpp_serialize (std::ostream & _s, const unsigned int _l = 1)
-          : cpp_generic (_s, _l), fieldname ()
+        cpp_serialize (Stream& _s, const unsigned int _l = 1)
+          : super (_s, _l), fieldname ()
         {}
 
         cpp_serialize ( const signature::field_name_t & _fieldname
-                      , std::ostream & _s
+                      , Stream& _s
                       , const unsigned int _l = 0
                       )
-          : cpp_generic (_s, _l), fieldname (_fieldname)
+          : super (_s, _l), fieldname (_fieldname)
         {}
 
-        std::ostream & operator () (const literal::type_name_t & t) const
+        Stream& operator () (const literal::type_name_t & t) const
         {
-          level (l+1);
+          this->level (this->l+1);
 
-          s << "ar & BOOST_SERIALIZATION_NVP (" << fieldname << ");"
+          this->s
+            << "ar & BOOST_SERIALIZATION_NVP (" << fieldname << ");"
             << std::endl
             ;
 
-          return s;
+          return this->s;
         }
 
-        std::ostream & operator () (const structured_t & map) const
+        Stream& operator () (const structured_t & map) const
         {
           for ( structured_t::const_iterator field (map.begin())
               ; field != map.end()
@@ -181,12 +190,12 @@ namespace signature
               )
             {
               boost::apply_visitor
-                ( cpp_serialize (longer (field->first), s, l)
+                ( cpp_serialize (longer (field->first), this->s, this->l)
                 , field->second
                 );
             }
 
-          return s;
+          return this->s;
         }
       };
     }
@@ -195,9 +204,12 @@ namespace signature
 
     namespace visitor
     {
-      class cpp_to_value : public cpp_generic
+      template<typename Stream>
+      class cpp_to_value : public cpp_generic<Stream>
       {
       private:
+        typedef cpp_generic<Stream> super;
+
         signature::field_name_t fieldname;
         signature::field_name_t levelname;
 
@@ -208,47 +220,49 @@ namespace signature
         }
 
       public:
-        cpp_to_value (std::ostream & _s, const unsigned int _l = 0)
-          : cpp_generic (_s, _l), fieldname ()
+        cpp_to_value (Stream& _s, const unsigned int _l = 0)
+          : super (_s, _l), fieldname ()
         {}
 
         cpp_to_value ( const signature::field_name_t & _fieldname
                      , const signature::field_name_t & _levelname
-                     , std::ostream & _s
+                     , Stream& _s
                      , const unsigned int _l = 0
                      )
-          : cpp_generic (_s, _l), fieldname (_fieldname), levelname (_levelname)
+          : super (_s, _l)
+          , fieldname (_fieldname)
+          , levelname (_levelname)
         {}
 
-        std::ostream & operator () (const literal::type_name_t & t) const
+        Stream& operator () (const literal::type_name_t & t) const
         {
-          level (l); s << "v_" << (l-1) << "[\"" << levelname << "\"]"
+          this->level (this->l); this->s << "v_" << (this->l-1) << "[\"" << levelname << "\"]"
                        << " = ";
 
           if (literal::cpp::known (t))
             {
-              s << "x." << fieldname;
+              this->s << "x." << fieldname;
             }
           else
             {
-              s << cpp_util::access::make ( cpp_util::access::type()
+              this->s << cpp_util::access::make ( cpp_util::access::type()
                                           , t, "to_value"
                                           )
                 << "(x." << fieldname << ")"
                 ;
             }
 
-          s << ";" << std::endl;
+          this->s << ";" << std::endl;
 
-          return s;
+          return this->s;
         }
 
-        std::ostream & operator () (const structured_t & map) const
+        Stream& operator () (const structured_t & map) const
         {
-          level (l); s << "{" << std::endl;
+          this->level (this->l); this->s << "{" << std::endl;
 
-          level (l+1); s << cpp_util::access::make ("","value","structured_t")
-                         << " v_" << l << ";"
+          this->level (this->l+1); this->s << cpp_util::access::make ("","value","structured_t")
+                         << " v_" << this->l << ";"
                          << std::endl
                          ;
 
@@ -258,26 +272,26 @@ namespace signature
               )
             {
               boost::apply_visitor
-                ( cpp_to_value (longer (field->first), field->first, s, l+1)
+                ( cpp_to_value (longer (field->first), field->first, this->s, this->l+1)
                 , field->second
                 );
             }
 
           if (fieldname.empty())
             {
-              level (l+1); s << "return v_" << l << ";" << std::endl;
+              this->level (this->l+1); this->s << "return v_" << this->l << ";" << std::endl;
             }
           else
             {
-              level (l+1); s << "v_" << (l-1) << "[\"" << levelname << "\"]"
-                             << " = " << "v_" << l << ";"
+              this->level (this->l+1); this->s << "v_" << (this->l-1) << "[\"" << levelname << "\"]"
+                             << " = " << "v_" << this->l << ";"
                              << std::endl
                              ;
             }
 
-          level (l); s << "} // to_value " << levelname << std::endl;
+          this->level (this->l); this->s << "} // to_value " << levelname << std::endl;
 
-          return s;
+          return this->s;
         }
       };
     }
@@ -288,15 +302,16 @@ namespace signature
     {
       typedef boost::unordered_set<literal::type_name_t> seen_type;
 
+      template<typename Stream>
       class cpp_includes : public boost::static_visitor<void>
       {
       private:
-        std::ostream & os;
+        Stream& os;
         seen_type & seen;
         const boost::filesystem::path & incpath;
 
       public:
-        cpp_includes ( std::ostream & _os
+        cpp_includes ( Stream& _os
                      , seen_type & _seen
                      , const boost::filesystem::path _incpath
                      )
@@ -338,7 +353,8 @@ namespace signature
 
     namespace visitor
     {
-      class cpp_struct : public cpp_generic
+      template<typename Stream>
+      class cpp_struct : public cpp_generic<Stream>
       {
       private:
         const boost::optional<const std::string &> name;
@@ -347,83 +363,86 @@ namespace signature
       public:
         cpp_struct ( const type & _sig
                    , const std::string & _name
-                   , std::ostream & _s
+                   , Stream& _s
                    , const unsigned int _l = 0
                    )
-          : cpp_generic (_s, _l), name (_name), sig (_sig)
+          : cpp_generic<Stream> (_s, _l), name (_name), sig (_sig)
         {}
 
-        cpp_struct ( std::ostream & _s
+        cpp_struct ( Stream& _s
                    , const unsigned int _l = 0
                    )
-          : cpp_generic (_s, _l), name (boost::none), sig (boost::none)
+          : cpp_generic<Stream> (_s, _l), name (boost::none), sig (boost::none)
         {}
 
-        std::ostream & operator () (const literal::type_name_t & t) const
+        Stream& operator () (const literal::type_name_t & t) const
         {
           if (literal::cpp::known (t))
             {
-              s << literal::cpp::translate (t);
+              this->s << literal::cpp::translate (t);
             }
           else
             {
-              s << cpp_util::access::make (cpp_util::access::type(), t, t);
+              this->s << cpp_util::access::make (cpp_util::access::type(), t, t);
             }
 
-          return s;
+          return this->s;
         }
 
-        std::ostream & operator () (const structured_t & map) const
+        Stream& operator () (const structured_t & map) const
         {
-          s << "struct ";
+          this->s << "struct ";
 
           if (name)
             {
-              s << *name << " ";
+              this->s << *name << " ";
             }
 
-          s << "{" << std::endl;
+          this->s << "{" << std::endl;
 
           for ( structured_t::const_iterator field (map.begin())
               ; field != map.end()
               ; ++field
               )
             {
-              level(l+1);
+              this->level(this->l+1);
 
-              boost::apply_visitor (cpp_struct (s, l+1), field->second);
+              boost::apply_visitor (cpp_struct (this->s, this->l+1), field->second);
 
-              s << " " << fhg::util::show (field->first) << ";" << std::endl;
+              this->s << " " << fhg::util::show (field->first) << ";" << std::endl;
             }
 
           if (sig)
             {
-              level (l+1); s << "friend class boost::serialization::access;" << std::endl;
-              level (l+1); s << "template<typename Archive>" << std::endl;
-              level (l+1); s << "void serialize (Archive & ar, const unsigned int)" << std::endl;
-              level (l+1); s << "{" << std::endl;
+              this->level (this->l+1); this->s << "friend class boost::serialization::access;" << std::endl;
+              this->level (this->l+1); this->s << "template<typename Archive>" << std::endl;
+              this->level (this->l+1); this->s << "void serialize (Archive & ar, const unsigned int)" << std::endl;
+              this->level (this->l+1); this->s << "{" << std::endl;
 
-              boost::apply_visitor ( visitor::cpp_serialize (s, l+1)
+              boost::apply_visitor ( visitor::cpp_serialize<Stream> (this->s, this->l+1)
                                    , (*sig).desc()
                                    );
 
-              level (l+1); s << "} // serialize " << (name ? *name : "UNKNOWN") << std::endl;
+              this->level (this->l+1); this->s << "} // serialize " << (name ? *name : "UNKNOWN") << std::endl;
             }
 
-          level(l); s << "}";
+          this->level (this->l); this->s << "}";
 
-          return s;
+          return this->s;
         }
       };
     }
 
-    inline void cpp_struct ( std::ostream & os
-                           , const type & s
-                           , const std::string & n
-                           , const unsigned int & l = 1
-                           )
+    template<typename Stream>
+    void cpp_struct ( Stream& os
+                    , const type & s
+                    , const std::string & n
+                    , const unsigned int & l = 1
+                    )
     {
-      boost::apply_visitor (visitor::cpp_struct (s, n, os, l), s.desc());
+      boost::apply_visitor ( visitor::cpp_struct<Stream> (s, n, os, l)
+                           , s.desc()
+                           );
 
       os << "; // struct " << n << std::endl;
       os << std::endl;
@@ -435,7 +454,9 @@ namespace signature
       level (os, l); os << "{" << std::endl;
       level (os, l); os << "  " << n << " x;" << std::endl;
 
-      boost::apply_visitor (visitor::cpp_from_value (os, l), s.desc());
+      boost::apply_visitor ( visitor::cpp_from_value<Stream> (os, l)
+                           , s.desc()
+                           );
 
       level (os, l); os << "  return x;" << std::endl;
       level (os, l); os << "} // from_value " << std::endl;
@@ -445,10 +466,11 @@ namespace signature
                         << " to_value (const " << n << " & x)"
                         << std::endl;
 
-      boost::apply_visitor (visitor::cpp_to_value (os, l), s.desc());
+      boost::apply_visitor (visitor::cpp_to_value<Stream> (os, l), s.desc());
     }
 
-    inline void cpp_struct (std::ostream & os, const type & s)
+    template<typename Stream>
+    void cpp_struct (Stream& os, const type & s)
     {
       cpp_struct (os, s, s.nice());
     }
@@ -457,7 +479,8 @@ namespace signature
 
     namespace visitor
     {
-      class cpp_show : public cpp_generic
+      template<typename Stream>
+      class cpp_show : public cpp_generic<Stream>
       {
       private:
         const std::string & field_local;
@@ -466,31 +489,31 @@ namespace signature
         const unsigned int l0;
 
       public:
-        cpp_show ( std::ostream & _s
+        cpp_show ( Stream& _s
                  , const std::string & _field_local
                  , const std::string & _field_global
                  , const unsigned int & _l0 = 0
                  , const unsigned int & _l = 0
                  )
-          : cpp_generic (_s, _l)
+          : cpp_generic<Stream> (_s, _l)
           , field_local (_field_local)
           , field_global (_field_global)
           , l0 (_l0)
         {}
 
-        std::ostream & operator () (const literal::type_name_t & t) const
+        Stream& operator () (const literal::type_name_t & t) const
         {
-          level (l0);
+          this->level (l0);
 
-          s << "s << \"";
+          this->s << "s << \"";
 
-          level (l);
+          this->level (this->l);
 
-          s << field_local << " = \" << ";
+          this->s << field_local << " = \" << ";
 
           if (literal::cpp::known (t))
             {
-              s << cpp_util::access::make ("","literal","show")
+              this->s << cpp_util::access::make ("","literal","show")
                 << "(" << cpp_util::access::make ("", "literal", "type")
                 << "(x" << fhg::util::show (field_global) << ")"
                 << ") << std::endl"
@@ -498,23 +521,23 @@ namespace signature
             }
           else
             {
-              s << "x" << fhg::util::show (field_global);
+              this->s << "x" << fhg::util::show (field_global);
             }
 
-          s << ";" << std::endl;
+          this->s << ";" << std::endl;
 
-          return s;
+          return this->s;
         }
 
-        std::ostream & operator () (const structured_t & map) const
+        Stream& operator () (const structured_t & map) const
         {
-          level (l0);
+          this->level (l0);
 
-          s << "s << \"";
+          this->s << "s << \"";
 
-          level (l);
+          this->level (this->l);
 
-          s << field_local << " = {\" << std::endl;" << std::endl;
+          this->s << field_local << " = {\" << std::endl;" << std::endl;
 
           for ( structured_t::const_iterator field (map.begin())
               ; field != map.end()
@@ -522,32 +545,33 @@ namespace signature
               )
             {
               boost::apply_visitor
-                ( cpp_show ( s
+                ( cpp_show ( this->s
                            , field->first
                            , field_global + "." + field->first
                            , l0
-                           , l+1
+                           , this->l+1
                            )
                 , field->second
                 );
             }
 
-          level (l0);
+          this->level (l0);
 
-          s << "s << \"";
+          this->s << "s << \"";
 
-          s << "}\" << std::endl;" << std::endl;
+          this->s << "}\" << std::endl;" << std::endl;
 
-          return s;
+          return this->s;
         }
       };
     }
 
-    inline void cpp_show ( std::ostream & os
-                         , const type & s
-                         , const std::string & n
-                         , const unsigned int & l = 0
-                         )
+    template<typename Stream>
+    void cpp_show ( Stream& os
+                  , const type & s
+                  , const std::string & n
+                  , const unsigned int & l = 0
+                  )
     {
       os << std::endl;
 
@@ -560,7 +584,9 @@ namespace signature
 
       os << "{"                                   << std::endl;
 
-      boost::apply_visitor (visitor::cpp_show (os, n, "", l + 1), s.desc());
+      boost::apply_visitor ( visitor::cpp_show<Stream> (os, n, "", l + 1)
+                           , s.desc()
+                           );
 
       os                                          << std::endl;
 
@@ -573,22 +599,24 @@ namespace signature
       os << "}"                                   << std::endl;
     }
 
-    inline void cpp_show ( std::ostream & os
-                         , const type & s
-                         , const unsigned int & l = 0
-                         )
+    template<typename Stream>
+    void cpp_show ( Stream& os
+                  , const type & s
+                  , const unsigned int & l = 0
+                  )
     {
       cpp_show (os, s, s.nice(), l);
     }
 
     // ********************************************************************* //
 
-    inline void cpp_header ( std::ostream & os
-                           , const type & s
-                           , const std::string & n
-                           , const boost::filesystem::path & defpath
-                           , const boost::filesystem::path & incpath
-                           )
+    template<typename Stream>
+    void cpp_header ( Stream& os
+                    , const type & s
+                    , const std::string & n
+                    , const boost::filesystem::path & defpath
+                    , const boost::filesystem::path & incpath
+                    )
     {
       cpp_util::header_gen_full (os);
       cpp_util::include_guard_begin (os, "PNETC_TYPE_" + n);
@@ -612,7 +640,7 @@ namespace signature
 
       visitor::seen_type seen;
 
-      boost::apply_visitor ( visitor::cpp_includes (os, seen, incpath)
+      boost::apply_visitor ( visitor::cpp_includes<Stream> (os, seen, incpath)
                            , s.desc()
                            );
 
@@ -625,11 +653,11 @@ namespace signature
       os << "    namespace " << n                                << std::endl;
       os << "    {"                                              << std::endl;
 
-      os << "      "; cpp_struct (os, s, n, 3);
+      os << "      "; cpp_struct<Stream> (os, s, n, 3);
 
       os                                                         << std::endl;
 
-      os << "      "; cpp_show (os, s, n, 3);
+      os << "      "; cpp_show<Stream> (os, s, n, 3);
 
       os << "    } // namespace " << n                           << std::endl;
       os << "  } // namespace type"                              << std::endl;
@@ -639,12 +667,13 @@ namespace signature
       cpp_util::include_guard_end (os, "PNETC_TYPE_" + n);
     }
 
-    inline void cpp_header (std::ostream & os, const type & s)
+    template<typename Stream>
+    void cpp_header (Stream& os, const type & s)
     {
-      cpp_header ( os, s, s.nice()
-                 , boost::filesystem::path ("<unknown>")
-                 , boost::filesystem::path ("")
-                 );
+      cpp_header<Stream> ( os, s, s.nice()
+                         , boost::filesystem::path ("<unknown>")
+                         , boost::filesystem::path ("")
+                         );
     }
   }
 }

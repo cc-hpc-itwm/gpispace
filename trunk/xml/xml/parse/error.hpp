@@ -267,6 +267,26 @@ namespace xml
 
       // ******************************************************************* //
 
+      class file_already_there : public generic
+      {
+      private:
+        std::string nice (const boost::filesystem::path& file) const
+        {
+          std::ostringstream ss;
+
+          ss << "file " << file << " already there with a different content";
+
+          return ss.str();
+        }
+
+      public:
+        explicit file_already_there (const boost::filesystem::path& file)
+          : generic (nice (file))
+        {}
+      };
+
+      // ******************************************************************* //
+
       template<typename IT>
       class include_loop : public generic
       {

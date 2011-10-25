@@ -518,6 +518,30 @@ namespace xml
 
       // ******************************************************************* //
 
+      class backup_file : public generic
+      {
+      private:
+        std::string nice ( const boost::filesystem::path & from
+                         , const boost::filesystem::path& to
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "make a backup of " << from << " in " << to;
+
+          return s.str();
+        }
+
+      public:
+        explicit backup_file ( const boost::filesystem::path & from
+                             , const boost::filesystem::path& to
+                             )
+          : generic (nice (from, to))
+        {}
+      };
+
+      // ******************************************************************* //
+
       class overwrite_file : public generic
       {
       private:

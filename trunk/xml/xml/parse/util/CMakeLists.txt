@@ -18,3 +18,9 @@ set (hdrs
 install (FILES ${hdrs}
   DESTINATION include/xml/parse/util
   COMPONENT headers)
+
+set (srcs_mk_fstream
+  mk_fstream.cpp
+)
+
+add_library(xml_util_mk_fstream ${srcs_mk_fstream})

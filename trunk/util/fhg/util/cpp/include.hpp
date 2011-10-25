@@ -14,30 +14,27 @@ namespace fhg
   {
     namespace cpp
     {
-      inline std::ostream & include ( std::ostream & os
-                                    , const std::string & what
-                                    )
+      template<typename Stream>
+      Stream& include (Stream& s, const std::string& what)
       {
         if (what.size() > 0)
           {
-            os << "#include <" << what << ">" << std::endl;
+            s << "#include <" << what << ">" << std::endl;
           }
 
-        return os;
+        return s;
       }
 
-      inline std::ostream & include ( std::ostream & os
-                                    , const char * what
-                                    )
+      template<typename Stream>
+      Stream& include (Stream& s, const char* what)
       {
-        return include (os, std::string (what));
+        return include (s, std::string (what));
       }
 
-      inline std::ostream & include ( std::ostream & os
-                                    , const path_type & file
-                                    )
+      template<typename Stream>
+      Stream& include (Stream& s, const path_type& file)
       {
-        return include (os, file.string());
+        return include (s, file.string());
       }
     }
   }

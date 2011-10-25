@@ -764,7 +764,7 @@ namespace xml
                               / cpp_util::make::cpp (mod->first)
                               );
 
-            std::ofstream stream; util::mk_fstream (stream, state, file);
+            util::check_no_change_fstream stream (state, file);
 
             cpp_util::include (stream, "we/loader/macros.hpp");
 
@@ -801,7 +801,7 @@ namespace xml
             stream << "}" << std::endl;
             stream << "WE_MOD_FINALIZE_END (" << mod->first << ");" << std::endl;
 
-            stream.close();
+            stream.commit();
           }
       }
 
@@ -812,7 +812,7 @@ namespace xml
         const path_t prefix (state.path_to_cpp());
         const path_t file (prefix / "Makefile");
 
-        std::ofstream stream; util::mk_fstream (stream, state, file);
+        util::check_no_change_fstream stream (state, file);
 
         for ( fun_info_map::const_iterator mod (m.begin())
             ; mod != m.end()
@@ -826,11 +826,19 @@ namespace xml
         stream                                                     << std::endl;
         stream << "### CONFIGURE SECTION"                          << std::endl;
         stream                                                     << std::endl;
+        //! \todo make path/options a user configuration
+        // only CXXFLAGS, CPPFLAGS, LDFLAGS
+        // - list of include paths (in CPPFLAGS)
+        // - list of flags
+        // - list of absolute libraries (in LDFLAGS)
         stream << "CXXINCLUDEPATHS += . $(BOOST_ROOT)/include"     << std::endl;
+        // raus, parameter
         stream << "CXXINCLUDEPATHS += $(SDPA_HOME)/include"        << std::endl;
-        stream << "CXXFLAGS += -O3 -fPIC"                          << std::endl;
+        // raus, parameter
+        stream << "CXXFLAGS += -O3"                                << std::endl;
         stream                                                     << std::endl;
         stream << "CXXLIBPATHS += $(BOOST_ROOT)/lib"               << std::endl;
+        // parameter
         stream << "CXXLIBPATHS += $(SDPA_HOME)/lib"                << std::endl;
         stream << "CXXLIBS += boost_serialization"                 << std::endl;
         stream                                                     << std::endl;
@@ -840,15 +848,20 @@ namespace xml
         stream                                                     << std::endl;
         stream << "### NO NEED TO CONFIGURE BELOW THIS LINE"       << std::endl;
         stream                                                     << std::endl;
+        stream << "CXXFLAGS += -fPIC"                              << std::endl;
+        stream                                                     << std::endl;
+        stream << "CPPFLAGS += $(addprefix -I ,$(CXXINCLUDEPATHS))"<< std::endl;
+        stream                                                     << std::endl;
+        stream << "LDFLAGS += $(addprefix -L,$(CXXLIBPATHS))"      << std::endl;
+        stream << "LDFLAGS += $(addprefix -l,$(CXXLIBS))"          << std::endl;
+        stream                                                     << std::endl;
         stream << ".PHONY: default modules"                        << std::endl;
         stream                                                     << std::endl;
         stream << "default: $(MODULES)"                            << std::endl;
         stream << "modules: $(MODULES) objcleandep"                << std::endl;
         stream                                                     << std::endl;
         stream << "%.o: %.cpp"                                     << std::endl;
-        stream << "\t$(CXX)"                                                   ;
-        stream << " $(CXXFLAGS) $(addprefix -I ,$(CXXINCLUDEPATHS))"           ;
-        stream << " -c $^ -o $@"                                   << std::endl;
+        stream << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^ -o $@"   << std::endl;
         stream                                                     << std::endl;
         stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
@@ -900,10 +913,9 @@ namespace xml
 
             stream << std::endl;
 
-            stream << "\t$(CXX) $(CXXFLAGS)"
-                   << " $(addprefix -L,$(CXXLIBPATHS))"
-                   << " $(addprefix -l,$(CXXLIBS))"
-                   << " -shared $^ -o $@"                          << std::endl;
+            stream << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS)"
+                   << " -shared $^ -o $@"
+                   << " $(LDFLAGS)"                                << std::endl;
             stream                                                 << std::endl;
           }
 
@@ -935,6 +947,8 @@ namespace xml
         stream                                                     << std::endl;
         stream << "modclean:"                                      << std::endl;
         stream << "\t$(RM) $(MODULES)"                             << std::endl;
+
+        stream.commit();
       }
 
       inline bool find_module_calls ( const state::type &
@@ -1030,7 +1044,8 @@ namespace xml
 
         typedef std::list<port_with_type> ports_type;
 
-        inline void mod_includes (std::ostream & os, const types_type & types)
+        template<typename Stream>
+        void mod_includes (Stream& s, const types_type& types)
         {
           for ( types_type::const_iterator type (types.begin())
               ; type != types.end()
@@ -1040,36 +1055,34 @@ namespace xml
               if (!literal::cpp::known (*type))
                 {
                   cpp_util::include
-                    (os, cpp_util::path::type() / cpp_util::make::hpp (*type));
+                    (s, cpp_util::path::type() / cpp_util::make::hpp (*type));
                 }
               else
                 {
-                  cpp_util::include (os, literal::cpp::include (*type));
+                  cpp_util::include (s, literal::cpp::include (*type));
                 }
             }
         }
 
-        inline void namespace_open ( std::ostream & os
-                                   , const mod_type & mod
-                                   )
+        template<typename Stream>
+        void namespace_open (Stream& s, const mod_type& mod)
         {
-          os << std::endl
-             << "namespace pnetc" << std::endl
-             << "{" << std::endl
-             << "  namespace op" << std::endl
-             << "  {" << std::endl
-             << "    namespace " << mod.name << std::endl
-             << "    {" << std::endl
+          s << std::endl
+            << "namespace pnetc" << std::endl
+            << "{" << std::endl
+            << "  namespace op" << std::endl
+            << "  {" << std::endl
+            << "    namespace " << mod.name << std::endl
+            << "    {" << std::endl
             ;
         }
 
-        inline void namespace_close (std::ostream & os
-                                   , const mod_type & mod
-                                   )
+        template<typename Stream>
+        void namespace_close (Stream& s, const mod_type & mod)
         {
-          os << "    } // namespace " << mod.name << std::endl
-             << "  } // namespace op" << std::endl
-             << "} // namespace pnetc" << std::endl
+          s << "    } // namespace " << mod.name << std::endl
+            << "  } // namespace op" << std::endl
+            << "} // namespace pnetc" << std::endl
             ;
         }
 
@@ -1137,8 +1150,9 @@ namespace xml
           return os.str();
         }
 
-        inline void
-        mod_signature ( std::ostream & os
+        template<typename Stream>
+        void
+        mod_signature ( Stream& s
                       , const fhg::util::maybe<port_with_type> & port_return
                       , const ports_type & ports_const
                       , const ports_type & ports_mutable
@@ -1155,7 +1169,7 @@ namespace xml
               << " "
             ;
 
-          os << pre.str() << "(";
+          s << pre.str() << "(";
 
           const std::string spre (pre.str());
 
@@ -1176,9 +1190,9 @@ namespace xml
               ; ++port, first = false
               )
             {
-              os << (first ? " " : (white + ", "))
-                 << "const " << mk_type (port->type) << " & " << port->name
-                 << std::endl
+              s << (first ? " " : (white + ", "))
+                << "const " << mk_type (port->type) << " & " << port->name
+                << std::endl
                 ;
             }
 
@@ -1187,9 +1201,9 @@ namespace xml
               ; ++port, first = false
               )
             {
-              os << (first ? " " : (white + ", "))
-                 << mk_type (port->type) << " & " << port->name
-                 << std::endl
+              s << (first ? " " : (white + ", "))
+                << mk_type (port->type) << " & " << port->name
+                << std::endl
                 ;
             }
 
@@ -1198,17 +1212,18 @@ namespace xml
               ; ++port, first = false
               )
             {
-              os << (first ? " " : (white + ", "))
-                 << mk_type (port->type) << " & " << port->name
-                 << std::endl
+              s << (first ? " " : (white + ", "))
+                << mk_type (port->type) << " & " << port->name
+                << std::endl
                 ;
             }
 
-          os << white << ")";
+          s << white << ")";
         }
 
-        inline void
-        mod_wrapper ( std::ostream & os
+        template<typename Stream>
+        void
+        mod_wrapper ( Stream& s
                     , const mod_type & mod
                     , const path_t file_hpp
                     , const ports_type & ports_const
@@ -1217,26 +1232,26 @@ namespace xml
                     , const fhg::util::maybe<port_with_type> & port_return
                     )
         {
-          cpp_util::include ( os
+          cpp_util::include ( s
                             , cpp_util::path::op() / mod.name / file_hpp
                             );
 
-          namespace_open (os, mod);
+          namespace_open (s, mod);
 
-          os << "      "
-             << "static void " << mod.function
-             << " (void *, const ::we::loader::input_t & _pnetc_input, ::we::loader::output_t & _pnetc_output)"
-             << std::endl
-             << "      "
-             << "{" << std::endl;
+          s << "      "
+            << "static void " << mod.function
+            << " (void *, const ::we::loader::input_t & _pnetc_input, ::we::loader::output_t & _pnetc_output)"
+            << std::endl
+            << "      "
+            << "{" << std::endl;
 
           for ( ports_type::const_iterator port (ports_const.begin())
               ; port != ports_const.end()
               ; ++port
               )
             {
-              os << "      "
-                 << "  const " << mk_get (*port, "& ");
+              s << "      "
+                << "  const " << mk_get (*port, "& ");
             }
 
           for ( ports_type::const_iterator port (ports_mutable.begin())
@@ -1244,8 +1259,8 @@ namespace xml
               ; ++port
               )
             {
-              os << "      "
-                 << "  " << mk_get (*port);
+              s << "      "
+                << "  " << mk_get (*port);
             }
 
           for ( ports_type::const_iterator port (ports_out.begin())
@@ -1253,15 +1268,15 @@ namespace xml
               ; ++port
               )
             {
-              os << "      "
-                 << "  " << mk_type (port->type) << " " << port->name << ";"
-                 << std::endl;
+              s << "      "
+                << "  " << mk_type (port->type) << " " << port->name << ";"
+                << std::endl;
             }
 
-          os << std::endl;
+          s << std::endl;
 
-          os << "      "
-             << "  ";
+          s << "      "
+            << "  ";
 
           bool first_put (true);
 
@@ -1269,31 +1284,31 @@ namespace xml
             {
               first_put = false;
 
-              os << "::we::loader::put (_pnetc_output"
-                 << ", \"" << (*port_return).name << "\""
-                 << ", "
+              s << "::we::loader::put (_pnetc_output"
+                << ", \"" << (*port_return).name << "\""
+                << ", "
                 ;
 
               if (!literal::cpp::known ((*port_return).type))
                 {
-                  os << cpp_util::access::make ( ""
-                                               , "pnetc"
-                                               , "type"
-                                               , (*port_return).type
-                                               , "to_value"
-                                               )
-                     << " ("
+                  s << cpp_util::access::make ( ""
+                                              , "pnetc"
+                                              , "type"
+                                              , (*port_return).type
+                                              , "to_value"
+                                              )
+                    << " ("
                     ;
                 }
             }
 
-          os << cpp_util::access::make ( ""
-                                       , "pnetc"
-                                       , "op"
-                                       , mod.name
-                                       , mod.function
-                                       )
-             << " ("
+          s << cpp_util::access::make ( ""
+                                      , "pnetc"
+                                      , "op"
+                                      , mod.name
+                                      , mod.function
+                                      )
+            << " ("
             ;
 
           bool first_param (true);
@@ -1303,7 +1318,7 @@ namespace xml
               ; ++port, first_param = false
               )
             {
-              os << (first_param ? "" : ", ") << port->name;
+              s << (first_param ? "" : ", ") << port->name;
             }
 
           for ( ports_type::const_iterator port (ports_mutable.begin())
@@ -1311,7 +1326,7 @@ namespace xml
               ; ++port, first_param = false
               )
             {
-              os << (first_param ? "" : ", ") << port->name;
+              s << (first_param ? "" : ", ") << port->name;
             }
 
           for ( ports_type::const_iterator port (ports_out.begin())
@@ -1319,22 +1334,22 @@ namespace xml
               ; ++port, first_param = false
               )
             {
-              os << (first_param ? "" : ", ") << port->name;
+              s << (first_param ? "" : ", ") << port->name;
             }
 
-          os << ")";
+          s << ")";
 
           if (port_return.isJust())
             {
-              os << ")";
+              s << ")";
 
               if (!literal::cpp::known ((*port_return).type))
                 {
-                  os << ")";
+                  s << ")";
                 }
             }
 
-          os << ";" << std::endl;
+          s << ";" << std::endl;
 
           for ( ports_type::const_iterator port (ports_mutable.begin())
               ; port != ports_mutable.end()
@@ -1343,18 +1358,18 @@ namespace xml
             {
               if (first_put)
                 {
-                  os << std::endl;
+                  s << std::endl;
 
                   first_put = false;
                 }
 
-              os << "      "
-                 << "  ::we::loader::put (_pnetc_output"
-                 << ", \"" << port->name << "\""
-                 << ", " << mk_value (*port)
-                 << ")"
-                 << ";"
-                 << std::endl
+              s << "      "
+                << "  ::we::loader::put (_pnetc_output"
+                << ", \"" << port->name << "\""
+                << ", " << mk_value (*port)
+                << ")"
+                << ";"
+                << std::endl
                 ;
             }
 
@@ -1365,25 +1380,25 @@ namespace xml
             {
               if (first_put)
                 {
-                  os << std::endl;
+                  s << std::endl;
 
                   first_put = false;
                 }
 
-              os << "      "
-                 << "  ::we::loader::put (_pnetc_output"
-                 << ", \"" << port->name << "\""
-                 << ", " << mk_value (*port)
-                 << ")"
-                 << ";"
-                 << std::endl
+              s << "      "
+                << "  ::we::loader::put (_pnetc_output"
+                << ", \"" << port->name << "\""
+                << ", " << mk_value (*port)
+                << ")"
+                << ";"
+                << std::endl
                 ;
             }
 
-          os << "      "
-             << "} // " << mod.function << std::endl;
+          s << "      "
+            << "} // " << mod.function << std::endl;
 
-          namespace_close (os, mod);
+          namespace_close (s, mod);
         }
 
         template<typename NET>
@@ -1570,7 +1585,7 @@ namespace xml
             {
               const path_t file (path / file_hpp);
 
-              std::ofstream stream; util::mk_fstream (stream, state, file);
+              util::check_no_change_fstream stream (state, file);
 
               cpp_util::header_gen_full (stream);
               cpp_util::include_guard_begin
@@ -1594,13 +1609,13 @@ namespace xml
               cpp_util::include_guard_end
                 (stream, "PNETC_OP_" + mod.name + "_" + mod.function);
 
-              stream.close();
+              stream.commit();
             }
 
             {
               const path_t file (path / file_cpp);
 
-              std::ofstream stream; util::mk_fstream (stream, state, file);
+              util::check_no_change_fstream stream (state, file);
 
               cpp_util::header_gen (stream);
 
@@ -1647,7 +1662,7 @@ namespace xml
 
               namespace_close (stream, mod);
 
-              stream.close();
+              stream.commit();
             }
 
             return true;
@@ -1681,14 +1696,14 @@ namespace xml
         const path_t file
           (prefix / cpp_util::path::type() / cpp_util::make::hpp (s.name));
 
-        std::ofstream stream; util::mk_fstream (stream, state, file);
+        util::check_no_change_fstream stream (state, file);
 
         state.verbose ("write to " + file.string());
 
         signature::cpp::cpp_header
           (stream, s.sig, s.name, s.path, cpp_util::path::type());
 
-        stream.close();
+        stream.commit();
       }
 
       inline void structs_to_cpp ( const structs_type & structs
