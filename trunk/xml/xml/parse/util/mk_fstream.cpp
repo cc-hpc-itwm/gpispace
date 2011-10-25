@@ -85,7 +85,11 @@ namespace xml
 
                 _state.warn (warning::backup_file (_file, backup));
 
-                boost::filesystem::copy_file (_file, backup);
+                boost::filesystem::copy_file
+                  ( _file
+                  , backup
+                  , boost::filesystem::copy_option::overwrite_if_exists
+                  );
               }
 
             _state.warn (warning::overwrite_file (_file));
