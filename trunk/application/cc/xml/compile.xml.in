@@ -25,7 +25,7 @@
     <cinclude href="stdexcept"/>
     <cinclude href="fstream"/>
     <cinclude href="process/process.hpp"/>
-    <link href="@CMAKE_INSTALL_PREFIX@/libexec/libprocess.so"/>
+    <link href="-lprocess"/>
     <code><![CDATA[
         LOG (INFO, "SDPACC compile");
 

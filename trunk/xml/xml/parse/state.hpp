@@ -50,6 +50,8 @@ namespace xml
       typedef std::vector<std::string> search_path_type;
       typedef std::vector<fs::path> in_progress_type;
 
+      typedef std::vector<std::string> gen_param_type;
+
       // ******************************************************************* //
 
       struct key_value_t
@@ -80,6 +82,7 @@ namespace xml
       private:
         ::xml::parse::type::requirements_type _requirements;
         search_path_type _search_path;
+        gen_param_type _gen_ldflags;
         in_progress_type _in_progress;
         property::path_type _prop_path;
         context_t _context;
@@ -122,6 +125,7 @@ namespace xml
         std::string _path_to_cpp;
 
         std::string _Osearch_path;
+        std::string _Ogen_ldflags;
         std::string _Oignore_properties;
         std::string _OWerror;
         std::string _OWall;
@@ -214,6 +218,7 @@ namespace xml
       public:
         type (void)
           : _search_path ()
+          , _gen_ldflags ()
           , _in_progress ()
           , _ignore_properties (false)
           , _Werror (false)
@@ -251,6 +256,7 @@ namespace xml
           , _path_to_cpp ("")
 
           , _Osearch_path ("search-path,I")
+          , _Ogen_ldflags ("gen-ldflags")
           , _Oignore_properties ("ignore-properties")
           , _OWerror ("Werror")
           , _OWall ("Wall")
@@ -289,6 +295,11 @@ namespace xml
         const search_path_type & search_path (void) const
         {
           return _search_path;
+        }
+
+        const gen_param_type& gen_ldflags (void) const
+        {
+          return _gen_ldflags;
         }
 
         // ***************************************************************** //
@@ -620,6 +631,10 @@ namespace xml
             ( _Osearch_path.c_str()
             , po::value<search_path_type>(&_search_path)
             , "search path"
+            )
+            ( _Ogen_ldflags.c_str()
+            , po::value<gen_param_type>(&_gen_ldflags)
+            , "ldflags for generated makefile"
             )
             ( _Overbose_file.c_str()
             , STRINGVAL(verbose_file)

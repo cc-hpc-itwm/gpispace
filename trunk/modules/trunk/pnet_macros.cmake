@@ -3,7 +3,7 @@ include(car_cdr_macros)
 
 macro(PNET_COMPILE)
   PARSE_ARGUMENTS(PNET
-    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS"
+    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS"
     "QUIET;BUILD"
     ${ARGN}
     )
@@ -15,7 +15,11 @@ macro(PNET_COMPILE)
     get_target_property(PNETC_LOCATION pnetc LOCATION)
   endif()
 
-  set (PNET__default_flags "--Woverwrite-file=false")
+  set ( PNET__default_flags
+        --Woverwrite-file=false
+        --Wbackup-file=false
+        --force-overwrite-file=true
+      )
 
   if (PNET_QUIET)
   else()
@@ -54,7 +58,17 @@ macro(PNET_COMPILE)
     message(FATAL_ERROR "** pnet_compile: at least one source file is required")
   endif()
 
-  set(PNETC_ARGS ${PNET__default_flags} ${PNET_FLAGS} ${__pnet_sources} -o ${PNET_OUTPUT})
+  if (PNET_LDFLAGS)
+    foreach(flag ${PNET_LDFLAGS})
+      set (PNET_FLAGS ${PNET_FLAGS} --gen-ldflags=${flag})
+    endforeach()
+  endif()
+
+  set(PNETC_ARGS ${PNET__default_flags}
+                 ${PNET_FLAGS}
+                 ${__pnet_sources}
+              -o ${PNET_OUTPUT}
+     )
 
   if (PNET_GENERATE)
     set(PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})

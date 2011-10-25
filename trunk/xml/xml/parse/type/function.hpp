@@ -12,8 +12,9 @@
 
 #include <list>
 
-#include <boost/variant.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/variant.hpp>
 
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
@@ -855,6 +856,13 @@ namespace xml
         stream << "LDFLAGS += $(addprefix -L,$(CXXLIBPATHS))"      << std::endl;
         stream << "LDFLAGS += $(addprefix -l,$(CXXLIBS))"          << std::endl;
         stream                                                     << std::endl;
+
+        BOOST_FOREACH (std::string const& flag, state.gen_ldflags())
+          {
+            stream << "LDFLAGS += " << flag << std::endl;
+          }
+
+        stream                                                     << std::endl;
         stream << ".PHONY: default modules"                        << std::endl;
         stream                                                     << std::endl;
         stream << "default: $(MODULES)"                            << std::endl;
@@ -879,6 +887,7 @@ namespace xml
           {
             const std::string objs ("OBJ_" + mod->first);
             const fun_infos_type & funs (mod->second);
+            const std::string links ("LINK_" + mod->first);
 
             for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
@@ -888,6 +897,13 @@ namespace xml
                 stream << objs << " += "
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
+                for ( links_type::const_iterator link (fun->links.begin())
+                    ; link != fun->links.end()
+                    ; ++link
+                    )
+                  {
+                    stream << links << " += " << *link << std::endl;
+                  }
               }
 
             stream << objs << " += " << cpp_util::make::obj (mod->first)
@@ -897,25 +913,12 @@ namespace xml
             stream << cpp_util::make::mod_so (mod->first)
                    << ": $(" << objs << ")";
 
-            for ( fun_infos_type::const_iterator fun (funs.begin())
-                ; fun != funs.end()
-                ; ++fun
-                )
-              {
-                for ( links_type::const_iterator link (fun->links.begin())
-                    ; link != fun->links.end()
-                    ; ++link
-                    )
-                  {
-                    stream << " " << *link;
-                  }
-              }
-
             stream << std::endl;
 
             stream << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS)"
                    << " -shared $^ -o $@"
-                   << " $(LDFLAGS)"                                << std::endl;
+                   << " $(LDFLAGS)"
+                   << " $(" << links << ")"                        << std::endl;
             stream                                                 << std::endl;
           }
 
