@@ -161,10 +161,19 @@ namespace fhg
             };
         }
 
-        namespace structs
+        namespace cxxflag
         {
           enum
             { first = ldflag::last + 1
+            , open, close
+            , last
+            };
+        }
+
+        namespace structs
+        {
+          enum
+            { first = cxxflag::last + 1
             , open, close
             , last
             };
@@ -265,7 +274,7 @@ namespace fhg
         {
           enum
             { first = expression::last + 1
-            , open, close, name, fun, cincludes, ldflags, code
+            , open, close, name, fun, cincludes, ldflags, cxxflags, code
             , last
             };
         }
@@ -324,6 +333,7 @@ namespace fhg
         SIG(cinclude  , ITVAL(XMLTYPE(cincludes_type)));
         SIG(connection, ITVAL(XMLTYPE(connections_type)));
         SIG(ldflag    , ITVAL(XMLTYPE(flags_type)));
+        SIG(cxxflag   , ITVAL(XMLTYPE(flags_type)));
         SIG(port      , ITVAL(XMLTYPE(ports_type)));
         SIG(require   , ITVAL(XMLTYPE(requirements_type)));
         SIG(_struct   , ITVAL(XMLTYPE(structs_type)));
@@ -398,6 +408,7 @@ namespace fhg
               WEAVE(mod::fun, std::string)(XMLTYPE(dump::dump_fun(mod)));
               WEAVE(mod::cincludes, XMLTYPE(cincludes_type))(mod.cincludes);
               WEAVE(mod::ldflags, XMLTYPE(flags_type))(mod.ldflags);
+              WEAVE(mod::cxxflags, XMLTYPE(flags_type))(mod.cxxflags);
               WEAVE(mod::code, MAYBE(std::string))(mod.code);
               WEAVEE(mod::close)();
             }
@@ -535,6 +546,12 @@ namespace fhg
         {
           WEAVE(ldflag::open, ITVAL(XMLTYPE(flags_type)))(flag);
           WEAVEE(ldflag::close)();
+        }
+
+        FUN(cxxflag, ITVAL(XMLTYPE(flags_type)), flag)
+        {
+          WEAVE(cxxflag::open, ITVAL(XMLTYPE(flags_type)))(flag);
+          WEAVEE(cxxflag::close)();
         }
 
         FUN(expression_sequence, std::string, lines)

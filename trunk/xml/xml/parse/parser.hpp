@@ -604,6 +604,13 @@ namespace xml
 
                   mod.ldflags.push_back (flag);
                 }
+              else if (child_name == "cxx")
+                {
+                  const std::string flag
+                    (required ("mod_type", child, "flag", state.file_in_progress()));
+
+                  mod.cxxflags.push_back (flag);
+                }
               else if (child_name == "code")
                 {
                   typedef std::vector<std::string> cdatas_container_type;

@@ -25,6 +25,7 @@
           <cinclude href="tracebunch.hpp"/>
           <cinclude href="deque"/>
           <ld flag="-ldo_load"/>
+          <cxx flag="-O0"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::assigned_package (assigned_package));
 

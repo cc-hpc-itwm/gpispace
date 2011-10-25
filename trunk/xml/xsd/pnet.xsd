@@ -39,7 +39,7 @@
     <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
   </xsd:complexType>
 
-  <xsd:complexType name="ldflag_type">
+  <xsd:complexType name="flag_type">
     <xsd:attribute name="flag" type="xsd:string" use="required"/>
   </xsd:complexType>
 
@@ -107,7 +107,8 @@
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="cinclude" type="cinclude_type"/>
-        <xsd:element name="ld" type="ldflag_type"/>
+        <xsd:element name="ld" type="flag_type"/>
+        <xsd:element name="cxx" type="flag_type"/>
       </xsd:choice>
       <xsd:element minOccurs="0" maxOccurs="1" name="code" type="xsd:string"/>
     </xsd:sequence>

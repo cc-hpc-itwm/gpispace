@@ -719,14 +719,17 @@ namespace xml
         std::string name;
         std::string code;
         flags_type ldflags;
+        flags_type cxxflags;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
                       , const flags_type & _ldflags
+                      , const flags_type & _cxxflags
                       )
           : name (_name)
           , code (_code)
           , ldflags (_ldflags)
+          , cxxflags (_cxxflags)
         {}
 
         bool operator == (const fun_info_type & other) const
@@ -831,7 +834,7 @@ namespace xml
         stream << "  $(warning !!!)"                               << std::endl;
         stream << "  $(warning !!! BOOST_ROOT EMPTY, ASSUMING /usr)"
                                                                    << std::endl;
-        stream << "\t$(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
+        stream << "  $(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
                                                                    << std::endl;
         stream << "  $(warning !!!)"                               << std::endl;
         stream << "  BOOST_ROOT = /usr"                            << std::endl;
@@ -866,9 +869,6 @@ namespace xml
         stream << "default: $(MODULES)"                            << std::endl;
         stream << "modules: $(MODULES) objcleandep"                << std::endl;
         stream                                                     << std::endl;
-        stream << "%.o: %.cpp"                                     << std::endl;
-        stream << "\t$(CXX) $(CXXFLAGS) -c $^ -o $@"               << std::endl;
-        stream                                                     << std::endl;
         stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(warning !!!)"                               << std::endl;
         stream << "\t$(warning !!! COPY $*.cpp_tmpl TO $*.cpp)"    << std::endl;
@@ -892,6 +892,9 @@ namespace xml
                 ; ++fun
                 )
               {
+                const std::string cxxflags
+                  ("CXXFLAG_" + mod->first + "_" + fun->name);
+
                 stream << objs << " += "
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
@@ -900,10 +903,31 @@ namespace xml
                   {
                     stream << ldflags << " += " << flag << std::endl;
                   }
+
+                BOOST_FOREACH (flags_type::value_type const& flag, fun->cxxflags)
+                  {
+                    stream << cxxflags << " += " << flag << std::endl;
+                  }
+
+                stream << cpp_util::make::obj (mod->first, fun->name)
+                       << ": "
+                       << cpp_util::make::cpp (mod->first, fun->name)
+                                                                   << std::endl;
+                stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
+                       << " -c $^ -o $@"                           << std::endl;
+                stream                                             << std::endl;
               }
 
             stream << objs << " += " << cpp_util::make::obj (mod->first)
                                                                    << std::endl;
+
+            stream << cpp_util::make::obj (mod->first)
+                   << ": "
+                   << ( cpp_util::path::op()
+                      / cpp_util::make::cpp (mod->first)
+                      ).string()                                   << std::endl;
+            stream << "\t$(CXX) $(CXXFLAGS) -c $^ -o $@"           << std::endl;
+            stream                                                 << std::endl;
 
             stream                                                 << std::endl;
             stream << cpp_util::make::mod_so (mod->first)
@@ -911,7 +935,7 @@ namespace xml
 
             stream << std::endl;
 
-            stream << "\t$(CXX) $(CXXFLAGS)"
+            stream << "\t$(CXX)"
                    << " -shared $^ -o $@"
                    << " $(LDFLAGS)"
                    << " $(" << ldflags << ")"                      << std::endl;
@@ -1564,6 +1588,7 @@ namespace xml
               const fun_info_type fun_info ( mod.function
                                            , stream.str()
                                            , mod.ldflags
+                                           , mod.cxxflags
                                            );
 
               if (m[mod.name].find (fun_info) == m[mod.name].end())

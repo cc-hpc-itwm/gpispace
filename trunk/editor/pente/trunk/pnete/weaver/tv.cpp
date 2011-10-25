@@ -298,6 +298,11 @@ namespace fhg
         append (flag);
       }
 
+      WSIG(tv, cxxflag::open, ITVAL(XMLTYPE(flags_type)), flag)
+      {
+        append (flag);
+      }
+
       WSIG(tv, expression_sequence::line, std::string, line)
       {
         append (line);
@@ -467,6 +472,10 @@ namespace fhg
       WSIG(tv, mod::ldflags, XMLTYPE(flags_type), ldflags)
       {
         xs ("ldflag", ldflags, FROM(ldflag));
+      }
+      WSIG(tv, mod::cxxflags, XMLTYPE(flags_type), cxxflags)
+      {
+        xs ("cxxflag", cxxflags, FROM(cxxflag));
       }
       WSIG(tv, mod::code, MAYBE(std::string), code)
       {

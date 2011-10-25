@@ -92,6 +92,15 @@ namespace fhg
           return extension::extend (name, extension::cpp());
         }
 
+        inline std::string cpp ( const std::string & mod
+                               , const std::string & fun
+                               )
+        {
+          const path_type path (path::op() / mod / fun);
+
+          return extension::extend (path.string(), extension::cpp());
+        }
+
         inline std::string tmpl (const std::string & name)
         {
           return extension::extend (name, extension::tmpl());

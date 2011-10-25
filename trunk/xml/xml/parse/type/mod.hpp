@@ -42,6 +42,7 @@ namespace xml
         fhg::util::maybe<std::string> code;
         cincludes_type cincludes;
         flags_type ldflags;
+        flags_type cxxflags;
 
         // ***************************************************************** //
 
@@ -229,6 +230,13 @@ namespace xml
           BOOST_FOREACH (flags_type::value_type const& flag, m.ldflags)
             {
               s.open ("ld");
+              s.attr ("flag", flag);
+              s.close ();
+            }
+
+          BOOST_FOREACH (flags_type::value_type const& flag, m.cxxflags)
+            {
+              s.open ("cxx");
               s.attr ("flag", flag);
               s.close ();
             }
