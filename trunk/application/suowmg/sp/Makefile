@@ -174,7 +174,7 @@ PNETC += --gen-ldflags=-L$(SDPA_HOME)/libexec
 PNETC += --gen-ldflags=-L$(SDPA_HOME)/lib
 PNETC += --gen-cxxflags=-O3
 PNETC += --gen-cxxflags=-I$(SDPA_HOME)/include
-PNETC += --gen-cxxflags=-I../../../kdm/src/
+PNETC += --gen-cxxflags=-I../../../kdm/src
 PNETC += --gen-cxxflags=-I../util
 PNETC += --gen-cxxflags=-I../seislib
 PNETC += --force-overwrite-file=true
