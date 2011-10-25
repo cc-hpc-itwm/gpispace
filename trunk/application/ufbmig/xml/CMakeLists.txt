@@ -5,8 +5,8 @@ pnet_compile(ufbmig_init init.xml
 )
 pnet_compile(ufbmig_calc calc.xml
   INCLUDES ${CMAKE_SOURCE_DIR}/application
-  OUTPUT ufbmig_calc.pnet GENERATE ufbmig_init
+  OUTPUT ufbmig_calc.pnet GENERATE ufbmig_calc
 )
 pnet_compile(ufbmig_done finalize.xml
-  OUTPUT ufbmig_done.pnet GENERATE ufbmig_init
+  OUTPUT ufbmig_done.pnet GENERATE ufbmig_done
 )
