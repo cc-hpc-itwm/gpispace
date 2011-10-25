@@ -4,7 +4,7 @@
   <out name="sum" type="long"/>
   <module name="num" function="sum plus (x, y)">
     <cinclude href="test.hpp"/>
-    <link href="test.o"/>
+    <ld flag="test.o"/>
     <code>return x + y + v();</code>
   </module>
 </defun>

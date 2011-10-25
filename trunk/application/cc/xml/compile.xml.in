@@ -25,7 +25,7 @@
     <cinclude href="stdexcept"/>
     <cinclude href="fstream"/>
     <cinclude href="process/process.hpp"/>
-    <link href="-lprocess"/>
+    <ld flag="-lprocess"/>
     <code><![CDATA[
         LOG (INFO, "SDPACC compile");
 

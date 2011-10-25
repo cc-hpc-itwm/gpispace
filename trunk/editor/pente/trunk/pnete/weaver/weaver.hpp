@@ -152,7 +152,7 @@ namespace fhg
             };
         }
 
-        namespace link
+        namespace ldflag
         {
           enum
             { first = cinclude::last + 1
@@ -164,7 +164,7 @@ namespace fhg
         namespace structs
         {
           enum
-            { first = link::last + 1
+            { first = ldflag::last + 1
             , open, close
             , last
             };
@@ -265,7 +265,7 @@ namespace fhg
         {
           enum
             { first = expression::last + 1
-            , open, close, name, fun, cincludes, links, code
+            , open, close, name, fun, cincludes, ldflags, code
             , last
             };
         }
@@ -323,7 +323,7 @@ namespace fhg
 
         SIG(cinclude  , ITVAL(XMLTYPE(cincludes_type)));
         SIG(connection, ITVAL(XMLTYPE(connections_type)));
-        SIG(link      , ITVAL(XMLTYPE(links_type)));
+        SIG(ldflag    , ITVAL(XMLTYPE(flags_type)));
         SIG(port      , ITVAL(XMLTYPE(ports_type)));
         SIG(require   , ITVAL(XMLTYPE(requirements_type)));
         SIG(_struct   , ITVAL(XMLTYPE(structs_type)));
@@ -397,7 +397,7 @@ namespace fhg
               WEAVE(mod::name, std::string)(mod.name);
               WEAVE(mod::fun, std::string)(XMLTYPE(dump::dump_fun(mod)));
               WEAVE(mod::cincludes, XMLTYPE(cincludes_type))(mod.cincludes);
-              WEAVE(mod::cincludes, XMLTYPE(links_type))(mod.links);
+              WEAVE(mod::ldflags, XMLTYPE(flags_type))(mod.ldflags);
               WEAVE(mod::code, MAYBE(std::string))(mod.code);
               WEAVEE(mod::close)();
             }
@@ -531,10 +531,10 @@ namespace fhg
           WEAVEE(cinclude::close)();
         }
 
-        FUN(link, ITVAL(XMLTYPE(links_type)), link)
+        FUN(ldflag, ITVAL(XMLTYPE(flags_type)), flag)
         {
-          WEAVE(link::open, ITVAL(XMLTYPE(links_type)))(link);
-          WEAVEE(link::close)();
+          WEAVE(ldflag::open, ITVAL(XMLTYPE(flags_type)))(flag);
+          WEAVEE(ldflag::close)();
         }
 
         FUN(expression_sequence, std::string, lines)

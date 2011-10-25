@@ -20,7 +20,7 @@
       <out name="sums" type="sums"/>
       <module name="asian" function="sums run (param)">
         <cinclude href="run_impl.hpp"/>
-        <link href="@SDPA_LIBEXEC@/libprocess.so"/>
+        <ld flag="@SDPA_LIBEXEC@/libprocess.so"/>
         <code><![CDATA[
           return ::asian::run (param);
         ]]></code>

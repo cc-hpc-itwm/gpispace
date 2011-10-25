@@ -33,7 +33,7 @@
           <cinclude href="util.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process/process.hpp"/>
-          <link href="-lprocess"/>
+          <ld flag="-lprocess"/>
           <code><![CDATA[
             LOG (INFO, "RUN " << ::print::shot (shot));
 

@@ -335,7 +335,7 @@
           <cinclude href="SegYHeader.h"/>
           <cinclude href="SegYBHeader.h"/>
           <cinclude href="SegYEBCHeader.h"/>
-          <link href="-ldetermine_size"/>
+          <ld flag="-ldetermine_size"/>
           <code><![CDATA[
             LOG (INFO, "INIT");
 

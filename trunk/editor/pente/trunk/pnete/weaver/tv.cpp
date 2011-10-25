@@ -293,9 +293,9 @@ namespace fhg
         append (cinclude);
       }
 
-      WSIG(tv, link::open, ITVAL(XMLTYPE(links_type)), link)
+      WSIG(tv, ldflag::open, ITVAL(XMLTYPE(flags_type)), flag)
       {
-        append (link);
+        append (flag);
       }
 
       WSIG(tv, expression_sequence::line, std::string, line)
@@ -464,9 +464,9 @@ namespace fhg
       {
         xs ("cinclude", cincludes, FROM(cinclude));
       }
-      WSIG(tv, mod::links, XMLTYPE(links_type), links)
+      WSIG(tv, mod::ldflags, XMLTYPE(flags_type), ldflags)
       {
-        xs ("link", links, FROM(link));
+        xs ("ldflag", ldflags, FROM(ldflag));
       }
       WSIG(tv, mod::code, MAYBE(std::string), code)
       {

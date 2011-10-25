@@ -24,7 +24,7 @@
           <cinclude href="process/process.hpp"/>
           <cinclude href="tracebunch.hpp"/>
           <cinclude href="deque"/>
-          <link href="-ldo_load"/>
+          <ld flag="-ldo_load"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << ::print::assigned_package (assigned_package));
 

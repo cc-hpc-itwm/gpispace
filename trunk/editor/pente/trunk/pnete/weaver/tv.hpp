@@ -114,7 +114,7 @@ namespace fhg
       WSIG(tv, port::place, MAYBE(std::string), place);
       WSIG(tv, port::properties, WETYPE(property::type), prop);
       WSIG(tv, cinclude::open, ITVAL(XMLTYPE(cincludes_type)), cinclude);
-      WSIG(tv, link::open, ITVAL(XMLTYPE(links_type)), link);
+      WSIG(tv, ldflag::open, ITVAL(XMLTYPE(flags_type)), flag);
       WSIG(tv, expression_sequence::line, std::string, line);
       WSIG(tv, type_get::open, ITVAL(XMLTYPE(type_get_type)), tg);
       WSIG(tv, type_map::open, ITVAL(XMLTYPE(type_map_type)), tm);
@@ -166,7 +166,7 @@ namespace fhg
       WSIG(tv, mod::name, std::string, name);
       WSIG(tv, mod::fun, std::string, fun);
       WSIG(tv, mod::cincludes, XMLTYPE(cincludes_type), cincludes);
-      WSIG(tv, mod::links, XMLTYPE(links_type), links);
+      WSIG(tv, mod::ldflags, XMLTYPE(flags_type), ldflags);
       WSIG(tv, mod::code, MAYBE(std::string), code);
       WSIG(tv, token::literal::name, ::literal::type_name_t, token);
       WSIG(tv, token::structured::field, ::signature::structured_t::const_iterator::value_type, field);

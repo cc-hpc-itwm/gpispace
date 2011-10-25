@@ -71,7 +71,7 @@
           <cinclude href="sstream"/>
           <cinclude href="process.hpp"/>
           <cinclude href="fhglog/fhglog.hpp"/>
-          <link href="/u/herc/rahn/.sdpa/modules/libprocess.so"/>
+          <ld flag="/u/herc/rahn/.sdpa/modules/libprocess.so"/>
           <code><![CDATA[
             std::ostringstream cmdline;
 

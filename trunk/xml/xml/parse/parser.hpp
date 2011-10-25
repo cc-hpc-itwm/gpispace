@@ -597,12 +597,12 @@ namespace xml
 
                   mod.cincludes.push_back (href);
                 }
-              else if (child_name == "link")
+              else if (child_name == "ld")
                 {
-                  const std::string href
-                    (required ("mod_type", child, "href", state.file_in_progress()));
+                  const std::string flag
+                    (required ("mod_type", child, "flag", state.file_in_progress()));
 
-                  mod.links.push_back (href);
+                  mod.ldflags.push_back (flag);
                 }
               else if (child_name == "code")
                 {

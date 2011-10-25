@@ -13,6 +13,7 @@
 #include <xml/parse/error.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 
 #include <list>
 
@@ -28,7 +29,7 @@ namespace xml
     {
       typedef std::list<std::string> port_args_type;
       typedef std::list<std::string> cincludes_type;
-      typedef std::list<std::string> links_type;
+      typedef std::list<std::string> flags_type;
 
       struct mod_type
       {
@@ -40,7 +41,7 @@ namespace xml
 
         fhg::util::maybe<std::string> code;
         cincludes_type cincludes;
-        links_type links;
+        flags_type ldflags;
 
         // ***************************************************************** //
 
@@ -225,13 +226,10 @@ namespace xml
               s.close ();
             }
 
-          for ( links_type::const_iterator link (m.links.begin())
-              ; link != m.links.end()
-              ; ++link
-              )
+          BOOST_FOREACH (flags_type::value_type const& flag, m.ldflags)
             {
-              s.open ("link");
-              s.attr ("href", *link);
+              s.open ("ld");
+              s.attr ("flag", flag);
               s.close ();
             }
 

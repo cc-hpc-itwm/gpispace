@@ -718,15 +718,15 @@ namespace xml
       {
         std::string name;
         std::string code;
-        links_type links;
+        flags_type ldflags;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
-                      , const links_type & _links
+                      , const flags_type & _ldflags
                       )
           : name (_name)
           , code (_code)
-          , links (_links)
+          , ldflags (_ldflags)
         {}
 
         bool operator == (const fun_info_type & other) const
@@ -885,7 +885,7 @@ namespace xml
           {
             const std::string objs ("OBJ_" + mod->first);
             const fun_infos_type & funs (mod->second);
-            const std::string links ("LINK_" + mod->first);
+            const std::string ldflags ("LDFLAG_" + mod->first);
 
             for ( fun_infos_type::const_iterator fun (funs.begin())
                 ; fun != funs.end()
@@ -895,12 +895,10 @@ namespace xml
                 stream << objs << " += "
                        << cpp_util::make::obj (mod->first, fun->name)
                                                                    << std::endl;
-                for ( links_type::const_iterator link (fun->links.begin())
-                    ; link != fun->links.end()
-                    ; ++link
-                    )
+
+                BOOST_FOREACH (flags_type::value_type const& flag, fun->ldflags)
                   {
-                    stream << links << " += " << *link << std::endl;
+                    stream << ldflags << " += " << flag << std::endl;
                   }
               }
 
@@ -916,7 +914,7 @@ namespace xml
             stream << "\t$(CXX) $(CXXFLAGS)"
                    << " -shared $^ -o $@"
                    << " $(LDFLAGS)"
-                   << " $(" << links << ")"                        << std::endl;
+                   << " $(" << ldflags << ")"                      << std::endl;
             stream                                                 << std::endl;
           }
 
@@ -1565,7 +1563,7 @@ namespace xml
 
               const fun_info_type fun_info ( mod.function
                                            , stream.str()
-                                           , mod.links
+                                           , mod.ldflags
                                            );
 
               if (m[mod.name].find (fun_info) == m[mod.name].end())

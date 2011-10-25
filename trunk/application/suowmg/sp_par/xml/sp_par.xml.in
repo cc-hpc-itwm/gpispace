@@ -349,7 +349,7 @@
           <cinclude href="SegYHeader.h"/>
           <cinclude href="SegYBHeader.h"/>
           <cinclude href="SegYEBCHeader.h"/>
-          <link href="@SDPA_LIBEXEC@/libdetermine_size.so"/>
+          <ld flag="@SDPA_LIBEXEC@/libdetermine_size.so"/>
           <code><![CDATA[
             LOG (INFO, "INIT");
 
