@@ -127,12 +127,6 @@ add_subdirectory(util)
 message(STATUS "=== [ selftest ] ===")
 add_subdirectory(selftest)
 
-## dependency fixes
-if (WITH_FAKE_PC)
-  add_dependencies (fvm-pc-fake mmgr)
-  add_dependencies (fvm-pc-fake.shared mmgr.shared)
-endif (WITH_FAKE_PC)
-
 ## optional components
 if (ENABLE_MONITOR_GUI)
   message(STATUS "=== [ monitor ] (deprecated) ===")
