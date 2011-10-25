@@ -170,6 +170,8 @@ void Client::shutdown() throw (ClientException)
 seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 {
   boost::unique_lock<boost::mutex> lock(mtx_);
+  reply_.reset();
+
   while (reply_.get() == NULL)
   {
     const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(timeout_));
@@ -185,7 +187,6 @@ seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
     }
   }
   seda::IEvent::Ptr ret(reply_);
-  reply_.reset();
   return ret;
 }
 
