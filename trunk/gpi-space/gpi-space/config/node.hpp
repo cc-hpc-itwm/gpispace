@@ -30,7 +30,7 @@ namespace gpi_space
       void load (Mapping const & m)
       {
         daemonize = fhg::util::read_bool
-          (m.get("node.daemonize", "false"));
+          (m.get("gpi.daemonize", "false"));
 
         snprintf ( kvs_url
                  , gpi_space::MAX_HOST_LEN
