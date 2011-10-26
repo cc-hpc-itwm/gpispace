@@ -3,12 +3,12 @@
 #include <pnete/ui/graph/port.hpp>
 
 #include <QGraphicsScene>
-#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QPainter>
 #include <QStaticText>
 #include <QDebug>
 #include <QMenu>
+#include <QPointF>
 
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/scene.hpp>
@@ -86,13 +86,12 @@ namespace fhg
             : connectable::item (direction, type_map, parent, &port.prop)
             , _port (port)
             , _orientation ()
-            , _drag_start (0.0, 0.0)
             , _length (size::port::width())
             , _menu_context()
           {
             access_style().push<qreal>
               ( "border_thickness"
-              , style::mode::NORMAL
+              , mode::NORMAL
               , boost::bind (&thicker_if_name, "in", _1)
               );
 
@@ -103,22 +102,22 @@ namespace fhg
 
             access_style().push<QColor>
               ( "background_color"
-              , style::mode::NORMAL
+              , mode::NORMAL
               , boost::bind (&color_if_type, "long", background_color_long, _1)
               );
             access_style().push<QColor>
               ( "background_color"
-              , style::mode::HIGHLIGHT
+              , mode::HIGHLIGHT
               , boost::bind (&color_if_type, "long", backgr, _1)
               );
             access_style().push<QColor>
               ( "background_color"
-              , style::mode::NORMAL
+              , mode::NORMAL
               , boost::bind (&color_if_type, "string", background_color_string, _1)
               );
 //             access_style().push<QColor>
 //               ( "background_color"
-//               , style::mode::NORMAL
+//               , mode::NORMAL
 //               , boost::bind (&color_if_type, "control", background_color_control, _1)
 //               );
 
@@ -127,12 +126,12 @@ namespace fhg
 
             access_style().push<QColor>
               ( "text_color"
-              , style::mode::NORMAL
+              , mode::NORMAL
               , boost::bind (&color_if_type, "long", text_color_long, _1)
               );
             access_style().push<QColor>
               ( "text_color"
-              , style::mode::NORMAL
+              , mode::NORMAL
               , boost::bind (&color_if_type, "string", text_color_string, _1)
               );
 
@@ -188,42 +187,26 @@ namespace fhg
               }
           }
 
-          void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
+          void item::setPos (const QPointF& new_position)
           {
-            if (mode() == style::mode::DRAG)
-              {
-                event->accept();
-              }
-            else
-              {
-                connectable::item::mouseReleaseEvent (event);
-              }
-          }
+            const QPointF old_location (pos());
+            const orientation::type old_orientation (orientation());
 
-          void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-          {
-            if (event->buttons() & Qt::RightButton)
-              {
-                event->ignore();
-                return;
-              }
+            connectable::item::setPos (fitting_position (new_position));
 
-            if (event->modifiers() == Qt::ControlModifier)
+            // do not move, when now colliding with a different port
+            foreach (QGraphicsItem* collidingItem, collidingItems())
               {
-                mode_push (style::mode::DRAG);
-                _drag_start = event->pos();
-                event->accept();
-                return;
-              }
+                if ( qgraphicsitem_cast<item*>(collidingItem)
+                   && collidingItem->parentItem() == parentItem()
+                   )
+                  {
+                    orientation (old_orientation);
+                    connectable::item::setPos (old_location);
 
-            //! \note Only allow one connection on ports.
-            if (!_connections.isEmpty())
-              {
-                event->ignore();
-                return;
+                    return;
+                  }
               }
-
-            connectable::item::mousePressEvent (event);
           }
 
           bool item::is_connectable_with (const connectable::item* item) const
@@ -294,39 +277,6 @@ namespace fhg
               }
 
             return style::raster::snap (position);
-          }
-
-          void item::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
-          {
-            if (mode() == style::mode::DRAG)
-              {
-                const QPointF old_location (pos());
-                const orientation::type old_orientation (orientation());
-                const QPointF new_location (pos() + event->pos() - _drag_start);
-
-                setPos (fitting_position (new_location));
-
-                // do not move, when now colliding with a different port
-                foreach (QGraphicsItem* collidingItem, collidingItems())
-                  {
-                    if ( qgraphicsitem_cast<item*>(collidingItem)
-                       && collidingItem->parentItem() == parentItem()
-                       )
-                      {
-                        orientation (old_orientation);
-                        setPos (old_location);
-                        event->ignore();
-                        return;
-                      }
-                  }
-                event->accept();
-                scene()->update (boundingRect().translated (old_location));
-                scene()->update (boundingRect().translated (pos()));
-              }
-            else
-              {
-                connectable::item::mouseMoveEvent (event);
-              }
           }
 
           const qreal& item::length() const

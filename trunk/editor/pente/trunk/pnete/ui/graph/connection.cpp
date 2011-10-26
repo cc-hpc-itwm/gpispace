@@ -3,6 +3,7 @@
 #include <pnete/ui/graph/connection.hpp>
 
 #include <QPainter>
+#include <QGraphicsSceneMouseEvent>
 
 #include <pnete/ui/graph/connectable_item.hpp>
 
@@ -255,6 +256,14 @@ namespace fhg
                            )
           {
             style::draw_shape (this, painter);
+          }
+
+          void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
+          {
+            if (event->modifiers() == Qt::ControlModifier)
+              {
+                event->ignore();
+              }
           }
         }
       }

@@ -14,6 +14,7 @@ class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
 class QPainterPath;
+class QGraphicsSceneMouseEvent;
 
 namespace fhg
 {
@@ -50,10 +51,12 @@ namespace fhg
 
             virtual QRectF boundingRect() const;
             virtual QPainterPath shape() const;
-            virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+            virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
             enum { Type = connection_graph_type };
             virtual int type() const { return Type; }
+
+            virtual void mousePressEvent (QGraphicsSceneMouseEvent*);
 
           private:
             connectable::item* _start;

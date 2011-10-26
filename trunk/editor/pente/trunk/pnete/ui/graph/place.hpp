@@ -56,9 +56,6 @@ namespace fhg
                                , const QStyleOptionGraphicsItem* option
                                , QWidget* widget = NULL
                                );
-            virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
-            virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
-            virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
             enum { Type = place_graph_type };
             virtual int type() const { return Type; }
@@ -67,8 +64,6 @@ namespace fhg
             place_type& _place;
 
             QStaticText _content;
-
-            QPointF _drag_start;
           };
         }
       }

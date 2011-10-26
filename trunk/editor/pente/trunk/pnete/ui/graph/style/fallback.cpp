@@ -30,11 +30,11 @@ namespace fhg
               }                                                         \
             }
 
-            IMPL (qreal, border_thickness, 2.0, 4.0, 1.0, 1.0, 1.0)
-            IMPL (QColor, border_color, Qt::black, Qt::red, Qt::gray, Qt::gray, Qt::gray)
-            IMPL (QColor, background_color, Qt::white, Qt::white, Qt::gray, Qt::gray, Qt::gray)
-            IMPL (qreal, text_line_thickness, 1.0, 1.0, 1.0, 1.0, 1.0)
-            IMPL (QColor, text_color, Qt::black, Qt::red, Qt::gray, Qt::gray, Qt::gray)
+            IMPL (qreal,  border_thickness,      2.0,       3.0,        1.0,       1.0,       1.0     )
+            IMPL (QColor, border_color,          Qt::black, Qt::yellow, Qt::gray,  Qt::gray,  Qt::gray)
+            IMPL (QColor, background_color,      Qt::white, Qt::white,  Qt::gray,  Qt::gray,  Qt::gray)
+            IMPL (qreal,  text_line_thickness,   1.0,       1.0,        1.0,       1.0,       1.0     )
+            IMPL (QColor, text_color,            Qt::black, Qt::red,    Qt::white, Qt::white, Qt::gray)
 #undef IMPL
 
             namespace detail

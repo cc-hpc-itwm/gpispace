@@ -1,7 +1,6 @@
 #include <pnete/ui/graph/transition.hpp>
 
 #include <QGraphicsScene>
-#include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
@@ -53,7 +52,6 @@ namespace fhg
                      , graph::item* parent
                      )
             : graph::item (parent, &transition.prop)
-            , _dragStart (0, 0)
             , _size (size::transition::width(), size::transition::height())
             , _transition (transition)
             , _menu_context()
@@ -67,7 +65,7 @@ namespace fhg
 
             access_style().push<QColor>
               ( "border_color_normal"
-              , style::mode::NORMAL
+              , mode::NORMAL
               , boost::bind (&color_if_name, "t", border_color_normal, _1)
               );
 
@@ -75,7 +73,7 @@ namespace fhg
 
             access_style().push<QColor>
               ( "background_color"
-              , style::mode::NORMAL
+              , mode::NORMAL
               , boost::bind (&color_if_name, "double", background_color, _1)
               );
           }
@@ -84,7 +82,6 @@ namespace fhg
 //                      , graph::item* parent
 //                      )
 //             : graph::item (parent)
-//             , _dragStart (0, 0)
 //             , _size (size::transition::width(), size::transition::height())
 //               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
 //             , _transition(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
@@ -110,91 +107,70 @@ namespace fhg
             connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
           }
 
-          void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
-          {
-            if(mode() == style::mode::DRAG)
-              {
-                mode_pop();
-                event->accept();
-              }
-            else
-              {
-                graph::item::mouseReleaseEvent (event);
-              }
-          }
+//           void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
+//           {
+//             if (mode() == mode::DRAG)
+//               {
+//                 //! \note Hackadiddyhack.
+//                 QHash<connection::item*, QRectF> connections;
+//                 foreach (QGraphicsItem* item, scene()->items())
+//                   {
+//                     connection::item* conn (qgraphicsitem_cast<connection::item*> (item));
+//                     if (conn)
+//                       {
+//                         connections.insert (conn, conn->boundingRect());
+//                       }
+//                   }
 
-          void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-          {
-            //! \todo resize grap or move?
-            event->accept();
-            _dragStart = event->pos();
-            mode_push (style::mode::DRAG);
-          }
+//                 const QPointF oldLocation (pos());
+//                 setPos (style::raster::snap
+//                        (oldLocation + event->pos() - _dragStart)
+//                        );
 
-          void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
-          {
-            if (mode() == style::mode::DRAG)
-              {
-                //! \note Hackadiddyhack.
-                QHash<connection::item*, QRectF> connections;
-                foreach (QGraphicsItem* item, scene()->items())
-                  {
-                    connection::item* conn (qgraphicsitem_cast<connection::item*> (item));
-                    if (conn)
-                      {
-                        connections.insert (conn, conn->boundingRect());
-                      }
-                  }
+//                 // do not move, when now colliding with a different transition
+//                 //! \todo move this elsewhere? make this nicer, allow movement to left and right, if collision on bottom.
+//                 //! \todo move to the nearest possible position.
+//                 foreach (QGraphicsItem* collidingItem, collidingItems())
+//                   {
+//                     if (qgraphicsitem_cast<item*> (collidingItem))
+//                       {
+//                         setPos (oldLocation);
+//                         event->ignore();
+//                         return;
+//                       }
+//                   }
+//                 event->accept();
+//                 QRectF bounding_with_childs (boundingRect());
+//                 foreach (QGraphicsItem* child, childItems())
+//                   {
+//                     bounding_with_childs =
+//                       bounding_with_childs.united ( child->boundingRect()
+//                                                   .translated (child->pos())
+//                                                   );
+//                   }
+//                 scene()->update (bounding_with_childs.translated (oldLocation));
+//                 scene()->update (bounding_with_childs.translated (pos()));
 
-                const QPointF oldLocation (pos());
-                setPos (style::raster::snap
-                       (oldLocation + event->pos() - _dragStart)
-                       );
-
-                // do not move, when now colliding with a different transition
-                //! \todo move this elsewhere? make this nicer, allow movement to left and right, if collision on bottom.
-                //! \todo move to the nearest possible position.
-                foreach (QGraphicsItem* collidingItem, collidingItems())
-                  {
-                    if (qgraphicsitem_cast<item*> (collidingItem))
-                      {
-                        setPos (oldLocation);
-                        event->ignore();
-                        return;
-                      }
-                  }
-                event->accept();
-                QRectF bounding_with_childs (boundingRect());
-                foreach (QGraphicsItem* child, childItems())
-                  {
-                    bounding_with_childs =
-                      bounding_with_childs.united ( child->boundingRect()
-                                                  .translated (child->pos())
-                                                  );
-                  }
-                scene()->update (bounding_with_childs.translated (oldLocation));
-                scene()->update (bounding_with_childs.translated (pos()));
-
-                //! \note Hackadilicous.
-                for ( QHash<connection::item*, QRectF>::const_iterator
-                        it (connections.constBegin())
-                    , end (connections.constEnd())
-                    ; it != end
-                    ; ++it
-                    )
-                  {
-                    if (it.value() != it.key()->boundingRect())
-                      {
-                        scene()->update (it.value());
-                        scene()->update (it.key()->boundingRect());
-                      }
-                  }
-              }
-            else
-              {
-                graph::item::mouseMoveEvent (event);
-              }
-          }
+//                 //! \note Hackadilicous.
+//                 for ( QHash<connection::item*, QRectF>::const_iterator
+//                         it (connections.constBegin())
+//                     , end (connections.constEnd())
+//                     ; it != end
+//                     ; ++it
+//                     )
+//                   {
+//                     if (it.value() != it.key()->boundingRect())
+//                       {
+//                         scene()->update (it.value());
+//                         scene()->update (it.key()->boundingRect());
+//                       }
+//                   }
+//               }
+//             else
+//               {
+//                 graph::item::mouseMoveEvent (event);
+//               }
+//           }
 
           const std::string& item::name() const
           {

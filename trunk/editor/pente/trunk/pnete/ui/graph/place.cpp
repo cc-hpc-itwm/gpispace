@@ -62,6 +62,7 @@ namespace fhg
             const QPointF pos (-half_size.width(), -half_size.height());
             return QRectF (pos, _content.size());
           }
+
           void item::paint ( QPainter* painter
                             , const QStyleOptionGraphicsItem* option
                             , QWidget* widget
@@ -79,44 +80,31 @@ namespace fhg
                                      );
           }
 
-          void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
-          {
-            if (mode() == style::mode::DRAG)
-              {
-                setPos (style::raster::snap (pos() + event->pos() - _drag_start));
-                event->accept();
-                scene()->update();
-              }
-            else
-              {
-                connectable::item::mouseMoveEvent (event);
-              }
-          }
-          void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
-          {
-            if (event->modifiers() == Qt::ControlModifier)
-              {
-                mode_push (style::mode::DRAG);
-                _drag_start = event->pos();
-                event->accept();
-                return;
-              }
+//           void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
+//           {
+//             if (mode() == style::mode::DRAG)
+//               {
+//                 setPos (style::raster::snap (pos() + event->pos() - _drag_start));
+//                 event->accept();
+//                 scene()->update();
+//               }
+//             else
+//               {
+//                 connectable::item::mouseMoveEvent (event);
+//               }
+//           }
+//           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
+//           {
+//             if (event->modifiers() == Qt::ControlModifier)
+//               {
+//                 mode_push (style::mode::DRAG);
+//                 _drag_start = event->pos();
+//                 event->accept();
+//                 return;
+//               }
 
-            connectable::item::mousePressEvent (event);
-          }
-
-          void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
-          {
-            if (mode() == style::mode::DRAG)
-              {
-                mode_pop();
-                event->accept();
-              }
-            else
-              {
-                connectable::item::mouseReleaseEvent (event);
-              }
-          }
+//             connectable::item::mousePressEvent (event);
+//           }
         }
       }
     }

@@ -19,6 +19,7 @@
 class QAction;
 class QMenu;
 class QGraphicsSceneContextMenuEvent;
+class QPointF;
 
 namespace fhg
 {
@@ -70,17 +71,15 @@ namespace fhg
             void
             set_just_orientation_but_not_in_property (const orientation::type&);
 
+            virtual void setPos (const QPointF&);
+
           public slots:
             void slot_set_type();
             void slot_delete();
             void refresh_tooltip();
 
           protected:
-
             virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
-            virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
-            virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
-            virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
 
           private:
             port_type& _port;
@@ -88,8 +87,6 @@ namespace fhg
             QPointF fitting_position (QPointF position);
 
             orientation::type _orientation;
-
-            QPointF _drag_start;
 
             qreal _length;
 

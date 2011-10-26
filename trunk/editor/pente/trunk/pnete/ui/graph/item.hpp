@@ -5,15 +5,19 @@
 
 #include <QObject>
 #include <QGraphicsItem>
+#include <QPointF>
+#include <QRectF>
+#include <QLinkedList>
 
 #include <pnete/ui/graph/scene.hpp>
 
 #include <pnete/ui/graph/orientation.hpp>
 
 #include <pnete/ui/graph/style/type.hpp>
-#include <pnete/ui/graph/style/mode.hpp>
+#include <pnete/ui/graph/mode.hpp>
 
 class QGraphicsSceneHoverEvent;
+class QGraphicsSceneMouseEvent;
 
 #include <stack>
 
@@ -49,14 +53,14 @@ namespace fhg
 
           class scene* scene() const;
 
-          void setPos (const QPointF&);
-          void setPos (qreal, qreal);
-
           void set_just_pos_but_not_in_property (const QPointF&);
           void set_just_pos_but_not_in_property (qreal, qreal);
 
           virtual void set_just_orientation_but_not_in_property
           (const port::orientation::type&) {}
+
+          virtual void setPos (const QPointF&);
+          virtual void setPos (qreal, qreal);
 
           //! \todo eliminate write acces to _style
           style::type& access_style();
@@ -69,18 +73,24 @@ namespace fhg
             return _style.get<T> (this, mode(), key);
           }
 
-          const style::mode::type& mode() const;
-          void mode_push (const style::mode::type&);
+          const mode::type& mode() const;
+          void mode_push (const mode::type&);
           void mode_pop();
+
+          virtual QLinkedList<item*> childs() const;
 
         private:
           ::we::type::property::type* _property;
           style::type _style;
-          std::stack<style::mode::type> _mode;
+          std::stack<mode::type> _mode;
+          QPointF _move_start;
 
         protected:
           virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
           virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event);
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
         };
       }
     }

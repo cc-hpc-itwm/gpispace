@@ -4,7 +4,7 @@
 #define _FHG_PNETE_UI_GRAPH_STYLE_FALLBACK_HPP 1
 
 #include <pnete/ui/graph/style/type.fwd.hpp>
-#include <pnete/ui/graph/style/mode.hpp>
+#include <pnete/ui/graph/mode.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
@@ -39,7 +39,7 @@ namespace fhg
                                      , const QColor&
                                      > type;
 
-              typedef boost::function< type (const style::mode::type&)
+              typedef boost::function< type (const mode::type&)
                                      > by_mode_type;
 
               typedef boost::unordered_map< key_type
@@ -51,7 +51,7 @@ namespace fhg
 
             template<typename T>
             const T& get ( const style::key_type& key
-                         , const style::mode::type& mode
+                         , const mode::type& mode
                          )
             {
               const detail::by_mode_by_key_type& by_mode_by_key

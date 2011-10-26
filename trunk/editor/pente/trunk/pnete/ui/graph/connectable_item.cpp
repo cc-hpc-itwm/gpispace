@@ -78,11 +78,28 @@ namespace fhg
             return unmapped;
           }
 
-          void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
+          void item::setPos (const QPointF& new_pos)
           {
-            scene()->create_connection (this);
-            //! \todo Start a new connection!
+            graph::item::setPos (new_pos);
           }
+
+          QLinkedList<graph::item*> item::childs() const
+          {
+            QLinkedList<graph::item*> childs;
+
+            foreach (connection::item* connection, connections())
+              {
+                childs.push_back (connection);
+              }
+
+            return childs;
+          }
+
+//           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
+//           {
+//             scene()->create_connection (this);
+//             //! \todo Start a new connection!
+//           }
         }
       }
     }

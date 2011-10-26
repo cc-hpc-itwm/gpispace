@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QSet>
+#include <QRectF>
 
 #include <pnete/ui/graph/item.hpp>
 
@@ -57,7 +58,11 @@ namespace fhg
 
             virtual const std::string& we_type() const = 0;
 
-            virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+//             virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+
+            virtual void setPos (const QPointF&);
+
+            virtual QLinkedList<graph::item*> childs() const;
 
           protected:
             QSet<connection::item*> _connections;

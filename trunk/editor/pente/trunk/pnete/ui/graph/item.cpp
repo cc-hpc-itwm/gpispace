@@ -3,6 +3,7 @@
 #include <pnete/ui/graph/item.hpp>
 
 #include <QGraphicsSceneHoverEvent>
+#include <QGraphicsSceneMouseEvent>
 
 #include <pnete/util.hpp>
 #include <util/property.hpp>
@@ -42,43 +43,57 @@ namespace fhg
           , _property (property)
           , _style ()
           , _mode ()
+          , _move_start ()
         {
-          _mode.push (style::mode::NORMAL);
+          _mode.push (mode::NORMAL);
           setAcceptHoverEvents (true);
         }
 
         class scene* item::scene() const
         {
-          return
-            fhg::util::throwing_qobject_cast<class scene*>(QGraphicsItem::scene());
-        }
+          QGraphicsScene* sc (QGraphicsItem::scene());
 
+          return sc
+            ? fhg::util::throwing_qobject_cast<class scene*> (sc)
+            : 0
+            ;
+        }
 
         void item::setPos (qreal x, qreal y)
         {
-          detail::set_position_x (_property, x);
-          detail::set_position_y (_property, y);
-
-          QGraphicsItem::setPos (x, y);
+          setPos (QPointF (x, y));
         }
-        void item::setPos (const QPointF& pos)
+        void item::setPos (const QPointF& new_pos)
         {
-          detail::set_position_x (_property, pos.x());
-          detail::set_position_y (_property, pos.y());
+          detail::set_position_x (_property, new_pos.x());
+          detail::set_position_y (_property, new_pos.y());
 
-          QGraphicsItem::setPos (pos);
+          set_just_pos_but_not_in_property (new_pos);
         }
-
         void item::set_just_pos_but_not_in_property (qreal x, qreal y)
         {
-          QGraphicsItem::setPos (x, y);
+          set_just_pos_but_not_in_property (QPointF (x, y));
         }
-        void item::set_just_pos_but_not_in_property (const QPointF& pos)
+        void item::set_just_pos_but_not_in_property (const QPointF& new_pos)
         {
-          QGraphicsItem::setPos (pos);
+          foreach (item* child, childs())
+            {
+              child->setVisible (false);
+            }
+
+          QGraphicsItem::setPos (new_pos);
+
+          foreach (item* child, childs())
+            {
+              child->setVisible (true);
+            }
         }
 
-        style::type& item::access_style () { return _style; }
+        //! \todo remove me
+        style::type& item::access_style ()
+        {
+          return _style;
+        }
 
         void item::clear_style_cache ()
         {
@@ -93,35 +108,71 @@ namespace fhg
             }
         }
 
-        void item::mode_push (const style::mode::type& mode)
+        void item::mode_push (const mode::type& mode)
         {
           _mode.push (mode);
-          update();
+          update (boundingRect());
         }
         void item::mode_pop ()
         {
           _mode.pop();
-          update();
+          update (boundingRect());
         }
-        const style::mode::type& item::mode() const
+        const mode::type& item::mode() const
         {
           if (_mode.empty())
             {
-              throw std::runtime_error ("STRANGE: No style mode!?");
+              throw std::runtime_error ("STRANGE: No mode!?");
             }
 
           return _mode.top();
         }
 
+        void item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
+        {
+          mode_push (mode::HIGHLIGHT);
+        }
         void item::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
         {
           mode_pop();
-          update (boundingRect());
         }
-        void item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
+        void item::mousePressEvent (QGraphicsSceneMouseEvent* event)
         {
-          mode_push (style::mode::HIGHLIGHT);
-          update (boundingRect());
+          if (event->modifiers() == Qt::ControlModifier)
+            {
+              mode_push (mode::MOVE);
+              _move_start = event->pos();
+            }
+        }
+        void item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
+        {
+          if (mode() == mode::MOVE)
+            {
+              mode_pop();
+            }
+        }
+        void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
+        {
+          if (mode() == mode::MOVE)
+            {
+              setPos (pos() + event->pos() - _move_start);
+            }
+        }
+
+        QLinkedList<item*> item::childs () const
+        {
+          QLinkedList<item*> childs;
+
+          foreach (QGraphicsItem* childItem, childItems())
+            {
+              if (item* child = qgraphicsitem_cast<item *> (childItem))
+                {
+                  childs.push_back (child);
+                  childs += child->childs();
+                }
+            }
+
+          return childs;
         }
       }
     }

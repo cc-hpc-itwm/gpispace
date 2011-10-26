@@ -6,7 +6,7 @@
 #include <pnete/ui/graph/style/type.fwd.hpp>
 #include <pnete/ui/graph/style/fallback.hpp>
 #include <pnete/ui/graph/style/store.hpp>
-#include <pnete/ui/graph/style/mode.hpp>
+#include <pnete/ui/graph/mode.hpp>
 
 #include <boost/unordered_map.hpp>
 

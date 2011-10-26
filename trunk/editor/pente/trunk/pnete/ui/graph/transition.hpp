@@ -74,13 +74,7 @@ namespace fhg
 
             virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
-            virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
-            virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
-            virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
-
             //! \todo size verstellbar
-
-            QPointF _dragStart;
             QSizeF _size;
 
             transition_type & _transition;
