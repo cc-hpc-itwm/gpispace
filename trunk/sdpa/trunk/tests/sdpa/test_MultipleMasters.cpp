@@ -26,7 +26,6 @@
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/nre/NREFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 
@@ -46,12 +45,8 @@
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
-
-#ifdef USE_REAL_WE
-	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
-#else
-	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-#endif
+#include <fhg/plugin/plugin.hpp>
+#include <fhg/plugin/core/kernel.hpp>
 
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -63,21 +58,11 @@ static const std::string kvs_host () { static std::string s("localhost"); return
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
 const int NMAXTRIALS = 10000;
-const int NMAXTHRDS = 5;
+const int NMAXTHRDS = 3;
 const int MAX_CAP = 100;
 
 namespace po = boost::program_options;
 #define NO_GUI ""
-
-typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
-
-#ifdef USE_REAL_WE
-	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-	bool bLaunchNrePcd = true;
-#else
-	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
-	bool bLaunchNrePcd = false;
-#endif
 
 struct MyFixture
 {
@@ -89,7 +74,6 @@ struct MyFixture
 	    	, m_serv (0)
 	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
@@ -144,6 +128,7 @@ struct MyFixture
 	}
 
 	void run_client(int i);
+	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
 	string read_workflow(string strFileName)
 	{
@@ -176,7 +161,6 @@ struct MyFixture
 	std::stringstream sstrNRE;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
-	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	boost::thread m_threadClient;
 	pid_t pidPcd_;
@@ -249,7 +233,7 @@ void MyFixture::run_client(int i)
 					return;
 				}
 
-				sleep(5);
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 			}
 		}
 
@@ -271,7 +255,7 @@ void MyFixture::run_client(int i)
 				return;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 
 		nTrials = 0;
@@ -293,13 +277,36 @@ void MyFixture::run_client(int i)
 				return;
 			}
 
-			sleep(5);
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
 		}
 	}
 
 	ptrCli->shutdown_network();
 	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
     ptrCli.reset();
+}
+
+sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
+{
+	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
+
+	kernel->put("plugin.kvs.host", kvs_host());
+	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
+
+	kernel->put("plugin.drts.name", drtsName);
+	kernel->put("plugin.drts.master", masterName);
+	kernel->put("plugin.drts.backlog", "2");
+	kernel->put("plugin.drts.request-mode", "false");
+
+	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
+//	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
+
+	return kernel;
 }
 
 BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
@@ -383,9 +390,9 @@ BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
 }
 */
 
-BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
+BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 {
-	LOG( INFO, "***** testMultipleMasters_push *****"<<std::endl);
+	LOG( INFO, "testMultipleMastersEmptyWEPush");
 
 	//string strAppGuiUrl   	= "";
 	string guiUrl   	= "";
@@ -393,50 +400,30 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 	string addrOrch 	= "127.0.0.1";
 	string addrAgg_0 	= "127.0.0.1:7700";
 	string addrAgg_1 	= "127.0.0.1:7701";
-	string addrNRE 		= "127.0.0.1";
+	string addrAgg_00 	= "127.0.0.1:7702";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg_0,m_arrAggMasterInfo, 100);
+	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_0", addrAgg_0,m_arrAggMasterInfo, 100);
 	ptrAgent0->start_agent(false);
 
 	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_1", addrAgg_1,m_arrAggMasterInfo, 100);
+	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgg_1, m_arrAggMasterInfo, 100);
 	ptrAgent1->start_agent(false);
 
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+	LOG( INFO, "Create the Agent ...");
+	sdpa::master_info_list_t arrAgent00MasterInfo;
+	sdpa::daemon::Agent::ptr_t ptrAgent00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_00", addrAgg_00, arrAgent00MasterInfo, 100);
+	ptrAgent00->start_agent(false);
 
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
+	ptrAgent00->addMaster("agent_0");
+	ptrAgent00->addMaster("agent_1");
 
-	master_info_list_t vecNreMasters;
-	vecNreMasters.push_back(MasterInfo("agent_0"));
-	vecNreMasters.push_back(MasterInfo("agent_1"));
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-																					 addrNRE,
-																					 vecNreMasters,
-																					 1,
-																					 workerUrl,
-																					 guiUrl,
-																					 bLaunchNrePcd,
-																					 TESTS_NRE_PCD_BIN_PATH,
-																					 v_fake_PC_search_path,
-																					 v_module_preload );
-
-	try {
-		ptrNRE->start_agent(false);
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( create_drts("drts_00", "agent_00") );
+	boost::thread drts_00_thread = boost::thread(&fhg::core::kernel_t::run, drts_00);
 
 	boost::thread* arrThreadClient = new boost::thread[NMAXTHRDS];
 
@@ -451,14 +438,16 @@ BOOST_AUTO_TEST_CASE( testMultipleMasters_push )
 		LOG( INFO, "The client thread "<<i<<" joined the main thread°!" );
 	}
 
-	ptrNRE->shutdown();
+	drts_00->stop();
+	drts_00_thread.join();
 
+	ptrAgent00->shutdown();
 	ptrAgent0->shutdown();
 	ptrAgent1->shutdown();
 
 	ptrOrch->shutdown();
 
-	LOG( INFO, "The test case testMultipleMasters_push terminated!" );
+	LOG( INFO, "The test case testMultipleMastersEmptyWEPush terminated!" );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
