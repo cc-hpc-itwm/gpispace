@@ -39,7 +39,6 @@
 #include <plugin/drts.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
 
 #include <boost/filesystem/path.hpp>
@@ -52,13 +51,6 @@
 //plugin
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
-
-
-#ifdef USE_REAL_WE
-	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
-#else
-	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-#endif
 
 
 const int NMAXTRIALS=5;
