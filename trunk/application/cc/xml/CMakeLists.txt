@@ -6,6 +6,11 @@ pnet_compile(sdpacc ${CMAKE_CURRENT_BINARY_DIR}/compile.xml
   OUTPUT compile.pnet
   GENERATE gen-sdpacc
   INSTALL share/sdpa/cc
-  LDFLAGS "-L${CMAKE_BINARY_DIR}/application/example/exec"
+  LDFLAGS "-L${CMAKE_BINARY_DIR}/application/example/process"
+  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
+           -I${CMAKE_BINARY_DIR}/fhglog
+           -I${CMAKE_SOURCE_DIR}/application/example
+           -O3
+  DEPENDS process
   BUILD
 )
