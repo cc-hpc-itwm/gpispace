@@ -18,7 +18,7 @@ include_directories(./src
 		    ./src/structures
 		    ./src/filehandler
 		    ./src/utils
-                    ../example/exec
+                    ../example
                     )
 
 set(SRC ./src/main.cpp

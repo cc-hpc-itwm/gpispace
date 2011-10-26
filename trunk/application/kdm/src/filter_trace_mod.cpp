@@ -29,7 +29,7 @@ using we::loader::put;
 #include <stdexcept>
 
 //! \todo Is this really supposed to be included? Its in example/exec/
-#include <process.hpp>
+#include <process/process.hpp>
 
 // ************************************************************************* //
 
