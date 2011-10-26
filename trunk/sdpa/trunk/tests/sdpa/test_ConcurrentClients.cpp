@@ -25,8 +25,7 @@
 #include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
-#include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
-#include <sdpa/daemon/nre/NREFactory.hpp>
+#include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/nre/SchedulerNRE.hpp>
 
@@ -47,11 +46,9 @@
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 
-#ifdef USE_REAL_WE
-	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
-#else
-	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-#endif
+//plugin
+#include <fhg/plugin/plugin.hpp>
+#include <fhg/plugin/core/kernel.hpp>
 
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -62,22 +59,16 @@ using namespace seda;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
-const int NMAXTRIALS 	= 10000;
-const int NMAXTHRDS 	= 1;
-const int MAX_CAP 		= 100;
+const int NMAXTRIALS = 10000;
+const int NMAXTHRDS  = 3;
+const int MAX_CAP 	 = 100;
 
 namespace po = boost::program_options;
 #define NO_GUI ""
 
-typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
-
-#ifdef USE_REAL_WE
-	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-	bool bLaunchNrePcd = true;
-#else
-	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
-	bool bLaunchNrePcd = false;
-#endif
+//plugin
+#include <fhg/plugin/plugin.hpp>
+#include <fhg/plugin/core/kernel.hpp>
 
 struct MyFixture
 {
@@ -89,7 +80,6 @@ struct MyFixture
 	    	, m_serv (0)
 	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
@@ -144,6 +134,7 @@ struct MyFixture
 	}
 
 	void run_client(int i);
+	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
 	string read_workflow(string strFileName)
 	{
@@ -176,7 +167,6 @@ struct MyFixture
 	std::stringstream sstrNRE;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
-	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	boost::thread m_threadClient;
 	pid_t pidPcd_;
@@ -302,6 +292,29 @@ void MyFixture::run_client(int i)
     ptrCli.reset();
 }
 
+sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
+{
+	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
+
+	kernel->put("plugin.kvs.host", kvs_host());
+	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
+
+	kernel->put("plugin.drts.name", drtsName);
+	kernel->put("plugin.drts.master", masterName);
+	kernel->put("plugin.drts.backlog", "2");
+	kernel->put("plugin.drts.request-mode", "false");
+
+	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
+
+	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
+//	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
+
+	return kernel;
+}
+
 BOOST_FIXTURE_TEST_SUITE( test_ConcurrentClients, MyFixture );
 
 
@@ -320,36 +333,12 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent();
 
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
-	ptrAgg->start_agent();
+	LOG( INFO, "Create the Agent ...");
+	sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg,m_arrAggMasterInfo, MAX_CAP);
+	ptrAgent->start_agent();
 
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-											 addrNRE, m_arrNreMasterInfo,
-											 2,
-											 workerUrl,
-											 /*strAppGuiUrl,*/
-											 guiUrl,
-											 bLaunchNrePcd,
-											 TESTS_NRE_PCD_BIN_PATH,
-											 v_fake_PC_search_path,
-											 v_module_preload );
-
-	try {
-		ptrNRE->start_agent();
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
 	boost::thread* arrThreadClient = new boost::thread[NMAXTHRDS];
 
@@ -364,8 +353,10 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 		LOG( INFO, "The client thread "<<i<<" joined the main thread°!" );
 	}
 
-	ptrNRE->shutdown();
-	ptrAgg->shutdown();
+	drts_0->stop();
+	drts_0_thread.join();
+
+	ptrAgent->shutdown();
 	ptrOrch->shutdown();
 
 	LOG( INFO, "The test case testConcurrentClients terminated!" );
