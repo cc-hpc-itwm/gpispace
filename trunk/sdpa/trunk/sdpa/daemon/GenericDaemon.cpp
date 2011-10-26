@@ -646,7 +646,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
         if( ptrJob.get() && !bTerminal )
         {
-          DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
+        	DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
             // put the job into the Running state here
             DMLOG(TRACE, "The job status is "<<ptrJob->getStatus());

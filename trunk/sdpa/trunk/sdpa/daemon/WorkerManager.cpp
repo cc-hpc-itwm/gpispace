@@ -523,6 +523,51 @@ bool hasSameName(sdpa::capability_t& cpb1, sdpa::capability_t& cpb2)
 	return (cpb1.name() == cpb2.name()) && (cpb1.type() == cpb2.type());
 }
 
+/*
+void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
+{
+	lock_type lock(mtx_);
+
+	for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
+	{
+		sdpa::capabilities_set_t workerCpbSet = it->second->capabilities();
+
+		bool bFound = false;
+		sdpa::capability_t cpbAg;
+		for( sdpa::capabilities_set_t::iterator itAg = workerCpbSet.begin(); itAg != workerCpbSet.end() && !bFound; itAg++)
+			if( itAg->name() == agentName )
+			{
+				bFound = true;
+				cpbAg = *itAg;
+			}
+
+		if(bFound)
+		{
+			workerCpbSet.erase(cpbAg);
+		}
+
+		for(sdpa::capabilities_set_t::iterator itwcpbs = workerCpbSet.begin(); itwcpbs != workerCpbSet.end();  itwcpbs++  )
+		{
+			{
+				capability_t cpb(*itwcpbs);
+				cpb.incDepth();
+
+				// see if there is already an entry into agentCpbSet
+				sdpa::capabilities_set_t::iterator itCpb = find_if( agentCpbSet.begin(), agentCpbSet.end(), boost::bind(&sdpa::capability_t::operator==, _1, cpb ));
+				if( itCpb != agentCpbSet.end() ) //SDPA_LOG_INFO( "There is already capability "<<cpb );
+				{
+					if(itCpb->depth() > cpb.depth())
+						const_cast<sdpa::capability_t&>(*itCpb).setDepth(cpb.depth());
+				}
+				else
+				{
+					agentCpbSet.insert(cpb);
+				}
+			}
+		}
+	}
+}
+*/
 
 void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
 {

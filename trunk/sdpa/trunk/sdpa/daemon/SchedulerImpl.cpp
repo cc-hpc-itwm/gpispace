@@ -741,8 +741,9 @@ void SchedulerImpl::run()
         	  }
         	  else //  if has backends try to execute it
         	  {
-				  //DLOG(TRACE, "Try to execute myself the job "<<jobId.str()<<" ...");
-				  //execute(jobId);
+        		  // just for testing
+				  DLOG(TRACE, "I have no workers, therefore I'll try to execute myself the job "<<jobId.str()<<" ...");
+				  execute(jobId);
 
         	  } // else fail
           }

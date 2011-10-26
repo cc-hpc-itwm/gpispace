@@ -1,7 +1,0 @@
-#!/bin/bash
-export LD_LIBRARY_PATH="@CMAKE_INSTALL_PREFIX@/lib/fake:@CMAKE_INSTALL_PREFIX@/lib"
-export LD_PRELOAD="@CMAKE_INSTALL_PREFIX@/lib/fake/libfvm-pc.so"
-FHGLOG_level=MIN  "@CMAKE_INSTALL_PREFIX@/bin/nre-pcd" -c "@CMAKE_INSTALL_PREFIX@/etc/fvm.cfg" $@
-
-#export LD_PRELOAD="/amd/nfs/root/gpfs/u/r/rotaru/projectsc++/sdpa/rotaru/build/fvm-pc/fvm-pc/fake/libfvm-pc.so" 
-#FHGLOG_level=MIN ./nre-pcd -l "127.0.0.1:9000" -a "/amd/nfs/root/gpfs/u/r/rotaru/projectsc++/sdpa/rotaru/build/we/kdm/mod/fake"
