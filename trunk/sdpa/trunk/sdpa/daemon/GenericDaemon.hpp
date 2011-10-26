@@ -254,6 +254,7 @@ namespace sdpa { namespace daemon {
 
       void addMaster(const agent_id_t& );
       void addMasters(const worker_id_list_t& );
+      void removeMaster(const agent_id_t& masterId);
       void removeMasters(const worker_id_list_t& );
 
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
