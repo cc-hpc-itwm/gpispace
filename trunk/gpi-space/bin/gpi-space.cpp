@@ -5,7 +5,7 @@
  */
 
 #include <stdio.h> // snprintf
-#include <unistd.h> // getuid, alarm
+#include <unistd.h> // getuid, alarm, setsid, fork
 #include <sys/types.h> // uid_t
 #include <pwd.h> // getpwuid
 
@@ -105,12 +105,6 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
 
   LOG(INFO, "started GPI interface on rank " << rank << " at " << socket_path);
 
-  if (cfg.node.daemonize)
-  {
-    // daemonize...
-
-    // wait for signals
-  }
 /* // TODO: use the shell interface
   else if (isatty (0) && isatty (1)) // usually on the master node only
   {
@@ -156,10 +150,7 @@ static int main_loop (const gpi_space::config & cfg, const gpi::rank_t rank)
     }
   }
 */
-  else
-  {
-    gpi::signal::handler().join ();
-  }
+  gpi::signal::handler().join ();
 
   mgr.stop ();
 
@@ -279,6 +270,18 @@ int main (int ac, char *av[])
   {
     LOG(ERROR, "could not configure: " << ex.what());
     return EXIT_FAILURE;
+  }
+
+  if (config.node.daemonize)
+  {
+    if (0 == fork())
+    {
+      setsid();
+    }
+    else
+    {
+      exit (0);
+    }
   }
 
   // initialize gpi api
