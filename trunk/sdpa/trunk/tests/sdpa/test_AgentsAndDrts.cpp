@@ -67,14 +67,6 @@ using namespace sdpa::tests;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
-typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
-
-#ifdef USE_REAL_WE
-	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-#else
-	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
-#endif
-
 struct MyFixture
 {
 	MyFixture()
@@ -85,16 +77,9 @@ struct MyFixture
 	    	, m_serv (0)
 	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start_agent the finite state machine
 
 		FHGLOG_SETUP();
-
-#ifdef USE_REAL_WE
-		m_bLaunchNrePcd = true;
-#else
-		m_bLaunchNrePcd = false;
-#endif
 
 		LOG(DEBUG, "Fixture's constructor called ...");
 
@@ -130,7 +115,6 @@ struct MyFixture
 
 		sstrOrch.str("");
 		sstrAgg.str("");
-		sstrNRE.str("");
 
 		m_serv->stop ();
 		m_pool->stop ();
@@ -175,15 +159,11 @@ struct MyFixture
 	boost::thread *m_thrd;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
-	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
-	std::stringstream sstrNRE;
 
 	boost::thread m_threadClient;
-	bool m_bLaunchNrePcd;
-	pid_t pidPcd_;
 
 	fhg::core::kernel_t *kernel;
 };
@@ -332,7 +312,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts1 )
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
@@ -371,7 +350,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts2 )
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
@@ -416,7 +394,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts3 )
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
