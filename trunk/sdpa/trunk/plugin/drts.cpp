@@ -122,11 +122,6 @@ public:
 
       std::list<std::string> master_list;
       fhg::util::split(master_names, ",", std::back_inserter(master_list));
-      if (master_list.empty())
-      {
-        MLOG(ERROR, "no master specified, please set plugin.drts.master!");
-        FHG_PLUGIN_FAILED(EINVAL);
-      }
 
       BOOST_FOREACH (std::string const & master, master_list)
       {
@@ -139,8 +134,7 @@ public:
             MLOG(INFO, "adding master \"" << m->name() << "\"");
             m_masters.insert (std::make_pair(m->name(), m));
 
-            if (m->is_polling())
-              have_master_with_polling = true;
+            have_master_with_polling |= m->is_polling();
           }
           else
           {
