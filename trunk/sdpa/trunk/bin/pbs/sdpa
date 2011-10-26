@@ -9,6 +9,7 @@ CONFIG_VERSION=3
 #debug_enabled=true
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
+debug_enabled=false
 
 ##############################################
 #                                            #
@@ -928,6 +929,11 @@ function start_agent ()
     local name="$1" ; shift
     local master="$1" ; shift
 
+    if [ -z "$name" ] ; then
+	echo "E: start_agent(): no name given!" >&2
+	return 1
+    fi
+
     if [ -z "$master" ] ; then
 	echo "E: start_agent(): no master given!" >&2
 	return 1
@@ -939,7 +945,7 @@ function start_agent ()
 	node=localhost
     fi
 
-    local cmd="rexec $node start-agent -D -n $name -m $master -f"
+    local cmd="rexec $node $SDPA_HOME/bin/start-agent -D -n $name -m $master -f"
     debug $cmd
     $cmd </dev/null >"$SDPA_LOG_DIR/$name.log" 2>&1
     if [ $? -eq 0 ] ; then
@@ -958,7 +964,7 @@ function stop_agent ()
     if [ "$node" == "$name" ] ; then
 	node=localhost # maybe we should use the master node?
     fi
-    local cmd="rexec $node stop-agent -n $name"
+    local cmd="rexec $node $SDPA_HOME/bin/stop-agent -n $name"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1 &
 }
@@ -972,7 +978,7 @@ function status_agent ()
 	node=localhost # maybe we should use the master node?
     fi
 
-    local cmd="rexec $node status-agent -n $name"
+    local cmd="rexec $node $SDPA_HOME/bin/status-agent -n $name"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1
 }
