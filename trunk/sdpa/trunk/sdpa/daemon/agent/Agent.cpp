@@ -207,21 +207,25 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 	catch(QueueFull const &)
 	{
 		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+		return false;
 	}
 	catch(seda::StageNotFound const &)
 	{
 		SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+		return false;
 	}
 	catch(std::exception const & ex)
 	{
 		SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-		throw;
+		return false;
 	}
 	catch(...)
 	{
 		SDPA_LOG_FATAL("Unexpected exception occurred!");
-		throw;
+		return false;
 	}
+
+	return true;
 }
 
 bool Agent::finished(const id_type& wfid, const result_type& result, const id_type& forward_to)
@@ -267,21 +271,25 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 	catch(QueueFull const &)
 	{
 		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFinishedEvent");
+		return false;
 	}
 	catch(seda::StageNotFound const &)
 	{
 		SDPA_LOG_ERROR("Stage not found when trying to submit JobFinishedEvent");
+		return false;
 	}
 	catch(std::exception const & ex)
 	{
 		SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-		throw;
+		return false;
 	}
 	catch(...)
 	{
 		SDPA_LOG_FATAL("Unexpected exception occurred!");
-		throw;
+		return false;
 	}
+
+	return true;
 }
 
 void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
@@ -445,21 +453,25 @@ bool Agent::failed(const id_type & wfid, const result_type & result)
 	catch(QueueFull const &)
 	{
 		SDPA_LOG_ERROR("Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a JobFailedEvent");
+		return false;
 	}
 	catch(seda::StageNotFound const &)
 	{
 		SDPA_LOG_ERROR("Stage not found when trying to submit JobFailedEvent");
+		return false;
 	}
 	catch(std::exception const & ex)
 	{
 		SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-		throw;
+		return false;
 	}
 	catch(...)
 	{
 		SDPA_LOG_FATAL("Unexpected exception occurred!");
-		throw;
+		return false;
 	}
+
+	return true;
 }
 
 
