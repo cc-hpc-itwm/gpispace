@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6.2)
 
-project(exec)
+project(process)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 message(STATUS "MODULE_PATH := ${CMAKE_MODULE_PATH}")
@@ -42,7 +42,7 @@ set (xmls
   )
 
 install(FILES ${xmls}
-  DESTINATION share/sdpa/xml/exec
+  DESTINATION share/sdpa/xml/process
   COMPONENT examples)
 
 install(FILES ${hdrs}

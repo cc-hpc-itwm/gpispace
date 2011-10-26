@@ -1,5 +1,5 @@
 add_subdirectory(stresstest)
 add_subdirectory(concurrent)
 add_subdirectory(put_get)
-add_subdirectory(exec)
+add_subdirectory(process)
 add_subdirectory(failing)
