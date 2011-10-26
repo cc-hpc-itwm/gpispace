@@ -166,8 +166,8 @@ endif (ENABLE_PNET_EDITOR)
 include(TargetDoc.cmake OPTIONAL)
 
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa
-  DESTINATION etc/modules/sdpa
-  RENAME ${PROJECT_REVISION}
+  DESTINATION etc/modules/soft/sdpa
+  RENAME current
   COMPONENT configurations)
 
 # CPACK packaging
