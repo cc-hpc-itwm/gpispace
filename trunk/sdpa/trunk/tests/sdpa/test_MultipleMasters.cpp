@@ -27,7 +27,6 @@
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/nre/SchedulerNRE.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
@@ -112,7 +111,6 @@ struct MyFixture
 
 		sstrOrch.str("");
 		sstrAgg.str("");
-		sstrNRE.str("");
 
 		m_serv->stop ();
 		m_pool->stop ();
@@ -158,12 +156,10 @@ struct MyFixture
 
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
-	std::stringstream sstrNRE;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
 	boost::thread m_threadClient;
-	pid_t pidPcd_;
 };
 
 void MyFixture::run_client(int i)
@@ -311,84 +307,6 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( testMultipleMastersSuite, MyFixture );
 
-/*BOOST_AUTO_TEST_CASE( testMultipleMasters_req )
-{
-	LOG( INFO, "***** testMultipleMasters_req *****"<<std::endl);
-
-	//string strAppGuiUrl   	= "";
-	string guiUrl   	= "";
-	string workerUrl 	= "127.0.0.1:5500";
-	string addrOrch 	= "127.0.0.1";
-	string addrAgg_0 	= "127.0.0.1:7700";
-	string addrAgg_1 	= "127.0.0.1:7701";
-	string addrNRE 		= "127.0.0.1";
-
-	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
-	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
-	ptrOrch->start_agent(true);
-
-	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg_0,m_arrAggMasterInfo, 10);
-	ptrAgent0->start_agent(true);
-
-	LOG( INFO, "Create the Agent ...");
-	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_1", addrAgg_1,m_arrAggMasterInfo, 10);
-	ptrAgent1->start_agent(true);
-
-	std::vector<std::string> v_fake_PC_search_path;
-	v_fake_PC_search_path.push_back(TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
-
-	std::vector<std::string> v_module_preload;
-	v_module_preload.push_back(TESTS_FVM_PC_FAKE_MODULE);
-
-	master_info_list_t vecNreMasters;
-	vecNreMasters.push_back(MasterInfo("agent_0"));
-	vecNreMasters.push_back(MasterInfo("agent_1"));
-
-	LOG( INFO, "Create the NRE ...");
-	sdpa::daemon::NRE<WorkerClient>::ptr_t
-		ptrNRE = sdpa::daemon::NREFactory<RealWorkflowEngine, WorkerClient>::create("NRE_0",
-																					 addrNRE,
-																					 vecNreMasters,
-																					 1,
-																					 workerUrl,
-																					 guiUrl,
-																					 bLaunchNrePcd,
-																					 TESTS_NRE_PCD_BIN_PATH,
-																					 v_fake_PC_search_path,
-																					 v_module_preload );
-
-	try {
-		ptrNRE->start_agent(true);
-	}
-	catch (const std::exception &ex) {
-		LOG( FATAL, "Could not start NRE: " << ex.what());
-		return;
-	}
-
-	boost::thread* arrThreadClient = new boost::thread[NMAXTHRDS];
-
-	for(int i=0;i<NMAXTHRDS;i++)
-		arrThreadClient[i] = boost::thread(boost::bind(&MyFixture::run_client, this, i));
-
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-
-	for(int i=0;i<NMAXTHRDS;i++)
-	{
-		arrThreadClient[i].join();
-		LOG( INFO, "The client thread "<<i<<" joined the main thread°!" );
-	}
-
-	ptrNRE->shutdown();
-
-	ptrAgent0->shutdown();
-	ptrAgent1->shutdown();
-
-	ptrOrch->shutdown();
-
-	LOG( INFO, "The test case testMultipleMasters_req terminated!" );
-}
-*/
 
 BOOST_AUTO_TEST_CASE( testMultipleMastersEmptyWEPush )
 {

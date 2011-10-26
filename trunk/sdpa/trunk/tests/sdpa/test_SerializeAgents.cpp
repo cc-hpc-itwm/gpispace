@@ -28,9 +28,7 @@
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
-#include <sdpa/daemon/nre/NREFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/nre/SchedulerNRE.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
@@ -47,18 +45,6 @@
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 
 const int MAX_CAP = 100;
-
-#ifdef USE_REAL_WE
-	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
-#else
-	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-#endif
-
-#ifdef USE_REAL_WE
-	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-#else
-	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
-#endif
 
 using namespace sdpa::tests;
 using namespace sdpa::daemon;
@@ -206,108 +192,6 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 }
 
 /*
-BOOST_AUTO_TEST_CASE(testNRESerialization)
-{
-	std::cout<<std::endl<<"----------------Begin  testNRESerialization----------------"<<std::endl;
-	std::string filename = "testSerializeNRE.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-	sdpa::daemon::NRE<WorkerClient>::ptr_t ptrNRE_0
-          (
-           sdpa::daemon::NREFactory< DummyWorkflowEngine
-                            , WorkerClient
-                            >::create( "NRE_0"
-                                     , "127.0.0.1:7002"
-                                     , sdpa::master_info_list_t(1, MasterInfo("aggregator_0"))
-                                     , MAX_CAP
-                                     , "127.0.0.1:7001"
-                                     , "127.0.0.1:8000"
-                                     )
-          );
-
-	ptrNRE_0->setScheduler( new sdpa::daemon::SchedulerNRE<WorkerClient>() );
-	//sdpa::daemon::SchedulerImpl* pScheduler = dynamic_cast< sdpa::daemon::SchedulerImpl*>(ptrNRE_0->scheduler().get());
-
-	JobId id1("_1");
-	sdpa::daemon::Job::ptr_t  p1(new JobFSM(id1, "decsription 1"));
-	ptrNRE_0->jobManager()->addJob(id1, p1);
-
-	JobId id2("_2");
-	sdpa::daemon::Job::ptr_t  p2(new JobFSM(id2, "decsription 2"));
-	ptrNRE_0->jobManager()->addJob(id2, p2);
-
-	JobId id3("_3");
-	sdpa::daemon::Job::ptr_t  p3(new JobFSM(id3, "decsription 3"));
-	ptrNRE_0->jobManager()->addJob(id3, p3);
-
-	JobId id4("_4");
-	sdpa::daemon::Job::ptr_t  p4(new JobFSM(id4, "decsription 4"));
-	ptrNRE_0->jobManager()->addJob(id4, p4);
-
-	JobId id5("_5");
-	sdpa::daemon::Job::ptr_t  p5(new JobFSM(id5, "decsription 5"));
-	ptrNRE_0->jobManager()->addJob(id5, p5);
-
-	int nSchedQSize = 5;
-	for(int i=0; i<nSchedQSize; i++)
-	{
-	    std::ostringstream ossJobId;;
-	    ossJobId<<"Job_"<<i;
-	    sdpa::job_id_t jobId(ossJobId.str());
-	    ptrNRE_0->scheduler()->schedule(jobId);
-	}
-
-	try
-	{
-            std::cout<<"----------------The NRE's content before backup is:----------------"<<std::endl;
-            //ptrNRE_0->print();
-
-            std::ofstream ofs(filename.c_str());
-            boost::archive::text_oarchive oa(ofs);
-            //oa.register_type(static_cast<NRE<DummyWorkflowEngine, WorkerClient>*>(NULL));
-            oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-            oa.register_type(static_cast<DaemonFSM*>(NULL));
-            oa.register_type(static_cast<GenericDaemon*>(NULL));
-            oa.register_type(static_cast<SchedulerImpl*>(NULL));
-            oa.register_type(static_cast<SchedulerNRE<WorkerClient>*>(NULL));
-            oa.register_type(static_cast<JobFSM*>(NULL));
-
-            oa << ptrNRE_0;
-	}
-	catch(exception &e)
-	{
-            cout <<"Exception occurred: "<< e.what() << endl;
-            return;
-	}
-
-	std::cout<<"----------------Try now to restore the NRE:----------------"<<std::endl;
-	try
-	{
-            sdpa::daemon::NRE<WorkerClient>::ptr_t ptrRestoredNRE_0;
-
-            std::ifstream ifs(filename.c_str());
-            boost::archive::text_iarchive ia(ifs);
-            //ia.register_type(static_cast<NRE<DummyWorkflowEngine, WorkerClient>*>(NULL));
-            ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
-            ia.register_type(static_cast<DaemonFSM*>(NULL));
-            ia.register_type(static_cast<GenericDaemon*>(NULL));
-            ia.register_type(static_cast<SchedulerImpl*>(NULL));
-            ia.register_type(static_cast<SchedulerNRE<WorkerClient>*>(NULL));
-            ia.register_type(static_cast<JobFSM*>(NULL));
-
-            ia >> ptrRestoredNRE_0;
-
-            std::cout<<std::endl<<"----------------The restored content of the NRE is:----------------"<<std::endl;
-            ptrRestoredNRE_0->print();
-	}
-	catch(exception &e)
-	{
-            cout <<"Exception occurred: " << e.what() << endl;
-            return;
-	}
-
-	std::cout<<std::endl<<"----------------End  NRE----------------"<<std::endl;
-
-}
-
 BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
 {
     std::cout<<std::endl<<"----------------Begin  testAggregatorSerialization----------------"<<std::endl;

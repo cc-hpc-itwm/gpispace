@@ -36,11 +36,6 @@
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
 
-#ifdef USE_REAL_WE
-	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
-#else
-	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-#endif
 
 using namespace std;
 using namespace sdpa::tests;

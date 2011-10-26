@@ -27,21 +27,11 @@
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
-#include <sdpa/daemon/nre/NREFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/nre/SchedulerNRE.hpp>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
 #include <sdpa/engine/EmptyWorkflowEngine.hpp>
 #include <sdpa/engine/RealWorkflowEngine.hpp>
-
-#ifdef USE_REAL_WE
-	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
-	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-#else
-	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
-#endif
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>

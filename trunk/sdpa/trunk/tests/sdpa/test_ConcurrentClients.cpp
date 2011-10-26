@@ -27,7 +27,6 @@
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/nre/SchedulerNRE.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
@@ -118,7 +117,6 @@ struct MyFixture
 
 		sstrOrch.str("");
 		sstrAgg.str("");
-		sstrNRE.str("");
 
 		m_serv->stop ();
 		m_pool->stop ();
@@ -164,12 +162,10 @@ struct MyFixture
 
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
-	std::stringstream sstrNRE;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
 
 	boost::thread m_threadClient;
-	pid_t pidPcd_;
 };
 
 void MyFixture::run_client(int i)
@@ -327,7 +323,6 @@ BOOST_AUTO_TEST_CASE( testConcurrentClients )
 	string workerUrl = "127.0.0.1:5500";
 	string addrOrch = "127.0.0.1";
 	string addrAgg = "127.0.0.1";
-	string addrNRE = "127.0.0.1";
 
 	LOG( INFO, "Create Orchestrator with an empty workflow engine ...");
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);

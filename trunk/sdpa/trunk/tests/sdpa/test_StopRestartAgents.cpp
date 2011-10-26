@@ -77,7 +77,6 @@ struct MyFixture
 	    	, m_serv (0)
 	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start the finite state machine
 
 		FHGLOG_SETUP();
@@ -158,14 +157,11 @@ struct MyFixture
 	boost::thread *m_thrd;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
-	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	std::string strBackupOrch;
 	std::string strBackupAgent;
-	std::string strBackupNRE;
 
 	boost::thread m_threadClient;
-	pid_t pidPcd_;
 };
 
 void MyFixture::run_client()
@@ -311,7 +307,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 
@@ -362,7 +358,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 
@@ -413,7 +409,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 
@@ -464,7 +460,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 
@@ -515,7 +511,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_req)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 
@@ -565,7 +561,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 
@@ -615,7 +611,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 
@@ -665,7 +661,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
+
 
 	typedef void OrchWorkflowEngine;
 

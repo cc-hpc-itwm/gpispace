@@ -39,7 +39,6 @@
 #include <plugin/drts.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <sdpa/daemon/nre/NREFactory.hpp>
 #include <seda/StageRegistry.hpp>
 
 #include <boost/filesystem/path.hpp>
@@ -54,16 +53,8 @@
 #include <fhg/plugin/core/kernel.hpp>
 
 
-#ifdef USE_REAL_WE
-	#include <sdpa/daemon/nre/nre-worker/NreWorkerClient.hpp>
-#else
-	#include <sdpa/daemon/nre/BasicWorkerClient.hpp>
-#endif
-
-
 const int NMAXTRIALS=5;
 const int MAX_CAP = 100;
-
 
 namespace po = boost::program_options;
 
@@ -75,14 +66,6 @@ using namespace sdpa::tests;
 static const std::string kvs_host () { static std::string s("localhost"); return s; }
 static const std::string kvs_port () { static std::string s("0"); return s; }
 
-typedef sdpa::nre::worker::BasicWorkerClient TestWorkerClient;
-
-#ifdef USE_REAL_WE
-	typedef sdpa::nre::worker::NreWorkerClient WorkerClient;
-#else
-	typedef sdpa::nre::worker::BasicWorkerClient WorkerClient;
-#endif
-
 struct MyFixture
 {
 	MyFixture()
@@ -93,16 +76,9 @@ struct MyFixture
 	    	, m_serv (0)
 	    	, m_thrd (0)
 			, m_arrAggMasterInfo(1, MasterInfo("orchestrator_0"))
-			, m_arrNreMasterInfo(1, MasterInfo("aggregator_0"))
 	{ //initialize and start_agent the finite state machine
 
 		FHGLOG_SETUP();
-
-#ifdef USE_REAL_WE
-		m_bLaunchNrePcd = true;
-#else
-		m_bLaunchNrePcd = false;
-#endif
 
 		LOG(DEBUG, "Fixture's constructor called ...");
 
@@ -138,7 +114,6 @@ struct MyFixture
 
 		sstrOrch.str("");
 		sstrAgg.str("");
-		sstrNRE.str("");
 
 		m_serv->stop ();
 		m_pool->stop ();
@@ -154,7 +129,7 @@ struct MyFixture
 	}
 
 	void start_client_and_cancel_job();
-	fhg::core::kernel_t* create_drts(const std::string& drtsName, const std::string& masterName );
+	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
 	string read_workflow(string strFileName)
 	{
@@ -183,15 +158,11 @@ struct MyFixture
 	boost::thread *m_thrd;
 
 	sdpa::master_info_list_t m_arrAggMasterInfo;
-	sdpa::master_info_list_t m_arrNreMasterInfo;
 
 	std::stringstream sstrOrch;
 	std::stringstream sstrAgg;
-	std::stringstream sstrNRE;
 
 	boost::thread m_threadClient;
-	bool m_bLaunchNrePcd;
-	pid_t pidPcd_;
 
 	fhg::core::kernel_t *kernel;
 };
@@ -306,9 +277,9 @@ void MyFixture::start_client_and_cancel_job()
 }
 
 
-fhg::core::kernel_t* MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
+sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
 {
-	fhg::core::kernel_t* kernel = new fhg::core::kernel_t;
+	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
 
 	kernel->put("plugin.kvs.host", kvs_host());
 	kernel->put("plugin.kvs.port", boost::lexical_cast<std::string>(m_serv->port()));
@@ -321,7 +292,9 @@ fhg::core::kernel_t* MyFixture::create_drts(const std::string& drtsName, const s
 	kernel->put("plugin.wfe.library_path", TESTS_EXAMPLE_STRESSTEST_MODULES_PATH);
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
+//	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
+	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 
 	return kernel;
@@ -329,6 +302,99 @@ fhg::core::kernel_t* MyFixture::create_drts(const std::string& drtsName, const s
 
 BOOST_FIXTURE_TEST_SUITE( test_agents, MyFixture )
 
+BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentEmptyWE )
+{
+	// topology:
+	// O
+	// |
+	// A
+	// |
+	// drts
+
+
+	LOG( DEBUG, "testCancelJobPath1AgentEmptyWE");
+	//guiUrl
+	string guiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgent 	= "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+	ptrOrch->start_agent(false);
+
+	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	ptrAg0->start_agent(false);
+
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	drts_0->stop();
+	drts_0_thread.join();
+
+	ptrAg0->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( DEBUG, "The test case testCancelJobPath1AgentEmptyWE terminated!");
+}
+
+BOOST_AUTO_TEST_CASE( testCancelJobPath1AgentRealWE )
+{
+	// topology:
+	// O
+	// |
+	// A
+	// |
+	// drts
+
+
+	LOG( DEBUG, "testCancelJobPath1AgentRealWE");
+	//guiUrl
+	string guiUrl   	= "";
+	string workerUrl 	= "127.0.0.1:5500";
+	string addrOrch 	= "127.0.0.1";
+	string addrAgent 	= "127.0.0.1";
+
+	typedef void OrchWorkflowEngine;
+
+	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
+	LOG( DEBUG, "The test workflow is "<<m_strWorkflow);
+
+	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create( "orchestrator_0", addrOrch, MAX_CAP );
+	ptrOrch->start_agent(false);
+
+	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
+	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	ptrAg0->start_agent(false);
+
+	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
+	boost::thread drts_0_thread = boost::thread( &fhg::core::kernel_t::run, drts_0 );
+
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::start_client_and_cancel_job, this));
+
+	threadClient.join();
+	LOG( INFO, "The client thread joined the main thread°!" );
+
+	drts_0->stop();
+	drts_0_thread.join();
+
+	ptrAg0->shutdown();
+	ptrOrch->shutdown();
+
+	LOG( DEBUG, "The test case testCancelJobPath1AgentRealWE terminated!");
+}
+
+/*
 BOOST_AUTO_TEST_CASE( testCancelJobPath2 )
 {
 	// topology:
@@ -347,7 +413,6 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath2 )
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
@@ -358,11 +423,11 @@ BOOST_AUTO_TEST_CASE( testCancelJobPath2 )
 	ptrOrch->start_agent(false);
 
 	sdpa::master_info_list_t arrAgentMasterInfo(1, MasterInfo("orchestrator_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAg0 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( "agent_0", addrAgent, arrAgentMasterInfo, MAX_CAP );
 	ptrAg0->start_agent(false);
 
 	sdpa::master_info_list_t arrAgMaster(1, MasterInfo("agent_0"));
-	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create( "agent_00", addrAgent, arrAgMaster, MAX_CAP );
+	sdpa::daemon::Agent::ptr_t ptrAg00 = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( "agent_00", addrAgent, arrAgMaster, MAX_CAP );
 	ptrAg00->start_agent(false);
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_00( create_drts("drts_00", "agent_00") );
@@ -403,7 +468,6 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsAndDrtsPath3 )
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
@@ -452,7 +516,6 @@ BOOST_AUTO_TEST_CASE( testCancelAgentsNoDrtsTree )
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
@@ -494,7 +557,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-	string addrNRE 		= "127.0.0.1";
 
 	typedef void OrchWorkflowEngine;
 
@@ -540,5 +602,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrtsTree )
 
 	LOG( DEBUG, "The test case testOrchestratorNoWe terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
