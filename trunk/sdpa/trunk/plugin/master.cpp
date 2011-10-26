@@ -17,7 +17,7 @@ namespace drts
     , m_num_jobs_recv(0)
     , m_num_jobs_rqst(0)
 
-    , m_polling(true)
+    , m_polling(false)
     , m_poll_backoff_counter(0)
     , m_min_poll_interval(boost::posix_time::milliseconds(10))
     , m_cur_poll_interval(m_min_poll_interval)

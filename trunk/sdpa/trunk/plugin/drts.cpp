@@ -16,6 +16,7 @@
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/split.hpp>
 
 #include <sdpa/uuidgen.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -71,17 +72,6 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
-    try
-    {
-      m_request_mode =
-        fhg::util::read_bool (fhg_kernel()->get("request-mode", "false"));
-    }
-    catch (std::exception const &ex)
-    {
-      LOG(ERROR, "could not parse request-mode (boolean): " << ex.what());
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
     m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
     if (0 == m_wfe)
     {
@@ -125,26 +115,52 @@ public:
 
     start_receiver();
 
+    bool have_master_with_polling (false);
+
     {
-      const std::string master_name (fhg_kernel()->get("master", ""));
-      if (master_name.empty())
+      const std::string master_names (fhg_kernel()->get("master", ""));
+
+      std::list<std::string> master_list;
+      fhg::util::split(master_names, ",", std::back_inserter(master_list));
+      if (master_list.empty())
       {
-        MLOG(ERROR, "name of master not specified, please set plugin.drts.master!");
+        MLOG(ERROR, "no master specified, please set plugin.drts.master!");
         FHG_PLUGIN_FAILED(EINVAL);
       }
 
-      if (master_name == m_my_name)
+      BOOST_FOREACH (std::string const & master, master_list)
       {
-        MLOG(ERROR, "I (" << m_my_name << "), myself, cannot be my master...");
-        FHG_PLUGIN_FAILED(EINVAL);
+        try
+        {
+          master_ptr m (create_master(master));
+
+          if (m_masters.find(m->name()) == m_masters.end())
+          {
+            MLOG(INFO, "adding master \"" << m->name() << "\"");
+            m_masters.insert (std::make_pair(m->name(), m));
+
+            if (m->is_polling())
+              have_master_with_polling = true;
+          }
+          else
+          {
+            MLOG(WARN, "master already specified, ignoring new one: " << master);
+          }
+        }
+        catch (std::exception const & ex)
+        {
+          MLOG(WARN, "could not add master: " << ex.what());
+        }
       }
 
-      MLOG(INFO, "adding master \"" << master_name << "\"");
-      m_masters.insert
-        (std::make_pair(master_name, master_ptr(new drts::Master(master_name))));
+      if (m_masters.empty())
+      {
+        MLOG(ERROR, "no masters specified, giving up");
+        FHG_PLUGIN_FAILED(EINVAL);
+      }
     }
 
-    if (m_request_mode)
+    if (have_master_with_polling)
       m_request_thread.reset(new boost::thread(&DRTSImpl::job_requestor_thread, this));
 
     m_execution_thread.reset(new boost::thread(&DRTSImpl::job_execution_thread, this));
@@ -807,6 +823,34 @@ private:
     }
   }
 
+  master_ptr create_master (std::string master)
+  {
+    if (master.empty())
+    {
+      throw std::runtime_error ("empty master specified!");
+    }
+
+    bool polling (false);
+    if (master[0] == '+')
+    {
+      polling = true;
+      master = master.substr(1);
+    }
+
+    if (master.empty())
+    {
+      throw std::runtime_error ("polling master with empty name specified!");
+    }
+
+    if (master == m_my_name)
+    {
+      throw std::runtime_error ("cannot be my own master!");
+    }
+    master_ptr m (new drts::Master(master));
+    m->set_is_polling (polling);
+    return m;
+  }
+
   void start_connect ()
   {
     bool at_least_one_disconnected = false;
@@ -970,7 +1014,6 @@ private:
   mutable mutex_type m_capabilities_mutex;
   map_of_capabilities_t m_capabilities;
 
-  bool m_request_mode;
   // jobs + their states
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;

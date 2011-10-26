@@ -54,6 +54,7 @@ namespace drts
     void job_requested();
 
     bool is_polling () const { return m_polling; }
+    void set_is_polling (bool b) { m_polling = b; }
     void reset_poll_rate();
     void decrease_poll_rate();
   private:
