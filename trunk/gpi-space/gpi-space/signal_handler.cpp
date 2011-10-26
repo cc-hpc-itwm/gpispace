@@ -102,6 +102,15 @@ namespace gpi
         }
       }
 
+      if (m_worker_thread && (boost::this_thread::get_id() != m_worker_thread->get_id()))
+      {
+        m_worker_thread->interrupt();
+      }
+      if (m_handler_thread && (boost::this_thread::get_id() != m_handler_thread->get_id()))
+      {
+        m_handler_thread->interrupt();
+      }
+
       join ();
 
       {
@@ -123,9 +132,13 @@ namespace gpi
     void handler_t::join ()
     {
       if (m_worker_thread && (boost::this_thread::get_id() != m_worker_thread->get_id()))
+      {
         m_worker_thread->join ();
-      if (m_handler_thread)
+      }
+      if (m_handler_thread && (boost::this_thread::get_id() != m_handler_thread->get_id()))
+      {
         m_handler_thread->join ();
+      }
     }
 
     void handler_t::raise (const signal_t sig)
@@ -190,60 +203,74 @@ namespace gpi
 
       pthread_sigmask (SIG_BLOCK, &restrict, 0);
 
-      while (!m_stopping)
+      try
       {
-        boost::this_thread::interruption_point ();
-
-        siginfo_t sig_info;
-
-        struct timespec timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_nsec = 100 * 1000 * 1000;
-
-        int ec = sigtimedwait (&restrict, &sig_info, &timeout);
-        //int ec = sigwaitinfo (&restrict,&sig_info);
-
-        if (m_stopping) break;
-
-        if (ec >= 0)
+        while (!m_stopping)
         {
-          this->raise (sig_info.si_signo);
+          boost::this_thread::interruption_point ();
+
+          siginfo_t sig_info;
+
+          struct timespec timeout;
+          timeout.tv_sec = 0;
+          timeout.tv_nsec = 100 * 1000 * 1000;
+
+          int ec = sigtimedwait (&restrict, &sig_info, &timeout);
+          //int ec = sigwaitinfo (&restrict,&sig_info);
+
+          if (m_stopping) break;
+
+          if (ec >= 0)
+          {
+            this->raise (sig_info.si_signo);
+          }
+          else if (errno != EAGAIN && errno != EINTR)
+          {
+            LOG( ERROR
+               , "sigwait() returned an error [" << ec << "]: " << strerror_r ( errno
+                                                                              , buf
+                                                                              , sizeof(buf)
+                                                                              )
+               );
+          }
         }
-        else if (errno != EAGAIN && errno != EINTR)
-        {
-          LOG( ERROR
-             , "sigwait() returned an error [" << ec << "]: " << strerror_r ( errno
-                                                                            , buf
-                                                                            , sizeof(buf)
-                                                                            )
-             );
-        }
+      }
+      catch (boost::thread_interrupted const &)
+      {
+        LOG(TRACE, "handler thread interrupted");
       }
     }
 
     void handler_t::worker_thread_main ()
     {
-      while (!m_stopping)
+      try
       {
-        boost::this_thread::interruption_point ();
-
-        signal_t sig (next_signal());
-
-        if (m_stopping) break;
-
-        try
+        while (!m_stopping)
         {
-          std::size_t count (0);
+          boost::this_thread::interruption_point ();
 
-          count = deliver_signal (sig);
-          DLOG(TRACE, "delivered signal " << count << " times");
+          signal_t sig (next_signal());
 
-          signal_delivered (sig);
+          if (m_stopping) break;
+
+          try
+          {
+            std::size_t count (0);
+
+            count = deliver_signal (sig);
+            DLOG(TRACE, "delivered signal " << count << " times");
+
+            signal_delivered (sig);
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(WARN, "error during signal handling: " << ex.what());
+          }
         }
-        catch (std::exception const & ex)
-        {
-          LOG(WARN, "error during signal handling: " << ex.what());
-        }
+      }
+      catch (boost::thread_interrupted const &)
+      {
+        LOG(TRACE, "worker thread interrupted");
       }
     }
 
