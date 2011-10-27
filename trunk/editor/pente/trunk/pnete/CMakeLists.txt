@@ -18,6 +18,7 @@ add_subdirectory (data)
 add_subdirectory (ui)
 add_subdirectory (weaver)
 
+# TODO: eliminate the circular dependency
 target_link_libraries ( pnete
                         "${LIB_PREFIX}ui"
                         "${LIB_PREFIX}data"
@@ -27,9 +28,6 @@ target_link_libraries ( pnete
                         ${FhgLog_LIBRARY}
                         ${Boost_LIBRARIES}
                         ${QT_LIBRARIES}
-#                        ${TIFF_LIBRARY}
-#                        ${JPEG_LIBRARY}
-#                        ${MNG_LIBRARY}
                       )
 
 install ( TARGETS pnete

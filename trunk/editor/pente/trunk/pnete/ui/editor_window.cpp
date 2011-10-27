@@ -15,6 +15,7 @@
 #include <QWidget>
 
 #include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/size.hpp>
 #include <pnete/ui/GraphView.hpp>
 #include <pnete/ui/StructureView.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
@@ -30,13 +31,6 @@ namespace fhg
     namespace ui
     {
       const Qt::DockWidgetArea dock_position (Qt::LeftDockWidgetArea);
-
-      //! \note These constants are not only hardcoded but also duplicate.
-      //! \todo Use the same constants as in GraphView.
-      static const int min_zoom_value (30);                                     // hardcoded constant
-      static const int max_zoom_value (300);                                    // hardcoded constant
-      static const int default_zoom_value (100);                                // hardcoded constant
-      static const int maximum_slider_length (200);                             // hardcoded constant
 
       editor_window::editor_window (QWidget* parent)
         : QMainWindow (parent)
@@ -239,18 +233,22 @@ namespace fhg
         zoom_tool_bar->addAction (zoom_default_action);
 
         QSlider* zoom_slider (new QSlider (Qt::Horizontal, this));
-        zoom_slider->setMaximumWidth (maximum_slider_length);
-        zoom_slider->setRange (min_zoom_value, max_zoom_value);
+        zoom_slider->setMaximumWidth (size::zoom::slider::max_length());
+        zoom_slider->setRange ( size::zoom::min_value()
+                              , size::zoom::max_value()
+                              );
         zoom_tool_bar->addWidget (zoom_slider);
 
-        zoom_slider->setValue (default_zoom_value);
+        zoom_slider->setValue (size::zoom::default_value());
 
         QSpinBox* zoom_spin_box (new QSpinBox (this));
         zoom_spin_box->setSuffix ("%");
-        zoom_spin_box->setRange (min_zoom_value, max_zoom_value);
+        zoom_spin_box->setRange ( size::zoom::min_value()
+                                , size::zoom::max_value()
+                                );
         zoom_tool_bar->addWidget (zoom_spin_box);
 
-        zoom_spin_box->setValue (default_zoom_value);
+        zoom_spin_box->setValue (size::zoom::default_value());
 
         zoom_slider->connect ( zoom_spin_box
                               , SIGNAL (valueChanged (int))
@@ -280,7 +278,7 @@ namespace fhg
                               );
 
         //! \todo This be segfault without view.
-        //_view_manager->current_view_zoom (default_zoom_value);
+        //_view_manager->current_view_zoom (size::zoom::default_value());
       }
 
       QMenu* editor_window::createPopupMenu()

@@ -47,6 +47,18 @@ namespace fhg
             CONST (qreal, length, detail::ratio_shorter (port::height() / 2.0));
           }
 
+          namespace zoom
+          {
+            CONST (int, min_value, 30);
+            CONST (int, max_value, 300);
+            CONST (int, default_value, 100);
+
+            namespace slider
+            {
+              CONST (int, max_length, 200);
+            }
+          }
+
 #undef CONST
         }
       }

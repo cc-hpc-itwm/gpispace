@@ -11,6 +11,7 @@
 #include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/size.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
 
@@ -20,15 +21,9 @@ namespace fhg
   {
     namespace ui
     {
-      //! \todo Make configurable. Also: duplicate in editor_window.
-      static const int min_zoom_value (30);                                     // hardcoded constant
-      static const int max_zoom_value (300);                                    // hardcoded constant
-      static const int per_click_zoom_difference (10);                          // hardcoded constant
-      static const int default_zoom_value (100);                                // hardcoded constant
-
       GraphView::GraphView (graph::scene::type* scene, QWidget* parent)
       : QGraphicsView (scene, parent)
-      , _currentScale (default_zoom_value)
+      , _currentScale (size::zoom::default_value())
       {
         setDragMode (QGraphicsView::ScrollHandDrag);
         setRenderHints ( QPainter::Antialiasing
@@ -135,7 +130,11 @@ namespace fhg
 
       void GraphView::zoom (int to)
       {
-        const int target (qBound (min_zoom_value, to, max_zoom_value));
+        const int target (qBound ( size::zoom::min_value()
+                                 , to
+                                 , size::zoom::max_value()
+                                 )
+                         );
         const qreal factor (target / static_cast<qreal> (_currentScale));
         scale (factor, factor);
         _currentScale = target;
@@ -145,15 +144,15 @@ namespace fhg
 
       void GraphView::zoom_in()
       {
-        zoom (_currentScale + per_click_zoom_difference);
+        zoom (_currentScale + size::zoom::per_tick());
       }
       void GraphView::zoom_out()
       {
-        zoom (_currentScale - per_click_zoom_difference);
+        zoom (_currentScale - size::zoom::per_tick());
       }
       void GraphView::reset_zoom()
       {
-        zoom (default_zoom_value);
+        zoom (size::zoom::default_value());
       }
 
       void GraphView::emit_current_zoom_level()

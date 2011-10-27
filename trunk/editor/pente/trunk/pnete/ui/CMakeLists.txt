@@ -20,6 +20,11 @@ set(ui_SRCS
   port_list_widget.cpp
   port_lists_widget.cpp
   ComboItemDelegate.cpp
+  size.cpp
+
+  expression_view.cpp
+  mod_view.cpp
+  net_view.cpp
 )
 
 set(ui_HDRS
@@ -46,10 +51,14 @@ set(ui_HDRS
   expression_widget.hpp
   port_list_widget.hpp
   port_lists_widget.hpp
+  size.hpp
+
+  expression_view.hpp
+  mod_view.hpp
+  net_view.hpp
 )
 
 set(ui_UIS
-#    PropertiesWidget.ui
      PropertiesEditorForm.ui
      StructureEditorForm.ui
 )
@@ -59,10 +68,6 @@ set(ui_TOMOC
   GraphView.hpp
   TransitionLibraryModel.hpp
   TransitionLibraryItem.hpp
-#  StructureView.hpp
-#  PropertiesEditor.hpp
-#  StructureEditor.hpp
-# undo_group_manager.hpp
 
   dock_widget.hpp
   base_editor_widget.hpp
@@ -77,6 +82,10 @@ set(ui_TOMOC
   expression_widget.hpp
   port_list_widget.hpp
   port_lists_widget.hpp
+
+  expression_view.hpp
+  mod_view.hpp
+  net_view.hpp
 )
 
 add_subdirectory (graph)
