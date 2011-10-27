@@ -1,15 +1,13 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/document_view.hpp>
+
+#include <QStringList>
+
 #include <pnete/ui/base_editor_widget.hpp>
+#include <pnete/data/internal.hpp>
 
 #include <pnete/util.hpp>
-
-#include <pnete/ui/net_widget.hpp>
-#include <pnete/ui/module_call_widget.hpp>
-#include <pnete/ui/expression_widget.hpp>
-
-#include <pnete/data/internal.hpp>
 
 namespace fhg
 {
@@ -80,56 +78,6 @@ namespace fhg
                        ? QString::fromStdString (*name)
                        : fallback_title()
                        );
-      }
-
-      net_view::net_view ( data::proxy::type& proxy
-                         , data::proxy::net_proxy::data_type& net
-                         , graph::scene* scene
-                         )
-        : document_view (proxy)
-      {
-        //! \todo submit known types
-        setWidget (new net_widget (proxy, net, scene, QStringList(), this));
-        set_title (data::proxy::function (proxy).name);
-      }
-      QString net_view::fallback_title () const
-      {
-        return tr("<<anonymous net>>");
-      }
-
-      expression_view::expression_view
-        ( data::proxy::type& proxy
-        , data::proxy::expression_proxy::data_type & expression
-        )
-          : document_view (proxy)
-      {
-        //! \todo submit known types
-        setWidget (new expression_widget ( proxy
-                                         , expression
-                                         , QStringList()
-                                         , this
-                                         )
-                  );
-        set_title (data::proxy::function (proxy).name);
-      }
-      QString expression_view::fallback_title () const
-      {
-        return tr("<<anonymous expression>>");
-      }
-
-      mod_view::mod_view
-        ( data::proxy::type& proxy
-        , data::proxy::mod_proxy::data_type & mod
-        )
-          : document_view (proxy)
-      {
-        //! \todo submit known types
-        setWidget (new module_call_widget (proxy, mod, QStringList(), this));
-        set_title (data::proxy::function (proxy).name);
-      }
-      QString mod_view::fallback_title () const
-      {
-        return tr("<<anonymous module call>>");
       }
     }
   }

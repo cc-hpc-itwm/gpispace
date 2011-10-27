@@ -21,6 +21,7 @@ add_subdirectory (weaver)
 target_link_libraries ( pnete
                         "${LIB_PREFIX}ui"
                         "${LIB_PREFIX}data"
+                        "${LIB_PREFIX}ui"
                         "${LIB_PREFIX}weaver"
                         ${WE_LIBRARIES}
                         ${FhgLog_LIBRARY}

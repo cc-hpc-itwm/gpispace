@@ -7,6 +7,9 @@
 #include <boost/variant.hpp>
 
 #include <pnete/ui/document_view.hpp>
+#include <pnete/ui/expression_view.hpp>
+#include <pnete/ui/mod_view.hpp>
+#include <pnete/ui/net_view.hpp>
 
 namespace fhg
 {

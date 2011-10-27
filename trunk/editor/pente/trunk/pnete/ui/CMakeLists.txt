@@ -10,6 +10,9 @@ set(ui_SRCS
   dock_widget.cpp
   base_editor_widget.cpp
   document_view.cpp
+  expression_view.cpp
+  mod_view.cpp
+  net_view.cpp
   view_manager.cpp
   net_widget.cpp
   module_call_widget.cpp
@@ -30,6 +33,9 @@ set(ui_HDRS
   dock_widget.hpp
   base_editor_widget.hpp
   document_view.hpp
+  expression_view.hpp
+  mod_view.hpp
+  net_view.hpp
   view_manager.hpp
 
   ComboItemDelegate.hpp
@@ -61,6 +67,9 @@ set(ui_TOMOC
   dock_widget.hpp
   base_editor_widget.hpp
   document_view.hpp
+  expression_view.hpp
+  mod_view.hpp
+  net_view.hpp
   view_manager.hpp
 
   net_widget.hpp

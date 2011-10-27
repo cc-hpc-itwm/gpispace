@@ -20,10 +20,6 @@ namespace fhg
     namespace ui
     {
       class base_editor_widget;
-      namespace graph
-      {
-        class scene;
-      }
 
       class document_view : public dock_widget
       {
@@ -51,44 +47,6 @@ namespace fhg
 
       private:
         virtual QString fallback_title() const = 0;
-      };
-
-      class expression_view : public document_view
-      {
-        Q_OBJECT;
-
-      public:
-        expression_view ( data::proxy::type&
-                        , data::proxy::expression_proxy::data_type&
-                        );
-      private:
-        virtual QString fallback_title() const;
-      };
-
-      class mod_view : public document_view
-      {
-        Q_OBJECT;
-
-      public:
-        mod_view ( data::proxy::type&
-                 , data::proxy::mod_proxy::data_type&
-                 );
-
-      private:
-        virtual QString fallback_title() const;
-      };
-
-      class net_view : public document_view
-      {
-        Q_OBJECT;
-
-      public:
-        net_view ( data::proxy::type&
-                 , data::proxy::net_proxy::data_type&
-                 , graph::scene*
-                 );
-      private:
-        virtual QString fallback_title() const;
       };
     }
   }
