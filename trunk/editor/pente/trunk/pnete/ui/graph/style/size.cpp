@@ -1,8 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/style/size.hpp>
-
-#include <cmath>
+#include <util/phi.hpp>
 
 namespace fhg
 {
@@ -16,35 +15,30 @@ namespace fhg
         {
 #define CONST(_t,_n,_v) const _t& _n () { static const _t _n (_v); return _n; }
 
-          namespace detail
-          {
-            static CONST(qreal, phi, (1.0 + sqrt(5.0)) / 2.0);
-
-            static qreal ratio_shorter (const qreal& x) { return x / phi(); }
-            static qreal ratio_longer (const qreal& x) { return x * phi(); }
-          }
-
           CONST (qreal, raster, 10) // hardcoded constant
 
           namespace transition
           {
             CONST (qreal, height, 100) // hardcoded constant
-            CONST (qreal, width, detail::ratio_longer (height()))
+            CONST (qreal, width, util::phi::ratio::bigger (height()))
           }
 
           namespace port
           {
             CONST ( qreal
                   , width
-                  , detail::ratio_shorter
-                    (detail::ratio_shorter (transition::height()))
+                  , util::phi::ratio::smaller
+                    (util::phi::ratio::smaller (transition::height()))
                   )
-            CONST (qreal, height, detail::ratio_shorter (width()))
+            CONST (qreal, height, util::phi::ratio::smaller (width()))
           }
 
           namespace cap
           {
-            CONST (qreal, length, detail::ratio_shorter (port::height() / 2.0));
+            CONST ( qreal
+                  , length
+                  , util::phi::ratio::smaller (port::height() / 2.0)
+                  );
           }
 
           namespace zoom

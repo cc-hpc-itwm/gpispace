@@ -12,6 +12,7 @@
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/size.hpp>
+#include <util/phi.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
 
@@ -34,7 +35,9 @@ namespace fhg
 
       QSize GraphView::sizeHint() const
       {
-        return QSize (window()->width() * 0.8, window()->height());
+        return QSize ( util::phi::ratio::smaller (window()->width())
+                     , window()->height()
+                     );
       }
 
       graph::scene::type* GraphView::scene() const
