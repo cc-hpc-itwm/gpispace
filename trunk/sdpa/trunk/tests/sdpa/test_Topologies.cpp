@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE( testPathOneDrts )
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
-	//LOG( DEBUG, "Create the Aggregator ...");
+	//LOG( DEBUG, "Create the Agent ...");
 	boost::shared_array<sdpa::daemon::Agent::ptr_t> arrAgents( new sdpa::daemon::Agent::ptr_t[NAGENTS] );
 
 	std::string strMaster = "orchestrator_0";
@@ -521,7 +521,7 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent(false);
 
-	//LOG( DEBUG, "Create the Aggregator ...");
+	//LOG( DEBUG, "Create the Agent ...");
 	//sdpa::daemon::Agent::ptr_t arrAgents[NAGENTS];
 	boost::shared_array<sdpa::daemon::Agent::ptr_t> arrAgents( new sdpa::daemon::Agent::ptr_t[NAGENTS] );
 
@@ -541,7 +541,6 @@ BOOST_AUTO_TEST_CASE( testMultipleMastersOneDrts )
 																			  	sdpa::master_info_list_t(1, MasterInfo(strMaster)),
 																			  	MAX_CAP );
 
-		// the master is always orchestrator_0
 	}
 
 	for(int k=0; k<NAGENTS; k++)
