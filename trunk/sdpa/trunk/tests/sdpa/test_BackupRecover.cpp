@@ -26,7 +26,7 @@
 #include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
-#include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
+#include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <sdpa/engine/DummyWorkflowEngine.hpp>
