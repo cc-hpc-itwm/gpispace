@@ -122,7 +122,7 @@ namespace fhg
           class net_type
           {
           private:
-            xml_type:: net_type& _net;
+            xml_type::net_type& _net;
 
           public:
             explicit net_type (xml_type::net_type& net);
