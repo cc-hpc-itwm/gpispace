@@ -5,6 +5,7 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 
+#include <pnete/ui/graph/style/raster.hpp>
 #include <pnete/util.hpp>
 #include <util/property.hpp>
 
@@ -65,10 +66,12 @@ namespace fhg
         }
         void item::setPos (const QPointF& new_pos)
         {
-          detail::set_position_x (_property, new_pos.x());
-          detail::set_position_y (_property, new_pos.y());
+          QPointF snapped (style::raster::snap (new_pos));
 
-          set_just_pos_but_not_in_property (new_pos);
+          detail::set_position_x (_property, snapped.x());
+          detail::set_position_y (_property, snapped.y());
+
+          set_just_pos_but_not_in_property (snapped);
         }
         void item::set_just_pos_but_not_in_property (qreal x, qreal y)
         {
