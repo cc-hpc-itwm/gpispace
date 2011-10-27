@@ -27,7 +27,7 @@
 #include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
-#include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
+#include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
@@ -192,11 +192,11 @@ BOOST_AUTO_TEST_CASE(testDummyWorkflowEngineSerialization)
 }
 
 /*
-BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
+BOOST_AUTO_TEST_CASE(testAgentSerialization)
 {
-    std::cout<<std::endl<<"----------------Begin  testAggregatorSerialization----------------"<<std::endl;
-    std::string filename = "testSerializeAggregator.txt"; // = boost::archive::tmpdir());filename += "/testfile";
-    Aggregator::ptr_t pAgg = sdpa::daemon::AggregatorFactory<DummyWorkflowEngine>::create(	"aggregator_0",
+    std::cout<<std::endl<<"----------------Begin  testAgentSerialization----------------"<<std::endl;
+    std::string filename = "testSerializeAgent.txt"; // = boost::archive::tmpdir());filename += "/testfile";
+    Agent::ptr_t pAgg = sdpa::daemon::AgentFactory<DummyWorkflowEngine>::create(	"agent_0",
     																						"127.0.0.1:7001",
     																						sdpa::master_info_list_t(1,MasterInfo("orchestrator_0")),
     																						MAX_CAP); //, "127.0.0.1:7000");
@@ -260,12 +260,12 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
 
     try
     {
-      std::cout<<"----------------The Aggregator<DummyWorkflowEngine>'s content before backup is:----------------"<<std::endl;
+      std::cout<<"----------------The Agent<DummyWorkflowEngine>'s content before backup is:----------------"<<std::endl;
       pAgg->print();
 
       std::ofstream ofs(filename.c_str());
       boost::archive::text_oarchive oa(ofs);
-      oa.register_type(static_cast<Aggregator*>(NULL));
+      oa.register_type(static_cast<Agent*>(NULL));
       oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
       oa.register_type(static_cast<DaemonFSM*>(NULL));
       oa.register_type(static_cast<GenericDaemon*>(NULL));
@@ -279,13 +279,13 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
       return;
     }
 
-    std::cout<<"----------------Try now to restore the Aggregator<DummyWorkflowEngine>:----------------"<<std::endl;
+    std::cout<<"----------------Try now to restore the Agent<DummyWorkflowEngine>:----------------"<<std::endl;
     try
     {
-      Aggregator::ptr_t pRestoredAgg;
+      Agent::ptr_t pRestoredAgg;
       std::ifstream ifs(filename.c_str());
       boost::archive::text_iarchive ia(ifs);
-      ia.register_type(static_cast<Aggregator*>(NULL));
+      ia.register_type(static_cast<Agent*>(NULL));
       ia.register_type(static_cast<DummyWorkflowEngine*>(NULL));
       ia.register_type(static_cast<DaemonFSM*>(NULL));
       ia.register_type(static_cast<GenericDaemon*>(NULL));
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
       ia.register_type(static_cast<JobFSM*>(NULL));
       ia >> pRestoredAgg;
 
-      std::cout<<std::endl<<"----------------The restored content of the Aggregator<DummyWorkflowEngine> is:----------------"<<std::endl;
+      std::cout<<std::endl<<"----------------The restored content of the Agent<DummyWorkflowEngine> is:----------------"<<std::endl;
       pRestoredAgg->print();
     }
     catch(exception &e)
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE(testAggregatorSerialization)
         return;
     }
 
-    std::cout<<std::endl<<"----------------End  testAggregatorSerialization----------------"<<std::endl;
+    std::cout<<std::endl<<"----------------End  testAgentSerialization----------------"<<std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(testOrchestratorSerialization)
