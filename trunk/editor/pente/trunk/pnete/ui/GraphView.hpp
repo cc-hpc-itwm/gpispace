@@ -34,7 +34,6 @@ namespace fhg
           void emit_current_zoom_level();
 
           graph::scene* scene() const;
-          void setScene(graph::scene* scene);
 
         public slots:
           void zoom (int to);

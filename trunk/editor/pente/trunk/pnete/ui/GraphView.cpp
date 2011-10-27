@@ -46,10 +46,6 @@ namespace fhg
       {
         return qobject_cast<graph::scene*> (QGraphicsView::scene());
       }
-      void GraphView::setScene(graph::scene* scene)
-      {
-        QGraphicsView::setScene (scene);
-      }
 
       void GraphView::focusInEvent (QFocusEvent* event)
       {

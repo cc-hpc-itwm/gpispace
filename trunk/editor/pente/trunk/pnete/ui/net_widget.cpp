@@ -29,7 +29,7 @@ namespace fhg
         layout->addWidget (_view);
         layout->setContentsMargins (0, 0, 0, 0);
         setLayout (layout);
-        _view->setScene (scene);
+        //        _view->setScene (scene);
       }
     }
   }
