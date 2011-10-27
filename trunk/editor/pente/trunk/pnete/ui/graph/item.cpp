@@ -111,12 +111,12 @@ namespace fhg
         void item::mode_push (const mode::type& mode)
         {
           _mode.push (mode);
-          update (boundingRect());
+          update ();
         }
         void item::mode_pop ()
         {
           _mode.pop();
-          update (boundingRect());
+          update ();
         }
         const mode::type& item::mode() const
         {

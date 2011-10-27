@@ -65,6 +65,8 @@ namespace fhg
             enum { Type = transition_graph_type };
             virtual int type() const { return Type; }
 
+            virtual void setPos (const QPointF&);
+
           public slots:
             void slot_delete(void);
             void slot_add_port(void);

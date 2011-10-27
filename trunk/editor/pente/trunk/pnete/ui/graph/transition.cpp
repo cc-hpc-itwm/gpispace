@@ -11,6 +11,7 @@
 #include <QPushButton>
 
 #include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/place.hpp>
 #include <pnete/ui/graph/cogwheel_button.hpp>
 #include <pnete/ui/graph/connection.hpp>
 
@@ -107,70 +108,38 @@ namespace fhg
             connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
           }
 
-//           void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
-//           {
-//             if (mode() == mode::DRAG)
-//               {
-//                 //! \note Hackadiddyhack.
-//                 QHash<connection::item*, QRectF> connections;
-//                 foreach (QGraphicsItem* item, scene()->items())
-//                   {
-//                     connection::item* conn (qgraphicsitem_cast<connection::item*> (item));
-//                     if (conn)
-//                       {
-//                         connections.insert (conn, conn->boundingRect());
-//                       }
-//                   }
+          void item::setPos (const QPointF& new_position)
+          {
+            const QPointF old_position (pos());
 
-//                 const QPointF oldLocation (pos());
-//                 setPos (style::raster::snap
-//                        (oldLocation + event->pos() - _dragStart)
-//                        );
+            graph::item::setPos (new_position);
 
-//                 // do not move, when now colliding with a different transition
-//                 //! \todo move this elsewhere? make this nicer, allow movement to left and right, if collision on bottom.
-//                 //! \todo move to the nearest possible position.
-//                 foreach (QGraphicsItem* collidingItem, collidingItems())
-//                   {
-//                     if (qgraphicsitem_cast<item*> (collidingItem))
-//                       {
-//                         setPos (oldLocation);
-//                         event->ignore();
-//                         return;
-//                       }
-//                   }
-//                 event->accept();
-//                 QRectF bounding_with_childs (boundingRect());
-//                 foreach (QGraphicsItem* child, childItems())
-//                   {
-//                     bounding_with_childs =
-//                       bounding_with_childs.united ( child->boundingRect()
-//                                                   .translated (child->pos())
-//                                                   );
-//                   }
-//                 scene()->update (bounding_with_childs.translated (oldLocation));
-//                 scene()->update (bounding_with_childs.translated (pos()));
+            foreach (QGraphicsItem* collidingItem, collidingItems())
+              {
+                if (  qgraphicsitem_cast<item*> (collidingItem)
+                   || qgraphicsitem_cast<place::item*> (collidingItem)
+                   || qgraphicsitem_cast<port::top_level::item*> (collidingItem)
+                   )
+                  {
+                    graph::item::setPos (old_position);
 
-//                 //! \note Hackadilicous.
-//                 for ( QHash<connection::item*, QRectF>::const_iterator
-//                         it (connections.constBegin())
-//                     , end (connections.constEnd())
-//                     ; it != end
-//                     ; ++it
-//                     )
-//                   {
-//                     if (it.value() != it.key()->boundingRect())
-//                       {
-//                         scene()->update (it.value());
-//                         scene()->update (it.key()->boundingRect());
-//                       }
-//                   }
-//               }
-//             else
-//               {
-//                 graph::item::mouseMoveEvent (event);
-//               }
-//           }
+                    return;
+                  }
+
+                if ( port::item* port
+                   = qgraphicsitem_cast<port::item*> (collidingItem)
+                   )
+                  {
+                    if (port->parentItem() != this)
+                      {
+                        graph::item::setPos (old_position);
+
+                        return;
+                      }
+                  }
+
+              }
+          }
 
           const std::string& item::name() const
           {
@@ -195,6 +164,8 @@ namespace fhg
 
           void item::slot_delete()
           {
+
+
             //! \ŧodo Actually delete this item.
             //! \todo disconnect ports.
             // foreach (QGraphicsItem* child, childItems())
@@ -267,6 +238,12 @@ namespace fhg
           {
             QPainterPath path;
             path.addRoundRect (bounding_rect (size), 20); // hardcoded constant
+
+            foreach (QGraphicsItem* child, childItems())
+              {
+                path = path.united (child->shape().translated (child->pos()));
+              }
+
             return path;
           }
           QPainterPath item::shape () const

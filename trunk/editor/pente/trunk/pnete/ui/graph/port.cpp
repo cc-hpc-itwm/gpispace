@@ -189,7 +189,7 @@ namespace fhg
 
           void item::setPos (const QPointF& new_position)
           {
-            const QPointF old_location (pos());
+            const QPointF old_position (pos());
             const orientation::type old_orientation (orientation());
 
             connectable::item::setPos (fitting_position (new_position));
@@ -202,9 +202,22 @@ namespace fhg
                    )
                   {
                     orientation (old_orientation);
-                    connectable::item::setPos (old_location);
+                    connectable::item::setPos (old_position);
 
                     return;
+                  }
+
+                if ( transition::item* transition
+                   = qgraphicsitem_cast<transition::item*> (collidingItem)
+                   )
+                  {
+                    if (parentItem() != transition)
+                      {
+                        orientation (old_orientation);
+                        connectable::item::setPos (old_position);
+
+                        return;
+                      }
                   }
               }
           }
