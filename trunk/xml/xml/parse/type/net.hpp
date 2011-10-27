@@ -171,6 +171,11 @@ namespace xml
             }
         }
 
+        void erase_transition (const transition_type& t)
+        {
+          _transitions.erase (t);
+        }
+
         void push_function (const function_type & f)
         {
           function_type old;

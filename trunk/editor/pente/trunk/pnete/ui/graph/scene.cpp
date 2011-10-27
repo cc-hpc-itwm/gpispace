@@ -8,11 +8,14 @@
 
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
 #include <pnete/ui/graph/item.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
+
+#include <pnete/data/internal.hpp>
 
 #include <util/graphviz.hpp>
 
@@ -26,7 +29,7 @@ namespace fhg
       {
         namespace scene
         {
-          type::type (net_type & net, QObject* parent)
+          type::type (::xml::parse::type::net_type & net, QObject* parent)
             : QGraphicsScene (parent)
             , _pending_connection (NULL)
             , _mouse_position (QPointF (0.0, 0.0))
@@ -34,6 +37,11 @@ namespace fhg
             , _net (net)
           {
             init_menu_context();
+
+            connect ( this
+                    , SIGNAL (signal_delete_transition (transition::item*))
+                    , SLOT (slot_delete_transition (transition::item*))
+                    );
           }
 
           //! \todo This is duplicate code, also available in main window.
@@ -292,6 +300,36 @@ namespace fhg
               {
                 it.key()->setPos (style::raster::snap (it.value().position()));
               }
+          }
+
+          void type::delete_transition (transition::item* transition_item)
+          {
+            emit signal_delete_transition (transition_item);
+          }
+          void type::slot_delete_transition (transition::item* transition_item)
+          {
+            if (!transition_item->proxy())
+              {
+                throw std::runtime_error ("slot_delete_transition: no proxy");
+              }
+
+            foreach (QGraphicsItem* child, transition_item->childItems())
+              {
+                if (port::item* port = qgraphicsitem_cast<port::item*> (child))
+                  {
+                    port->erase_connections (this);
+                  }
+              }
+
+            removeItem (transition_item);
+
+            data::proxy::root(*transition_item->proxy())
+              ->change_manager().delete_transition
+              ( transition_item->transition()
+              , transition_item->net()
+              );
+
+            delete transition_item;
           }
         }
       }

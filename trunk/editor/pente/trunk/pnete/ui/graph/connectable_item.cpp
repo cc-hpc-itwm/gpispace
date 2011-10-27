@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include <pnete/ui/graph/connection.hpp>
+#include <pnete/ui/graph/scene.hpp>
 
 namespace fhg
 {
@@ -93,6 +94,15 @@ namespace fhg
               }
 
             return childs;
+          }
+
+          void item::erase_connections (scene::type* scene)
+          {
+            foreach (connection::item* connection, connections())
+              {
+                scene->removeItem (connection);
+                delete connection;
+              }
           }
 
 //           void item::mousePressEvent (QGraphicsSceneMouseEvent* event)

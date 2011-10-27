@@ -1,5 +1,7 @@
-#ifndef GRAPHTRANSITION_HPP
-#define GRAPHTRANSITION_HPP 1
+// mirko.rahn@itwm.fraunhofer.de
+
+#ifndef _FHG_PNETE_UI_GRAPH_TRANSITION_HPP
+#define _FHG_PNETE_UI_GRAPH_TRANSITION_HPP 1
 
 #include <QPainterPath>
 #include <QRectF>
@@ -21,8 +23,6 @@ class QMenu;
 
 #include <pnete/weaver/weaver.hpp>
 
-#include <xml/parse/types.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -33,21 +33,21 @@ namespace fhg
       {
         namespace transition
         {
-          typedef ITVAL(XMLTYPE(net_type::transitions_type)) transition_type;
-
           class item : public graph::item
           {
             Q_OBJECT;
 
           public:
-            explicit item ( transition_type & data
+            explicit item ( ::xml::parse::type::transition_type& transition
+                          , ::xml::parse::type::net_type& net
                           , graph::item* parent = NULL
                           );
 //             explicit item ( const QString& filename
 //                           , graph::item* parent = NULL
 //                           );
 
-            const transition_type& transition () const;
+            const ::xml::parse::type::transition_type& transition() const;
+            ::xml::parse::type::net_type& net();
 
             virtual QRectF boundingRect() const;
             virtual QPainterPath shape() const;
@@ -59,7 +59,7 @@ namespace fhg
 
             void repositionChildrenAndResize();
 
-            data::proxy::type* proxy (data::proxy::type*);
+            void set_proxy (data::proxy::type*);
             data::proxy::type* proxy () const;
 
             enum { Type = transition_graph_type };
@@ -71,22 +71,24 @@ namespace fhg
             void slot_delete(void);
             void slot_add_port(void);
 
+          private slots:
+
           protected:
             virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-
             virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
+          private:
             //! \todo size verstellbar
             QSizeF _size;
 
-            transition_type & _transition;
+            ::xml::parse::type::transition_type& _transition;
+            ::xml::parse::type::net_type& _net;
 
-          private:
             QMenu _menu_context;
 
             void init_menu_context();
 
-            data::proxy::type * _proxy;
+            data::proxy::type* _proxy;
           };
         }
       }

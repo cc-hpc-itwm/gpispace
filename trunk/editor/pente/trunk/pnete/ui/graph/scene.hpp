@@ -24,6 +24,7 @@ namespace fhg
       namespace graph
       {
         namespace connection { class item; }
+        namespace transition { class item; }
         namespace connectable { class item; }
 
         namespace scene
@@ -33,9 +34,9 @@ namespace fhg
             Q_OBJECT;
 
           public:
-            typedef ::xml::parse::type::net_type net_type;
-
-            explicit type (net_type & net,  QObject* parent = NULL);
+            explicit type ( ::xml::parse::type::net_type & net
+                          , QObject* parent = NULL
+                          );
 
             const QPointF& mouse_position() const;
 
@@ -45,12 +46,18 @@ namespace fhg
                                    , bool only_reading
                                    );
 
+            void delete_transition (transition::item*);
+
           public slots:
+            void slot_delete_transition (transition::item*);
             void slot_add_transition ();
             void slot_add_place ();
             void slot_add_struct ();
 
             void auto_layout();
+
+          signals:
+            void signal_delete_transition (transition::item*);
 
           protected:
             virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
@@ -70,7 +77,7 @@ namespace fhg
             QMenu _menu_new;
             QMenu _menu_context;
 
-            net_type & _net;
+            ::xml::parse::type::net_type& _net;
           };
         }
       }

@@ -152,7 +152,7 @@ namespace fhg
 
         _type_map = function_with_mapping.type_map();
 
-        _transition->proxy (sub.proxy());
+        _transition->set_proxy (sub.proxy());
 
         _current_port_direction = ui::graph::connectable::direction::IN;
         from::many (this, sub.in(), FROM(port));
@@ -386,6 +386,7 @@ namespace fhg
           ( new ui::graph::transition::item
             ( const_cast< ITVAL(XMLTYPE(net_type::transitions_type))& >
               (transition)
+            , _net
             )
           );
         _scene->addItem (trans);

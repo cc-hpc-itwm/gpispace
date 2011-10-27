@@ -119,6 +119,17 @@ namespace xml
         return boost::none;
       }
 
+      void erase (const T& x)
+      {
+        typename names_type::iterator found (_names.find (x.name));
+
+        if (found != _names.end())
+          {
+            _elements.erase (found->second);
+            _names.erase (found);
+          }
+      }
+
       void clear (void) { _elements.clear(); _names.clear(); }
 
       elements_type & elements (void) { return _elements; }

@@ -32,7 +32,7 @@ namespace fhg
         public:
         GraphView (graph::scene::type* scene, QWidget* parent = NULL);
 
-          void emit_current_zoom_level();
+        void emit_current_zoom_level();
 
         graph::scene::type* scene() const;
 

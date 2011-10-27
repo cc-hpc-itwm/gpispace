@@ -22,6 +22,7 @@ namespace fhg
       namespace graph
       {
         namespace connection { class item; }
+        namespace scene { class type; }
 
         namespace connectable
         {
@@ -52,6 +53,7 @@ namespace fhg
 
             virtual bool is_connectable_with (const item*) const;
 
+            void erase_connections (scene::type*);
             const QSet<connection::item*>& connections() const;
             const direction::type& direction() const;
             const direction::type& direction (const direction::type&);

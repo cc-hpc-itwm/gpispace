@@ -50,6 +50,15 @@ namespace fhg
             (expr::parse::parse_result (text.toStdString()))
           );
       }
+
+      void change_manager_t::delete_transition
+      ( const ::xml::parse::type::transition_type& trans
+      , ::xml::parse::type::net_type& net
+      )
+      {
+        //! \todo inform the world *before* deleting the transition
+        net.erase_transition (trans);
+      }
     }
   }
 }

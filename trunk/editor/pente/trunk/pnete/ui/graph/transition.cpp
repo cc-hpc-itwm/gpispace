@@ -49,12 +49,14 @@ namespace fhg
             return boost::none;
           }
 
-          item::item ( transition_type & transition
+          item::item ( ::xml::parse::type::transition_type& transition
+                     , ::xml::parse::type::net_type& net
                      , graph::item* parent
                      )
             : graph::item (parent, &transition.prop)
             , _size (size::transition::width(), size::transition::height())
             , _transition (transition)
+            , _net (net)
             , _menu_context()
             , _proxy (NULL)
           {
@@ -92,9 +94,13 @@ namespace fhg
 //             //! \todo WORK HERE, everything is missing
 //           }
 
-          const transition_type& item::transition () const
+          const ::xml::parse::type::transition_type& item::transition () const
           {
             return _transition;
+          }
+          ::xml::parse::type::net_type& item::net ()
+          {
+            return _net;
           }
 
           void item::init_menu_context()
@@ -164,19 +170,7 @@ namespace fhg
 
           void item::slot_delete()
           {
-
-
-            //! \ŧodo Actually delete this item.
-            //! \todo disconnect ports.
-            // foreach (QGraphicsItem* child, childItems())
-            // {
-            //   port* p (qgraphicsitem_cast<port*> (child));
-            //   if (p)
-            //   {
-            //     p->disconnect_all();
-            //   }
-            // }
-            scene()->removeItem (this);
+            scene()->delete_transition (this);
           }
 
           void item::slot_add_port()
@@ -225,9 +219,32 @@ namespace fhg
             height = style::raster::snap (height);
           }
 
-          data::proxy::type* item::proxy (data::proxy::type* proxy_)
+          void item::set_proxy (data::proxy::type* proxy_)
           {
-            return _proxy = proxy_;
+            if (proxy_ && _proxy != proxy_)
+              {
+//                 if (_proxy)
+//                   {
+//                     data::proxy::root(*_proxy)->change_manager().disconnect();
+//                   }
+
+                _proxy = proxy_;
+
+//                 connect ( &(data::proxy::root(*_proxy)->change_manager())
+//                         , SIGNAL ( signal_delete_transition
+//                                    ( const QObject*
+//                                    , const ::xml::parse::type::transition_type&
+//                                    , ::xml::parse::type::net_type&
+//                                    )
+//                                  )
+//                         , SLOT ( slot_delete_transition
+//                                  ( const QObject*
+//                                  , const ::xml::parse::type::transition_type&
+//                                  , ::xml::parse::type::net_type&
+//                                  )
+//                                )
+//                         );
+              }
           }
           data::proxy::type* item::proxy () const
           {

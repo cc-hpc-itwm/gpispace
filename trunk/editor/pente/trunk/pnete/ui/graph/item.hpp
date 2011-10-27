@@ -29,8 +29,6 @@ namespace fhg
     {
       namespace graph
       {
-        namespace scene { class type; }
-
         class item : public QObject, public QGraphicsItem
         {
           Q_OBJECT;
