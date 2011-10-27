@@ -26,7 +26,7 @@
 #include <boost/serialization/export.hpp>
 #include <sdpa/daemon/orchestrator/OrchestratorFactory.hpp>
 #include <sdpa/daemon/orchestrator/SchedulerOrch.hpp>
-#include <sdpa/daemon/aggregator/AggregatorFactory.hpp>
+#include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
@@ -293,8 +293,8 @@ BOOST_AUTO_TEST_CASE( testJobSubmToWeFails )
 	sdpa::daemon::Orchestrator::ptr_t ptrOrch = sdpa::daemon::OrchestratorFactory<void>::create("orchestrator_0", addrOrch, MAX_CAP);
 	ptrOrch->start_agent();
 
-	LOG( INFO, "Create the Aggregator ...");
-	sdpa::daemon::Aggregator::ptr_t ptrAgg = sdpa::daemon::AggregatorFactory<RealWorkflowEngine>::create("aggregator_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"));
+	LOG( INFO, "Create the Agent ...");
+	sdpa::daemon::Agent::ptr_t ptrAgg = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create("agent_0", addrAgg,std::vector<std::string>(1,"orchestrator_0"));
 	ptrAgg->start_agent();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
