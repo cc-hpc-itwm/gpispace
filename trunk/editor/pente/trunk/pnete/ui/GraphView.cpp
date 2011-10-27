@@ -26,7 +26,7 @@ namespace fhg
       static const int per_click_zoom_difference (10);                          // hardcoded constant
       static const int default_zoom_value (100);                                // hardcoded constant
 
-      GraphView::GraphView (graph::scene* scene, QWidget* parent)
+      GraphView::GraphView (graph::scene::type* scene, QWidget* parent)
       : QGraphicsView (scene, parent)
       , _currentScale (default_zoom_value)
       {
@@ -42,9 +42,9 @@ namespace fhg
         return QSize (window()->width() * 0.8, window()->height());
       }
 
-      graph::scene* GraphView::scene() const
+      graph::scene::type* GraphView::scene() const
       {
-        return qobject_cast<graph::scene*> (QGraphicsView::scene());
+        return qobject_cast<graph::scene::type*> (QGraphicsView::scene());
       }
 
       void GraphView::focusInEvent (QFocusEvent* event)

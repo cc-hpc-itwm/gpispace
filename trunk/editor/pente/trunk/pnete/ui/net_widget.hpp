@@ -22,7 +22,7 @@ namespace fhg
 
       namespace graph
       {
-        class scene;
+        namespace scene { class type; }
       }
     }
 
@@ -35,7 +35,7 @@ namespace fhg
       public:
         net_widget ( data::proxy::type& proxy
                    , data::proxy::net_proxy::data_type& net
-                   , graph::scene* scene
+                   , graph::scene::type* scene
                    , const QStringList& types
                    , QWidget* parent = NULL
                    );

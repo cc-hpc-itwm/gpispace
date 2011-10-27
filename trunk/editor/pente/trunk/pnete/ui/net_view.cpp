@@ -15,7 +15,7 @@ namespace fhg
     {
       net_view::net_view ( data::proxy::type& proxy
                          , data::proxy::net_proxy::data_type& net
-                         , graph::scene* scene
+                         , graph::scene::type* scene
                          )
         : document_view (proxy)
       {

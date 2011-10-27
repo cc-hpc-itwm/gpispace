@@ -27,10 +27,10 @@ namespace fhg
   {
     namespace ui
     {
-      class scene;
-
       namespace graph
       {
+        namespace scene { class type; }
+
         class item : public QObject, public QGraphicsItem
         {
           Q_OBJECT;
@@ -51,7 +51,7 @@ namespace fhg
                , ::we::type::property::type* property = NULL
                );
 
-          class scene* scene() const;
+          scene::type* scene() const;
 
           void set_just_pos_but_not_in_property (const QPointF&);
           void set_just_pos_but_not_in_property (qreal, qreal);

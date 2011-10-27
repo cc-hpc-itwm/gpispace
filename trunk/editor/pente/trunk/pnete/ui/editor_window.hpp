@@ -25,9 +25,10 @@ namespace fhg
       class view_manager;
       class StructureView;
       class GraphView;
+
       namespace graph
       {
-        class scene;
+        namespace scene { class type; }
       }
 
       class editor_window : public QMainWindow
@@ -52,7 +53,7 @@ namespace fhg
         void quit();
         void expand_library();
 
-        void scene_changed (ui::graph::scene*);
+        void scene_changed (ui::graph::scene::type*);
         void view_changed (GraphView*);
 
       private:

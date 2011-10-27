@@ -17,7 +17,7 @@ namespace fhg
       net_widget::net_widget
         ( data::proxy::type& proxy
         , data::proxy::net_proxy::data_type& net
-        , graph::scene* scene
+        , graph::scene::type* scene
         , const QStringList& types
         , QWidget* parent
         )
@@ -29,7 +29,6 @@ namespace fhg
         layout->addWidget (_view);
         layout->setContentsMargins (0, 0, 0, 0);
         setLayout (layout);
-        //        _view->setScene (scene);
       }
     }
   }

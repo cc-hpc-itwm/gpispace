@@ -49,12 +49,12 @@ namespace fhg
           setAcceptHoverEvents (true);
         }
 
-        class scene* item::scene() const
+        scene::type* item::scene() const
         {
           QGraphicsScene* sc (QGraphicsItem::scene());
 
           return sc
-            ? fhg::util::throwing_qobject_cast<class scene*> (sc)
+            ? fhg::util::throwing_qobject_cast<scene::type*> (sc)
             : 0
             ;
         }

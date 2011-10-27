@@ -81,7 +81,8 @@ namespace fhg
       }
       WSIG(function, net::open, XMLTYPE(net_type), net)
       {
-        _scene = new ui::graph::scene(const_cast< XMLTYPE(net_type) &> (net));
+        _scene = new ui::graph::scene::type
+          (const_cast< XMLTYPE(net_type) &> (net));
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
             ( _root
@@ -117,7 +118,7 @@ namespace fhg
 
 
       transition::transition ( data::internal_type* root
-                             , ui::graph::scene* scene
+                             , ui::graph::scene::type* scene
                              , ui::graph::transition::item* transition
                              , XMLTYPE(net_type)& net
                              , item_by_name_type& place_item_by_name
@@ -269,7 +270,7 @@ namespace fhg
           }
       }
 
-      connection::connection ( ui::graph::scene* scene
+      connection::connection ( ui::graph::scene::type* scene
                              , item_by_name_type& place_item_by_name
                              , item_by_name_type& port_item_by_name
                              , const ui::graph::connectable::direction::type& direction
@@ -327,7 +328,7 @@ namespace fhg
       }
 
       net::net ( data::internal_type* root
-               , ui::graph::scene* scene
+               , ui::graph::scene::type* scene
                , XMLTYPE(net_type)& net
                , XMLTYPE(ports_type)& in
                , XMLTYPE(ports_type)& out
@@ -435,7 +436,7 @@ namespace fhg
       }
 
       port_toplevel::port_toplevel
-        ( ui::graph::scene* scene
+      ( ui::graph::scene::type* scene
         , const ui::graph::connectable::direction::type& direction
         , item_by_name_type& place_item_by_name
         )

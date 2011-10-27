@@ -64,8 +64,8 @@ namespace fhg
                 , SLOT (view_changed (GraphView*))
                 );
         connect (_view_manager
-                , SIGNAL (scene_changed (graph::scene*))
-                , SLOT (scene_changed (graph::scene*))
+                , SIGNAL (scene_changed (graph::scene::type*))
+                , SLOT (scene_changed (graph::scene::type*))
                 );
       }
 
@@ -77,7 +77,7 @@ namespace fhg
         create();
       }
 
-      void editor_window::scene_changed (graph::scene*)
+      void editor_window::scene_changed (graph::scene::type*)
       {
       }
 

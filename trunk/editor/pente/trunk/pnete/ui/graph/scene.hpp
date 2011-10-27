@@ -26,50 +26,53 @@ namespace fhg
         namespace connection { class item; }
         namespace connectable { class item; }
 
-        class scene : public QGraphicsScene
+        namespace scene
         {
-          Q_OBJECT;
+          class type : public QGraphicsScene
+          {
+            Q_OBJECT;
 
-        public:
-          typedef ::xml::parse::type::net_type net_type;
+          public:
+            typedef ::xml::parse::type::net_type net_type;
 
-          explicit scene (net_type & net,  QObject* parent = NULL);
+            explicit type (net_type & net,  QObject* parent = NULL);
 
-          const QPointF& mouse_position() const;
+            const QPointF& mouse_position() const;
 
-          void create_connection (connectable::item* item);
-          void create_connection ( connectable::item* from
-                                 , connectable::item* to
-                                 , bool only_reading
-                                 );
+            void create_connection (connectable::item* item);
+            void create_connection ( connectable::item* from
+                                   , connectable::item* to
+                                   , bool only_reading
+                                   );
 
-        public slots:
-          void slot_add_transition ();
-          void slot_add_place ();
-          void slot_add_struct ();
+          public slots:
+            void slot_add_transition ();
+            void slot_add_place ();
+            void slot_add_struct ();
 
-          void auto_layout();
+            void auto_layout();
 
-        protected:
-          virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
-          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
-          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
-          virtual void keyPressEvent (QKeyEvent* event);
+          protected:
+            virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
+            virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
+            virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+            virtual void keyPressEvent (QKeyEvent* event);
 
-        private:
-          connection::item* create_connection (bool only_reading = false);
-          void remove_pending_connection();
+          private:
+            connection::item* create_connection (bool only_reading = false);
+            void remove_pending_connection();
 
-          void init_menu_context();
+            void init_menu_context();
 
-          connection::item* _pending_connection;
-          QPointF _mouse_position;
+            connection::item* _pending_connection;
+            QPointF _mouse_position;
 
-          QMenu _menu_new;
-          QMenu _menu_context;
+            QMenu _menu_new;
+            QMenu _menu_context;
 
-          net_type & _net;
-        };
+            net_type & _net;
+          };
+        }
       }
     }
   }
