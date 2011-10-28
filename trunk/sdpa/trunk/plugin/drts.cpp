@@ -64,7 +64,7 @@ public:
     m_my_name =      fhg_kernel()->get("name", "drts");
     try
     {
-      m_backlog_size = boost::lexical_cast<size_t>(fhg_kernel()->get("backlog", "3"));
+      m_backlog_size = fhg_kernel()->get<size_t>("backlog", "3");
     }
     catch (std::exception const &ex)
     {
