@@ -45,7 +45,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
   COMPONENT plugins
 )
 
-fhg_add_plugin(gui gui.cpp
+fhg_add_plugin(gui gui.cpp observable.cpp
   EXPORTS GUI
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${WE_LIBRARIES}
