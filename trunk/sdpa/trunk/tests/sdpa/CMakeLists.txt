@@ -13,6 +13,7 @@ message(STATUS "fvm fake module is in: ${TESTS_FVM_PC_FAKE_MODULE}")
 fhg_add_plugin (fvm-fake fvm-fake.cpp
   EXPORTS FVM
   LINK_LIBRARIES ${TESTS_FVM_PC_FAKE_MODULE}
+  DEPENDS fvm-pc-fake.shared
   )
 
 get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
