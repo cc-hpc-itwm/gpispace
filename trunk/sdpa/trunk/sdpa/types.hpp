@@ -25,6 +25,7 @@ namespace sdpa {
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 	typedef worker_id_list_t agent_id_list_t;
+
 	typedef std::map<sdpa::worker_id_t, unsigned int> map_degs_t;
 
 	class MasterInfo
@@ -55,9 +56,10 @@ namespace sdpa {
 	class Capability
 	{
 	    public:
-			Capability(const std::string& name = "", const std::string& type = "", const std::string& owner = "" )
+			Capability(const std::string& name = "", const std::string& type = "", const std::string& owner = "", size_t depth= 0)
 			: name_(name)
 			, type_(type)
+			, depth_(depth)
 			, owner_(owner)
 			{}
 
@@ -65,6 +67,7 @@ namespace sdpa {
 			{
 				name_  = cpb.name();
 				type_  = cpb.type();
+				depth_ = cpb.depth();
 				owner_ = cpb.owner();
 			}
 
@@ -74,11 +77,18 @@ namespace sdpa {
 				{
 					name_  = cpb.name();
 					type_  = cpb.type();
+					depth_ = cpb.depth();
 					owner_ = cpb.owner();
 				}
 
 				return *this;
 			}
+
+			/*bool operator()(const  Capability& a, const Capability& b)
+			{
+				//Capability cpb(name_, type_, owner_);
+				return (a ==*this) && (b==*this)  && (a.depth() < b.depth());
+			}*/
 
 			virtual ~Capability () {}
 
@@ -86,8 +96,9 @@ namespace sdpa {
 			void setName(const std::string& name) { name_ = name;}
 			std::string type() const { return type_;}
 			void setType(const std::string& type) { type_ = type;}
-
-
+			size_t depth() const { return depth_;}
+			void setDepth(const size_t& depth) { depth_ = depth;}
+			void incDepth() { depth_++; }
 			std::string owner() const { return owner_; }
 			void setOwner(const std::string& owner) { owner_ = owner; }
 
@@ -96,6 +107,7 @@ namespace sdpa {
 			{
 				ar & name_;
 				ar & type_;
+				ar & depth_;
 				ar & owner_;
 			}
 
@@ -107,6 +119,9 @@ namespace sdpa {
 				else if( name() != b.name() ) {
 					return name() < b.name();
 				}
+				else if( depth() != b.depth() ){
+					return depth()<b.depth();
+				}
 				else {
 					return owner() < b.owner();
 				}
@@ -116,13 +131,15 @@ namespace sdpa {
 
 			bool operator==(const Capability& b) const
 			{
-				return ( (type() == b.type()) && (name() == b.name()) && (owner() == b.owner()));
+				// ignore depth
+				return ( type() == b.type() && name() == b.name() && owner() == b.owner() /*&& depth() == b.depth()*/);
 			}
 
 
 	    private:
 			std::string name_;
 			std::string type_;
+			mutable size_t depth_;
 			std::string owner_;
 	};
 
@@ -146,20 +163,20 @@ namespace sdpa {
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
 {
-	os<<"name: "<<cpb.name()<<", type: "<<cpb.type()<</*", depth: "<<cpb.depth()<<*/", owner = "<<cpb.owner();
+	os<<"name: "<<cpb.name()<<", type: "<<cpb.type()<<", depth: "<<cpb.depth()<<", owner = "<<cpb.owner();
 	return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::capabilities_set_t& cpbSet)
 {
-	os<<std::endl<<"--------------------------------------------------------"<<std::endl;
+	os<<"Content of the capabilities set:"<<std::endl;
 
 	BOOST_FOREACH(const sdpa::capability_t& cpb, cpbSet)
 	{
 		os<<cpb<<std::endl;
 	}
 
-	os<<"--------------------------------------------------------"<<std::endl;
+	os<<"****************************************************"<<std::endl;
 	return os;
 }
 
