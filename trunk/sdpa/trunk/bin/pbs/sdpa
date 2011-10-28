@@ -1199,15 +1199,21 @@ function status_drts ()
     local err
     local ec
     err=$(node_loop status_drts_on_node $@ 2>&1)
-    ec=$?
-    return $ec
+    if [ $? -ne 0 ] ; then
+	return 1
+    else
+	return 0
+    fi
 }
 
 function start_drts_on_node ()
 {
     local node=$1 ; shift
+    local master="$1" ; shift
+    if [ -z "$master" ] ; then
+	master="aggregator"
+    fi
 
-    local master="aggregator"
     local with_mediator=$(get "topology.with-mediator" "true")
     if [ x"$with_mediator" == x"true" ] ; then
 	master="nre-$node"
@@ -1238,9 +1244,10 @@ function stop_drts_on_node ()
 
 function status_drts_on_node ()
 {
-    local node=$1; shift
+    local node="$1"; shift
+    local name="$1"; shift
     local pids
-    pids=$(rexec $node "$SDPA_HOME/bin/status-drts -s")
+    pids=$(rexec $node "$SDPA_HOME/bin/status-drts" -s -n "$name")
     return $?
 }
 
@@ -1316,7 +1323,7 @@ function start ()
     local p
     local rc=0
     for p in $parts ; do
-	status_$p >/dev/null 2>&1
+	status_$p $@ >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
 	    log "* $p"
 	    continue
