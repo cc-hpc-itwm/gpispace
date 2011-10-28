@@ -3,6 +3,7 @@
 #include <we/we.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
+#include <we/util/putget.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -115,15 +116,7 @@ main (int argc, char ** argv)
       fhg::util::parse::position pos (k, begin, value.end());
       literal::read (tokval, pos);
 
-      act.add_input (
-                     we::input_t::value_type
-                     ( we::token_t ( port_name
-                                   , boost::apply_visitor (literal::visitor::type_name(), tokval)
-                                   , tokval
-                                   )
-                     , act.transition().input_port_by_name (port_name)
-                     )
-                    );
+      we::util::token::put (act, port_name, tokval);
     }
     catch (std::exception const & ex)
     {
