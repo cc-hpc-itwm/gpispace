@@ -49,7 +49,7 @@ install (TARGETS pnetc
 if (ENABLE_STATIC_BINARIES)
   add_executable(pnetc.static pnetc.cpp ${headerlist_hpp})
   target_link_libraries(pnetc.static
-                        xmk_util_mk_fstream
+                        xml_util_mk_fstream
                         ${WE_LIBRARIES}
                         ${Boost_LIBRARIES}
                        )
