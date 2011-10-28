@@ -164,6 +164,9 @@ done
 
 # TODO: get those from the .sdpa/configs/sdpa.rc file, at least parts of it
 
+# config values (kernel)
+cfg="$cfg -s kernel.load.lazy=0"
+
 # config values (kvs plugin)
 kvs_host=$(echo "$kvs_url" | cut -d: -f1)
 kvs_port=$(echo "$kvs_url" | cut -d: -f2)
