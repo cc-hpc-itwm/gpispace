@@ -178,6 +178,8 @@ namespace condition
          , const translate_t & _translate = &no_trans
          )
       : expression_ (_expression)
+        //! \todo do not initialize parser immediately, think of some other way
+        // (pnetput should not parse the whole net just to put some tokens)
       , parser (_expression)
       , context ()
       , translate (_translate)
