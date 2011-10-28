@@ -105,13 +105,19 @@ macro(PNET_COMPILE)
       # TODO:  this doesn't  work  in the  first  install...
       # figure out how to convince cmake to do this only after the build step has
       # been completed
-      file(GLOB_RECURSE pnet_modules ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}/*.so)
-      install (FILES ${pnet_modules}
-	PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
-	            GROUP_EXECUTE GROUP_READ
-		    WORLD_EXECUTE WORLD_READ
+      install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}
 	DESTINATION ${PNET_INSTALL}
+	USE_SOURCE_PERMISSIONS
+	FILES_MATCHING PATTERN "*.so"
+	PATTERN "we" EXCLUDE
 	)
+#      file(GLOB_RECURSE pnet_modules ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}/*.so)
+#      install (FILES ${pnet_modules}
+#	PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+#	            GROUP_EXECUTE GROUP_READ
+#		    WORLD_EXECUTE WORLD_READ
+#	DESTINATION ${PNET_INSTALL}
+#	)
     endif()
   endif()
 endmacro()
