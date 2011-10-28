@@ -75,6 +75,12 @@ Configured
     {
       action_submit(evt);
     }
+    
+   Subscribe(evt: const seda::IEvent::Ptr &)
+    nil
+    {
+      action_subscribe(evt);
+    }
 
   Cancel(evt: const seda::IEvent::Ptr &)
     nil
@@ -112,6 +118,13 @@ Configured
     {
       action_store_reply(evt);
     }
+    
+	SubscribeAck(evt: const seda::IEvent::Ptr &)
+	nil
+    {
+      action_store_reply(evt);
+    }
+   
   CancelAck(evt: const seda::IEvent::Ptr &)
     nil
     {
