@@ -118,7 +118,8 @@ namespace sdpa { namespace client {
     const std::string &output_stage() const { return output_stage_; }
 
     typedef unsigned long long timeout_t;
-    seda::IEvent::Ptr wait_for_reply(const timeout_t& t = 0) throw (Timedout);
+    seda::IEvent::Ptr wait_for_reply() throw (Timedout);
+    seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
 
   private:
 	Client(const std::string &a_name, const std::string &output_stage);
@@ -128,10 +129,6 @@ namespace sdpa { namespace client {
       // assert stage->strategy() == this
       client_stage_ = stage;
     }
-
-    typedef unsigned long long timeout_t;
-    seda::IEvent::Ptr wait_for_reply() throw (Timedout);
-    seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
 
     std::string version_;
     std::string copyright_;

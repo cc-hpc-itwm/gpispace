@@ -198,7 +198,7 @@ void Client::subscribe() throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << reply->str();
+      MLOG(ERROR, "unexpected reply: " << reply->str());
       throw ClientException("got an unexpected reply to Subscribe: " + reply->str());
     }
   }
@@ -275,7 +275,7 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << reply->str();
+      MLOG(ERROR, "unexpected reply: " << reply->str());
       throw ClientException("got an unexpected reply to SubmitJob: " + reply->str());
     }
   }
@@ -314,7 +314,7 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << reply->str();
+      MLOG(ERROR, "unexpected reply: " << reply->str());
       throw ClientException("got an unexpected reply to CancelJob: " + reply->str());
     }
   }
@@ -350,7 +350,7 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << reply->str();
+      MLOG(ERROR, "unexpected reply: " << reply->str());
       throw ClientException("got an unexpected reply to QueryJob: " + reply->str());
     }
   }
@@ -383,7 +383,7 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << reply->str();
+      MLOG(ERROR, "unexpected reply: " << reply->str());
       throw ClientException("got an unexpected reply to DeleteJob: " + reply->str());
     }
   }
@@ -418,7 +418,7 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << reply->str();
+      MLOG(ERROR, "unexpected reply: " << reply->str());
       throw ClientException("got an unexpected reply to RetrieveResults: " + reply->str());
     }
   }
