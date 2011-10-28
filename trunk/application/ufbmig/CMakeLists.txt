@@ -6,9 +6,9 @@ endif(POLICY CMP0011)
 
 project (ufbmig)
 
-option(WITH_UFBMIG_DAEMON "Compile UfbMigDaemon" OFF)
+option(ENABLE_UFBMIGD "Compile UfbMigDaemon" OFF)
 
 add_subdirectory(xml)
-if (WITH_UFBMIG_DAEMON)
+if (ENABLE_UFBMIGD)
   add_subdirectory(daemon)
 endif()
