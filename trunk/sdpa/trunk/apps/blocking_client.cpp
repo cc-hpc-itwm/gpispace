@@ -42,7 +42,6 @@ string read_workflow(string strFileName)
 	return os.str();
 }
 
-// use FHGLOG_level = MIN FHGLOG_color=off
 
 int main(int argc, char** argv)
 {
@@ -107,6 +106,10 @@ int main(int argc, char** argv)
 	}
 
 	std::string strWorkflow = read_workflow(strFileName);
+
+
+
+	/*
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
@@ -119,6 +122,20 @@ int main(int argc, char** argv)
 	ptrCli->configure_network( config );
 	sdpa::job_id_t job_id_user;
 
+	*/
+
+	sdpa::client::config_t config = sdpa::client::ClientApi::config();
+
+	std::vector<std::string> cav;
+	std::ostringstream oss;
+	oss<<"--orchestrator="<<orch;
+	cav.push_back(oss.str());
+	config.parse_command_line(cav);
+
+	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config );
+	ptrCli->configure_network( config );
+
+	sdpa::job_id_t job_id_user;
 	int nTrials = 0;
 	try {
 
@@ -138,60 +155,75 @@ int main(int argc, char** argv)
 		}
 	}
 
-	std::string job_status = ptrCli->queryJob(job_id_user);
-	//LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-	std::cout<<std::endl;
+	ptrCli->subscribe();
 
-	nTrials = 0;
-	while( job_status.find("Finished") 	== std::string::npos &&
-		   job_status.find("Failed") 	== std::string::npos &&
-		   job_status.find("Cancelled") == std::string::npos )
+	LOG( DEBUG, "The client successfully subscribed for orchestrator notifications ...");
+	std::string job_status;
+	try
 	{
-		try {
-			job_status = ptrCli->queryJob(job_id_user);
-			//LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-			std::cout<<".";
-			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
+		seda::IEvent::Ptr reply(ptrCli->waitForNotification(100000));
+		// check event type
+		if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
 		{
-			//LOG( DEBUG, "Exception: "<<cliExc.what());
-			std::cout<<"-";
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			job_status="Finished";
+			LOG(INFO, job_status);
 
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return -1;
-			}
-
-			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+			// wait here to be notified
 		}
-	}
-
-	LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
-
-	std::cout<<std::endl;
-	nTrials = 0;
-	try {
-			LOG( INFO, "Retrieve results of the job "<<job_id_user);
-			ptrCli->retrieveResults(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
-	}
-	catch(const sdpa::client::ClientException& cliExc)
-	{
-		if(nTrials++ > NMAXTRIALS)
+		else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
 		{
-			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
+			job_status="Failed";
+			LOG(INFO, job_status);
+			// wait here to be notified
+		}
+		else if (dynamic_cast<sdpa::events::CancelJobEvent*>(reply.get()))
+		{
+			job_status="Cancelled";
+			LOG(INFO, job_status);
+			// wait here to be notified
+		}
+		else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
+		{
+			LOG(ERROR, "error during subscription: reason := "
+						+ err->reason()
+						+ " code := "
+						+ boost::lexical_cast<std::string>(err->error_code())
+						);
 
 			ptrCli->shutdown_network();
 			ptrCli.reset();
 			return -1;
 		}
-
-		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
+		else
+		{
+			LOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
+			ptrCli->shutdown_network();
+			ptrCli.reset();
+			return -1;
+		}
 	}
+	catch (const sdpa::client::Timedout &)
+	{
+		LOG(ERROR, "Timeout expired!");
+		ptrCli->shutdown_network();
+		ptrCli.reset();
+		return -1;
+	}
+
+	LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
+
+	nTrials = 0;
+	if( job_status != std::string("Finished") &&
+		job_status != std::string("Failed")   &&
+		job_status != std::string("Cancelled") )
+	{
+		LOG(ERROR, "Unexpected status, leave now ...");
+		ptrCli->shutdown_network();
+		ptrCli.reset();
+		return -1;
+	}
+
+	nTrials = 0;
 
 	// reset trials counter
 	nTrials = 0;
@@ -215,4 +247,6 @@ int main(int argc, char** argv)
 	}
 
 	ptrCli->shutdown_network();
+
+	return 0;
 }
