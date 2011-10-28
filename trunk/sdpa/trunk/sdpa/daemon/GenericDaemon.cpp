@@ -64,7 +64,6 @@ GenericDaemon::GenericDaemon( 	const std::string name,
         m_threadBkpService(this),
         m_last_request_time(0),
         m_arrMasterInfo(arrMasterInfo)
-       //,  m_bUseRequestModel(false)
 {
 	// ask kvs if there is already an entry for (name.id = m_strAgentUID)
 	//     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -429,25 +428,21 @@ void GenericDaemon::stop()
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-  if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
-  {
-    try
-    {
-      pSdpaEvt->handleBy(this);
-    }
-    catch (std::exception const & ex)
-    {
-      LOG( ERROR
-         , "could not handle event "
-         << "\""  << pEvent->str() << "\""
-         << " : " << ex.what()
-         );
-    }
-  }
-  else
-  {
-    SDPA_LOG_WARN("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
-  }
+	if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
+	{
+		try
+		{
+			pSdpaEvt->handleBy(this);
+		}
+		catch (std::exception const & ex)
+		{
+			LOG( ERROR, "could not handle event "<< "\""  << pEvent->str() << "\""<< " : " << ex.what());
+		}
+	}
+	else
+	{
+		SDPA_LOG_WARN("Received unexpected event " << pEvent->str()<<". Cannot handle it!");
+	}
 }
 
 void GenericDaemon::setDefaultConfiguration()
@@ -946,12 +941,12 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 		 {
 			 if( error.from() == masterInfo.name() )
 			 {
-				  // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
-				  const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-				  SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-				  boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-				  masterInfo.set_registered(false);
-				  requestRegistration(masterInfo);
+				 // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
+				 const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+				 SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+				 boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+				 masterInfo.set_registered(false);
+				 requestRegistration(masterInfo);
 			 }
 		 }
     	 break;
@@ -1266,6 +1261,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 		bool bIsSubset = scheduler()->addCapabilities(worker_id, pCpbGainEvt->capabilities());
 
 		if(!bIsSubset)
+		{
 			for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
 				if (it->is_registered() && it->name() != worker_id  )
 				{
@@ -1274,6 +1270,9 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 																														pCpbGainEvt->capabilities() ));
 					sendEventToMaster(shpCpbGainEvt);
 				}
+
+			SDPA_LOG_INFO("Gained new capabilities: "<<pCpbGainEvt->capabilities());
+		}
 	}
 	catch( const WorkerNotFoundException& ex)
 	{
@@ -1315,6 +1314,16 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 	{
 		SDPA_LOG_ERROR("Unexpected exception ("<<ex.what()<<") occurred when trying to remove some capabilities of the worker "<<worker_id);
 	}
+}
+
+void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt )
+{
+	 SDPA_LOG_INFO("Received subscribe event!");
+	 subscribe(pEvt->subscriber());
+
+	 SDPA_LOG_INFO("reply immediately with a SubscribeAckEvent");
+	 sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), pEvt->subscriber()) );
+	 sendEventToMaster(ptrSubscAckEvt);
 }
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
@@ -1524,9 +1533,9 @@ void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, con
 	}
 	else
 	{
-	  DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
-	  CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
-	  sendEventToSelf(pEvtCancelJobAck);
+		DLOG(TRACE, "Sent CancelJobAckEvent to self for the job"<<jobId);
+		CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent(worker_id, name(), jobId, SDPAEvent::message_id_type()));
+		sendEventToSelf(pEvtCancelJobAck);
 	}
 }
 
@@ -1625,8 +1634,26 @@ void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
 	ptr_scheduler_->getWorkerCapabilities(cpbset);
 }
 
-
 void GenericDaemon::addCapability(const capability_t& cpb)
 {
 	m_capabilities.insert(cpb);
+}
+
+void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
+{
+	m_listSubscribers.remove(id);
+}
+
+void GenericDaemon::subscribe(const sdpa::agent_id_t& id)
+{
+	m_listSubscribers.push_back(id);
+}
+
+bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
+{
+	bool bFound = false;
+	for( sdpa::agent_id_list_t::iterator it = m_listSubscribers.begin(); !bFound && it != m_listSubscribers.end(); it++ )
+		if(*it==agentId)
+			bFound = true;
+	return bFound;
 }

@@ -200,9 +200,19 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
                                                )
                           );
 
-	    // send the event to the master
-	    sendEventToMaster(pEvtJobFinished);
 	    pJob->JobFinished(pEvtJobFinished.get());
+
+	    if(!isSubscriber(pJob->owner()))
+	    	sendEventToMaster(pEvtJobFinished);
+
+	    //publishEvent(*pEvtJobFinished);
+	    BOOST_FOREACH( sdpa::agent_id_t& subscriber, m_listSubscribers )
+		{
+			sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
+			ptrEvt->from() = name();
+			ptrEvt->to()   = subscriber;
+			sendEventToMaster(ptrEvt);
+		}
 	}
 	catch(QueueFull const &)
 	{

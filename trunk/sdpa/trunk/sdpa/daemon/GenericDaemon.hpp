@@ -35,6 +35,7 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 #include <sdpa/events/ConfigReplyEvent.hpp>
+#include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/types.hpp>
 
@@ -126,6 +127,7 @@ namespace sdpa { namespace daemon {
 	  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
 	  virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
 	  virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
+	  virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
 
 	  virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
 	  virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
@@ -213,6 +215,7 @@ namespace sdpa { namespace daemon {
           //ar & ptr_workflow_engine_;
 
           ar & m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
+          ar & m_listSubscribers;
       }
 
       friend class boost::serialization::access;
@@ -247,10 +250,10 @@ namespace sdpa { namespace daemon {
       //virtual const std::string masterName() const { return  std::string(); }
 
       template <typename T>
-      void notifyMasters(const T& ptrNotEvt);
+      void notifyMasters(const T&);
 
       template <typename T>
-      void notifyWorkers(const T& ptrNotEvt);
+      void notifyWorkers(const T&);
 
       void addMaster(const agent_id_t& );
       void addMasters(const worker_id_list_t& );
@@ -258,6 +261,10 @@ namespace sdpa { namespace daemon {
       void removeMasters(const worker_id_list_t& );
 
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
+
+      void unsubscribe(const sdpa::agent_id_t&);
+      void subscribe(const sdpa::agent_id_t&);
+      bool isSubscriber(const sdpa::agent_id_t& agentId);
 
 protected:
 
@@ -337,6 +344,7 @@ protected:
         sdpa::util::time_type m_last_request_time;
         sdpa::master_info_list_t m_arrMasterInfo;
         sdpa::capabilities_set_t m_capabilities;
+        sdpa::agent_id_list_t m_listSubscribers;
   };
 }}
 

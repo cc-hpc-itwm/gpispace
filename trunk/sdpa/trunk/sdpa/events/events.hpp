@@ -29,5 +29,7 @@
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/SubscribeAckEvent.hpp>
 
 #endif

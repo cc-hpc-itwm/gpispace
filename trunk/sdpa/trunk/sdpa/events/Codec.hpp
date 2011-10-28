@@ -75,6 +75,8 @@ namespace sdpa { namespace events {
       ar.register_type(static_cast<WorkerRegistrationEvent*>(NULL));
       ar.register_type(static_cast<CapabilitiesGainedEvent*>(NULL));
       ar.register_type(static_cast<CapabilitiesLostEvent*>(NULL));
+      ar.register_type(static_cast<SubscribeEvent*>(NULL));
+      ar.register_type(static_cast<SubscribeAckEvent*>(NULL));
     }
   };
 }}

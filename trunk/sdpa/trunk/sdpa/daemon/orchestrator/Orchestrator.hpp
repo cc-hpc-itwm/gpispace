@@ -70,6 +70,9 @@ namespace daemon {
 
 		friend class boost::serialization::access;
 
+		template <typename T>
+		void notifySubscribers(const T& ptrEvt);
+
 	  private:
 		Scheduler* create_scheduler(bool bUseReqModel)
 		{

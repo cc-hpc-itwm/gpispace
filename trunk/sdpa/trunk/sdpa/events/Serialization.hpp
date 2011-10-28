@@ -51,6 +51,8 @@
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/SubscribeAckEvent.hpp>
 #include <boost/serialization/set.hpp>
 
 
@@ -238,6 +240,19 @@ namespace boost { namespace serialization {
  	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
  	  ar & e.capabilities();
    }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::SubscribeEvent & e, unsigned int /* version */)
+  {
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+	  ar & e.subscriber();
+  }
+
+  template <class Archive>
+  void serialize(Archive & ar, sdpa::events::SubscribeAckEvent & e, unsigned int /* version */)
+  {
+	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+  }
 
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::SDPAEvent)
