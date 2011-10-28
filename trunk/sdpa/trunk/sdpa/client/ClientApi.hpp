@@ -68,6 +68,15 @@ namespace sdpa { namespace client {
     {
       return pimpl->build();
     }
+    void subscribe()
+	{
+		pimpl->subscribe();
+	}
+
+    seda::IEvent::Ptr  waitForNotification(const sdpa::client::Client::timeout_t& t = 0)
+	{
+		return pimpl->wait_for_reply(t);
+	}
 
     job_id_t submitJob(const job_desc_t &desc) throw (ClientException)
     {
