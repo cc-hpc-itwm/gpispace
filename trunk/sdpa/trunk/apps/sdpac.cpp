@@ -17,6 +17,7 @@
 #include <fhg/util/getenv.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
+#include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
 
@@ -26,6 +27,11 @@
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -53,7 +59,7 @@ static std::string center (std::string const & text, const std::size_t len)
 }
 
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
-int command_wait ( const std::string &job_id
+int command_poll_and_wait ( const std::string &job_id
                  , const sdpa::client::ClientApi::ptr_t &api
                  , boost::posix_time::time_duration poll_interval
                  )
@@ -114,6 +120,103 @@ int command_wait ( const std::string &job_id
   return exit_code;
 }
 
+
+/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+int command_subscribe_and_wait ( const std::string &job_id
+                 , const sdpa::client::ClientApi::ptr_t &ptrCli )
+{
+	typedef boost::posix_time::ptime time_type;
+	time_type poll_start = boost::posix_time::microsec_clock::local_time();
+
+	int exit_code(4);
+
+	std::cerr << "starting at: " << poll_start << std::endl;
+
+	std::cout << "waiting for job to return..." << std::flush;
+
+	ptrCli->subscribe();
+
+  	std::cout<<"The client successfully subscribed for orchestrator notifications ..."<<std::endl;
+  	std::string job_status;
+  	try
+  	{
+  		seda::IEvent::Ptr reply( ptrCli->waitForNotification(100000) );
+
+  		// check event type
+  		if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
+  		{
+  			job_status="Finished";
+  			//LOG(INFO, job_status);
+  			exit_code = 0;
+  		}
+  		else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
+  		{
+  			job_status="Failed";
+  			//LOG(INFO, job_status);
+  			exit_code = 1;
+  		}
+  		else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
+  		{
+  			job_status="Cancelled";
+  			//LOG(INFO, job_status);
+  			exit_code = 2;
+  		}
+  		else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
+  		{
+  			std::cerr<< "got error event: reason := "
+  						+ err->reason()
+  						+ " code := "
+  						+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
+
+  			ptrCli->shutdown_network();
+  			return exit_code;
+  		}
+  		else
+  		{
+  			std::cerr<< "unexpected reply: " << (reply ? reply->str() : "null")<<std::endl;
+  			ptrCli->shutdown_network();
+  			return exit_code;
+  		}
+  	}
+  	catch (const sdpa::client::Timedout &)
+  	{
+  		std::cerr<< "Timeout expired!" <<std::endl;
+  		ptrCli->shutdown_network();
+  		return exit_code;
+  	}
+
+  	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
+
+  	if( job_status != std::string("Finished") &&
+  		job_status != std::string("Failed")   &&
+  		job_status != std::string("Cancelled") )
+  	{
+  		std::cerr<<"Unexpected status, leave now ..."<<std::endl;
+  		ptrCli->shutdown_network();
+  		return exit_code;
+  	}
+
+  	time_type poll_end = boost::posix_time::microsec_clock::local_time();
+
+  	std::cerr << "stopped at: " << poll_end << std::endl;
+  	std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
+  	return exit_code;
+}
+
+/* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
+int command_wait ( const std::string &job_id
+                 , const sdpa::client::ClientApi::ptr_t &api
+                 , boost::posix_time::time_duration poll_interval )
+{
+	boost::posix_time::time_duration null_duration(0,0,0);
+
+	if( poll_interval == null_duration )
+		return command_poll_and_wait(job_id, api, poll_interval);
+	else
+		return command_subscribe_and_wait(job_id, api);
+
+}
+
 bool file_exists(const std::string &path)
 {
   struct stat file_info;
@@ -134,7 +237,7 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("poll-interval,t", su::po::value<int>()->default_value(250), "sets the poll interval")
+    ("poll-interval,t", su::po::value<int>()->default_value(0), "sets the poll interval")
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")

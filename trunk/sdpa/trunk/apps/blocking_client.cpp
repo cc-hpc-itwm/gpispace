@@ -5,7 +5,6 @@
 #include <boost/program_options.hpp>
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/logging.hpp>
-#include <sdpa/util/Config.hpp>
 
 #include <sdpa/client/ClientApi.hpp>
 #include <seda/StageRegistry.hpp>
@@ -13,6 +12,11 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
+
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
 
 namespace bfs = boost::filesystem;
 
@@ -176,7 +180,7 @@ int main(int argc, char** argv)
 			LOG(INFO, job_status);
 			// wait here to be notified
 		}
-		else if (dynamic_cast<sdpa::events::CancelJobEvent*>(reply.get()))
+		else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
 		{
 			job_status="Cancelled";
 			LOG(INFO, job_status);

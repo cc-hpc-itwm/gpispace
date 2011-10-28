@@ -212,7 +212,6 @@ void Client::subscribe() throw (ClientException)
 seda::IEvent::Ptr Client::wait_for_reply(const timeout_t& t) throw (Timedout)
 {
 	boost::unique_lock<boost::mutex> lock(mtx_);
-	reply_.reset();
 
 	while (reply_.get() == NULL)
 	{
@@ -230,6 +229,7 @@ seda::IEvent::Ptr Client::wait_for_reply(const timeout_t& t) throw (Timedout)
 		}
   }
   seda::IEvent::Ptr ret(reply_);
+  reply_.reset();
   return ret;
 }
 
