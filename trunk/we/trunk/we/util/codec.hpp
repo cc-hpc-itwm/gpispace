@@ -32,7 +32,7 @@ namespace we
     template < typename OA = boost::archive::text_oarchive
              , typename IA = boost::archive::text_iarchive
              >
-    struct codec
+    struct base_codec
     {
       typedef OA oarchive;
       typedef IA iarchive;
@@ -83,8 +83,10 @@ namespace we
       }
     };
 
-    typedef codec<boost::archive::text_oarchive, boost::archive::text_iarchive> text_codec;
-    typedef codec<boost::archive::xml_oarchive, boost::archive::xml_iarchive> xml_codec;
+    typedef base_codec<boost::archive::text_oarchive, boost::archive::text_iarchive> text_codec;
+    typedef base_codec<boost::archive::xml_oarchive, boost::archive::xml_iarchive> xml_codec;
+
+    typedef text_codec codec;
   }
 }
 

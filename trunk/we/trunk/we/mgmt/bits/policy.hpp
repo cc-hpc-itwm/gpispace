@@ -33,7 +33,7 @@ namespace we
     {
       namespace def
       {
-        template <typename T, typename BaseCodec = ::we::util::text_codec>
+        template <typename T, typename BaseCodec = ::we::util::codec>
         struct codec
         {
           typedef T type;
