@@ -59,7 +59,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , fsm_(*this)
   , timeout_(5000U)
   , my_location_("127.0.0.1:0")
-{ }
+{}
 
 Client::~Client()
 {
@@ -248,42 +248,42 @@ seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
-	//MLOG(DEBUG,"submitting job with description = " << desc);
-	MLOG(DEBUG,"submitting new job ... " );
-	client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
-	DMLOG(TRACE,"waiting for a reply");
-	try
-	{
-		seda::IEvent::Ptr reply(wait_for_reply());
-		// check event type
-		if (se::SubmitJobAckEvent *sj_ack = dynamic_cast<se::SubmitJobAckEvent*>(reply.get()))
-		{
-			DMLOG(DEBUG,"got an acknowledge: "
-					<< sj_ack->from()
-					<< " -> "
-					<< sj_ack->to()
-					<< " job_id: "
-					<< sj_ack->job_id());
-			return sj_ack->job_id();
-		}
-		else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-		{
-			throw ClientException( "error during submit: reason := "
-									+ err->reason()
-									+ " code := "
-									+ boost::lexical_cast<std::string>(err->error_code())
-								);
-		}
-		else
-		{
-			MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-			throw ClientException("got an unexpected reply");
-		}
-	}
-	catch (const Timedout &)
-	{
-		throw ApiCallFailed("submitJob");
-	}
+  //MLOG(DEBUG,"submitting job with description = " << desc);
+  MLOG(DEBUG,"submitting new job ... " );
+  client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
+  DMLOG(TRACE,"waiting for a reply");
+  try
+  {
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (se::SubmitJobAckEvent *sj_ack = dynamic_cast<se::SubmitJobAckEvent*>(reply.get()))
+    {
+      DMLOG(DEBUG,"got an acknowledge: "
+          << sj_ack->from()
+          << " -> "
+          << sj_ack->to()
+          << " job_id: "
+          << sj_ack->job_id());
+      return sj_ack->job_id();
+    }
+    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during submit: reason := "
+                           + err->reason()
+                           + " code := "
+                           + boost::lexical_cast<std::string>(err->error_code())
+                           );
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
+      throw ClientException("got an unexpected reply");
+    }
+  }
+  catch (const Timedout &)
+  {
+    throw ApiCallFailed("submitJob");
+  }
 }
 
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
