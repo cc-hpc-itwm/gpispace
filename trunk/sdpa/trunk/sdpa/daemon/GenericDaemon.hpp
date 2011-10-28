@@ -334,6 +334,7 @@ protected:
         condition_type cond_can_stop_;
         condition_type cond_can_start_;
 
+        mutex_type mtx_subscriber_;
       protected:
         bool m_bRequestsAllowed;
         bool m_bStopped;

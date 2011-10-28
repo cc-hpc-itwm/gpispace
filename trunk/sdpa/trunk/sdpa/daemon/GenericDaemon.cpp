@@ -953,6 +953,9 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     }
     case ErrorEvent::SDPA_ENODE_SHUTDOWN:
     {
+    	if( isSubscriber(error.from()) )
+    		unsubscribe(error.from());
+
     	worker_id_t worker_id(error.from());
 
     	try
@@ -1641,16 +1644,21 @@ void GenericDaemon::addCapability(const capability_t& cpb)
 
 void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
 {
+	lock_type lock(mtx_subscriber_);
+	LOG(INFO, "Unsubscribe "<<id<<" ...");
 	m_listSubscribers.remove(id);
 }
 
 void GenericDaemon::subscribe(const sdpa::agent_id_t& id)
 {
+	lock_type lock(mtx_subscriber_);
+	LOG(INFO, "Subscribe "<<id<<" ...");
 	m_listSubscribers.push_back(id);
 }
 
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 {
+	lock_type lock(mtx_subscriber_);
 	bool bFound = false;
 	for( sdpa::agent_id_list_t::iterator it = m_listSubscribers.begin(); !bFound && it != m_listSubscribers.end(); it++ )
 		if(*it==agentId)
