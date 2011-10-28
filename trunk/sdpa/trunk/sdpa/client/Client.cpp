@@ -276,8 +276,8 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-      throw ClientException("got an unexpected reply");
+      MLOG(ERROR, "unexpected reply: " << reply->str();
+      throw ClientException("got an unexpected reply to SubmitJob: " + reply->str());
     }
   }
   catch (const Timedout &)
@@ -315,8 +315,8 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-      throw ClientException("got an unexpected reply");
+      MLOG(ERROR, "unexpected reply: " << reply->str();
+      throw ClientException("got an unexpected reply to CancelJob: " + reply->str());
     }
   }
   catch(const Timedout &)
@@ -351,8 +351,8 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-      throw ClientException("got an unexpected reply");
+      MLOG(ERROR, "unexpected reply: " << reply->str();
+      throw ClientException("got an unexpected reply to QueryJob: " + reply->str());
     }
   }
   catch (const Timedout &)
@@ -384,8 +384,8 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
     }
     else
     {
-    	MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-    	throw ClientException("got an unexpected reply");
+      MLOG(ERROR, "unexpected reply: " << reply->str();
+      throw ClientException("got an unexpected reply to DeleteJob: " + reply->str());
     }
   }
   catch (const Timedout &)
@@ -419,8 +419,8 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
     }
     else
     {
-      MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-      throw ClientException("got an unexpected reply");
+      MLOG(ERROR, "unexpected reply: " << reply->str();
+      throw ClientException("got an unexpected reply to RetrieveResults: " + reply->str());
     }
   }
   catch (const Timedout &)
