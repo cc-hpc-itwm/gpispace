@@ -4,6 +4,7 @@ set (hdrs
   cross.hpp
   it.hpp
   stat.hpp
+  putget.hpp
   )
 
 install(FILES ${hdrs}
