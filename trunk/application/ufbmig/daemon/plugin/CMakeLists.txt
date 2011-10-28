@@ -9,6 +9,9 @@ include_directories(${FhgLog_INCLUDE_DIR})
 find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
+find_package(WE REQUIRED QUIET)
+include_directories(${WE_INCLUDE_DIR})
+
 # add include directory to sdpa-plugin directory
 include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugin)
 
@@ -21,7 +24,8 @@ include_directories(${UFBMIG_INIT_INC})
 
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   EXPORTS UFBMIG_BACK
-  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+  LINK_LIBRARIES ${WE_LIBRARIES}
+                 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
   HEADERS ufbmig_back.hpp
