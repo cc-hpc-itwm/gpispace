@@ -9,6 +9,7 @@ pnet_compile(ufbmig_init init.xml
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
+  INSTALL share/ufbmig
 )
 pnet_compile(ufbmig_calc calc.xml
   INCLUDES ${CMAKE_SOURCE_DIR}/application
@@ -20,6 +21,7 @@ pnet_compile(ufbmig_calc calc.xml
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
+  INSTALL share/ufbmig
 )
 pnet_compile(ufbmig_done finalize.xml
   OUTPUT ufbmig_done.pnet
@@ -30,4 +32,5 @@ pnet_compile(ufbmig_done finalize.xml
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
+  INSTALL share/ufbmig
 )
