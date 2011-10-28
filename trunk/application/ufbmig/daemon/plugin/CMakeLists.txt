@@ -28,6 +28,7 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   HEADER_DESTINATION include/plugins
   PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
+  INSTALL
 )
 
 fhg_add_plugin(ufbmig_front ufbmig_front.cpp
@@ -42,4 +43,5 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp
   HEADER_DESTINATION include/plugins
   PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
+  INSTALL
 )
