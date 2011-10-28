@@ -20,6 +20,7 @@
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
+#include <sdpa/uuidgen.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
@@ -396,8 +397,14 @@ int main (int argc, char **argv) {
 
   try
   {
-    const std::string client_api_name
-      ("sdpac-"+boost::lexical_cast<std::string>(getpid()));
+    std::string client_api_name ("sdpac-");
+    {
+      sdpa::uuidgen gen;
+      sdpa::uuid id;
+      gen(id);
+      client_api_name += id.str();
+    }
+
     sdpa::client::ClientApi::ptr_t api
       (sdpa::client::ClientApi::create (cfg, client_api_name));
     if (cfg.is_set("version"))
