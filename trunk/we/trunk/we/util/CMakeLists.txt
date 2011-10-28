@@ -4,7 +4,7 @@ set (hdrs
   cross.hpp
   it.hpp
   stat.hpp
-  putget.hpp
+  token.hpp
   )
 
 install(FILES ${hdrs}

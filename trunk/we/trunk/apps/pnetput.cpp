@@ -3,7 +3,7 @@
 #include <we/we.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <we/type/literal.hpp>
-#include <we/util/putget.hpp>
+#include <we/util/token.hpp>
 
 #include <iostream>
 #include <fstream>
