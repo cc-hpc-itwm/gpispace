@@ -33,9 +33,9 @@ namespace we
         return act;
       }
 
-      list_t get_token ( we::activity_t const & act
-                       , std::string const & port
-                       )
+      list_t get ( we::activity_t const & act
+                 , std::string const & port
+                 )
       {
         typedef we::activity_t::transition_type::port_id_t port_id_t;
         typedef we::activity_t::output_t output_t;
