@@ -10,6 +10,7 @@ set(hdrs
   plugin.hpp
   kernel.hpp
   capability.hpp
+  storage.hpp
 )
 
 add_subdirectory(core)
