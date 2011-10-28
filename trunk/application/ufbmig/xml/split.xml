@@ -20,7 +20,7 @@
         <in name="config" type="config"/>
         <in name="interval" type="interval"/>
         <out name="intervals" type="intervals"/>
-        <module name="ufbmig" function="intervals split (config, interval)">
+        <module name="ufbmig_calc" function="intervals split (config, interval)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="algorithm"/>

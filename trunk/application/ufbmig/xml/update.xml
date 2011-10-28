@@ -84,7 +84,7 @@
         <in name="config" type="config"/>
         <in name="interval_tagged" type="interval_tagged_with_id"/>
         <out name="interval_tagged" type="interval_tagged_with_id"/>
-        <module name="ufbmig" function="update (config, interval_tagged)">
+        <module name="ufbmig_calc" function="update (config, interval_tagged)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <code><![CDATA[

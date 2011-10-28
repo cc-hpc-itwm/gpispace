@@ -33,7 +33,7 @@
         <in name="config" type="config"/>
         <in name="ready_package" type="ready_package"/>
         <out name="ready_package" type="ready_package"/>
-        <module name="ufbmig" function="calculate (config, ready_package)">
+        <module name="ufbmig_calc" function="calculate (config, ready_package)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="string"/>

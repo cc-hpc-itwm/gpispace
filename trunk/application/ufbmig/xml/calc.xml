@@ -26,9 +26,21 @@
           <place name="num_outputslots" type="long"/>
 
           <transition name="read_config" inline="true">
-            <include-function href="read/config.xml"/>
-            <connect-in port="file_with_config" place="file_with_config"/>
-            <connect-out port="config" place="config_read"/>
+	    <defun>
+	      <in name="filename" type="string"/>
+	      <out name="config" type="config"/>
+	      <module name="ufbmig_calc" function="read_config (filename, config)">
+		<cinclude href="fhglog/fhglog.hpp"/>
+		<cinclude href="util/rw.hpp"/>
+		<code><![CDATA[
+		MLOG (INFO, "reading config from file " << filename);
+
+		::ufbmig::util::serialize::read (filename, config);
+		]]></code>
+	      </module>
+	    </defun>
+	    <connect-in port="filename" place="file_with_config"/>
+	    <connect-out port="config" place="config_read"/>
           </transition>
 
           <place name="config_read" type="config"/>

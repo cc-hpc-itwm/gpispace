@@ -107,11 +107,23 @@
     </transition>
 
     <transition name="write_config" inline="true">
-      <include-function href="write/config.xml"/>
-      <connect-in port="file_with_config" place="file_with_config"/>
+      <defun>
+	<in name="filename" type="string"/>
+	<in name="config" type="config"/>
+	<out name="config" type="config"/>
+	<module name="ufbmig_init" function="write_config (filename, config)">
+	  <cinclude href="fhglog/fhglog.hpp"/>
+	  <cinclude href="util/rw.hpp"/>
+	  <code><![CDATA[
+	  MLOG (INFO, "writing config to file " << filename);
+
+	  ::ufbmig::util::serialize::write (filename, config);
+	  ]]></code>
+	</module>
+      </defun>
+      <connect-in port="filename" place="file_with_config"/>
       <connect-in port="config" place="config"/>
       <connect-out port="config" place="config_written"/>
     </transition>
   </net>
-
 </defun>

@@ -15,7 +15,7 @@
         <in name="config" type="config"/>
         <in name="assigned_package" type="assigned_package"/>
         <out name="assigned_package" type="assigned_package"/>
-        <module name="ufbmig" function="load (config, assigned_package)">
+        <module name="ufbmig_calc" function="load (config, assigned_package)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <code><![CDATA[
             LOG (INFO, "LOAD " << assigned_package);
