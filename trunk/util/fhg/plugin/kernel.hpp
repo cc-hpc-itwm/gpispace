@@ -6,6 +6,7 @@
 #include <string>
 
 #include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <fhg/plugin/plugin_base.hpp>
 
@@ -44,10 +45,7 @@ namespace fhg
       template <typename T>
       T get(std::string const & key, std::string const &dflt) const
       {
-        std::stringstream s (get(key, dflt));
-        T v;
-        s >> v;
-        return v;
+        return boost::lexical_cast<T>(get(key, dflt));
       }
 
       virtual void start_completed(int) = 0;
