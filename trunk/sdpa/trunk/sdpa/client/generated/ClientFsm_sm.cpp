@@ -140,6 +140,18 @@ namespace sdpa
             return;
         }
 
+        void ClientState::Subscribe(ClientContext& context, const seda::IEvent::Ptr & evt)
+        {
+            Default(context);
+            return;
+        }
+
+        void ClientState::SubscribeAck(ClientContext& context, const seda::IEvent::Ptr & evt)
+        {
+            Default(context);
+            return;
+        }
+
         void ClientState::Unknown(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
             Default(context);
@@ -488,6 +500,48 @@ namespace sdpa
         }
 
         void ClientFsm_Configured::SubmitAck(ClientContext& context, const seda::IEvent::Ptr & evt)
+        {
+            Client& ctxt = context.getOwner();
+
+            ClientState& EndStateName = context.getState();
+
+            context.clearState();
+            try
+            {
+                ctxt.action_store_reply(evt);
+                context.setState(EndStateName);
+            }
+            catch (...)
+            {
+                context.setState(EndStateName);
+                throw;
+            }
+
+            return;
+        }
+
+        void ClientFsm_Configured::Subscribe(ClientContext& context, const seda::IEvent::Ptr & evt)
+        {
+            Client& ctxt = context.getOwner();
+
+            ClientState& EndStateName = context.getState();
+
+            context.clearState();
+            try
+            {
+                ctxt.action_subscribe(evt);
+                context.setState(EndStateName);
+            }
+            catch (...)
+            {
+                context.setState(EndStateName);
+                throw;
+            }
+
+            return;
+        }
+
+        void ClientFsm_Configured::SubscribeAck(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
             Client& ctxt = context.getOwner();
 

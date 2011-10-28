@@ -46,6 +46,8 @@ namespace sdpa
             virtual void StatusReply(ClientContext& context, const seda::IEvent::Ptr & evt);
             virtual void Submit(ClientContext& context, const seda::IEvent::Ptr & evt);
             virtual void SubmitAck(ClientContext& context, const seda::IEvent::Ptr & evt);
+            virtual void Subscribe(ClientContext& context, const seda::IEvent::Ptr & evt);
+            virtual void SubscribeAck(ClientContext& context, const seda::IEvent::Ptr & evt);
             virtual void Unknown(ClientContext& context, const seda::IEvent::Ptr & evt);
 
         protected:
@@ -119,6 +121,8 @@ namespace sdpa
             void StatusReply(ClientContext& context, const seda::IEvent::Ptr & evt);
             void Submit(ClientContext& context, const seda::IEvent::Ptr & evt);
             void SubmitAck(ClientContext& context, const seda::IEvent::Ptr & evt);
+            void Subscribe(ClientContext& context, const seda::IEvent::Ptr & evt);
+            void SubscribeAck(ClientContext& context, const seda::IEvent::Ptr & evt);
             void Unknown(ClientContext& context, const seda::IEvent::Ptr & evt);
         };
 
@@ -222,6 +226,16 @@ namespace sdpa
             void SubmitAck(const seda::IEvent::Ptr & evt)
             {
                 (getState()).SubmitAck(*this, evt);
+            };
+
+            void Subscribe(const seda::IEvent::Ptr & evt)
+            {
+                (getState()).Subscribe(*this, evt);
+            };
+
+            void SubscribeAck(const seda::IEvent::Ptr & evt)
+            {
+                (getState()).SubscribeAck(*this, evt);
             };
 
             void Unknown(const seda::IEvent::Ptr & evt)
