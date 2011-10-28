@@ -64,7 +64,7 @@ namespace fhg
       int rc = 0;
 
       bool load_force (boost::lexical_cast<bool>(get("kernel.load.force", "0")));
-      bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
+      bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "0")));
 
       plugin_t::ptr_t p (plugin_t::create( file
                                          , load_force
