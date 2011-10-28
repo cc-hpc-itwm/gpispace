@@ -31,11 +31,11 @@ namespace sdpa { namespace client {
       }
       catch (std::exception &ex)
       {
-        LOG(FATAL, "client->shutdown() failed!" << ex.what());
+        LOG(ERROR, "client->shutdown() failed!" << ex.what());
       }
       catch (...)
       {
-        LOG(FATAL, "client->shutdown() failed due to an unknown reason!");
+        LOG(ERROR, "client->shutdown() failed due to an unknown reason!");
       }
     }
 

@@ -153,18 +153,21 @@ void Client::start(const config_t & config) throw (ClientException)
 
 void Client::shutdown() throw (ClientException)
 {
+  client_stage_->stop();
+  seda::StageRegistry::instance().remove(client_stage_);
+  client_stage_.reset();
+
+  /* somehow times out from time to time...
   client_stage_->send(seda::IEvent::Ptr(new Shutdown()));
   try
   {
     wait_for_reply();
-    client_stage_->stop();
-    seda::StageRegistry::instance().remove(client_stage_);
-    client_stage_.reset();
   }
   catch (const Timedout &)
   {
     throw ApiCallFailed("shutdown", "this call should never timeout!");
   }
+  */
 }
 
 seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
