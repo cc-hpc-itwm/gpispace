@@ -1,4 +1,11 @@
 # -*- mode: cmake; -*-
+find_package(SMC)
+if (SMC_FOUND)
+    message(STATUS "Found StateMachineCompiler: ${SMC_JAR}")
+    include_directories(${SMC_INCLUDE_DIR})
+else (SMC_FOUND)
+    message(STATUS "WARNING: SMC could not be found!")
+endif (SMC_FOUND)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_BINARY_DIR})

@@ -88,6 +88,7 @@ namespace sdpa { namespace client {
 
     void start(const config_t &cfg) throw(ClientException);
     void shutdown() throw(ClientException);
+    void subscribe() throw (ClientException);
 
     job_id_t submitJob(const job_desc_t &) throw (ClientException);
     void cancelJob(const job_id_t &) throw (ClientException);
@@ -101,6 +102,7 @@ namespace sdpa { namespace client {
     void action_config_nok();
     void action_shutdown();
 
+    void action_subscribe(const seda::IEvent::Ptr&);
     void action_submit(const seda::IEvent::Ptr&);
     void action_cancel(const seda::IEvent::Ptr&);
     void action_query(const seda::IEvent::Ptr&);
@@ -114,6 +116,10 @@ namespace sdpa { namespace client {
 
     const std::string &input_stage() const { return client_stage_->name(); }
     const std::string &output_stage() const { return output_stage_; }
+
+    typedef unsigned long long timeout_t;
+    seda::IEvent::Ptr wait_for_reply(const timeout_t& t = 0) throw (Timedout);
+
   private:
 	Client(const std::string &a_name, const std::string &output_stage);
 
@@ -122,9 +128,6 @@ namespace sdpa { namespace client {
       // assert stage->strategy() == this
       client_stage_ = stage;
     }
-
-    typedef unsigned long long timeout_t;
-    seda::IEvent::Ptr wait_for_reply() throw (Timedout);
 
     std::string version_;
     std::string copyright_;

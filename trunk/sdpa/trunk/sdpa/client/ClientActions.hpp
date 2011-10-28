@@ -13,6 +13,7 @@ namespace sdpa { namespace client {
       virtual void action_config_nok() = 0;
       virtual void action_shutdown() = 0;
 
+      virtual void action_subscribe(const seda::IEvent::Ptr &) = 0;
       virtual void action_submit(const seda::IEvent::Ptr &) = 0;
       virtual void action_cancel(const seda::IEvent::Ptr &) = 0;
       virtual void action_query(const seda::IEvent::Ptr &) = 0;
