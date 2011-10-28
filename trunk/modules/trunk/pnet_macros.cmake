@@ -79,16 +79,18 @@ macro(PNET_COMPILE)
   add_custom_target(pnet-${PNET_NAME} ALL
     COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
     DEPENDS ${PNETC_LOCATION} ${PNET_DEPENDS}
-    COMMENT "Compiling petri-net: ${PNET_NAME}"
+    COMMENT "Generating petri-net: ${PNET_NAME}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES ${PNET_SOURCES}
     )
 
   set_target_properties(pnet-${PNET_NAME} PROPERTIES PNET_GENERATE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
+  set_target_properties(pnet-${PNET_NAME} PROPERTIES LOCATION ${PNET_OUTPUT})
 
   if (PNET_BUILD)
     add_custom_command(TARGET pnet-${PNET_NAME} POST_BUILD
       COMMAND make -C ${PNET_GENERATE}
+      COMMENT "Compiling modules for: ${PNET_NAME}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       )
   endif()
@@ -98,6 +100,18 @@ macro(PNET_COMPILE)
   endif()
 
   if (PNET_INSTALL)
-    install (FILES ${__pnet_sources} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL})
+    install (FILES ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL})
+    if (PNET_BUILD)
+      # TODO:  this doesn't  work  in the  first  install...
+      # figure out how to convince cmake to do this only after the build step has
+      # been completed
+      file(GLOB_RECURSE pnet_modules ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}/*.so)
+      install (FILES ${pnet_modules}
+	PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+	            GROUP_EXECUTE GROUP_READ
+		    WORLD_EXECUTE WORLD_READ
+	DESTINATION ${PNET_INSTALL}
+	)
+    endif()
   endif()
 endmacro()
