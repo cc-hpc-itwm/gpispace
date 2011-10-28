@@ -88,12 +88,11 @@ void Client::perform(const seda::IEvent::Ptr &event)
     DMLOG(TRACE,"ack");
     fsm_.SubmitAck(event);
   } else if (dynamic_cast<se::SubscribeEvent*>(event.get())) {
-	  DMLOG(TRACE,"subscribe");
-	  fsm_.Subscribe(event);
-  }
-  else if (dynamic_cast<se::SubscribeAckEvent*>(event.get())) {
-	DMLOG(TRACE,"subscribe");
-	fsm_.SubscribeAck(event);
+    DMLOG(TRACE,"subscribe");
+    fsm_.Subscribe(event);
+  } else if (dynamic_cast<se::SubscribeAckEvent*>(event.get())) {
+    DMLOG(TRACE,"subscribe");
+    fsm_.SubscribeAck(event);
   } else if (dynamic_cast<se::QueryJobStatusEvent*>(event.get())) {
     DMLOG(TRACE,"qstat");
     fsm_.Query(event);
@@ -181,32 +180,32 @@ void Client::shutdown() throw (ClientException)
 
 void Client::subscribe() throw (ClientException)
 {
-	MLOG(DEBUG,"attempting to subscribe ... " );
-	client_stage_->send(seda::IEvent::Ptr(new se::SubscribeEvent(name(), orchestrator_)));
-	DMLOG(TRACE,"waiting for a reply");
-	try
-	{
-		seda::IEvent::Ptr reply(wait_for_reply());
-		// check event type
-		if (se::SubscribeAckEvent *sj_ack = dynamic_cast<se::SubscribeAckEvent*>(reply.get()))
-		{
-			MLOG(TRACE,"got SubscribeAckEvent: "<< sj_ack->from()<< " -> "<< sj_ack->to());
-		}
-		else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-		{
-			throw ClientException( "error during submit: reason := "+ err->reason()
-                           	   	   + " code := "+ boost::lexical_cast<std::string>(err->error_code()));
-		}
-		else
-		{
-			MLOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-			throw ClientException("got an unexpected reply");
-		}
-	}
-	catch (const Timedout &)
-	{
-		throw ApiCallFailed("subscribe");
-	}
+  MLOG(DEBUG,"attempting to subscribe ... " );
+  client_stage_->send(seda::IEvent::Ptr(new se::SubscribeEvent(name(), orchestrator_)));
+  DMLOG(TRACE,"waiting for a reply");
+  try
+  {
+    seda::IEvent::Ptr reply(wait_for_reply());
+    // check event type
+    if (se::SubscribeAckEvent *sj_ack = dynamic_cast<se::SubscribeAckEvent*>(reply.get()))
+    {
+      MLOG(TRACE,"got SubscribeAckEvent: "<< sj_ack->from()<< " -> "<< sj_ack->to());
+    }
+    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
+    {
+      throw ClientException( "error during submit: reason := "+ err->reason()
+                           + " code := "+ boost::lexical_cast<std::string>(err->error_code()));
+    }
+    else
+    {
+      MLOG(ERROR, "unexpected reply: " << reply->str();
+      throw ClientException("got an unexpected reply to Subscribe: " + reply->str());
+    }
+  }
+  catch (const Timedout &)
+  {
+    throw ApiCallFailed("subscribe");
+  }
 }
 
 seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
