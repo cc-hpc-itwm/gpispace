@@ -4,7 +4,7 @@ configure_file(compile.xml.in ${CMAKE_CURRENT_BINARY_DIR}/compile.xml @ONLY)
 
 pnet_compile(sdpacc ${CMAKE_CURRENT_BINARY_DIR}/compile.xml
   OUTPUT compile.pnet
-  GENERATE gen-sdpacc
+  GENERATE sdpacc
   INSTALL share/sdpa/cc
   LDFLAGS "-L${CMAKE_BINARY_DIR}/application/example/process"
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
