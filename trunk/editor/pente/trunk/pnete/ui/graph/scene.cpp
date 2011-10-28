@@ -1,4 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/scene.hpp>
 
@@ -15,6 +15,8 @@
 
 #include <pnete/ui/graph/style/raster.hpp>
 
+#include <pnete/ui/util/action.hpp>
+
 #include <pnete/data/internal.hpp>
 
 #include <util/graphviz.hpp>
@@ -29,18 +31,33 @@ namespace fhg
       {
         namespace scene
         {
-          type::type (::xml::parse::type::net_type & net, QObject* parent)
+          type::type ( ::xml::parse::type::net_type & net
+                     , data::change_manager_t& change_manager
+                     , QObject* parent
+                     )
             : QGraphicsScene (parent)
             , _pending_connection (NULL)
             , _mouse_position (QPointF (0.0, 0.0))
             , _menu_context()
             , _net (net)
+            , _change_manager (change_manager)
           {
             init_menu_context();
 
-            connect ( this
-                    , SIGNAL (signal_delete_transition (transition::item*))
-                    , SLOT (slot_delete_transition (transition::item*))
+            connect ( &_change_manager
+                    , SIGNAL ( signal_delete_transition
+                               ( const QObject*
+                               , const ::xml::parse::type::transition_type&
+                               , ::xml::parse::type::net_type&
+                               )
+                             )
+                    , SLOT ( slot_delete_transition
+                             ( const QObject*
+                             , const ::xml::parse::type::transition_type&
+                             , ::xml::parse::type::net_type&
+                             )
+                           )
+                    , Qt::DirectConnection
                     );
           }
 
@@ -69,21 +86,74 @@ namespace fhg
                     , SLOT (slot_add_struct())
                     );
 
-            QAction* auto_layout_action (new QAction (tr ("auto_layout"), this));
+            _menu_context.addMenu (menu_new);
+            _menu_context.addSeparator();
+
+            QAction* auto_layout_action
+              (_menu_context.addAction (tr ("auto_layout")));
             connect ( auto_layout_action
                     , SIGNAL (triggered())
                     , SLOT (auto_layout())
                     );
-
-            _menu_context.addMenu (menu_new);
-            _menu_context.addAction (auto_layout_action);
           }
 
           void type::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
           {
-            QGraphicsScene::contextMenuEvent (event);
+            if (item* i = qgraphicsitem_cast<item*> (itemAt (event->scenePos())))
+              {
+                switch (i->type())
+                  {
+                  case item::connection_graph_type:
+                    break;
+                  case item::port_graph_type:
+                  case item::top_level_port_graph_type:
+                    {
+                      QMenu menu;
 
-            if (!event->isAccepted())
+                      QAction* action_set_type
+                        (menu.addAction(tr("Set type")));
+                      //                      connect (action_set_type, SIGNAL(triggered()), SLOT(slot_set_type()));
+
+                      menu.addSeparator();
+
+                      QAction* action_delete (menu.addAction(tr("Delete")));
+                      //             connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
+
+                      menu.exec(event->screenPos());
+                      event->accept();
+                    }
+                    break;
+                  case item::transition_graph_type:
+                    {
+                      QMenu menu;
+
+                      QAction* action_add_port (menu.addAction(tr("Add Port")));
+                      //                          connect (action_add_port, SIGNAL(triggered()), SLOT(slot_add_port()));
+
+                      menu.addSeparator();
+
+                      util::action::type*
+                        action_delete (new util::action::type ( i
+                                                              , tr("Delete")
+                                                              )
+                                      );
+                      menu.addAction (action_delete);
+                      connect ( action_delete
+                              , SIGNAL(signal_triggered(graph::item*))
+                              , SLOT(slot_delete_transition(graph::item*))
+                              );
+
+                      menu.exec(event->screenPos());
+                      event->accept();
+                    }
+                    break;
+                  case item::place_graph_type:
+                    break;
+                  default:
+                    break;
+                  }
+              }
+            else
               {
                 _menu_context.popup(event->screenPos());
                 event->accept();
@@ -302,17 +372,31 @@ namespace fhg
               }
           }
 
-          void type::delete_transition (transition::item* transition_item)
+          void type::slot_delete_transition
+          ( const QObject* origin
+          , const ::xml::parse::type::transition_type& trans
+          , ::xml::parse::type::net_type& net
+          )
           {
-            emit signal_delete_transition (transition_item);
-          }
-          void type::slot_delete_transition (transition::item* transition_item)
-          {
-            if (!transition_item->proxy())
+            if (origin != this && is_my_net (net))
               {
-                throw std::runtime_error ("slot_delete_transition: no proxy");
+                foreach (QGraphicsItem* child, items())
+                  {
+                    if ( transition::item* transition_item
+                       = qgraphicsitem_cast<transition::item*> (child)
+                       )
+                      {
+                        if (&trans == &transition_item->transition())
+                          {
+                            remove_transition_item (transition_item);
+                            delete transition_item;
+                          }
+                      }
+                  }
               }
-
+          }
+          void type::remove_transition_item (transition::item* transition_item)
+          {
             foreach (QGraphicsItem* child, transition_item->childItems())
               {
                 if (port::item* port = qgraphicsitem_cast<port::item*> (child))
@@ -322,14 +406,30 @@ namespace fhg
               }
 
             removeItem (transition_item);
+          }
+          void type::slot_delete_transition (graph::item* graph_item)
+          {
+            transition::item* transition_item
+              (qgraphicsitem_cast<transition::item*> (graph_item));
 
-            data::proxy::root(*transition_item->proxy())
-              ->change_manager().delete_transition
-              ( transition_item->transition()
-              , transition_item->net()
-              );
+            if (!transition_item)
+              {
+                throw std::runtime_error
+                  ("STRANGE: delete_transition for something else!?");
+              }
 
+            remove_transition_item (transition_item);
+
+            _change_manager.delete_transition ( this
+                                              , transition_item->transition()
+                                              , transition_item->net()
+                                              );
             delete transition_item;
+          }
+
+          bool type::is_my_net (const ::xml::parse::type::net_type& net)
+          {
+            return &net == &_net;
           }
         }
       }

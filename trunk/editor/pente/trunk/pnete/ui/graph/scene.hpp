@@ -19,10 +19,13 @@ namespace fhg
 {
   namespace pnete
   {
+    namespace data { class change_manager_t; }
+
     namespace ui
     {
       namespace graph
       {
+        class item;
         namespace connection { class item; }
         namespace transition { class item; }
         namespace connectable { class item; }
@@ -34,7 +37,8 @@ namespace fhg
             Q_OBJECT;
 
           public:
-            explicit type ( ::xml::parse::type::net_type & net
+            explicit type ( ::xml::parse::type::net_type& net
+                          , data::change_manager_t& change_manager
                           , QObject* parent = NULL
                           );
 
@@ -46,10 +50,14 @@ namespace fhg
                                    , bool only_reading
                                    );
 
-            void delete_transition (transition::item*);
-
           public slots:
-            void slot_delete_transition (transition::item*);
+            void slot_delete_transition (graph::item*);
+            void
+            slot_delete_transition ( const QObject*
+                                   , const ::xml::parse::type::transition_type&
+                                   , ::xml::parse::type::net_type&
+                                   );
+
             void slot_add_transition ();
             void slot_add_place ();
             void slot_add_struct ();
@@ -57,7 +65,6 @@ namespace fhg
             void auto_layout();
 
           signals:
-            void signal_delete_transition (transition::item*);
 
           protected:
             virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
@@ -66,6 +73,9 @@ namespace fhg
             virtual void keyPressEvent (QKeyEvent* event);
 
           private:
+            void remove_transition_item (transition::item*);
+            bool is_my_net (const ::xml::parse::type::net_type&);
+
             connection::item* create_connection (bool only_reading = false);
             void remove_pending_connection();
 
@@ -78,6 +88,7 @@ namespace fhg
             QMenu _menu_context;
 
             ::xml::parse::type::net_type& _net;
+            data::change_manager_t& _change_manager;
           };
         }
       }

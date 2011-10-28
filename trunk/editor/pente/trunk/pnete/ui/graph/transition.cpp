@@ -3,9 +3,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 #include <QGraphicsSceneContextMenuEvent>
-#include <QMenu>
 #include <QAction>
-#include <QDebug>
 #include <QToolButton>
 #include <QGraphicsProxyWidget>
 #include <QPushButton>
@@ -57,12 +55,10 @@ namespace fhg
             , _size (size::transition::width(), size::transition::height())
             , _transition (transition)
             , _net (net)
-            , _menu_context()
             , _proxy (NULL)
           {
             new cogwheel_button (this);
             setFlag (ItemIsSelectable);
-            init_menu_context();
 
             static const QColor border_color_normal (Qt::yellow);
 
@@ -88,7 +84,6 @@ namespace fhg
 //             , _size (size::transition::width(), size::transition::height())
 //               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
 //             , _transition(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
-//             , _menu_context()
 //             , _proxy (NULL)
 //           {
 //             //! \todo WORK HERE, everything is missing
@@ -101,17 +96,6 @@ namespace fhg
           ::xml::parse::type::net_type& item::net ()
           {
             return _net;
-          }
-
-          void item::init_menu_context()
-          {
-            QAction* action_add_port (_menu_context.addAction(tr("Add Port")));
-            connect (action_add_port, SIGNAL(triggered()), SLOT(slot_add_port()));
-
-            _menu_context.addSeparator();
-
-            QAction* action_delete (_menu_context.addAction(tr("Delete")));
-            connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
           }
 
           void item::setPos (const QPointF& new_position)
@@ -157,27 +141,6 @@ namespace fhg
           //   internal()->change_manager().set_transition_name (reference(), name);
           // }
 
-          void item::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
-          {
-            graph::item::contextMenuEvent (event);
-
-            if (!event->isAccepted())
-              {
-                _menu_context.popup (event->screenPos());
-                event->accept();
-              }
-          }
-
-          void item::slot_delete()
-          {
-            scene()->delete_transition (this);
-          }
-
-          void item::slot_add_port()
-          {
-            qDebug() << "item::slot_add_port()";
-          }
-
           void item::repositionChildrenAndResize()
           {
             const qreal padding (10.0); // hardcoded constant
@@ -221,30 +184,7 @@ namespace fhg
 
           void item::set_proxy (data::proxy::type* proxy_)
           {
-            if (proxy_ && _proxy != proxy_)
-              {
-//                 if (_proxy)
-//                   {
-//                     data::proxy::root(*_proxy)->change_manager().disconnect();
-//                   }
-
-                _proxy = proxy_;
-
-//                 connect ( &(data::proxy::root(*_proxy)->change_manager())
-//                         , SIGNAL ( signal_delete_transition
-//                                    ( const QObject*
-//                                    , const ::xml::parse::type::transition_type&
-//                                    , ::xml::parse::type::net_type&
-//                                    )
-//                                  )
-//                         , SLOT ( slot_delete_transition
-//                                  ( const QObject*
-//                                  , const ::xml::parse::type::transition_type&
-//                                  , ::xml::parse::type::net_type&
-//                                  )
-//                                )
-//                         );
-              }
+            _proxy = proxy_;
           }
           data::proxy::type* item::proxy () const
           {

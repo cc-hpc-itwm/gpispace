@@ -8,14 +8,11 @@
 #include <QPointF>
 #include <QSizeF>
 #include <QObject>
-#include <QMenu>
 
 class QPainter;
 class QStyleOptionGraphicsItem;
-class QGraphicsSceneContextMenuEvent;
 class QWidget;
 class QAction;
-class QMenu;
 
 #include <pnete/ui/graph/item.hpp>
 
@@ -68,14 +65,10 @@ namespace fhg
             virtual void setPos (const QPointF&);
 
           public slots:
-            void slot_delete(void);
-            void slot_add_port(void);
-
           private slots:
 
           protected:
             virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-            virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
           private:
             //! \todo size verstellbar
@@ -83,10 +76,6 @@ namespace fhg
 
             ::xml::parse::type::transition_type& _transition;
             ::xml::parse::type::net_type& _net;
-
-            QMenu _menu_context;
-
-            void init_menu_context();
 
             data::proxy::type* _proxy;
           };

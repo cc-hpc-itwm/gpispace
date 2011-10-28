@@ -87,7 +87,6 @@ namespace fhg
             , _port (port)
             , _orientation ()
             , _length (size::port::width())
-            , _menu_context()
           {
             access_style().push<qreal>
               ( "border_thickness"
@@ -150,41 +149,11 @@ namespace fhg
                           , QStaticText(QString::fromStdString (name())).size().width()
                           + 2 * size::cap::length()
                           );
-
-            init_menu_context();
-          }
-
-          void item::init_menu_context()
-          {
-            QAction* action_set_type (_menu_context.addAction(tr("Set type")));
-            connect (action_set_type, SIGNAL(triggered()), SLOT(slot_set_type()));
-
-            _menu_context.addSeparator();
-
-            QAction* action_delete (_menu_context.addAction(tr("Delete")));
-            connect (action_delete, SIGNAL(triggered()), SLOT(slot_delete()));
           }
 
           void item::slot_set_type ()
           {
             qDebug() << "port::slot_set_type()";
-          }
-
-          void item::slot_delete ()
-          {
-            //delete_connection();
-            //scene()->removeItem (this);
-          }
-
-          void item::contextMenuEvent (QGraphicsSceneContextMenuEvent* event)
-          {
-            graph::item::contextMenuEvent (event);
-
-            if (!event->isAccepted())
-              {
-                _menu_context.popup (event->screenPos());
-                event->accept();
-              }
           }
 
           void item::setPos (const QPointF& new_position)

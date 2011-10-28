@@ -101,7 +101,11 @@ namespace fhg
             foreach (connection::item* connection, connections())
               {
                 scene->removeItem (connection);
-                delete connection;
+
+                if (connection)
+                  {
+                    delete connection;
+                  }
               }
           }
 

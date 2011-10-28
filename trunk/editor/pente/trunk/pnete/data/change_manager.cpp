@@ -52,11 +52,13 @@ namespace fhg
       }
 
       void change_manager_t::delete_transition
-      ( const ::xml::parse::type::transition_type& trans
+      ( const QObject* origin
+      , const ::xml::parse::type::transition_type& trans
       , ::xml::parse::type::net_type& net
       )
       {
-        //! \todo inform the world *before* deleting the transition
+        emit signal_delete_transition (origin, trans, net);
+
         net.erase_transition (trans);
       }
     }

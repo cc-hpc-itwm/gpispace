@@ -52,5 +52,8 @@ QT4_WRAP_CPP(graph_SRCS_MOC ${graph_TOMOC} ${graph_UIS_H})
 
 qt4_automoc(${graph_SRCS_MOC})
 add_library("${LIB_PREFIX}graph" ${graph_SRCS} ${graph_SRCS_MOC})
-target_link_libraries ("${LIB_PREFIX}graph" "${LIB_PREFIX}graphviz-wrapper")
-target_link_libraries ("${LIB_PREFIX}graph" "${LIB_PREFIX}style")
+target_link_libraries ("${LIB_PREFIX}graph"
+                       "${LIB_PREFIX}graphviz-wrapper"
+                       "${LIB_PREFIX}style"
+                       "${LIB_PREFIX}ui_util"
+                      )

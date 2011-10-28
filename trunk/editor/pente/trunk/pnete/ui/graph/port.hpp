@@ -75,11 +75,9 @@ namespace fhg
 
           public slots:
             void slot_set_type();
-            void slot_delete();
             void refresh_tooltip();
 
           protected:
-            virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
 
           private:
             port_type& _port;
@@ -89,10 +87,6 @@ namespace fhg
             orientation::type _orientation;
 
             qreal _length;
-
-            QMenu _menu_context;
-
-            void init_menu_context();
           };
 
           namespace top_level

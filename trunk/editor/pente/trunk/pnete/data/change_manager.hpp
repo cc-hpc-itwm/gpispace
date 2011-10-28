@@ -32,7 +32,8 @@ namespace fhg
                             , ::xml::parse::type::expression_type&
                             , const QString&
                             );
-        void delete_transition ( const ::xml::parse::type::transition_type&
+        void delete_transition ( const QObject*
+                               , const ::xml::parse::type::transition_type&
                                , ::xml::parse::type::net_type&
                                );
 
@@ -50,6 +51,11 @@ namespace fhg
                                       , const ::xml::parse::type::function_type&
                                       , const QString&
                                       );
+        void
+        signal_delete_transition ( const QObject*
+                                 , const ::xml::parse::type::transition_type&
+                                 , ::xml::parse::type::net_type&
+                                 );
 
       private:
         internal_type& _internal;

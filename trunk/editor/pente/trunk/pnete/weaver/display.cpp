@@ -8,6 +8,8 @@
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
 
+#include <pnete/data/internal.hpp>
+
 #include <xml/parse/types.hpp>
 
 #include <QtGlobal>
@@ -82,7 +84,9 @@ namespace fhg
       WSIG(function, net::open, XMLTYPE(net_type), net)
       {
         _scene = new ui::graph::scene::type
-          (const_cast< XMLTYPE(net_type) &> (net));
+          ( const_cast< XMLTYPE(net_type) &> (net)
+          , _root->change_manager()
+          );
         _proxy = new data::proxy::type
           ( data::proxy::net_proxy
             ( _root
