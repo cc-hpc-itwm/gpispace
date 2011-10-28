@@ -138,7 +138,7 @@ void Client::start(const config_t & config) throw (ClientException)
   DMLOG(TRACE, "waiting until configuration is done.");
   try
   {
-    seda::IEvent::Ptr reply(wait_for_reply());
+    seda::IEvent::Ptr reply(wait_for_reply(0));
     // check event type
     if (dynamic_cast<ConfigOK*>(reply.get()))
     {
@@ -209,25 +209,38 @@ void Client::subscribe() throw (ClientException)
 	}
 }
 
-seda::IEvent::Ptr Client::wait_for_reply(const timeout_t& t) throw (Timedout)
+seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 {
-	boost::unique_lock<boost::mutex> lock(mtx_);
+  return wait_for_reply(timeout_);
+}
 
-	while (reply_.get() == NULL)
-	{
-		const boost::system_time to(boost::get_system_time() + (t ? boost::posix_time::milliseconds(t) : boost::posix_time::milliseconds(timeout_)));
-		if (! cond_.timed_wait(lock, to))
-		{
-			if (reply_.get() != NULL)
-			{
-				break;
-			}
-			else
-			{
-				throw Timedout("did not receive reply");
-			}
-		}
+seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
+{
+  boost::unique_lock<boost::mutex> lock(mtx_);
+
+  while (reply_.get() == NULL)
+  {
+    if (t)
+    {
+      const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(t));
+      if (! cond_.timed_wait(lock, to))
+      {
+        if (reply_.get() != NULL)
+        {
+          break;
+        }
+        else
+        {
+          throw Timedout("did not receive reply");
+        }
+      }
+    }
+    else
+    {
+      cond_.wait(lock);
+    }
   }
+
   seda::IEvent::Ptr ret(reply_);
   reply_.reset();
   return ret;

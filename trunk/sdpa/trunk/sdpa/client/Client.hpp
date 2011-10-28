@@ -129,6 +129,10 @@ namespace sdpa { namespace client {
       client_stage_ = stage;
     }
 
+    typedef unsigned long long timeout_t;
+    seda::IEvent::Ptr wait_for_reply() throw (Timedout);
+    seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
+
     std::string version_;
     std::string copyright_;
     std::string contact_;
