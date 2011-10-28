@@ -187,6 +187,7 @@ public:
     {
       if (JobResultsReplyEvent* ack = dynamic_cast<JobResultsReplyEvent*>(rep.get()))
       {
+        out = ack->result();
         return 0;
       }
       else if (ErrorEvent* error = dynamic_cast<ErrorEvent*>(rep.get()))
