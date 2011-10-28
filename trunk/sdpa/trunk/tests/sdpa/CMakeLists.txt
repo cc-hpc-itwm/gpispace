@@ -86,6 +86,7 @@ set (tc_srcs
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
   test_Topologies.cpp
+  test_Subscriber.cpp
 )
 
 foreach (tc_src ${tc_srcs})
