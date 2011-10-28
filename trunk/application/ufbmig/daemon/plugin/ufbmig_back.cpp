@@ -16,6 +16,8 @@
 #include "gpi.hpp"
 
 // ufbmig types
+#include <we/we.hpp>
+#include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
 
 #include <boost/thread.hpp>
@@ -38,6 +40,7 @@ namespace job
     int         type;     // INIT, CALC, FINAL, ...
     std::string id;
     int         state;
+    int         error;
     std::string result;
   };
 
@@ -52,6 +55,35 @@ namespace job
     if (sdpa::status::CANCELED == state) return -ECANCELED;
     if (sdpa::status::FAILED   == state) return -EFAULT;
     else                                 return -EFAULT;
+  }
+
+  static std::string type_to_name (int type)
+  {
+    switch (type)
+    {
+    case job::type::INITIALIZE:
+      return "INITIALIZE";
+      break;
+    case job::type::CALCULATE:
+      return "CALCULATE";
+      break;
+    case job::type::FINALIZE:
+      return "FINALIZE";
+      break;
+    default:
+      return "UNKNOWN";
+    }
+  }
+
+  std::string status_to_string(int s)
+  {
+    if (s == sdpa::status::PENDING)   return "Pending";
+    if (s == sdpa::status::RUNNING)   return "Running";
+    if (s == sdpa::status::FINISHED)  return "Finished";
+    if (s == sdpa::status::FAILED)    return "Failed";
+    if (s == sdpa::status::CANCELED)  return "Cancelled";
+    if (s == sdpa::status::SUSPENDED) return "Suspended";
+    else                              return "Unknown";
   }
 }
 
@@ -73,6 +105,9 @@ public:
     m_wf_path_finalize =
       fhg_kernel()->get("wf_done", "/u/herc/petry/pnet/ufbmig/done.pnet");
 
+    m_file_with_config =
+      fhg_kernel()->get("config", "/fhgfs/HPC/petry/scratch/ufbmig/config.token");
+
     m_frontend = 0;
     sdpa_ctl = fhg_kernel()->acquire<sdpa::Control>("sdpactl");
     if (0 == sdpa_ctl)
@@ -88,8 +123,20 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
-    // TODO: lazy acquire gpi
-    // gpi = fhg_kernel()->acquire<gpi::GPI>("gpi");
+    gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
+    if (0 == gpi_api)
+    {
+      MLOG(WARN, "could not acquire gpi::GPI plugin");
+    }
+
+    // restore from existing state:
+    //   if file exists(config_file)
+    //     read it
+    //     check handles
+    //     if something fails:
+    //        submit finalize workflow, to deallocate possible left-overs
+    //     else
+    //        set state to initialized
 
     fhg_kernel()->schedule ( boost::bind( &UfBMigBackImpl::update_job_states
                                         , this
@@ -104,6 +151,18 @@ public:
   {
     m_frontend = 0;
     FHG_PLUGIN_STOPPED();
+  }
+
+  FHG_ON_PLUGIN_LOADED(plugin)
+  {
+    if (plugin == "gpi")
+    {
+      gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
+      if (0 == gpi_api)
+      {
+        MLOG(ERROR, "gpi plugin doesn't implement GPI!");
+      }
+    }
   }
 
   void registerFrontend(ufbmig::Frontend* f)
@@ -124,9 +183,31 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_initialize));
 
-    // place tokens
+    we::activity_t act;
 
-    return submit_job(wf, job::type::INITIALIZE);
+    try
+    {
+      we::util::codec::decode(wf, act);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "decoding workflow failed: " << ex.what());
+      return -EINVAL;
+    }
+
+    // place tokens
+    try
+    {
+      we::util::token::put (act, "description", xml);
+      we::util::token::put (act, "file_with_config", m_file_with_config);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "could not put tokens: " << ex.what());
+      return -EINVAL;
+    }
+
+    return submit_job(we::util::codec::encode(act), job::type::INITIALIZE);
   }
 
   int update_salt_mask (const char *data, size_t len)
@@ -141,17 +222,30 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_calculate));
 
-    // place tokens
+    we::activity_t act;
 
-    // read workflow from file
-    //    use wfe plugin?
-    //        Workflow wfe->parse(string);
-    //        Workflow.put("port", value);
-    //        Workflow.get<>("port");
-    // place tokens
-    // submit job
+    try
+    {
+      we::util::codec::decode(wf, act);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "decoding workflow failed: " << ex.what());
+      return -EINVAL;
+    }
 
-    return submit_job(wf, job::type::CALCULATE);
+    // place tokens
+    try
+    {
+      we::util::token::put (act, "file_with_config", m_file_with_config);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "could not put token: " << ex.what());
+      return -EINVAL;
+    }
+
+    return submit_job(we::util::codec::encode(act), job::type::CALCULATE);
   }
 
   int finalize()
@@ -159,12 +253,41 @@ public:
     MLOG(INFO, "submitting FINALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_finalize));
-    return submit_job(wf, job::type::FINALIZE);
+    we::activity_t act;
+
+    try
+    {
+      we::util::codec::decode(wf, act);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "decoding workflow failed: " << ex.what());
+      return -EINVAL;
+    }
+
+    // place tokens
+    try
+    {
+      we::util::token::put (act, "file_with_config", m_file_with_config);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "could not put token: " << ex.what());
+      return -EINVAL;
+    }
+
+    return submit_job(we::util::codec::encode(act), job::type::FINALIZE);
   }
 
   int cancel()
   {
     MLOG(INFO, "CANCELLING running workflows");
+    lock_type lock (m_job_list_mutex);
+    BOOST_FOREACH(job::info_t const & j, m_job_list)
+    {
+      if (! job::is_done(j))
+        sdpa_c->cancel(j.id);
+    }
     return 0;
   }
 
@@ -197,7 +320,7 @@ private:
     }
 
     std::stringstream sstr;
-    ifs >> sstr.rdbuf();
+    ifs >> std::noskipws >> sstr.rdbuf();
     return sstr.str();
   }
 
@@ -205,11 +328,6 @@ private:
   {
     int ec;
     job::info_t job_info;
-
-    // append job_info_t
-    // start kernel task to query job state
-    //    std::string res;
-    //    sdpa_c->execute(read_workflow_from_file("/u/herc/petry/pnet/fail.pnet"), res);
 
     job_info.type = type;
     ec = sdpa_c->submit( wf
@@ -224,37 +342,100 @@ private:
     return ec;
   }
 
-  void notify_frontend_about_job (job::info_t const &j)
+  void notify_frontend_about_completed_job (job::info_t const &j)
   {
-    if (! m_frontend) return;
-
-    int ec = job::state_to_result_code(j.state);
+    if (!m_frontend) return;
 
     switch (j.type)
     {
     case job::type::INITIALIZE:
-      m_frontend->initialize_done(ec);
+      m_frontend->initialize_done(j.error);
       break;
     case job::type::CALCULATE:
-      m_frontend->calculate_done(ec);
+      m_frontend->calculate_done(j.error);
       break;
     case job::type::FINALIZE:
-      m_frontend->finalize_done(ec);
+      m_frontend->finalize_done(j.error);
       break;
     }
   }
 
-  void close_job (job::info_t const &j)
+  int handle_initialize_result (we::activity_t const &result)
   {
-    // parse and handle result
+    try
+    {
+      we::util::token::list_t output (we::util::token::get (result, "config"));
+      if (output.empty())
+        throw std::runtime_error("empty list");
+      config = pnetc::type::config::from_value(output.front());
+      MLOG(INFO, "got config: " << config);
+    }
+    catch (std::exception const & ex)
+    {
+      MLOG(ERROR, "could not get config token: " << ex.what());
+    }
+    return 0;
+  }
 
-    std::string result;
-    sdpa_c->result(j.id, result);
+  int handle_calculate_result (we::activity_t const &result)
+  {
+    return 0;
+  }
 
-    LOG(INFO, "job finished: " << result);
+  int handle_finalize_result (we::activity_t const &result)
+  {
+    return 0;
+  }
 
-    sdpa_c->remove(j.id);
-    notify_frontend_about_job(j);
+  int handle_job_result (int type, we::activity_t const &result)
+  {
+    switch (type)
+    {
+    case job::type::INITIALIZE:
+      return handle_initialize_result(result);
+      break;
+    case job::type::CALCULATE:
+      return handle_calculate_result(result);
+      break;
+    case job::type::FINALIZE:
+      return handle_finalize_result(result);
+      break;
+    default:
+      return -EINVAL;
+    }
+  }
+
+  int handle_completed_job (job::info_t const &j)
+  {
+    int ec = 0;
+
+    LOG( INFO
+       , "job returned: " << job::type_to_name(j.type) << " "
+       << job::status_to_string(j.state)
+       );
+
+    if (0 == j.error)
+    {
+      we::activity_t result;
+      try
+      {
+        we::util::codec::decode(j.result, result);
+        ec = handle_job_result (j.type, result);
+      }
+      catch (std::exception const &ex)
+      {
+        MLOG(ERROR, "could not decode result: " << ex.what());
+        ec = -EINVAL;
+      }
+    }
+    else
+    {
+      ec = j.error;
+    }
+
+    notify_frontend_about_completed_job(j);
+
+    return ec;
   }
 
   void update_job_states ()
@@ -269,7 +450,10 @@ private:
       j->state = sdpa_c->status(j->id);
       if (job::is_done(*j))
       {
-        close_job (*j);
+        j->error = job::state_to_result_code(j->state);
+        sdpa_c->result(j->id, j->result);
+        sdpa_c->remove(j->id);
+        handle_completed_job (*j);
         j = m_job_list.erase(j);
         if (j == m_job_list.end()) break;
       }
@@ -286,13 +470,21 @@ private:
   job_list_t m_job_list;
   sdpa::Control * sdpa_ctl;
   sdpa::Client * sdpa_c;
+  gpi::GPI *gpi_api;
   ufbmig::Frontend *m_frontend;
   std::list<job::info_t> m_job_info_list;
+
+  // state
+  int migration_state;
 
   // workflow paths
   std::string m_wf_path_initialize;
   std::string m_wf_path_calculate;
   std::string m_wf_path_finalize;
+
+  // workflow configs
+  pnetc::type::config::config config;
+  std::string m_file_with_config;
 };
 
 EXPORT_FHG_PLUGIN( ufbmig_back
