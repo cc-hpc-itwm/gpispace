@@ -52,10 +52,11 @@ void Orchestrator::action_config_ok(const ConfigOkEvent& e)
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
-	BOOST_FOREACH( sdpa::agent_id_t& subscriber, m_listSubscribers )
+	BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 	{
-		SDPA_LOG_INFO("Notify the subscriber "<<subscriber);
-		ptrEvt->to()   = subscriber;
+
+		SDPA_LOG_INFO("Notify the subscriber "<< pair_subscr_joblist.first);
+		ptrEvt->to() = pair_subscr_joblist.first;
 		sendEventToMaster(ptrEvt);
 	}
 }
