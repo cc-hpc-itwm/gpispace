@@ -2,7 +2,7 @@
 #define SDPA_DAEMON_EXCEPTIONS_HPP 1
 
 #include <sdpa/SDPAException.hpp>
-#include <sdpa/types.hpp>
+#include <sdpa/capability.hpp>
 
 namespace sdpa {
 namespace daemon {

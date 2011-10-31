@@ -20,9 +20,7 @@
 
 #include <seda/Strategy.hpp>
 
-//#include <seda/comm/delivery_service.hpp>
-//#include <seda/comm/ServiceThread.hpp>
-
+#include <sdpa/capability.hpp>
 #include <sdpa/sdpa-config.hpp>
 #include <sdpa/util/Config.hpp>
 #include <sdpa/daemon/IAgent.hpp>

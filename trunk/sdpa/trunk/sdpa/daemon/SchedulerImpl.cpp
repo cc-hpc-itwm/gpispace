@@ -23,7 +23,7 @@
 #include <sdpa/events/id_generator.hpp>
 
 #include <cassert>
-#include <boost/foreach.hpp>
+#include <sdpa/capability.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa::events;
