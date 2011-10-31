@@ -88,7 +88,7 @@ namespace sdpa { namespace client {
 
     void start(const config_t &cfg) throw(ClientException);
     void shutdown() throw(ClientException);
-    void subscribe() throw (ClientException);
+    void subscribe(const job_id_list_t&) throw (ClientException);
 
     job_id_t submitJob(const job_desc_t &) throw (ClientException);
     void cancelJob(const job_id_t &) throw (ClientException);
