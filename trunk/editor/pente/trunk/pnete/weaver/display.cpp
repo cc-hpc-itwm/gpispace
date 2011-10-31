@@ -342,7 +342,7 @@ namespace fhg
         , _in (in)
         , _out (out)
         , _place_item_by_name ()
-        , _root ()
+        , _root (root)
       {}
       WSIGE(net, net::close)
       {
