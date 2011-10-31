@@ -36,6 +36,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+#include <sstream>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -1322,7 +1323,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt )
 {
 	 SDPA_LOG_INFO("Received subscribe event!");
-	 subscribe(pEvt->subscriber());
+	 subscribe(pEvt->subscriber(), pEvt->listJobIds());
 
 	 SDPA_LOG_INFO("reply immediately with a SubscribeAckEvent");
 	 sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), pEvt->subscriber()) );
@@ -1646,22 +1647,48 @@ void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
 {
 	lock_type lock(mtx_subscriber_);
 	LOG(INFO, "Unsubscribe "<<id<<" ...");
-	m_listSubscribers.remove(id);
+	m_listSubscribers.erase(id);
 }
 
-void GenericDaemon::subscribe(const sdpa::agent_id_t& id)
+bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_id_t& jobId)
+{
+	for(sdpa::job_id_list_t::const_iterator it = m_listSubscribers[agId].begin(); it != m_listSubscribers[agId].end(); it++ )
+		if( *it == jobId )
+			return true;
+
+	return false;
+}
+
+void GenericDaemon::subscribe(const sdpa::agent_id_t& agId, const sdpa::job_id_list_t& listJobIds)
 {
 	lock_type lock(mtx_subscriber_);
-	LOG(INFO, "Subscribe "<<id<<" ...");
-	m_listSubscribers.push_back(id);
+	std::ostringstream osstr;
+	osstr<<"The agent "<<agId<<" subscribed for the list of jobs (";
+	BOOST_FOREACH(const sdpa::JobId& jid, listJobIds)
+	{
+		osstr<<jid<<" ";
+	}
+	osstr<<")";
+	LOG(INFO, osstr.str());
+
+	// allow to subscribe multiple times with different lists of job ids
+	if(isSubscriber(agId))
+	{
+		LOG(INFO, "The agent has "<<agId<<" already subscribed, check now the list of jobs ...");
+		BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
+		{
+			if( !subscribedFor(agId, jobId) )
+				m_listSubscribers[agId].push_back(jobId);
+		}
+	}
+	else
+		m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(agId, listJobIds));
 }
 
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 {
 	lock_type lock(mtx_subscriber_);
-	bool bFound = false;
-	for( sdpa::agent_id_list_t::iterator it = m_listSubscribers.begin(); !bFound && it != m_listSubscribers.end(); it++ )
-		if(*it==agentId)
-			bFound = true;
-	return bFound;
+	sdpa::subscriber_map_t::iterator it = m_listSubscribers.find(agentId);
+
+	return (it != m_listSubscribers.end());
 }
