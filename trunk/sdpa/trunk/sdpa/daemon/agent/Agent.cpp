@@ -206,12 +206,15 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 	    	sendEventToMaster(pEvtJobFinished);
 
 	    //publishEvent(*pEvtJobFinished);
-	    BOOST_FOREACH( sdpa::agent_id_t& subscriber, m_listSubscribers )
+	    BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 		{
-			sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
-			ptrEvt->from() = name();
-			ptrEvt->to()   = subscriber;
-			sendEventToMaster(ptrEvt);
+	    	if(subscribedFor(pair_subscr_joblist.first, id))
+	    	{
+				sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
+				ptrEvt->from() = name();
+				ptrEvt->to()   = pair_subscr_joblist.first;
+				sendEventToMaster(ptrEvt);
+	    	}
 		}
 	}
 	catch(QueueFull const &)
