@@ -43,15 +43,17 @@ namespace sdpa { namespace events {
         : MgmtEvent()
       {}
 
-      SubscribeEvent( const address_t& a_from, const address_t& a_to )
+      SubscribeEvent( const address_t& a_from, const address_t& a_to, const job_id_list_t& listJobIds )
 		  : MgmtEvent(a_from, a_to),
-		    subscriber_(a_from)
+		    subscriber_(a_from),
+		    listJobIds_(listJobIds)
       { }
 
       SubscribeEvent( const SubscribeEvent& subscribeEvt )
         : MgmtEvent (subscribeEvt)
       {
     	  subscriber_ = subscribeEvt.subscriber_;
+    	  listJobIds_ = subscribeEvt.listJobIds_;
 	  }
 
     SubscribeEvent& operator=( const SubscribeEvent& subscribeEvt )
@@ -59,7 +61,8 @@ namespace sdpa { namespace events {
     	if(this != &subscribeEvt)
     	{
     		*((MgmtEvent*)(this)) = (MgmtEvent&)(subscribeEvt);
-    		subscriber_ 	 	  = subscribeEvt.subscriber_;
+    		subscriber_ = subscribeEvt.subscriber_;
+    		listJobIds_ = subscribeEvt.listJobIds_;
     	}
 
     	return *this;
@@ -69,9 +72,11 @@ namespace sdpa { namespace events {
 
     std::string str() const { return "SubscribeEvent"; }
 
-
     const sdpa::agent_id_t& subscriber() const { return subscriber_;}
     sdpa::agent_id_t& subscriber() { return subscriber_;}
+
+    const sdpa::job_id_list_t& listJobIds() const { return listJobIds_;}
+    sdpa::job_id_list_t& listJobIds() { return listJobIds_;}
 
     virtual void handleBy(EventHandler *handler)
     {
@@ -79,7 +84,8 @@ namespace sdpa { namespace events {
     }
 
     private:
-      sdpa::agent_id_t subscriber_;
+    	sdpa::agent_id_t subscriber_;
+    	sdpa::job_id_list_t listJobIds_;
   };
 }}
 
