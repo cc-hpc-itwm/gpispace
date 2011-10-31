@@ -246,6 +246,7 @@ namespace boost { namespace serialization {
   {
 	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
 	  ar & e.subscriber();
+	  ar & e.listJobIds();
   }
 
   template <class Archive>
@@ -254,10 +255,9 @@ namespace boost { namespace serialization {
 	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
   }
 
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::SDPAEvent)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::JobEvent)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::MgmtEvent)
+  BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::SDPAEvent)
+  BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::JobEvent)
+  BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::MgmtEvent)
 
 }}
 
