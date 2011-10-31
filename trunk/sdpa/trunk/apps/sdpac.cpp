@@ -135,7 +135,7 @@ int command_subscribe_and_wait ( const std::string &job_id
 
 	std::cout << "waiting for job to return..." << std::flush;
 
-	ptrCli->subscribe();
+	ptrCli->subscribe(job_id);
 
   	std::cout<<"The client successfully subscribed for orchestrator notifications ..."<<std::endl;
   	std::string job_status;

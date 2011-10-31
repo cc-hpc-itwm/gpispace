@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	ptrCli->subscribe();
+	ptrCli->subscribe(job_id_user);
 
 	LOG( DEBUG, "The client successfully subscribed for orchestrator notifications ...");
 	std::string job_status;
