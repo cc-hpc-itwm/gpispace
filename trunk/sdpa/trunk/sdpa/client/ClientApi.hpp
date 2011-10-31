@@ -68,9 +68,17 @@ namespace sdpa { namespace client {
     {
       return pimpl->build();
     }
-    void subscribe()
+
+    void subscribe(const job_id_t& jobId)
+   	{
+    	job_id_list_t listJobIds;
+    	listJobIds.push_back(jobId);
+       	pimpl->subscribe(listJobIds);
+   	}
+
+    void subscribe(const job_id_list_t& listJobIds)
 	{
-		pimpl->subscribe();
+    	pimpl->subscribe(listJobIds);
 	}
 
     seda::IEvent::Ptr  waitForNotification(const sdpa::client::Client::timeout_t& t = 0)
