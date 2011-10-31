@@ -263,8 +263,9 @@ namespace sdpa { namespace daemon {
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
 
       void unsubscribe(const sdpa::agent_id_t&);
-      void subscribe(const sdpa::agent_id_t&);
-      bool isSubscriber(const sdpa::agent_id_t& agentId);
+      void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
+      bool isSubscriber(const sdpa::agent_id_t&);
+      bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
 protected:
 
@@ -345,7 +346,7 @@ protected:
         sdpa::util::time_type m_last_request_time;
         sdpa::master_info_list_t m_arrMasterInfo;
         sdpa::capabilities_set_t m_capabilities;
-        sdpa::agent_id_list_t m_listSubscribers;
+        sdpa::subscriber_map_t m_listSubscribers;
   };
 }}
 
