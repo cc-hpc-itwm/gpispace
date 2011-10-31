@@ -17,6 +17,7 @@
 
 namespace sdpa {
 	typedef sdpa::JobId job_id_t;
+	typedef std::list<sdpa::JobId> job_id_list_t;
 	typedef std::string job_desc_t;
 	typedef std::string location_t;
 	typedef std::string worker_id_t;
@@ -25,6 +26,7 @@ namespace sdpa {
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 	typedef worker_id_list_t agent_id_list_t;
+	typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
 
 	typedef std::map<sdpa::worker_id_t, unsigned int> map_degs_t;
 
