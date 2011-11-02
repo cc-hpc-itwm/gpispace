@@ -124,6 +124,7 @@ namespace sdpa { namespace client {
   private:
 	Client(const std::string &a_name, const std::string &output_stage);
 
+	void clear_reply();
     void setStage(seda::Stage::Ptr stage)
     {
       // assert stage->strategy() == this

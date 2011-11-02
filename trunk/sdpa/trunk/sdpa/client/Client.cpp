@@ -245,8 +245,19 @@ seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
   return ret;
 }
 
+void Client::clear_reply()
+{
+	boost::unique_lock<boost::mutex> lock(mtx_);
+	if (reply_)
+	{
+		LOG(WARN, "clearing old reply: " << reply_->str());
+	}
+	reply_.reset();
+}
+
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
+	clear_reply();
   //MLOG(DEBUG,"submitting job with description = " << desc);
   MLOG(DEBUG,"submitting new job ... " );
   client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
@@ -287,6 +298,7 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
+	clear_reply();
   MLOG(DEBUG,"cancelling job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent( name()
                                                               , orchestrator_
@@ -326,8 +338,9 @@ void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 
 std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 {
-  MLOG(DEBUG,"querying status of job: " << jid);
-  client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
+	clear_reply();
+	MLOG(DEBUG,"querying status of job: " << jid);
+	client_stage_->send(seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
                                                                  , orchestrator_
                                                                  , jid)));
   DMLOG(TRACE,"waiting for a reply");
@@ -362,6 +375,7 @@ std::string Client::queryJob(const job_id_t &jid) throw (ClientException)
 
 void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
+	clear_reply();
   MLOG(DEBUG,"deleting job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name(), orchestrator_, jid)));
   DMLOG(TRACE,"waiting for a reply");
@@ -395,6 +409,7 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 
 sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
+	clear_reply();
   MLOG(DEBUG,"retrieving results of job: " << jid);
   client_stage_->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
                                                                       , orchestrator_
