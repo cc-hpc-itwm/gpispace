@@ -55,7 +55,7 @@ endif()
 
 # TODO: we need to check the compiler here, gcc does not know about those flags, is this The Right Thing To Do (TM)?
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -wd383 -wd981 -fPIC -fpic")
+  set(CMAKE_CXX_FLAGS "${CXXFLAGS} -wd191 -wd1170 -wd1292 -wd2196 -fPIC -fpic")
   message(STATUS "compiler: ${CMAKE_CXX_COMPILER_MAJOR}.${CMAKE_CXX_COMPILER_MINOR}")
   if (${CMAKE_CXX_COMPILER_MAJOR} GREATER 9)
     message(STATUS "Warning: adding __aligned__=ignored to the list of definitions")
