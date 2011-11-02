@@ -782,7 +782,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       // if it comes from outside set it as local
       if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() ) //e.to())
       {
-          LOG(INFO, "got new job from " << e.from() << " = " << job_id);
+          LOG(DEBUG, "got new job from " << e.from() << " = " << job_id);
           pJob->setType(Job::MASTER);
       }
 
@@ -1646,7 +1646,7 @@ void GenericDaemon::addCapability(const capability_t& cpb)
 void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
 {
 	lock_type lock(mtx_subscriber_);
-	LOG(INFO, "Unsubscribe "<<id<<" ...");
+	DLOG(TRACE, "Unsubscribe "<<id<<" ...");
 	m_listSubscribers.erase(id);
 }
 
@@ -1662,19 +1662,9 @@ bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_
 void GenericDaemon::subscribe(const sdpa::agent_id_t& agId, const sdpa::job_id_list_t& listJobIds)
 {
 	lock_type lock(mtx_subscriber_);
-	std::ostringstream osstr;
-	osstr<<"The agent "<<agId<<" subscribed for the list of jobs (";
-	BOOST_FOREACH(const sdpa::JobId& jid, listJobIds)
-	{
-		osstr<<jid<<" ";
-	}
-	osstr<<")";
-	LOG(INFO, osstr.str());
-
 	// allow to subscribe multiple times with different lists of job ids
 	if(isSubscriber(agId))
 	{
-		LOG(INFO, "The agent has "<<agId<<" already subscribed, check now the list of jobs ...");
 		BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
 		{
 			if( !subscribedFor(agId, jobId) )
@@ -1682,7 +1672,9 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& agId, const sdpa::job_id_l
 		}
 	}
 	else
-		m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(agId, listJobIds));
+        {
+          m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(agId, listJobIds));
+        }
 }
 
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
