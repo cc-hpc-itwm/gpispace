@@ -58,7 +58,6 @@ namespace fhg
           (const port::orientation::type&) {}
 
           virtual void setPos (const QPointF&);
-          virtual void setPos (qreal, qreal);
 
           //! \todo eliminate write acces to _style
           style::type& access_style();

@@ -184,7 +184,7 @@ namespace fhg
           {
             connection::item * c (new connection::item (only_reading));
             addItem (c);
-            c->setPos (0.0, 0.0);
+            c->setPos (QPointF (0.0, 0.0));
             return c;
           }
 

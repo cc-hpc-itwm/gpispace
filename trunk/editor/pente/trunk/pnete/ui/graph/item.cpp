@@ -60,10 +60,6 @@ namespace fhg
             ;
         }
 
-        void item::setPos (qreal x, qreal y)
-        {
-          setPos (QPointF (x, y));
-        }
         void item::setPos (const QPointF& new_pos)
         {
           QPointF snapped (style::raster::snap (new_pos));
