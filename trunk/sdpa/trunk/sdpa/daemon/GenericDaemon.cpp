@@ -1323,11 +1323,13 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
 void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt )
 {
 	 SDPA_LOG_INFO("Received subscribe event!");
-	 subscribe(pEvt->subscriber(), pEvt->listJobIds());
-
-	 SDPA_LOG_INFO("reply immediately with a SubscribeAckEvent");
-	 sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), pEvt->subscriber()) );
-	 sendEventToMaster(ptrSubscAckEvt);
+	 try {
+		 subscribe(pEvt->subscriber(), pEvt->listJobIds());
+	 }
+	 catch(..)
+	 {
+		 SDPA_LOG_WARN("An exception occurred when \""<<pEvt->subscriber()<<"\" was attempting to subscribe!");
+	 }
 }
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
@@ -1676,6 +1678,10 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 		m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(subscriber, listJobIds));
 	}
 
+	SDPA_LOG_INFO("reply immediately with a SubscribeAckEvent");
+	sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), pEvt->subscriber()) );
+	sendEventToMaster(ptrSubscAckEvt);
+
 	// check if the jobs for which subscribed are already in a terminal state
 	BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
 	{
@@ -1690,6 +1696,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 																		   , pJob->id()
 																		   , pJob->result()
 																		   ));
+				 sendEventToMaster(pEvtJobFinished);
 			}
 			else if(jobStatus.find("Failed") == std::string::npos)
 			{
@@ -1698,14 +1705,18 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 																	   , pJob->id()
 																	   , pJob->result()
 																	   ));
+
+				 sendEventToMaster(pEvtJobFailed);
 			}
 			else if( jobStatus.find("Cancelled") == std::string::npos)
 			{
-				 CancelJobAckEvent::Ptr pEvtJobFinished(new CancelJobAckEvent( name()
+				 CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent( name()
 																			   , subscriber
 																			   , pJob->id()
 																			   , pJob->result()
 																			   ));
+
+				 sendEventToMaster(pEvtCancelJobAck);
 			}
 		}
 		catch(const JobNotFoundException& ex)
