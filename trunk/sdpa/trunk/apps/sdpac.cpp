@@ -209,13 +209,10 @@ int command_wait ( const std::string &job_id
                  , const sdpa::client::ClientApi::ptr_t &api
                  , boost::posix_time::time_duration poll_interval )
 {
-	boost::posix_time::time_duration null_duration(0,0,0);
-
-	if( poll_interval == null_duration )
-		return command_poll_and_wait(job_id, api, poll_interval);
+	if(poll_interval.total_milliseconds())
+          return command_poll_and_wait(job_id, api, poll_interval);
 	else
-		return command_subscribe_and_wait(job_id, api);
-
+          return command_subscribe_and_wait(job_id, api);
 }
 
 bool file_exists(const std::string &path)
