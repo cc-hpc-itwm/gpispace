@@ -126,7 +126,7 @@ struct MyFixture
 		seda::StageRegistry::instance().clear();
 	}
 
-	void run_client();
+	void run_client_with_polling();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
@@ -164,12 +164,13 @@ struct MyFixture
 	boost::thread m_threadClient;
 };
 
-void MyFixture::run_client()
+void MyFixture::run_client_with_polling()
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
 	std::vector<std::string> cav;
 	cav.push_back("--orchestrator=orchestrator_0");
+	cav.push_back("--network.timeout=0");
 	config.parse_command_line(cav);
 
 	std::ostringstream osstr;
@@ -202,14 +203,10 @@ void MyFixture::run_client()
 
 		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
 
-		std::string job_status = ptrCli->queryJob(job_id_user);
-		LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
 
 		nTrials = 0;
-		while( job_status.find("Finished") == std::string::npos &&
-			   job_status.find("Failed") == std::string::npos &&
-			   job_status.find("Cancelled") == std::string::npos)
-		{
+		std::string job_status;
+		do{
 			try {
 				job_status = ptrCli->queryJob(job_id_user);
 				LOG( DEBUG, "The status of the job "<<job_id_user<<" is "<<job_status);
@@ -218,6 +215,7 @@ void MyFixture::run_client()
 			}
 			catch(const sdpa::client::ClientException& cliExc)
 			{
+				LOG(ERROR, "could not query job: " << cliExc.what());
 				if(nTrials++ > NMAXTRIALS)
 				{
 					LOG( DEBUG, "The maximum number of job queries  was exceeded. Giving-up now!");
@@ -229,7 +227,9 @@ void MyFixture::run_client()
 
 				boost::this_thread::sleep(boost::posix_time::seconds(3));
 			}
-		}
+		}while( job_status.find("Finished") == std::string::npos &&
+				   job_status.find("Failed") == std::string::npos &&
+				   job_status.find("Cancelled") == std::string::npos);
 
 		nTrials = 0;
 
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -375,7 +375,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -528,7 +528,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_req)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	ptrAgent->shutdown(strBackupAgent);
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentNoWE_push)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	ptrAgent->shutdown(strBackupAgent);
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentEmptyWE_push)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	ptrAgent->shutdown(strBackupAgent);
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
@@ -678,7 +678,7 @@ BOOST_AUTO_TEST_CASE( testStop_AgentRealWE_push)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	ptrAgent->shutdown(strBackupAgent);
 	LOG( INFO, "Shutdown the agent \"agent_o\". The recovery string is "<<strBackupAgent);
@@ -736,7 +736,7 @@ BOOST_AUTO_TEST_CASE( testStop_2Agents_NoDrts_push)
 	//sdpa::shared_ptr<fhg::core::kernel_t> drts( create_drts("drts", "agent_1") );
 	//boost::thread drts_thread = boost::thread(&fhg::core::kernel_t::run, drts);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	ptrAgent0->shutdown(strBackupAgent0);
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
@@ -794,7 +794,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Req)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts( create_drts("drts", "agent_1") );
 	boost::thread drts_thread = boost::thread(&fhg::core::kernel_t::run, drts);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	ptrAgent0->shutdown(strBackupAgent0);
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);
@@ -852,7 +852,7 @@ BOOST_AUTO_TEST_CASE( testStop_2AgentsAndDrts_Push_RealWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts( create_drts("drts", "agent_1") );
 	boost::thread drts_thread = boost::thread(&fhg::core::kernel_t::run, drts);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
 
 	ptrAgent0->shutdown(strBackupAgent0);
 	LOG( INFO, "Shutdown agent \"agent_o\". The recovery string is "<<strBackupAgent0);

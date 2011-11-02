@@ -1659,22 +1659,60 @@ bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_
 	return false;
 }
 
-void GenericDaemon::subscribe(const sdpa::agent_id_t& agId, const sdpa::job_id_list_t& listJobIds)
+void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::job_id_list_t& listJobIds)
 {
 	lock_type lock(mtx_subscriber_);
 	// allow to subscribe multiple times with different lists of job ids
-	if(isSubscriber(agId))
+	if(isSubscriber(subscriber))
 	{
 		BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
 		{
-			if( !subscribedFor(agId, jobId) )
-				m_listSubscribers[agId].push_back(jobId);
+			if( !subscribedFor(subscriber, jobId) )
+				m_listSubscribers[subscriber].push_back(jobId);
 		}
 	}
 	else
-        {
-          m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(agId, listJobIds));
-        }
+	{
+		m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(subscriber, listJobIds));
+	}
+
+	// check if the jobs for which subscribed are already in a terminal state
+	BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
+	{
+		try {
+			Job::ptr_t& pJob = findJob(jobId);
+			sdpa::status_t jobStatus = pJob->getStatus();
+
+			if(jobStatus.find("Finished") == std::string::npos)
+			{
+				 JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
+																		   , subscriber
+																		   , pJob->id()
+																		   , pJob->result()
+																		   ));
+			}
+			else if(jobStatus.find("Failed") == std::string::npos)
+			{
+				 JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent( name()
+																	   , subscriber
+																	   , pJob->id()
+																	   , pJob->result()
+																	   ));
+			}
+			else if( jobStatus.find("Cancelled") == std::string::npos)
+			{
+				 CancelJobAckEvent::Ptr pEvtJobFinished(new CancelJobAckEvent( name()
+																			   , subscriber
+																			   , pJob->id()
+																			   , pJob->result()
+																			   ));
+			}
+		}
+		catch(const JobNotFoundException& ex)
+		{
+			throw ex;
+		}
+	}
 }
 
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)

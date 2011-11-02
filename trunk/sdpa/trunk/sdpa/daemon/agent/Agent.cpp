@@ -205,7 +205,6 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 	    if(!isSubscriber(pJob->owner()))
 	    	sendEventToMaster(pEvtJobFinished);
 
-	    //publishEvent(*pEvtJobFinished);
 	    BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 		{
 	    	if(subscribedFor(pair_subscr_joblist.first, id))
@@ -273,6 +272,22 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 	    // send the event to the master
 	    //sendEventToMaster(pEvtJobFinished);
 	    pJob->JobFinished(pEvtJobFinished.get());
+
+	    if(!isSubscriber(pJob->owner()))
+	    	sendEventToMaster(pEvtJobFinished);
+
+		//publishEvent(*pEvtJobFinished);
+		BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+		{
+			if(subscribedFor(pair_subscr_joblist.first, job_id))
+			{
+				sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
+				ptrEvt->from() = name();
+				ptrEvt->to()   = pair_subscr_joblist.first;
+				sendEventToMaster(ptrEvt);
+			}
+		}
+
 	    // delete the job here -> send self a FinishedJobAck
 	    JobFinishedAckEvent::Ptr pEvtJobFinishedAck(new JobFinishedAckEvent( name(), name(), job_id, result));
 	    sendEventToSelf(pEvtJobFinishedAck);
@@ -460,8 +475,21 @@ bool Agent::failed(const id_type & wfid, const result_type & result)
                           );
 
 	    // send the event to the master
-	    sendEventToMaster(pEvtJobFailed);
 	    pJob->JobFailed(pEvtJobFailed.get());
+
+	    if(!isSubscriber(pJob->owner()))
+	    	sendEventToMaster(pEvtJobFailed);
+
+		BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+		{
+			if(subscribedFor(pair_subscr_joblist.first, id))
+			{
+				sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFailedEvent(*pEvtJobFailed) );
+				ptrEvt->from() = name();
+				ptrEvt->to() = pair_subscr_joblist.first;
+				sendEventToMaster(ptrEvt);
+			}
+		}
 	}
 	catch(QueueFull const &)
 	{
@@ -534,10 +562,24 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     if(isTop())
     {
         // send immediately an acknowledgment to the component that requested the cancellation
-        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pJob->result()));
 
         // only if the job was already submitted
-        sendEventToMaster(pCancelAckEvt);
+        //sendEventToMaster(pCancelAckEvt);
+
+        if(!isSubscriber(pJob->owner()))
+			sendEventToMaster(pCancelAckEvt);
+
+		BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+		{
+			if(subscribedFor(pair_subscr_joblist.first,  pEvt->job_id()))
+			{
+				sdpa::events::SDPAEvent::Ptr ptrEvt( new CancelJobAckEvent(*pCancelAckEvt) );
+				ptrEvt->from() = name();
+				ptrEvt->to() = pair_subscr_joblist.first;
+				sendEventToMaster(ptrEvt);
+			}
+		}
     }
   }
   catch(const JobNotFoundException &)

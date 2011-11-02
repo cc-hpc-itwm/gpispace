@@ -523,7 +523,6 @@ bool hasSameName(sdpa::capability_t& cpb1, sdpa::capability_t& cpb2)
 	return (cpb1.name() == cpb2.name()) && (cpb1.type() == cpb2.type());
 }
 
-/*
 void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
 {
 	lock_type lock(mtx_);
@@ -567,8 +566,8 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 		}
 	}
 }
-*/
 
+/*
 void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
 {
 	lock_type lock(mtx_);
@@ -590,6 +589,7 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 		}
 	}
 }
+*/
 
 template <typename T>
 bool has_capability(const T& worker_cpb_map, const std::string& cpbName)

@@ -80,13 +80,13 @@ set (tc_srcs
   test_SerializeSharedPtr.cpp
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
-#  test_Agents.cpp
   test_AgentsAndDrts.cpp
   test_StopRestartAgents.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
+#  test_MM.cpp
 )
 
 foreach (tc_src ${tc_srcs})
@@ -97,13 +97,13 @@ foreach (tc_src ${tc_srcs})
   add_executable(${tc_name} ${tc_src})
   target_link_libraries(${tc_name}
                         sdpa-daemon
-			sdpa-com
+                        sdpa-com
                         sdpa-client
                         sdpa-events
                         sdpa-util
                         sdpa
                         fhg-plugin
-			${SEDA_LIBRARY}
+                        ${SEDA_LIBRARY}
                         ${FhgLog_LIBRARY}
                         ${WE_LIBRARIES}
                         ${Boost_UNIT_TEST_LIBRARIES}
