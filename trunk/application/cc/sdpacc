@@ -24,7 +24,7 @@ prog_name=$(basename $0)
 compiler="$prog_name"
 c_compiler="gcc"
 cxx_compiler="g++"
-SDPACFLAGS="--network.timeout=10000 -t 500"
+SDPACFLAGS="--network.timeout=10000 -t 0"
 
 if [ -n "$SDPACC_CC" ] ; then
     c_compiler="$SDPACC_CC"
@@ -58,6 +58,7 @@ args="$@"
 pnet="$SDPA_HOME/share/sdpa/cc/compile.pnet"
 
 pnet_tmp=$(mktemp)
+result=
 jobid=
 
 trap 'cancel' EXIT
@@ -80,10 +81,12 @@ function cancel()
 	return 0
     fi
     sdpac $SDPACFLAGS cancel "$jobid" &>/dev/null
-    sdpac $SDPACFLAGS -t 1 wait "$jobid" &>/dev/null
+    sdpac $SDPACFLAGS wait "$jobid" &>/dev/null
     ec=$?
     sdpac $SDPACFLAGS delete "$jobid" &>/dev/null
-    test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
+    if [ -n "$result" ] ; then
+	test -e "$result" && rm -f "$result"
+    fi
     return $ec
 }
 
@@ -104,25 +107,38 @@ function prepare ()
 
 function execute ()
 {
-    jobid_or_err=$(sdpac $SDPACFLAGS submit ${pnet_tmp} 2>&1)
+    err=$(sdpac $SDPACFLAGS submit ${pnet_tmp} 2>&1)
     ec=$?
-    if [ $ec -ne 0 ] ; then
-	echo "submission failed: $jobid_or_err" >&2
-	return $ec
-    fi
-    jobid="$jobid_or_err"
     test -e "${pnet_tmp}" && rm -f "${pnet_tmp}"
-    sdpac $SDPACFLAGS wait "$jobid" &>/dev/null
-    ec=$?
     if [ $ec -ne 0 ] ; then
+	echo "submission failed: $ec: $err" >&2
 	return $ec
     fi
-    sdpac $SDPACFLAGS results "${jobid}" &>/dev/null
-    sdpac $SDPACFLAGS delete "${jobid}" &>/dev/null
+    jobid="$err"
+    err=$(sdpac $SDPACFLAGS wait "$jobid" 2>&1)
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+	echo "waiting for job to return failed: $ec: $err" >&2
+	return $ec
+    fi
+    result=$(mktemp)
+    err=$(sdpac $SDPACFLAGS -f -o "$result" results "${jobid}" 2>&1)
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+	echo "could not get results: $ec: $err" >&2
+	return $ec
+    fi
 
-    std_out=$(pnetget < "sdpa.${jobid}.out" --type=output std_out | sed -e 's/^"//g' -e 's/"$//g')
-    std_err=$(pnetget < "sdpa.${jobid}.out" --type=output std_err | sed -e 's/^"//g' -e 's/"$//g')
-    ec=$(pnetget < "sdpa.${jobid}.out" --type=output exit_code | tr -d L)
+    err=$(sdpac $SDPACFLAGS delete "${jobid}" 2>&1)
+    ec=$?
+    if [ $ec -ne 0 ] ; then
+	echo "could not delete job: $ec: $err" >&2
+    fi
+
+    std_out=$(pnetget < "$result" --type=output std_out | sed -e 's/^"//g' -e 's/"$//g')
+    std_err=$(pnetget < "$result" --type=output std_err | sed -e 's/^"//g' -e 's/"$//g')
+    ec=$(pnetget < "$result" --type=output exit_code | tr -d L)
+    test -e "$result" && rm -f "$result"
 
     if [ -n "$std_out" ] ; then
 	echo -e "$std_out"
@@ -137,7 +153,6 @@ function execute ()
 	echo -e "${co}$std_err${nc}" >&2
     fi
 
-    test -e "sdpa.${jobid}.out" && rm -f "sdpa.${jobid}.out"
     unset jobid
     return $ec
 }
