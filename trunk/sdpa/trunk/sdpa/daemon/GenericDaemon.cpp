@@ -1326,9 +1326,9 @@ void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pE
 	 try {
 		 subscribe(pEvt->subscriber(), pEvt->listJobIds());
 	 }
-	 catch(..)
+	 catch(...)
 	 {
-		 SDPA_LOG_WARN("An exception occurred when \""<<pEvt->subscriber()<<"\" was attempting to subscribe!");
+		 SDPA_LOG_WARN("An exception occurred when "<<pEvt->subscriber()<<" was attempting to subscribe!");
 	 }
 }
 
@@ -1679,7 +1679,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 	}
 
 	SDPA_LOG_INFO("reply immediately with a SubscribeAckEvent");
-	sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), pEvt->subscriber()) );
+	sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber ));
 	sendEventToMaster(ptrSubscAckEvt);
 
 	// check if the jobs for which subscribed are already in a terminal state
