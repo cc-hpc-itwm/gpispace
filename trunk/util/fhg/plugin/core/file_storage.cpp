@@ -180,8 +180,15 @@ namespace fhg
         else
         {
           fs::ofstream s (p);
-          s << value;
-          return 0;
+          if (s)
+          {
+            s << value;
+            return 0;
+          }
+          else
+          {
+            return -EPERM;
+          }
         }
       }
 
