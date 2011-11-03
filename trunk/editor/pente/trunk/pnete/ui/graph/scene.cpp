@@ -5,6 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QApplication>
 
 #include <pnete/ui/graph/connectable_item.hpp>
 #include <pnete/ui/graph/connection.hpp>
@@ -128,22 +129,37 @@ namespace fhg
                       QMenu menu;
 
                       QAction* action_add_port (menu.addAction(tr("Add Port")));
-                      //                          connect (action_add_port, SIGNAL(triggered()), SLOT(slot_add_port()));
 
                       menu.addSeparator();
 
-                      util::action::type*
-                        action_delete (new util::action::type ( i
-                                                              , tr("Delete")
-                                                              )
-                                      );
-                      menu.addAction (action_delete);
-                      connect ( action_delete
-                              , SIGNAL(signal_triggered(graph::item*))
-                              , SLOT(slot_delete_transition(graph::item*))
-                              );
+                      QAction* action_delete (menu.addAction (tr("Delete")));
 
-                      menu.exec(event->screenPos());
+
+                      QAction* triggered (menu.exec(event->screenPos()));
+
+                      if (triggered == action_delete)
+                        {
+                          slot_delete_transition (i);
+                        }
+                      else if (triggered == action_add_port)
+                        {
+                          std::cerr << "add port" << std::endl;
+                        }
+                      else if (!triggered)
+                        {
+                          //! \todo see QTBUG-21943
+                          QPoint p ( event->widget()
+                                   ->mapFromGlobal(event->screenPos())
+                                   );
+                          QMouseEvent mouseEvent( QEvent::MouseMove
+                                                , p
+                                                , Qt::NoButton
+                                                , Qt::NoButton
+                                                , event->modifiers()
+                                                );
+                          QApplication::sendEvent(event->widget(), &mouseEvent);
+                        }
+
                       event->accept();
                     }
                     break;
@@ -317,6 +333,7 @@ namespace fhg
                 event->accept();
                 return;
               }
+
             QGraphicsScene::keyPressEvent (event);
           }
 
@@ -389,7 +406,7 @@ namespace fhg
                         if (&trans == &transition_item->transition())
                           {
                             remove_transition_item (transition_item);
-                            delete transition_item;
+                            transition_item->deleteLater();
                           }
                       }
                   }
@@ -424,7 +441,8 @@ namespace fhg
                                               , transition_item->transition()
                                               , transition_item->net()
                                               );
-            delete transition_item;
+
+            transition_item->deleteLater();
           }
 
           bool type::is_my_net (const ::xml::parse::type::net_type& net)

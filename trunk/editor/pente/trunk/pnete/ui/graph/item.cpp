@@ -48,6 +48,7 @@ namespace fhg
         {
           _mode.push (mode::NORMAL);
           setAcceptHoverEvents (true);
+          setAcceptedMouseButtons (Qt::LeftButton);
         }
 
         scene::type* item::scene() const
