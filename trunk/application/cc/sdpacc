@@ -24,7 +24,10 @@ prog_name=$(basename $0)
 compiler="$prog_name"
 c_compiler="gcc"
 cxx_compiler="g++"
-SDPACFLAGS="--network.timeout=10000 -t 0"
+
+if [ -z "$SDPACFLAGS" ] ; then
+   SDPACFLAGS="--network.timeout=10000 -t 0"
+fi
 
 if [ -n "$SDPACC_CC" ] ; then
     c_compiler="$SDPACC_CC"
@@ -118,7 +121,7 @@ function execute ()
     err=$(sdpac $SDPACFLAGS wait "$jobid" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
-	echo "waiting for job to return failed: $ec: $err" >&2
+	echo "job failed: $ec: $err" >&2
 	return $ec
     fi
     result=$(mktemp)
@@ -154,6 +157,7 @@ function execute ()
     fi
 
     unset jobid
+    unset result
     return $ec
 }
 
