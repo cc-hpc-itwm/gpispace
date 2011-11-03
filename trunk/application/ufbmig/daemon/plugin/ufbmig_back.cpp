@@ -22,6 +22,9 @@
 
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
 
 namespace job
 {
@@ -99,14 +102,31 @@ public:
   FHG_PLUGIN_START()
   {
     m_wf_path_initialize =
-      fhg_kernel()->get("wf_init", "/u/herc/petry/pnet/ufbmig/init.pnet");
+      fhg_kernel()->get("wf_init", "init.pnet");
+    if (! fs::exists(m_wf_path_initialize))
+    {
+      MLOG(ERROR, "cannot access INITIALIZE workflow: " << m_wf_path_initialize);
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
+
     m_wf_path_calculate =
-      fhg_kernel()->get("wf_calc", "/u/herc/petry/pnet/ufbmig/calc.pnet");
+      fhg_kernel()->get("wf_calc", "calc.pnet");
+    if (! fs::exists(m_wf_path_calculate))
+    {
+      MLOG(ERROR, "cannot access CALCULATE workflow: " << m_wf_path_calculate);
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
+
     m_wf_path_finalize =
-      fhg_kernel()->get("wf_done", "/u/herc/petry/pnet/ufbmig/done.pnet");
+      fhg_kernel()->get("wf_done", "done.pnet");
+    if (! fs::exists(m_wf_path_finalize))
+    {
+      MLOG(ERROR, "cannot access FINALIZE workflow: " << m_wf_path_finalize);
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
 
     m_file_with_config =
-      fhg_kernel()->get("config", "/fhgfs/HPC/petry/scratch/ufbmig/config.token");
+      fhg_kernel()->get("config", "config.token");
 
     m_frontend = 0;
     sdpa_ctl = fhg_kernel()->acquire<sdpa::Control>("sdpactl");
