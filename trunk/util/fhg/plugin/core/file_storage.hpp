@@ -1,5 +1,5 @@
-#ifndef FHG_PLUGIN_CORE_KERNEL_FILE_STORAGE_HPP
-#define FHG_PLUGIN_CORE_KERNEL_FILE_STORAGE_HPP 1
+#ifndef FHG_PLUGIN_CORE_FILE_STORAGE_HPP
+#define FHG_PLUGIN_CORE_FILE_STORAGE_HPP 1
 
 #include <list>
 
@@ -11,67 +11,70 @@
 
 namespace fhg
 {
-  namespace core
+  namespace plugin
   {
-    class FileStorage : public fhg::plugin::Storage
+    namespace core
     {
-    public:
-      typedef boost::filesystem::path path_t;
-    private:
-      struct value_t
+      class FileStorage : public fhg::plugin::Storage
       {
-        value_t ()
-          : modified(false)
-        {}
+      public:
+        typedef boost::filesystem::path path_t;
+      private:
+        struct value_t
+        {
+          value_t ()
+            : modified(false)
+          {}
 
-        explicit value_t (std::string const &v)
-          : modified (false)
-          , value (v)
-        {}
+          explicit value_t (std::string const &v)
+            : modified (false)
+            , value (v)
+          {}
 
-        bool modified;
-        std::string value;
+          bool modified;
+          std::string value;
+        };
+
+        typedef std::string key_t;
+        typedef boost::unordered_map<key_t, value_t> value_map_t;
+
+        typedef boost::condition_variable_any condition_type;
+        typedef boost::recursive_mutex mutex_type;
+        typedef boost::unique_lock<mutex_type> lock_type;
+
+        typedef boost::unordered_map<key_t, FileStorage*> storage_map_t;
+      public:
+        ~FileStorage();
+
+        explicit
+        FileStorage (path_t const & path);
+
+        static bool validate(std::string const & key);
+
+        void restore ();
+
+        int add_storage(std::string const &key);
+        FileStorage *get_storage(std::string const & key) const;
+        int del_storage(std::string const &key);
+
+        int save (std::string const &key, std::string const &value);
+        int load (std::string const &key, std::string &value);
+        int remove (std::string const &key);
+        int commit ();
+        int flush ();
+      private:
+        // restore the layout discovered from the filesystem
+        void restore_storages();
+        void restore_values();
+        storage_map_t::iterator restore_storage(path_t const & path);
+        value_map_t::iterator restore_value(path_t const & path);
+
+        mutable mutex_type m_mutex;
+        path_t m_path;
+        storage_map_t m_stores;
+        value_map_t m_values;
       };
-
-      typedef std::string key_t;
-      typedef boost::unordered_map<key_t, value_t> value_map_t;
-
-      typedef boost::condition_variable_any condition_type;
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
-      typedef boost::unordered_map<std::string, FileStorage*> storage_map_t;
-    public:
-      ~FileStorage();
-
-      explicit
-      FileStorage (path_t const & path, bool do_restore=false);
-
-      void restore ();
-
-      int add_storage(std::string const &);
-      Storage *get_storage(std::string const&) const;
-      int del_storage(std::string const &);
-
-      int save (std::string const &key, std::string const &value);
-      int load (std::string const &key, std::string &value);
-      bool exists (std::string const &key) const;
-      int remove (std::string const &key);
-      int commit ();
-    private:
-      // restore the layout discovered from the filesystem
-      void restore_storages();
-      void restore_values();
-      storage_map_t::iterator restore_storage(path_t const & path);
-      value_map_t::iterator restore_value(path_t const & path);
-
-      mutable mutex_type m_mutex;
-      mutable mutex_type m_transaction_mutex;
-      path_t m_path;
-      storage_map_t m_stores;
-      value_map_t m_values;
-      value_map_t m_transaction;
-    };
+    }
   }
 }
 
