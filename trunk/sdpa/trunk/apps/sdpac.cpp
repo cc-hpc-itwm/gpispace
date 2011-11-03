@@ -510,7 +510,7 @@ int main (int argc, char **argv) {
       }
 
       std::stringstream sstr;
-      ifs >> sstr.rdbuf();
+      ifs >> std::noskipws >> sstr.rdbuf();
 
       const std::string job_id(api->submitJob(sstr.str()));
       std::cout << job_id << std::endl;
