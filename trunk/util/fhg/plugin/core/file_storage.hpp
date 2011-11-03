@@ -46,7 +46,7 @@ namespace fhg
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
-        typedef boost::unordered_map<key_t, FileStorage*> storage_map_t;
+        typedef boost::unordered_map<key_t, FileStorage*> store_map_t;
       public:
         ~FileStorage();
 
@@ -69,14 +69,14 @@ namespace fhg
         // restore the layout discovered from the filesystem
         void restore_storages();
         void restore_values();
-        storage_map_t::iterator restore_storage(path_t const & path);
+        store_map_t::iterator restore_storage(path_t const & path);
         value_map_t::iterator restore_value(path_t const & path);
 
         mutable mutex_type m_mutex;
         path_t m_path;
         int m_mode;
         int m_flags;
-        storage_map_t m_stores;
+        store_map_t m_stores;
         value_map_t m_values;
       };
     }

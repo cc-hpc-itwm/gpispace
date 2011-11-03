@@ -45,21 +45,53 @@ namespace fhg
             fs::create_directories (m_path);
             // this only works on UNIX
             chmod (m_path.string().c_str(), mode);
+
+            fs::ofstream file (m_path / ".storage");
+            if (file)
+            {
+              file << time(0);
+            }
           }
           else
           {
             throw fs::filesystem_error
-              ( "not such file or directory"
+              ( "no such file or directory"
               , path
               , boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory)
               );
           }
+        }
+
+        fs::ofstream lock_file (m_path / ".lock");
+        if (lock_file)
+        {
+          lock_file << getpid();
+        }
+        else
+        {
+          throw fs::filesystem_error
+            ( "could not lock directory"
+            , path
+            , boost::system::errc::make_error_code(boost::system::errc::permission_denied)
+            );
         }
       }
 
       FileStorage::~FileStorage()
       {
         flush();
+        for ( store_map_t::iterator start (m_stores.begin()), end(m_stores.end())
+            ; start != end
+            ; ++start
+            )
+        {
+          delete start->second;
+        }
+        m_stores.clear();
+        m_values.clear();
+
+        boost::system::error_code ec;
+        fs::remove (m_path / ".lock", ec);
       }
 
       int FileStorage::restore ()
@@ -85,7 +117,14 @@ namespace fhg
         {
           if (m_stores.find(s) == m_stores.end())
           {
-            m_stores[s] = new FileStorage(p, m_flags | O_CREAT, m_mode);
+            try
+            {
+              m_stores[s] = new FileStorage(p, m_flags | O_CREAT, m_mode);
+            }
+            catch (std::exception const & ex)
+            {
+              return -EPERM;
+            }
           }
           return 0;
         }
@@ -96,7 +135,7 @@ namespace fhg
         if (not validate(k))
           return 0;
         lock_type lock (m_mutex);
-        storage_map_t::const_iterator it (m_stores.find(k));
+        store_map_t::const_iterator it (m_stores.find(k));
         if (it == m_stores.end())
         {
           return 0;
@@ -112,7 +151,7 @@ namespace fhg
         if (not validate(k))
           return -EINVAL;
         lock_type lock (m_mutex);
-        storage_map_t::iterator it (m_stores.find(k));
+        store_map_t::iterator it (m_stores.find(k));
         if (it == m_stores.end())
         {
           return -ENOENT;
@@ -226,7 +265,7 @@ namespace fhg
       {
       }
 
-      FileStorage::storage_map_t::iterator
+      FileStorage::store_map_t::iterator
       FileStorage::restore_storage(path_t const & path)
       {
         FileStorage *child = detail::create_storage (m_path / path);
