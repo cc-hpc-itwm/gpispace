@@ -136,7 +136,7 @@ void test_hierachy ()
 
   BOOST_REQUIRE_EQUAL (s.add_storage ("sub1"), 0);
   {
-    FileStorage *sub = (FileStorage*)s.get_storage ("sub1");
+    fhg::plugin::Storage *sub = s.get_storage ("sub1");
     BOOST_REQUIRE (sub);
     sub->save("dummy", "dummy");
     std::string dummy;
