@@ -1,20 +1,23 @@
 # -*- mode: cmake; -*-
 
-set(tc_srcs
-  test_semaphore.cpp
-  test_event.cpp
-  test_ini_parser.cpp
-  test_parent_path.cpp
+include(fhg_test_macros)
+
+fhg_add_test(test_storage.cpp
+  LINK_LIBRARIES fhg-plugin-core
+  ARGS ${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary
+  DESCRIPTION "Tests the file-storage backend"
 )
 
-foreach (tc_src ${tc_srcs})
-  # get the filename without extension
-  string(REGEX REPLACE "(.*/)?test_(.*)\\.c.*" "test_${PROJECT_NAME}_\\2" tc_name ${tc_src})
-  message(STATUS "adding test case ${tc_name} (using ${tc_src})")
+fhg_add_test(test_semaphore.cpp
+  DESCRIPTION "Tests the semaphore implementation"
+)
 
-  add_executable(${tc_name} ${tc_src})
-  target_link_libraries(${tc_name} ${Boost_UNIT_TEST_LIBRARIES})
-  target_link_libraries(${tc_name} ${Boost_LIBRARIES})
-  get_target_property(LOC ${tc_name} LOCATION_)
-  add_test(${tc_name} ${LOC})
-endforeach(tc_src ${tc_srcs})
+fhg_add_test(test_event.cpp
+  DESCRIPTION "Tests the thread event implementation"
+)
+
+fhg_add_test(test_ini_parser.cpp
+  DESCRIPTION "Tests the ini-parser"
+)
+
+fhg_add_test(test_parent_path.cpp)
