@@ -23,6 +23,7 @@ set (mods
   merge_archives_unix.cmake.in
   pnet_macros.cmake
   fhg_plugin_macros.cmake
+  fhg_test_macros.cmake
   )
 
 install(FILES ${mods}
