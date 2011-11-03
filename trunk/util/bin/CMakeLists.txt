@@ -10,28 +10,6 @@ target_link_libraries(fhgkernel fhg-plugin)
 find_package(FhgLog REQUIRED)
 include_directories(${FhgLog_INCLUDE_DIR})
 
-# this is required to be able to load modules that require parts of boost
-# the binary doesn't use itself (like threads and stuff)
-target_link_libraries(fhgmodinfo
-  "-Wl,-whole-archive"
-#  ${Boost_FILESYSTEM_LIBRARY}
-#  ${Boost_PROGRAM_OPTIONS_LIBRARY}
-#  ${Boost_SERIALIZATION_LIBRARY}
-#  ${Boost_SYSTEM_LIBRARY}
-#  ${Boost_THREAD_LIBRARY}
-  "-Wl,-no-whole-archive"
-  )
-
-target_link_libraries(fhgkernel
-  "-Wl,-whole-archive"
-#  ${Boost_FILESYSTEM_LIBRARY}
-#  ${Boost_SERIALIZATION_LIBRARY}
-#  ${Boost_SYSTEM_LIBRARY}
-#  ${Boost_THREAD_LIBRARY}
-  "-Wl,-no-whole-archive"
-  "-Wl,-E"
-  )
-
 install (TARGETS fhgcfg fhgmodinfo fhgkernel
   RUNTIME
   DESTINATION bin
