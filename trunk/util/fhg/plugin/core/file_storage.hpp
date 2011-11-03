@@ -53,8 +53,6 @@ namespace fhg
         explicit
         FileStorage (path_t const & path, int flags = O_CREAT, int mode = S_IRWXU);
 
-        static bool validate(std::string const & key);
-
         int restore ();
 
         int add_storage(std::string const &key);
@@ -66,7 +64,7 @@ namespace fhg
         int flush ();
       protected:
         int write (std::string const &key, std::string const &value);
-        int read (std::string const &key, std::string &value);
+        int read (std::string const &key, std::string &value) const;
       private:
         // restore the layout discovered from the filesystem
         void restore_storages();

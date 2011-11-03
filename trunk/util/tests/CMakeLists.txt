@@ -2,10 +2,14 @@
 
 include(fhg_test_macros)
 
-fhg_add_test(test_storage.cpp
+fhg_add_test(test_file_storage.cpp
   LINK_LIBRARIES fhg-plugin-core
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary
   DESCRIPTION "Tests the file-storage backend"
+)
+fhg_add_test(test_null_storage.cpp
+  LINK_LIBRARIES fhg-plugin-core
+  DESCRIPTION "Tests the null-storage backend"
 )
 
 fhg_add_test(test_semaphore.cpp

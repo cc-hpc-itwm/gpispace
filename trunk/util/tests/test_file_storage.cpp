@@ -14,7 +14,6 @@
 
 #include <boost/filesystem.hpp>
 
-
 #include <fhg/plugin/core/file_storage.hpp>
 
 using namespace boost::unit_test;
@@ -25,15 +24,15 @@ static fs::path working_dir;
 
 void test_invalid_key ()
 {
-  using namespace fhg::plugin::core;
+  using namespace fhg::plugin;
 
-  BOOST_REQUIRE (! FileStorage::validate ("."));
-  BOOST_REQUIRE (! FileStorage::validate ("/"));
-  BOOST_REQUIRE (! FileStorage::validate ("/home"));
-  BOOST_REQUIRE (! FileStorage::validate ("../../foo"));
-  BOOST_REQUIRE (! FileStorage::validate ("foo.bar"));
-  BOOST_REQUIRE (! FileStorage::validate ("foo/../"));
-  BOOST_REQUIRE (! FileStorage::validate (".."));
+  BOOST_REQUIRE (! Storage::validate ("."));
+  BOOST_REQUIRE (! Storage::validate ("/"));
+  BOOST_REQUIRE (! Storage::validate ("/home"));
+  BOOST_REQUIRE (! Storage::validate ("../../foo"));
+  BOOST_REQUIRE (! Storage::validate ("foo.bar"));
+  BOOST_REQUIRE (! Storage::validate ("foo/../"));
+  BOOST_REQUIRE (! Storage::validate (".."));
 }
 
 void test_save_load_delete ()
@@ -188,6 +187,7 @@ init_unit_test_suite (int ac, char *av[])
     ts1->add( BOOST_TEST_CASE(&test_hierachy));
     ts1->add( BOOST_TEST_CASE(&test_complex_state));
     ts1->add( BOOST_TEST_CASE(&test_save_load_invalid));
+    ts1->add( BOOST_TEST_CASE(&test_invalid_key));
 
     framework::master_test_suite().add( ts1 );
   }

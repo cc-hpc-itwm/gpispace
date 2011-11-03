@@ -45,7 +45,7 @@ namespace fhg
       }
 
       template <typename T>
-      int load (std::string const &key, T &val)
+      int load (std::string const &key, T &val) const
       {
         std::string encoded;
         int ec;
@@ -71,15 +71,25 @@ namespace fhg
       virtual int remove (std::string const &key) = 0;
       virtual int commit () = 0;
       virtual int flush () = 0;
+
+      static bool validate (std::string const & key)
+      {
+        if (key.empty()) return false;
+        if (key.find("/") != std::string::npos) return false;
+        if (key.find(" ") != std::string::npos) return false;
+        if (key.find(".") != std::string::npos) return false;
+        return true;
+      }
+
     protected:
       virtual int write (std::string const &key, std::string const &value) = 0;
-      virtual int read (std::string const &key, std::string &value) = 0;
+      virtual int read (std::string const &key, std::string &value) const = 0;
     private:
       typedef boost::archive::xml_oarchive oarchive;
       typedef boost::archive::xml_iarchive iarchive;
 
       template <typename T>
-      int decode (std::string const &text, T & v)
+      static int decode (std::string const &text, T & v)
       {
         std::istringstream s (text);
         try
@@ -96,7 +106,7 @@ namespace fhg
       }
 
       template <typename T>
-      int encode (T const & v, std::string & text)
+      static int encode (T const & v, std::string & text)
       {
         std::ostringstream s;
         try

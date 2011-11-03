@@ -62,16 +62,6 @@ namespace fhg
         flush();
       }
 
-      bool FileStorage::validate(std::string const &key)
-      {
-        if (key.empty()) return false;
-        if (key.find("/") != std::string::npos) return false;
-        if (key.find(" ") != std::string::npos) return false;
-        if (key.find(".") != std::string::npos) return false;
-
-        return true;
-      }
-
       int FileStorage::restore ()
       {
         restore_storages();
@@ -125,7 +115,7 @@ namespace fhg
         storage_map_t::iterator it (m_stores.find(k));
         if (it == m_stores.end())
         {
-          return -ESRCH;
+          return -ENOENT;
         }
         else
         {
@@ -156,7 +146,7 @@ namespace fhg
         }
       }
 
-      int FileStorage::read (std::string const &key, std::string &value)
+      int FileStorage::read (std::string const &key, std::string &value) const
       {
         if (not validate(key))
           return -EINVAL;
