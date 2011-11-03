@@ -46,11 +46,8 @@ namespace fhg
             const ::xml::parse::type::transition_type& transition() const;
             ::xml::parse::type::net_type& net();
 
-            virtual QRectF boundingRect() const;
             virtual QPainterPath shape() const;
-
-            QRectF bounding_rect (const QSizeF&) const;
-            QPainterPath shape (const QSizeF&) const;
+            QRectF rectangle() const;
 
             const std::string& name() const;
 

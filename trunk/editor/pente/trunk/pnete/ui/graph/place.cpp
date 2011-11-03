@@ -59,11 +59,35 @@ namespace fhg
                              );
           }
 
-          QRectF item::boundingRect() const
+          const QStaticText& item::content() const
           {
-            const QSizeF half_size (_content.size() / 2.0);
-            const QPointF pos (-half_size.width(), -half_size.height());
-            return QRectF (pos, _content.size());
+            return _content;
+          }
+          QSizeF item::content_size() const
+          {
+            return content().size();
+          }
+          QPointF item::content_pos() const
+          {
+            const QSizeF half_size (content_size() / 2.0);
+
+            return QPointF (-half_size.width(), -half_size.height());
+          }
+
+          QPainterPath item::shape () const
+          {
+            QPainterPath path;
+            const qreal d (3.0);
+
+            path.addRoundRect ( QRectF
+                                ( content_pos() - QPointF (d, d)
+                                , content_size() + QSizeF (2*d, 2*d)
+                                )
+                              , 2*d
+                              , 2*d
+                              );
+
+            return path;
           }
 
           void item::paint ( QPainter* painter
@@ -71,16 +95,9 @@ namespace fhg
                             , QWidget* widget
                             )
           {
-            const QSizeF half_size (_content.size() / 2.0);
-            const QPointF pos (-half_size.width(), -half_size.height());
-            painter->drawStaticText (pos, _content);
-            painter->drawRoundedRect ( QRectF
-                                     ( pos - QPointF (2.0, 2.0)
-                                     , _content.size() + QSizeF (4.0, 4.0)
-                                     )
-                                     , 5.0
-                                     , 5.0
-                                     );
+            style::draw_shape (this, painter);
+
+            painter->drawStaticText (content_pos(), content());
           }
 
           void item::setPos (const QPointF& new_position)

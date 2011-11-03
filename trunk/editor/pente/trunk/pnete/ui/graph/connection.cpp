@@ -246,10 +246,6 @@ namespace fhg
             return path;
           }
 
-          QRectF item::boundingRect () const
-          {
-            return shape().boundingRect();
-          }
           void item::paint ( QPainter* painter
                            , const QStyleOptionGraphicsItem*
                            , QWidget*

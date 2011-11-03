@@ -63,7 +63,6 @@ namespace fhg
             virtual int type() const { return Type; }
 
             QRectF bounding_rect(bool cap = true, int cap_factor = 0) const;
-            virtual QRectF boundingRect() const;
             virtual QPainterPath shape() const;
             virtual void
             paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);

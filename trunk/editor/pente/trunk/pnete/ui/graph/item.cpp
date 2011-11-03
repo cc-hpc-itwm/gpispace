@@ -174,6 +174,11 @@ namespace fhg
 
           return childs;
         }
+
+        QRectF item::boundingRect () const
+        {
+          return shape().controlPointRect();
+        }
       }
     }
   }

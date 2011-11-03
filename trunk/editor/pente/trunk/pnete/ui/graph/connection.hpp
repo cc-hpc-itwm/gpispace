@@ -49,7 +49,6 @@ namespace fhg
             const bool& reading_only() const;
             const bool& reading_only (const bool&);
 
-            virtual QRectF boundingRect() const;
             virtual QPainterPath shape() const;
             virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 

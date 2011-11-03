@@ -205,59 +205,59 @@ namespace fhg
 
           QPointF item::fitting_position (QPointF position)
           {
-            if (!parentItem())
+            if ( const transition::item* transition
+               = qgraphicsitem_cast<const transition::item*> (parentItem())
+               )
               {
-                return style::raster::snap (position);
-              }
+                const QPointF minimum_distance
+                  ( boundingRect().width() / 2.0 + 1.0    // hardcoded constants
+                  , boundingRect().height() / 2.0 + 1.0   // hardcoded constants
+                  );
 
-            const QPointF minimum_distance
-              ( boundingRect().width() / 2.0 + 1.0    // hardcoded constants
-              , boundingRect().height() / 2.0 + 1.0   // hardcoded constants
-              );
+                const QRectF bounding (transition->rectangle());
 
-            const QRectF bounding (parentItem()->boundingRect());
+                const qreal to_left (quad (position.x() - bounding.left()));
+                const qreal to_right (quad (position.x() - bounding.right()));
+                const qreal to_top (quad (position.y() - bounding.top()));
+                const qreal to_bottom (quad (position.y() - bounding.bottom()));
 
-            const qreal to_left (quad (position.x() - bounding.left()));
-            const qreal to_right (quad (position.x() - bounding.right()));
-            const qreal to_top (quad (position.y() - bounding.top()));
-            const qreal to_bottom (quad (position.y() - bounding.bottom()));
+                orientation ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
+                            ? ( to_top < to_bottom
+                              ? orientation::NORTH
+                              : orientation::SOUTH
+                              )
+                            : ( to_left < to_right
+                              ? orientation::WEST
+                              : orientation::EAST
+                              )
+                            );
 
-            orientation ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
-                        ? ( to_top < to_bottom
-                          ? orientation::NORTH
-                          : orientation::SOUTH
-                          )
-                        : ( to_left < to_right
-                          ? orientation::WEST
-                          : orientation::EAST
-                          )
-                        );
-
-            if(  orientation() == orientation::WEST
-              || orientation() == orientation::EAST
-              )
-              {
-                position.setX ( orientation() == orientation::WEST
-                              ? bounding.left()
-                              : bounding.right()
-                              );
-                position.setY ( qBound ( bounding.top() + minimum_distance.y()
-                                       , position.y()
-                                       , bounding.bottom() - minimum_distance.y()
-                                       )
-                              );
-              }
-            else
-              {
-                position.setX ( qBound ( bounding.left() + minimum_distance.x()
-                                       , position.x()
-                                       , bounding.right() - minimum_distance.x()
-                                       )
-                              );
-                position.setY ( orientation() == orientation::NORTH
-                              ? bounding.top()
-                              : bounding.bottom()
-                              );
+                if(  orientation() == orientation::WEST
+                  || orientation() == orientation::EAST
+                  )
+                  {
+                    position.setX ( orientation() == orientation::WEST
+                                  ? bounding.left()
+                                  : bounding.right()
+                                  );
+                    position.setY ( qBound ( bounding.top() + minimum_distance.y()
+                                           , position.y()
+                                           , bounding.bottom() - minimum_distance.y()
+                                           )
+                                  );
+                  }
+                else
+                  {
+                    position.setX ( qBound ( bounding.left() + minimum_distance.x()
+                                           , position.x()
+                                           , bounding.right() - minimum_distance.x()
+                                           )
+                                  );
+                    position.setY ( orientation() == orientation::NORTH
+                                  ? bounding.top()
+                                  : bounding.bottom()
+                                  );
+                  }
               }
 
             return style::raster::snap (position);
@@ -398,29 +398,6 @@ namespace fhg
                               );
               default:
                 throw std::runtime_error("invalid port direction!");
-              }
-          }
-
-          QRectF item::boundingRect () const
-          {
-            return bounding_rect ();
-          }
-
-          QColor queryColorForType (const QString& type)
-          {
-            //! \note Colors shamelessly stolen from PSPro.
-            //! \todo Maybe also do a gradient? Maybe looks awesome.
-            if (type.startsWith ("seismic"))
-              {
-                return QColor (0, 130, 250);                                           // hardcoded constant
-              }
-            else if (type.startsWith ("velocity"))
-              {
-                return QColor (248, 248, 6);                                           // hardcoded constant
-              }
-            else
-              {
-                return QColor (255, 255, 255);                                         // hardcoded constant
               }
           }
 

@@ -6,6 +6,8 @@
 #include <QPainter>
 #include <QRectF>
 #include <QStaticText>
+#include <QPointF>
+#include <QSizeF>
 
 #include <boost/optional.hpp>
 
@@ -15,7 +17,6 @@
 
 class QWidget;
 class QStyleOptionGraphicsItem;
-class QPointF;
 
 #include <pnete/ui/graph/connectable_item.hpp>
 
@@ -49,12 +50,12 @@ namespace fhg
             const std::string& we_type() const;
 
             virtual void setPos (const QPointF&);
+            virtual QPainterPath shape() const;
 
           public slots:
             void refresh_content();
 
           public:
-            virtual QRectF boundingRect() const;
             virtual void paint ( QPainter* painter
                                , const QStyleOptionGraphicsItem* option
                                , QWidget* widget = NULL
@@ -67,6 +68,10 @@ namespace fhg
             place_type& _place;
 
             QStaticText _content;
+
+            const QStaticText& content() const;
+            QSizeF content_size() const;
+            QPointF content_pos() const;
           };
         }
       }

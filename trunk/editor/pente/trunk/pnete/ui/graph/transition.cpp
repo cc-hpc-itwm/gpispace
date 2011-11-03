@@ -10,7 +10,7 @@
 
 #include <pnete/ui/graph/port.hpp>
 #include <pnete/ui/graph/place.hpp>
-#include <pnete/ui/graph/cogwheel_button.hpp>
+// #include <pnete/ui/graph/cogwheel_button.hpp>
 #include <pnete/ui/graph/connection.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
@@ -57,7 +57,7 @@ namespace fhg
             , _net (net)
             , _proxy (NULL)
           {
-            new cogwheel_button (this);
+            //            new cogwheel_button (this);
             setFlag (ItemIsSelectable);
 
             static const QColor border_color_normal (Qt::yellow);
@@ -146,7 +146,7 @@ namespace fhg
             const qreal padding (10.0); // hardcoded constant
             const qreal step (size::port::height());
 
-            const QRectF bound (boundingRect());
+            const QRectF bound (rectangle());
             const qreal top (bound.top());
             const qreal left (bound.left());
             const qreal right (bound.right());
@@ -191,10 +191,19 @@ namespace fhg
             return _proxy;
           }
 
-          QPainterPath item::shape (const QSizeF& size) const
+          QRectF item::rectangle () const
+          {
+            const QSizeF half_size (_size / 2.0);
+            return QRectF ( -half_size.width()
+                          , -half_size.height()
+                          , _size.width()
+                          , _size.height()
+                          );
+          }
+          QPainterPath item::shape () const
           {
             QPainterPath path;
-            path.addRoundRect (bounding_rect (size), 20); // hardcoded constant
+            path.addRoundRect (rectangle (), 20); // hardcoded constant
 
             foreach (QGraphicsItem* child, childItems())
               {
@@ -202,23 +211,6 @@ namespace fhg
               }
 
             return path;
-          }
-          QPainterPath item::shape () const
-          {
-            return shape (_size);
-          }
-          QRectF item::bounding_rect (const QSizeF& size) const
-          {
-            const QSizeF half_size (size / 2.0);
-            return QRectF ( -half_size.width()
-                          , -half_size.height()
-                          , size.width()
-                          , size.height()
-                          );
-          }
-          QRectF item::boundingRect () const
-          {
-            return bounding_rect (_size);
           }
 
           void item::paint ( QPainter* painter
@@ -231,7 +223,7 @@ namespace fhg
             painter->setPen (QPen (QBrush (Qt::black), 1.0));
             painter->setBackgroundMode (Qt::TransparentMode);
 
-            QRectF rect (boundingRect());
+            QRectF rect (rectangle());
             rect.setWidth (rect.width() - size::port::width());
             rect.setHeight (rect.height() - size::port::width());
             rect.translate ( size::port::height() / 2.0
