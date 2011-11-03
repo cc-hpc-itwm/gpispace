@@ -28,6 +28,16 @@ namespace xml
       elements_type _elements;
       names_type _names;
 
+      inline T& insert (const T& x)
+      {
+        typename elements_type::iterator
+          pos (_elements.insert (_elements.end(), x));
+
+        _names.insert (typename names_type::value_type (x.name, pos));
+
+        return *pos;
+      }
+
     public:
       unique () : _elements (), _names () {}
       unique (const unique & old) : _elements (), _names () { *this = old; }
@@ -53,86 +63,54 @@ namespace xml
 
       boost::optional<T&> push (const T& x, T& old)
       {
-        const typename names_type::const_iterator found (_names.find (x.name));
+        const typename names_type::const_iterator pos (_names.find (x.name));
 
-        if (found != _names.end())
+        if (pos != _names.end())
           {
-            old = *(found->second);
+            old = *(pos->second);
 
             return boost::none;
           }
 
-        typename elements_type::iterator
-          pos (_elements.insert (_elements.end(), x));
-
-        _names.insert (typename names_type::value_type (x.name, pos));
-
-        return *pos;
+        return insert (x);
       }
 
-//       bool push (const T & x, T & old)
-//       {
-//         const typename names_type::const_iterator found (_names.find (x.name));
-
-//         if (found != _names.end())
-//           {
-//             old = *(found->second);
-
-//             return false;
-//           }
-
-//         _names[x.name] = _elements.insert (_elements.end(), x);
-
-//         return true;
-//       }
-
-      bool push (const T & x)
+      boost::optional<T&> push (const T& x)
       {
-        const typename names_type::const_iterator found (_names.find (x.name));
-
-        if (found != _names.end())
+        if (is_element (x.name))
           {
-            return false;
+            return boost::none;
           }
 
-        _names[x.name] = _elements.insert (_elements.end(), x);
-
-        return true;
+        return insert (x);
       }
 
       bool by_key (const Key & key, T & x) const
       {
-        const typename names_type::const_iterator found (_names.find (key));
+        const typename names_type::const_iterator pos (_names.find (key));
 
-        if (found == _names.end())
+        if (pos == _names.end())
           {
             return false;
           }
 
-        x = *(found->second);
+        x = *(pos->second);
 
         return true;
       }
 
       bool is_element (const Key & key) const
       {
-        const typename names_type::const_iterator found (_names.find (key));
-
-        if (found == _names.end())
-          {
-            return false;
-          }
-
-        return true;
+        return _names.find (key) != _names.end();
       }
 
       boost::optional<T&> by_key (const Key & key)
       {
-        typename names_type::iterator found (_names.find (key));
+        typename names_type::iterator pos (_names.find (key));
 
-        if (found != _names.end())
+        if (pos != _names.end())
           {
-            return *(found->second);
+            return *(pos->second);
           }
 
         return boost::none;
@@ -140,12 +118,12 @@ namespace xml
 
       void erase (const T& x)
       {
-        typename names_type::iterator found (_names.find (x.name));
+        typename names_type::iterator pos (_names.find (x.name));
 
-        if (found != _names.end())
+        if (pos != _names.end())
           {
-            _elements.erase (found->second);
-            _names.erase (found);
+            _elements.erase (pos->second);
+            _names.erase (pos);
           }
       }
 

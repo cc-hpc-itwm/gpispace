@@ -151,14 +151,17 @@ namespace xml
 
         // ***************************************************************** //
 
-        void push_place (const place_type & place)
+        place_type& push_place (const place_type & p)
         {
           place_type old;
+          boost::optional<place_type&> place (_places.push (p, old));
 
-          if (!_places.push (place, old))
+          if (!place)
             {
-              throw error::duplicate_place (place.name, path);
+              throw error::duplicate_place (p.name, path);
             }
+
+          return *place;
         }
 
         transition_type& push_transition (const transition_type & t)

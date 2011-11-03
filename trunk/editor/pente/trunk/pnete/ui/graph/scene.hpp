@@ -68,6 +68,10 @@ namespace fhg
                                      , ::xml::parse::type::net_type&
                                      );
             void slot_add_place ();
+            void slot_add_place ( const QObject*
+                                , ::xml::parse::type::place_type&
+                                , ::xml::parse::type::net_type&
+                                );
             void slot_add_struct ();
 
             void auto_layout();

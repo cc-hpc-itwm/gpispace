@@ -75,6 +75,21 @@ namespace fhg
                            )
                     , Qt::DirectConnection
                     );
+            connect ( &change_manager()
+                    , SIGNAL ( signal_add_place
+                               ( const QObject*
+                               , ::xml::parse::type::place_type&
+                               , ::xml::parse::type::net_type&
+                               )
+                             )
+                    , SLOT ( slot_add_place
+                             ( const QObject*
+                             , ::xml::parse::type::place_type&
+                             , ::xml::parse::type::net_type&
+                             )
+                           )
+                    , Qt::DirectConnection
+                    );
           }
 
           //! \todo This is duplicate code, also available in main window.
@@ -226,7 +241,24 @@ namespace fhg
 
           void type::slot_add_place ()
           {
-            qDebug() << "type::add_place";
+            change_manager().add_place (this, net());
+          }
+          void type::slot_add_place ( const QObject* origin
+                                    , ::xml::parse::type::place_type& p
+                                    , ::xml::parse::type::net_type& n
+                                    )
+          {
+            if (is_my_net (n))
+              {
+                place::item* place (new place::item (p));
+
+                addItem (place);
+
+                  if (origin == this)
+                    {
+                      place->setPos (mouse_position());
+                    }
+              }
           }
 
           void type::slot_add_struct ()
@@ -300,12 +332,12 @@ namespace fhg
 
           void type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
           {
+            _mouse_position = mouseEvent->scenePos();
+
             if (_pending_connection)
               {
                 const QRectF old_area (_pending_connection->boundingRect());
-                _mouse_position = mouseEvent->scenePos();
                 update (old_area);
-
                 update ( QRectF ( QPointF ( qMin (0.0, _mouse_position.x())
                                           , qMin (0.0, _mouse_position.y())
                                           )
@@ -314,11 +346,6 @@ namespace fhg
                                           )
                                 )
                        );
-              }
-            else
-              {
-                _mouse_position = mouseEvent->scenePos();
-                // update();
               }
 
             QGraphicsScene::mouseMoveEvent (mouseEvent);

@@ -67,9 +67,22 @@ namespace fhg
       , ::xml::parse::type::net_type& net
       )
       {
-        ::xml::parse::type::transition_type trans;
-
-        emit signal_add_transition (origin, net.push_transition (trans), net);
+        emit signal_add_transition
+          ( origin
+          , net.push_transition (::xml::parse::type::transition_type())
+          , net
+          );
+      }
+      void change_manager_t::add_place
+      ( const QObject* origin
+      , ::xml::parse::type::net_type& net
+      )
+      {
+        emit signal_add_place
+          ( origin
+          , net.push_place (::xml::parse::type::place_type())
+          , net
+          );
       }
     }
   }

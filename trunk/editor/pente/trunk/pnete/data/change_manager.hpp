@@ -40,6 +40,9 @@ namespace fhg
         void add_transition ( const QObject*
                             , ::xml::parse::type::net_type&
                             );
+        void add_place ( const QObject*
+                       , ::xml::parse::type::net_type&
+                       );
 
       signals:
         void signal_set_expression ( const QObject*
@@ -64,6 +67,10 @@ namespace fhg
                                    , ::xml::parse::type::transition_type&
                                    , ::xml::parse::type::net_type&
                                    );
+        void signal_add_place ( const QObject*
+                              , ::xml::parse::type::place_type&
+                              , ::xml::parse::type::net_type&
+                              );
 
       private:
         internal_type& _internal;
