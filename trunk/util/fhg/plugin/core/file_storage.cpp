@@ -2,7 +2,7 @@
 
 #include <errno.h>
 
-#include <boost/filesystem/exception.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/system/error_code.hpp>
 
 #include "file_storage.hpp"
@@ -23,7 +23,7 @@ namespace fhg
         }
       }
 
-      FileStorage::FileStorage(path_t const & path, int mode)
+      FileStorage::FileStorage(path_t const & path, int flags, int mode)
         : m_path (fs::absolute(path))
         , m_mode (mode)
       {
@@ -40,9 +40,20 @@ namespace fhg
         }
         else
         {
-          fs::create_directories (m_path);
-          // this only works on UNIX
-          chmod (m_path.string().c_str(), mode);
+          if (flags & O_CREAT)
+          {
+            fs::create_directories (m_path);
+            // this only works on UNIX
+            chmod (m_path.string().c_str(), mode);
+          }
+          else
+          {
+            throw fs::filesystem_error
+              ( "not such file or directory"
+              , path
+              , boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory)
+              );
+          }
         }
       }
 
@@ -56,7 +67,7 @@ namespace fhg
         if (key.empty()) return false;
         if (key.find("/") != std::string::npos) return false;
         if (key.find(" ") != std::string::npos) return false;
-        if (key == "." || key == "..") return false;
+        if (key.find(".") != std::string::npos) return false;
 
         return true;
       }
@@ -76,22 +87,52 @@ namespace fhg
         lock_type lock (m_mutex);
 
         path_t p (m_path / s);
-
-        // create directory
-
-        // create file storage with that directory
-
-        return -EPERM;
+        if (fs::exists(p) && fs::is_regular_file(p))
+        {
+          return -ENOTDIR;
+        }
+        else
+        {
+          if (m_stores.find(s) == m_stores.end())
+          {
+            m_stores[s] = new FileStorage(p, m_flags | O_CREAT, m_mode);
+          }
+          return 0;
+        }
       }
 
-      FileStorage* FileStorage::get_storage(std::string const&) const
+      FileStorage* FileStorage::get_storage(std::string const&k) const
       {
-        return 0;
+        if (not validate(k))
+          return 0;
+        lock_type lock (m_mutex);
+        storage_map_t::const_iterator it (m_stores.find(k));
+        if (it == m_stores.end())
+        {
+          return 0;
+        }
+        else
+        {
+          return it->second;
+        }
       }
 
-      int FileStorage::del_storage(std::string const &)
+      int FileStorage::del_storage(std::string const &k)
       {
-        return -ESRCH;
+        if (not validate(k))
+          return -EINVAL;
+        lock_type lock (m_mutex);
+        storage_map_t::iterator it (m_stores.find(k));
+        if (it == m_stores.end())
+        {
+          return -ESRCH;
+        }
+        else
+        {
+          delete it->second;
+          m_stores.erase (it);
+          return 0;
+        }
       }
 
       int FileStorage::write (std::string const &key, std::string const &value)
@@ -99,54 +140,80 @@ namespace fhg
         if (not validate(key))
           return -EINVAL;
 
-        value_t val (value);
+        lock_type lock(m_mutex);
 
         path_t p(m_path / key);
 
+        if (fs::exists(p) && fs::is_directory(p))
         {
-          lock_type lock(m_mutex);
-          if (m_stores.find(key) != m_stores.end())
-            return -EPERM;
-          if (m_values.find(key) == m_values.end())
-          {
-            m_values[key] = val;
-          }
+          return -EISDIR;
         }
-
-        return 0;
+        else
+        {
+          fs::ofstream s (p);
+          s << value;
+          return 0;
+        }
       }
 
       int FileStorage::read (std::string const &key, std::string &value)
       {
         if (not validate(key))
-        {
           return -EINVAL;
-        }
 
         lock_type lock(m_mutex);
-        if (m_stores.find(key) != m_stores.end())
-          return -EPERM;
-        value_map_t::iterator v_it(m_values.find(key));
-        if (v_it == m_values.end())
+
+        path_t p(m_path / key);
+
+        if (fs::exists(p) && fs::is_directory(p))
         {
-          v_it = restore_value(key);
-          if (v_it == m_values.end())
+          return -EISDIR;
+        }
+        else
+        {
+          fs::ifstream s (p);
+          if (s)
           {
-            return -ESRCH;
+            std::stringstream sstr;
+            s >> std::noskipws >> sstr.rdbuf();
+            value = sstr.str();
+            return 0;
+          }
+          else
+          {
+            return -ENOENT;
           }
         }
-        value = v_it->second.value;
-        return 0;
       }
 
       int FileStorage::remove (std::string const &key)
       {
-        return -ESRCH;
+        if (not validate(key))
+          return -EINVAL;
+
+        path_t p(m_path / key);
+
+        if (fs::is_directory(p))
+        {
+          // TODO: remove storage associated with key
+          return -EISDIR;
+        }
+        else
+        {
+          if (fs::remove(p))
+          {
+            return 0;
+          }
+          else
+          {
+            return -ENOENT;
+          }
+        }
       }
 
       int FileStorage::flush ()
       {
-        return -EIO;
+        return 0;
       }
 
       int FileStorage::commit ()
@@ -157,7 +224,7 @@ namespace fhg
 
         // merge transaction with values
 
-        return -EIO;
+        return 0;
       }
 
       // restore the layout discovered from the filesystem
