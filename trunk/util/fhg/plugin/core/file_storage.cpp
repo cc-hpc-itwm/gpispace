@@ -101,7 +101,7 @@ namespace fhg
         }
       }
 
-      FileStorage* FileStorage::get_storage(std::string const&k) const
+      Storage* FileStorage::get_storage(std::string const&k) const
       {
         if (not validate(k))
           return 0;

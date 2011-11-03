@@ -64,6 +64,10 @@ namespace fhg
       bool is_auto_commit () const { return m_auto_commit; }
       void set_auto_commit (bool b) { m_auto_commit = b; }
 
+      virtual int add_storage (std::string const &key) = 0;
+      virtual Storage *get_storage (std::string const &key) const = 0;
+      virtual int del_storage (std::string const &key) = 0;
+
       virtual int remove (std::string const &key) = 0;
       virtual int commit () = 0;
       virtual int flush () = 0;

@@ -58,7 +58,7 @@ namespace fhg
         int restore ();
 
         int add_storage(std::string const &key);
-        FileStorage *get_storage(std::string const & key) const;
+        Storage *get_storage(std::string const & key) const;
         int del_storage(std::string const &key);
 
         int remove (std::string const &key);
