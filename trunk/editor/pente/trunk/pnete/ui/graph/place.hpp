@@ -15,6 +15,7 @@
 
 class QWidget;
 class QStyleOptionGraphicsItem;
+class QPointF;
 
 #include <pnete/ui/graph/connectable_item.hpp>
 
@@ -46,6 +47,8 @@ namespace fhg
 
             const std::string& name() const;
             const std::string& we_type() const;
+
+            virtual void setPos (const QPointF&);
 
           public slots:
             void refresh_content();

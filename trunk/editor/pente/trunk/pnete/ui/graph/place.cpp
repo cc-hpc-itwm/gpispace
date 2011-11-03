@@ -1,4 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/graph/place.hpp>
 
@@ -6,6 +6,9 @@
 #include <QGraphicsSceneContextMenuEvent>
 
 #include <pnete/ui/graph/style/raster.hpp>
+
+#include <pnete/ui/graph/port.hpp>
+#include <pnete/ui/graph/transition.hpp>
 
 namespace fhg
 {
@@ -78,6 +81,26 @@ namespace fhg
                                      , 5.0
                                      , 5.0
                                      );
+          }
+
+          void item::setPos (const QPointF& new_position)
+          {
+            const QPointF old_position (pos());
+
+            graph::item::setPos (new_position);
+
+            foreach (QGraphicsItem* collidingItem, collidingItems())
+              {
+                if (  qgraphicsitem_cast<item*> (collidingItem)
+                   || qgraphicsitem_cast<transition::item*> (collidingItem)
+                   || qgraphicsitem_cast<port::top_level::item*> (collidingItem)
+                   )
+                  {
+                    graph::item::setPos (old_position);
+
+                    return;
+                  }
+              }
           }
 
 //           void item::mouseMoveEvent (QGraphicsSceneMouseEvent* event)
