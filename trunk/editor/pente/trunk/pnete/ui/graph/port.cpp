@@ -198,6 +198,11 @@ namespace fhg
               && connectable::item::is_connectable_with (item);
           }
 
+          static qreal quad (const qreal x)
+          {
+            return x * x;
+          }
+
           QPointF item::fitting_position (QPointF position)
           {
             if (!parentItem())
@@ -205,20 +210,17 @@ namespace fhg
                 return style::raster::snap (position);
               }
 
-            const QPointF minimum_distance ( boundingRect().width() / 2.0 + 1.0    // hardcoded constants
-                                           , boundingRect().height() / 2.0 + 1.0   // hardcoded constants
-                                           );
+            const QPointF minimum_distance
+              ( boundingRect().width() / 2.0 + 1.0    // hardcoded constants
+              , boundingRect().height() / 2.0 + 1.0   // hardcoded constants
+              );
 
             const QRectF bounding (parentItem()->boundingRect());
 
-            qreal to_left (position.x() - bounding.left());
-            qreal to_right (position.x() - bounding.right());
-            qreal to_top (position.y() - bounding.top());
-            qreal to_bottom (position.y() - bounding.bottom());
-            to_left *= to_left;
-            to_right *= to_right;
-            to_top *= to_top;
-            to_bottom *= to_bottom;
+            const qreal to_left (quad (position.x() - bounding.left()));
+            const qreal to_right (quad (position.x() - bounding.right()));
+            const qreal to_top (quad (position.y() - bounding.top()));
+            const qreal to_bottom (quad (position.y() - bounding.bottom()));
 
             orientation ( qMin (to_top, to_bottom) < qMin (to_left, to_right)
                         ? ( to_top < to_bottom
