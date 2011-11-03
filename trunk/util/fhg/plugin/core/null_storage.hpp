@@ -21,7 +21,7 @@ namespace fhg
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
       public:
-        ~NullStorage () {}
+        ~NullStorage ();
 
         int add_storage (std::string const &key);
         Storage *get_storage (std::string const &key) const;

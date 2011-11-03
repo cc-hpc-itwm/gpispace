@@ -8,6 +8,19 @@ namespace fhg
   {
     namespace core
     {
+      NullStorage::~NullStorage ()
+      {
+        for ( store_map_t::iterator start (m_stores.begin()), end(m_stores.end())
+            ; start != end
+            ; ++start
+            )
+        {
+          delete start->second;
+        }
+        m_stores.clear();
+        m_values.clear();
+      }
+
       int NullStorage::add_storage (std::string const &key)
       {
         lock_type lock (m_mutex);
