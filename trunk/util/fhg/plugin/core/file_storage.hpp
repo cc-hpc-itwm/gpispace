@@ -51,17 +51,18 @@ namespace fhg
 
         static bool validate(std::string const & key);
 
-        void restore ();
+        int restore ();
 
         int add_storage(std::string const &key);
         FileStorage *get_storage(std::string const & key) const;
         int del_storage(std::string const &key);
 
-        int save (std::string const &key, std::string const &value);
-        int load (std::string const &key, std::string &value);
         int remove (std::string const &key);
         int commit ();
         int flush ();
+      protected:
+        int write (std::string const &key, std::string const &value);
+        int read (std::string const &key, std::string &value);
       private:
         // restore the layout discovered from the filesystem
         void restore_storages();

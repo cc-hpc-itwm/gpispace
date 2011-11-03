@@ -37,10 +37,11 @@ namespace fhg
         return true;
       }
 
-      void FileStorage::restore ()
+      int FileStorage::restore ()
       {
         restore_storages();
         restore_values();
+        return 0;
       }
 
       int FileStorage::add_storage(std::string const &s)
@@ -69,7 +70,7 @@ namespace fhg
         return -ESRCH;
       }
 
-      int FileStorage::save (std::string const &key, std::string const &value)
+      int FileStorage::write (std::string const &key, std::string const &value)
       {
         if (not validate(key))
           return -EINVAL;
@@ -91,8 +92,13 @@ namespace fhg
         return 0;
       }
 
-      int FileStorage::load (std::string const &key, std::string &value)
+      int FileStorage::read (std::string const &key, std::string &value)
       {
+        if (not validate(key))
+        {
+          return -EINVAL;
+        }
+
         lock_type lock(m_mutex);
         if (m_stores.find(key) != m_stores.end())
           return -EPERM;
