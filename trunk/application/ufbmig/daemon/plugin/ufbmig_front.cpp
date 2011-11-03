@@ -107,12 +107,12 @@ public:
     info.m_uRemoteDaemonPort = info.m_uDaemonPort;
     info.m_uRemoteFileEnginePort = info.m_uFileEnginePort;
 
-    m_server->init(info);
-    m_server->handleExceptionsByLibrary(false);
-    m_server->addCommunication (new PSProMigIF::ServerCommunicationListen());
-
     try
     {
+      m_server->handleExceptionsByLibrary(false);
+      m_server->init(info);
+      m_server->addCommunication (new PSProMigIF::ServerCommunicationListen());
+
       MLOG(TRACE, "UfBMig frontend starting on port " << info.m_uPort);
 
       // start server control object
