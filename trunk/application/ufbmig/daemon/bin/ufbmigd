@@ -121,8 +121,9 @@ gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -
 
 log "starting ufbmigd..."
 prefix=${SDPA_HOME}
-FHGLOG_level=MIN $prefix/bin/fhgkernel \
+FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
     -s kernel.load.lazy=0 \
+    -s kernel.state.path="$SDPA_SCRATCH_DIR/state/ufbmigd" \
     -s plugin.net.name="${name}" \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \
