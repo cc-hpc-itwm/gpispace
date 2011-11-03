@@ -26,7 +26,7 @@ namespace gpi
       {
         header_t ()
           : length (0)
-          , version (0x02)
+          , version (0x01)
           , flags (0)
           , seq (0)
           , ack (0)
