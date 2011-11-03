@@ -59,6 +59,25 @@ void test_save_load_delete ()
   }
 }
 
+void test_save_load_invalid ()
+{
+  using namespace fhg::plugin::core;
+
+  FileStorage s (working_dir);
+
+  {
+    std::string text;
+    BOOST_REQUIRE_EQUAL(s.save("text", text), 0);
+  }
+
+  {
+    int i;
+    BOOST_REQUIRE_EQUAL(s.load("text", i), -EINVAL);
+  }
+
+  BOOST_REQUIRE_EQUAL(s.remove("text"), 0);
+}
+
 void test_restore ()
 {
   using namespace fhg::plugin::core;
@@ -155,6 +174,7 @@ init_unit_test_suite (int ac, char *av[])
     ts1->add( BOOST_TEST_CASE(&test_restore));
     ts1->add( BOOST_TEST_CASE(&test_hierachy));
     ts1->add( BOOST_TEST_CASE(&test_complex_state));
+    ts1->add( BOOST_TEST_CASE(&test_save_load_invalid));
 
     framework::master_test_suite().add( ts1 );
   }
