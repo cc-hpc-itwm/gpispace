@@ -1,6 +1,10 @@
 #ifndef FHG_PLUGIN_CORE_FILE_STORAGE_HPP
 #define FHG_PLUGIN_CORE_FILE_STORAGE_HPP 1
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <list>
 
 #include <boost/filesystem.hpp>
@@ -47,7 +51,7 @@ namespace fhg
         ~FileStorage();
 
         explicit
-        FileStorage (path_t const & path);
+        FileStorage (path_t const & path, int flags = O_CREAT, int mode = S_IRWXU);
 
         static bool validate(std::string const & key);
 
@@ -72,6 +76,8 @@ namespace fhg
 
         mutable mutex_type m_mutex;
         path_t m_path;
+        int m_flags;
+        int m_mode;
         storage_map_t m_stores;
         value_map_t m_values;
       };

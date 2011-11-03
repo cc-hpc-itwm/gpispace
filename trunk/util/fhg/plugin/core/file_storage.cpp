@@ -2,7 +2,12 @@
 
 #include <errno.h>
 
+#include <boost/filesystem/exception.hpp>
+#include <boost/system/error_code.hpp>
+
 #include "file_storage.hpp"
+
+namespace fs = boost::filesystem;
 
 namespace fhg
 {
@@ -18,9 +23,32 @@ namespace fhg
         }
       }
 
-      FileStorage::FileStorage(path_t const & path)
-        : m_path (path)
-      {}
+      FileStorage::FileStorage(path_t const & path, int flags, int mode)
+        : m_path (fs::absolute(path))
+        , m_flags (flags)
+        , m_mode (mode)
+      {
+        if (fs::exists(m_path))
+        {
+          if (! fs::is_directory(m_path))
+          {
+            throw fs::filesystem_error
+              ( "not a directory"
+              , path
+              , boost::system::errc::make_error_code(boost::system::errc::not_a_directory)
+              );
+          }
+        }
+        else
+        {
+          if (m_flags & O_CREAT)
+          {
+            fs::create_directories (m_path);
+            // this only works on UNIX
+            chmod (m_path.string().c_str(), mode);
+          }
+        }
+      }
 
       FileStorage::~FileStorage()
       {
@@ -117,12 +145,12 @@ namespace fhg
 
       int FileStorage::remove (std::string const &key)
       {
-        return 0;
+        return -ESRCH;
       }
 
       int FileStorage::flush ()
       {
-        return 0;
+        return -EIO;
       }
 
       int FileStorage::commit ()
@@ -133,7 +161,7 @@ namespace fhg
 
         // merge transaction with values
 
-        return 0;
+        return -EIO;
       }
 
       // restore the layout discovered from the filesystem

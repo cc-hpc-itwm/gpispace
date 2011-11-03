@@ -7,11 +7,15 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include <fhg/plugin/core/file_storage.hpp>
 
 using namespace boost::unit_test;
 
-static std::string working_dir;
+namespace fs = boost::filesystem;
+
+static fs::path working_dir;
 
 void test_simple_storage ()
 {
@@ -83,7 +87,8 @@ init_unit_test_suite (int ac, char *av[])
       ("I need the path to a temporary dictory to work in!");
   }
 
-  working_dir = av[1];
+  working_dir  = fs::path(av[1]);
+  working_dir /= "store";
 
   {
     test_suite* ts1 = BOOST_TEST_SUITE( "basic_storage" );
