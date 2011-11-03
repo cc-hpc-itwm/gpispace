@@ -33,11 +33,15 @@ public:
 
   FHG_PLUGIN_START()
   {
+    fhg_kernel()->storage()->load("counter", m_counter);
+    fhg_kernel()->storage()->load("timer", m_timer);
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
+    fhg_kernel()->storage()->save("counter", m_counter);
+    fhg_kernel()->storage()->save("timer", m_timer);
     print(std::cout);
     FHG_PLUGIN_STOPPED();
   }

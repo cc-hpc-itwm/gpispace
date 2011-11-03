@@ -14,6 +14,7 @@ namespace fhg
                                                )
       : m_plugin(p)
       , m_kernel(k)
+      , m_storage (0)
       , m_privileged(privileged)
     {
       assert (m_plugin);
@@ -67,6 +68,17 @@ namespace fhg
     fhg::core::plugin_t::ptr_t PluginKernelMediator::plugin()
     {
       return m_plugin;
+    }
+
+    fhg::plugin::Storage *PluginKernelMediator::storage()
+    {
+      if (! m_storage)
+      {
+        m_kernel->plugin_storage()->add_storage(m_plugin->name());
+        m_storage = m_kernel->plugin_storage()->get_storage(m_plugin->name());
+      }
+
+      return m_storage;
     }
 
     void PluginKernelMediator::schedule(fhg::plugin::task_t task)

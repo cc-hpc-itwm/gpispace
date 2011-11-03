@@ -9,6 +9,8 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
+#include <fhg/plugin/core/null_storage.hpp>
+#include <fhg/plugin/core/file_storage.hpp>
 
 #include <fhg/util/split.hpp>
 
@@ -31,6 +33,7 @@ namespace fhg
     kernel_t::kernel_t ()
       : m_tick_time (5 * 100 * 1000)
       , m_stop_requested (false)
+      , m_storage (0)
     {}
 
     kernel_t::~kernel_t ()
@@ -42,6 +45,8 @@ namespace fhg
       // segfault due to dynamic symbols
       assert (m_task_queue.empty());
       assert (m_pending_tasks.empty());
+
+      delete m_storage; m_storage = 0;
     }
 
     plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
@@ -61,6 +66,7 @@ namespace fhg
     int kernel_t::load_plugin(std::string const & file)
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
+
       int rc = 0;
 
       bool load_force (boost::lexical_cast<bool>(get("kernel.load.force", "0")));
@@ -82,10 +88,16 @@ namespace fhg
       }
 
       check_dependencies(p);
+
       // create mediator
       // todo: privileged plugin decision...
       // todo: write a control plugin that opens a socket or whatever
-      mediator_ptr m(new PluginKernelMediator(p, this, "control" == p->name()));
+      mediator_ptr m
+        (new PluginKernelMediator( p
+                                 , this
+                                 , "control" == p->name()
+                                 )
+        );
 
       rc = p->init();
       if (rc)
@@ -379,6 +391,58 @@ namespace fhg
     void kernel_t::reset ()
     {
       m_stop_requested = false;
+    }
+
+    fhg::plugin::Storage* kernel_t::storage ()
+    {
+      if (!m_storage)
+      {
+        initialize_storage();
+      }
+      return m_storage;
+    }
+
+    fhg::plugin::Storage* kernel_t::plugin_storage ()
+    {
+      if (!m_storage)
+      {
+        initialize_storage();
+      }
+      return m_storage->get_storage("plugin");
+    }
+
+    void kernel_t::initialize_storage()
+    {
+      if (m_storage)
+        return;
+
+      std::string state_path (get("kernel.state.path", ""));
+      if (! state_path.empty())
+      {
+        try
+        {
+          m_storage = new fhg::plugin::core::FileStorage ( state_path
+                                                         , O_CREAT
+                                                         );
+        }
+        catch (std::exception const &ex)
+        {
+          MLOG(ERROR, "could not create file storage: " << ex.what());
+          MLOG(WARN, "falling back to null-storage, persistence layer is not available!");
+          m_storage = new fhg::plugin::core::NullStorage;
+        }
+      }
+      else
+      {
+        m_storage = new fhg::plugin::core::NullStorage;
+      }
+
+      int ec = m_storage->add_storage("plugin");
+      if (ec)
+      {
+        throw std::runtime_error
+          (std::string("could initialize plugin storage: ") + strerror(-ec));
+      }
     }
 
     int kernel_t::run ()

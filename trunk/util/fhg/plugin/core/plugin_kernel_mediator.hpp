@@ -23,6 +23,8 @@ namespace fhg
       virtual fhg::plugin::Plugin * acquire(std::string const & name);
       virtual void release(std::string const &name);
 
+      fhg::plugin::Storage *storage();
+
       void schedule(fhg::plugin::task_t);
       void schedule(fhg::plugin::task_t, size_t ticks);
 
@@ -39,6 +41,7 @@ namespace fhg
     private:
       fhg::core::plugin_t::ptr_t m_plugin;
       fhg::core::kernel_t *m_kernel;
+      fhg::plugin::Storage *m_storage;
       bool m_privileged;
     };
   }

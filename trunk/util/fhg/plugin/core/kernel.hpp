@@ -112,6 +112,9 @@ namespace fhg
       int load_plugin (std::string const & file);
       int unload_plugin (std::string const &name);
 
+      fhg::plugin::Storage * storage();
+      fhg::plugin::Storage * plugin_storage();
+
       void unload_all ();
 
       void schedule(std::string const &owner, fhg::plugin::task_t);
@@ -126,6 +129,7 @@ namespace fhg
       void plugin_start_completed(std::string const & name, int);
       void plugin_failed(std::string const &name, int);
     private:
+      void initialize_storage ();
       void check_dependencies (fhg::core::plugin_t::ptr_t const &);
       void remove_pending_tasks (std::string const & owner);
       void notify_plugin_load (std::string const & name);
@@ -157,6 +161,8 @@ namespace fhg
       task_queue_t m_task_queue;
       task_queue_t m_pending_tasks;
       config_t m_config;
+
+      fhg::plugin::Storage *m_storage;
     };
   }
 }
