@@ -35,6 +35,21 @@ void test_invalid_key ()
   BOOST_REQUIRE (! Storage::validate (".."));
 }
 
+void test_permission_denied ()
+{
+  using namespace fhg::plugin::core;
+
+  try
+  {
+    FileStorage s ("/");
+    BOOST_REQUIRE (false);
+  }
+  catch (std::exception const &ex)
+  {
+    BOOST_REQUIRE (true);
+  }
+}
+
 void test_save_load_delete ()
 {
   using namespace fhg::plugin::core;
@@ -188,6 +203,7 @@ init_unit_test_suite (int ac, char *av[])
     ts1->add( BOOST_TEST_CASE(&test_complex_state));
     ts1->add( BOOST_TEST_CASE(&test_save_load_invalid));
     ts1->add( BOOST_TEST_CASE(&test_invalid_key));
+    ts1->add( BOOST_TEST_CASE(&test_permission_denied));
 
     framework::master_test_suite().add( ts1 );
   }
