@@ -51,7 +51,7 @@ namespace fhg
         ~FileStorage();
 
         explicit
-        FileStorage (path_t const & path, int flags = O_CREAT, int mode = S_IRWXU);
+        FileStorage (path_t const & path, int mode = S_IRWXU);
 
         static bool validate(std::string const & key);
 
@@ -76,7 +76,6 @@ namespace fhg
 
         mutable mutex_type m_mutex;
         path_t m_path;
-        int m_flags;
         int m_mode;
         storage_map_t m_stores;
         value_map_t m_values;

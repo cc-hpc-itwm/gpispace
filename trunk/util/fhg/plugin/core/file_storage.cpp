@@ -23,9 +23,8 @@ namespace fhg
         }
       }
 
-      FileStorage::FileStorage(path_t const & path, int flags, int mode)
+      FileStorage::FileStorage(path_t const & path, int mode)
         : m_path (fs::absolute(path))
-        , m_flags (flags)
         , m_mode (mode)
       {
         if (fs::exists(m_path))
@@ -41,12 +40,9 @@ namespace fhg
         }
         else
         {
-          if (m_flags & O_CREAT)
-          {
-            fs::create_directories (m_path);
-            // this only works on UNIX
-            chmod (m_path.string().c_str(), mode);
-          }
+          fs::create_directories (m_path);
+          // this only works on UNIX
+          chmod (m_path.string().c_str(), mode);
         }
       }
 
