@@ -32,29 +32,44 @@ namespace fhg
       {
         namespace scene
         {
-          type::type ( ::xml::parse::type::net_type & net
-                     , data::change_manager_t& change_manager
+          type::type ( ::xml::parse::type::net_type & n
+                     , data::change_manager_t& cm
                      , QObject* parent
                      )
             : QGraphicsScene (parent)
             , _pending_connection (NULL)
             , _mouse_position (QPointF (0.0, 0.0))
             , _menu_context()
-            , _net (net)
-            , _change_manager (change_manager)
+            , _net (n)
+            , _change_manager (cm)
           {
             init_menu_context();
 
-            connect ( &_change_manager
+            connect ( &change_manager()
                     , SIGNAL ( signal_delete_transition
                                ( const QObject*
                                , const ::xml::parse::type::transition_type&
-                               , ::xml::parse::type::net_type&
+                               , const ::xml::parse::type::net_type&
                                )
                              )
                     , SLOT ( slot_delete_transition
                              ( const QObject*
                              , const ::xml::parse::type::transition_type&
+                             , const ::xml::parse::type::net_type&
+                             )
+                           )
+                    , Qt::DirectConnection
+                    );
+            connect ( &change_manager()
+                    , SIGNAL ( signal_add_transition
+                               ( const QObject*
+                               , ::xml::parse::type::transition_type&
+                               , ::xml::parse::type::net_type&
+                               )
+                             )
+                    , SLOT ( slot_add_transition
+                             ( const QObject*
+                             , ::xml::parse::type::transition_type&
                              , ::xml::parse::type::net_type&
                              )
                            )
@@ -176,9 +191,37 @@ namespace fhg
               }
           }
 
+          ::xml::parse::type::net_type& type::net()
+          {
+            return _net;
+          }
+          data::change_manager_t& type::change_manager()
+          {
+            return _change_manager;
+          }
+
+
           void type::slot_add_transition ()
           {
-            qDebug() << "type::add_transition";
+            change_manager().add_transition (this, net());
+          }
+          void type::slot_add_transition
+          ( const QObject* origin
+          , ::xml::parse::type::transition_type& t
+          , ::xml::parse::type::net_type& n
+          )
+          {
+            if (is_my_net (n))
+              {
+                transition::item* trans (new transition::item (t, n));
+
+                addItem (trans);
+
+                if (origin == this)
+                  {
+                    trans->setPos (mouse_position());
+                  }
+              }
           }
 
           void type::slot_add_place ()
@@ -392,7 +435,7 @@ namespace fhg
           void type::slot_delete_transition
           ( const QObject* origin
           , const ::xml::parse::type::transition_type& trans
-          , ::xml::parse::type::net_type& net
+          , const ::xml::parse::type::net_type& net
           )
           {
             if (origin != this && is_my_net (net))
@@ -437,17 +480,17 @@ namespace fhg
 
             remove_transition_item (transition_item);
 
-            _change_manager.delete_transition ( this
-                                              , transition_item->transition()
-                                              , transition_item->net()
-                                              );
+            change_manager().delete_transition ( this
+                                               , transition_item->transition()
+                                               , transition_item->net()
+                                               );
 
             transition_item->deleteLater();
           }
 
-          bool type::is_my_net (const ::xml::parse::type::net_type& net)
+          bool type::is_my_net (const ::xml::parse::type::net_type& n)
           {
-            return &net == &_net;
+            return &n == &net();
           }
         }
       }

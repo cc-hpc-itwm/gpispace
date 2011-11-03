@@ -37,6 +37,10 @@ namespace fhg
                                , ::xml::parse::type::net_type&
                                );
 
+        void add_transition ( const QObject*
+                            , ::xml::parse::type::net_type&
+                            );
+
       signals:
         void signal_set_expression ( const QObject*
                                    , const ::xml::parse::type::expression_type&
@@ -54,8 +58,12 @@ namespace fhg
         void
         signal_delete_transition ( const QObject*
                                  , const ::xml::parse::type::transition_type&
-                                 , ::xml::parse::type::net_type&
+                                 , const ::xml::parse::type::net_type&
                                  );
+        void signal_add_transition ( const QObject*
+                                   , ::xml::parse::type::transition_type&
+                                   , ::xml::parse::type::net_type&
+                                   );
 
       private:
         internal_type& _internal;

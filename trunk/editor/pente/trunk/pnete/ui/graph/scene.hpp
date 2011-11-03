@@ -50,15 +50,23 @@ namespace fhg
                                    , bool only_reading
                                    );
 
+            ::xml::parse::type::net_type& net();
+            data::change_manager_t& change_manager();
+
+
           public slots:
             void slot_delete_transition (graph::item*);
             void
             slot_delete_transition ( const QObject*
                                    , const ::xml::parse::type::transition_type&
-                                   , ::xml::parse::type::net_type&
+                                   , const ::xml::parse::type::net_type&
                                    );
 
             void slot_add_transition ();
+            void slot_add_transition ( const QObject*
+                                     , ::xml::parse::type::transition_type&
+                                     , ::xml::parse::type::net_type&
+                                     );
             void slot_add_place ();
             void slot_add_struct ();
 

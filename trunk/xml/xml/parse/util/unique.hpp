@@ -51,7 +51,7 @@ namespace xml
         return *this;
       }
 
-      bool push (const T & x, T & old)
+      boost::optional<T&> push (const T& x, T& old)
       {
         const typename names_type::const_iterator found (_names.find (x.name));
 
@@ -59,13 +59,32 @@ namespace xml
           {
             old = *(found->second);
 
-            return false;
+            return boost::none;
           }
 
-        _names[x.name] = _elements.insert (_elements.end(), x);
+        typename elements_type::iterator
+          pos (_elements.insert (_elements.end(), x));
 
-        return true;
+        _names.insert (typename names_type::value_type (x.name, pos));
+
+        return *pos;
       }
+
+//       bool push (const T & x, T & old)
+//       {
+//         const typename names_type::const_iterator found (_names.find (x.name));
+
+//         if (found != _names.end())
+//           {
+//             old = *(found->second);
+
+//             return false;
+//           }
+
+//         _names[x.name] = _elements.insert (_elements.end(), x);
+
+//         return true;
+//       }
 
       bool push (const T & x)
       {

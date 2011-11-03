@@ -61,6 +61,16 @@ namespace fhg
 
         net.erase_transition (trans);
       }
+
+      void change_manager_t::add_transition
+      ( const QObject* origin
+      , ::xml::parse::type::net_type& net
+      )
+      {
+        ::xml::parse::type::transition_type trans;
+
+        emit signal_add_transition (origin, net.push_transition (trans), net);
+      }
     }
   }
 }

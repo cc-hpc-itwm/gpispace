@@ -161,14 +161,17 @@ namespace xml
             }
         }
 
-        void push_transition (const transition_type & t)
+        transition_type& push_transition (const transition_type & t)
         {
           transition_type old;
+          boost::optional<transition_type&> trans (_transitions.push (t, old));
 
-          if (!_transitions.push (t, old))
+          if (!trans)
             {
               throw error::duplicate_transition<transition_type> (t, old);
             }
+
+          return *trans;
         }
 
         void erase_transition (const transition_type& t)
