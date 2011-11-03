@@ -23,6 +23,19 @@ namespace fs = boost::filesystem;
 
 static fs::path working_dir;
 
+void test_invalid_key ()
+{
+  using namespace fhg::plugin::core;
+
+  BOOST_REQUIRE (! FileStorage::validate ("."));
+  BOOST_REQUIRE (! FileStorage::validate ("/"));
+  BOOST_REQUIRE (! FileStorage::validate ("/home"));
+  BOOST_REQUIRE (! FileStorage::validate ("../../foo"));
+  BOOST_REQUIRE (! FileStorage::validate ("foo.bar"));
+  BOOST_REQUIRE (! FileStorage::validate ("foo/../"));
+  BOOST_REQUIRE (! FileStorage::validate (".."));
+}
+
 void test_save_load_delete ()
 {
   using namespace fhg::plugin::core;
