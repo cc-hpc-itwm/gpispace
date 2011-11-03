@@ -167,8 +167,7 @@ namespace fhg
             {
               if (item* child = qgraphicsitem_cast<item *> (childItem))
                 {
-                  childs.push_back (child);
-                  childs += child->childs();
+                  childs << child << child->childs();
                 }
             }
 

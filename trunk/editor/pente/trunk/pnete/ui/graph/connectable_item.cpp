@@ -90,7 +90,7 @@ namespace fhg
 
             foreach (connection::item* connection, connections())
               {
-                childs.push_back (connection);
+                childs << connection;
               }
 
             return childs;
