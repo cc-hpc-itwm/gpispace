@@ -824,6 +824,7 @@ private:
     while (master->outstanding_events().size() && master->is_connected())
     {
       sdpa::events::SDPAEvent::Ptr evt(master->outstanding_events().get());
+      MLOG(TRACE, "re-sending " << evt->str());
       ensure_send_event (evt);
     }
   }
