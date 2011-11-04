@@ -100,7 +100,7 @@ const std::string USER("user");
 	  virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
 	  virtual void addCapability(const capability_t&) = 0;
 
-	  virtual bool isLeaf() = 0;
+	  virtual bool canRunTasksLocally() { return false; }
   };
 }}
 

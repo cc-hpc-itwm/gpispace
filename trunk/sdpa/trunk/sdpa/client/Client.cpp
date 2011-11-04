@@ -213,6 +213,7 @@ seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
   return wait_for_reply(timeout_);
 }
 
+// on t=0 blocks forever
 seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
 {
 	boost::unique_lock<boost::mutex> lock(mtx_);
