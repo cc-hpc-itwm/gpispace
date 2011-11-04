@@ -15,7 +15,7 @@ namespace fhg
   {
     namespace data
     {
-      class internal_type;
+      namespace internal { class type; }
 
       class manager
       {
@@ -24,7 +24,7 @@ namespace fhg
 
         typedef QString id_type;
         typedef boost::bimaps::set_of<id_type> ids_type;
-        typedef boost::bimaps::set_of<internal_type*> datas_type;
+        typedef boost::bimaps::set_of<internal::type*> datas_type;
         typedef boost::bimap<ids_type, datas_type> bimap_type;
 
         bimap_type _files;
@@ -34,9 +34,9 @@ namespace fhg
       public:
         static manager& instance();
 
-        internal_type* load (const QString& filename);
-        internal_type* create();
-        void save ( internal_type* data
+        internal::type* load (const QString& filename);
+        internal::type* create();
+        void save ( internal::type* data
                   , const boost::optional<const QString&> filename = boost::none
                   ) const;
         //! \todo add close!

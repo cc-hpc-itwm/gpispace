@@ -17,7 +17,7 @@ namespace fhg
   {
     namespace data
     {
-      class internal_type;
+      namespace internal { class type; }
     }
 
     namespace ui
@@ -64,7 +64,7 @@ namespace fhg
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);
 
-        void create_windows (data::internal_type* data);
+        void create_windows (data::internal::type* data);
       };
     }
   }

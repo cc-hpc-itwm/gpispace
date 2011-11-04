@@ -13,14 +13,14 @@ namespace fhg
   {
     namespace data
     {
-      class internal_type;
+      namespace internal { class type; }
 
       class change_manager_t : public QObject
       {
         Q_OBJECT;
 
       public:
-        change_manager_t (internal_type &);
+        change_manager_t (internal::type &);
 
       public:
 
@@ -73,7 +73,7 @@ namespace fhg
                               );
 
       private:
-        internal_type& _internal;
+        internal::type& _internal;
       };
     }
   }

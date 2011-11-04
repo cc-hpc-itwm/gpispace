@@ -190,17 +190,17 @@
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="142"/>
-        <source>new_net</source>
-        <translation>New net</translation>
+        <source>new</source>
+        <translation>New</translation>
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="143"/>
-        <source>open_net</source>
+        <source>open</source>
         <translation>Open</translation>
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="144"/>
-        <source>save_net</source>
+        <source>save</source>
         <translation>Save As</translation>
     </message>
     <message>

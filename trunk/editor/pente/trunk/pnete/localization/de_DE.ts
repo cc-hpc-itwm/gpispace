@@ -190,24 +190,24 @@
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="142"/>
-        <source>new_net</source>
-        <translation>Neues Netz</translation>
+        <source>new</source>
+        <translation>Neu</translation>
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="143"/>
-        <source>open_net</source>
+        <source>open</source>
         <translation>Öffnen</translation>
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="144"/>
-        <source>save_net</source>
+        <source>save</source>
         <translation>Speichern unter</translation>
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="145"/>
         <location filename="ui/editor_window.cpp" line="291"/>
         <source>close_current_window</source>
-        <translation>Netz schließen</translation>
+        <translation>Schließen</translation>
     </message>
     <message>
         <location filename="ui/editor_window.cpp" line="146"/>

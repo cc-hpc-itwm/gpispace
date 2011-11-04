@@ -99,8 +99,8 @@ namespace fhg
         file_tool_bar->setFloatable (false);
 
         QAction* create_action (new QAction (tr ("new"), this));
-        QAction* open_action (new QAction (tr ("open_net"), this));
-        QAction* save_action (_view_manager->save_current_file_action());
+        QAction* open_action (new QAction (tr ("open"), this));
+        QAction* save_action (_view_manager->action_save_current_file());
         QAction* close_action (new QAction (tr ("close_current_window"), this));
         QAction* quit_action (new QAction (tr ("quit_application"), this));
 
@@ -314,7 +314,7 @@ namespace fhg
         open (filename);
       }
 
-      void editor_window::create_windows (data::internal_type* data)
+      void editor_window::create_windows (data::internal::type* data)
       {
         _view_manager->create_widget (data->root_proxy());
         _structure_view->append (data);

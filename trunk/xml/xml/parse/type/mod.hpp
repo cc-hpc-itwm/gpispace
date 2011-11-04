@@ -83,6 +83,7 @@ namespace xml
 
         // ***************************************************************** //
 
+        mod_type () {}
         mod_type ( const std::string & _name
                  , const std::string & _function
                  , const boost::filesystem::path & path

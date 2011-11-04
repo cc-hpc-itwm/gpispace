@@ -21,7 +21,7 @@ namespace fhg
     namespace weaver
     {
       function::function ( function_with_mapping_type function_with_mapping
-                         , data::internal_type* root
+                         , data::internal::type* root
                          )
         : _proxy (NULL)
         , _function_with_mapping (function_with_mapping)
@@ -121,7 +121,7 @@ namespace fhg
       }
 
 
-      transition::transition ( data::internal_type* root
+      transition::transition ( data::internal::type* root
                              , ui::graph::scene::type* scene
                              , ui::graph::transition::item* transition
                              , XMLTYPE(net_type)& net
@@ -331,7 +331,7 @@ namespace fhg
           }
       }
 
-      net::net ( data::internal_type* root
+      net::net ( data::internal::type* root
                , ui::graph::scene::type* scene
                , XMLTYPE(net_type)& net
                , XMLTYPE(ports_type)& in

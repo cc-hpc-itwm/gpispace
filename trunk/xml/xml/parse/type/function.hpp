@@ -452,6 +452,11 @@ namespace xml
 
         // ***************************************************************** //
 
+        function_type () {}
+        function_type (const type& _f) : f (_f) {}
+
+        // ***************************************************************** //
+
         void add_expression (const expression_type & e)
         {
           boost::apply_visitor (visitor::join (e), f);

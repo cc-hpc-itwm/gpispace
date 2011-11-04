@@ -39,7 +39,7 @@ namespace fhg
         header()->hide();
       }
 
-      void StructureView::append (data::internal_type* data)
+      void StructureView::append (data::internal::type* data)
       {
         _datas.push_back (data);
 

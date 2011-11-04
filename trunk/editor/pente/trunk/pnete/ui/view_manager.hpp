@@ -7,6 +7,8 @@
 
 #include <pnete/data/proxy.hpp>
 
+#include <stack>
+
 class QAction;
 class QWidget;
 
@@ -21,52 +23,46 @@ namespace fhg
 
       class view_manager : public QObject
       {
-        Q_OBJECT
+        Q_OBJECT;
 
-        public:
-          view_manager (editor_window* parent);
+      public:
+        view_manager (editor_window* parent);
 
-        public slots:
-          void focus_changed (QWidget*);
+        QAction* action_save_current_file();
+
+      public slots:
+        void focus_changed (QWidget*);
 
         // net_view
         //! \todo QActions!, disable for non-nets
-          void current_view_zoom (int);
-          void current_view_zoom_in();
-          void current_view_zoom_out();
-          void current_view_reset_zoom();
+        void current_view_zoom (int);
+        void current_view_zoom_in();
+        void current_view_zoom_out();
+        void current_view_reset_zoom();
 
-          void current_scene_add_transition();
-          void current_scene_add_place();
-          void current_scene_add_struct();
-          void current_scene_auto_layout();
+        void current_scene_add_transition();
+        void current_scene_add_place();
+        void current_scene_add_struct();
+        void current_scene_auto_layout();
 
         // document, general
-          void duplicate_active_widget();
-          void create_widget (data::proxy::type &);
-          void current_widget_close();
+        void duplicate_active_widget();
+        void create_widget (data::proxy::type &);
+        void current_widget_close();
         void save_file();
 
-        signals:
+      signals:
         // net_view
-          void zoomed (int);
-        //void data_changed (function_type*);
+        void zoomed (int);
 
-      public:
-        QAction* save_current_file_action();
+      private:
+        editor_window* _editor_window;
 
-        private:
-          editor_window* _editor_window;
+        std::stack<document_view*> _accessed_widgets;
 
-          QList<document_view*> _accessed_widgets;
+        void add_on_top_of_current_widget (document_view* w);
 
-          void add_on_top_of_current_widget (document_view* w);
-
-        QAction* _save_current_file;
-        void initialize_actions();
-
-        void disable_file_actions();
-        void enable_file_actions();
+        QAction* _action_save_current_file;
       };
     }
   }

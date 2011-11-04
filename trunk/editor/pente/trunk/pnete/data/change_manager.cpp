@@ -11,7 +11,7 @@ namespace fhg
   {
     namespace data
     {
-      change_manager_t::change_manager_t (internal_type & i)
+      change_manager_t::change_manager_t (internal::type & i)
         : _internal (i)
       {}
 

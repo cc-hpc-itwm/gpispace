@@ -38,7 +38,7 @@ namespace fhg
         return *_instance_ptr;
       }
 
-      internal_type* manager::load (const QString& filename)
+      internal::type* manager::load (const QString& filename)
       {
         bimap_type::left_map::iterator pos (_files.left.find (filename));
 
@@ -48,7 +48,7 @@ namespace fhg
         }
         else
         {
-          internal_type* ret (new internal_type (filename));
+          internal::type* ret (new internal::type (filename));
 
           _files.insert (bimap_type::value_type (filename, ret));
 
@@ -56,20 +56,20 @@ namespace fhg
         }
       }
 
-      internal_type* manager::create()
+      internal::type* manager::create()
       {
         const QString filename ( QObject::tr ("unnamed-%1.xml")
                                . arg (++_unnamed_current)
                                );
 
-        internal_type* ret (new internal_type ());
+        internal::type* ret (new internal::type ());
 
         _files.insert (bimap_type::value_type (filename, ret));
 
         return ret;
       }
 
-      void manager::save ( internal_type* data
+      void manager::save ( internal::type* data
                          , const boost::optional<const QString &> filename
                          ) const
       {

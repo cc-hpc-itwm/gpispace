@@ -1,4 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <pnete/ui/view_manager.hpp>
 
@@ -30,39 +30,26 @@ namespace fhg
         : QObject (NULL)
         , _editor_window (parent)
         , _accessed_widgets()
-        , _save_current_file (NULL)
+        , _action_save_current_file (new QAction (tr ("save"), this))
       {
-        initialize_actions();
-      }
-
-      void view_manager::initialize_actions()
-      {
-        _save_current_file = new QAction (tr ("save_file"), this);
-        _save_current_file->setShortcuts (QKeySequence::Save);
-        _save_current_file->setEnabled (false);
-        connect (_save_current_file, SIGNAL (triggered()), SLOT (save_file()));
-      }
-
-      void view_manager::disable_file_actions()
-      {
-        _save_current_file->setEnabled (false);
-      }
-
-      void view_manager::enable_file_actions()
-      {
-        _save_current_file->setEnabled (true);
+        _action_save_current_file->setShortcuts (QKeySequence::Save);
+        _action_save_current_file->setEnabled (false);
+        connect ( _action_save_current_file
+                , SIGNAL (triggered())
+                , SLOT (save_file())
+                );
       }
 
       void view_manager::save_file()
       {
-        if (_accessed_widgets.isEmpty())
+        if (_accessed_widgets.empty())
         {
           return;
         }
 
         QString filename ( QFileDialog::getSaveFileName
                            ( _editor_window
-                           , tr ("Save net")
+                           , tr ("Save")
                            , QDir::homePath()
                            , tr ("XML files (*.xml);; All files (*)")
                            )
@@ -79,7 +66,7 @@ namespace fhg
         }
 
         data::manager::instance().save
-          ( data::proxy::root (_accessed_widgets.back()->widget()->proxy())
+          ( data::proxy::root (_accessed_widgets.top()->widget()->proxy())
           , filename
           );
       }
@@ -96,7 +83,7 @@ namespace fhg
                                    );
         }
 
-        _accessed_widgets.append (current_view);
+        _accessed_widgets.push (current_view);
 
         //! \todo enable and disable actions
 
@@ -125,19 +112,21 @@ namespace fhg
 
       void view_manager::add_on_top_of_current_widget (document_view* w)
       {
-        if (!_accessed_widgets.isEmpty())
-        {
-          _editor_window->tabifyDockWidget (_accessed_widgets.back(), w);
-        }
+        if (!_accessed_widgets.empty())
+          {
+            _editor_window->tabifyDockWidget (_accessed_widgets.top(), w);
+          }
         else
-        {
-          _editor_window->
+          {
+            _editor_window->
               addDockWidget (Qt::LeftDockWidgetArea, w, Qt::Horizontal);
-        }
+          }
+
         connect ( w->widget()
                 , SIGNAL (focus_gained (QWidget*))
                 , SLOT (focus_changed (QWidget*))
                 );
+
 //         connect ( w->graph()
 //                 , SIGNAL (zoomed (int))
 //                 , SIGNAL (zoomed (int))
@@ -150,38 +139,36 @@ namespace fhg
 
       void view_manager::duplicate_active_widget()
       {
-        if (_accessed_widgets.isEmpty())
-        {
-          return;
-        }
-
-        create_widget (_accessed_widgets.back()->widget()->proxy());
+        if (!_accessed_widgets.empty())
+          {
+            create_widget (_accessed_widgets.top()->widget()->proxy());
+          }
       }
       void view_manager::current_widget_close()
       {
-        if (_accessed_widgets.isEmpty())
+        if (!_accessed_widgets.empty())
         {
-          return;
-        }
-        document_view* current (_accessed_widgets.back());
-        _accessed_widgets.removeAll (current);
-        _editor_window->removeDockWidget (current);
-        delete current;
-        if (!_accessed_widgets.isEmpty())
-        {
-          _accessed_widgets.back()->widget()->setFocus();
-        }
-        else
-        {
-          disable_file_actions();
+          document_view* current (_accessed_widgets.top());
+          _accessed_widgets.pop ();
+          _editor_window->removeDockWidget (current);
+          delete current;
+
+          if (!_accessed_widgets.empty())
+            {
+              _accessed_widgets.top()->widget()->setFocus();
+            }
+          else
+            {
+              _action_save_current_file->setEnabled (false);
+            }
         }
       }
       void view_manager::create_widget (data::proxy::type& proxy)
       {
-        enable_file_actions();
-
         add_on_top_of_current_widget
           (data::proxy::document_view_factory (proxy));
+
+        _action_save_current_file->setEnabled (true);
       }
 
       // net_view, ACTIONS!
@@ -224,9 +211,9 @@ namespace fhg
         //_current_view->reset_zoom();
       }
 
-      QAction* view_manager::save_current_file_action()
+      QAction* view_manager::action_save_current_file()
       {
-        return _save_current_file;
+        return _action_save_current_file;
       }
     }
   }
