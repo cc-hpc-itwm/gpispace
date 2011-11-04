@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include <sdpa/logging.hpp>
 #include <seda/IEvent.hpp>
 #include <sdpa/memory.hpp>
 #include <sdpa/events/EventHandler.hpp>
