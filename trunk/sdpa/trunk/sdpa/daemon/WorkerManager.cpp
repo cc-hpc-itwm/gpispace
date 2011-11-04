@@ -33,20 +33,25 @@ WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 
 WorkerManager::~WorkerManager()
 {
-  DLOG(TRACE, "WorkerManager shutting down...");
-  LOG_IF( WARN
+	worker_map_.clear();
+	rank_map_.clear();
+	owner_map_.clear();
+
+	DLOG(TRACE, "WorkerManager shutting down...");
+	LOG_IF( WARN
         , worker_map_.size()
         , "there are still entries left in the worker map: " << worker_map_.size()
         );
-  LOG_IF( WARN
+
+	LOG_IF( WARN
         , rank_map_.size()
         , "there are still entries left in the rank map: " << rank_map_.size()
         );
-  LOG_IF( WARN
+	LOG_IF( WARN
         , owner_map_.size()
         , "there are still entries left in the owner map: " << owner_map_.size()
         );
-  LOG_IF( WARN
+	LOG_IF( WARN
         , common_queue_.size()
         , "there are still entries left in the common queue: " << common_queue_.size()
         );
