@@ -36,6 +36,8 @@ class SchedulerTestImpl : public Scheduler {
 
 	void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
+	void removeRecoveryInconsistencies(){}
+
     // thread related functions
     void start();
     void stop();

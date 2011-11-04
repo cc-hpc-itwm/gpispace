@@ -174,13 +174,13 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
 	int exit_code(4);
 
 	std::cerr << "starting at: " << poll_start << std::endl;
-
 	std::cout << "waiting for job to return..." << std::flush;
 
 	ptrCli->subscribe(job_id);
 
   	std::cout<<"The client successfully subscribed for orchestrator notifications ..."<<std::endl;
   	std::string job_status;
+
   	try
   	{
   		seda::IEvent::Ptr reply( ptrCli->waitForNotification(100000) );
@@ -211,20 +211,20 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
   						+ " code := "
   						+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
 
-  			ptrCli->shutdown_network();
+  			//ptrCli->shutdown_network();
   			return exit_code;
   		}
   		else
   		{
   			std::cerr<< "unexpected reply: " << (reply ? reply->str() : "null")<<std::endl;
-  			ptrCli->shutdown_network();
+  			//ptrCli->shutdown_network();
   			return exit_code;
   		}
   	}
   	catch (const sdpa::client::Timedout &)
   	{
   		std::cerr<< "Timeout expired!" <<std::endl;
-  		ptrCli->shutdown_network();
+  		//ptrCli->shutdown_network();
   		return exit_code;
   	}
 
@@ -287,7 +287,9 @@ void MyFixture::run_client_subscriber()
 
 
 		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
+		nTrials = 0;
 
+RETRY:
 		try {
 			LOG( DEBUG, "User: delete the job "<<job_id_user);
 			ptrCli->deleteJob(job_id_user);
@@ -295,13 +297,17 @@ void MyFixture::run_client_subscriber()
 		}
 		catch(const sdpa::client::ClientException& cliExc)
 		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
+			LOG(WARN, "Client exception occurred!(trial "<<nTrials<<")");
+			if(nTrials++>NMAXTRIALS)
+			{
+				LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
+				ptrCli->shutdown_network();
+				ptrCli.reset();
+				return;
+			}
 
 			boost::this_thread::sleep(boost::posix_time::seconds(3));
+			goto RETRY;
 		}
 	}
 
@@ -343,7 +349,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEWait)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-
 
 	typedef void OrchWorkflowEngine;
 
@@ -482,7 +487,6 @@ BOOST_AUTO_TEST_CASE( test2Subscribers_OrchNoWEWait)
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWEWait terminated!");
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEStopRestart)
 {
 	LOG( DEBUG, "testAgentsAndDrts_OrchNoWEStopRestart");
@@ -491,7 +495,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEStopRestart)
 	string workerUrl 	= "127.0.0.1:5500";
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
-
 
 	typedef void OrchWorkflowEngine;
 
@@ -533,5 +536,5 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEStopRestart)
 
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWEStopRestart terminated!");
 }
-*/
+
 BOOST_AUTO_TEST_SUITE_END()

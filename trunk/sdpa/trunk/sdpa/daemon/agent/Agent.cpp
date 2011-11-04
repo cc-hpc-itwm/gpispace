@@ -202,7 +202,10 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 	    pJob->JobFinished(pEvtJobFinished.get());
 
 	    if(!isSubscriber(pJob->owner()))
+	    {
+	    	SDPA_LOG_INFO("Post a JobFinished event to the master "<<pJob->owner());
 	    	sendEventToMaster(pEvtJobFinished);
+	    }
 
 	    BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 		{

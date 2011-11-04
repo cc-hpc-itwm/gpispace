@@ -743,8 +743,8 @@ void SchedulerImpl::run()
 				{
 					// just for testing
 					DLOG(TRACE, "I have no workers, therefore I'll try to execute myself the job "<<jobId.str()<<" ...");
-					if(ptr_comm_handler_->canRunTasksLocally())
-						execute(jobId);
+					//if(ptr_comm_handler_->canRunTasksLocally())
+						//execute(jobId);
 
 				} // else fail
 			}

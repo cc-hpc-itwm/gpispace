@@ -100,6 +100,7 @@ namespace sdpa { namespace daemon {
                 ar & result_;
                 ar & walltime_;
                 ar & type_;
+                ar & m_owner;
         }
 
     protected:
