@@ -81,6 +81,7 @@ set (tc_srcs
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
   test_AgentsAndDrts.cpp
+  test_StopRestartOrch.cpp
   test_StopRestartAgents.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
