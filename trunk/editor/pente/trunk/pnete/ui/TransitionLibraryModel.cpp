@@ -21,15 +21,18 @@ namespace fhg
     {
       const QString TransitionLibraryModel::mimeType ("pnete/transition");      // hardcoded constant
 
-      TransitionLibraryModel::TransitionLibraryModel(const QDir& path, QWidget* parent)
-      : QAbstractItemModel(parent),
-      _fileSystemWatcher(NULL),
-      _items(new TransitionLibraryItem("__DUMMY__ROOT__", true, this))          // hardcoded constant
+      TransitionLibraryModel::TransitionLibraryModel ( const QDir& path
+                                                     , QWidget* parent
+                                                     )
+        : QAbstractItemModel (parent)
+        , _fileSystemWatcher (NULL)
+        , _items (new TransitionLibraryItem("__DUMMY__ROOT__", true, this))          // hardcoded constant
       {
-        readContentFromDirectory(path.path());
+        readContentFromDirectory (path.path());
       }
 
-      void TransitionLibraryModel::readContentFromDirectory(const QString& path)
+      void
+      TransitionLibraryModel::readContentFromDirectory (const QString& path)
       {
         _items->clearChildren();
 
@@ -38,21 +41,29 @@ namespace fhg
         _items->sortChildren();
       }
 
-      void TransitionLibraryModel::addContentFromDirectory(const QString& path, bool trusted)
+      void
+      TransitionLibraryModel::addContentFromDirectory ( const QString& path
+                                                      , bool trusted
+                                                      )
       {
         if(trusted)
-        {
-          _trustedPaths.push_back(path);
-        }
+          {
+            _trustedPaths.push_back(path);
+          }
         else
-        {
-          _untrustedPaths.push_back(path);
-        }
+          {
+            _untrustedPaths.push_back(path);
+          }
         readContentFromDirectoryRecursive(_items, trusted, path);
         _items->sortChildren();
       }
 
-      void TransitionLibraryModel::readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const bool& trusted, const QString& path)
+      void
+      TransitionLibraryModel::readContentFromDirectoryRecursive
+      ( TransitionLibraryItem* currentRoot
+      , const bool& trusted
+      , const QString& path
+      )
       {
         setFileSystemWatcher (path);
 
@@ -101,7 +112,7 @@ namespace fhg
                 )
         {
           currentRoot->appendChild
-            ( new TransitionLibraryItem ( fileInfo.absoluteFilePath()
+            ( new TransitionLibraryItem ( fileInfo.baseName()
                                         , false
                                         , trusted
                                         , currentRoot
@@ -152,7 +163,12 @@ namespace fhg
           return 0;
         }
 
-        TransitionLibraryItem* parentItem = !parent.isValid() ? _items : static_cast<TransitionLibraryItem*>(parent.internalPointer());
+        const TransitionLibraryItem* parentItem
+          ( !parent.isValid()
+          ? _items
+          : static_cast<TransitionLibraryItem*>(parent.internalPointer())
+          );
+
         return parentItem->childCount();
       }
 
@@ -166,7 +182,9 @@ namespace fhg
         //! \todo symbols for trusted and untrusted entries? (lib / user)
         if(index.isValid())
         {
-          TransitionLibraryItem* item = static_cast<TransitionLibraryItem*>(index.internalPointer());
+          TransitionLibraryItem* item
+            (static_cast<TransitionLibraryItem*>(index.internalPointer()));
+
           switch(role)
           {
             case Qt::DisplayRole:
@@ -214,7 +232,8 @@ namespace fhg
       {
         //! \todo multiple at once!
 
-        TransitionLibraryItem* item = static_cast<TransitionLibraryItem*>(indexes.first().internalPointer());
+        TransitionLibraryItem* item
+          (static_cast<TransitionLibraryItem*>(indexes.first().internalPointer()));
         if(!item->is_folder())
         {
           //! \todo This is outdated shit.
@@ -238,10 +257,15 @@ namespace fhg
       {
         if(hasIndex(row, column, parent))
         {
-          TransitionLibraryItem* parentItem = !parent.isValid() ? _items : static_cast<TransitionLibraryItem*>(parent.internalPointer());
+          TransitionLibraryItem* parentItem
+            ( !parent.isValid()
+            ? _items
+            : static_cast<TransitionLibraryItem*>(parent.internalPointer())
+            );
 
-          TransitionLibraryItem* childItem = parentItem->child(row);
-          if(childItem)
+          TransitionLibraryItem* childItem (parentItem->child(row));
+
+          if (childItem)
           {
             return createIndex(row, column, childItem);
           }
@@ -257,8 +281,8 @@ namespace fhg
           return QModelIndex();
         }
 
-        TransitionLibraryItem* childItem = static_cast<TransitionLibraryItem*>(index.internalPointer());
-        TransitionLibraryItem* parentItem = childItem->parent();
+        TransitionLibraryItem* childItem (static_cast<TransitionLibraryItem*>(index.internalPointer()));
+        TransitionLibraryItem* parentItem (childItem->parent());
 
         if(parentItem == _items)
         {

@@ -3,10 +3,9 @@
 #ifndef _PNETE_UI_DOCK_WIDGET_HPP
 #define _PNETE_UI_DOCK_WIDGET_HPP 1
 
-#include <QObject>
 #include <QDockWidget>
 
-class QObject;
+class Widget;
 
 namespace fhg
 {
@@ -19,7 +18,11 @@ namespace fhg
         Q_OBJECT
 
       public:
-        dock_widget (const QString& title = "");
+        explicit dock_widget (const QString& = "<<unnamed dock_widget>>");
+        explicit dock_widget (const QString&, QWidget*);
+
+      private:
+        void init();
       };
     }
   }

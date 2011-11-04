@@ -2,10 +2,8 @@
 
 #include <QAction>
 #include <QDir>
-#include <QDockWidget>
 #include <QFileDialog>
 #include <QGridLayout>
-#include <QHeaderView>
 #include <QMenu>
 #include <QMenuBar>
 #include <QSpinBox>
@@ -15,11 +13,13 @@
 #include <QWidget>
 
 #include <pnete/ui/graph/scene.hpp>
+#include <pnete/ui/dock_widget.hpp>
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/GraphView.hpp>
 #include <pnete/ui/StructureView.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/view_manager.hpp>
+#include <pnete/ui/transition_library_view.hpp>
 
 #include <pnete/data/manager.hpp>
 #include <pnete/data/internal.hpp>
@@ -30,71 +30,41 @@ namespace fhg
   {
     namespace ui
     {
-      const Qt::DockWidgetArea dock_position (Qt::LeftDockWidgetArea);
+      static const Qt::DockWidgetArea dock_position (Qt::LeftDockWidgetArea);
 
       editor_window::editor_window (QWidget* parent)
         : QMainWindow (parent)
-        , _transition_library (NULL)
+        , _transition_library (new transition_library_view (20, 5, this))
         , _view_manager (new view_manager (this))
-      {
-        setup();
-      }
-
-      void editor_window::setup()
+        , _structure_view (new StructureView (this))
       {
         setWindowTitle (tr ("editor_window_title"));
-
-        setup_structure_view();
-        setup_initial_document ();
-        setup_transition_library();
-        setup_menu_and_toolbar();
 
         setDocumentMode (true);
         setDockNestingEnabled (true);
         setTabPosition (Qt::AllDockWidgetAreas, QTabWidget::North);
 
-        connect (_view_manager
-                , SIGNAL (view_changed (GraphView*))
-                , SLOT (view_changed (GraphView*))
-                );
-        connect (_view_manager
-                , SIGNAL (scene_changed (graph::scene::type*))
-                , SLOT (scene_changed (graph::scene::type*))
-                );
-      }
+        addDockWidget ( dock_position
+                      , new dock_widget ( tr ("library_window")
+                                        , _transition_library
+                                        )
+                      , Qt::Horizontal
+                      );
 
-      void editor_window::setup_initial_document ()
-      {
-        //! \note this is a dummy only.
-        setCentralWidget (new QWidget());
-        centralWidget()->hide();
-        create();
-      }
+        addDockWidget ( dock_position
+                      , new dock_widget ( tr ("structure_window")
+                                        , _structure_view
+                                        )
+                      , Qt::Horizontal
+                      );
 
-      void editor_window::scene_changed (graph::scene::type*)
-      {
-      }
-
-      void editor_window::view_changed (GraphView* view)
-      {
-        view->emit_current_zoom_level();
-      }
-
-      void editor_window::expand_library()
-      {
-        _transition_library->expandAll();
+        setup_menu_and_toolbar();
       }
 
       void editor_window::set_transition_library_path (const QString& path)
       {
-        TransitionLibraryModel* model
-            (new TransitionLibraryModel (QDir (path), this));
-        _transition_library->setModel (model);
-        _transition_library->expandAll();
-        _transition_library->setColumnWidth (0, 230);                           // hardcoded constant
-        _transition_library->setColumnWidth (1, 20);                            // hardcoded constant
-
-        connect (model, SIGNAL (layoutChanged()), SLOT (expand_library()));
+        _transition_library->setModel
+          (new TransitionLibraryModel (QDir (path), this));
       }
 
       void editor_window::add_transition_library_user_path ( const QString& path
@@ -103,7 +73,6 @@ namespace fhg
       {
         qobject_cast<TransitionLibraryModel*> (_transition_library->model())->
             addContentFromDirectory (path, trusted);
-        expand_library();
       }
 
       void editor_window::setup_menu_and_toolbar()
@@ -129,7 +98,7 @@ namespace fhg
         addToolBar (Qt::TopToolBarArea, file_tool_bar);
         file_tool_bar->setFloatable (false);
 
-        QAction* create_action (new QAction (tr ("new_net"), this));
+        QAction* create_action (new QAction (tr ("new"), this));
         QAction* open_action (new QAction (tr ("open_net"), this));
         QAction* save_action (_view_manager->save_current_file_action());
         QAction* close_action (new QAction (tr ("close_current_window"), this));
@@ -325,49 +294,6 @@ namespace fhg
         //menu_bar->addAction(createPopupMenu()->menuAction());
         //! \todo Open createPopupMenu() on menu_action::triggered().
         //! \todo Actually differ between documents and library / structure there.
-      }
-
-      class dock_widget : public QDockWidget
-      {
-        public:
-          dock_widget (const QString& n, QWidget* child, QWidget* parent = NULL)
-          : QDockWidget (n, parent)
-          {
-            setAllowedAreas (dock_position);
-            setFeatures ( QDockWidget::DockWidgetClosable
-                        | QDockWidget::DockWidgetMovable
-                        );
-
-            setWidget (child);
-          }
-      };
-
-      void editor_window::setup_transition_library()
-      {
-        _transition_library = new QTreeView (this);
-        _transition_library->setDragDropMode (QAbstractItemView::DragOnly);
-        _transition_library->header()->hide();
-
-        dock_widget* dw ( new dock_widget ( tr ("library_window")
-                                          , _transition_library
-                                          , this
-                                          )
-                        );
-        addDockWidget (dock_position, dw, Qt::Horizontal);
-        dw->hide();
-      }
-
-      void editor_window::setup_structure_view ()
-      {
-        _structure_view = new StructureView (this);
-
-        dock_widget* dw ( new dock_widget ( tr ("structure_window")
-                                          , _structure_view
-                                          , this
-                                          )
-                        );
-        addDockWidget (dock_position, dw, Qt::Horizontal);
-        dw->hide();
       }
 
       void editor_window::create()

@@ -21,6 +21,7 @@ set(ui_SRCS
   port_lists_widget.cpp
   ComboItemDelegate.cpp
   size.cpp
+  transition_library_view.cpp
 
   expression_view.cpp
   mod_view.cpp
@@ -52,6 +53,7 @@ set(ui_HDRS
   port_list_widget.hpp
   port_lists_widget.hpp
   size.hpp
+  transition_library_view.hpp
 
   expression_view.hpp
   mod_view.hpp
