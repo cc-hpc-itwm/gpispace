@@ -1010,6 +1010,11 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     	}
     	break;
     }
+    case ErrorEvent::SDPA_ENETWORKFAILURE:
+    {
+    	MLOG(WARN, "last message could not be sent due to a network failure!");
+
+    }
     default:
     {
     	MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
@@ -1487,7 +1492,7 @@ void GenericDaemon::workerJobFailed(const Worker::worker_id_t& worker_id, const 
 {
   if( hasWorkflowEngine() )
   {
-      DLOG(TRACE, "external job failed: " << jobId);
+	  SDPA_LOG_INFO("worker job failed: " << jobId);
       workflowEngine()->failed( jobId.str(), reason );
 
       try {
@@ -1510,7 +1515,7 @@ void GenericDaemon::workerJobFinished(const Worker::worker_id_t& worker_id, cons
 {
 	if( hasWorkflowEngine() )
 	{
-		DLOG(TRACE, "external job finished: " << jobId);
+		SDPA_LOG_INFO("worker job finished: " << jobId);
 		workflowEngine()->finished( jobId.str(), result );
 		try {
 		  jobManager()->deleteJob(jobId);
@@ -1532,7 +1537,7 @@ void GenericDaemon::workerJobCancelled(const Worker::worker_id_t& worker_id, con
 {
 	if( hasWorkflowEngine() )
 	{
-		DLOG(TRACE, "external job cancelled: " << jobId);
+		SDPA_LOG_INFO("worker job cancelled: " << jobId);
 		workflowEngine()->cancelled( jobId.str() );
 		try {
 			jobManager()->deleteJob(jobId);
