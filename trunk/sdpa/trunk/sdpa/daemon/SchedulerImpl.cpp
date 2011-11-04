@@ -219,7 +219,7 @@ void SchedulerImpl::delWorker( const Worker::worker_id_t& worker_id ) throw (Wor
 */
 void SchedulerImpl::schedule_local(const sdpa::job_id_t &jobId)
 {
-  SDPA_LOG_DEBUG("Called schedule_local ...");
+  SDPA_LOG_DEBUG("Schedule the job "<<jobId.str()<<" to the workflow engine!");
 
   id_type wf_id = jobId.str();
 
@@ -743,8 +743,8 @@ void SchedulerImpl::run()
 				{
 					// just for testing
 					DLOG(TRACE, "I have no workers, therefore I'll try to execute myself the job "<<jobId.str()<<" ...");
-					//if(ptr_comm_handler_->canRunTasksLocally())
-						//execute(jobId);
+					if(ptr_comm_handler_->canRunTasksLocally())
+						execute(jobId);
 
 				} // else fail
 			}

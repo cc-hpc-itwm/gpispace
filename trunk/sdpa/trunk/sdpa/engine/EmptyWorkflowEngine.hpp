@@ -172,7 +172,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     */
 	bool finished(const id_type& activityId, const result_type& result )
     {
-    	SDPA_LOG_DEBUG("The activity " << activityId<<" finished!");
+    	SDPA_LOG_DEBUG("The activity " << activityId<<" has finished!");
 
 		if(pIAgent_)
 		{
@@ -345,9 +345,10 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     		  we_result_t we_result = qResults.pop_and_wait();
 
     		  if(we_result.status == FINISHED)
-                    {
-                      pIAgent_->finished(we_result.jobId, we_result.result);
-                    }
+				{
+    			  SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" successfully finished!");
+				  pIAgent_->finished(we_result.jobId, we_result.result);
+				}
     		  else
     			  if(we_result.status == FAILED)
                             {
