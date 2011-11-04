@@ -2,6 +2,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
+#include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
 
 #include "peer.hpp"
@@ -582,10 +583,15 @@ namespace fhg
 
         started_.notify (0);
       }
-      catch (...)
+      catch (boost::system::system_error const &bse)
       {
+        LOG(ERROR, "could not update my location: " << bse.what());
+        started_.notify (bse.code().value());
+      }
+      catch (std::exception const &ex)
+      {
+        LOG(ERROR, "could not update my location: " << ex.what());
         started_.notify (1);
-        throw;
       }
     }
 
