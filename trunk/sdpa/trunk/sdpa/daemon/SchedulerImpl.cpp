@@ -839,17 +839,17 @@ void SchedulerImpl::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
   }
   catch(JobNotDeletedException const& ex1)
   {
-      SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<"!");
+	  SDPA_LOG_WARN("The job "<<job_id.str()<<" couldn't be found!");
       throw ex1;
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-      SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
+      SDPA_LOG_WARN("The worker "<<worker_id<<" couldn't be found!");
       throw ex2;
   }
   catch(const std::exception& ex3 )
   {
-      SDPA_LOG_ERROR("Unexpected exception occurred when trying to delete the job "<<job_id.str()<<" from the worker "<<worker_id<<": "<< ex3.what() );
+      SDPA_LOG_WARN("Unexpected exception occurred when trying to delete the job "<<job_id.str()<<" from the worker "<<worker_id<<": "<< ex3.what() );
       throw ex3;
   }
 }
