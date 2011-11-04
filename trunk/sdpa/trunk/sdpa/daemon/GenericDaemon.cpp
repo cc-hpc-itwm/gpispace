@@ -99,6 +99,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         recover(ifs);
 
         ptr_job_man_->updateJobInfo(this);
+        //scheduler()->removeRecoveryInconsistencies();
 
         //if( isTop() )
         {
@@ -162,13 +163,14 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
         recover(iostr);
 
         ptr_job_man_->updateJobInfo(this);
+        //scheduler()->removeRecoveryInconsistencies();
 
         //if( isTop() )
         {
             SDPA_LOG_WARN( "JobManager after recovering:" );
             ptr_job_man_->print();
 
-            SDPA_LOG_INFO("Worker manager after recovering:");
+            SDPA_LOG_INFO("Scheduler after recovering:");
             scheduler()->print();
         }
     }
@@ -301,6 +303,9 @@ void GenericDaemon::notifyWorkers(const T& ptrNotEvt)
 		SDPA_LOG_INFO("Send notification to the worker "<<*iter);
 	    sendEventToMaster(ptrNotEvt);
 	}
+
+	// remove workers
+    scheduler()->removeWorkers();
 }
 
 // TODO: work here
@@ -1682,14 +1687,14 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 	sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber ));
 	sendEventToMaster(ptrSubscAckEvt);
 
-	// check if the jobs for which subscribed are already in a terminal state
+	// check if the subscribed jobs are already in a terminal state
 	BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
 	{
 		try {
 			Job::ptr_t& pJob = findJob(jobId);
 			sdpa::status_t jobStatus = pJob->getStatus();
 
-			if(jobStatus.find("Finished") == std::string::npos)
+			if(jobStatus.find("Finished") != std::string::npos)
 			{
 				 JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
 																		   , subscriber
@@ -1698,7 +1703,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 																		   ));
 				 sendEventToMaster(pEvtJobFinished);
 			}
-			else if(jobStatus.find("Failed") == std::string::npos)
+			else if(jobStatus.find("Failed") != std::string::npos)
 			{
 				 JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent( name()
 																	   , subscriber
@@ -1708,7 +1713,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 
 				 sendEventToMaster(pEvtJobFailed);
 			}
-			else if( jobStatus.find("Cancelled") == std::string::npos)
+			else if( jobStatus.find("Cancelled") != std::string::npos)
 			{
 				 CancelJobAckEvent::Ptr pEvtCancelJobAck(new CancelJobAckEvent( name()
 																			   , subscriber
