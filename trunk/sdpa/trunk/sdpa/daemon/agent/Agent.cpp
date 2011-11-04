@@ -179,8 +179,7 @@ bool Agent::finished(const id_type & wfid, const result_type & result)
 	try {
 		pJob = ptr_job_man_->findJob(id);
 	}
-	catch(JobNotFoundException const &)
-	{
+	catch(JobNotFoundException const &){
 		SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
 		return false;
 	}
@@ -261,25 +260,22 @@ bool Agent::finished(const id_type& wfid, const result_type& result, const id_ty
 
 	try {
 	    // forward it up
-		JobFinishedEvent::Ptr pEvtJobFinished
-                          (new JobFinishedEvent( name()
-                                               , forward_to
-                                               , job_id
-                                               , result
-                                               )
-                          );
+		JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
+				   	   	   	   	   	   	   	   	   	   	   	   	   , forward_to
+				   	   	   	   	   	   	   	   	   	   	   	   	   , job_id
+				   	   	   	   	   	   	   	   	   	   	   	   	   , result ));
 
 	    // send the event to the master
 	    //sendEventToMaster(pEvtJobFinished);
 	    pJob->JobFinished(pEvtJobFinished.get());
 
-	    if(!isSubscriber(pJob->owner()))
+	    if( !isSubscriber(pJob->owner()) )
 	    	sendEventToMaster(pEvtJobFinished);
 
 		//publishEvent(*pEvtJobFinished);
 		BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 		{
-			if(subscribedFor(pair_subscr_joblist.first, job_id))
+			if( subscribedFor( pair_subscr_joblist.first, job_id) )
 			{
 				sdpa::events::SDPAEvent::Ptr ptrEvt( new JobFinishedEvent(*pEvtJobFinished) );
 				ptrEvt->from() = name();
@@ -332,9 +328,9 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
   // send a JobFailedAckEvent back to the worker/slave
   JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent( name()
-								              	  	  	  	  	  	  	  , pEvt->from()
-								              	  	  	  	  	  	  	  , pEvt->job_id()
-								              	  	  	  	  	  	  	  , pEvt->id() ) );
+																  , pEvt->from()
+																  , pEvt->job_id()
+																  , pEvt->id() ) );
   // send the event to the slave
   sendEventToSlave(pEvtJobFailedAckEvt);
 

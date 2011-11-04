@@ -39,7 +39,8 @@ namespace sdpa {
         : DaemonFSM( name, arrMasterNames, cap, rank ),
           SDPA_INIT_LOGGER(name),
           url_(url),
-          m_guiService("SDPA", guiUrl)
+          m_guiService("SDPA", guiUrl),
+          m_bLeaf(false)
         {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
           //ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::Scheduler(this));
@@ -95,15 +96,19 @@ namespace sdpa {
         void notifyAppGui(const result_type & result);
         //void requestRegistration(const MasterInfo& masterInfo);
 
+        void setLeaf() { m_bLeaf = true; }
+        bool isLeaf() { return m_bLeaf; }
+
         private:
         Scheduler* create_scheduler(bool bUseReqModel)
         {
-          DLOG(TRACE, "creating agent scheduler...");
-          return new AgentScheduler(this, bUseReqModel);
+        	DLOG(TRACE, "creating agent scheduler...");
+        	return new AgentScheduler(this, bUseReqModel);
         }
 
         std::string url_;
 
+        bool m_bLeaf;
         NotificationService m_guiService;
       };
   }

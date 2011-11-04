@@ -34,20 +34,19 @@ namespace sdpa {
 	   SchedulerImpl(pCommHandler, use_request_model),
 	   SDPA_INIT_LOGGER("Scheduler " + (pCommHandler?pCommHandler->name():"AGG"))
 	{
-
 	}
 
 	 virtual ~AgentScheduler()
 	 {
-	   try
-	   {
-	       LOG(TRACE, "destructing SchedulerAgg");
-	       stop();
-	   }
-	   catch (std::exception const & ex)
-	   {
-	       LOG(ERROR, "could not stop SchedulerAgg: " << ex.what());
-	   }
+		 try
+		 {
+			 LOG(TRACE, "destructing SchedulerAgg");
+			 stop();
+		 }
+		 catch (std::exception const & ex)
+		 {
+			 LOG(ERROR, "could not stop SchedulerAgg: " << ex.what());
+		 }
 	 }
 
 	 friend class boost::serialization::access;
@@ -55,7 +54,7 @@ namespace sdpa {
 	 template <class Archive>
 	 void serialize(Archive& ar, const unsigned int /* file_version */)
 	 {
-	   ar & boost::serialization::base_object<SchedulerImpl>(*this);
+		 ar & boost::serialization::base_object<SchedulerImpl>(*this);
 	 }
 
   private:
