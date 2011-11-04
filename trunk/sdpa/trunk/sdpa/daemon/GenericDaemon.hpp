@@ -203,7 +203,7 @@ namespace sdpa { namespace daemon {
       virtual bool requestsAllowed();
 
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
-      void  setScheduler(Scheduler* p) {ptr_scheduler_ = Scheduler::ptr_t(p);}
+      void setScheduler(Scheduler* p) {ptr_scheduler_ = Scheduler::ptr_t(p);}
 
       template <class Archive>
       void serialize(Archive& ar, const unsigned int)
@@ -336,7 +336,7 @@ protected:
         condition_type cond_can_start_;
 
         mutex_type mtx_subscriber_;
-      protected:
+	protected:
         bool m_bRequestsAllowed;
         bool m_bStopped;
         bool m_bStarted;
