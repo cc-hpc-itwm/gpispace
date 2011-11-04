@@ -691,86 +691,86 @@ void SchedulerImpl::execute(const sdpa::job_id_t& jobId)
 	}
 	else
 	{
-		SDPA_LOG_ERROR("Invalid status of the executed activity received from the NRE worker!");
+		SDPA_LOG_ERROR("Invalid status of the executed activity received from the worker!");
 		ptr_comm_handler_->workerJobFailed("", jobId, result.second);
 	}
 }
 
 void SchedulerImpl::run()
 {
-  if(!ptr_comm_handler_)
-  {
-      SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
-      stop();
-      return;
-  }
+	if(!ptr_comm_handler_)
+	{
+		SDPA_LOG_ERROR("The scheduler cannot be started. Invalid communication handler. ");
+		stop();
+		return;
+	}
 
-  SDPA_LOG_DEBUG("Scheduler thread running ...");
+	SDPA_LOG_DEBUG("Scheduler thread running ...");
 
-  while(!bStopRequested)
-  {
-      try
-      {
-    	  check_post_request(); // eventually, post a request to the master
+	while(!bStopRequested)
+	{
+		try
+		{
+			check_post_request(); // eventually, post a request to the master
 
-    	  if( numberOfWorkers()>0 )
-    		  feed_workers(); //eventually, feed some workers
+			if( numberOfWorkers()>0 )
+				feed_workers(); //eventually, feed some workers
 
-          sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
-          const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+			sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
+			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-          if( !pJob->isMasterJob() ) //it's a we job
-          {
-              // if it's an NRE just execute it!
-              // Attention!: an NRE has no WorkerManager!!!!
-              // or has an Worker Manager and the workers are threads
-        	  if( numberOfWorkers()>0 ) //
-        	  {
-				  try
-				  {
-					  schedule_remote(jobId);
-				  }
-				  catch( const NoWorkerFoundException& ex)
-				  {
-					  SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
-					  // do so as when no preferences were set, just ignore them right now
-					  //schedule_anywhere(jobId);
+			if( !pJob->isMasterJob() ) //it's a we job
+			{
+				// if it's an NRE just execute it!
+				// Attention!: an NRE has no WorkerManager!!!!
+				// or has an Worker Manager and the workers are threads
+				if( numberOfWorkers()>0 ) //
+				{
+					try
+					{
+						schedule_remote(jobId);
+					}
+					catch( const NoWorkerFoundException& ex)
+					{
+						SDPA_LOG_DEBUG("No valid worker found! Put the job "<<jobId.str()<<" into the common queue");
+						// do so as when no preferences were set, just ignore them right now
+						//schedule_anywhere(jobId);
 
-					  ptr_worker_man_->dispatchJob(jobId);
-				  }
-        	  }
-        	  else //  if has backends try to execute it
-        	  {
-        		  // just for testing
-				  DLOG(TRACE, "I have no workers, therefore I'll try to execute myself the job "<<jobId.str()<<" ...");
-				  //if(ptr_comm_handler_->isLeaf())
-					  //execute(jobId);
+						ptr_worker_man_->dispatchJob(jobId);
+					}
+				}
+				else //  if has backends try to execute it
+				{
+					// just for testing
+					DLOG(TRACE, "I have no workers, therefore I'll try to execute myself the job "<<jobId.str()<<" ...");
+					//if(ptr_comm_handler_->canRunTasksLocally())
+						//execute(jobId);
 
-        	  } // else fail
-          }
-          else // it's a master job
-        	  schedule_local(jobId);
-      }
-      catch(const JobNotFoundException& ex)
-      {
-          SDPA_LOG_WARN("Could not schedule the job "<<ex.job_id().str()<<". Job not found -> possible recovery inconsistency ...)");
-      }
-      catch( const boost::thread_interrupted & )
-      {
-          DMLOG(DEBUG, "Thread interrupted ...");
-          bStopRequested = true; // FIXME: can probably be removed
-          break;
-      }
-      catch( const sdpa::daemon::QueueEmpty &)
-      {
-          // ignore
-      }
-      catch ( const std::exception &ex )
-      {
-          MLOG(ERROR, "exception in scheduler thread: " << ex.what());
-          throw;
-      }
-  }
+				} // else fail
+			}
+			else // it's a master job
+				schedule_local(jobId);
+		}
+		catch(const JobNotFoundException& ex)
+		{
+			SDPA_LOG_WARN("Could not schedule the job "<<ex.job_id().str()<<". Job not found -> possible recovery inconsistency ...)");
+		}
+		catch( const boost::thread_interrupted & )
+		{
+			DMLOG(DEBUG, "Thread interrupted ...");
+			bStopRequested = true; // FIXME: can probably be removed
+			break;
+		}
+		catch( const sdpa::daemon::QueueEmpty &)
+		{
+			// ignore
+		}
+		catch ( const std::exception &ex )
+		{
+			MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+			throw;
+		}
+	}
 }
 
 void SchedulerImpl::print()
