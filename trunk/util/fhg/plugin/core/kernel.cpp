@@ -46,7 +46,11 @@ namespace fhg
       assert (m_task_queue.empty());
       assert (m_pending_tasks.empty());
 
-      delete m_storage; m_storage = 0;
+      if (m_storage)
+      {
+        delete m_storage;
+        m_storage = 0;
+      }
     }
 
     plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
