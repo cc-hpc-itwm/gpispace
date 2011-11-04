@@ -225,7 +225,7 @@ void JobManager::updateJobInfo(sdpa::daemon::IComm* p)
 void JobManager::resubmitJobsAndResults(IComm* pComm)
 {
     lock_type lock(mtx_);
-    SDPA_LOG_INFO("Re-submit to the master the finished/failed/cancelled jobs)!");
+    SDPA_LOG_INFO("Re-submit to the master the the results of the jobs that are either finished, failed or cancelled!)!");
 
     for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
     {
