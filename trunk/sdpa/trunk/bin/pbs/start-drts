@@ -171,6 +171,10 @@ done
 
 # config values (kernel)
 cfg="$cfg -s kernel.load.lazy=0"
+stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
+if [ x"$stateful" = x"true" ] ; then
+    cfg="$cfg -S $SDPA_SCRATCH_DIR/state/kernel/$name"
+fi
 
 # config values (kvs plugin)
 kvs_host=$(echo "$kvs_url" | cut -d: -f1)
