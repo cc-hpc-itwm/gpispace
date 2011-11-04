@@ -49,6 +49,7 @@ namespace sdpa { namespace events {
           SDPA_EUNKNOWN,
           SDPA_EJOBREJECTED,
           SDPA_EPERM,
+          SDPA_ENETWORKFAILURE
       };
 
       ErrorEvent()
