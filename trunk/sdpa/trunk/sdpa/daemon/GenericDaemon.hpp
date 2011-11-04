@@ -265,6 +265,8 @@ namespace sdpa { namespace daemon {
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
+      virtual bool isLeaf() { return false; }
+
 protected:
 
        // observe workflow engine
