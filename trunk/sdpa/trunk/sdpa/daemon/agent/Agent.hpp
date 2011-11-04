@@ -34,13 +34,14 @@ namespace sdpa {
               const std::string& url = "",
               const sdpa::master_info_list_t arrMasterNames = sdpa::master_info_list_t(),
               unsigned int cap = 10000,
+              bool bCanRunTasksLocally = false,
               unsigned int rank = 0,
               const std::string& guiUrl = "")
         : DaemonFSM( name, arrMasterNames, cap, rank ),
           SDPA_INIT_LOGGER(name),
           url_(url),
           m_guiService("SDPA", guiUrl),
-          m_bLeaf(false)
+          m_bCanRunTasksLocally(bCanRunTasksLocally)
         {
           SDPA_LOG_DEBUG("Agent's constructor called ...");
           //ptr_scheduler_ =  sdpa::daemon::Scheduler::ptr_t(new sdpa::daemon::Scheduler(this));
@@ -84,9 +85,10 @@ namespace sdpa {
         {
           ar & boost::serialization::base_object<DaemonFSM>(*this);
           ar & url_; //boost::serialization::make_nvp("url_", url_);
-          //ar & m_arrMasterNames; //boost::serialization::make_nvp("url_", m_arrMasterNames);
+          ar & m_bCanRunTasksLocally;
         }
 
+        bool canRunTasksLocally() { return m_bCanRunTasksLocally; }
         virtual void backup( std::ostream& );
         virtual void recover( std::istream& );
 
@@ -95,9 +97,6 @@ namespace sdpa {
 
         void notifyAppGui(const result_type & result);
         //void requestRegistration(const MasterInfo& masterInfo);
-
-        void setLeaf() { m_bLeaf = true; }
-        bool isLeaf() { return m_bLeaf; }
 
         private:
         Scheduler* create_scheduler(bool bUseReqModel)
@@ -109,7 +108,7 @@ namespace sdpa {
         std::string url_;
 
         NotificationService m_guiService;
-        bool m_bLeaf;
+        bool m_bCanRunTasksLocally;
       };
   }
 }

@@ -751,5 +751,3 @@ void Agent::notifyAppGui(const result_type & result)
     	SDPA_LOG_INFO("Sent notification to the application gui! (result ="<<result<<")");
 	 */
 }
-
-
