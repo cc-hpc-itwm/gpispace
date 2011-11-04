@@ -215,34 +215,28 @@ seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 
 seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
 {
-  boost::unique_lock<boost::mutex> lock(mtx_);
+	boost::unique_lock<boost::mutex> lock(mtx_);
 
-  while (reply_.get() == NULL)
-  {
-    if (t)
-    {
-      const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(t));
-      if (! cond_.timed_wait(lock, to))
-      {
-        if (reply_.get() != NULL)
-        {
-          break;
-        }
-        else
-        {
-          throw Timedout("did not receive reply");
-        }
-      }
-    }
-    else
-    {
-      cond_.wait(lock);
-    }
-  }
+	while (reply_.get() == NULL)
+	{
+		if (t)
+		{
+			const boost::system_time to(boost::get_system_time() + boost::posix_time::milliseconds(t));
+			if (!cond_.timed_wait(lock, to))
+			{
+				if (reply_.get() != NULL)
+					break;
+				else
+					throw Timedout("did not receive reply");
+			}
+		}
+		else
+			cond_.wait(lock);
+	}
 
-  seda::IEvent::Ptr ret(reply_);
-  reply_.reset();
-  return ret;
+	seda::IEvent::Ptr ret(reply_);
+	reply_.reset();
+	return ret;
 }
 
 void Client::clear_reply()
