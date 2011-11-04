@@ -88,11 +88,13 @@ namespace sdpa
 
         if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
         {
-          sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
-          if (err)
-          {
-            super::perform (err);
-          }
+        	//sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
+        	sdpa::events::ErrorEvent::Ptr ptrErrEvt( new sdpa::events::ErrorEvent(	sdpa_event->to(),
+        																			sdpa_event->from(),
+        																			sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE,
+        																			sdpa_event->str()));
+        	if (ptrErrEvt)
+        		super::perform (ptrErrEvt);
         }
       }
     }
