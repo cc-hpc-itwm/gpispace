@@ -4,6 +4,11 @@
 #include <string>
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/time_serialize.hpp>
+
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/version.hpp>
 
 namespace drts
 {
@@ -77,6 +82,24 @@ namespace drts
     void started   (boost::posix_time::ptime const &t) { m_started = t; }
     void completed (boost::posix_time::ptime const &t) { m_completed = t; }
   private:
+    friend class boost::serialization::access;
+    template <typename Archive>
+    void serialize (Archive & ar, const unsigned int version)
+    {
+      ar & BOOST_SERIALIZATION_NVP(m_id);
+      ar & BOOST_SERIALIZATION_NVP(m_description);
+      ar & BOOST_SERIALIZATION_NVP(m_owner);
+      ar & BOOST_SERIALIZATION_NVP(m_state);
+      ar & BOOST_SERIALIZATION_NVP(m_result);
+
+      if (version > 0)
+      {
+        ar & BOOST_SERIALIZATION_NVP(m_entered);
+        ar & BOOST_SERIALIZATION_NVP(m_started);
+        ar & BOOST_SERIALIZATION_NVP(m_completed);
+      }
+    }
+
     inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
     mutable mutex_type m_mutex;
 
@@ -91,6 +114,9 @@ namespace drts
     boost::posix_time::ptime m_started;
     boost::posix_time::ptime m_completed;
   };
+
 }
+
+BOOST_CLASS_VERSION(drts::Job, 1);
 
 #endif
