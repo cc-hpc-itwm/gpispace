@@ -672,9 +672,9 @@ int main (int argc, char **argv) {
 
     api->shutdown_network();
   }
-  catch (const sdpa::client::ClientException &ce)
+  catch (std::exception const &ex)
   {
-    std::cerr << "failed: " << ce.what() << std::endl;
+    std::cerr << "failed: " << ex.what() << std::endl;
     return 3;
   }
 }
