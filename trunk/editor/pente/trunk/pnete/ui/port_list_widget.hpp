@@ -16,10 +16,9 @@ namespace fhg
   {
     namespace ui
     {
-      //! \todo use tiberiu's type selections combobox
-      //! \todo implies to use QTableView
       //! \todo make this nicer
       //! \todo add edit facilities
+      //! \todo adjust column sizes automatically
       class port_list_widget : public QTableView
       {
         Q_OBJECT;

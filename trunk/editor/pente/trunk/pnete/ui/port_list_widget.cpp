@@ -50,10 +50,12 @@ namespace fhg
             (row, 1, new QStandardItem (QString::fromStdString(port->type)));
         }
 
-        resizeRowsToContents(); // Adjust the row height.
-        resizeColumnsToContents(); // Adjust the column width.
+        resizeRowsToContents();
+        resizeColumnsToContents();
 
     	setModel (model);
+
+        setSelectionMode (QAbstractItemView::NoSelection);
       }
     }
   }
