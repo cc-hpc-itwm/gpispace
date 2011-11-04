@@ -968,7 +968,7 @@ private:
     if (0 != ec)
     {
       // check master
-      map_of_masters_t::iterator master (m_masters.find(evt->from()));
+      map_of_masters_t::iterator master (m_masters.find(evt->to()));
       if (master != m_masters.end())
       {
         master->second->outstanding_events().put(evt);
