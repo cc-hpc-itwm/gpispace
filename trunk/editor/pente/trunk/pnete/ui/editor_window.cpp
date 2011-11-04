@@ -98,29 +98,49 @@ namespace fhg
         addToolBar (Qt::TopToolBarArea, file_tool_bar);
         file_tool_bar->setFloatable (false);
 
-        QAction* create_action (new QAction (tr ("new"), this));
+        QMenu* menu_new (new QMenu (tr("new")));
+        QAction* action_new_expression (menu_new->addAction (tr("expression")));
+        action_new_expression->setShortcut (QKeySequence("Ctrl+E"));
+        connect ( action_new_expression
+                , SIGNAL (triggered())
+                , SLOT (slot_new_expression())
+                );
+        QAction* action_new_module_call (menu_new->addAction (tr("module_call")));
+        action_new_module_call->setShortcut (QKeySequence("Ctrl+M"));
+        connect ( action_new_module_call
+                , SIGNAL (triggered())
+                , SLOT (slot_new_module_call())
+                );
+        QAction* action_new_net (menu_new->addAction (tr("net")));
+        connect ( action_new_net
+                , SIGNAL (triggered())
+                , SLOT (slot_new_net())
+                );
+        action_new_net->setShortcut (QKeySequence::New);
+        file_menu->addMenu (menu_new);
+
         QAction* open_action (new QAction (tr ("open"), this));
         QAction* save_action (_view_manager->action_save_current_file());
         QAction* close_action (new QAction (tr ("close_current_window"), this));
         QAction* quit_action (new QAction (tr ("quit_application"), this));
 
-        create_action->setShortcuts (QKeySequence::New);
-        open_action->setShortcuts (QKeySequence::Open);
-        close_action->setShortcuts (QKeySequence::Close);
-        quit_action->setShortcuts (QKeySequence::Quit);
+        open_action->setShortcut (QKeySequence::Open);
+        close_action->setShortcut (QKeySequence::Close);
+        quit_action->setShortcut (QKeySequence::Quit);
 
-        connect (create_action, SIGNAL (triggered()), SLOT (create()));
         connect (open_action, SIGNAL (triggered()), SLOT (open()));
         connect (close_action, SIGNAL (triggered()), SLOT (close_document()));
         connect (quit_action, SIGNAL (triggered()), SLOT (quit()));
 
-        file_menu->addAction (create_action);
         file_menu->addAction (open_action);
         file_menu->addAction (save_action);
         file_menu->addAction (close_action);
         file_menu->addAction (quit_action);
 
-        file_tool_bar->addAction (create_action);
+        file_tool_bar->addAction (action_new_expression);
+        file_tool_bar->addAction (action_new_module_call);
+        file_tool_bar->addAction (action_new_net);
+        file_tool_bar->addAction (action_new_expression);
         file_tool_bar->addAction (open_action);
         file_tool_bar->addAction (save_action);
       }
@@ -296,9 +316,23 @@ namespace fhg
         //! \todo Actually differ between documents and library / structure there.
       }
 
-      void editor_window::create()
+      void editor_window::slot_new_expression()
       {
-        create_windows (data::manager::instance().create());
+        create_windows ( data::manager::instance()
+                       . create(data::internal::kind::expression)
+                       );
+      }
+      void editor_window::slot_new_module_call()
+      {
+        create_windows ( data::manager::instance()
+                       . create(data::internal::kind::module_call)
+                       );
+      }
+      void editor_window::slot_new_net()
+      {
+        create_windows ( data::manager::instance()
+                       . create(data::internal::kind::net)
+                       );
       }
 
       void editor_window::open()

@@ -24,8 +24,6 @@ namespace fhg
         namespace kind
         {
           enum type {expression, module_call, net};
-
-          ::xml::parse::type::function_type::type make (const type&);
         }
 
         class type

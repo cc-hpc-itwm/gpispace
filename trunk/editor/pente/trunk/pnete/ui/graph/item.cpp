@@ -76,6 +76,7 @@ namespace fhg
         }
         void item::set_just_pos_but_not_in_property (const QPointF& new_pos)
         {
+          //! \todo update more clever
           foreach (item* child, childs())
             {
               child->setVisible (false);

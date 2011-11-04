@@ -12,8 +12,6 @@
 
 #include <stdexcept>
 
-#include <pnete/data/internal.hpp>
-
 #include <fstream>
 
 namespace fhg
@@ -56,13 +54,13 @@ namespace fhg
         }
       }
 
-      internal::type* manager::create()
+      internal::type* manager::create (const internal::kind::type& kind)
       {
         const QString filename ( QObject::tr ("unnamed-%1.xml")
                                . arg (++_unnamed_current)
                                );
 
-        internal::type* ret (new internal::type ());
+        internal::type* ret (new internal::type (kind));
 
         _files.insert (bimap_type::value_type (filename, ret));
 

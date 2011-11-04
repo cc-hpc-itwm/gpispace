@@ -20,7 +20,7 @@ namespace fhg
       {
         namespace kind
         {
-          ::xml::parse::type::function_type::type make (const type& t)
+          static ::xml::parse::type::function_type::type make (const type& t)
           {
             switch (t)
               {

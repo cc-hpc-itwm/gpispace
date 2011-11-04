@@ -47,7 +47,9 @@ namespace fhg
         virtual QMenu* createPopupMenu();
 
       public slots:
-        void create();
+        void slot_new_expression();
+        void slot_new_module_call();
+        void slot_new_net();
         void open();
         void open (const QString& filename);
         void close_document();

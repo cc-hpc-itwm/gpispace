@@ -9,14 +9,14 @@
 #include <boost/bimap/set_of.hpp>
 #include <boost/optional.hpp>
 
+#include <pnete/data/internal.hpp>
+
 namespace fhg
 {
   namespace pnete
   {
     namespace data
     {
-      namespace internal { class type; }
-
       class manager
       {
       private:
@@ -35,7 +35,7 @@ namespace fhg
         static manager& instance();
 
         internal::type* load (const QString& filename);
-        internal::type* create();
+        internal::type* create (const internal::kind::type&);
         void save ( internal::type* data
                   , const boost::optional<const QString&> filename = boost::none
                   ) const;
