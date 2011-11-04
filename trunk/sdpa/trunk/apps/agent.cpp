@@ -114,19 +114,19 @@ int main (int argc, char **argv)
 	    // check if the folder exists
 	    if( !bfs::is_directory(st) )             // true - is directory
 	    {
-		LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-		bDoBackup = false;
+	    	LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
+	    	bDoBackup = false;
 	    }
 	    else
 	    {
-		LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
-		bDoBackup = true;
+	    	LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
+	    	bDoBackup = true;
 	    }
 	    break;
 
 	case FILE_DEF:
-	    LOG( WARN, "Backup folder not specified! No backup file will be created!");
-	    bDoBackup = false;
+	    	LOG( WARN, "Backup folder not specified! No backup file will be created!");
+	    	bDoBackup = false;
 	    break;
 
 	case FLDANDFILE_DEF:
@@ -136,12 +136,12 @@ int main (int argc, char **argv)
 	    if( !bfs::is_directory(st) )             // true - is directory
 	    {
 	        LOG(FATAL, "The path "<<backup_folder<<" does not represent a folder!" );
-		bDoBackup = false;
+	        bDoBackup = false;
 	    }
 	    else
 	    {
-		LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
-		bDoBackup = true;
+	    	LOG(INFO, "Backup the agent into the file "<<backup_folder<<"/"<<backup_file );
+	    	bDoBackup = true;
 	    }
 	    break;
 
@@ -170,50 +170,56 @@ int main (int argc, char **argv)
 
 	try
 	{
-            sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( agentName, agentUrl, listMasterInfo, MAX_CAP, agentRank, appGuiUrl ); //, orchUrl );
+		sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<RealWorkflowEngine>::create( 	agentName,
+																										agentUrl,
+																										listMasterInfo,
+																										MAX_CAP,
+																										false,
+																										agentRank,
+																										appGuiUrl ); //, orchUrl );
 
-            bool bUseRequestModel(fhg::util::read_bool(requestMode));
+		bool bUseRequestModel(fhg::util::read_bool(requestMode));
 
-            if(bDoBackup)
-              ptrAgent->start_agent(bUseRequestModel, bkp_path/backup_file);
-            else
-              ptrAgent->start_agent(bUseRequestModel);
+		if(bDoBackup)
+		  ptrAgent->start_agent(bUseRequestModel, bkp_path/backup_file);
+		else
+		  ptrAgent->start_agent(bUseRequestModel);
 
-            LOG(DEBUG, "waiting for signals...");
-            sigset_t waitset;
-            int sig(0);
-            int result(0);
+		LOG(DEBUG, "waiting for signals...");
+		sigset_t waitset;
+		int sig(0);
+		int result(0);
 
-            sigfillset(&waitset);
-            sigprocmask(SIG_BLOCK, &waitset, NULL);
+		sigfillset(&waitset);
+		sigprocmask(SIG_BLOCK, &waitset, NULL);
 
-            bool signal_ignored = true;
-            while (signal_ignored)
-            {
-              result = sigwait(&waitset, &sig);
-              if (result == 0)
-              {
-                LOG(DEBUG, "got signal: " << sig);
-                switch (sig)
-                {
-                case SIGTERM:
-                case SIGINT:
-                  signal_ignored = false;
-                  break;
-                default:
-                  LOG(INFO, "ignoring signal: " << sig);
-                  break;
-                }
-              }
-              else
-              {
-                  LOG(ERROR, "error while waiting for signal: " << result);
-              }
-            }
+		bool signal_ignored = true;
+		while (signal_ignored)
+		{
+		  result = sigwait(&waitset, &sig);
+		  if (result == 0)
+		  {
+			LOG(DEBUG, "got signal: " << sig);
+			switch (sig)
+			{
+			case SIGTERM:
+			case SIGINT:
+			  signal_ignored = false;
+			  break;
+			default:
+			  LOG(INFO, "ignoring signal: " << sig);
+			  break;
+			}
+		  }
+		  else
+		  {
+			  LOG(ERROR, "error while waiting for signal: " << result);
+		  }
+		}
 
-            LOG(INFO, "terminating...");
+		LOG(INFO, "terminating...");
 
-            ptrAgent->shutdown();
+		ptrAgent->shutdown();
 	}
 	catch ( std::exception& )
 	{
