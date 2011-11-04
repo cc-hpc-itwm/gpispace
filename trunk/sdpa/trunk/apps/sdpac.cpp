@@ -141,7 +141,7 @@ int command_subscribe_and_wait ( const std::string &job_id
   	std::string job_status;
   	try
   	{
-  		seda::IEvent::Ptr reply( ptrCli->waitForNotification(100000) );
+  		seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
 
   		// check event type
   		if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
