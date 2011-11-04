@@ -108,8 +108,8 @@ namespace sdpa {
 
         std::string url_;
 
-        bool m_bLeaf;
         NotificationService m_guiService;
+        bool m_bLeaf;
       };
   }
 }
