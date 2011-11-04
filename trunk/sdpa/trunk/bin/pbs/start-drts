@@ -124,6 +124,11 @@ if [ -z "$kvs_url" ] ; then
     exit 1
 fi
 
+if [ -z "$master" ] ; then
+    log "E: no master specified!"
+    exit 1
+fi
+
 # quick hack to easily start multiple instances
 if [ -n "$count" ] ; then
     if [ $count -eq 0 ] ; then
