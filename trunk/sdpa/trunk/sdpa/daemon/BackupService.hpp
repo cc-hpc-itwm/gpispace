@@ -115,6 +115,7 @@ namespace daemon
 
 			std::ostringstream osstr;
 			daemon()->backup(osstr);
+			// last backup
 			m_strBackupDaemon = osstr.str();
 		}
 
@@ -139,6 +140,7 @@ namespace daemon
 					daemon()->backup(ofs);
 					ofs.close();
 
+					m_strBackupDaemon = tmpBakFile.string();
 					boost::filesystem::rename(tmpBakFile, m_backupFile);
 
 					boost::this_thread::sleep(boost::posix_time::microseconds(m_backup_interval));
@@ -154,6 +156,8 @@ namespace daemon
 			std::ofstream ofs(tmpBakFile.string().c_str());
 			daemon()->backup(ofs);
 			ofs.close();
+			// last backup
+			m_strBackupDaemon = tmpBakFile.string();
 
 			boost::filesystem::rename(tmpBakFile, m_backupFile);
 		}
