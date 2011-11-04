@@ -41,12 +41,6 @@ int main(int ac, char **av)
 {
   FHGLOG_SETUP(ac,av);
 
-  kernel = new fhg::core::kernel_t;
-
-  signal (SIGINT, sig_term);
-  signal (SIGTERM, sig_term);
-  signal (SIGCHLD, sig_chld);
-
   namespace po = boost::program_options;
 
   po::options_description desc("options");
@@ -54,11 +48,13 @@ int main(int ac, char **av)
   std::vector<std::string> mods_to_load;
   std::vector<std::string> config_vars;
   bool keep_going (false);
+  std::string state_path;
 
   desc.add_options()
     ("help,h", "this message")
     ("verbose,v", "be verbose")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
+    ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ( "keep-going,k", "just log errors, but do not refuse to start")
     ( "load,l"
     , po::value<std::vector<std::string> >(&mods_to_load)
@@ -92,6 +88,12 @@ int main(int ac, char **av)
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
   }
+
+  kernel = new fhg::core::kernel_t (state_path);
+
+  signal (SIGINT, sig_term);
+  signal (SIGTERM, sig_term);
+  signal (SIGCHLD, sig_chld);
 
   keep_going = vm.count("keep-going") != 0;
 

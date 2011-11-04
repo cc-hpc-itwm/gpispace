@@ -124,8 +124,8 @@ state_dir="$SDPA_SCRATCH_DIR/state/ufbmigd"
 mkdir -p "$state_dir"
 prefix=${SDPA_HOME}
 FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
+    --state "$state_dir/store/" \
     -s kernel.load.lazy=0 \
-    -s kernel.state.path="$state_dir/store/" \
     -s plugin.net.name="${name}" \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \

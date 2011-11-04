@@ -102,7 +102,8 @@ namespace fhg
     class kernel_t
     {
     public:
-      kernel_t ();
+      explicit
+      kernel_t (std::string const &state_path = "");
       ~kernel_t ();
 
       int run ();
@@ -153,6 +154,7 @@ namespace fhg
       mutable condition_type m_task_eligible;
       mutable mutex_type m_mtx_config;
 
+      std::string m_state_path;
       time_t m_tick_time;
       bool m_stop_requested;
       plugin_map_t m_plugins;

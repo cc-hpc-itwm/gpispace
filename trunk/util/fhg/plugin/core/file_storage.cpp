@@ -2,12 +2,16 @@
 
 #include <errno.h>
 
+#include <fhglog/minimal.hpp>
+
 #include <boost/filesystem/fstream.hpp>
 #include <boost/system/error_code.hpp>
 
 #include "file_storage.hpp"
 
 namespace fs = boost::filesystem;
+
+#define FILE_STORAGE_VERSION 1
 
 namespace fhg
 {
@@ -29,51 +33,108 @@ namespace fhg
       {
         if (fs::exists(m_path))
         {
-          if (! fs::is_directory(m_path))
-          {
-            throw fs::filesystem_error
-              ( "not a directory"
-              , path
-              , boost::system::errc::make_error_code(boost::system::errc::not_a_directory)
-              );
-          }
+          check_storage_path (m_path, mode, FILE_STORAGE_VERSION);
+        }
+        else if (flags & O_CREAT)
+        {
+          init_storage_path (m_path, mode, FILE_STORAGE_VERSION);
         }
         else
         {
-          if (flags & O_CREAT)
-          {
-            fs::create_directories (m_path);
-            // this only works on UNIX
-            chmod (m_path.string().c_str(), mode);
-
-            fs::ofstream file (m_path / ".storage");
-            if (file)
-            {
-              file << time(0);
-            }
-          }
-          else
-          {
-            throw fs::filesystem_error
-              ( "no such file or directory"
-              , path
-              , boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory)
-              );
-          }
+          throw fs::filesystem_error
+            ( "no such file or directory"
+            , path
+            , boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory)
+            );
         }
 
-        fs::ofstream lock_file (m_path / ".lock");
-        if (lock_file)
+        lock_storage_path();
+      }
+
+      void FileStorage::lock_storage_path ()
+      {
+        path_t lock_file (m_path / ".lock");
+        if (fs::exists(lock_file))
         {
-          lock_file << getpid();
+          MLOG(WARN, "lock file still exists!");
+        }
+
+        fs::ofstream s (lock_file);
+        if (s)
+        {
+          s << getpid() << std::endl;
         }
         else
         {
           throw fs::filesystem_error
             ( "could not lock directory"
-            , path
+            , m_path
             , boost::system::errc::make_error_code(boost::system::errc::permission_denied)
             );
+        }
+      }
+
+      void FileStorage::unlock_storage_path ()
+      {
+        path_t lock_file (m_path / ".lock");
+        if (fs::exists(lock_file))
+        {
+          fs::ifstream s (lock_file);
+          int pid (0);
+          s >> pid;
+
+          if (pid != getpid())
+          {
+            MLOG(WARN, "i cannot unlock the lock file: not owner!");
+          }
+          else
+          {
+            boost::system::error_code ec;
+            fs::remove (m_path / ".lock", ec);
+          }
+        }
+      }
+
+      void FileStorage::check_storage_path (path_t const &path, int mode, int version)
+      {
+        if (! fs::is_directory(path))
+        {
+          throw fs::filesystem_error
+            ( "not a directory"
+            , path
+            , boost::system::errc::make_error_code(boost::system::errc::not_a_directory)
+            );
+        }
+        else
+        {
+          fs::ifstream file (path / ".storage");
+          if (file)
+          {
+            int found_version (0);
+            file >> found_version;
+            if (version != version)
+            {
+              MLOG(WARN, "version mismatch of storage directory: expected := " << version << " found := " << found_version);
+            }
+          }
+          else
+          {
+            MLOG(WARN, "path is not a valid storage directory: " << path);
+            init_storage_path (path, mode, version);
+          }
+        }
+      }
+
+      void FileStorage::init_storage_path (path_t const &path, int mode, int version)
+      {
+        fs::create_directories (path);
+        // this only works on UNIX
+        chmod (path.string().c_str(), mode);
+
+        fs::ofstream file (m_path / ".storage");
+        if (file)
+        {
+          file << version << std::endl;
         }
       }
 
@@ -90,8 +151,7 @@ namespace fhg
         m_stores.clear();
         m_values.clear();
 
-        boost::system::error_code ec;
-        fs::remove (m_path / ".lock", ec);
+        unlock_storage_path();
       }
 
       int FileStorage::restore ()

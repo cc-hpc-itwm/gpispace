@@ -30,11 +30,14 @@ namespace fhg
 {
   namespace core
   {
-    kernel_t::kernel_t ()
-      : m_tick_time (5 * 100 * 1000)
+    kernel_t::kernel_t (std::string const &state_path)
+      : m_state_path (state_path)
+      , m_tick_time (5 * 100 * 1000)
       , m_stop_requested (false)
       , m_storage (0)
-    {}
+    {
+      initialize_storage ();
+    }
 
     kernel_t::~kernel_t ()
     {
@@ -408,11 +411,7 @@ namespace fhg
 
     fhg::plugin::Storage* kernel_t::plugin_storage ()
     {
-      if (!m_storage)
-      {
-        initialize_storage();
-      }
-      return m_storage->get_storage("plugin");
+      return storage()->get_storage("plugin");
     }
 
     void kernel_t::initialize_storage()
@@ -420,12 +419,11 @@ namespace fhg
       if (m_storage)
         return;
 
-      std::string state_path (get("kernel.state.path", ""));
-      if (! state_path.empty())
+      if (! m_state_path.empty())
       {
         try
         {
-          m_storage = new fhg::plugin::core::FileStorage ( state_path
+          m_storage = new fhg::plugin::core::FileStorage ( m_state_path
                                                          , O_CREAT
                                                          );
         }
@@ -445,7 +443,7 @@ namespace fhg
       if (ec)
       {
         throw std::runtime_error
-          (std::string("could initialize plugin storage: ") + strerror(-ec));
+          (std::string("could not initialize `plugin' storage: ") + strerror(-ec));
       }
     }
 
