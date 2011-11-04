@@ -335,27 +335,8 @@ public:
       master_it->second->is_connected(true);
       master_it->second->reset_poll_rate();
 
-      {
-        sdpa::capabilities_set_t caps;
-        lock_type capabilities_lock(m_capabilities_mutex);
-        for ( map_of_capabilities_t::const_iterator cap_it(m_capabilities.begin())
-            ; cap_it != m_capabilities.end()
-            ; ++cap_it
-            )
-        {
-          caps.insert (cap_it->first);
-        }
-
-        if (! caps.empty())
-        {
-
-          send_event(new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                              , master_it->first
-                                                              , caps
-                                                              )
-                    );
-        }
-      }
+      notify_capabilities_to_master (master_it->second);
+      resend_outstanding_events (master_it->second);
 
       m_connected_event.notify(master_it->second->name());
 
@@ -760,22 +741,22 @@ private:
           if (ec > 0)
           {
             job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::FAILED);
-            send_event (new sdpa::events::JobFailedEvent ( m_my_name
-                                                         , job->owner()
-                                                         , job->id()
-                                                         , result
-                                                         )
-                       );
+            ensure_send_event (new sdpa::events::JobFailedEvent ( m_my_name
+                                                                , job->owner()
+                                                                , job->id()
+                                                                , result
+                                                                )
+                              );
           }
           else if (ec < 0)
           {
             job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::CANCELED);
-            send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
-                                                            , job->owner()
-                                                            , job->id()
-                                                            , result
-                                                            )
-                       );
+            ensure_send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
+                                                                   , job->owner()
+                                                                   , job->id()
+                                                                   , result
+                                                                   )
+                              );
 
             lock_type job_map_lock (m_job_map_mutex);
             map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
@@ -786,14 +767,12 @@ private:
           else
           {
             job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::FINISHED);
-            send_event (new sdpa::events::JobFinishedEvent ( m_my_name
-                                                           , job->owner()
-                                                           , job->id()
-                                                           , result
-                                                           )
-                       );
-
-
+            ensure_send_event (new sdpa::events::JobFinishedEvent ( m_my_name
+                                                                  , job->owner()
+                                                                  , job->id()
+                                                                  , result
+                                                                  )
+                              );
           }
         }
         catch (std::exception const & ex)
@@ -814,6 +793,38 @@ private:
         DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
         m_jobs.erase(job_it);
       }
+    }
+  }
+
+  void notify_capabilities_to_master (master_ptr const &master)
+  {
+    sdpa::capabilities_set_t caps;
+    lock_type capabilities_lock(m_capabilities_mutex);
+    for ( map_of_capabilities_t::const_iterator cap_it(m_capabilities.begin())
+        ; cap_it != m_capabilities.end()
+        ; ++cap_it
+        )
+    {
+      caps.insert (cap_it->first);
+    }
+
+    if (! caps.empty())
+    {
+      send_event(new sdpa::events::CapabilitiesGainedEvent( m_my_name
+                                                          , master->name()
+                                                          , caps
+                                                          )
+                );
+    }
+  }
+
+  void resend_outstanding_events (master_ptr const &master)
+  {
+    MLOG(TRACE, "resending outstanding events to " << master->name());
+    while (master->outstanding_events().size() && master->is_connected())
+    {
+      sdpa::events::SDPAEvent::Ptr evt(master->outstanding_events().get());
+      ensure_send_event (evt);
     }
   }
 
@@ -943,6 +954,31 @@ private:
         MLOG(TRACE, m_peer->name() << " is shutting down");
       }
     }
+  }
+
+  int ensure_send_event (sdpa::events::SDPAEvent *e)
+  {
+    return ensure_send_event (sdpa::events::SDPAEvent::Ptr(e));
+  }
+
+  int ensure_send_event (sdpa::events::SDPAEvent::Ptr const & evt)
+  {
+    int ec = send_event (evt);
+
+    if (0 != ec)
+    {
+      // check master
+      map_of_masters_t::iterator master (m_masters.find(evt->from()));
+      if (master != m_masters.end())
+      {
+        master->second->outstanding_events().put(evt);
+      }
+      else
+      {
+        return ec;
+      }
+    }
+    return 0;
   }
 
   int send_event (sdpa::events::SDPAEvent *e)

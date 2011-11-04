@@ -2,9 +2,15 @@
 #define DRTS_MASTER_HPP 1
 
 #include <string>
+#include <list>
 #include <ctime>
+
+#include <fhg/util/thread/queue.hpp>
+
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <sdpa/events/events.hpp>
 
 namespace drts
 {
@@ -16,6 +22,9 @@ namespace drts
     typedef boost::posix_time::ptime time_type;
     typedef boost::posix_time::time_duration time_duration;
 
+    typedef fhg::thread::queue< sdpa::events::SDPAEvent::Ptr
+                              , std::list
+                              > event_queue_t;
   public:
     enum state_code
       {
@@ -57,8 +66,9 @@ namespace drts
     void set_is_polling (bool b) { m_polling = b; }
     void reset_poll_rate();
     void decrease_poll_rate();
-  private:
 
+    event_queue_t & outstanding_events() { return m_outstanding_events; }
+  private:
     mutable mutex_type m_stats_mutex;
 
     // disallow copy construction
@@ -82,6 +92,8 @@ namespace drts
     time_duration m_min_poll_interval;
     time_duration m_cur_poll_interval;
     time_duration m_max_poll_interval;
+
+    event_queue_t m_outstanding_events;
   };
 }
 
