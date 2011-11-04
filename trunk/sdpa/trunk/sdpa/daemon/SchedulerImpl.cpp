@@ -743,7 +743,8 @@ void SchedulerImpl::run()
         	  {
         		  // just for testing
 				  DLOG(TRACE, "I have no workers, therefore I'll try to execute myself the job "<<jobId.str()<<" ...");
-				  execute(jobId);
+				  //if(ptr_comm_handler_->isLeaf())
+					  //execute(jobId);
 
         	  } // else fail
           }
@@ -752,8 +753,7 @@ void SchedulerImpl::run()
       }
       catch(const JobNotFoundException& ex)
       {
-          SDPA_LOG_DEBUG("Job not found! Could not schedule the job "<<ex.job_id().str());
-          throw;
+          SDPA_LOG_WARN("Could not schedule the job "<<ex.job_id().str()<<". Job not found -> possible recovery inconsistency ...)");
       }
       catch( const boost::thread_interrupted & )
       {
@@ -890,4 +890,28 @@ void SchedulerImpl::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 void SchedulerImpl::getWorkerCapabilities(sdpa::capabilities_set_t& cpbset)
 {
 	ptr_worker_man_->getCapabilities(ptr_comm_handler_->name(), cpbset);
+}
+
+
+void SchedulerImpl::removeRecoveryInconsistencies()
+{
+	SDPA_LOG_INFO("Remove recovery inconsistencies!");
+	std::list<JobQueue::iterator> listDirtyJobs;
+	for(JobQueue::iterator it = jobs_to_be_scheduled.begin(); it != jobs_to_be_scheduled.end(); it++ )
+	{
+		try {
+			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(*it);
+		}
+		catch(const JobNotFoundException& ex)
+		{
+			listDirtyJobs.push_back(it);
+		}
+	}
+
+	while(!listDirtyJobs.empty())
+	{
+		SDPA_LOG_INFO("Removing the job id "<<*listDirtyJobs.front()<<" from the scheduler's queue ...");
+		jobs_to_be_scheduled.erase(listDirtyJobs.front());
+		listDirtyJobs.pop_front();
+	}
 }

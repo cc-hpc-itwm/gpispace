@@ -52,9 +52,7 @@ namespace sdpa {
 	bool schedule_to(const sdpa::job_id_t&, const Worker::ptr_t& pWorker);
 	void schedule_anywhere( const sdpa::job_id_t& jobId );
 
-          void reschedule( const Worker::worker_id_t &
-                         , Worker::JobQueue* pQueue
-                         );
+	void reschedule( const Worker::worker_id_t &, Worker::JobQueue* pQueue);
 	void reschedule( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException);
 	void reschedule( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id );
 
@@ -114,7 +112,10 @@ namespace sdpa {
 	friend class boost::serialization::access;
 
 	virtual void print();
-	//protected:
+	virtual void removeRecoveryInconsistencies();
+    void removeWorkers() { ptr_worker_man_->removeWorkers(); }
+
+protected:
 	JobQueue jobs_to_be_scheduled;
 	WorkerManager::ptr_t ptr_worker_man_;
 
