@@ -60,6 +60,7 @@ namespace sdpa { namespace daemon {
 
      // void getListOfRegisteredRanks( std::vector<unsigned int>& );
 
+      void removeWorkers() { worker_map_.clear(); }
       const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
       worker_id_t getLeastLoadedWorker() throw (NoWorkerFoundException, AllWorkersFullException);
 
