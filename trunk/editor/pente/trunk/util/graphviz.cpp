@@ -65,12 +65,15 @@ namespace fhg
 
 
 
-      node_type::node_type (graph_type& graph, const QString& name)
-        : _node (agnode (graph._graph, internal::unsafe (name)))
+      node_type::node_type (Agraph_t* graph, const QString& name)
+        : _node (agnode (graph, internal::unsafe (name)))
       {
         internal::set_attribute (_node, "label", "");
       }
-
+      Agnode_t* node_type::node () const
+      {
+        return _node;
+      }
       void node_type::size (const QSizeF& size)
       {
         //! \todo correct dpi factor
@@ -110,7 +113,16 @@ namespace fhg
                        );
       }
 
-
+      edge_type::edge_type ( Agraph_t* graph
+                           , Agnode_t* from
+                           , Agnode_t* to
+                           )
+        : _edge (agedge (graph, from, to))
+      {}
+      void edge_type::beep () const
+      {
+        std::cout << _edge << std::endl;
+      }
 
       graph_type::graph_type (context_type& context, const QString& name)
         : _graph (agopen (internal::unsafe (name), AGDIGRAPH))
@@ -135,21 +147,23 @@ namespace fhg
 
       node_type graph_type::add_node (const QString& name)
       {
-        return node_type (*this, name);
+        return node_type (_graph, name);
       }
 
       node_type graph_type::add_node (const QGraphicsItem* const item)
       {
-        node_type node (*this, internal::unique_name (item));
+        node_type node (_graph, internal::unique_name (item));
         node.size (item->boundingRect().size());
         node.fixed_size (true);
         node.shape ("rectangle");
         return node;
       }
 
-      void graph_type::add_edge (const node_type& from, const node_type& to)
+      edge_type graph_type::add_edge ( const node_type& from
+                                     , const node_type& to
+                                     )
       {
-        agedge (_graph, from._node, to._node);
+        return edge_type (_graph, from.node(), to.node());
       }
 
       void graph_type::layout (const QString& engine)

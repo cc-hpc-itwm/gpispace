@@ -22,6 +22,11 @@
 
 #include <util/graphviz.hpp>
 
+#include <boost/unordered_map.hpp>
+#include <boost/foreach.hpp>
+
+#include <list>
+
 namespace fhg
 {
   namespace pnete
@@ -409,8 +414,10 @@ namespace fhg
 
           void type::auto_layout()
           {
-            typedef QHash<item*, graphviz::node_type> nodes_type;
-            nodes_type nodes;
+            typedef boost::unordered_map< item*
+                                        , graphviz::node_type
+                                        > nodes_map_type;
+            nodes_map_type nodes;
 
             graphviz::context_type context;
             graphviz::graph_type graph (context);
@@ -419,19 +426,30 @@ namespace fhg
 
             foreach (QGraphicsItem* i, items())
               {
-                if ( ( i->type() == item::port_graph_type
+                if ( (  i->type() == item::port_graph_type
                      || i->type() == item::transition_graph_type
                      || i->type() == item::place_graph_type
                      || i->type() == item::top_level_port_graph_type
                      )
-                   && i->parentItem() == NULL)
+                   && i->parentItem() == NULL
+                   )
                   {
-                    nodes.insert (qgraphicsitem_cast<item*> (i), graph.add_node (i));
+                    nodes.insert ( nodes_map_type::value_type
+                                   ( qgraphicsitem_cast<item*> (i)
+                                   , graph.add_node (i)
+                                   )
+                                 );
                   }
               }
+
+            typedef std::list<graphviz::edge_type> edges_type;
+            edges_type edges;
+
             foreach (QGraphicsItem* i, items())
               {
-                if (connection::item* c = qgraphicsitem_cast<connection::item*> (i))
+                if ( connection::item* c
+                   = qgraphicsitem_cast<connection::item*> (i)
+                   )
                   {
                     QGraphicsItem* start (c->start());
                     QGraphicsItem* end (c->end());
@@ -439,23 +457,31 @@ namespace fhg
                     start = start->parentItem() ? start->parentItem() : start;
                     end = end->parentItem() ? end->parentItem() : end;
 
-                    nodes_type::iterator start_node
+                    nodes_map_type::iterator start_node
                       (nodes.find (qgraphicsitem_cast<item*> (start)));
-                    nodes_type::iterator end_node
+                    nodes_map_type::iterator end_node
                       (nodes.find (qgraphicsitem_cast<item*> (end)));
 
-                    graph.add_edge (*start_node, *end_node);
+                    if (start_node != nodes.end() && end_node != nodes.end())
+                      {
+                        edges.push_back ( graph.add_edge ( start_node->second
+                                                         , end_node->second
+                                                         )
+                                        );
+                      }
                   }
               }
 
             graph.layout ("dot");
 
-            for ( nodes_type::const_iterator it (nodes.begin()), end (nodes.end())
-                ; it != end
-                ; ++it
-                )
+            BOOST_FOREACH (nodes_map_type::value_type& it, nodes)
               {
-                it.key()->setPos (style::raster::snap (it.value().position()));
+                it.first->setPos (style::raster::snap (it.second.position()));
+              }
+
+            BOOST_FOREACH (const graphviz::edge_type& edge, edges)
+              {
+                edge.beep();
               }
           }
 

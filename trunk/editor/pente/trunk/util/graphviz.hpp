@@ -11,6 +11,7 @@ class QGraphicsItem;
 
 // Yes, I know the typedef is ugly, but I prefer this to having an include here.
 struct Agraph_t;
+struct Agedge_t;
 struct Agnode_t;
 struct GVC_s;
 typedef struct GVC_s GVC_t;
@@ -23,6 +24,7 @@ namespace fhg
     {
       class graph_type;
       class node_type;
+      class edge_type;
 
       class context_type
       {
@@ -39,7 +41,7 @@ namespace fhg
       class node_type
       {
       public:
-        node_type (graph_type& graph, const QString& name);
+        node_type (Agraph_t* graph, const QString& name);
 
         void size (const QSizeF& size);
         void fixed_size (const bool& set);
@@ -47,10 +49,21 @@ namespace fhg
 
         QPointF position() const;
 
+        Agnode_t* node () const;
+
       private:
         Agnode_t* _node;
+      };
 
-        friend class graph_type;
+      class edge_type
+      {
+      public:
+        edge_type (Agraph_t*, Agnode_t*, Agnode_t*);
+
+        void beep () const;
+
+      private:
+        Agedge_t* _edge;
       };
 
       class graph_type
@@ -64,7 +77,7 @@ namespace fhg
 
         node_type add_node (const QString& name);
         node_type add_node (const QGraphicsItem* const item);
-        void add_edge (const node_type& from, const node_type& to);
+        edge_type add_edge (const node_type& from, const node_type& to);
 
         void layout (const QString& engine);
 
@@ -72,8 +85,6 @@ namespace fhg
         Agraph_t* _graph;
 
         context_type& _context;
-
-        friend class node_type;
       };
     }
   }
