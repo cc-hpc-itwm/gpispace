@@ -100,14 +100,14 @@ namespace fhg
                          );
       }
 
-      int ec (0);
+      boost::system::error_code ec;
       // todo introduce timeout to event::wait()
       started_.wait (ec);
 
       if (ec)
       {
         stop();
-        throw std::runtime_error ("peer "+name_+" could not be started!");
+        throw boost::system::system_error (ec);
       }
 
       {
@@ -581,17 +581,20 @@ namespace fhg
 
         kvs::put (values);
 
-        started_.notify (0);
+        started_.notify (boost::system::error_code());
       }
       catch (boost::system::system_error const &bse)
       {
         LOG(ERROR, "could not update my location: " << bse.what());
-        started_.notify (bse.code().value());
+        started_.notify (bse.code());
       }
       catch (std::exception const &ex)
       {
         LOG(ERROR, "could not update my location: " << ex.what());
-        started_.notify (1);
+        started_.notify
+          (boost::system::errc::make_error_code
+          (boost::system::errc::state_not_recoverable)
+          );
       }
     }
 

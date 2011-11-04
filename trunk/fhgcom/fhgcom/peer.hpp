@@ -140,7 +140,7 @@ namespace fhg
       std::string port_;
       std::string cookie_;
       p2p::address_t my_addr_;
-      fhg::util::thread::event<int> started_;
+      fhg::util::thread::event<boost::system::error_code> started_;
 
       boost::asio::io_service io_service_;
       boost::shared_ptr<boost::asio::io_service::work> io_service_work_;
