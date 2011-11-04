@@ -1731,6 +1731,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 		}
 		catch(const JobNotFoundException& ex)
 		{
+			SDPA_LOG_WARN("The subscriber "<<subscriber<<" subscribed for a job that doesn't exist anymore! "<<ex.what());
 			throw ex;
 		}
 	}
