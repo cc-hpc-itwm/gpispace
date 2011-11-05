@@ -1,4 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #ifndef _FHG_UTIL_GRAPHVIZ_HPP
 #define _FHG_UTIL_GRAPHVIZ_HPP 1

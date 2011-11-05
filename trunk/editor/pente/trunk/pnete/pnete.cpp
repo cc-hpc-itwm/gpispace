@@ -20,6 +20,7 @@ int main (int argc, char *argv[])
 
   try
   {
+    QApplication::setGraphicsSystem ("raster");
     fhg::pnete::PetriNetEditor pente (argc, argv);
     pente.startup ();
     return pente.exec ();

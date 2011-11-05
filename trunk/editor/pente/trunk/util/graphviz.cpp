@@ -1,4 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
+// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <util/graphviz.hpp>
 
@@ -108,6 +108,8 @@ namespace fhg
         QStringList position_strings
           (QString (internal::get_attribute (_node, "pos")).split (","));
 
+        //! \todo check the faster (but unsafe?) alternative:
+        //        QPointF (ND_coord (_node).x, ND_coord (_node).y)
         return QPointF ( position_strings[0].toInt()
                        , position_strings[1].toInt()
                        );
@@ -121,7 +123,20 @@ namespace fhg
       {}
       void edge_type::beep () const
       {
-        std::cout << _edge << std::endl;
+        std::cout << _edge << ": ";
+
+        const bezier* b (ED_spl(_edge)->list);
+
+        for (int i (0); i < b->size; ++i)
+          {
+            const pointf& p (b->list[i]);
+
+            std::cout << p.x << ":" << p.y << ", ";
+          }
+        std::cout << std::endl;
+
+        std::cout << "## " << internal::get_attribute (_edge, "pos") << std::endl;
+
       }
 
       graph_type::graph_type (context_type& context, const QString& name)
