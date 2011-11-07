@@ -47,7 +47,8 @@ check_host() {
 
 
 if [ "$host" != "build" ]; then
-  exit
+# exit
+echo
 fi
 
 check_host
@@ -64,4 +65,5 @@ echo "Running ctest"
 # set additional directory where cmake will search for stuff:
 #export CMAKE_PREFIX_PATH=/p/hpc/psp/vr3-nightly-test-support
 
-$CTEST -V -S ${HOME}/Dashboards/SDPAContinuous.cmake
+$CTEST -V -VV -S ${HOME}/Dashboards/SDPAContinuous.cmake,COMPILER_ID=gcc
+

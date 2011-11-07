@@ -65,4 +65,5 @@ unset http_proxy
 
 echo "Running ctest"
 
-$CTEST -S ${HOME}/Dashboards/SDPACoverage.cmake -V -VV
+$CTEST -V -VV -S ${HOME}/Dashboards/SDPACoverage.cmake,COMPILER_ID=gcc
+
