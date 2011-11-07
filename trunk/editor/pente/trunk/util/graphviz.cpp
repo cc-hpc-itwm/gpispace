@@ -125,15 +125,15 @@ namespace fhg
       {
         std::cout << _edge << ": ";
 
-        const bezier* b (ED_spl(_edge)->list);
+//         const bezier* b (ED_spl(_edge)->list);
 
-        for (int i (0); i < b->size; ++i)
-          {
-            const pointf& p (b->list[i]);
+//         for (int i (0); i < b->size; ++i)
+//           {
+//             const pointf& p (b->list[i]);
 
-            std::cout << p.x << ":" << p.y << ", ";
-          }
-        std::cout << std::endl;
+//             std::cout << p.x << ":" << p.y << ", ";
+//           }
+//         std::cout << std::endl;
 
         std::cout << "## " << internal::get_attribute (_edge, "pos") << std::endl;
 
