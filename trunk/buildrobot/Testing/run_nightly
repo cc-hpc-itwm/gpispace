@@ -66,20 +66,22 @@ unset http_proxy
 
 echo "Running ctest"
 
-$CTEST -S ${HOME}/Dashboards/SDPANightly.cmake -V -VV
+$CTEST -V -VV -S ${HOME}/Dashboards/SDPANightly.cmake,COMPILER_ID=gcc
 
-if [ "$have_intel" != "yes" ]; then
-  exit
+if [ "$have_intel" = "yes" ]; then
+  if [ -x /home/toolsLinux/compiler/config.icc1181 ]; then
+    echo compile with intel
+    # now compile with intel compiler
+    . /home/toolsLinux/compiler/config.icc1181
+    $CTEST -V -VV -S ${HOME}/Dashboards/SDPANightly.cmake,COMPILER_ID=intel
+  fi
 fi
 
-# now compile with intel compiler
-. /home/toolsLinux/compiler/config.icc1181
-$CTEST -S ${HOME}/Dashboards/SDPANightly_intel.cmake -V -VV
-
+# compile with clang
 EXTERNAL_SOFTWARE=$HOME/external_software/
 CLANG_BIN=${EXTERNAL_SOFTWARE}/clang/2.9/bin
 if [ -x ${CLANG_BIN}/clang ]; then
   export CC=${CLANG_BIN}/clang
   export CXX=${CLANG_BIN}/clang++
-  $CTEST -S ${HOME}/Dashboards/SDPANightly_clang.cmake -V -VV
+  $CTEST -V -VV -S ${HOME}/Dashboards/SDPANightly.cmake,COMPILER_ID=clang
 fi
