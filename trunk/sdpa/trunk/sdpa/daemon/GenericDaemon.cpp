@@ -115,6 +115,8 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         SDPA_LOG_WARN( "Can't find the backup file "<<bkp_file);
     }
 
+    scheduler()->setUseRequestModel(bUseReqModel);
+
     // The stage uses 2 threads
     ptr_daemon_stage_.lock()->start();
 
@@ -176,6 +178,8 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
     }
     else
       SDPA_LOG_INFO( "The input stream is empty! No recovery operation carried out for the daemon "<<name());
+
+    scheduler()->setUseRequestModel(bUseReqModel);
 
     // The stage uses 2 threads
     ptr_daemon_stage_.lock()->start();
