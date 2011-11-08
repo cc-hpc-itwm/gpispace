@@ -13,6 +13,7 @@ namespace we
     {
       typedef ::value::type type;
       typedef std::list<type> list_t;
+      typedef std::map<std::string, list_t> marking_t;
 
       we::activity_t & put ( we::activity_t & act
                            , std::string const & port
@@ -33,6 +34,29 @@ namespace we
         return act;
       }
 
+      /*
+
+        TODO: make this work.
+
+        see we/we.hpp for the to_value template
+
+      template <typename T>
+      we::activity_t & put ( we::activity_t & act
+                           , std::string const & port
+                           , T const & val
+                           )
+      {
+        using namespace we::util::token;
+        return put( act, port, to_value(val) );
+      }
+      */
+
+      // TODO:
+      // try the following:
+      //    generic templetized function that may be overridden: to_value/from_value
+      //    so that put/get can take any structs
+      // see: hash_value
+
       list_t get ( we::activity_t const & act
                  , std::string const & port
                  )
@@ -52,6 +76,42 @@ namespace we
         }
 
         return tokens;
+      }
+
+      marking_t get_input (we::activity_t const & act)
+      {
+        typedef we::activity_t::transition_type::port_id_t port_id_t;
+        typedef we::activity_t::input_t input_t;
+
+        marking_t m;
+        for ( input_t::const_iterator in(act.input().begin()), end(act.input().end())
+            ; in != end
+            ; ++in
+            )
+        {
+          const std::string port_name (act.transition().get_port(in->second).name());
+          m[port_name].push_back (in->first.value);
+        }
+
+        return m;
+      }
+
+      marking_t get_output (we::activity_t const & act)
+      {
+        typedef we::activity_t::transition_type::port_id_t port_id_t;
+        typedef we::activity_t::output_t output_t;
+
+        marking_t m;
+        for ( output_t::const_iterator out(act.output().begin()), end(act.output().end())
+            ; out != end
+            ; ++out
+            )
+        {
+          const std::string port_name (act.transition().get_port(out->second).name());
+          m[port_name].push_back (out->first.value);
+        }
+
+        return m;
       }
     }
   }

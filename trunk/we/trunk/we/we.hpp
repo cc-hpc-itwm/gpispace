@@ -3,6 +3,8 @@
 
 // this header defines our default types for petri-nets
 
+#include <boost/static_assert.hpp>
+
 #include <we/net.hpp>
 #include <we/util/codec.hpp>
 #include <we/type/transition.hpp>
@@ -13,6 +15,18 @@
 
 namespace we
 {
+  /*
+    TODO: make this work (in principle it  already works, but I guess one has to
+    predefine the to_value function for all the literals.
+
+    template <typename T>
+    ::value::type to_value (T const &)
+    {
+      BOOST_STATIC_ASSERT ((T*)0 && false);
+      return 0;
+    }
+  */
+
   using petri_net::connection_t;
   using petri_net::PT;
   using petri_net::PT_READ;
