@@ -331,7 +331,9 @@ void MonitorWindow::UpdateExecutionView( sdpa::daemon::NotificationEvent const &
     activity_name = mod_call.module() + ":" + mod_call.function();
   }
   catch (boost::bad_get const &)
-  {}
+  {
+    // do nothing, i.e. take the activity name as it was
+  }
 
   lock_type lock(m_task_struct_mutex);
 
