@@ -38,7 +38,11 @@ namespace fhg
 
       int load_plugin (std::string const &path);
       int unload_plugin (std::string const &name);
+
+      int terminate ();
     private:
+      bool has_permission(int) const;
+
       fhg::core::plugin_t::ptr_t m_plugin;
       fhg::core::kernel_t *m_kernel;
       fhg::plugin::Storage *m_storage;

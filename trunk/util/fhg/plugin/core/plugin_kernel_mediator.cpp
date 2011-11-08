@@ -8,6 +8,14 @@ namespace fhg
 {
   namespace core
   {
+    namespace permission
+    {
+      enum code
+        {
+          TERMINATE = 100,
+        };
+    };
+
     PluginKernelMediator::PluginKernelMediator ( fhg::core::plugin_t::ptr_t const & p
                                                , kernel_t *k
                                                , bool privileged
@@ -123,6 +131,11 @@ namespace fhg
       }
     }
 
+    bool PluginKernelMediator::has_permission (int) const
+    {
+      return true;
+    }
+
     int PluginKernelMediator::unload_plugin (std::string const &name)
     {
       if (m_privileged)
@@ -136,6 +149,20 @@ namespace fhg
           LOG(ERROR, "could not unload plugin " << name << ": " << ex.what());
           return -EINVAL;
         }
+      }
+      else
+      {
+        return -EPERM;
+      }
+    }
+
+    int PluginKernelMediator::terminate ()
+    {
+      if (has_permission(permission::TERMINATE))
+      {
+        LOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
+        m_kernel->stop();
+        return 0;
       }
       else
       {
