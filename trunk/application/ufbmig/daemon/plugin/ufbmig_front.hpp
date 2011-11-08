@@ -17,6 +17,7 @@ namespace ufbmig
     virtual int cancel() = 0;
 
     virtual void initialize_done (int) = 0;
+    virtual void salt_mask_done (int) = 0;
     virtual void calculate_done (int) = 0;
     virtual void finalize_done (int) = 0;
   };

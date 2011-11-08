@@ -19,6 +19,7 @@
 #include <we/we.hpp>
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
+#include <pnetc/type/salt_mask.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
@@ -33,6 +34,7 @@ namespace job
     enum code
       {
         INITIALIZE,
+        UPDATE,
         CALCULATE,
         FINALIZE,
       };
@@ -66,6 +68,9 @@ namespace job
     {
     case job::type::INITIALIZE:
       return "INITIALIZE";
+      break;
+    case job::type::UPDATE:
+      return "UPDATE";
       break;
     case job::type::CALCULATE:
       return "CALCULATE";
@@ -130,15 +135,23 @@ public:
     m_control_sdpa = fhg_kernel()->get<bool>("control_sdpa", "0");
 
     m_wf_path_initialize =
-      fhg_kernel()->get("wf_init", "init.pnet");
+      fhg_kernel()->get("wf_init", "ufbmig_init.pnet");
     if (! fs::exists(m_wf_path_initialize))
     {
       MLOG(ERROR, "cannot access INITIALIZE workflow: " << m_wf_path_initialize);
       FHG_PLUGIN_FAILED(ENOENT);
     }
 
+    m_wf_path_mask =
+      fhg_kernel()->get("wf_mask", "ufbmig_mask.pnet");
+    if (! fs::exists(m_wf_path_mask))
+    {
+      MLOG(ERROR, "cannot access UPDATE workflow: " << m_wf_path_mask);
+      FHG_PLUGIN_FAILED(ENOENT);
+    }
+
     m_wf_path_calculate =
-      fhg_kernel()->get("wf_calc", "calc.pnet");
+      fhg_kernel()->get("wf_calc", "ufbmig_calc.pnet");
     if (! fs::exists(m_wf_path_calculate))
     {
       MLOG(ERROR, "cannot access CALCULATE workflow: " << m_wf_path_calculate);
@@ -146,7 +159,7 @@ public:
     }
 
     m_wf_path_finalize =
-      fhg_kernel()->get("wf_done", "done.pnet");
+      fhg_kernel()->get("wf_done", "ufbmig_done.pnet");
     if (! fs::exists(m_wf_path_finalize))
     {
       MLOG(ERROR, "cannot access FINALIZE workflow: " << m_wf_path_finalize);
@@ -163,26 +176,6 @@ public:
       //    i.e. recovery is currently not possible
     }
 
-    m_frontend = 0;
-
-    if (m_control_sdpa)
-    {
-      sdpa_ctl = fhg_kernel()->acquire<sdpa::Control>("sdpactl");
-      if (0 == sdpa_ctl)
-      {
-        MLOG(ERROR, "could not acquire sdpa::Control plugin");
-        FHG_PLUGIN_FAILED(EAGAIN);
-      }
-      else
-      {
-        sdpa_ctl->restart();
-      }
-    }
-    else
-    {
-      sdpa_ctl = 0;
-    }
-
     sdpa_c = fhg_kernel()->acquire<sdpa::Client>("sdpac");
     if (0 == sdpa_c)
     {
@@ -194,9 +187,23 @@ public:
     if (0 == gpi_api)
     {
       MLOG(WARN, "could not acquire gpi::GPI plugin");
-      FHG_PLUGIN_FAILED(EAGAIN);
     }
 
+    if (m_control_sdpa)
+    {
+      sdpa_ctl = fhg_kernel()->acquire<sdpa::Control>("sdpactl");
+      if (0 == sdpa_ctl)
+      {
+        MLOG(WARN, "could not acquire sdpa::Control plugin, cannot control SDPA!");
+        m_control_sdpa = false;
+      }
+    }
+    else
+    {
+      sdpa_ctl = 0;
+    }
+
+    m_frontend = 0;
     m_state = state::UNINITIALIZED;
 
     fhg_kernel()->schedule ( boost::bind( &UfBMigBackImpl::update_job_states
@@ -246,6 +253,12 @@ public:
       return -EINVAL;
     }
 
+    if (m_control_sdpa && sdpa_ctl)
+    {
+      MLOG(INFO, "restarting SDPA...");
+      sdpa_ctl->restart();
+    }
+
     MLOG(INFO, "submitting INITIALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_initialize));
@@ -285,11 +298,39 @@ public:
       return -EAGAIN;
     }
 
-    MLOG(INFO, "updating SALTMASK");
+    MLOG(INFO, "submitting SALTMASK workflow");
+
+    const std::string wf(read_workflow_from_file(m_wf_path_mask));
+
+    we::activity_t act;
+
+    try
+    {
+      we::util::codec::decode(wf, act);
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "decoding workflow failed: " << ex.what());
+      return -EINVAL;
+    }
+
+    // place tokens
+    try
+    {
+      we::util::token::put (act, "file_with_config", m_file_with_config);
+      we::util::token::put ( act
+                           , "salt_mask"
+                           , pnetc::type::salt_mask::to_value(m_salt_mask)
+                           );
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "could not put tokens: " << ex.what());
+      return -EINVAL;
+    }
 
     m_state = state::UPDATING;
-
-    return 0;
+    return submit_job(we::util::codec::encode(act), job::type::UPDATE);
   }
 
   int calculate(std::string const &xml)
@@ -378,12 +419,19 @@ public:
 
   int cancel()
   {
-    MLOG(INFO, "CANCELLING running workflows");
     lock_type lock (m_job_list_mutex);
-    BOOST_FOREACH(job::info_t const & j, m_job_list)
+    if (m_job_list.size())
     {
-      if (! job::is_done(j))
-        sdpa_c->cancel(j.id);
+      MLOG(INFO, "CANCELLING running workflows");
+      BOOST_FOREACH(job::info_t const & j, m_job_list)
+      {
+        if (! job::is_done(j))
+          sdpa_c->cancel(j.id);
+      }
+    }
+    else
+    {
+      MLOG(INFO, "nothing to cancel!");
     }
     return 0;
   }
@@ -449,12 +497,20 @@ private:
       config = pnetc::type::config::from_value(output.front());
       MLOG(INFO, "got config: " << config);
 
+
+
       m_state = state::INITIALIZED;
     }
     catch (std::exception const & ex)
     {
       MLOG(ERROR, "could not get config token: " << ex.what());
     }
+    return 0;
+  }
+
+  int handle_update_salt_mask_result (we::activity_t const &result)
+  {
+    m_state = state::INITIALIZED;
     return 0;
   }
 
@@ -498,19 +554,21 @@ private:
       if (0 == ec)
       {
         ec = handle_initialize_result(result);
-        if (0 == ec)
-        {
-          m_state = state::INITIALIZED;
-        }
       }
 
       if (m_frontend) m_frontend->initialize_done(ec);
       break;
+    case job::type::UPDATE:
+      if (0 == ec)
+      {
+        ec = handle_update_salt_mask_result(result);
+      }
+
+      if (m_frontend) m_frontend->salt_mask_done(ec);
     case job::type::CALCULATE:
       if (0 == ec)
       {
         ec = handle_calculate_result(result);
-        m_state = state::INITIALIZED;
       }
 
       if (m_frontend) m_frontend->calculate_done(ec);
@@ -519,7 +577,6 @@ private:
       if (0 == ec)
       {
         ec = handle_finalize_result(result);
-        m_state = state::UNINITIALIZED;
       }
       if (m_frontend) m_frontend->finalize_done(ec);
       break;
@@ -562,8 +619,6 @@ private:
   job_list_t m_job_list;
 
   bool m_control_sdpa;
-  int m_state;
-
   sdpa::Control * sdpa_ctl;
   sdpa::Client * sdpa_c;
   gpi::GPI *gpi_api;
@@ -571,10 +626,13 @@ private:
   std::list<job::info_t> m_job_info_list;
 
   // state
-  int migration_state;
+  int m_state;
+  gpi::pc::type::handle_t m_output_handle;
+  pnetc::type::salt_mask::salt_mask m_salt_mask;
 
   // workflow paths
   std::string m_wf_path_initialize;
+  std::string m_wf_path_mask;
   std::string m_wf_path_calculate;
   std::string m_wf_path_finalize;
 

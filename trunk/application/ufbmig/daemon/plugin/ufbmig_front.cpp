@@ -27,12 +27,14 @@ namespace client { namespace command {
     // sent by the GUI to us
     enum code
       {
-        INITIALIZE = 0,
-        MIGRATE,
-        MIGRATE_WITH_SALT_MASK,
-        SALT_MASK,
-        ABORT,
-        FINALIZE,
+        INITIALIZE             = 0,
+        MIGRATE                = 1,
+        MIGRATE_WITH_SALT_MASK = 2,
+        SALT_MASK              = 3,
+        ABORT                  = 4,
+        FINALIZE               = 5,
+
+        NUM_COMMANDS
       };
   }
 }
@@ -55,8 +57,12 @@ namespace server { namespace command {
         FINALIZE_SUCCESS = 8,
         FINALIZE_FAILURE = 9,
 
-        ABORT_ACCEPTED = 10,
-        ABORT_REFUSED = 11,
+        PROCESSING_SALT_MASK = 10,
+        PROCESS_SALT_MASK_SUCCESS = 11,
+        PROCESS_SALT_MASK_FAILURE = 12,
+
+        ABORT_ACCEPTED = 13,
+        ABORT_REFUSED = 14,
 
         PROGRESS = 1000,
         LOGOUTPUT = 1001,
@@ -189,22 +195,51 @@ public:
 
   void initialize_done (int ec)
   {
-    LOG(TRACE, "initialize done: " << ec);
     if (! ec)
     {
+      LOG(TRACE, "initialize done");
       send_initialize_success();
     }
     else
     {
+      LOG(WARN, "initialize failed: " << ec);
       send_initialize_failure(ec);
+    }
+  }
+
+  void salt_mask_done (int ec)
+  {
+    if (0 == ec)
+    {
+      LOG(TRACE, "salt mask done");
+      send_process_salt_mask_success();
+
+      // work around strange protocol
+      if (! m_migrate_xml_buffer.empty())
+      {
+        const std::string payload (m_migrate_xml_buffer);
+        m_migrate_xml_buffer.clear();
+        handle_ISIM_command (client::command::MIGRATE, payload);
+      }
+    }
+    else
+    {
+      LOG(WARN, "salt mask failed: " << ec);
+      send_process_salt_mask_failure(ec);
+
+      // work around strange protocol
+      if (! m_migrate_xml_buffer.empty())
+      {
+        m_migrate_xml_buffer.clear();
+      }
     }
   }
 
   void calculate_done (int ec)
   {
-    LOG(TRACE, "calculate done: " << ec);
     if (! ec)
     {
+      LOG(TRACE, "migration done");
       // get current output from backend
       const char *data = 0;
       const size_t len = 0;
@@ -213,19 +248,21 @@ public:
     }
     else
     {
+      LOG(WARN, "migration failed: " << ec);
       send_migrate_failure(ec);
     }
   }
 
   void finalize_done (int ec)
   {
-    LOG(TRACE, "finalize done: " << ec);
     if (! ec)
     {
+      LOG(TRACE, "finalize done");
       send_finalize_success();
     }
     else
     {
+      LOG(WARN, "finalize failed: " << ec);
       send_finalize_failure(ec);
     }
   }
@@ -269,6 +306,27 @@ private:
   {
     m_server->idle();
     create_pspro_message(server::command::INITIALIZE_FAILURE, &ec, sizeof(ec))
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_processing_salt_mask()
+  {
+    m_server->busy();
+    create_pspro_message(server::command::PROCESSING_SALT_MASK)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_process_salt_mask_success()
+  {
+    m_server->idle();
+    create_pspro_message(server::command::PROCESS_SALT_MASK_SUCCESS)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_process_salt_mask_failure(int ec)
+  {
+    m_server->idle();
+    create_pspro_message(server::command::PROCESS_SALT_MASK_FAILURE, &ec, sizeof(ec))
       ->sendMsg(m_server->communication());
   }
 
@@ -332,9 +390,9 @@ private:
       ->sendMsg(m_server->communication());
   }
 
-  void send_abort_refused()
+  void send_abort_refused(int ec)
   {
-    create_pspro_message(server::command::ABORT_REFUSED)
+    create_pspro_message(server::command::ABORT_REFUSED, &ec, sizeof(ec))
       ->sendMsg(m_server->communication());
   }
 
@@ -380,9 +438,8 @@ private:
   {
     int ec = 0;
 
-    MLOG(INFO, "got command: " << cmd);
-    MLOG(INFO, "custom size: " << payload.size());
-    //    MLOG(INFO, "custom data: " << payload);
+    DMLOG(TRACE, "got command: " << cmd);
+    DMLOG(TRACE, "custom size: " << payload.size());
 
     switch (cmd)
     {
@@ -409,27 +466,31 @@ private:
       }
       break;
     case client::command::MIGRATE_WITH_SALT_MASK:
-      // just remember xml data, asume we get the salt mask afterwards
+      // work around protocol fuck up: just  remember xml data, asume we get the
+      // salt mask afterwards
       m_migrate_xml_buffer = payload;
       break;
     case client::command::SALT_MASK:
-      ec = update_salt_mask(0, 0);
-      // work around strange protocol
-      if (! m_migrate_xml_buffer.empty())
+      ec = update_salt_mask(payload.c_str(), payload.size());
+      if (0 == ec)
       {
-        ec = handle_ISIM_command (client::command::MIGRATE, m_migrate_xml_buffer);
-        m_migrate_xml_buffer.clear();
+        send_processing_salt_mask();
+      }
+      else
+      {
+        send_process_salt_mask_failure(ec);
       }
       break;
     case client::command::ABORT:
       // abort
-      if (0 == cancel())
+      ec = cancel ();
+      if (0 == ec)
       {
         send_abort_accepted();
       }
       else
       {
-        send_abort_refused();
+        send_abort_refused(ec);
       }
       break;
     case client::command::FINALIZE:
@@ -444,6 +505,7 @@ private:
       }
       break;
     default:
+      MLOG(ERROR, "Ignoring invalid command from client: " << cmd);
       break;
     }
 
