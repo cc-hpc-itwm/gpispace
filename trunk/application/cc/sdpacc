@@ -58,7 +58,7 @@ if [ -z "$cxx_compiler" ] ; then
 fi
 
 args="$@"
-pnet="$SDPA_HOME/share/sdpa/cc/compile.pnet"
+pnet="$SDPA_HOME/libexec/apps/sdpacc/compile.pnet"
 
 pnet_tmp=$(mktemp)
 result=

@@ -130,10 +130,10 @@ FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \
     -s plugin.ufbmig_front.port_server=${port} \
-    -s plugin.ufbmig_back.wf_init="${SDPA_HOME}/share/ufbmig/ufbmig_init.pnet" \
-    -s plugin.ufbmig_back.wf_mask="${SDPA_HOME}/share/ufbmig/ufbmig_mask.pnet" \
-    -s plugin.ufbmig_back.wf_calc="${SDPA_HOME}/share/ufbmig/ufbmig_calc.pnet" \
-    -s plugin.ufbmig_back.wf_done="${SDPA_HOME}/share/ufbmig/ufbmig_done.pnet" \
+    -s plugin.ufbmig_back.wf_init="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_init.pnet" \
+    -s plugin.ufbmig_back.wf_mask="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_mask.pnet" \
+    -s plugin.ufbmig_back.wf_calc="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_calc.pnet" \
+    -s plugin.ufbmig_back.wf_done="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_done.pnet" \
     -s plugin.ufbmig_back.config="${state_dir}/config.token" \
     -s plugin.ufbmig_back.control_sdpa=0 \
     -s plugin.gpi.socket="$gpi_socket" \

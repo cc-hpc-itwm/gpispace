@@ -9,7 +9,7 @@ pnet_compile(ufbmig_init init.xml
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
-  INSTALL share/ufbmig
+  INSTALL libexec/apps/ufbmig
 )
 
 pnet_compile(ufbmig_mask update_salt_mask.xml
@@ -22,7 +22,7 @@ pnet_compile(ufbmig_mask update_salt_mask.xml
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
-  INSTALL share/ufbmig
+  INSTALL libexec/apps/ufbmig
 )
 
 pnet_compile(ufbmig_calc calc.xml
@@ -35,7 +35,7 @@ pnet_compile(ufbmig_calc calc.xml
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
-  INSTALL share/ufbmig
+  INSTALL libexec/apps/ufbmig
 )
 
 pnet_compile(ufbmig_done finalize.xml
@@ -47,5 +47,5 @@ pnet_compile(ufbmig_done finalize.xml
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
-  INSTALL share/ufbmig
+  INSTALL libexec/apps/ufbmig
 )
