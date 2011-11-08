@@ -879,16 +879,17 @@ function start_proc ()
 	debug $binary $@
 	$binary $@ </dev/null >"$log_file" 2>&1 &
 	pid=$!
-	sleep 0.5
-	if is_proc_alive "$name" "$pid" ; then
-	    echo "+ $name ($pid)" >&2
-	    echo "$pid" > "$pid_file"
-	    disown -a
-	    return 0
-	else
-	    echo "- $name (dead)" >&2
-	    return 1
-	fi
+	for (( i = 0 ; i < 3 ; ++i )) ; do
+	    sleep 0.5
+	    if is_proc_alive "$name" "$pid" ; then
+		echo "+ $name ($pid)" >&2
+		echo "$pid" > "$pid_file"
+		disown -a
+		return 0
+	    fi
+	done
+	echo "- $name (dead)" >&2
+	return 1
     fi
 }
 
