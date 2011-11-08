@@ -90,6 +90,32 @@ namespace job
   }
 }
 
+namespace state
+{
+  /*
+                                    CALCULATING
+                                      ^   |
+                                calc  |   | done
+                                      |   v
+    UNINITIALIZED -- initialize --> INITIALIZED -- finalize ---.
+           ^                          |    ^                   |
+           |                   update |    | done              |
+           |                          v    |                   |
+           |                         UPDATING                  |
+           |                                                   |
+           |                                                  /
+           `-----------------------  FINALIZING <------------'
+   */
+  enum code
+    {
+      UNINITIALIZED = 0,
+      INITIALIZED,
+      CALCULATING,
+      UPDATING,
+      FINALIZING,
+    };
+}
+
 class UfBMigBackImpl : FHG_PLUGIN
                      , public ufbmig::Backend
 {
@@ -101,12 +127,14 @@ class UfBMigBackImpl : FHG_PLUGIN
 public:
   FHG_PLUGIN_START()
   {
+    m_control_sdpa = fhg_kernel()->get<bool>("control_sdpa", "0");
+
     m_wf_path_initialize =
       fhg_kernel()->get("wf_init", "init.pnet");
     if (! fs::exists(m_wf_path_initialize))
     {
       MLOG(ERROR, "cannot access INITIALIZE workflow: " << m_wf_path_initialize);
-      FHG_PLUGIN_FAILED(EINVAL);
+      FHG_PLUGIN_FAILED(ENOENT);
     }
 
     m_wf_path_calculate =
@@ -114,7 +142,7 @@ public:
     if (! fs::exists(m_wf_path_calculate))
     {
       MLOG(ERROR, "cannot access CALCULATE workflow: " << m_wf_path_calculate);
-      FHG_PLUGIN_FAILED(EINVAL);
+      FHG_PLUGIN_FAILED(ENOENT);
     }
 
     m_wf_path_finalize =
@@ -122,41 +150,54 @@ public:
     if (! fs::exists(m_wf_path_finalize))
     {
       MLOG(ERROR, "cannot access FINALIZE workflow: " << m_wf_path_finalize);
-      FHG_PLUGIN_FAILED(EINVAL);
+      FHG_PLUGIN_FAILED(ENOENT);
     }
 
     m_file_with_config =
       fhg_kernel()->get("config", "config.token");
 
-    m_frontend = 0;
-    sdpa_ctl = fhg_kernel()->acquire<sdpa::Control>("sdpactl");
-    if (0 == sdpa_ctl)
+    if (fs::exists(m_file_with_config))
     {
-      MLOG(ERROR, "could not acquire sdpa::Control plugin");
-      FHG_PLUGIN_FAILED(EINVAL);
+      MLOG(INFO, "trying to recover from existing config...");
+      // TODO: not implemented, since gpid kills gpi-space anyways...
+      //    i.e. recovery is currently not possible
+    }
+
+    m_frontend = 0;
+
+    if (m_control_sdpa)
+    {
+      sdpa_ctl = fhg_kernel()->acquire<sdpa::Control>("sdpactl");
+      if (0 == sdpa_ctl)
+      {
+        MLOG(ERROR, "could not acquire sdpa::Control plugin");
+        FHG_PLUGIN_FAILED(EAGAIN);
+      }
+      else
+      {
+        sdpa_ctl->restart();
+      }
+    }
+    else
+    {
+      sdpa_ctl = 0;
     }
 
     sdpa_c = fhg_kernel()->acquire<sdpa::Client>("sdpac");
     if (0 == sdpa_c)
     {
       MLOG(ERROR, "could not acquire sdpa::Client plugin");
-      FHG_PLUGIN_FAILED(EINVAL);
+      FHG_PLUGIN_FAILED(EAGAIN);
     }
 
     gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
     if (0 == gpi_api)
     {
       MLOG(WARN, "could not acquire gpi::GPI plugin");
+      FHG_PLUGIN_FAILED(EAGAIN);
     }
 
-    // restore from existing state:
-    //   if file exists(config_file)
-    //     read it
-    //     check handles
-    //     if something fails:
-    //        submit finalize workflow, to deallocate possible left-overs
-    //     else
-    //        set state to initialized
+    m_state = state::UNINITIALIZED;
 
     fhg_kernel()->schedule ( boost::bind( &UfBMigBackImpl::update_job_states
                                         , this
@@ -199,6 +240,12 @@ public:
 
   int initialize(std::string const &xml)
   {
+    if (state::UNINITIALIZED != m_state)
+    {
+      MLOG(ERROR, "state mismatch: cannot initialize again!");
+      return -EINVAL;
+    }
+
     MLOG(INFO, "submitting INITIALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_initialize));
@@ -232,12 +279,27 @@ public:
 
   int update_salt_mask (const char *data, size_t len)
   {
+    if (state::INITIALIZED != m_state)
+    {
+      MLOG(WARN, "cannot update salt mask currently, invalid state: " << m_state);
+      return -EAGAIN;
+    }
+
     MLOG(INFO, "updating SALTMASK");
+
+    m_state = state::UPDATING;
+
     return 0;
   }
 
   int calculate(std::string const &xml)
   {
+    if (state::INITIALIZED != m_state)
+    {
+      MLOG(WARN, "cannot calculate right now, invalid state: " << m_state);
+      return -EAGAIN;
+    }
+
     MLOG(INFO, "submitting CALCULATE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_calculate));
@@ -265,11 +327,21 @@ public:
       return -EINVAL;
     }
 
-    return submit_job(we::util::codec::encode(act), job::type::CALCULATE);
+    int ec = submit_job(we::util::codec::encode(act), job::type::CALCULATE);
+    if (0 == ec)
+    {
+      m_state = state::CALCULATING;
+    }
+    return ec;
   }
 
   int finalize()
   {
+    if (state::INITIALIZED != m_state)
+    {
+      MLOG(WARN, "cannot finalize right now, invalid state: " << m_state);
+      return -EAGAIN;
+    }
     MLOG(INFO, "submitting FINALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_finalize));
@@ -296,7 +368,12 @@ public:
       return -EINVAL;
     }
 
-    return submit_job(we::util::codec::encode(act), job::type::FINALIZE);
+    int ec = submit_job(we::util::codec::encode(act), job::type::FINALIZE);
+    if (0 == ec)
+    {
+      m_state = state::FINALIZING;
+    }
+    return ec;
   }
 
   int cancel()
@@ -362,24 +439,6 @@ private:
     return ec;
   }
 
-  void notify_frontend_about_completed_job (job::info_t const &j)
-  {
-    if (!m_frontend) return;
-
-    switch (j.type)
-    {
-    case job::type::INITIALIZE:
-      m_frontend->initialize_done(j.error);
-      break;
-    case job::type::CALCULATE:
-      m_frontend->calculate_done(j.error);
-      break;
-    case job::type::FINALIZE:
-      m_frontend->finalize_done(j.error);
-      break;
-    }
-  }
-
   int handle_initialize_result (we::activity_t const &result)
   {
     try
@@ -389,6 +448,8 @@ private:
         throw std::runtime_error("empty list");
       config = pnetc::type::config::from_value(output.front());
       MLOG(INFO, "got config: " << config);
+
+      m_state = state::INITIALIZED;
     }
     catch (std::exception const & ex)
     {
@@ -399,61 +460,72 @@ private:
 
   int handle_calculate_result (we::activity_t const &result)
   {
+    m_state = state::INITIALIZED;
     return 0;
   }
 
   int handle_finalize_result (we::activity_t const &result)
   {
+    m_state = state::UNINITIALIZED;
     return 0;
-  }
-
-  int handle_job_result (int type, we::activity_t const &result)
-  {
-    switch (type)
-    {
-    case job::type::INITIALIZE:
-      return handle_initialize_result(result);
-      break;
-    case job::type::CALCULATE:
-      return handle_calculate_result(result);
-      break;
-    case job::type::FINALIZE:
-      return handle_finalize_result(result);
-      break;
-    default:
-      return -EINVAL;
-    }
   }
 
   int handle_completed_job (job::info_t const &j)
   {
-    int ec = 0;
-
     LOG( INFO
        , "job returned: " << job::type_to_name(j.type) << " "
        << job::status_to_string(j.state)
        );
 
-    if (0 == j.error)
+    int ec = j.error;
+
+    we::activity_t result;
+    if (0 == ec)
     {
-      we::activity_t result;
       try
       {
         we::util::codec::decode(j.result, result);
-        ec = handle_job_result (j.type, result);
       }
       catch (std::exception const &ex)
       {
-        MLOG(ERROR, "could not decode result: " << ex.what());
         ec = -EINVAL;
       }
     }
-    else
-    {
-      ec = j.error;
-    }
 
-    notify_frontend_about_completed_job(j);
+    switch (j.type)
+    {
+    case job::type::INITIALIZE:
+      if (0 == ec)
+      {
+        ec = handle_initialize_result(result);
+        if (0 == ec)
+        {
+          m_state = state::INITIALIZED;
+        }
+      }
+
+      if (m_frontend) m_frontend->initialize_done(ec);
+      break;
+    case job::type::CALCULATE:
+      if (0 == ec)
+      {
+        ec = handle_calculate_result(result);
+        m_state = state::INITIALIZED;
+      }
+
+      if (m_frontend) m_frontend->calculate_done(ec);
+      break;
+    case job::type::FINALIZE:
+      if (0 == ec)
+      {
+        ec = handle_finalize_result(result);
+        m_state = state::UNINITIALIZED;
+      }
+      if (m_frontend) m_frontend->finalize_done(ec);
+      break;
+    default:
+      return -EINVAL;
+    }
 
     return ec;
   }
@@ -488,6 +560,10 @@ private:
 
   mutex_type m_job_list_mutex;
   job_list_t m_job_list;
+
+  bool m_control_sdpa;
+  int m_state;
+
   sdpa::Control * sdpa_ctl;
   sdpa::Client * sdpa_c;
   gpi::GPI *gpi_api;
