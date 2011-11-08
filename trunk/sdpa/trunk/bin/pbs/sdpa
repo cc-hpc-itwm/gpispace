@@ -724,25 +724,15 @@ function generate_environment ()
     echo export SDPA_HOME="$SDPA_HOME"
     echo export SDPA_LIBEXEC="$SDPA_HOME/libexec"
 
-    echo "path = $PATH" >&2
-
     prepend_to_path PATH "$SDPA_HOME/bin"
-
-    echo "path = $PATH" >&2
-
     prepend_to_path PATH "$SDPA_HOME/bin/pbs"
-
-    echo "path = $PATH" >&2
-
     prepend_to_path PATH "$SDPA_HOME/bin/parsu"
-
-    echo "path = $PATH" >&2
 
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec"
-    prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
-
     prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
+
+    prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
 
     for f in $( find "$SDPA_LIBEXEC/apps" -type f -name "*.so" ) ; do
 	app_module_dir=$(dirname "$f")
