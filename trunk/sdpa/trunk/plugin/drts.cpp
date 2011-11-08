@@ -154,6 +154,8 @@ public:
       }
     }
 
+    restore_jobs ();
+
     if (have_master_with_polling)
       m_request_thread.reset(new boost::thread(&DRTSImpl::job_requestor_thread, this));
 
@@ -183,10 +185,6 @@ public:
       m_execution_thread.reset();
     }
 
-    // cancel all pending jobs
-    //    try to deliver outstanding notifications
-    //    dump state of job-map
-
     if (m_event_thread)
     {
       m_event_thread->interrupt();
@@ -209,6 +207,11 @@ public:
     m_peer.reset();
 
     m_wfe = 0;
+
+    {
+      lock_type job_map_lock (m_job_map_mutex);
+      fhg_kernel()->storage()->save("jobs", m_jobs);
+    }
 
     FHG_PLUGIN_STOPPED();
   }
@@ -717,18 +720,18 @@ private:
       {
         try
         {
-          std::string result;
-
           job->started(boost::posix_time::microsec_clock::universal_time());
 
           MLOG(TRACE, "executing job " << job->id());
 
+          std::string result;
           int ec = m_wfe->execute ( job->id()
                                   , job->description()
                                   , m_capabilities
                                   , result
                                   , meta_data
                                   );
+          job->set_result (result);
 
           job->completed(boost::posix_time::microsec_clock::universal_time());
 
@@ -740,45 +743,24 @@ private:
 
           if (ec > 0)
           {
-            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::FAILED);
-            ensure_send_event (new sdpa::events::JobFailedEvent ( m_my_name
-                                                                , job->owner()
-                                                                , job->id()
-                                                                , result
-                                                                )
-                              );
+            job->set_state (drts::Job::FAILED);
           }
           else if (ec < 0)
           {
-            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::CANCELED);
-            ensure_send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
-                                                                   , job->owner()
-                                                                   , job->id()
-                                                                   , result
-                                                                   )
-                              );
-
-            lock_type job_map_lock (m_job_map_mutex);
-            map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
-            assert (job_it != m_jobs.end());
-            DMLOG(TRACE, "removing job " << job->id());
-            m_jobs.erase(job_it);
+            job->set_state (drts::Job::CANCELED);
           }
           else
           {
-            job->cmp_and_swp_state (drts::Job::RUNNING, drts::Job::FINISHED);
-            ensure_send_event (new sdpa::events::JobFinishedEvent ( m_my_name
-                                                                  , job->owner()
-                                                                  , job->id()
-                                                                  , result
-                                                                  )
-                              );
+            job->set_state (drts::Job::FINISHED);
           }
         }
         catch (std::exception const & ex)
         {
-          // mark job as failed
+          MLOG(ERROR, "unexpected exception during job execution: " << ex.what());
+          job->set_state (drts::Job::FAILED);
         }
+
+        send_job_result_to_master (job);
 
         {
           lock_type lock(m_job_computed_mutex);
@@ -789,9 +771,11 @@ private:
       {
         lock_type job_map_lock (m_job_map_mutex);
         map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
-        assert (job_it != m_jobs.end());
-        DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
-        m_jobs.erase(job_it);
+        if (job_it != m_jobs.end())
+        {
+          DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
+          m_jobs.erase(job_it);
+        }
       }
     }
   }
@@ -818,14 +802,103 @@ private:
     }
   }
 
+  void restore_jobs()
+  {
+    map_of_jobs_t old_jobs;
+    fhg_kernel()->storage()->load("jobs", old_jobs);
+    if (old_jobs.size())
+    {
+      for ( map_of_jobs_t::iterator it (old_jobs.begin()), end (old_jobs.end())
+          ; it != end
+          ; ++it
+          )
+      {
+        job_ptr_t job (it->second);
+
+        switch (job->state())
+        {
+        case drts::Job::FINISHED:
+          {
+            lock_type job_map_lock (m_job_map_mutex);
+            MLOG(INFO, "restoring information of finished job: " << job->id());
+            m_jobs[it->first] = job;
+          }
+          break;
+        case drts::Job::FAILED:
+          {
+            lock_type job_map_lock (m_job_map_mutex);
+            MLOG(INFO, "restoring information of failed job: " << job->id());
+            m_jobs[it->first] = job;
+          }
+          break;
+        case drts::Job::PENDING:
+          MLOG(WARN, "ignoring old pending job: " << job->id());
+          break;
+        case drts::Job::RUNNING:
+          MLOG(WARN, "ignoring old pending job: " << job->id());
+          break;
+        case drts::Job::CANCELED:
+          MLOG(WARN, "ignoring old pending job: " << job->id());
+          break;
+        default:
+          MLOG(ERROR, "STRANGE job state: " << job->state());
+          break;
+        }
+      }
+    }
+  }
+
   void resend_outstanding_events (master_ptr const &master)
   {
-    MLOG(TRACE, "resending outstanding events to " << master->name());
-    while (master->outstanding_events().size() && master->is_connected())
+    MLOG(TRACE, "resending outstanding notifications to " << master->name());
+    lock_type job_map_lock (m_job_map_mutex);
+    for ( map_of_jobs_t::iterator job_it (m_jobs.begin()), end (m_jobs.end())
+        ; job_it != end
+        ; ++job_it
+        )
     {
-      sdpa::events::SDPAEvent::Ptr evt(master->outstanding_events().get());
-      MLOG(TRACE, "re-sending " << evt->str());
-      ensure_send_event (evt);
+      job_ptr_t job (job_it->second);
+      MLOG(TRACE, "checking job id := " << job->id() << " state := " << job->state() << " owner := " << job->owner());
+      if (   (job->owner() == master->name())
+         && (job->state() >= drts::Job::FINISHED)
+         )
+      {
+        MLOG(TRACE, "resending outcome of job " << job->id());
+        send_job_result_to_master (job);
+      }
+    }
+  }
+
+  int send_job_result_to_master (job_ptr_t const & job)
+  {
+    switch (job->state())
+    {
+    case drts::Job::FINISHED:
+      return send_event (new sdpa::events::JobFinishedEvent ( m_my_name
+                                                            , job->owner()
+                                                            , job->id()
+                                                            , job->result()
+                                                            )
+                        );
+      break;
+    case drts::Job::FAILED:
+      return send_event (new sdpa::events::JobFailedEvent ( m_my_name
+                                                          , job->owner()
+                                                          , job->id()
+                                                          , job->result()
+                                                          )
+                        );
+      break;
+    case drts::Job::CANCELED:
+      return send_event (new sdpa::events::CancelJobAckEvent ( m_my_name
+                                                             , job->owner()
+                                                             , job->id()
+                                                             , job->result()
+                                                             )
+                        );
+      break;
+    default:
+      return 0;
     }
   }
 
@@ -955,31 +1028,6 @@ private:
         MLOG(TRACE, m_peer->name() << " is shutting down");
       }
     }
-  }
-
-  int ensure_send_event (sdpa::events::SDPAEvent *e)
-  {
-    return ensure_send_event (sdpa::events::SDPAEvent::Ptr(e));
-  }
-
-  int ensure_send_event (sdpa::events::SDPAEvent::Ptr const & evt)
-  {
-    int ec = send_event (evt);
-
-    if (0 != ec)
-    {
-      // check master
-      map_of_masters_t::iterator master (m_masters.find(evt->to()));
-      if (master != m_masters.end())
-      {
-        master->second->outstanding_events().put(evt);
-      }
-      else
-      {
-        return ec;
-      }
-    }
-    return 0;
   }
 
   int send_event (sdpa::events::SDPAEvent *e)

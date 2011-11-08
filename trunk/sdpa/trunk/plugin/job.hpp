@@ -66,13 +66,14 @@ namespace drts
     state_t cmp_and_swp_state( state_t expected
                              , state_t newstate
                              );
+    inline void set_state (state_t s) { lock_type lck(m_mutex); m_state = s; }
 
     std::string const & id() const { return m_id; }
     std::string const & description() const { return m_description; }
     std::string const & owner() const { return m_owner; }
 
     std::string const & result() const { lock_type lck(m_mutex); return m_result; }
-    void result(std::string const &r) { lock_type lck(m_mutex); m_result = r; }
+    void set_result(std::string const &r) { lock_type lck(m_mutex); m_result = r; }
 
     boost::posix_time::ptime const & entered () const { return m_entered; }
     boost::posix_time::ptime const & started () const { return m_started; }
@@ -82,6 +83,8 @@ namespace drts
     void started   (boost::posix_time::ptime const &t) { m_started = t; }
     void completed (boost::posix_time::ptime const &t) { m_completed = t; }
   private:
+    Job () {}
+
     friend class boost::serialization::access;
     template <typename Archive>
     void serialize (Archive & ar, const unsigned int version)
