@@ -20,8 +20,8 @@
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 
-static const std::string SERVER_APP_NAME("ISIM(at)SDPA");
-static const std::string SERVER_APP_VERS("0.0.1");
+static const std::string SERVER_APP_NAME("Interactive Migration");
+static const std::string SERVER_APP_VERS("1.0.0");
 
 namespace client { namespace command {
     // sent by the GUI to us
@@ -54,6 +54,9 @@ namespace server { namespace command {
         FINALIZING = 7,
         FINALIZE_SUCCESS = 8,
         FINALIZE_FAILURE = 9,
+
+        ABORT_ACCEPTED = 10,
+        ABORT_REFUSED = 11,
 
         PROGRESS = 1000,
         LOGOUTPUT = 1001,
@@ -323,6 +326,18 @@ private:
       ->sendMsg(m_server->communication());
   }
 
+  void send_abort_accepted()
+  {
+    create_pspro_message(server::command::ABORT_ACCEPTED)
+      ->sendMsg(m_server->communication());
+  }
+
+  void send_abort_refused()
+  {
+    create_pspro_message(server::command::ABORT_REFUSED)
+      ->sendMsg(m_server->communication());
+  }
+
   void message_thread ()
   {
     typedef boost::shared_ptr<PSProMigIF::Message> message_ptr;
@@ -408,7 +423,14 @@ private:
       break;
     case client::command::ABORT:
       // abort
-      cancel();
+      if (0 == cancel())
+      {
+        send_abort_accepted();
+      }
+      else
+      {
+        send_abort_refused();
+      }
       break;
     case client::command::FINALIZE:
       ec = finalize();
