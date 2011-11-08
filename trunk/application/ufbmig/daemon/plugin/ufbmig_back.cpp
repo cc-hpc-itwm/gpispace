@@ -317,6 +317,14 @@ public:
       return -EAGAIN;
     }
 
+    MLOG(TRACE, "writing new salt mask");
+
+    {
+      fs::ofstream salt_mask_stream (m_file_with_mask);
+      salt_mask_stream.write (data, len);
+      salt_mask_stream.close();
+    }
+
     MLOG(INFO, "submitting SALTMASK workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_mask));
