@@ -717,7 +717,11 @@ function generate_environment ()
     if [ -z "$SDPA_HOME" ] ; then
 	mydir="$(cd $(dirname $( which $0 )) && pwd)"
 	export SDPA_HOME="$(dirname "$mydir")"
+    else
+	# sanitize HOME
+	export SDPA_HOME="$(echo $SDPA_HOME | sed -e 's,/\+$,,')"
     fi
+    export SDPA_LIBEXEC="$SDPA_HOME/libexec"
 
     echo export SDPA_HOME="$SDPA_HOME"
     echo export SDPA_LIBEXEC="$SDPA_HOME/libexec"
@@ -730,6 +734,11 @@ function generate_environment ()
     prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
 
     prepend_to_path LD_LIBRARY_PATH "$HOME/.sdpa/plugins"
+
+    for f in $( find "$SDPA_LIBEXEC/apps" -type f -name "*.so" ) ; do
+	app_module_dir=$(dirname "$f")
+	prepend_to_path PC_LIBRARY_PATH "$app_module_dir"
+    done
     prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
     prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/plugins"
 
@@ -760,6 +769,7 @@ function initialize ()
     :> "$tmp_file"
     echo test -e "$state_dir/sdpa.pre.env" \&\& source "$state_dir/sdpa.pre.env" >> "$tmp_file"
     if ! generate_environment >> "$tmp_file" ; then
+	log "E: could not generate environment"
 	return 1
     fi
     cat >>"$tmp_file" <<EOF
