@@ -134,6 +134,7 @@ FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
     -s plugin.ufbmig_back.wf_calc="${SDPA_HOME}/share/ufbmig/ufbmig_calc.pnet" \
     -s plugin.ufbmig_back.wf_done="${SDPA_HOME}/share/ufbmig/ufbmig_done.pnet" \
     -s plugin.ufbmig_back.config="${state_dir}/config.token" \
+    -s plugin.ufbmig_back.control_sdpa=0 \
     -s plugin.gpi.socket="$gpi_socket" \
     $prefix/libexec/plugins/kvs.so \
     $prefix/libexec/plugins/net.so \
