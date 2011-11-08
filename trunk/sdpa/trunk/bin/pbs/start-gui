@@ -3,4 +3,9 @@
 test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
 log "Running sdpa-gui $@ on $(hostname)"
-sdpa-gui $@ 2>/dev/null
+err=$(sdpa-gui $@ 2>&1)
+ec=$?
+if [ $ec -ne 0 ] ; then
+	echo "sdpa-gui failed: $ec: $err" >&2
+	exit $ec
+fi
