@@ -64,6 +64,9 @@ namespace server { namespace command {
         ABORT_ACCEPTED = 13,
         ABORT_REFUSED = 14,
 
+        MIGRATE_META_DATA = 15,
+        MIGRATE_DATA = 16,
+
         PROGRESS = 1000,
         LOGOUTPUT = 1001,
       };
@@ -340,7 +343,11 @@ private:
   void send_migrate_success(const void *data, size_t len)
   {
     m_server->idle();
-    create_pspro_message(server::command::MIGRATE_SUCCESS, data, len)
+    create_pspro_message(server::command::MIGRATE_SUCCESS)
+      ->sendMsg(m_server->communication());
+    create_pspro_message(server::command::MIGRATE_META_DATA, 0, 0)
+      ->sendMsg(m_server->communication());
+    create_pspro_message(server::command::MIGRATE_DATA, data, len)
       ->sendMsg(m_server->communication());
   }
 
@@ -363,6 +370,7 @@ private:
     m_server->idle();
     create_pspro_message(server::command::FINALIZE_SUCCESS)
       ->sendMsg(m_server->communication());
+    send_waiting_for_initialize();
   }
 
   void send_finalize_failure(int ec)
@@ -402,7 +410,8 @@ private:
 
     MLOG(TRACE, "waiting for messages...");
 
-    while (!m_stop_requested)
+    size_t fail_counter = 0;
+    while (!m_stop_requested && fail_counter < 100)
     {
       try
       {
@@ -413,7 +422,12 @@ private:
           (PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout));
         if (! msg)
         {
+          ++fail_counter;
           continue;
+        }
+        else
+        {
+          fail_counter = 0;
         }
 
         if (msg->m_ulCustomDataSize)
@@ -431,6 +445,13 @@ private:
       {
         MLOG(ERROR, "error during message receive!");
       }
+    }
+
+    if (fail_counter)
+    {
+      int ec = errno;
+      MLOG(ERROR, "terminating, since there were " << fail_counter << " failures while receiving messages from the GUI: " << strerror(ec));
+      fhg_kernel()->terminate();
     }
   }
 
