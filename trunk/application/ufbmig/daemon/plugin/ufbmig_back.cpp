@@ -19,11 +19,11 @@
 #include <we/we.hpp>
 #include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
-#include <pnetc/type/salt_mask.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -168,12 +168,31 @@ public:
 
     m_file_with_config =
       fhg_kernel()->get("config", "config.token");
+    m_file_with_mask =
+      fhg_kernel()->get("saltmask", "saltmask");
 
     if (fs::exists(m_file_with_config))
     {
       MLOG(INFO, "trying to recover from existing config...");
       // TODO: not implemented, since gpid kills gpi-space anyways...
       //    i.e. recovery is currently not possible
+    }
+
+    if (fs::exists(m_file_with_mask))
+    {
+      try
+      {
+        fs::ofstream of(m_file_with_mask);
+        if (! of)
+        {
+          throw std::runtime_error ("could not open file");
+        }
+      }
+      catch (std::exception const & ex)
+      {
+        MLOG(ERROR, "could not create saltmask state in: " << m_file_with_mask << ": " << ex.what());
+        FHG_PLUGIN_FAILED(EIO);
+      }
     }
 
     sdpa_c = fhg_kernel()->acquire<sdpa::Client>("sdpac");
@@ -249,7 +268,7 @@ public:
   {
     if (state::UNINITIALIZED != m_state)
     {
-      MLOG(ERROR, "state mismatch: cannot initialize again!");
+      MLOG(ERROR, "state mismatch: cannot initialize again in state: " << m_state);
       return -EINVAL;
     }
 
@@ -318,10 +337,7 @@ public:
     try
     {
       we::util::token::put (act, "file_with_config", m_file_with_config);
-      we::util::token::put ( act
-                           , "salt_mask"
-                           , pnetc::type::salt_mask::to_value(m_salt_mask)
-                           );
+      we::util::token::put (act, "file_with_mask", m_file_with_mask);
     }
     catch (std::exception const &ex)
     {
@@ -380,9 +396,16 @@ public:
   {
     if (state::INITIALIZED != m_state)
     {
-      MLOG(WARN, "cannot finalize right now, invalid state: " << m_state);
-      return -EAGAIN;
+      MLOG(WARN, "finalizing from invalid state: " << m_state);
+      MLOG(WARN, "this will probably result in failed executions");
     }
+
+    if (! fs::exists(m_file_with_config))
+    {
+      MLOG(INFO, "no config file found, finalize not possible!");
+      return -EINVAL;
+    }
+
     MLOG(INFO, "submitting FINALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_finalize));
@@ -496,10 +519,6 @@ private:
         throw std::runtime_error("empty list");
       config = pnetc::type::config::from_value(output.front());
       MLOG(INFO, "got config: " << config);
-
-
-
-      m_state = state::INITIALIZED;
     }
     catch (std::exception const & ex)
     {
@@ -510,19 +529,25 @@ private:
 
   int handle_update_salt_mask_result (we::activity_t const &result)
   {
-    m_state = state::INITIALIZED;
     return 0;
   }
 
   int handle_calculate_result (we::activity_t const &result)
   {
-    m_state = state::INITIALIZED;
     return 0;
   }
 
   int handle_finalize_result (we::activity_t const &result)
   {
-    m_state = state::UNINITIALIZED;
+    if (fs::exists(m_file_with_config))
+    {
+      fs::remove(m_file_with_config);
+    }
+    if (fs::exists(m_file_with_mask))
+    {
+      fs::remove(m_file_with_mask);
+    }
+
     return 0;
   }
 
@@ -553,6 +578,7 @@ private:
     case job::type::INITIALIZE:
       if (0 == ec)
       {
+        m_state = state::INITIALIZED;
         ec = handle_initialize_result(result);
       }
 
@@ -563,13 +589,16 @@ private:
       {
         ec = handle_update_salt_mask_result(result);
       }
+      m_state = state::INITIALIZED;
 
       if (m_frontend) m_frontend->salt_mask_done(ec);
+      break;
     case job::type::CALCULATE:
       if (0 == ec)
       {
         ec = handle_calculate_result(result);
       }
+      m_state = state::INITIALIZED;
 
       if (m_frontend) m_frontend->calculate_done(ec);
       break;
@@ -578,6 +607,8 @@ private:
       {
         ec = handle_finalize_result(result);
       }
+      m_state = state::UNINITIALIZED;
+
       if (m_frontend) m_frontend->finalize_done(ec);
       break;
     default:
@@ -627,8 +658,6 @@ private:
 
   // state
   int m_state;
-  gpi::pc::type::handle_t m_output_handle;
-  pnetc::type::salt_mask::salt_mask m_salt_mask;
 
   // workflow paths
   std::string m_wf_path_initialize;
@@ -639,6 +668,7 @@ private:
   // workflow configs
   pnetc::type::config::config config;
   std::string m_file_with_config;
+  std::string m_file_with_mask;
 };
 
 EXPORT_FHG_PLUGIN( ufbmig_back

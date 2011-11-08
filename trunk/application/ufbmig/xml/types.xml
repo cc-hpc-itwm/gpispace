@@ -62,11 +62,6 @@
     <field name="interval" type="interval"/>
   </struct>
 
-  <struct name="salt_mask">
-    <field name="handle" type="long" />
-    <field name="size" type="long"/>
-  </struct>
-
   <include-structs href="interval/types.xml"/>
 
 </structs>
