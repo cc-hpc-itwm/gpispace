@@ -252,6 +252,10 @@ that is shared among all nodes.
 	    log "E: failed to create scratch directory: $scratch_dir"
 	    return 1
 	fi
+	if ! mkdir -p "$scratch_dir/state" ; then
+	    log "E: failed to create state directory: $scratch_dir/state"
+	    return 1
+	fi
     fi
 
     put "sdpa.scratch_dir" "$scratch_dir"
@@ -667,9 +671,6 @@ function generate_environment ()
 
     # read variables from config and write them to an environment file
     #     replacing init-screen.env in principle
-
-
-
     fhgcfg -f "$config_file" -l | while read key dummy val ; do
 	case "$key" in
 	    log.server.level)
@@ -790,9 +791,20 @@ EOF
 
 function cleanup ()
 {
+    test -r "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
+
     echo "cleaning up" >&2
+
+    echo "  * state" >&2
+    if [ -n "$SDPA_SCRATCH_DIR" ] ; then
+	if [ -d "$SDPA_SCRATCH_DIR"/state ] ; then
+	    find "$SDPA_SCRATCH_DIR"/state -mindepth 1 -delete
+	fi
+    fi
+
     echo "  * logs" >&2
     clear-logs -f -a -x
+
     echo "  * backup files" >&2
     for f in "$HOME"/*.bkp *.bkp ; do
 	if [ -e "$f" ] ; then
