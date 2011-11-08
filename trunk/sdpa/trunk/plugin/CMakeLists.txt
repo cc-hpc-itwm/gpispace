@@ -9,6 +9,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp
 		 ${FhgCom_LIBRARY}
 		 ${Boost_SERIALIZATION_SHARED_LIBRARY}
 		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_DATE_TIME_SHARED_LIBRARY}
 		 ${Boost_SYSTEM_SHARED_LIBRARY}
   INSTALL
   HEADERS drts.hpp
