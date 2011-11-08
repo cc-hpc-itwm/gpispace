@@ -83,10 +83,10 @@ else
 fi
 
 do_copy=false
-if [ $need_copy == "true" -a $force == "true" ] ; then
+if [ $need_copy = "true" -a $force = "true" ] ; then
     do_copy=true
 fi
-if [ $need_copy == "true" -a $do_copy == "false" ] ; then
+if [ $need_copy = "true" -a $do_copy = "false" ] ; then
     read -t 5 -n 1 -p "Do you want me to copy \"$gpi_exe\" to \"$gpi_bin_path\"? [y/N] " ans
     case "$ans" in
 	y|Y)
@@ -97,7 +97,7 @@ if [ $need_copy == "true" -a $do_copy == "false" ] ; then
     esac
 fi
 
-if [ $do_copy == "true" ] ; then
+if [ $do_copy = "true" ] ; then
     if [ ! -d "$gpi_bin_path" ] ; then
 	tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
 	if [ $? -ne 0 ] ; then
