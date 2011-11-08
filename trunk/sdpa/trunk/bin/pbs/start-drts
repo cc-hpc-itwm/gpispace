@@ -170,7 +170,12 @@ done
 # TODO: get those from the .sdpa/configs/sdpa.rc file, at least parts of it
 
 # config values (kernel)
-cfg="$cfg -s kernel.load.lazy=0"
+lazy="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g kernel.lazy -v false)"
+if [ x"$lazy" = x"true" ] ; then
+    cfg="$cfg -s kernel.load.lazy=1"
+else
+    cfg="$cfg -s kernel.load.lazy=0"
+fi
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
     cfg="$cfg -S $SDPA_SCRATCH_DIR/state/kernel/$name"
