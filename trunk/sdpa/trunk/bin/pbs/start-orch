@@ -5,7 +5,7 @@ test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 debug=false
 bind_addr="`hostname`"
 name="orchestrator"
-bkp_dir="${SDPA_BKP_DIR}"
+bkp_dir="${SDPA_SCRATCH_DIR}/state"
 
 while getopts ":hgn:l:d:" opt; do
   case $opt in
@@ -39,8 +39,9 @@ done
 log "Running $name at $bind_addr"
 
 argv="-u $bind_addr -n ${name} -k ${KVS_URL}"
-if [ -n "${bkp_dir}" ] ; then
-  argv="$argv -d $bkp_dir -f ${name}.bak"
+stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
+if [ x"$stateful" = x"true" ] ; then
+    argv="$argv -d ${bkp_dir}"
 fi
 
 if $debug ; then
