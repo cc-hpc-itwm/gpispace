@@ -198,9 +198,7 @@ function prepend_to_path ()
 	val=$(echo "$val" | sed "s,:$v:,:,g")
 	val=$(echo "$val" | sed -e "s,^$v:,,g")
 	val=$(echo "$val" | sed -e "s,:$v\$,,g")
-	if ! echo "$val" | grep -q -- "$v" ; then
-	    val="$v:$val"
-	fi
+	val="$v:$val"
     done
     eval "$var=$val"
 }
@@ -716,7 +714,7 @@ function generate_environment ()
 
     if [ -z "$SDPA_HOME" ] ; then
 	mydir="$(cd $(dirname $( which $0 )) && pwd)"
-	export SDPA_HOME="$(dirname "$mydir")"
+	export SDPA_HOME=$(dirname "$mydir")
     else
 	# sanitize HOME
 	export SDPA_HOME="$(echo $SDPA_HOME | sed -e 's,/\+$,,')"
@@ -726,9 +724,20 @@ function generate_environment ()
     echo export SDPA_HOME="$SDPA_HOME"
     echo export SDPA_LIBEXEC="$SDPA_HOME/libexec"
 
+    echo "path = $PATH" >&2
+
     prepend_to_path PATH "$SDPA_HOME/bin"
+
+    echo "path = $PATH" >&2
+
     prepend_to_path PATH "$SDPA_HOME/bin/pbs"
+
+    echo "path = $PATH" >&2
+
     prepend_to_path PATH "$SDPA_HOME/bin/parsu"
+
+    echo "path = $PATH" >&2
+
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec"
     prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
