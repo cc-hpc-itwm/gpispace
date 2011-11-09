@@ -21,12 +21,12 @@ namespace fhg
       {
         namespace connection
         {
-          item::item (bool reading_only)
+          item::item (bool read)
             : graph::item()
             , _start (NULL)
             , _end (NULL)
             , _fixed_points()
-            , _reading_only (reading_only)
+            , _read (read)
           {
             setZValue (-1);                                                          // hardcoded constant
           }
@@ -107,15 +107,22 @@ namespace fhg
             return _fixed_points;
           }
 
-          const bool& item::reading_only() const
+          const QList<QPointF>&
+          item::fixed_points (const QList<QPointF>& fixed_points_)
           {
-            return _reading_only;
-          }
-          const bool& item::reading_only (const bool& reading_only_)
-          {
-            return _reading_only = reading_only_;
+            return _fixed_points = fixed_points_;
           }
 
+          const bool& item::read() const
+          {
+            return _read;
+          }
+          const bool& item::read (const bool& read_)
+          {
+            return _read = read_;
+          }
+
+          //! \todo this is broken
           QPainterPath item::shape () const
           {
             if(!start() && !end())
@@ -190,8 +197,8 @@ namespace fhg
             QPointF intersection;
 
             for ( QList<QLineF>::iterator line (linesForward.begin())
-                    ; line != linesForward.end()
-                    ; ++line
+                ; line != linesForward.end()
+                ; ++line
                 )
               {
                 QPointF target (line->p2());

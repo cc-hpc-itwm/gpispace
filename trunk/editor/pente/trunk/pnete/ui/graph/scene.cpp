@@ -442,8 +442,10 @@ namespace fhg
                   }
               }
 
-            typedef std::list<graphviz::edge_type> edges_type;
-            edges_type edges;
+            typedef boost::unordered_map< connection::item*
+                                        , graphviz::edge_type
+                                        > edges_map_type;
+            edges_map_type edges;
 
             foreach (QGraphicsItem* i, items())
               {
@@ -464,10 +466,14 @@ namespace fhg
 
                     if (start_node != nodes.end() && end_node != nodes.end())
                       {
-                        edges.push_back ( graph.add_edge ( start_node->second
-                                                         , end_node->second
-                                                         )
-                                        );
+                        edges.insert
+                          ( edges_map_type::value_type
+                            ( c
+                            , graph.add_edge ( start_node->second
+                                             , end_node->second
+                                             )
+                            )
+                          );
                       }
                   }
               }
@@ -479,9 +485,10 @@ namespace fhg
                 it.first->setPos (style::raster::snap (it.second.position()));
               }
 
-            BOOST_FOREACH (const graphviz::edge_type& edge, edges)
+            BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
               {
-                edge.beep();
+                //! \todo enable this, before repair connection::shape
+                //                edge.first->fixed_points (edge.second.points());
               }
           }
 

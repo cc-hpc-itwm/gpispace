@@ -33,7 +33,7 @@ namespace fhg
             Q_OBJECT;
 
           public:
-            item (bool reading_only = false);
+            item (bool read = false);
             ~item();
 
             connectable::item* start() const;
@@ -45,9 +45,10 @@ namespace fhg
             connectable::item* free_side(connectable::item*);
 
             const QList<QPointF>& fixed_points() const;
+            const QList<QPointF>& fixed_points (const QList<QPointF>&);
 
-            const bool& reading_only() const;
-            const bool& reading_only (const bool&);
+            const bool& read() const;
+            const bool& read (const bool&);
 
             virtual QPainterPath shape() const;
             virtual void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -63,7 +64,7 @@ namespace fhg
 
             QList<QPointF> _fixed_points;
 
-            bool _reading_only;
+            bool _read;
           };
         }
       }

@@ -6,8 +6,11 @@
 #include <QGraphicsItem>
 
 #include <iostream>
+#include <stdexcept>
 
 #include <gvc.h>
+
+#include <boost/lexical_cast.hpp>
 
 namespace fhg
 {
@@ -103,15 +106,26 @@ namespace fhg
         internal::set_attribute (_node, "shape", shape);
       }
 
+      template<typename T>
+      static T parse (const QString& s)
+      {
+        return boost::lexical_cast<T> (s.toStdString());
+      }
+
       QPointF node_type::position() const
       {
-        QStringList position_strings
+        const QStringList position_strings
           (QString (internal::get_attribute (_node, "pos")).split (","));
+
+        if (position_strings.length() < 2)
+          {
+            throw std::runtime_error ("node_type::position: wrong position");
+          }
 
         //! \todo check the faster (but unsafe?) alternative:
         //        QPointF (ND_coord (_node).x, ND_coord (_node).y)
-        return QPointF ( position_strings[0].toInt()
-                       , position_strings[1].toInt()
+        return QPointF ( parse<qreal> (position_strings[0])
+                       , parse<qreal> (position_strings[1])
                        );
       }
 
@@ -121,22 +135,34 @@ namespace fhg
                            )
         : _edge (agedge (graph, from, to))
       {}
-      void edge_type::beep () const
+      QList<QPointF> edge_type::points() const
       {
-        std::cout << _edge << ": ";
+        QList<QPointF> points;
 
-//         const bezier* b (ED_spl(_edge)->list);
+        const QStringList position_strings
+          (QString (internal::get_attribute (_edge, "pos")).split(" "));
 
-//         for (int i (0); i < b->size; ++i)
-//           {
-//             const pointf& p (b->list[i]);
+        foreach (const QString& point_string, position_strings)
+          {
+            QStringList components (point_string.split(","));
 
-//             std::cout << p.x << ":" << p.y << ", ";
-//           }
-//         std::cout << std::endl;
+            if (components[0] == "e")
+              {
+                components.pop_front();
+              }
 
-        std::cout << "## " << internal::get_attribute (_edge, "pos") << std::endl;
+            if (components.length() < 2)
+              {
+                throw std::runtime_error ("edge_type::points: wrong position");
+              }
 
+            points.push_back ( QPointF ( parse<qreal> (components[0])
+                                       , parse<qreal> (components[1])
+                                       )
+                             );
+          }
+
+        return points;
       }
 
       graph_type::graph_type (context_type& context, const QString& name)

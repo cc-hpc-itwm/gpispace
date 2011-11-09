@@ -8,6 +8,7 @@ class QGraphicsItem;
 
 #include <QString>
 #include <QPointF>
+#include <QList>
 
 // Yes, I know the typedef is ugly, but I prefer this to having an include here.
 struct Agraph_t;
@@ -60,7 +61,7 @@ namespace fhg
       public:
         edge_type (Agraph_t*, Agnode_t*, Agnode_t*);
 
-        void beep () const;
+        QList<QPointF> points() const;
 
       private:
         Agedge_t* _edge;
