@@ -127,6 +127,7 @@ struct MyFixture
 	}
 
 	void run_client_subscriber();
+	int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli );
 
 	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
@@ -166,67 +167,69 @@ struct MyFixture
 
 
 /*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
-int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
+int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
 	typedef boost::posix_time::ptime time_type;
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
 	int exit_code(4);
 
-	std::cerr << "starting at: " << poll_start << std::endl;
-	std::cout << "waiting for job to return..." << std::flush;
-
 	ptrCli->subscribe(job_id);
 
-  	std::cout<<"The client successfully subscribed for orchestrator notifications ..."<<std::endl;
-  	std::string job_status;
+	LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
 
-  	try
-  	{
-  		seda::IEvent::Ptr reply( ptrCli->waitForNotification(100000) );
+	std::string job_status;
 
-  		// check event type
-  		if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
-  		{
-  			job_status="Finished";
-  			//LOG(INFO, job_status);
-  			exit_code = 0;
-  		}
-  		else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
-  		{
-  			job_status="Failed";
-  			//LOG(INFO, job_status);
-  			exit_code = 1;
-  		}
-  		else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
-  		{
-  			job_status="Cancelled";
-  			//LOG(INFO, job_status);
-  			exit_code = 2;
-  		}
-  		else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
-  		{
-  			std::cerr<< "got error event: reason := "
-  						+ err->reason()
-  						+ " code := "
-  						+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
+  	int nTrials = 0;
+  	do {
 
-  			//ptrCli->shutdown_network();
-  			return exit_code;
-  		}
-  		else
+  		LOG(INFO, "start waiting at: " << poll_start);
+
+  		try
   		{
-  			std::cerr<< "unexpected reply: " << (reply ? reply->str() : "null")<<std::endl;
-  			//ptrCli->shutdown_network();
-  			return exit_code;
-  		}
-  	}
-  	catch (const sdpa::client::Timedout &)
-  	{
-  		std::cerr<< "Timeout expired!" <<std::endl;
-  		//ptrCli->shutdown_network();
-  		return exit_code;
-  	}
+  			if(nTrials<NMAXTRIALS)
+  			{
+  				boost::this_thread::sleep(boost::posix_time::seconds(1));
+  				LOG(INFO, "Re-trying ...");
+  			}
+
+			seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
+
+			// check event type
+			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
+			{
+				job_status="Finished";
+				exit_code = 0;
+			}
+			else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
+			{
+				job_status="Failed";
+				exit_code = 1;
+			}
+			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
+			{
+				job_status="Cancelled";
+				exit_code = 2;
+			}
+			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
+			{
+				std::cerr<< "got error event: reason := "
+							+ err->reason()
+							+ " code := "
+							+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
+
+			}
+			else
+			{
+				LOG(WARN, "unexpected reply: " << (reply ? reply->str() : "null"));
+			}
+		}
+		catch (const sdpa::client::Timedout &)
+		{
+			LOG(INFO, "Timeout expired!");
+		}
+
+  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS);
 
   	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
 
@@ -234,15 +237,14 @@ int subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientAp
   		job_status != std::string("Failed")   &&
   		job_status != std::string("Cancelled") )
   	{
-  		std::cerr<<"Unexpected status, leave now ..."<<std::endl;
-  		ptrCli->shutdown_network();
+  		LOG(ERROR, "Unexpected status, leave now ...");
   		return exit_code;
   	}
 
   	time_type poll_end = boost::posix_time::microsec_clock::local_time();
 
-  	std::cerr << "stopped at: " << poll_end << std::endl;
-  	std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
+  	LOG(INFO, "Client stopped waiting at: " << poll_end);
+  	LOG(INFO, "Execution time: " << (poll_end - poll_start));
   	return exit_code;
 }
 
@@ -341,7 +343,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 BOOST_FIXTURE_TEST_SUITE( test_StopRestartAgents, MyFixture );
 
-BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEWait)
+/*BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEWait)
 {
 	LOG( DEBUG, "testAgentsAndDrts_OrchNoWEWait");
 	//guiUrl
@@ -382,6 +384,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEWait)
 
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWEWait terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_CASE( test2Subscribers_OrchNoWEWait)
 {
@@ -487,6 +490,7 @@ BOOST_AUTO_TEST_CASE( test2Subscribers_OrchNoWEWait)
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWEWait terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEStopRestart)
 {
 	LOG( DEBUG, "testAgentsAndDrts_OrchNoWEStopRestart");
@@ -536,5 +540,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWEStopRestart)
 
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWEStopRestart terminated!");
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

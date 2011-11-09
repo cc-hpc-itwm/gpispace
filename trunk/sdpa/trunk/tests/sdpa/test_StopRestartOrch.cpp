@@ -438,7 +438,7 @@ sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& 
 
 	kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-//	kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
+	//kernel->load_plugin (TESTS_GUI_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 	kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 
@@ -549,6 +549,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWE terminated!");
 }
 
+/*
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 {
 	LOG( DEBUG, "testAgentsAndDrts_OrchEmptyWE");
@@ -650,7 +651,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchDummyWE terminated!");
 }
-
+*/
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 {
@@ -702,6 +703,5 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWE_AgentRealWE terminated!");
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()
