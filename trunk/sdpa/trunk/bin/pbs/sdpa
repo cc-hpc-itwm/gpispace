@@ -3,8 +3,8 @@
 # usage: sdpa {start|stop|status|submit file}
 #
 
-# increment this value up to date if anything config related changes!
-CONFIG_VERSION=3
+# increment this value if anything config related changes!
+CONFIG_VERSION=4
 
 #debug_enabled=true
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
@@ -131,6 +131,21 @@ function setup_state ()
     put "sdpa.state_dir" "$state_dir"
     log "I: state directory configured to be in $state_dir"
 
+    local p_stateful=$(get "sdpa.stateful" "true")
+    if [ x"$p_stateful" = x"true" ] ; then
+	y_n_p "Do you want stateful execution? [Y/n] "
+    else
+	y_n_p "Do you want stateful execution? [y/N] "
+    fi
+    local ec=$?
+    if [ $ec -eq 0 ] ; then
+	put "sdpa.stateful" "true"
+    elif [ $ec -eq 1 ] ; then
+	put "sdpa.stateful" "false"
+    else
+	put "sdpa.stateful" "$p_stateful"
+    fi
+
     local data_dir="$HOME/.sdpa/data"
     if ! test -d "$data_dir" ; then
 	if ! mkdir -p "$data_dir" ; then
@@ -140,8 +155,13 @@ function setup_state ()
     fi
 
     if [ -n "$PBS_NODEFILE" ] ; then
-        test -e ~/.sdpa/data/aux && rm -f ~/.sdpa/data/aux
-        /bin/ln -sf $(dirname $PBS_NODEFILE) ~/.sdpa/data/aux
+	real_file=$(readlink -e "$PBS_NODEFILE")
+	if [ -n "$real_file" ] ; then
+            test -e ~/.sdpa/data/aux && rm -f ~/.sdpa/data/aux
+            /bin/ln -s "$(dirname "${real_file}")" ~/.sdpa/data/aux
+	else
+	    log "E: PBS_NODEFILE does not point to an existing file: $PBS_NODEFILE"
+	fi
     else
         log "E: PBS_NODEFILE is empty, could not figure out where the aux directory should be!"
     fi
@@ -170,7 +190,7 @@ function setup_kvs ()
 function y_n_p ()
 {
     local prompt="$1" ; shift
-    read -n 1 -p "$prompt [y/N] " yes_or_no
+    read -n 1 -p "$prompt" yes_or_no
     case "$yes_or_no" in
 	y|Y)
 	    echo
@@ -372,11 +392,10 @@ EOF
 	    return 1
 	fi
     fi
-
-    local plugin_dir="$HOME/.sdpa/plugins/autoload"
+    local plugin_dir="$HOME/.sdpa/plugins"
     if ! test -d "$plugin_dir" ; then
 	if ! mkdir -p "$plugin_dir" ; then
-	    log "E: failed to create plugins directory: $plugin_dir"
+	    log "E: failed to create plugin directory: $plugin_dir"
 	    return 1
 	fi
     fi
@@ -387,28 +406,13 @@ EOF
 	return 1
     fi
 
-    log "-: using SDPA plugins from $prefix"
-
-    local count=0
-    # fill in some autoload plugins
-    for p in fvm-pc-compat sinc ; do
-	local plugin="$prefix/libexec/lib${p}.so"
-	if test -e "$plugin" ; then
-	    local c=$( printf "%0.2d" $count )
-	    local link="$plugin_dir/${c}${p}.so"
-	    if ln -sf "$plugin" "$link" ; then
-		log "I: autoloading plugin $p (from $plugin)"
-	    fi
-	    count=$(( count + 1 ))
-	fi
-    done
-
     log "-: setting up the DRTS"
     put "kernel.plugins" "gui,kvs,wfe,gpi,gpi-compat,drts"
+    put "kernel.lazy" $(get "kernel.lazy" "true")
 
     log "-: configuring plugins"
-    put "plugin.gpi.startmode" "wait"
-    put "plugin.drts.backlog" "2"
+    put "plugin.gpi.startmode" $(get "plugin.drts.backlog" "2")
+    put "plugin.drts.backlog" $(get "plugin.drts.backlog" "2")
 }
 
 function setup_topology ()
@@ -552,7 +556,7 @@ to adjust the amount.
 	log "-:          gpi size: $gpi_size"
 	log "-:          shm size: $shm_size"
 	log "-:          com size: $com_size"
-	if ! y_n_p "Are you really sure to use these values?" ; then
+	if ! y_n_p "Are you really sure to use these values? [y/N] " ; then
 	    return 1
 	fi
     fi
@@ -735,12 +739,11 @@ function generate_environment ()
 
     prepend_to_path PC_LIBRARY_PATH "$SDPA_HOME/libexec"
 
-    for f in $( find "$SDPA_LIBEXEC/apps" -type f -name "*.so" ) ; do
-	app_module_dir=$(dirname "$f")
-	prepend_to_path PC_LIBRARY_PATH "$app_module_dir"
+    for f in $( find "$SDPA_LIBEXEC/apps" "$HOME/.sdpa/modules" -type f -name "*.so" ) ; do
+	mod_dir=$(dirname "$f")
+	prepend_to_path PC_LIBRARY_PATH "$mod_dir"
+	prepend_to_path LD_LIBRARY_PATH "$mod_dir"
     done
-    prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/modules"
-    prepend_to_path PC_LIBRARY_PATH "$HOME/.sdpa/plugins"
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
     echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH"
