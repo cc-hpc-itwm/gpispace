@@ -22,6 +22,8 @@ namespace fhg
       public:
         change_manager_t (internal::type &);
 
+        internal::type& internal () const;
+
       public:
 
         void set_function_name ( const QObject*
@@ -38,6 +40,10 @@ namespace fhg
                                );
 
         void add_transition ( const QObject*
+                            , ::xml::parse::type::net_type&
+                            );
+        void add_transition ( const QObject*
+                            , ::xml::parse::type::function_type&
                             , ::xml::parse::type::net_type&
                             );
         void add_place ( const QObject*

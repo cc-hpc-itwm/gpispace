@@ -9,9 +9,13 @@
 #include <QWheelEvent>
 
 #include <pnete/ui/TransitionLibraryModel.hpp>
+#include <pnete/ui/TransitionLibraryItem.hpp>
 #include <pnete/ui/graph/transition.hpp>
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/size.hpp>
+
+#include <pnete/data/manager.hpp>
+
 #include <util/phi.hpp>
 
 #include <pnete/ui/graph/style/raster.hpp>
@@ -53,60 +57,75 @@ namespace fhg
 
       void GraphView::dragEnterEvent (QDragEnterEvent* event)
       {
+        QGraphicsView::dragEnterEvent (event);
+
         //! \todo Paint a ghost transition.
         const QMimeData* mimeData (event->mimeData());
+
         if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
         {
           event->acceptProposedAction();
-          return;
-        }
-        else
-        {
-          QGraphicsView::dragEnterEvent (event);
         }
       }
 
       void GraphView::dragMoveEvent (QDragMoveEvent* event)
       {
+        QGraphicsView::dragMoveEvent (event);
+
         //! \todo Paint a ghost transition.
         const QMimeData* mimeData (event->mimeData());
+
         if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
         {
           event->acceptProposedAction();
-        }
-        else
-        {
-          QGraphicsView::dragMoveEvent (event);
         }
       }
 
       void GraphView::dropEvent (QDropEvent* event)
       {
-//         const QMimeData* mimeData (event->mimeData());
-//         if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
-//         {
-//           //! \todo get path.
-//           const QString filename/* (magic)*/;
-//           // mimeData->data(TransitionLibraryModel::mimeType) === filepath as ..)
+        QGraphicsView::dropEvent (event);
 
-//           graph::transition::item* transition
-//             (new graph::transition::item (filename));
+        const QMimeData* mimeData (event->mimeData());
 
-//           scene()->addItem (transition);
+        if (mimeData->hasFormat (TransitionLibraryModel::mimeType))
+        {
+          QByteArray byteArray
+            (mimeData->data (TransitionLibraryModel::mimeType));
+          QDataStream stream (&byteArray, QIODevice::ReadOnly);
 
-//           transition->setPos
-//             ( graph::style::raster::snap
-//               ( mapToScene (event->pos())
-//               - transition->boundingRect().bottomRight() / 2.0
-//               )
-//             );
+          QSet<QString> paths;
 
-//           event->acceptProposedAction();
-//         }
-//         else
-//         {
-//           QGraphicsView::dropEvent (event);
-//         }
+          stream >> paths;
+
+          foreach (const QString& path, paths)
+            {
+              std::cerr << "got " << path.toStdString() << std::endl;
+
+              data::internal::type* data
+                (data::manager::instance().load (path));
+
+              scene()->change_manager()
+                .add_transition (this, data->function(), scene()->net());
+
+              //! \todo construct transition
+//               graph::transition::item* transition
+//                 ( new graph::transition::item ( data->as_transition()
+//                                               , scene()->net()
+//                                               )
+//                 );
+
+//               scene()->addItem (transition);
+
+//               transition->setPos
+//                 ( graph::style::raster::snap
+//                   ( mapToScene (event->pos())
+//                   - transition->boundingRect().bottomRight() / 2.0
+//                   )
+//                 );
+            }
+
+          event->acceptProposedAction();
+        }
       }
 
       void GraphView::wheelEvent (QWheelEvent* event)

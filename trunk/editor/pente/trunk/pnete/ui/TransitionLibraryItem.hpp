@@ -5,6 +5,7 @@
 
 #include <QList>
 #include <QObject>
+#include <QFileInfo>
 
 namespace fhg
 {
@@ -13,44 +14,50 @@ namespace fhg
     namespace data
     {
       class Transition;
+
+      namespace internal { class type; }
     }
     namespace ui
     {
       class TransitionLibraryItem : public QObject
       {
-        Q_OBJECT
+        Q_OBJECT;
 
-        public:
-          TransitionLibraryItem ( const QString& name
-                                , bool is_folder
-                                , bool trusted = false
-                                , QObject* parent = NULL
-                                );
+      public:
+        TransitionLibraryItem (QObject*);
+        TransitionLibraryItem ( const QFileInfo& fileinfo
+                              , bool is_folder
+                              , bool trusted = false
+                              , QObject* parent = NULL
+                              );
 
-          void appendChild (TransitionLibraryItem* child);
+        void appendChild (TransitionLibraryItem* child);
 
-          bool is_folder() const;
-          const QString& name() const;
-          const bool& trusted() const;
+        bool is_folder() const;
+        const QFileInfo& fileinfo() const;
+        QString path() const;
+        const bool& trusted() const;
 
-          TransitionLibraryItem* child (int row) const;
-          int childCount() const;
-          int row() const;
-          TransitionLibraryItem* parent() const;
+        TransitionLibraryItem* child (int row) const;
+        TransitionLibraryItem* child_with_fileinfo (const QFileInfo&) const;
+        int childCount() const;
+        int row() const;
+        TransitionLibraryItem* parent() const;
 
-          const QList<TransitionLibraryItem*>& children() const;
+        const QList<TransitionLibraryItem*>& children() const;
 
-          void clearChildren();
+        void clearChildren();
 
-          void sortChildren (bool descending = false);
+        void sortChildren (bool descending = false);
 
-        private:
-          bool _is_folder;
-          QString _name;
-          bool _trusted;
+      private:
+        bool _is_folder;
+        QFileInfo _fileinfo;
+        bool _trusted;
+        data::internal::type* _data;
 
-          QList<TransitionLibraryItem*> _children;
-          TransitionLibraryItem* _parent;
+        QList<TransitionLibraryItem*> _children;
+        TransitionLibraryItem* _parent;
       };
     }
   }

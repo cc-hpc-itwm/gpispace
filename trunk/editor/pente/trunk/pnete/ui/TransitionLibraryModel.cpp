@@ -26,7 +26,7 @@ namespace fhg
                                                      )
         : QAbstractItemModel (parent)
         , _fileSystemWatcher (NULL)
-        , _items (new TransitionLibraryItem("__DUMMY__ROOT__", true, this))          // hardcoded constant
+        , _items (new TransitionLibraryItem(this))
       {
         readContentFromDirectory (path.path());
       }
@@ -67,58 +67,51 @@ namespace fhg
       {
         setFileSystemWatcher (path);
 
-        QDir directory (path);
+        const QDir directory (path);
 
-        foreach ( QFileInfo fileInfo
+        foreach ( QFileInfo fileinfo
                 , directory.entryInfoList( QDir::Dirs
                                          | QDir::NoSymLinks
                                          | QDir::NoDotAndDotDot
                                          )
                 )
         {
-          const QString newName (fileInfo.fileName());
+          TransitionLibraryItem* newRoot
+            (currentRoot->child_with_fileinfo (fileinfo));
 
-          TransitionLibraryItem* newRoot (NULL);
-          foreach (TransitionLibraryItem* child, currentRoot->children())
-          {
-            if (child->is_folder() && child->name() == newName)
-            {
-              newRoot = child;
-              break;
-            }
-          }
           if (!newRoot)
-          {
-            currentRoot->appendChild
-              ( newRoot = new TransitionLibraryItem ( newName
-                                                    , true
-                                                    , trusted
-                                                    , currentRoot
-                                                    )
-              );
-          }
+            {
+              currentRoot->appendChild
+                ( newRoot = new TransitionLibraryItem ( fileinfo
+                                                      , true
+                                                      , trusted
+                                                      , currentRoot
+                                                      )
+                );
+            }
+
           readContentFromDirectoryRecursive ( newRoot
                                             , trusted
-                                            , fileInfo.absoluteFilePath()
+                                            , fileinfo.absoluteFilePath()
                                             );
         }
 
-        foreach ( QFileInfo fileInfo
+        foreach ( QFileInfo fileinfo
                 , directory.entryInfoList( QStringList("*.xml")
                                          , QDir::Files
                                          | QDir::NoSymLinks
                                          | QDir::NoDotAndDotDot
                                          )
                 )
-        {
-          currentRoot->appendChild
-            ( new TransitionLibraryItem ( fileInfo.baseName()
-                                        , false
-                                        , trusted
-                                        , currentRoot
-                                        )
-            );
-        }
+          {
+            currentRoot->appendChild
+              ( new TransitionLibraryItem ( fileinfo
+                                          , false
+                                          , trusted
+                                          , currentRoot
+                                          )
+              );
+          }
       }
 
       void TransitionLibraryModel::rereadAllDirectories(const QString& path)
@@ -190,7 +183,7 @@ namespace fhg
             case Qt::DisplayRole:
               if(index.column() == 0)
               {
-                return item->name();
+                return item->path();
               }
               break;
 
@@ -228,34 +221,41 @@ namespace fhg
         }
       }
 
-      QMimeData* TransitionLibraryModel::mimeData(const QModelIndexList& indexes) const
+      QMimeData*
+      TransitionLibraryModel::mimeData (const QModelIndexList& indices) const
       {
-        //! \todo multiple at once!
+        QSet<QString> paths;
 
-        TransitionLibraryItem* item
-          (static_cast<TransitionLibraryItem*>(indexes.first().internalPointer()));
-        if(!item->is_folder())
+        foreach (const QModelIndex& index, indices)
+          {
+            TransitionLibraryItem* item
+              (static_cast<TransitionLibraryItem*> (index.internalPointer()));
+
+            if (!item->is_folder())
+              {
+                paths << item->path();
+              }
+          }
+
+        if (!paths.empty())
         {
-          //! \todo This is outdated shit.
-          /*
-          QMimeData* mimeData = new QMimeData;
           QByteArray byteArray;
-          // Thanks Qt for providing a "toByteArray()" method.
-          QDataStream stream(&byteArray, QIODevice::WriteOnly);
-          stream << item->name();
-          mimeData->setData(mimeType, byteArray);
-          */
-          return NULL;
+          QDataStream stream (&byteArray, QIODevice::WriteOnly);
+
+          stream << paths;
+
+          QMimeData* mimeData (new QMimeData);
+          mimeData->setData (mimeType, byteArray);
+
+          return mimeData;
         }
-        else
-        {
-          return NULL;
-        }
+
+        return 0;
       }
 
       QModelIndex TransitionLibraryModel::index(int row, int column, const QModelIndex& parent) const
       {
-        if(hasIndex(row, column, parent))
+        if (hasIndex (row, column, parent))
         {
           TransitionLibraryItem* parentItem
             ( !parent.isValid()
@@ -302,7 +302,10 @@ namespace fhg
         }
         else
         {
-          return Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+          return Qt::ItemIsDragEnabled
+            | Qt::ItemIsEnabled
+            | Qt::ItemIsSelectable
+            ;
         }
       }
     }

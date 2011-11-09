@@ -53,7 +53,6 @@ namespace fhg
             ::xml::parse::type::net_type& net();
             data::change_manager_t& change_manager();
 
-
           public slots:
             void slot_delete_transition (graph::item*);
             void

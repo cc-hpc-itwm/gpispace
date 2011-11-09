@@ -77,18 +77,6 @@ namespace fhg
               );
           }
 
-//           item::item ( const QString& filename
-//                      , graph::item* parent
-//                      )
-//             : graph::item (parent)
-//             , _size (size::transition::width(), size::transition::height())
-//               //! \todo BIG UGLY FUCKING HACK EVIL DO NOT LOOK AT THIS BUT DELETE
-//             , _transition(*static_cast<transition_type*> (malloc (sizeof (transition_type))))
-//             , _proxy (NULL)
-//           {
-//             //! \todo WORK HERE, everything is missing
-//           }
-
           const ::xml::parse::type::transition_type& item::transition () const
           {
             return _transition;

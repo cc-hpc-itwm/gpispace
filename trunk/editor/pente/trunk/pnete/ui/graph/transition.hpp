@@ -39,9 +39,6 @@ namespace fhg
                           , ::xml::parse::type::net_type& net
                           , graph::item* parent = NULL
                           );
-//             explicit item ( const QString& filename
-//                           , graph::item* parent = NULL
-//                           );
 
             const ::xml::parse::type::transition_type& transition() const;
             ::xml::parse::type::net_type& net();

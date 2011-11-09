@@ -2,6 +2,8 @@
 
 #include <pnete/ui/TransitionLibraryItem.hpp>
 
+#include <pnete/data/manager.hpp>
+
 #include <QtAlgorithms>
 
 namespace fhg
@@ -10,16 +12,31 @@ namespace fhg
   {
     namespace ui
     {
-      TransitionLibraryItem::TransitionLibraryItem( const QString& name
-                                                  , bool is_folder
-                                                  , bool trusted
-                                                  , QObject* parent
-                                                  )
+      TransitionLibraryItem::TransitionLibraryItem (QObject* parent)
         : QObject(parent)
-        , _is_folder(is_folder)
-        , _name(name)
-        , _trusted(trusted)
-        , _parent(qobject_cast<TransitionLibraryItem*>(parent))
+        , _is_folder (true)
+        , _fileinfo (QFileInfo())
+        , _trusted (false)
+        , _data (0)
+        , _children ()
+        , _parent (qobject_cast<TransitionLibraryItem*>(parent))
+      {}
+
+      TransitionLibraryItem::TransitionLibraryItem ( const QFileInfo& fileinfo
+                                                   , bool is_folder
+                                                   , bool trusted
+                                                   , QObject* parent
+                                                   )
+        : QObject(parent)
+        , _is_folder (is_folder)
+        , _fileinfo (fileinfo)
+        , _trusted (trusted)
+        , _data (_is_folder
+                ? 0
+                : data::manager::instance().load (_fileinfo.absoluteFilePath())
+                )
+        , _children ()
+        , _parent (qobject_cast<TransitionLibraryItem*>(parent))
       {}
 
       void TransitionLibraryItem::appendChild(TransitionLibraryItem* child)
@@ -32,6 +49,21 @@ namespace fhg
         return _children.at(row);
       }
 
+      TransitionLibraryItem*
+      TransitionLibraryItem::child_with_fileinfo
+      (const QFileInfo& fileinfo) const
+      {
+        foreach (TransitionLibraryItem* child, children())
+          {
+            if (child->fileinfo() == fileinfo)
+              {
+                return child;
+              }
+          }
+
+        return 0;
+      }
+
       int TransitionLibraryItem::childCount() const
       {
         return _children.count();
@@ -42,9 +74,14 @@ namespace fhg
         return _is_folder;
       }
 
-      const QString& TransitionLibraryItem::name() const
+      const QFileInfo& TransitionLibraryItem::fileinfo() const
       {
-        return _name;
+        return _fileinfo;
+      }
+
+      QString TransitionLibraryItem::path() const
+      {
+        return fileinfo().absoluteFilePath();
       }
 
       const bool& TransitionLibraryItem::trusted() const
@@ -96,7 +133,7 @@ namespace fhg
         }
         else
         {
-          return l->name() < r->name();
+          return l->path() < r->path();
         }
       }
 
@@ -112,7 +149,7 @@ namespace fhg
         }
         else
         {
-          return l->name() > r->name();
+          return l->path() > r->path();
         }
       }
 

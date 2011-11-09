@@ -22,6 +22,8 @@ namespace fhg
       {
         setColumnWidth (1, _width1);
         setDragDropMode (QAbstractItemView::DragOnly);
+        setSelectionMode (QAbstractItemView::ExtendedSelection);
+        setDragEnabled (true);
         header()->hide();
       }
 

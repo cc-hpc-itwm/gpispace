@@ -15,6 +15,11 @@ namespace fhg
         : _internal (i)
       {}
 
+      internal::type& change_manager_t::internal () const
+      {
+        return _internal;
+      }
+
       void change_manager_t::set_function_name
       ( const QObject* origin
       , ::xml::parse::type::function_type& fun
@@ -60,6 +65,22 @@ namespace fhg
         emit signal_delete_transition (origin, trans, net);
 
         net.erase_transition (trans);
+      }
+
+      void change_manager_t::add_transition
+      ( const QObject* origin
+      , ::xml::parse::type::function_type& fun
+      , ::xml::parse::type::net_type& net
+      )
+      {
+        ::xml::parse::type::transition_type transition;
+
+        //! \todo better naming
+        transition.f = fun;
+        transition.name = fun.name ? *fun.name : "<<transition>>";
+
+        emit signal_add_transition
+          (origin, net.push_transition (transition), net);
       }
 
       void change_manager_t::add_transition

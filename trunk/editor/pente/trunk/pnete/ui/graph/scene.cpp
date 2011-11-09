@@ -20,6 +20,8 @@
 
 #include <pnete/data/internal.hpp>
 
+#include <pnete/weaver/display.hpp>
+
 #include <util/graphviz.hpp>
 
 #include <boost/unordered_map.hpp>
@@ -236,6 +238,17 @@ namespace fhg
                 transition::item* trans (new transition::item (t, n));
 
                 addItem (trans);
+
+                weaver::item_by_name_type place_by_name;
+
+                weaver::transition wt ( &change_manager().internal()
+                                      , this
+                                      , trans
+                                      , n
+                                      , place_by_name
+                                      );
+
+                FROM(transition) (&wt, t);
 
                 if (origin == this)
                   {
