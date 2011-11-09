@@ -1707,6 +1707,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 		m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(subscriber, listJobIds));
 	}
 
+        // TODO: we should only send an ack *if* the job actually exists....
 	SDPA_LOG_INFO("reply immediately with a SubscribeAckEvent");
 	sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber ));
 	sendEventToMaster(ptrSubscAckEvt);
@@ -1721,10 +1722,10 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 			if(jobStatus.find("Finished") != std::string::npos)
 			{
 				 JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
-																		   , subscriber
-																		   , pJob->id()
-																		   , pJob->result()
-																		   ));
+                                                                                           , subscriber
+                                                                                           , pJob->id()
+                                                                                           , pJob->result()
+                                                                                           ));
 				 sendEventToMaster(pEvtJobFinished);
 			}
 			else if(jobStatus.find("Failed") != std::string::npos)
@@ -1750,8 +1751,15 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 		}
 		catch(const JobNotFoundException& ex)
 		{
-			SDPA_LOG_WARN("The subscriber "<<subscriber<<" subscribed for a job that doesn't exist anymore! "<<ex.what());
-			throw ex;
+                  SDPA_LOG_WARN("The subscriber "<<subscriber<<" subscribed for a job that doesn't exist anymore! "<<ex.what());
+                  ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
+                                                          , subscriber
+                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , "no such job"
+                                                          )
+                                           );
+                  sendEventToMaster(pErrorEvt);
+                  throw ex;
 		}
 	}
 }

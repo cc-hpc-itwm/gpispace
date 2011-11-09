@@ -301,6 +301,13 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   catch(const JobNotFoundException &)
   {
     SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+    ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
+                                            , pEvt->from()
+                                            , ErrorEvent::SDPA_EJOBNOTFOUND
+                                            , "no such job"
+                                            )
+                             );
+    sendEventToMaster(pErrorEvt);
     return;
   }
 
