@@ -814,44 +814,41 @@ private:
   {
     map_of_jobs_t old_jobs;
     fhg_kernel()->storage()->load("jobs", old_jobs);
-    if (old_jobs.size())
+    for ( map_of_jobs_t::iterator it (old_jobs.begin()), end (old_jobs.end())
+        ; it != end
+        ; ++it
+        )
     {
-      for ( map_of_jobs_t::iterator it (old_jobs.begin()), end (old_jobs.end())
-          ; it != end
-          ; ++it
-          )
-      {
-        job_ptr_t job (it->second);
+      job_ptr_t job (it->second);
 
-        switch (job->state())
+      switch (job->state())
+      {
+      case drts::Job::FINISHED:
         {
-        case drts::Job::FINISHED:
-          {
-            lock_type job_map_lock (m_job_map_mutex);
-            MLOG(INFO, "restoring information of finished job: " << job->id());
-            m_jobs[it->first] = job;
-          }
-          break;
-        case drts::Job::FAILED:
-          {
-            lock_type job_map_lock (m_job_map_mutex);
-            MLOG(INFO, "restoring information of failed job: " << job->id());
-            m_jobs[it->first] = job;
-          }
-          break;
-        case drts::Job::PENDING:
-          MLOG(WARN, "ignoring old pending job: " << job->id());
-          break;
-        case drts::Job::RUNNING:
-          MLOG(WARN, "ignoring old pending job: " << job->id());
-          break;
-        case drts::Job::CANCELED:
-          MLOG(WARN, "ignoring old pending job: " << job->id());
-          break;
-        default:
-          MLOG(ERROR, "STRANGE job state: " << job->state());
-          break;
+          lock_type job_map_lock (m_job_map_mutex);
+          MLOG(INFO, "restoring information of finished job: " << job->id());
+          m_jobs[it->first] = job;
         }
+        break;
+      case drts::Job::FAILED:
+        {
+          lock_type job_map_lock (m_job_map_mutex);
+          MLOG(INFO, "restoring information of failed job: " << job->id());
+          m_jobs[it->first] = job;
+        }
+        break;
+      case drts::Job::PENDING:
+        MLOG(WARN, "ignoring old pending job: " << job->id());
+        break;
+      case drts::Job::RUNNING:
+        MLOG(WARN, "ignoring old running job: " << job->id());
+        break;
+      case drts::Job::CANCELED:
+        MLOG(WARN, "ignoring old canceled job: " << job->id());
+        break;
+      default:
+        MLOG(ERROR, "STRANGE job state: " << job->state());
+        break;
       }
     }
   }
