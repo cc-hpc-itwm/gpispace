@@ -1032,7 +1032,7 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     case ErrorEvent::SDPA_ENETWORKFAILURE:
     {
     	MLOG(WARN, "last message could not be sent due to a network failure!");
-
+        break;
     }
     default:
     {
