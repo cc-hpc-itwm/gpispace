@@ -127,6 +127,8 @@ int command_poll_and_wait ( const std::string &job_id
 /*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
+	FHGLOG_SETUP();
+
 	typedef boost::posix_time::ptime time_type;
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
