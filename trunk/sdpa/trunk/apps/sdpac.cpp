@@ -110,7 +110,7 @@ int command_poll_and_wait ( const std::string &job_id
     else
     {
 	boost::this_thread::sleep(poll_interval);
-	std::cout << "." << std::flush;
+        //	std::cout << "." << std::flush;
     }
   }
 
