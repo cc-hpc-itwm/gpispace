@@ -31,7 +31,7 @@ namespace sdpa {
   public:
 	 SchedulerOrch(sdpa::daemon::IComm* pCommHandler = NULL,  bool bUseReqModel = true):
 		 SchedulerImpl(pCommHandler, bUseReqModel),
-		 SDPA_INIT_LOGGER("Scheduler " + (pCommHandler?pCommHandler->name():"ORCH"))
+		 SDPA_INIT_LOGGER(pCommHandler?pCommHandler->name()+"::Scheduler":"Scheduler")
 	 {}
 
 	 virtual ~SchedulerOrch()

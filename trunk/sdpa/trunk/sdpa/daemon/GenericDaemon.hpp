@@ -133,6 +133,7 @@ namespace sdpa { namespace daemon {
 	  virtual void requestRegistration();
 	  virtual void requestRegistration(const MasterInfo& masterInfo);
 	  virtual void requestJob(const MasterInfo& masterInfo);
+	  virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
 	  virtual sdpa::status_t getStatus() { throw std::runtime_error("not implemented by the generic daemon!"); }
 
@@ -210,7 +211,7 @@ namespace sdpa { namespace daemon {
       {
           ar & ptr_job_man_;
           ar & ptr_scheduler_;
-          //ar & ptr_workflow_engine_;
+          ar & ptr_workflow_engine_;
 
           ar & m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
           ar & m_listSubscribers;

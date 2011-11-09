@@ -105,7 +105,7 @@ namespace sdpa {
 	void serialize(Archive& ar, const unsigned int)
 	{
 		ar & boost::serialization::base_object<Scheduler>(*this);
-		ar & jobs_to_be_scheduled;
+		//ar & jobs_to_be_scheduled;
 		ar & ptr_worker_man_;
 	}
 

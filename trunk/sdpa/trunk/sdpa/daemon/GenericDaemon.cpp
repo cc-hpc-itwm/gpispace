@@ -97,11 +97,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         SDPA_LOG_INFO( "Recover the agent "<<name()<<" from the backup file "<<bkp_file);
 
         recover(ifs);
-
-        ptr_job_man_->updateJobInfo(this);
-        //scheduler()->removeRecoveryInconsistencies();
-
-        //if( isTop() )
+              //if( isTop() )
         {
           SDPA_LOG_WARN( "JobManager after recovering:" );
           ptr_job_man_->print();
@@ -146,6 +142,10 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
     {
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
+
+    jobManager()->reScheduleAllMasterJobs(this);
+
+    //scheduler()->removeRecoveryInconsistencies();
 }
 
 void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile )
@@ -163,9 +163,6 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
         LOG(INFO, "The recovery string is: "<<strBackup);
         std::stringstream iostr(strBackup);
         recover(iostr);
-
-        ptr_job_man_->updateJobInfo(this);
-        //scheduler()->removeRecoveryInconsistencies();
 
         //if( isTop() )
         {
@@ -210,6 +207,11 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
     {
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
+
+    jobManager()->reScheduleAllMasterJobs(this);
+
+    //scheduler()->removeRecoveryInconsistencies();
+
 }
 
 void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
@@ -251,6 +253,10 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
   {
       SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
   }
+
+  jobManager()->reScheduleAllMasterJobs(this);
+
+  //scheduler()->removeRecoveryInconsistencies();
 
 }
 
@@ -651,7 +657,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
         if( ptrJob.get() && !bTerminal )
         {
-        	DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
+        	SDPA_LOG_INFO("Serving a job to the worker "<<worker_id);
 
             // put the job into the Running state here
             DMLOG(TRACE, "The job status is "<<ptrJob->getStatus());
@@ -659,7 +665,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
             //ptrJob->Dispatch(); // no event need to be sent
 
             // create a SubmitJobEvent for the job job_id serialize and attach description
-            DMLOG(TRACE, "sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
+            SDPA_LOG_INFO("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
             SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), ""));
 
             // Post a SubmitJobEvent to the slave who made the request
@@ -672,7 +678,7 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
     }
     catch(const NoJobScheduledException&)
     {
-        //SDPA_LOG_DEBUG("No job was scheduled to the worker '"<<worker_id);
+        //SDPA_LOG_INFO("No job was scheduled to the worker '"<<worker_id);
     }
     catch(const WorkerNotFoundException&)
     {
@@ -847,6 +853,34 @@ void GenericDaemon::action_config_request(const ConfigRequestEvent& e)
   sendEventToSlave(pCfgReplyEvt);
 }
 
+void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
+{
+	worker_id_t worker_id (evtRegWorker.from());
+
+	SDPA_LOG_INFO("****************Register new worker, " << worker_id << ", with the capacity "<<evtRegWorker.capacity()<<"***********");
+
+	addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+
+	SDPA_LOG_INFO("The worker \"" << worker_id << "\" has the following capabilities: " << evtRegWorker.capabilities());
+
+	// send back an acknowledgment
+	SDPA_LOG_INFO("Send back to the worker " << worker_id << " a registration acknowledgment!" );
+	WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
+
+	sendEventToSlave(pWorkerRegAckEvt);
+
+	if (! evtRegWorker.capabilities().empty())
+	{
+	  // propagate the capabilities upward to the masters
+	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+		  if (it->is_registered() && it->name() != worker_id )
+		  {
+			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
+			  sendEventToMaster(shpCpbGainEvt);
+		  }
+	}
+}
+
 void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
@@ -854,30 +888,7 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
   // check if the worker evtRegWorker.from() has already registered!
   try
   {
-      SDPA_LOG_INFO("****************Register new worker, " << worker_id << ", with the capacity "<<evtRegWorker.capacity()<<"***********");
-
-      addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(), evtRegWorker.rank(), evtRegWorker.agent_uuid() );
-
-
-      SDPA_LOG_INFO("The worker \"" << worker_id << "\" has the following capabilities: " << evtRegWorker.capabilities());
-
-      // send back an acknowledgment
-      DMLOG(TRACE, "Send back to the worker " << worker_id << " a registration acknowledgment!" );
-      WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
-
-      sendEventToSlave(pWorkerRegAckEvt);
-
-      if (! evtRegWorker.capabilities().empty())
-      {
-    	  // propagate the capabilities upward to the masters
-    	  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-    		  if (it->is_registered() && it->name() != worker_id )
-    		  {
-    			  sdpa::events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new sdpa::events::CapabilitiesGainedEvent(name(), it->name(), evtRegWorker.capabilities()));
-    			  sendEventToMaster(shpCpbGainEvt);
-    		  }
-      }
-
+	  registerWorker(evtRegWorker);
   }
   catch(WorkerAlreadyExistException& ex)
   {
@@ -893,16 +904,20 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
           scheduler()->delWorker(worker_id);
           LOG(TRACE, "Add worker"<<worker_id );
-          addWorker( worker_id, evtRegWorker.capacity(), evtRegWorker.capabilities(),  evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+
+          registerWorker(evtRegWorker);
       }
+      else
+      {
+		  SDPA_LOG_INFO("A worker with the same id (" << worker_id << ") and uuid ("<<evtRegWorker.agent_uuid()<<" is already registered!");
 
-      SDPA_LOG_INFO("The worker " << worker_id << " is already registered!");
+		  // just answer back with an acknowledgment
+		  SDPA_LOG_INFO("Send registration ack to the agent " << worker_id );
+		  WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
 
-      // send back an acknowledgment
-      SDPA_LOG_INFO("Send registration ack to the agent " << worker_id );
-      WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), evtRegWorker.from()));
-      pWorkerRegAckEvt->id() = evtRegWorker.id();
-      sendEventToSlave(pWorkerRegAckEvt);
+		  pWorkerRegAckEvt->id() = evtRegWorker.id();
+		  sendEventToSlave(pWorkerRegAckEvt);
+      }
   }
   catch(const QueueFull& ex)
   {
@@ -1575,7 +1590,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
     if( !masterInfo.is_registered() )
 	{
-		SDPA_LOG_INFO("The agent (" << name() << ") is sending a registration event to master (" << masterInfo.name() << "), capacity = "<<capacity());
+		SDPA_LOG_INFO("The agent \"" << name() << "\" is sending a registration event to master \"" << masterInfo.name() << "\", capacity = "<<capacity());
 
 		capabilities_set_t cpbSet;
 		getCapabilities(cpbSet);
@@ -1588,7 +1603,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 void GenericDaemon::requestRegistration()
 {
     // try to re-register
-    BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+    BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
 	{
     	requestRegistration(masterInfo);
 	}

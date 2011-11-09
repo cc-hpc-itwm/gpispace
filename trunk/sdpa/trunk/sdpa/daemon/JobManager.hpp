@@ -59,7 +59,6 @@ namespace sdpa { namespace daemon {
 	  virtual void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 	  void markJobForDeletion(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob) throw(JobNotMarkedException);
 	  std::vector<sdpa::job_id_t> getJobIDList();
-	  void updateJobInfo(IComm*);
 
 	  unsigned int countMasterJobs();
 
@@ -73,6 +72,7 @@ namespace sdpa { namespace daemon {
 	  bool slotAvailable() const;
 
       void resubmitJobsAndResults(IComm* );
+      void reScheduleAllMasterJobs(IComm*);
 
 	  template <class Archive>
 	  void serialize(Archive& ar, const unsigned int)

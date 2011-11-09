@@ -32,6 +32,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
 
+#include <sdpa/daemon/jobFSM/JobFSM.hpp>
+
 using namespace std;
 using namespace sdpa::daemon;
 
@@ -187,41 +189,6 @@ void JobManager::waitForFreeSlot ()
   free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }
 
-void JobManager::updateJobInfo(sdpa::daemon::IComm* p)
-{
-    lock_type lock(mtx_);
-    for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
-    {
-        sdpa::daemon::Job* pJob = it->second.get();
-        pJob->set_icomm(p);
-
-        pJob->print_info();
-
-        // if the job is in a terminal state do nothing
-        std::string job_status = pJob->getStatus();
-        if( job_status.find("Finished") != std::string::npos ||
-            job_status.find("Failed") != std::string::npos ||
-            job_status.find("Cancelled") != std::string::npos )
-          return;
-
-        // else, // not coming from WE
-        // and it's not already in jobs_to_be scheduled!
-        if( !p->is_scheduled(pJob->id()) )
-        {
-            // ATTENTION this attribute should be recovered
-            //if( p->hasWorkflowEngine())
-            //	pJob->set_local(true);
-            //else
-            //	pJob->set_local(false);
-
-            SDPA_LOG_DEBUG("The job "<<pJob->id()<<" is not yet scheduled! Schedule it now.");
-            p->schedule(pJob->id());
-        }
-        else
-          SDPA_LOG_DEBUG("The job "<<pJob->id()<<" is already scheduled!");
-    }
-}
-
 void JobManager::resubmitJobsAndResults(IComm* pComm)
 {
     lock_type lock(mtx_);
@@ -268,6 +235,45 @@ void JobManager::resubmitJobsAndResults(IComm* pComm)
         	pComm->sendEventToMaster(pEvtJobCancelled);
         }
     }
+}
+
+void JobManager::reScheduleAllMasterJobs(IComm* pComm)
+{
+	lock_type lock(mtx_);
+	job_id_list_t listJobsToRemove;
+
+	for ( job_map_t::iterator it = job_map_.begin(); it != job_map_.end(); ++it )
+	{
+		sdpa::job_id_t job_id = it->first;
+		Job::ptr_t pJob = it->second;
+		std::string status = pJob->getStatus();
+		pJob->set_icomm(pComm);
+
+		// the job is not in a terminal state
+		if(	status.find("Finished") 	== std::string::npos
+			&& status.find("Failed") 	== std::string::npos
+			&& status.find("Cancelled") == std::string::npos )
+		{
+			//if(	pJob->isMasterJob() )
+
+			SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
+			pJob->Reschedule();
+
+			SDPA_LOG_INFO("Schedule the job"<<pJob->id());
+			pComm->schedule(job_id);
+
+			/*else
+				listJobsToRemove.push_back(it->first);*/
+		}
+	}
+
+	/*while(!listJobsToRemove.empty())
+	{
+		sdpa::job_id_t job_id = listJobsToRemove.back();
+		SDPA_LOG_INFO("Remove the job "<<job_id);
+		job_map_.erase(job_id);
+		listJobsToRemove.pop_back();
+	}*/
 }
 
 unsigned int JobManager::countMasterJobs()

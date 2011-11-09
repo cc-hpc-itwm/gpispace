@@ -38,7 +38,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/daemon/IAgent.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 #include <boost/function.hpp>
 
 using namespace sdpa;
@@ -90,6 +90,16 @@ public:
 
    	friend class EmptyWorkflowEngine;
 
+    template <class Archive>
+  	void serialize(Archive& ar, const unsigned int)
+  	{
+  		ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+  		ar & jobId;
+  		ar & status;
+  		ar & result;
+  	}
+
+
    public:
    	sdpa::job_id_t jobId;
    	we_status status;
@@ -107,11 +117,11 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     //typedef std::pair<sdpa::job_id_t, result_type>
     typedef SynchronizedQueue<std::list<we_result_t> > ResQueue;
 
-    EmptyWorkflowEngine( IAgent* pIAgent = NULL, Function_t f = id_gen )
-    	: SDPA_INIT_LOGGER("sdpa.tests.EmptyWE")
+    EmptyWorkflowEngine( GenericDaemon* pGenericDaemon = NULL, Function_t f = id_gen )
+    	: SDPA_INIT_LOGGER(dynamic_cast<GenericDaemon*>(pGenericDaemon)->name()+"::EmptyWE")
     	, bStopRequested(false)
 	{
-    	pIAgent_ = pIAgent;
+    	pGenericDaemon_ = pGenericDaemon;
     	fct_id_gen_ = f;
     	start();
     	SDPA_LOG_DEBUG("Empty workflow engine created ...");
@@ -124,9 +134,9 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 
     virtual bool is_real() { return false; }
 
-    void connect(IAgent* pIAgent )
+    void connect(GenericDaemon* pGenericDaemon )
     {
-    	pIAgent_ = pIAgent;
+    	pGenericDaemon_ = pGenericDaemon;
     }
 
     void set_id_generator ( Function_t f = id_gen )
@@ -145,12 +155,12 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" failed!");
 
-		if(pIAgent_)
+		if(pGenericDaemon_)
 		{
 			// find the corresponding workflow_id
 			const id_type workflowId = map_Act2Wf_Ids_[activityId];
 
-			//pIAgent_->failed(workflowId, result);
+			//pGenericDaemon_->failed(workflowId, result);
 			we_result_t resP(workflowId, result, FAILED);
 			qResults.push(resP);
 
@@ -174,12 +184,12 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     {
     	SDPA_LOG_DEBUG("The activity " << activityId<<" has finished!");
 
-		if(pIAgent_)
+		if(pGenericDaemon_)
 		{
 			// find the corresponding workflow_id
 			const id_type workflowId = map_Act2Wf_Ids_[activityId];
 
-			//pIAgent_->finished(workflowId, result);
+			//pGenericDaemon_->finished(workflowId, result);
 			we_result_t resP(workflowId, result, FINISHED);
 			qResults.push(resP);
 
@@ -209,7 +219,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		* transition from * to terminated.
 		*/
 
-		if(pIAgent_)
+		if(pGenericDaemon_)
 		{
 			// find the corresponding workflow_id
 			const id_type workflowId = map_Act2Wf_Ids_[activityId];
@@ -225,7 +235,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 			// if no activity left, declare the workflow cancelled
 			if(bAllActFinished)
 			{
-				//pIAgent_->cancelled(workflowId);
+				//pGenericDaemon_->cancelled(workflowId);
 				result_type result;
 				const we_result_t resP(workflowId, result, CANCELLED);
 				qResults.push(resP);
@@ -271,10 +281,10 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		map_Act2Wf_Ids_.insert(id_pair(act_id, wfid));
 
 		// ship the same activity/workflow description
-		if(pIAgent_)
+		if(pGenericDaemon_)
 		{
-			SDPA_LOG_DEBUG("Submit new activity ...");
-			pIAgent_->submit(act_id, wf_desc, empty_req_list());
+			SDPA_LOG_DEBUG("Submit to the agent "<<pGenericDaemon_->name()<<" new activity \""<<act_id<<"\"");
+			pGenericDaemon_->submit(act_id, wf_desc, empty_req_list());
 		}
     }
 
@@ -290,7 +300,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 		SDPA_LOG_DEBUG("Called cancel workflow, wfid = "<<wfid);
 
 		lock_type lock(mtx_);
-		if(pIAgent_)
+		if(pGenericDaemon_)
 		{
 			SDPA_LOG_DEBUG("Cancel all the activities related to the workflow "<<wfid);
 
@@ -298,7 +308,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
 				if( it->second == wfid )
 				{
 					id_type activityId = it->first;
-					pIAgent_->cancel(activityId, reason);
+					pGenericDaemon_->cancel(activityId, reason);
 				}
 		}
 
@@ -315,7 +325,7 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
       void start()
       {
     	   bStopRequested = false;
-			if(!pIAgent_)
+			if(!pGenericDaemon_)
 			{
 				SDPA_LOG_ERROR("The Workfow engine cannot be started. Invalid communication handler. ");
 				return;
@@ -347,17 +357,17 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     		  if(we_result.status == FINISHED)
 				{
     			  SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" successfully finished!");
-				  pIAgent_->finished(we_result.jobId, we_result.result);
+				  pGenericDaemon_->finished(we_result.jobId, we_result.result);
 				}
     		  else
     			  if(we_result.status == FAILED)
                             {
-                              pIAgent_->failed(we_result.jobId, we_result.result);
+                              pGenericDaemon_->failed(we_result.jobId, we_result.result);
                             }
     			  else
     				  if(we_result.status == CANCELLED)
                                     {
-                                      pIAgent_->cancelled(we_result.jobId);
+                                      pGenericDaemon_->cancelled(we_result.jobId);
                                     }
     				  else
                                     { // consider debug==off
@@ -366,9 +376,17 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     	  }
       }
 
+    template <class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+		ar & map_Act2Wf_Ids_;
+		ar & qResults;
+	}
+
 
   public:
-    mutable IAgent *pIAgent_;
+    mutable GenericDaemon *pGenericDaemon_;
 
   private:
     map_t map_Act2Wf_Ids_;
@@ -383,5 +401,30 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     boost::condition_variable_any cond_stop;
 };
 
+
+namespace boost { namespace serialization {
+template<class Archive>
+inline void save_construct_data(
+    Archive & ar, const EmptyWorkflowEngine* t, const unsigned int
+){
+    // save data required to construct instance
+    ar << t->pGenericDaemon_;
+}
+
+template<class Archive>
+inline void load_construct_data(
+    Archive & ar, EmptyWorkflowEngine* t, const unsigned int
+){
+    // retrieve data from archive required to construct new instance
+	GenericDaemon *pGenericDaemon;
+    ar >> pGenericDaemon;
+
+    // invoke inplace constructor to initialize instance of my_class
+    ::new(t)EmptyWorkflowEngine(pGenericDaemon, id_gen);
+}
+}} // namespace ...
+
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(IWorkflowEngine)
 
 #endif //EMPTY_WORKFLOW_ENGINE_HPP

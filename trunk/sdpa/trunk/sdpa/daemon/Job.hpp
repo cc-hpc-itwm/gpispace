@@ -57,6 +57,7 @@ namespace sdpa { namespace daemon {
 
         virtual bool isMasterJob()=0;
         virtual void setType(const job_type& )=0;
+        virtual job_type type()=0;
 
         virtual std::string print_info() = 0;
 

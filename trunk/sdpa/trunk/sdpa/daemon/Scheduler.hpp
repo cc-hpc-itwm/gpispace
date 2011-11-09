@@ -54,6 +54,7 @@ namespace daemon {
 	 virtual void getWorkerList(std::list<std::string>&) = 0;
 
 	 virtual size_t numberOfWorkers() = 0;
+	 virtual void feed_workers()= 0;
 
 	 //virtual void notifyWorkers(const sdpa::events::ErrorEvent::error_code_t& ) = 0;
 	 virtual void removeRecoveryInconsistencies() = 0;

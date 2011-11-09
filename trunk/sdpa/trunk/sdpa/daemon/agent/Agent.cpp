@@ -54,7 +54,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  DLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
+  SDPA_LOG_INFO("handleJobFinished(" << pEvt->job_id() << ")");
 
   // send a JobFinishedAckEvent back to the worker/slave
   JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()
@@ -327,7 +327,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  DLOG(TRACE, "handleJobFailed(" << pEvt->job_id() << ")");
+  SDPA_LOG_INFO("handleJobFailed(" << pEvt->job_id() << ")");
 
   // send a JobFailedAckEvent back to the worker/slave
   JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent( name()
@@ -706,6 +706,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     }
 }
 
+//template <typename T>
 void Agent::backup( std::ostream& ofs )
 {
     try {
@@ -721,6 +722,11 @@ void Agent::backup( std::ostream& ofs )
         oa.register_type(static_cast<AgentScheduler*>(NULL));
         oa.register_type(static_cast<SchedulerImpl*>(NULL));
         oa<<ptr_scheduler_;
+
+        /*oa.register_type(static_cast<T*>(NULL));
+        oa << ptr_workflow_engine_;*/
+        oa << boost::serialization::make_nvp("url_", m_arrMasterInfo);
+        oa << m_listSubscribers;
     }
     catch(exception &e) {
         cout <<"Exception occurred: "<< e.what() << endl;
@@ -728,6 +734,7 @@ void Agent::backup( std::ostream& ofs )
     }
 }
 
+//template <typename T>
 void Agent::recover( std::istream& ifs )
 {
 	try {
@@ -735,11 +742,28 @@ void Agent::recover( std::istream& ifs )
 		ia.register_type(static_cast<JobManager*>(NULL));
 		ia.register_type(static_cast<JobImpl*>(NULL));
 		ia.register_type(static_cast<JobFSM*>(NULL));
-		ia >> ptr_job_man_;
+		ia>>ptr_job_man_;
+
+		// probably makes no sense to recover the scheduler
+		// since the workflow engine cannot be recovered
 
 		ia.register_type(static_cast<AgentScheduler*>(NULL));
 		ia.register_type(static_cast<SchedulerImpl*>(NULL));
-		ia>> ptr_scheduler_;
+		ia>>ptr_scheduler_;
+
+		// should ignore the workflow engine recovery,
+		// since it is not always possible to recover it
+
+	    /*ia.register_type(static_cast<T*>(NULL));
+        ia >> ptr_workflow_engine_;*/
+        ia >> boost::serialization::make_nvp("url_", m_arrMasterInfo);
+        SDPA_LOG_INFO("The list of recoverd masters is: ");
+        BOOST_FOREACH(sdpa::MasterInfo& m, m_arrMasterInfo)
+        {
+        	SDPA_LOG_INFO(m.name());
+        }
+
+        ia >> m_listSubscribers;
 	}
 	catch(exception &e) {
 		cout <<"Exception occurred: " << e.what() << endl;

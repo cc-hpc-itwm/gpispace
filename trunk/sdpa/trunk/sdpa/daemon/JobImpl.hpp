@@ -59,6 +59,7 @@ namespace sdpa { namespace daemon {
 
         bool isMasterJob();
         void setType(const job_type& );
+        virtual job_type type() { return type_;}
 
         virtual void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
         virtual sdpa::worker_id_t owner() { return m_owner; }
