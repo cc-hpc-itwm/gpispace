@@ -455,6 +455,8 @@ public:
 
         job->entered(boost::posix_time::microsec_clock::universal_time());
 
+        fhg_kernel()->storage()->save("jobs", m_jobs);
+
         m_pending_jobs.put(job);
       }
     }
@@ -549,6 +551,8 @@ public:
 
     DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
+
+    fhg_kernel()->storage()->save("jobs", m_jobs);
   }
 
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e)
@@ -581,6 +585,8 @@ public:
 
     DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
+
+    fhg_kernel()->storage()->save("jobs", m_jobs);
   }
 
   // not implemented events
@@ -775,6 +781,8 @@ private:
         {
           DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
           m_jobs.erase(job_it);
+
+          fhg_kernel()->storage()->save("jobs", m_jobs);
         }
       }
     }
