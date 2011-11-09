@@ -132,7 +132,9 @@ function execute ()
 	return $ec
     fi
 
-    err=$(sdpac $SDPACFLAGS delete "${jobid}" 2>&1)
+    to_be_deleted="${jobid}"
+    jobid=
+    err=$(sdpac $SDPACFLAGS delete "${to_be_deleted}" 2>&1)
     ec=$?
     if [ $ec -ne 0 ] ; then
 	echo "could not delete job: $ec: $err" >&2
