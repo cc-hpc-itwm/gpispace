@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestStopRestartOrchestrator
+#define BOOST_TEST_MODULE TestStopRestartOrchestratorPollingCli
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
@@ -126,9 +126,7 @@ struct MyFixture
 		seda::StageRegistry::instance().clear();
 	}
 
-	void run_client_with_polling();
-	void run_client_subscriber();
-	int subscribe_and_wait( const std::string&, const sdpa::client::ClientApi::ptr_t& );
+	void run_client_polling();
 
 	sdpa::shared_ptr<fhg::core::kernel_t> create_drts(const std::string& drtsName, const std::string& masterName );
 
@@ -166,7 +164,7 @@ struct MyFixture
 	boost::thread m_threadClient;
 };
 
-void MyFixture::run_client_with_polling()
+void MyFixture::run_client_polling()
 {
 	sdpa::client::config_t config = sdpa::client::ClientApi::config();
 
@@ -276,152 +274,6 @@ void MyFixture::run_client_with_polling()
     ptrCli.reset();
 }
 
-/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
-int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
-{
-	typedef boost::posix_time::ptime time_type;
-	time_type poll_start = boost::posix_time::microsec_clock::local_time();
-
-	int exit_code(4);
-
-	ptrCli->subscribe(job_id);
-
-	LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
-
-	std::string job_status;
-
-  	int nTrials = 0;
-  	do {
-
-  		LOG(INFO, "start waiting at: " << poll_start);
-
-  		try
-  		{
-  			if(nTrials<NMAXTRIALS)
-  			{
-  				boost::this_thread::sleep(boost::posix_time::seconds(1));
-  				LOG(INFO, "Re-trying ...");
-  			}
-
-			seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
-
-			// check event type
-			if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
-			{
-				job_status="Finished";
-				exit_code = 0;
-			}
-			else if (dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get()))
-			{
-				job_status="Failed";
-				exit_code = 1;
-			}
-			else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
-			{
-				job_status="Cancelled";
-				exit_code = 2;
-			}
-			else if(sdpa::events::ErrorEvent *err = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get()))
-			{
-				std::cerr<< "got error event: reason := "
-							+ err->reason()
-							+ " code := "
-							+ boost::lexical_cast<std::string>(err->error_code())<<std::endl;
-
-			}
-			else
-			{
-				LOG(WARN, "unexpected reply: " << (reply ? reply->str() : "null"));
-			}
-		}
-		catch (const sdpa::client::Timedout &)
-		{
-			LOG(INFO, "Timeout expired!");
-		}
-
-  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS);
-
-  	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
-
-  	if( job_status != std::string("Finished") &&
-  		job_status != std::string("Failed")   &&
-  		job_status != std::string("Cancelled") )
-  	{
-  		LOG(ERROR, "Unexpected status, leave now ...");
-  		return exit_code;
-  	}
-
-  	time_type poll_end = boost::posix_time::microsec_clock::local_time();
-
-  	LOG(INFO, "Client stopped waiting at: " << poll_end);
-  	LOG(INFO, "Execution time: " << (poll_end - poll_start));
-  	return exit_code;
-}
-
-void MyFixture::run_client_subscriber()
-{
-	sdpa::client::config_t config = sdpa::client::ClientApi::config();
-
-	std::vector<std::string> cav;
-	cav.push_back("--orchestrator=orchestrator_0");
-	cav.push_back("--network.timeout=0");
-	config.parse_command_line(cav);
-
-	std::ostringstream osstr;
-	osstr<<"sdpac_"<<testNb++;
-
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, osstr.str(), osstr.str()+".apps.client.out" );
-	ptrCli->configure_network( config );
-
-	for( int k=0; k<m_nITER; k++ )
-	{
-		int nTrials = 0;
-		sdpa::job_id_t job_id_user;
-
-		try {
-
-			LOG( DEBUG, "Submitting new workflow ..."); //<<m_strWorkflow);
-			job_id_user = ptrCli->submitJob(m_strWorkflow);
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			if(nTrials++ > NMAXTRIALS)
-			{
-				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
-
-				ptrCli->shutdown_network();
-				ptrCli.reset();
-				return;
-			}
-		}
-
-		LOG( DEBUG, "//////////JOB #"<<k<<"////////////");
-
-
-		int exit_code = subscribe_and_wait( job_id_user, ptrCli );
-
-		try {
-			LOG( DEBUG, "User: delete the job "<<job_id_user);
-			ptrCli->deleteJob(job_id_user);
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
-		}
-		catch(const sdpa::client::ClientException& cliExc)
-		{
-			LOG( DEBUG, "The maximum number of  trials was exceeded. Giving-up now!");
-
-			ptrCli->shutdown_network();
-			ptrCli.reset();
-			return;
-
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
-		}
-	}
-
-	ptrCli->shutdown_network();
-	boost::this_thread::sleep(boost::posix_time::microseconds(5*m_sleep_interval));
-    ptrCli.reset();
-}
-
 sdpa::shared_ptr<fhg::core::kernel_t> MyFixture::create_drts(const std::string& drtsName, const std::string& masterName )
 {
 	sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
@@ -474,7 +326,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_Orch2Agents)
 	sdpa::daemon::Agent::ptr_t ptrAgent1 = sdpa::daemon::AgentFactory<EmptyWorkflowEngine>::create("agent_1", addrAgent1, arrAgent1MasterInfo, MAX_CAP, true );
 	ptrAgent1->start_agent(false, strBackupAgent1);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -523,7 +375,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_subscriber, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -549,7 +401,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE)
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchNoWE terminated!");
 }
 
-/*
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 {
 	LOG( DEBUG, "testAgentsAndDrts_OrchEmptyWE");
@@ -575,7 +426,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchEmptyWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -610,7 +461,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 	string addrOrch 	= "127.0.0.1";
 	string addrAgent 	= "127.0.0.1";
 
-
 	typedef void OrchWorkflowEngine;
 
 	m_strWorkflow = read_workflow("workflows/stresstest.pnet");
@@ -626,7 +476,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);
@@ -651,7 +501,6 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchDummyWE)
 
 	LOG( DEBUG, "The test case testAgentsAndDrts_OrchDummyWE terminated!");
 }
-*/
 
 BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 {
@@ -678,7 +527,7 @@ BOOST_AUTO_TEST_CASE( testAgentsAndDrts_OrchNoWE_AgentRealWE)
 	sdpa::shared_ptr<fhg::core::kernel_t> drts_0( create_drts("drts_0", "agent_0") );
 	boost::thread drts_0_thread = boost::thread(&fhg::core::kernel_t::run, drts_0);
 
-	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_with_polling, this));
+	boost::thread threadClient = boost::thread(boost::bind(&MyFixture::run_client_polling, this));
 
 	LOG( DEBUG, "Shutdown the orchestrator");
 	ptrOrch->shutdown(strBackupOrch);

@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestStopRestartAgents
+#define BOOST_TEST_MODULE TestStopRestartAgentsSubscriberCli
 #include <sdpa/daemon/jobFSM/JobFSM.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>

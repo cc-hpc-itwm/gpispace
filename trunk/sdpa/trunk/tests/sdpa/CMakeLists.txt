@@ -36,30 +36,19 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.hpp.in ${CMAKE_CURRENT_B
 
 add_subdirectory(workflows)
 
-if (USE_REAL_WE AND BUILDING_FROM_MAIN)
-  get_target_property(PNETC_LOCATION pnetc LOCATION)
-  if (PNETC_LOCATION)
-  else()
-    set(PNETC_LOCATION pnetc)
-  endif()
+include(pnet_macros)
 
-  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
-	DEPENDS pnetc
-	COMMAND ${PNETC_LOCATION}
-	ARGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
-    COMMENT "Invoke command: ${CMAKE_BINARY_DIR}/xml/xml/parse/pnetc -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib  ${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows/stresstest.xml -o ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet" VERBATIM
-    )
-else (USE_REAL_WE AND BUILDING_FROM_MAIN)
-	configure_file(${CMAKE_SOURCE_DIR}/tests/sdpa/workflows/stresstest.xml ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
-endif (USE_REAL_WE AND BUILDING_FROM_MAIN)
+pnet_compile(sdpa-stresstest ${CMAKE_CURRENT_SOURCE_DIR}/workflows/stresstest.xml
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet
+  FLAGS -I ${CMAKE_SOURCE_DIR}/application/example/stresstest -I ${CMAKE_SOURCE_DIR}/application/lib 
+)
 
 set (test_srcs
   SchedulerTestImpl.cpp
   test_Config.cpp
 )
 
-ADD_LIBRARY(sdpa-test ${test_srcs} ${CMAKE_CURRENT_BINARY_DIR}/workflows/stresstest.pnet)
+ADD_LIBRARY(sdpa-test ${test_srcs})
 target_link_libraries(sdpa-test
 	 sdpa-daemon
 	 sdpa-client
@@ -81,8 +70,10 @@ set (tc_srcs
   test_SerializeJobPtr.cpp
   test_SerializeAgents.cpp
   test_AgentsAndDrts.cpp
-  test_StopRestartOrch.cpp
-  test_StopRestartAgents.cpp
+  test_StopRestartOrchPollingCli.cpp
+  test_StopRestartOrchSubscriberCli.cpp
+  test_StopRestartAgentsSubscriberCli.cpp
+  test_StopRestartAgentsPollingCli.cpp
   test_ConcurrentClients.cpp
   test_MultipleMasters.cpp
   test_Topologies.cpp
