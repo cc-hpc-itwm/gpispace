@@ -145,6 +145,27 @@ public:
     return api.collect_info();
   }
 
+  void garbage_collect ()
+  {
+    return api.garbage_collect();
+  }
+
+  bool is_connected () const
+  {
+    return api.is_connected();
+  }
+
+  bool connect ()
+  {
+    if (! is_connected())
+    {
+      return try_start ();
+    }
+    else
+    {
+      return true;
+    }
+  }
 private:
   bool try_start ()
   {

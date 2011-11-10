@@ -47,6 +47,10 @@ namespace gpi
     virtual void detach_segment(const gpi::pc::type::segment_id_t id) = 0;
     virtual gpi::pc::type::segment::list_t list_segments () = 0;
     virtual gpi::pc::type::info::descriptor_t collect_info () = 0;
+
+    virtual bool is_connected () const = 0;
+    virtual bool connect () = 0;
+    virtual void garbage_collect () = 0;
   };
 }
 
