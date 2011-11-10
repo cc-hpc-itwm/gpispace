@@ -19,7 +19,7 @@ namespace fhg
   {
     namespace ui
     {
-      const QString TransitionLibraryModel::mimeType ("pnete/transition");      // hardcoded constant
+      const QString TransitionLibraryModel::mimeType ("pnete/transition"); // hardcoded constant
 
       TransitionLibraryModel::TransitionLibraryModel ( const QDir& path
                                                      , QWidget* parent
@@ -117,22 +117,28 @@ namespace fhg
       void TransitionLibraryModel::rereadAllDirectories(const QString& path)
       {
         //! \todo only re-read the changed directory instead of deleting everything.
-        delete _fileSystemWatcher;
+        if (_fileSystemWatcher)
+          {
+            delete _fileSystemWatcher;
+          }
         _fileSystemWatcher = new QFileSystemWatcher(this);
-        connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(rereadAllDirectories(const QString&)));
+        connect ( _fileSystemWatcher
+                , SIGNAL (directoryChanged (const QString&))
+                , SLOT (rereadAllDirectories (const QString&))
+                );
 
         emit layoutAboutToBeChanged();
         _items->clearChildren();
         emit layoutChanged();
 
-        foreach(QString path, _trustedPaths)
-        {
-          readContentFromDirectoryRecursive(_items, true, path);
-        }
+        foreach (QString path, _trustedPaths)
+          {
+            readContentFromDirectoryRecursive(_items, true, path);
+          }
         foreach(QString path, _untrustedPaths)
-        {
-          readContentFromDirectoryRecursive(_items, false, path);
-        }
+          {
+            readContentFromDirectoryRecursive(_items, false, path);
+          }
 
         emit layoutAboutToBeChanged();
         _items->sortChildren();
@@ -144,14 +150,18 @@ namespace fhg
         if(!_fileSystemWatcher)
         {
           _fileSystemWatcher = new QFileSystemWatcher(this);
-          connect(_fileSystemWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(rereadAllDirectories(const QString&)));
+
+          connect ( _fileSystemWatcher
+                  , SIGNAL (directoryChanged (const QString&))
+                  , SLOT (rereadAllDirectories (const QString&))
+                  );
         }
         _fileSystemWatcher->addPath(path);
       }
 
       int TransitionLibraryModel::rowCount(const QModelIndex& parent) const
       {
-        if(parent.column() > 0)
+        if (parent.column() > 0)
         {
           return 0;
         }
@@ -170,55 +180,69 @@ namespace fhg
         return 2;
       }
 
-      QVariant TransitionLibraryModel::data(const QModelIndex& index, int role) const
+      QVariant
+      TransitionLibraryModel::data (const QModelIndex& index, int role) const
       {
-        //! \todo symbols for trusted and untrusted entries? (lib / user)
-        if(index.isValid())
-        {
-          TransitionLibraryItem* item
-            (static_cast<TransitionLibraryItem*>(index.internalPointer()));
-
-          switch(role)
+        if (index.isValid())
           {
-            case Qt::DisplayRole:
-              if(index.column() == 0)
-              {
-                return item->path();
-              }
-              break;
+            TransitionLibraryItem* item
+              (static_cast<TransitionLibraryItem*>(index.internalPointer()));
 
-            case Qt::DecorationRole:
-            //! \todo folder icon?
-              if(index.column() == 1 && !item->is_folder() && item->trusted())
+            switch(role)
               {
-                return QIcon(":/lock.png");                                     // hardcoded constant
-              }
-              break;
+              case Qt::DisplayRole:
+                if(index.column() == 0)
+                  {
+                    return item->name();
+                  }
+                break;
 
-            case Qt::ToolTipRole:
-              if(index.column() == 1 && !item->is_folder() && item->trusted())
-              {
-                return tr("Trusted Transition");
-              }
-              break;
+              case Qt::DecorationRole:
+                //! \todo folder icon?
+                if ( index.column() == 1
+                   && !item->is_folder()
+                   && item->trusted()
+                   )
+                  {
+                    return QIcon(":/lock.png"); // hardcoded constant
+                  }
+                break;
+
+              case Qt::ToolTipRole:
+                if ( index.column() == 1
+                   && !item->is_folder()
+                   && item->trusted()
+                   )
+                  {
+                    return tr("Trusted Transition");
+                  }
+                break;
 
             default:
               ;
           }
         }
+
         return QVariant();
       }
 
-      QVariant TransitionLibraryModel::headerData(int section, Qt::Orientation orientation, int role) const
+      QVariant
+      TransitionLibraryModel::headerData ( int section
+                                         , Qt::Orientation orientation
+                                         , int role
+                                         ) const
       {
-        if(orientation != Qt::Horizontal || role != Qt::DisplayRole || section != 0)
-        {
-          return QVariant();
-        }
+        if ( orientation != Qt::Horizontal
+           || role != Qt::DisplayRole
+           || section != 0
+           )
+          {
+            return QVariant();
+          }
         else
-        {
-          return QString(tr("Transition"));
-        }
+          {
+            return QString(tr("Transition"));
+          }
       }
 
       QMimeData*
@@ -253,60 +277,63 @@ namespace fhg
         return 0;
       }
 
-      QModelIndex TransitionLibraryModel::index(int row, int column, const QModelIndex& parent) const
+      QModelIndex
+      TransitionLibraryModel::index ( int row
+                                    , int column
+                                    , const QModelIndex& parent
+                                    ) const
       {
         if (hasIndex (row, column, parent))
-        {
-          TransitionLibraryItem* parentItem
-            ( !parent.isValid()
-            ? _items
-            : static_cast<TransitionLibraryItem*>(parent.internalPointer())
-            );
-
-          TransitionLibraryItem* childItem (parentItem->child(row));
-
-          if (childItem)
           {
-            return createIndex(row, column, childItem);
+            TransitionLibraryItem* parentItem
+              ( !parent.isValid()
+              ? _items
+              : static_cast<TransitionLibraryItem*>(parent.internalPointer())
+              );
+
+            TransitionLibraryItem* childItem (parentItem->child(row));
+
+            if (childItem)
+              {
+                return createIndex(row, column, childItem);
+              }
           }
-        }
 
         return QModelIndex();
       }
 
-      QModelIndex TransitionLibraryModel::parent(const QModelIndex& index) const
+      QModelIndex
+      TransitionLibraryModel::parent (const QModelIndex& index) const
       {
         if (!index.isValid())
-        {
-          return QModelIndex();
-        }
+          {
+            return QModelIndex();
+          }
 
-        TransitionLibraryItem* childItem (static_cast<TransitionLibraryItem*>(index.internalPointer()));
+        TransitionLibraryItem* childItem
+          (static_cast<TransitionLibraryItem*>(index.internalPointer()));
         TransitionLibraryItem* parentItem (childItem->parent());
 
-        if(parentItem == _items)
-        {
-          return QModelIndex();
-        }
-        else
-        {
-          return createIndex(parentItem->row(), 0, parentItem);
-        }
+        return (parentItem == _items)
+          ? QModelIndex()
+          : createIndex(parentItem->row(), 0, parentItem)
+          ;
       }
 
-      Qt::ItemFlags TransitionLibraryModel::flags(const QModelIndex& index) const
+      Qt::ItemFlags
+      TransitionLibraryModel::flags(const QModelIndex& index) const
       {
         if (!index.isValid())
-        {
-          return Qt::NoItemFlags;
-        }
+          {
+            return Qt::NoItemFlags;
+          }
         else
-        {
-          return Qt::ItemIsDragEnabled
-            | Qt::ItemIsEnabled
-            | Qt::ItemIsSelectable
-            ;
-        }
+          {
+            return Qt::ItemIsDragEnabled
+                 | Qt::ItemIsEnabled
+                 | Qt::ItemIsSelectable
+                 ;
+          }
       }
     }
   }

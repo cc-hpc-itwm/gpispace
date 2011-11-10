@@ -62,8 +62,6 @@ namespace fhg
 
 //             virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
 
-            virtual void setPos (const QPointF&);
-
             virtual QLinkedList<graph::item*> childs() const;
 
           protected:

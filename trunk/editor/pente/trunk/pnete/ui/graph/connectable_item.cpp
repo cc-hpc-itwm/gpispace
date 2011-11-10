@@ -79,11 +79,6 @@ namespace fhg
             return unmapped;
           }
 
-          void item::setPos (const QPointF& new_pos)
-          {
-            graph::item::setPos (new_pos);
-          }
-
           QLinkedList<graph::item*> item::childs() const
           {
             QLinkedList<graph::item*> childs;

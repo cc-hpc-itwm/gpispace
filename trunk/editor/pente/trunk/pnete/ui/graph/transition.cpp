@@ -149,25 +149,27 @@ namespace fhg
                     if (p->direction() == connectable::direction::IN)
                       {
                         p->orientation (port::orientation::WEST);
-                        p->setPos (style::raster::snap (positionIn));
+                        p->setPos_no_collision_detection
+                          (style::raster::snap (positionIn));
                         positionIn.ry() += step + padding;
                       }
                     else
                       {
                         p->orientation (port::orientation::EAST);
-                        p->setPos (style::raster::snap (positionOut));
+                        p->setPos_no_collision_detection
+                          (style::raster::snap (positionOut));
                         positionOut.ry() += step + padding;
                       }
                   }
               }
 
-            qreal& height (_size.rheight());
-            height = qMax ( height
-                          , qMax ( positionIn.y() - top
-                                 , positionOut.y() - top
-                                 )
-                          );
-            height = style::raster::snap (height);
+            _size.rheight()
+              = style::raster::snap ( qMax ( _size.rheight()
+                                           , qMax ( positionIn.y() - top
+                                                  , positionOut.y() - top
+                                                  )
+                                           )
+                                    );
           }
 
           void item::set_proxy (data::proxy::type* proxy_)

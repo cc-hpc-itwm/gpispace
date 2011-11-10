@@ -99,29 +99,11 @@ namespace fhg
 
           foreach (const QString& path, paths)
             {
-              std::cerr << "got " << path.toStdString() << std::endl;
-
               data::internal::type* data
                 (data::manager::instance().load (path));
 
               scene()->change_manager()
                 .add_transition (this, data->function(), scene()->net());
-
-              //! \todo construct transition
-//               graph::transition::item* transition
-//                 ( new graph::transition::item ( data->as_transition()
-//                                               , scene()->net()
-//                                               )
-//                 );
-
-//               scene()->addItem (transition);
-
-//               transition->setPos
-//                 ( graph::style::raster::snap
-//                   ( mapToScene (event->pos())
-//                   - transition->boundingRect().bottomRight() / 2.0
-//                   )
-//                 );
             }
 
           event->acceptProposedAction();

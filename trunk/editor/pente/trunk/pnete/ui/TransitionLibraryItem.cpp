@@ -79,9 +79,25 @@ namespace fhg
         return _fileinfo;
       }
 
+      const data::internal::type* TransitionLibraryItem::data() const
+      {
+        return _data;
+      }
+
       QString TransitionLibraryItem::path() const
       {
         return fileinfo().absoluteFilePath();
+      }
+      QString TransitionLibraryItem::name() const
+      {
+        //! \todo better handling for the anonymous case
+        return is_folder()
+          ? fileinfo().baseName()
+          : QString::fromStdString ( data()->function().name
+                                   ? *data()->function().name
+                                   : "<<anonymous>>"
+                                   )
+          ;
       }
 
       const bool& TransitionLibraryItem::trusted() const

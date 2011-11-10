@@ -156,6 +156,11 @@ namespace fhg
             qDebug() << "port::slot_set_type()";
           }
 
+          void item::setPos_no_collision_detection (const QPointF& new_position)
+          {
+            connectable::item::setPos (new_position);
+          }
+
           void item::setPos (const QPointF& new_position)
           {
             const QPointF old_position (pos());

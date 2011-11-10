@@ -250,6 +250,8 @@ namespace fhg
 
                 FROM(transition) (&wt, t);
 
+                trans->repositionChildrenAndResize();
+
                 if (origin == this)
                   {
                     trans->setPos (mouse_position());

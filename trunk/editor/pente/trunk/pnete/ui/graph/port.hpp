@@ -72,6 +72,8 @@ namespace fhg
 
             virtual void setPos (const QPointF&);
 
+            void setPos_no_collision_detection (const QPointF&);
+
           public slots:
             void slot_set_type();
             void refresh_tooltip();
