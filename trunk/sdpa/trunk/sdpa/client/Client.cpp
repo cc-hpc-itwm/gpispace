@@ -180,6 +180,7 @@ void Client::shutdown() throw (ClientException)
 
 void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
 {
+	clear_reply();
   MLOG(DEBUG,"attempting to subscribe ... " );
   client_stage_->send(seda::IEvent::Ptr(new se::SubscribeEvent(name(), orchestrator_, listJobIds)));
   DMLOG(TRACE,"waiting for a reply");
