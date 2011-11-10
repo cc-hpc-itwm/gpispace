@@ -254,26 +254,38 @@ void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 			&& status.find("Failed") 	== std::string::npos
 			&& status.find("Cancelled") == std::string::npos )
 		{
-			//if(	pJob->isMasterJob() )
+			if( pComm->hasWorkflowEngine() )
+			{
+				if(	pJob->isMasterJob() )
+				{
+					SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
+					pJob->Reschedule();
 
-			SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
-			pJob->Reschedule();
+					SDPA_LOG_INFO("Schedule the job"<<pJob->id());
+					pComm->schedule(job_id);
+				}
+				else
+					listJobsToRemove.push_back(it->first);
+			}
+			else
+			{
+				SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
+				pJob->Reschedule();
 
-			SDPA_LOG_INFO("Schedule the job"<<pJob->id());
-			pComm->schedule(job_id);
-
-			/*else
-				listJobsToRemove.push_back(it->first);*/
+				SDPA_LOG_INFO("Schedule the job"<<pJob->id());
+				pComm->schedule(job_id);
+			}
 		}
 	}
 
-	/*while(!listJobsToRemove.empty())
+	// remove the jobs submitted by the workflow engine, eventually send a cancel event
+	while(!listJobsToRemove.empty())
 	{
 		sdpa::job_id_t job_id = listJobsToRemove.back();
 		SDPA_LOG_INFO("Remove the job "<<job_id);
 		job_map_.erase(job_id);
 		listJobsToRemove.pop_back();
-	}*/
+	}
 }
 
 unsigned int JobManager::countMasterJobs()

@@ -104,7 +104,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
 	}
 	catch(JobNotFoundException const &)
 	{
-		SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
+		SDPA_LOG_WARN("job " << pEvt->job_id() << " could not be found!");
 	}
 	catch(JobNotDeletedException const & ex)
 	{
