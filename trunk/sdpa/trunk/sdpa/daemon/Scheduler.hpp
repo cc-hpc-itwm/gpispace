@@ -60,6 +60,8 @@ namespace daemon {
 	 virtual void removeRecoveryInconsistencies() = 0;
 	 virtual void removeWorkers() = 0;
 
+	 virtual void cancelWorkerJobs(IComm* pComm) = 0;
+
 	 virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) = 0;
 	 virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;
 	 virtual void getWorkerCapabilities(sdpa::capabilities_set_t& cpbset) = 0;

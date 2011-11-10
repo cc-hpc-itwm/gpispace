@@ -91,6 +91,8 @@ namespace sdpa {
 	virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
 	virtual void feed_workers();
 
+	void cancelWorkerJobs(IComm* pComm);
+
 	virtual bool useRequestModel() { return m_bUseRequestModel; }
 	void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
 

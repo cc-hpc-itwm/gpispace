@@ -918,3 +918,8 @@ void SchedulerImpl::removeRecoveryInconsistencies()
 		listDirtyJobs.pop_front();
 	}
 }
+
+void SchedulerImpl::cancelWorkerJobs(IComm* pComm)
+{
+	ptr_worker_man_->cancelWorkerJobs(pComm);
+}
