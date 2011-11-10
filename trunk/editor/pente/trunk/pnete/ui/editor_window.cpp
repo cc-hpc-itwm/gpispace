@@ -62,18 +62,14 @@ namespace fhg
 
         setup_menu_and_toolbar();
 
+        _transition_library->setModel (new TransitionLibraryModel (this));
+
         readSettings();
       }
 
-      void editor_window::set_transition_library_path (const QString& path)
-      {
-        _transition_library->setModel
-          (new TransitionLibraryModel (QDir (path), this));
-      }
-
-      void editor_window::add_transition_library_user_path ( const QString& path
-                                                           , bool trusted
-                                                           )
+      void editor_window::add_transition_library_path ( const QString& path
+                                                      , bool trusted
+                                                      )
       {
         qobject_cast<TransitionLibraryModel*> (_transition_library->model())->
             addContentFromDirectory (path, trusted);

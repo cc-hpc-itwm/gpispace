@@ -21,25 +21,11 @@ namespace fhg
     {
       const QString TransitionLibraryModel::mimeType ("pnete/transition"); // hardcoded constant
 
-      TransitionLibraryModel::TransitionLibraryModel ( const QDir& path
-                                                     , QWidget* parent
-                                                     )
+      TransitionLibraryModel::TransitionLibraryModel (QWidget* parent)
         : QAbstractItemModel (parent)
         , _fileSystemWatcher (NULL)
         , _items (new TransitionLibraryItem(this))
-      {
-        readContentFromDirectory (path.path());
-      }
-
-      void
-      TransitionLibraryModel::readContentFromDirectory (const QString& path)
-      {
-        _items->clearChildren();
-
-        _trustedPaths.push_back(path);
-        readContentFromDirectoryRecursive(_items, true, path);
-        _items->sortChildren();
-      }
+      {}
 
       void
       TransitionLibraryModel::addContentFromDirectory ( const QString& path

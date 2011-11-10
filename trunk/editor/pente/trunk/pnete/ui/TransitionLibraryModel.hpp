@@ -25,7 +25,7 @@ namespace fhg
         Q_OBJECT
 
         public:
-          TransitionLibraryModel (const QDir& path, QWidget* parent = NULL);
+          TransitionLibraryModel (QWidget* parent = NULL);
 
           static const QString mimeType;
 
@@ -41,7 +41,6 @@ namespace fhg
           virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
           virtual QMimeData * mimeData(const QModelIndexList& indexes) const;
 
-          void readContentFromDirectory(const QString& path);
           void addContentFromDirectory(const QString& path, bool trusted = false);
 
         public slots:

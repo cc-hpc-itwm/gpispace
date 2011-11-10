@@ -40,10 +40,9 @@ namespace fhg
       public:
         explicit editor_window (QWidget *parent = NULL);
 
-        void set_transition_library_path (const QString& path);
-        void add_transition_library_user_path ( const QString& path
-                                              , bool trusted = false
-                                              );
+        void add_transition_library_path ( const QString& path
+                                         , bool trusted = false
+                                         );
 
         virtual QMenu* createPopupMenu();
         virtual void closeEvent (QCloseEvent*);

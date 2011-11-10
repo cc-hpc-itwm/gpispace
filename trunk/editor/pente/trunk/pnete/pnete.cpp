@@ -90,6 +90,29 @@ namespace library_transition
       settings.endArray();
       settings.endGroup();
     }
+
+    static void add ( fhg::pnete::ui::editor_window* editor_window
+                    , const QString& key
+                    , const bool trusted
+                    )
+    {
+      QSettings settings;
+
+      settings.beginGroup (key::group());
+
+      const int size (settings.beginReadArray (key));
+
+      for (int i (0); i < size; ++i)
+      {
+        settings.setArrayIndex (i);
+        editor_window->add_transition_library_path
+          (settings.value (key::path()).toString(), trusted);
+      }
+      settings.endArray();
+
+      settings.endGroup ();
+    }
+
   }
 
   static void update (const QString& key, const path_list_type& paths_new)
@@ -99,6 +122,12 @@ namespace library_transition
     paths_old.insert (paths_new.begin(), paths_new.end());
 
     detail::write (key, paths_old);
+  }
+
+  static void update (fhg::pnete::ui::editor_window* editor_window)
+  {
+    detail::add (editor_window, key::paths_trusted(), true);
+    detail::add (editor_window, key::paths_untrusted(), false);
   }
 }
 
@@ -186,9 +215,9 @@ namespace fhg
       processEvents ();
     }
     PetriNetEditor::PetriNetEditor (int& argc, char *argv[])
-    : QApplication (argc, argv)
-    , _splash (QPixmap (":/pente.png"))
-    , _editor_windows ()
+      : QApplication (argc, argv)
+      , _splash (QPixmap (":/pente.png"))
+      , _editor_windows ()
     {}
 
     void PetriNetEditor::startup ()
@@ -198,9 +227,14 @@ namespace fhg
 #endif
 
       setupLocalization ();
-      processCommandLine ();
-      int window_id (create_editor_window ());
-      createTransitionLibrary (window_id);
+
+      ui::editor_window* editor_window (create_editor_window());
+
+      library_transition::update (editor_window);
+
+      _splash.close();
+
+      editor_window->show();
     }
 
     PetriNetEditor::~PetriNetEditor ()
@@ -213,12 +247,14 @@ namespace fhg
       _editor_windows.clear();
     }
 
-    void PetriNetEditor::setupLocalization ()
+    void PetriNetEditor::setupLocalization()
     {
       const QString& locale (QLocale::system().name());
 
-      _qtTranslator.load ( "qt_" + locale
-                        , QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+      _qtTranslator.load
+        ( "qt_" + locale
+        , QLibraryInfo::location(QLibraryInfo::TranslationsPath)
+        );
       installTranslator (&_qtTranslator);
 
       //! \note Fallback.
@@ -229,85 +265,11 @@ namespace fhg
       installTranslator (&_penteTranslator);
     }
 
-    void PetriNetEditor::processCommandLine ()
+    ui::editor_window* PetriNetEditor::create_editor_window()
     {
-      const QStringList& args (arguments ());
-      if (args.contains ("--make-config"))
-      {
-        QSettings settings;
-        settings.beginGroup ("transitionLibrary");
+      _editor_windows << new ui::editor_window();
 
-        if(args.size () <= args.indexOf ("--make-config") + 1)
-        {
-          std::cerr << "Please also specify a path containing lib/, statoil/ and user/!" << std::endl;
-          throw std::runtime_error ("Please specify base path.");
-        }
-
-        QString pnetedir = args.at (args.indexOf ("--make-config") + 1);
-
-        settings.setValue ("basePath", QString ("%1/lib").arg (pnetedir));
-
-        //! \todo this should not be default!
-        settings.beginWriteArray ("trustedPaths");
-        settings.setArrayIndex (0);
-        settings.setValue ("path", QString ("%1/statoil").arg (pnetedir));
-        settings.endArray ();
-
-        settings.beginWriteArray ("userPaths");
-        settings.setArrayIndex (0);
-        settings.setValue ("path", QString ("%1/user").arg (pnetedir));
-        settings.endArray ();
-
-        settings.endGroup ();
-      }
-    }
-
-    int PetriNetEditor::create_editor_window ()
-    {
-      const int window_id (_editor_windows.count());
-      _editor_windows.append (new ui::editor_window());
-      _splash.close();
-      _editor_windows.at (window_id)->show();
-      return window_id;
-    }
-
-    void PetriNetEditor::createTransitionLibrary (int window_id)
-    {
-      QSettings settings;
-
-      settings.beginGroup ("transitionLibrary");
-
-      if (!settings.contains ("basePath"))
-      {
-        //! \todo error message.
-        std::cerr << "There is no base path set for the transition library.\n"
-                  << "Please run \"" << qPrintable (arguments ().at (0))
-                  << " --make-config <path>\", where path contains lib.\n";
-        throw std::runtime_error ("Please configure first.");
-      }
-
-      _editor_windows.at (window_id)->set_transition_library_path
-          (settings.value ("basePath").toString ());
-
-      const int numTrusted (settings.beginReadArray ("trustedPaths"));
-      for (int i (0); i < numTrusted; ++i)
-      {
-        settings.setArrayIndex (i);
-        _editor_windows.at (window_id)->add_transition_library_user_path
-            (settings.value ("path").toString (), true);
-      }
-      settings.endArray();
-
-      const int numUser (settings.beginReadArray ("userPaths"));
-      for (int i (0); i < numUser; ++i)
-      {
-        settings.setArrayIndex (i);
-        _editor_windows.at (window_id)->add_transition_library_user_path
-            (settings.value ("path").toString (), false);
-      }
-      settings.endArray ();
-
-      settings.endGroup ();
+      return _editor_windows.back();
     }
   }
 }

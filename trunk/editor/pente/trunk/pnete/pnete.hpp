@@ -25,18 +25,15 @@ namespace fhg
 
       void startup ();
 
-      void setupLocalization ();
-      void processCommandLine ();
-      int create_editor_window ();
-      void createTransitionLibrary (int window_id);
-
     private:
       QSplashScreen _splash;
       QTranslator _qtTranslator;
       QTranslator _penteTranslator;
       QList<ui::editor_window*> _editor_windows;
 
-      void showSplashScreen ();
+      void showSplashScreen();
+      void setupLocalization();
+      ui::editor_window* create_editor_window();
     };
   }
 }
