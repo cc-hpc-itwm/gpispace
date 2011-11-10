@@ -2,6 +2,8 @@
 
 #include <pnete/pnete.hpp>
 
+#include <set>
+#include <vector>
 #include <iostream>
 #include <stdexcept>
 
@@ -13,26 +15,122 @@
 #include <pnete/ui/editor_window.hpp>
 
 #include <boost/program_options.hpp>
-
-#include <iostream>
+#include <boost/foreach.hpp>
 
 namespace po = boost::program_options;
 
 #define BE_PENTE 1
 
+typedef std::string path_type;
+typedef std::set<std::string> path_set_type;
+typedef std::vector<std::string> path_list_type;
+
+namespace library_transition
+{
+  namespace key
+  {
+#define CONST(_type,_name,_value)                       \
+    static const _type& _name()                         \
+    {                                                   \
+      static const _type value (_value);                \
+                                                        \
+      return value;                                     \
+    }
+
+    CONST(QString, group, "library_transition");
+    CONST(QString, path, "path");
+    CONST(QString, paths_trusted, "paths_trusted");
+    CONST(QString, paths_untrusted, "paths_untrusted");
+
+#undef CONST
+  }
+
+  namespace detail
+  {
+    static path_set_type read (const QString& key)
+    {
+      path_set_type paths;
+
+      QSettings settings;
+
+      settings.beginGroup (key::group());
+
+      const int size (settings.beginReadArray (key));
+
+      for (int i (0); i < size; ++i)
+        {
+          settings.setArrayIndex (i);
+
+          paths.insert (settings.value (key::path()).toString().toStdString());
+        }
+
+      settings.endArray();
+      settings.endGroup();
+
+      return paths;
+    }
+
+    static void write (const QString& key, const path_set_type& paths)
+    {
+      QSettings settings;
+
+      settings.beginGroup (key::group());
+
+      settings.beginWriteArray (key);
+
+      int index (0);
+
+      BOOST_FOREACH(const path_type& path, paths)
+        {
+          settings.setArrayIndex (index++);
+
+          settings.setValue (key::path(), QString::fromStdString (path));
+        }
+
+      settings.endArray();
+      settings.endGroup();
+    }
+  }
+
+  static void update (const QString& key, const path_list_type& paths_new)
+  {
+    path_set_type paths_old (detail::read (key));
+
+    paths_old.insert (paths_new.begin(), paths_new.end());
+
+    detail::write (key, paths_old);
+  }
+}
+
 int main (int argc, char *argv[])
 {
   Q_INIT_RESOURCE (resources);
 
+  QApplication::setApplicationName ("pnete");
+  //! \todo Get SVN revision.
+  QApplication::setApplicationVersion ("0.1");
+  QApplication::setOrganizationDomain ("itwm.fhg.de");
+  QApplication::setOrganizationName ("Fraunhofer ITWM");
+
   po::options_description desc ("options");
 
   std::string workflow ("-");
+  path_list_type paths_trusted_new;
+  path_list_type paths_untrusted_new;
 
   desc.add_options()
     ( "help,h", "this message")
     ( "workflow,w"
     , po::value<std::string>(&workflow)->default_value(workflow)
     , "workflow file name, - for stdin"
+    )
+    ( "lib-trusted,L"
+    , po::value<path_list_type>(&paths_trusted_new)
+    , "path to trusted library"
+    )
+    ( "lib-untrusted,T"
+    , po::value<path_list_type>(&paths_untrusted_new)
+    , "path to untrusted library"
     )
     ;
 
@@ -58,11 +156,10 @@ int main (int argc, char *argv[])
       workflow = "/dev/stdin";
     }
 
-  QApplication::setApplicationName ("pnete");
-  //! \todo Get SVN revision.
-  QApplication::setApplicationVersion ("0.1");
-  QApplication::setOrganizationDomain ("itwm.fhg.de");
-  QApplication::setOrganizationName ("Fraunhofer ITWM");
+  library_transition::update
+    (library_transition::key::paths_trusted(), paths_trusted_new);
+  library_transition::update
+    (library_transition::key::paths_untrusted(), paths_untrusted_new);
 
   try
   {
@@ -74,7 +171,8 @@ int main (int argc, char *argv[])
   catch (const std::exception& e)
   {
     std::cerr << "EXCEPTION: " << e.what () << std::endl;
-    return -1;
+
+    return EXIT_FAILURE;
   }
 }
 
