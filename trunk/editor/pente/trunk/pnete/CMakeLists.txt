@@ -3,6 +3,7 @@ include (${QT_USE_FILE})
 
 set ( pnete_SRCS
       pnete.cpp
+      setting.cpp
     )
 
 set ( pnete_RCCS
