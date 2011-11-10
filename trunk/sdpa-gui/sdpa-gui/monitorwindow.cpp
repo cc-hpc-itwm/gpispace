@@ -51,8 +51,8 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     ui->m_log_table->horizontalHeader ()->setStretchLastSection(true);
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
-
-    //    m_portfolio_.Init();
+    ui->m_drop_filtered->setCheckState(Qt::Checked);
+      //    m_portfolio_.Init();
 
     m_scene = new fhg::taskview::TaskScene (this);
     m_view = new fhg::taskview::TaskView(m_scene);
