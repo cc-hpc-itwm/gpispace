@@ -54,7 +54,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  SDPA_LOG_INFO("handleJobFinished(" << pEvt->job_id() << ")");
+  DMLOG(TRACE, "handleJobFinished(" << pEvt->job_id() << ")");
 
   // send a JobFinishedAckEvent back to the worker/slave
   JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()

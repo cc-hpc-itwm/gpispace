@@ -660,15 +660,10 @@ void GenericDaemon::serve_job(const Worker::worker_id_t& worker_id, const job_id
 
         if( ptrJob.get() && !bTerminal )
         {
-        	SDPA_LOG_INFO("Serving a job to the worker "<<worker_id);
-
-            // put the job into the Running state here
-            DMLOG(TRACE, "The job status is "<<ptrJob->getStatus());
-
-            //ptrJob->Dispatch(); // no event need to be sent
+            DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
             // create a SubmitJobEvent for the job job_id serialize and attach description
-            SDPA_LOG_INFO("sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
+            DMLOG(TRACE, "sending SubmitJobEvent (jid=" << ptrJob->id() << ") to: " << worker_id);
             SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), ""));
 
             // Post a SubmitJobEvent to the slave who made the request
