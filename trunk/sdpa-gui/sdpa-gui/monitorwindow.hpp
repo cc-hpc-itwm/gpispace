@@ -52,9 +52,9 @@ public slots:
     void toggleFollowTaskView(bool checked);
     void levelFilterChanged (int lvl);
     // portfolio related slots
-  void ClearTable() { } //m_portfolio_.ClearTable(); }
-  void SubmitPortfolio() { }// m_portfolio_.SubmitPortfolio(); }
-  void resizePortfolio(int k) {}// m_portfolio_.Resize(k); }
+  void ClearTable() { m_portfolio_->ClearTable(); }
+  void SubmitPortfolio() { m_portfolio_->SubmitPortfolio(); }
+  void resizePortfolio(int k) { m_portfolio_->Resize(k); }
 
   // execution view
   void clearActivityLog();
@@ -65,11 +65,9 @@ private:
   void handle_external_event (int type, const fhg::log::LogEvent &);
 
     bool event (QEvent *event);
-  /*
   void UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
                           , we::activity_t const & act
                           );
-  */
   void UpdateExecutionView( sdpa::daemon::NotificationEvent const & evt
                           , we::activity_t const & act
                           );
@@ -88,7 +86,7 @@ private:
     bool m_follow_execution;
     std::vector<fhg::log::LogEvent> m_log_events;
 
-  //Portfolio m_portfolio_;
+  Portfolio *m_portfolio_;
   fhg::taskview::TaskScene *m_scene;
   fhg::taskview::TaskView *m_view;
 

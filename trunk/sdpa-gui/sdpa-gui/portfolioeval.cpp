@@ -40,11 +40,16 @@ Portfolio::~Portfolio()
 
 void Portfolio::Init()
 {
-	QString strBackendDir(SDPA_PREFIX);
-	m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
+  QString strBackendDir(SDPA_PREFIX);
+  char *sdpa_home = std::getenv("SDPA_HOME");
+  if (sdpa_home)
+  {
+    strBackendDir = sdpa_home;
+  }
 
-	QString qstrCurrPath = QDir::currentPath();
-	m_pUi->m_editWorkflowFile->setText(qstrCurrPath + "/asian.pnet");
+  m_pUi->m_editBackendFile->setText(strBackendDir + "/bin/Asian");
+  m_pUi->m_editWorkflowFile->setText(strBackendDir + "/libexec/apps/asian/asian.pnet");
+  m_pUi->m_nThreads->setValue(1);
 
 	char* szKvsEnv = std::getenv("KVS_URL");
 	if(szKvsEnv)
@@ -101,7 +106,7 @@ void Portfolio::InitTable()
 
 void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_parameters_t& v_row_params )
 {
-  m_pUi->m_progressBar->setRange(0, 4 * v_row_params.size() * common_params.nLBUs() + v_row_params.size() - 1);
+  m_pUi->m_progressBar->setRange(0, 4 * v_row_params.size() * common_params.nLBUs() + v_row_params.size());
   m_pUi->m_progressBar->reset();
 
 	//QComboBox
@@ -374,6 +379,12 @@ void Portfolio::StopClient()
       return;
     }
 
+    if (m_poll_thread)
+    {
+      m_poll_thread->interrupt();
+      m_poll_thread->join();
+    }
+
     m_ptrCli->shutdown_network();
     m_ptrCli.reset();
     m_bClientStarted = false;
@@ -415,8 +426,8 @@ void Portfolio::StartClient()
 		{
                   fhg::com::kvs::global::get_kvs_info().init( vec[0]
                                                             , vec[1]
-                                                            , boost::posix_time::seconds(10)
-                                                            , 3
+                                                            , boost::posix_time::seconds(1)
+                                                            , 1
                                                             );
                   fhg::com::kvs::put("test_val", 42);
                   fhg::com::kvs::del("test_val");
@@ -459,7 +470,7 @@ void Portfolio::StartClient()
 						   	 QString("Portfolio evaluation"),
 						   	 QString("The client could not be started! Exception occurred: "+ QString(ex.what())) );
 
-	  m_bClientStarted = false;
+          StopClient();
 	  //throw ex;
   }
 }
@@ -484,6 +495,7 @@ void Portfolio::Poll()
       if(nTrials++ > NMAXTRIALS)
       {
         qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
+        StopClient();
         EnableControls();
         return;
       }
@@ -501,6 +513,8 @@ void Portfolio::Poll()
   }
   catch(const std::exception& cliExc)
   {
+    qDebug() << "could not delete job: " << cliExc.what();
+    StopClient();
   }
 
   EnableControls();
@@ -508,7 +522,13 @@ void Portfolio::Poll()
 
 void Portfolio::WaitForCurrJobCompletion()
 {
-	boost::thread threadPoll = boost::thread(boost::bind(&Portfolio::Poll, this));
+  if (m_poll_thread)
+  {
+    m_poll_thread->interrupt();
+    m_poll_thread->join();
+  }
+
+  m_poll_thread.reset(new boost::thread(boost::bind(&Portfolio::Poll, this)));
 }
 
 void Portfolio::DisableControls()
@@ -527,10 +547,18 @@ void Portfolio::EnableControls()
 
 void Portfolio::SubmitPortfolio()
 {
+  if (m_poll_thread)
+  {
+    m_poll_thread->interrupt();
+    m_poll_thread->join();
+  }
+
+  /*
 	if (m_bClientStarted)
 	{
 		StopClient();
 	}
+  */
 
 	if(!m_bClientStarted)
 	{
@@ -576,6 +604,7 @@ void Portfolio::SubmitPortfolio()
                                        QString("Exception!"),
                                        QString(cliExc.what())
                                        );
+                  StopClient();
                   EnableControls();
                   return;
 

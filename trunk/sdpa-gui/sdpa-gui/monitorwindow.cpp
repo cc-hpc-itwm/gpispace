@@ -28,6 +28,8 @@
 #include <sdpa-gui/taskview/taskscene.hpp>
 #include <sdpa-gui/taskview/taskview.hpp>
 
+#include "portfolioevent.hpp"
+
 using namespace std;
 using namespace boost;
 
@@ -42,7 +44,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
   , ui(new Ui::MonitorWindow)
   , m_follow_logging (true)
   , m_follow_execution (true)
-    //  , m_portfolio_(ui)
+  , m_portfolio_(new Portfolio(ui))
   , m_current_scale (1.0)
 {
     ui->setupUi(this);
@@ -52,7 +54,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
     ui->m_log_table->horizontalHeaderItem (2)->setTextAlignment (Qt::AlignLeft);
     ui->m_log_table->setSelectionMode(QAbstractItemView::NoSelection);
     ui->m_drop_filtered->setCheckState(Qt::Checked);
-      //    m_portfolio_.Init();
+    m_portfolio_->Init();
 
     m_scene = new fhg::taskview::TaskScene (this);
     m_view = new fhg::taskview::TaskView(m_scene);
@@ -154,7 +156,7 @@ MonitorWindow::MonitorWindow( unsigned short exe_port
                     );
 
     m_timer.start((int)(std::floor (1000 / 26. + 0.5)));
-    //    m_portfolio_.InitTable();
+    m_portfolio_->InitTable();
 }
 
 MonitorWindow::~MonitorWindow()
@@ -222,7 +224,6 @@ void decode (const std::string& strMsg, T& t)
   ar >> t;
 }
 
-/*
 void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const & evt
                                        , we::activity_t const & act
                                        )
@@ -256,7 +257,7 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
       double Vega(get<double>(token.value, "Vega"));
 
       simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
-      m_portfolio_.ShowResult(sim_res);
+      m_portfolio_->ShowResult(sim_res);
     }
   }
 
@@ -278,7 +279,6 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
   int val = ui->m_progressBar->value()+1;
   ui->m_progressBar->setValue(val);
 }
-*/
 
 void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
 {
@@ -304,8 +304,8 @@ void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
       return;
     }
 
-    //    UpdatePortfolioView(notification, act);
     UpdateExecutionView(notification, act);
+    QApplication::postEvent (this, new PortFolioEvent(1001, notification, act));
   }
   else
   {
@@ -490,8 +490,8 @@ MonitorWindow::event (QEvent *e)
   if (e->type() == 1001)
   {
     e->accept ();
-    LogEventWrapper *logevt = (LogEventWrapper*)(e);
-    append_exe (logevt->log_event);
+    PortFolioEvent *evt = (PortFolioEvent*)(e);
+    UpdatePortfolioView(evt->notification, evt->activity);
     return true;
   }
   if (e->type() == 1002)

@@ -1,6 +1,9 @@
 #ifndef PORTFOLIO_HPP
 #define PORTFOLIO_HPP
 
+#include <boost/thread.hpp>
+#include <boost/shared_ptr.hpp>
+
 #include <sdpa/client/ClientApi.hpp>
 #include <apps/portfolio_params.hpp>
 #include <string>
@@ -40,6 +43,8 @@ private:
 	sdpa::client::ClientApi::ptr_t m_ptrCli;
 	sdpa::job_id_t m_currentJobId;
 	bool m_bClientStarted;
+
+  boost::shared_ptr<boost::thread> m_poll_thread;
 };
 
 #endif
