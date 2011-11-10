@@ -248,6 +248,11 @@ public:
       const size_t len = 0;
 
       send_migrate_success(data, len);
+
+      // TODO:
+      //    abort running transfers
+      //    schedule new data transfer for output
+      //    when finished send_migrate_success()
     }
     else
     {
