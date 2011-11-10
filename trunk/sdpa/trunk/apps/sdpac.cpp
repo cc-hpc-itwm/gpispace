@@ -36,7 +36,7 @@
 
 namespace fs = boost::filesystem;
 
-const int NMAXTRIALS = 5;
+const int NMAXTRIALS = 10;
 
 void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
 {
@@ -124,19 +124,31 @@ int command_poll_and_wait ( const std::string &job_id
 }
 
 
-/*returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::ClientApi::ptr_t &ptrCli )
 {
-	FHGLOG_SETUP();
-
 	typedef boost::posix_time::ptime time_type;
 	time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
 	int exit_code(4);
 
-	ptrCli->subscribe(job_id);
+	bool bSubscribed = false;
 
-	LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+	do
+	{
+		try
+		{
+			ptrCli->subscribe(job_id);
+			bSubscribed = true;
+		}
+		catch(...)
+		{
+			bSubscribed = false;
+		}
+
+	}while(!bSubscribed);
+
+	if(bSubscribed)
+		LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
 
 	std::string job_status;
 
@@ -149,8 +161,29 @@ int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::
   		{
   			if(nTrials<NMAXTRIALS)
 			{
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 				LOG(INFO, "Re-trying ...");
+
+				bSubscribed = false;
+
+				do
+				{
+					try
+					{
+						ptrCli->subscribe(job_id);
+						bSubscribed = true;
+					}
+					catch(...)
+					{
+						bSubscribed = false;
+						boost::this_thread::sleep(boost::posix_time::seconds(1));
+					}
+
+				}while(!bSubscribed);
+
+				if(bSubscribed)
+					LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+
 			}
 
 			seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
@@ -207,6 +240,7 @@ int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::
   	LOG(INFO, "Execution time: " << (poll_end - poll_start));
   	return exit_code;
 }
+
 
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait ( const std::string &job_id
