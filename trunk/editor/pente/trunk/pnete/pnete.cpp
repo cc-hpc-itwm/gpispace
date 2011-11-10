@@ -12,17 +12,63 @@
 
 #include <pnete/ui/editor_window.hpp>
 
+#include <boost/program_options.hpp>
+
+#include <iostream>
+
+namespace po = boost::program_options;
+
 #define BE_PENTE 1
 
 int main (int argc, char *argv[])
 {
   Q_INIT_RESOURCE (resources);
 
+  po::options_description desc ("options");
+
+  std::string workflow ("-");
+
+  desc.add_options()
+    ( "help,h", "this message")
+    ( "workflow,w"
+    , po::value<std::string>(&workflow)->default_value(workflow)
+    , "workflow file name, - for stdin"
+    )
+    ;
+
+  po::positional_options_description p;
+  p.add("workflow", -1);
+
+  po::variables_map vm;
+  po::store( po::command_line_parser(argc, argv)
+           . options(desc).positional(p).allow_unregistered().run()
+           , vm
+           );
+  po::notify (vm);
+
+  if (vm.count("help"))
+    {
+      std::cout << desc << std::endl;
+
+      return EXIT_SUCCESS;
+    }
+
+  if (workflow == "-")
+    {
+      workflow = "/dev/stdin";
+    }
+
+  QApplication::setApplicationName ("pnete");
+  //! \todo Get SVN revision.
+  QApplication::setApplicationVersion ("0.1");
+  QApplication::setOrganizationDomain ("itwm.fhg.de");
+  QApplication::setOrganizationName ("Fraunhofer ITWM");
+
   try
   {
-    QApplication::setGraphicsSystem ("raster");
     fhg::pnete::PetriNetEditor pente (argc, argv);
     pente.startup ();
+
     return pente.exec ();
   }
   catch (const std::exception& e)
@@ -41,17 +87,11 @@ namespace fhg
       _splash.show ();
       processEvents ();
     }
-    PetriNetEditor::PetriNetEditor (int & argc, char *argv[])
+    PetriNetEditor::PetriNetEditor (int& argc, char *argv[])
     : QApplication (argc, argv)
     , _splash (QPixmap (":/pente.png"))
     , _editor_windows ()
-    {
-      setApplicationName ("pnete");
-      //! \todo Get SVN revision.
-      setApplicationVersion ("0.1");
-      setOrganizationDomain ("itwm.fhg.de");
-      setOrganizationName ("Fraunhofer ITWM");
-    }
+    {}
 
     void PetriNetEditor::startup ()
     {

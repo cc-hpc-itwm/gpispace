@@ -19,16 +19,8 @@ namespace fhg
 
     class PetriNetEditor : public QApplication
     {
-    private:
-      QSplashScreen _splash;
-      QTranslator _qtTranslator;
-      QTranslator _penteTranslator;
-      QList<ui::editor_window*> _editor_windows;
-
-      void showSplashScreen ();
-
     public:
-      PetriNetEditor (int & argc, char *argv[]);
+      PetriNetEditor (int& argc, char *argv[]);
       virtual ~PetriNetEditor ();
 
       void startup ();
@@ -37,6 +29,14 @@ namespace fhg
       void processCommandLine ();
       int create_editor_window ();
       void createTransitionLibrary (int window_id);
+
+    private:
+      QSplashScreen _splash;
+      QTranslator _qtTranslator;
+      QTranslator _penteTranslator;
+      QList<ui::editor_window*> _editor_windows;
+
+      void showSplashScreen ();
     };
   }
 }
