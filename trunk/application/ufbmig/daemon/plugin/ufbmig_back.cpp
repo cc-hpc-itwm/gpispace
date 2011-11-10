@@ -171,6 +171,12 @@ public:
     m_file_with_mask =
       fhg_kernel()->get("saltmask", "saltmask");
 
+    m_chunk_size = fhg_kernel()->get<std::size_t>("chunk_size", "4194304");
+
+    // allocate enough to have double buffering
+    m_transfer_segment_size = 2 * m_chunk_size;
+    m_scratch_size = m_transfer_segment_size;
+
     if (fs::exists(m_file_with_config))
     {
       MLOG(INFO, "trying to recover from existing config...");
@@ -654,6 +660,74 @@ private:
                            );
   }
 
+  void clear_my_gpi_state ()
+  {
+    m_scratch_handle = 0;
+  }
+
+  int setup_my_gpi_state ()
+  {
+    m_scratch_handle = gpi_api->alloc ( 1
+                                      , m_scratch_size
+                                      , "ufbmigd transfer buffer"
+                                      , gpi::pc::type::handle::F_GLOBAL
+                                      );
+    if (0 == m_scratch_handle)
+    {
+      MLOG(ERROR, "could not allocate global GPI memory!");
+      return -EAGAIN;
+    }
+
+    m_transfer_segment = gpi_api->register_segment ( "ufbmigd"
+                                                   , m_transfer_segment_size
+                                                   , gpi::pc::type::segment::F_FORCE_UNLINK
+                                                   | gpi::pc::type::segment::F_EXCLUSIVE
+                                                   );
+    m_transfer_buffer0 = gpi_api->alloc ( m_transfer_segment
+                                        , m_chunk_size
+                                        , "ufbmigd local buffer 0"
+                                        , gpi::pc::type::handle::F_NONE
+                                        );
+    m_transfer_buffer1 = gpi_api->alloc ( m_transfer_segment
+                                        , m_chunk_size
+                                        , "ufbmigd local buffer 1"
+                                        , gpi::pc::type::handle::F_NONE
+                                        );
+    return 0;
+  }
+
+  int reinitialize_gpi_state ()
+  {
+    if (! gpi_api)
+    {
+      MLOG(ERROR, "cannot initialize gpi connection: gpi plugin not available");
+      return -EAGAIN;
+    }
+
+    if (! gpi_api->is_connected())
+    {
+      clear_my_gpi_state();
+
+      if (! gpi_api->connect())
+      {
+        MLOG(ERROR, "could not open connection to gpi");
+        return -EAGAIN;
+      }
+    }
+
+    if (0 == m_scratch_handle)
+    {
+      int ec = setup_my_gpi_state ();
+      if (0 != ec)
+      {
+        MLOG(ERROR, "could not setup my gpi state: " << strerror(-ec));
+        return ec;
+      }
+    }
+
+    return 0;
+  }
+
   mutex_type m_job_list_mutex;
   job_list_t m_job_list;
 
@@ -666,6 +740,18 @@ private:
 
   // state
   int m_state;
+
+  std::size_t             m_chunk_size;
+
+  // shared memory
+  gpi::pc::type::segment_id_t m_transfer_segment;
+  std::size_t                 m_transfer_segment_size;
+  gpi::pc::type::handle_t     m_transfer_buffer0;
+  gpi::pc::type::handle_t     m_transfer_buffer1;
+
+  // gpi allocations
+  gpi::pc::type::handle_t     m_scratch_handle;
+  std::size_t                 m_scratch_size;
 
   // workflow paths
   std::string m_wf_path_initialize;
