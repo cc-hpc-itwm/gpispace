@@ -21,7 +21,8 @@
 #include <sdpa/types.hpp>
 #include <boost/foreach.hpp>
 #include "boost/bind.hpp"
-
+#include <sdpa/events/CancelJobEvent.hpp>
+#include <sdpa/daemon/IComm.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -633,6 +634,7 @@ bool compare(sdpa::map_degs_t::value_type &i1, sdpa::map_degs_t::value_type &i2)
 
 Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException)
 {
+	lock_type lock(mtx_);
 	if( worker_map_.empty() )
 		throw NoWorkerFoundException();
 
@@ -646,4 +648,32 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 	sdpa::map_degs_t::iterator iter = std::max_element( mapDegs.begin(), mapDegs.end(), compare );
 
 	return worker_map_[iter->first];
+}
+
+void WorkerManager::triggerJobTermination(IComm* pComm, Worker::JobQueue& queue, const worker_id_t& worker_id)
+{
+	while(!queue.empty())
+	{
+		JobId jobId = queue.pop();
+		// send message to the worker
+		sdpa::events::CancelJobEvent::Ptr pCancelJobEvt(new sdpa::events::CancelJobEvent(pComm->name(), worker_id, jobId, "re-scheduling") );
+		pComm->sendEventToSlave(pCancelJobEvt);
+	}
+}
+
+void WorkerManager::cancelWorkerJobs(IComm* pComm)
+{
+	lock_type lock(mtx_);
+	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
+	{
+		worker_id_t worker_id = pair.first;
+		Worker::ptr_t pWorker = pair.second;
+		pWorker->pending().clear();
+
+		// for all jobs that are submitted or acknowledged
+		// send a ca ncel event
+		triggerJobTermination(pComm, pWorker->submitted(), worker_id);
+		triggerJobTermination(pComm, pWorker->acknowledged(), worker_id);
+	}
+
 }

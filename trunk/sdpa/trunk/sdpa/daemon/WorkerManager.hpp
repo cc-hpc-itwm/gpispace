@@ -80,6 +80,8 @@ namespace sdpa { namespace daemon {
       void getWorkerList(std::list<std::string>& workerList);
       void balanceWorkers();
       const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
+      void triggerJobTermination(IComm*, Worker::JobQueue&, const worker_id_t&);
+      void cancelWorkerJobs(IComm* pComm);
 
       bool has_job(const sdpa::job_id_t& job_id);
 
