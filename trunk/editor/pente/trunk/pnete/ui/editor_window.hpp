@@ -10,6 +10,7 @@ class QString;
 class QTreeView;
 class QWidget;
 class QMenuBar;
+class QCloseEvent;
 
 namespace fhg
 {
@@ -45,6 +46,7 @@ namespace fhg
                                               );
 
         virtual QMenu* createPopupMenu();
+        virtual void closeEvent (QCloseEvent*);
 
       public slots:
         void slot_new_expression();
@@ -67,6 +69,9 @@ namespace fhg
         void setup_window_actions (QMenuBar* menu_bar);
 
         void create_windows (data::internal::type* data);
+
+        void readSettings();
+        void writeSettings();
       };
     }
   }

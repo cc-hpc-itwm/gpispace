@@ -11,6 +11,8 @@
 #include <QToolBar>
 #include <QTreeView>
 #include <QWidget>
+#include <QCloseEvent>
+#include <QSettings>
 
 #include <pnete/ui/graph/scene.hpp>
 #include <pnete/ui/dock_widget.hpp>
@@ -59,6 +61,8 @@ namespace fhg
                       );
 
         setup_menu_and_toolbar();
+
+        readSettings();
       }
 
       void editor_window::set_transition_library_path (const QString& path)
@@ -294,6 +298,20 @@ namespace fhg
         return menu;
       }
 
+      void editor_window::closeEvent (QCloseEvent* event)
+      {
+        //! \todo ask the user
+        if (/* userReallyWantsToQuit() */ true)
+          {
+            writeSettings();
+            event->accept();
+          }
+        else
+          {
+            event->ignore();
+          }
+      }
+
       void editor_window::setup_window_actions (QMenuBar* menu_bar)
       {
         QMenu* windows_menu (new QMenu (tr ("windows_menu"), menu_bar));
@@ -368,6 +386,26 @@ namespace fhg
       {
         //! \todo Warn, if unsaved documents open.
         close();
+      }
+
+      void editor_window::readSettings()
+      {
+        QSettings settings;
+
+        settings.beginGroup("MainWindow");
+        resize(settings.value("size", QSize(400, 400)).toSize());
+        move(settings.value("pos", QPoint(200, 200)).toPoint());
+        settings.endGroup();
+      }
+
+      void editor_window::writeSettings()
+      {
+        QSettings settings;
+
+        settings.beginGroup("MainWindow");
+        settings.setValue("size", size());
+        settings.setValue("pos", pos());
+        settings.endGroup();
       }
     }
   }
