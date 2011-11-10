@@ -273,7 +273,7 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("poll-interval,t", su::po::value<int>()->default_value(0), "sets the poll interval")
+    ("poll-interval,t", su::po::value<int>()->default_value(100), "sets the poll interval")
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
