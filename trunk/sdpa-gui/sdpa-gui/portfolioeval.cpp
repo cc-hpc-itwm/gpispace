@@ -106,7 +106,7 @@ void Portfolio::InitTable()
 
 void Portfolio::InitPortfolio( common_parameters_t& common_params, arr_row_parameters_t& v_row_params )
 {
-  m_pUi->m_progressBar->setRange(0, 4 * v_row_params.size() * common_params.nLBUs() + v_row_params.size());
+  m_pUi->m_progressBar->setRange(0, 4 * v_row_params.size() * common_params.nLBUs() + v_row_params.size() - 1);
   m_pUi->m_progressBar->reset();
 
 	//QComboBox

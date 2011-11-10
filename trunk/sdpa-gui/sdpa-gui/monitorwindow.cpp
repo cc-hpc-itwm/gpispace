@@ -233,34 +233,6 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
     return;
   }
 
-  we::activity_t::output_t output (act.output());
-
-  //  qDebug() << evt.activity_name().c_str() << " produced " << output.size() << " token(s):";
-
-  for ( we::activity_t::output_t::const_iterator it(output.begin())
-      ; it != output.end()
-      ; ++it
-      )
-  {
-    using namespace we::loader;
-    we::token_t token (it->first);
-
-    //    qDebug() << "    " << boost::lexical_cast<std::string>(token).c_str();
-
-    if (evt.activity_name () == "done")
-    {
-      long rowId (get<long>(token.value, "rowID"));
-      double pv (get<double>(token.value, "pv"));
-      double stddev(get<double>(token.value, "stddev"));
-      double Delta(get<double>(token.value, "Delta"));
-      double Gamma(get<double>(token.value, "Gamma"));
-      double Vega(get<double>(token.value, "Vega"));
-
-      simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
-      m_portfolio_->ShowResult(sim_res);
-    }
-  }
-
   try
   {
     we::type::module_call_t mod_call
@@ -270,14 +242,35 @@ void MonitorWindow::UpdatePortfolioView( sdpa::daemon::NotificationEvent const &
       int val = ui->m_progressBar->value()+1;
       ui->m_progressBar->setValue(val);
     }
+
+    if (mod_call.function() == "done")
+    {
+      we::activity_t::output_t output (act.output());
+
+      for ( we::activity_t::output_t::const_iterator it(output.begin())
+          ; it != output.end()
+          ; ++it
+          )
+      {
+        using namespace we::loader;
+        we::token_t token (it->first);
+
+        long rowId (get<long>(token.value, "rowID"));
+        double pv (get<double>(token.value, "pv"));
+        double stddev(get<double>(token.value, "stddev"));
+        double Delta(get<double>(token.value, "Delta"));
+        double Gamma(get<double>(token.value, "Gamma"));
+        double Vega(get<double>(token.value, "Vega"));
+
+        simulation_result_t sim_res(rowId, pv, stddev, Delta, Gamma, Vega);
+        m_portfolio_->ShowResult(sim_res);
+      }
+    }
   }
   catch (std::exception const &ex)
   {
-    std::cerr << ex.what() << std::endl;
+    // ignore non module calls...
   }
-
-  int val = ui->m_progressBar->value()+1;
-  ui->m_progressBar->setValue(val);
 }
 
 void MonitorWindow::append_exe (fhg::log::LogEvent const &evt)
