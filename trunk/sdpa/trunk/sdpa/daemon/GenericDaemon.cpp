@@ -143,6 +143,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
 
+    scheduler()->cancelWorkerJobs(this);
     jobManager()->reScheduleAllMasterJobs(this);
 
     //scheduler()->removeRecoveryInconsistencies();
@@ -208,6 +209,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
 
+    scheduler()->cancelWorkerJobs(this);
     jobManager()->reScheduleAllMasterJobs(this);
 
     //scheduler()->removeRecoveryInconsistencies();
@@ -254,6 +256,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
       SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
   }
 
+  scheduler()->cancelWorkerJobs(this);
   jobManager()->reScheduleAllMasterJobs(this);
 
   //scheduler()->removeRecoveryInconsistencies();
@@ -764,7 +767,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       ptr_job_man_->findJob(e.job_id());
       // The job already exists -> generate an error message that the job already exists
 
-      MLOG(ERROR, "The job with job-id: " << e.job_id()<<" does already exist!");
+      MLOG(WARN, "The job with job-id: " << e.job_id()<<" does already exist (possibly recovered)!");
       if( e.from() != sdpa::daemon::WE ) //e.to())
       {
           ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, "The job already exists!") );
