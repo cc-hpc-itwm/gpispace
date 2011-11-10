@@ -16,6 +16,8 @@ add_executable(Asian ${SRCS3})
 
 ADD_LIBRARY(asian_x86 STATIC ${SRCS2})
 
+add_subdirectory(pnet)
+
 install(TARGETS Asian
   RUNTIME
   DESTINATION bin
