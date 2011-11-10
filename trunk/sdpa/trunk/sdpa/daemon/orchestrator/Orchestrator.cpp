@@ -84,7 +84,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     Job::ptr_t pJob;
     try {
         pJob = ptr_job_man_->findJob(pEvt->job_id());
+        SDPA_LOG_INFO( "Current job status: "<<pJob->getStatus());
         pJob->JobFinished(pEvt);
+        SDPA_LOG_INFO( "Job status after transition to finished: "<<pJob->getStatus());
     }
     catch(JobNotFoundException const &)
     {
@@ -466,7 +468,7 @@ void Orchestrator::backup( std::ostream& os )
         /*oa.register_type(static_cast<DummyWorkflowEngine*>(NULL));
         oa << ptr_workflow_engine_;*/
         oa << m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
-        //oa << m_listSubscribers;
+        oa << m_listSubscribers;
     }
     catch(exception &e)
     {
@@ -506,7 +508,7 @@ void Orchestrator::recover( std::istream& is )
       /*ia.register_type(static_cast<T*>(NULL));
       ia >> ptr_workflow_engine_;*/
       ia >> m_arrMasterInfo; //boost::serialization::make_nvp("url_", m_arrMasterInfo);
-      //ia >> m_listSubscribers;
+      ia >> m_listSubscribers;
 
       //SDPA_LOG_INFO("Worker manager after recovery: \n");
       //scheduler()->print();

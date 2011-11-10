@@ -193,7 +193,7 @@ void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
     }
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
     {
-      throw ClientException( "error during submit: reason := "+ err->reason()
+      throw ClientException( "error during subscribe: reason := "+ err->reason()
                            + " code := "+ boost::lexical_cast<std::string>(err->error_code()));
     }
     else

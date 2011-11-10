@@ -1718,7 +1718,8 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 	// check if the subscribed jobs are already in a terminal state
 	BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
 	{
-		try {
+		//try
+		{
 			Job::ptr_t& pJob = findJob(jobId);
 			sdpa::status_t jobStatus = pJob->getStatus();
 
@@ -1752,7 +1753,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 				 sendEventToMaster(pEvtCancelJobAck);
 			}
 		}
-		catch(const JobNotFoundException& ex)
+		/*catch(const JobNotFoundException& ex)
 		{
                   SDPA_LOG_WARN("The subscriber "<<subscriber<<" subscribed for a job that doesn't exist anymore! "<<ex.what());
                   ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
@@ -1763,7 +1764,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
                                            );
                   sendEventToMaster(pErrorEvt);
                   throw ex;
-		}
+		}*/
 	}
 }
 
