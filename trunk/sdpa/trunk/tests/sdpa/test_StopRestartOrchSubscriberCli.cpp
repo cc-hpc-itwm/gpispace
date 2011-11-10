@@ -172,9 +172,25 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
 
 	int exit_code(4);
 
-	ptrCli->subscribe(job_id);
+	bool bSubscribed = false;
 
-	LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+	do
+	{
+		try
+		{
+			ptrCli->subscribe(job_id);
+			bSubscribed = true;
+		}
+		catch(...)
+		{
+			bSubscribed = false;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+		}
+
+	}while(!bSubscribed);
+
+	if(bSubscribed)
+		LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
 
 	std::string job_status;
 
@@ -187,8 +203,28 @@ int MyFixture::subscribe_and_wait ( const std::string &job_id, const sdpa::clien
   		{
   			if(nTrials<NMAXTRIALS)
 			{
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
+				boost::this_thread::sleep(boost::posix_time::seconds(3));
 				LOG(INFO, "Re-trying ...");
+
+				bSubscribed = false;
+
+				do
+				{
+					try
+					{
+						ptrCli->subscribe(job_id);
+						bSubscribed = true;
+					}
+					catch(...)
+					{
+						bSubscribed = false;
+					}
+
+				}while(!bSubscribed);
+
+				if(bSubscribed)
+					LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+
 			}
 
 			seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
