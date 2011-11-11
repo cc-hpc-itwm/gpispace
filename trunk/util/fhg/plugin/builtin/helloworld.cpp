@@ -57,7 +57,8 @@ public:
       count = fake_count;
     }
 
-    fhg_kernel()->schedule( boost::bind( &HelloWorldImpl::do_it
+    fhg_kernel()->schedule( "say"
+                          , boost::bind( &HelloWorldImpl::do_it
                                        , this
                                        )
                           );
@@ -78,8 +79,6 @@ public:
     start_timer("helloworld.say");
     say (std::cout);
     stop_timer("helloworld.say");
-
-    kill (0, 15);
   }
 
   void say (std::ostream &os) const

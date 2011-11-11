@@ -27,6 +27,7 @@ namespace fhg
       typedef boost::condition_variable_any condition_type;
 
       std::string owner;
+      std::string name;
       fhg::plugin::task_t task;
       size_t ticks;
       int state;
@@ -36,8 +37,13 @@ namespace fhg
         return ticks < rhs.ticks;
       }
 
-      task_info_t (std::string const & o, fhg::plugin::task_t t, size_t num_ticks)
+      task_info_t ( std::string const & o
+                  , std::string const & n
+                  , fhg::plugin::task_t t
+                  , size_t num_ticks
+                  )
         : owner(o)
+        , name(n)
         , task(t)
         , ticks(num_ticks)
         , state (PENDING)
@@ -45,6 +51,7 @@ namespace fhg
 
       task_info_t (const task_info_t &other)
         : owner(other.owner)
+        , name(other.name)
         , task(other.task)
         , ticks(other.ticks)
         , state (other.state)
@@ -53,6 +60,7 @@ namespace fhg
       task_info_t & operator= (const task_info_t &other)
       {
         owner = other.owner;
+        name = other.name;
         task = other.task;
         ticks = other.ticks;
         state = other.state;
@@ -118,8 +126,14 @@ namespace fhg
 
       void unload_all ();
 
-      void schedule(std::string const &owner, fhg::plugin::task_t);
-      void schedule(std::string const &owner, fhg::plugin::task_t, size_t ticks);
+      void schedule( std::string const &owner
+                   , std::string const &name
+                   , fhg::plugin::task_t
+                   );
+      void schedule( std::string const &owner
+                   , std::string const &name
+                   , fhg::plugin::task_t, size_t ticks
+                   );
       plugin_t::ptr_t lookup_plugin(std::string const & name);
 
       time_t tick_time () const;

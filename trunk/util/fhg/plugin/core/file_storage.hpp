@@ -66,8 +66,8 @@ namespace fhg
         int write (std::string const &key, std::string const &value);
         int read (std::string const &key, std::string &value) const;
       private:
-        void check_storage_path (path_t const & path, int mode, int version);
-        void init_storage_path (path_t const & path, int mode, int version);
+        void check_storage_path (path_t const & path, int mode, const int version);
+        void init_storage_path (path_t const & path, int mode, const int version);
 
         void lock_storage_path ();
         void unlock_storage_path ();

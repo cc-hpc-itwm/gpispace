@@ -231,7 +231,8 @@ public:
     m_frontend = 0;
     m_state = state::UNINITIALIZED;
 
-    fhg_kernel()->schedule ( boost::bind( &UfBMigBackImpl::update_job_states
+    fhg_kernel()->schedule ( "update job states"
+                           , boost::bind( &UfBMigBackImpl::update_job_states
                                         , this
                                         )
                            , 1
@@ -653,7 +654,8 @@ private:
       }
     }
 
-    fhg_kernel()->schedule ( boost::bind( &UfBMigBackImpl::update_job_states
+    fhg_kernel()->schedule ( "update job states"
+                           , boost::bind( &UfBMigBackImpl::update_job_states
                                         , this
                                         )
                            , 1

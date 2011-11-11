@@ -44,7 +44,8 @@ public:
     {
       if (! try_start())
       {
-        fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::restart_loop
+        fhg_kernel()->schedule( "connect"
+                              , boost::bind ( &GpiPluginImpl::restart_loop
                                             , this
                                             )
                               , 0
@@ -191,7 +192,8 @@ private:
     }
     else
     {
-      fhg_kernel()->schedule( boost::bind ( &GpiPluginImpl::restart_loop
+      fhg_kernel()->schedule( "connect"
+                            , boost::bind ( &GpiPluginImpl::restart_loop
                                           , this
                                           )
                             , 5

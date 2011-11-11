@@ -25,8 +25,8 @@ namespace fhg
 
       fhg::plugin::Storage *storage();
 
-      void schedule(fhg::plugin::task_t);
-      void schedule(fhg::plugin::task_t, size_t ticks);
+      void schedule(std::string const &, fhg::plugin::task_t);
+      void schedule(std::string const &, fhg::plugin::task_t, size_t ticks);
 
       fhg::core::plugin_t::ptr_t plugin ();
 

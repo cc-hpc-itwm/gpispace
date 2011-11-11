@@ -965,9 +965,10 @@ private:
 
     if (at_least_one_disconnected)
     {
-      fhg_kernel()->schedule (boost::bind( &DRTSImpl::start_connect
-                                         , this
-                                         )
+      fhg_kernel()->schedule ( "connect"
+                             , boost::bind( &DRTSImpl::start_connect
+                                          , this
+                                          )
                              , 5
                              );
     }
@@ -1019,9 +1020,10 @@ private:
 
           master->second->is_connected(false);
 
-          fhg_kernel()->schedule (boost::bind( &DRTSImpl::start_connect
-                                             , this
-                                             )
+          fhg_kernel()->schedule ( "connect"
+                                 , boost::bind( &DRTSImpl::start_connect
+                                              , this
+                                              )
                                  , 5
                                  );
         }

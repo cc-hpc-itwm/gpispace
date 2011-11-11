@@ -61,8 +61,8 @@ namespace fhg
 
       virtual Storage *storage() = 0;
 
-      virtual void schedule(task_t) = 0;
-      virtual void schedule(task_t, size_t ticks) = 0;
+      virtual void schedule(std::string const & name, task_t) = 0;
+      virtual void schedule(std::string const & name, task_t, size_t ticks) = 0;
 
       virtual std::string get(std::string const & key, std::string const &dflt) const = 0;
 

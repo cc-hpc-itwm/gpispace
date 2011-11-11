@@ -269,6 +269,7 @@ namespace fhg
         MLOG(TRACE, name << " plugin finished starting");
 
         schedule( "kernel"
+                , "notify plugin load"
                 , boost::bind( &kernel_t::notify_plugin_load
                              , this
                              , name
@@ -375,19 +376,21 @@ namespace fhg
     }
 
     void kernel_t::schedule( std::string const &owner
+                           , std::string const &name
                            , fhg::plugin::task_t task
                            )
     {
-      schedule (owner, task, 0);
+      schedule (owner, name, task, 0);
     }
 
     void kernel_t::schedule( std::string const &owner
+                           , std::string const &name
                            , fhg::plugin::task_t task
                            , size_t ticks
                            )
     {
       lock_type lock(m_mtx_pending_tasks);
-      m_pending_tasks.push_back(task_info_t(owner, task, ticks));
+      m_pending_tasks.push_back(task_info_t(owner, name, task, ticks));
     }
 
     void kernel_t::stop ()
@@ -487,12 +490,12 @@ namespace fhg
 
             try
             {
-              LOG(TRACE, "executing task of: " << task.owner);
+              LOG(TRACE, "executing task " << task.owner << "::" << task.name);
               task.execute();
             }
             catch (std::exception const & ex)
             {
-              MLOG(WARN, "task of plugin " << task.owner << " failed: " << ex.what());
+              MLOG(WARN, "task " << task.owner << "::" << task.name << " failed: " << ex.what());
             }
           }
         }

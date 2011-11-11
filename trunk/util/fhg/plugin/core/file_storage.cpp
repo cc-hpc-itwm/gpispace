@@ -95,7 +95,7 @@ namespace fhg
         }
       }
 
-      void FileStorage::check_storage_path (path_t const &path, int mode, int version)
+      void FileStorage::check_storage_path (path_t const &path, int mode, const int version)
       {
         if (! fs::is_directory(path))
         {
@@ -112,7 +112,7 @@ namespace fhg
           {
             int found_version (0);
             file >> found_version;
-            if (version != version)
+            if (version != found_version)
             {
               MLOG(WARN, "version mismatch of storage directory: expected := " << version << " found := " << found_version);
             }
@@ -125,7 +125,7 @@ namespace fhg
         }
       }
 
-      void FileStorage::init_storage_path (path_t const &path, int mode, int version)
+      void FileStorage::init_storage_path (path_t const &path, int mode, const int version)
       {
         fs::create_directories (path);
         // this only works on UNIX
