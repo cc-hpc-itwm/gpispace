@@ -1017,7 +1017,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
 					masterInfo.set_registered(false);
-					requestRegistration(masterInfo);
+
+					//requestRegistration(masterInfo);
 				}
 			}
     	}
@@ -1042,7 +1043,8 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
    				masterInfo.set_registered(false);
-   				requestRegistration(masterInfo);
+
+   				//requestRegistration(masterInfo);
    			}
    		}
 
