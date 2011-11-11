@@ -166,6 +166,7 @@ int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::
 
 				bSubscribed = false;
 
+				int nTrialsSubscr = 0;
 				do
 				{
 					try
@@ -177,12 +178,20 @@ int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::
 					{
 						bSubscribed = false;
 						boost::this_thread::sleep(boost::posix_time::seconds(1));
+						nTrialsSubscr++;
 					}
 
-				}while(!bSubscribed);
+				}while(!bSubscribed && nTrialsSubscr++<NMAXTRIALS);
 
 				if(bSubscribed)
+				{
 					LOG(INFO, "The client successfully subscribed for orchestrator notifications ...");
+				}
+				else
+				{
+					LOG(ERROR, "The client couldn't subscribe after "<<nTrialsSubscr<<" trials. Giving-up now!");
+					return exit_code;
+				}
 
 			}
 
@@ -222,7 +231,10 @@ int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::
 			LOG(INFO, "Timeout expired!");
 		}
 
-  	}while(exit_code == 4 && ++nTrials<NMAXTRIALS);
+  	}while(exit_code == 4 && nTrials++<NMAXTRIALS);
+
+  	if(exit_code == 4)
+  		return exit_code;
 
   	std::cout<<"The status of the job "<<job_id<<" is "<<job_status<<std::endl;
 
@@ -240,7 +252,6 @@ int command_subscribe_and_wait ( const std::string &job_id, const sdpa::client::
   	LOG(INFO, "Execution time: " << (poll_end - poll_start));
   	return exit_code;
 }
-
 
 /* returns: 0 job finished, 1 job failed, 2 job cancelled, other value if failures occurred */
 int command_wait ( const std::string &job_id
