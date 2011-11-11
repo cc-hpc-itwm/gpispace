@@ -62,7 +62,7 @@ if [ -r "CMakeCache.txt" ] ; then
 fi
 echo "done." >&2
 
-build_rev=$( cd "$src" && git describe --tags 2>/dev/null )
+build_rev=$( cd "$src" && git describe --all --tags 2>/dev/null )
 if [ $? != 0 ]; then
     echo "W: could not get version information from git, trying svn..."
     build_rev="$( cd "$src" && svn info | grep '^Revision:' | cut -d' ' -f 2 )"
