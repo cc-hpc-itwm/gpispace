@@ -5,6 +5,14 @@
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+using boost::lambda::bind;
+using boost::lambda::var;
+//using boost::lambda::_1;
+
 #include "peer.hpp"
 #include "kvs/kvsc.hpp"
 #include <fhg/util/thread/event.hpp>
@@ -239,7 +247,12 @@ namespace fhg
         std::string n (peer_info.at(prefix + ".name"));
         reverse_lookup_cache_[addr] = n;
 
-        DLOG(TRACE, "corresponding connection data: name=" << n << " host=" << std::string(h) << " port=" << std::string(p));
+        DLOG( TRACE
+	      , "corresponding connection data:"
+	      << " name=" << n
+	      << " host=" << std::string(h)
+	      << " port=" << std::string(p)
+	      );
 
         // store message in out queue
         //    connect_handler -> sends messages from out queue
@@ -247,15 +260,6 @@ namespace fhg
         // async_connect (...);
         connection_data_t & cd = connections_[addr];
         cd.send_in_progress = false;
-        cd.connection =
-          connection_t::ptr_t(new connection_t( io_service_
-                                              , cookie_
-                                              , this
-                                              )
-                             );
-        cd.connection->local_address (my_addr_);
-        cd.connection->remote_address (addr);
-
         cd.name = n;
 
         to_send_t to_send;
@@ -265,23 +269,39 @@ namespace fhg
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
-        boost::asio::ip::tcp::resolver resolver(io_service_);
-        boost::asio::ip::tcp::resolver::query query(h, p);
-        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+	cd.connection =
+	  connection_t::ptr_t(new connection_t( io_service_
+                                              , cookie_
+						, this
+						)
+			      );
+        cd.connection->local_address (my_addr_);
+        cd.connection->remote_address (addr);
+	
+	namespace bai = boost::asio::ip;
+	
+        bai::tcp::resolver resolver(io_service_);
+        bai::tcp::resolver::query query(h, p);
+        bai::tcp::resolver::iterator iter =
+	  bai::tcp::resolver(io_service_).resolve(query);
 
-        LOG( DEBUG
-           , my_addr_ << " (" << name_ << ")"
-           << " connecting to "
-           << addr << " (" << n << ")"
-           << " at " << endpoint
-           );
-        cd.connection->socket().async_connect( endpoint
-                                             , boost::bind ( &self::connection_established
-                                                           , this
-                                                           , addr
-                                                           , boost::asio::placeholders::error
-                                                           )
-                                             );
+        boost::system::error_code ec;
+
+	for (; iter != bai::tcp::resolver::iterator(); ++iter)
+	  {
+	    cd.connection->socket().close();
+	    
+	    ec = boost::asio::error::would_block;
+
+	    cd.connection->socket().connect( iter->endpoint(), ec);
+
+	    if (!ec && cd.connection->socket().is_open())
+	      {
+		break;
+	      }
+	  }
+
+	connection_established (addr, ec);
       }
       else
       {
@@ -447,9 +467,14 @@ namespace fhg
 
       if (! ec)
       {
-        DLOG(TRACE, "connection to " << a << " established: " << ec);
-
         connection_data_t & cd = connections_.at (a);
+
+	LOG( TRACE
+	     , my_addr_ << " (" << name_ << ")"
+	     << " connected to "
+	     << a << " (" << cd.name << ")"
+	     << " @ " << cd.connection->socket().remote_endpoint();
+	     );
 
         {
           DLOG(TRACE, "setting socket option 'keep-alive' to 'true'");
