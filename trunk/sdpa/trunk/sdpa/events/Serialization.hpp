@@ -80,6 +80,7 @@ namespace boost { namespace serialization {
     ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
     ar & e.error_code();
     ar & e.reason();
+    ar & e.job_id();
   }
 
   template <class Archive>
