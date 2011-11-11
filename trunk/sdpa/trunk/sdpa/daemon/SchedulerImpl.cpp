@@ -565,7 +565,7 @@ void SchedulerImpl::check_post_request()
 		if( !masterInfo.is_registered() )
 		{
 			SDPA_LOG_INFO("I'm not yet registered. Try to re-register ...");
-			const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 1 *1000*1000) );
+			const unsigned long reg_timeout( ptr_comm_handler_->cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
 			SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
 			boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
 
