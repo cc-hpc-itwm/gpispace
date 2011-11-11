@@ -261,7 +261,7 @@ void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 					SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
 					pJob->Reschedule();
 
-					SDPA_LOG_INFO("Schedule the job"<<pJob->id());
+					SDPA_LOG_INFO("Re-schedule the job"<<pJob->id());
 					pComm->schedule(job_id);
 				}
 				else
@@ -272,7 +272,7 @@ void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 				SDPA_LOG_INFO("Put the job "<<pJob->id()<<" back into the pending state");
 				pJob->Reschedule();
 
-				SDPA_LOG_INFO("Schedule the job"<<pJob->id());
+				SDPA_LOG_INFO("Re-schedule the job"<<pJob->id());
 				pComm->schedule(job_id);
 			}
 		}
