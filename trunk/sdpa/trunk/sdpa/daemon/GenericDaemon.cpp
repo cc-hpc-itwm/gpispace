@@ -765,7 +765,7 @@ void GenericDaemon::action_submit_job(const SubmitJobEvent& e)
       MLOG(WARN, "The job with job-id: " << e.job_id()<<" does already exist (possibly recovered)!");
       if( e.from() != sdpa::daemon::WE ) //e.to())
       {
-          ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, "The job already exists!") );
+          ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
           sendEventToMaster(pErrorEvt);
       }
 
@@ -1029,9 +1029,54 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
     }
     case ErrorEvent::SDPA_ENETWORKFAILURE:
     {
-    	MLOG(WARN, "last message could not be sent due to a network failure!");
-        break;
-    }
+       	MLOG(WARN, "last message could not be sent due to a network failure!");
+       	// mar the current agent as not registered to the failing master
+       	BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+   		{
+   			if( error.from() == masterInfo.name() )
+   			{
+   				SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+
+   				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+   				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+   				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+
+   				masterInfo.set_registered(false);
+   				requestRegistration(masterInfo);
+   			}
+   		}
+
+       	break;
+	}
+	case ErrorEvent::SDPA_EJOBEXISTS:
+	{
+		SDPA_LOG_INFO("The worker managed to recover the job "<<error.job_id()<<", it already has it!");
+		// do the same as when receiving a SubmitJobAckEvent
+
+		Worker::worker_id_t worker_id = error.from();
+		try {
+			// Only, now should be state of the job updated to RUNNING
+			// since it was not rejected, no error occurred etc ....
+			//find the job ptrJob and call
+			Job::ptr_t ptrJob = ptr_job_man_->findJob(error.job_id());
+			ptrJob->Dispatch();
+			ptr_scheduler_->acknowledgeJob(worker_id, error.job_id());
+		}
+		catch(JobNotFoundException const& ex)
+		{
+			SDPA_LOG_ERROR("The job " << error.job_id() << " was not found on"<<name()<<"!");
+		}
+		catch(WorkerNotFoundException const &)
+		{
+			SDPA_LOG_ERROR("job re-submission could not be acknowledged: worker " << worker_id << " not found!!");
+		}
+		catch(std::exception const &ex)
+		{
+			SDPA_LOG_ERROR("Unexpected exception occurred upon receiving ErrorEvent::SDPA_EJOBEXISTS: " << ex.what());
+		}
+
+		break;
+	}
     default:
     {
     	MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());

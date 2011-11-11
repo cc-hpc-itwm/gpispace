@@ -54,7 +54,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
 	BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
 	{
-                DLOG(TRACE, "Notify the subscriber "<<subscriber);
+		DLOG(TRACE, "Notify the subscriber "<<subscriber);
 		ptrEvt->to() = pair_subscr_joblist.first;
 		sendEventToMaster(ptrEvt);
 	}
@@ -84,9 +84,11 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     Job::ptr_t pJob;
     try {
         pJob = ptr_job_man_->findJob(pEvt->job_id());
-        SDPA_LOG_INFO( "Current job status: "<<pJob->getStatus());
         pJob->JobFinished(pEvt);
-        SDPA_LOG_INFO( "Job status after transition to finished: "<<pJob->getStatus());
+        if( pJob->getStatus().find("Finished") == std::string::npos   )
+        {
+        	SDPA_LOG_FATAL( "Invalid status for the job "<<pJob->id()<<"! (The job should be finished)" );
+        }
     }
     catch(JobNotFoundException const &)
     {
@@ -184,6 +186,10 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
     try {
         pJob = ptr_job_man_->findJob(pEvt->job_id());
         pJob->JobFailed(pEvt);
+        if( pJob->getStatus().find("Failed") == std::string::npos   )
+        {
+        	SDPA_LOG_FATAL( "Invalid status for the job "<<pJob->id()<<"! (The job should be failed)" );
+        }
     }
     catch(const JobNotFoundException &)
     {
