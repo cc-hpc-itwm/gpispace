@@ -62,7 +62,7 @@ namespace asian
   {
     const int nThread (param.nThreads);
 
-    ::pnetc::type::sums::sums sums[nThread];
+    ::pnetc::type::sums::sums *sums = new ::pnetc::type::sums::sums[nThread];
 
     boost::thread_group threads;
 
@@ -103,6 +103,8 @@ namespace asian
 
     sums[0].param = param;
 
-    return sums[0];
+    ::pnetc::type::sums::sums ret (sums[0]);
+    delete [] sums;
+    return ret;
   }
 } // namespace asian
