@@ -152,7 +152,7 @@ function execute ()
         co=
         nc=
         if isatty /dev/stderr ; then
-            co="\033[35;40m"
+	    co='\033[0;35m'
             nc="\033[0m"
         fi
 	echo -e "${co}$std_err${nc}" >&2
