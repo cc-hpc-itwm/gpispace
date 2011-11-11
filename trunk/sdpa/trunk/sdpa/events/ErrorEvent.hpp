@@ -26,6 +26,7 @@ namespace sc = boost::statechart;
 #endif
 
 #include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/types.hpp>
 
 namespace sdpa { namespace events {
 // this could be replaced by a small macro
@@ -42,12 +43,13 @@ namespace sdpa { namespace events {
           SDPA_ENOERROR = 0,
           SDPA_ENOJOBAVAIL,
           SDPA_EJOBNOTFOUND,
+          SDPA_EJOBEXISTS,
+          SDPA_EJOBREJECTED,
           SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EBUSY,
           SDPA_EAGAIN,
           SDPA_EUNKNOWN,
-          SDPA_EJOBREJECTED,
           SDPA_EPERM,
           SDPA_ENETWORKFAILURE
       };
@@ -62,18 +64,24 @@ namespace sdpa { namespace events {
                 , const address_t &a_to
                 , const error_code_t &a_error_code
                 , const std::string& a_reason
+                , const sdpa::job_id_t& jobId = sdpa::job_id_t::invalid_job_id()
                 )
         : MgmtEvent(a_from, a_to)
         , error_code_(a_error_code)
         , reason_(a_reason)
+      	, job_id_ (jobId)
       {}
 
       ~ErrorEvent() {}
 
       const std::string &reason() const { return reason_; }
       std::string &reason() { return reason_; }
+
       const error_code_t &error_code() const { return error_code_; }
       error_code_t &error_code() { return error_code_; }
+
+      const sdpa::job_id_t &job_id() const { return job_id_; }
+      sdpa::job_id_t &job_id() { return job_id_; }
 
       std::string str() const { return "ErrorEvent"; }
 
@@ -84,6 +92,7 @@ namespace sdpa { namespace events {
     private:
       error_code_t error_code_;
       std::string reason_;
+      sdpa::job_id_t job_id_;
   };
 }}
 #endif
