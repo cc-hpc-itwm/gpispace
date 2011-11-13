@@ -125,8 +125,7 @@ namespace state
 struct gpi_stream
 {
   int                     fd;
-  gpi::pc::type::handle_t handle;
-  std::size_t             size;
+  gpi::pc::type::handle::descriptor_t handle;
   uint64_t                read_pointer;
   uint64_t                write_pointer;
 };
@@ -513,19 +512,36 @@ public:
     gpi::pc::type::handle_t handle = 0;
     size_t size = 0;
 
-    if (name == "meta")
+    int ec = reinitialize_gpi_state();
+    if (0 != ec)
     {
-      handle = config.handle.data.output_meta;
-      size = config.size.alloc.output_meta;
+      return ec;
     }
-    else if (name == "data")
+
+    gpi::pc::type::handle::descriptor_t found;
+
+    // lookup the handle by name
+    gpi::pc::type::handle::list_t
+      available_handles (gpi_api->list_allocations(1));
+    BOOST_FOREACH( gpi::pc::type::handle::descriptor_t const & desc
+                 , available_handles
+                 )
     {
-      handle = config.handle.data.output;
-      size = config.size.alloc.output;
+      if (desc.name == name)
+      {
+        // TODO: we need a 'total-size' field to keep track of that
+        found = desc;
+        if (desc.flags & gpi::pc::type::handle::F_GLOBAL)
+        {
+          found.size *= gpi_api->collect_info().nodes;
+        }
+        break;
+      }
     }
-    else
+
+    if (0 == found.id)
     {
-      MLOG(ERROR, "could not open data: " << name << ": no such data");
+      MLOG(ERROR, "could not open handle: " << name << ": no such handle");
       return -ENOENT;
     }
 
@@ -538,8 +554,7 @@ public:
     {
       stream_ptr_t s (new gpi_stream);
       s->fd = fd;
-      s->handle = handle;
-      s->size = size;
+      s->handle = found;
       s->read_pointer = 0;
       s->write_pointer = 0;
 
@@ -557,10 +572,10 @@ public:
     if (stream_it != m_streams.end())
     {
       m_streams.erase(stream_it);
-      m_stream_fds.push(fd);
+      free_file_descriptor(fd);
 
       // any subsequent call to read/write transfers will fail
-      stream_it->second->handle = 0;
+      stream_it->second->handle.id = 0;
       return 0;
     }
     else
@@ -581,7 +596,7 @@ public:
     {
     case SEEK_SET:
       {
-        if (off > s->size)
+        if (off > s->handle.size)
           return -EINVAL;
         s->read_pointer = off;
         if (o)
@@ -599,7 +614,7 @@ public:
       break;
     case SEEK_END:
       {
-        s->read_pointer = s->size;
+        s->read_pointer = s->handle.size;
         if (o)
           *o = s->read_pointer;
       }
@@ -666,6 +681,12 @@ private:
     }
 
     return fd;
+  }
+
+  void free_file_descriptor (int fd)
+  {
+    lock_type lock (m_stream_mutex);
+    m_stream_fds.push(fd);
   }
 
   std::string read_workflow_from_file (std::string const & path)
@@ -925,12 +946,12 @@ private:
     size_t remaining_bytes = len;
 
     num_read = 0;
-    while (remaining_bytes && (s->read_pointer != s->size))
+    while (remaining_bytes && (s->read_pointer != s->handle.size))
     {
       size_t transfer_size =
         std::min ( m_chunk_size
                  , std::min ( remaining_bytes
-                            , s->size - s->read_pointer
+                            , s->handle.size - s->read_pointer
                             )
                  );
 
@@ -941,7 +962,7 @@ private:
           (gpi_api->memcpy( gpi::pc::type::memory_location_t( m_scratch_handle
                                                             , 0
                                                             )
-                          , gpi::pc::type::memory_location_t( s->handle
+                          , gpi::pc::type::memory_location_t( s->handle.id
                                                             , s->read_pointer
                                                             )
                           , transfer_size
