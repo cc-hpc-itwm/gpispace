@@ -44,11 +44,13 @@
             vmem::free (config.handle.data.coarse_mask);
             vmem::free (config.handle.data.coarse_vel);
             vmem::free (config.handle.data.output);
+            vmem::free (config.handle.data.output_meta);
             vmem::free (config.handle.data.update);
             vmem::free (config.handle.data.input);
 
             vmem::free (config.handle.scratch.update);
             vmem::free (config.handle.scratch.output);
+            vmem::free (config.handle.scratch.output_meta);
 
             return control();
           ]]></code>
