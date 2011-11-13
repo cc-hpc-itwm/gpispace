@@ -272,14 +272,14 @@ namespace fhg
 	cd.connection =
 	  connection_t::ptr_t(new connection_t( io_service_
                                               , cookie_
-						, this
-						)
-			      );
+                                              , this
+                                              )
+                             );
         cd.connection->local_address (my_addr_);
         cd.connection->remote_address (addr);
-	
+
 	namespace bai = boost::asio::ip;
-	
+
         bai::tcp::resolver resolver(io_service_);
         bai::tcp::resolver::query query(h, p);
         bai::tcp::resolver::iterator iter =
@@ -288,18 +288,18 @@ namespace fhg
         boost::system::error_code ec;
 
 	for (; iter != bai::tcp::resolver::iterator(); ++iter)
-	  {
-	    cd.connection->socket().close();
-	    
-	    ec = boost::asio::error::would_block;
+        {
+          cd.connection->socket().close();
 
-	    cd.connection->socket().connect( iter->endpoint(), ec);
+          ec = boost::asio::error::would_block;
 
-	    if (!ec && cd.connection->socket().is_open())
-	      {
-		break;
-	      }
-	  }
+          cd.connection->socket().connect( iter->endpoint(), ec);
+
+          if (!ec && cd.connection->socket().is_open())
+          {
+            break;
+          }
+        }
 
 	connection_established (addr, ec);
       }
@@ -469,12 +469,12 @@ namespace fhg
       {
         connection_data_t & cd = connections_.at (a);
 
-	LOG( TRACE
-	     , my_addr_ << " (" << name_ << ")"
-	     << " connected to "
-	     << a << " (" << cd.name << ")"
-	     << " @ " << cd.connection->socket().remote_endpoint();
-	     );
+        LOG( TRACE
+             , my_addr_ << " (" << name_ << ")"
+             << " connected to "
+             << a << " (" << cd.name << ")"
+             << " @ " << cd.connection->socket().remote_endpoint();
+             );
 
         {
           DLOG(TRACE, "setting socket option 'keep-alive' to 'true'");
