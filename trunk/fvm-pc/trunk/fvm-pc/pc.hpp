@@ -40,9 +40,11 @@ int fvmGetNodeCount() DEPRECATE_API("please switch to the gpi-space pc api");
 fvmSize_t fvmGetShmemSize() DEPRECATE_API("please switch to the gpi-space pc api");
 
 fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size) DEPRECATE_API("please switch to the gpi-space pc api");
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name) DEPRECATE_API("please switch to the gpi-space pc api");
 int fvmGlobalFree(fvmAllocHandle_t ptr) DEPRECATE_API("please switch to the gpi-space pc api");
 
 fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size) DEPRECATE_API("please switch to the gpi-space pc api");
+fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size, const char *) DEPRECATE_API("please switch to the gpi-space pc api");
 int fvmLocalFree(fvmAllocHandle_t ptr) DEPRECATE_API("please switch to the gpi-space pc api");
 
 fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,

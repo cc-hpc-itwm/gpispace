@@ -17,7 +17,7 @@ namespace ufbmig
       {
         inline long alloc (const std::size_t size, const std::string & descr)
         {
-          const fvmAllocHandle_t handle (fvmGlobalAlloc (size));
+          const fvmAllocHandle_t handle (fvmGlobalAlloc (size, descr.c_str()));
 
           if (handle == 0)
             {

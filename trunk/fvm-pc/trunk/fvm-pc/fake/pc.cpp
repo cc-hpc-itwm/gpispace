@@ -115,6 +115,11 @@ int fvmLeave()
   return 0;
 }
 
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *)
+{
+  return fvmGlobalAlloc(size);
+}
+
 fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
 {
   static fvmAllocHandle_t num_allocs = 0;
@@ -164,6 +169,11 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
 #endif
 	  return FVM_EGENERAL;
   }
+}
+
+fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size, const char *)
+{
+  return fvmLocalAlloc(size);
 }
 
 fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)

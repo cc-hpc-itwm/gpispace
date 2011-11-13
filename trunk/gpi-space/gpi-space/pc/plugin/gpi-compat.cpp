@@ -201,14 +201,19 @@ int fvmLeave()
   return 0;
 }
 
-fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size, const char *name)
 {
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
-                                , gpi_compat->m_global_handle_name
+                                , name
                                 , gpi::pc::type::handle::F_GLOBAL
                                 | gpi::pc::type::handle::F_PERSISTENT
                                 );
+}
+
+fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
+{
+  return fvmGlobalAlloc(size, gpi_compat->m_global_handle_name.c_str());
 }
 
 int fvmGlobalFree(fvmAllocHandle_t ptr)
@@ -217,13 +222,18 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
   return 0;
 }
 
-fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
+fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size, const char *name)
 {
   return gpi_compat->api->alloc ( 1 // GPI
                                 , size
-                                , gpi_compat->m_local_handle_name
+                                , name
                                 , 0
                                 );
+}
+
+fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
+{
+  return fvmLocalAlloc(size, gpi_compat->m_local_handle_name.c_str());
 }
 
 int fvmLocalFree(fvmAllocHandle_t ptr)
