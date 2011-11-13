@@ -276,6 +276,17 @@ public:
     }
   }
 private:
+  boost::shared_ptr<PSProMigIF::Message> create_pspro_error_message ( int cmd
+                                                                    , int ec
+                                                                    )
+  {
+    if (ec < 0)
+      ec = -ec;
+
+    std::string error (strerror(ec));
+    return create_pspro_message(cmd, error.c_str(), error.size());
+  }
+
   boost::shared_ptr<PSProMigIF::Message> create_pspro_message( int cmd
                                                              , const void *data = 0
                                                              , size_t len = 0
@@ -314,7 +325,7 @@ private:
   void send_initialize_failure(int ec)
   {
     m_server->idle();
-    create_pspro_message(server::command::INITIALIZE_FAILURE, &ec, sizeof(ec))
+    create_pspro_error_message(server::command::INITIALIZE_FAILURE, ec)
       ->sendMsg(m_server->communication());
   }
 
@@ -335,7 +346,7 @@ private:
   void send_process_salt_mask_failure(int ec)
   {
     m_server->idle();
-    create_pspro_message(server::command::PROCESS_SALT_MASK_FAILURE, &ec, sizeof(ec))
+    create_pspro_error_message(server::command::PROCESS_SALT_MASK_FAILURE, ec)
       ->sendMsg(m_server->communication());
   }
 
@@ -351,19 +362,6 @@ private:
     m_server->idle();
     create_pspro_message(server::command::MIGRATE_SUCCESS)
       ->sendMsg(m_server->communication());
-
-    /*
-    int fd = m_backend->open("meta");
-    if (fd < 0)
-    {
-      MLOG(ERROR, "no meta data available");
-    }
-    else
-    {
-      MLOG(INFO, "transfering meta data from fd " << fd);
-    }
-    */
-
     create_pspro_message(server::command::MIGRATE_META_DATA, 0, 0)
       ->sendMsg(m_server->communication());
     create_pspro_message(server::command::MIGRATE_DATA, 0 /*data*/, 0/*len*/)
@@ -373,7 +371,7 @@ private:
   void send_migrate_failure(int ec)
   {
     m_server->idle();
-    create_pspro_message(server::command::MIGRATE_FAILURE, &ec, sizeof(ec))
+    create_pspro_error_message(server::command::MIGRATE_FAILURE, ec)
       ->sendMsg(m_server->communication());
   }
 
@@ -395,7 +393,7 @@ private:
   void send_finalize_failure(int ec)
   {
     m_server->idle();
-    create_pspro_message(server::command::FINALIZE_FAILURE, &ec, sizeof(ec))
+    create_pspro_error_message(server::command::FINALIZE_FAILURE, ec)
       ->sendMsg(m_server->communication());
   }
 
@@ -419,7 +417,7 @@ private:
 
   void send_abort_refused(int ec)
   {
-    create_pspro_message(server::command::ABORT_REFUSED, &ec, sizeof(ec))
+    create_pspro_error_message(server::command::ABORT_REFUSED, ec)
       ->sendMsg(m_server->communication());
   }
 
