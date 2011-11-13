@@ -140,6 +140,7 @@ add_subdirectory(sdpa)
 add_subdirectory(apps)
 add_subdirectory(plugin)
 add_subdirectory(bin)
+add_subdirectory(etc)
 include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
@@ -149,9 +150,3 @@ endif (BUILD_TESTING)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp
   DESTINATION include/sdpa
   COMPONENT headers)
-INSTALL(FILES etc/sdpac.rc.example
-  DESTINATION etc/sdpa
-  COMPONENT configurations)
-INSTALL(FILES etc/sdpa.env
-  DESTINATION etc/sdpa
-  COMPONENT configurations)
