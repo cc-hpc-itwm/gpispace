@@ -175,6 +175,7 @@ public:
 
   int update_salt_mask(const char *data, size_t len)
   {
+    assert (m_backend);
     return m_backend->update_salt_mask(data, len);
   }
 
@@ -247,12 +248,12 @@ public:
       const char *data = 0;
       const size_t len = 0;
 
-      send_migrate_success(data, len);
-
       // TODO:
       //    abort running transfers
       //    schedule new data transfer for output
       //    when finished send_migrate_success()
+
+      send_migrate_success();
     }
     else
     {
@@ -345,14 +346,27 @@ private:
       ->sendMsg(m_server->communication());
   }
 
-  void send_migrate_success(const void *data, size_t len)
+  void send_migrate_success()
   {
     m_server->idle();
     create_pspro_message(server::command::MIGRATE_SUCCESS)
       ->sendMsg(m_server->communication());
+
+    /*
+    int fd = m_backend->open("meta");
+    if (fd < 0)
+    {
+      MLOG(ERROR, "no meta data available");
+    }
+    else
+    {
+      MLOG(INFO, "transfering meta data from fd " << fd);
+    }
+    */
+
     create_pspro_message(server::command::MIGRATE_META_DATA, 0, 0)
       ->sendMsg(m_server->communication());
-    create_pspro_message(server::command::MIGRATE_DATA, data, len)
+    create_pspro_message(server::command::MIGRATE_DATA, 0 /*data*/, 0/*len*/)
       ->sendMsg(m_server->communication());
   }
 

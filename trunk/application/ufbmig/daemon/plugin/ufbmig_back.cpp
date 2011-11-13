@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <list>
+#include <stack>
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -121,6 +122,15 @@ namespace state
     };
 }
 
+struct gpi_stream
+{
+  int                     fd;
+  gpi::pc::type::handle_t handle;
+  std::size_t             size;
+  uint64_t                read_pointer;
+  uint64_t                write_pointer;
+};
+
 class UfBMigBackImpl : FHG_PLUGIN
                      , public ufbmig::Backend
 {
@@ -128,6 +138,9 @@ class UfBMigBackImpl : FHG_PLUGIN
   typedef boost::unique_lock<mutex_type> lock_type;
   typedef boost::condition_variable_any condition_type;
   typedef std::list<job::info_t> job_list_t;
+  typedef boost::shared_ptr<gpi_stream> stream_ptr_t;
+  typedef std::map<int, stream_ptr_t> stream_map_t;
+  typedef std::stack<int> stream_fd_stack_t;
 
 public:
   FHG_PLUGIN_START()
@@ -213,6 +226,10 @@ public:
     {
       MLOG(WARN, "could not acquire gpi::GPI plugin");
     }
+    else
+    {
+      reinitialize_gpi_state ();
+    }
 
     if (m_control_sdpa)
     {
@@ -255,6 +272,10 @@ public:
       if (0 == gpi_api)
       {
         MLOG(ERROR, "gpi plugin doesn't implement GPI!");
+      }
+      else
+      {
+        reinitialize_gpi_state ();
       }
     }
   }
@@ -474,25 +495,152 @@ public:
     return 0;
   }
 
-  size_t output_volume_size ()
+  int open (std::string const & name)
   {
+    if (! (name == "meta" || name == "data"))
+    {
+      MLOG(ERROR, "could not open data: " << name << ": no such data");
+      return -ENOENT;
+    }
+
+    int fd = allocate_file_descriptor();
+    if (fd < 0)
+    {
+      MLOG(ERROR, "could not allocate filedescriptor");
+    }
+    else
+    {
+      stream_ptr_t s (new gpi_stream);
+      s->fd = fd;
+      s->handle = 0;
+      s->size = 0;
+      s->read_pointer = 0;
+      s->write_pointer = 0;
+
+      lock_type lock (m_stream_mutex);
+      m_streams[fd] = s;
+    }
+
+    return fd;
+  }
+
+  int close (int fd)
+  {
+    lock_type lock (m_stream_mutex);
+    stream_map_t::iterator stream_it (m_streams.find(fd));
+    if (stream_it != m_streams.end())
+    {
+      m_streams.erase(stream_it);
+      m_stream_fds.push(fd);
+
+      // any subsequent call to read/write transfers will fail
+      stream_it->second->handle = 0;
+      return 0;
+    }
+    else
+    {
+      return -EBADF;
+    }
+  }
+
+  int seek (const int fd, const uint64_t off, const int whence, uint64_t & o)
+  {
+    lock_type lock (m_stream_mutex);
+    stream_map_t::iterator stream_it (m_streams.find(fd));
+    if (stream_it == m_streams.end())
+      return -EBADF;
+
+    stream_ptr_t s = stream_it->second;
+    switch (whence)
+    {
+    case SEEK_SET:
+      {
+        if (off > s->size)
+          return -EINVAL;
+        o = s->read_pointer = off;
+      }
+      break;
+    case SEEK_CUR:
+      {
+        if (s->read_pointer + off < s->read_pointer)
+          return -EOVERFLOW;
+        s->read_pointer += off;
+        o = s->read_pointer;
+      }
+      break;
+    case SEEK_END:
+      {
+        o = s->read_pointer = s->size;
+      }
+      break;
+    default:
+      return -EINVAL;
+    }
     return 0;
   }
 
-  int read_output_volume (char *buffer, size_t buffer_size, size_t offset)
+  ssize_t read (int fd, char *buffer, size_t len)
   {
-    // remaining = sizeof(output_volume) - offset;
-    // memcpy(scratch, output_volume+offset, 0, min(scratch_size, remaining));
-    // memcpy(shared_mem, scratch, min(remaining, scratch_size));
-    // memcpy to buffer
+    stream_ptr_t s;
+
+    {
+      lock_type lock (m_stream_mutex);
+      stream_map_t::iterator stream_it (m_streams.find(fd));
+      if (stream_it == m_streams.end())
+      {
+        return -EBADF;
+      }
+      else
+      {
+        s = stream_it->second;
+      }
+    }
+
+    MLOG(WARN, "read (fd, buffer, len) not yet implemented!");
+
+    // transfer chunks from handle to shm and then memcpy to to buffer
+
     return 0;
   }
 
-  size_t salt_mask_size ()
+  ssize_t write (int fd, const char *buffer, size_t len)
   {
+    stream_ptr_t s;
+
+    {
+      lock_type lock (m_stream_mutex);
+      stream_map_t::iterator stream_it (m_streams.find(fd));
+      if (stream_it == m_streams.end())
+      {
+        return -EBADF;
+      }
+      else
+      {
+        s = stream_it->second;
+      }
+    }
+
+    MLOG(ERROR, "write (fd, buffer, len) not yet implemented!");
     return 0;
   }
 private:
+  int allocate_file_descriptor ()
+  {
+    lock_type lock (m_stream_mutex);
+    int fd;
+    if (m_stream_fds.size())
+    {
+      fd = m_stream_fds.top();
+      m_stream_fds.pop();
+    }
+    else
+    {
+      fd = (int)(m_stream_fds.size());
+    }
+
+    return fd;
+  }
+
   std::string read_workflow_from_file (std::string const & path)
   {
     std::ifstream ifs(path.c_str());
@@ -730,8 +878,12 @@ private:
     return 0;
   }
 
-  mutex_type m_job_list_mutex;
+  mutable mutex_type m_job_list_mutex;
   job_list_t m_job_list;
+
+  mutable mutex_type m_stream_mutex;
+  stream_map_t m_streams;
+  stream_fd_stack_t m_stream_fds;
 
   bool m_control_sdpa;
   sdpa::Control * sdpa_ctl;

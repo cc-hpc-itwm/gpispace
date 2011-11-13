@@ -17,6 +17,13 @@ namespace ufbmig
     virtual int finalize() = 0;
     virtual int cancel() = 0;
     virtual void registerFrontend(Frontend*) = 0;
+
+    // TODO move to stream interface
+    virtual int open (std::string const &) = 0; // current paths: meta, output
+    virtual int close (int) = 0;
+    virtual int seek (const int, const uint64_t off, const int whence, uint64_t & o) = 0;
+    virtual ssize_t read (int, char *buffer, size_t len) = 0;
+    virtual ssize_t write (int, const char *buffer, size_t len) = 0;
   };
 }
 
