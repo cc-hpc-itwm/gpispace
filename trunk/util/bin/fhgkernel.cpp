@@ -34,7 +34,7 @@ static void wait_on_child()
 static void sig_chld(int)
 {
   if (kernel)
-    kernel->schedule("kernel", "wait on child", &wait_on_child);
+    kernel->schedule("kernel", "wait_on_child", &wait_on_child);
 }
 
 int main(int ac, char **av)
