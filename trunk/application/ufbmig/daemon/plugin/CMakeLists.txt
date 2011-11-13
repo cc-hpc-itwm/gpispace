@@ -32,6 +32,7 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
   HEADER_DESTINATION include/plugins
   PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
+  DEPENDS pnet-ufbmig_init pnet-ufbmig_calc pnet-ufbmig_done pnet-ufbmig_mask
   INSTALL
 )
 
