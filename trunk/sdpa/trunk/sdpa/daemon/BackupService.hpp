@@ -97,7 +97,7 @@ namespace daemon
 			{
 				try
 				{
-					SDPA_LOG_DEBUG( "Backup the daemon "<<daemon()->name());
+                                  DMLOG(TRACE, "Backing up daemon: " << daemon()->name());
 
 					std::ostringstream osstr;
 					daemon()->backup(osstr);
@@ -111,7 +111,7 @@ namespace daemon
 				}
 			}
 
-			SDPA_LOG_DEBUG( "While loop finished. Backup the daemon "<<daemon()->name() );
+                        DMLOG(TRACE, "backup service stopping, performing final backup of " << daemon()->name());
 
 			std::ostringstream osstr;
 			daemon()->backup(osstr);
@@ -134,7 +134,7 @@ namespace daemon
 			{
 				try
 				{
-					SDPA_LOG_DEBUG( "Backup the daemon "<<daemon()->name());
+                                  DMLOG(TRACE, "Backing up daemon: " << daemon()->name());
 
 					std::ofstream ofs(tmpBakFile.string().c_str());
 					daemon()->backup(ofs);
