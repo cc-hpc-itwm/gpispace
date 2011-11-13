@@ -37,7 +37,7 @@ namespace gpi
 
         void check_bounds ( const gpi::pc::type::handle::descriptor_t &
                           , const gpi::pc::type::offset_t start
-                          , const gpi::pc::type::offset_t end
+                          , const gpi::pc::type::size_t   amount
                           ) const;
 
         void alloc_hook (const gpi::pc::type::handle::descriptor_t &){}

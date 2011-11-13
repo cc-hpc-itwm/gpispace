@@ -7,6 +7,7 @@
 #include <fcntl.h>
 
 #include <fhglog/minimal.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace gpi
 {
@@ -20,14 +21,14 @@ namespace gpi
                              , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
                              )
-          : area_t ( gpi::pc::type::segment::SEG_SHM
-                   , id
-                   , creator
-                   , name
-                   , size
-                   , flags
-                   )
-          , m_ptr (NULL)
+        : area_t ( gpi::pc::type::segment::SEG_SHM
+                 , id
+                 , creator
+                 , name
+                 , size
+                 , flags
+                 )
+        , m_ptr (NULL)
       {
         if (name.empty())
         {
@@ -48,160 +49,177 @@ namespace gpi
         }
       }
 
-     shm_area_t::~shm_area_t()
-     {
-       try
-       {
-         shm_area_t::close(m_ptr, descriptor().size);
-         m_ptr = 0;
-         if (unlink_after_close (descriptor().flags))
-         {
-           shm_area_t::unlink (m_path);
-         }
-       }
-       catch (std::exception const & ex)
-       {
-         LOG( ERROR
-            , "error in ~shm_area_t:"
-            << " id = " << descriptor().id
-            << " ptr = " << m_ptr
-            << " path = " << m_path
-            << " error = " << ex.what()
-            );
-       }
-     }
+      shm_area_t::~shm_area_t()
+      {
+        try
+        {
+          shm_area_t::close(m_ptr, descriptor().size);
+          m_ptr = 0;
+          if (unlink_after_close (descriptor().flags))
+          {
+            shm_area_t::unlink (m_path);
+          }
+        }
+        catch (std::exception const & ex)
+        {
+          LOG( ERROR
+             , "error in ~shm_area_t:"
+             << " id = " << descriptor().id
+             << " ptr = " << m_ptr
+             << " path = " << m_path
+             << " error = " << ex.what()
+             );
+        }
+      }
 
-     void*
-     shm_area_t::ptr ()
-     {
-       return m_ptr;
-     }
+      void*
+      shm_area_t::ptr ()
+      {
+        return m_ptr;
+      }
 
-     bool
-     shm_area_t::is_allowed_to_attach
-        (const gpi::pc::type::process_id_t proc) const
-     {
-       if (gpi::flag::is_set
+      bool
+      shm_area_t::is_allowed_to_attach
+      (const gpi::pc::type::process_id_t proc) const
+      {
+        if (gpi::flag::is_set
            (descriptor ().flags, gpi::pc::type::segment::F_EXCLUSIVE))
-       {
-         if (proc == descriptor ().creator)
-           return true;
-         else
-           return false;
-       }
-       return true;
-     }
+        {
+          if (proc == descriptor ().creator)
+            return true;
+          else
+            return false;
+        }
+        return true;
+      }
 
-     area_t::grow_direction_t
-     shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
-     {
+      area_t::grow_direction_t
+      shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
+      {
         return area_t::GROW_UP;
-     }
+      }
 
       void
       shm_area_t::check_bounds ( const gpi::pc::type::handle::descriptor_t &hdl
                                , const gpi::pc::type::offset_t start
-                               , const gpi::pc::type::offset_t end
+                               , const gpi::pc::type::offset_t amount
                                ) const
       {
-        if (! (start < hdl.size && end < hdl.size))
+        if (! (start < hdl.size && (start + amount) <= hdl.size))
         {
+          CLOG( ERROR
+              , "shm.memory"
+              , "out-of-bounds access:"
+              << " hdl=" << hdl
+              << " size=" << hdl.size
+              << " range=["<<start << ", " << start+amount << "]"
+              );
           throw std::invalid_argument
-              ("out-of-bounds: access to shm handle outside boundaries");
+            ( std::string("out-of-bounds:")
+            + " access to shm handle"
+            + " " + boost::lexical_cast<std::string>(hdl.id)
+            +" outside boundaries"
+            + " ["
+            + boost::lexical_cast<std::string>(start)
+            + ","
+            + boost::lexical_cast<std::string>(start+amount)
+            + ")"
+            + " is not within [0, " + boost::lexical_cast<std::string>(hdl.size) + ")"
+            );
         }
       }
 
-     bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t flgs)
-     {
-       if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
-         return true;
-       return false;
-     }
+      bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t flgs)
+      {
+        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
+          return true;
+        return false;
+      }
 
-     bool shm_area_t::unlink_after_close (const gpi::pc::type::flags_t flgs)
-     {
-       if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_NOUNLINK))
-         return false;
-       if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
-         return false;
-       return true;
-     }
+      bool shm_area_t::unlink_after_close (const gpi::pc::type::flags_t flgs)
+      {
+        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_NOUNLINK))
+          return false;
+        if (gpi::flag::is_set (flgs, gpi::pc::type::segment::F_EXCLUSIVE))
+          return false;
+        return true;
+      }
 
-     void* shm_area_t::open ( std::string const & path
-                            , const gpi::pc::type::size_t size
-                            , const int open_flags
-                            , const mode_t open_mode
-                            )
-     {
-       int err (0);
-       int fd (-1);
-       void *ptr (0);
+      void* shm_area_t::open ( std::string const & path
+                             , const gpi::pc::type::size_t size
+                             , const int open_flags
+                             , const mode_t open_mode
+                             )
+      {
+        int err (0);
+        int fd (-1);
+        void *ptr (0);
 
-       fd = shm_open (path.c_str(), open_flags, open_mode);
-       if (fd < 0)
-       {
-         std::string err (strerror(errno));
-         throw std::runtime_error ("open: " + err);
-       }
+        fd = shm_open (path.c_str(), open_flags, open_mode);
+        if (fd < 0)
+        {
+          std::string err (strerror(errno));
+          throw std::runtime_error ("open: " + err);
+        }
 
-       int prot (0);
-       if (open_flags & O_RDONLY)
-         prot = PROT_READ;
-       else if (open_flags & O_WRONLY)
-         prot = PROT_WRITE;
-       else if (open_flags & O_RDWR)
-         prot = PROT_READ | PROT_WRITE;
+        int prot (0);
+        if (open_flags & O_RDONLY)
+          prot = PROT_READ;
+        else if (open_flags & O_WRONLY)
+          prot = PROT_WRITE;
+        else if (open_flags & O_RDWR)
+          prot = PROT_READ | PROT_WRITE;
 
-       ptr = mmap ( NULL
-                  , size
-                  , prot
-                  , MAP_SHARED
-                  , fd
-                  , 0
-                  );
-       if (MAP_FAILED == ptr)
-       {
-         std::string err (strerror(errno));
+        ptr = mmap ( NULL
+                   , size
+                   , prot
+                   , MAP_SHARED
+                   , fd
+                   , 0
+                   );
+        if (MAP_FAILED == ptr)
+        {
+          std::string err (strerror(errno));
+          ::close (fd);
+          throw std::runtime_error ("mmap: " + err);
+        }
+
         ::close (fd);
-         throw std::runtime_error ("mmap: " + err);
-       }
+        return ptr;
+      }
 
-       ::close (fd);
-       return ptr;
-     }
+      void shm_area_t::close ( void *ptr
+                             , const gpi::pc::type::size_t sz
+                             )
+      {
+        if (ptr)
+        {
+          if (munmap(ptr, sz) < 0)
+          {
+            std::string err (strerror(errno));
+            throw std::runtime_error ("munmap: " + err);
+          }
+        }
+      }
 
-     void shm_area_t::close ( void *ptr
-                            , const gpi::pc::type::size_t sz
-                            )
-     {
-       if (ptr)
-       {
-         if (munmap(ptr, sz) < 0)
-         {
-           std::string err (strerror(errno));
-           throw std::runtime_error ("munmap: " + err);
-         }
-       }
-     }
+      void shm_area_t::unlink (std::string const & p)
+      {
+        if (shm_unlink (p.c_str()) < 0)
+        {
+          std::string err (strerror(errno));
+          throw std::runtime_error ("unlink: " + err);
+        }
+      }
 
-     void shm_area_t::unlink (std::string const & p)
-     {
-       if (shm_unlink (p.c_str()) < 0)
-       {
-         std::string err (strerror(errno));
-         throw std::runtime_error ("unlink: " + err);
-       }
-     }
-
-     bool
-     shm_area_t::is_range_local ( const gpi::pc::type::handle::descriptor_t &hdl
-                                , const gpi::pc::type::offset_t a
-                                , const gpi::pc::type::offset_t b
-                                ) const
-     {
-       return ((hdl.offset + a) < size())
-           && ((hdl.offset + b) < size());
-     }
+      bool
+      shm_area_t::is_range_local ( const gpi::pc::type::handle::descriptor_t &hdl
+                                 , const gpi::pc::type::offset_t a
+                                 , const gpi::pc::type::offset_t b
+                                 ) const
+      {
+        return ((hdl.offset + a) < size())
+          && ((hdl.offset + b) < size());
+      }
     }
   }
 }
