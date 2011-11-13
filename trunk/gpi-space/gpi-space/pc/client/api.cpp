@@ -8,9 +8,14 @@
 #include <stdio.h>
 #include <signal.h>
 
+#include <fstream>
+
 #include <boost/bind.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 #include <fhglog/minimal.hpp>
 
@@ -162,11 +167,17 @@ namespace gpi
 
         // serialize
         std::string data;
+        try
         {
           std::stringstream sstr;
-          boost::archive::text_oarchive oa (sstr);
+          boost::archive::binary_oarchive oa (sstr);
           oa & rqst;
           data = sstr.str();
+        }
+        catch (std::exception const &ex)
+        {
+          MLOG(ERROR, "could not serialize request: " << ex.what());
+          throw;
         }
 
         // send
@@ -651,7 +662,17 @@ namespace gpi
         proto::memory::list_t rqst;
         rqst.segment = seg;
 
-        proto::message_t rply (communicate(proto::memory::message_t(rqst)));
+        proto::message_t rply;
+        try
+        {
+          rply = communicate(proto::memory::message_t(rqst));
+        }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
+        }
+
         try
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t> (rply));

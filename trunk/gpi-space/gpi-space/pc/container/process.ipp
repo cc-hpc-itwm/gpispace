@@ -18,6 +18,8 @@
 #include <boost/bind.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/message_visitor.hpp>
@@ -98,7 +100,7 @@ namespace gpi
 
         header_t header;
         int err;
-        std::vector<char> buffer (1024);
+        std::vector<char> buffer;
 
         err = checked_read (fd, &header, sizeof(header));
         if (err <= 0)
@@ -231,7 +233,7 @@ namespace gpi
       void process_t<M>::decode_buffer (const char * buf, const size_t len, gpi::pc::proto::message_t & msg)
       {
         std::stringstream sstr (std::string (buf, len));
-        boost::archive::text_iarchive ia (sstr);
+        boost::archive::binary_iarchive ia (sstr);
         ia & msg;
       }
 
