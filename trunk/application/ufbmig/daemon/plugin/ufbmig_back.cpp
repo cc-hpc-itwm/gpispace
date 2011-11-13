@@ -247,13 +247,6 @@ public:
     m_frontend = 0;
     m_state = state::UNINITIALIZED;
 
-    fhg_kernel()->schedule ( "update job states"
-                           , boost::bind( &UfBMigBackImpl::update_job_states
-                                        , this
-                                        )
-                           , 1
-                           );
-
     FHG_PLUGIN_STARTED();
   }
 
@@ -716,6 +709,16 @@ private:
     {
       lock_type lock (m_job_list_mutex);
       m_job_list.push_back(job_info);
+
+      if (m_job_list.size() == 1)
+      {
+        fhg_kernel()->schedule ( "update job states"
+                               , boost::bind( &UfBMigBackImpl::update_job_states
+                                            , this
+                                            )
+                               , 1
+                               );
+      }
     }
 
     return ec;
@@ -850,12 +853,15 @@ private:
       }
     }
 
-    fhg_kernel()->schedule ( "update job states"
-                           , boost::bind( &UfBMigBackImpl::update_job_states
-                                        , this
-                                        )
-                           , 1
-                           );
+    if (not m_job_list.empty())
+    {
+      fhg_kernel()->schedule ( "update job states"
+                             , boost::bind( &UfBMigBackImpl::update_job_states
+                                          , this
+                                          )
+                             , 1
+                             );
+    }
   }
 
   void clear_my_gpi_state ()
