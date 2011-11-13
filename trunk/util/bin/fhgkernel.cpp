@@ -26,6 +26,16 @@ static void sig_term(int)
   if (kernel) kernel->stop ();
 }
 
+static void handle_sig_pipe()
+{
+}
+
+static void sig_pipe(int)
+{
+  if (kernel)
+    kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
+}
+
 static void wait_on_child()
 {
   waitpid(-1, 0, WNOHANG);
@@ -94,6 +104,7 @@ int main(int ac, char **av)
   signal (SIGINT, sig_term);
   signal (SIGTERM, sig_term);
   signal (SIGCHLD, sig_chld);
+  signal (SIGPIPE, sig_pipe);
 
   keep_going = vm.count("keep-going") != 0;
 
