@@ -188,12 +188,13 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         pJob->JobFailed(pEvt);
         if( pJob->getStatus().find("Failed") == std::string::npos   )
         {
-        	SDPA_LOG_FATAL( "Invalid status for the job "<<pJob->id()<<"! (The job should be failed)" );
+          SDPA_LOG_ERROR( "**** Invalid state of job: " << pJob->id() << " expected: Failed found: " <<  pJob->getStatus());
         }
     }
     catch(const JobNotFoundException &)
     {
         SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+        // TODO: shouldn't we reply with an error here???
         return;
     }
 
