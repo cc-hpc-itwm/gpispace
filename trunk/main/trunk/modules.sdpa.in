@@ -16,4 +16,4 @@ prepend-path    LD_LIBRARY_PATH   ${prefix}/lib/:${prefix}/libexec
 prepend-path    PC_LIBRARY_PATH   ${prefix}/libexec
 setenv          SDPA_LIBEXEC      ${prefix}/libexec
 setenv          SDPA_HOME         ${prefix}
-setenv		SDPA_REVISION	  @PROJECT_REVISION@
+setenv		SDPA_VERSION	  @PROJECT_REVISION@
