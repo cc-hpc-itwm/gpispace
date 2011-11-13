@@ -1,8 +1,6 @@
 include(pnet_macros)
 
-configure_file(compile.xml.in ${CMAKE_CURRENT_BINARY_DIR}/compile.xml @ONLY)
-
-pnet_compile(sdpacc ${CMAKE_CURRENT_BINARY_DIR}/compile.xml
+pnet_compile(sdpacc compile.xml
   OUTPUT compile.pnet
   GENERATE sdpacc
   INSTALL libexec/apps/sdpacc
