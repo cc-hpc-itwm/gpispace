@@ -61,6 +61,13 @@ namespace fhg
 
         return cnt;
       }
+
+      void clear ()
+      {
+        lock_type lock(m_mtx);
+        while (not m_container.empty())
+          m_container.pop_front();
+      }
     private:
       mutable mutex m_mtx;
       mutable condition m_cond;
