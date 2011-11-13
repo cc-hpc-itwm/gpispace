@@ -187,7 +187,7 @@ public:
     m_chunk_size = fhg_kernel()->get<std::size_t>("chunk_size", "4194304");
 
     // allocate enough to have double buffering
-    m_transfer_segment_size = 2 * m_chunk_size;
+    m_transfer_segment_size = m_chunk_size;
     m_scratch_size = m_transfer_segment_size;
 
     if (fs::exists(m_file_with_config))
@@ -261,6 +261,19 @@ public:
   FHG_PLUGIN_STOP()
   {
     m_frontend = 0;
+
+    {
+      lock_type lock (m_stream_mutex);
+      while (not m_streams.empty())
+      {
+        close (m_streams.begin()->first);
+      }
+      while (not m_stream_fds.empty())
+      {
+        m_stream_fds.pop();
+      }
+    }
+
     FHG_PLUGIN_STOPPED();
   }
 
@@ -497,7 +510,20 @@ public:
 
   int open (std::string const & name)
   {
-    if (! (name == "meta" || name == "data"))
+    gpi::pc::type::handle_t handle = 0;
+    size_t size = 0;
+
+    if (name == "meta")
+    {
+      handle = config.handle.data.output_meta;
+      size = config.size.alloc.output_meta;
+    }
+    else if (name == "data")
+    {
+      handle = config.handle.data.output;
+      size = config.size.alloc.output;
+    }
+    else
     {
       MLOG(ERROR, "could not open data: " << name << ": no such data");
       return -ENOENT;
@@ -512,8 +538,8 @@ public:
     {
       stream_ptr_t s (new gpi_stream);
       s->fd = fd;
-      s->handle = 0;
-      s->size = 0;
+      s->handle = handle;
+      s->size = size;
       s->read_pointer = 0;
       s->write_pointer = 0;
 
@@ -543,7 +569,7 @@ public:
     }
   }
 
-  int seek (const int fd, const uint64_t off, const int whence, uint64_t & o)
+  int seek (const int fd, const uint64_t off, const int whence, uint64_t * o)
   {
     lock_type lock (m_stream_mutex);
     stream_map_t::iterator stream_it (m_streams.find(fd));
@@ -557,7 +583,9 @@ public:
       {
         if (off > s->size)
           return -EINVAL;
-        o = s->read_pointer = off;
+        s->read_pointer = off;
+        if (o)
+          *o = s->read_pointer;
       }
       break;
     case SEEK_CUR:
@@ -565,12 +593,15 @@ public:
         if (s->read_pointer + off < s->read_pointer)
           return -EOVERFLOW;
         s->read_pointer += off;
-        o = s->read_pointer;
+        if (o)
+          *o = s->read_pointer;
       }
       break;
     case SEEK_END:
       {
-        o = s->read_pointer = s->size;
+        s->read_pointer = s->size;
+        if (o)
+          *o = s->read_pointer;
       }
       break;
     default:
@@ -579,7 +610,7 @@ public:
     return 0;
   }
 
-  ssize_t read (int fd, char *buffer, size_t len)
+  int read (int fd, char *buffer, size_t len, size_t & num_read)
   {
     stream_ptr_t s;
 
@@ -596,14 +627,10 @@ public:
       }
     }
 
-    MLOG(WARN, "read (fd, buffer, len) not yet implemented!");
-
-    // transfer chunks from handle to shm and then memcpy to to buffer
-
-    return 0;
+    return read_from_stream_to_buffer(s, buffer, len, num_read);
   }
 
-  ssize_t write (int fd, const char *buffer, size_t len)
+  int write (int fd, const char *buffer, size_t len, size_t & num_written)
   {
     stream_ptr_t s;
 
@@ -621,7 +648,7 @@ public:
     }
 
     MLOG(ERROR, "write (fd, buffer, len) not yet implemented!");
-    return 0;
+    return -ENOSYS;
   }
 private:
   int allocate_file_descriptor ()
@@ -819,7 +846,7 @@ private:
   {
     m_scratch_handle = gpi_api->alloc ( 1
                                       , m_scratch_size
-                                      , "ufbmigd transfer buffer"
+                                      , "ufbmigd transfer space"
                                       , gpi::pc::type::handle::F_GLOBAL
                                       );
     if (0 == m_scratch_handle)
@@ -833,14 +860,9 @@ private:
                                                    , gpi::pc::type::segment::F_FORCE_UNLINK
                                                    | gpi::pc::type::segment::F_EXCLUSIVE
                                                    );
-    m_transfer_buffer0 = gpi_api->alloc ( m_transfer_segment
+    m_transfer_buffer = gpi_api->alloc ( m_transfer_segment
                                         , m_chunk_size
-                                        , "ufbmigd local buffer 0"
-                                        , gpi::pc::type::handle::F_NONE
-                                        );
-    m_transfer_buffer1 = gpi_api->alloc ( m_transfer_segment
-                                        , m_chunk_size
-                                        , "ufbmigd local buffer 1"
+                                        , "ufbmigd transfer buffer"
                                         , gpi::pc::type::handle::F_NONE
                                         );
     return 0;
@@ -867,11 +889,94 @@ private:
 
     if (0 == m_scratch_handle)
     {
-      int ec = setup_my_gpi_state ();
-      if (0 != ec)
+      try
       {
-        MLOG(ERROR, "could not setup my gpi state: " << strerror(-ec));
-        return ec;
+        int ec = setup_my_gpi_state ();
+        if (0 != ec)
+        {
+          MLOG(ERROR, "could not setup my gpi state: " << strerror(-ec));
+          return ec;
+        }
+      }
+      catch (std::exception const &ex)
+      {
+        MLOG(ERROR, "could not setup my gpi state: " << ex.what());
+        return -EAGAIN;
+      }
+    }
+
+    return 0;
+  }
+
+  int read_from_stream_to_buffer ( stream_ptr_t s
+                                 , char * buffer
+                                 , size_t len
+                                 , size_t & num_read
+                                 )
+  {
+    const gpi::pc::type::queue_id_t queue (0);
+
+    int ec = reinitialize_gpi_state();
+    if (0 != ec)
+    {
+      return ec;
+    }
+
+    size_t remaining_bytes = len;
+
+    num_read = 0;
+    while (remaining_bytes && (s->read_pointer != s->size))
+    {
+      size_t transfer_size =
+        std::min ( m_chunk_size
+                 , std::min ( remaining_bytes
+                            , s->size - s->read_pointer
+                            )
+                 );
+
+      // transfer chunk from handle to scratch
+      try
+      {
+        gpi_api->wait
+          (gpi_api->memcpy( gpi::pc::type::memory_location_t( m_scratch_handle
+                                                            , 0
+                                                            )
+                          , gpi::pc::type::memory_location_t( s->handle
+                                                            , s->read_pointer
+                                                            )
+                          , transfer_size
+                          , queue
+                          )
+        );
+
+        gpi_api->wait
+          (gpi_api->memcpy( gpi::pc::type::memory_location_t( m_transfer_buffer
+                                                            , 0
+                                                            )
+                          , gpi::pc::type::memory_location_t( m_scratch_handle
+                                                            , 0
+                                                            )
+                          , transfer_size
+                          , queue
+                          )
+        );
+
+        // memcpy to buffer
+        memcpy ( buffer
+               , gpi_api->ptr (m_transfer_buffer)
+               , transfer_size
+               );
+
+        // update state
+        remaining_bytes -= transfer_size;
+        s->read_pointer += transfer_size;
+        num_read += transfer_size;
+        std::advance (buffer, transfer_size);
+      }
+      catch (std::exception const & ex)
+      {
+        MLOG(WARN, "could not transfer from " << s->handle << " to scratch!");
+        return -EAGAIN;
       }
     }
 
@@ -900,8 +1005,7 @@ private:
   // shared memory
   gpi::pc::type::segment_id_t m_transfer_segment;
   std::size_t                 m_transfer_segment_size;
-  gpi::pc::type::handle_t     m_transfer_buffer0;
-  gpi::pc::type::handle_t     m_transfer_buffer1;
+  gpi::pc::type::handle_t     m_transfer_buffer;
 
   // gpi allocations
   gpi::pc::type::handle_t     m_scratch_handle;
