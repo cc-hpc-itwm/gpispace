@@ -29,7 +29,7 @@ namespace ufbmig
             throw std::runtime_error (oss.str());
           }
 
-        boost::archive::text_oarchive oa (f, boost::archive::no_header);
+        boost::archive::text_oarchive oa (f);
 
         oa << x;
       }
@@ -48,7 +48,7 @@ namespace ufbmig
             throw std::runtime_error (oss.str());
           }
 
-        boost::archive::text_iarchive oa (f, boost::archive::no_header);
+        boost::archive::text_iarchive oa (f);
 
         oa >> x;
       }

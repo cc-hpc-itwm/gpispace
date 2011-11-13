@@ -40,7 +40,7 @@ namespace we
       template <typename T>
       static void encode (std::ostream & s, const T & t)
       {
-        oarchive ar ( s, boost::archive::no_header );
+        oarchive ar ( s );
         ar << BOOST_SERIALIZATION_NVP (t);
       }
 
@@ -55,7 +55,7 @@ namespace we
       template <typename T>
       static void decode (std::istream & s, T & t)
       {
-        iarchive ar ( s, boost::archive::no_header );
+        iarchive ar ( s );
         ar >> BOOST_SERIALIZATION_NVP (t);
       }
 
