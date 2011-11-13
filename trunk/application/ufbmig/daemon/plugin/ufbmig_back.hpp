@@ -1,6 +1,7 @@
 #ifndef UFBMIG_BACKEND_HPP
 #define UFBMIG_BACKEND_HPP 1
 
+#include <stdint.h>
 #include <string>
 
 namespace ufbmig
