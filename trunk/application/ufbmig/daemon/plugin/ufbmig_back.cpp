@@ -685,7 +685,6 @@ private:
                  , available_handles
                  )
     {
-      MLOG(DEBUG, desc);
       if (desc.name == name)
       {
         // TODO: we need a 'total-size' field to keep track of that
