@@ -8,12 +8,12 @@ state_dir="/tmp/ufbmig"
 mkdir -p "${state_dir}"
 
 prefix=${SDPA_HOME}
-FHGLOG_level=MIN FHGLOG_to_console=stderr fhgkernel \
+FHGLOG_level=MIN FHGLOG_to_console=stderr gdb -ex run --args fhgkernel \
     -s kernel.load.lazy=0 \
-    -s plugin.net.name="${name}" \
-    -s plugin.sdpac.orchestrator="${orchestrator}" \
-    -s plugin.ufbmig_front.timeout_default=${timeout} \
-    -s plugin.ufbmig_front.port_server=${port} \
+    -s plugin.net.name="ufbmig-test" \
+    -s plugin.sdpac.orchestrator="orchestrator" \
+    -s plugin.ufbmig_front.timeout_default=10 \
+    -s plugin.ufbmig_front.port_server=55555 \
     -s plugin.ufbmig_back.wf_init="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_init.pnet" \
     -s plugin.ufbmig_back.wf_mask="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_mask.pnet" \
     -s plugin.ufbmig_back.wf_calc="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_calc.pnet" \
@@ -28,3 +28,6 @@ FHGLOG_level=MIN FHGLOG_to_console=stderr fhgkernel \
     $prefix/libexec/plugins/sdpactl.so \
     $prefix/libexec/plugins/ufbmig_back.so \
     $prefix/libexec/plugins/ufbmig_test.so
+
+# load this
+#    $prefix/libexec/plugins/ufbmig_front.so \
