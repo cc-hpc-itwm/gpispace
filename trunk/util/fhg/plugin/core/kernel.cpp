@@ -127,9 +127,9 @@ namespace fhg
             ; ++it
             )
         {
-          mediator_ptr m = it->second;
+          mediator_ptr other_mediator = it->second;
           if (it->first != p->name())
-            m->plugin()->handle_plugin_loaded(p->name());
+            other_mediator->plugin()->handle_plugin_loaded(p->name());
         }
       }
       else if (rc == START_INCOMPLETE) // incomplete
