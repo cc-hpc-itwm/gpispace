@@ -93,12 +93,9 @@ public:
     m_migrate_xml_buffer.clear();
 
     std::string def_timeout = fhg_kernel()->get("timeout_default", "-1");
-    m_conn_timeout =
-      boost::lexical_cast<int>(fhg_kernel()->get("timeout_connect", def_timeout));
-    m_send_timeout =
-      boost::lexical_cast<int>(fhg_kernel()->get("timeout_send", def_timeout));
-    m_recv_timeout =
-      boost::lexical_cast<int>(fhg_kernel()->get("timeout_recv", def_timeout));
+    m_conn_timeout = fhg_kernel()->get<int>("timeout_connect", def_timeout);
+    m_send_timeout = fhg_kernel()->get<int>("timeout_send", def_timeout);
+    m_recv_timeout = fhg_kernel()->get<int>("timeout_recv", def_timeout);
 
     MLOG( TRACE
         ,  "timeouts: connect = " << m_conn_timeout
@@ -110,11 +107,11 @@ public:
     info.m_nConnectToTimeout = m_conn_timeout;
     info.m_nWaitForConnectionTimeout = m_conn_timeout;
     info.m_uPort =
-      boost::lexical_cast<unsigned int>(fhg_kernel()->get("port_server", "55555"));
+      fhg_kernel()->get<unsigned short>("port_server", "55555");
     info.m_uDaemonPort =
-      boost::lexical_cast<unsigned int>(fhg_kernel()->get("port_daemon", "26698"));
+      fhg_kernel()->get<unsigned short>("port_daemon", "26698");
     info.m_uFileEnginePort =
-      boost::lexical_cast<unsigned int>(fhg_kernel()->get("port_file_engine", "26699"));
+      fhg_kernel()->get<unsigned short>("port_file_engine", "26699");
     info.m_uRemotePort = info.m_uPort;
     info.m_uRemoteDaemonPort = info.m_uDaemonPort;
     info.m_uRemoteFileEnginePort = info.m_uFileEnginePort;
