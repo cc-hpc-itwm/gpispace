@@ -50,3 +50,15 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp
   COMPONENT plugins
   INSTALL
 )
+
+fhg_add_plugin(ufbmig_test ufbmig_test.cpp
+  EXPORTS UFBMIG_TEST
+  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_SYSTEM_SHARED_LIBRARY}
+  HEADERS ufbmig_front.hpp
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
+  COMPONENT plugins
+  INSTALL
+)
