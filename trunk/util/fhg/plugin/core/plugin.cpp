@@ -135,6 +135,7 @@ namespace fhg
       }
 
       m_plugin = create_plugin();
+      dlerror();
       return 0;
     }
 
