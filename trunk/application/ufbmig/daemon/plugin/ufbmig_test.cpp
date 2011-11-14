@@ -1,4 +1,3 @@
-#include "ufbmig_front.hpp"
 #include "ufbmig_back.hpp"
 
 #include <errno.h>
@@ -9,7 +8,6 @@
 #include <boost/bind.hpp>
 
 class UfBMigTest : FHG_PLUGIN
-                 , public ufbmig::Frontend
 {
 public:
   UfBMigTest ()
@@ -20,8 +18,6 @@ public:
     m_backend = fhg_kernel()->acquire<ufbmig::Backend>("ufbmig_back");
     if (m_backend)
     {
-      m_backend->registerFrontend(this);
-
       fhg_kernel()->schedule ( "test_backend"
                              , boost::bind( &UfBMigTest::test_backend
                                           , this
@@ -35,8 +31,6 @@ public:
 
   FHG_PLUGIN_STOP()
   {
-    if (m_backend)
-      m_backend->registerFrontend(0);
     FHG_PLUGIN_STOPPED();
   }
 
@@ -47,8 +41,6 @@ public:
       m_backend = fhg_kernel()->acquire<ufbmig::Backend>(plugin);
       if (m_backend)
       {
-        m_backend->registerFrontend(this);
-
         fhg_kernel()->schedule ( "test_backend"
                                , boost::bind( &UfBMigTest::test_backend
                                             , this
@@ -58,36 +50,6 @@ public:
       }
     }
   }
-
-  int initialize(std::string const &)
-  {
-    return -ENOTSUP;
-  }
-
-  int update_salt_mask(const char *data, size_t len)
-  {
-    return -ENOTSUP;
-  }
-
-  int calculate(std::string const &)
-  {
-    return -ENOTSUP;
-  }
-
-  int finalize()
-  {
-    return -ENOTSUP;
-  }
-
-  int cancel()
-  {
-    return -ENOTSUP;
-  }
-
-  void initialize_done (int) { }
-  void salt_mask_done (int) { }
-  void calculate_done (int) { }
-  void finalize_done (int) { }
 private:
   void test_backend()
   {
