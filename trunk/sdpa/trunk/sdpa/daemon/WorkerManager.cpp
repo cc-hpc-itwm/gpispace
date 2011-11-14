@@ -656,6 +656,7 @@ void WorkerManager::triggerJobTermination(IComm* pComm, Worker::JobQueue& queue,
 	{
 		JobId jobId = queue.pop();
 		// send message to the worker
+		SDPA_LOG_INFO("Tell the worker "<<worker_id<<" to cancel the job "<<jobId<<"!");
 		sdpa::events::CancelJobEvent::Ptr pCancelJobEvt(new sdpa::events::CancelJobEvent(pComm->name(), worker_id, jobId, "re-scheduling") );
 		pComm->sendEventToSlave(pCancelJobEvt);
 	}
