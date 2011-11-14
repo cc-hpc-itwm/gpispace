@@ -172,9 +172,8 @@ namespace sdpa { namespace daemon {
 	void serialize(Archive& ar, const unsigned int)
 	{
     	ar & name_;
-        // AP: what about those?
-        // ar & rank_;
-        // ar & location_;
+        ar & rank_;
+        ar & location_;
     	ar & tstamp_;
     	ar & pending_;
     	ar & submitted_;
