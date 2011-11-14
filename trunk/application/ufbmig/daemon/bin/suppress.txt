@@ -34,4 +34,298 @@
    fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
    fun:main
 }
+{  
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:realloc
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:_ZN5boost6thread12start_threadEv
+   obj:*
+   fun:_ZN3fhg4core8kernel_t11load_pluginERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:_ZN5boost6thread12start_threadEv
+   obj:*
+   fun:_ZN3fhg4core8kernel_t11load_pluginERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:_ZN3fhg4core8plugin_t6createERKSsbi
+   fun:_ZN3fhg4core8kernel_t11load_pluginERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost4asio6detail16service_registry6createINS1_15task_io_serviceEEEPNS0_10io_service7serviceERS5_
+   fun:_ZN5boost4asio6detail16service_registry14do_use_serviceERKNS0_10io_service7service3keyEPFPS4_RS3_E
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN3fhg4core8kernel_t11load_pluginERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost4asio6detail16service_registry6createINS1_13epoll_reactorEEEPNS0_10io_service7serviceERS5_
+   obj:*
+   fun:_ZN5boost4asio6detail16service_registry14do_use_serviceERKNS0_10io_service7service3keyEPFPS4_RS3_E
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN3fhg4core8kernel_t11load_pluginERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.8
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{  
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeIN3fhg3log8LogLevel5LevelESt4pairIKS3_SsESt10_Select1stIS6_ESt4lessIS3_ESaIS6_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS6_
+   fun:_ZNSt8_Rb_treeIN3fhg3log8LogLevel5LevelESt4pairIKS3_SsESt10_Select1stIS6_ESt4lessIS3_ESaIS6_EE13insert_uniqueERKS6_
+   fun:_ZNSt8_Rb_treeIN3fhg3log8LogLevel5LevelESt4pairIKS3_SsESt10_Select1stIS6_ESt4lessIS3_ESaIS6_EE13insert_uniqueESt17_Rb_tree_iteratorIS6_ERKS6_
+   fun:_ZNSt3mapIN3fhg3log8LogLevel5LevelESsSt4lessIS3_ESaISt4pairIKS3_SsEEEixERS7_
+   fun:_ZN3fhg3log11color_map_tC1Ev
+   fun:_ZN3fhg3log14StreamAppenderC1ERKSsRSoS3_NS1_9ColorModeE
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost4asio6detail16service_registry6createINS1_15task_io_serviceEEEPNS0_10io_service7serviceERS5_
+   fun:_ZN5boost4asio6detail16service_registry14do_use_serviceERKNS0_10io_service7service3keyEPFPS4_RS3_E
+   fun:_ZN3fhg3log6remote14RemoteAppenderC1ERKSsS4_
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:_ZN3fhg4core8plugin_t6createERKSsbi
+   fun:_ZN3fhg4core8kernel_t11load_pluginERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost4asio6detail16service_registry6createINS1_13epoll_reactorEEEPNS0_10io_service7serviceERS5_
+   fun:_ZN5boost4asio6detail16service_registry6createINS0_23datagram_socket_serviceINS0_2ip3udpEEEEEPNS0_10io_service7serviceERS8_
+   fun:_ZN5boost4asio6detail16service_registry14do_use_serviceERKNS0_10io_service7service3keyEPFPS4_RS3_E
+   fun:_ZN3fhg3log6remote14RemoteAppender4openEv
+   fun:_ZN3fhg3log6remote14RemoteAppenderC1ERKSsS4_
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5state3getEv
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{  
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log9getLoggerERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN3fhg3log6Logger11addAppenderERKN5boost10shared_ptrINS0_8AppenderEEE
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{  
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN3fhg3log6remote14RemoteAppender4openEv
+   fun:_ZN3fhg3log6remote14RemoteAppenderC1ERKSsS4_
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log9getLoggerERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost16unordered_detail17hash_unique_tableINS0_3mapISsNS_4hashISsEESt8equal_toISsESaISt4pairIKSsNS_10shared_ptrIN3fhg3log6LoggerEEEEEEEE7emplaceISE_EES7_INS0_18hash_iterator_baseISF_NS0_9ungroupedEEEbERKT_
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN3fhg3log6remote14RemoteAppenderC1ERKSsS4_
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN3fhg3log16CompoundAppender11addAppenderERKN5boost10shared_ptrINS0_8AppenderEEE
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
 

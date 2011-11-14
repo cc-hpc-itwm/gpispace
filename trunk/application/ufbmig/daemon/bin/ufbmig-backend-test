@@ -8,7 +8,8 @@ state_dir="/tmp/ufbmig"
 mkdir -p "${state_dir}"
 
 prefix=${SDPA_HOME}
-FHGLOG_level=MIN FHGLOG_to_console=stderr gdb -ex run --args fhgkernel \
+#FHGLOG_level=MIN FHGLOG_to_console=stderr gdb -ex run --args fhgkernel \
+FHGLOG_level=MIN FHGLOG_to_console=stderr valgrind --gen-suppressions=all --suppressions=suppress.txt --tool=memcheck --db-attach=yes --leak-check=full --show-reachable=yes --malloc-fill=0x0 --free-fill=0xa fhgkernel \
     -s kernel.load.lazy=0 \
     -s plugin.net.name="ufbmig-test" \
     -s plugin.sdpac.orchestrator="orchestrator" \
