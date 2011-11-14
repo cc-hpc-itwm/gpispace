@@ -504,8 +504,9 @@ public:
   {
     gpi::pc::type::handle_t handle = 0;
     size_t size = 0;
+    int ec = 0;
 
-    int ec = reinitialize_gpi_state();
+    ec = reinitialize_gpi_state();
     if (0 != ec)
     {
       return ec;
@@ -513,37 +514,19 @@ public:
 
     gpi::pc::type::handle::descriptor_t found;
 
-    // lookup the handle by name
-    gpi::pc::type::handle::list_t
-      available_handles (gpi_api->list_allocations(1));
-    BOOST_FOREACH( gpi::pc::type::handle::descriptor_t const & desc
-                 , available_handles
-                 )
+    ec = lookup_handle_by_name(name, found);
+    if (ec < 0)
     {
-      if (desc.name == name)
-      {
-        // TODO: we need a 'total-size' field to keep track of that
-        found = desc;
-        if (desc.flags & gpi::pc::type::handle::F_GLOBAL)
-        {
-          found.size *= gpi_api->collect_info().nodes;
-        }
-        break;
-      }
+      return ec;
     }
 
     if (0 == found.id)
     {
-      MLOG(ERROR, "could not open handle: " << name << ": no such handle");
       return -ENOENT;
     }
 
     int fd = allocate_file_descriptor();
-    if (fd < 0)
-    {
-      MLOG(ERROR, "could not allocate filedescriptor");
-    }
-    else
+    if (fd >= 0)
     {
       stream_ptr_t s (new gpi_stream);
       s->fd = fd;
@@ -680,6 +663,49 @@ private:
   {
     lock_type lock (m_stream_mutex);
     m_stream_fds.push(fd);
+  }
+
+  int lookup_handle_by_name( std::string const &name
+                           , gpi::pc::type::handle::descriptor_t & found
+                           )
+  {
+    // lookup handle
+    gpi::pc::type::handle::list_t
+      available_handles;
+    try
+    {
+      available_handles = gpi_api->list_allocations(1);
+    }
+    catch (std::exception const &ex)
+    {
+      return -EIO;
+    }
+
+    BOOST_FOREACH( gpi::pc::type::handle::descriptor_t const & desc
+                 , available_handles
+                 )
+    {
+      MLOG(DEBUG, desc);
+      if (desc.name == name)
+      {
+        // TODO: we need a 'total-size' field to keep track of that
+        found = desc;
+        if (desc.flags & gpi::pc::type::handle::F_GLOBAL)
+        {
+          try
+          {
+            found.size *= gpi_api->collect_info().nodes;
+          }
+          catch (std::exception const &ex)
+          {
+            return -EIO;
+          }
+        }
+        break;
+      }
+    }
+
+    return 0;
   }
 
   std::string read_workflow_from_file (std::string const & path)
@@ -897,6 +923,8 @@ private:
 
   int reinitialize_gpi_state ()
   {
+    lock_type gpi_mutex (m_gpi_state_mutex);
+
     if (! gpi_api)
     {
       MLOG(ERROR, "cannot initialize gpi connection: gpi plugin not available");
@@ -975,7 +1003,15 @@ private:
                           , queue
                           )
         );
+      }
+      catch (std::exception const & ex)
+      {
+        MLOG(WARN, "could not transfer from " << s->handle << " to scratch: " << ex.what());
+        return -EIO;
+      }
 
+      try
+      {
         gpi_api->wait
           (gpi_api->memcpy( gpi::pc::type::memory_location_t( m_transfer_buffer
                                                             , 0
@@ -987,24 +1023,24 @@ private:
                           , queue
                           )
         );
-
-        // memcpy to buffer
-        memcpy ( buffer
-               , gpi_api->ptr (m_transfer_buffer)
-               , transfer_size
-               );
-
-        // update state
-        remaining_bytes -= transfer_size;
-        s->read_pointer += transfer_size;
-        num_read += transfer_size;
-        std::advance (buffer, transfer_size);
       }
       catch (std::exception const & ex)
       {
-        MLOG(WARN, "could not transfer from " << s->handle << " to scratch!");
-        return -EAGAIN;
+        MLOG(WARN, "could not transfer from scratch to shm: " << ex.what());
+        return -EIO;
       }
+
+      // memcpy to buffer
+      memcpy ( buffer
+             , gpi_api->ptr (m_transfer_buffer)
+             , transfer_size
+             );
+
+      // update state
+      remaining_bytes -= transfer_size;
+      s->read_pointer += transfer_size;
+      num_read += transfer_size;
+      std::advance (buffer, transfer_size);
     }
 
     return 0;
@@ -1016,6 +1052,8 @@ private:
   mutable mutex_type m_stream_mutex;
   stream_map_t m_streams;
   stream_fd_stack_t m_stream_fds;
+
+  mutable mutex_type m_gpi_state_mutex;
 
   bool m_control_sdpa;
   sdpa::Control * sdpa_ctl;
