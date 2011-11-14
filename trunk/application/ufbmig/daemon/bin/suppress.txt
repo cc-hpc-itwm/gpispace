@@ -1,0 +1,37 @@
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN5boost6detail25get_once_per_thread_epochEv
+   fun:_ZN5boost9call_onceIPFvvEEEvRNS_9once_flagET_
+   fun:_ZN5boost6detail23get_current_thread_dataEv
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN3fhg4core8kernel_t11load_pluginERKSs
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost4asio6detail16service_registry6createINS0_2ip16resolver_serviceINS4_3udpEEEEEPNS0_10io_service7serviceERS8_
+   fun:_ZN5boost4asio6detail16service_registry14do_use_serviceERKNS0_10io_service7service3keyEPFPS4_RS3_E
+   fun:_ZN3fhg3log6remote14RemoteAppender4openEv
+   fun:_ZN3fhg3log6remote14RemoteAppenderC1ERKSsS4_
+   fun:_ZN3fhg3log20DefaultConfiguration9configureEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN3fhg3log6LoggerC1ERKSs
+   fun:_ZN5state7state_t9getLoggerERKSsS2_
+   fun:_ZN3fhg3log6Logger3getERKSsS3_
+   fun:_ZN3fhg3log6Logger3getEv
+   fun:_ZN3fhg3log20DefaultConfiguration21default_configurationEv
+   fun:main
+}
+
