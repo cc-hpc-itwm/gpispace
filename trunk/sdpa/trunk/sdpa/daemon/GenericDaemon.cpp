@@ -218,46 +218,46 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
 void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 {
-  if(!ptr_scheduler_)
-  {
-    SDPA_LOG_INFO("Create the scheduler...");
-    sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
-    ptr_scheduler_ = ptrSched;
-  }
+	if(!ptr_scheduler_)
+	{
+		SDPA_LOG_INFO("Create the scheduler...");
+		sdpa::daemon::Scheduler::ptr_t ptrSched(create_scheduler(bUseReqModel));
+		ptr_scheduler_ = ptrSched;
+	}
 
-  // The stage uses 2 threads
-  ptr_daemon_stage_.lock()->start();
+	// The stage uses 2 threads
+	ptr_daemon_stage_.lock()->start();
 
-  //start-up the the daemon
-  SDPA_LOG_INFO("Trigger StartUpEvent...");
-  StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
-  sendEventToSelf(pEvtStartUp);
+	//start-up the the daemon
+	SDPA_LOG_INFO("Trigger StartUpEvent...");
+	StartUpEvent::Ptr pEvtStartUp(new StartUpEvent(name(), name(), cfgFile));
+	sendEventToSelf(pEvtStartUp);
 
-  lock_type lock(mtx_);
-  while(!m_bStarted)
-    cond_can_start_.wait(lock);
+	lock_type lock(mtx_);
+	while(!m_bStarted)
+		cond_can_start_.wait(lock);
 
-  if( is_configured() )
-  {
-    // no backup, if a backup file was not specified!
-    // m_threadBkpService.start();
+	if( is_configured() )
+	{
+		// no backup, if a backup file was not specified!
+		// m_threadBkpService.start();
 
-    SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
-    if( !isTop() )
-    	requestRegistration();
+		SDPA_LOG_INFO("Agent " << name() << " was successfully configured!");
+		if( !isTop() )
+			requestRegistration();
 
-    SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
+		SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
 
-    ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
-    notifyWorkers(pErrEvt);
-  }
-  else
-  {
-      SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
-  }
+		ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
+		notifyWorkers(pErrEvt);
+	}
+	else
+	{
+		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
+	}
 
-  scheduler()->cancelWorkerJobs(this);
-  jobManager()->reScheduleAllMasterJobs(this);
+	scheduler()->cancelWorkerJobs(this);
+	jobManager()->reScheduleAllMasterJobs(this);
 
   //scheduler()->removeRecoveryInconsistencies();
 
