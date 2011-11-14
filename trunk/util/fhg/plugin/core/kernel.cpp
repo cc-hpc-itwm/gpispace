@@ -369,7 +369,10 @@ namespace fhg
               ; ++it
               )
           {
-            if (unload_plugin (it) < 0) continue;
+            if (unload_plugin (it) < 0)
+              continue;
+            else
+              break;
           }
         }
       }
