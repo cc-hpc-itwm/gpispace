@@ -182,6 +182,7 @@ namespace gpi
 
         // send
         header_t header;
+        ::memset (&header, 0, sizeof(header));
         header.version = 0x01;
         header.length = data.size();
 
