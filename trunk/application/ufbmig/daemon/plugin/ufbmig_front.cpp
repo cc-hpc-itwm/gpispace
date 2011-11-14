@@ -5,12 +5,14 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/util/thread/queue.hpp>
 
 #include <cstdio>
 #include <cstring>
 #include <string>
 #include <cstdlib>
 #include <iostream>
+#include <functional>
 
 #include "ServerCommunication.h"
 #include "Server.h"
@@ -22,6 +24,17 @@
 
 static const std::string SERVER_APP_NAME("Interactive Migration");
 static const std::string SERVER_APP_VERS("1.0.0");
+
+typedef boost::recursive_mutex mutex_type;
+typedef boost::unique_lock<mutex_type> lock_type;
+typedef boost::condition_variable_any condition_type;
+
+typedef boost::shared_ptr<PSProMigIF::Message> PSProMessagePtr;
+
+static void my_free(void *ptr)
+{
+  free(ptr);
+}
 
 namespace client { namespace command {
     // sent by the GUI to us
@@ -73,6 +86,34 @@ namespace server { namespace command {
   }
 }
 
+namespace transfer
+{
+  enum
+    {
+      PENDING = 0,
+      RUNNING = 1,
+      CANCELED = 2,
+      FINISHED = 3,
+    };
+
+  struct request_t
+  {
+    request_t ()
+      : m_state(0)
+    {}
+
+    int state() const { lock_type lck(m_mtx); return m_state; }
+    void set_state(int s) { lock_type lck(m_mtx); m_state = s; }
+  private:
+    mutable mutex_type m_mtx;
+
+    int m_state; // 0 pending 1 executing 2 canceled
+  };
+
+  typedef boost::shared_ptr<request_t> request_ptr_t;
+  typedef fhg::thread::queue<request_ptr_t, std::list> request_queue_t;
+}
+
 class UfBMigFrontImpl : FHG_PLUGIN
                       , public ufbmig::Frontend
 {
@@ -102,6 +143,9 @@ public:
         << " send = " << m_send_timeout
         << " recv = " << m_recv_timeout
         );
+
+    m_chunk_size = fhg_kernel()->get<std::size_t>("chunk_size", "4194304");
+    MLOG(TRACE, "using chunk size for GUI messages of: " << m_chunk_size);
 
     PSProMigIF::StartupInfo info;
     info.m_nConnectToTimeout = m_conn_timeout;
@@ -142,11 +186,15 @@ public:
       FHG_PLUGIN_FAILED(EFAULT);
     }
 
+    m_current_transfer = transfer::request_ptr_t(new transfer::request_t());
+    m_current_transfer->set_state(transfer::CANCELED);
+
     m_backend = fhg_kernel()->acquire<ufbmig::Backend>("ufbmig_back");
     assert (m_backend);
     m_backend->registerFrontend(this);
 
     m_stop_requested = false;
+    m_transfer_thread = boost::thread (&UfBMigFrontImpl::transfer_thread, this);
     m_message_thread = boost::thread (&UfBMigFrontImpl::message_thread, this);
 
     send_waiting_for_initialize();
@@ -158,6 +206,10 @@ public:
   {
     //m_server->stop(); // FIXME: deadlock!
     m_stop_requested = true;
+
+    m_transfer_thread.interrupt();
+    m_transfer_thread.join ();
+
     m_message_thread.interrupt();
     m_message_thread.join ();
 
@@ -191,6 +243,10 @@ public:
   int cancel()
   {
     assert (m_backend);
+    /*
+    m_transfer_requests.clear();
+    m_current_transfer->set_state(transfer::CANCELED);
+    */
     return m_backend->cancel();
   }
 
@@ -273,9 +329,9 @@ public:
     }
   }
 private:
-  boost::shared_ptr<PSProMigIF::Message> create_pspro_error_message ( int cmd
-                                                                    , int ec
-                                                                    )
+  PSProMessagePtr create_pspro_error_message ( int cmd
+                                             , int ec
+                                             )
   {
     if (ec < 0)
       ec = -ec;
@@ -284,17 +340,23 @@ private:
     return create_pspro_message(cmd, error.c_str(), error.size());
   }
 
-  boost::shared_ptr<PSProMigIF::Message> create_pspro_message( int cmd
-                                                             , const void *data = 0
-                                                             , size_t len = 0
-                                                             )
+  PSProMessagePtr create_pspro_message( int cmd
+                                      , const void *data = 0
+                                      , size_t len = 0
+                                      )
   {
     assert ((len && data != NULL) || !len);
 
-    boost::shared_ptr<PSProMigIF::Message> msg
-      (PSProMigIF::Message::generateMsg(len));
-    msg->m_nCommand = cmd;
+    PSProMessagePtr msg(create_new_pspro_message(cmd, len));
     memcpy( msg->getCostumPtr(), data, len);
+    return msg;
+  }
+
+  PSProMessagePtr create_new_pspro_message (int cmd, size_t len)
+  {
+    PSProMessagePtr msg
+      (PSProMigIF::Message::generateMsg(len), std::ptr_fun(my_free));
+    msg->m_nCommand = cmd;
     return msg;
   }
 
@@ -359,10 +421,10 @@ private:
     m_server->idle();
     create_pspro_message(server::command::MIGRATE_SUCCESS)
       ->sendMsg(m_server->communication());
-    create_pspro_message(server::command::MIGRATE_META_DATA, 0, 0)
-      ->sendMsg(m_server->communication());
-    create_pspro_message(server::command::MIGRATE_DATA, 0 /*data*/, 0/*len*/)
-      ->sendMsg(m_server->communication());
+
+    m_transfer_requests.clear ();
+    m_current_transfer->set_state(transfer::CANCELED);
+    m_transfer_requests.put(transfer::request_ptr_t(new transfer::request_t()));
   }
 
   void send_migrate_failure(int ec)
@@ -420,7 +482,7 @@ private:
 
   void message_thread ()
   {
-    typedef boost::shared_ptr<PSProMigIF::Message> message_ptr;
+    typedef PSProMessagePtr message_ptr;
 
     MLOG(TRACE, "waiting for messages...");
 
@@ -433,7 +495,9 @@ private:
         std::string payload;
 
         message_ptr msg
-          (PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout));
+          ( PSProMigIF::Message::recvMsg(m_server->communication(), m_recv_timeout)
+          , std::ptr_fun(my_free)
+          );
         if (! msg)
         {
           ++fail_counter;
@@ -547,13 +611,187 @@ private:
     return ec;
   }
 
+  void transfer_thread ()
+  {
+    while (not m_stop_requested)
+    {
+      int ec = 0;
+
+      m_current_transfer = m_transfer_requests.get();
+
+      if (m_current_transfer->state() != transfer::PENDING)
+      {
+        MLOG(INFO, "ignoring non pending transfer request!");
+        continue;
+      }
+
+      m_current_transfer->set_state(transfer::RUNNING);
+
+      // transfer meta data
+      ec = transfer_output_meta_data_to_gui(m_current_transfer);
+      if (0 != ec)
+      {
+        MLOG(WARN, "Could not transfer output meta data to GUI: " << strerror(-ec));
+        continue;
+      }
+
+      ec = transfer_output_data_to_gui(m_current_transfer);
+      if (0 != ec)
+      {
+        MLOG(WARN, "Could not transfer output to GUI: " << strerror(-ec));
+        continue;
+      }
+
+      m_current_transfer->set_state(transfer::FINISHED);
+    }
+  }
+
+  int transfer_output_meta_data_to_gui (transfer::request_ptr_t request)
+  {
+    if (request->state() == transfer::CANCELED)
+    {
+      return -ECANCELED;
+    }
+
+    int fd = m_backend->open("data.output_meta");
+    if (fd < 0)
+    {
+      MLOG(ERROR, "meta data not available: " << strerror(-fd));
+      return fd;
+    }
+
+    uint64_t sz;
+    int ec;
+
+    ec = m_backend->seek (fd, 0, SEEK_END, &sz);
+    m_backend->seek (fd, 0, SEEK_SET, 0);
+
+    if (ec != 0)
+    {
+      MLOG(WARN, "could not determine size of meta data: " << strerror(-ec));
+      m_backend->close(fd);
+      return -EIO;
+    }
+
+    if (0 == sz)
+    {
+      MLOG(WARN, "ignoring empty meta data!");
+      m_backend->close(fd);
+      return -EIO;
+    }
+
+    MLOG(INFO, "transfering meta data with size " << sz);
+
+    PSProMessagePtr
+      msg (create_new_pspro_message(server::command::MIGRATE_META_DATA, sz));
+
+    size_t num_read;
+    memset(msg->getCostumPtr(), 0, sz);
+    ec = m_backend->read (fd, msg->getCostumPtr(), sz, num_read);
+
+    MLOG(INFO, "read " << num_read << " bytes");
+
+    if (0 == ec)
+    {
+      try
+      {
+        msg->sendMsg(m_server->communication());
+      }
+      catch (std::exception const & ex)
+      {
+        MLOG(ERROR, "could not send message to GUI: " << ex.what());
+        ec = -EIO;
+      }
+    }
+
+    m_backend->close (fd);
+    return ec;
+  }
+
+    // get transfer request from queue
+    // check its state:
+    //   ignore if already canceled
+    //   mark it as ongoing else
+    // handle transfer:
+    //   open meta data
+    //     if size > 0: send
+    //     else: abort transfer
+    //   open output data
+    //   while not canceled
+    //     create message with size chunk_size
+    //     store current offset in the first 4(?) bytes
+    //     read into remaining buffer
+    //       if read failed, abort transfer
+    //     send message
+
+  int transfer_output_data_to_gui(transfer::request_ptr_t request)
+  {
+    if (request->state() == transfer::CANCELED)
+    {
+      return -ECANCELED;
+    }
+
+    int fd = m_backend->open("data.output");
+    if (fd < 0)
+    {
+      MLOG(ERROR, "data not available: " << strerror(-fd));
+      return fd;
+    }
+
+    uint64_t total_size;
+    int ec;
+
+    ec = m_backend->seek (fd, 0, SEEK_END, &total_size);
+    m_backend->seek (fd, 0, SEEK_SET, 0);
+
+    size_t remaining = total_size;
+    size_t offset = 0;
+    while (remaining && request->state() != transfer::CANCELED)
+    {
+      size_t transfer_size = std::min (remaining, m_chunk_size);
+      size_t message_size = sizeof(offset) + transfer_size;
+
+      PSProMessagePtr
+        msg (create_new_pspro_message(server::command::MIGRATE_DATA, message_size));
+      memcpy(msg->getCostumPtr(), &offset, sizeof(offset));
+
+      size_t num_read;
+      ec = m_backend->read ( fd
+                           , msg->getCostumPtr() + sizeof(offset)
+                           , transfer_size
+                           , num_read
+                           );
+      if (0 == ec && (num_read == transfer_size))
+      {
+        msg->sendMsg(m_server->communication());
+        offset += transfer_size;
+        remaining -= transfer_size;
+      }
+      else
+      {
+        MLOG(WARN, "could not read output: " << strerror(-ec));
+        break;
+      }
+    }
+
+    m_backend->close (fd);
+    return ec;
+  }
+
   bool m_stop_requested;
   int m_conn_timeout;
   int m_send_timeout;
   int m_recv_timeout;
+  size_t m_chunk_size;
+
   PSProMigIF::StartServer* m_server;
   ufbmig::Backend *m_backend;
+
+  transfer::request_queue_t m_transfer_requests;
+  transfer::request_ptr_t m_current_transfer;
+
   boost::thread m_message_thread;
+  boost::thread m_transfer_thread;
 
   std::string m_migrate_xml_buffer;
 };
