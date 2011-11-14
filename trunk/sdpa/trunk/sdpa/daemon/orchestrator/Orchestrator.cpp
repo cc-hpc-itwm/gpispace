@@ -85,10 +85,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     try {
         pJob = ptr_job_man_->findJob(pEvt->job_id());
         pJob->JobFinished(pEvt);
-        if( pJob->getStatus().find("Finished") == std::string::npos   )
-        {
-        	SDPA_LOG_FATAL( "Invalid status for the job "<<pJob->id()<<"! (The job should be finished)" );
-        }
+        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     }
     catch(JobNotFoundException const &)
     {
@@ -186,10 +183,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
     try {
         pJob = ptr_job_man_->findJob(pEvt->job_id());
         pJob->JobFailed(pEvt);
-        if( pJob->getStatus().find("Failed") == std::string::npos   )
-        {
-          SDPA_LOG_ERROR( "**** Invalid state of job: " << pJob->id() << " expected: Failed found: " <<  pJob->getStatus());
-        }
+        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     }
     catch(const JobNotFoundException &)
     {
