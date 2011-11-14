@@ -547,11 +547,12 @@ public:
     stream_map_t::iterator stream_it (m_streams.find(fd));
     if (stream_it != m_streams.end())
     {
-      m_streams.erase(stream_it);
-      free_file_descriptor(fd);
-
       // any subsequent call to read/write transfers will fail
       stream_it->second->handle.id = 0;
+
+      free_file_descriptor(fd);
+
+      m_streams.erase(stream_it);
       return 0;
     }
     else
@@ -1029,11 +1030,20 @@ private:
         return -EIO;
       }
 
-      // memcpy to buffer
-      memcpy ( buffer
-             , gpi_api->ptr (m_transfer_buffer)
-             , transfer_size
-             );
+      void *src = gpi_api->ptr(m_transfer_buffer);
+      if (src)
+      {
+        // memcpy to buffer
+        memcpy ( buffer
+               , src
+               , transfer_size
+               );
+      }
+      else
+      {
+        MLOG(WARN, "could not memcpy to buffer: shm disappeared");
+        return -EIO;
+      }
 
       // update state
       remaining_bytes -= transfer_size;
