@@ -120,13 +120,6 @@ class UfBMigFrontImpl : FHG_PLUGIN
 public:
   UfBMigFrontImpl ()
   {
-    // start server communication
-    PSProMigIF::StartServer::registerInstance
-      ( SERVER_APP_NAME
-      , new PSProMigIF::ServerHelper(SERVER_APP_VERS)
-      );
-
-    m_server = PSProMigIF::StartServer::getInstance(SERVER_APP_NAME);
   }
 
   FHG_PLUGIN_START()
@@ -145,7 +138,7 @@ public:
         );
 
     m_chunk_size = fhg_kernel()->get<std::size_t>("chunk_size", "4194304");
-    MLOG(TRACE, "using chunk size for GUI messages of: " << m_chunk_size);
+    DMLOG(TRACE, "using chunk size for GUI messages of: " << m_chunk_size);
 
     PSProMigIF::StartupInfo info;
     info.m_nConnectToTimeout = m_conn_timeout;
@@ -162,6 +155,13 @@ public:
 
     try
     {
+      // start server communication
+      PSProMigIF::StartServer::registerInstance
+        ( SERVER_APP_NAME
+        , new PSProMigIF::ServerHelper(SERVER_APP_VERS)
+      );
+
+      m_server = PSProMigIF::StartServer::getInstance(SERVER_APP_NAME);
       m_server->handleExceptionsByLibrary(false);
       m_server->init(info);
       m_server->addCommunication (new PSProMigIF::ServerCommunicationListen());
@@ -179,6 +179,11 @@ public:
       FHG_PLUGIN_FAILED(ETIMEDOUT);
       // TODO:
       //   mark plugin as incomplete, try to start connection again...
+    }
+    catch (PSProMigIF::ServerStateControlError)
+    {
+      LOG(ERROR, "could not start server connection due to an unknown reason");
+      FHG_PLUGIN_FAILED(EFAULT);
     }
     catch (...)
     {
@@ -360,124 +365,118 @@ private:
     return msg;
   }
 
-  void send_waiting_for_initialize()
+  int send_waiting_for_initialize()
   {
     m_server->idle();
-    create_pspro_message(server::command::WAITING_FOR_INITIALIZE)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::WAITING_FOR_INITIALIZE));
   }
 
-  void send_initializing()
+  int send_initializing()
   {
     m_server->busy();
-    create_pspro_message(server::command::INITIALIZING)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::INITIALIZING));
   }
 
-  void send_initialize_success()
+  int send_initialize_success()
   {
     m_server->idle();
-    create_pspro_message(server::command::INITIALIZE_SUCCESS)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::INITIALIZE_SUCCESS));
   }
 
-  void send_initialize_failure(int ec)
+  int send_initialize_failure(int ec)
   {
     m_server->idle();
-    create_pspro_error_message(server::command::INITIALIZE_FAILURE, ec)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_error_message( server::command::INITIALIZE_FAILURE
+                                                 , ec
+                                                 )
+                      );
   }
 
-  void send_processing_salt_mask()
+  int send_processing_salt_mask()
   {
     m_server->busy();
-    create_pspro_message(server::command::PROCESSING_SALT_MASK)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::PROCESSING_SALT_MASK));
   }
 
-  void send_process_salt_mask_success()
+  int send_process_salt_mask_success()
   {
     m_server->idle();
-    create_pspro_message(server::command::PROCESS_SALT_MASK_SUCCESS)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::PROCESS_SALT_MASK_SUCCESS));
   }
 
-  void send_process_salt_mask_failure(int ec)
+  int send_process_salt_mask_failure(int ec)
   {
     m_server->idle();
-    create_pspro_error_message(server::command::PROCESS_SALT_MASK_FAILURE, ec)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_error_message( server::command::PROCESS_SALT_MASK_FAILURE
+                                                 , ec
+                                                 )
+                      );
   }
 
-  void send_migrating()
+  int send_migrating()
   {
     m_server->busy();
-    create_pspro_message(server::command::MIGRATING)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::MIGRATING));
   }
 
-  void send_migrate_success()
+  int send_migrate_success()
   {
     m_server->idle();
-    create_pspro_message(server::command::MIGRATE_SUCCESS)
-      ->sendMsg(m_server->communication());
-
-    m_transfer_requests.clear ();
-    m_current_transfer->set_state(transfer::CANCELED);
-    m_transfer_requests.put(transfer::request_ptr_t(new transfer::request_t()));
+    int ec = send_to_gui (create_pspro_message(server::command::MIGRATE_SUCCESS));
+    if (0 == ec)
+    {
+      m_transfer_requests.clear ();
+      m_current_transfer->set_state(transfer::CANCELED);
+      m_transfer_requests.put(transfer::request_ptr_t(new transfer::request_t()));
+    }
+    return ec;
   }
 
-  void send_migrate_failure(int ec)
+  int send_migrate_failure(int ec)
   {
     m_server->idle();
-    create_pspro_error_message(server::command::MIGRATE_FAILURE, ec)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_error_message(server::command::MIGRATE_FAILURE, ec));
   }
 
-  void send_finalizing()
+  int send_finalizing()
   {
     m_server->busy();
-    create_pspro_message(server::command::FINALIZING)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::FINALIZING));
   }
 
-  void send_finalize_success()
+  int send_finalize_success()
   {
     m_server->idle();
-    create_pspro_message(server::command::FINALIZE_SUCCESS)
-      ->sendMsg(m_server->communication());
-    send_waiting_for_initialize();
+    int ec;
+    ec = send_to_gui(create_pspro_message(server::command::FINALIZE_SUCCESS));
+    ec = send_waiting_for_initialize();
+    return ec;
   }
 
-  void send_finalize_failure(int ec)
+  int send_finalize_failure(int ec)
   {
     m_server->idle();
-    create_pspro_error_message(server::command::FINALIZE_FAILURE, ec)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_error_message(server::command::FINALIZE_FAILURE, ec));
   }
 
-  void send_progress(int p)
+  int send_progress(int p)
   {
-    create_pspro_message(server::command::PROGRESS, &p, sizeof(p))
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::PROGRESS, &p, sizeof(p)));
   }
 
-  void send_logoutput(std::string const &msg)
+  int send_logoutput(std::string const &msg)
   {
-    create_pspro_message(server::command::LOGOUTPUT, msg.c_str(), msg.size())
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::LOGOUTPUT, msg.c_str(), msg.size()));
   }
 
-  void send_abort_accepted()
+  int send_abort_accepted()
   {
-    create_pspro_message(server::command::ABORT_ACCEPTED)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_message(server::command::ABORT_ACCEPTED));
   }
 
-  void send_abort_refused(int ec)
+  int send_abort_refused(int ec)
   {
-    create_pspro_error_message(server::command::ABORT_REFUSED, ec)
-      ->sendMsg(m_server->communication());
+    return send_to_gui(create_pspro_error_message(server::command::ABORT_REFUSED, ec));
   }
 
   void message_thread ()
@@ -627,6 +626,8 @@ private:
 
       m_current_transfer->set_state(transfer::RUNNING);
 
+      MLOG(INFO, "transfering data to GUI");
+
       // transfer meta data
       ec = transfer_output_meta_data_to_gui(m_current_transfer);
       if (0 != ec)
@@ -643,6 +644,8 @@ private:
       }
 
       m_current_transfer->set_state(transfer::FINISHED);
+
+      MLOG(INFO, "transfer complete");
     }
   }
 
@@ -658,6 +661,10 @@ private:
     {
       MLOG(ERROR, "meta data not available: " << strerror(-fd));
       return fd;
+    }
+    else
+    {
+      DMLOG(TRACE, "meta data opened: fd := " << fd);
     }
 
     uint64_t sz;
@@ -680,49 +687,31 @@ private:
       return -EIO;
     }
 
-    MLOG(INFO, "transfering meta data with size " << sz);
+    DMLOG(TRACE, "transfering meta data with size " << sz);
+
+    std::vector<char> buffer (sz, 0);
 
     PSProMessagePtr
       msg (create_new_pspro_message(server::command::MIGRATE_META_DATA, sz));
-
     size_t num_read;
-    memset(msg->getCostumPtr(), 0, sz);
     ec = m_backend->read (fd, msg->getCostumPtr(), sz, num_read);
-
-    MLOG(INFO, "read " << num_read << " bytes");
-
     if (0 == ec)
     {
-      try
+      ec = send_to_gui(msg);
+      if (0 != ec)
       {
-        msg->sendMsg(m_server->communication());
+        MLOG(ERROR, "could not send meta data to GUI: " << strerror(-ec));
       }
-      catch (std::exception const & ex)
-      {
-        MLOG(ERROR, "could not send message to GUI: " << ex.what());
-        ec = -EIO;
-      }
+    }
+    else
+    {
+      MLOG(WARN, "reading meta data failed: " << strerror(-ec));
     }
 
     m_backend->close (fd);
+
     return ec;
   }
-
-    // get transfer request from queue
-    // check its state:
-    //   ignore if already canceled
-    //   mark it as ongoing else
-    // handle transfer:
-    //   open meta data
-    //     if size > 0: send
-    //     else: abort transfer
-    //   open output data
-    //   while not canceled
-    //     create message with size chunk_size
-    //     store current offset in the first 4(?) bytes
-    //     read into remaining buffer
-    //       if read failed, abort transfer
-    //     send message
 
   int transfer_output_data_to_gui(transfer::request_ptr_t request)
   {
@@ -736,6 +725,10 @@ private:
     {
       MLOG(ERROR, "data not available: " << strerror(-fd));
       return fd;
+    }
+    else
+    {
+      MLOG(TRACE, "opened output data stream: fd := " << fd);
     }
 
     uint64_t total_size;
@@ -757,25 +750,44 @@ private:
 
       size_t num_read;
       ec = m_backend->read ( fd
-                           , msg->getCostumPtr() + sizeof(offset)
+                           , msg->getCostumPtr()+sizeof(offset)
                            , transfer_size
                            , num_read
                            );
-      if (0 == ec && (num_read == transfer_size))
+
+      if (0 == ec)
       {
-        msg->sendMsg(m_server->communication());
+        ec = send_to_gui(msg);
+        if (0 != ec)
+        {
+          MLOG(ERROR, "could not send data chunk to GUI: " << strerror(-ec));
+          break;
+        }
+
         offset += transfer_size;
         remaining -= transfer_size;
       }
       else
       {
-        MLOG(WARN, "could not read output: " << strerror(-ec));
         break;
       }
     }
 
     m_backend->close (fd);
     return ec;
+  }
+
+  int send_to_gui(PSProMessagePtr msg)
+  {
+    try
+    {
+      msg->sendMsg(m_server->communication(), m_send_timeout);
+    }
+    catch (std::exception const &ex)
+    {
+      return -EIO;
+    }
+    return 0;
   }
 
   bool m_stop_requested;
