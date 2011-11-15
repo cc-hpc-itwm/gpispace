@@ -177,7 +177,7 @@ namespace sdpa
 
         void ClientFsm_Unconfigured::Shutdown(ClientContext& context)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -198,7 +198,7 @@ namespace sdpa
 
         void ClientFsm_Unconfigured::Start(ClientContext& context, const sdpa::client::config_t & cfg)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             (context.getState()).Exit(context);
             context.clearState();
@@ -219,7 +219,7 @@ namespace sdpa
 
         void ClientFsm_Configuring::ConfigNok(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             (context.getState()).Exit(context);
             context.clearState();
@@ -241,7 +241,7 @@ namespace sdpa
 
         void ClientFsm_Configuring::ConfigOk(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             (context.getState()).Exit(context);
             context.clearState();
@@ -270,7 +270,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Cancel(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -291,7 +291,7 @@ namespace sdpa
 
         void ClientFsm_Configured::CancelAck(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -312,7 +312,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Delete(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -333,7 +333,7 @@ namespace sdpa
 
         void ClientFsm_Configured::DeleteAck(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -354,7 +354,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Error(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -375,7 +375,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Query(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -396,7 +396,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Results(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -417,7 +417,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Retrieve(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -438,7 +438,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Shutdown(ClientContext& context)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -459,7 +459,7 @@ namespace sdpa
 
         void ClientFsm_Configured::StatusReply(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -480,7 +480,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Submit(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -501,7 +501,7 @@ namespace sdpa
 
         void ClientFsm_Configured::SubmitAck(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -522,7 +522,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Subscribe(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -543,7 +543,7 @@ namespace sdpa
 
         void ClientFsm_Configured::SubscribeAck(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
@@ -564,7 +564,7 @@ namespace sdpa
 
         void ClientFsm_Configured::Unknown(ClientContext& context, const seda::IEvent::Ptr & evt)
         {
-            Client& ctxt(context.getOwner());
+            Client& ctxt = context.getOwner();
 
             ClientState& EndStateName = context.getState();
 
