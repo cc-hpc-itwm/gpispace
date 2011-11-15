@@ -931,7 +931,7 @@ private:
       return -EAGAIN;
     }
 
-    if (! gpi_api->is_connected())
+    if (! gpi_api->ping())
     {
       clear_my_gpi_state();
 
