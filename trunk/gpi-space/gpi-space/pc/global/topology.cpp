@@ -557,7 +557,8 @@ namespace gpi
         LOG(WARN, "error on connection to child node " << rank);
         LOG(ERROR, "node-failover is not available yet, I have to commit Seppuku...");
         del_child (rank);
-        gpi::signal::handler().raise(15);
+        //        gpi::signal::handler().raise(15);
+        _exit(15);
       }
     }
   }
