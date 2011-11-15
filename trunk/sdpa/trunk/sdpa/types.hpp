@@ -28,6 +28,8 @@ namespace sdpa {
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 	typedef worker_id_list_t agent_id_list_t;
 	typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
+	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
+	typedef std::list<worker_job_pair_t> cancellation_list_t;
 
 	typedef std::map<sdpa::worker_id_t, unsigned int> map_degs_t;
 
