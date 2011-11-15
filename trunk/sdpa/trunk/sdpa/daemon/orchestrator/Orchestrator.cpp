@@ -80,7 +80,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       sendEventToSlave(ptrAckEvt);
     }
 
-    //put the job into the state Finished
+    //put the job into the state Finished or Cancelled
     Job::ptr_t pJob;
     try {
         pJob = ptr_job_man_->findJob(pEvt->job_id());
@@ -178,7 +178,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         sendEventToSlave(evt);
     }
 
-    //put the job into the state Failed
+    //put the job into the state Failed or Cancelled
     Job::ptr_t pJob;
     try {
         pJob = ptr_job_man_->findJob(pEvt->job_id());
@@ -371,9 +371,10 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
         // just send an acknowledgment to the master
         // send an acknowledgment to the component that requested the cancellation
+    	CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
+
         if(!isTop())
         {
-            CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id(), pEvt->id()));
             // only if the job was already submitted
             sendEventToMaster(pCancelAckEvt);
 
@@ -385,6 +386,10 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
             {
                 LOG( WARN, "the JobManager could not delete the job: "<< pEvt->job_id());
             }
+        }
+        else
+        {
+        	notifySubscribers(pCancelAckEvt);
         }
     }
     else // acknowledgment comes from a worker -> inform WE that the activity was canceled
