@@ -20,6 +20,7 @@ namespace ufbmig
     virtual void salt_mask_done (int) = 0;
     virtual void calculate_done (int) = 0;
     virtual void finalize_done (int) = 0;
+    virtual void progress_updated(int) = 0;
   };
 }
 
