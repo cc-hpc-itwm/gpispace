@@ -37,7 +37,10 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="string"/>
+	  <cinclude href="progress.h"/>
           <code><![CDATA[
+            // use a demo progress thingy
+            static int progress_counter = 0;
             LOG (INFO, "RUN " << ready_package);
 
             char * update_descr = static_cast<char *> (fvmGetShmemPtr());
@@ -83,6 +86,8 @@
                        , static_cast<fvmAllocHandle_t> (config.handle.scratch.update)
                        )
                      );
+
+            set_progress("ufbmig", (progress_counter++) % 100); // 50 of 100
           ]]></code>
         </module>
       </defun>
