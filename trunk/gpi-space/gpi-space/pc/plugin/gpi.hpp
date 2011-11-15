@@ -51,6 +51,7 @@ namespace gpi
     virtual bool is_connected () const = 0;
     virtual bool connect () = 0;
     virtual void garbage_collect () = 0;
+    virtual bool ping () = 0;
   };
 }
 

@@ -167,6 +167,11 @@ public:
       return true;
     }
   }
+
+  bool ping ()
+  {
+    return api.ping();
+  }
 private:
   bool try_start ()
   {
