@@ -84,7 +84,7 @@ private:
   std::string m_prefix;
 };
 
-int set_progress(const char *name, int value)
+int set_progress(const char *name, size_t value)
 {
   return global_progress->set(name, value);
 }
