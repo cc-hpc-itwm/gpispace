@@ -326,6 +326,8 @@ public:
       sdpa_ctl->restart();
     }
 
+    update_progress(50);
+
     MLOG(INFO, "submitting INITIALIZE workflow");
 
     const std::string wf(read_workflow_from_file(m_wf_path_initialize));
