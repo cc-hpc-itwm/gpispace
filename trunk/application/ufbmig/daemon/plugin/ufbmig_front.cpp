@@ -334,7 +334,7 @@ public:
     }
   }
 
-  void progress_updated (int value)
+  void update_progress (int value)
   {
     send_progress(value);
   }

@@ -658,6 +658,30 @@ public:
     return -ENOSYS;
   }
 private:
+  void update_progress ()
+  {
+    if (progress)
+    {
+      int value = 0;
+      int ec = progress->get("ufbmig", &value);
+      update_progress(value);
+    }
+  }
+
+  void update_progress (int v)
+  {
+    if (m_frontend) m_frontend->update_progress(v);
+  }
+
+  void set_progress (int v)
+  {
+    if (progress)
+    {
+      progress->set("ufbmig", v);
+    }
+    update_progress (v);
+  }
+
   int allocate_file_descriptor ()
   {
     lock_type lock (m_stream_mutex);
@@ -753,11 +777,10 @@ private:
 
       if (m_job_list.size() == 1)
       {
-        fhg_kernel()->schedule ( "update job states"
+        fhg_kernel()->schedule ( "update_job_states"
                                , boost::bind( &UfBMigBackImpl::update_job_states
                                             , this
                                             )
-                               , 1
                                );
       }
     }
@@ -812,6 +835,8 @@ private:
        , "job returned: " << job::type_to_name(j.type) << " "
        << job::status_to_string(j.state)
        );
+
+    update_progress(100);
 
     int ec = j.error;
 
@@ -877,6 +902,8 @@ private:
   {
     lock_type lock (m_job_list_mutex);
 
+    update_progress();
+
     for ( job_list_t::iterator j(m_job_list.begin())
         ; j != m_job_list.end()
         ; ++j
@@ -896,11 +923,10 @@ private:
 
     if (not m_job_list.empty())
     {
-      fhg_kernel()->schedule ( "update job states"
+      fhg_kernel()->schedule ( "update_job_states"
                              , boost::bind( &UfBMigBackImpl::update_job_states
                                           , this
                                           )
-                             , 1
                              );
     }
   }
