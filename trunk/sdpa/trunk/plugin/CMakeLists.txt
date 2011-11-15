@@ -99,3 +99,15 @@ fhg_add_plugin(sdpactl sdpactl.cpp
   PLUGIN_DESTINATION libexec/plugins
   COMPONENT plugins
 )
+
+fhg_add_plugin(progress progress.cpp
+  EXPORTS Progress
+  LINK_LIBRARIES ${Boost_SERIALIZATION_SHARED_LIBRARY}
+		 ${Boost_THREAD_SHARED_LIBRARY}
+		 ${Boost_SYSTEM_SHARED_LIBRARY}
+  INSTALL
+  HEADERS progress.hpp progress.h
+  HEADER_DESTINATION include/plugins
+  PLUGIN_DESTINATION libexec/plugins
+  COMPONENT plugins
+)
