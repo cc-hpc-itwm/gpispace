@@ -152,6 +152,7 @@ FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
     $prefix/libexec/plugins/gpi.so \
     $prefix/libexec/plugins/sdpac.so \
     $prefix/libexec/plugins/sdpactl.so \
+    $prefix/libexec/plugins/progress.so \
     $prefix/libexec/plugins/ufbmig_back.so \
     $prefix/libexec/plugins/ufbmig_front.so \
     $@ >$SDPA_LOG_DIR/ufbmigd.log 2>&1 &
