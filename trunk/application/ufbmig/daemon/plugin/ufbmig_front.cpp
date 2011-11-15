@@ -333,6 +333,11 @@ public:
       send_finalize_failure(ec);
     }
   }
+
+  void progress_updated (int value)
+  {
+    send_progress(value);
+  }
 private:
   PSProMessagePtr create_pspro_error_message ( int cmd
                                              , int ec
