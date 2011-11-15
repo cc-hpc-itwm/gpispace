@@ -935,6 +935,9 @@ private:
     {
       clear_my_gpi_state();
 
+      m_state = state::UNINITIALIZED;
+      if (m_frontend) m_frontend->finalize_done(0);
+
       if (! gpi_api->connect())
       {
         MLOG(ERROR, "could not open connection to gpi");
