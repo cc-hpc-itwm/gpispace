@@ -12,6 +12,7 @@ namespace fhg
     {
       enum code
         {
+          SHUTDOWN  = 50,
           TERMINATE = 100,
         };
     };
@@ -159,12 +160,26 @@ namespace fhg
       }
     }
 
+    int PluginKernelMediator::shutdown ()
+    {
+      if (has_permission(permission::SHUTDOWN))
+      {
+        LOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
+        m_kernel->stop();
+        return 0;
+      }
+      else
+      {
+        return -EPERM;
+      }
+    }
+
     int PluginKernelMediator::terminate ()
     {
       if (has_permission(permission::TERMINATE))
       {
-        LOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
-        m_kernel->stop();
+        LOG(WARN, "plugin `" << m_plugin->name() << "' requested to kill the kernel!");
+        _exit (9);
         return 0;
       }
       else
