@@ -15,6 +15,7 @@
 #include "sdpactl.hpp"
 #include "sdpac.hpp"
 #include "gpi.hpp"
+#include "progress.hpp"
 
 // ufbmig types
 #include <we/we.hpp>
@@ -220,6 +221,12 @@ public:
       FHG_PLUGIN_FAILED(EAGAIN);
     }
 
+    progress = fhg_kernel()->acquire<progress::Progress>("progress");
+    if (0 == progress)
+    {
+      MLOG(WARN, "could not acquire progress::Progress plugin");
+    }
+
     gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
     if (0 == gpi_api)
     {
@@ -273,7 +280,7 @@ public:
   {
     if (plugin == "gpi")
     {
-      gpi_api = fhg_kernel()->acquire<gpi::GPI>("gpi");
+      gpi_api = fhg_kernel()->acquire<gpi::GPI>(plugin);
       if (0 == gpi_api)
       {
         MLOG(ERROR, "gpi plugin doesn't implement GPI!");
@@ -281,6 +288,14 @@ public:
       else
       {
         reinitialize_gpi_state ();
+      }
+    }
+    else if (plugin == "progress")
+    {
+      progress = fhg_kernel()->acquire<progress::Progress>(plugin);
+      if (0 == progress)
+      {
+        MLOG(ERROR, "progress plugin does not implement Progress");
       }
     }
   }
@@ -1070,6 +1085,7 @@ private:
   bool m_control_sdpa;
   sdpa::Control * sdpa_ctl;
   sdpa::Client * sdpa_c;
+  progress::Progress *progress;
   gpi::GPI *gpi_api;
   ufbmig::Frontend *m_frontend;
   std::list<job::info_t> m_job_info_list;
