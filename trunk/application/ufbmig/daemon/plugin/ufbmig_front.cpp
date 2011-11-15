@@ -453,10 +453,13 @@ private:
     return ec;
   }
 
-  int send_finalize_failure(int ec)
+  int send_finalize_failure(int err)
   {
     m_server->idle();
-    return send_to_gui(create_pspro_error_message(server::command::FINALIZE_FAILURE, ec));
+    int ec;
+    ec = send_to_gui(create_pspro_error_message(server::command::FINALIZE_FAILURE, err));
+    ec = send_waiting_for_initialize();
+    return ec;
   }
 
   int send_progress(int p)
