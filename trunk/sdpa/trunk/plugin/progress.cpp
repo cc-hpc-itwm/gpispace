@@ -11,7 +11,7 @@
 static progress::Progress *global_progress;
 
 class ProgressImpl : FHG_PLUGIN
-                   , progress::Progress
+                   , public progress::Progress
 {
 public:
   ProgressImpl () {}
