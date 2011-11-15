@@ -662,9 +662,11 @@ private:
   {
     if (progress)
     {
-      int value = 0;
-      int ec = progress->get("ufbmig", &value);
-      update_progress(value);
+      int value = progress->get("ufbmig");
+      if (value >= 0)
+      {
+        update_progress(value);
+      }
     }
   }
 

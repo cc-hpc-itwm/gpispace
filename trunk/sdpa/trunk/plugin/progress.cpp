@@ -37,12 +37,15 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
-  int set (const char *name, int value)
+  int set (const char *name, size_t value)
   {
     if (! name)
     {
       return -EINVAL;
     }
+
+    if (value > 100)
+      return -EOVERFLOW;
 
     m_kvs->put( add_prefix(name)
               , boost::lexical_cast<std::string>(value)
@@ -51,28 +54,25 @@ public:
     return 0;
   }
 
-  int get (const char *name, int *value) const
+  int get (const char *name) const
   {
     if (! name)
     {
       return -EINVAL;
     }
-    int current_val;
+
     try
     {
-      current_val =
-        boost::lexical_cast<int>(m_kvs->get( add_prefix(name)
-                                           , "0"
-                                           )
-                                );
+      return std::abs( boost::lexical_cast<int>(m_kvs->get( add_prefix(name)
+                                                          , "0"
+                                                          )
+                                               )
+                     );
     }
     catch (std::exception const &ex)
     {
       return -EINVAL;
     }
-
-    if (value) *value = current_val;
-    return 0;
   }
 private:
   std::string add_prefix(std::string const &name) const
@@ -89,9 +89,9 @@ int set_progress(const char *name, int value)
   return global_progress->set(name, value);
 }
 
-int get_progress(const char *name, int *value)
+int get_progress(const char *name)
 {
-  return global_progress->get(name, value);
+  return global_progress->get(name);
 }
 
 EXPORT_FHG_PLUGIN( progress
