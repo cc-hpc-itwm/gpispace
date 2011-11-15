@@ -27,6 +27,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/daemon/Scheduler.hpp>
 
 namespace sdpa { namespace tests { class DaemonFSMTest_SMC; class DaemonFSMTest_BSC;}}
 
@@ -80,8 +81,8 @@ namespace sdpa { namespace daemon {
       void getWorkerList(std::list<std::string>& workerList);
       void balanceWorkers();
       const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
-      void triggerJobTermination(IComm*, Worker::JobQueue&, const worker_id_t&);
-      void cancelWorkerJobs(IComm* pComm);
+      void cancelWorkerJobs(sdpa::daemon::Scheduler*);
+      void forceOldWorkerJobsTermination();
 
       bool has_job(const sdpa::job_id_t& job_id);
 

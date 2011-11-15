@@ -650,31 +650,28 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 	return worker_map_[iter->first];
 }
 
-void WorkerManager::triggerJobTermination(IComm* pComm, Worker::JobQueue& queue, const worker_id_t& worker_id)
-{
-	while(!queue.empty())
-	{
-		JobId jobId = queue.pop();
-		// send message to the worker
-		SDPA_LOG_INFO("Tell the worker "<<worker_id<<" to cancel the job "<<jobId<<"!");
-		sdpa::events::CancelJobEvent::Ptr pCancelJobEvt(new sdpa::events::CancelJobEvent(pComm->name(), worker_id, jobId, "re-scheduling") );
-		pComm->sendEventToSlave(pCancelJobEvt);
-	}
-}
-
-void WorkerManager::cancelWorkerJobs(IComm* pComm)
+void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)
 {
 	lock_type lock(mtx_);
 	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
-		worker_id_t worker_id = pair.first;
+		worker_id_t workerId = pair.first;
 		Worker::ptr_t pWorker = pair.second;
 		pWorker->pending().clear();
 
-		// for all jobs that are submitted or acknowledged
-		// send a ca ncel event
-		triggerJobTermination(pComm, pWorker->submitted(), worker_id);
-		triggerJobTermination(pComm, pWorker->acknowledged(), worker_id);
-	}
+		JobId jobId;
 
+		while(!pWorker->submitted().empty())
+		{
+			jobId = pWorker->submitted().pop();
+			ptrSched->planForCancellation(workerId, jobId);
+		}
+		// for all jobs that are submitted or acknowledged
+
+		while(!pWorker->acknowledged().empty())
+		{
+			jobId = pWorker->acknowledged().pop();
+			ptrSched->planForCancellation(workerId, jobId);
+		}
+	}
 }
