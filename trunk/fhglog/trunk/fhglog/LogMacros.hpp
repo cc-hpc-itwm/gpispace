@@ -179,6 +179,9 @@ namespace fhg { namespace log {
            , msg                                                        \
            )
 
+#define MLOG_EVERY_N(level, N, msg) FHGLOG_DO_EVERY_N(N, MLOG(level, msg))
+#define MLOG_EVERY_N_IF(level, N, condition, msg) FHGLOG_DO_EVERY_N_IF(condition, N, MLOG(level, msg))
+
     // log to a named logger (component)
 #define CLOG(level, component, msg)                                     \
     LLOG( level                                                         \
@@ -206,6 +209,11 @@ namespace fhg { namespace log {
 #define DLOG_EVERY_N(level, N, msg)
 #define DLOG_EVERY_N_IF(level, N, condition, msg)
 
+#define DMLOG_IF(level, condition, msg)
+#define DMLOG_IF_ELSE(level, condition, m1, m2)
+#define DMLOG_EVERY_N(level, N, msg)
+#define DMLOG_EVERY_N_IF(level, N, condition, msg)
+
 #else
 
 #define DLLOG(level, logger, msg) LLOG(level, logger, msg)
@@ -216,6 +224,11 @@ namespace fhg { namespace log {
 #define DLOG_IF_ELSE(level, condition, msg1, msg2) LOG_IF_ELSE(level, condition, msg1, msg2)
 #define DLOG_EVERY_N(level, N, msg) LOG_EVERY_N(level, N, msg)
 #define DLOG_EVERY_N_IF(level, N, condition, msg) LOG_EVERY_N_IF(level, N, condition, msg)
+
+#define DMLOG_IF(level, condition, msg) MLOG_IF(level, condition, msg)
+#define DMLOG_IF_ELSE(level, condition, msg1, msg2) MLOG_IF_ELSE(level, condition, msg1, msg2)
+#define DMLOG_EVERY_N(level, N, msg) MLOG_EVERY_N(level, N, msg)
+#define DMLOG_EVERY_N_IF(level, N, condition, msg) MLOG_EVERY_N_IF(level, N, condition, msg)
 
 #endif
 
