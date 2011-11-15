@@ -550,23 +550,18 @@ private:
     switch (cmd)
     {
     case client::command::INITIALIZE:
+      send_initializing();
+
       ec = initialize(payload);
-      if (0 == ec)
-      {
-        send_initializing();
-      }
-      else
+      if (0 != ec)
       {
         send_initialize_failure(ec);
       }
       break;
     case client::command::MIGRATE:
+      send_migrating();
       ec = calculate(payload);
-      if (0 == ec)
-      {
-        send_migrating();
-      }
-      else
+      if (0 != ec)
       {
         send_migrate_failure(ec);
       }
@@ -577,12 +572,9 @@ private:
       m_migrate_xml_buffer = payload;
       break;
     case client::command::SALT_MASK:
+      send_processing_salt_mask();
       ec = update_salt_mask(payload.c_str(), payload.size());
-      if (0 == ec)
-      {
-        send_processing_salt_mask();
-      }
-      else
+      if (0 != ec)
       {
         send_process_salt_mask_failure(ec);
       }
@@ -600,12 +592,9 @@ private:
       }
       break;
     case client::command::FINALIZE:
+      send_finalizing();
       ec = finalize();
-      if (0 == ec)
-      {
-        send_finalizing();
-      }
-      else
+      if (0 != ec)
       {
         send_finalize_failure(ec);
       }
