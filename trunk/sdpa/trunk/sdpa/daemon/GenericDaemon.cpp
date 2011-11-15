@@ -135,6 +135,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
 
         SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
 
+        scheduler()->cancelWorkerJobs();
         ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
         notifyWorkers(pErrEvt);
     }
@@ -143,10 +144,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, const bfs::path& bkp_file, c
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
 
-    scheduler()->cancelWorkerJobs(this);
     jobManager()->reScheduleAllMasterJobs(this);
-
-    //scheduler()->removeRecoveryInconsistencies();
 }
 
 void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, const std::string& cfgFile )
@@ -201,6 +199,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
 
         SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
 
+        scheduler()->cancelWorkerJobs();
         ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
         notifyWorkers(pErrEvt);
     }
@@ -209,10 +208,7 @@ void GenericDaemon::start_agent( bool bUseReqModel, std::string& strBackup, cons
         SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
     }
 
-    scheduler()->cancelWorkerJobs(this);
     jobManager()->reScheduleAllMasterJobs(this);
-
-    //scheduler()->removeRecoveryInconsistencies();
 
 }
 
@@ -248,6 +244,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 
 		SDPA_LOG_INFO("Notify the workers that I'm up again and they should re-register!");
 
+		scheduler()->cancelWorkerJobs();
 		ErrorEvent::Ptr pErrEvt(new ErrorEvent( name(), "", ErrorEvent::SDPA_EWORKERNOTREG,  "worker notification") );
 		notifyWorkers(pErrEvt);
 	}
@@ -256,11 +253,7 @@ void GenericDaemon::start_agent(bool bUseReqModel, const std::string& cfgFile )
 		SDPA_LOG_INFO("Agent "<<name()<<" could not configure. Giving up now!");
 	}
 
-	scheduler()->cancelWorkerJobs(this);
 	jobManager()->reScheduleAllMasterJobs(this);
-
-  //scheduler()->removeRecoveryInconsistencies();
-
 }
 
 void GenericDaemon::shutdown(std::string& strBackup )
@@ -566,8 +559,8 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
   catch(JobNotFoundException const &)
   {
-    SDPA_LOG_ERROR("Job " << e.job_id() << " could not be found!");
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+	  SDPA_LOG_ERROR("Job " << e.job_id() << " could not be found!");
+	  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                       , e.from()
                                                       , ErrorEvent::SDPA_EJOBNOTFOUND
                                                       , "no such job"
@@ -577,8 +570,8 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
   catch(JobNotMarkedException const &)
   {
-    SDPA_LOG_WARN("Job " << e.job_id() << " not ready for deletion!");
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+	  SDPA_LOG_WARN("Job " << e.job_id() << " not ready for deletion!");
+	  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                       , e.from()
                                                       , ErrorEvent::SDPA_EAGAIN
                                                       , "not ready for deletion, try again later"
@@ -588,8 +581,8 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
   catch(JobNotDeletedException const & ex)
   {
-    SDPA_LOG_ERROR("Job " << e.job_id() << " could not be deleted!");
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+	  SDPA_LOG_ERROR("Job " << e.job_id() << " could not be deleted!");
+	  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                       , e.from()
                                                       , ErrorEvent::SDPA_EUNKNOWN
                                                       , ex.what()
@@ -599,27 +592,27 @@ void GenericDaemon::action_delete_job(const DeleteJobEvent& e )
   }
   catch(std::exception const & ex)
   {
-    SDPA_LOG_ERROR("unexpected exception during job-deletion: " << ex.what());
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+	  SDPA_LOG_ERROR("unexpected exception during job-deletion: " << ex.what());
+	  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                       , e.from()
                                                       , ErrorEvent::SDPA_EUNKNOWN
                                                       , ex.what()
                                                       )
                                       )
                      );
-    throw;
+	  throw;
   }
   catch(...)
   {
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+	  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
                                                       , e.from()
                                                       , ErrorEvent::SDPA_EUNKNOWN
                                                       , "unknown"
                                                       )
                                       )
                      );
-    SDPA_LOG_ERROR("unexpected exception during job-deletion!");
-    throw;
+	  SDPA_LOG_ERROR("unexpected exception during job-deletion!");
+	  throw;
   }
 }
 
@@ -931,159 +924,158 @@ void GenericDaemon::action_register_worker(const WorkerRegistrationEvent& evtReg
 
 void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
 {
-  DMLOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
+	DMLOG(TRACE, "got error event from " << error.from() << " code: " << error.error_code() << " reason: " << error.reason());
 
-  // if it'a communication error, inspect all jobs and
-  // send results if they are in a terminal state
+	// if it'a communication error, inspect all jobs and
+	// send results if they are in a terminal state
 
-  switch (error.error_code())
-  {
-    case ErrorEvent::SDPA_ENOERROR:
-    {
-    	// everything is fine, nothing to do
-    	break;
-    }
-    // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
-    // 'reason' should not be reused for important information
-    case ErrorEvent::SDPA_EJOBREJECTED:
-    {
-    	sdpa::job_id_t jobId(error.reason());
-    	sdpa::worker_id_t worker_id(error.from());
-    	SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<jobId.str()<<". Reschedule it now!");
-
-    	scheduler()->reschedule(worker_id, jobId);
-        break;
-    }
-    case ErrorEvent::SDPA_EWORKERNOTREG:
-    {
-    	SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
-    	// mark the agen as not-registered
-
-        // check if the message comes from a master
-		 BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-		 {
-			 if( error.from() == masterInfo.name() )
-			 {
-				 // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
-				 const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-				 SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-				 boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-				 masterInfo.set_registered(false);
-				 requestRegistration(masterInfo);
-			 }
-		 }
-    	 break;
-    }
-    case ErrorEvent::SDPA_ENODE_SHUTDOWN:
-    {
-    	if( isSubscriber(error.from()) )
-    		unsubscribe(error.from());
-
-    	worker_id_t worker_id(error.from());
-
-    	try
-    	{
-    		 Worker::ptr_t ptrWorker = findWorker(worker_id);
-
-    		 SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
-
-    		 // notify capability losses...
-			 BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-			 {
-				  sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
-						  new sdpa::events::CapabilitiesLostEvent(  name(),
-																	masterInfo.name(),
-																	ptrWorker->capabilities()
-																  )
-				  );
-
-				  sendEventToMaster(shpCpbLostEvt);
-			 }
-
-    		 ptr_scheduler_->reschedule(worker_id);
-    		 ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
-    	}
-    	catch (WorkerNotFoundException const& /*ignored*/)
-    	{
-    		// check if the message comes from a master
-			BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-			{
-				if( error.from() == masterInfo.name() )
-				{
-					SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
-
-					const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-					masterInfo.set_registered(false);
-
-					//requestRegistration(masterInfo);
-				}
-			}
-    	}
-    	catch (std::exception const& ex)
-    	{
-    		LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
-    	}
-    	break;
-    }
-    case ErrorEvent::SDPA_ENETWORKFAILURE:
-    {
-       	MLOG(WARN, "last message could not be sent due to a network failure!");
-       	// mar the current agent as not registered to the failing master
-       	BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
-   		{
-   			if( error.from() == masterInfo.name() )
-   			{
-   				SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
-
-   				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-   				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-   				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
-
-   				masterInfo.set_registered(false);
-
-   				//requestRegistration(masterInfo);
-   			}
-   		}
-
-       	break;
-	}
-	case ErrorEvent::SDPA_EJOBEXISTS:
+	switch (error.error_code())
 	{
-		SDPA_LOG_INFO("The worker managed to recover the job "<<error.job_id()<<", it already has it!");
-		// do the same as when receiving a SubmitJobAckEvent
+    	case ErrorEvent::SDPA_ENOERROR:
+    	{
+    		// everything is fine, nothing to do
+    		break;
+    	}
+    	// this  should  better go  into  a  distinct  event, since  the  ErrorEvent
+    	// 'reason' should not be reused for important information
+    	case ErrorEvent::SDPA_EJOBREJECTED:
+    	{
+    		sdpa::job_id_t jobId(error.reason());
+    		sdpa::worker_id_t worker_id(error.from());
+    		SDPA_LOG_WARN("The worker "<<worker_id<<" rejected the job "<<jobId.str()<<". Reschedule it now!");
 
-		Worker::worker_id_t worker_id = error.from();
-		try {
-			// Only, now should be state of the job updated to RUNNING
-			// since it was not rejected, no error occurred etc ....
-			//find the job ptrJob and call
-			Job::ptr_t ptrJob = ptr_job_man_->findJob(error.job_id());
-			ptrJob->Dispatch();
-			ptr_scheduler_->acknowledgeJob(worker_id, error.job_id());
-		}
-		catch(JobNotFoundException const& ex)
-		{
-			SDPA_LOG_ERROR("The job " << error.job_id() << " was not found on"<<name()<<"!");
-		}
-		catch(WorkerNotFoundException const &)
-		{
-			SDPA_LOG_ERROR("job re-submission could not be acknowledged: worker " << worker_id << " not found!!");
-		}
-		catch(std::exception const &ex)
-		{
-			SDPA_LOG_ERROR("Unexpected exception occurred upon receiving ErrorEvent::SDPA_EJOBEXISTS: " << ex.what());
-		}
+    		scheduler()->reschedule(worker_id, jobId);
+    		break;
+    	}
+    	case ErrorEvent::SDPA_EWORKERNOTREG:
+    	{
+    		SDPA_LOG_WARN("New instance of the master is up, sending new registration request!");
+    		// mark the agen as not-registered
 
-		break;
+    		// check if the message comes from a master
+    		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+    		{
+    			if( error.from() == masterInfo.name() )
+    			{
+    				// we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
+    				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+    				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+    				masterInfo.set_registered(false);
+    				requestRegistration(masterInfo);
+    			}
+    		}
+    		break;
+    	}
+    	case ErrorEvent::SDPA_ENODE_SHUTDOWN:
+    	{
+    		if( isSubscriber(error.from()) )
+    			unsubscribe(error.from());
+
+    		worker_id_t worker_id(error.from());
+
+    		try
+    		{
+    			Worker::ptr_t ptrWorker = findWorker(worker_id);
+
+    			SDPA_LOG_INFO("worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
+
+    			// notify capability losses...
+    			BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    			{
+    				sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
+    						new sdpa::events::CapabilitiesLostEvent(  	name(),
+																		masterInfo.name(),
+																		ptrWorker->capabilities()
+																  	  ));
+
+    				sendEventToMaster(shpCpbLostEvt);
+    			}
+
+    			ptr_scheduler_->reschedule(worker_id);
+    			ptr_scheduler_->delWorker(worker_id); // do a re-scheduling here
+    		}
+    		catch (WorkerNotFoundException const& /*ignored*/)
+    		{
+    			// check if the message comes from a master
+    			BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+				{
+    				if( error.from() == masterInfo.name() )
+    				{
+    					SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+
+    					const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+    					SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+    					boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+
+    					masterInfo.set_registered(false);
+
+    					//requestRegistration(masterInfo);
+    				}
+				}
+    		}
+    		catch (std::exception const& ex)
+    		{
+    			LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
+    		}
+    		break;
+    	}
+    	case ErrorEvent::SDPA_ENETWORKFAILURE:
+    	{
+    		MLOG(WARN, "last message could not be sent due to a network failure!");
+    		// mark the current agent as not registered to the failing master
+    		BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+    		{
+    			if( error.from() == masterInfo.name() )
+    			{
+    				SDPA_LOG_WARN("Master " << masterInfo.name() << " is down");
+
+    				const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
+    				SDPA_LOG_INFO("Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
+    				boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+
+    				masterInfo.set_registered(false);
+
+    				//requestRegistration(masterInfo);
+    			}
+    		}
+
+    		break;
+    	}
+    	case ErrorEvent::SDPA_EJOBEXISTS:
+    	{
+    		SDPA_LOG_INFO("The worker managed to recover the job "<<error.job_id()<<", it already has it!");
+    		// do the same as when receiving a SubmitJobAckEvent
+
+    		Worker::worker_id_t worker_id = error.from();
+    		try {
+    			// Only, now should be state of the job updated to RUNNING
+    			// since it was not rejected, no error occurred etc ....
+    			//find the job ptrJob and call
+    			Job::ptr_t ptrJob = ptr_job_man_->findJob(error.job_id());
+    			ptrJob->Dispatch();
+    			ptr_scheduler_->acknowledgeJob(worker_id, error.job_id());
+    		}
+    		catch(JobNotFoundException const& ex)
+    		{
+    			SDPA_LOG_ERROR("The job " << error.job_id() << " was not found on"<<name()<<"!");
+    		}
+    		catch(WorkerNotFoundException const &)
+    		{
+    			SDPA_LOG_ERROR("job re-submission could not be acknowledged: worker " << worker_id << " not found!!");
+    		}
+    		catch(std::exception const &ex)
+    		{
+    			SDPA_LOG_ERROR("Unexpected exception occurred upon receiving ErrorEvent::SDPA_EJOBEXISTS: " << ex.what());
+    		}
+
+    		break;
+    	}
+    	default:
+    	{
+    		MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
+    	}
 	}
-    default:
-    {
-    	MLOG(WARN, "got an ErrorEvent back (ignoring it): code=" << error.error_code() << " reason=" << error.reason());
-    }
-  }
 }
 
 /* Implements Gwes2Sdpa */
@@ -1096,49 +1088,49 @@ void GenericDaemon::action_error_event(const sdpa::events::ErrorEvent &error)
  */
 void GenericDaemon::submit(const id_type& activityId, const encoded_type& desc, const requirement_list_t& job_req_list )
 {
-  // create new job with the job description = workflow (serialize it first)
-  // set the parent_id to ?
-  // add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
-  // schedule the new job to some worker
+	// create new job with the job description = workflow (serialize it first)
+	// set the parent_id to ?
+	// add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
+	// schedule the new job to some worker
 
-  try {
-      DMLOG(TRACE, "workflow engine submitted "<<activityId);
+	try {
+		DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
-      job_id_t job_id(activityId);
-      job_id_t parent_id("WE"); // is this really needed?
+		job_id_t job_id(activityId);
+		job_id_t parent_id("WE"); // is this really needed?
 
-      ptr_job_man_->addJobRequirements(job_id, job_req_list);
+		ptr_job_man_->addJobRequirements(job_id, job_req_list);
 
-      // WORK HERE: limit number of maximum parallel jobs
-      ptr_job_man_->waitForFreeSlot ();
+		// WORK HERE: limit number of maximum parallel jobs
+		ptr_job_man_->waitForFreeSlot ();
 
-      // don't forget to set here the job's preferences
-      SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
-      sendEventToSelf(pEvtSubmitJob);
-  }
-  catch(QueueFull const &)
-  {
-      SDPA_LOG_ERROR("could not send event to my stage, queue is full!");
-      workflowEngine()->failed( activityId, "" ); // why?
-  }
-  catch(seda::StageNotFound const &)
-  {
-      SDPA_LOG_ERROR("Stage not found when trying to submit SubmitJobEvent!");
-      workflowEngine()->failed( activityId, "" ); // why?
-      throw;
-  }
-  catch(std::exception const & ex)
-  {
-      SDPA_LOG_ERROR("unexpected exception during submitJob: " << ex.what());
-      workflowEngine()->failed( activityId, "" ); // why?
-      throw;
-  }
-  catch(...)
-  {
-      SDPA_LOG_ERROR("unexpected exception during submitJob!");
-      workflowEngine()->failed( activityId, "" ); // why?
-      throw;
-  }
+		// don't forget to set here the job's preferences
+		SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+		sendEventToSelf(pEvtSubmitJob);
+	}
+	catch(QueueFull const &)
+	{
+		SDPA_LOG_ERROR("could not send event to my stage, queue is full!");
+		workflowEngine()->failed( activityId, "" ); // why?
+	}
+	catch(seda::StageNotFound const &)
+	{
+		SDPA_LOG_ERROR("Stage not found when trying to submit SubmitJobEvent!");
+		workflowEngine()->failed( activityId, "" ); // why?
+		throw;
+	}
+	catch(std::exception const & ex)
+	{
+		SDPA_LOG_ERROR("unexpected exception during submitJob: " << ex.what());
+		workflowEngine()->failed( activityId, "" ); // why?
+		throw;
+	}
+	catch(...)
+	{
+		SDPA_LOG_ERROR("unexpected exception during submitJob!");
+		workflowEngine()->failed( activityId, "" ); // why?
+		throw;
+	}
 }
 
 /**
@@ -1228,74 +1220,74 @@ bool GenericDaemon::cancelled(const id_type& workflowId)
 
 Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
-  try {
-      return ptr_job_man_->findJob(job_id);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-      throw ex;
-  }
+	try {
+		return ptr_job_man_->findJob(job_id);
+	}
+	catch(const JobNotFoundException& ex)
+	{
+		throw ex;
+	}
 }
 
 void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
 {
-  try {
-      jobManager()->deleteJob(jobId);
-  }
-  catch(const JobNotDeletedException& ex)
-  {
-      throw ex;
-  }
+	try {
+		jobManager()->deleteJob(jobId);
+	}
+	catch(const JobNotDeletedException& ex)
+	{
+		throw ex;
+	}
 }
 
 void GenericDaemon::jobFailed(const job_id_t& jobId, const std::string& reason)
 {
-  DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
-  workflowEngine()->failed( jobId.str(), reason );
-  jobManager()->deleteJob(jobId);
+	DLOG(TRACE, "informing workflow engine that " << jobId << " has failed: " << reason);
+	workflowEngine()->failed( jobId.str(), reason );
+	jobManager()->deleteJob(jobId);
 }
 
 const requirement_list_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
-  try {
-	  return ptr_job_man_->getJobRequirements(jobId);
-  }
-  catch (const NoJobRequirements& ex)
-  {
-      throw ex;
-  }
+	try {
+		return ptr_job_man_->getJobRequirements(jobId);
+	}
+	catch (const NoJobRequirements& ex)
+	{
+		throw ex;
+	}
 }
 
 void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
 {
-  if(!ptr_workflow_engine_)
-    throw NoWorkflowEngine();
+	if(!ptr_workflow_engine_)
+		throw NoWorkflowEngine();
 
-  ptr_workflow_engine_->submit(wf_id, desc);
+	ptr_workflow_engine_->submit(wf_id, desc);
 }
 
 void GenericDaemon::cancelWorkflow(const id_type& workflowId, const std::string& reason)
 {
-  if (hasWorkflowEngine())
-  {
-    ptr_workflow_engine_->cancel(workflowId, reason);
-  }
-  else
-  {
-    LOG(WARN, "would cancel " << workflowId << " on myself");
-  }
+	if (hasWorkflowEngine())
+	{
+		ptr_workflow_engine_->cancel(workflowId, reason);
+	}
+	else
+	{
+		LOG(WARN, "would cancel " << workflowId << " on myself");
+	}
 }
 
 void GenericDaemon::activityCancelled(const id_type& actId, const std::string& )
 {
-  if (hasWorkflowEngine())
-  {
-    ptr_workflow_engine_->cancelled( actId );
-  }
-  else
-  {
-    LOG(WARN, "cannot notify cancelled(" << actId << "): no workflow engine!");
-  }
+	if (hasWorkflowEngine())
+	{
+		ptr_workflow_engine_->cancelled( actId );
+	}
+	else
+	{
+		LOG(WARN, "cannot notify cancelled(" << actId << "): no workflow engine!");
+	}
 }
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
@@ -1368,7 +1360,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
 
 void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent* pCpbLostEvt)
 {
-        DMLOG(TRACE, "Received CapabilitiesLostEvent!");
+	DMLOG(TRACE, "Received CapabilitiesLostEvent!");
 	// tell the scheduler to remove the capabilities of the worker pCpbLostEvt->from
 
 	sdpa::worker_id_t worker_id = pCpbLostEvt->from();
@@ -1408,104 +1400,104 @@ void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pE
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
 {
-  try {
-      if(ptr_daemon_stage_.lock())
-      {
-          ptr_daemon_stage_.lock()->send(pEvt);
-          DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-      }
-      else
-      {
-          SDPA_LOG_ERROR("Daemon stage not defined! ");
-      }
-  }
-  catch(const seda::QueueFull&)
-  {
-      SDPA_LOG_WARN("Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& ex)
-  {
-      SDPA_LOG_ERROR("Stage not found! "<<ex.what());
-  }
-  catch(const std::exception& ex)
-  {
-      SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-  }
+	try {
+		if(ptr_daemon_stage_.lock())
+		{
+			ptr_daemon_stage_.lock()->send(pEvt);
+			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		}
+		else
+		{
+			SDPA_LOG_ERROR("Daemon stage not defined! ");
+		}
+	}
+	catch(const seda::QueueFull&)
+	{
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& ex)
+	{
+		SDPA_LOG_ERROR("Stage not found! "<<ex.what());
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+	}
 }
 
 void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
-  try {
-      if( to_master_stage().get() )
-      {
-          to_master_stage()->send(pEvt);
-          DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-          // to_master_stage()->dump();
-      }
-      else
-      {
-          SDPA_LOG_ERROR("The master stage does not exist!");
-      }
-  }
-  catch(const QueueFull&)
-  {
-      SDPA_LOG_WARN("Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& )
-  {
-      SDPA_LOG_ERROR("Stage "<<to_master_stage()->name()<<" not found!");
-  }
-  catch(const std::exception& ex)
-  {
-      SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-  }
+	try {
+		if( to_master_stage().get() )
+		{
+			to_master_stage()->send(pEvt);
+			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+			// to_master_stage()->dump();
+		}
+		else
+		{
+			SDPA_LOG_ERROR("The master stage does not exist!");
+		}
+	}
+	catch(const QueueFull&)
+	{
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& )
+	{
+		SDPA_LOG_ERROR("Stage "<<to_master_stage()->name()<<" not found!");
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+	}
 }
 
 void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
-  try {
-      if( to_slave_stage().get() )
-      {
-          to_slave_stage()->send(pEvt);
-          DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
-      }
-      else
-      {
-          SDPA_LOG_ERROR("The slave stage does not exist!");
-      }
-  }
-  catch(const QueueFull&)
-  {
-      SDPA_LOG_WARN("Could not send event. The queue is full!");
-  }
-  catch(const seda::StageNotFound& )
-  {
-      SDPA_LOG_ERROR("Stage "<<to_slave_stage()->name()<<" not found!");
-  }
-  catch(const std::exception& ex)
-  {
-      SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
-  }
+	try {
+		if( to_slave_stage().get() )
+		{
+			to_slave_stage()->send(pEvt);
+			DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+		}
+		else
+		{
+			SDPA_LOG_ERROR("The slave stage does not exist!");
+		}
+	}
+	catch(const QueueFull&)
+	{
+		SDPA_LOG_WARN("Could not send event. The queue is full!");
+	}
+	catch(const seda::StageNotFound& )
+	{
+		SDPA_LOG_ERROR("Stage "<<to_slave_stage()->name()<<" not found!");
+	}
+	catch(const std::exception& ex)
+	{
+		SDPA_LOG_WARN("Could not send event. Exception occurred: "<<ex.what());
+	}
 }
 
 Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
 {
-  try {
-      return  ptr_scheduler_->findWorker(worker_id);
-  }
-  catch(const WorkerNotFoundException& ex) {
-    throw ex;
-  }
+	try {
+		return  ptr_scheduler_->findWorker(worker_id);
+	}
+	catch(const WorkerNotFoundException& ex) {
+		throw ex;
+	}
 }
 
 const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
-  try {
-      return  ptr_scheduler_->findWorker(job_id);
-  }
-  catch(const NoWorkerFoundException& ex) {
-      throw ex;
-  }
+	try {
+		return  ptr_scheduler_->findWorker(job_id);
+	}
+	catch(const NoWorkerFoundException& ex) {
+		throw ex;
+	}
 }
 
 void GenericDaemon::addWorker( const Worker::worker_id_t& workerId,
@@ -1514,12 +1506,13 @@ void GenericDaemon::addWorker( const Worker::worker_id_t& workerId,
 		                       const unsigned int& agent_rank,
 		                       const sdpa::worker_id_t& agent_uuid )
 {
-	  try {
-		  ptr_scheduler_->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
-	  }catch( const WorkerAlreadyExistException& ex )
-	  {
-		  throw ex;
-	  }
+	try {
+		ptr_scheduler_->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
+	}
+	catch( const WorkerAlreadyExistException& ex )
+	{
+		throw ex;
+	}
 }
 
 void GenericDaemon::update_last_request_time()
