@@ -8,6 +8,8 @@
 #include <fhglog/minimal.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+static progress::Progress *global_progress;
+
 class ProgressImpl : FHG_PLUGIN
                    , progress::Progress
 {
@@ -26,6 +28,7 @@ public:
 
     m_prefix = fhg_kernel()->get("prefix", "progress");
 
+    global_progress = this;
     FHG_PLUGIN_STARTED();
   }
 
@@ -80,6 +83,16 @@ private:
   kvs::KeyValueStore *m_kvs;
   std::string m_prefix;
 };
+
+int set_progress(const char *name, int value)
+{
+  return global_progress->set(name, value);
+}
+
+int get_progress(const char *name, int *value)
+{
+  return global_progress->get(name, value);
+}
 
 EXPORT_FHG_PLUGIN( progress
                  , ProgressImpl
