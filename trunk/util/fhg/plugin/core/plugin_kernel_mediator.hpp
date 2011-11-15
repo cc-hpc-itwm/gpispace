@@ -40,6 +40,7 @@ namespace fhg
       int unload_plugin (std::string const &name);
 
       int terminate ();
+      int shutdown ();
     private:
       bool has_permission(int) const;
 
