@@ -264,8 +264,6 @@ void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 					SDPA_LOG_INFO("Re-schedule the job"<<pJob->id());
 					pComm->schedule(job_id);
 				}
-				else
-					listJobsToRemove.push_back(it->first);
 			}
 			else
 			{
@@ -276,15 +274,6 @@ void JobManager::reScheduleAllMasterJobs(IComm* pComm)
 				pComm->schedule(job_id);
 			}
 		}
-	}
-
-	// remove the jobs submitted by the workflow engine, eventually send a cancel event
-	while(!listJobsToRemove.empty())
-	{
-		sdpa::job_id_t job_id = listJobsToRemove.back();
-		SDPA_LOG_INFO("Remove the job "<<job_id);
-		job_map_.erase(job_id);
-		listJobsToRemove.pop_back();
 	}
 }
 
