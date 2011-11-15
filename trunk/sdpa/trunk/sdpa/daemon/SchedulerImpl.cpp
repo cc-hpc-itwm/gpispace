@@ -627,7 +627,6 @@ void SchedulerImpl::feed_workers()
 
 }
 
-
 void SchedulerImpl::run()
 {
 	if(!ptr_comm_handler_)
@@ -646,7 +645,10 @@ void SchedulerImpl::run()
 			check_post_request(); // eventually, post a request to the master
 
 			if( numberOfWorkers()>0 )
+			{
+				forceOldWorkerJobsTermination();
 				feed_workers(); //eventually, feed some workers
+			}
 
 			sdpa::job_id_t jobId   = jobs_to_be_scheduled.pop_and_wait(m_timeout);
 			const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
@@ -919,7 +921,49 @@ void SchedulerImpl::removeRecoveryInconsistencies()
 	}
 }
 
-void SchedulerImpl::cancelWorkerJobs(IComm* pComm)
+void SchedulerImpl::cancelWorkerJobs()
 {
-	ptr_worker_man_->cancelWorkerJobs(pComm);
+	ptr_worker_man_->cancelWorkerJobs(this);
 }
+
+void SchedulerImpl::planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId)
+{
+	cancellation_list_.push_back(sdpa::worker_job_pair_t(workerId, jobId));
+}
+
+void SchedulerImpl::forceOldWorkerJobsTermination()
+{
+	// cannot recover the jobs produced by the workflow engine
+	if(ptr_comm_handler_->hasWorkflowEngine())
+	{
+		sdpa::cancellation_list_t new_cancellation_list;
+		while( !cancellation_list_.empty() )
+		{
+			worker_job_pair_t worker_job_pair = cancellation_list_.front();
+			sdpa::worker_id_t workerId = worker_job_pair.first;
+			sdpa::job_id_t jobId = worker_job_pair.second;
+
+			try {
+				SDPA_LOG_INFO("Tell the worker "<<workerId<<" to cancel the job "<<jobId);
+				Worker::ptr_t pWorker = findWorker(workerId);
+
+				CancelJobEvent::Ptr pEvtCancelJob (new CancelJobEvent( 	ptr_comm_handler_->name()
+																		, workerId
+																		, jobId
+																		, "The master recovered after a crash!") );
+
+				ptr_comm_handler_->sendEventToSlave(pEvtCancelJob);
+			}
+			catch (const WorkerNotFoundException& ex)
+			{
+				new_cancellation_list.push_back(worker_job_pair);
+				//SDPA_LOG_WARN("Couldn't find the worker "<<workerId<<"(not registered yet)!");
+			}
+
+			cancellation_list_.pop_front();
+		}
+
+		cancellation_list_ = new_cancellation_list;
+	}
+}
+

@@ -91,7 +91,9 @@ namespace sdpa {
 	virtual bool post_request(const MasterInfo& masterInfo, bool force = false);
 	virtual void feed_workers();
 
-	void cancelWorkerJobs(IComm* pComm);
+	void cancelWorkerJobs();
+	void planForCancellation(const Worker::worker_id_t& workerId, const sdpa::job_id_t& jobId);
+	virtual void forceOldWorkerJobsTermination();
 
 	virtual bool useRequestModel() { return m_bUseRequestModel; }
 	void setUseRequestModel (bool b) { m_bUseRequestModel = b; }
@@ -129,6 +131,7 @@ protected:
 	boost::posix_time::time_duration m_timeout;
 
 	bool m_bUseRequestModel; // true -> request model, false -> push model
+	sdpa::cancellation_list_t cancellation_list_;
   };
 }}
 
