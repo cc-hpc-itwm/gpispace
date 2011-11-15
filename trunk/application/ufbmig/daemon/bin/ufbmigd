@@ -119,23 +119,33 @@ gpi_socket="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_path -v /var/tmp/g
 gpi_socket="$gpi_socket/GPISpace-$(id -u)"
 gpi_socket="$gpi_socket/$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.socket_name -v control)"
 
+control_sdpa=0
+gpi_api_used="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g gpi.api)"
+if [ x"$gpi_api_used" = x"gpi.api.real" ] ; then
+	control_sdpa=1
+fi
+
 log "starting ufbmigd..."
 state_dir="$SDPA_SCRATCH_DIR/state/ufbmigd"
 mkdir -p "$state_dir"
 prefix=${SDPA_HOME}
+#FHGLOG_level=MIN FHGLOG_to_console=stderr valgrind --tool=memcheck --leak-check=full --show-reachable=yes --malloc-fill=0x0 --free-fill=0xa $prefix/bin/fhgkernel \
 FHGLOG_level=MIN FHGLOG_to_console=stderr $prefix/bin/fhgkernel \
     --state "$state_dir/store/" \
     -s kernel.load.lazy=0 \
     -s plugin.net.name="${name}" \
     -s plugin.sdpac.orchestrator="${orchestrator}" \
     -s plugin.ufbmig_front.timeout_default=${timeout} \
+    -s plugin.ufbmig_front.timeout_send=5 \
     -s plugin.ufbmig_front.port_server=${port} \
+    -s plugin.ufbmig_front.chunk_size=16777216 \
     -s plugin.ufbmig_back.wf_init="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_init.pnet" \
     -s plugin.ufbmig_back.wf_mask="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_mask.pnet" \
     -s plugin.ufbmig_back.wf_calc="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_calc.pnet" \
     -s plugin.ufbmig_back.wf_done="${SDPA_LIBEXEC}/apps/ufbmig/ufbmig_done.pnet" \
     -s plugin.ufbmig_back.config="${state_dir}/config.token" \
-    -s plugin.ufbmig_back.control_sdpa=0 \
+    -s plugin.ufbmig_back.control_sdpa="${control_sdpa}" \
+    -s plugin.ufbmig_back.chunk_size=16777216 \
     -s plugin.gpi.socket="$gpi_socket" \
     $prefix/libexec/plugins/kvs.so \
     $prefix/libexec/plugins/net.so \
