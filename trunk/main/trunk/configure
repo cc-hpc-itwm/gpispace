@@ -190,7 +190,7 @@ while getopts ":hb:tTsSaAgGfFmMeEL:r:p:" opt; do
 	    ;;
 	p)
 	    count=$(( count + 2 ))
-	    build_prefix=$(readlink -f "$OPTARG")
+	    build_prefix="$OPTARG"
 	    ;;
 	\?)
 	    echo "E: invalid option: -$OPTARG" >&2
