@@ -12,7 +12,7 @@ PATH_MAIN = $(CURDIR)
 TEE      = /usr/bin/tee
 DOT      = /usr/bin/dot -Tps -Grankdir=LR
 RM       = /bin/rm -rf
-TOUCH    = /usr/bin/touch
+TOUCH    = touch
 CAT      = /bin/cat
 CP       = /bin/cp
 
