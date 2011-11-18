@@ -41,7 +41,7 @@ if [ -z "$SDPA_HOME" ] ; then
 fi
 
 # try to avoid cyclic execution of $self
-mydir=$(cd $(dirname $(which $0)) && pwd)
+mydir=$(readlink -f $(cd $(dirname $(which $0)) && pwd))
 self="$mydir/$(basename $0)"
 
 c_compiler=$(which -a "$c_compiler" | grep -v $mydir | head -n 1)
