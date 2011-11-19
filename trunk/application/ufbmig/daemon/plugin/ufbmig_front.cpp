@@ -21,6 +21,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/function.hpp>
 
 static const std::string SERVER_APP_NAME("Interactive Migration");
 static const std::string SERVER_APP_VERS("1.0.0");
@@ -98,16 +99,26 @@ namespace transfer
 
   struct request_t
   {
+    typedef boost::function<void (void)> callback_fun_t;
+
     request_t ()
       : m_state(0)
     {}
 
     int state() const { lock_type lck(m_mtx); return m_state; }
     void set_state(int s) { lock_type lck(m_mtx); m_state = s; }
+
+    void set_callback(callback_fun_t const & f)
+    {
+      lock_type lck(m_mtx); m_callback=f;
+    }
+
+    void completed() { m_callback(); }
   private:
     mutable mutex_type m_mtx;
 
     int m_state; // 0 pending 1 executing 2 canceled
+    callback_fun_t m_callback;
   };
 
   typedef boost::shared_ptr<request_t> request_ptr_t;
@@ -248,10 +259,10 @@ public:
   int cancel()
   {
     assert (m_backend);
-    /*
+
     m_transfer_requests.clear();
     m_current_transfer->set_state(transfer::CANCELED);
-    */
+
     return m_backend->cancel();
   }
 
@@ -302,16 +313,15 @@ public:
     if (! ec)
     {
       LOG(TRACE, "migration done");
-      // get current output from backend
-      const char *data = 0;
-      const size_t len = 0;
 
-      // TODO:
-      //    abort running transfers
-      //    schedule new data transfer for output
-      //    when finished send_migrate_success()
-
-      send_migrate_success();
+      m_transfer_requests.clear ();
+      m_current_transfer->set_state(transfer::CANCELED);
+      transfer::request_ptr_t transfer(new transfer::request_t());
+      transfer->set_callback (boost::bind( &UfBMigFrontImpl::send_migrate_success
+                                         , this
+                                         )
+                             );
+      m_transfer_requests.put(transfer);
     }
     else
     {
@@ -427,14 +437,7 @@ private:
   int send_migrate_success()
   {
     m_server->idle();
-    int ec = send_to_gui (create_pspro_message(server::command::MIGRATE_SUCCESS));
-    if (0 == ec)
-    {
-      m_transfer_requests.clear ();
-      m_current_transfer->set_state(transfer::CANCELED);
-      m_transfer_requests.put(transfer::request_ptr_t(new transfer::request_t()));
-    }
-    return ec;
+    return send_to_gui (create_pspro_message(server::command::MIGRATE_SUCCESS));
   }
 
   int send_migrate_failure(int ec)
@@ -641,6 +644,7 @@ private:
       }
 
       m_current_transfer->set_state(transfer::FINISHED);
+      m_current_transfer->completed();
 
       MLOG(INFO, "transfer complete");
     }
