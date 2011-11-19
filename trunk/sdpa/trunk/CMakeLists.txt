@@ -138,7 +138,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 # Reflect the package structure
 add_subdirectory(sdpa)
 add_subdirectory(apps)
-add_subdirectory(plugin)
+add_subdirectory(plugins)
 add_subdirectory(bin)
 add_subdirectory(etc)
 include(CTest)

@@ -1,6 +1,3 @@
-# add include directory to sdpa-plugin directory
-include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugin)
-
 include(pnet_macros)
 
 pnet_compile(ufbmig_init init.xml
@@ -10,6 +7,7 @@ pnet_compile(ufbmig_init init.xml
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
+	   -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
   BUILD
   INSTALL libexec/apps/ufbmig
@@ -23,6 +21,7 @@ pnet_compile(ufbmig_mask update_salt_mask.xml
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
+	   -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
   BUILD
   INSTALL libexec/apps/ufbmig
@@ -37,6 +36,7 @@ pnet_compile(ufbmig_calc calc.xml
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
 	   -I${CMAKE_SOURCE_DIR}/sdpa/plugin
+	   -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
   BUILD
   INSTALL libexec/apps/ufbmig
@@ -49,6 +49,7 @@ pnet_compile(ufbmig_done finalize.xml
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
+	   -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
   BUILD
   INSTALL libexec/apps/ufbmig

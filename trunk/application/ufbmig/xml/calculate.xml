@@ -37,7 +37,7 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="string"/>
-	  <cinclude href="progress.h"/>
+	  <cinclude href="plugins/progress.h"/>
           <code><![CDATA[
             // use a demo progress thingy
             static int progress_counter = 0;

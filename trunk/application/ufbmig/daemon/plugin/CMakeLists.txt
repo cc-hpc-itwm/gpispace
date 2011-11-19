@@ -13,7 +13,7 @@ find_package(WE REQUIRED QUIET)
 include_directories(${WE_INCLUDE_DIR})
 
 # add include directory to sdpa-plugin directory
-include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugin)
+include_directories(${CMAKE_SOURCE_DIR}/sdpa/plugins)
 
 # add include directory to gpi-plugin directory
 include_directories(${CMAKE_SOURCE_DIR}/gpi-space)
