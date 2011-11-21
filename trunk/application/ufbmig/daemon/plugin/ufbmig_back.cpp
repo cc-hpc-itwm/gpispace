@@ -434,6 +434,7 @@ public:
     // place tokens
     try
     {
+      we::util::token::put (act, "description", xml);
       we::util::token::put (act, "file_with_config", m_file_with_config);
     }
     catch (std::exception const &ex)

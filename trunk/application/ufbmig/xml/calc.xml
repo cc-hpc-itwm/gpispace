@@ -2,11 +2,13 @@
 
   <include-structs href="types.xml"/>
 
+  <in name="description" type="string" place="description"/>
   <in name="file_with_config" type="string" place="file_with_config"/>
   <out name="done" type="control" place="done"/>
 
   <net>
 
+    <place name="description" type="string"/>
     <place name="file_with_config" type="string"/>
     <place name="config" type="config"/>
     <place name="done" type="control"/>
