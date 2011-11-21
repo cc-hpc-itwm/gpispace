@@ -4,6 +4,8 @@
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <QWidget>
+
 #include <sdpa/client/ClientApi.hpp>
 #include <apps/portfolio_params.hpp>
 #include <string>
@@ -12,7 +14,9 @@ namespace Ui {
     class MonitorWindow;
 }
 
-class Portfolio {
+class Portfolio : public QWidget {
+  Q_OBJECT
+  
 public:
 	Portfolio( Ui::MonitorWindow* );
 	virtual ~Portfolio();
@@ -37,6 +41,7 @@ public:
 	void EnableControls();
 	void DisableControls();
 
+  bool event (QEvent *event);
 private:
 	Ui::MonitorWindow *m_pUi;
 	int m_nRows;

@@ -21,6 +21,29 @@ double simulation_result_t::gTotalVega 	= 0.0;
 #include <boost/tokenizer.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+static int enable_disable_event_type = QEvent::registerEventType();
+
+class Enable_Disable_Controls : public QEvent
+{
+public:
+  explicit
+  Enable_Disable_Controls(bool what)
+    : QEvent((QEvent::Type)(enable_disable_event_type))
+    , m_what (what)
+  {}
+
+  bool is_enable () const { return m_what; }
+private:
+  bool m_what;
+};
+
+static void postEnableControls(QObject *receiver)
+{
+  QCoreApplication::postEvent ( receiver
+				, new Enable_Disable_Controls (true)
+				);
+}
+
 const int NMAXTRIALS = 10;
 int mPollingInterval(1000000) ; //1 second
 
@@ -496,7 +519,7 @@ void Portfolio::Poll()
       {
         qDebug()<<"The maximum number of job submission  trials was exceeded. Giving-up now!";
         StopClient();
-        EnableControls();
+	postEnableControls(this);
         return;
       }
 
@@ -517,7 +540,18 @@ void Portfolio::Poll()
     StopClient();
   }
 
-  EnableControls();
+  postEnableControls(this);
+}
+
+bool Portfolio::event (QEvent *event)
+{
+  if (event->type() == enable_disable_event_type)
+    {
+      EnableControls();
+      event->accept();
+      return true;
+    }
+  return QWidget::event(event);
 }
 
 void Portfolio::WaitForCurrJobCompletion()
