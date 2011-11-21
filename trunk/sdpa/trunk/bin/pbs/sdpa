@@ -275,6 +275,9 @@ that is shared among all nodes.
 	    log "E: failed to create scratch directory: $scratch_dir"
 	    return 1
 	fi
+    fi
+
+    if ! test -d "$scratch_dir/state" ; then
 	if ! mkdir -p "$scratch_dir/state" ; then
 	    log "E: failed to create state directory: $scratch_dir/state"
 	    return 1
