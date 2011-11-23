@@ -71,6 +71,16 @@ public:
       MLOG(ERROR, "could not parse backlog size: " << fhg_kernel()->get("backlog", "3") << ": " << ex.what());
       FHG_PLUGIN_FAILED(EINVAL);
     }
+    try
+    {
+      m_terminate_on_failure = fhg::util::read_bool
+        (fhg_kernel()->get("terminate_on_failure", "false"));
+    }
+    catch (std::exception const &ex)
+    {
+      MLOG(ERROR, "could not parse bool from `terminate_on_failure' config key: " << ex.what());
+      FHG_PLUGIN_FAILED(EINVAL);
+    }
 
     m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
     if (0 == m_wfe)
@@ -768,6 +778,12 @@ private:
 
         send_job_result_to_master (job);
 
+        if (m_terminate_on_failure && job->state() == drts::Job::FAILED)
+        {
+          MLOG(WARN, "execution of job failed and terminate on failure policy is in place. Good bye cruel world.");
+          fhg_kernel()->terminate();
+        }
+
         {
           lock_type lock(m_job_computed_mutex);
           m_job_computed.notify_one();
@@ -1075,6 +1091,7 @@ private:
   }
 
   bool m_shutting_down;
+  bool m_terminate_on_failure;
 
   wfe::WFE *m_wfe;
 
