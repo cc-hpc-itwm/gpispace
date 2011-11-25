@@ -72,7 +72,6 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   }
 }
 
-
 void Worker::delete_job(const sdpa::job_id_t &job_id)
 {
 	DLOG(TRACE, "deleting job " << job_id << " from worker " << name());
@@ -127,6 +126,7 @@ void Worker::print()
 
 unsigned int Worker::nbAllocatedJobs()
 {
+	lock_type lock(mtx_);
 	unsigned int nJobs = pending().size() + submitted().size() + acknowledged().size();
 
 	return nJobs;

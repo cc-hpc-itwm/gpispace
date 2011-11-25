@@ -500,6 +500,17 @@ void WorkerManager::getWorkerList(std::list<std::string>& workerList)
     workerList.push_back(iter->second->name());
 }
 
+void WorkerManager::getWorkerListNotFull(sdpa::worker_id_list_t& workerList)
+{
+	lock_type lock(mtx_);
+	for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+	{
+		Worker::ptr_t ptrWorker = iter->second;
+		if(ptrWorker->nbAllocatedJobs()<ptrWorker->capacity())
+			workerList.push_back(ptrWorker->name());
+	}
+}
+
 bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)
 {
 	lock_type lock(mtx_);
@@ -597,39 +608,31 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 }
 */
 
-template <typename T>
-bool has_capability(const T& worker_cpb_map, const std::string& cpbName)
+template <typename TPtrWorker, typename TReqSet>
+int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set )
 {
-	typename T::const_iterator it = worker_cpb_map.find(cpbName);
-	if(it != worker_cpb_map.end())
-		return true;
-	else
-		return false;
-}
+	int matchingDeg = 0;
 
-template <typename TCpbMap, typename TReqSet>
-unsigned int matchRequirements( const TCpbMap worker_cpb_map, const TReqSet job_req_set )
-{
-	unsigned int matchingDeg = 0;
-
+	// for all job requirements
 	for( typename TReqSet::const_iterator it = job_req_set.begin(); it != job_req_set.end(); it++ )
 	{
-		if( has_capability(worker_cpb_map, it->value()) )
+		if( pWorker->hasCapability(it->value()) )
+		{
+			// increase the number of matchings
 			matchingDeg++;
-		else
-			if( it->is_mandatory())
+		}
+		else // if the worker doesn't have the capability
+			if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
 			{
-				matchingDeg = 0;
-				break;
+				LOG(ERROR, "The worker "<<pWorker->name()<<" doesn't have the capability required ("<<it->value()<<")");
+				std::cout<<"The capabilities of the worker "<<pWorker->name()<<" are:";
+				std::cout<<pWorker->capabilities();
+
+				return 0;
 			}
 	}
 
 	return matchingDeg;
-}
-
-bool compare(sdpa::map_degs_t::value_type &i1, sdpa::map_degs_t::value_type &i2)
-{
-	return i1.second<i2.second;
 }
 
 Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& listJobReq ) throw (NoWorkerFoundException)
@@ -640,14 +643,27 @@ Worker::ptr_t WorkerManager::getBestMatchingWorker( const requirement_list_t& li
 
 	sdpa::map_degs_t mapDegs;
 
+	int maxMatchingDeg = 0;
+
+	// the worker id of the worker that fulfills most of the requirements
+	// a matching degree 0 means that either at least a mandatory requirement
+	// is not fulfilled or the worker does not have at all that capability
+	worker_id_t bestMatchingWorkerId;
+
 	BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
 	{
-		mapDegs[pair.first] =  matchRequirements( pair.second->capabilities(), listJobReq );
+		int matchingDeg = matchRequirements( pair.second, listJobReq );
+		if( matchingDeg > maxMatchingDeg )
+		{
+			maxMatchingDeg = matchingDeg;
+			bestMatchingWorkerId = pair.first;
+		}
 	}
 
-	sdpa::map_degs_t::iterator iter = std::max_element( mapDegs.begin(), mapDegs.end(), compare );
+	if(maxMatchingDeg == 0)
+		throw NoWorkerFoundException();
 
-	return worker_map_[iter->first];
+	return worker_map_[bestMatchingWorkerId];
 }
 
 void WorkerManager::cancelWorkerJobs(sdpa::daemon::Scheduler* ptrSched)

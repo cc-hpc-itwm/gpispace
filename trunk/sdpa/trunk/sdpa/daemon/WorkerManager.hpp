@@ -79,6 +79,8 @@ namespace sdpa { namespace daemon {
 
       size_t numberOfWorkers() { return worker_map_.size(); }
       void getWorkerList(std::list<std::string>& workerList);
+      void getWorkerListNotFull(sdpa::worker_id_list_t& workerList);
+
       void balanceWorkers();
       const Worker::worker_id_t& worker(unsigned int rank) throw (NoWorkerFoundException);
       void cancelWorkerJobs(sdpa::daemon::Scheduler*);

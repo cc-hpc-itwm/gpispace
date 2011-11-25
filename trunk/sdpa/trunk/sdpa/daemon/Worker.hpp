@@ -109,6 +109,13 @@ namespace sdpa { namespace daemon {
     bool addCapabilities(const capabilities_set_t& cpbset);
     void removeCapabilities(const capabilities_set_t& cpbset);
 
+    bool hasCapability(const std::string& cpbName)
+    {
+       	lock_type lock(mtx_);
+       	sdpa::capabilities_set_t::const_iterator it = capabilities_.find(cpbName);
+       	return (it != capabilities_.end());
+    }
+
     /**
          Checks if the worker has job
     */
@@ -120,9 +127,7 @@ namespace sdpa { namespace daemon {
 		 Return true if the worker is timedout, false otherwise
      */
     bool timedout() const { return timedout_; }
-
-    void set_timedout(bool bValue = true ) { timedout_ = bValue; }
-
+    void set_timedout( bool bValue = true ) { timedout_ = bValue; }
 
     /**
       Return the next pending job or throw an exception.

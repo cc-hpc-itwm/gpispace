@@ -119,7 +119,8 @@ namespace sdpa {
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
 {
-	os<<"name: "<<cpb.name()<<", type: "<<cpb.type()<<", depth: "<<cpb.depth()<<", owner = "<<cpb.owner();
+	//os<<"name: "<<cpb.name()<<", type: "<<cpb.type()<<", depth: "<<cpb.depth()<<", owner = "<<cpb.owner();
+	os<<cpb.name();
 	return os;
 }
 

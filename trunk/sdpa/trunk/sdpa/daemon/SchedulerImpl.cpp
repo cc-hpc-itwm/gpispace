@@ -167,7 +167,6 @@ void SchedulerImpl::reschedule( const Worker::worker_id_t& worker_id ) throw (Wo
     // put the jobs back into the central queue and don't forget
     // to reset the status
 
-
   }
   catch (const WorkerNotFoundException& ex)
   {
@@ -351,7 +350,7 @@ bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const Worker::ptr_t
 bool SchedulerImpl::schedule_to(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& workerId)
 {
 	const Worker::ptr_t& pWorker = findWorker( workerId);
-	return schedule_to(jobId, workerId);
+	return schedule_to(jobId, pWorker);
 }
 
 void SchedulerImpl::delete_job (sdpa::job_id_t const & job)
@@ -387,10 +386,10 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
 
       try
       {
-    	  const requirement_list_t job_req = ptr_comm_handler_->getJobRequirements(jobId);
+    	  const requirement_list_t job_req_list = ptr_comm_handler_->getJobRequirements(jobId);
 
           // no preferences specified
-          if( job_req.empty() )
+          if( job_req_list.empty() )
           {
         	  // schedule to the first worker that requests a job
               schedule_anywhere(jobId);
@@ -401,9 +400,8 @@ bool SchedulerImpl::schedule_with_constraints(const sdpa::job_id_t& jobId,  bool
         	  try
         	  {
         		  // first round: get the list of all workers for which the mandatory requirements are matching the capabilities
-        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req);
-
-        		  // effectively assign the job to that worker
+        		  Worker::ptr_t ptrBestWorker = ptr_worker_man_->getBestMatchingWorker(job_req_list);
+        		  SDPA_LOG_INFO("The best worker matching the requirements for the job  "<<jobId<<" is "<<ptrBestWorker->name());
 
         		  // schedule the job to that one
         		  return schedule_to(jobId, ptrBestWorker);
@@ -580,6 +578,7 @@ void SchedulerImpl::check_post_request()
 	}
 }
 
+/* obsolete?
 void SchedulerImpl::feed_workers()
 {
 	// for any worker take a job from its pending queue, a
@@ -624,7 +623,25 @@ void SchedulerImpl::feed_workers()
     catch (std::exception const& ex) {
     	SDPA_LOG_ERROR("An unexpected exception occurred when attempting to feed the workers");
     }
+}
+*/
 
+void SchedulerImpl::feed_workers()
+{
+	sdpa::worker_id_list_t workerList;
+	ptr_worker_man_->getWorkerListNotFull(workerList);
+
+	BOOST_FOREACH(const sdpa::worker_id_t& worker_id, workerList)
+	{
+		if(ptr_comm_handler_)
+		{
+			ptr_comm_handler_->serve_job(worker_id);
+		}
+		else
+		{
+			SDPA_LOG_WARN("Invalid communication handler");
+		}
+    }
 }
 
 void SchedulerImpl::run()
@@ -679,7 +696,7 @@ void SchedulerImpl::run()
 					DLOG(TRACE, "I have no workers, therefore I'll try to execute myself the job "<<jobId.str()<<" ...");
 					if(ptr_comm_handler_->canRunTasksLocally())
 						execute(jobId);
-					else // no worker available
+					else // no worker available, put the job back into the queue
 						jobs_to_be_scheduled.push(jobId);
 
 
