@@ -89,6 +89,25 @@ public:
       FHG_PLUGIN_FAILED(ELIBACC);
     }
 
+    // parse virtual capabilities
+    {
+      std::string virtual_capabilities (fhg_kernel()->get("virtual_capabilities", ""));
+      std::list<std::string> capability_list;
+      fhg::util::split( virtual_capabilities
+                      , ","
+                      , std::back_inserter(capability_list)
+                      );
+      BOOST_FOREACH (std::string const & cap, capability_list)
+      {
+        if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
+        {
+          MLOG(INFO, "adding virtual capability: " << cap);
+          m_virtual_capabilities.insert
+            (std::make_pair(cap, new fhg::plugin::Capability(cap, "virtual")));
+        }
+      }
+    }
+
     // TODO: add
     //
     //      acquire_all<T>() -> [(name, T*)]
@@ -221,6 +240,14 @@ public:
     {
       lock_type job_map_lock (m_job_map_mutex);
       fhg_kernel()->storage()->save("jobs", m_jobs);
+    }
+
+    {
+      while (not m_virtual_capabilities.empty())
+      {
+        delete m_virtual_capabilities.begin()->second;
+        m_virtual_capabilities.erase(m_virtual_capabilities.begin());
+      }
     }
 
     FHG_PLUGIN_STOPPED();
@@ -816,6 +843,14 @@ private:
       caps.insert (cap_it->first);
     }
 
+    for ( map_of_capabilities_t::const_iterator cap_it(m_virtual_capabilities.begin())
+        ; cap_it != m_virtual_capabilities.end()
+        ; ++cap_it
+        )
+    {
+      caps.insert (cap_it->first);
+    }
+
     if (! caps.empty())
     {
       send_event(new sdpa::events::CapabilitiesGainedEvent( m_my_name
@@ -1116,6 +1151,7 @@ private:
 
   mutable mutex_type m_capabilities_mutex;
   map_of_capabilities_t m_capabilities;
+  map_of_capabilities_t m_virtual_capabilities;
 
   // jobs + their states
   size_t m_backlog_size;
