@@ -1,6 +1,8 @@
 #ifndef FHG_UTIL_PLUGIN_CAPABILITY_HPP
 #define FHG_UTIL_PLUGIN_CAPABILITY_HPP 1
 
+#include <string>
+
 namespace fhg
 {
   namespace plugin
@@ -8,10 +10,25 @@ namespace fhg
     class Capability
     {
     public:
+      Capability (std::string const & name, std::string const & type)
+        : m_name (name)
+        , m_type (type)
+      {}
+
       virtual ~Capability () {}
 
-      virtual const char * capability_name () const = 0;
-      virtual const char * capability_type () const = 0;
+      virtual const std::string const & capability_name () const
+      {
+        return m_name;
+      };
+
+      virtual const std::string const & capability_type () const
+      {
+        return m_type;
+      }
+    private:
+      std::string m_name;
+      std::string m_type;
     };
   }
 }

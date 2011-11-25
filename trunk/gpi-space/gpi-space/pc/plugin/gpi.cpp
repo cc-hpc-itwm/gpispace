@@ -13,16 +13,14 @@ class GpiPluginImpl : FHG_PLUGIN
 {
 public:
   GpiPluginImpl()
-    : api ("")
+    : Capability ("GPI", "PGAS")
+    , api ("")
   {}
 
   virtual ~GpiPluginImpl()
   {
     api.stop();
   }
-
-  const char * capability_name () const { return "GPI";  }
-  const char * capability_type () const { return "PGAS"; }
 
   FHG_PLUGIN_START()
   {
