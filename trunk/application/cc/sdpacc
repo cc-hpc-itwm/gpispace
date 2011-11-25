@@ -26,7 +26,7 @@ c_compiler="gcc"
 cxx_compiler="g++"
 
 if [ -z "$SDPACFLAGS" ] ; then
-   SDPACFLAGS="--network.timeout=10000 -t 0"
+   SDPACFLAGS="--network.timeout=10000 -t 25"
 fi
 
 if [ -n "$SDPACC_CC" ] ; then
