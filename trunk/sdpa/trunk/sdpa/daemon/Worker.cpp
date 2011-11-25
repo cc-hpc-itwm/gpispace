@@ -51,14 +51,13 @@ void Worker::update()
 
 void Worker::dispatch(const sdpa::job_id_t& jobId)
 {
-  SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
-  pending_.push(jobId);
+	update();
+	SDPA_LOG_DEBUG("appending job(" << jobId.str() << ") to the pending queue");
+	pending_.push(jobId);
 }
 
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
-  //update();
-
   try
   {
 	  acknowledged().push(job_id);

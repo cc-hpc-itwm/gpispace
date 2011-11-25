@@ -354,36 +354,36 @@ class EmptyWorkflowEngine : public IWorkflowEngine {
     		  //cond_stop.wait(lock);
     		  we_result_t we_result = qResults.pop_and_wait();
 
-    		  if(we_result.status == FINISHED)
-				{
-    			  SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" successfully finished!");
-				  pGenericDaemon_->finished(we_result.jobId, we_result.result);
-				}
-    		  else
-    			  if(we_result.status == FAILED)
-                            {
-                              pGenericDaemon_->failed(we_result.jobId, we_result.result);
-                            }
-    			  else
-    				  if(we_result.status == CANCELLED)
-                                    {
-                                      pGenericDaemon_->cancelled(we_result.jobId);
-                                    }
-    				  else
-                                    { // consider debug==off
-                                      DLOG(ERROR, "Invalid job status!!!!");
-                                    }
+    		  switch(we_result.status)
+    		  {
+    		  	  case FINISHED:
+    		  		  	  SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" successfully finished!");
+    		  		  	  pGenericDaemon_->finished(we_result.jobId, we_result.result);
+    		  		  	  break;
+
+    		  	  case FAILED:
+    		  		  	  SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" failed!");
+    		  		  	  pGenericDaemon_->failed(we_result.jobId, we_result.result);
+    		  		  	  break;
+
+    		  	  case CANCELLED:
+    		  		  	  SDPA_LOG_INFO("Notify the agent that the job "<<we_result.jobId.str()<<" was cancelled!");
+    		  		  	  pGenericDaemon_->cancelled(we_result.jobId);
+    		  		  	  break;
+
+    		  	  default:
+    		  		  	  SDPA_LOG_ERROR("Invalid status for the the job "<<we_result.jobId.str()<<"!");
+    		  }
     	  }
       }
 
-    template <class Archive>
-	void serialize(Archive& ar, const unsigned int)
-	{
-		ar & boost::serialization::base_object<IWorkflowEngine>(*this);
-		ar & map_Act2Wf_Ids_;
-		ar & qResults;
-	}
-
+      template <class Archive>
+      void serialize(Archive& ar, const unsigned int)
+      {
+    	  ar & boost::serialization::base_object<IWorkflowEngine>(*this);
+    	  ar & map_Act2Wf_Ids_;
+    	  ar & qResults;
+      }
 
   public:
     mutable GenericDaemon *pGenericDaemon_;

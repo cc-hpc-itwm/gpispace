@@ -1747,7 +1747,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 
         // TODO: we should only send an ack *if* the job actually exists....
 	SDPA_LOG_INFO("reply immediately with a SubscribeAckEvent");
-	sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber ));
+	sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber, listJobIds));
 	sendEventToMaster(ptrSubscAckEvt);
 
 	// check if the subscribed jobs are already in a terminal state

@@ -254,6 +254,7 @@ namespace boost { namespace serialization {
   void serialize(Archive & ar, sdpa::events::SubscribeAckEvent & e, unsigned int /* version */)
   {
 	  ar & boost::serialization::base_object<sdpa::events::MgmtEvent>(e);
+	  ar & e.listJobIds();
   }
 
   BOOST_SERIALIZATION_ASSUME_ABSTRACT(sdpa::events::SDPAEvent)

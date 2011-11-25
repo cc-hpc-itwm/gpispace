@@ -42,9 +42,32 @@ namespace sdpa { namespace events {
       SubscribeAckEvent()
         : MgmtEvent()
       {}
-      SubscribeAckEvent(const address_t& a_from, const address_t& a_to) : MgmtEvent(a_from, a_to) { }
+
+      SubscribeAckEvent(const address_t& a_from, const address_t& a_to, const job_id_list_t& listJobIds )
+	  	  : MgmtEvent(a_from, a_to),
+	  	    listJobIds_(listJobIds)
+      { }
+
+      SubscribeAckEvent( const SubscribeAckEvent& subscribeEvt )
+             : MgmtEvent (subscribeEvt)
+      {
+		  listJobIds_ = subscribeEvt.listJobIds_;
+	  }
+
+      SubscribeAckEvent& operator=( const SubscribeAckEvent& subscribeEvt )
+      {
+    	  if(this != &subscribeEvt)
+    	  {
+    		  listJobIds_ = subscribeEvt.listJobIds_;
+    	  }
+
+    	  return *this;
+      }
 
       virtual ~SubscribeAckEvent() { }
+
+      const sdpa::job_id_list_t& listJobIds() const { return listJobIds_;}
+      sdpa::job_id_list_t& listJobIds() { return listJobIds_;}
 
       virtual void handleBy(EventHandler *handler)
       {
@@ -52,6 +75,9 @@ namespace sdpa { namespace events {
       }
 
       std::string str() const { return "SubscribeAckEvent"; }
+
+    private:
+      sdpa::job_id_list_t listJobIds_;
   };
 }}
 
