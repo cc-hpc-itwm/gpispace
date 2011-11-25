@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 test -r "$HOME/.sdpa/state/sdpa.env" && source "$HOME/.sdpa/state/sdpa.env"
 
