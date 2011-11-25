@@ -17,12 +17,12 @@ namespace fhg
 
       virtual ~Capability () {}
 
-      virtual const std::string const & capability_name () const
+      virtual std::string const & capability_name () const
       {
         return m_name;
       };
 
-      virtual const std::string const & capability_type () const
+      virtual std::string const & capability_type () const
       {
         return m_type;
       }
