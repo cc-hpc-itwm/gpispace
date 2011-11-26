@@ -4,7 +4,7 @@
 #
 
 # increment this value if anything config related changes!
-CONFIG_VERSION=5
+CONFIG_VERSION=6
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
@@ -54,6 +54,7 @@ function put ()
     local val="$1"; shift
 
     fhgcfg -f "$config_file" -a "$key" -v "$val"
+    log "-: set $key to '$val'"
 }
 
 function rexec ()
@@ -81,6 +82,15 @@ function guess_head_node ()
 	echo "$PBS_O_HOST"
     else
 	echo "$(hostname -f)"
+    fi
+}
+
+function is_unattended ()
+{
+    if [ -n "$SDPA_PERFORM_UNATTENDED_SETUP" ] ; then
+	return 0
+    else
+	return 1
     fi
 }
 
@@ -134,7 +144,7 @@ function setup_state ()
     put "sdpa.state_dir" "$state_dir"
     log "I: state directory configured to be in $state_dir"
 
-    local p_stateful=$(get "sdpa.stateful" "true")
+    local p_stateful=$(get "sdpa.stateful" "false")
     if [ x"$p_stateful" = x"true" ] ; then
 	y_n_p "Do you want stateful execution? [Y/n] "
     else
@@ -193,6 +203,11 @@ function setup_kvs ()
 function y_n_p ()
 {
     local prompt="$1" ; shift
+
+    if is_unattended ; then
+	return 2
+    fi
+
     read -n 1 -p "$prompt" yes_or_no
     case "$yes_or_no" in
 	y|Y)
@@ -248,6 +263,10 @@ function get_user_input ()
 $doc
 EOF
     fi
+    if is_unattended ; then
+	return
+    fi
+
     read -e -p "  $prompt " new_val
     if [ -n "$new_val" ] ; then
 	new_val=$(eval echo "$new_val")
@@ -267,7 +286,7 @@ The "scratch"  directory should be a directory  you are allowed to  write to and
 that is shared among all nodes.
 '
 
-    local scratch_dir=$(get "sdpa.scratch_dir" "/scratch/$USER/sdpa")
+    local scratch_dir=$(get "sdpa.scratch_dir" "$HOME/.sdpa/scratch")
     get_user_input "scratch directory to use [$scratch_dir]:" scratch_dir "$doc"
 
     if ! test -d "$scratch_dir" ; then
@@ -285,7 +304,6 @@ that is shared among all nodes.
     fi
 
     put "sdpa.scratch_dir" "$scratch_dir"
-    log "-: using scratch dir $scratch_dir"
 }
 
 function setup_logging ()
@@ -326,10 +344,6 @@ to. It should be on the same host that you run the GUI on.
     put "log.server.url" "$url"
     put "log.server.level" "$lvl"
     put "sdpa.log_dir" "$log_dir"
-
-    log "-: using log server at $url"
-    log "-: using log level of $lvl"
-    log "-: using log dir $log_dir"
 }
 
 function setup_temp ()
@@ -357,8 +371,6 @@ some components.
     fi
 
     put "$key" "$val"
-
-    log "-: using node local directory $val"
 }
 
 function setup_gui ()
@@ -380,8 +392,6 @@ this location.
     local prompt="location of the monitor gui (host:port) [$val]:"
     get_user_input "$prompt" val "$doc"
     put "$key" "$val"
-
-    log "-: using gui at $val"
 }
 
 function setup_plugins ()
@@ -417,7 +427,7 @@ EOF
     put "kernel.lazy" $(get "kernel.lazy" "true")
 
     log "-: configuring plugins"
-    put "plugin.gpi.startmode" $(get "plugin.drts.backlog" "nowait")
+    put "plugin.gpi.startmode" $(get "plugin.gpi.startmode" "nowait")
     put "plugin.drts.backlog" $(get "plugin.drts.backlog" "2")
 }
 
@@ -439,12 +449,22 @@ workers will be attached to a single master.
 The number  of workers on each  node can either be  set to a fixed  number or to
 zero. In case of a zero, I will start as many workers as there are processors.
 '
+    echo "$doc"
 
-    local key="topology.with-mediator"
-    local val=$(get "$key" "yes")
-    local prompt="Do you want to use a per-node mediator? [$val]:"
-    get_user_input "$prompt" val "$doc"
-    put "$key" "$val"
+    local p_with_mediator=$(get "topology.with-mediator" "false")
+    if [ x"$p_with_mediator" = x"true" ] ; then
+	y_n_p "Do you want to use a per-node mediator? [Y/n] "
+    else
+	y_n_p "Do you want to use a per-node mediator? [y/N] "
+    fi
+    local ec=$?
+    if [ $ec -eq 0 ] ; then
+	put "topology.with-mediator" "true"
+    elif [ $ec -eq 1 ] ; then
+	put "topology.with-mediator" "false"
+    else
+	put "topology.with-mediator" "$p_with_mediator"
+    fi
 
     local key="topology.per-node"
     local val=$(get "$key" "0")
@@ -521,11 +541,34 @@ process. Depending on  how many workers you are planning to  use, you might have
 to adjust the amount.
 
 '
+    echo "$doc"
+
+    local p_gpi_enabled=$(get "gpi.enabled" "false")
+    if [ x"$p_gpi_enabled" = x"true" ] ; then
+	y_n_p "Do you want to enable GPI? [Y/n] "
+    else
+	y_n_p "Do you want stateful execution? [y/N] "
+    fi
+    local ec=$?
+    if [ $ec -eq 0 ] ; then
+	put "gpi.enabled" "true"
+    elif [ $ec -eq 1 ] ; then
+	put "gpi.enabled" "false"
+    else
+	put "gpi.enabled" "$p_gpi_enabled"
+    fi
+
+    if [ "$p_gpi_enabled" = "false" ] ; then
+	log "I: GPI support has been disabled."
+	log "I: to activate it, run 'sdpa setup gpi'"
+	return
+    fi
+
     local gpid_pid=$(ps -C gpid.exe -o pid= | tr -d ' ')
     local gpid_dir=$(cat /proc/$gpid_pid/cmdline 2>/dev/null | tr '\0' ' ' | grep -o -- '-p [^ ]*' | cut -d' ' -f 2)
 
     gpid_dir=$(get "gpi.priv_dir" "$gpid_dir")
-    get_user_input "GPI privileged directory to use [$gpid_dir]:" gpid_dir "$doc"
+    get_user_input "GPI privileged directory to use [$gpid_dir]:" gpid_dir
 
     local gpi_size=$(get "gpi.memory_size" "5G")
     get_user_input "gpi memory size (per node) [$gpi_size]:" gpi_size
@@ -572,7 +615,6 @@ to adjust the amount.
     put "plugin.gpi-compat.shm_size" "$shm_size"
     put "plugin.gpi-compat.com_size" "$com_size"
 
-    put "gpi.enabled" $(get gpi.enabled "true")
     put "gpi.api" $(get gpi.api "gpi.api.real")
     put "gpi.timeout" $(get gpi.timeout "30")
     put "gpi.socket_mode" $(get gpi.socket_mode "0700")
@@ -601,6 +643,7 @@ to adjust the amount.
 
 function setup_client ()
 {
+    log "I: setting up sdpa commandline client"
     if ! test -e "$HOME/.sdpa/configs/sdpac.rc" ; then
 	touch "$HOME/.sdpa/configs/sdpac.rc"
     fi
@@ -609,17 +652,16 @@ function setup_client ()
 function setup ()
 {
     cat <<EOF
-                 ================================
-                 *          SDPA setup          *
-                 ================================
+$(sdpac --version)
 
 Initiating the  setup routine of  SDPA. In case  of errors or  questions, please
 contact 'Alexander Petry <petry@itwm.fhg.de>'.
 
-
-
-
 EOF
+    if is_unattended ; then
+	log "I: performing automatic setup"
+    fi
+
     if ! test -e "$config_file" ; then
       mkdir -p $(dirname "$config_file") 2>/dev/null
       touch "$config_file"
@@ -633,7 +675,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-	parts="state kvs scratch logging temp gui plugins gpi client topology"
+	parts="state kvs scratch logging temp gui plugins gpi topology client"
     else
 	shift
     fi
