@@ -19,6 +19,7 @@ typedef bitsetofint::type set_t;
 #include "timer.hpp"
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
 #if BOOST_VERSION <= 103800
@@ -28,6 +29,9 @@ using std::endl;
 int
 main ()
 {
+  size_t ec (0); // error counter
+
+#if 0
   set_t set(1);
 
   cout << set;
@@ -224,6 +228,36 @@ main ()
     }
   }
 #endif
+
+#endif
+
+  cout << "testing bitwise operations on bitsetofint" << std::endl;
+
+  cout << "*** OR: ";
+
+  {
+    set_t a (1); // 64bit
+    set_t b (2); // 128bit
+
+    a.ins (32);
+    b.ins (96);
+
+    set_t c = a | b;
+
+    if (not c.is_element(32) || not c.is_element(96))
+    {
+      cout << "FAILED" << endl;
+      cerr << "ERROR: expected bits 32 and 96 to be set, but they were not!" << endl;
+      cerr << std::hex << "       a := " << a << endl;
+      cerr << std::hex << "       b := " << b << endl;
+      cerr << std::hex << "   a | b := " << c << endl;
+      ++ec;
+    }
+    else
+    {
+      cout << "SUCCESS" << endl;
+    }
+  }
 
   return EXIT_SUCCESS;
 }

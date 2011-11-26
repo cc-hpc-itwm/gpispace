@@ -23,6 +23,7 @@ namespace bitsetofint
   public:
     typedef uint64_t element_type;
     typedef std::vector<unsigned long> container_type;
+    enum { bits_per_block = 64 };
 
   private:
     container_type container;
@@ -51,7 +52,7 @@ namespace bitsetofint
     void ins (const element_type & x) throw (std::bad_alloc)
     {
       if (the_container(x) >= container.size())
-        container.resize(the_container(x) + 1);
+        container.resize(the_container(x) + 1, 0);
       container[the_container(x)] |= (1UL << the_slot(x));
     }
 
@@ -67,10 +68,28 @@ namespace bitsetofint
         && ((container[the_container(x)] & (1UL << the_slot(x))) != 0);
     }
 
+    friend type operator|(const type &, const type &);
     friend std::ostream & operator << (std::ostream &, const type &);
     friend std::size_t hash_value (const type &);
     friend bool operator == (const type &, const type &);
   };
+
+  inline type operator| (const type & lhs, const type & rhs)
+  {
+    type result (std::max (lhs.container.size(), rhs.container.size()));
+
+    for (size_t i (0); i < result.container.size(); ++i)
+    {
+      result.container [i] =
+        (
+         (i < lhs.container.size() ? lhs.container[i] : 0)
+         |
+         (i < rhs.container.size() ? rhs.container[i] : 0)
+        );
+    }
+
+    return result;
+  }
 
   inline std::ostream & operator << (std::ostream & s, const type & t)
   {
