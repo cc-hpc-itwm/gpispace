@@ -144,6 +144,10 @@ int main(int ac, char **av)
   atexit(&at_exit);
   int rc = kernel->run();
   MLOG(TRACE, "shutting down... (" << rc << ")");
+  MLOG(TRACE, "killing children...");
+
+  kill (0, SIGTERM);
+
   kernel->unload_all();
 
   delete kernel;
