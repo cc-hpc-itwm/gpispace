@@ -1349,7 +1349,7 @@ function start_drts_on_node ()
 	master="nre-$node"
     fi
 
-    err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -m "$master" -c "$per_node" $@ 2>&1)
+    err=$(rexec "$node" "$SDPA_HOME/bin/start-drts" -m "$master" -c "$per_node" $@ </dev/null >/dev/null 2>&1 &)
     if [ $? -ne 0 ] ; then
 	log "E: pc did not startup on node $node: $err" >&2
 	return 1

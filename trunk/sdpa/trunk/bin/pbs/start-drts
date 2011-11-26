@@ -183,7 +183,8 @@ else
 fi
 
 if [ $daemonize ] ; then
-    cfg="$cfg -s kernel.daemonize=1"
+    #cfg="$cfg -s kernel.daemonize=1"
+    :
 fi
 
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
@@ -230,8 +231,6 @@ done
 
 cmd="${bin} $cfg $plugin_load_flags"
 
-log "Running $cmd on node $hostname"
 export FHGLOG_to_file="$logfile"
-export FHGLOG_to_console=stderr
-
-$cmd
+log "Running $cmd on node $hostname" >/dev/null 2>&1
+exec $cmd >"$logfile.out" 2>"$logfile.err" </dev/null
