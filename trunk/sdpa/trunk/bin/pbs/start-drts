@@ -134,11 +134,16 @@ if [ -n "$count" ] ; then
     if [ $count -eq 0 ] ; then
 	count=$(grep ^processor /proc/cpuinfo | wc -l)
     fi
-    stop-drts
+    ec=0
     for i in $(seq 1 $count) ; do
-	$0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D -f </dev/null &>/dev/null &
+	$0 -i $i -m $master -k "$kvs_url" -b "$backlog" -S "$gpi_socket" -g "$gui" -l "$lib_path" -D -f &
+	ec=$(( ec + $? ))
     done
-    exit 0
+    for i in $(jobs -p) ; do
+	wait $i
+	ec=$(( ec + $? ))
+    done
+    exit $ec
 fi
 
 name="${name_prefix}-${identity}"
@@ -176,6 +181,11 @@ if [ x"$lazy" = x"true" ] ; then
 else
     cfg="$cfg -s kernel.load.lazy=0"
 fi
+
+if [ $daemonize ] ; then
+    cfg="$cfg -s kernel.daemonize=1"
+fi
+
 stateful="$(fhgcfg -f ~/.sdpa/configs/sdpa.rc -g sdpa.stateful -v false)"
 if [ x"$stateful" = x"true" ] ; then
     cfg="$cfg -S $SDPA_SCRATCH_DIR/state/kernel/$name"
@@ -222,11 +232,6 @@ cmd="${bin} $cfg $plugin_load_flags"
 
 log "Running $cmd on node $hostname"
 export FHGLOG_to_file="$logfile"
+export FHGLOG_to_console=stderr
 
-if [ "$daemonize" == "true" ] ; then
-    to_bg $$ 3 </dev/null &>/dev/null &
-    exec $cmd </dev/null &> "${logfile}"
-    echo "exec failed: $?"
-else
-    exec $cmd
-fi
+$cmd
