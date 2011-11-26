@@ -8,7 +8,7 @@ CONFIG_VERSION=5
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
-debug_enabled=false
+debug_enabled=true
 
 ##############################################
 #                                            #
@@ -975,13 +975,13 @@ function start_agent ()
 	node=localhost
     fi
 
-    local cmd="rexec $node $SDPA_HOME/bin/start-agent -D -n $name -m $master -f"
-    debug $cmd
-    err=$($cmd </dev/null >"$SDPA_LOG_DIR/$name.log" 2>&1)
+    err=$(rexec "$node" -T "$SDPA_HOME/bin/start-agent" -D -n "$name" -m "$master" -f $@ 2>&1)
     if [ $? -eq 0 ] ; then
 	echo "+ $name" >&2
+	return 0
     else
-	echo "- $name" >&2
+	echo "- $name: $err" >&2
+	return 1
     fi
 }
 
